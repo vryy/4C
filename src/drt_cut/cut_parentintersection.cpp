@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
-/**
+/*!
 \file cut_parentintersection.cpp
 
 \brief provides the basic functionality for cutting a mesh
@@ -580,8 +580,10 @@ void GEO::CUT::ParentIntersection::Cut_Finalize(bool include_inner,
     TEUCHOS_FUNC_TIME_MONITOR("XFEM::FluidWizard::Cut::DirectDivergence");
 
 #ifndef LOCAL
+#if EXTENDED_CUT_DEBUG_OUTPUT
     if (myrank_ == 0)
       std::cout << "\t DirectDivergence Cut with Global configuration!" << std::endl;
+#endif
 #endif
     m.DirectDivergenceGaussRule(include_inner, BCellgausstype);
 

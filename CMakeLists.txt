@@ -406,6 +406,13 @@ if (AMDLIBM_FOUND)
   MESSAGE("II Found AMD libM: ${AMDLIBM_INCLUDES}")
 endif()
 
+
+find_package(CLN)
+if (CLN_FOUND)
+  include_directories(SYSTEM ${CLN_INCLUDE_DIRS})
+  set(LIBRARIES ${CLN_LIBRARIES} ${LIBRARIES}  )
+  MESSAGE("-- Found CLN: ${CLN_INCLUDE_DIRS}, ${CLN_LIBRARIES}")
+endif()
 #explicitly remove all duplicate libraries, keeping the rightmost library
 #additionally remove the keywords debug;optimized;general since the libraries
 #are precompiled and this flag has no influence
@@ -768,6 +775,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_pasi.cpp
   src/drt_inpar/inpar_cell.cpp
   src/drt_inpar/inpar_contact.cpp
+  src/drt_inpar/inpar_cut.cpp
   src/drt_inpar/inpar_ehl.cpp
   src/drt_inpar/inpar_elemag.cpp
   src/drt_inpar/inpar_elch.cpp
@@ -2319,6 +2327,7 @@ set(OBJS_DRT_CONTACT_AUG
   src/drt_contact_xcontact/xcontact_integrator.cpp
 )
 set(OBJS_DRT_CUT
+  src/drt_cut/cut_options.cpp
   src/drt_cut/base_vol.cpp
   src/drt_cut/cut_boundarycell.cpp
   src/drt_cut/cut_boundingbox.cpp
@@ -2367,12 +2376,11 @@ set(OBJS_DRT_CUT
   src/drt_cut/cut_cutwizard.cpp
   src/drt_cut/cut_pointgraph_simple.cpp
   src/drt_cut/cut_facetgraph_simple.cpp
+  src/drt_cut/cut_clnwrapper.cpp
+  src/drt_cut/cut_memory_manager.cpp
 )
 set(OBJS_CUT_TEST
   tests/cut_test/cut_test_double.cpp
-  tests/cut_test/cut_test_facets.cpp
-  tests/cut_test/cut_test_graph.cpp
-  tests/cut_test/cut_test_generator.cpp
   tests/cut_test/cut_test_geometry.cpp
   tests/cut_test/cut_test_intersection.cpp
   tests/cut_test/cut_test_levelset.cpp
@@ -2419,9 +2427,34 @@ set(OBJS_CUT_TEST
   tests/cut_test/cut_test_volume.cpp
   tests/cut_test/drt_dserror.cpp
   tests/cut_test/drt_singletondestruction.cpp
+  tests/cut_test/cut_test_intersection.cpp
+  tests/cut_test/drt_singletondestruction.cpp
+  tests/cut_test/cut_test_bacigenerated_1890.cpp
+  tests/cut_test/cut_test_bacigenerated_6890.cpp
+  tests/cut_test/cut_test_bacigenerated_1858.cpp 
+  tests/cut_test/cut_test_bacigenerated_1970.cpp
+  tests/cut_test/cut_test_bacigenerated_1910.cpp
+  tests/cut_test/cut_test_bacigenerated_2010.cpp
+  tests/cut_test/cut_test_bacigenerated_1860.cpp
+  tests/cut_test/cut_test_facet_failed_cln.cpp
+  tests/cut_test/cut_test_bacigenerated_6920.cpp 
+  tests/cut_test/cut_test_bacigenerated_7019.cpp 
+  tests/cut_test/cut_test_bacigenerated_6923.cpp
+  tests/cut_test/cut_test_bacigenerated_41534.cpp 
+  tests/cut_test/cut_test_bacigenerated_43244.cpp 
+  tests/cut_test/cut_test_bacigenerated_463638.cpp 
+  tests/cut_test/cut_test_bacigenerated_622320.cpp 
+  tests/cut_test/cut_test_bacigenerated_227469.cpp
+  tests/cut_test/cut_test_bacigenerated_622829.cpp
+  tests/cut_test/cut_test_bacigenerated_627558.cpp
+  tests/cut_test/cut_test_bacigenerated_7022.cpp 
+  tests/cut_test/cut_test_bacigenerated_238425.cpp
+  tests/cut_test/cut_test_bacigenerated_197489.cpp
   src/drt_fem_general/drt_utils_gausspoints.cpp
   src/drt_fem_general/drt_utils_fem_shapefunctions.cpp
   src/drt_fem_general/drt_utils_integration.cpp
+  src/drt_cut/cut_clnwrapper.cpp
+  src/drt_cut/cut_memory_manager.cpp 
 )
 set(OBJS_GRAPH_TEST
   tests/graph_test/graph_test_main.cpp

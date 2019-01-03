@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
-/**
+/*!
 \file cut_parentintersection.H
 
 \brief provides the basic functionality for cutting a mesh
@@ -140,6 +140,9 @@ namespace GEO
 
       /// get the options
       void GetOptions(Options& options) { options = options_; };
+
+      /// get the options
+      Options& GetOptions() { return options_; };
 
       /*========================================================================*/
       //! @name Cut functionality routines

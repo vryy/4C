@@ -1,9 +1,16 @@
+/*!----------------------------------------------------------------------
+\brief Test for the CUT Library
+\file cut_test_double.cpp
+
+\level 1
+
+\maintainer Ager Christoph
+*----------------------------------------------------------------------*/
 
 #include "../../src/drt_cut/cut_mesh.H"
 #include "../../src/drt_cut/cut_element.H"
 #include "../../src/drt_cut/cut_meshintersection.H"
 #include "cut_test_utils.H"
-#include "cut_test_generator.H"
 
 void test_quad4_surface_mesh_cut()
 {
@@ -21,6 +28,7 @@ void test_quad4_surface_mesh_cut()
 void test_hex8_quad4_double_cut()
 {
   GEO::CUT::MeshIntersection intersection(2);
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   GEO::CUT::Mesh& mesh = intersection.NormalMesh();
 
@@ -75,5 +83,5 @@ void test_hex8_quad4_double_cut()
   intersection.Status();
 
   // OutputGenerator generator;
-  intersection.CutTest_Cut(true);
+  intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
 }

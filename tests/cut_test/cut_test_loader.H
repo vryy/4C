@@ -1,3 +1,12 @@
+/*!----------------------------------------------------------------------
+\brief Test for the CUT Library
+\file cut_test_loader.H
+
+\level 1
+
+\maintainer Ager Christoph
+*----------------------------------------------------------------------*/
+
 #ifndef CUT_TEST_LOADER_H
 #define CUT_TEST_LOADER_H
 
@@ -21,7 +30,8 @@ class MeshLoader
 
   void CutTest_Cut(bool include_inner, bool do_Cut_Positions_Dofsets = false)
   {
-    mesh_.CutTest_Cut(include_inner, INPAR::CUT::VCellGaussPts_Tessellation,
+    mesh_.GetOptions().Init_for_Cuttests();  // use full cln
+    mesh_.CutTest_Cut(include_inner, INPAR::CUT::VCellGaussPts_DirectDivergence,
         INPAR::CUT::BCellGaussPts_Tessellation, true, true, do_Cut_Positions_Dofsets);
     mesh_.PrintCellStats();
   }

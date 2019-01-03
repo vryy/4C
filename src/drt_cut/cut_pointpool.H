@@ -56,10 +56,12 @@ namespace GEO
 
       /// If a point with the coordinates "x" does not exists, it creates a new point
       /// correspondingly
-      Point* NewPoint(const double* x, Edge* cut_edge, Side* cut_side, double tolerance);
+      Point* NewPoint(const double* x, Edge* cut_edge, Side* cut_side, double tolerance,
+          double tol_scale = 1.0);
 
       /// Get the point with the specified coordinates "x" from the pointpool
-      Point* GetPoint(const double* x, Edge* cut_edge, Side* cut_side, double tolerance);
+      Point* GetPoint(
+          const double* x, Edge* cut_edge, Side* cut_side, double tolerance, double tol_scal = 1.0);
 
       /// Simply insert p into the pointpool and correspondingly modify the boundingbox size
       void AddPoint(const double* x, Teuchos::RCP<Point> p);
@@ -105,6 +107,9 @@ namespace GEO
 
       /// Get Points
       const RCPPointSet& GetPoints() { return points_; }
+
+      // get the node where point with specified coordinate lies
+      OctTreeNode* FindNode(const double* coord, Point* p);
 
      private:
       /*========================================================================*/
@@ -154,7 +159,8 @@ namespace GEO
       explicit PointPool(double norm = 1);
 
       /// create a new point in the point PointPool
-      Point* NewPoint(const double* x, Edge* cut_edge, Side* cut_side, double tolerance)
+      Point* NewPoint(
+          const double* x, Edge* cut_edge, Side* cut_side, double tolerance, double tol_scale = 1.0)
       {
         switch (probdim_)
         {
@@ -164,10 +170,11 @@ namespace GEO
             double x_ext[3] = {0.0, 0.0, 0.0};
             std::copy(x, x + 2, x_ext);
 
-            return tree_.NewPoint(x_ext, cut_edge, cut_side, GetTolerance(x_ext, tolerance));
+            return tree_.NewPoint(
+                x_ext, cut_edge, cut_side, GetTolerance(x_ext, tolerance), tol_scale);
           }
           case 3:
-            return tree_.NewPoint(x, cut_edge, cut_side, GetTolerance(x, tolerance));
+            return tree_.NewPoint(x, cut_edge, cut_side, GetTolerance(x, tolerance), tol_scale);
           default:
             dserror("Unsupported problem dimension! (probdim = %d)", probdim_);
             exit(EXIT_FAILURE);
@@ -178,9 +185,10 @@ namespace GEO
       }
 
       /// get the pointer to a stored point if possible
-      Point* GetPoint(const double* x, Edge* cut_edge, Side* cut_side, double tolerance)
+      Point* GetPoint(
+          const double* x, Edge* cut_edge, Side* cut_side, double tolerance, double tol_scale = 1.0)
       {
-        return tree_.GetPoint(x, cut_edge, cut_side, GetTolerance(x, tolerance));
+        return tree_.GetPoint(x, cut_edge, cut_side, GetTolerance(x, tolerance), tol_scale);
       }
 
       /// get default tolerance for the case that the tolerance of a point is set to 0!!!

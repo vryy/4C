@@ -6,7 +6,7 @@
 
 \level 2
 
-\maintainer Christoph Ager, Michael Hiermeier
+\maintainer Christoph Ager
 */
 /*----------------------------------------------------------------------*/
 
@@ -16,11 +16,13 @@
 #include "cut_mesh.H"
 #include "cut_kernel.H"
 #include "cut_output.H"
+#include "cut_node.H"
+#include "cut_edge.H"
+#include "cut_side.H"
+#include "cut_options.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
-// activate debug intersection output in cut_intersection
-//#define DEBUG_CUTINTERSECTION_OUTPUT
 
 namespace GEO
 {
@@ -31,10 +33,19 @@ namespace GEO
 
     enum IntersectionStatus
     {
-      intersect_unevaluated = -1,         // before ComputeEdgeSideIntersection has been called
-      intersect_no_cut_point = 0,         // no cut point was found
-      intersect_single_cut_point = 1,     // one single cut point was found
-      intersect_multiple_cut_points = 2,  // parallel cases
+      intersect_newton_failed = -2,      // if newton failed
+      intersect_unevaluated = -1,        // before ComputeEdgeSideIntersection has been called
+      intersect_no_cut_point = 0,        // no cut point was found
+      intersect_single_cut_point = 1,    // one single cut point was found
+      intersect_multiple_cut_points = 2  // parallel cases
+    };
+
+
+    enum ParallelIntersectionStatus
+    {
+      intersection_not_possible = -1,
+      intersection_not_found = 0,
+      intersection_found = 1,
     };
 
     //! Map IntersectionStatus enum to std::string
@@ -50,6 +61,8 @@ namespace GEO
           return "intersect_single_cut_point";
         case intersect_multiple_cut_points:
           return "intersect_multiple_cut_points";
+        case intersect_newton_failed:
+          return "intersect_newton_failed";
         default:
           return "Unknown IntersectionStatus";
       }
@@ -90,7 +103,8 @@ namespace GEO
             useboundingbox_(false),
             mesh_ptr_(NULL),
             edge_ptr_(NULL),
-            side_ptr_(NULL)
+            side_ptr_(NULL),
+            options_ptr_(NULL)
       {
       }
 
@@ -112,7 +126,7 @@ namespace GEO
        *  \author hiermeier \date 08/16 */
       template <class T1, class T2>
       void Init(T1& xyze_lineElement, T2& xyze_surfaceElement, bool usescaling, bool useshifting,
-          bool useboundingbox)
+          bool useboundingbox, Options* options)
       {
         isscaled_ = usescaling;
         isshifted_ = useshifting;
@@ -121,6 +135,7 @@ namespace GEO
         mesh_ptr_ = NULL;
         edge_ptr_ = NULL;
         side_ptr_ = NULL;
+        options_ptr_ = options;
 
         if (static_cast<unsigned>(xyze_lineElement.M()) != ProbDim() or
             static_cast<unsigned>(xyze_lineElement.N()) != NumNodesEdge())
@@ -164,6 +179,7 @@ namespace GEO
         mesh_ptr_ = mesh_ptr;
         edge_ptr_ = edge_ptr;
         side_ptr_ = side_ptr;
+        options_ptr_ = &(mesh_ptr->CreateOptions());
 
         SetCoordinates();
         ScaleAndShift();
@@ -180,7 +196,7 @@ namespace GEO
        *
        *  \author hiermeier \date 08/16 */
       virtual enum IntersectionStatus ComputeEdgeSideIntersection(
-          double& tolerance, bool check_inside = true) = 0;
+          double& tolerance, bool check_inside = true, std::vector<int>* touched_edges = NULL) = 0;
 
       /** \brief Computes the intersection points of the edge with the specified side
        *  and stores the points in cuts
@@ -189,6 +205,13 @@ namespace GEO
        *
        *  \author hiermeier \date 08/16 */
       virtual bool Intersect(PointSet& cuts) = 0;
+
+      virtual ParallelIntersectionStatus HandleParallelIntersection(
+          PointSet& cuts, int id = -1, bool output = false) = 0;
+
+      virtual bool TriangulatedIntersection(PointSet& cuts) = 0;
+
+      virtual bool HandleSpecialCases() = 0;
 
       /** \brief Get the final cut point global coordinates
        *
@@ -319,6 +342,14 @@ namespace GEO
         exit(EXIT_FAILURE);
       }
 
+      /// get a pointer to the cut options object
+      Options* GetOptionsPtr()
+      {
+        if (options_ptr_ != NULL) return options_ptr_;
+        dserror("The option pointer is not yet initialized!");
+        exit(EXIT_FAILURE);
+      }
+
      private:
       /// flag which indicates whether the Init() has been called or not.
       bool isinit_;
@@ -340,6 +371,9 @@ namespace GEO
 
       /// side pointer
       Side* side_ptr_;
+
+      /// cut options pointer
+      Options* options_ptr_;
 
     };  // class IntersectionBase
 
@@ -458,6 +492,54 @@ namespace GEO
         return x_.A();
       }
 
+      // Remove all the edges from list of touching edges that are further away than 1e-14 (
+      // TOPOLOGICAL_TOLERANCE ) distance from the point
+      template <unsigned int dim, INPAR::CUT::CUT_Floattype floattype>
+      void FixDistantTouchingEdges(
+          LINALG::Matrix<dim, 1>& p_coord, std::vector<int>& touching_edges)
+      {
+        bool signeddistance = false;
+        double distance = 0;
+        LINALG::Matrix<dim, 1> xsi;
+        LINALG::Matrix<dim, numNodesEdge> xyze_edge;
+        const std::vector<Edge*>& side_edges = GetSide().Edges();
+
+        for (std::vector<int>::iterator it = touching_edges.begin(); it != touching_edges.end();)
+        {
+          side_edges[*it]->Coordinates(xyze_edge.A());
+
+          KERNEL::ComputeDistance<dim, edgetype, floattype> cd(xsi);
+          bool conv = cd(xyze_edge, p_coord, distance, signeddistance);
+          KERNEL::PointOnSurfaceLoc loc = cd.GetSideLocation();
+
+          if (conv)
+          {
+            if (not loc.OnSide())
+            {
+              // safety check if it is larger then some (rather arbitrary distance)
+              if (distance > 1e-10)
+              {
+                std::ofstream file("far_touched_edges.pos");
+                Edge* e = side_edges[*it];
+                GEO::CUT::OUTPUT::GmshEdgeDump(file, e, std::string("FarEdge"));
+                GEO::CUT::OUTPUT::GmshNewSection(file, "Point", false);
+                LINALG::Matrix<3, 1> p(p_coord.A());
+                GEO::CUT::OUTPUT::GmshCoordDump(file, p, 0);
+                GEO::CUT::OUTPUT::GmshEndSection(file);
+                file.close();
+                GenerateGmshDump();
+                dserror("Distance between point touching edge is too high! Check this case!");
+              }
+              it = touching_edges.erase(it);
+            }
+            else
+              ++it;
+          }
+          else
+            dserror("Newton did not converge for simple ComputeDistance between point and a line");
+        }
+      }
+
       /** \brief Calculate the actual intersection of an edge and a side ( or 2-nd edge )
        *
        *  \param tolerance (out) : tolerance specified by the CUT::KERNEL
@@ -477,7 +559,28 @@ namespace GEO
        *
        *  \author hiermeier \date 08/16 */
       virtual enum IntersectionStatus ComputeEdgeSideIntersection(
-          double& tolerance, bool check_inside = true)
+          double& tolerance, bool check_inside = true, std::vector<int>* touched_edges = NULL)
+      {
+        switch (GetOptionsPtr()->GeomIntersect_Floattype())
+        {
+          case INPAR::CUT::floattype_cln:
+          {
+            return ComputeEdgeSideIntersectionT<INPAR::CUT::floattype_cln>(
+                tolerance, check_inside, touched_edges);
+          }
+          case INPAR::CUT::floattype_double:
+          {
+            return ComputeEdgeSideIntersectionT<INPAR::CUT::floattype_double>(
+                tolerance, check_inside, touched_edges);
+          }
+          default:
+            throw std::runtime_error("Unexpected floattype for ComputeEdgeSideIntersectionT!");
+        }
+      }
+
+      template <INPAR::CUT::CUT_Floattype floattype>
+      enum IntersectionStatus ComputeEdgeSideIntersectionT(
+          double& tolerance, bool check_inside = true, std::vector<int>* touched_edges = NULL)
       {
         CheckInit();
         TEUCHOS_FUNC_TIME_MONITOR("ComputeEdgeSideIntersection");
@@ -493,20 +596,74 @@ namespace GEO
           return (istatus_);
         }
 
-        KERNEL::ComputeIntersection<probdim, edgetype, sidetype> ci(xsi_);
-        //      KERNEL::DebugComputeIntersection<probdim,edgetype,sidetype> ci( xsi_ );
+        KERNEL::ComputeIntersection<probdim, edgetype, sidetype,
+            (floattype == INPAR::CUT::floattype_cln)>
+            ci(xsi_);
+        // KERNEL::DebugComputeIntersection<probdim,edgetype,sidetype,(floattype ==
+        // INPAR::CUT::floattype_cln)> ci( xsi_ );
 
         bool conv = ci(xyze_surfaceElement_, xyze_lineElement_);
         tolerance = ci.GetTolerance();
 
-        /* Check if the found point is within the limits of the side and edge element,
-         * if the Newton scheme did converge */
-        if (check_inside)
-          num_cut_points_ = (conv and (ci.SurfaceWithinLimits() and ci.LineWithinLimits()) ? 1 : 0);
-        else
-          num_cut_points_ = conv;
 
-        istatus_ = GEO::CUT::IntersectionStatus(num_cut_points_);
+        if (probdim > dimside + dimedge)
+        {
+          // edge-edge intersection, we might create point even if newton did not converge
+          //
+          double line_distance = ci.DistanceBetween();
+          if ((line_distance < SIDE_DETECTION_TOLERANCE) and (ci.GetEdgeLocation().WithinSide()) and
+              (ci.GetSideLocation().WithinSide()))
+          {
+            istatus_ = intersect_single_cut_point;
+          }
+          else
+          {
+            istatus_ = intersect_no_cut_point;
+          }
+        }
+
+
+        // normal intersection
+        else
+        {
+          /* Check if the found point is within the limits of the side and edge element,
+           * if the Newton scheme did converge */
+          if (check_inside)
+          {
+            if (conv)
+            {
+              if ((ci.GetEdgeLocation().WithinSide()) and (ci.GetSideLocation().WithinSide()))
+                istatus_ = intersect_single_cut_point;
+              // converged but is outside
+              else
+                istatus_ = intersect_no_cut_point;  // limits will be checked later
+            }
+            else
+              istatus_ = intersect_newton_failed;
+          }
+          else
+          {
+            num_cut_points_ = conv;
+            istatus_ = GEO::CUT::IntersectionStatus(num_cut_points_);
+          }
+          // if we want to get edges back
+          if (touched_edges)
+          {
+            std::vector<int>& touched = *touched_edges;
+            ci.GetTouchedSideEdges(touched);
+
+            // this should not happen, as all the touching edges must be identified by edge-edge
+            // intersections
+            if ((istatus_ == intersect_no_cut_point) && (touched.size() > 0))
+            {
+              std::stringstream err_msg;
+              err_msg << "Touching " << touched.size()
+                      << " edges, but no intersection! This should not happen! ";
+              GenerateGmshDump();
+              dserror(err_msg.str());
+            }
+          }
+        }
 
         return istatus_;
       }
@@ -515,9 +672,6 @@ namespace GEO
        *   and stores the points in cuts
        *
        *  WARNING: Intersection just works for planes ( TRI3, QUAD4 unwarped! ) with lines!!!
-       *
-       *  intersection should also return a tolerance for the evaluation of each point,
-       *  which will be used to merge points in the point-pool!!!
        *
        *  (1) try to find not overlapping geometries with bounding-boxes to avoid a big load
        *  of work ... has to be done. This is here just for performance ... intersection
@@ -534,7 +688,8 @@ namespace GEO
        *  that this is just possible because we limit this function to plane ( unwarped )
        *  QUAD4 sides!!!
        *
-       *  (3) take care of special intersections on the surface edges
+       *  (3) Perform edge-edge intersection of line surface edges, bounding box is also
+       *  applied here to sppeed up calculations
        *
        *  (4) try to calculate the intersection point directly with the Newton
        *  this will basically fail if the system is conditioned badly --> means that line
@@ -542,16 +697,29 @@ namespace GEO
        *  captured in point (2) ) or element is distorted or it's a QUAD4 and the
        *  intersection point is outside the element and is not part of the interpolation
        *  space! These cases should be treated separately later!!!
+       *  If TRIANGULATED_INTERSECTION flag is enabled, intersection of the quad4 with
+       *  the line is splitted into intersection of line with two tri3, obtained from the
+       *  quad4. In the case it should always converge
        *
-       *  (5) take care of other special cases --> 5.1 QUAD4 outside interpolation space,
-       *                                           5.2 distorted elements
-       *
-       *  (6) throw dserror in case this intersection wasn't treated right --> this means
+       *  (5) throw dserror in case this intersection wasn't treated right --> this means
        *  there is still handling of some special cases missing in the code & it does not
        *  mean that there is no intersection point.
        *
        *  \author ager */
       virtual bool Intersect(PointSet& cuts);
+
+      // Try to find possible intersection points, if this intersection is between parallell size
+      // and edge without using real ComputeIntersection
+      virtual ParallelIntersectionStatus HandleParallelIntersection(
+          PointSet& cuts, int id = -1, bool output = false);
+
+      virtual void GenerateGmshDump();
+
+      // Handle cases for which normal intersection procedure did not work
+      virtual bool HandleSpecialCases();
+
+      // compute intersection by splitting quad4 into two triangles
+      virtual bool TriangulatedIntersection(PointSet& cuts);
 
       /** \brief Will return TRUE, if local side coordinates are within the side
        *  element parameter space bounds */
@@ -696,14 +864,32 @@ namespace GEO
       /** \brief Compute the intersection of an edge with a TRI3 surface element,
        *         which is created by splitting a QUAD4 element into two TRI3 elements
        *
-       *  \param tolerance (out) : specified tolerance by the CUT::KERNEL routine
+       *  \param tolerance (out) : location status of the compute distance routine
        *  \param triangleid (in) : ID of the desired triangle ( 0 or 1 )
        *
        *  Returns TRUE if the calculation was successful. This does not imply, that the
        *  calculated intersection point is feasible!
        *
        *  \author hiermeier \date 08/16 */
-      bool ComputeEdgeTri3Intersection(double& tolerance, int triangleid)
+      bool ComputeEdgeTri3Intersection(int triangleid, KERNEL::PointOnSurfaceLoc& location)
+      {
+        switch (GetOptionsPtr()->GeomIntersect_Floattype())
+        {
+          case INPAR::CUT::floattype_cln:
+          {
+            return ComputeEdgeTri3IntersectionT<INPAR::CUT::floattype_cln>(triangleid, location);
+          }
+          case INPAR::CUT::floattype_double:
+          {
+            return ComputeEdgeTri3IntersectionT<INPAR::CUT::floattype_double>(triangleid, location);
+          }
+          default:
+            throw std::runtime_error("Unexpected floattype for ComputeEdgeTri3IntersectionT!");
+        }
+      }
+
+      template <INPAR::CUT::CUT_Floattype floattype>
+      bool ComputeEdgeTri3IntersectionT(int triangleid, KERNEL::PointOnSurfaceLoc& location)
       {
         if (triangleid < 0) dserror("The triangle id has to be positive!");
 
@@ -714,18 +900,80 @@ namespace GEO
         else
           xsi.SetView(xsi_.A());
 
-        KERNEL::ComputeIntersection<3, edgetype, DRT::Element::tri3> ci(xsi);
-        //      KERNEL::DebugComputeIntersection<probdim,edgetype,DRT::Element::tri3> ci( xsi );
+        KERNEL::ComputeIntersection<3, edgetype, DRT::Element::tri3, floattype> ci(xsi);
+        // KERNEL::DebugComputeIntersection<probdim,edgetype,DRT::Element::tri3,floattype> ci( xsi
+        // );
 
         LINALG::Matrix<3, 3> xyze_triElement;
         GetTriangle(xyze_triElement, triangleid);
         LINALG::Matrix<3, numNodesEdge> xyze_lineElement(xyze_lineElement_.A(), true);
 
         bool conv = ci(xyze_triElement, xyze_lineElement);
-        tolerance = ci.GetTolerance();
+        location = ci.GetSideLocation();
+
         return conv;
       }
 
+      // Computes tri3 edge intersection used for quad4 -> 2 tri3 splits
+      enum IntersectionStatus ComputeEdgeTri3IntersectionQuad4Split(
+          int triangleid, bool* close_to_shared_edge = NULL)
+      {
+        switch (GetOptionsPtr()->GeomIntersect_Floattype())
+        {
+          case INPAR::CUT::floattype_cln:
+          {
+            return ComputeEdgeTri3IntersectionQuad4SplitT<INPAR::CUT::floattype_cln>(
+                triangleid, close_to_shared_edge);
+          }
+          case INPAR::CUT::floattype_double:
+          {
+            return ComputeEdgeTri3IntersectionQuad4SplitT<INPAR::CUT::floattype_double>(
+                triangleid, close_to_shared_edge);
+          }
+          default:
+            throw std::runtime_error(
+                "Unexpected floattype for ComputeEdgeTri3IntersectionQuad4SplitT!");
+        }
+      }
+
+      template <INPAR::CUT::CUT_Floattype floattype>
+      enum IntersectionStatus ComputeEdgeTri3IntersectionQuad4SplitT(
+          int triangleid, bool* close_to_shared_edge = NULL)
+      {
+        if (triangleid < 0) dserror("The triangle id has to be positive!");
+
+        TEUCHOS_FUNC_TIME_MONITOR("ComputeEdgeTri3Intersection");
+        LINALG::Matrix<3, 1> xsi;
+        if (xsi_.M() != 3)
+          dserror("xsi_ has the wrong dimension! (dimedge + 2 = %d + 2)", dimedge);
+        else
+          xsi.SetView(xsi_.A());
+
+        KERNEL::ComputeIntersection<3, edgetype, DRT::Element::tri3, floattype> ci(xsi);
+        // KERNEL::DebugComputeIntersection<probdim,edgetype,DRT::Element::tri3,floattype> ci( xsi
+        // );
+
+        LINALG::Matrix<3, 3> xyze_triElement;
+        GetTriangle(xyze_triElement, triangleid);
+        LINALG::Matrix<3, numNodesEdge> xyze_lineElement(xyze_lineElement_.A(), true);
+
+        bool conv = ci(xyze_triElement, xyze_lineElement);
+
+        if (conv)
+        {
+          if (ci.GetEdgeLocation().WithinSide() and ci.GetSideLocation().WithinSide())
+            istatus_ = intersect_single_cut_point;
+          else
+            istatus_ = intersect_no_cut_point;
+        }
+        else
+          istatus_ = intersect_newton_failed;
+        // if is done during triangulation
+        if (close_to_shared_edge)
+          *close_to_shared_edge = (ci.GetSideLocationTriangleSplit().WithinSide());
+
+        return istatus_;
+      }
       /** \brief get one of the two triangles with id 0 or 1
        *  of a QUAD4 element
        *
@@ -746,14 +994,33 @@ namespace GEO
         }
       };
 
-      /** \brief Default ComputeDistance routine
-       *
-       *  This is the default method to calculate the distance between a point
-       *  and side element. This method should work for all supported sides.
-       *
-       *  FixMe Use the GEO::CUT::Position implementation instead. -- hiermeier */
+      /** \brief Update ComputeDistance routine to get information about location from the
+       * cut_kernel This function is used for normal ComputeDistance (without triangulation) */
       bool ComputeDistance(LINALG::Matrix<probdim, 1> point, double& distance, double& tolerance,
-          bool& zeroarea, bool signeddistance = false)
+          bool& zeroarea, KERNEL::PointOnSurfaceLoc& loc, std::vector<int>& touched_edges,
+          bool signeddistance = false)
+      {
+        switch (GetOptionsPtr()->GeomDistance_Floattype())
+        {
+          case INPAR::CUT::floattype_cln:
+          {
+            return ComputeDistanceT<INPAR::CUT::floattype_cln>(
+                point, distance, tolerance, zeroarea, loc, touched_edges, signeddistance);
+          }
+          case INPAR::CUT::floattype_double:
+          {
+            return ComputeDistanceT<INPAR::CUT::floattype_double>(
+                point, distance, tolerance, zeroarea, loc, touched_edges, signeddistance);
+          }
+          default:
+            throw std::runtime_error("Unexpected floattype for ComputeDistanceT!");
+        }
+      }
+
+      template <INPAR::CUT::CUT_Floattype floattype>
+      bool ComputeDistanceT(LINALG::Matrix<probdim, 1> point, double& distance, double& tolerance,
+          bool& zeroarea, KERNEL::PointOnSurfaceLoc& loc, std::vector<int>& touched_edges,
+          bool signeddistance = false)
       {
         TEUCHOS_FUNC_TIME_MONITOR("ComputeDistance");
 
@@ -763,31 +1030,95 @@ namespace GEO
               "a GEO::CUT::Position object instead!");
         LINALG::Matrix<probdim, 1> xsi(xsi_.A(), true);
 
-        //      KERNEL::DebugComputeDistance<probdim,sidetype> cd( xsi_ );
-        KERNEL::ComputeDistance<probdim, sidetype> cd(xsi);
+        KERNEL::ComputeDistance<probdim, sidetype, floattype> cd(xsi);
 
         bool conv = cd(xyze_surfaceElement_, point, distance, signeddistance);
         tolerance = cd.GetTolerance();
         zeroarea = cd.ZeroArea();
+        loc = cd.GetSideLocation();
+        cd.GetTouchedSideEdges(touched_edges);
+        if (not(loc.WithinSide()))
+        {
+          touched_edges.clear();
+        }
+        FixDistantTouchingEdges<probdim, floattype>(point, touched_edges);
 
         return conv;
       }
+
       bool ComputeDistance(Point* p, double& distance, double& tolerance, bool& zeroarea,
+          KERNEL::PointOnSurfaceLoc& loc, std::vector<int>& touched_edges,
           bool signeddistance = false)
       {
         LINALG::Matrix<probdim, 1> point(p->X());
-        return ComputeDistance(point, distance, tolerance, zeroarea, signeddistance);
+        return ComputeDistance(
+            point, distance, tolerance, zeroarea, loc, touched_edges, signeddistance);
       }
 
-      /** \brief Special QUAD4 ComputeDistance routine
-       *
-       *  This is a specialization of the ComputeDistance method to calculate the
-       *  distance between a point and Tri3 side element, which is generated from
-       *  a Quad4 element by triangulation. The tri3_id has to be 0 or 1.
-       *
-       *  FixMe Use the GEO::CUT::Position implementation instead. -- hiermeier */
+
+      // Transform IDs of the edges in the one of triangle in the splitted quad4 into the ids of
+      // quad4 edges
+      void GetQuadEdgeIdsFromTri(std::vector<int>& quad4_touched_edges,
+          const std::vector<int>& tri_touched_edges_ids, int tri_id)
+      {
+        // NOTE: Transformation follow from the transformation function in the cut_kernel
+        // SplitQuad4IntoTri3, see notes about ids there first transform normal edges
+        int triangle = 2 * tri_id;
+        std::vector<int> allowed_ids;  // (0, 2) ( 1 is diagonal and is ignored)
+        int count_id;
+        for (std::vector<int>::const_iterator e_it = tri_touched_edges_ids.begin();
+             e_it != tri_touched_edges_ids.end(); ++e_it)
+        {
+          if ((*e_it) == 0)
+            count_id = 0;
+          else if ((*e_it) == 1)
+            count_id = 1;
+          // else it is diagnoal
+          else
+            continue;
+          int quad4_id = triangle + count_id;
+          quad4_touched_edges.push_back(quad4_id);
+        }
+
+        if (quad4_touched_edges.size() > 4) dserror("this should not be possible");
+      }
+
+
+      // Calculates if all nodal points of this quad4 belong to the same plane
+      // (if any nodal point lie on the plane created by other 3).
+      // Splitting into triangles is done in the same way, as in the other routines
+      // Calculation is done both with same tolerance as in cut_kernel, as well, as
+      // more tight tolerance of 1e-30
+      std::pair<bool, bool> IsQuad4Distorted();
+
+      /* Used during splitting of quad4 into tri3 and computing distance to them */
       bool ComputeDistance(LINALG::Matrix<3, 1> point, double& distance, double& tolerance,
-          bool& zeroarea, bool signeddistance, int tri3_id)
+          bool& zeroarea, KERNEL::PointOnSurfaceLoc& loc, std::vector<int>& touched_edges,
+          bool signeddistance, int tri3_id, bool& extended_tri_tolerance_loc_triangle_split)
+      {
+        switch (GetOptionsPtr()->GeomDistance_Floattype())
+        {
+          case INPAR::CUT::floattype_cln:
+          {
+            return ComputeDistanceT<INPAR::CUT::floattype_cln>(point, distance, tolerance, zeroarea,
+                loc, touched_edges, signeddistance, tri3_id,
+                extended_tri_tolerance_loc_triangle_split);
+          }
+          case INPAR::CUT::floattype_double:
+          {
+            return ComputeDistanceT<INPAR::CUT::floattype_double>(point, distance, tolerance,
+                zeroarea, loc, touched_edges, signeddistance, tri3_id,
+                extended_tri_tolerance_loc_triangle_split);
+          }
+          default:
+            throw std::runtime_error("Unexpected floattype for ComputeDistanceT!");
+        }
+      }
+
+      template <INPAR::CUT::CUT_Floattype floattype>
+      bool ComputeDistanceT(LINALG::Matrix<3, 1> point, double& distance, double& tolerance,
+          bool& zeroarea, KERNEL::PointOnSurfaceLoc& loc, std::vector<int>& touched_edges,
+          bool signeddistance, int tri3_id, bool& extended_tri_tolerance_loc_triangle_split)
       {
         if (sidetype != DRT::Element::quad4)
           dserror(
@@ -802,28 +1133,38 @@ namespace GEO
         if (xsi_.M() != 3) dserror("xsi_ has the wrong dimension! (dimedge + 2 = %d + 2)", dimedge);
         LINALG::Matrix<3, 1> xsi(xsi_.A(), true);
 
-        //      KERNEL::DebugComputeDistance<probdim,DRT::Element::tri3> cd( xsi );
-        KERNEL::ComputeDistance<3, DRT::Element::tri3> cd(xsi);
+        // KERNEL::DebugComputeDistance<probdim,DRT::Element::tri3, floattype> cd( xsi );
+        KERNEL::ComputeDistance<3, DRT::Element::tri3, floattype> cd(xsi);
 
         LINALG::Matrix<3, 3> xyze_triElement;
         GetTriangle(xyze_triElement, tri3_id);
 
         bool conv = cd(xyze_triElement, point, distance, signeddistance);
         tolerance = cd.GetTolerance();
+        loc = cd.GetSideLocation();
         zeroarea = cd.ZeroArea();
+        std::vector<int> tri_touched_edges;
+        cd.GetTouchedSideEdges(tri_touched_edges);
+
+        GetQuadEdgeIdsFromTri(touched_edges, tri_touched_edges, tri3_id);
+        extended_tri_tolerance_loc_triangle_split =
+            (cd.GetSideLocationTriangleSplit().WithinSide());
+        FixDistantTouchingEdges<3, floattype>(point, touched_edges);
 
         return conv;
       }
 
       /// get the coordinates of the point and call the related ComputeDistance routine
       bool ComputeDistance(Point* p, double& distance, double& tolerance, bool& zeroarea,
-          bool signeddistance, int tri3_id)
+          KERNEL::PointOnSurfaceLoc& loc, std::vector<int>& touched_edges, bool signeddistance,
+          int tri3_id, bool& extended_tri_tolerance_loc_triangle_split)
       {
         LINALG::Matrix<3, 1> point(p->X());
-        return ComputeDistance(point, distance, tolerance, zeroarea, signeddistance, tri3_id);
+        return ComputeDistance(point, distance, tolerance, zeroarea, loc, touched_edges,
+            signeddistance, tri3_id, extended_tri_tolerance_loc_triangle_split);
       }
 
-      /** \brief check if the two given edeges \c e1 and \c e2 intersect
+      /** \brief check if the two given edges \c e1 and \c e2 intersect
        *
        *  This routine computes the intersection point between edge \c sedge and
        *  edge \c eedge, and returns TRUE if the computation was successful AND
@@ -832,12 +1173,14 @@ namespace GEO
        *
        *  \param sedge         (in)  : one edge of the side element
        *  \param eedge         (in)  : edge which is supposed to cut the side
+       *  \param side          (in)  : side
        *  \param ee_cut_points (out) : cut points between the two given edges
        *  \param tolerance     (out) : used internal adaptive tolerance
        *                           ( specified by the CUT::KERNEL )
        *
        *  \author hiermeier \date 08/16 */
-      bool ComputeCut(Edge* sedge, Edge* eedge, PointSet& ee_cut_points, double& tolerance);
+      bool ComputeCut(
+          Edge* sedge, Edge* eedge, Side* side, PointSet& ee_cut_points, double& tolerance);
 
       /// add cut point that is a node to all edges and sides it touches
       void InsertCut(Node* n, PointSet& cuts)
@@ -845,19 +1188,15 @@ namespace GEO
         cuts.insert(Point::InsertCut(GetEdgePtr(), GetSidePtr(), n));
       }
 
-      /// test if we are on any edge of the cut side and add those edges
-      void TestSideEdges(Point* p, const double* xsi)
-      {
-        const LINALG::Matrix<dimedge + dimside, 1> xsi_mat(xsi, true);
-        TestSideEdges(p, xsi_mat);
-      }
-      void TestSideEdges(Point* p, const LINALG::Matrix<dimside + dimedge, 1>& xsi)
-      {
-        std::vector<Edge*> edges;
-        TestSideEdges(p, xsi, edges);
-      }
-      void TestSideEdges(
-          Point* p, const LINALG::Matrix<dimedge + dimside, 1>& xsi, std::vector<Edge*>& edges);
+      void AddConnectivityInfo(Point* p, const LINALG::Matrix<probdim, 1>& xreal,
+          const std::vector<int>& touched_vertices_ids, const std::vector<int>& touched_edges_ids);
+
+      void AddConnectivityInfo(Point* p, const LINALG::Matrix<probdim, 1>& xreal,
+          const std::vector<int>& touched_edges_ids,
+          const std::set<std::pair<Side*, Edge*>>& touched_cut_pairs);
+
+      void GetConnectivityInfo(const LINALG::Matrix<probdim, 1>& xreal,
+          const std::vector<int>& touched_edges_ids, std::set<std::pair<Side*, Edge*>>& out);
 
       bool RefinedBBOverlapCheck(int maxstep = 10);
 

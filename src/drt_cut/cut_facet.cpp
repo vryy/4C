@@ -290,7 +290,7 @@ bool GEO::CUT::Facet::IsPlanar(Mesh& mesh, const std::vector<Point*>& points)
     LINALG::Matrix<3, 3> B;
     B = A;
     x2 = 0;
-    double det = LINALG::gaussElimination<true, 3>(B, x3, x2);
+    double det = LINALG::gaussElimination<true, 3, double>(B, x3, x2);
     if (fabs(det) < LINSOLVETOL)
     {
       throw std::runtime_error("failed to find point position");

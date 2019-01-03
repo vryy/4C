@@ -264,7 +264,7 @@ void GEO::CUT::TetMeshIntersection::FindEdgeCuts()
           double tolerance;
           try
           {
-            e->ComputeCut(&mesh_, ce, NULL, tolerance);
+            e->ComputeCut(&mesh_, ce, NULL, NULL, tolerance);
           }
           catch (std::runtime_error& err)
           {
@@ -315,7 +315,9 @@ void GEO::CUT::TetMeshIntersection::Cut(Mesh& parent_mesh, Element* element,
   plain_element_set elements_done;
   // increase counter
   ++count;
-  cut_mesh_.Cut(mesh_, elements_done, count);
+  // note: purpose of count is not reallly known, guess it was related to recursion
+  cut_mesh_.Cut(mesh_, elements_done /*, count */);
+  // cut_mesh_.Cut( mesh_, elements_done, count );
 
   // New way of cut? Might need to join the the TetMeshIntersection with the new Cut algorithm?
   // THIS IS NOT WORKING AT THE MOMENT!!!

@@ -9,9 +9,8 @@
 
 \level 2
 
-\maintainer Michael Hiermeier
-*/
-/*----------------------------------------------------------------------------*/
+\maintainer Christoph Ager
+ *------------------------------------------------------------------------------------------------*/
 
 #include "cut_position.H"
 #include "cut_boundingbox.H"
@@ -20,17 +19,17 @@
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<GEO::CUT::Position> GEO::CUT::Position::Create(
-    const Element& element, const Point& point)
+    const Element& element, const Point& point, INPAR::CUT::CUT_Floattype floattype)
 {
   const PositionFactory factory;
-  return factory.CreatePosition(element, point);
+  return factory.CreatePosition(element, point, floattype);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned rdim>
 Teuchos::RCP<GEO::CUT::Position> GEO::CUT::Position::Create(
-    const Element& element, const LINALG::Matrix<rdim, 1>& xyz)
+    const Element& element, const LINALG::Matrix<rdim, 1>& xyz, INPAR::CUT::CUT_Floattype floattype)
 {
   const PositionFactory factory;
   if (rdim < factory.ProbDim())
@@ -38,14 +37,15 @@ Teuchos::RCP<GEO::CUT::Position> GEO::CUT::Position::Create(
         "The given point has the wrong row dimension!\n"
         "rdim < prodbim <--> %d < %d",
         rdim, factory.ProbDim());
-  return factory.CreatePosition(element, xyz.A());
+  return factory.CreatePosition(element, xyz.A(), floattype);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned rdim, unsigned cdim, unsigned rdim_2>
 Teuchos::RCP<GEO::CUT::Position> GEO::CUT::Position::Create(const LINALG::Matrix<rdim, cdim>& xyze,
-    const LINALG::Matrix<rdim_2, 1>& xyz, const DRT::Element::DiscretizationType& distype)
+    const LINALG::Matrix<rdim_2, 1>& xyz, const DRT::Element::DiscretizationType& distype,
+    INPAR::CUT::CUT_Floattype floattype)
 {
   const PositionFactory factory;
   const unsigned probdim = factory.ProbDim();
@@ -74,14 +74,15 @@ Teuchos::RCP<GEO::CUT::Position> GEO::CUT::Position::Create(const LINALG::Matrix
         "received input : %d x 1 (rows x cols)",
         probdim, rdim_2);
 
-  return factory.CreatePosition(xyze_ptr, xyz.A(), distype);
+  return factory.CreatePosition(xyze_ptr, xyz.A(), distype, floattype);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned rdim>
 Teuchos::RCP<GEO::CUT::Position> GEO::CUT::Position::Create(const Epetra_SerialDenseMatrix& xyze,
-    const LINALG::Matrix<rdim, 1>& xyz, const DRT::Element::DiscretizationType& distype)
+    const LINALG::Matrix<rdim, 1>& xyz, const DRT::Element::DiscretizationType& distype,
+    INPAR::CUT::CUT_Floattype floattype)
 {
   const PositionFactory factory;
   const unsigned probdim = factory.ProbDim();
@@ -110,14 +111,15 @@ Teuchos::RCP<GEO::CUT::Position> GEO::CUT::Position::Create(const Epetra_SerialD
         "received input : %d x 1 (rows x cols)",
         probdim, xyz.M());
 
-  return factory.CreatePosition(xyze_ptr, xyz.A(), distype);
+  return factory.CreatePosition(xyze_ptr, xyz.A(), distype, floattype);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned rdim>
 Teuchos::RCP<GEO::CUT::Position> GEO::CUT::Position::Create(const std::vector<Node*> nodes,
-    const LINALG::Matrix<rdim, 1>& xyz, DRT::Element::DiscretizationType distype)
+    const LINALG::Matrix<rdim, 1>& xyz, DRT::Element::DiscretizationType distype,
+    INPAR::CUT::CUT_Floattype floattype)
 {
   const PositionFactory factory;
   if (rdim < factory.ProbDim())
@@ -125,14 +127,15 @@ Teuchos::RCP<GEO::CUT::Position> GEO::CUT::Position::Create(const std::vector<No
         "The given point has the wrong row dimension!\n"
         "rdim < prodbim <--> %d < %d",
         rdim, factory.ProbDim());
-  return factory.CreatePosition(nodes, xyz.A(), distype);
+  return factory.CreatePosition(nodes, xyz.A(), distype, floattype);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, DRT::Element::DiscretizationType eletype, unsigned numNodesElement,
-    unsigned dim>
-void GEO::CUT::PositionGeneric<probdim, eletype, numNodesElement, dim>::ConstructBoundingBox()
+    unsigned dim, INPAR::CUT::CUT_Floattype floattype>
+void GEO::CUT::PositionGeneric<probdim, eletype, numNodesElement, dim,
+    floattype>::ConstructBoundingBox()
 {
   bbside_ = Teuchos::rcp(BoundingBox::Create());
 
@@ -146,8 +149,9 @@ void GEO::CUT::PositionGeneric<probdim, eletype, numNodesElement, dim>::Construc
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, DRT::Element::DiscretizationType eletype, unsigned numNodesElement,
-    unsigned dim>
-bool GEO::CUT::ComputePosition<probdim, eletype, numNodesElement, dim>::Compute(const double& Tol)
+    unsigned dim, INPAR::CUT::CUT_Floattype floattype>
+bool GEO::CUT::ComputePosition<probdim, eletype, numNodesElement, dim, floattype>::Compute(
+    const double& Tol)
 {
   /* If the given point is outside the element bounding box, no need
    * to perform the complex calculations */
@@ -157,8 +161,9 @@ bool GEO::CUT::ComputePosition<probdim, eletype, numNodesElement, dim>::Compute(
   //    return false;
   //  }
 
-  //      KERNEL::DebugComputePosition<probdim,eletype> cp( this->xsi_ );
-  KERNEL::ComputePosition<probdim, eletype> cp(this->xsi_);
+  // no cln used for compute position
+  KERNEL::ComputePosition<probdim, eletype, floattype> cp(this->xsi_);
+  //  KERNEL::DebugComputePosition<probdim,eletype,floattype> cp( this->xsi_ );
   this->pos_status_ =
       (cp(this->xyze_, this->px_) ? Position::position_valid : Position::position_invalid);
   this->compute_tolerance_ = cp.GetTolerance();
@@ -171,9 +176,9 @@ bool GEO::CUT::ComputePosition<probdim, eletype, numNodesElement, dim>::Compute(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, DRT::Element::DiscretizationType eletype, unsigned numNodesElement,
-    unsigned dim>
-bool GEO::CUT::ComputeEmbeddedPosition<probdim, eletype, numNodesElement,
-    dim>::IsGivenPointWithinElement()
+    unsigned dim, INPAR::CUT::CUT_Floattype floattype>
+bool GEO::CUT::ComputeEmbeddedPosition<probdim, eletype, numNodesElement, dim,
+    floattype>::IsGivenPointWithinElement()
 {
   // If the given point is outside the side's bounding box, no need to perform
   // the complex calculations
@@ -184,8 +189,9 @@ bool GEO::CUT::ComputeEmbeddedPosition<probdim, eletype, numNodesElement,
   }
 
   // try to compute the local coordinates and the distance using the Newton scheme
-  KERNEL::ComputeDistance<probdim, eletype> cd(xsi_aug_);
-  // KERNEL::DebugComputeDistance<DRT::Element::line2, elementtype> cd( xsi_ );
+  KERNEL::ComputeDistance<probdim, eletype, (floattype == INPAR::CUT::floattype_cln)> cd(xsi_aug_);
+  //  KERNEL::DebugComputeDistance< probdim, eletype,(floattype==INPAR::CUT::floattype_cln) > cd(
+  //  xsi_aug_ );
 
   double dist = 0.0;
   this->pos_status_ =
@@ -198,8 +204,8 @@ bool GEO::CUT::ComputeEmbeddedPosition<probdim, eletype, numNodesElement,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, DRT::Element::DiscretizationType eletype, unsigned numNodesElement,
-    unsigned dim>
-bool GEO::CUT::ComputeEmbeddedPosition<probdim, eletype, numNodesElement, dim>::Compute(
+    unsigned dim, INPAR::CUT::CUT_Floattype floattype>
+bool GEO::CUT::ComputeEmbeddedPosition<probdim, eletype, numNodesElement, dim, floattype>::Compute(
     const double& Tol, const bool& allow_dist)
 {
   xsi_aug_ = 0.0;
@@ -215,8 +221,9 @@ bool GEO::CUT::ComputeEmbeddedPosition<probdim, eletype, numNodesElement, dim>::
   }
 
   // try to compute the local coordinates and the distance using the Newton scheme
-  KERNEL::ComputeDistance<probdim, eletype> cd(xsi_aug_);
-  //  KERNEL::DebugComputeDistance< probdim, eletype > cd( xsi_aug_ );
+  KERNEL::ComputeDistance<probdim, eletype, (floattype == INPAR::CUT::floattype_cln)> cd(xsi_aug_);
+  //  KERNEL::DebugComputeDistance< probdim, eletype,(floattype==INPAR::CUT::floattype_cln) > cd(
+  //  xsi_aug_ );
 
   double dist = 0.0;
   this->pos_status_ =
@@ -269,34 +276,34 @@ GEO::CUT::PositionFactory::PositionFactory() : probdim_(DRT::Problem::Instance()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<GEO::CUT::Position> GEO::CUT::PositionFactory::CreatePosition(
-    const Element& element, const Point& point) const
+    const Element& element, const Point& point, INPAR::CUT::CUT_Floattype floattype) const
 {
   DRT::Element::DiscretizationType distype = element.Shape();
 
   switch (distype)
   {
     case DRT::Element::line2:
-      return CreateConcretePosition<DRT::Element::line2>(element, point);
+      return CreateConcretePosition<DRT::Element::line2>(element, point, floattype);
     case DRT::Element::tri3:
-      return CreateConcretePosition<DRT::Element::tri3>(element, point);
+      return CreateConcretePosition<DRT::Element::tri3>(element, point, floattype);
     case DRT::Element::tri6:
-      return CreateConcretePosition<DRT::Element::tri6>(element, point);
+      return CreateConcretePosition<DRT::Element::tri6>(element, point, floattype);
     case DRT::Element::quad4:
-      return CreateConcretePosition<DRT::Element::quad4>(element, point);
+      return CreateConcretePosition<DRT::Element::quad4>(element, point, floattype);
     case DRT::Element::quad8:
-      return CreateConcretePosition<DRT::Element::quad8>(element, point);
+      return CreateConcretePosition<DRT::Element::quad8>(element, point, floattype);
     case DRT::Element::quad9:
-      return CreateConcretePosition<DRT::Element::quad9>(element, point);
+      return CreateConcretePosition<DRT::Element::quad9>(element, point, floattype);
     case DRT::Element::hex8:
-      return CreateConcretePosition<DRT::Element::hex8>(element, point);
+      return CreateConcretePosition<DRT::Element::hex8>(element, point, floattype);
     case DRT::Element::hex20:
-      return CreateConcretePosition<DRT::Element::hex20>(element, point);
+      return CreateConcretePosition<DRT::Element::hex20>(element, point, floattype);
     case DRT::Element::tet4:
-      return CreateConcretePosition<DRT::Element::tet4>(element, point);
+      return CreateConcretePosition<DRT::Element::tet4>(element, point, floattype);
     case DRT::Element::pyramid5:
-      return CreateConcretePosition<DRT::Element::pyramid5>(element, point);
+      return CreateConcretePosition<DRT::Element::pyramid5>(element, point, floattype);
     case DRT::Element::wedge6:
-      return CreateConcretePosition<DRT::Element::wedge6>(element, point);
+      return CreateConcretePosition<DRT::Element::wedge6>(element, point, floattype);
     default:
       dserror("Unsupported distype = %s", DRT::DistypeToString(distype).c_str());
       exit(EXIT_FAILURE);
@@ -308,34 +315,34 @@ Teuchos::RCP<GEO::CUT::Position> GEO::CUT::PositionFactory::CreatePosition(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<GEO::CUT::Position> GEO::CUT::PositionFactory::CreatePosition(
-    const Element& element, const double* xyz) const
+    const Element& element, const double* xyz, INPAR::CUT::CUT_Floattype floattype) const
 {
   DRT::Element::DiscretizationType distype = element.Shape();
 
   switch (distype)
   {
     case DRT::Element::line2:
-      return CreateConcretePosition<DRT::Element::line2>(element, xyz);
+      return CreateConcretePosition<DRT::Element::line2>(element, xyz, floattype);
     case DRT::Element::tri3:
-      return CreateConcretePosition<DRT::Element::tri3>(element, xyz);
+      return CreateConcretePosition<DRT::Element::tri3>(element, xyz, floattype);
     case DRT::Element::tri6:
-      return CreateConcretePosition<DRT::Element::tri6>(element, xyz);
+      return CreateConcretePosition<DRT::Element::tri6>(element, xyz, floattype);
     case DRT::Element::quad4:
-      return CreateConcretePosition<DRT::Element::quad4>(element, xyz);
+      return CreateConcretePosition<DRT::Element::quad4>(element, xyz, floattype);
     case DRT::Element::quad8:
-      return CreateConcretePosition<DRT::Element::quad8>(element, xyz);
+      return CreateConcretePosition<DRT::Element::quad8>(element, xyz, floattype);
     case DRT::Element::quad9:
-      return CreateConcretePosition<DRT::Element::quad9>(element, xyz);
+      return CreateConcretePosition<DRT::Element::quad9>(element, xyz, floattype);
     case DRT::Element::hex8:
-      return CreateConcretePosition<DRT::Element::hex8>(element, xyz);
+      return CreateConcretePosition<DRT::Element::hex8>(element, xyz, floattype);
     case DRT::Element::hex20:
-      return CreateConcretePosition<DRT::Element::hex20>(element, xyz);
+      return CreateConcretePosition<DRT::Element::hex20>(element, xyz, floattype);
     case DRT::Element::tet4:
-      return CreateConcretePosition<DRT::Element::tet4>(element, xyz);
+      return CreateConcretePosition<DRT::Element::tet4>(element, xyz, floattype);
     case DRT::Element::pyramid5:
-      return CreateConcretePosition<DRT::Element::pyramid5>(element, xyz);
+      return CreateConcretePosition<DRT::Element::pyramid5>(element, xyz, floattype);
     case DRT::Element::wedge6:
-      return CreateConcretePosition<DRT::Element::wedge6>(element, xyz);
+      return CreateConcretePosition<DRT::Element::wedge6>(element, xyz, floattype);
     default:
       dserror("Unsupported distype = %s", DRT::DistypeToString(distype).c_str());
       exit(EXIT_FAILURE);
@@ -346,33 +353,34 @@ Teuchos::RCP<GEO::CUT::Position> GEO::CUT::PositionFactory::CreatePosition(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<GEO::CUT::Position> GEO::CUT::PositionFactory::CreatePosition(
-    const double* xyze, const double* xyz, const DRT::Element::DiscretizationType& distype) const
+Teuchos::RCP<GEO::CUT::Position> GEO::CUT::PositionFactory::CreatePosition(const double* xyze,
+    const double* xyz, const DRT::Element::DiscretizationType& distype,
+    INPAR::CUT::CUT_Floattype floattype) const
 {
   switch (distype)
   {
     case DRT::Element::line2:
-      return CreateConcretePosition<DRT::Element::line2>(xyze, xyz);
+      return CreateConcretePosition<DRT::Element::line2>(xyze, xyz, floattype);
     case DRT::Element::tri3:
-      return CreateConcretePosition<DRT::Element::tri3>(xyze, xyz);
+      return CreateConcretePosition<DRT::Element::tri3>(xyze, xyz, floattype);
     case DRT::Element::tri6:
-      return CreateConcretePosition<DRT::Element::tri6>(xyze, xyz);
+      return CreateConcretePosition<DRT::Element::tri6>(xyze, xyz, floattype);
     case DRT::Element::quad4:
-      return CreateConcretePosition<DRT::Element::quad4>(xyze, xyz);
+      return CreateConcretePosition<DRT::Element::quad4>(xyze, xyz, floattype);
     case DRT::Element::quad8:
-      return CreateConcretePosition<DRT::Element::quad8>(xyze, xyz);
+      return CreateConcretePosition<DRT::Element::quad8>(xyze, xyz, floattype);
     case DRT::Element::quad9:
-      return CreateConcretePosition<DRT::Element::quad9>(xyze, xyz);
+      return CreateConcretePosition<DRT::Element::quad9>(xyze, xyz, floattype);
     case DRT::Element::hex8:
-      return CreateConcretePosition<DRT::Element::hex8>(xyze, xyz);
+      return CreateConcretePosition<DRT::Element::hex8>(xyze, xyz, floattype);
     case DRT::Element::hex20:
-      return CreateConcretePosition<DRT::Element::hex20>(xyze, xyz);
+      return CreateConcretePosition<DRT::Element::hex20>(xyze, xyz, floattype);
     case DRT::Element::tet4:
-      return CreateConcretePosition<DRT::Element::tet4>(xyze, xyz);
+      return CreateConcretePosition<DRT::Element::tet4>(xyze, xyz, floattype);
     case DRT::Element::pyramid5:
-      return CreateConcretePosition<DRT::Element::pyramid5>(xyze, xyz);
+      return CreateConcretePosition<DRT::Element::pyramid5>(xyze, xyz, floattype);
     case DRT::Element::wedge6:
-      return CreateConcretePosition<DRT::Element::wedge6>(xyze, xyz);
+      return CreateConcretePosition<DRT::Element::wedge6>(xyze, xyz, floattype);
     default:
       dserror("Unsupported distype = %s", DRT::DistypeToString(distype).c_str());
       exit(EXIT_FAILURE);
@@ -385,7 +393,7 @@ Teuchos::RCP<GEO::CUT::Position> GEO::CUT::PositionFactory::CreatePosition(
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<GEO::CUT::Position> GEO::CUT::PositionFactory::CreatePosition(
     const std::vector<GEO::CUT::Node*> nodes, const double* xyz,
-    DRT::Element::DiscretizationType distype) const
+    DRT::Element::DiscretizationType distype, INPAR::CUT::CUT_Floattype floattype) const
 {
   if (distype == DRT::Element::dis_none)
   {
@@ -400,27 +408,27 @@ Teuchos::RCP<GEO::CUT::Position> GEO::CUT::PositionFactory::CreatePosition(
   switch (distype)
   {
     case DRT::Element::line2:
-      return CreateConcretePosition<DRT::Element::line2>(nodes, xyz);
+      return CreateConcretePosition<DRT::Element::line2>(nodes, xyz, floattype);
     case DRT::Element::tri3:
-      return CreateConcretePosition<DRT::Element::tri3>(nodes, xyz);
+      return CreateConcretePosition<DRT::Element::tri3>(nodes, xyz, floattype);
     case DRT::Element::tri6:
-      return CreateConcretePosition<DRT::Element::tri6>(nodes, xyz);
+      return CreateConcretePosition<DRT::Element::tri6>(nodes, xyz, floattype);
     case DRT::Element::quad4:
-      return CreateConcretePosition<DRT::Element::quad4>(nodes, xyz);
+      return CreateConcretePosition<DRT::Element::quad4>(nodes, xyz, floattype);
     case DRT::Element::quad8:
-      return CreateConcretePosition<DRT::Element::quad8>(nodes, xyz);
+      return CreateConcretePosition<DRT::Element::quad8>(nodes, xyz, floattype);
     case DRT::Element::quad9:
-      return CreateConcretePosition<DRT::Element::quad9>(nodes, xyz);
+      return CreateConcretePosition<DRT::Element::quad9>(nodes, xyz, floattype);
     case DRT::Element::hex8:
-      return CreateConcretePosition<DRT::Element::hex8>(nodes, xyz);
+      return CreateConcretePosition<DRT::Element::hex8>(nodes, xyz, floattype);
     case DRT::Element::hex20:
-      return CreateConcretePosition<DRT::Element::hex20>(nodes, xyz);
+      return CreateConcretePosition<DRT::Element::hex20>(nodes, xyz, floattype);
     case DRT::Element::tet4:
-      return CreateConcretePosition<DRT::Element::tet4>(nodes, xyz);
+      return CreateConcretePosition<DRT::Element::tet4>(nodes, xyz, floattype);
     case DRT::Element::pyramid5:
-      return CreateConcretePosition<DRT::Element::pyramid5>(nodes, xyz);
+      return CreateConcretePosition<DRT::Element::pyramid5>(nodes, xyz, floattype);
     case DRT::Element::wedge6:
-      return CreateConcretePosition<DRT::Element::wedge6>(nodes, xyz);
+      return CreateConcretePosition<DRT::Element::wedge6>(nodes, xyz, floattype);
     default:
       dserror("Unsupported distype = %s", DRT::DistypeToString(distype).c_str());
       exit(EXIT_FAILURE);
@@ -429,48 +437,74 @@ Teuchos::RCP<GEO::CUT::Position> GEO::CUT::PositionFactory::CreatePosition(
   exit(EXIT_FAILURE);
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+INPAR::CUT::CUT_Floattype GEO::CUT::PositionFactory::UsePosFloattype(
+    INPAR::CUT::CUT_Floattype floattype)
+{
+  if (general_pos_floattype_ != INPAR::CUT::floattype_none)
+    return general_pos_floattype_;
+  else
+    return floattype;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+INPAR::CUT::CUT_Floattype GEO::CUT::PositionFactory::UseDistFloattype(
+    INPAR::CUT::CUT_Floattype floattype)
+{
+  if (general_dist_floattype_ != INPAR::CUT::floattype_none)
+    return general_dist_floattype_;
+  else
+    return floattype;
+}
+
+INPAR::CUT::CUT_Floattype GEO::CUT::PositionFactory::general_pos_floattype_ =
+    INPAR::CUT::floattype_none;
+INPAR::CUT::CUT_Floattype GEO::CUT::PositionFactory::general_dist_floattype_ =
+    INPAR::CUT::floattype_none;
 
 template Teuchos::RCP<GEO::CUT::Position> GEO::CUT::Position::Create<2>(
-    const Element& element, const LINALG::Matrix<2, 1>& xyz);
+    const Element& element, const LINALG::Matrix<2, 1>& xyz, INPAR::CUT::CUT_Floattype floattype);
 template Teuchos::RCP<GEO::CUT::Position> GEO::CUT::Position::Create<3>(
-    const Element& element, const LINALG::Matrix<3, 1>& xyz);
+    const Element& element, const LINALG::Matrix<3, 1>& xyz, INPAR::CUT::CUT_Floattype floattype);
 
 template Teuchos::RCP<GEO::CUT::Position> GEO::CUT::Position::Create<3, 3, 3>(
     const LINALG::Matrix<3, 3>& xyze, const LINALG::Matrix<3, 1>& xyz,
-    const DRT::Element::DiscretizationType& distype);
+    const DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
 template Teuchos::RCP<GEO::CUT::Position> GEO::CUT::Position::Create<3, 6, 3>(
     const LINALG::Matrix<3, 6>& xyze, const LINALG::Matrix<3, 1>& xyz,
-    const DRT::Element::DiscretizationType& distype);
+    const DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
 template Teuchos::RCP<GEO::CUT::Position> GEO::CUT::Position::Create<3, 4, 3>(
     const LINALG::Matrix<3, 4>& xyze, const LINALG::Matrix<3, 1>& xyz,
-    const DRT::Element::DiscretizationType& distype);
+    const DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
 template Teuchos::RCP<GEO::CUT::Position> GEO::CUT::Position::Create<3, 8, 3>(
     const LINALG::Matrix<3, 8>& xyze, const LINALG::Matrix<3, 1>& xyz,
-    const DRT::Element::DiscretizationType& distype);
+    const DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
 template Teuchos::RCP<GEO::CUT::Position> GEO::CUT::Position::Create<3, 9, 3>(
     const LINALG::Matrix<3, 9>& xyze, const LINALG::Matrix<3, 1>& xyz,
-    const DRT::Element::DiscretizationType& distype);
+    const DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
 template Teuchos::RCP<GEO::CUT::Position> GEO::CUT::Position::Create<3, 2, 3>(
     const LINALG::Matrix<3, 2>& xyze, const LINALG::Matrix<3, 1>& xyz,
-    const DRT::Element::DiscretizationType& distype);
+    const DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
 template Teuchos::RCP<GEO::CUT::Position> GEO::CUT::Position::Create<2, 2, 2>(
     const LINALG::Matrix<2, 2>& xyze, const LINALG::Matrix<2, 1>& xyz,
-    const DRT::Element::DiscretizationType& distype);
+    const DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
 
 template Teuchos::RCP<GEO::CUT::Position> GEO::CUT::Position::Create<3>(
     const Epetra_SerialDenseMatrix& xyze, const LINALG::Matrix<3, 1>& xyz,
-    const DRT::Element::DiscretizationType& distype);
+    const DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
 template Teuchos::RCP<GEO::CUT::Position> GEO::CUT::Position::Create<2>(
     const Epetra_SerialDenseMatrix& xyze, const LINALG::Matrix<2, 1>& xyz,
-    const DRT::Element::DiscretizationType& distype);
+    const DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
 
 
 template Teuchos::RCP<GEO::CUT::Position> GEO::CUT::Position::Create<3>(
     const std::vector<Node*> nodes, const LINALG::Matrix<3, 1>& xyz,
-    DRT::Element::DiscretizationType distype);
+    DRT::Element::DiscretizationType distype, INPAR::CUT::CUT_Floattype floattype);
 template Teuchos::RCP<GEO::CUT::Position> GEO::CUT::Position::Create<2>(
     const std::vector<Node*> nodes, const LINALG::Matrix<2, 1>& xyz,
-    DRT::Element::DiscretizationType distype);
+    DRT::Element::DiscretizationType distype, INPAR::CUT::CUT_Floattype floattype);
 
 /* --- ComputeEmbeddedPosition --- */
 // embedded element types
@@ -489,6 +523,27 @@ template class GEO::CUT::ComputeEmbeddedPosition<3, DRT::Element::line2>;
 // template class GEO::CUT::ComputeEmbeddedPosition<3,DRT::Element::tet10>;
 // template class GEO::CUT::ComputeEmbeddedPosition<3,DRT::Element::wedge15>;
 
+template class GEO::CUT::ComputeEmbeddedPosition<3, DRT::Element::tri3,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::tri3>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::ComputeEmbeddedPosition<3, DRT::Element::tri6,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri6>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::tri6>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::ComputeEmbeddedPosition<3, DRT::Element::quad4,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::quad4>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::ComputeEmbeddedPosition<3, DRT::Element::quad8,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad8>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::quad8>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::ComputeEmbeddedPosition<3, DRT::Element::quad9,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad9>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::quad9>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::ComputeEmbeddedPosition<2, DRT::Element::line2,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::line2>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::line2>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::ComputeEmbeddedPosition<3, DRT::Element::line2,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::line2>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::line2>::dim, INPAR::CUT::floattype_cln>;
 /* --- ComputePosition --- */
 // non-embedded cases (only)
 template class GEO::CUT::ComputePosition<1, DRT::Element::line2>;
@@ -509,6 +564,57 @@ template class GEO::CUT::ComputePosition<3, DRT::Element::hex27>;
 template class GEO::CUT::ComputePosition<3, DRT::Element::pyramid5>;
 template class GEO::CUT::ComputePosition<3, DRT::Element::wedge6>;
 template class GEO::CUT::ComputePosition<3, DRT::Element::wedge15>;
+
+template class GEO::CUT::ComputePosition<1, DRT::Element::line2,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::line2>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::line2>::dim, INPAR::CUT::floattype_cln>;
+
+template class GEO::CUT::ComputePosition<2, DRT::Element::tri3,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::tri3>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::ComputePosition<2, DRT::Element::tri6,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri6>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::tri6>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::ComputePosition<2, DRT::Element::quad4,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::quad4>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::ComputePosition<2, DRT::Element::quad8,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad8>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::quad8>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::ComputePosition<2, DRT::Element::quad9,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad9>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::quad9>::dim, INPAR::CUT::floattype_cln>;
+
+template class GEO::CUT::ComputePosition<3, DRT::Element::tet4,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::tet4>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::ComputePosition<3, DRT::Element::tet10,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet10>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::tet10>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::ComputePosition<3, DRT::Element::hex8,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::hex8>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::ComputePosition<3, DRT::Element::hex16,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex16>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::hex16>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::ComputePosition<3, DRT::Element::hex18,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex18>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::hex18>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::ComputePosition<3, DRT::Element::hex20,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::hex20>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::ComputePosition<3, DRT::Element::hex27,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex27>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::hex27>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::ComputePosition<3, DRT::Element::pyramid5,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::pyramid5>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::pyramid5>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::ComputePosition<3, DRT::Element::wedge6,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge6>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::wedge6>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::ComputePosition<3, DRT::Element::wedge15,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge15>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::wedge15>::dim, INPAR::CUT::floattype_cln>;
 
 /* --- PositionGeneric --- */
 // embedded cases
@@ -545,3 +651,78 @@ template class GEO::CUT::PositionGeneric<3, DRT::Element::wedge15>;
 // template class GEO::CUT::PositionGeneric<2,DRT::Element::tet4>;
 // template class GEO::CUT::PositionGeneric<2,DRT::Element::pyramid5>;
 // template class GEO::CUT::PositionGeneric<2,DRT::Element::wedge6>;
+
+// embedded cases
+template class GEO::CUT::PositionGeneric<3, DRT::Element::tri3,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::tri3>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::PositionGeneric<3, DRT::Element::tri6,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri6>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::tri6>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::PositionGeneric<3, DRT::Element::quad4,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::quad4>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::PositionGeneric<3, DRT::Element::quad8,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad8>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::quad8>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::PositionGeneric<3, DRT::Element::quad9,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad9>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::quad9>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::PositionGeneric<2, DRT::Element::line2,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::line2>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::line2>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::PositionGeneric<3, DRT::Element::line2,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::line2>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::line2>::dim, INPAR::CUT::floattype_cln>;
+
+// non-embedded cases
+template class GEO::CUT::PositionGeneric<1, DRT::Element::line2,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::line2>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::line2>::dim, INPAR::CUT::floattype_cln>;
+
+template class GEO::CUT::PositionGeneric<2, DRT::Element::tri3,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::tri3>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::PositionGeneric<2, DRT::Element::tri6,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri6>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::tri6>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::PositionGeneric<2, DRT::Element::quad4,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::quad4>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::PositionGeneric<2, DRT::Element::quad8,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad8>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::quad8>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::PositionGeneric<2, DRT::Element::quad9,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad9>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::quad9>::dim, INPAR::CUT::floattype_cln>;
+
+template class GEO::CUT::PositionGeneric<3, DRT::Element::tet4,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::tet4>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::PositionGeneric<3, DRT::Element::tet10,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet10>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::tet10>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::PositionGeneric<3, DRT::Element::hex8,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::hex8>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::PositionGeneric<3, DRT::Element::hex16,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex16>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::hex16>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::PositionGeneric<3, DRT::Element::hex18,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex18>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::hex18>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::PositionGeneric<3, DRT::Element::hex20,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::hex20>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::PositionGeneric<3, DRT::Element::hex27,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex27>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::hex27>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::PositionGeneric<3, DRT::Element::pyramid5,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::pyramid5>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::pyramid5>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::PositionGeneric<3, DRT::Element::wedge6,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge6>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::wedge6>::dim, INPAR::CUT::floattype_cln>;
+template class GEO::CUT::PositionGeneric<3, DRT::Element::wedge15,
+    DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge15>::numNodePerElement,
+    DRT::UTILS::DisTypeToDim<DRT::Element::wedge15>::dim, INPAR::CUT::floattype_cln>;

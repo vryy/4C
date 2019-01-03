@@ -612,15 +612,15 @@ namespace DRT
 
     //! compute covariant metric tensor for surface/line element and optionally, the normalized
     //! normal vector at the Gausspoint (template)
-    template <DRT::Element::DiscretizationType DISTYPE, int probdim>
+    template <DRT::Element::DiscretizationType DISTYPE, int probdim, typename valueType = double>
     void ComputeMetricTensorForBoundaryEle(
         const LINALG::Matrix<probdim,
-            DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& xyze,
+            DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement, valueType>& xyze,
         const LINALG::Matrix<DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
-            DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& deriv,
+            DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement, valueType>& deriv,
         LINALG::Matrix<DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
-            DRT::UTILS::DisTypeToDim<DISTYPE>::dim>& metrictensor,
-        double& sqrtdetg, LINALG::Matrix<probdim, 1>* normalvec = NULL,
+            DRT::UTILS::DisTypeToDim<DISTYPE>::dim, valueType>& metrictensor,
+        valueType& sqrtdetg, LINALG::Matrix<probdim, 1, valueType>* normalvec = NULL,
         const bool& unit_normal = true, const bool& throw_error = true)
     {
       /* 2D boundary Element
@@ -654,7 +654,7 @@ namespace DRT
       |
       |   dxyzdrs(1,2) = deriv(1,iel) * xyze(2, iel)^T
        */
-      LINALG::Matrix<DRT::UTILS::DisTypeToDim<DISTYPE>::dim, probdim> dxyzdrs;
+      LINALG::Matrix<DRT::UTILS::DisTypeToDim<DISTYPE>::dim, probdim, valueType> dxyzdrs;
       dxyzdrs.MultiplyNT(deriv, xyze);
 
       /* 2D boundary Element
@@ -710,7 +710,7 @@ namespace DRT
           // compute unit normal (outward pointing)
           if (unit_normal)
           {
-            const double norm2 = normalvec->Norm2();
+            const valueType norm2 = normalvec->Norm2();
             if (norm2 < 0.0)
               dserror(
                   "The l2-norm of the normal vector is smaller than 0.0!"
@@ -726,7 +726,7 @@ namespace DRT
           // compute unit normal (outward pointing)
           if (unit_normal)
           {
-            const double norm2 = normalvec->Norm2();
+            const valueType norm2 = normalvec->Norm2();
             if (norm2 < 0.0)
               dserror(
                   "The l2-norm of the normal vector is smaller than 0.0!"
@@ -743,17 +743,25 @@ namespace DRT
             (*normalvec)(1) = -dxyzdrs(0, 0);
             (*normalvec)(2) = 0.0;
           }
-          else
+          // to handle small normal vectors with dxyzdrs(0,0) < 1e-6
+          // and other componets  = 0.0
+          else if (dxyzdrs(0, 2) != 0 or dxyzdrs(0, 1) != 0)
           {
             (*normalvec)(0) = 0.0;
             (*normalvec)(1) = -dxyzdrs(0, 2);
             (*normalvec)(2) = dxyzdrs(0, 1);
           }
+          else
+          {
+            (*normalvec)(0) = dxyzdrs(0, 1);
+            (*normalvec)(1) = -dxyzdrs(0, 0);
+            (*normalvec)(2) = 0.0;
+          }
 
           // compute unit normal (outward pointing)
           if (unit_normal)
           {
-            const double norm2 = normalvec->Norm2();
+            const valueType norm2 = normalvec->Norm2();
             if (norm2 < 0.0)
               dserror(
                   "The l2-norm of the normal vector is smaller than 0.0!"

@@ -1,15 +1,11 @@
-/*---------------------------------------------------------------------------*/
-/*!
+/*!----------------------------------------------------------------------
+\brief Test for the CUT Library
 \file cut_test_triangulateFacet.cpp
-
-\brief cut test cpp file
 
 \level 1
 
-\maintainer Christoph Ager
-
-*/
-/*---------------------------------------------------------------------------*/
+\maintainer Ager Christoph
+*----------------------------------------------------------------------*/
 
 #include "../../src/drt_cut/cut_options.H"
 #include "../../src/drt_cut/cut_mesh.H"
@@ -99,6 +95,7 @@ void test_facet_split()
 {
   std::cout << "checking triangulation of facets...\n";
   GEO::CUT::Options options;
+  options.Init_for_Cuttests();
   GEO::CUT::Mesh mesh(options);
   GEO::CUT::Element* e = create_hex8(mesh);
   GEO::CUT::Side* s = Create_quad4(mesh, 0.5, 0.1, 0);

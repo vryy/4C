@@ -43,19 +43,58 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::DirectDivergence::VCIntegrationR
   isRef_ = false;                                    // whether ref plane is falling on facet?
 
   // get integration facets and reference plane
+  Teuchos::RCP<BoundingBox> fbox = Teuchos::rcp(BoundingBox::Create());
+  const plain_facet_set& facete = volcell_->Facets();
+  // create bounding box around all facets
+  for (plain_facet_set::const_iterator i = facete.begin(); i != facete.end(); i++)
+  {
+    Facet* fe = *i;
+    const std::vector<Point*>& corn = fe->Points();
+    for (std::vector<Point*>::const_iterator p = corn.begin(); p != corn.end(); ++p)
+    {
+      fbox->AddPoint((*p)->X());
+    }
+  }
+  LINALG::Matrix<3, 2> fvolume = fbox->GetBoundingVolume();
+  const double totalVolume = (fvolume(0, 1) - fvolume(0, 0)) * (fvolume(1, 1) - fvolume(1, 0)) *
+                             (fvolume(2, 1) - fvolume(2, 0));
+
   ListFacets(facetIterator, RefPlaneEqn, IteratorRefFacet, isRef_);
 
   if (isRef_) refFacet_ = *IteratorRefFacet;
 
   if (facetIterator.size() == 0)
   {
-    const plain_facet_set& facete = volcell_->Facets();
+#if EXTENDED_CUT_DEBUG_OUTPUT
+    std::cout << "NOTICE: X-component normal is zero on all facets,\
+                 Volume of the bounding box surrounding facets is equal to "
+              << totalVolume << std::endl;
+#endif
 
-    std::cout << "number of facets: " << facete.size() << std::endl;
-    for (plain_facet_set::const_iterator f = facete.begin(); f != facete.end(); f++)
-      (*f)->Print(std::cout);
+    if (totalVolume > MINIMUM_VOLUME_BB_FACETS)
+    {
+      const plain_facet_set& facete = volcell_->Facets();
+      std::cout << "number of facets: " << facete.size() << std::endl;
 
-    dserror("x-component normal is zero on all the facets? It should not be.");
+      for (plain_facet_set::const_iterator f = facete.begin(); f != facete.end(); f++)
+        (*f)->Print(std::cout);
+
+      // dump element and facets
+      std::ofstream file("facets_x_normal_equal_0_CUTFAIL_DD.pos");
+      volcell_->DumpGmsh(file);
+      file.close();
+
+      std::string filename1("element_x_normal_equal_0_CUTFAIL_DD.pos");
+      std::ofstream file1(filename1.c_str());
+      GEO::CUT::OUTPUT::GmshCompleteCutElement(file1, elem1_, false);
+      file1.close();
+
+      std::stringstream err_msg;
+      err_msg << "x-component normal is zero on all the facets? It should not be. Volume of the "
+                 "bounding box around facets is "
+              << totalVolume;
+      dserror(err_msg.str());
+    }
   }
 
   Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp =

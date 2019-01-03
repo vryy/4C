@@ -3,13 +3,9 @@
 
  \brief class representing a geometrical side
 
- <pre>
-\level 3
-\maintainer Andy Wirtz
- wirtz@lnm.mw.tum.de
- http://www.lnm.mw.tum.de
- 089 - 289-15270
- </pre>
+\level 2
+
+\maintainer Christoph Ager
  *------------------------------------------------------------------------------------------------*/
 
 #include "cut_side.H"
@@ -24,6 +20,9 @@
 
 #include <string>
 #include <stack>
+#include <list>
+
+//#define DEBUG_PARALLEL_CUT_SURFACE
 
 
 /*----------------------------------------------------------------------------*
@@ -59,18 +58,24 @@ GEO::CUT::Edge* GEO::CUT::Side::FindEdge(Point* begin, Point* end)
   }
   return NULL;
 }
+
+bool GEO::CUT::Side::FindCutPointsDispatch(Mesh& mesh, Element* element, Side& side, Edge& e)
+{
+  return e.FindCutPointsMeshCut(mesh, element, side, *this);
+}
+
 /*----------------------------------------------------------------------------*
  * Calculate the points at which the other side intersects with this considered
  * side
  *----------------------------------------------------------------------------*/
-bool GEO::CUT::Side::FindCutPoints(Mesh& mesh, Element* element, Side& other, int recursion)
+bool GEO::CUT::Side::FindCutPoints(Mesh& mesh, Element* element, Side& other)
 {
   bool cut = false;
   const std::vector<Edge*>& edges = Edges();
   for (std::vector<Edge*>::const_iterator i = edges.begin(); i != edges.end(); ++i)
   {
     Edge* e = *i;
-    if (e->FindCutPoints(mesh, element, *this, other, recursion))
+    if (e->FindCutPoints(mesh, element, *this, other))
     {
       cut = true;
     }
@@ -90,10 +95,13 @@ bool GEO::CUT::Side::FindCutLines(Mesh& mesh, Element* element, Side& other)
     if (l->IsCut(this, &other))
     {
       if (not l->IsCut(element))
+      {
         dserror(
-            "Line is cut by both sides but not by the element, check this "
-            "situation as it is not expected!");
-      // l->AddElement( element );
+            "Line (%d, %d) is cut by both sides but not by the element, check this "
+            "situation as it is not expected!",
+            l->BeginPoint()->Id(), l->EndPoint()->Id());
+        // l->AddElement( element );
+      }
       other.AddLine(l);
     }
   }
@@ -121,11 +129,14 @@ bool GEO::CUT::Side::FindCutLines(Mesh& mesh, Element* element, Side& other)
      * (see also IMPL::PointGraph1D::AddCutLinesToGraph)     hiermeier 11/16 */
     case 1:
     {
-      return false;
+      if (IsTouched(other, cuts[0]))
+        return false;
+      else
+        dserror("Single point between two sides is not a touching point!");
     }
-    // ------------------------------------------------------------------------
-    // The normal case. A straight cut.
-    // ------------------------------------------------------------------------
+      // ------------------------------------------------------------------------
+      // The normal case. A straight cut.
+      // ------------------------------------------------------------------------
     case 2:
     {
       std::vector<Point*> c;
@@ -213,6 +224,87 @@ GEO::CUT::Facet* GEO::CUT::Side::FindFacet(const std::vector<Point*>& facet_poin
   return NULL;
 }
 
+
+
+bool GEO::CUT::Side::IsTouched(Side& other, Point* p)
+{
+  // first we check if it is a nodal point of one of the surface
+  if (not((p->NodalPoint(other.Nodes())) || (p->NodalPoint(Nodes()))))
+  {
+    // now we check if it was merged, and is no longer Nodal point, however it is still
+    // topologically touchign point
+    if ((IsTouchedAt(&other, p)) || (other.IsTouchedAt(this, p))) return true;
+
+    // if not the previous case, check if the cut_point lie on the edges of both sides
+    // for my side
+    bool on_my_edge = false;
+    for (unsigned ledge = 0; ledge < Edges().size(); ++ledge)
+    {
+      for (unsigned lpoint = 0; lpoint < Edges()[ledge]->CutPoints().size(); ++lpoint)
+      {
+        if (Edges()[ledge]->CutPoints()[lpoint]->Id() == p->Id())
+        {
+          on_my_edge = true;
+        }
+      }
+    }
+
+    // for other side
+    bool on_other_edge = false;
+    for (unsigned ledge = 0; ledge < other.Edges().size(); ++ledge)
+    {
+      for (unsigned lpoint = 0; lpoint < other.Edges()[ledge]->CutPoints().size(); ++lpoint)
+      {
+        if (other.Edges()[ledge]->CutPoints()[lpoint]->Id() == p->Id())
+        {
+          on_other_edge = true;
+        }
+      }
+    }
+
+    if (!on_my_edge || !on_other_edge)
+    {
+      std::ofstream file("touching_point_between_two_sides_is_not_on_edge.pos");
+      GEO::CUT::OUTPUT::GmshSideDump(file, this, std::string("ThisSide"));
+      GEO::CUT::OUTPUT::GmshSideDump(file, &other, std::string("OtherSide"));
+      GEO::CUT::OUTPUT::GmshPointDump(file, p, p->Id(), std::string("CutPoint"), false, NULL);
+      p->DumpConnectivityInfo();
+      file.close();
+      dserror(
+          "Touching point between two sides does not lie on edge. This case should be analyzed");
+    }
+  }
+  return true;
+}
+
+
+
+bool GEO::CUT::Side::IsTouchedAt(Side* other, Point* p)
+{
+  // count of edges from other side touching at this point
+  int count = 0;
+  for (unsigned int ledge = 0; ledge < other->Edges().size(); ++ledge)
+  {
+    if (p->IsCut(this, other->Edges()[ledge])) count++;
+  }
+
+  switch (count)
+  {
+    case 0:
+      return false;
+    case 1:
+      // if touched only by one edge it can be edge-edge intersection, so we need to check current
+      // side on itersection with other side, however we test it later on
+      return false;
+    case 2:
+      // this is touching point then
+      return true;
+    default:
+      dserror("This case should be investigated");
+      return false;
+  }
+}
+
 /*----------------------------------------------------------------------------*/
 // Find Cut Lines for two Cut Sides, which have more than two common cut points!
 //(This happens if the cutsides are in the same plane )              ager 08/15
@@ -222,7 +314,7 @@ bool GEO::CUT::Side::FindTouchingCutLines(
 {
   // More that two cut points show a touch.
   //
-  // 1// If all nodes are caught and nothing else, the cut surface has hit this
+  // If all nodes are caught and nothing else, the cut surface has hit this
   // surface exactly. No need to cut anything. However, the surface might be
   // required for integration.
   {
@@ -254,6 +346,119 @@ bool GEO::CUT::Side::FindTouchingCutLines(
   return false;
 }
 
+
+// Try to find intersection of edges of "this" side  with side.
+bool GEO::CUT::Side::FindParallelIntersection(
+    Mesh& mesh, Element* element, Side& side, const PointSet& cut, point_line_set& new_lines)
+{
+  // number of lines that could be created
+  unsigned int line_counter = 0;
+  // queue of points that will be inserted as cut lines, if everything goes OK.
+  // we want to create only when we know, that this is normal case, and not a special cases,
+  // that needs to be handled separately
+  std::vector<std::pair<Point*, Point*>> cut_lines_queue;
+  PointSet c;
+
+  // loop over the edges
+  for (std::vector<Edge*>::const_iterator e_it = Edges().begin(); e_it != Edges().end(); ++e_it)
+  {
+    Edge* e = *e_it;
+    c.clear();
+    const PointPositionSet& edge_cut_points = (*e_it)->CutPoints();
+    for (PointPositionSet::const_iterator p_it = edge_cut_points.begin();
+         p_it != edge_cut_points.end(); ++p_it)
+    {
+      if (cut.find(*p_it) != cut.end()) c.insert(*p_it);  //
+    }
+
+    switch (c.size())
+    {
+      case 0:
+        break;
+      case 1:
+      {
+        if (not(IsTouchedAt(&side, c[0])))
+        {
+          // if this is not a nodal point we definitely throw an error
+          if ((c[0] != e->BeginNode()->point()) and (c[0] != e->EndNode()->point()))
+          {
+            if (not CreateParallelCutSurface(mesh, element, side, cut))
+            {
+              // maybe that other side will create require number of lines;
+              return false;
+            }
+            // else we should have generated all the parallel surface and we are done with this side
+            else
+            {
+              return true;
+            }
+          }
+        }
+        break;
+      }
+      case 2:
+      {
+        cut_lines_queue.push_back(std::make_pair(c[0], c[1]));
+        break;
+      }
+      default:
+      {
+        // this can happen when edge is parallel and nodal point of the side lies on the edge
+        for (PointSet::iterator c_it = c.begin(); c_it != c.end(); ++c_it)
+        {
+          if ((not(*c_it)->NodalPoint(e->Nodes())) and (not(*c_it)->NodalPoint(side.Nodes())))
+          {
+            GEO::CUT::OUTPUT::DebugDump_ThreePointsOnEdge(this, &side, e, c[0], cut);
+            dserror(
+                "Uknown case of three intersection point lying on side's edge in side-side "
+                "intersection, this case should be reported");
+          }
+        }
+
+#if EXTENDED_CUT_DEBUG_OUTPUT
+        std::cout << "NOTICE: Creating cut line on a edge with multiple ( " << c.size()
+                  << " ) cut_points " << std::endl;
+#endif
+        // sorting points first
+        PointPositionSet sorted_cut_points(c.begin(), c.end(), PointPositionLess(e));
+
+        PointPositionSet::iterator next = sorted_cut_points.begin();
+        for (PointPositionSet::iterator c_it = next; next != (--sorted_cut_points.end());
+             c_it = next)
+        {
+          ++next;
+          cut_lines_queue.push_back(std::make_pair(*c_it, *next));
+        }
+
+        break;
+      }
+    }
+  }
+
+  // If there were no anomalies, we add all point as cut lines.
+  for (std::vector<std::pair<Point*, Point*>>::iterator it = cut_lines_queue.begin();
+       it != cut_lines_queue.end(); ++it)
+  {
+    Point* first = it->first;
+    Point* second = it->second;
+
+    mesh.NewLine(first, second, this, &side, element);
+    line_counter++;
+    if (first->Id() > second->Id())
+      new_lines.insert(std::make_pair(first, second));
+    else
+      new_lines.insert(std::make_pair(second, first));
+  }
+
+  // if number of lines equal to number of cut points the whole surface is parallel
+  if (line_counter == cut.size())
+  {
+    return true;
+  }
+  else
+    return false;
+}
+
 /*----------------------------------------------------------------------------*
  * Find Cut Lines for two Cut Sides specially based on a discretization,
  * which have more than two common cut points!
@@ -268,194 +473,406 @@ bool GEO::CUT::Side::FindAmbiguousCutLines(
    * (1) If all nodes are caught and nothing else, the cut surface has hit this
    *     surface exactly. No need to cut anything. However, the surface might be
    *     required for integration. */
-  if (FindTouchingCutLines(mesh, element, side, cut)) return true;
-
-  /* (2) Not all nodes are caught but some cut points lie on an edge of the cut sides,
-   *     try to connect all points which lie on a line and finally connect all other
-   *     missing cut points!!! */
+  if (FindTouchingCutLines(mesh, element, side, cut))
   {
-    /* this might not be really high performance, but it is just handling of a special
-     * case an therefore will not occur too often
-     * --> Speed doesn't matter, but robustness does !!! */
-    int created_lines = 0;
-    std::vector<int> p1lines;
-    std::vector<int> p2lines;
-    PointSet c;
-    //   std::vector<Point*> c;
-    // loop over all edges of the side side
-    for (unsigned ledge = 0; ledge < side.Edges().size(); ++ledge)
-    {
-      c.clear();
-      for (unsigned lcpoint = 0; lcpoint < cut.size(); ++lcpoint)
-      {
-        // find all common points of this edge and cut
-        for (unsigned lpoint = 0; lpoint < side.Edges()[ledge]->CutPoints().size(); ++lpoint)
-        {
-          //     std::cout << "check point " << side.Edges()[ledge]->CutPoints()[lpoint]->Id() << "
-          //     and " << cut[lcpoint]->Id() << std::endl; std::cout << "with idx " << lpoint << "
-          //     and " << lcpoint << std::endl;
-          if (side.Edges()[ledge]->CutPoints()[lpoint]->Id() == cut[lcpoint]->Id())
-            c.insert(cut[lcpoint]);  //
-        }
-      }
-      switch (c.size())
-      {
-        case 0:
-        case 1:
-          break;
-        case 2:
-        {
-          mesh.NewLine(c[0], c[1], this, &side, element);
-          created_lines++;
-          p1lines.push_back(c[0]->Id());
-          p2lines.push_back(c[1]->Id());
-          break;
-        }
-        default:
-        {
-          FindAmbiguousCutLinesonEdge(mesh, element, side, c);
-        }
-      }
-    }
-    // loop over all edges of the side side
-    for (unsigned ledge = 0; ledge < Edges().size(); ++ledge)
-    {
-      c.clear();
-      for (unsigned lcpoint = 0; lcpoint < cut.size(); ++lcpoint)
-      {
-        // find all common points of this edge and cut
-        for (unsigned lpoint = 0; lpoint < Edges()[ledge]->CutPoints().size(); ++lpoint)
-        {
-          if (Edges()[ledge]->CutPoints()[lpoint]->Id() == cut[lcpoint]->Id())
-          {
-            c.insert(cut[lcpoint]);  //
-          }
-        }
-      }
-      switch (c.size())
-      {
-        case 0:
-        case 1:
-          break;
-        case 2:
-        {
-          mesh.NewLine(c[0], c[1], this, &side, element);
-          created_lines++;
-          p1lines.push_back(c[0]->Id());
-          p2lines.push_back(c[1]->Id());
-          break;
-        }
-        default:
-        {
-          FindAmbiguousCutLinesonEdge(mesh, element, side, c);
-        }
-      }
-    }
+    return true;
+  }
 
-    /* (3) Now connect all missing points together --> the idea is that all
-     * points basically are on one line with just a little deviation to this
-     * line, therefore we construct a vector which points in direction of this
-     * line and sort all cut points according to this line! Finally we connect
-     * these points by lines!
-     * (REMARK: If this is not enough to construct lines, we run into an dserror
-     * and have to rethink if there are other special cases possible!) */
-    if (p1lines.size() < cut.size() - 1)
+  /* (2) Trying to find parallel intersection between two surfaces */
+  point_line_set new_lines;
+  PointSet c;
+
+  std::vector<bool> lies_inside(2);
+
+  // try to find intersection of edges of this side with other side
+  lies_inside[0] = this->FindParallelIntersection(mesh, element, side, cut, new_lines);
+
+  // edges of other side with this side
+  lies_inside[1] = side.FindParallelIntersection(mesh, element, *this, cut, new_lines);
+
+  // either first side lies inside second, or second inside first, or they share parts of each other
+  if (lies_inside[0] || lies_inside[1] || (new_lines.size() == cut.size()))
+    return true;
+
+  else
+  {
+#ifdef DEBUG_PARALLEL_CUT_SURFACE
+    std::cout << "Trying to create parallel surface from both sides" << std::endl;
+#endif
+
+    // either we missed one side that is partially parallel ( all cut points are on their edges)
+    // or it can happen (special case for 3 points) that cut points are split
+    // between edges of two sides
+    std::vector<Point*> cut_point_on_edges_1;
+    std::vector<Point*> cut_point_on_edges_2;
+
+    lies_inside[1] =
+        side.CreateParallelCutSurface(mesh, element, *this, cut, &cut_point_on_edges_1);
+    lies_inside[0] =
+        this->CreateParallelCutSurface(mesh, element, side, cut, &cut_point_on_edges_2);
+
+    // we create cut lines during one of CreateParallelCutSurface calls and we are done
+    if (lies_inside[0] or lies_inside[1]) return true;
+
+    // we try to create cut points from the combination
+    else
     {
-      FindAmbiguousCutLinesonEdge(mesh, element, side, cut);
-      return true;
-    }
-    else  // connected already all points :-)!
-    {
-      return true;
+      PointSet collected_points(cut_point_on_edges_1.begin(), cut_point_on_edges_1.end());
+      std::copy(cut_point_on_edges_2.begin(), cut_point_on_edges_2.end(),
+          std::inserter(collected_points, collected_points.end()));
+      // if we collected this all points with parallel cut surface function calls we handle this
+      // case
+      if (collected_points == cut)
+      {
+        if (cut.size() == 3)
+        {
+#ifdef DEBUG_PARALLEL_CUT_SURFACE
+          std::cout << "NOTICE: Creating parallel cut surface" << std::endl;
+#endif
+          // note: here we connect three points in any direction since it is always closed cycles
+          for (PointSet::const_iterator it = cut.begin(); it != (--cut.end()); ++it)
+          {
+            PointSet::const_iterator next = it;
+            ++next;
+
+            Point* p1 = *it;
+            Point* p2 = *next;
+            if (p1 == p2) dserror("Trying to create line between two points, which are the same!");
+            mesh.NewLine(p1, p2, this, &side, element);
+          }
+
+          // connect last to first to close the cycle
+          if (cut.front() == cut.back())
+          {
+            dserror("Trying to create line between two points, which are the same!");
+          }
+          else
+            mesh.NewLine(cut.front(), cut.back(), this, &side, element);
+
+          return true;
+        }
+        else
+        {
+          std::ofstream file("more_than_3_points_in_the_parallel_surface.pos");
+          GEO::CUT::OUTPUT::GmshSideDump(file, this, std::string("ThisSide"));
+          GEO::CUT::OUTPUT::GmshSideDump(file, &side, std::string("OtherSide"));
+          for (PointSet::const_iterator it = cut.begin(); it != cut.end(); ++it)
+          {
+            GEO::CUT::OUTPUT::GmshPointDump(
+                file, (*it), (*it)->Id(), std::string("CutPoint"), false, NULL);
+          }
+          file.close();
+          dserror("This case is not handled yet, generate GMSH output and look into it!");
+        }
+      }
+      GEO::CUT::OUTPUT::DebugDump_MultipleCutPointsSpecial(
+          this, &side, cut, collected_points, new_lines);
+      throw std::runtime_error("This case should be reported probably");
     }
   }
-  dserror("FindAmbiguousCutLines failed!!!");
+  // should not reach here
   return false;
 }
 
-/*----------------------------------------------------------------------------*
- * Create lines based on cut points arising from an intersection, which should
- * basically be a straight line! Due to numeric precision and finally merging
- * of Points this can happen! The approach is to create a vector, which points
- * in direction of the line and then sort all points along this vector, and
- * connect the points in this sorted order!                          ager 08/15
- *----------------------------------------------------------------------------*/
-bool GEO::CUT::Side::FindAmbiguousCutLinesonEdge(
-    Mesh& mesh, Element* element, Side& side, const PointSet& cut)
+
+// Create paralel cut surface based on intersection with the other side, and "cut" cut_points
+bool GEO::CUT::Side::CreateParallelCutSurface(Mesh& mesh, Element* element, Side& other,
+    const PointSet& cut, std::vector<Point*>* cut_point_for_lines_out)
 {
-  double dist2 = 0.0;
-  int idxp1 = 0;
-  int idxp2 = 0;
-  // 1// Find Poins with maximum distance in between (Brute Force)
-  for (uint i = 0; i < cut.size(); ++i)
+  std::list<Edge*> edges_cycle;
+  const std::vector<Edge*>& edges = Edges();
+
+  Edge* first = edges[0];
+  edges_cycle.push_back(first);
+  Node* begin_node = first->BeginNode();
+  Node* end_node = first->EndNode();
+
+  // creating list of edges, so that every previous edges is connected with the next
+  for (std::vector<Edge*>::const_iterator it = (++edges.begin()); it != edges.end(); ++it)
   {
-    for (uint j = 0; j < cut.size(); ++j)
+    Edge* e = *it;
+
+    // if items has a node, that is equal to the start of the list, we push it to the
+    // front of list and update begin node
+    if ((begin_node == e->BeginNode()) || (begin_node == e->EndNode()))
     {
-      if (i != j)
+      begin_node = (begin_node == e->BeginNode()) ? e->EndNode() : e->BeginNode();
+      edges_cycle.push_front(e);
+    }
+
+    // otherwise we push it to the end of the list
+    else if ((end_node == e->BeginNode()) || (end_node == e->EndNode()))
+    {
+      end_node = (end_node == e->EndNode()) ? e->BeginNode() : e->EndNode();
+      edges_cycle.push_back(e);
+    }
+  }
+
+  // (since PointPositionSet on the edge is sorted (-1,1) = (BeginPoint(), EndPoint() )
+  // we add points into the cycles based on orientation of first edge begin_edge1->end_edge1
+  // if end_edge1 == begin_edge2 we add point in same direction as we collected,
+  // Simiarly done for all  check and possibly reverse direction of inserting for remaining edges
+  std::vector<Point*> cut_points_for_lines;
+  Point* tail = (*edges_cycle.begin())->BeginNode()->point();
+  for (std::list<Edge*>::iterator it = edges_cycle.begin(); it != edges_cycle.end(); ++it)
+  {
+    Edge* e = *it;
+    std::vector<Point*> points;
+    bool reverse = false;
+
+    // if the end node of previous vector is end node of current vector, we reverse direction of
+    // point insertion
+    if (tail != e->BeginNode()->point()) reverse = true;
+
+    const PointPositionSet& edge_points = e->CutPoints();
+    for (PointPositionSet::const_iterator pt = edge_points.begin(); pt != edge_points.end(); ++pt)
+    {
+      Point* p = *pt;
+      /* p != tail so end points, that are cut points, are added only once as heads, and no tails */
+      if ((cut.find(p) != cut.end()) and (p != tail))
       {
-        double tmpdist2 = 0.0;
-        for (uint dim = 0; dim < 3; ++dim)
-          tmpdist2 += (cut[i]->X()[dim] - cut[j]->X()[dim]) * (cut[i]->X()[dim] - cut[j]->X()[dim]);
-        if (dist2 < tmpdist2)
+        points.push_back(p);
+      }
+    }
+
+    if (reverse)
+      cut_points_for_lines.insert(cut_points_for_lines.end(), points.rbegin(), points.rend());
+    else
+      cut_points_for_lines.insert(cut_points_for_lines.end(), points.begin(), points.end());
+
+    if (not reverse)
+      tail = e->EndNode()->point();
+    else
+      tail = e->BeginNode()->point();
+  }
+
+  // if last tail is the cut point, when we  connect it to the front, which was the same point -->
+  // we obtain duplicate which needs to be erased
+  if ((cut.find(tail) != cut.end()) and (cut_points_for_lines.back() == tail) and
+      (cut_points_for_lines.front() == tail))
+    cut_points_for_lines.erase(--cut_points_for_lines.end());
+
+  bool create_simplified_geometry = false;
+
+#ifdef DEBUG_PARALLEL_CUT_SURFACE
+  std::cout << "Points before erasing are: \n";
+  for (std::vector<Point*>::iterator it = cut_points_for_lines.begin();
+       it != cut_points_for_lines.end(); ++it)
+  {
+    std::cout << (*it)->Id() << std::endl;
+  }
+
+  std::cout << "Cut points are : \n";
+  for (PointSet::const_iterator it = cut.begin(); it != cut.end(); ++it)
+  {
+    std::cout << (*it)->Id() << std::endl;
+  }
+#endif
+
+  // if we collected more points than cut points, maybe some points
+  // are collected twice because they are cut points of multiple edge
+  if (cut_points_for_lines.size() > cut.size())
+  {
+    // map to find out which location id  on parallel surface each point has
+    std::map<Point*, unsigned int> unique_points;
+    typedef std::map<Point*, unsigned int> unique_points_map;
+
+    // trying to find duplicate points and remove points between them
+    for (std::vector<Point*>::iterator it = cut_points_for_lines.begin();
+         it != cut_points_for_lines.end();
+        /* */)
+    {
+      int counter = std::distance(cut_points_for_lines.begin(), it);
+      Point* dublicate = *it;
+      std::pair<unique_points_map::iterator, bool> inserted =
+          unique_points.insert(std::make_pair(dublicate, counter));
+      // we found dublicate
+      if (not inserted.second)
+      {
+#ifdef DEBUG_PARALLEL_CUT_SURFACE
+        std::cout << "Found dublicate!" << std::endl;
+        std::cout << "Dublicate has id of" << dublicate->Id() << std::endl;
+#endif
+
+        bool erased = false;
+        // get exisiting point
+        const std::pair<Point*, unsigned int>& existing_el = *(inserted.first);
+        bool current_erased = false;
+
+        // try to find these duplicates by iterating over edges
+        for (std::list<Edge*>::iterator e_it = edges_cycle.begin(); e_it != edges_cycle.end();
+             ++e_it)
         {
-          dist2 = tmpdist2;
-          idxp1 = i;
-          idxp2 = j;
+          if (not current_erased)
+          {
+            // if the existing point was cut by this edge, try to find current one (duplicate), on
+            // one of the next edges. then remove everything in between to avoid problems with
+            // facets creation e.g. in the pointgraph
+            if (existing_el.first->IsCut(*e_it))
+            {
+              // number of cut points in between
+              int n_cuts_between;
+              // next cut point between existing and duplicate
+              int next_cut;
+
+              std::list<Edge*>::iterator e_next = e_it;
+
+              // normal ordering
+              if (*e_it != edges_cycle.back())
+              {
+                n_cuts_between = (counter - existing_el.second - 1);
+                next_cut = existing_el.second + 1;
+                ++e_next;
+              }
+              // is cut by the last edge, and next edges is first edge of the cycle
+              // Then number of points in betwen is distance to the end of cycle from duplicate id +
+              // distance from the beginning to the existing point
+              else
+              {
+                n_cuts_between = (existing_el.second + (cut_points_for_lines.size() - counter - 1));
+                next_cut = (counter + 1) % cut_points_for_lines.size();
+                e_next = edges_cycle.begin();
+              }
+
+              if (existing_el.first->IsCut(*e_next))
+              {
+                std::vector<Point*> common_points;
+                // safety check that we have only nodal point in between
+                (*e_next)->CommonNodalPoints(*e_it, common_points);
+                if (common_points.size() != 1) dserror("This should not be possible!");
+
+                Point* nodal = common_points[0];
+
+                // NOTE: we only handle the case, when the point in between existing is a single
+                // nodal point From what it seems we can also erase even if there is other cut point
+                // in between, but only if it touches both edges. If it touches just one edge
+                // something different shoudl be done...
+                if ((n_cuts_between > 0) and
+                    (!((n_cuts_between == 1) and (cut_points_for_lines[next_cut] = nodal))))
+                  dserror("There is cut point that is close to cut_point that touches both edges");
+
+                else
+                {
+                  // erase one of duplicates and everything in between from the vector ( leave one
+                  // for connection to other lines)
+                  if (next_cut > counter)
+                  {
+#ifdef DEBUG_PARALLEL_CUT_SURFACE
+                    std::cout << "Erasing points from end to beginning" << std::endl;
+#endif
+                    cut_points_for_lines.erase(cut_points_for_lines.begin(),
+                        cut_points_for_lines.begin() + existing_el.second);
+                    cut_points_for_lines.erase(it, cut_points_for_lines.end());
+                    // obviously we are in the end now, so we don't want to process anything else
+                    it = cut_points_for_lines.end();
+                  }
+                  else
+                  {
+#ifdef DEBUG_PARALLEL_CUT_SURFACE
+                    std::cout << "Erasing points from beginning to end" << std::endl;
+#endif
+                    // we want to be pointintg to the next point after the dublicate now
+                    it = cut_points_for_lines.erase(
+                        cut_points_for_lines.begin() + existing_el.second, it);
+                    ++it;
+                  }
+
+
+#ifdef DEBUG_PARALLEL_CUT_SURFACE
+                  std::cout << "New point list is " << std::endl;
+                  for (std::vector<Point*>::iterator it = cut_points_for_lines.begin();
+                       it != cut_points_for_lines.end(); ++it)
+                  {
+                    std::cout << (*it)->Id() << std::endl;
+                  }
+#endif
+
+#ifdef DEBUG_PARALLEL_CUT_SURFACE
+                  std::cout << "Current *it id is " << (*it)->Id() << std::endl;
+#endif
+
+                  erased = true;
+                  current_erased = true;
+                }
+              }
+            }
+          }
         }
+        if (not erased)
+          dserror("Found duplicate cut_point on different edge, but nothing got erased!");
       }
+      else
+        ++it;
     }
+
+    // if we erased duplicates and some points for simplification
+    if (cut_points_for_lines.size() <= cut.size()) create_simplified_geometry = true;
   }
 
-  // (2) create vector between these two points
-  std::vector<double> linevec;
-  for (uint dim = 0; dim < 3; ++dim) linevec.push_back(cut[idxp1]->X()[dim] - cut[idxp2]->X()[dim]);
-
-  /* (3) evaluate distance from each involved cut point to the first point,
-   * projected onto the line vector */
-  std::vector<double> projpointdist;
-  for (uint cpoint = 0; cpoint < cut.size(); ++cpoint)
+#ifdef DEBUG_PARALLEL_CUT_SURFACE
+  std::cout << "Points after erasing are" << std::endl;
+  for (std::vector<Point*>::iterator it = cut_points_for_lines.begin();
+       it != cut_points_for_lines.end(); ++it)
   {
-    projpointdist.push_back(0.0);
-    for (uint dim = 0; dim < 3; ++dim)
-      projpointdist[cpoint] += (cut[idxp1]->X()[dim] - cut[cpoint]->X()[dim]) * linevec[dim];
+    // we found matching point
+    std::cout << (*it)->Id() << std::endl;
+  }
+#endif
+
+  if (cut_point_for_lines_out)
+  {
+    *cut_point_for_lines_out = cut_points_for_lines;
   }
 
-  // (4) sort the points accordingly to the projected distance from step //3//
-
-  std::vector<int> sortedcutpoints;
-  for (uint cpoint = 0; cpoint < cut.size(); ++cpoint) sortedcutpoints.push_back(cpoint);
-
-  bool sorted = false;
-  while (!sorted)
+  // if we captured all cut_points on the edges of the side create a parallel cut surface
+  if (cut_points_for_lines.size() == cut.size() || create_simplified_geometry)
   {
-    sorted = true;
-    for (uint cpoint = 0; cpoint < cut.size() - 1; ++cpoint)
+#ifdef DEBUG_PARALLEL_CUT_SURFACE
+    std::cout << "Creating parallel cut lines" << std::endl;
+#endif
+
+    for (std::vector<Point*>::iterator it = cut_points_for_lines.begin();
+         it != (--cut_points_for_lines.end()); ++it)
     {
-      if (projpointdist[sortedcutpoints[cpoint]] > projpointdist[sortedcutpoints[cpoint + 1]])
-      {
-        int tmpidx = sortedcutpoints[cpoint + 1];
-        sortedcutpoints[cpoint + 1] = sortedcutpoints[cpoint];
-        sortedcutpoints[cpoint] = tmpidx;
-        sorted = false;
-      }
+      std::vector<Point*>::iterator next = it;
+      ++next;
+
+      Point* p1 = *it;
+      Point* p2 = *next;
+      if (p1 == p2) dserror("Trying to create line between two points, which are the same!");
+      mesh.NewLine(p1, p2, this, &other, element);
     }
-  }
 
-  // (5) Now create lines between these points!
-  for (uint cpoint = 0; cpoint < cut.size() - 1; ++cpoint)
-  {
-    mesh.NewLine(
-        cut[sortedcutpoints[cpoint]], cut[sortedcutpoints[cpoint + 1]], this, &side, element);
+    if (cut_points_for_lines[0] == cut_points_for_lines.back())
+    {
+      std::ofstream file("parallel_dump_first_equal_last.pos");
+      // Dump cut points for lines and normal cut points
+      for (std::vector<Point*>::iterator it = cut_points_for_lines.begin();
+           it != cut_points_for_lines.end(); ++it)
+      {
+        std::stringstream pname;
+        pname << "Point_for_line" << (*it)->Id();
+        GEO::CUT::OUTPUT::GmshPointDump(file, *it, (*it)->Id(), pname.str(), false, NULL);
+      }
+      for (PointSet::const_iterator it = cut.begin(); it != cut.end(); ++it)
+      {
+        std::stringstream pname;
+        pname << "CutPoint" << (*it)->Id();
+        GEO::CUT::OUTPUT::GmshPointDump(file, *it, (*it)->Id(), pname.str(), false, NULL);
+        (*it)->DumpConnectivityInfo();
+      }
+      GEO::CUT::OUTPUT::GmshSideDump(file, &other, std::string("OtherSide"));
+      GEO::CUT::OUTPUT::GmshSideDump(file, this, std::string("ThisSide"));
+      file.close();
+      dserror("Trying to create line between two points, which are the same!");
+    }
+    mesh.NewLine(cut_points_for_lines[0], cut_points_for_lines.back(), this, &other, element);
+    return true;
   }
-  return true;
-}
-
-void GEO::CUT::Side::GetBoundaryCells(plain_boundarycell_set& bcells)
-{
-  for (std::vector<Facet*>::iterator i = facets_.begin(); i != facets_.end(); ++i)
+  // else we still might consider different side
+  else
   {
-    Facet* f = *i;
-    f->GetBoundaryCells(bcells);
+    return false;
   }
 }
 
@@ -552,19 +969,73 @@ void GEO::CUT::Side::MakeInternalFacets(
   /* ignore cycles with all points on one and the same edge
    * ( ToDo seems meaningful for 3-D, check it for the other cases ) */
   // ignore cycles with points outside the current element
-  if ((not points.IsValid() and element->Dim() == 3) or not points.IsCut(element)) return;
+  if ((not points.IsValid() and element->Dim() == 3) or not points.IsCut(element))
+  {
+    // dserror("Shouldn't reach this case!");
+    return;
+  }
 
   Side* s = NULL;
 
   plain_side_set sides(element->Sides().begin(), element->Sides().end());
   points.Intersection(sides);
 
+
   if (sides.size() > 1)
   {
+#if 0
     std::stringstream str;
-    str << "can touch exactly one element side: " << points << "found sides:\n";
-    std::copy(sides.begin(), sides.end(), std::ostream_iterator<Side*>(str, "\n"));
-    run_time_error(str.str());
+    str << "can touch exactly one element side: "
+      << points
+      << "found sides:\n";
+    std::copy( sides.begin(), sides.end(), std::ostream_iterator<Side*>( str, "\n" ) );
+
+
+    int counter = 0;
+    std::ofstream file("multiple_touched_sides.pos");
+    for (plain_side_set::iterator it = sides.begin(); it != sides.end(); ++it, ++counter)
+    {
+      file << "View \"ElementSide" << counter << "\" {\n";
+      GEO::CUT::OUTPUT::GmshSideDump(file, *it, NULL);
+      file << "};\n";
+    }
+    file << "View \"ThisSide" << "\" {\n";
+    GEO::CUT::OUTPUT::GmshSideDump(file, this, NULL);
+    file << "};\n";
+    file << "//Cycle dump\n";
+
+    points.GmshDump( file );
+
+    file.close();
+
+    dserror( str.str() );
+#endif
+    {
+      Facet* f = NULL;
+      for (plain_side_set::iterator it = sides.begin(); it != sides.end(); ++it)
+      {
+        f = (*it)->FindFacet(points());
+        if (f != NULL) break;
+      }
+
+      if (f != NULL)
+        f->ExchangeSide(this, true);
+      else
+        f = mesh.NewFacet(points(), this, true);
+
+      facets.insert(f);
+      facets_.push_back(f);
+
+#if EXTENDED_CUT_DEBUG_OUTPUT
+      std::cout << "NOTICE:"
+                << "cut_side facet touching multiple (" << sides.size() << ")"
+                << "element sides" << std::endl;
+#endif
+
+      return;
+    }
+
+    // run_time_error( str.str() );
   }
   else if (sides.size() == 1)
   {
@@ -587,6 +1058,32 @@ void GEO::CUT::Side::MakeInternalFacets(
     {
       // we throw an error at this point since this is not allowed -- hiermeier 11/16
       {
+        int counter = 0;
+        std::ofstream file("points_are_not_facet..pos");
+        for (plain_side_set::iterator it = sides.begin(); it != sides.end(); ++it, ++counter)
+        {
+          std::stringstream side_name;
+          side_name << "ElementSide" << counter;
+          GEO::CUT::OUTPUT::GmshSideDump(file, *it, side_name.str());
+        }
+        GEO::CUT::OUTPUT::GmshSideDump(file, this, std::string("ThisSide"));
+        file << "//Cycle dump\n";
+
+        const std::vector<Facet*> side_facets = s->Facets();
+        counter = 0;
+        for (std::vector<Facet*>::const_iterator it = side_facets.begin(); it != side_facets.end();
+             ++it, ++counter)
+        {
+          file << "View \"ThisCycle" << counter << "\" {\n";
+          CUT::OUTPUT::GmshFacetDump(file, *it, "lines", true, false, NULL);
+          file << "};\n";
+        }
+
+        points.GmshDump(file);
+
+        file.close();
+
+
         std::cout << "\nOn cut side " << this;
         std::cout << "\nFound element side " << s;
         std::cout << "\nIs cut = " << (s->IsCut() ? "TRUE" : "FALSE");
@@ -608,6 +1105,32 @@ void GEO::CUT::Side::MakeInternalFacets(
         for (std::vector<Point*>::const_iterator cit = points().begin(); cit != points().end();
              ++cit)
           std::cout << "Point " << (*cit) << "\n";
+
+
+        std::cout << "\n\n -- Distance between points is --- " << std::endl;
+        for (unsigned int i = 0; i < points().size(); ++i)
+        {
+          Point* first = points()[i];
+          Point* next = points()[(i + 1) % points.size()];
+          std::cout << "Between" << first->Id() << " and " << next->Id() << " is "
+                    << GEO::CUT::DistanceBetweenPoints(first, next) << std::endl;
+        }
+
+
+        std::cout << "\n\n -- Distance between element points and cut_points --- " << std::endl;
+        for (std::vector<Point*>::const_iterator eit = element->Points().begin();
+             eit != element->Points().end(); ++eit)
+        {
+          Point* element_point = *eit;
+          for (std::vector<Point*>::const_iterator cit = points().begin(); cit != points().end();
+               ++cit)
+          {
+            Point* cycle_point = *cit;
+            std::cout << "Between" << element_point->Id() << " and " << cycle_point->Id() << " is "
+                      << GEO::CUT::DistanceBetweenPoints(element_point, cycle_point) << std::endl;
+          }
+        }
+
         std::cout << std::endl;
 
         run_time_error(
@@ -624,6 +1147,7 @@ void GEO::CUT::Side::MakeInternalFacets(
       //    dserror("must have matching facet on side");
     }
   }
+  // if comon side is null, meaning cut_side does not lie on the element_side
   else
   {
     // insert new internal facet
@@ -967,7 +1491,6 @@ bool GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::IsCloserSide(
    * and find an intersection point with the other side */
   LINALG::Matrix<probdim, 1> ray_point_xyz(true);
   // as second point on the ray we define the midpoint of this side
-  //  this->SideCenter(ray_point_xyz);
 
 
   /* choose a point inside the side such that the angle between the normal of
@@ -1136,17 +1659,19 @@ template <unsigned probdim, DRT::Element::DiscretizationType sidetype, unsigned 
 bool GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::WithinSide(
     const LINALG::Matrix<probdim, 1>& xyz, LINALG::Matrix<dim, 1>& rs, double& dist)
 {
+  dserror("Do we use this function?");
   Teuchos::RCP<Position> pos = PositionFactory::BuildPosition<probdim, sidetype>(*this, xyz);
   bool success = pos->IsGivenPointWithinElement();
   if (not success)
   {
-    //      throw std::runtime_error( "ComputeDistance w.r.t side not successful" );
+    throw std::runtime_error("ComputeDistance w.r.t side not successful");
     rs = 0;
     dist = 9999;  // set large value
     return false;
   }
   pos->LocalCoordinates(rs);
   dist = pos->Distance();
+
 
   return pos->WithinLimits(false);
 }
@@ -1221,9 +1746,10 @@ bool GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::RayCut(
   // do not check for within-limits during the Newton-scheme, since the cut-point is
   // allowed to be not within the side and line
   bool checklimits = false;
-  GEO::CUT::KERNEL::ComputeIntersection<probdim, DRT::Element::line2, sidetype> ci(
+  // do not use cln here
+  GEO::CUT::KERNEL::ComputeIntersection<probdim, DRT::Element::line2, sidetype, false> ci(
       xsi, checklimits);
-  //  GEO::CUT::KERNEL::DebugComputeIntersection<probdim,DRT::Element::line2, sidetype>
+  // GEO::CUT::KERNEL::DebugComputeIntersection<probdim,DRT::Element::line2, sidetype,false>
   //      ci( xsi, checklimits );
 
   // successful line-side intersection

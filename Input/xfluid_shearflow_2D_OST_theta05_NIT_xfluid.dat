@@ -65,7 +65,7 @@ GMSH_DEBUG_OUT                  No
 GMSH_SOL_OUT                    No
 GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
-VOLUME_GAUSS_POINTS_BY          Tessellation
+VOLUME_GAUSS_POINTS_BY          DirectDivergence
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche                       // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?

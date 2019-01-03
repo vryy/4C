@@ -20,6 +20,7 @@ the Baci guide in the Convention chapter.
 #include "drt_utils_local_connectivity_matrices.H"
 #include <boost/static_assert.hpp>
 #include <boost/type_traits.hpp>
+#include "../drt_cut/cut_clnwrapper.H"
 
 #define PY5TOL 1.0e-14
 
@@ -42,9 +43,9 @@ namespace DRT
       // "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
       BOOST_STATIC_ASSERT((not boost::is_same<int, T>::value)) BACI_ATTRIBUTE_UNUSED;
 
-      const T Q18 = 1.0 / 8.0;
-      const T Q12 = 1.0 / 2.0;
-      const T Q14 = 1.0 / 4.0;
+      const T Q18 = 0.125;
+      const T Q12 = 0.5;
+      const T Q14 = 0.25;
 
       switch (distype)
       {
@@ -248,28 +249,28 @@ namespace DRT
         {
           const T u = 1.0 - r - s - t;
 
-          funct(0) = u * (2 * u - 1);
-          funct(1) = r * (2 * r - 1);
-          funct(2) = s * (2 * s - 1);
-          funct(3) = t * (2 * t - 1);
-          funct(4) = 4 * r * u;
-          funct(5) = 4 * r * s;
-          funct(6) = 4 * s * u;
-          funct(7) = 4 * t * u;
-          funct(8) = 4 * r * t;
-          funct(9) = 4 * s * t;
+          funct(0) = u * (2.0 * u - 1);
+          funct(1) = r * (2.0 * r - 1);
+          funct(2) = s * (2.0 * s - 1);
+          funct(3) = t * (2.0 * t - 1);
+          funct(4) = 4.0 * r * u;
+          funct(5) = 4.0 * r * s;
+          funct(6) = 4.0 * s * u;
+          funct(7) = 4.0 * t * u;
+          funct(8) = 4.0 * r * t;
+          funct(9) = 4.0 * s * t;
           break;
         }
         case DRT::Element::wedge6:
         {
           const T t3 = 1.0 - r - s;
 
-          funct(0) = Q12 * r * (1 - t);
-          funct(1) = Q12 * s * (1 - t);
-          funct(2) = Q12 * t3 * (1 - t);
-          funct(3) = Q12 * r * (1 + t);
-          funct(4) = Q12 * s * (1 + t);
-          funct(5) = Q12 * t3 * (1 + t);
+          funct(0) = Q12 * r * (1.0 - t);
+          funct(1) = Q12 * s * (1.0 - t);
+          funct(2) = Q12 * t3 * (1.0 - t);
+          funct(3) = Q12 * r * (1.0 + t);
+          funct(4) = Q12 * s * (1.0 + t);
+          funct(5) = Q12 * t3 * (1.0 + t);
           break;
         }
         case DRT::Element::wedge15:
@@ -328,7 +329,7 @@ namespace DRT
 
           if (fabs(t - 1.0) > PY5TOL)
           {
-            ration = (r * s * t) / (1 - t);
+            ration = (r * s * t) / (1.0 - t);
           }
           else
           {
@@ -383,9 +384,9 @@ namespace DRT
       const int ds = 1;
       const int dt = 2;
 
-      const T Q18 = 1.0 / 8.0;
-      const T Q12 = 1.0 / 2.0;
-      const T Q14 = 1.0 / 4.0;
+      const T Q18 = 0.125;
+      const T Q12 = 0.500;
+      const T Q14 = 0.250;
 
       switch (distype)
       {
@@ -447,17 +448,17 @@ namespace DRT
           const T tp = 1.0 + t;
           const T tm = 1.0 - t;
 
-          deriv1(0, 0) = 0.125 * sm * (2 * r + s) * tm;
-          deriv1(1, 0) = 0.125 * rm * (r + 2 * s) * tm;
+          deriv1(0, 0) = 0.125 * sm * (2.0 * r + s) * tm;
+          deriv1(1, 0) = 0.125 * rm * (r + 2.0 * s) * tm;
 
           deriv1(0, 1) = 0.125 * sm * (2 * r - s) * tm;
-          deriv1(1, 1) = 0.125 * rp * (2 * s - r) * tm;
+          deriv1(1, 1) = 0.125 * rp * (2.0 * s - r) * tm;
 
-          deriv1(0, 2) = 0.125 * sp * (2 * r + s) * tm;
-          deriv1(1, 2) = 0.125 * rp * (r + 2 * s) * tm;
+          deriv1(0, 2) = 0.125 * sp * (2.0 * r + s) * tm;
+          deriv1(1, 2) = 0.125 * rp * (r + 2.0 * s) * tm;
 
-          deriv1(0, 3) = 0.125 * sp * (2 * r - s) * tm;
-          deriv1(1, 3) = 0.125 * rm * (2 * s - r) * tm;
+          deriv1(0, 3) = 0.125 * sp * (2.0 * r - s) * tm;
+          deriv1(1, 3) = 0.125 * rm * (2.0 * s - r) * tm;
 
           deriv1(0, 4) = -0.5 * sm * r * tm;
           deriv1(1, 4) = -0.25 * rm * rp * tm;
@@ -471,17 +472,17 @@ namespace DRT
           deriv1(0, 7) = -0.25 * sm * sp * tm;
           deriv1(1, 7) = -0.5 * rm * s * tm;
 
-          deriv1(0, 8) = 0.125 * sm * (2 * r + s) * tp;
-          deriv1(1, 8) = 0.125 * rm * (r + 2 * s) * tp;
+          deriv1(0, 8) = 0.125 * sm * (2.0 * r + s) * tp;
+          deriv1(1, 8) = 0.125 * rm * (r + 2.0 * s) * tp;
 
-          deriv1(0, 9) = 0.125 * sm * (2 * r - s) * tp;
-          deriv1(1, 9) = 0.125 * rp * (2 * s - r) * tp;
+          deriv1(0, 9) = 0.125 * sm * (2.0 * r - s) * tp;
+          deriv1(1, 9) = 0.125 * rp * (2.0 * s - r) * tp;
 
-          deriv1(0, 10) = 0.125 * sp * (2 * r + s) * tp;
-          deriv1(1, 10) = 0.125 * rp * (r + 2 * s) * tp;
+          deriv1(0, 10) = 0.125 * sp * (2.0 * r + s) * tp;
+          deriv1(1, 10) = 0.125 * rp * (r + 2.0 * s) * tp;
 
-          deriv1(0, 11) = 0.125 * sp * (2 * r - s) * tp;
-          deriv1(1, 11) = 0.125 * rm * (2 * s - r) * tp;
+          deriv1(0, 11) = 0.125 * sp * (2.0 * r - s) * tp;
+          deriv1(1, 11) = 0.125 * rm * (2.0 * s - r) * tp;
 
           deriv1(0, 12) = -0.5 * sm * r * tp;
           deriv1(1, 12) = -0.25 * rm * rp * tp;
@@ -822,65 +823,65 @@ namespace DRT
         {
           const T u = 1.0 - r - s - t;
 
-          deriv1(0, 0) = -4 * u + 1;
+          deriv1(0, 0) = -4.0 * u + 1;
           deriv1(1, 0) = deriv1(0, 0);
           deriv1(2, 0) = deriv1(0, 0);
 
-          deriv1(0, 1) = 4 * r - 1;
-          deriv1(1, 1) = 0;
-          deriv1(2, 1) = 0;
+          deriv1(0, 1) = 4.0 * r - 1;
+          deriv1(1, 1) = 0.0;
+          deriv1(2, 1) = 0.0;
 
-          deriv1(0, 2) = 0;
-          deriv1(1, 2) = 4 * s - 1;
-          deriv1(2, 2) = 0;
+          deriv1(0, 2) = 0.0;
+          deriv1(1, 2) = 4.0 * s - 1;
+          deriv1(2, 2) = 0.0;
 
-          deriv1(0, 3) = 0;
-          deriv1(1, 3) = 0;
-          deriv1(2, 3) = 4 * t - 1;
+          deriv1(0, 3) = 0.0;
+          deriv1(1, 3) = 0.0;
+          deriv1(2, 3) = 4.0 * t - 1;
 
-          deriv1(0, 4) = 4 * (u - r);
-          deriv1(1, 4) = -4 * r;
-          deriv1(2, 4) = -4 * r;
+          deriv1(0, 4) = 4.0 * (u - r);
+          deriv1(1, 4) = -4.0 * r;
+          deriv1(2, 4) = -4.0 * r;
 
-          deriv1(0, 5) = 4 * s;
-          deriv1(1, 5) = 4 * r;
-          deriv1(2, 5) = 0;
+          deriv1(0, 5) = 4.0 * s;
+          deriv1(1, 5) = 4.0 * r;
+          deriv1(2, 5) = 0.0;
 
-          deriv1(0, 6) = -4 * s;
-          deriv1(1, 6) = 4 * (u - s);
-          deriv1(2, 6) = -4 * s;
+          deriv1(0, 6) = -4.0 * s;
+          deriv1(1, 6) = 4.0 * (u - s);
+          deriv1(2, 6) = -4.0 * s;
 
-          deriv1(0, 7) = -4 * t;
-          deriv1(1, 7) = -4 * t;
-          deriv1(2, 7) = 4 * (u - t);
+          deriv1(0, 7) = -4.0 * t;
+          deriv1(1, 7) = -4.0 * t;
+          deriv1(2, 7) = 4.0 * (u - t);
 
-          deriv1(0, 8) = 4 * t;
-          deriv1(1, 8) = 0;
-          deriv1(2, 8) = 4 * r;
+          deriv1(0, 8) = 4.0 * t;
+          deriv1(1, 8) = 0.0;
+          deriv1(2, 8) = 4.0 * r;
 
-          deriv1(0, 9) = 0;
-          deriv1(1, 9) = 4 * t;
-          deriv1(2, 9) = 4 * s;
+          deriv1(0, 9) = 0.0;
+          deriv1(1, 9) = 4.0 * t;
+          deriv1(2, 9) = 4.0 * s;
 
           break;
         }
         case DRT::Element::wedge6:
         {
-          const T p1 = Q12 * (1 - t);
-          const T p2 = Q12 * (1 + t);
+          const T p1 = Q12 * (1.0 - t);
+          const T p2 = Q12 * (1.0 + t);
           const T t3 = 1.0 - r - s;
 
           deriv1(0, 0) = p1;
-          deriv1(0, 1) = 0;
+          deriv1(0, 1) = 0.0;
           deriv1(0, 2) = -p1;
           deriv1(0, 3) = p2;
-          deriv1(0, 4) = 0;
+          deriv1(0, 4) = 0.0;
           deriv1(0, 5) = -p2;
 
-          deriv1(1, 0) = 0;
+          deriv1(1, 0) = 0.0;
           deriv1(1, 1) = p1;
           deriv1(1, 2) = -p1;
-          deriv1(1, 3) = 0;
+          deriv1(1, 3) = 0.0;
           deriv1(1, 4) = p2;
           deriv1(1, 5) = -p2;
 
@@ -914,31 +915,31 @@ namespace DRT
           const T dp2dt = -2.0 * t;
 
           deriv1(dr, 0) = Q12 * ((4.0 * t1 - 1.0) * mt - p2);
-          deriv1(dr, 1) = 0;
+          deriv1(dr, 1) = 0.0;
           deriv1(dr, 2) = Q12 * ((1.0 - 4.0 * t3) * mt + p2);
           deriv1(dr, 3) = Q12 * ((4.0 * t1 - 1.0) * pt - p2);
-          deriv1(dr, 4) = 0;
+          deriv1(dr, 4) = 0.0;
           deriv1(dr, 5) = Q12 * ((1.0 - 4.0 * t3) * pt + p2);
           deriv1(dr, 6) = 2.0 * t2 * mt;
           deriv1(dr, 7) = -2.0 * t2 * mt;
           deriv1(dr, 8) = 2.0 * (t3 - t1) * mt;
           deriv1(dr, 9) = p2;
-          deriv1(dr, 10) = 0;
+          deriv1(dr, 10) = 0.0;
           deriv1(dr, 11) = -p2;
           deriv1(dr, 12) = 2.0 * t2 * pt;
           deriv1(dr, 13) = -2.0 * t2 * pt;
           deriv1(dr, 14) = 2.0 * (t3 - t1) * pt;
 
-          deriv1(ds, 0) = 0;
+          deriv1(ds, 0) = 0.0;
           deriv1(ds, 1) = Q12 * ((4.0 * t2 - 1.0) * mt - p2);
           deriv1(ds, 2) = Q12 * ((1.0 - 4.0 * t3) * mt + p2);
-          deriv1(ds, 3) = 0;
+          deriv1(ds, 3) = 0.0;
           deriv1(ds, 4) = Q12 * ((4.0 * t2 - 1.0) * pt - p2);
           deriv1(ds, 5) = Q12 * ((1.0 - 4.0 * t3) * pt + p2);
           deriv1(ds, 6) = 2.0 * t1 * mt;
           deriv1(ds, 7) = 2.0 * (t3 - t2) * mt;
           deriv1(ds, 8) = -2.0 * t1 * mt;
-          deriv1(ds, 9) = 0;
+          deriv1(ds, 9) = 0.0;
           deriv1(ds, 10) = p2;
           deriv1(ds, 11) = -p2;
           deriv1(ds, 12) = 2.0 * t1 * pt;
@@ -1159,131 +1160,131 @@ namespace DRT
 
           deriv2(drdr, 0) = 0.25 * sm * tm;
           deriv2(dsds, 0) = 0.25 * rm * tm;
-          deriv2(drds, 0) = -0.125 * (2 * r + 2 * s - 1.0) * tm;
+          deriv2(drds, 0) = -0.125 * (2.0 * r + 2.0 * s - 1.0) * tm;
 
           deriv2(drdr, 1) = 0.25 * sm * tm;
           deriv2(dsds, 1) = 0.25 * rp * tm;
-          deriv2(drds, 1) = 0.125 * (-2 * r + 2 * s - 1.0) * tm;
+          deriv2(drds, 1) = 0.125 * (-2.0 * r + 2.0 * s - 1.0) * tm;
 
           deriv2(drdr, 2) = 0.25 * sp * tm;
           deriv2(dsds, 2) = 0.25 * rp * tm;
-          deriv2(drds, 2) = 0.125 * (2 * r + 2 * s + 1.0) * tm;
+          deriv2(drds, 2) = 0.125 * (2.0 * r + 2.0 * s + 1.0) * tm;
 
           deriv2(drdr, 3) = 0.25 * sp * tm;
           deriv2(dsds, 3) = 0.25 * rm * tm;
-          deriv2(drds, 3) = -0.125 * (-2 * r + 2 * s + 1.0) * tm;
+          deriv2(drds, 3) = -0.125 * (-2.0 * r + 2.0 * s + 1.0) * tm;
 
           deriv2(drdr, 4) = -0.5 * sm * tm;
-          deriv2(dsds, 4) = 0;
+          deriv2(dsds, 4) = 0.0;
           deriv2(drds, 4) = 0.5 * r * tm;
 
-          deriv2(drdr, 5) = 0;
+          deriv2(drdr, 5) = 0.0;
           deriv2(dsds, 5) = -0.5 * rp * tm;
           deriv2(drds, 5) = -0.5 * s * tm;
 
           deriv2(drdr, 6) = -0.5 * sp * tm;
-          deriv2(dsds, 6) = 0;
+          deriv2(dsds, 6) = 0.0;
           deriv2(drds, 6) = -0.5 * r * tm;
 
-          deriv2(drdr, 7) = 0;
+          deriv2(drdr, 7) = 0.0;
           deriv2(dsds, 7) = -0.5 * rm * tm;
           deriv2(drds, 7) = 0.5 * s * tm;
 
           deriv2(drdr, 8) = 0.25 * sm * tp;
           deriv2(dsds, 8) = 0.25 * rm * tp;
-          deriv2(drds, 8) = -0.125 * (2 * r + 2 * s - 1.0) * tp;
+          deriv2(drds, 8) = -0.125 * (2.0 * r + 2.0 * s - 1.0) * tp;
 
           deriv2(drdr, 9) = 0.25 * sm * tp;
           deriv2(dsds, 9) = 0.25 * rp * tp;
-          deriv2(drds, 9) = 0.125 * (-2 * r + 2 * s - 1.0) * tp;
+          deriv2(drds, 9) = 0.125 * (-2.0 * r + 2.0 * s - 1.0) * tp;
 
           deriv2(drdr, 10) = 0.25 * sp * tp;
           deriv2(dsds, 10) = 0.25 * rp * tp;
-          deriv2(drds, 10) = 0.125 * (2 * r + 2 * s + 1.0) * tp;
+          deriv2(drds, 10) = 0.125 * (2.0 * r + 2.0 * s + 1.0) * tp;
 
           deriv2(drdr, 11) = 0.25 * sp * tp;
           deriv2(dsds, 11) = 0.25 * rm * tp;
-          deriv2(drds, 11) = -0.125 * (-2 * r + 2 * s + 1.0) * tp;
+          deriv2(drds, 11) = -0.125 * (-2.0 * r + 2.0 * s + 1.0) * tp;
 
           deriv2(drdr, 12) = -0.5 * sm * tp;
-          deriv2(dsds, 12) = 0;
+          deriv2(dsds, 12) = 0.0;
           deriv2(drds, 12) = 0.5 * r * tp;
 
-          deriv2(drdr, 13) = 0;
+          deriv2(drdr, 13) = 0.0;
           deriv2(dsds, 13) = -0.5 * rp * tp;
           deriv2(drds, 13) = -0.5 * s * tp;
 
           deriv2(drdr, 14) = -0.5 * sp * tp;
-          deriv2(dsds, 14) = 0;
+          deriv2(dsds, 14) = 0.0;
           deriv2(drds, 14) = -0.5 * r * tp;
 
-          deriv2(drdr, 15) = 0;
+          deriv2(drdr, 15) = 0.0;
           deriv2(dsds, 15) = -0.5 * rm * tp;
           deriv2(drds, 15) = 0.5 * s * tp;
 
-          deriv2(drdt, 0) = -0.125 * sm * (2 * r + s);
-          deriv2(dsdt, 0) = -0.125 * rm * (r + 2 * s);
-          deriv2(dtdt, 0) = 0;
+          deriv2(drdt, 0) = -0.125 * sm * (2.0 * r + s);
+          deriv2(dsdt, 0) = -0.125 * rm * (r + 2.0 * s);
+          deriv2(dtdt, 0) = 0.0;
 
-          deriv2(drdt, 1) = -0.125 * sm * (2 * r - s);
-          deriv2(dsdt, 1) = -0.125 * rp * (2 * s - r);
-          deriv2(dtdt, 1) = 0;
+          deriv2(drdt, 1) = -0.125 * sm * (2.0 * r - s);
+          deriv2(dsdt, 1) = -0.125 * rp * (2.0 * s - r);
+          deriv2(dtdt, 1) = 0.0;
 
-          deriv2(drdt, 2) = -0.125 * sp * (2 * r + s);
-          deriv2(dsdt, 2) = -0.125 * rp * (r + 2 * s);
-          deriv2(dtdt, 2) = 0;
+          deriv2(drdt, 2) = -0.125 * sp * (2.0 * r + s);
+          deriv2(dsdt, 2) = -0.125 * rp * (r + 2.0 * s);
+          deriv2(dtdt, 2) = 0.0;
 
-          deriv2(drdt, 3) = -0.125 * sp * (2 * r - s);
-          deriv2(dsdt, 3) = -0.125 * rm * (2 * s - r);
-          deriv2(dtdt, 3) = 0;
+          deriv2(drdt, 3) = -0.125 * sp * (2.0 * r - s);
+          deriv2(dsdt, 3) = -0.125 * rm * (2.0 * s - r);
+          deriv2(dtdt, 3) = 0.0;
 
           deriv2(drdt, 4) = 0.5 * sm * r;
           deriv2(dsdt, 4) = 0.25 * rm * rp;
-          deriv2(dtdt, 4) = 0;
+          deriv2(dtdt, 4) = 0.0;
 
           deriv2(drdt, 5) = -0.25 * sm * sp;
           deriv2(dsdt, 5) = 0.5 * rp * s;
-          deriv2(dtdt, 5) = 0;
+          deriv2(dtdt, 5) = 0.0;
 
           deriv2(drdt, 6) = 0.5 * sp * r;
           deriv2(dsdt, 6) = -0.25 * rm * rp;
-          deriv2(dtdt, 6) = 0;
+          deriv2(dtdt, 6) = 0.0;
 
           deriv2(drdt, 7) = 0.25 * sm * sp;
           deriv2(dsdt, 7) = 0.5 * rm * s;
-          deriv2(dtdt, 7) = 0;
+          deriv2(dtdt, 7) = 0.0;
 
-          deriv2(drdt, 8) = 0.125 * sm * (2 * r + s);
-          deriv2(dsdt, 8) = 0.125 * rm * (r + 2 * s);
-          deriv2(dtdt, 8) = 0;
+          deriv2(drdt, 8) = 0.125 * sm * (2.0 * r + s);
+          deriv2(dsdt, 8) = 0.125 * rm * (r + 2.0 * s);
+          deriv2(dtdt, 8) = 0.0;
 
-          deriv2(drdt, 9) = 0.125 * sm * (2 * r - s);
-          deriv2(dsdt, 9) = 0.125 * rp * (2 * s - r);
-          deriv2(dtdt, 9) = 0;
+          deriv2(drdt, 9) = 0.125 * sm * (2.0 * r - s);
+          deriv2(dsdt, 9) = 0.125 * rp * (2.0 * s - r);
+          deriv2(dtdt, 9) = 0.0;
 
-          deriv2(drdt, 10) = 0.125 * sp * (2 * r + s);
-          deriv2(dsdt, 10) = 0.125 * rp * (r + 2 * s);
-          deriv2(dtdt, 10) = 0;
+          deriv2(drdt, 10) = 0.125 * sp * (2.0 * r + s);
+          deriv2(dsdt, 10) = 0.125 * rp * (r + 2.0 * s);
+          deriv2(dtdt, 10) = 0.0;
 
-          deriv2(drdt, 11) = 0.125 * sp * (2 * r - s);
-          deriv2(dsdt, 11) = 0.125 * rm * (2 * s - r);
-          deriv2(dtdt, 11) = 0;
+          deriv2(drdt, 11) = 0.125 * sp * (2.0 * r - s);
+          deriv2(dsdt, 11) = 0.125 * rm * (20 * s - r);
+          deriv2(dtdt, 11) = 0.0;
 
           deriv2(drdt, 12) = -0.5 * sm * r;
           deriv2(dsdt, 12) = -0.25 * rm * rp;
-          deriv2(dtdt, 12) = 0;
+          deriv2(dtdt, 12) = 0.0;
 
           deriv2(drdt, 13) = 0.25 * sm * sp;
           deriv2(dsdt, 13) = -0.5 * rp * s;
-          deriv2(dtdt, 13) = 0;
+          deriv2(dtdt, 13) = 0.0;
 
           deriv2(drdt, 14) = -0.5 * sp * r;
           deriv2(dsdt, 14) = 0.25 * rm * rp;
-          deriv2(dtdt, 14) = 0;
+          deriv2(dtdt, 14) = 0.0;
 
           deriv2(drdt, 15) = -0.25 * sm * sp;
           deriv2(dsdt, 15) = -0.5 * rm * s;
-          deriv2(dtdt, 15) = 0;
+          deriv2(dtdt, 15) = 0.0;
 
           break;
         }
@@ -1348,21 +1349,21 @@ namespace DRT
 
           deriv2(drdr, 7) = (.50 * (1. - s * s)) * (1. - t);
           deriv2(dsds, 7) = -.50 * r * (r - 1.) * (1. - t);
-          deriv2(dtdt, 7) = 0;
+          deriv2(dtdt, 7) = 0.;
           deriv2(drds, 7) = -(.50 * (r - 1.)) * s * (1. - t) - .50 * r * s * (1. - t);
           deriv2(drdt, 7) = -(.25 * (r - 1.)) * (1. - s * s) - .25 * r * (1. - s * s);
           deriv2(dsdt, 7) = .50 * r * (r - 1.) * s;
 
           deriv2(drdr, 8) = -(1.0 * (1. - s * s)) * (1. - t);
           deriv2(dsds, 8) = -(1.0 * (1. - r * r)) * (1. - t);
-          deriv2(dtdt, 8) = 0;
+          deriv2(dtdt, 8) = 0.;
           deriv2(drds, 8) = 2.0 * r * s * (1. - t);
           deriv2(drdt, 8) = 1.0 * r * (1. - s * s);
           deriv2(dsdt, 8) = (1.0 * (1. - r * r)) * s;
 
           deriv2(drdr, 9) = .250 * s * (s - 1.) * (1. + t);
           deriv2(dsds, 9) = .250 * r * (r - 1.) * (1. + t);
-          deriv2(dtdt, 9) = 0;
+          deriv2(dtdt, 9) = 0.;
           deriv2(drds, 9) = (.125 * (r - 1.)) * (s - 1.) * (1. + t) +
                             (.125 * (r - 1.)) * s * (1. + t) + .125 * r * (s - 1.) * (1. + t) +
                             .125 * r * s * (1. + t);
@@ -1371,7 +1372,7 @@ namespace DRT
 
           deriv2(drdr, 10) = .250 * s * (s - 1.) * (1. + t);
           deriv2(dsds, 10) = .250 * r * (r + 1.) * (1. + t);
-          deriv2(dtdt, 10) = 0;
+          deriv2(dtdt, 10) = 0.;
           deriv2(drds, 10) = (.125 * (r + 1.)) * (s - 1.) * (1. + t) +
                              .125 * s * (r + 1.) * (1. + t) + .125 * r * (s - 1.) * (1. + t) +
                              .125 * r * s * (1. + t);
@@ -1380,7 +1381,7 @@ namespace DRT
 
           deriv2(drdr, 11) = .250 * s * (s + 1.) * (1. + t);
           deriv2(dsds, 11) = .250 * r * (r + 1.) * (1. + t);
-          deriv2(dtdt, 11) = 0;
+          deriv2(dtdt, 11) = 0.;
           deriv2(drds, 11) = (.125 * (r + 1.)) * (s + 1.) * (1. + t) +
                              .125 * s * (r + 1.) * (1. + t) + .125 * r * (s + 1.) * (1. + t) +
                              .125 * r * s * (1. + t);
@@ -1389,7 +1390,7 @@ namespace DRT
 
           deriv2(drdr, 12) = .250 * s * (s + 1.) * (1. + t);
           deriv2(dsds, 12) = .250 * r * (r - 1.) * (1. + t);
-          deriv2(dtdt, 12) = 0;
+          deriv2(dtdt, 12) = 0.;
           deriv2(drds, 12) = (.125 * (r - 1.)) * (s + 1.) * (1. + t) +
                              (.125 * (r - 1.)) * s * (1. + t) + .125 * r * (s + 1.) * (1. + t) +
                              .125 * r * s * (1. + t);
@@ -1398,35 +1399,35 @@ namespace DRT
 
           deriv2(drdr, 13) = -.50 * s * (s - 1.) * (1. + t);
           deriv2(dsds, 13) = (.50 * (1. - r * r)) * (1. + t);
-          deriv2(dtdt, 13) = 0;
+          deriv2(dtdt, 13) = 0.;
           deriv2(drds, 13) = -.50 * r * (s - 1.) * (1. + t) - .50 * r * s * (1. + t);
           deriv2(drdt, 13) = -.50 * r * s * (s - 1.);
           deriv2(dsdt, 13) = (.25 * (1. - r * r)) * (s - 1.) + (.25 * (1. - r * r)) * s;
 
           deriv2(drdr, 14) = (.50 * (1. - s * s)) * (1. + t);
           deriv2(dsds, 14) = -.50 * r * (r + 1.) * (1. + t);
-          deriv2(dtdt, 14) = 0;
+          deriv2(dtdt, 14) = 0.;
           deriv2(drds, 14) = -.50 * s * (r + 1.) * (1. + t) - .50 * r * s * (1. + t);
           deriv2(drdt, 14) = (.25 * (r + 1.)) * (1. - s * s) + .25 * r * (1. - s * s);
           deriv2(dsdt, 14) = -.50 * r * s * (r + 1.);
 
           deriv2(drdr, 15) = -.50 * s * (s + 1.) * (1. + t);
           deriv2(dsds, 15) = (.50 * (1. - r * r)) * (1. + t);
-          deriv2(dtdt, 15) = 0;
+          deriv2(dtdt, 15) = 0.;
           deriv2(drds, 15) = -.50 * r * (s + 1.) * (1. + t) - .50 * r * s * (1. + t);
           deriv2(drdt, 15) = -.50 * r * s * (s + 1.);
           deriv2(dsdt, 15) = (.25 * (1. - r * r)) * (s + 1.) + (.25 * (1. - r * r)) * s;
 
           deriv2(drdr, 16) = (.50 * (1. - s * s)) * (1. + t);
           deriv2(dsds, 16) = -.50 * r * (r - 1.) * (1. + t);
-          deriv2(dtdt, 16) = 0;
+          deriv2(dtdt, 16) = 0.;
           deriv2(drds, 16) = -(.50 * (r - 1.)) * s * (1. + t) - .50 * r * s * (1. + t);
           deriv2(drdt, 16) = (.25 * (r - 1.)) * (1. - s * s) + .25 * r * (1. - s * s);
           deriv2(dsdt, 16) = -.50 * r * (r - 1.) * s;
 
           deriv2(drdr, 17) = -(1.0 * (1. - s * s)) * (1. + t);
           deriv2(dsds, 17) = -(1.0 * (1. - r * r)) * (1. + t);
-          deriv2(dtdt, 17) = 0;
+          deriv2(dtdt, 17) = 0.;
           deriv2(drds, 17) = 2.0 * r * s * (1. + t);
           deriv2(drdt, 17) = -1.0 * r * (1. - s * s);
           deriv2(dsdt, 17) = -(1.0 * (1. - r * r)) * s;
@@ -1618,25 +1619,25 @@ namespace DRT
           deriv2(drdr, 5) = sm1 * tp1;
           deriv2(drdr, 6) = sp1 * tp1;
           deriv2(drdr, 7) = sp1 * tp1;
-          deriv2(drdr, 8) = -2 * sm1 * tm1;
+          deriv2(drdr, 8) = -2.0 * sm1 * tm1;
           deriv2(drdr, 9) = s00 * tm1;
-          deriv2(drdr, 10) = -2 * tm1 * sp1;
+          deriv2(drdr, 10) = -2.0 * tm1 * sp1;
           deriv2(drdr, 11) = s00 * tm1;
           deriv2(drdr, 12) = t00 * sm1;
           deriv2(drdr, 13) = t00 * sm1;
           deriv2(drdr, 14) = t00 * sp1;
           deriv2(drdr, 15) = t00 * sp1;
-          deriv2(drdr, 16) = -2 * sm1 * tp1;
+          deriv2(drdr, 16) = -2.0 * sm1 * tp1;
           deriv2(drdr, 17) = s00 * tp1;
-          deriv2(drdr, 18) = -2 * sp1 * tp1;
+          deriv2(drdr, 18) = -2.0 * sp1 * tp1;
           deriv2(drdr, 19) = s00 * tp1;
-          deriv2(drdr, 20) = -2 * s00 * tm1;
-          deriv2(drdr, 21) = -2 * t00 * sm1;
+          deriv2(drdr, 20) = -2.0 * s00 * tm1;
+          deriv2(drdr, 21) = -2.0 * t00 * sm1;
           deriv2(drdr, 22) = s00 * t00;
-          deriv2(drdr, 23) = -2 * t00 * sp1;
+          deriv2(drdr, 23) = -2.0 * t00 * sp1;
           deriv2(drdr, 24) = s00 * t00;
-          deriv2(drdr, 25) = -2 * s00 * tp1;
-          deriv2(drdr, 26) = -2 * s00 * t00;
+          deriv2(drdr, 25) = -2.0 * s00 * tp1;
+          deriv2(drdr, 26) = -2.0 * s00 * t00;
 
           deriv2(dsds, 0) = rm1 * tm1;
           deriv2(dsds, 1) = tm1 * rp1;
@@ -1647,24 +1648,24 @@ namespace DRT
           deriv2(dsds, 6) = rp1 * tp1;
           deriv2(dsds, 7) = rm1 * tp1;
           deriv2(dsds, 8) = r00 * tm1;
-          deriv2(dsds, 9) = -2 * tm1 * rp1;
+          deriv2(dsds, 9) = -2.0 * tm1 * rp1;
           deriv2(dsds, 10) = r00 * tm1;
-          deriv2(dsds, 11) = -2 * rm1 * tm1;
+          deriv2(dsds, 11) = -2.0 * rm1 * tm1;
           deriv2(dsds, 12) = t00 * rm1;
           deriv2(dsds, 13) = t00 * rp1;
           deriv2(dsds, 14) = t00 * rp1;
           deriv2(dsds, 15) = t00 * rm1;
           deriv2(dsds, 16) = r00 * tp1;
-          deriv2(dsds, 17) = -2 * rp1 * tp1;
+          deriv2(dsds, 17) = -2.0 * rp1 * tp1;
           deriv2(dsds, 18) = r00 * tp1;
-          deriv2(dsds, 19) = -2 * rm1 * tp1;
-          deriv2(dsds, 20) = -2 * r00 * tm1;
+          deriv2(dsds, 19) = -2.0 * rm1 * tp1;
+          deriv2(dsds, 20) = -2.0 * r00 * tm1;
           deriv2(dsds, 21) = r00 * t00;
-          deriv2(dsds, 22) = -2 * t00 * rp1;
+          deriv2(dsds, 22) = -2.0 * t00 * rp1;
           deriv2(dsds, 23) = r00 * t00;
-          deriv2(dsds, 24) = -2 * t00 * rm1;
-          deriv2(dsds, 25) = -2 * r00 * tp1;
-          deriv2(dsds, 26) = -2 * r00 * t00;
+          deriv2(dsds, 24) = -2.0 * t00 * rm1;
+          deriv2(dsds, 25) = -2.0 * r00 * tp1;
+          deriv2(dsds, 26) = -2.0 * r00 * t00;
 
           deriv2(dtdt, 0) = rm1 * sm1;
           deriv2(dtdt, 1) = sm1 * rp1;
@@ -1678,21 +1679,21 @@ namespace DRT
           deriv2(dtdt, 9) = s00 * rp1;
           deriv2(dtdt, 10) = r00 * sp1;
           deriv2(dtdt, 11) = s00 * rm1;
-          deriv2(dtdt, 12) = -2 * rm1 * sm1;
-          deriv2(dtdt, 13) = -2 * sm1 * rp1;
-          deriv2(dtdt, 14) = -2 * rp1 * sp1;
-          deriv2(dtdt, 15) = -2 * rm1 * sp1;
+          deriv2(dtdt, 12) = -2.0 * rm1 * sm1;
+          deriv2(dtdt, 13) = -2.0 * sm1 * rp1;
+          deriv2(dtdt, 14) = -2.0 * rp1 * sp1;
+          deriv2(dtdt, 15) = -2.0 * rm1 * sp1;
           deriv2(dtdt, 16) = r00 * sm1;
           deriv2(dtdt, 17) = s00 * rp1;
           deriv2(dtdt, 18) = r00 * sp1;
           deriv2(dtdt, 19) = s00 * rm1;
           deriv2(dtdt, 20) = r00 * s00;
-          deriv2(dtdt, 21) = -2 * r00 * sm1;
-          deriv2(dtdt, 22) = -2 * s00 * rp1;
-          deriv2(dtdt, 23) = -2 * r00 * sp1;
-          deriv2(dtdt, 24) = -2 * s00 * rm1;
+          deriv2(dtdt, 21) = -2.0 * r00 * sm1;
+          deriv2(dtdt, 22) = -2.0 * s00 * rp1;
+          deriv2(dtdt, 23) = -2.0 * r00 * sp1;
+          deriv2(dtdt, 24) = -2.0 * s00 * rm1;
           deriv2(dtdt, 25) = r00 * s00;
-          deriv2(dtdt, 26) = -2 * r00 * s00;
+          deriv2(dtdt, 26) = -2.0 * r00 * s00;
 
           deriv2(drds, 0) = tm1 * drm1 * dsm1;
           deriv2(drds, 1) = tm1 * dsm1 * drp1;
@@ -1714,13 +1715,13 @@ namespace DRT
           deriv2(drds, 17) = tp1 * ds00 * drp1;
           deriv2(drds, 18) = tp1 * dr00 * dsp1;
           deriv2(drds, 19) = tp1 * ds00 * drm1;
-          deriv2(drds, 20) = 4 * r * s * tm1;
+          deriv2(drds, 20) = 4.0 * r * s * tm1;
           deriv2(drds, 21) = t00 * dr00 * dsm1;
           deriv2(drds, 22) = t00 * ds00 * drp1;
           deriv2(drds, 23) = t00 * dr00 * dsp1;
           deriv2(drds, 24) = t00 * ds00 * drm1;
-          deriv2(drds, 25) = 4 * r * s * tp1;
-          deriv2(drds, 26) = 4 * r * s * t00;
+          deriv2(drds, 25) = 4.0 * r * s * tp1;
+          deriv2(drds, 26) = 4.0 * r * s * t00;
 
           deriv2(drdt, 0) = sm1 * drm1 * dtm1;
           deriv2(drdt, 1) = sm1 * dtm1 * drp1;
@@ -1743,12 +1744,12 @@ namespace DRT
           deriv2(drdt, 18) = sp1 * dr00 * dtp1;
           deriv2(drdt, 19) = s00 * drm1 * dtp1;
           deriv2(drdt, 20) = s00 * dr00 * dtm1;
-          deriv2(drdt, 21) = 4 * r * t * sm1;
+          deriv2(drdt, 21) = 4.0 * r * t * sm1;
           deriv2(drdt, 22) = s00 * dt00 * drp1;
-          deriv2(drdt, 23) = 4 * r * t * sp1;
+          deriv2(drdt, 23) = 4.0 * r * t * sp1;
           deriv2(drdt, 24) = s00 * dt00 * drm1;
           deriv2(drdt, 25) = s00 * dr00 * dtp1;
-          deriv2(drdt, 26) = 4 * r * t * s00;
+          deriv2(drdt, 26) = 4.0 * r * t * s00;
 
           deriv2(dsdt, 0) = rm1 * dsm1 * dtm1;
           deriv2(dsdt, 1) = rp1 * dsm1 * dtm1;
@@ -1772,11 +1773,11 @@ namespace DRT
           deriv2(dsdt, 19) = rm1 * ds00 * dtp1;
           deriv2(dsdt, 20) = r00 * ds00 * dtm1;
           deriv2(dsdt, 21) = r00 * dt00 * dsm1;
-          deriv2(dsdt, 22) = 4 * s * t * rp1;
+          deriv2(dsdt, 22) = 4.0 * s * t * rp1;
           deriv2(dsdt, 23) = r00 * dt00 * dsp1;
-          deriv2(dsdt, 24) = 4 * s * t * rm1;
+          deriv2(dsdt, 24) = 4.0 * s * t * rm1;
           deriv2(dsdt, 25) = r00 * ds00 * dtp1;
-          deriv2(dsdt, 26) = 4 * s * t * r00;
+          deriv2(dsdt, 26) = 4.0 * s * t * r00;
           break;
         }
         case DRT::Element::tet4:
@@ -1914,36 +1915,36 @@ namespace DRT
           const T pt = 1.0 + t;
 
           deriv2(drdr, 0) = 2.0 * mt;
-          deriv2(drdr, 1) = 0;
+          deriv2(drdr, 1) = 0.0;
           deriv2(drdr, 2) = 2.0 * mt;
           deriv2(drdr, 3) = 2.0 * pt;
-          deriv2(drdr, 4) = 0;
+          deriv2(drdr, 4) = 0.0;
           deriv2(drdr, 5) = 2.0 * pt;
-          deriv2(drdr, 6) = 0;
-          deriv2(drdr, 7) = 0;
+          deriv2(drdr, 6) = 0.0;
+          deriv2(drdr, 7) = 0.0;
           deriv2(drdr, 8) = -4.0 * mt;
-          deriv2(drdr, 9) = 0;
-          deriv2(drdr, 10) = 0;
-          deriv2(drdr, 11) = 0;
-          deriv2(drdr, 12) = 0;
-          deriv2(drdr, 13) = 0;
+          deriv2(drdr, 9) = 0.0;
+          deriv2(drdr, 10) = 0.0;
+          deriv2(drdr, 11) = 0.0;
+          deriv2(drdr, 12) = 0.0;
+          deriv2(drdr, 13) = 0.0;
           deriv2(drdr, 14) = -4.0 * pt;
 
-          deriv2(dsds, 0) = 0;
+          deriv2(dsds, 0) = 0.0;
           deriv2(dsds, 1) = 2.0 * mt;
           deriv2(dsds, 2) = 2.0 * mt;
-          deriv2(dsds, 3) = 0;
+          deriv2(dsds, 3) = 0.0;
           deriv2(dsds, 4) = 2.0 * pt;
           deriv2(dsds, 5) = 2.0 * pt;
-          deriv2(dsds, 6) = 0;
+          deriv2(dsds, 6) = 0.0;
           deriv2(dsds, 7) = -4.0 * mt;
-          deriv2(dsds, 8) = 0;
-          deriv2(dsds, 9) = 0;
-          deriv2(dsds, 10) = 0;
-          deriv2(dsds, 11) = 0;
-          deriv2(dsds, 12) = 0;
+          deriv2(dsds, 8) = 0.0;
+          deriv2(dsds, 9) = 0.0;
+          deriv2(dsds, 10) = 0.0;
+          deriv2(dsds, 11) = 0.0;
+          deriv2(dsds, 12) = 0.0;
           deriv2(dsds, 13) = -4.0 * pt;
-          deriv2(dsds, 14) = 0;
+          deriv2(dsds, 14) = 0.0;
 
           deriv2(dtdt, 0) = t1;
           deriv2(dtdt, 1) = t2;
@@ -1951,58 +1952,58 @@ namespace DRT
           deriv2(dtdt, 3) = t1;
           deriv2(dtdt, 4) = t2;
           deriv2(dtdt, 5) = t3;
-          deriv2(dtdt, 6) = 0;
-          deriv2(dtdt, 7) = 0;
-          deriv2(dtdt, 8) = 0;
+          deriv2(dtdt, 6) = 0.0;
+          deriv2(dtdt, 7) = 0.0;
+          deriv2(dtdt, 8) = 0.0;
           deriv2(dtdt, 9) = -2.0 * t1;
           deriv2(dtdt, 10) = -2.0 * t2;
           deriv2(dtdt, 11) = -2.0 * t3;
-          deriv2(dtdt, 12) = 0;
-          deriv2(dtdt, 13) = 0;
-          deriv2(dtdt, 14) = 0;
+          deriv2(dtdt, 12) = 0.0;
+          deriv2(dtdt, 13) = 0.0;
+          deriv2(dtdt, 14) = 0.0;
 
-          deriv2(drds, 0) = 0;
-          deriv2(drds, 1) = 0;
+          deriv2(drds, 0) = 0.0;
+          deriv2(drds, 1) = 0.0;
           deriv2(drds, 2) = 2.0 * mt;
-          deriv2(drds, 3) = 0;
-          deriv2(drds, 4) = 0;
+          deriv2(drds, 3) = 0.0;
+          deriv2(drds, 4) = 0.0;
           deriv2(drds, 5) = 2.0 * pt;
           deriv2(drds, 6) = 2.0 * mt;
           deriv2(drds, 7) = -2.0 * mt;
           deriv2(drds, 8) = -2.0 * mt;
-          deriv2(drds, 9) = 0;
-          deriv2(drds, 10) = 0;
-          deriv2(drds, 11) = 0;
+          deriv2(drds, 9) = 0.0;
+          deriv2(drds, 10) = 0.0;
+          deriv2(drds, 11) = 0.0;
           deriv2(drds, 12) = 2.0 * pt;
           deriv2(drds, 13) = -2.0 * pt;
           deriv2(drds, 14) = -2.0 * pt;
 
           deriv2(drdt, 0) = Q12 * ((1.0 - 4.0 * t1) + 2.0 * t);
-          deriv2(drdt, 1) = 0;
+          deriv2(drdt, 1) = 0.0;
           deriv2(drdt, 2) = Q12 * ((4.0 * t3 - 1.0) - 2.0 * t);
           deriv2(drdt, 3) = Q12 * ((4.0 * t1 - 1.0) + 2.0 * t);
-          deriv2(drdt, 4) = 0;
+          deriv2(drdt, 4) = 0.0;
           deriv2(drdt, 5) = Q12 * ((1.0 - 4.0 * t3) - 2.0 * t);
           deriv2(drdt, 6) = -2.0 * t2;
           deriv2(drdt, 7) = 2.0 * t2;
           deriv2(drdt, 8) = -2.0 * (t3 - t1);
           deriv2(drdt, 9) = -2.0 * t;
-          deriv2(drdt, 10) = 0;
+          deriv2(drdt, 10) = 0.0;
           deriv2(drdt, 11) = 2.0 * t;
           deriv2(drdt, 12) = 2.0 * t2;
           deriv2(drdt, 13) = -2.0 * t2;
           deriv2(drdt, 14) = 2.0 * (t3 - t1);
 
-          deriv2(dsdt, 0) = 0;
+          deriv2(dsdt, 0) = 0.0;
           deriv2(dsdt, 1) = Q12 * ((1.0 - 4.0 * t2) + 2.0 * t);
           deriv2(dsdt, 2) = Q12 * ((4.0 * t3 - 1.0) - 2.0 * t);
-          deriv2(dsdt, 3) = 0;
+          deriv2(dsdt, 3) = 0.0;
           deriv2(dsdt, 4) = Q12 * ((4.0 * t2 - 1.0) + 2.0 * t);
           deriv2(dsdt, 5) = Q12 * ((1.0 - 4.0 * t3) - 2.0 * t);
           deriv2(dsdt, 6) = -2.0 * t1;
           deriv2(dsdt, 7) = -2.0 * (t3 - t2);
           deriv2(dsdt, 8) = 2.0 * t1;
-          deriv2(dsdt, 9) = 0;
+          deriv2(dsdt, 9) = 0.0;
           deriv2(dsdt, 10) = -2.0 * t;
           deriv2(dsdt, 11) = 2.0 * t;
           deriv2(dsdt, 12) = 2.0 * t1;
@@ -2545,24 +2546,24 @@ namespace DRT
           // 1/2 (r + 1.0)
           deriv2(dsds, 2) = 0.5 * rp;
           // 1/4 (2.0 r + 2.0 s + 1.0)
-          deriv2(drds, 2) = 0.25 * (2 * r + 2 * s + 1.0);
+          deriv2(drds, 2) = 0.25 * (2.0 * r + 2.0 * s + 1.0);
 
           // 1/2 (s + 1.0)
           deriv2(drdr, 3) = 0.5 * sp;
           //(-1/2) (r - 1.0)
           deriv2(dsds, 3) = 0.5 * rm;
           //(-1/4) (- 2.0 r + 2.0 s + 1.0)
-          deriv2(drds, 3) = -0.25 * (-2 * r + 2 * s + 1.0);
+          deriv2(drds, 3) = -0.25 * (-2.0 * r + 2.0 * s + 1.0);
 
           // s - 1.0
           deriv2(drdr, 4) = -sm;
           // 0
-          deriv2(dsds, 4) = 0;
+          deriv2(dsds, 4) = 0.0;
           // r
           deriv2(drds, 4) = r;
 
           // 0
-          deriv2(drdr, 5) = 0;
+          deriv2(drdr, 5) = 0.0;
           //-((r + 1.0))
           deriv2(dsds, 5) = -rp;
           //-s
@@ -2571,12 +2572,12 @@ namespace DRT
           //-((s + 1.0))
           deriv2(drdr, 6) = -sp;
           // 0
-          deriv2(dsds, 6) = 0;
+          deriv2(dsds, 6) = 0.0;
           //-r
           deriv2(drds, 6) = -r;
 
           // 0
-          deriv2(drdr, 7) = 0;
+          deriv2(drdr, 7) = 0.0;
           // r - 1.0
           deriv2(dsds, 7) = -rm;
           // s
@@ -2787,7 +2788,7 @@ namespace DRT
           funct(0) = (2.0 / 3.0) * r * (1.0 - r) * (0.25 - r * r);
           funct(1) = -(2.0 / 3.0) * r * (1.0 + r) * (0.25 - r * r);
           funct(2) = -(8.0 / 3.0) * r * (1.0 - r * r) * (0.5 - r);
-          funct(3) = 4 * (1.0 - r * r) * (0.25 - r * r);
+          funct(3) = 4.0 * (1.0 - r * r) * (0.25 - r * r);
           funct(4) = (8.0 / 3.0) * r * (1.0 - r * r) * (0.5 + r);
           break;
           /*

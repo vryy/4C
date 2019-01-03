@@ -108,6 +108,7 @@ GMSH_SOL_OUT                    no
 GMSH_DISCRET_OUT                no//yes
 GMSH_CUT_OUT                    no
 GMSH_EOS_OUT                    no
+VOLUME_GAUSS_POINTS_BY          DirectDivergence
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche                       //BoundaryTypeSigma "BoundaryTypeTauPressure" "" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 IS_PSEUDO_2D                    yes
