@@ -85,7 +85,7 @@ namespace PARTICLEENGINE
     ParticleContainerBundleShrdPtr particlecontainerbundle_;
 
     //! holds all vtp writer objects for each particle type and status
-    std::map<TypeEnum, std::map<StatusEnum, std::shared_ptr<RuntimeVtpWriter>>> runtime_vtpwriters_;
+    std::vector<std::vector<std::shared_ptr<RuntimeVtpWriter>>> runtime_vtpwriters_;
 
     //! setup time of runtime vtp writer
     double setuptime_;
