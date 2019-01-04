@@ -56,30 +56,33 @@ namespace PARTICLEINTERACTION
     explicit DEMNeighborPairs();
 
     //! virtual destructor
-    virtual ~DEMNeighborPairs(){};
+    ~DEMNeighborPairs(){};
 
     //! init neighbor pair handler
-    virtual void Init();
+    void Init();
 
     //! setup neighbor pair handler
-    virtual void Setup(
+    void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
 
     //! write restart of neighbor pair handler
-    virtual void WriteRestart(const int step, const double time) const;
+    void WriteRestart(const int step, const double time) const;
 
     //! read restart of neighbor pair handler
-    virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
+    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
-    //! get reference to map holding neighbor pairs
-    const DEMNeighborPairsMap& GetRefToNeighborPairsMap() const { return neighborpairsmap_; };
+    //! get reference to neighbor pair data
+    inline const DEMNeighborPairData& GetRefToNeighborPairData() const
+    {
+      return neighborpairdata_;
+    };
 
     //! evaluate neighbor pairs
-    virtual void EvaluateNeighborPairs();
+    void EvaluateNeighborPairs();
 
    private:
-    //! map of neighbor pairs with evaluated quantities
-    PARTICLEINTERACTION::DEMNeighborPairsMap neighborpairsmap_;
+    //! neighbor pair data with evaluated quantities
+    PARTICLEINTERACTION::DEMNeighborPairData neighborpairdata_;
 
     //! interface to particle engine
     std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface_;

@@ -57,6 +57,12 @@ void PARTICLEINTERACTION::SPHNeighborPairs::Setup(
 
   // set kernel handler
   kernel_ = kernel;
+
+  // determine size of vectors indexed by particle types
+  const int typevectorsize = *(--particlecontainerbundle_->GetParticleTypes().end()) + 1;
+
+  // allocate memory to hold neighbor pairs
+  neighborpairdata_.resize(typevectorsize);
 }
 
 /*---------------------------------------------------------------------------*
@@ -81,9 +87,6 @@ void PARTICLEINTERACTION::SPHNeighborPairs::ReadRestart(
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateNeighborPairs()
 {
-  // clear map
-  neighborpairsmap_.clear();
-
   // get reference to particle neighbors
   const PARTICLEENGINE::ParticleNeighbors& particleneighbors =
       particleengineinterface_->GetParticleNeighbors();
@@ -91,15 +94,18 @@ void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateNeighborPairs()
   // iterate over particle types
   for (auto& type_i : particlecontainerbundle_->GetParticleTypes())
   {
-    // check for owned particles of current type
-    if (particleneighbors[type_i].empty()) continue;
-
-    // get reference to sub-map
-    auto& currentTypeMap = neighborpairsmap_[type_i];
-
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainerShrdPtr container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+
+    // get number of particles stored in container
+    int particlestored = container_i->ParticlesStored();
+
+    // allocate memory for neighbor pairs of owned particles of current particle type
+    neighborpairdata_[type_i].assign(particlestored, std::vector<SPHNeighborPair>(0));
+
+    // check for owned particles of current type
+    if (particleneighbors[type_i].empty()) continue;
 
     // iterate over particles of current type
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
@@ -111,8 +117,11 @@ void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateNeighborPairs()
       // check for neighbors of owned particles of current type
       if (currentNeighbors.empty()) continue;
 
-      // get reference to sub-map
-      auto& currentTypeCurrentParticleMap = currentTypeMap[particle_i];
+      // get reference to vector of neighbor pairs of current particle
+      std::vector<SPHNeighborPair>& currentNeighborPairs = (neighborpairdata_[type_i])[particle_i];
+
+      // allocate memory for neighbor pairs of current particle
+      currentNeighborPairs.reserve(currentNeighbors.size());
 
       // declare pointer variables for particle i
       const double *pos_i, *rad_i;
@@ -155,9 +164,11 @@ void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateNeighborPairs()
         // neighboring particle out of support radius
         if (absdist > rad_i[0]) continue;
 
+        // initialize particle pair
+        currentNeighborPairs.push_back(std::make_pair(neighborParticleIt, SPHParticlePair()));
+
         // get reference to current particle pair
-        ParticlePairSPH& particlepair =
-            ((currentTypeCurrentParticleMap[type_j])[status_j])[particle_j];
+        SPHParticlePair& particlepair = (currentNeighborPairs.back()).second;
 
         // set absolute distance between particles
         particlepair.absdist_ = absdist;
@@ -171,6 +182,9 @@ void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateNeighborPairs()
         // evaluate first derivative of kernel
         particlepair.dWdrij_ = kernel_->dWdrij(absdist, rad_i[0]);
       }
+
+      // free superfluous allocated memory
+      currentNeighborPairs.resize(currentNeighborPairs.size());
     }
   }
 }

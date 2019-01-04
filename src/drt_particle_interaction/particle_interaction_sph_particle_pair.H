@@ -26,7 +26,7 @@
 namespace PARTICLEINTERACTION
 {
   //! struct to store quantities of interacting particles
-  struct ParticlePairSPH
+  struct SPHParticlePair
   {
     //! absolute distance between particles
     double absdist_;

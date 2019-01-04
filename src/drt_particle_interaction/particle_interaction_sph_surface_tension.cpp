@@ -217,12 +217,12 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::AddAcceleratio
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeColorfieldGradient() const
 {
-  // iterate over particle types
-  for (auto& typeIt : neighborpairs_->GetRefToNeighborPairsMap())
-  {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum type_i = typeIt.first;
+  // get reference to neighbor pair data
+  const SPHNeighborPairData& neighborpairdata = neighborpairs_->GetRefToNeighborPairData();
 
+  // iterate over particle types
+  for (auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  {
     // no colorfield gradient evaluation for boundary or rigid particles
     if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
 
@@ -233,14 +233,15 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeColorfi
     // clear colorfield gradient state
     container_i->ClearState(PARTICLEENGINE::ColorfieldGradient);
 
-    // particles of current type with neighbors
-    const auto& currparticles = typeIt.second;
-
-    // iterate over particles of current type
-    for (auto& particleIt : currparticles)
+    // iterate over particles in container
+    for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
     {
-      // get local index of particle i
-      const int particle_i = particleIt.first;
+      // get reference to vector of neighbor pairs of current particle
+      const std::vector<SPHNeighborPair>& currentNeighborPairs =
+          (neighborpairdata[type_i])[particle_i];
+
+      // check for neighbor pairs of current particle
+      if (currentNeighborPairs.empty()) continue;
 
       // declare pointer variables for particle i
       const double *mass_i, *dens_i;
@@ -255,53 +256,42 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeColorfi
       // volume of particle i
       const double V_i = mass_i[0] / dens_i[0];
 
-      // iterate over particle types of neighboring particles
-      for (auto& neighborTypeIt : particleIt.second)
+      // iterate over neighbor pairs
+      for (auto& neighborIt : currentNeighborPairs)
       {
-        // get type of neighboring particles
-        PARTICLEENGINE::TypeEnum type_j = neighborTypeIt.first;
+        // access values of local index tuple of neighboring particle
+        PARTICLEENGINE::TypeEnum type_j;
+        PARTICLEENGINE::StatusEnum status_j;
+        int particle_j;
+        std::tie(type_j, status_j, particle_j) = neighborIt.first;
+
+        // get reference to current particle pair
+        const SPHParticlePair& particlepair = neighborIt.second;
 
         // no evaluation for particles of same type or neighboring boundary or rigid particles
         if (type_i == type_j or type_j == PARTICLEENGINE::BoundaryPhase or
             type_j == PARTICLEENGINE::RigidPhase)
           continue;
 
-        // iterate over particle status of neighboring particles
-        for (auto& neighborStatusIt : neighborTypeIt.second)
-        {
-          // get status of neighboring particles of current type
-          PARTICLEENGINE::StatusEnum status_j = neighborStatusIt.first;
+        // get container of neighboring particles of current particle type and state
+        PARTICLEENGINE::ParticleContainerShrdPtr container_j =
+            particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
 
-          // get container of neighboring particles of current particle type and state
-          PARTICLEENGINE::ParticleContainerShrdPtr container_j =
-              particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
+        // declare pointer variables for neighbor particle j
+        const double *mass_j, *dens_j;
 
-          // iterate over neighboring particles of current type and status
-          for (auto& neighborParticleIt : neighborStatusIt.second)
-          {
-            // get local index of neighbor particle j
-            const int particle_j = neighborParticleIt.first;
+        // get pointer to particle states
+        mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
+        dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
 
-            // get reference to particle pair
-            const ParticlePairSPH& particlepair = neighborParticleIt.second;
+        // volume of particle j
+        const double V_j = mass_j[0] / dens_j[0];
 
-            // declare pointer variables for neighbor particle j
-            const double *mass_j, *dens_j;
+        const double fac =
+            (V_i * V_i + V_j * V_j) * (dens_i[0] / (dens_i[0] + dens_j[0])) * particlepair.dWdrij_;
 
-            // get pointer to particle states
-            mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
-            dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
-
-            // volume of particle j
-            const double V_j = mass_j[0] / dens_j[0];
-
-            const double fac = (V_i * V_i + V_j * V_j) * (dens_i[0] / (dens_i[0] + dens_j[0])) *
-                               particlepair.dWdrij_;
-
-            // sum contribution of neighbor particle j
-            for (int i = 0; i < 3; ++i) colorfieldgrad_i[i] += fac * particlepair.e_ij_[i];
-          }
-        }
+        // sum contribution of neighbor particle j
+        for (int i = 0; i < 3; ++i) colorfieldgrad_i[i] += fac * particlepair.e_ij_[i];
       }
     }
   }
@@ -313,12 +303,12 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeColorfi
 void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallNormalAndDistance()
     const
 {
-  // iterate over particle types
-  for (auto& typeIt : neighborpairs_->GetRefToNeighborPairsMap())
-  {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum type_i = typeIt.first;
+  // get reference to neighbor pair data
+  const SPHNeighborPairData& neighborpairdata = neighborpairs_->GetRefToNeighborPairData();
 
+  // iterate over particle types
+  for (auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  {
     // no colorfield gradient evaluation for boundary or rigid particles
     if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
 
@@ -333,14 +323,15 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallNor
     // clear unit wall normal state
     container_i->ClearState(PARTICLEENGINE::UnitWallNormal);
 
-    // particles of current type with neighbors
-    const auto& currparticles = typeIt.second;
-
-    // iterate over particles of current type
-    for (auto& particleIt : currparticles)
+    // iterate over particles in container
+    for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
     {
-      // get local index of particle i
-      const int particle_i = particleIt.first;
+      // get reference to vector of neighbor pairs of current particle
+      const std::vector<SPHNeighborPair>& currentNeighborPairs =
+          (neighborpairdata[type_i])[particle_i];
+
+      // check for neighbor pairs of current particle
+      if (currentNeighborPairs.empty()) continue;
 
       // declare pointer variables for particle i
       const double *rad_i, *mass_i, *dens_i;
@@ -362,30 +353,25 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallNor
       // set support radius of particle i as initial wall distance
       walldistance_i[0] = rad_i[0];
 
-      // iterate over particle types of neighboring particles
-      for (auto& neighborTypeIt : particleIt.second)
+      // iterate over neighbor pairs
+      for (auto& neighborIt : currentNeighborPairs)
       {
-        // get type of neighboring particles
-        PARTICLEENGINE::TypeEnum type_j = neighborTypeIt.first;
+        // access values of local index tuple of neighboring particle
+        PARTICLEENGINE::TypeEnum type_j;
+        PARTICLEENGINE::StatusEnum status_j;
+        int particle_j;
+        std::tie(type_j, status_j, particle_j) = neighborIt.first;
+
+        // get reference to current particle pair
+        const SPHParticlePair& particlepair = neighborIt.second;
 
         // no evaluation for neighboring non-boundary and non-rigid particles
         if (type_j != PARTICLEENGINE::BoundaryPhase and type_j != PARTICLEENGINE::RigidPhase)
           continue;
 
-        // iterate over particle status of neighboring particles
-        for (auto& neighborStatusIt : neighborTypeIt.second)
-        {
-          // iterate over neighboring particles of current type and status
-          for (auto& neighborParticleIt : neighborStatusIt.second)
-          {
-            // get reference to particle pair
-            const ParticlePairSPH& particlepair = neighborParticleIt.second;
-
-            // sum contribution of neighbor boundary particle j
-            const double fac = -((V_j * V_j) / V_i) * particlepair.dWdrij_;
-            for (int i = 0; i < 3; ++i) wallnormal_i[i] += fac * particlepair.e_ij_[i];
-          }
-        }
+        // sum contribution of neighbor boundary particle j
+        const double fac = -((V_j * V_j) / V_i) * particlepair.dWdrij_;
+        for (int i = 0; i < 3; ++i) wallnormal_i[i] += fac * particlepair.e_ij_[i];
       }
 
       // norm of wall normal
@@ -399,35 +385,30 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallNor
       // scale unit wall normal
       for (int i = 0; i < 3; ++i) wallnormal_i[i] = wallnormal_i[i] / wallnormal_i_norm;
 
-      // iterate over particle types of neighboring particles
-      for (auto& neighborTypeIt : particleIt.second)
+      // iterate over neighbor pairs
+      for (auto& neighborIt : currentNeighborPairs)
       {
-        // get type of neighboring particles
-        PARTICLEENGINE::TypeEnum type_j = neighborTypeIt.first;
+        // access values of local index tuple of neighboring particle
+        PARTICLEENGINE::TypeEnum type_j;
+        PARTICLEENGINE::StatusEnum status_j;
+        int particle_j;
+        std::tie(type_j, status_j, particle_j) = neighborIt.first;
+
+        // get reference to current particle pair
+        const SPHParticlePair& particlepair = neighborIt.second;
 
         // no evaluation for neighboring non-boundary and non-rigid particles
         if (type_j != PARTICLEENGINE::BoundaryPhase and type_j != PARTICLEENGINE::RigidPhase)
           continue;
 
-        // iterate over particle status of neighboring particles
-        for (auto& neighborStatusIt : neighborTypeIt.second)
-        {
-          // iterate over neighboring particles of current type and status
-          for (auto& neighborParticleIt : neighborStatusIt.second)
-          {
-            // get reference to particle pair
-            const ParticlePairSPH& particlepair = neighborParticleIt.second;
+        // distance of particle i to neighboring boundary particle j
+        double currentwalldistance =
+            particlepair.absdist_ *
+            (wallnormal_i[0] * particlepair.e_ij_[0] + wallnormal_i[1] * particlepair.e_ij_[1] +
+                wallnormal_i[2] * particlepair.e_ij_[2]);
 
-            // distance of particle i to neighboring boundary particle j
-            double currentwalldistance =
-                particlepair.absdist_ *
-                (wallnormal_i[0] * particlepair.e_ij_[0] + wallnormal_i[1] * particlepair.e_ij_[1] +
-                    wallnormal_i[2] * particlepair.e_ij_[2]);
-
-            // update wall distance of particle i
-            if (currentwalldistance < walldistance_i[0]) walldistance_i[0] = currentwalldistance;
-          }
-        }
+        // update wall distance of particle i
+        if (currentwalldistance < walldistance_i[0]) walldistance_i[0] = currentwalldistance;
       }
     }
   }
@@ -472,12 +453,12 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
   int kernelspacedim = 0;
   kernel_->KernelSpaceDimension(kernelspacedim);
 
-  // iterate over particle types
-  for (auto& typeIt : neighborpairs_->GetRefToNeighborPairsMap())
-  {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum type_i = typeIt.first;
+  // get reference to neighbor pair data
+  const SPHNeighborPairData& neighborpairdata = neighborpairs_->GetRefToNeighborPairData();
 
+  // iterate over particle types
+  for (auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  {
     // no colorfield gradient extrapolation for boundary or rigid particles
     if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
 
@@ -492,14 +473,15 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     const MAT::PAR::ParticleMaterialBase* material_i =
         particlematerial_->GetPtrToParticleMatParameter(type_i);
 
-    // particles of current type with neighbors
-    const auto& currparticles = typeIt.second;
-
-    // iterate over particles of current type
-    for (auto& particleIt : currparticles)
+    // iterate over particles in container
+    for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
     {
-      // get local index of particle i
-      const int particle_i = particleIt.first;
+      // get reference to vector of neighbor pairs of current particle
+      const std::vector<SPHNeighborPair>& currentNeighborPairs =
+          (neighborpairdata[type_i])[particle_i];
+
+      // check for neighbor pairs of current particle
+      if (currentNeighborPairs.empty()) continue;
 
       // declare pointer variables for particle i
       const double *rad_i, *mass_i, *colorfieldgrad_i, *walldistance_i;
@@ -543,15 +525,25 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
       double sumj_fj_Vj_Wij_CFGj[3];
       for (int i = 0; i < 3; ++i) sumj_fj_Vj_Wij_CFGj[i] = 0.0;
 
-      // iterate over particle types of neighboring particles
-      for (auto& neighborTypeIt : particleIt.second)
+      // iterate over neighbor pairs
+      for (auto& neighborIt : currentNeighborPairs)
       {
-        // get type of neighboring particles
-        PARTICLEENGINE::TypeEnum type_j = neighborTypeIt.first;
+        // access values of local index tuple of neighboring particle
+        PARTICLEENGINE::TypeEnum type_j;
+        PARTICLEENGINE::StatusEnum status_j;
+        int particle_j;
+        std::tie(type_j, status_j, particle_j) = neighborIt.first;
+
+        // get reference to current particle pair
+        const SPHParticlePair& particlepair = neighborIt.second;
 
         // no evaluation for neighboring boundary or rigid particles
         if (type_j == PARTICLEENGINE::BoundaryPhase or type_j == PARTICLEENGINE::RigidPhase)
           continue;
+
+        // get container of neighboring particles of current particle type and state
+        PARTICLEENGINE::ParticleContainerShrdPtr container_j =
+            particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
 
         // get material for current particle type
         const MAT::PAR::ParticleMaterialBase* material_j = NULL;
@@ -563,68 +555,46 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
         // change sign of colorfield gradient for different particle types
         double signfac = (type_i == type_j) ? 1.0 : -1.0;
 
-        // iterate over particle status of neighboring particles
-        for (auto& neighborStatusIt : neighborTypeIt.second)
-        {
-          // get status of neighboring particles of current type
-          PARTICLEENGINE::StatusEnum status_j = neighborStatusIt.first;
+        // declare pointer variables for neighbor particle j
+        const double *rad_j, *mass_j, *dens_j, *colorfieldgrad_j, *walldistance_j;
 
-          // get container of neighboring particles of current particle type and state
-          PARTICLEENGINE::ParticleContainerShrdPtr container_j =
-              particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
+        // get pointer to particle states
+        rad_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_j);
+        mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
+        dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
+        colorfieldgrad_j =
+            container_j->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_j);
+        walldistance_j =
+            container_j->GetPtrToParticleState(PARTICLEENGINE::WallDistance, particle_j);
 
-          // iterate over neighboring particles of current type and status
-          for (auto& neighborParticleIt : neighborStatusIt.second)
-          {
-            // get local index of neighbor particle j
-            const int particle_j = neighborParticleIt.first;
+        // initial particle spacing
+        const double initspacing_j =
+            std::pow((mass_j[0] / material_j->initDensity_), (1.0 / kernelspacedim));
 
-            // get reference to particle pair
-            const ParticlePairSPH& particlepair = neighborParticleIt.second;
+        // corrected wall distance and maximum correction distance
+        const double dw_j = walldistance_j[0] - initspacing_j;
+        const double dmax_j = kernel_->SmoothingLength(rad_j[0]);
 
-            // declare pointer variables for neighbor particle j
-            const double *rad_j, *mass_j, *dens_j, *colorfieldgrad_j, *walldistance_j;
+        // determine correction factor
+        double f_j = 1.0;
+        if (dw_j < 0.0)
+          f_j = 0.0;
+        else if (dw_j < dmax_j)
+          f_j = dw_j / dmax_j;
 
-            // get pointer to particle states
-            rad_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_j);
-            mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
-            dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
-            colorfieldgrad_j =
-                container_j->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_j);
-            walldistance_j =
-                container_j->GetPtrToParticleState(PARTICLEENGINE::WallDistance, particle_j);
+        // no contribution of current particle j
+        if (f_j == 0.0) continue;
 
-            // initial particle spacing
-            const double initspacing_j =
-                std::pow((mass_j[0] / material_j->initDensity_), (1.0 / kernelspacedim));
+        // volume of particle j
+        const double V_j = mass_j[0] / dens_j[0];
 
-            // corrected wall distance and maximum correction distance
-            const double dw_j = walldistance_j[0] - initspacing_j;
-            const double dmax_j = kernel_->SmoothingLength(rad_j[0]);
+        const double fac = f_j * V_j * particlepair.Wij_;
 
-            // determine correction factor
-            double f_j = 1.0;
-            if (dw_j < 0.0)
-              f_j = 0.0;
-            else if (dw_j < dmax_j)
-              f_j = dw_j / dmax_j;
+        // initial estimate
+        for (int i = 0; i < 3; ++i) sumj_fj_Vj_Wij_CFGj[i] += signfac * fac * colorfieldgrad_j[i];
 
-            // no contribution of current particle j
-            if (f_j == 0.0) continue;
-
-            // volume of particle j
-            const double V_j = mass_j[0] / dens_j[0];
-
-            const double fac = f_j * V_j * particlepair.Wij_;
-
-            // initial estimate
-            for (int i = 0; i < 3; ++i)
-              sumj_fj_Vj_Wij_CFGj[i] += signfac * fac * colorfieldgrad_j[i];
-
-            // correction factor
-            sumj_fj_Vj_Wij += fac;
-          }
-        }
+        // correction factor
+        sumj_fj_Vj_Wij += fac;
       }
 
       // evaluation only for particles with contributions from neighboring particles
@@ -689,11 +659,8 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
 void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeInterfaceNormal() const
 {
   // iterate over particle types
-  for (auto& typeIt : neighborpairs_->GetRefToNeighborPairsMap())
+  for (auto& type_i : particlecontainerbundle_->GetParticleTypes())
   {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum type_i = typeIt.first;
-
     // no colorfield gradient evaluation for boundary or rigid particles
     if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
 
@@ -704,15 +671,9 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeInterfa
     // clear interface normal state
     container_i->ClearState(PARTICLEENGINE::InterfaceNormal);
 
-    // particles of current type with neighbors
-    const auto& currparticles = typeIt.second;
-
-    // iterate over particles of current type
-    for (auto& particleIt : currparticles)
+    // iterate over particles in container
+    for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
     {
-      // get local index of particle i
-      const int particle_i = particleIt.first;
-
       // declare pointer variables for particle i
       const double *rad_i, *colorfieldgrad_i;
       double* interfacenormal_i;
@@ -747,11 +708,8 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::CorrectTripleP
   kernel_->KernelSpaceDimension(kernelspacedim);
 
   // iterate over particle types
-  for (auto& typeIt : neighborpairs_->GetRefToNeighborPairsMap())
+  for (auto& type_i : particlecontainerbundle_->GetParticleTypes())
   {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum type_i = typeIt.first;
-
     // no curvature evaluation for boundary or rigid particles
     if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
 
@@ -763,15 +721,9 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::CorrectTripleP
     const MAT::PAR::ParticleMaterialBase* material_i =
         particlematerial_->GetPtrToParticleMatParameter(type_i);
 
-    // particles of current type with neighbors
-    const auto& currparticles = typeIt.second;
-
-    // iterate over particles of current type
-    for (auto& particleIt : currparticles)
+    // iterate over particles in container
+    for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
     {
-      // get local index of particle i
-      const int particle_i = particleIt.first;
-
       // declare pointer variables for particle i
       const double *rad_i, *mass_i, *wallnormal_i, *walldistance_i;
       double* interfacenormal_i;
@@ -893,12 +845,12 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
   if (surfacetensionrampfctnumber_ > 0)
     timefac = DRT::Problem::Instance()->Funct(surfacetensionrampfctnumber_ - 1).EvaluateTime(time_);
 
-  // iterate over particle types
-  for (auto& typeIt : neighborpairs_->GetRefToNeighborPairsMap())
-  {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum type_i = typeIt.first;
+  // get reference to neighbor pair data
+  const SPHNeighborPairData& neighborpairdata = neighborpairs_->GetRefToNeighborPairData();
 
+  // iterate over particle types
+  for (auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  {
     // no curvature evaluation for boundary or rigid particles
     if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
 
@@ -909,14 +861,15 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     // clear curvature state
     container_i->ClearState(PARTICLEENGINE::Curvature);
 
-    // particles of current type with neighbors
-    const auto& currparticles = typeIt.second;
-
-    // iterate over particles of current type
-    for (auto& particleIt : currparticles)
+    // iterate over particles in container
+    for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
     {
-      // get local index of particle i
-      const int particle_i = particleIt.first;
+      // get reference to vector of neighbor pairs of current particle
+      const std::vector<SPHNeighborPair>& currentNeighborPairs =
+          (neighborpairdata[type_i])[particle_i];
+
+      // check for neighbor pairs of current particle
+      if (currentNeighborPairs.empty()) continue;
 
       // declare pointer variables for particle i
       const double *rad_i, *mass_i, *dens_i, *colorfieldgrad_i, *interfacenormal_i;
@@ -945,71 +898,58 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
       // add self-interaction
       sumj_Vj_Wij += Wii * mass_i[0] / dens_i[0];
 
-      // iterate over particle types of neighboring particles
-      for (auto& neighborTypeIt : particleIt.second)
+      // iterate over neighbor pairs
+      for (auto& neighborIt : currentNeighborPairs)
       {
-        // get type of neighboring particles
-        PARTICLEENGINE::TypeEnum type_j = neighborTypeIt.first;
+        // access values of local index tuple of neighboring particle
+        PARTICLEENGINE::TypeEnum type_j;
+        PARTICLEENGINE::StatusEnum status_j;
+        int particle_j;
+        std::tie(type_j, status_j, particle_j) = neighborIt.first;
+
+        // get reference to current particle pair
+        const SPHParticlePair& particlepair = neighborIt.second;
 
         // no evaluation for neighboring boundary or rigid particles
         if (type_j == PARTICLEENGINE::BoundaryPhase or type_j == PARTICLEENGINE::RigidPhase)
           continue;
 
+        // get container of neighboring particles of current particle type and state
+        PARTICLEENGINE::ParticleContainerShrdPtr container_j =
+            particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
+
         // change sign of interface normal for different particle types
         double signfac = (type_i == type_j) ? 1.0 : -1.0;
 
-        // iterate over particle status of neighboring particles
-        for (auto& neighborStatusIt : neighborTypeIt.second)
-        {
-          // get status of neighboring particles of current type
-          PARTICLEENGINE::StatusEnum status_j = neighborStatusIt.first;
+        // declare pointer variables for neighbor particle j
+        const double *mass_j, *dens_j, *interfacenormal_j;
 
-          // get container of neighboring particles of current particle type and state
-          PARTICLEENGINE::ParticleContainerShrdPtr container_j =
-              particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
+        // get pointer to particle states
+        mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
+        dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
+        interfacenormal_j =
+            container_j->GetPtrToParticleState(PARTICLEENGINE::InterfaceNormal, particle_j);
 
-          // iterate over neighboring particles of current type and status
-          for (auto& neighborParticleIt : neighborStatusIt.second)
-          {
-            // get local index of neighbor particle j
-            const int particle_j = neighborParticleIt.first;
+        // evaluation only for non-zero interface normal
+        const double interfacenormal_j_norm =
+            std::sqrt(interfacenormal_j[0] * interfacenormal_j[0] +
+                      interfacenormal_j[1] * interfacenormal_j[1] +
+                      interfacenormal_j[2] * interfacenormal_j[2]);
+        if (not(interfacenormal_j_norm > 0.0)) continue;
 
-            // get reference to particle pair
-            const ParticlePairSPH& particlepair = neighborParticleIt.second;
+        // volume of particle j
+        const double V_j = mass_j[0] / dens_j[0];
 
-            // declare pointer variables for neighbor particle j
-            const double *mass_j, *dens_j, *interfacenormal_j;
+        double n_ij[3];
+        for (int i = 0; i < 3; ++i) n_ij[i] = interfacenormal_i[i] - signfac * interfacenormal_j[i];
 
-            // get pointer to particle states
-            mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
-            dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
-            interfacenormal_j =
-                container_j->GetPtrToParticleState(PARTICLEENGINE::InterfaceNormal, particle_j);
+        // initial curvature estimate
+        sumj_nij_Vj_eij_dWij += (n_ij[0] * particlepair.e_ij_[0] + n_ij[1] * particlepair.e_ij_[1] +
+                                    n_ij[2] * particlepair.e_ij_[2]) *
+                                V_j * particlepair.dWdrij_;
 
-            // evaluation only for non-zero interface normal
-            const double interfacenormal_j_norm =
-                std::sqrt(interfacenormal_j[0] * interfacenormal_j[0] +
-                          interfacenormal_j[1] * interfacenormal_j[1] +
-                          interfacenormal_j[2] * interfacenormal_j[2]);
-            if (not(interfacenormal_j_norm > 0.0)) continue;
-
-            // volume of particle j
-            const double V_j = mass_j[0] / dens_j[0];
-
-            double n_ij[3];
-            for (int i = 0; i < 3; ++i)
-              n_ij[i] = interfacenormal_i[i] - signfac * interfacenormal_j[i];
-
-            // initial curvature estimate
-            sumj_nij_Vj_eij_dWij +=
-                (n_ij[0] * particlepair.e_ij_[0] + n_ij[1] * particlepair.e_ij_[1] +
-                    n_ij[2] * particlepair.e_ij_[2]) *
-                V_j * particlepair.dWdrij_;
-
-            // correction factor
-            sumj_Vj_Wij += V_j * particlepair.Wij_;
-          }
-        }
+        // correction factor
+        sumj_Vj_Wij += V_j * particlepair.Wij_;
       }
 
       // only add meaningful contributions

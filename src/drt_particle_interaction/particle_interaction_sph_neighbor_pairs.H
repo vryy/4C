@@ -61,31 +61,34 @@ namespace PARTICLEINTERACTION
     explicit SPHNeighborPairs();
 
     //! virtual destructor
-    virtual ~SPHNeighborPairs(){};
+    ~SPHNeighborPairs(){};
 
     //! init neighbor pair handler
-    virtual void Init();
+    void Init();
 
     //! setup neighbor pair handler
-    virtual void Setup(
+    void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel);
 
     //! write restart of neighbor pair handler
-    virtual void WriteRestart(const int step, const double time) const;
+    void WriteRestart(const int step, const double time) const;
 
     //! read restart of neighbor pair handler
-    virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
+    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
-    //! get reference to map holding neighbor pairs
-    const SPHNeighborPairsMap& GetRefToNeighborPairsMap() const { return neighborpairsmap_; };
+    //! get reference to neighbor pair data
+    inline const SPHNeighborPairData& GetRefToNeighborPairData() const
+    {
+      return neighborpairdata_;
+    };
 
     //! evaluate neighbor pairs
-    virtual void EvaluateNeighborPairs();
+    void EvaluateNeighborPairs();
 
    private:
-    //! map of neighbor pairs with evaluated absolute distance, versor and kernel
-    PARTICLEINTERACTION::SPHNeighborPairsMap neighborpairsmap_;
+    //! neighbor pair data with evaluated quantities
+    PARTICLEINTERACTION::SPHNeighborPairData neighborpairdata_;
 
     //! interface to particle engine
     std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface_;

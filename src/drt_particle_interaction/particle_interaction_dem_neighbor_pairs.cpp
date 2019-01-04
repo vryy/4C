@@ -49,6 +49,12 @@ void PARTICLEINTERACTION::DEMNeighborPairs::Setup(
 
   // set particle container bundle
   particlecontainerbundle_ = particleengineinterface_->GetParticleContainerBundle();
+
+  // determine size of vectors indexed by particle types
+  const int typevectorsize = *(--particlecontainerbundle_->GetParticleTypes().end()) + 1;
+
+  // allocate memory to hold neighbor pairs
+  neighborpairdata_.resize(typevectorsize);
 }
 
 /*---------------------------------------------------------------------------*
@@ -73,9 +79,6 @@ void PARTICLEINTERACTION::DEMNeighborPairs::ReadRestart(
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateNeighborPairs()
 {
-  // clear map
-  neighborpairsmap_.clear();
-
   // get reference to particle neighbors
   const PARTICLEENGINE::ParticleNeighbors& particleneighbors =
       particleengineinterface_->GetParticleNeighbors();
@@ -83,15 +86,18 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateNeighborPairs()
   // iterate over particle types
   for (auto& type_i : particlecontainerbundle_->GetParticleTypes())
   {
-    // check for owned particles of current type
-    if (particleneighbors[type_i].empty()) continue;
-
-    // get reference to sub-map
-    auto& currentTypeMap = neighborpairsmap_[type_i];
-
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainerShrdPtr container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+
+    // get number of particles stored in container
+    int particlestored = container_i->ParticlesStored();
+
+    // allocate memory for neighbor pairs of owned particles of current particle type
+    neighborpairdata_[type_i].assign(particlestored, std::vector<DEMNeighborPair>(0));
+
+    // check for owned particles of current type
+    if (particleneighbors[type_i].empty()) continue;
 
     // iterate over particles of current type
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
@@ -103,8 +109,11 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateNeighborPairs()
       // check for neighbors of owned particles of current type
       if (currentNeighbors.empty()) continue;
 
-      // get reference to sub-map
-      auto& currentTypeCurrentParticleMap = currentTypeMap[particle_i];
+      // get reference to vector of neighbor pairs of current particle
+      std::vector<DEMNeighborPair>& currentNeighborPairs = (neighborpairdata_[type_i])[particle_i];
+
+      // allocate memory for neighbor pairs of current particle
+      currentNeighborPairs.reserve(currentNeighbors.size());
 
       // declare pointer variables for particle i
       const double *pos_i, *rad_i, *mass_i;
@@ -150,9 +159,11 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateNeighborPairs()
         // neighboring particle out of interaction distance
         if (gap > 0.0) continue;
 
+        // initialize particle pair
+        currentNeighborPairs.push_back(std::make_pair(neighborParticleIt, DEMParticlePair()));
+
         // get reference to current particle pair
-        ParticlePairDEM& particlepair =
-            ((currentTypeCurrentParticleMap[type_j])[status_j])[particle_j];
+        DEMParticlePair& particlepair = (currentNeighborPairs.back()).second;
 
         // set gap between particles
         particlepair.gap_ = gap;
@@ -163,6 +174,9 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateNeighborPairs()
         // set effective mass of particles i and j
         particlepair.m_eff_ = mass_i[0] * mass_j[0] / (mass_i[0] + mass_j[0]);
       }
+
+      // free superfluous allocated memory
+      currentNeighborPairs.resize(currentNeighborPairs.size());
     }
   }
 }

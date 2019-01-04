@@ -150,24 +150,25 @@ void PARTICLEINTERACTION::DEMContact::CheckCriticalTimeStep() const
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContact::AddForceContribution() const
 {
-  // iterate over particle types
-  for (auto& typeIt : neighborpairs_->GetRefToNeighborPairsMap())
-  {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum type_i = typeIt.first;
+  // get reference to neighbor pair data
+  const DEMNeighborPairData& neighborpairdata = neighborpairs_->GetRefToNeighborPairData();
 
+  // iterate over particle types
+  for (auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainerShrdPtr container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
 
-    // particles of current type with neighbors
-    const auto& currparticles = typeIt.second;
-
-    // iterate over particles of current type
-    for (auto& particleIt : currparticles)
+    // iterate over particles in container
+    for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
     {
-      // get local index of particle i
-      const int particle_i = particleIt.first;
+      // get reference to vector of neighbor pairs of current particle
+      const std::vector<DEMNeighborPair>& currentNeighborPairs =
+          (neighborpairdata[type_i])[particle_i];
+
+      // check for neighbor pairs of current particle
+      if (currentNeighborPairs.empty()) continue;
 
       // declare pointer variables for particle i
       const double *vel_i, *rad_i;
@@ -178,60 +179,49 @@ void PARTICLEINTERACTION::DEMContact::AddForceContribution() const
       rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
       force_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Force, particle_i);
 
-      // iterate over particle types of neighboring particles
-      for (auto& neighborTypeIt : particleIt.second)
+      // iterate over neighbor pairs
+      for (auto& neighborIt : currentNeighborPairs)
       {
-        // get type of neighboring particles
-        PARTICLEENGINE::TypeEnum type_j = neighborTypeIt.first;
+        // access values of local index tuple of neighboring particle
+        PARTICLEENGINE::TypeEnum type_j;
+        PARTICLEENGINE::StatusEnum status_j;
+        int particle_j;
+        std::tie(type_j, status_j, particle_j) = neighborIt.first;
 
-        // iterate over particle status of neighboring particles
-        for (auto& neighborStatusIt : neighborTypeIt.second)
+        // get reference to current particle pair
+        const DEMParticlePair& particlepair = neighborIt.second;
+
+        // get container of neighboring particles of current particle type and state
+        PARTICLEENGINE::ParticleContainerShrdPtr container_j =
+            particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
+
+        // declare pointer variables for neighbor particle j
+        const double *vel_j, *rad_j;
+
+        // get pointer to particle states
+        vel_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_j);
+        rad_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_j);
+
+        // evaluate relative velocity in normal direction
+        double vel_rel_normal(0.0), vel_rel[3];
+
+        // iterate over spatial dimension
+        for (int dim = 0; dim < 3; ++dim)
         {
-          // get status of neighboring particles of current type
-          PARTICLEENGINE::StatusEnum status_j = neighborStatusIt.first;
+          // relative velocity between particles
+          vel_rel[dim] = vel_i[dim] - vel_j[dim];
 
-          // get container of neighboring particles of current particle type and state
-          PARTICLEENGINE::ParticleContainerShrdPtr container_j =
-              particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
-
-          // iterate over neighboring particles of current type and status
-          for (auto& neighborParticleIt : neighborStatusIt.second)
-          {
-            // get local index of neighbor particle j
-            const int particle_j = neighborParticleIt.first;
-
-            // get reference to particle pair
-            const ParticlePairDEM& particlepair = neighborParticleIt.second;
-
-            // declare pointer variables for neighbor particle j
-            const double *vel_j, *rad_j;
-
-            // get pointer to particle states
-            vel_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_j);
-            rad_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_j);
-
-            // evaluate relative velocity in normal direction
-            double vel_rel_normal(0.0), vel_rel[3];
-
-            // iterate over spatial dimension
-            for (int dim = 0; dim < 3; ++dim)
-            {
-              // relative velocity between particles
-              vel_rel[dim] = vel_i[dim] - vel_j[dim];
-
-              // relative velocity between particles in normal direction
-              vel_rel_normal += vel_rel[dim] * particlepair.e_ji_[dim];
-            }
-
-            // calculate normal contact force
-            double normalcontactforce(0.0);
-            contactnormal_->NormalContactForce(particlepair.gap_, rad_i, rad_j, vel_rel_normal,
-                particlepair.m_eff_, normalcontactforce);
-
-            // add contact contribution
-            for (int i = 0; i < 3; ++i) force_i[i] += normalcontactforce * particlepair.e_ji_[i];
-          }
+          // relative velocity between particles in normal direction
+          vel_rel_normal += vel_rel[dim] * particlepair.e_ji_[dim];
         }
+
+        // calculate normal contact force
+        double normalcontactforce(0.0);
+        contactnormal_->NormalContactForce(particlepair.gap_, rad_i, rad_j, vel_rel_normal,
+            particlepair.m_eff_, normalcontactforce);
+
+        // add contact contribution
+        for (int i = 0; i < 3; ++i) force_i[i] += normalcontactforce * particlepair.e_ji_[i];
       }
     }
   }

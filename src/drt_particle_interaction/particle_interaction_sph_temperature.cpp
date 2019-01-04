@@ -170,12 +170,12 @@ void PARTICLEINTERACTION::SPHTemperatureIntegration::ComputeTemperature() const
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHTemperatureIntegration::EnergyEquation() const
 {
-  // iterate over particle types
-  for (auto& typeIt : neighborpairs_->GetRefToNeighborPairsMap())
-  {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum type_i = typeIt.first;
+  // get reference to neighbor pair data
+  const SPHNeighborPairData& neighborpairdata = neighborpairs_->GetRefToNeighborPairData();
 
+  // iterate over particle types
+  for (auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  {
     // no temperature integration for boundary particles
     if (type_i == PARTICLEENGINE::BoundaryPhase) continue;
 
@@ -192,14 +192,15 @@ void PARTICLEINTERACTION::SPHTemperatureIntegration::EnergyEquation() const
     if (type_i == PARTICLEENGINE::RigidPhase)
       basematerial_i = particlematerial_->GetPtrToParticleMatParameter(type_i);
 
-    // particles of current type with neighbors
-    const auto& currparticles = typeIt.second;
-
-    // iterate over particles of current type
-    for (auto& particleIt : currparticles)
+    // iterate over particles in container
+    for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
     {
-      // get local index of particle i
-      const int particle_i = particleIt.first;
+      // get reference to vector of neighbor pairs of current particle
+      const std::vector<SPHNeighborPair>& currentNeighborPairs =
+          (neighborpairdata[type_i])[particle_i];
+
+      // check for neighbor pairs of current particle
+      if (currentNeighborPairs.empty()) continue;
 
       // declare pointer variables for particle i
       const double *dens_i, *temp_i;
@@ -217,11 +218,21 @@ void PARTICLEINTERACTION::SPHTemperatureIntegration::EnergyEquation() const
       // initialize sum of evaluated kernel values for particle i due to neighbor particles j
       double sumj_tempdot_ij(0.0);
 
-      // iterate over particle types of neighboring particles
-      for (auto& neighborTypeIt : particleIt.second)
+      // iterate over neighbor pairs
+      for (auto& neighborIt : currentNeighborPairs)
       {
-        // get type of neighboring particles
-        PARTICLEENGINE::TypeEnum type_j = neighborTypeIt.first;
+        // access values of local index tuple of neighboring particle
+        PARTICLEENGINE::TypeEnum type_j;
+        PARTICLEENGINE::StatusEnum status_j;
+        int particle_j;
+        std::tie(type_j, status_j, particle_j) = neighborIt.first;
+
+        // get reference to current particle pair
+        const SPHParticlePair& particlepair = neighborIt.second;
+
+        // get container of neighboring particles of current particle type and state
+        PARTICLEENGINE::ParticleContainerShrdPtr container_j =
+            particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
 
         // get material for current particle type
         const MAT::PAR::ParticleMaterialThermo* thermomaterial_j = NULL;
@@ -235,44 +246,23 @@ void PARTICLEINTERACTION::SPHTemperatureIntegration::EnergyEquation() const
         if (type_j == PARTICLEENGINE::BoundaryPhase or type_j == PARTICLEENGINE::RigidPhase)
           basematerial_j = particlematerial_->GetPtrToParticleMatParameter(type_j);
 
-        // iterate over particle status of neighboring particles
-        for (auto& neighborStatusIt : neighborTypeIt.second)
-        {
-          // get status of neighboring particles of current type
-          PARTICLEENGINE::StatusEnum status_j = neighborStatusIt.first;
+        // declare pointer variables for neighbor particle j
+        const double *mass_j, *dens_j, *temp_j;
 
-          // get container of neighboring particles of current particle type and state
-          PARTICLEENGINE::ParticleContainerShrdPtr container_j =
-              particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
+        // get pointer to particle states
+        mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
+        temp_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Temperature, particle_j);
 
-          // iterate over neighboring particles of current type and status
-          for (auto& neighborParticleIt : neighborStatusIt.second)
-          {
-            // get local index of neighbor particle j
-            const int particle_j = neighborParticleIt.first;
+        if (type_j == PARTICLEENGINE::BoundaryPhase or type_j == PARTICLEENGINE::RigidPhase)
+          dens_j = &(basematerial_j->initDensity_);
+        else
+          dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
 
-            // get reference to particle pair
-            const ParticlePairSPH& particlepair = neighborParticleIt.second;
-
-            // declare pointer variables for neighbor particle j
-            const double *mass_j, *dens_j, *temp_j;
-
-            // get pointer to particle states
-            mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
-            temp_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Temperature, particle_j);
-
-            if (type_j == PARTICLEENGINE::BoundaryPhase or type_j == PARTICLEENGINE::RigidPhase)
-              dens_j = &(basematerial_j->initDensity_);
-            else
-              dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
-
-            // sum contribution of neighbor particle j
-            sumj_tempdot_ij +=
-                mass_j[0] / (dens_i[0] * dens_j[0]) *
-                (thermomaterial_i->thermalConductivity_ + thermomaterial_j->thermalConductivity_) *
-                (temp_i[0] - temp_j[0]) * (particlepair.dWdrij_ / particlepair.absdist_);
-          }
-        }
+        // sum contribution of neighbor particle j
+        sumj_tempdot_ij +=
+            mass_j[0] / (dens_i[0] * dens_j[0]) *
+            (thermomaterial_i->thermalConductivity_ + thermomaterial_j->thermalConductivity_) *
+            (temp_i[0] - temp_j[0]) * (particlepair.dWdrij_ / particlepair.absdist_);
       }
 
       // add contributions of neighbor particles
