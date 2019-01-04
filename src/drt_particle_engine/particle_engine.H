@@ -99,9 +99,9 @@ namespace PARTICLEENGINE
     //! refresh particles being ghosted on other processors
     void RefreshParticles() const;
 
-    //! refresh specific states of particles of specific types
-    void RefreshSpecificStatesOfParticlesOfSpecificTypes(
-        const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes) const override;
+    //! refresh particles of specific states and types
+    void RefreshParticlesOfSpecificStatesAndTypes(
+        const StatesOfTypesToRefresh& particlestatestotypes) const override;
 
     //! dynamic load balancing
     void DynamicLoadBalancing();
@@ -216,7 +216,7 @@ namespace PARTICLEENGINE
 
     //! determine particles that need to be refreshed
     void DetermineSpecificStatesOfParticlesOfSpecificTypesToBeRefreshed(
-        const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes,
+        const StatesOfTypesToRefresh& particlestatestotypes,
         std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend) const;
 
     //! communicate particles

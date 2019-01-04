@@ -81,9 +81,6 @@ namespace PARTICLEINTERACTION
     virtual void ComputePressure() const;
 
    protected:
-    //! refresh pressure of ghosted particles
-    virtual void RefreshPressure() const;
-
     //! interface to particle engine
     std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface_;
 
@@ -95,6 +92,9 @@ namespace PARTICLEINTERACTION
 
     //! equation of state bundle
     std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle_;
+
+    //! pressure of ghosted particles to refresh
+    PARTICLEENGINE::StatesOfTypesToRefresh pressuretorefresh_;
   };
 
 }  // namespace PARTICLEINTERACTION

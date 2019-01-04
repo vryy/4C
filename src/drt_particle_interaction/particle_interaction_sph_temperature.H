@@ -91,9 +91,6 @@ namespace PARTICLEINTERACTION
     virtual void ComputeTemperature() const = 0;
 
    protected:
-    //! refresh temperature of ghosted particles
-    virtual void RefreshTemperature() const final;
-
     //! smoothed particle hydrodynamics specific parameter list
     const Teuchos::ParameterList& params_sph_;
 
@@ -108,6 +105,9 @@ namespace PARTICLEINTERACTION
 
     //! neighbor pair handler
     std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs_;
+
+    //! temperature of ghosted particles to refresh
+    PARTICLEENGINE::StatesOfTypesToRefresh temperaturetorefresh_;
 
     //! time step size
     double dt_;

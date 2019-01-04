@@ -136,6 +136,53 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::Init()
 }
 
 /*---------------------------------------------------------------------------*
+ | setup surface tension handler                              sfuchs 01/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::Setup(
+    const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
+    const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
+    const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
+    const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle,
+    const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs)
+{
+  // call base class setup
+  SPHSurfaceTensionBase::Setup(
+      particleengineinterface, kernel, particlematerial, equationofstatebundle, neighborpairs);
+
+  // setup colorfield gradient and wall distance of ghosted particles to refresh
+  {
+    std::vector<PARTICLEENGINE::StateEnum> states{
+        PARTICLEENGINE::ColorfieldGradient, PARTICLEENGINE::WallDistance};
+
+    // iterate over particle types
+    for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
+    {
+      // no refreshing of density states for boundary or rigid particles
+      if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
+        continue;
+
+      cfgwalldisttorefresh_.push_back(std::make_pair(typeEnum, states));
+    }
+  }
+
+  // setup colorfield gradient and interface normal of ghosted particles to refresh
+  {
+    std::vector<PARTICLEENGINE::StateEnum> states{
+        PARTICLEENGINE::ColorfieldGradient, PARTICLEENGINE::InterfaceNormal};
+
+    // iterate over particle types
+    for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
+    {
+      // no refreshing of density states for boundary or rigid particles
+      if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
+        continue;
+
+      cfgintnormtorefresh_.push_back(std::make_pair(typeEnum, states));
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*
  | insert surface tension evaluation dependent states         sfuchs 08/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
@@ -190,7 +237,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::AddAcceleratio
     ComputeWallNormalAndDistance();
 
     // refresh colorfield gradient and wall distance
-    RefreshColorfieldGradientAndWallDistance();
+    particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(cfgwalldisttorefresh_);
 
     // extrapolate colorfield gradient at triple point
     ExtrapolateColorfieldGradientAtTriplePoint();
@@ -206,7 +253,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::AddAcceleratio
   }
 
   // refresh colorfield gradient and interface normal
-  RefreshColorfieldGradientAndInterfaceNormal();
+  particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(cfgintnormtorefresh_);
 
   // compute curvature and add acceleration contribution
   ComputeCurvatureAndAddAccelerationContribution();
@@ -412,31 +459,6 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallNor
       }
     }
   }
-}
-
-/*---------------------------------------------------------------------------*
- | refresh colorfield gradient and wall distance              sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
-    RefreshColorfieldGradientAndWallDistance() const
-{
-  // init map
-  std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>> particlestatestotypes;
-
-  // iterate over particle types
-  for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
-  {
-    // no refreshing of surface tension states for boundary or rigid particles
-    if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
-      continue;
-
-    // set state enums to map
-    particlestatestotypes[typeEnum] = {
-        PARTICLEENGINE::ColorfieldGradient, PARTICLEENGINE::WallDistance};
-  }
-
-  // refresh specific states of particles of specific types
-  particleengineinterface_->RefreshSpecificStatesOfParticlesOfSpecificTypes(particlestatestotypes);
 }
 
 /*---------------------------------------------------------------------------*
@@ -807,31 +829,6 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::CorrectTripleP
       for (int i = 0; i < 3; ++i) interfacenormal_i[i] = correctednormal_i[i];
     }
   }
-}
-
-/*---------------------------------------------------------------------------*
- | refresh colorfield gradient and interface normal           sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
-    RefreshColorfieldGradientAndInterfaceNormal() const
-{
-  // init map
-  std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>> particlestatestotypes;
-
-  // iterate over particle types
-  for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
-  {
-    // no refreshing of surface tension states for boundary or rigid particles
-    if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
-      continue;
-
-    // set state enums to map
-    particlestatestotypes[typeEnum] = {
-        PARTICLEENGINE::ColorfieldGradient, PARTICLEENGINE::InterfaceNormal};
-  }
-
-  // refresh specific states of particles of specific types
-  particleengineinterface_->RefreshSpecificStatesOfParticlesOfSpecificTypes(particlestatestotypes);
 }
 
 /*---------------------------------------------------------------------------*

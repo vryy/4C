@@ -41,9 +41,9 @@ namespace PARTICLEENGINE
     //! virtual destructor
     virtual ~ParticleEngineInterface(){};
 
-    //! refresh specific states of particles of specific types
-    virtual void RefreshSpecificStatesOfParticlesOfSpecificTypes(
-        const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes) const = 0;
+    //! refresh particles of specific states and types
+    virtual void RefreshParticlesOfSpecificStatesAndTypes(
+        const StatesOfTypesToRefresh& particlestatestotypes) const = 0;
 
     //! change type of particles
     virtual void TypeChangeParticles(std::vector<std::set<int>>& particlestoremove,

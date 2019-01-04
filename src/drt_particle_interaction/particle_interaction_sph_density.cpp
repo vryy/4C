@@ -79,6 +79,20 @@ void PARTICLEINTERACTION::SPHDensityBase::Setup(
 
   // set neighbor pair handler
   neighborpairs_ = neighborpairs;
+
+  // setup density of ghosted particles to refresh
+  {
+    std::vector<PARTICLEENGINE::StateEnum> states{PARTICLEENGINE::Density};
+
+    for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
+    {
+      // no refreshing of density states for boundary or rigid particles
+      if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
+        continue;
+
+      densitytorefresh_.push_back(std::make_pair(typeEnum, states));
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*
@@ -104,29 +118,6 @@ void PARTICLEINTERACTION::SPHDensityBase::ReadRestart(
 void PARTICLEINTERACTION::SPHDensityBase::SetCurrentStepSize(const double currentstepsize)
 {
   dt_ = currentstepsize;
-}
-
-/*---------------------------------------------------------------------------*
- | refresh density of ghosted particles                       sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHDensityBase::RefreshDensity() const
-{
-  // init map
-  std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>> particlestatestotypes;
-
-  // iterate over particle types
-  for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
-  {
-    // no refreshing of density states for boundary or rigid particles
-    if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
-      continue;
-
-    // set state enums to map
-    particlestatestotypes[typeEnum].insert(PARTICLEENGINE::Density);
-  }
-
-  // refresh specific states of particles of specific types
-  particleengineinterface_->RefreshSpecificStatesOfParticlesOfSpecificTypes(particlestatestotypes);
 }
 
 /*---------------------------------------------------------------------------*
@@ -386,7 +377,7 @@ void PARTICLEINTERACTION::SPHDensitySummation::ComputeDensity() const
   }
 
   // refresh density of ghosted particles
-  RefreshDensity();
+  particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(densitytorefresh_);
 }
 
 /*---------------------------------------------------------------------------*
@@ -444,7 +435,7 @@ void PARTICLEINTERACTION::SPHDensityIntegration::ComputeDensity() const
   }
 
   // refresh density of ghosted particles
-  RefreshDensity();
+  particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(densitytorefresh_);
 }
 
 /*---------------------------------------------------------------------------*
@@ -571,7 +562,7 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::ComputeDensity() const
   }
 
   // refresh density of ghosted particles
-  RefreshDensity();
+  particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(densitytorefresh_);
 
   // evaluate sum of weighted mass and colorfield
   SumWeightedMassAndColorfield();
@@ -580,7 +571,7 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::ComputeDensity() const
   CorrectDensity();
 
   // refresh density of ghosted particles
-  RefreshDensity();
+  particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(densitytorefresh_);
 }
 
 /*---------------------------------------------------------------------------*

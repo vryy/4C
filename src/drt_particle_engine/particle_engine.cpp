@@ -352,10 +352,10 @@ void PARTICLEENGINE::ParticleEngine::RefreshParticles() const
 }
 
 /*---------------------------------------------------------------------------*
- | refresh specific states of particles of specific types     sfuchs 05/2018 |
+ | refresh particles of specific states and types             sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleEngine::RefreshSpecificStatesOfParticlesOfSpecificTypes(
-    const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes) const
+void PARTICLEENGINE::ParticleEngine::RefreshParticlesOfSpecificStatesAndTypes(
+    const StatesOfTypesToRefresh& particlestatestotypes) const
 {
   std::vector<std::vector<ParticleObjShrdPtr>> particlestosend(comm_.NumProc());
   std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>> particlestoinsert(typevectorsize_);
@@ -1426,7 +1426,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeRefreshed(
  | determine particles that need to be refreshed              sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::DetermineSpecificStatesOfParticlesOfSpecificTypesToBeRefreshed(
-    const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes,
+    const StatesOfTypesToRefresh& particlestatestotypes,
     std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend) const
 {
   // safety check
@@ -1437,9 +1437,6 @@ void PARTICLEENGINE::ParticleEngine::DetermineSpecificStatesOfParticlesOfSpecifi
   {
     // get type of particles
     TypeEnum typeEnum = typeIt.first;
-
-    // get state enum set
-    const std::set<StateEnum>& stateEnumSet = typeIt.second;
 
     // check for particles of current type to be sent
     if (directghostingtargets_[typeEnum].empty()) continue;
@@ -1456,7 +1453,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineSpecificStatesOfParticlesOfSpecifi
       ParticleStates particleStates;
 
       // iterate over states to be sent
-      for (auto& stateEnum : stateEnumSet)
+      for (auto& stateEnum : typeIt.second)
         particleStates[stateEnum] = container->GetParticleState(stateEnum, ownedindex);
 
       // iterate over target processors

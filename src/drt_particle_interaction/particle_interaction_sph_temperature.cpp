@@ -64,6 +64,19 @@ void PARTICLEINTERACTION::SPHTemperatureBase::Setup(
 
   // set neighbor pair handler
   neighborpairs_ = neighborpairs;
+
+  // setup temperature of ghosted particles to refresh
+  {
+    std::vector<PARTICLEENGINE::StateEnum> states{PARTICLEENGINE::Temperature};
+
+    for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
+    {
+      // no refreshing of density states for boundary or rigid particles
+      if (typeEnum == PARTICLEENGINE::BoundaryPhase) continue;
+
+      temperaturetorefresh_.push_back(std::make_pair(typeEnum, states));
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*
@@ -89,28 +102,6 @@ void PARTICLEINTERACTION::SPHTemperatureBase::ReadRestart(
 void PARTICLEINTERACTION::SPHTemperatureBase::SetCurrentStepSize(const double currentstepsize)
 {
   dt_ = currentstepsize;
-}
-
-/*---------------------------------------------------------------------------*
- | refresh temperature of ghosted particles                    meier 09/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHTemperatureBase::RefreshTemperature() const
-{
-  // init map
-  std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>> particlestatestotypes;
-
-  // iterate over particle types
-  for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
-  {
-    // no refreshing of temperature states for boundary particles
-    if (typeEnum == PARTICLEENGINE::BoundaryPhase) continue;
-
-    // set state enums to map
-    particlestatestotypes[typeEnum].insert(PARTICLEENGINE::Temperature);
-  }
-
-  // refresh specific states of particles of specific types
-  particleengineinterface_->RefreshSpecificStatesOfParticlesOfSpecificTypes(particlestatestotypes);
 }
 
 /*---------------------------------------------------------------------------*
@@ -162,7 +153,7 @@ void PARTICLEINTERACTION::SPHTemperatureIntegration::ComputeTemperature() const
   }
 
   // refresh temperature of ghosted particles
-  RefreshTemperature();
+  particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(temperaturetorefresh_);
 }
 
 /*---------------------------------------------------------------------------*

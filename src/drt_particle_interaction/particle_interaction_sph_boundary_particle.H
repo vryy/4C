@@ -106,12 +106,17 @@ namespace PARTICLEINTERACTION
     //! virtual destructor
     virtual ~SPHBoundaryParticleAdami(){};
 
+    //! setup boundary particle handler
+    virtual void Setup(
+        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
+        const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
+
     //! init boundary particles
     virtual void InitBoundaryParticles(std::vector<double>& gravity) const override;
 
-   protected:
-    //! refresh modified states of ghosted boundary particles
-    virtual void RefreshModifiedStatesOfBoundaryParticles() const;
+   private:
+    //! modified states of ghosted boundary particles to refresh
+    PARTICLEENGINE::StatesOfTypesToRefresh boundarystatestorefresh_;
   };
 
 }  // namespace PARTICLEINTERACTION

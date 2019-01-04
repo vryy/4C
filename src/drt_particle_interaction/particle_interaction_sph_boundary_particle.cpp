@@ -100,6 +100,26 @@ PARTICLEINTERACTION::SPHBoundaryParticleAdami::SPHBoundaryParticleAdami(
 }
 
 /*---------------------------------------------------------------------------*
+ | setup boundary particle handler                            sfuchs 01/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::SPHBoundaryParticleAdami::Setup(
+    const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
+    const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs)
+{
+  // call base class setup
+  SPHBoundaryParticleBase::Setup(particleengineinterface, neighborpairs);
+
+  // setup modified states of ghosted boundary particles to refresh
+  {
+    std::vector<PARTICLEENGINE::StateEnum> states{
+        PARTICLEENGINE::BoundaryPressure, PARTICLEENGINE::BoundaryVelocity};
+
+    for (auto& typeEnum : typestoconsider_)
+      boundarystatestorefresh_.push_back(std::make_pair(typeEnum, states));
+  }
+}
+
+/*---------------------------------------------------------------------------*
  | initialize modified boundary particle states               sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticles(
@@ -216,22 +236,5 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticles(
   }
 
   // refresh modified states of ghosted boundary particles
-  RefreshModifiedStatesOfBoundaryParticles();
-}
-
-/*---------------------------------------------------------------------------*
- | refresh modified states of ghosted boundary particles      sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHBoundaryParticleAdami::RefreshModifiedStatesOfBoundaryParticles() const
-{
-  // init map
-  std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>> particlestatestotypes;
-
-  // set state enums to map
-  for (auto& type : typestoconsider_)
-    particlestatestotypes[type] = {
-        PARTICLEENGINE::BoundaryPressure, PARTICLEENGINE::BoundaryVelocity};
-
-  // refresh specific states of particles of specific types
-  particleengineinterface_->RefreshSpecificStatesOfParticlesOfSpecificTypes(particlestatestotypes);
+  particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(boundarystatestorefresh_);
 }

@@ -138,6 +138,14 @@ namespace PARTICLEINTERACTION
     //! init surface tension handler
     virtual void Init();
 
+    //! setup surface tension handler
+    virtual void Setup(
+        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
+        const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
+        const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
+        const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle,
+        const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
+
     //! insert surface tension evaluation dependent states
     virtual void InsertParticleStatesOfParticleTypes(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
@@ -153,9 +161,6 @@ namespace PARTICLEINTERACTION
     //! compute wall normal and distance
     virtual void ComputeWallNormalAndDistance() const;
 
-    //! refresh colorfield gradient and wall distance
-    virtual void RefreshColorfieldGradientAndWallDistance() const;
-
     //! extrapolate colorfield gradient at triple point
     virtual void ExtrapolateColorfieldGradientAtTriplePoint() const;
 
@@ -165,11 +170,14 @@ namespace PARTICLEINTERACTION
     //! correct normal vector of particles close to triple point
     virtual void CorrectTriplePointNormal() const;
 
-    //! refresh colorfield gradient and interface normal
-    virtual void RefreshColorfieldGradientAndInterfaceNormal() const;
-
     //! compute curvature and acceleration contribution
     virtual void ComputeCurvatureAndAddAccelerationContribution() const;
+
+    //! colorfield gradient and wall distance of ghosted particles to refresh
+    PARTICLEENGINE::StatesOfTypesToRefresh cfgwalldisttorefresh_;
+
+    //! colorfield gradient and interface normal of ghosted particles to refresh
+    PARTICLEENGINE::StatesOfTypesToRefresh cfgintnormtorefresh_;
 
     //! surface tension coefficient
     const double surfacetensioncoefficient_;
