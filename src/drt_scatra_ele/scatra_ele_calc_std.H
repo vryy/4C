@@ -5,10 +5,12 @@
 \brief evaluation of scalar transport elements for standard scalar transport problems
 
 <pre>
-Maintainer: Rui Fang
-            fang@lnm.mw.tum.de
+\maintainer Anh-Tu Vuong
+            vuong@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
-            089-289-15251
+            089 - 289-15237
+
+\level 1
 </pre>
 */
 /*--------------------------------------------------------------------------*/
