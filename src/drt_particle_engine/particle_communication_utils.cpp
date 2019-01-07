@@ -35,7 +35,6 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
 
   // number of processors receiving data from this processor
   int const numsendtoprocs = sdata.size();
-  int counter = 0;
 
   // mpi communicator
   const Epetra_MpiComm* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm);
@@ -55,12 +54,12 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
   // ---- send size of messages to receiving processors ----
   std::vector<MPI_Request> sizerequest(numsendtoprocs);
   std::vector<int> sizetargets(numsendtoprocs);
-  counter = 0;
+  int counter = 0;
   for (auto& p : sdata)
   {
-    int torank = p.first;
+    int const torank = p.first;
     if (myrank == torank) dserror("processor should not send messages to itself!");
-    if (torank == -1) dserror("processor can not send messages to processor -1!");
+    if (torank < 0) dserror("processor can not send messages to processor < 0!");
 
     sizetargets[counter] = torank;
 
@@ -77,18 +76,16 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
   std::vector<MPI_Request> recvrequest(numrecvfromprocs);
   for (int rec = 0; rec < numrecvfromprocs; ++rec)
   {
-    int msgsize = -1;
-    int msgtag = -1;
-    int msgsource = -1;
-    int msgsizetorecv = -1;
-
     // probe for any message to come
     MPI_Status status;
     MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, mpicomm->Comm(), &status);
 
-    // get sender, tag and size
-    msgsource = status.MPI_SOURCE;
-    msgtag = status.MPI_TAG;
+    // get message sender and tag
+    int const msgsource = status.MPI_SOURCE;
+    int const msgtag = status.MPI_TAG;
+
+    // get message size
+    int msgsize = -1;
     MPI_Get_count(&status, MPI_INT, &msgsize);
 
     // check message tag
@@ -99,6 +96,7 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
     if (msgsize != 1) dserror("message size not correct (one int expected)!");
 
     // perform blocking receive operation
+    int msgsizetorecv = -1;
     MPI_Recv(&msgsizetorecv, msgsize, MPI_INT, msgsource, msgtag, mpicomm->Comm(), &status);
 
     // check received size of message
@@ -117,20 +115,19 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
   counter = 0;
   while (counter != numsendtoprocs)
   {
+    // test for non-blocking send operation
     int index = -1;
     int flag = 0;
-    int torank = -1;
-
-    // test for non-blocking send operation
     MPI_Status status;
     MPI_Testany(numsendtoprocs, &sizerequest[0], &index, &flag, &status);
 
     if (flag)
     {
-      torank = sizetargets[index];
+      int const torank = sizetargets[index];
       if (myrank == torank) dserror("processor should not send messages to itself!");
-      if (torank == -1) dserror("processor can not send messages to processor -1!");
+      if (torank < 0) dserror("processor can not send messages to processor < 0!");
 
+      // reference to send buffer
       std::vector<char>& sbuffer = sdata[torank];
 
       // perform blocking send operation
@@ -145,10 +142,6 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
   sdata.clear();
 
   // ---- wait for completion of receive operations ----
-  for (auto& req : recvrequest)
-  {
-    // wait for non-blocking receive operation
-    MPI_Status status;
-    MPI_Wait(&req, &status);
-  }
+  std::vector<MPI_Status> status(numrecvfromprocs);
+  MPI_Waitall(numrecvfromprocs, &recvrequest[0], &status[0]);
 }
