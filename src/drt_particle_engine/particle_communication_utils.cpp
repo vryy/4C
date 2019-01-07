@@ -97,7 +97,8 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
 
     // perform blocking receive operation
     int msgsizetorecv = -1;
-    MPI_Recv(&msgsizetorecv, msgsize, MPI_INT, msgsource, msgtag, mpicomm->Comm(), &status);
+    MPI_Recv(
+        &msgsizetorecv, msgsize, MPI_INT, msgsource, msgtag, mpicomm->Comm(), MPI_STATUS_IGNORE);
 
     // check received size of message
     if (msgsizetorecv < 0) dserror("received message size is negative!");
@@ -118,8 +119,7 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
     // test for non-blocking send operation
     int index = -1;
     int flag = 0;
-    MPI_Status status;
-    MPI_Testany(numsendtoprocs, &sizerequest[0], &index, &flag, &status);
+    MPI_Testany(numsendtoprocs, &sizerequest[0], &index, &flag, MPI_STATUS_IGNORE);
 
     if (flag)
     {
@@ -142,6 +142,5 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
   sdata.clear();
 
   // ---- wait for completion of receive operations ----
-  std::vector<MPI_Status> status(numrecvfromprocs);
-  MPI_Waitall(numrecvfromprocs, &recvrequest[0], &status[0]);
+  MPI_Waitall(numrecvfromprocs, &recvrequest[0], MPI_STATUSES_IGNORE);
 }
