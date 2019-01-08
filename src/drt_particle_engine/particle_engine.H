@@ -194,6 +194,9 @@ namespace PARTICLEENGINE
     //! determine ghosting dependent maps/sets for communication
     void DetermineGhostingDependentMapsAndSets();
 
+    //! relate half neighboring bins to owned bins
+    void RelateHalfNeighboringBinsToOwnedBins();
+
     //! check particles for periodic boundaries/leaving domain
     void CheckParticlesAtBoundaries(std::vector<std::set<int>>& particlestoremove) const;
 
@@ -255,8 +258,8 @@ namespace PARTICLEENGINE
     //! determine bin weights needed for repartitioning
     void DetermineBinWeights();
 
-    //! invalidate all safety flags
-    void InvalidateAllSafetyFlags();
+    //! invalidate particle safety flags
+    void InvalidateParticleSafetyFlags();
 
     //! communication
     const Epetra_Comm& comm_;
@@ -297,7 +300,7 @@ namespace PARTICLEENGINE
     //! relate (owned and ghosted) particles to bins
     std::vector<std::vector<std::pair<PARTICLEENGINE::ParticleType, int>>> particlestobins_;
 
-    //! maps particles of all types to neighboring particles of all types and statuses (overlapping)
+    //! relate (overlapping) particle neighbors of all types and statuses
     ParticleNeighbors particleneighbors_;
 
     //! maps particle global ids to local index in specific particle container
@@ -305,6 +308,9 @@ namespace PARTICLEENGINE
 
     //! relate local index of owned particles to other processors local index of ghosted particles
     std::vector<std::map<int, std::vector<std::pair<int, int>>>> directghostingtargets_;
+
+    //! relate half surrounding neighboring bins (including owned bin itself) to owned bins
+    std::vector<std::set<int>> halfneighboringbinstobins_;
 
     //! flag denoting valid relation of owned particles to bins
     bool validownedparticles_;
@@ -320,6 +326,9 @@ namespace PARTICLEENGINE
 
     //! flag denoting validity of direct ghosting
     bool validdirectghosting_;
+
+    //! flag denoting valid relation of half surrounding neighboring bins to owned bins
+    bool validhalfneighboringbins_;
 
     //! owned bins at an open boundary or a periodic boundary
     std::set<int> boundarybins_;

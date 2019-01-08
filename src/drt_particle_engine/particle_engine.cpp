@@ -52,7 +52,8 @@ PARTICLEENGINE::ParticleEngine::ParticleEngine(
       validghostedparticles_(false),
       validparticleneighbors_(false),
       validglobalidtolocalindex_(false),
-      validdirectghosting_(false)
+      validdirectghosting_(false),
+      validhalfneighboringbins_(false)
 {
   // empty constructor
 }
@@ -406,8 +407,11 @@ void PARTICLEENGINE::ParticleEngine::DynamicLoadBalancing()
   // clear all containers of owned particles
   particlecontainerbundle_->ClearAllContainersOfSpecificStatus(PARTICLEENGINE::Owned);
 
-  // invalidate all safety flags
-  InvalidateAllSafetyFlags();
+  // invalidate particle safety flags
+  InvalidateParticleSafetyFlags();
+
+  // invalidate flag denoting valid relation of half surrounding neighboring bins to owned bins
+  validhalfneighboringbins_ = false;
 
   // distribute particles to owning processor
   DistributeParticles(particlestodistribute);
@@ -445,6 +449,9 @@ void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
   if ((not validownedparticles_) or (not validghostedparticles_))
     dserror("invalid relation of particles to bins!");
 
+  // relate half neighboring bins to owned bins
+  if (not validhalfneighboringbins_) RelateHalfNeighboringBinsToOwnedBins();
+
   // iterate over particle types
   for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
@@ -474,10 +481,6 @@ void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
     // check if current bin contains owned particles
     if (particlestobins_[collidofbin].empty()) continue;
 
-    // get neighboring bins
-    std::vector<int> binvec;
-    binstrategy_->GetNeighborAndOwnBinIds(gidofbin, binvec);
-
     // iterate over owned particles in current bin
     for (auto& particleIt : particlestobins_[collidofbin])
     {
@@ -491,14 +494,15 @@ void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
       ParticleContainerShrdPtr container =
           particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
-      // get position of particle
-      double* currpos = container->GetPtrToParticleState(PARTICLEENGINE::Position, ownedindex);
+      // get global id of particle
+      const int* currglobalid = container->GetPtrToParticleGlobalID(ownedindex);
 
-      // get reference to vector of neighbors of current particle
-      std::vector<LocalIndexTuple>& currentNeighbors = (particleneighbors_[typeEnum])[ownedindex];
+      // get position of particle
+      const double* currpos =
+          container->GetPtrToParticleState(PARTICLEENGINE::Position, ownedindex);
 
       // iterate over neighboring bins (including current bin)
-      for (int gidofneighborbin : binvec)
+      for (int gidofneighborbin : halfneighboringbinstobins_[rowlidofbin])
       {
         // get local id of neighboring bin
         const int collidofneighboringbin = bincolmap_->LID(gidofneighborbin);
@@ -524,28 +528,33 @@ void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
           ParticleContainerShrdPtr neighborcontainer =
               particlecontainerbundle_->GetSpecificContainer(neighborTypeEnum, neighborStatusEnum);
 
-          // no self-neighboring
-          if (gidofbin == gidofneighborbin and typeEnum == neighborTypeEnum and
-              neighborStatusEnum == PARTICLEENGINE::Owned and ownedindex == neighborindex)
-            continue;
+          // get global id of neighboring particle
+          const int* neighborglobalid = neighborcontainer->GetPtrToParticleGlobalID(neighborindex);
+
+          // avoid duplicate neighbor pairs and self-neighboring
+          if (gidofbin == gidofneighborbin and neighborglobalid[0] <= currglobalid[0]) continue;
 
           // get position of neighboring particle
-          const double* neighborcurrpos =
+          const double* neighborpos =
               neighborcontainer->GetPtrToParticleState(PARTICLEENGINE::Position, neighborindex);
 
           // distance vector from owned particle to neighboring particle
           double dist[3];
 
           // distance between particles considering periodic boundaries
-          DistanceBetweenParticles(currpos, neighborcurrpos, dist);
+          DistanceBetweenParticles(currpos, neighborpos, dist);
 
           // distance between particles larger than minimum bin size
           if (std::sqrt(dist[0] * dist[0] + dist[1] * dist[1] + dist[2] * dist[2]) > minbinsize_)
             continue;
 
-          // insert neighboring particle of current type and status
-          currentNeighbors.push_back(
+          // insert neighbor relation of both particles
+          (particleneighbors_[typeEnum])[ownedindex].push_back(
               std::make_tuple(neighborTypeEnum, neighborStatusEnum, neighborindex));
+
+          if (neighborStatusEnum != PARTICLEENGINE::Ghosted)
+            (particleneighbors_[neighborTypeEnum])[neighborindex].push_back(
+                std::make_tuple(typeEnum, PARTICLEENGINE::Owned, ownedindex));
         }
       }
     }
@@ -1085,6 +1094,66 @@ void PARTICLEENGINE::ParticleEngine::DetermineGhostingDependentMapsAndSets()
       dserror("mismatch in size of data %d <-> %d", static_cast<int>((rdata[msgsource]).size()),
           position);
   }
+}
+
+/*---------------------------------------------------------------------------*
+ | relate half neighboring bins to owned bins                 sfuchs 01/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEENGINE::ParticleEngine::RelateHalfNeighboringBinsToOwnedBins()
+{
+  // allocate memory for neighbors of owned bins
+  halfneighboringbinstobins_.assign(binrowmap_->NumMyElements(), std::set<int>());
+
+  // loop over row bins
+  for (int rowlidofbin = 0; rowlidofbin < binrowmap_->NumMyElements(); ++rowlidofbin)
+  {
+    // get global id of bin
+    const int gidofbin = binrowmap_->GID(rowlidofbin);
+
+    // get ijk of current bin
+    int ijk[3];
+    binstrategy_->ConvertGidToijk(gidofbin, ijk);
+
+    // get reference to neighboring bins (including current bin) of current bin
+    std::set<int>& neighboringbins = halfneighboringbinstobins_[rowlidofbin];
+
+    // insert current bin id
+    neighboringbins.insert(gidofbin);
+
+    // insert half of the surrounding bins following a specific stencil
+    int ijk_range_9bin[] = {ijk[0] - 1, ijk[0] + 1, ijk[1] - 1, ijk[1] + 1, ijk[2] + 1, ijk[2] + 1};
+    binstrategy_->GidsInijkRange(&ijk_range_9bin[0], neighboringbins, false);
+
+    int ijk_range_3bin[] = {ijk[0] + 1, ijk[0] + 1, ijk[1] - 1, ijk[1] + 1, ijk[2], ijk[2]};
+    binstrategy_->GidsInijkRange(&ijk_range_3bin[0], neighboringbins, false);
+
+    int ijk_range_1bin[] = {ijk[0], ijk[0], ijk[1] + 1, ijk[1] + 1, ijk[2], ijk[2]};
+    binstrategy_->GidsInijkRange(&ijk_range_1bin[0], neighboringbins, false);
+  }
+
+  // iterate over bins being ghosted on this processor
+  for (int gidofbin : ghostedbins_)
+  {
+    // get neighboring bins
+    std::vector<int> binvec;
+    binstrategy_->GetNeighborBinIds(gidofbin, binvec);
+
+    // iterate over neighboring bins
+    for (int neighbin : binvec)
+    {
+      // get local id of bin
+      const int rowlidofbin = binrowmap_->LID(neighbin);
+
+      // neighboring bin not owned by this processor
+      if (rowlidofbin < 0) continue;
+
+      // insert neighboring bins being ghosted on this processor
+      halfneighboringbinstobins_[rowlidofbin].insert(gidofbin);
+    }
+  }
+
+  // validate flag denoting valid relation of half surrounding neighboring bins to owned bins
+  validhalfneighboringbins_ = true;
 }
 
 /*---------------------------------------------------------------------------*
@@ -1673,8 +1742,8 @@ void PARTICLEENGINE::ParticleEngine::InsertOwnedParticles(
   // clear after all particles are inserted
   particlestoinsert.clear();
 
-  // invalidate all safety flags
-  InvalidateAllSafetyFlags();
+  // invalidate particle safety flags
+  InvalidateParticleSafetyFlags();
 }
 
 /*---------------------------------------------------------------------------*
@@ -1805,8 +1874,8 @@ void PARTICLEENGINE::ParticleEngine::RemoveParticlesFromContainers(
   // clear after all particles are removed
   particlestoremove.clear();
 
-  // invalidate all safety flags
-  InvalidateAllSafetyFlags();
+  // invalidate particle safety flags
+  InvalidateParticleSafetyFlags();
 }
 
 /*---------------------------------------------------------------------------*
@@ -1849,8 +1918,8 @@ void PARTICLEENGINE::ParticleEngine::RelateOwnedParticlesToBins()
   particlestobins_.resize(bincolmap_->NumMyElements());
   for (auto& binIt : particlestobins_) binIt.clear();
 
-  // invalidate all safety flags
-  InvalidateAllSafetyFlags();
+  // invalidate particle safety flags
+  InvalidateParticleSafetyFlags();
 
   // iterate over particle types
   for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
@@ -1937,9 +2006,9 @@ void PARTICLEENGINE::ParticleEngine::DetermineBinWeights()
 }
 
 /*---------------------------------------------------------------------------*
- | invalidate all safety flags                                sfuchs 11/2018 |
+ | invalidate particle safety flags                           sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleEngine::InvalidateAllSafetyFlags()
+void PARTICLEENGINE::ParticleEngine::InvalidateParticleSafetyFlags()
 {
   validownedparticles_ = false;
   validghostedparticles_ = false;
