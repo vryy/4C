@@ -14,7 +14,7 @@
 #include "Teuchos_RCP.hpp"
 #include "Epetra_Map.h"
 #include "Epetra_SerialDenseMatrix.h"
-
+#include "../drt_mortar/abstract_binarytree.H"
 
 // forward declarations
 namespace DRT
@@ -585,7 +585,7 @@ namespace CONTACT
   \author popp (popp@lnm.mw.tum.de)
   */
 
-  class SelfBinaryTree
+  class SelfBinaryTree : public MORTAR::AbstractBinaryTree
   {
    public:
     /*!
@@ -616,7 +616,13 @@ namespace CONTACT
            call SetEnlarge() and SearchContactSeparate()
 
     */
-    void EvaluateSearch();
+    void EvaluateSearch() final;
+
+    /*!
+    \brief Initialize the binary tree
+
+    */
+    void Init() final;
 
     //@}
 

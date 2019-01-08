@@ -613,7 +613,24 @@ void CONTACT::SelfDualEdge::CalculateCosts()
  *----------------------------------------------------------------------*/
 CONTACT::SelfBinaryTree::SelfBinaryTree(DRT::Discretization& discret, const Epetra_Comm* lcomm,
     Teuchos::RCP<Epetra_Map> elements, int dim, double eps)
-    : idiscret_(discret), lcomm_(lcomm), elements_(elements), dim_(dim), eps_(eps)
+    : MORTAR::AbstractBinaryTree(),
+      idiscret_(discret),
+      lcomm_(lcomm),
+      elements_(elements),
+      dim_(dim),
+      kdop_(-1),
+      nvectors_(-1),
+      eps_(eps),
+      enlarge_(-1.0)
+{
+  // keep the constructor clean
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | initialize the binary tree                              schmidt 12/18|
+ *----------------------------------------------------------------------*/
+void CONTACT::SelfBinaryTree::Init()
 {
   // get out of here if not participating in interface
   if (!lComm()) return;
