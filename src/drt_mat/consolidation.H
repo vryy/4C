@@ -3,16 +3,10 @@
  \file consolidation.H
  \brief material managing consolidation or other phase change
 
- provides a common storage and evaluation of consolidation related stuff for SLM
- this material needs to be referenced by material definitions that use consolidation
- e.g. MAT::ThrStVenantKirchhoff and MAT::FourierVar
- example:
- MAT 2 MAT_consolidation SOLIDUS 1615 LIQUIDUS 1674
-
- \level 1
-<pre>
-\maintainer Sebastian Pröll
-</pre>
+ \level 3
+ <pre>
+ \maintainer Sebastian Pröll
+ </pre>
  */
 
 /*----------------------------------------------------------------------*
@@ -30,8 +24,6 @@
 #include "../drt_lib/drt_parobjectfactory.H"
 
 #include <Teuchos_TimeMonitor.hpp>
-
-
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -58,17 +50,18 @@ namespace MAT
       //@{
       const double solidustemp_;
       const double liquidustemp_;
-      // smoothing width, if 0 no smoothing but linear
+      /// smoothing width, if 0 no smoothing but linear interpolation
       const double delta_;
       const double latentheat_;
-
-      bool heatint_;      // if true use heat integration instead of apparent capacity
-      bool enthalpydep_;  // enthalpy dependent parameters
-
       //@}
 
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
+      /// if true use heat integration instead of apparent capacity
+      bool heatint_;
+      /// enthalpy dependent parameters instead of temperature
+      bool enthalpydep_;
     };
 
   }  // namespace PAR
@@ -89,27 +82,34 @@ namespace MAT
   /*----------------------------------------------------------------------*/
   /// Consolidation material
   ///
-  /// Manager for consolidation process.
+  /// Manager for consolidation process which provides a common storage and evaluation of
+  /// consolidation related stuff for SLM.
+  /// This material needs to be referenced by material definitions that use consolidation.
   ///
   /// \author proell
   /// \date 05/18
   class Consolidation : public Material
   {
    public:
-    // interface of a general interpolant
+    /// interface of a general interpolant
     class Interpolant
     {
      public:
+      /// evaluate interpolation at point x
       virtual double valueAt(double x) = 0;
+      /// derivative of interpoaltion at point x
       virtual double derivativeAt(double x) = 0;
+      /// inverse of interpolation, i.e., find
       virtual double inverseAt(double x) = 0;
     };
 
+    /// linear interpolant
     class LinearInterpolant : public Interpolant
     {
      public:
+      /// ctor
       LinearInterpolant();
-
+      /// ctor
       LinearInterpolant(double x1, double x2, double y1, double y2)
           : x1_(x1), x2_(x2), y1_(y1), y2_(y2)
       {
@@ -296,64 +296,8 @@ namespace MAT
       const double TOL = 1e-6;
     };
 
-    //  class ApparentCapacityEvaluator{
-    //  public:
-    //
-    //    static const ApparentCapacityEvaluator* Setup(const double Ts, const double Tl, const
-    //    double latentheat){
-    //      if (instance_ == NULL) {
-    //        instance_ = new ApparentCapacityEvaluator(Ts,Tl,latentheat);
-    //      }
-    //      return instance_;
-    //    }
-    //
-    //    static const ApparentCapacityEvaluator* Instance(){
-    //      if (instance_ == NULL)
-    //        dserror("Setup has not been called!");
-    //      return instance_;
-    //    }
-    //
-    //    double Evaluate(const double temperature) const {
-    //      if (temperature <= Ts_ or temperature >= Tl_)
-    //        return 0;
-    //      else if (temperature > Ts_ and temperature <= Tmid_){
-    //        return leftInterp_->valueAt(temperature);
-    //      }
-    //      else if (temperature > Tmid_ and temperature < Tl_){
-    //        return rightInterp_->valueAt(temperature);
-    //      }
-    //      else{
-    //        dserror("Temperature %f out of range",temperature);
-    //        return -1;
-    //      }
-    //    }
-    //
-    //  private:
-    //    ApparentCapacityEvaluator(const double Ts, const double Tl, const double latentheat){
-    //      const double Tmid = (Ts+Tl)/2;
-    //      const double Cpeak = 2*latentheat/(Tl-Ts);
-    //      const double delta = (Tl-Ts)/6;
-    //      leftInterp_ = new QuadLinQuadInterpolant(Ts,Tmid,0,Cpeak,0,0,delta);
-    //      rightInterp_ = new QuadLinQuadInterpolant(Tmid,Tl,Cpeak,0,0,0,delta);
-    //      Ts_ = Ts;
-    //      Tl_ = Tl;
-    //      Tmid_ = Tmid;
-    //    }
-    //
-    //    // prohibit unwanted operations
-    //    ApparentCapacityEvaluator(ApparentCapacityEvaluator const&);
-    //    void operator=(ApparentCapacityEvaluator const&);
-    //
-    //    //! singleton instance
-    //    static ApparentCapacityEvaluator* instance_;
-    //
-    //    Interpolant* leftInterp_;
-    //    Interpolant* rightInterp_;
-    //    double Ts_,Tl_,Tmid_;
-    //  };
-
-    typedef Teuchos::RCP<MAT::Consolidation::Interpolant> InterpolantPtr;
-    typedef std::map<const std::vector<int>, InterpolantPtr> InterpolantCache;
+    using InterpolantPtr = Teuchos::RCP<MAT::Consolidation::Interpolant>;
+    using InterpolantCache = std::map<const std::vector<int>, InterpolantPtr>;
 
     /// empty constructor
     Consolidation();
@@ -402,18 +346,17 @@ namespace MAT
     /// return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new Consolidation(*this)); }
 
-    // setup rotine to create history variables based on number of Gauss points
+    //! setup routine to create history variables based on number of Gauss points
     void Setup(const int numgp);
 
-    // update history variables
+    //! update history variables
     void Update();
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-
     /// @name evaluation of functions and their derivatives based on phase and temperature
-    //@{
+    //! @{
 
     /// \brief evaluation routine for function evaluation based on temperature and consolidation
     ///
@@ -425,7 +368,7 @@ namespace MAT
             functions  ///< vector of global functions IDs to interpolate, length NUMFUNCT
     );
 
-    // \brief evaluation routine for derivative evaluation based on temperature and consolidation
+    /// \brief evaluation routine for derivative evaluation based on temperature and consolidation
     ///
     /// This is the main method to be used by classes holding an instance of Consolidation.
     /// Based on temperature and GP history the correct derivative of the interpolation is
@@ -436,7 +379,12 @@ namespace MAT
             functions  ///< vector of global functions IDs to interpolate, length NUMFUNCT
     );
 
-    //@}
+    /// @}
+
+    /**
+     * Set value of shapefunctions
+     * @param shapefunct
+     */
     template <unsigned int nen>
     void SetFunct(const LINALG::Matrix<nen, 1>& shapefunct)
     {
@@ -451,6 +399,7 @@ namespace MAT
             functions  ///< vector of global functions IDs to interpolate, length NUMFUNCT
     )
     {
+      // TODO this should be solved via templates (preferably) or polymorhpism
       if (params_->enthalpydep_)
       {
         return EvaluateTempDependentFunction(enth_, gp, functions);
@@ -470,7 +419,7 @@ namespace MAT
     {
       if (params_->enthalpydep_)
       {
-        // for now just skip derivative evaluatation, not clear how temp dependency should be done
+        // for now just skip derivative evaluation, not clear how temp dependency should be done
         // with enthalpy
         return 0;
       }
@@ -480,11 +429,10 @@ namespace MAT
       }
     }
 
-
     //! get the middle temperature between solidus and liquidus
     double MeltingTemperature() { return (params_->solidustemp_ + params_->liquidustemp_) / 2; }
 
-    //! get the value of latent heat disctributed on the capacity
+    //! get the value of latent heat distributed on the capacity
     double ApparentCapacityPeak(double temperature)
     {
       if (params_->heatint_)
@@ -506,7 +454,7 @@ namespace MAT
         return -1;
       }
     }
-
+    //! linearization contribution of latent heat distributed on the capacity
     double ApparentCapacityDerivative(double temperature)
     {
       if (params_->heatint_)
@@ -529,9 +477,9 @@ namespace MAT
       }
     }
 
-    // \brief limit the latent heat source term based on history at nodes
-    //
-    // NOTE: this method is only implemented for melting
+    /// \brief limit the latent heat source term based on history at nodes
+    ///
+    /// \note this method is only implemented for melting
     template <unsigned int nen>
     void LimitLatentHeatSourceTerm(
         LINALG::Matrix<nen, 1>&
@@ -566,10 +514,12 @@ namespace MAT
       }
     }
 
+    //! reset memory of
     void ResetLatentHeatLastStep() { *lhremnp_ = *lhrem_; }
 
     /// service function for postprocessing, evaluate "phase"
     /// at nodes based on history and temperature
+    ///
     /// prerequisite: Update() called in this step
     template <unsigned int nen>
     void NodalPhase(LINALG::Matrix<nen, 1>& nodaltemp,  ///< temperatures at element nodes
@@ -638,13 +588,15 @@ namespace MAT
     }
 
    private:
-    // number of functions used for interpolation
-    // 0: powder, 1: melt, 2: solid
+    /// number of functions used for interpolation
+    ///
+    /// indexing is 0: powder, 1: melt, 2: solid
     static const int NUMFUNCT = 3;
 
     /// internal evaluation for phase fractions based on current temperature and phase
     void EvaluateFractions(const double temperature, const double cfrac);
 
+    /// internal evaluation of fraction derivatives
     void EvaluateFractionDerivatives(
         const double temperature, const double cfrac, const double cfracn);
 
@@ -657,11 +609,11 @@ namespace MAT
     /// helper evaluating the definition of cfrac, alsos ets fractional temperature
     double CFracNext(const double temperature, const double oldcfrac);
 
-    // evaluate a cubic polynomial between Ts and Tl
+    /// evaluate between Ts and Tl using a smoothed interpolation
     double EvaluateSmoothTransition(
         const double temperature, const int gp, const std::vector<int> functions);
 
-    // evaluate derivative of cubic polynomial between Ts and Tl
+    /// evaluate derivative between Ts and Tl of smoothed interpolation
     double EvaluateSmoothDerivative(
         const double temperature, const int gp, const std::vector<int> functions);
 
@@ -674,76 +626,77 @@ namespace MAT
     //! evaluate derivatives of global functions by IDs for given temperature
     double FunctionDerivative(const double temperature, const int function);
 
-    //! return vec1*vec2
+    //! \return vec1*vec2
     double ScalarProduct(std::vector<double>* vec1, std::vector<double>* vec2);
 
-    // internal temp variables initialization
+    /// internal temporary variables initialization
     void SetupFunctionEvaluateVariables();
 
-    //! return a if 0 <= a <= 1, 0 if a < 0, 1 if a > 1
+    //! \return a if 0 <= a <= 1, 0 if a < 0, 1 if a > 1
     inline double limiter(const double a) const { return std::min(std::max(a, 0.0), 1.0); }
 
-    // select the interpolant based on the current consolidated fraction
-    // prerequisite: EvaluateCFracnpAtGp() called
+    /// select the interpolant based on the current consolidated fraction
+    /// prerequisite: EvaluateCFracnpAtGp() called
     InterpolantPtr GetCurrentInterpolant(const double rc, const std::vector<int> functions);
 
-    // return the (cached) interpolant smoothly connecting all-powder with all-melt
+    /// return the (cached) interpolant smoothly connecting all-powder with all-melt
     InterpolantPtr GetOrCreateBaseInterpolant(const std::vector<int> functions);
 
-    // create the interpolant smoothly connecting all-powder with all-melt
+    /// create the interpolant smoothly connecting all-powder with all-melt
     InterpolantPtr CreateBaseInterpolant(const std::vector<int>& functions);
 
-    // TODO this switching should be done with polymorphism and different evaluation strategies
+    /// Check if interpolation is linear or smoothed.
+    ///
+    /// \todo this switching should be done with polymorphism and different evaluation strategies
     bool HasSmoothing() { return (params_->delta_ > 1e-12); }
 
     /// my material parameters
     MAT::PAR::Consolidation* params_;
 
-    // consolidated phase fraction last step at GP
+    /// consolidated phase fraction last step at GP
     Teuchos::RCP<std::vector<double>> cfracn_;
-    // save consolidated phase fraction at GP for update after convergence
+    /// save consolidated phase fraction at GP for update after convergence
     Teuchos::RCP<std::vector<double>> cfracnp_;
 
-    // nodally lumped N . N^T matrix
+    /// nodally lumped N . N^T matrix
     std::vector<double>* nodallump_;
-    // remaining latent heat
+    /// remaining latent heat
     std::vector<double>* lhrem_;
     std::vector<double>* lhremnp_;
 
-    /// for postprocessing
-
-    // consolidated fraction at nodes in last step, only for postproc
+    /// consolidated fraction at nodes in last step, only for postproc
     Teuchos::RCP<std::vector<double>> cfracnode_;
 
-    // temperature fraction between Ts_mod and Tl_mod
+    /// temperature fraction between Ts_mod and Tl_mod
     double Tfrac_;
-    // modified solidus and liquidus temperatures
+    /// modified solidus and liquidus temperatures
     double Ts_mod_, Tl_mod_;
 
-    // (non-history) variables for fractions, functions and their derivatives
-    // avoids passing around vectors all the time
+    /// (non-history) variables for fractions, functions and their derivatives
+    /// avoids passing around vectors all the time
     std::vector<double>* frac_;
     std::vector<double>* frac_T_;
 
-    // initial interpolation curve from powder to melt, not dependent on GP
-    // since we might call this class with different functions, we cache all calculated interpolants
+    /// initial interpolation curve from powder to melt, not dependent on GP
+    /// since we might call this class with different functions, we cache all calculated
+    /// interpolants
     InterpolantCache baseInterpolantCache;
 
-    // interpolates from 0 to 1 between [Ts-delta/2, Tl+delta/2]
+    /// interpolates from 0 to 1 between [Ts-delta/2, Tl+delta/2]
     InterpolantPtr fractionInterpolant;
 
-    // apparent capacity interpolatns
+    /// apparent capacity interpolants
     InterpolantPtr leftInterpAppCapa_;
     InterpolantPtr rightInterpAppCapa_;
 
-    // enthalpy at gp
+    /// enthalpy at current gp
     double enth_;
 
-    bool isSmooth_;
 
   };  // Consolidation
 
 }  // namespace MAT
+   // namespace MAT
    // namespace MAT
 /*----------------------------------------------------------------------*/
 #endif  // CONSOLIDATION_H_

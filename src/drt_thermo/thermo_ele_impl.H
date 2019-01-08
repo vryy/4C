@@ -168,7 +168,7 @@ namespace DRT
               econd,  //!< conductivity matrix
           LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa,  //!< capacity matrix
           LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
-              ecapalin,  // linearization contribution of capacity
+              ecapalin,  //!< linearization contribution of capacity
           LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  //!< internal force
           LINALG::Matrix<nen_ * numdofpernode_, 1>* efext,  //!< external force
           LINALG::Matrix<nquad_, nsd_>* eheatflux,          //!< heat fluxes at Gauss points
@@ -180,8 +180,8 @@ namespace DRT
           const double time                      //!< current times
       );
 
-      // post-Newton iteration update of temperatures and source terms to account for latent heat of
-      // phase change
+      //! post-Newton iteration update of temperatures and source terms to account for latent heat
+      //! of phase change
       virtual void CalculatePhaseChangeIncrement(
           DRT::Element* ele,  //!< the element whose matrix is calculated
           LINALG::Matrix<nen_ * numdofpernode_, 1>*
@@ -236,9 +236,10 @@ namespace DRT
           LINALG::Matrix<nen_ * numdofpernode_, 1>& evector,  //!< element vectorr
           Teuchos::ParameterList& params  //!< parameter list, containing e.g., dt,theta
       );
-      //@}
+      //! @}
 
       //! @name geometrically linear TSI
+      //! @{
 
       //! Calculate element vectors (internal/external) and a few matrices
       //! considering current displacement solution
@@ -279,9 +280,10 @@ namespace DRT
           LINALG::Matrix<6, 1>* strainvel  //!< strain rate
       );
 
-      //@}
+      //! @}
 
       //! @name linear, small strain thermoplasticity solved with TSI
+      //! @{
 
       //! calculate internal dissipation arising when a thermo-elasto-plastic
       //! material is used
@@ -298,9 +300,10 @@ namespace DRT
           LINALG::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>* etangcoupl,  // k_Td
           Teuchos::ParameterList& params);
 
-      //@}
+      //! @}
 
       //! @name geometrically nonlinear TSI analysis
+      //! @{
 
       //! calculate element vectors (internal/external) and a few matrices
       //! considering current displacement solution
@@ -320,8 +323,8 @@ namespace DRT
           LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  //!< internal force
           LINALG::Matrix<nquad_, nsd_>* eheatflux,          //!< heat fluxes at Gauss points
           LINALG::Matrix<nquad_, nsd_>* etempgrad,    //!< temperature gradients at Gauss points
-          const INPAR::THR::HeatFluxType ioheatflux,  // heat flux output option
-          const INPAR::THR::TempGradType iotempgrad,  // tempgrad output option
+          const INPAR::THR::HeatFluxType ioheatflux,  //!< heat flux output option
+          const INPAR::THR::TempGradType iotempgrad,  //!< tempgrad output option
           Teuchos::ParameterList& params);
 
       //! calculate thermal-mechanical system matrix k_Td needed in monolithic TSI
@@ -359,9 +362,10 @@ namespace DRT
           LINALG::Matrix<nsd_, nsd_>* invdefgrd    //!< inverse deformation gradient tensor
       );
 
-      //@}
+      /// @}
 
       //! @name finite strain thermoplasticity solved with TSI
+      //! @{
 
       //! calculate internal dissipation arising when a thermo-elasto-plastic
       //! material is used within geometrically nonlinear analysis
@@ -369,26 +373,26 @@ namespace DRT
       //! mechanical energy dissipates as heat
       void CalculateCouplNlnDissipation(
           DRT::Element* ele,          //!< the element whose matrix is calculated
-          std::vector<double>& disp,  // current displacements
+          std::vector<double>& disp,  //!< current displacements
           LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
-              econd,                                        // conductivity matrix
+              econd,                                        //!< conductivity matrix
           LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  //!< internal force
           Teuchos::ParameterList& params);
 
       //! calculate terms of dissipation for thermo-mechanical system matrix k_Td
       //! used in case of plastic material within geometrically nonlinear analysis
       void CalculateCouplNlnDissipationCond(
-          DRT::Element* ele,          // the element whose matrix is calculated
+          DRT::Element* ele,          //!< the element whose matrix is calculated
           std::vector<double>& disp,  //!< current displacements
           std::vector<double>& vel,   //!< current velocities
           LINALG::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>* etangcoupl,  // k_Td
           Teuchos::ParameterList& params);
 
-      //@}
+      /// @}
 
       // extract the node based phase information
-      void ExtractPhaseInformation(DRT::Element* ele,
-          LINALG::Matrix<nen_ * numdofpernode_, 1>& ephase);  // vector to fill, view on elevec1
+      void ExtractPhaseInformation(DRT::Element* ele,         ///< current element
+          LINALG::Matrix<nen_ * numdofpernode_, 1>& ephase);  ///< vector to fill, view on elevec1
 
       // FDcheck of conductivity matrix on element level
       void FDCheckCouplNlnFintCondCapa(
@@ -448,10 +452,11 @@ namespace DRT
       LINALG::Matrix<nsd_, nsd_> dercmat_;
       //! capacity density
       double capacoeff_;
-      //! deriavtive of capacity w.r.t. T
+      //! derivative of capacity w.r.t. T
       double dercapa_;
 
       //! @name material related stuff
+      //! @{
 
       //! material tangent of the structure
       LINALG::Matrix<6, 1> ctemp_;
@@ -464,7 +469,7 @@ namespace DRT
       //! nurbs specific: control point weights
       LINALG::Matrix<nen_, 1> weights_;
 
-      //@}
+      /// @}
 
     };  // class TemperImpl
 

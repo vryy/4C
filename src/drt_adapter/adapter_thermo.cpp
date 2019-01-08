@@ -195,11 +195,19 @@ void ADAPTER::Thermo::Integrate()
     // integrate time step
     INPAR::THR::ConvergenceStatus convStatus = Solve();
 
-    if (convStatus == INPAR::THR::conv_success)
+    switch (convStatus)
     {
-      Update();
-      PrintStep();
-      Output();
+      case INPAR::THR::conv_success:
+        Update();
+        PrintStep();
+        Output();
+        break;
+      case INPAR::THR::conv_fail_repeat:
+        // do not update and output but try again
+        continue;
+      default:
+        // no other convergence status can be handled at this point, abort
+        dserror("Solver failed.");
     }
   }
   // print monitoring of time consumption

@@ -3,7 +3,7 @@
  \file consolidation.cpp
  \brief managing common consolidation methods
 
-\level 1
+\level 3
 <pre>
 \maintainer Sebastian Pröll
 </pre>
@@ -20,7 +20,7 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 
-#include <algorithm>  // for min and max function
+#include <algorithm>
 #include <iterator>
 
 /*----------------------------------------------------------------------*

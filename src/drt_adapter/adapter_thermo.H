@@ -229,11 +229,14 @@ namespace ADAPTER
     //! @name Solver calls
     //@{
 
-    //! non-linear solve
-    //!
-    //! Do the nonlinear solve, i.e. (multiple) corrector,
-    //! for the time step. All boundary conditions have
-    //! been set.
+    /**
+     * @brief Non-linear solve
+     *
+     * Do the nonlinear solve, i.e. (multiple) corrector for the time step.
+     * All boundary conditions have been set.
+     *
+     * @return status of the solve, which can be used for adaptivity
+     */
     virtual INPAR::THR::ConvergenceStatus Solve() = 0;
 
     /// get the linear solver object used for this field

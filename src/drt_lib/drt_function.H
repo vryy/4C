@@ -457,17 +457,49 @@ namespace DRT
       LINALG::Matrix<3, 1> acc_B_;
     };
 
-    // special implementation of a polynomial for faster derivative evaluation
-    // on Gauss point level FAD is too slow
+    /**
+     * @brief special implementation of a  1D polynomial function
+     *
+     * Evaluating the derivative is faster for this function than FAD.
+     */
     class FastPolynomialFunction : public Function
     {
      public:
+      /**
+       * ctor
+       *
+       * @param coefficients the coefficients of the monomials in ascending order
+       */
       FastPolynomialFunction(std::vector<double>* coefficients);
 
+      /**
+       * Evaluate the polynomial.
+       *
+       * @param argument point to evaluate
+       * @return value of the polynomial at `argument`
+       */
       double Evaluate(const double argument) const;
 
+      /**
+       * Evaluate first derivative of polynomial.
+       *
+       * @param argument point to evaluate
+       * @return value of first derivative of polynomial at `argument`
+       */
       double EvaluateDerivative(const double argument) const;
 
+      /*!
+      \brief evaluate function at given time and position
+
+      \param index (i) For vector-valued functions, index defines the
+                       function-component which should be evaluated
+                       For scalar functions, index is always set to 0
+      \param t     (i) The point in time in which the
+                       function will be evaluated
+      \param x     (i) The point in 3-dimensional space in which the
+                       function will be evaluated
+      \throws dserror
+      */
       virtual double Evaluate(const int index, const double* x, double t)
       {
         dserror("FastPolynomialFunction does not support this call.");
@@ -475,7 +507,7 @@ namespace DRT
       }
 
      private:
-      // internal polynomial representation
+      //! internal polynomial representation
       const DRT::UTILS::Polynomial* const mypoly_;
     };
 

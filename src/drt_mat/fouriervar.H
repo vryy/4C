@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file fouriervar.H
-\brief material for heat conduction according to fourier's law with varaiable conductivity
+\brief material for heat conduction according to fourier's law with variable conductivity
 
 \level 1
 <pre>
@@ -81,7 +81,10 @@ namespace MAT
   /// FourierVar material
   ///
   /// This is a an extension of Fourier's isotropic law of heat conduction to
-  /// multiple phases and varying heat capacity and conductivity.  ///
+  /// multiple phases and varying heat capacity and conductivity.
+  ///
+  /// the input line should read something like:
+  /// MAT 2 THERM_FourierVar CAPANUM § CAPAFUNCT 5 6 6 CONDUCTNUM 3 CONDUCTFUNCT 4 3 4 CONSOLMAT 3
   ///
   /// \author proell
   /// \date 04/18
@@ -194,6 +197,9 @@ namespace MAT
     }
 
 
+    /// evaluate conductivity and capacity at nodes
+    ///
+    /// only for post-processing purposes
     template <unsigned int nen>
     void NodalConductivityCapacity(
         LINALG::Matrix<nen, 1>& nodaltemp,  ///< temperatures at element nodes
@@ -208,7 +214,7 @@ namespace MAT
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-    // Get direct access to the Consolidation
+    /// Get direct access to the Consolidation object
     virtual Teuchos::RCP<MAT::Consolidation> Consolidation() { return consol_; }
 
    private:
@@ -225,7 +231,7 @@ namespace MAT
     /// my material parameters
     MAT::PAR::FourierVar* params_;
 
-    // pointer to the consolidation material managing the actual evaluation of function
+    /// pointer to the consolidation material managing the actual evaluation of function
     Teuchos::RCP<MAT::Consolidation> consol_;
 
   };  // FourierVar

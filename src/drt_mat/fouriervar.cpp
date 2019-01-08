@@ -1,14 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file fouriervar.cpp
-\brief heat condution according to fourier's law with variable conductivity and capacity
+\brief heat conduction according to fourier's law with variable conductivity and capacity
 
-
-the input line should read
-  MAT 2 THERM_FourierVar CAPANUM 2 CAPAFUNCT 5 6 CONDUCTNUM 2 CONDUCTFUNCT 3 4 CONSOLTEMP 1000
-use 't' variable in functions definitions for temperature
-
-\level 1
+\level 2
 <pre>
 \maintainer Sebastian Pröll
 </pre>

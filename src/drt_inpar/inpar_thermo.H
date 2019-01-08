@@ -170,7 +170,7 @@ namespace INPAR
       divcont_repeat_simulation,  ///< repeat the whole simulation
     };
 
-    // convergence of nonlinear solver
+    /// convergence of nonlinear solver
     enum ConvergenceStatus
     {
       conv_success = 0,      ///< converged successfully
@@ -309,8 +309,8 @@ namespace INPAR
     //! Type of phase output (in SLM)
     enum PhaseType
     {
-      phase_none,
-      phase_yes
+      phase_none,  //!< no phase output
+      phase_yes    //!< write phase output
     };
 
     //! Map predictor enum term to std::string

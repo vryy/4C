@@ -204,7 +204,6 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
   // (action == "calc_thermo_finttang")
   // (action == "calc_thermo_heatflux")
   // (action == "postproc_thermo_heatflux")
-  // (action == "postproc_phase")
   // (action == "calc_thermo_phase")
   // (action == "integrate_shape_functions")
   // (action == "calc_thermo_update_istep")
@@ -916,19 +915,6 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
       dserror("unknown type of heatflux/temperature gradient output on element level");
 
   }  // action == THR::postproc_thermo_heatflux
-
-  //============================================================================
-  else if (action == THR::postproc_phase)
-  {
-    // copy the correct entry from the nodal map to the assembled vector
-    const Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> nodephasemap =
-        params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>>(
-            "nodephasemap");
-    const int gid = ele->Id();
-    LINALG::Matrix<nen_ * numdofpernode_, 1> nodalphase(((*nodephasemap)[gid])->A(), true);
-    LINALG::Matrix<nen_ * numdofpernode_, 1> ephase(elevec1_epetra, true);  // view only!
-    ephase.Update(nodalphase);
-  }
 
   //============================================================================
   else if (action == THR::integrate_shape_functions)
