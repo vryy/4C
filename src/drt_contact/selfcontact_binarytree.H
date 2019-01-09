@@ -31,8 +31,8 @@ namespace CONTACT
   {
     SELFCO_INNER,        ///< indicates an inner node (has children)
     SELFCO_LEAF,         ///< indicates a leaf node (no further children)
-    SELFCO_NO_ELEMENTS,  ///< inidicates that there are no elements on this (root) treenode
-    SELFCO_UNDEFINED     ///< indiactes an undefined tree node
+    SELFCO_NO_ELEMENTS,  ///< indicates that there are no elements on this (root) treenode
+    SELFCO_UNDEFINED     ///< indicates an undefined tree node
   };
 
   //@}
@@ -56,7 +56,7 @@ namespace CONTACT
     \param elelist        list of all elements in SelfBinaryTreeNode
     \param dopnormals     reference to DOP normals
     \param samplevectors  reference to sample vectors
-    \param kdop           refernece to no. of vertices
+    \param kdop           reference to no. of vertices
     \param dim            dimension of problem
     \param layer          current layer of treenode
     \param treenodes      references to treenodes storage scheme
@@ -249,7 +249,7 @@ namespace CONTACT
     virtual Epetra_SerialDenseMatrix Slabs() const { return slabs_; }
 
     /*!
-    \brief Return pointer to nomals of DOP
+    \brief Return pointer to normals of DOP
 
     */
     virtual Epetra_SerialDenseMatrix Dopnormals() const { return dopnormals_; }
