@@ -439,7 +439,7 @@ void PARTICLEENGINE::ParticleEngine::TypeChangeParticles(
 }
 
 /*---------------------------------------------------------------------------*
- | build overlapping particle to particle neighbors           sfuchs 05/2018 |
+ | build particle to particle neighbors                       sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
 {
@@ -452,19 +452,8 @@ void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
   // relate half neighboring bins to owned bins
   if (not validhalfneighboringbins_) RelateHalfNeighboringBinsToOwnedBins();
 
-  // iterate over particle types
-  for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
-  {
-    // get container of owned particles of current particle type
-    ParticleContainerShrdPtr container =
-        particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
-
-    // get number of particles stored in container
-    int particlestored = container->ParticlesStored();
-
-    // allocate memory for neighbors of owned particles of current particle type
-    particleneighbors_[typeEnum].assign(particlestored, std::vector<LocalIndexTuple>(0));
-  }
+  // clear potential particle neighbors
+  potentialparticleneighbors_.clear();
 
   // invalidate flag denoting validity of particle neighbors map
   validparticleneighbors_ = false;
@@ -548,13 +537,10 @@ void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
           if (std::sqrt(dist[0] * dist[0] + dist[1] * dist[1] + dist[2] * dist[2]) > minbinsize_)
             continue;
 
-          // insert neighbor relation of both particles
-          (particleneighbors_[typeEnum])[ownedindex].push_back(
-              std::make_tuple(neighborTypeEnum, neighborStatusEnum, neighborindex));
-
-          if (neighborStatusEnum != PARTICLEENGINE::Ghosted)
-            (particleneighbors_[neighborTypeEnum])[neighborindex].push_back(
-                std::make_tuple(typeEnum, PARTICLEENGINE::Owned, ownedindex));
+          // append potential particle neighbor pair
+          potentialparticleneighbors_.push_back(
+              std::make_pair(std::make_tuple(typeEnum, PARTICLEENGINE::Owned, ownedindex),
+                  std::make_tuple(neighborTypeEnum, neighborStatusEnum, neighborindex)));
         }
       }
     }
@@ -629,15 +615,15 @@ bool PARTICLEENGINE::ParticleEngine::HaveValidParticleConnectivity() const
 }
 
 /*---------------------------------------------------------------------------*
- | get reference to particle neighbors                        sfuchs 11/2018 |
+ | get reference to potential particle neighbors              sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-const PARTICLEENGINE::ParticleNeighbors& PARTICLEENGINE::ParticleEngine::GetParticleNeighbors()
-    const
+const PARTICLEENGINE::PotentialParticleNeighbors&
+PARTICLEENGINE::ParticleEngine::GetPotentialParticleNeighbors() const
 {
   // safety check
   if (not validparticleneighbors_) dserror("invalid particle neighbors!");
 
-  return particleneighbors_;
+  return potentialparticleneighbors_;
 }
 
 /*---------------------------------------------------------------------------*
@@ -913,7 +899,6 @@ void PARTICLEENGINE::ParticleEngine::SetupDataStorage(
   typevectorsize_ = ((--particlestatestotypes.end())->first) + 1;
 
   // allocate memory to hold particle types
-  particleneighbors_.resize(typevectorsize_);
   directghostingtargets_.resize(typevectorsize_);
 }
 

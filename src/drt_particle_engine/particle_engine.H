@@ -110,7 +110,7 @@ namespace PARTICLEENGINE
     void TypeChangeParticles(std::vector<std::set<int>>& particlestoremove,
         std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert) override;
 
-    //! build overlapping particle to particle neighbors
+    //! build particle to particle neighbors
     void BuildParticleToParticleNeighbors();
 
     //! build global id to local index map
@@ -125,8 +125,8 @@ namespace PARTICLEENGINE
       return particlecontainerbundle_;
     };
 
-    //! get reference to particle neighbors
-    const ParticleNeighbors& GetParticleNeighbors() const override;
+    //! get reference to potential particle neighbors
+    const PotentialParticleNeighbors& GetPotentialParticleNeighbors() const override;
 
     //! get local index in specific particle container
     const LocalIndexTupleShrdPtr GetLocalIndexInSpecificContainer(int globalid) const override;
@@ -300,8 +300,8 @@ namespace PARTICLEENGINE
     //! relate (owned and ghosted) particles to bins
     std::vector<std::vector<std::pair<PARTICLEENGINE::ParticleType, int>>> particlestobins_;
 
-    //! relate (overlapping) particle neighbors of all types and statuses
-    ParticleNeighbors particleneighbors_;
+    //! relate potential particle neighbors of all types and statuses
+    PotentialParticleNeighbors potentialparticleneighbors_;
 
     //! maps particle global ids to local index in specific particle container
     std::unordered_map<int, LocalIndexTupleShrdPtr> globalidtolocalindex_;

@@ -52,8 +52,8 @@ namespace PARTICLEENGINE
     //! get particle container bundle
     virtual const ParticleContainerBundleShrdPtr GetParticleContainerBundle() const = 0;
 
-    //! get reference to particle neighbors
-    virtual const ParticleNeighbors& GetParticleNeighbors() const = 0;
+    //! get reference to potential particle neighbors
+    virtual const PotentialParticleNeighbors& GetPotentialParticleNeighbors() const = 0;
 
     //! get local index in specific particle container
     virtual const LocalIndexTupleShrdPtr GetLocalIndexInSpecificContainer(int globalid) const = 0;

@@ -66,7 +66,7 @@ namespace PARTICLEENGINE
 
   typedef std::shared_ptr<LocalIndexTuple> LocalIndexTupleShrdPtr;
 
-  typedef std::vector<std::vector<std::vector<LocalIndexTuple>>> ParticleNeighbors;
+  typedef std::vector<std::pair<LocalIndexTuple, LocalIndexTuple>> PotentialParticleNeighbors;
 
   typedef std::vector<std::pair<TypeEnum, std::vector<StateEnum>>> StatesOfTypesToRefresh;
 
