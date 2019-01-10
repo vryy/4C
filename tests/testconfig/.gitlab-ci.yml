@@ -83,6 +83,7 @@ variables:
 .buildtest_full: &buildtest_full
     stage: buildtest
     script:
+        - "echo build type: CTEST_BUILD_TYPE_GITLAB=$CTEST_BUILD_TYPE_GITLAB"
         - "echo full test: triggered by user with TEST_TAG=$TEST_TAG"
         - "echo exclude string: CTEST_EXCLUDE_STRING=$CTEST_EXCLUDE_STRING"
         # Delete old build files.
