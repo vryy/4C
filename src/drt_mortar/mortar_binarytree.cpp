@@ -910,12 +910,25 @@ void MORTAR::BinaryTreeNode::EnlargeGeometry(double& enlarge)
  *----------------------------------------------------------------------*/
 MORTAR::BinaryTree::BinaryTree(DRT::Discretization& discret, Teuchos::RCP<Epetra_Map> selements,
     Teuchos::RCP<Epetra_Map> melements, int dim, double eps, bool useauxpos)
-    : idiscret_(discret),
+    : MORTAR::AbstractBinaryTree(),
+      idiscret_(discret),
       selements_(selements),
       melements_(melements),
+      minlengthele_(-1.0),
       dim_(dim),
       eps_(eps),
-      useauxpos_(useauxpos)
+      useauxpos_(useauxpos),
+      enlarge_(-1.0),
+      kdop_(-1)
+{
+  // keep the constructor clean
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | initialize the binary tree                              schmidt 12/18|
+ *----------------------------------------------------------------------*/
+void MORTAR::BinaryTree::Init()
 {
   // initialize sizes
   streenodesmap_.resize(1);

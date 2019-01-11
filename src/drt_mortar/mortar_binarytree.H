@@ -15,7 +15,7 @@
 #include "Epetra_Comm.h"
 #include "Epetra_Map.h"
 #include "Epetra_SerialDenseMatrix.h"
-
+#include "abstract_binarytree.H"
 
 // forward declarations
 namespace DRT
@@ -345,7 +345,7 @@ namespace MORTAR
 
   \author popp (popp@lnm.mw.tum.de)
   */
-  class BinaryTree
+  class BinaryTree : public AbstractBinaryTree
   {
    public:
     /*!
@@ -376,7 +376,13 @@ namespace MORTAR
     \brief Evaluate search tree to get corresponding master elements for the slave elements
 
     */
-    void EvaluateSearch();
+    void EvaluateSearch() final;
+
+    /*!
+    \brief Initialize the binary tree
+
+    */
+    void Init() final;
 
    private:
     /*!
