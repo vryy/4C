@@ -81,6 +81,10 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   // relate particle phase to material id
   StringParameter("PHASE_TO_MATERIAL_ID", "", "relate particle phase to material id", &particledyn);
 
+  // amplitude of noise added to initial position
+  DoubleParameter("INITIAL_POSITION_AMPLITUDE", 0.0, "amplitude of noise added to initial position",
+      &particledyn);
+
   /*-------------------------------------------------------------------------*
    | control parameters for initial/boundary conditions                      |
    *-------------------------------------------------------------------------*/
@@ -215,6 +219,11 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "surface tension coefficient in continuum surface force formulation", &particledynsph);
   DoubleParameter("STATICCONTACTANGLE", 0.0,
       "static contact angle in degree in continuum surface force formulation with wetting effects",
+      &particledynsph);
+
+  // type of phase change
+  setStringToIntegralParameter<int>("PHASECHANGETYPE", "NoPhaseChange", "type of phase change",
+      tuple<std::string>("NoPhaseChange"), tuple<int>(INPAR::PARTICLE::NoPhaseChange),
       &particledynsph);
 
   /*-------------------------------------------------------------------------*

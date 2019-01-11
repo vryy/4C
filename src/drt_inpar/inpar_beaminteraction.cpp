@@ -14,7 +14,6 @@
 
 #include "inpar_beaminteraction.H"
 #include "drt_validparameters.H"
-#include "drt_validparameters.H"
 #include "../drt_lib/drt_conditiondefinition.H"
 
 void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
@@ -152,16 +151,18 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
   /*----------------------------------------------------------------------*/
   /* parameters for beam to solid contact */
 
-  Teuchos::ParameterList& beamtosolidcontact =
-      beaminteraction.sublist("BEAM TO SOLID CONTACT", false, "");
+  Teuchos::ParameterList& beam_to_solid_volume_mestying =
+      beaminteraction.sublist("BEAM TO SOLID VOLUME MESHTYING", false, "");
 
   setStringToIntegralParameter<int>("STRATEGY", "None", "Type of employed solving strategy",
       tuple<std::string>("None", "none", "Penalty", "penalty"),
-      tuple<int>(bstr_none, bstr_none, bstr_penalty, bstr_penalty), &beamtosolidcontact);
+      tuple<int>(bstr_none, bstr_none, bstr_penalty, bstr_penalty), &beam_to_solid_volume_mestying);
 
-  DoubleParameter("BEAMS_BTSVOLMTPENALTYPARAM", 0.0,
-      "Penalty parameter for beam-to-solid volume meshtying", &beamtosolidcontact);
+  DoubleParameter("PENALTY_PARAMETER", 0.0, "Penalty parameter for beam-to-solid volume meshtying",
+      &beam_to_solid_volume_mestying);
 
+  IntParameter("GAUSS_POINTS", 6, "Number of Gauss Points for the integral evaluations",
+      &beam_to_solid_volume_mestying);
 
   // ...
 }

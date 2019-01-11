@@ -46,6 +46,10 @@ namespace PARTICLEENGINE
     virtual void RefreshSpecificStatesOfParticlesOfSpecificTypes(
         const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes) const = 0;
 
+    //! change type of particles
+    virtual void TypeChangeParticles(std::map<TypeEnum, std::set<int>>& particlestoremove,
+        std::map<TypeEnum, std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert) = 0;
+
     //! get particle container bundle
     virtual const ParticleContainerBundleShrdPtr GetParticleContainerBundle() const = 0;
 

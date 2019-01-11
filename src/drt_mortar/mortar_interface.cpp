@@ -1186,6 +1186,9 @@ void MORTAR::MortarInterface::Redistribute()
   // minimum number of elements per proc
   int minele = IParams().get<int>("MIN_ELEPROC");
 
+  // Max. relative imbalance between subdomain sizes
+  const double imbalance_tol = IParams().get<double>("IMBALANCE_TOL");
+
   // calculate real number of procs to be used
   if (minele > 0)
   {
@@ -1220,7 +1223,8 @@ void MORTAR::MortarInterface::Redistribute()
 
   //**********************************************************************
   // call ZOLTAN for parallel redistribution
-  DRT::UTILS::PartUsingParMetis(idiscret_, sroweles, srownodes, scolnodes, comm, false, sproc);
+  DRT::UTILS::PartUsingParMetis(
+      idiscret_, sroweles, srownodes, scolnodes, comm, false, sproc, imbalance_tol);
   //**********************************************************************
 
   //**********************************************************************
@@ -1229,7 +1233,7 @@ void MORTAR::MortarInterface::Redistribute()
   Teuchos::RCP<Epetra_Map> mrownodes = Teuchos::null;
   Teuchos::RCP<Epetra_Map> mcolnodes = Teuchos::null;
 
-  RedistributeMasterSide(mrownodes, mcolnodes, mroweles, comm, mproc);
+  RedistributeMasterSide(mrownodes, mcolnodes, mroweles, comm, mproc, imbalance_tol);
 
   //**********************************************************************
   // (4) Merge global interface node row and column map
@@ -1260,21 +1264,26 @@ void MORTAR::MortarInterface::Redistribute()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void MORTAR::MortarInterface::RedistributeMasterSide(Teuchos::RCP<Epetra_Map>& mrownodes,
-    Teuchos::RCP<Epetra_Map>& mcolnodes, const Teuchos::RCP<Epetra_Map>& mroweles,
-    const Teuchos::RCP<Epetra_Comm>& comm, int parts) const
+void MORTAR::MortarInterface::RedistributeMasterSide(Teuchos::RCP<Epetra_Map>& rownodes,
+    Teuchos::RCP<Epetra_Map>& colnodes, const Teuchos::RCP<Epetra_Map>& roweles,
+    const Teuchos::RCP<Epetra_Comm>& comm, const int parts, const double imbalance) const
 {
   if (not HasMaSharingRefInterface())
+  {
     // call ZOLTAN for parallel redistribution
-    DRT::UTILS::PartUsingParMetis(idiscret_, mroweles, mrownodes, mcolnodes, comm, false, parts);
+    DRT::UTILS::PartUsingParMetis(
+        idiscret_, roweles, rownodes, colnodes, comm, false, parts, imbalance);
+  }
   else
   {
     DRT::UTILS::RedistributeInAccordanceWithReference(
-        *GetMaSharingRefInterfacePtr()->MasterRowNodes(), *MasterRowNodes(), mrownodes);
+        *GetMaSharingRefInterfacePtr()->MasterRowNodes(), *MasterRowNodes(), rownodes);
 
     DRT::UTILS::RedistributeInAccordanceWithReference(
-        *GetMaSharingRefInterfacePtr()->MasterColNodes(), *MasterColNodes(), mcolnodes);
+        *GetMaSharingRefInterfacePtr()->MasterColNodes(), *MasterColNodes(), colnodes);
   }
+
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1584,6 +1593,8 @@ void MORTAR::MortarInterface::CreateSearchTree()
     // create binary tree object for search and setup tree
     binarytree_ = Teuchos::rcp(new MORTAR::BinaryTree(
         Discret(), selecolmap_, melefullmap, Dim(), SearchParam(), SearchUseAuxPos()));
+    // initialize the binary tree
+    binarytree_->Init();
   }
 }
 

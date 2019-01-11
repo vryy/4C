@@ -4,10 +4,11 @@
 
 \brief Active stress material
 
-\maintainer Marc Hirschvogel, originally by C. Bertoglio
+\maintainer Amadeus Gebauer
 
 \level 2
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 
 #ifndef ELAST_ANISOACTIVESTRESS_EVOLUTION_H_

@@ -25,7 +25,7 @@ class Header(object):
   @staticmethod
   def get_example():
     return ["","An appropriate header must be before any section and contain:",
-            "// Maintainer: Max Mustermann, Michaela Schaffrath"]
+            "// Maintainer: Max Mustermann"]
 
   @staticmethod
   def _extract_header(cont):

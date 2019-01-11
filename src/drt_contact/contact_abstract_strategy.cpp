@@ -2878,11 +2878,10 @@ void CONTACT::CoAbstractStrategy::VisualizeGmsh(const int step, const int iter)
 }
 
 /*----------------------------------------------------------------------*
- | collect maps for preconditioner (AMG)                   wiesner 01/12|
  *----------------------------------------------------------------------*/
 void CONTACT::CoAbstractStrategy::CollectMapsForPreconditioner(
     Teuchos::RCP<Epetra_Map>& MasterDofMap, Teuchos::RCP<Epetra_Map>& SlaveDofMap,
-    Teuchos::RCP<Epetra_Map>& InnerDofMap, Teuchos::RCP<Epetra_Map>& ActiveDofMap)
+    Teuchos::RCP<Epetra_Map>& InnerDofMap, Teuchos::RCP<Epetra_Map>& ActiveDofMap) const
 {
   InnerDofMap = gndofrowmap_;   // global internal dof row map
   ActiveDofMap = gactivedofs_;  // global active slave dof row map
@@ -2898,6 +2897,8 @@ void CONTACT::CoAbstractStrategy::CollectMapsForPreconditioner(
     MasterDofMap = pgmdofrowmap_;
   else
     MasterDofMap = gmdofrowmap_;
+
+  return;
 }
 
 /*----------------------------------------------------------------------*

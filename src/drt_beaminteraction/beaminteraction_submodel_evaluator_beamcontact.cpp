@@ -13,7 +13,6 @@
 
 #include "../drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact.H"
 #include "../drt_beaminteraction/beam_contact_pair.H"
-#include "../drt_beaminteraction/beam_contact_evaluation_data.H"
 #include "../drt_beaminteraction/beam_contact_params.H"
 #include "../drt_beaminteraction/beam_contact_runtime_vtk_output_params.H"
 #include "../drt_beaminteraction/beaminteraction_calc_utils.H"
@@ -46,11 +45,18 @@
 
 #include <NOX_Solver_Generic.H>
 
+#include "beam_to_solid_volume_meshtying_params.H"
+#include "../drt_geometry_pair/geometry_pair_evaluation_data_global.H"
+#include "../drt_geometry_pair/geometry_pair_line_to_volume_evaluation_data.H"
+#include "../drt_inpar/inpar_geometry_pair.H"
+
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::BeamContact()
     : beam_contact_params_ptr_(Teuchos::null),
       beam_contact_evaluation_data_ptr_(Teuchos::null),
+      geometry_evaluation_data_ptr_(Teuchos::null),
       contact_elepairs_(Teuchos::null)
 {
   // clear stl stuff
@@ -67,10 +73,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
   // build a new data container to manage beam contact parameters
   beam_contact_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamContactParams());
 
-  // build a new data container to manage beam contact evaluation data that can not be stored
+  // build a new data container to manage geometry evaluation data that can not be stored
   // pairwise
-  beam_contact_evaluation_data_ptr_ =
-      Teuchos::rcp(new BEAMINTERACTION::BeamContactEvaluationData());
+  geometry_evaluation_data_ptr_ = Teuchos::rcp(new GEOMETRYPAIR::GeometryEvaluationDataGlobal());
 
   // build runtime vtp writer if desired
   if ((bool)DRT::INPUT::IntegralValue<int>(
@@ -104,13 +109,19 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
   }
 
   if (DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
-          DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID CONTACT"),
+          DRT::Problem::Instance()->BeamInteractionParams().sublist(
+              "BEAM TO SOLID VOLUME MESHTYING"),
           "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none)
   {
     contactelementtypes_.push_back(BINSTRATEGY::UTILS::Solid);
 
     beam_contact_params_ptr_->BuildBeamToSolidVolumeMeshtyingParams();
-    beam_contact_evaluation_data_ptr_->BuildBeamToSolidVolumeMeshtyingEvaluationData();
+
+    geometry_evaluation_data_ptr_->BuildLineToVolumeEvaluationData();
+
+    // Set the Gauss rule for the pair.
+    geometry_evaluation_data_ptr_->LineToVolumeEvaluationData()->SetGaussRule(
+        beam_contact_params_ptr_->BeamToSolidVolumeMeshtyingParams()->GaussRule());
   }
 
 
@@ -882,6 +893,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
   // Todo maybe keep existing pairs and reuse them ?
   contact_elepairs_.clear();
 
+  // reset the geometry evaluation data
+  geometry_evaluation_data_ptr_->ResetGeometryEvaluationDataGlobal();
+
   std::map<int, std::set<DRT::Element*>>::const_iterator nearbyeleiter;
 
   for (nearbyeleiter = nearby_elements_map_.begin(); nearbyeleiter != nearby_elements_map_.end();
@@ -906,7 +920,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
       Teuchos::RCP<BEAMINTERACTION::BeamContactPair> newbeaminteractionpair =
           BEAMINTERACTION::BeamContactPair::Create(ele_ptrs);
       newbeaminteractionpair->Init(
-          beam_contact_evaluation_data_ptr_, beam_contact_params_ptr_, ele_ptrs);
+          beam_contact_params_ptr_, geometry_evaluation_data_ptr_, ele_ptrs);
       newbeaminteractionpair->Setup();
 
       // add to list of current contact pairs

@@ -4,7 +4,7 @@
 
 \brief 2D boundary elment
 
-\maintainer Martin Pfaller
+\maintainer Amadeus Gebauer
 
 \level 2
 */

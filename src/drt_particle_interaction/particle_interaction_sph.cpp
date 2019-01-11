@@ -31,6 +31,7 @@
 #include "particle_interaction_sph_momentum.H"
 #include "particle_interaction_sph_surface_tension.H"
 #include "particle_interaction_sph_boundary_particle.H"
+#include "particle_interaction_sph_phase_change.H"
 
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_container.H"
@@ -90,6 +91,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Init()
 
   // init boundary particle handler
   InitBoundaryParticleHandler();
+
+  // init phase change handler
+  InitPhaseChangeHandler();
 }
 
 /*---------------------------------------------------------------------------*
@@ -131,6 +135,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Setup(
 
   // setup boundary particle handler
   if (boundaryparticle_) boundaryparticle_->Setup(particleengineinterface, neighborpairs_);
+
+  // setup phase change handler
+  if (phasechange_) phasechange_->Setup(particleengineinterface);
 }
 
 /*---------------------------------------------------------------------------*
@@ -168,6 +175,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::WriteRestart(
 
   // write restart of boundary particle handler
   if (boundaryparticle_) boundaryparticle_->WriteRestart(step, time);
+
+  // write restart of phase change handler
+  if (phasechange_) phasechange_->WriteRestart(step, time);
 }
 
 /*---------------------------------------------------------------------------*
@@ -205,6 +215,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::ReadRestart(
 
   // read restart of boundary particle handler
   if (boundaryparticle_) boundaryparticle_->ReadRestart(reader);
+
+  // read restart of phase change handler
+  if (phasechange_) phasechange_->ReadRestart(reader);
 }
 
 /*---------------------------------------------------------------------------*
@@ -315,9 +328,6 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
           inittemperature, PARTICLEENGINE::Temperature, type);
     }
   }
-
-  // refresh initial states of ghosted particles
-  RefreshInitialStates();
 }
 
 /*---------------------------------------------------------------------------*
@@ -347,6 +357,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::EvaluateInteractions()
 
   // add surface tension contribution to acceleration field
   if (surfacetension_) surfacetension_->AddAccelerationContribution();
+
+  // evaluate phase change
+  if (phasechange_) phasechange_->EvaluatePhaseChange();
 }
 
 /*---------------------------------------------------------------------------*
@@ -624,6 +637,34 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitBoundaryParticleHandler()
 }
 
 /*---------------------------------------------------------------------------*
+ | init phase change handler                                  sfuchs 11/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::ParticleInteractionSPH::InitPhaseChangeHandler()
+{
+  // get type phase change
+  INPAR::PARTICLE::PhaseChangeType phasechangetype =
+      DRT::INPUT::IntegralValue<INPAR::PARTICLE::PhaseChangeType>(params_sph_, "PHASECHANGETYPE");
+
+  // create phase change handler
+  switch (phasechangetype)
+  {
+    case INPAR::PARTICLE::NoPhaseChange:
+    {
+      phasechange_ = std::unique_ptr<PARTICLEINTERACTION::SPHPhaseChangeBase>(nullptr);
+      break;
+    }
+    default:
+    {
+      dserror("unknown boundary particle formulation type!");
+      break;
+    }
+  }
+
+  // init phase change handler
+  if (phasechange_) phasechange_->Init();
+}
+
+/*---------------------------------------------------------------------------*
  | compute initial consistent particle volume                 sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::ParticleInteractionSPH::ComputeConsistentParticleVolume() const
@@ -652,33 +693,4 @@ double PARTICLEINTERACTION::ParticleInteractionSPH::ComputeConsistentParticleVol
 
   // consistent volume of non-boundary particles
   return (consistentproblemvolume / totalnumberofnonboundaryparticles);
-}
-
-/*---------------------------------------------------------------------------*
- | refresh initial states of ghosted particles                sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::ParticleInteractionSPH::RefreshInitialStates() const
-{
-  // init map
-  std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>> particlestatestotypes;
-
-  // iterate over particle types
-  for (auto& typeIt : particlecontainerbundle_->GetRefToAllContainersMap())
-  {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum type = typeIt.first;
-
-    // set states to refresh to map
-    if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase)
-      particlestatestotypes[type] = {PARTICLEENGINE::Mass, PARTICLEENGINE::Radius};
-    else
-      particlestatestotypes[type] = {
-          PARTICLEENGINE::Density, PARTICLEENGINE::Mass, PARTICLEENGINE::Radius};
-
-    // set temperature state to refresh to map
-    if (temperature_) particlestatestotypes[type].insert(PARTICLEENGINE::Temperature);
-  }
-
-  // refresh specific states of particles of specific types
-  particleengineinterface_->RefreshSpecificStatesOfParticlesOfSpecificTypes(particlestatestotypes);
 }

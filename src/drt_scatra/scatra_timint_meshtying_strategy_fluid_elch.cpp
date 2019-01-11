@@ -3,12 +3,10 @@
 
 \brief Fluid-fluid meshtying strategy for electrochemistry problems
 
-\brief Fluid-fluid meshtying strategy for electrochemistry problems
-
 \level 2
 
-\maintainer Rui Fang
-            fang@lnm.mw.tum.de
+\maintainer Christoph Schmidt
+            schmidt@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089 - 289-15251
 

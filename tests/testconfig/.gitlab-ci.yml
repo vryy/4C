@@ -10,14 +10,31 @@ variables:
     # 2: daily debug
     GITLAB_SCHEDULER_TYPE: "0"
 
+    # Build type for pipelines started via the GitLab GUI
+    # Options:
+    # - "release" (default)
+    # - "debug"
+    CTEST_BUILD_TYPE_GITLAB: "release"
+    
     # Prefix for do-configure.
     CTEST_CONFIGURE_PREFIX: ""
 
     # Postfix for do-configure.
     CTEST_CONFIGURE_POSTFIX: "--useDEAL"
+    
+    # Select specific test by regular expressen (".": all)
+    TEST_TAG: "."
 
     # Temporary exclude postprocessing tests at IMCS.
     CTEST_EXCLUDE_STRING: ""
+
+    # Flag to specify if pipeline fails on warning (0:no, 1:yes)
+    CTEST_FAIL_ON_WARNING: "1"
+
+    # Flags for additional pipelines (daily full) performed only if set (used of the clusters) (0:no, 1:yes)
+    GITLAB_SCHEDULER_LNM_KAISER: "0"
+    GITLAB_SCHEDULER_LNM_DEEP: "0"
+    GITLAB_SCHEDULER_LNM_BRUTEFORCE: "0"
 
 #-------------------------------------------------------------------------------
 # Define the base jobs for testing
@@ -34,6 +51,8 @@ variables:
         - "echo minimal test: triggered by change in master"
         # Delete old build files.
         - rm -rf ../baci-build/
+        # Clear eventual ccache cache.
+        - 'if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared"; fi'
         - ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -L minimal | tee ../buildtest_minimal.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\,"
     after_script:
         # Write Selection of the output into the terminal and therefore to GITLAB
@@ -64,12 +83,15 @@ variables:
 .buildtest_full: &buildtest_full
     stage: buildtest
     script:
+        - "echo build type: CTEST_BUILD_TYPE_GITLAB=$CTEST_BUILD_TYPE_GITLAB"
         - "echo full test: triggered by user with TEST_TAG=$TEST_TAG"
         - "echo exclude string: CTEST_EXCLUDE_STRING=$CTEST_EXCLUDE_STRING"
         # Delete old build files.
         - rm -rf ../baci-build/
+        # Clear eventual ccache cache.
+        - 'if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared"; fi'
         # Output to log because it is too much for the gitlab console.
-        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -E "$CTEST_EXCLUDE_STRING" -R $TEST_TAG | tee ../buildtest_full.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\," '
+        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_${CTEST_BUILD_TYPE_GITLAB}.cmake -VV -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG" | tee ../buildtest_full.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\," '
     after_script:
         # Write Selection of the output into the terminal and therefore to GITLAB
         # Output 200 lines for any failing test
@@ -86,6 +108,10 @@ variables:
     only:
         refs:
             - web
+    except:
+        variables:
+            - $GITLAB_SCHEDULER_TYPE == "1"
+            - $GITLAB_SCHEDULER_TYPE == "2"
 
 
 # This kind of job is started by a daily scheduler, with the variable
@@ -94,12 +120,14 @@ variables:
 .buildtest_daily: &buildtest_daily
     stage: buildtest
     script:
-        - "echo full test: nightly test"
+        - "echo full test: nightly test with TEST_TAG=$TEST_TAG"
         - "echo exclude string: CTEST_EXCLUDE_STRING=$CTEST_EXCLUDE_STRING"
         # Delete old build files.
         - rm -rf ../baci-build/
+        # Clear eventual ccache cache.
+        - 'if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared"; fi'
         # Output to log because it is too much for the gitlab console.
-        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -E "$CTEST_EXCLUDE_STRING" | tee ../buildtest_daily.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\,"'
+        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG" | tee ../buildtest_daily.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\,"'
     after_script:
         # Write Selection of the output into the terminal and therefore to GITLAB
         # Output 200 lines for any failing test 
@@ -127,6 +155,8 @@ variables:
         - "echo exclude string: CTEST_EXCLUDE_STRING=$CTEST_EXCLUDE_STRING"
         # Delete old build files.
         - rm -rf ../baci-build/
+        # Clear eventual ccache cache.
+        - 'if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared"; fi'
         # Output to log because it is too much for the gitlab console.
         - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_debug.cmake -VV -E "$CTEST_EXCLUDE_STRING" | tee ../buildtest_daily_debug.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\,"'
     after_script:
@@ -319,6 +349,59 @@ lnm-buildtest_daily:
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
         - lnm-release-nightly-full
+
+lnm-buildtest_daily_bruteforce:
+    << : *buildtest_daily
+    variables:
+        TEST_TAG: ""
+        CTEST_FAIL_ON_WARNING: "0"
+        CTEST_CONFIGURE_POSTFIX: ""
+        CTEST_MAKE: "make full -j3"
+        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-BruteForce-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "bruteforce_Q12015_icc.config"
+        CTEST_DROP_SITE_CDASH_GITLAB: "1"
+        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
+        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
+    tags:
+        - lnm-release-nightly-build-bruteforce
+    only:
+        variables:
+            - $GITLAB_SCHEDULER_LNM_BRUTEFORCE == "1"
+
+lnm-buildtest_daily_deep:
+    << : *buildtest_daily
+    variables:
+        TEST_TAG: ""
+        CTEST_FAIL_ON_WARNING: "0"
+        CTEST_MAKE: "make full -j3"
+        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-Deep-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "haswell_cluster_Q12015_gcc48.config"
+        CTEST_DROP_SITE_CDASH_GITLAB: "1"
+        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
+        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
+    tags:
+        - lnm-release-nightly-build-deep
+    only:
+        variables:
+            - $GITLAB_SCHEDULER_LNM_DEEP == "1"
+
+lnm-buildtest_daily_kaiser:
+    << : *buildtest_daily
+    variables:
+        TEST_TAG: ""
+        CTEST_FAIL_ON_WARNING: "0"
+        CTEST_MAKE: "make full -j3"
+        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-Kaiser-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "kaiser_Q12015_gcc48_ACML_ompi162.config"
+        CTEST_DROP_SITE_CDASH_GITLAB: "1"
+        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
+        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
+    tags:
+        - lnm-release-nightly-build-kaiser
+    only:
+        variables:
+            - $GITLAB_SCHEDULER_LNM_KAISER == "1"
+
 
 lnm-buildtest_daily_debug:
     << : *buildtest_daily_debug

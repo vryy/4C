@@ -263,7 +263,7 @@ namespace MORTAR
     virtual void InitBinStrategyforTimestep(Teuchos::RCP<const Epetra_Vector> vel) = 0;
     virtual void CollectMapsForPreconditioner(Teuchos::RCP<Epetra_Map>& MasterDofMap,
         Teuchos::RCP<Epetra_Map>& SlaveDofMap, Teuchos::RCP<Epetra_Map>& InnerDofMap,
-        Teuchos::RCP<Epetra_Map>& ActiveDofMap) = 0;
+        Teuchos::RCP<Epetra_Map>& ActiveDofMap) const = 0;
     virtual double ConstraintNorm() const = 0;
     virtual Teuchos::RCP<Epetra_Vector> ContactNorStress() = 0;
     virtual Teuchos::RCP<Epetra_Vector> ContactTanStress() = 0;
@@ -314,11 +314,10 @@ namespace MORTAR
     virtual void RestrictMeshtyingZone() = 0;
     virtual void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
-        Teuchos::RCP<LINALG::MapExtractor> dbcmaps, int numiter,
-        Teuchos::RCP<Epetra_Operator>& blockMat, Teuchos::RCP<Epetra_Vector>& blocksol,
-        Teuchos::RCP<Epetra_Vector>& blockrhs) = 0;
+        Teuchos::RCP<LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
+        Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) = 0;
     virtual void UpdateDisplacementsAndLMincrements(
-        Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol) = 0;
+        Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) = 0;
     virtual void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) = 0;
     virtual void SetState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) = 0;
     virtual const Teuchos::RCP<Epetra_Map> SlipRowNodes() = 0;

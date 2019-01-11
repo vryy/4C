@@ -4,7 +4,7 @@
 \brief Basic constraint class, dealing with constraints living on boundaries, code originally by
 Thomas Kloeppel
 
-\maintainer Marc Hirschvogel
+\maintainer Amadeus Gebauer
 
 \level 2
 

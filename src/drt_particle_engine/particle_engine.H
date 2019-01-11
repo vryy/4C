@@ -106,11 +106,19 @@ namespace PARTICLEENGINE
     //! dynamic load balancing
     void DynamicLoadBalancing();
 
+    //! change type of particles
+    void TypeChangeParticles(std::map<TypeEnum, std::set<int>>& particlestoremove,
+        std::map<TypeEnum, std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert)
+        override;
+
     //! build overlapping particle to particle neighbor map
     void BuildParticleToParticleNeighbors();
 
     //! build global id to local index map
     void BuildGlobalIDToLocalIndexMap();
+
+    //! check for valid particle connectivity
+    bool HaveValidParticleConnectivity() const;
 
     //! get particle container bundle
     const ParticleContainerBundleShrdPtr GetParticleContainerBundle() const override
@@ -119,10 +127,7 @@ namespace PARTICLEENGINE
     };
 
     //! get reference to particle neighbors map
-    const ParticleNeighborsMap& GetParticleNeighborsMap() const override
-    {
-      return particletoparticleneighbors_;
-    };
+    const ParticleNeighborsMap& GetParticleNeighborsMap() const override;
 
     //! get local index in specific particle container
     const LocalIndexTupleShrdPtr GetLocalIndexInSpecificContainer(int globalid) const override;
@@ -223,8 +228,7 @@ namespace PARTICLEENGINE
 
     //! insert owned particles received from other processors
     void InsertOwnedParticles(
-        std::map<TypeEnum, std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert)
-        const;
+        std::map<TypeEnum, std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert);
 
     //! insert ghosted particles received from other processors
     void InsertGhostedParticles(
@@ -237,7 +241,10 @@ namespace PARTICLEENGINE
         const;
 
     //! remove particles from containers
-    void RemoveParticlesFromContainers(std::map<TypeEnum, std::set<int>>& particlestoremove) const;
+    void RemoveParticlesFromContainers(std::map<TypeEnum, std::set<int>>& particlestoremove);
+
+    //! store particle positions after transfer of particles
+    void StorePositionsAfterParticleTransfer();
 
     //! rebuild index of owned particles in bin content map
     void RebuildIndexOfOwnedParticlesInBinContentMap();
@@ -247,6 +254,9 @@ namespace PARTICLEENGINE
 
     //! determine bin weights needed for repartitioning
     void DetermineBinWeights();
+
+    //! invalidate all safety flags
+    void InvalidateAllSafetyFlags();
 
     //! communication
     const Epetra_Comm& comm_;
@@ -278,15 +288,32 @@ namespace PARTICLEENGINE
     //! particle runtime vtp writer
     std::unique_ptr<PARTICLEENGINE::ParticleRuntimeVtpWriter> particlevtpwriter_;
 
-    //! maps bin gids to its containing particles
-    std::map<int, TypeStatusIndexMap> bincontent_;
+    //! maps bins to its containing (owned and ghosted) particles
+    std::map<int, TypeStatusIndexMap> binstocontainingparticles_;
 
-    //! maps particles of all types and statuses to its neighboring particles of all types and
-    //! statuses (overlapping pairs)
-    ParticleNeighborsMap particletoparticleneighbors_;
+    //! maps particles of all types to neighboring particles of all types and statuses (overlapping)
+    ParticleNeighborsMap particleneighbors_;
 
     //! maps particle global ids to local index in specific particle container
     std::unordered_map<int, LocalIndexTupleShrdPtr> globalidtolocalindex_;
+
+    //! maps local index of owned particles to other processors local index of ghosted particles
+    std::map<TypeEnum, std::map<int, std::vector<std::pair<int, int>>>> directghostingmap_;
+
+    //! flag denoting validity of map relating owned particles to bins
+    bool validownedparticles_;
+
+    //! flag denoting validity of map relating ghosted particles to bins
+    bool validghostedparticles_;
+
+    //! flag denoting validity of particle neighbors map
+    bool validparticleneighbors_;
+
+    //! flag denoting validity of map relating particle global ids to local index
+    bool validglobalidtolocalindex_;
+
+    //! flag denoting validity of direct ghosting
+    bool validdirectghosting_;
 
     //! owned bins at an open boundary or a periodic boundary
     std::set<int> boundarybins_;
@@ -302,9 +329,6 @@ namespace PARTICLEENGINE
 
     //! maps bins on this processor to processors ghosting that bins
     std::map<int, std::set<int>> thisbinsghostedby_;
-
-    //! maps local index of owned particles to other processors local index of ghosted particles
-    std::map<TypeEnum, std::map<int, std::vector<std::pair<int, int>>>> directghostingmap_;
   };
 
 }  // namespace PARTICLEENGINE

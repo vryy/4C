@@ -75,7 +75,7 @@ bool BEAMINTERACTION::GEO::PointToCurveProjection(LINALG::TMatrix<T, 3, 1> const
     /* Note: Even if automatic differentiation via FAD is applied, norm_delta_r has to be of type
      * double since this factor is needed for a pure scaling of the nonlinear CCP and has not to be
      * linearized! */
-    double norm_delta_r = FADUTILS::CastToDouble(FADUTILS::VectorNorm<3>(delta_r));
+    double norm_delta_r = FADUTILS::CastToDouble(FADUTILS::VectorNorm(delta_r));
 
     /* The closer the beams get, the smaller is norm_delta_r, but
      * norm_delta_r is not allowed to be too small, else numerical problems occur.
@@ -340,11 +340,10 @@ template <typename T>
 void BEAMINTERACTION::GEO::CalcEnclosedAngle(
     T& angle, T& cosine_angle, const LINALG::TMatrix<T, 3, 1>& a, const LINALG::TMatrix<T, 3, 1>& b)
 {
-  if (FADUTILS::VectorNorm<3>(a) < 1.0e-12 or FADUTILS::VectorNorm<3>(b) < 1.0e-12)
+  if (FADUTILS::VectorNorm(a) < 1.0e-12 or FADUTILS::VectorNorm(b) < 1.0e-12)
     dserror("Cannot determine angle for zero vector!");
 
-  cosine_angle =
-      FADUTILS::Norm(a.Dot(b) / (FADUTILS::VectorNorm<3>(a) * FADUTILS::VectorNorm<3>(b)));
+  cosine_angle = FADUTILS::Norm<T>(a.Dot(b) / (FADUTILS::VectorNorm(a) * FADUTILS::VectorNorm(b)));
 
   if (cosine_angle < 1.0)
   {

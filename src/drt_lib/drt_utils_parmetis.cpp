@@ -1,34 +1,31 @@
 /*!----------------------------------------------------------------------
 \file drt_utils_parmetis.cpp
 
-\brief A collection of helper methods for namespace DRT
+\brief A collection of helper methods related to partitioning and parallel distribution
 
-<pre>
 \level 0
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
 *----------------------------------------------------------------------*/
 
 #include "drt_utils_parmetis.H"
+
 #include "../linalg/linalg_utils.H"
 
 #include <Epetra_Time.h>
 
-// Include Isorropia_Exception.hpp only because the helper functions at
-// the bottom of this file (which create the epetra objects) can
-// potentially throw exceptions.
+/* Include Isorropia_Exception.hpp only because the helper functions at
+ * the bottom of this file (which create the epetra objects) can
+ * potentially throw exceptions.
+ */
 #include <Isorropia_Exception.hpp>
 
-// The Isorropia symbols being demonstrated are declared
-// in these headers:
+// The Isorropia symbols being demonstrated are declared in these headers:
 #include <Isorropia_Epetra.hpp>
-#include <Isorropia_EpetraRedistributor.hpp>
-#include <Isorropia_EpetraPartitioner.hpp>
 #include <Isorropia_EpetraCostDescriber.hpp>
+#include <Isorropia_EpetraPartitioner.hpp>
+#include <Isorropia_EpetraRedistributor.hpp>
 
 #include <iterator>
 
@@ -148,11 +145,12 @@ void DRT::UTILS::UnpackLocalConnectivity(
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::PartUsingParMetis(Teuchos::RCP<DRT::Discretization> dis,
     Teuchos::RCP<Epetra_Map> roweles, Teuchos::RCP<Epetra_Map>& rownodes,
-    Teuchos::RCP<Epetra_Map>& colnodes, Teuchos::RCP<Epetra_Comm> comm, bool outflag, int parts)
+    Teuchos::RCP<Epetra_Map>& colnodes, Teuchos::RCP<Epetra_Comm> comm, const bool outflag,
+    const int parts, const double imbalance)
 {
   const int myrank = comm->MyPID();
   Epetra_Time timer(dis->Comm());
-  double t1 = timer.ElapsedTime();
+  const double t1 = timer.ElapsedTime();
   if (!myrank && outflag)
   {
     printf("parmetis:\n");
@@ -161,12 +159,24 @@ void DRT::UTILS::PartUsingParMetis(Teuchos::RCP<DRT::Discretization> dis,
 
   Teuchos::RCP<const Epetra_CrsGraph> graph = BuildGraph(dis, roweles, rownodes, comm, outflag);
 
-  // use Isorropia
+  /* Use Isorropia package to access Zoltan
+   *
+   * By default, Isorropia will use Zoltan hypergraph partitioning, treating the graph columns as
+   * hyperedges and the graph rows as vertices.
+   */
 
+  // Pass parameters to Zoltan via this parameter list
   Teuchos::ParameterList paramlist;
-  // No parameters. By default, Isorropia will use Zoltan hypergraph
-  // partitioning, treating the graph columns as hyperedges and the
-  // graph rows as vertices.
+
+  /* Set tolerance on max. relative imbalance of subdomain sizes
+   * if it is provided. Otherwise, don't set it. This will then use the default value.
+   */
+  if (imbalance > 0.0)
+  {
+    std::stringstream ss;
+    ss << imbalance;
+    paramlist.set("IMBALANCE_TOL", ss.str());
+  }
 
   // if the user wants to use less procs than available (as indicated by
   // the input flag "parts" above) then pass on this information to the
@@ -175,8 +185,7 @@ void DRT::UTILS::PartUsingParMetis(Teuchos::RCP<DRT::Discretization> dis,
   {
     std::stringstream ss;
     ss << parts;
-    std::string s = ss.str();
-    paramlist.set("num parts", s);
+    paramlist.set("num parts", ss.str());
   }
 
   Epetra_CrsGraph* balanced_graph = NULL;
@@ -200,7 +209,7 @@ void DRT::UTILS::PartUsingParMetis(Teuchos::RCP<DRT::Discretization> dis,
   colnodes = Teuchos::rcp(new Epetra_Map(-1, rcp_balanced_graph->ColMap().NumMyElements(),
       rcp_balanced_graph->ColMap().MyGlobalElements(), 0, *comm));
 
-  double t2 = timer.ElapsedTime();
+  const double t2 = timer.ElapsedTime();
   if (!myrank && outflag)
   {
     printf("Graph rebalancing:    %10.5e secs\n", t2 - t1);

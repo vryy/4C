@@ -511,7 +511,8 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
           DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SPHERE CONTACT"),
           "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none or
       DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
-          DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID CONTACT"),
+          DRT::Problem::Instance()->BeamInteractionParams().sublist(
+              "BEAM TO SOLID VOLUME MESHTYING"),
           "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none or
       beampotconditions.size() > 0)
     modeltypes.insert(INPAR::STR::model_beaminteraction);

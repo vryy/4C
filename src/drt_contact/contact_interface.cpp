@@ -1060,6 +1060,9 @@ bool CONTACT::CoInterface::Redistribute(int index)
   // minimum number of elements per proc
   int minele = IParams().get<int>("MIN_ELEPROC");
 
+  // Max. relative imbalance between subdomain sizes
+  const double imbalance_tol = IParams().get<double>("IMBALANCE_TOL");
+
   // calculate real number of procs to be used
   if (minele > 0)
   {
@@ -1133,7 +1136,8 @@ bool CONTACT::CoInterface::Redistribute(int index)
 
   //**********************************************************************
   // call ZOLTAN for parallel redistribution
-  DRT::UTILS::PartUsingParMetis(idiscret_, scroweles, scrownodes, sccolnodes, comm, false, scproc);
+  DRT::UTILS::PartUsingParMetis(
+      idiscret_, scroweles, scrownodes, sccolnodes, comm, false, scproc, imbalance_tol);
   //**********************************************************************
 
   //**********************************************************************
@@ -1155,7 +1159,7 @@ bool CONTACT::CoInterface::Redistribute(int index)
   //**********************************************************************
   // call ZOLTAN for parallel redistribution
   DRT::UTILS::PartUsingParMetis(
-      idiscret_, sncroweles, sncrownodes, snccolnodes, comm, false, sncproc);
+      idiscret_, sncroweles, sncrownodes, snccolnodes, comm, false, sncproc, imbalance_tol);
   //**********************************************************************
 
   //**********************************************************************
@@ -1164,7 +1168,7 @@ bool CONTACT::CoInterface::Redistribute(int index)
   Teuchos::RCP<Epetra_Map> mrownodes = Teuchos::null;
   Teuchos::RCP<Epetra_Map> mcolnodes = Teuchos::null;
 
-  RedistributeMasterSide(mrownodes, mcolnodes, mroweles, comm, mproc);
+  RedistributeMasterSide(mrownodes, mcolnodes, mroweles, comm, mproc, imbalance_tol);
 
   //**********************************************************************
   // (7) Merge global interface node row and column map
@@ -1369,6 +1373,8 @@ void CONTACT::CoInterface::CreateSearchTree()
       // (NOTE THAT SELF CONTACT SEARCH IS NOT YET FULLY PARALLELIZED!)
       binarytreeself_ = Teuchos::rcp(
           new CONTACT::SelfBinaryTree(Discret(), lComm(), elefullmap, Dim(), SearchParam()));
+      // initialize the binary tree
+      binarytreeself_->Init();
     }
     //*****TWO BODY CONTACT*****
     else
@@ -1402,9 +1408,8 @@ void CONTACT::CoInterface::CreateSearchTree()
       // create binary tree object for contact search and setup tree
       binarytree_ = Teuchos::rcp(new MORTAR::BinaryTree(
           Discret(), selecolmap_, melefullmap, Dim(), SearchParam(), SearchUseAuxPos()));
-
-      // initialize active contact nodes via binarytree
-      // binarytree_->SearchContactInit(binarytree_->Sroot(), binarytree_->Mroot());
+      // initialize the binary tree
+      binarytree_->Init();
     }
   }
 

@@ -1,14 +1,11 @@
 /*!----------------------------------------------------------------------
 \file solver_krylovsolver.H
 
-<pre>
-\brief Declaration
-\level 1
+\brief Declaration of Baci's interface to Krylov solvers
+
+\level 0
+
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-Created on: Jul 4, 2011
-</pre>
 */
 /*----------------------------------------------------------------------*/
 
@@ -43,39 +40,65 @@ namespace LINALG
     class KrylovSolver : public SolverType
     {
      public:
+      //! Constructor
       KrylovSolver(const Epetra_Comm& comm, Teuchos::ParameterList& params, FILE* outfile);
 
+      //! Destructor
       virtual ~KrylovSolver();
 
+      /*! \brief Setup the solver object
+       *
+       * @param matrix Matrix of the linear system
+       * @param x Solution vector of the linear system
+       * @param b Right-hand side vector of the linear system
+       * @param refactor Boolean flag to enforce a refactorization of the matrix
+       * @param reset Boolean flag to enforce a full reset of the solver object
+       * @param projector Krylov projector
+       */
       virtual void Setup(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Epetra_MultiVector> x,
-          Teuchos::RCP<Epetra_MultiVector> b, bool refactor, bool reset,
+          Teuchos::RCP<Epetra_MultiVector> b, const bool refactor, const bool reset,
           Teuchos::RCP<LINALG::KrylovProjector> projector) = 0;
 
       virtual int Solve() = 0;
 
       int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y);
 
-      /// get plain pointer to underlaying preconditioner object (of type PreconditionerType)
-      /// note: using this function outside the solver object is dangerous, since there's no
-      /// guarantee, that the preconditioner object still exists (but usually it should exist
-      /// as long it's needed/used within the solver object)
-      virtual PreconditionerType* Preconditioner()
-      {
-        return preconditioner_.get(); /*&*preconditioner_;*/
-      }
+      /*! \brief Get plain pointer to underlying preconditioner object of type PreconditionerType
+       *
+       * \warning Using this function outside the solver object is dangerous, since there's no
+       * guarantee, that the preconditioner object still exists (but usually it should exist
+       * as long it's needed/used within the solver object)
+       */
+      virtual PreconditionerType* Preconditioner() { return preconditioner_.get(); }
 
       int Ncall() { return ncall_; }
 
       Teuchos::ParameterList& Params() const { return params_; }
 
      protected:
-      /// return true, if preconditoner can be reused
-      /// reuse (input): AZREUSE from parameter list
-      /// reset (input): force preconditioner to be rebuilt
-      bool AllowReusePreconditioner(int reuse, bool reset);
+      /*! \brief Check whether preconditioner will be reused
+       *
+       * The user can control reuse/recomputation of the preconditioner by setting appropriate input
+       * arguments \c reuse and \c reset. In addition, contact mechanics problems perform some
+       * additional checks since they require to rebuild the preconditioner when the active set has
+       * changed.
+       *
+       * @param[in] reuse Parameter AZREUSE from parameter list
+       * @param reset Force preconditioner to be rebuilt
+       * @return Boolean flag to indicate whether preconditioner is reused (\c true) or has to be
+       * re-computed (\c false)
+       *
+       * \sa CheckReuseStatusOfActiveSet()
+       */
+      bool AllowReusePreconditioner(const int reuse, const bool reset);
 
-      //! function for creating preconditioner object
-      void CreatePreconditioner(Teuchos::ParameterList& azlist, bool isCrsMatrix,
+      /*! \brief Function for creating preconditioner object
+       *
+       * @param azlist Aztec parameter list
+       * @param isCrsMatrix Boolean flag to indicate Epetra_CrsMatrix (true) or block matrix (false)
+       * @param projector Krylov projector
+       */
+      void CreatePreconditioner(Teuchos::ParameterList& azlist, const bool isCrsMatrix,
           Teuchos::RCP<LINALG::KrylovProjector> projector);
 
       //! a communicator
@@ -103,18 +126,44 @@ namespace LINALG
       Teuchos::RCP<PreconditionerType> preconditioner_;
 
      private:
-      //! number of active DOFs in structural contact simulations.
-      //! This is used to check whether preconditioner can be reused or not.
-      //! Member variable only used for structural contact problems with the
-      //! "contact activeDofMap" parameter in the "Linear System properties"
-      //! parameter list set.
-      int nActiveDofs_;
+      /*! \brief Check if active set has changed. If yes, enforce to rebuild the preconditioner.
+       *
+       * We only can reuse the preconditioner if the active set in contact problems has not changed.
+       * Therefore, we compare the current map of active DOFs with #activeDofMap_, i.e. the one
+       * stored from the previous application of the preconditioner.
+       *
+       * The comparison is done in multiple stages:
+       * 1. Check if number of active DOFs has changed:
+       *   - If yes, we need to rebuild the preconditioner.
+       *   - If not, then check 2.
+       * 2. Compare current and stored map of active DOFs using a PointSameAs() comparison.
+       *   - If map has changed, we need to rebuild the preconditioner.
+       *
+       * \param[in/out] bAllowReuse Boolean flag to indicate reuse (true) or rebuild
+       * (false) of the preconditioner
+       * \param[in] linSysParams Parameter list with some linear system information
+       */
+      virtual void CheckReuseStatusOfActiveSet(
+          bool& bAllowReuse, const Teuchos::ParameterList* linSysParams);
+
+      /*! \brief Map of active DOFs in structural contact simulations.
+       *
+       * This is used to check whether preconditioner can be reused or not.
+       * We cannot reuse the preconditioner if the active set has changed.
+       *
+       * \note Member variable only used for structural contact problems with the
+       * "contact activeDofMap" parameter in the "Linear System properties"
+       * parameter list set.
+       *
+       * \sa CheckReuseStatusOfActiveSet()
+       */
+      Teuchos::RCP<Epetra_Map> activeDofMap_;
 
 #ifdef HAVE_MueLu
 
      protected:
       //! @name Permutation methods.
-      //@{
+      //!@{
 
       /*! @brief extract map provided for being used with permutation factory. only rows in the
        * given map are subject to permutations. returns Teuchos::null if no additional information
@@ -154,8 +203,9 @@ namespace LINALG
        * system */
       void ReTransformSolution();
 
-      // parameter xOp only needed for RowMap and DomainMap? (use original matrix A without
-      // permutation)
+      /*! parameter xOp only needed for RowMap and DomainMap? (use original matrix A without
+       * permutation)
+       */
       void PermuteNullSpace(const Teuchos::RCP<Epetra_CrsMatrix>& A);
 
       /*! @brief Internal helper functions to access operators from internal data structure */
@@ -166,6 +216,7 @@ namespace LINALG
 
       /*! @brief Count number of zeros on diagonal of input matrix */
       int CountZerosOnDiagonalEpetra(const Teuchos::RCP<Epetra_CrsMatrix>& A);
+
       /*! @brief Count number of zeros on diagonal of input matrix */
       int CountZerosOnDiagonal(const Teuchos::RCP<const Xpetra::Matrix<double, int, int>>& xOp);
 
@@ -173,6 +224,7 @@ namespace LINALG
        * diagonal of matrix A */
       Teuchos::RCP<Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node>> FindZeroDiagonalEntries(
           const Teuchos::RCP<Epetra_CrsMatrix>& A, double tolerance = 1e-5);
+
       /*! @brief Returns map with global row ids of rows with absolute value < tolerance on the
        * diagonal of matrix A */
       Teuchos::RCP<Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node>> FindZeroDiagonalEntries(
@@ -212,13 +264,14 @@ namespace LINALG
 
       /*! @brief internal flexible data container for storing permutation specific data (permutation
        * operators...) */
-      Teuchos::RCP<MueLu::Level> data_;  // data container
+      Teuchos::RCP<MueLu::Level> data_;
 
       /*! @brief factory class which generates permutation data using input matrix A */
-      Teuchos::RCP<MueLu::PermutationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
-          PermFact_;  // permutation factory
-                      //@}
-#endif                // HAVE_MueLu
+      Teuchos::RCP<MueLu::PermutationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>> PermFact_;
+
+      //!@}
+
+#endif  // HAVE_MueLu
 
 #ifdef WRITEOUTSTATISTICS
       double dtimeprecondsetup_;

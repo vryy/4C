@@ -759,6 +759,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_beaminteraction.cpp
   src/drt_inpar/inpar_beampotential.cpp
   src/drt_inpar/inpar_browniandyn.cpp
+  src/drt_inpar/inpar_geometry_pair.cpp
   src/drt_inpar/inpar_bio.cpp
   src/drt_inpar/inpar_cardiac_monodomain.cpp
   src/drt_inpar/inpar_particle.cpp
@@ -887,14 +888,12 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
   src/drt_beaminteraction/periodic_boundingbox.cpp
   src/drt_beaminteraction/beam3contact_utils.cpp
   src/drt_beaminteraction/beam3contact_tangentsmoothing.cpp
-  src/drt_beaminteraction/beam_contact_evaluation_data.cpp
   src/drt_beaminteraction/beam_contact_params.cpp
   src/drt_beaminteraction/beam_contact_runtime_vtk_output_params.cpp
   src/drt_beaminteraction/beam_contact_pair.cpp
   src/drt_beaminteraction/beam_to_beam_contact_pair.cpp
   src/drt_beaminteraction/beam_to_beam_contact_params.cpp
   src/drt_beaminteraction/beam_to_beam_contact_variables.cpp
-  src/drt_beaminteraction/beam_to_solid_volume_meshtying_evaluation_data.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_params.cpp
   src/drt_beaminteraction/beam_to_sphere_contact_pair.cpp
@@ -1864,6 +1863,7 @@ set(OBJS_DRT_PARTICLE_INTERACTION
   src/drt_particle_interaction/particle_interaction_sph_artificialviscosity.cpp
   src/drt_particle_interaction/particle_interaction_sph_surface_tension.cpp
   src/drt_particle_interaction/particle_interaction_sph_boundary_particle.cpp
+  src/drt_particle_interaction/particle_interaction_sph_phase_change.cpp
   src/drt_particle_interaction/particle_interaction_material_handler.cpp
 )
 set(OBJS_DRT_PARTICLE_ENGINE
@@ -2570,6 +2570,18 @@ set(OBJS_DRT_FIBER_LIB
 src/drt_fiber/drt_fiber_node.cpp
 )
 
+set(OBJS_DRT_GEOMETRY_PAIR
+src/drt_geometry_pair/geometry_pair_factory.cpp
+src/drt_geometry_pair/geometry_pair.cpp
+src/drt_geometry_pair/geometry_pair_utility_classes.cpp
+src/drt_geometry_pair/geometry_pair_evaluation_data_global.cpp
+src/drt_geometry_pair/geometry_pair_evaluation_data_base.cpp
+src/drt_geometry_pair/geometry_pair_line_to_volume_evaluation_data.cpp
+src/drt_geometry_pair/geometry_pair_line_to_volume.cpp
+src/drt_geometry_pair/geometry_pair_line_to_volume_gauss_point_projection.cpp
+src/drt_geometry_pair/geometry_pair_line_to_volume_segmentation.cpp
+)
+
 ###------------------------------------------------------------------ Element flags
 
 #   all possible elements
@@ -2826,6 +2838,7 @@ add_library(drt_lib_statinv_ana ${OBJS_STATINV_ANALYSIS_LIB})
 add_library(drt_lib_immersed ${OBJS_DRT_IMMERSED_LIB})
 add_library(drt_lib_xfem_manag ${OBJS_DRT_XFEM_MANAG_LIB})
 add_library(drt_lib_fiber ${OBJS_DRT_FIBER_LIB})
+add_library(drt_lib_geometry_pair ${OBJS_DRT_GEOMETRY_PAIR})
 add_library(alg_mor ${OBJS_DRT_MOR})
 
 
@@ -2851,6 +2864,7 @@ set(SUPPORT_LIBRARIES
   drt_lib_statinv_ana
   drt_lib_immersed
   drt_lib_fiber
+  drt_lib_geometry_pair
   )
 
 # separate library as it does not play well with testing

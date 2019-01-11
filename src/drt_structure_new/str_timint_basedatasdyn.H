@@ -131,14 +131,14 @@ namespace STR
         return dyntype_;
       };
 
-      /// ToDo Add comment @Pfaller
+      /// Get type of shell thickness scaling
       const enum INPAR::STR::STC_Scale& GetSTCAlgoType() const
       {
         CheckInitSetup();
         return stcscale_;
       };
 
-      /// ToDo Add comment @Pfaller
+      /// Get number of layers for multilayered shell thickness scaling case
       const int& GetSTCLayer() const
       {
         CheckInitSetup();

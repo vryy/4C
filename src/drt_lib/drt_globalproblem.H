@@ -357,6 +357,10 @@ namespace DRT
     {
       return getParameterList()->sublist("BROWNIAN DYNAMICS");
     }
+    const Teuchos::ParameterList& GeometryPairParams() const
+    {
+      return getParameterList()->sublist("GEOMETRY PAIR");
+    }
     const Teuchos::ParameterList& ThermalDynamicParams() const
     {
       return getParameterList()->sublist("THERMAL DYNAMIC");
