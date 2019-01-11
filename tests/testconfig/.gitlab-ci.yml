@@ -10,12 +10,18 @@ variables:
     # 2: daily debug
     GITLAB_SCHEDULER_TYPE: "0"
 
+    # Build type for pipelines started via the GitLab GUI
+    # Options:
+    # - "release" (default)
+    # - "debug"
+    CTEST_BUILD_TYPE_GITLAB: "release"
+    
     # Prefix for do-configure.
     CTEST_CONFIGURE_PREFIX: ""
 
     # Postfix for do-configure.
     CTEST_CONFIGURE_POSTFIX: "--useDEAL"
-
+    
     # Select specific test by regular expressen (".": all)
     TEST_TAG: "."
 
@@ -77,6 +83,7 @@ variables:
 .buildtest_full: &buildtest_full
     stage: buildtest
     script:
+        - "echo build type: CTEST_BUILD_TYPE_GITLAB=$CTEST_BUILD_TYPE_GITLAB"
         - "echo full test: triggered by user with TEST_TAG=$TEST_TAG"
         - "echo exclude string: CTEST_EXCLUDE_STRING=$CTEST_EXCLUDE_STRING"
         # Delete old build files.
@@ -84,7 +91,7 @@ variables:
         # Clear eventual ccache cache.
         - 'if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared"; fi'
         # Output to log because it is too much for the gitlab console.
-        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG" | tee ../buildtest_full.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\," '
+        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_${CTEST_BUILD_TYPE_GITLAB}.cmake -VV -E "$CTEST_EXCLUDE_STRING" -R "$TEST_TAG" | tee ../buildtest_full.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\," '
     after_script:
         # Write Selection of the output into the terminal and therefore to GITLAB
         # Output 200 lines for any failing test
