@@ -139,7 +139,7 @@ bool LINALG::SOLVER::KrylovSolver::AllowReusePreconditioner(const int reuse, con
   CheckReuseStatusOfActiveSet(bAllowReuse, linSysParams);
 
   // true, if preconditioner must not reused but is to re-created!
-  bool create = reset or not Ncall() or not reuse or (Ncall() % reuse) == 0;
+  const bool create = reset or not Ncall() or not reuse or (Ncall() % reuse) == 0;
   if (create) bAllowReuse = false;  // we have to create a new preconditioner
 
   // here, each processor has its own local decision made
