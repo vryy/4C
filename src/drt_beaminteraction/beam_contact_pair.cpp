@@ -227,33 +227,33 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair:
             {
               case 8:
               {
-                return Teuchos::rcp(new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<
-                    GEOMETRYPAIR::ElementDiscretizationHermite,
-                    GEOMETRYPAIR::ElementDiscretizationStandard<DRT::Element::hex8>>());
+                return Teuchos::rcp(
+                    new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<GEOMETRYPAIR::t_hermite,
+                        GEOMETRYPAIR::t_hex8>());
               }
               case 20:
               {
-                return Teuchos::rcp(new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<
-                    GEOMETRYPAIR::ElementDiscretizationHermite,
-                    GEOMETRYPAIR::ElementDiscretizationStandard<DRT::Element::hex20>>());
+                return Teuchos::rcp(
+                    new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<GEOMETRYPAIR::t_hermite,
+                        GEOMETRYPAIR::t_hex20>());
               }
               case 27:
               {
-                return Teuchos::rcp(new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<
-                    GEOMETRYPAIR::ElementDiscretizationHermite,
-                    GEOMETRYPAIR::ElementDiscretizationStandard<DRT::Element::hex27>>());
+                return Teuchos::rcp(
+                    new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<GEOMETRYPAIR::t_hermite,
+                        GEOMETRYPAIR::t_hex27>());
               }
               case 4:
               {
-                return Teuchos::rcp(new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<
-                    GEOMETRYPAIR::ElementDiscretizationHermite,
-                    GEOMETRYPAIR::ElementDiscretizationStandard<DRT::Element::tet4>>());
+                return Teuchos::rcp(
+                    new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<GEOMETRYPAIR::t_hermite,
+                        GEOMETRYPAIR::t_tet4>());
               }
               case 10:
               {
-                return Teuchos::rcp(new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<
-                    GEOMETRYPAIR::ElementDiscretizationHermite,
-                    GEOMETRYPAIR::ElementDiscretizationStandard<DRT::Element::tet10>>());
+                return Teuchos::rcp(
+                    new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<GEOMETRYPAIR::t_hermite,
+                        GEOMETRYPAIR::t_tet10>());
               }
               default:
               {

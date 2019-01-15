@@ -19,6 +19,7 @@
 #include "src/drt_so3/so_hex8.H"
 #include "src/drt_so3/so_hex27.H"
 #include "src/drt_so3/so_tet10.H"
+#include "src/drt_geometry_pair/geometry_pair_element_types.H"
 #include "src/drt_geometry_pair/geometry_pair_evaluation_data_global.H"
 #include "src/drt_geometry_pair/geometry_pair_line_to_volume_segmentation.H"
 #include "src/drt_geometry_pair/geometry_pair_line_to_volume_evaluation_data.H"
@@ -26,7 +27,6 @@
 #include "src/drt_lib/drt_globalproblem.H"
 
 #include "../drt_geometry_pair/unit_geometry_pair_line_to_volume_segmentation_geometry_functions.H"
-
 
 
 namespace GEOMETRYPAIR
@@ -81,8 +81,8 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
     std::vector<LINALG::TMatrix<double, 12, 1>> q_line_elements;
     std::vector<LINALG::TMatrix<double, 9, 1>> q_rot_line_elements;
     std::vector<LINALG::TMatrix<double, 24, 1>> q_volume_elements;
-    std::vector<
-        Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, 2, 2, 8, 1>>>
+    std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
+        GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>>>
         geometry_pairs;
 
     // Get the geometry.
@@ -119,8 +119,8 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
     std::vector<LINALG::TMatrix<double, 12, 1>> q_line_elements;
     std::vector<LINALG::TMatrix<double, 9, 1>> q_rot_line_elements;
     std::vector<LINALG::TMatrix<double, 81, 1>> q_volume_elements;
-    std::vector<
-        Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, 2, 2, 27, 1>>>
+    std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
+        GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex27>>>
         geometry_pairs;
 
     // Get the geometry.
@@ -160,8 +160,8 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
     std::vector<LINALG::TMatrix<double, 12, 1>> q_line_elements;
     std::vector<LINALG::TMatrix<double, 9, 1>> q_rot_line_elements;
     std::vector<LINALG::TMatrix<double, 30, 1>> q_volume_elements;
-    std::vector<
-        Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, 2, 2, 10, 1>>>
+    std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
+        GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10>>>
         geometry_pairs;
 
     // Get the geometry.
@@ -205,18 +205,13 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
    * @param q_volume_elements (in) Vector of DOF vectors for the positions of the volume element.
    * @param segments_vector (out) Vector with found segments for each pair.
    */
-  template <unsigned int n_nodes_element_1, unsigned int n_nodal_values_element_1,
-      unsigned int n_nodes_element_2, unsigned int n_nodal_values_element_2>
+  template <typename el1, typename el2>
   void CreateEvaluatePairs(
-      std::vector<
-          Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, n_nodes_element_1,
-              n_nodal_values_element_1, n_nodes_element_2, n_nodal_values_element_2>>>&
-          geometry_pairs,
-      const std::vector<LINALG::TMatrix<double, 3 * n_nodes_element_1 * n_nodal_values_element_1,
-          1>>& q_line_elements,
+      std::vector<Teuchos::RCP<
+          GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, el1, el2>>>& geometry_pairs,
+      const std::vector<LINALG::TMatrix<double, el1::n_dof_, 1>>& q_line_elements,
       const std::vector<LINALG::TMatrix<double, 9, 1>>& q_rot_line_elements,
-      const std::vector<LINALG::TMatrix<double, 3 * n_nodes_element_2 * n_nodal_values_element_2,
-          1>>& q_volume_elements,
+      const std::vector<LINALG::TMatrix<double, el2::n_dof_, 1>>& q_volume_elements,
       std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>>& segments_vector)
   {
     // Check that the vectors have the right size.
@@ -255,8 +250,7 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
       for (auto& volume : volume_elements_)
       {
         geometry_pairs.push_back(Teuchos::rcp(
-            new GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, n_nodes_element_1,
-                n_nodal_values_element_1, n_nodes_element_2, n_nodal_values_element_2>()));
+            new GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, el1, el2>()));
         geometry_pairs.back()->Init(evaluation_data_, line.get(), volume.get());
         geometry_pairs.back()->Setup();
       }

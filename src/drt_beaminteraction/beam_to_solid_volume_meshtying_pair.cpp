@@ -140,8 +140,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<beam, solid>::CreateGeometr
     const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> geometry_evaluation_data_ptr)
 {
   // Set up the geometry pair, it will be initialized in the Init call of the base class.
-  geometry_pair_ = GEOMETRYPAIR::GeometryPairLineToVolumeFactory<double, beam::n_nodes_,
-      beam::n_val_, solid::n_nodes_, 1>(geometry_evaluation_data_ptr);
+  geometry_pair_ = GEOMETRYPAIR::GeometryPairLineToVolumeFactory<double, beam, solid>(
+      geometry_evaluation_data_ptr);
 }
 
 
@@ -149,12 +149,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<beam, solid>::CreateGeometr
  *
  */
 template <typename beam, typename solid>
-Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolume<double, beam::n_nodes_, beam::n_val_,
-    solid::n_nodes_, 1>>
+Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolume<double, beam, solid>>
 BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<beam, solid>::CastGeometryPair() const
 {
-  return Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::GeometryPairLineToVolume<double, beam::n_nodes_,
-      beam::n_val_, solid::n_nodes_, 1>>(geometry_pair_, true);
+  return Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::GeometryPairLineToVolume<double, beam, solid>>(
+      geometry_pair_, true);
 }
 
 
@@ -381,22 +380,17 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<beam,
  * Explicit template initialization of template class.
  */
 // Hermite beam element, hex8 solid element.
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<
-    GEOMETRYPAIR::ElementDiscretizationHermite,
-    GEOMETRYPAIR::ElementDiscretizationStandard<DRT::Element::hex8>>;
+template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_hex8>;
 // Hermite beam element, hex20 solid element.
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<
-    GEOMETRYPAIR::ElementDiscretizationHermite,
-    GEOMETRYPAIR::ElementDiscretizationStandard<DRT::Element::hex20>>;
+template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_hex20>;
 // Hermite beam element, hex27 solid element.
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<
-    GEOMETRYPAIR::ElementDiscretizationHermite,
-    GEOMETRYPAIR::ElementDiscretizationStandard<DRT::Element::hex27>>;
+template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_hex27>;
 // Hermite beam element, tet4 solid element.
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<
-    GEOMETRYPAIR::ElementDiscretizationHermite,
-    GEOMETRYPAIR::ElementDiscretizationStandard<DRT::Element::tet4>>;
+template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_tet4>;
 // Hermite beam element, tet10 solid element.
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<
-    GEOMETRYPAIR::ElementDiscretizationHermite,
-    GEOMETRYPAIR::ElementDiscretizationStandard<DRT::Element::tet10>>;
+template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_tet10>;

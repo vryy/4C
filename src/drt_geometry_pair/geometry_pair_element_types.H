@@ -95,6 +95,18 @@ namespace GEOMETRYPAIR
     virtual ~ElementDiscretizationHermite(){};
   };
 
+
+  /**
+   * Shortcuts to element types are created here, so the explicit template initialisations are
+   * better readable.
+   */
+  typedef ElementDiscretizationHermite t_hermite;
+  typedef ElementDiscretizationStandard<DRT::Element::hex8> t_hex8;
+  typedef ElementDiscretizationStandard<DRT::Element::hex20> t_hex20;
+  typedef ElementDiscretizationStandard<DRT::Element::hex27> t_hex27;
+  typedef ElementDiscretizationStandard<DRT::Element::tet4> t_tet4;
+  typedef ElementDiscretizationStandard<DRT::Element::tet10> t_tet10;
+
 }  // namespace GEOMETRYPAIR
 
 #endif

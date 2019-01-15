@@ -9,6 +9,7 @@
 
 
 #include "geometry_pair_line_to_volume_gauss_point_projection.H"
+#include "geometry_pair_element_types.H"
 #include "geometry_pair_evaluation_data_global.H"
 #include "geometry_pair_line_to_volume_evaluation_data.H"
 #include "geometry_pair_utility_classes.H"
@@ -20,15 +21,11 @@
 /**
  *
  */
-template <typename scalar_type, unsigned int n_nodes_element_1,
-    unsigned int n_nodal_values_element_1, unsigned int n_nodes_element_2,
-    unsigned int n_nodal_values_element_2>
-void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, n_nodes_element_1,
-    n_nodal_values_element_1, n_nodes_element_2, n_nodal_values_element_2>::Setup()
+template <typename scalar_type, typename line, typename volume>
+void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, line, volume>::Setup()
 {
   // Call Setup on the base class.
-  GeometryPairLineToVolume<scalar_type, n_nodes_element_1, n_nodal_values_element_1,
-      n_nodes_element_2, n_nodal_values_element_2>::Setup();
+  GeometryPairLineToVolume<scalar_type, line, volume>::Setup();
 
   // Check if a projection tracking vector exists for this line element. If not a new one is
   // created.
@@ -50,16 +47,10 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, n_n
 /**
  *
  */
-template <typename scalar_type, unsigned int n_nodes_element_1,
-    unsigned int n_nodal_values_element_1, unsigned int n_nodes_element_2,
-    unsigned int n_nodal_values_element_2>
-void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, n_nodes_element_1,
-    n_nodal_values_element_1, n_nodes_element_2,
-    n_nodal_values_element_2>::PreEvaluate(const LINALG::TMatrix<scalar_type,
-                                               3 * n_nodes_element_1 * n_nodal_values_element_1, 1>&
-                                               q_line,
-    const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_2 * n_nodal_values_element_2, 1>&
-        q_volume,
+template <typename scalar_type, typename line, typename volume>
+void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, line,
+    volume>::PreEvaluate(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
+    const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
     std::vector<LineSegment<scalar_type>>& segments) const
 {
   // Check if the element is initialized.
@@ -111,16 +102,10 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, n_n
 /**
  *
  */
-template <typename scalar_type, unsigned int n_nodes_element_1,
-    unsigned int n_nodal_values_element_1, unsigned int n_nodes_element_2,
-    unsigned int n_nodal_values_element_2>
-void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, n_nodes_element_1,
-    n_nodal_values_element_1, n_nodes_element_2,
-    n_nodal_values_element_2>::Evaluate(const LINALG::TMatrix<scalar_type,
-                                            3 * n_nodes_element_1 * n_nodal_values_element_1, 1>&
-                                            q_line,
-    const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_2 * n_nodal_values_element_2, 1>&
-        q_volume,
+template <typename scalar_type, typename line, typename volume>
+void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, line,
+    volume>::Evaluate(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
+    const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
     std::vector<LineSegment<scalar_type>>& segments) const
 {
   // Check if the element is initialized.
@@ -182,12 +167,9 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, n_n
 /**
  *
  */
-template <typename scalar_type, unsigned int n_nodes_element_1,
-    unsigned int n_nodal_values_element_1, unsigned int n_nodes_element_2,
-    unsigned int n_nodal_values_element_2>
-std::vector<bool>& GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type,
-    n_nodes_element_1, n_nodal_values_element_1, n_nodes_element_2,
-    n_nodal_values_element_2>::GetLineProjectionVectorMutable() const
+template <typename scalar_type, typename line, typename volume>
+std::vector<bool>& GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, line,
+    volume>::GetLineProjectionVectorMutable() const
 {
   // Get the Gauss point projection tracker for this line element.
   int line_element_id = this->Element1()->Id();
@@ -200,8 +182,13 @@ std::vector<bool>& GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<sc
 /**
  * Explicit template initialization of template class.
  */
-template class GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<double, 2, 2, 8, 1>;
-template class GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<double, 2, 2, 20, 1>;
-template class GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<double, 2, 2, 27, 1>;
-template class GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<double, 2, 2, 4, 1>;
-template class GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<double, 2, 2, 10, 1>;
+template class GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<double,
+    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>;
+template class GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<double,
+    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex20>;
+template class GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<double,
+    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex27>;
+template class GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<double,
+    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet4>;
+template class GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<double,
+    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10>;

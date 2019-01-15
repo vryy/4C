@@ -31,9 +31,7 @@ namespace LINALG
 }  // namespace LINALG
 namespace GEOMETRYPAIR
 {
-  template <typename scalar_type, unsigned int n_nodes_element_1,
-      unsigned int n_nodal_values_element_1, unsigned int n_nodes_element_2,
-      unsigned int n_nodal_values_element_2>
+  template <typename scalar_type, typename line, typename volume>
   class GeometryPairLineToVolume;
 }  // namespace GEOMETRYPAIR
 
@@ -184,8 +182,7 @@ namespace BEAMINTERACTION
      * \brief Return a cast of the geometry pair to the type for this contact pair.
      * @return RPC with the type of geometry pair for this beam contact pair.
      */
-    inline Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolume<double, beam::n_nodes_, beam::n_val_,
-        solid::n_nodes_, 1>>
+    inline Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolume<double, beam, solid>>
     CastGeometryPair() const;
 
    private:
