@@ -237,12 +237,6 @@ namespace GEOMETRYPAIR
         std::vector<ProjectionPointLineToVolume<scalar_type>>& intersection_points) const;
 
     /**
-     * \brief Get the shape of the volume element.
-     * @return Shape type of volume element.
-     */
-    DiscretizationTypeVolume GetVolumeType() const;
-
-    /**
      * \brief Check if the parameter coordinate eta is in the valid range from -1 to 1.
      * @param eta Parameter coordiante on the line.
      * @return True if eta is between -1 and 1

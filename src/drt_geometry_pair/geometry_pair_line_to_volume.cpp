@@ -361,7 +361,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
 {
   // Check the input parameters.
   {
-    if (GetVolumeType() == DiscretizationTypeVolume::hexaeder && fixed_parameter > 2)
+    if (volume::volume_type_ == DiscretizationTypeVolume::hexaeder && fixed_parameter > 2)
       dserror(
           "Fixed_parameter in IntersectLineWithVolume has to be smaller than 3 with a hexaeder "
           "element.");
@@ -484,7 +484,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
   unsigned int n_faces;
   std::vector<unsigned int> face_fixed_parameters;
   std::vector<double> face_fixed_values;
-  if (GetVolumeType() == DiscretizationTypeVolume::hexaeder)
+  if (volume::volume_type_ == DiscretizationTypeVolume::hexaeder)
   {
     n_faces = 6;
     face_fixed_parameters = {0, 0, 1, 1, 2, 2};
@@ -545,21 +545,6 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
   IntersectLineWithVolume(q_line, q_volume, intersection_points, eta_start, xi_start);
 };
 
-/**
- *
- */
-template <typename scalar_type, typename line, typename volume>
-GEOMETRYPAIR::DiscretizationTypeVolume
-GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::GetVolumeType() const
-{
-  if (volume::n_nodes_ == 8 || volume::n_nodes_ == 20 || volume::n_nodes_ == 27)
-    return GEOMETRYPAIR::DiscretizationTypeVolume::hexaeder;
-  else if (volume::n_nodes_ == 4 || volume::n_nodes_ == 10)
-    return GEOMETRYPAIR::DiscretizationTypeVolume::tetraeder;
-  else
-    dserror("Unknown volume type in GetVolumeType()!");
-}
-
 
 /**
  *
@@ -584,7 +569,7 @@ bool GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ValidPar
     const LINALG::TMatrix<scalar_type, 3, 1>& xi) const
 {
   double xi_limit = 1.0 + CONSTANTS::projection_xi_eta_tol;
-  if (GetVolumeType() == DiscretizationTypeVolume::hexaeder)
+  if (volume::volume_type_ == DiscretizationTypeVolume::hexaeder)
   {
     if (fabs(xi(0)) < xi_limit && fabs(xi(1)) < xi_limit && fabs(xi(2)) < xi_limit) return true;
   }
@@ -619,7 +604,7 @@ template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::SetStartValuesElement2(
     LINALG::TMatrix<scalar_type, 3, 1>& xi) const
 {
-  if (GetVolumeType() == GEOMETRYPAIR::DiscretizationTypeVolume::hexaeder)
+  if (volume::volume_type_ == DiscretizationTypeVolume::hexaeder)
     xi.PutScalar(0.0);
   else
     xi.PutScalar(0.25);
