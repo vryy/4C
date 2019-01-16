@@ -1931,11 +1931,8 @@ void PARTICLEENGINE::ParticleEngine::DetermineBinWeights()
     // get global id of bin
     const int gidofbin = binrowmap_->GID(rowlidofbin);
 
-    // number of particles in current bin
-    const int numparticlesbin = particlestobins_[bincolmap_->LID(gidofbin)].size();
-
     // add number of particles in current bin to weights
-    binweights_->SumIntoGlobalValue(gidofbin, 0, numparticlesbin);
+    (*binweights_)[0][rowlidofbin] += particlestobins_[bincolmap_->LID(gidofbin)].size();
   }
 }
 
