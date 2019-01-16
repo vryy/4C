@@ -4,14 +4,12 @@
 \brief base class for two or more elements that interact geometrically, e.g. contact or meshtying
 problems.
 
-\level 3
+\level 1
 \maintainer Ivo Steinbrecher
 */
 
 
 #include "geometry_pair.H"
-
-#include "../drt_lib/drt_dserror.H"
 
 
 /**
@@ -49,20 +47,4 @@ void GEOMETRYPAIR::GeometryPair::Setup()
   CheckInit();
 
   issetup_ = true;
-}
-
-/**
- *
- */
-void GEOMETRYPAIR::GeometryPair::CheckInit() const
-{
-  if (!isinit_) dserror("Init() has not been called yet!");
-}
-
-/**
- *
- */
-void GEOMETRYPAIR::GeometryPair::CheckInitSetup() const
-{
-  if (!isinit_ || !issetup_) dserror("Init() and Setup() have not been called yet!");
 }

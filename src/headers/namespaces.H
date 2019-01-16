@@ -588,9 +588,16 @@ namespace GEO
  * Includes:
  *   - Line to volume pair
  *     - Gauss point projection
+ *     - Segmentation
  */
 namespace GEOMETRYPAIR
 {
+  /*!
+   * \brief Constants used in geometry pair.
+   */
+  namespace CONSTANTS
+  {
+  }  // namespace CONSTANTS
 }  // namespace GEOMETRYPAIR
 
 /*! \brief

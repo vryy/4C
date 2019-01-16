@@ -1373,6 +1373,8 @@ void CONTACT::CoInterface::CreateSearchTree()
       // (NOTE THAT SELF CONTACT SEARCH IS NOT YET FULLY PARALLELIZED!)
       binarytreeself_ = Teuchos::rcp(
           new CONTACT::SelfBinaryTree(Discret(), lComm(), elefullmap, Dim(), SearchParam()));
+      // initialize the binary tree
+      binarytreeself_->Init();
     }
     //*****TWO BODY CONTACT*****
     else
@@ -1406,9 +1408,8 @@ void CONTACT::CoInterface::CreateSearchTree()
       // create binary tree object for contact search and setup tree
       binarytree_ = Teuchos::rcp(new MORTAR::BinaryTree(
           Discret(), selecolmap_, melefullmap, Dim(), SearchParam(), SearchUseAuxPos()));
-
-      // initialize active contact nodes via binarytree
-      // binarytree_->SearchContactInit(binarytree_->Sroot(), binarytree_->Mroot());
+      // initialize the binary tree
+      binarytree_->Init();
     }
   }
 

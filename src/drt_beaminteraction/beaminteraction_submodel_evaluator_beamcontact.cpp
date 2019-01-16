@@ -119,13 +119,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
 
     geometry_evaluation_data_ptr_->BuildLineToVolumeEvaluationData();
 
-    // In case of Gauss point projection, the Gauss rule needs to be set.
-    if (geometry_evaluation_data_ptr_->LineToVolumeEvaluationData()->GetStrategy() ==
-        INPAR::GEOMETRYPAIR::LineToVolumeStrategy::gauss_point_projection)
-    {
-      geometry_evaluation_data_ptr_->LineToVolumeEvaluationData()->SetGaussRule(
-          beam_contact_params_ptr_->BeamToSolidVolumeMeshtyingParams()->GaussRule());
-    }
+    // Set the Gauss rule for the pair.
+    geometry_evaluation_data_ptr_->LineToVolumeEvaluationData()->SetGaussRule(
+        beam_contact_params_ptr_->BeamToSolidVolumeMeshtyingParams()->GaussRule());
   }
 
 

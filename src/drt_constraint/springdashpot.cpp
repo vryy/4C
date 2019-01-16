@@ -6,7 +6,7 @@
 <pre>
 \level 3
 
-\maintainer Martin Pfaller
+\maintainer Amadeus Gebauer
 </pre>
 
 *----------------------------------------------------------------------*/

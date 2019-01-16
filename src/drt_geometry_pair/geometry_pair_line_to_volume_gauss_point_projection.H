@@ -3,7 +3,7 @@
 
 \brief Line to volume interaction with simple Gauss point projection and boundary segmentation.
 
-\level 3
+\level 1
 \maintainer Ivo Steinbrecher
 */
 // End doxygen header.
@@ -91,7 +91,7 @@ namespace GEOMETRYPAIR
      * \brief Get the line projection vector for the line element in this pair.
      * @return Reference to line projection vector.
      */
-    std::vector<bool>& GetLineProjectionVector() const;
+    std::vector<bool>& GetLineProjectionVectorMutable() const;
   };
 }  // namespace GEOMETRYPAIR
 

@@ -21,7 +21,7 @@
 
 ### Header check ################################################
 echo "Start test for correct file headers ..."
-python ./tests/code_test/nightly_header-check.py | tee wrong_format.txt
+python2 ./tests/code_test/nightly_header-check.py | tee wrong_format.txt
 
 if [ -s wrong_format.txt ]
 then

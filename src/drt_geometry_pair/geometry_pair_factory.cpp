@@ -3,7 +3,7 @@
 
 \brief functions to create geometry pairs.
 
-\level 3
+\level 1
 \maintainer Ivo Steinbrecher
 */
 
@@ -11,6 +11,7 @@
 #include "geometry_pair_factory.H"
 #include "geometry_pair_line_to_volume.H"
 #include "geometry_pair_line_to_volume_gauss_point_projection.H"
+#include "geometry_pair_line_to_volume_segmentation.H"
 #include "geometry_pair_evaluation_data_global.H"
 #include "geometry_pair_line_to_volume_evaluation_data.H"
 
@@ -36,10 +37,8 @@ Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToVolumeF
           new GeometryPairLineToVolumeGaussPointProjection<scalar_type, n_nodes_element_1,
               n_nodal_values_element_1, n_nodes_element_2, n_nodal_values_element_2>());
     case INPAR::GEOMETRYPAIR::LineToVolumeStrategy::segmentation:
-    {
-      dserror("Segmentation case not yet implemented!");
-      return Teuchos::null;
-    }
+      return Teuchos::rcp(new GeometryPairLineToVolumeSegmentation<scalar_type, n_nodes_element_1,
+          n_nodal_values_element_1, n_nodes_element_2, n_nodal_values_element_2>());
     default:
       return Teuchos::null;
   }

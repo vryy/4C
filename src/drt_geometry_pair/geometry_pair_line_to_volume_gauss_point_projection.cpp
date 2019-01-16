@@ -3,7 +3,7 @@
 
 \brief Line to volume interaction with simple Gauss point projection and boundary segmentation.
 
-\level 3
+\level 1
 \maintainer Ivo Steinbrecher
 */
 
@@ -62,8 +62,11 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, n_n
         q_volume,
     std::vector<LineSegment<scalar_type>>& segments) const
 {
+  // Check if the element is initialized.
+  this->CheckInitSetup();
+
   // Get the Gauss point projection tracker for this line element.
-  std::vector<bool>& line_projection_tracker = GetLineProjectionVector();
+  std::vector<bool>& line_projection_tracker = GetLineProjectionVectorMutable();
 
   // Gauss rule.
   DRT::UTILS::IntegrationPoints1D gauss_points =
@@ -87,7 +90,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, n_n
       if (projection_result == ProjectionResult::projection_found_valid)
       {
         // Valid Gauss point was found, add to this segment and set tracking point to true.
-        line_segment.AddGaussPoint(
+        line_segment.AddProjectionPoint(
             ProjectionPointLineToVolume<scalar_type>(eta, xi, gauss_points.qwgt[index_gp]));
         line_projection_tracker[index_gp] = true;
 
@@ -120,6 +123,9 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, n_n
         q_volume,
     std::vector<LineSegment<scalar_type>>& segments) const
 {
+  // Check if the element is initialized.
+  this->CheckInitSetup();
+
   // Only zero one segments are expected.
   if (segments.size() > 1)
     dserror(
@@ -128,13 +134,13 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, n_n
         segments.size());
 
   // Check if one point projected in PreEvaluate.
-  if (segments.size() == 1 && segments[0].GetNumerOfGaussPoints() > 0)
+  if (segments.size() == 1 && segments[0].GetNumberOfProjectionPoints() > 0)
   {
     // Flag if segmentation is needed.
     bool need_segmentation = false;
 
     // Check if all Gauss points projected for this line.
-    const std::vector<bool>& line_projection_tracker = GetLineProjectionVector();
+    const std::vector<bool>& line_projection_tracker = GetLineProjectionVectorMutable();
     for (auto const& projects : line_projection_tracker)
       if (!projects) need_segmentation = true;
 
@@ -152,7 +158,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, n_n
       // Get the limits of the segmented line.
       scalar_type eta_a, eta_b, eta_intersection_point, eta_first_gauss_point;
       eta_intersection_point = intersection_points[0].GetEta();
-      eta_first_gauss_point = segments[0].GetGaussPoints()[0].GetEta();
+      eta_first_gauss_point = segments[0].GetProjectionPoints()[0].GetEta();
       if (eta_intersection_point < eta_first_gauss_point)
       {
         eta_a = eta_intersection_point;
@@ -166,7 +172,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, n_n
 
       // Reproject the Gauss points on the segmented line.
       segments[0] = LineSegment<scalar_type>(eta_a, eta_b);
-      this->ProjectPointsOnSegmentToVolume(q_line, q_volume,
+      this->ProjectGaussPointsOnSegmentToVolume(q_line, q_volume,
           this->EvaluationData()->LineToVolumeEvaluationData()->GetGaussPoints(), segments[0]);
     }
   }
@@ -181,7 +187,7 @@ template <typename scalar_type, unsigned int n_nodes_element_1,
     unsigned int n_nodal_values_element_2>
 std::vector<bool>& GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type,
     n_nodes_element_1, n_nodal_values_element_1, n_nodes_element_2,
-    n_nodal_values_element_2>::GetLineProjectionVector() const
+    n_nodal_values_element_2>::GetLineProjectionVectorMutable() const
 {
   // Get the Gauss point projection tracker for this line element.
   int line_element_id = this->Element1()->Id();

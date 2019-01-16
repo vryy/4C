@@ -5,10 +5,12 @@
 \brief utility class supporting element evaluation for electrodes
 
 <pre>
-Maintainer: Rui Fang
-            fang@lnm.mw.tum.de
+\maintainer Christoph Schmidt
+            schmidt@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
-            089-289-15251
+            089 - 289-15251
+
+\level 2
 </pre>
  */
 /*----------------------------------------------------------------------*/

@@ -4,7 +4,7 @@
 \brief Data container holding pointers to all subcontainers that in turn hold all evaluation data
 specific to their problem type, that can not be stored pairwise.
 
-\level 3
+\level 1
 \maintainer Ivo Steinbrecher
 */
 

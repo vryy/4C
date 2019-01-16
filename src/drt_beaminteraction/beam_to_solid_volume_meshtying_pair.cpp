@@ -35,7 +35,7 @@
 template <unsigned int numnodessol, unsigned int numnodes, unsigned int numnodalvalues>
 BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<numnodessol, numnodes,
     numnodalvalues>::BeamToSolidVolumeMeshtyingPair()
-    : BeamContactPair(), line_to_volume_segments_()
+    : BeamContactPair(), meshtying_is_evaluated_(false), line_to_volume_segments_()
 {
   // Empty constructor.
 }
@@ -170,7 +170,10 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<numnodessol, numnodes,
     numnodalvalues>::PreEvaluate()
 {
   // Call PreEvaluate on the geometry Pair.
-  CastGeometryPair()->PreEvaluate(ele1posref_, ele2posref_, line_to_volume_segments_);
+  if (!meshtying_is_evaluated_)
+  {
+    CastGeometryPair()->PreEvaluate(ele1posref_, ele2posref_, line_to_volume_segments_);
+  }
 }
 
 
@@ -185,7 +188,11 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<numnodessol, numnodes,
     LINALG::SerialDenseMatrix* stiffmat22)
 {
   // Call Evaluate on the geometry Pair.
-  CastGeometryPair()->Evaluate(ele1posref_, ele2posref_, line_to_volume_segments_);
+  if (!meshtying_is_evaluated_)
+  {
+    CastGeometryPair()->Evaluate(ele1posref_, ele2posref_, line_to_volume_segments_);
+    meshtying_is_evaluated_ = true;
+  }
 
   // Initialize variables for position and force vectors.
   LINALG::TMatrix<double, 3, 1> dr_beam_ref;
@@ -207,12 +214,12 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<numnodessol, numnodes,
     beam_segmentation_factor = 0.5 * line_to_volume_segments_[i_segment].GetSegmentLength();
 
     // Gauss point loop.
-    for (unsigned int i_gp = 0; i_gp < line_to_volume_segments_[i_segment].GetGaussPoints().size();
-         i_gp++)
+    for (unsigned int i_gp = 0;
+         i_gp < line_to_volume_segments_[i_segment].GetProjectionPoints().size(); i_gp++)
     {
       // Get the current Gauss point.
       const GEOMETRYPAIR::ProjectionPointLineToVolume<double>& projected_gauss_point =
-          line_to_volume_segments_[i_segment].GetGaussPoints()[i_gp];
+          line_to_volume_segments_[i_segment].GetProjectionPoints()[i_gp];
 
       // Get the jacobian in the reference configuration.
       CastGeometryPair()->GetElement1PositionDerivative(
@@ -359,6 +366,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<numnodessol, numnodes,
 {
   CheckInitSetup();
 
+  // Only display information if a segment exists for this pair.
+  if (line_to_volume_segments_.size() == 0) return;
+
   // Display the number of segments and segment length.
   out << "beam ID " << Element1()->Id() << ", solid ID " << Element2()->Id() << ":";
   out << " n_segments = " << line_to_volume_segments_.size() << "\n";
@@ -370,7 +380,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<numnodessol, numnodes,
     out << "    segment " << index_segment << ": ";
     out << "eta in [" << line_to_volume_segments_[index_segment].GetEtaA() << ", "
         << line_to_volume_segments_[index_segment].GetEtaB() << "]";
-    out << ", Gauss points = " << line_to_volume_segments_[index_segment].GetNumerOfGaussPoints();
+    out << ", Gauss points = "
+        << line_to_volume_segments_[index_segment].GetNumberOfProjectionPoints();
     out << "\n";
   }
 }

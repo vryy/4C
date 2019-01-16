@@ -10,10 +10,7 @@ The input line should read
 
 \level 2
 
-<pre>
-\maintainer Martin Pfaller
-            pfaller@lnm.mw.tum.de
-</pre>
+\maintainer Amadeus Gebauer
 */
 
 /*----------------------------------------------------------------------*/

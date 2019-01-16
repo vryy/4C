@@ -1593,6 +1593,8 @@ void MORTAR::MortarInterface::CreateSearchTree()
     // create binary tree object for search and setup tree
     binarytree_ = Teuchos::rcp(new MORTAR::BinaryTree(
         Discret(), selecolmap_, melefullmap, Dim(), SearchParam(), SearchUseAuxPos()));
+    // initialize the binary tree
+    binarytree_->Init();
   }
 }
 
