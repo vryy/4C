@@ -458,9 +458,15 @@ namespace DRT
     };
 
     /**
-     * @brief special implementation of a  1D polynomial function
+     * @brief special implementation of a 1D polynomial function
      *
-     * Evaluating the derivative is faster for this function than FAD.
+     * This class defines a generic polynomial that that takes on argument. The polynomial can be
+     * evaluated and the first derivative is also provided.
+     *
+     * This class does circumvent using automatic differentiation and may be used in
+     * performance-sensitive applications (e.g. operations on Gauss-point level).
+     * In particular, evaluating the derivative is faster for this function compared to
+     * a VariableExprFunction representing the same polynomial.
      */
     class FastPolynomialFunction : public Function
     {
@@ -473,7 +479,9 @@ namespace DRT
       FastPolynomialFunction(std::vector<double>* coefficients);
 
       /**
-       * Evaluate the polynomial.
+       * @brief Evaluate the polynomial.
+       *
+       * This is the only supported evaluation call for this class
        *
        * @param argument point to evaluate
        * @return value of the polynomial at `argument`
