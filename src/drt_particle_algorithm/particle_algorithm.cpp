@@ -727,8 +727,8 @@ bool PARTICLEALGORITHM::ParticleAlgorithm::CheckParticleTransfer()
     const double* lasttransferpos =
         container->GetPtrToParticleState(PARTICLEENGINE::LastTransferPosition, 0);
 
-    // get dimension of particle position
-    int statedim = PARTICLEENGINE::EnumToStateDim(PARTICLEENGINE::Position);
+    // get particle state dimension
+    int statedim = container->GetParticleStateDim(PARTICLEENGINE::Position);
 
     // iterate over coordinate values of owned particles of current type
     for (int i = 0; i < (statedim * particlestored); ++i)

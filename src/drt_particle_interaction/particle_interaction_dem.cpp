@@ -269,8 +269,8 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::ComputeAcceleration() const
     // no owned particles of current particle type
     if (particlestored <= 0) continue;
 
-    // get dimension of particle state
-    int statedim = PARTICLEENGINE::EnumToStateDim(PARTICLEENGINE::Acceleration);
+    // get particle state dimension
+    int statedim = container->GetParticleStateDim(PARTICLEENGINE::Acceleration);
 
     // get pointer to particle state
     const double* mass = container->GetPtrToParticleState(PARTICLEENGINE::Mass, 0);

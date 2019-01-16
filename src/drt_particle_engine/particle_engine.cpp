@@ -1454,7 +1454,16 @@ void PARTICLEENGINE::ParticleEngine::DetermineSpecificStatesOfParticlesOfSpecifi
 
       // iterate over states to be sent
       for (auto& stateEnum : typeIt.second)
-        particleStates[stateEnum] = container->GetParticleState(stateEnum, ownedindex);
+      {
+        // get particle state dimension
+        int statedim = container->GetParticleStateDim(stateEnum);
+
+        // get pointer to particle state
+        const double* state_ptr = container->GetPtrToParticleState(stateEnum, ownedindex);
+
+        // fill particle state
+        particleStates[stateEnum].assign(state_ptr, state_ptr + statedim);
+      }
 
       // iterate over target processors
       for (auto& targetIt : indexIt.second)
@@ -1823,8 +1832,8 @@ void PARTICLEENGINE::ParticleEngine::StorePositionsAfterParticleTransfer()
     double* lasttransferpos =
         container->GetPtrToParticleState(PARTICLEENGINE::LastTransferPosition, 0);
 
-    // get dimension of particle position
-    int statedim = PARTICLEENGINE::EnumToStateDim(PARTICLEENGINE::Position);
+    // get particle state dimension
+    int statedim = container->GetParticleStateDim(PARTICLEENGINE::Position);
 
     // copy particle position data
     for (int i = 0; i < (statedim * particlestored); ++i) lasttransferpos[i] = pos[i];
@@ -1860,8 +1869,8 @@ void PARTICLEENGINE::ParticleEngine::RelateOwnedParticlesToBins()
     const double* lasttransferpos =
         container->GetPtrToParticleState(PARTICLEENGINE::LastTransferPosition, 0);
 
-    // get dimension of particle position
-    int statedim = PARTICLEENGINE::EnumToStateDim(PARTICLEENGINE::Position);
+    // get particle state dimension
+    int statedim = container->GetParticleStateDim(PARTICLEENGINE::Position);
 
     // loop over particles in container
     for (int index = 0; index < particlestored; ++index)

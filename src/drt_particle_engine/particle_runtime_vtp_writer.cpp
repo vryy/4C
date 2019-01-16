@@ -195,7 +195,7 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
       int particlestored = container->ParticlesStored();
 
       // get particle states stored in container
-      const std::set<StateEnum> particlestates = container->GetStoredStates();
+      const std::set<StateEnum>& particlestates = container->GetStoredStates();
 
       // safety check
       if (not particlestates.count(PARTICLEENGINE::Position))
@@ -205,8 +205,8 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
       // iterate over particle states
       for (auto& particleState : particlestates)
       {
-        // get dimension of particle state
-        int statedim = PARTICLEENGINE::EnumToStateDim(particleState);
+        // get particle state dimension
+        int statedim = container->GetParticleStateDim(particleState);
 
         // get name of particle state
         std::string statename = PARTICLEENGINE::EnumToStateName(particleState);

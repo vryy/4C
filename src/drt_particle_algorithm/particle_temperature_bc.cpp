@@ -163,8 +163,8 @@ void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::EvaluateTemperature
     refpos = container->GetPtrToParticleState(PARTICLEENGINE::ReferencePosition, 0);
     temp = container->GetPtrToParticleState(PARTICLEENGINE::Temperature, 0);
 
-    // get dimension of particle position
-    int statedim = PARTICLEENGINE::EnumToStateDim(PARTICLEENGINE::Position);
+    // get particle state dimension
+    int statedim = container->GetParticleStateDim(PARTICLEENGINE::Position);
 
     // safety check
     if (function.NumberComponents() != 1)

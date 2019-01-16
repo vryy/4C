@@ -250,8 +250,8 @@ void PARTICLEALGORITHM::TimInt::AddInitialRandomNoiseToPosition()
     // no owned particles of current particle type
     if (particlestored <= 0) continue;
 
-    // get dimension of particle state
-    int statedim = PARTICLEENGINE::EnumToStateDim(PARTICLEENGINE::Position);
+    // get particle state dimension
+    int statedim = container->GetParticleStateDim(PARTICLEENGINE::Position);
 
     // get pointer to particle state
     double* pos = container->GetPtrToParticleState(PARTICLEENGINE::Position, 0);

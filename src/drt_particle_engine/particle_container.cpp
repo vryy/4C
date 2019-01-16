@@ -220,14 +220,11 @@ void PARTICLEENGINE::ParticleContainer::GetParticle(
   // iterate over states stored in container
   for (auto& stateEnum : storedstates_)
   {
-    std::vector<double> particleState(statedim_[stateEnum]);
+    // get pointer to particle state
+    const double* state_ptr = &((states_[stateEnum])[index * statedim_[stateEnum]]);
 
-    // store current state in vector
-    for (int dim = 0; dim < statedim_[stateEnum]; ++dim)
-      particleState[dim] = (states_[stateEnum])[index * statedim_[stateEnum] + dim];
-
-    // get state from container
-    particle.insert(std::make_pair(stateEnum, particleState));
+    // fill particle state
+    particle[stateEnum].assign(state_ptr, state_ptr + statedim_[stateEnum]);
   }
 }
 
@@ -259,22 +256,6 @@ void PARTICLEENGINE::ParticleContainer::RemoveParticle(int index)
 }
 
 /*---------------------------------------------------------------------------*
- | get state of a particle at index                           sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
-std::vector<double> PARTICLEENGINE::ParticleContainer::GetParticleState(
-    StateEnum stateEnum, int index) const
-{
-  if (index < 0 or index > (particlestored_ - 1))
-    dserror("can not return state of particle as index %d out of bounds!", index);
-
-  std::vector<double> particleState(statedim_[stateEnum]);
-  for (int dim = 0; dim < statedim_[stateEnum]; ++dim)
-    particleState[dim] = (states_[stateEnum])[index * statedim_[stateEnum] + dim];
-
-  return particleState;
-}
-
-/*---------------------------------------------------------------------------*
  | get minimum stored value of state                          sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
 double PARTICLEENGINE::ParticleContainer::GetMinValueOfState(StateEnum stateEnum) const
@@ -284,7 +265,7 @@ double PARTICLEENGINE::ParticleContainer::GetMinValueOfState(StateEnum stateEnum
   double min = (states_[stateEnum])[0];
 
   for (int i = 0; i < (particlestored_ * statedim_[stateEnum]); ++i)
-    if ((states_[stateEnum])[i] < min) min = (states_[stateEnum])[i];
+    min = std::min(min, states_[stateEnum][i]);
 
   return min;
 }
@@ -299,7 +280,7 @@ double PARTICLEENGINE::ParticleContainer::GetMaxValueOfState(StateEnum stateEnum
   double max = (states_[stateEnum])[0];
 
   for (int i = 0; i < (particlestored_ * statedim_[stateEnum]); ++i)
-    if ((states_[stateEnum])[i] > max) max = (states_[stateEnum])[i];
+    max = std::max(max, states_[stateEnum][i]);
 
   return max;
 }

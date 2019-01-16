@@ -67,8 +67,8 @@ namespace PARTICLEENGINE
     //! remove particle from particle container
     void RemoveParticle(int index);
 
-    //! get state of a particle at index
-    std::vector<double> GetParticleState(StateEnum stateEnum, int index) const;
+    //! return particle state dimension
+    inline int GetParticleStateDim(StateEnum stateEnum) { return statedim_[stateEnum]; };
 
     //! return pointer to state of a particle at index
     inline double* GetPtrToParticleState(StateEnum stateEnum, int index)
@@ -126,7 +126,7 @@ namespace PARTICLEENGINE
     };
 
     //! get stored particle states
-    inline const std::set<StateEnum> GetStoredStates() const { return storedstates_; };
+    inline const std::set<StateEnum>& GetStoredStates() const { return storedstates_; };
 
     //! get size of particle container
     inline int ContainerSize() const { return containersize_; };
