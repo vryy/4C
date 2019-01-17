@@ -12,7 +12,7 @@
 #ifndef UNIT_GEOMETRY_PAIR_LINE_TO_VOLUME_SEGMENTATION_LINE_ALONG_ELEMENT_SURFACE_H_
 #define UNIT_GEOMETRY_PAIR_LINE_TO_VOLUME_SEGMENTATION_LINE_ALONG_ELEMENT_SURFACE_H_
 
-#include "../drt_geometry_pair/unit_geometry_pair_line_to_volume_segmentation.H"
+#include "unit_geometry_pair_line_to_volume_segmentation.H"
 
 
 namespace GEOMETRYPAIR
@@ -27,9 +27,8 @@ namespace GEOMETRYPAIR
       std::vector<LINALG::TMatrix<double, 12, 1>>& q_line_elements,
       std::vector<LINALG::TMatrix<double, 9, 1>>& q_rot_line_elements,
       std::vector<LINALG::TMatrix<double, 24, 1>>& q_volume_elements,
-      std::vector<
-          Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, 2, 2, 8, 1>>>&
-          geometry_pairs)
+      std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
+          GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>>>& geometry_pairs)
   {
     // Create the elements.
     const int dummy_node_ids[2] = {0, 1};
@@ -126,9 +125,8 @@ namespace GEOMETRYPAIR
       std::vector<LINALG::TMatrix<double, 12, 1>>& q_line_elements,
       std::vector<LINALG::TMatrix<double, 9, 1>>& q_rot_line_elements,
       std::vector<LINALG::TMatrix<double, 81, 1>>& q_volume_elements,
-      std::vector<
-          Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, 2, 2, 27, 1>>>&
-          geometry_pairs)
+      std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
+          GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex27>>>& geometry_pairs)
   {
     // Create the elements.
     const int dummy_node_ids[2] = {0, 1};
@@ -256,9 +254,8 @@ namespace GEOMETRYPAIR
       std::vector<LINALG::TMatrix<double, 12, 1>>& q_line_elements,
       std::vector<LINALG::TMatrix<double, 9, 1>>& q_rot_line_elements,
       std::vector<LINALG::TMatrix<double, 30, 1>>& q_volume_elements,
-      std::vector<
-          Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, 2, 2, 10, 1>>>&
-          geometry_pairs)
+      std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
+          GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10>>>& geometry_pairs)
   {
     // Create the elements.
     const int dummy_node_ids[2] = {0, 1};

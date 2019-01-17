@@ -16,6 +16,7 @@
 #include "beam_contact_pair.H"
 
 #include "beam3contact_defines.H"
+#include "../drt_geometry_pair/geometry_pair_element_types.H"
 #include "../drt_geometry_pair/geometry_pair_utility_classes.H"
 
 #include "../linalg/linalg_fixedsizematrix.H"
@@ -30,9 +31,7 @@ namespace LINALG
 }  // namespace LINALG
 namespace GEOMETRYPAIR
 {
-  template <typename scalar_type, unsigned int n_nodes_element_1,
-      unsigned int n_nodal_values_element_1, unsigned int n_nodes_element_2,
-      unsigned int n_nodal_values_element_2>
+  template <typename scalar_type, typename line, typename volume>
   class GeometryPairLineToVolume;
 }  // namespace GEOMETRYPAIR
 
@@ -41,8 +40,10 @@ namespace BEAMINTERACTION
 {
   /**
    * \brief Class for beam to solid meshtying.
+   * @param beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
+   * @param solid Type from GEOMETRYPAIR::ElementDiscretization... representing the solid.
    */
-  template <unsigned int numnodessol, unsigned int numnodes, unsigned int numnodalvalues>
+  template <typename beam, typename solid>
   class BeamToSolidVolumeMeshtyingPair : public BeamContactPair
   {
    public:
@@ -181,30 +182,23 @@ namespace BEAMINTERACTION
      * \brief Return a cast of the geometry pair to the type for this contact pair.
      * @return RPC with the type of geometry pair for this beam contact pair.
      */
-    inline Teuchos::RCP<
-        GEOMETRYPAIR::GeometryPairLineToVolume<double, numnodes, numnodalvalues, numnodessol, 1>>
+    inline Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolume<double, beam, solid>>
     CastGeometryPair() const;
 
    private:
-    //! Number of degrees of freedom for the first element.
-    static const int n_dof_element_1_ = 3 * numnodes * numnodalvalues;
-
-    //! Number of degrees of freedom for the second element.
-    static const int n_dof_element_2_ = 3 * numnodessol;
-
     //! Type to be used for scalar AD variables.
-    typedef Sacado::ELRFad::SLFad<double, n_dof_element_1_ + n_dof_element_2_> TYPE_BTS_VMT_AD;
+    typedef Sacado::ELRFad::SLFad<double, beam::n_dof_ + solid::n_dof_> TYPE_BTS_VMT_AD;
 
     //! Flag if the meshtying has been evaluated already.
     bool meshtying_is_evaluated_;
 
     //! Current nodal positions (and tangents) of the two elements.
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, n_dof_element_1_, 1> ele1pos_;
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, n_dof_element_2_, 1> ele2pos_;
+    LINALG::TMatrix<TYPE_BTS_VMT_AD, beam::n_dof_, 1> ele1pos_;
+    LINALG::TMatrix<TYPE_BTS_VMT_AD, solid::n_dof_, 1> ele2pos_;
 
     //! Reference nodal positions (and tangents) of the two elements.
-    LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues, 1> ele1posref_;
-    LINALG::TMatrix<TYPEBTS, 3 * numnodessol, 1> ele2posref_;
+    LINALG::TMatrix<TYPEBTS, beam::n_dof_, 1> ele1posref_;
+    LINALG::TMatrix<TYPEBTS, solid::n_dof_, 1> ele2posref_;
 
     //! Vector with the segments of the line to volume pair.
     std::vector<GEOMETRYPAIR::LineSegment<double>> line_to_volume_segments_;
