@@ -28,6 +28,8 @@
 
 #include "../drt_lib/drt_dserror.H"
 
+#include <Teuchos_TimeMonitor.hpp>
+
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
@@ -150,6 +152,8 @@ void PARTICLEINTERACTION::DEMContact::CheckCriticalTimeStep() const
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContact::AddForceContribution() const
 {
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::DEMContact::AddForceContribution");
+
   // get reference to neighbor pair data
   const DEMNeighborPairData& neighborpairdata = neighborpairs_->GetRefToNeighborPairData();
 

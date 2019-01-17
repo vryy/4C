@@ -32,6 +32,8 @@
 
 #include "../drt_lib/drt_dserror.H"
 
+#include <Teuchos_TimeMonitor.hpp>
+
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 08/2018 |
  *---------------------------------------------------------------------------*/
@@ -174,6 +176,8 @@ void PARTICLEINTERACTION::SPHMomentum::InsertParticleStatesOfParticleTypes(
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentum::AddAccelerationContribution() const
 {
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHMomentum::AddAccelerationContribution");
+
   // declare temp variables
   double temp(0.0);
 

@@ -28,6 +28,8 @@
 
 #include "../drt_lib/drt_dserror.H"
 
+#include <Teuchos_TimeMonitor.hpp>
+
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 08/2018 |
  *---------------------------------------------------------------------------*/
@@ -101,6 +103,8 @@ void PARTICLEINTERACTION::SPHPressure::ReadRestart(
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHPressure::ComputePressure() const
 {
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHPressure::ComputePressure");
+
   // iterate over particle types
   for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {

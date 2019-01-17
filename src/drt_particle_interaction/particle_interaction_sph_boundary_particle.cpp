@@ -26,6 +26,8 @@
 
 #include "../drt_lib/drt_dserror.H"
 
+#include <Teuchos_TimeMonitor.hpp>
+
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 08/2018 |
  *---------------------------------------------------------------------------*/
@@ -125,6 +127,8 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::Setup(
 void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticles(
     std::vector<double>& gravity) const
 {
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticles");
+
   // get reference to neighbor pair data
   const SPHNeighborPairData& neighborpairdata = neighborpairs_->GetRefToNeighborPairData();
 

@@ -28,6 +28,8 @@
 
 #include "../drt_lib/drt_dserror.H"
 
+#include <Teuchos_TimeMonitor.hpp>
+
 /*---------------------------------------------------------------------------*
  | constructor                                                 meier 09/2018 |
  *---------------------------------------------------------------------------*/
@@ -138,6 +140,8 @@ void PARTICLEINTERACTION::SPHTemperatureIntegration::InsertParticleStatesOfParti
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHTemperatureIntegration::ComputeTemperature() const
 {
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHTemperatureIntegration::ComputeTemperature");
+
   // evaluate energy equation
   EnergyEquation();
 

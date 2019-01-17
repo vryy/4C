@@ -256,6 +256,8 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::ClearForceState() const
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionDEM::ComputeAcceleration() const
 {
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionDEM::ComputeAcceleration");
+
   // iterate over particle types
   for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {

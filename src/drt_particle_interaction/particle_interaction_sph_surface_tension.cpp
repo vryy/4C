@@ -32,6 +32,8 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 
+#include <Teuchos_TimeMonitor.hpp>
+
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 08/2018 |
  *---------------------------------------------------------------------------*/
@@ -228,6 +230,9 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
 void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::AddAccelerationContribution()
     const
 {
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::AddAccelerationContribution");
+
   // compute colorfield gradient
   ComputeColorfieldGradient();
 

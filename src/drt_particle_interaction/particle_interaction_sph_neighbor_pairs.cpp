@@ -26,6 +26,8 @@
 
 #include "../drt_lib/drt_dserror.H"
 
+#include <Teuchos_TimeMonitor.hpp>
+
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 08/2018 |
  *---------------------------------------------------------------------------*/
@@ -87,6 +89,8 @@ void PARTICLEINTERACTION::SPHNeighborPairs::ReadRestart(
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateNeighborPairs()
 {
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHNeighborPairs::EvaluateNeighborPairs");
+
   // get reference to particle neighbors
   const PARTICLEENGINE::ParticleNeighbors& particleneighbors =
       particleengineinterface_->GetParticleNeighbors();

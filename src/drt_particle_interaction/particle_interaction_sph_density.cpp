@@ -31,6 +31,8 @@
 
 #include "../drt_lib/drt_dserror.H"
 
+#include <Teuchos_TimeMonitor.hpp>
+
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 08/2018 |
  *---------------------------------------------------------------------------*/
@@ -361,6 +363,8 @@ void PARTICLEINTERACTION::SPHDensitySummation::InsertParticleStatesOfParticleTyp
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensitySummation::ComputeDensity() const
 {
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHDensitySummation::ComputeDensity");
+
   // evaluate sum of weighted mass and colorfield
   SumWeightedMassAndColorfield();
 
@@ -419,6 +423,8 @@ void PARTICLEINTERACTION::SPHDensityIntegration::InsertParticleStatesOfParticleT
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityIntegration::ComputeDensity() const
 {
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHDensityIntegration::ComputeDensity");
+
   // evaluate continuity equation
   ContinuityEquation();
 
@@ -546,6 +552,8 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::InsertParticleStatesOfPartic
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityPredictCorrect::ComputeDensity() const
 {
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHDensityPredictCorrect::ComputeDensity");
+
   // evaluate continuity equation
   ContinuityEquation();
 
