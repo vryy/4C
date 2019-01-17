@@ -177,8 +177,8 @@ void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::EvaluateDirichletBoun
     if (evalvel) vel = container->GetPtrToParticleState(PARTICLEENGINE::Velocity, 0);
     if (evalacc) acc = container->GetPtrToParticleState(PARTICLEENGINE::Acceleration, 0);
 
-    // get dimension of particle position
-    int statedim = PARTICLEENGINE::EnumToStateDim(PARTICLEENGINE::Position);
+    // get particle state dimension
+    int statedim = container->GetParticleStateDim(PARTICLEENGINE::Position);
 
     // safety check
     if (statedim != function.NumberComponents())

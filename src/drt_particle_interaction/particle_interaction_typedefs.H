@@ -26,15 +26,13 @@
 #include "../drt_particle_engine/particle_enums.H"
 #include "../drt_particle_engine/particle_typedefs.H"
 
-#include <map>
-
 /*---------------------------------------------------------------------------*
  | forward declarations                                       sfuchs 08/2018 |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  struct ParticlePairSPH;
-  struct ParticlePairDEM;
+  struct SPHParticlePair;
+  struct DEMParticlePair;
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*
@@ -42,17 +40,20 @@ namespace PARTICLEINTERACTION
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  typedef std::map<PARTICLEENGINE::TypeEnum,
-      std::map<int, std::map<PARTICLEENGINE::TypeEnum,
-                        std::map<PARTICLEENGINE::StatusEnum,
-                            std::map<int, PARTICLEINTERACTION::ParticlePairSPH>>>>>
-      SPHNeighborPairsMap;
+  //! smoothed particle hydrodynamics (SPH) specific typedefs
 
-  typedef std::map<PARTICLEENGINE::TypeEnum,
-      std::map<int, std::map<PARTICLEENGINE::TypeEnum,
-                        std::map<PARTICLEENGINE::StatusEnum,
-                            std::map<int, PARTICLEINTERACTION::ParticlePairDEM>>>>>
-      DEMNeighborPairsMap;
+  typedef std::pair<PARTICLEENGINE::LocalIndexTuple, PARTICLEINTERACTION::SPHParticlePair>
+      SPHNeighborPair;
+
+  typedef std::vector<std::vector<std::vector<SPHNeighborPair>>> SPHNeighborPairData;
+
+
+  //! discrete element method (DEM) specific typedefs
+
+  typedef std::pair<PARTICLEENGINE::LocalIndexTuple, PARTICLEINTERACTION::DEMParticlePair>
+      DEMNeighborPair;
+
+  typedef std::vector<std::vector<std::vector<DEMNeighborPair>>> DEMNeighborPairData;
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*/

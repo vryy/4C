@@ -113,14 +113,14 @@ void PARTICLEALGORITHM::InitialFieldHandler::SetInitialFields()
       // get pointer to particle position
       const double* pos = container->GetPtrToParticleState(PARTICLEENGINE::Position, 0);
 
-      // get dimension of particle position
-      int posstatedim = PARTICLEENGINE::EnumToStateDim(PARTICLEENGINE::Position);
+      // get particle state dimension
+      int posstatedim = container->GetParticleStateDim(PARTICLEENGINE::Position);
 
       // get pointer to particle state
       double* state = container->GetPtrToParticleState(particleState, 0);
 
-      // get dimension of particle state
-      int statedim = PARTICLEENGINE::EnumToStateDim(particleState);
+      // get particle state dimension
+      int statedim = container->GetParticleStateDim(particleState);
 
       // safety check
       if (statedim != function.NumberComponents())

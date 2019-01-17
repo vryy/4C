@@ -99,19 +99,18 @@ namespace PARTICLEENGINE
     //! refresh particles being ghosted on other processors
     void RefreshParticles() const;
 
-    //! refresh specific states of particles of specific types
-    void RefreshSpecificStatesOfParticlesOfSpecificTypes(
-        const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes) const override;
+    //! refresh particles of specific states and types
+    void RefreshParticlesOfSpecificStatesAndTypes(
+        const StatesOfTypesToRefresh& particlestatestotypes) const override;
 
     //! dynamic load balancing
     void DynamicLoadBalancing();
 
     //! change type of particles
-    void TypeChangeParticles(std::map<TypeEnum, std::set<int>>& particlestoremove,
-        std::map<TypeEnum, std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert)
-        override;
+    void TypeChangeParticles(std::vector<std::set<int>>& particlestoremove,
+        std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert) override;
 
-    //! build overlapping particle to particle neighbor map
+    //! build overlapping particle to particle neighbors
     void BuildParticleToParticleNeighbors();
 
     //! build global id to local index map
@@ -126,8 +125,8 @@ namespace PARTICLEENGINE
       return particlecontainerbundle_;
     };
 
-    //! get reference to particle neighbors map
-    const ParticleNeighborsMap& GetParticleNeighborsMap() const override;
+    //! get reference to particle neighbors
+    const ParticleNeighbors& GetParticleNeighbors() const override;
 
     //! get local index in specific particle container
     const LocalIndexTupleShrdPtr GetLocalIndexInSpecificContainer(int globalid) const override;
@@ -158,7 +157,7 @@ namespace PARTICLEENGINE
     int GetNumberOfParticles() const override;
 
     //! get number of particles on this processor of specific type
-    int GetNumberOfParticlesOfSpecificType(const TypeEnum particleType) const override;
+    int GetNumberOfParticlesOfSpecificType(const TypeEnum typeEnum) const override;
 
     //! write binning discretization output (debug feature)
     void WriteBinDisOutput(const int step, const double time) const;
@@ -171,7 +170,7 @@ namespace PARTICLEENGINE
     void SetupBinningStrategy();
 
     //! setup ghosting of bins
-    void SetupBinGhosting() const;
+    void SetupBinGhosting();
 
     //! init particle container bundle
     void InitParticleContainerBundle();
@@ -179,6 +178,9 @@ namespace PARTICLEENGINE
     //! setup particle container bundle
     void SetupParticleContainerBundle(
         const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes) const;
+
+    //! setup data storage
+    void SetupDataStorage(const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes);
 
     //! init particle runtime vtp writer
     void InitParticleVtpWriter();
@@ -193,34 +195,33 @@ namespace PARTICLEENGINE
     void DetermineGhostingDependentMapsAndSets();
 
     //! check particles for periodic boundaries/leaving domain
-    void CheckParticlesAtBoundaries(std::map<TypeEnum, std::set<int>>& particlestoremove) const;
+    void CheckParticlesAtBoundaries(std::vector<std::set<int>>& particlestoremove) const;
 
     //! determine particles that need to be distributed
     void DetermineParticlesToBeDistributed(std::vector<ParticleObjShrdPtr>& particlestodistribute,
-        std::map<int, std::vector<ParticleObjShrdPtr>>& particlestosend,
-        std::map<TypeEnum, std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestokeep) const;
+        std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend,
+        std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestokeep) const;
 
     //! determine particles that need to be transfered
-    void DetermineParticlesToBeTransfered(std::map<TypeEnum, std::set<int>>& particlestoremove,
-        std::map<int, std::vector<ParticleObjShrdPtr>>& particlestosend) const;
+    void DetermineParticlesToBeTransfered(std::vector<std::set<int>>& particlestoremove,
+        std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend) const;
 
     //! determine particles that need to be ghosted
     void DetermineParticlesToBeGhosted(
-        std::map<int, std::vector<ParticleObjShrdPtr>>& particlestosend) const;
+        std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend) const;
 
     //! determine particles that need to be refreshed
     void DetermineParticlesToBeRefreshed(
-        std::map<int, std::vector<ParticleObjShrdPtr>>& particlestosend) const;
+        std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend) const;
 
     //! determine particles that need to be refreshed
     void DetermineSpecificStatesOfParticlesOfSpecificTypesToBeRefreshed(
-        const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes,
-        std::map<int, std::vector<ParticleObjShrdPtr>>& particlestosend) const;
+        const StatesOfTypesToRefresh& particlestatestotypes,
+        std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend) const;
 
     //! communicate particles
-    void CommunicateParticles(std::map<int, std::vector<ParticleObjShrdPtr>>& particlestosend,
-        std::map<TypeEnum, std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoreceive)
-        const;
+    void CommunicateParticles(std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend,
+        std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoreceive) const;
 
     //! communicate and build map for direct ghosting
     void CommunicateDirectGhostingMap(
@@ -228,26 +229,25 @@ namespace PARTICLEENGINE
 
     //! insert owned particles received from other processors
     void InsertOwnedParticles(
-        std::map<TypeEnum, std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert);
+        std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert);
 
     //! insert ghosted particles received from other processors
     void InsertGhostedParticles(
-        std::map<TypeEnum, std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert,
+        std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert,
         std::map<int, std::map<TypeEnum, std::map<int, std::pair<int, int>>>>& directghosting);
 
     //! insert refreshed particles received from other processors
     void InsertRefreshedParticles(
-        std::map<TypeEnum, std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert)
-        const;
+        std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert) const;
 
     //! remove particles from containers
-    void RemoveParticlesFromContainers(std::map<TypeEnum, std::set<int>>& particlestoremove);
+    void RemoveParticlesFromContainers(std::vector<std::set<int>>& particlestoremove);
 
     //! store particle positions after transfer of particles
     void StorePositionsAfterParticleTransfer();
 
-    //! rebuild index of owned particles in bin content map
-    void RebuildIndexOfOwnedParticlesInBinContentMap();
+    //! relate owned particles to bins
+    void RelateOwnedParticlesToBins();
 
     //! determine minimum relevant bin size
     void DetermineMinRelevantBinSize();
@@ -273,8 +273,14 @@ namespace PARTICLEENGINE
     //! distribution of row bins
     Teuchos::RCP<Epetra_Map> binrowmap_;
 
+    //! distribution of col bins
+    Teuchos::RCP<Epetra_Map> bincolmap_;
+
     //! minimum relevant bin size
     double minbinsize_;
+
+    //! size of vectors indexed by particle types
+    int typevectorsize_;
 
     //! vector of bin center coordinates
     Teuchos::RCP<Epetra_MultiVector> bincenters_;
@@ -288,25 +294,25 @@ namespace PARTICLEENGINE
     //! particle runtime vtp writer
     std::unique_ptr<PARTICLEENGINE::ParticleRuntimeVtpWriter> particlevtpwriter_;
 
-    //! maps bins to its containing (owned and ghosted) particles
-    std::map<int, TypeStatusIndexMap> binstocontainingparticles_;
+    //! relate (owned and ghosted) particles to bins
+    std::vector<std::vector<std::pair<PARTICLEENGINE::ParticleType, int>>> particlestobins_;
 
     //! maps particles of all types to neighboring particles of all types and statuses (overlapping)
-    ParticleNeighborsMap particleneighbors_;
+    ParticleNeighbors particleneighbors_;
 
     //! maps particle global ids to local index in specific particle container
     std::unordered_map<int, LocalIndexTupleShrdPtr> globalidtolocalindex_;
 
-    //! maps local index of owned particles to other processors local index of ghosted particles
-    std::map<TypeEnum, std::map<int, std::vector<std::pair<int, int>>>> directghostingmap_;
+    //! relate local index of owned particles to other processors local index of ghosted particles
+    std::vector<std::map<int, std::vector<std::pair<int, int>>>> directghostingtargets_;
 
-    //! flag denoting validity of map relating owned particles to bins
+    //! flag denoting valid relation of owned particles to bins
     bool validownedparticles_;
 
-    //! flag denoting validity of map relating ghosted particles to bins
+    //! flag denoting valid relation of ghosted particles to bins
     bool validghostedparticles_;
 
-    //! flag denoting validity of particle neighbors map
+    //! flag denoting valid relation of particle neighbors
     bool validparticleneighbors_;
 
     //! flag denoting validity of map relating particle global ids to local index

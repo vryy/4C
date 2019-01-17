@@ -48,8 +48,33 @@ void PARTICLEINTERACTION::MaterialHandler::Init()
   PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToIDs(
       params_, "PHASE_TO_MATERIAL_ID", typetomatidmap);
 
-  // map particle types to particle material parameters
-  for (auto& typeIt : typetomatidmap) MapParticleTypeToMatParameter(typeIt.first, typeIt.second);
+  // determine size of vector indexed by particle types
+  const int typevectorsize = ((--typetomatidmap.end())->first) + 1;
+
+  // allocate memory to hold particle types
+  phasetypetoparticlematpar_.resize(typevectorsize);
+
+  // relate particle types to particle material parameters
+  for (auto& typeIt : typetomatidmap)
+  {
+    // get type of particle
+    PARTICLEENGINE::TypeEnum typeEnum = typeIt.first;
+
+    // add to set of particle types of stored particle material parameters
+    storedtypes_.insert(typeEnum);
+
+    // get material parameters and cast to particle material parameter
+    const MAT::PAR::Parameter* matparameter =
+        DRT::Problem::Instance()->Materials()->ParameterById(typeIt.second);
+    const MAT::PAR::ParticleMaterialBase* particlematparameter =
+        dynamic_cast<const MAT::PAR::ParticleMaterialBase*>(matparameter);
+
+    // safety check
+    if (particlematparameter == NULL) dserror("cast to specific particle material failed!");
+
+    // relate particle types to particle material parameters
+    phasetypetoparticlematpar_[typeEnum] = particlematparameter;
+  }
 }
 
 /*---------------------------------------------------------------------------*
@@ -75,36 +100,4 @@ void PARTICLEINTERACTION::MaterialHandler::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // nothing to do
-}
-
-/*---------------------------------------------------------------------------*
- | return pointer to particle material parameter              sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
-const MAT::PAR::ParticleMaterialBase*
-PARTICLEINTERACTION::MaterialHandler::GetPtrToParticleMatParameter(
-    PARTICLEENGINE::TypeEnum particleType) const
-{
-  auto typeIt = phasetypetoparticlematpar_.find(particleType);
-  if (typeIt == phasetypetoparticlematpar_.end())
-    dserror("particle material parameters of phase '%s' not found!",
-        PARTICLEENGINE::EnumToTypeName(particleType).c_str());
-  return typeIt->second;
-}
-
-/*---------------------------------------------------------------------------*
- | map particle types to particle material parameters         sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::MaterialHandler::MapParticleTypeToMatParameter(
-    PARTICLEENGINE::TypeEnum particleType, int matID)
-{
-  // get material parameters and cast to particle material parameter
-  const MAT::PAR::Parameter* matparameter =
-      DRT::Problem::Instance()->Materials()->ParameterById(matID);
-  const MAT::PAR::ParticleMaterialBase* particlematparameter =
-      dynamic_cast<const MAT::PAR::ParticleMaterialBase*>(matparameter);
-
-  // safety check
-  if (particlematparameter == NULL) dserror("cast to specific particle material failed!");
-
-  phasetypetoparticlematpar_.insert(std::make_pair(particleType, particlematparameter));
 }

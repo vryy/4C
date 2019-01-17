@@ -186,8 +186,8 @@ void PARTICLEALGORITHM::ResultTest::TestSpecial(
       // get pointer to particle state
       const double* state = container->GetPtrToParticleState(particleState, 0);
 
-      // get dimension of particle state
-      int statedim = PARTICLEENGINE::EnumToStateDim(particleState);
+      // get particle state dimension
+      int statedim = container->GetParticleStateDim(particleState);
 
       // get actual result
       actresult = state[statedim * index + dim];

@@ -26,7 +26,7 @@
 namespace PARTICLEINTERACTION
 {
   //! struct to store quantities of interacting particles
-  struct ParticlePairDEM
+  struct DEMParticlePair
   {
     //! penetration between particles
     double gap_;

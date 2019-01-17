@@ -74,7 +74,7 @@ void PARTICLEALGORITHM::InputGenerator::AddGeneratedParticle(const std::vector<d
     dserror("particle can not be generated since position vector needs three entries!");
 
   // fill position into particle states map
-  std::map<PARTICLEENGINE::StateEnum, std::vector<double>> particlestates;
+  PARTICLEENGINE::ParticleStates particlestates;
   particlestates.insert(std::make_pair(PARTICLEENGINE::Position, position));
 
   // create and init new particle object

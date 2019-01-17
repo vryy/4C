@@ -96,9 +96,6 @@ namespace PARTICLEINTERACTION
     virtual void ComputeDensity() const = 0;
 
    protected:
-    //! refresh density of ghosted particles
-    virtual void RefreshDensity() const final;
-
     //! evaluate sum of weighted mass and colorfield
     virtual void SumWeightedMassAndColorfield() const final;
 
@@ -125,6 +122,9 @@ namespace PARTICLEINTERACTION
 
     //! neighbor pair handler
     std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs_;
+
+    //! density of ghosted particles to refresh
+    PARTICLEENGINE::StatesOfTypesToRefresh densitytorefresh_;
 
     //! time step size
     double dt_;
