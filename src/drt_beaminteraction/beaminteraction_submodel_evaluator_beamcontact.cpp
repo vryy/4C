@@ -919,7 +919,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
 
       // construct, init and setup contact pairs
       Teuchos::RCP<BEAMINTERACTION::BeamContactPair> newbeaminteractionpair =
-          BEAMINTERACTION::BeamContactPair::Create(ele_ptrs);
+          BEAMINTERACTION::BeamContactPair::Create(ele_ptrs, beam_contact_params_ptr_);
       newbeaminteractionpair->Init(
           beam_contact_params_ptr_, geometry_evaluation_data_ptr_, ele_ptrs);
       newbeaminteractionpair->Setup();

@@ -86,7 +86,8 @@ namespace BEAMINTERACTION
         LINALG::SerialDenseMatrix* stiffmat22) = 0;
 
     //! return appropriate internal implementation class (acts as a simple factory)
-    static Teuchos::RCP<BeamContactPair> Create(std::vector<DRT::Element const*> const& ele_ptrs);
+    static Teuchos::RCP<BeamContactPair> Create(std::vector<DRT::Element const*> const& ele_ptrs,
+        const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr);
 
     /*
     \brief Update state of translational nodal DoFs (absolute positions and tangents) of both
