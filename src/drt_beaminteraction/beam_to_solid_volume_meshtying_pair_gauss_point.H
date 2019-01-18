@@ -1,7 +1,8 @@
 /*!
 \file beam_to_solid_volume_meshtying_pair_gauss_point.H
 
-\brief Meshtying element for meshtying between a 3D beam and a 3D solid element.
+\brief Meshtying element for meshtying between a 3D beam and a 3D solid element using Gauss point
+projection.
 
 \level 3
 \maintainer Ivo Steinbrecher
@@ -32,7 +33,7 @@ namespace GEOMETRYPAIR
 namespace BEAMINTERACTION
 {
   /**
-   * \brief Class for beam to solid meshtying.
+   * \brief Class for beam to solid meshtying using Gauss point projection.
    * @param beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
    * @param solid Type from GEOMETRYPAIR::ElementDiscretization... representing the solid.
    */

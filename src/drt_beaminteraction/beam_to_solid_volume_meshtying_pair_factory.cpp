@@ -10,12 +10,16 @@
 
 #include "beam_to_solid_volume_meshtying_pair_factory.H"
 #include "beam_to_solid_volume_meshtying_pair_gauss_point.H"
+#include "beam_to_solid_volume_meshtying_pair_mortar.H"
 #include "beam_to_solid_volume_meshtying_params.H"
 
 #include "../drt_so3/so_base.H"
 #include "../drt_inpar/inpar_beaminteraction.H"
 
 
+/**
+ *
+ */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairFactory(
     std::vector<DRT::Element const*> const& ele_ptrs,
@@ -60,13 +64,74 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairFactory(
     }
   }
   else if (contact_discretization ==
-           INPAR::BEAMINTERACTION::BeamToSolidVolumeContactDiscretization::gauss_point_to_segment)
+           INPAR::BEAMINTERACTION::BeamToSolidVolumeContactDiscretization::mortar)
   {
-    dserror("Mortar not yet implemented.");
-  }
-  else
-  {
-    dserror("Wrong contact discretization for beam to solid volume meshtying.");
+    INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions mortar_shape_function =
+        params_ptr->BeamToSolidVolumeMeshtyingParams()->GetMortarShapeFunctionType();
+
+    switch (mortar_shape_function)
+    {
+      case INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions::line2:
+      {
+        switch (shape)
+        {
+          case DRT::Element::hex8:
+            return Teuchos::rcp(
+                new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+                    GEOMETRYPAIR::t_hex8, BEAMINTERACTION::t_mortar_line2>());
+          case DRT::Element::hex20:
+            return Teuchos::rcp(
+                new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+                    GEOMETRYPAIR::t_hex20, BEAMINTERACTION::t_mortar_line2>());
+          case DRT::Element::hex27:
+            return Teuchos::rcp(
+                new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+                    GEOMETRYPAIR::t_hex27, BEAMINTERACTION::t_mortar_line2>());
+          case DRT::Element::tet4:
+            return Teuchos::rcp(
+                new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+                    GEOMETRYPAIR::t_tet4, BEAMINTERACTION::t_mortar_line2>());
+          case DRT::Element::tet10:
+            return Teuchos::rcp(
+                new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+                    GEOMETRYPAIR::t_tet10, BEAMINTERACTION::t_mortar_line2>());
+          default:
+            dserror("Wrong element type for solid element.");
+        }
+        break;
+      }
+      case INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions::line3:
+      {
+        switch (shape)
+        {
+          case DRT::Element::hex8:
+            return Teuchos::rcp(
+                new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+                    GEOMETRYPAIR::t_hex8, BEAMINTERACTION::t_mortar_line3>());
+          case DRT::Element::hex20:
+            return Teuchos::rcp(
+                new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+                    GEOMETRYPAIR::t_hex20, BEAMINTERACTION::t_mortar_line3>());
+          case DRT::Element::hex27:
+            return Teuchos::rcp(
+                new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+                    GEOMETRYPAIR::t_hex27, BEAMINTERACTION::t_mortar_line3>());
+          case DRT::Element::tet4:
+            return Teuchos::rcp(
+                new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+                    GEOMETRYPAIR::t_tet4, BEAMINTERACTION::t_mortar_line3>());
+          case DRT::Element::tet10:
+            return Teuchos::rcp(
+                new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+                    GEOMETRYPAIR::t_tet10, BEAMINTERACTION::t_mortar_line3>());
+          default:
+            dserror("Wrong element type for solid element.");
+        }
+        break;
+      }
+      default:
+        dserror("Wrong mortar shape function.");
+    }
   }
 
   // Default return value.

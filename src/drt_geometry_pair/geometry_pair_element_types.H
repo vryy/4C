@@ -23,8 +23,8 @@
 namespace GEOMETRYPAIR
 {
   /**
-   * \brief This structure "returns" the type of an volume element. This is done in this way, so the
-   * type conversion can be done at compile time.
+   * \brief This structure "converts" the type of a volume element. This is done in this way, so
+   * the type conversion can be done at compile time.
    */
   template <DRT::Element::DiscretizationType discretization>
   struct ElementDiscretizationToVolumeType

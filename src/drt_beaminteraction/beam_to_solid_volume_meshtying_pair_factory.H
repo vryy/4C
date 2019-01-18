@@ -19,6 +19,13 @@
 
 namespace BEAMINTERACTION
 {
+  /**
+   * Create the correct type of beam to solid volume meshtying element, depending on the simulation
+   * parameters.
+   * @param ele_ptrs Vector containing pointer to the elements of the pair.
+   * @param params_ptr Beam contact parameters.
+   * @return Teuchos pointer to the created pair.
+   */
   Teuchos::RCP<BeamContactPair> BeamToSolidVolumeMeshtyingPairFactory(
       std::vector<DRT::Element const*> const& ele_ptrs,
       const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr);
