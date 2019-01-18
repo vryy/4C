@@ -26,7 +26,13 @@ Boards: Make sure your issue will show up in the "Backlog" of our issue board. D
 ## List of Failing Tests and Pipelines
 <!---
 Tell us which tests are failing, which pipelines & jobs are affected, etc.
+
+Link to a pipeline with <pipelineID> via: [<pipelineID>](https://gitlab.lrz.de/baci/baci/pipelines/<pipelineID>)
+Link to a job with <jobID> via: [<jobID>](https://gitlab.lrz.de/baci/baci/-/jobs/<jobID>)
 -->
+* **Pipeline ID:**
+* **Job ID:**
+* **Failing tests:**
 
 ## Environment and Configuration
 <!---
@@ -59,8 +65,7 @@ If applicable, let everybody know how this is related to any other open issues:
 ## Additional Information
 <!---
 Anything else that might be helpful to know in addressing this issue:
-* Pipeline ID:
-* Job ID:
+* Summary of test failure (e.g. RESULT section from screen output)
 * Test log file:
 * When was the last time everything worked (date/time; SHA1s; etc.)?
 * What did you do that made the bug rear its ugly head?
