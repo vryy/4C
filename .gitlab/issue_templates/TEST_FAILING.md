@@ -64,7 +64,7 @@ Anything else that might be helpful to know in addressing this issue:
 * Test log file:
 * When was the last time everything worked (date/time; SHA1s; etc.)?
 * What did you do that made the bug rear its ugly head?
-* What recent changes might have cause this test to fail?
+* What recent changes might have caused this test to fail?
 -->
 
 ## Interested Parties
