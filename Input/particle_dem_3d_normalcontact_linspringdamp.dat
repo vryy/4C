@@ -45,8 +45,8 @@ COMPONENT 1 FUNCTION 1.0e-2
 COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION 0.0
-COMPONENT 1 FUNCTION -2.0e-2*heaviside(x)
-COMPONENT 2 FUNCTION 1.0e-2*heaviside(y)
+COMPONENT 1 FUNCTION -2.0e-2
+COMPONENT 2 FUNCTION 1.0e-2*heaviside(y-0.015)
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ParticleDEM INITRADIUS 0.01 INITDENSITY 5.0e-3
 ----------------------------------------------------------RESULT DESCRIPTION

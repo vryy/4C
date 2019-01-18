@@ -192,7 +192,7 @@ void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::EvaluateDirichletBoun
       {
         // evaluate function, first and second time derivative
         functtimederiv =
-            function.EvaluateTimeDerivative(dim, &(refpos[statedim * i + dim]), evaltime, deg);
+            function.EvaluateTimeDerivative(dim, &(refpos[statedim * i]), evaltime, deg);
 
         // set position state
         if (evalpos)
