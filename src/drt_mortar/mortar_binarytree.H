@@ -105,7 +105,7 @@ namespace MORTAR
     \brief Print type of tree node to std::cout
 
     */
-    virtual void PrintType() final;
+    void PrintType() final;
 
     /*!
     \brief Set slabs of current treenode

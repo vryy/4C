@@ -25,6 +25,7 @@ namespace CONTACT
 {
   class SelfBinaryTree;
   class SelfDualEdge;
+  class UnbiasedSelfBinaryTree;
 }  // namespace CONTACT
 
 namespace MORTAR
@@ -38,9 +39,10 @@ namespace MORTAR
   {
     // these classes need access to protected methods of this class and are therefore defined friend
     // classes here
+    friend class BinaryTree;
     friend class CONTACT::SelfBinaryTree;
     friend class CONTACT::SelfDualEdge;
-    friend class BinaryTree;
+    friend class CONTACT::UnbiasedSelfBinaryTree;
 
    public:
     /*!

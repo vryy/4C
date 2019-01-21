@@ -376,7 +376,17 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::GetMatrixBlockPtr
 
 void CONTACT::CoNitscheStrategy::Setup(bool redistributed, bool init)
 {
-  if (isselfcontact_) dserror("no self contact with Nitsche yet");
+  // we need to init the isselfcontact_ flag here, as we do not want to call the CoAbstractStrategy
+  if (init)
+  {
+    // set potential global self contact status
+    // (this is TRUE if at least one contact interface is a self contact interface)
+    bool selfcontact = false;
+    for (unsigned i = 0; i < Interfaces().size(); ++i)
+      if (Interfaces()[i]->SelfContact()) selfcontact = true;
+
+    if (selfcontact) isselfcontact_ = true;
+  }
   ReconnectParentElements();
   curr_state_ = Teuchos::null;
   curr_state_eval_ = false;

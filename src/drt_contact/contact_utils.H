@@ -53,6 +53,24 @@ namespace CONTACT
     void GetMasterSlaveSideInfo(std::vector<bool>& isslave, std::vector<bool>& isself,
         const std::vector<DRT::Condition*> cond_grp);
 
+    /**
+     * \brief Gather information on initialization (Active/Inactive)
+     *
+     * \param [in,out]  Two_half_pass: two half pass approach applied for current condition group
+     * \param [in,out]  Check_nonsmooth_selfcontact: reference configuration check for non-smooth
+     *                                               self contact shall be performed for current
+     *                                               condition group
+     * \param [in,out]  isactive:  condition is set active
+     * \param [in]      isslave:   condition is defined as slave side
+     * \param [in]      isself:    condition is self contact condition
+     * \param [in]      cond_grp:  current contact condition group (i.e. conditions with
+     *                             same ID)
+     *
+     * \author cschmidt \date 11/18 */
+    void GetInitializationInfo(bool& Two_half_pass, bool& Check_nonsmooth_selfcontact,
+        std::vector<bool>& isactive, std::vector<bool>& isslave, std::vector<bool>& isself,
+        const std::vector<DRT::Condition*> cond_grp);
+
     /// write conservation data to an output file
     void WriteConservationDataToFile(const int mypid, const int interface_id, const int nln_iter,
         const LINALG::SerialDenseMatrix& conservation_data, const std::string& ofile_path,

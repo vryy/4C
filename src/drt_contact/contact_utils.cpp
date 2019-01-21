@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/**
+/*!
 \file contact_utils.cpp
 
 \brief Contains a summary of contact utility functions
@@ -17,9 +17,11 @@
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_condition.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/every_iteration_writer.H"
 
 #include "../drt_inpar/inpar_mortar.H"
+#include "../drt_inpar/inpar_contact.H"
 
 #include "../linalg/linalg_serialdensematrix.H"
 
@@ -148,6 +150,7 @@ void CONTACT::UTILS::GetMasterSlaveSideInfo(std::vector<bool>& isslave, std::vec
 {
   bool hasslave = false;
   bool hasmaster = false;
+  bool hasself = false;
   std::vector<const std::string*> sides(cond_grp.size());
   // safety...
   isslave.clear();
@@ -174,6 +177,7 @@ void CONTACT::UTILS::GetMasterSlaveSideInfo(std::vector<bool>& isslave, std::vec
     {
       hasmaster = true;
       hasslave = true;
+      hasself = true;
       isslave[j] = false;
       isself[j] = true;
     }
@@ -185,11 +189,132 @@ void CONTACT::UTILS::GetMasterSlaveSideInfo(std::vector<bool>& isslave, std::vec
   if (!hasmaster) dserror("ERROR: Master side missing in contact condition group!");
 
   // check for self contact group
-  if (isself[0])
+  if (hasself)
   {
-    for (int j = 1; j < (int)isself.size(); ++j)
-      if (!isself[j]) dserror("ERROR: Inconsistent definition of self contact condition group!");
+    for (unsigned j = 0; j < isself.size(); ++j)
+      if (!isself[j])
+        dserror(
+            "ERROR: Inconsistent definition of self contact condition group! You defined one "
+            "condition as 'Selfcontact' condition. So all other contact conditions with same ID "
+            "need to be defined as 'Selfcontact' as well!");
   }
+}
+
+/*----------------------------------------------------------------------------*
+ | gather initialization information                            schmidt 11/18 |
+ *----------------------------------------------------------------------------*/
+void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass, bool& Check_nonsmooth_selfcontact,
+    std::vector<bool>& isactive, std::vector<bool>& isslave, std::vector<bool>& isself,
+    const std::vector<DRT::Condition*> cond_grp)
+{
+  std::vector<const std::string*> active(cond_grp.size());
+  std::vector<int> two_half_pass(cond_grp.size());
+  std::vector<int> check_nonsmooth_selfcontact(cond_grp.size());
+
+  for (std::size_t j = 0; j < cond_grp.size(); ++j)
+  {
+    active[j] = cond_grp[j]->Get<std::string>("Initialization");
+    if (isslave[j])
+    {
+      // slave sides may be initialized as "Active" or as "Inactive"
+      if (*active[j] == "Active")
+        isactive[j] = true;
+      else if (*active[j] == "Inactive")
+        isactive[j] = false;
+      else
+        dserror("ERROR: Unknown contact init qualifier!");
+    }
+    else if (isself[j])
+    {
+      // self contact surf must NOT be initialized as "Active" as this makes no sense
+      if (*active[j] == "Active")
+        dserror("ERROR: Selfcontact surface cannot be active!");
+      else if (*active[j] == "Inactive")
+        isactive[j] = false;
+      else
+        dserror("ERROR: Unknown contact init qualifier!");
+    }
+    else
+    {
+      // master sides must NOT be initialized as "Active" as this makes no sense
+      if (*active[j] == "Active")
+        dserror("ERROR: Master side cannot be active!");
+      else if (*active[j] == "Inactive")
+        isactive[j] = false;
+      else
+        dserror("ERROR: Unknown contact init qualifier!");
+    }
+
+    // check for two half pass approach
+    two_half_pass[j] = cond_grp[j]->GetDouble("TwoHalfPass");
+    if (two_half_pass[j]) Two_half_pass = true;
+
+    // check for reference configuration check for non-smooth self contact method
+    check_nonsmooth_selfcontact[j] = cond_grp[j]->GetDouble("RefConfCheckNonSmoothSelfContact");
+    if (check_nonsmooth_selfcontact[j]) Check_nonsmooth_selfcontact = true;
+  }
+
+  // SAFETY CHECKS
+  // read parameter list and problem type
+  const PROBLEM_TYP problemtype = DRT::Problem::Instance()->ProblemType();
+  const Teuchos::ParameterList& contact = DRT::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& mortar = DRT::Problem::Instance()->MortarCouplingParams();
+
+  // all definitions of one interface need to be consistent
+  if (Two_half_pass)
+  {
+    for (unsigned i = 0; i < two_half_pass.size(); ++i)
+      if (!two_half_pass[i])
+        dserror(
+            "ERROR: Inconsistent definition of contact condition group! You set the 'TwoHalfPass' "
+            "to true for at least one condition. So all other contact conditions with same ID need "
+            "to be defined accordingly!");
+
+    for (unsigned j = 0; j < cond_grp.size(); ++j)
+    {
+      if (!isself[j])
+        dserror(
+            "Setting 'TwoHalfPass' to true is only reasonable in combination with self contact so "
+            "far!");
+
+      if (Check_nonsmooth_selfcontact && (!check_nonsmooth_selfcontact[j]))
+        dserror(
+            "ERROR: Inconsistent definition of contact condition group! You set the "
+            "'RefConfCheckNonSmoothSelfContact' to true for at least one condition. So all other "
+            "contact conditions with same ID need to be defined accordingly!");
+    }
+
+    if (problemtype != prb_structure)
+      dserror("two half pass algorithm only implemented in structural problems");
+    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
+        INPAR::CONTACT::solution_nitsche)
+      dserror("two half pass algorithm only with nitsche contact formulation");
+    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::NitscheWeighting>(contact, "NITSCHE_WEIGHTING") !=
+        INPAR::CONTACT::NitWgt_harmonic)
+      dserror("two half pass algorithm only with harmonic weighting");
+  }
+
+  if ((!Two_half_pass) && Check_nonsmooth_selfcontact)
+    dserror(
+        "ERROR: 'RefConfCheckNonSmoothSelfContact' is activated, which is only reasonable for "
+        "non-smooth self contact in combination with the two half pass 'TwoHalfPass' approach so "
+        "far!");
+
+  if (Two_half_pass && (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(
+                            mortar, "ALGORITHM") != INPAR::MORTAR::algorithm_gpts))
+    dserror(
+        "ERROR: You activated the two half pass 'TwoHalfPass' approach, but the 'MORTAR COUPLING' "
+        "Algorithm is NOT 'GPTS'!");
+
+
+  if (Check_nonsmooth_selfcontact &&
+      (!DRT::INPUT::IntegralValue<int>(contact, "NONSMOOTH_GEOMETRIES")))
+    dserror(
+        "ERROR: You activated the self contact condition reference configuration check for "
+        "non-smooth geometries, but flag 'NONSMOOTH_GEOMETRIES' in the 'CONTACT DYNAMIC' section "
+        "is not true!");
+
+  return;
 }
 
 /*----------------------------------------------------------------------------*

@@ -2287,6 +2287,7 @@ set(OBJS_DRT_CONTACT
   src/drt_contact/selfcontact_binarytree.cpp
   src/drt_contact/smoothing_strategy.cpp
   src/drt_contact/smoothing_manager.cpp
+  src/drt_contact/unbiased_selfcontact_binarytree.cpp
   src/drt_contact/contact_utils.cpp
 )
 set(OBJS_DRT_CONTACT_AUG

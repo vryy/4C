@@ -176,6 +176,16 @@ void INPAR::MORTAR::SetValidConditions(
           static_cast<int>(DBCHandling::remove_dbc_nodes_from_slave_side)),
       true)));
 
+  // optional two half pass approach
+  contactcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("TwoHalfPass", true)));
+  contactcomponents.push_back(Teuchos::rcp(new RealConditionComponent("TwoHalfPass")));
+
+  // optional reference configuration check for non-smooth self contact
+  contactcomponents.push_back(
+      Teuchos::rcp(new SeparatorConditionComponent("RefConfCheckNonSmoothSelfContact", true)));
+  contactcomponents.push_back(
+      Teuchos::rcp(new RealConditionComponent("RefConfCheckNonSmoothSelfContact")));
+
   Teuchos::RCP<ConditionDefinition> linecontact =
       Teuchos::rcp(new ConditionDefinition("DESIGN LINE MORTAR CONTACT CONDITIONS 2D", "Contact",
           "Line Contact Coupling", DRT::Condition::Contact, true, DRT::Condition::Line));
