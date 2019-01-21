@@ -16,7 +16,6 @@
 #include "beam_contact_pair.H"
 
 #include "beam3contact_defines.H"
-#include "../drt_geometry_pair/geometry_pair_element_types.H"
 #include "../drt_geometry_pair/geometry_pair_utility_classes.H"
 
 #include "../linalg/linalg_fixedsizematrix.H"

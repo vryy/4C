@@ -17,19 +17,6 @@ projection.
 #include "beam_to_solid_volume_meshtying_pair_base.H"
 
 
-// Forward declarations.
-namespace LINALG
-{
-  class SerialDenseVector;
-  class SerialDenseMatrix;
-}  // namespace LINALG
-namespace GEOMETRYPAIR
-{
-  template <typename scalar_type, typename line, typename volume>
-  class GeometryPairLineToVolume;
-}  // namespace GEOMETRYPAIR
-
-
 namespace BEAMINTERACTION
 {
   /**

@@ -21,24 +21,14 @@ functions for the traction.
 #include "../drt_lib/drt_element.H"
 
 
-// Forward declarations.
-namespace LINALG
-{
-  class SerialDenseVector;
-  class SerialDenseMatrix;
-}  // namespace LINALG
-namespace GEOMETRYPAIR
-{
-  template <typename scalar_type, typename line, typename volume>
-  class GeometryPairLineToVolume;
-}  // namespace GEOMETRYPAIR
-
-
 namespace BEAMINTERACTION
 {
   /**
-   * \brief This structure "converts" the type of a mortar shape function to a discretization. This
-   * is done in this way, so the type conversion can be done at compile time.
+   * \brief This structure "converts" the type of a mortar shape function to a discretization.
+   *
+   * The mortar shape function input parameter is converted to an enum. The following class is used
+   * to get the correct element type to template the mortar pairs on. The way this conversion is
+   * done, the relevant values are known at compile time.
    */
   template <INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions mortar_discretization>
   struct MortarDiscretizationToElementDiscretization
