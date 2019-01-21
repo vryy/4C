@@ -11,10 +11,8 @@
 #ifndef SELFCONTACT_BINARYTREE_SELF_H
 #define SELFCONTACT_BINARYTREE_SELF_H
 
-#include "Teuchos_RCP.hpp"
 #include "Epetra_Map.h"
-#include "Epetra_SerialDenseMatrix.h"
-#include "../drt_mortar/abstract_binarytree.H"
+#include "../drt_mortar/base_binarytree.H"
 
 // forward declarations
 namespace DRT
@@ -44,7 +42,7 @@ namespace CONTACT
 
   \author popp (popp@lnm.mw.tum.de)
   */
-  class SelfBinaryTreeNode
+  class SelfBinaryTreeNode : public MORTAR::BaseBinaryTreeNode
   {
    public:
     /*!
@@ -58,8 +56,8 @@ namespace CONTACT
     \param samplevectors  reference to sample vectors
     \param kdop           reference to no. of vertices
     \param dim            dimension of problem
-    \param layer          current layer of treenode
-    \param treenodes      references to treenodes storage scheme
+    \param layer          current layer of tree node
+    \param treenodes      references to tree nodes storage scheme
 
     */
     SelfBinaryTreeNode(SelfBinaryTreeNodeType type, DRT::Discretization& discret,
@@ -77,13 +75,7 @@ namespace CONTACT
     //! @name Evaluation methods
 
     /*!
-    \brief Calculate slabs of dop
-
-    */
-    void CalculateSlabsDop();
-
-    /*!
-    \brief Update slabs of current treenode in bottom up way
+    \brief Update slabs of current tree node in bottom up way
 
     */
     void UpdateSlabsBottomUp(double& eps);
@@ -104,41 +96,28 @@ namespace CONTACT
     \brief Return logical array of qualified sample vectors
 
     */
-    virtual std::vector<bool> QualifiedVectors() { return qualifiedvectors_; }
+    std::vector<bool> QualifiedVectors() const { return qualifiedvectors_; }
 
     /*!
     \brief Set logical array of qualified sample vectors
 
     */
-    virtual void SetQualifiedVectors(std::vector<bool> qualifiedvectors)
+    void SetQualifiedVectors(std::vector<bool> qualifiedvectors)
     {
       qualifiedvectors_ = qualifiedvectors;
     }
 
     /*!
-    \brief Enlarge geometry of a Treenode by an offset, dependent on size
+    \brief Print type of tree node to std::cout
 
     */
-    void EnlargeGeometry(double& eps);
-
-    /*!
-    \brief Print type of TreeNode to std::cout
-
-    */
-    void PrintType();
-
-    /*!
-    \brief Print slabs to std::cout
-
-    */
-    void PrintSlabs();
+    virtual void PrintType() final;
 
     /*!
     \brief Set slabs of current treenode
 
     */
     void SetSlabs(Epetra_SerialDenseMatrix& newslabs);
-
     //@}
 
     //! @name Access methods
@@ -147,48 +126,38 @@ namespace CONTACT
     \brief Get communicator
 
     */
-    virtual const Epetra_Comm& Comm() const;
+    const Epetra_Comm& Comm() const;
 
 
     /*!
-    \brief Complete tree by filling treenode storage scheme
+    \brief Complete tree by filling tree node storage scheme
 
     */
     void CompleteTree(int layer, double& enlarge);
 
     /*!
-
-    /brief Get discretization of the interface
-
-    */
-    virtual DRT::Discretization& Discret() const { return idiscret_; }
-
-    /*!
     \brief Return pointer to type of treenode
 
     */
-    virtual SelfBinaryTreeNodeType Type() const { return type_; }
+    SelfBinaryTreeNodeType Type() const { return type_; }
 
     /*!
-    \brief Set type of treenode
+    \brief Set type of tree node
 
     */
-    virtual void SetType(SelfBinaryTreeNodeType type) { type_ = type; }
+    void SetType(SelfBinaryTreeNodeType type) { type_ = type; }
 
     /*!
-    \brief Return pointer to adjacent treenodes
+    \brief Return pointer to adjacent tree nodes
 
     */
-    virtual std::vector<Teuchos::RCP<SelfBinaryTreeNode>> AdjacentTreenodes()
-    {
-      return adjacentTreenodes_;
-    }
+    std::vector<Teuchos::RCP<SelfBinaryTreeNode>> AdjacentTreenodes() { return adjacentTreenodes_; }
 
     /*!
-    \brief set adjacent Treefnodes
+    \brief set adjacent tree nodes
 
     */
-    virtual void SetAdjacentTnodes(std::vector<Teuchos::RCP<SelfBinaryTreeNode>> adjTnodes)
+    void SetAdjacentTnodes(std::vector<Teuchos::RCP<SelfBinaryTreeNode>> adjTnodes)
     {
       adjacentTreenodes_ = adjTnodes;
     }
@@ -197,31 +166,31 @@ namespace CONTACT
     \brief Return list of endnodes
 
     */
-    virtual std::vector<int> Endnodes() { return endnodes_; }
+    std::vector<int> Endnodes() const { return endnodes_; }
 
     /*!
     \brief Set list of endnodes
 
     */
-    virtual void SetEndnodes(std::vector<int> endnodes) { endnodes_ = endnodes; }
+    void SetEndnodes(std::vector<int> endnodes) { endnodes_ = endnodes; }
 
     /*!
     \brief Update list of endnodes with endnodes of children
 
     */
-    virtual void UpdateEndnodes();
+    void UpdateEndnodes();
 
     /*!
     \brief Return pointer to right child
 
     */
-    virtual Teuchos::RCP<SelfBinaryTreeNode> Rightchild() const { return rightchild_; }
+    Teuchos::RCP<SelfBinaryTreeNode> Rightchild() const { return rightchild_; }
 
     /*!
     \brief Return pointer to left child
 
     */
-    virtual Teuchos::RCP<SelfBinaryTreeNode> Leftchild() const { return leftchild_; }
+    Teuchos::RCP<SelfBinaryTreeNode> Leftchild() const { return leftchild_; }
 
     /*!
     \brief set children of a Binary Tree Node
@@ -234,56 +203,13 @@ namespace CONTACT
     \brief Return pointer to parent
 
     */
-    virtual Teuchos::RCP<SelfBinaryTreeNode> Parent() const { return parent_; }
+    Teuchos::RCP<SelfBinaryTreeNode> Parent() const { return parent_; }
 
     /*!
     \brief set parent of treenode
 
     */
-    virtual void SetParent(Teuchos::RCP<SelfBinaryTreeNode> parent) { parent_ = parent; }
-
-    /*!
-    \brief Return pointer to slabs of DOP
-
-    */
-    virtual Epetra_SerialDenseMatrix Slabs() const { return slabs_; }
-
-    /*!
-    \brief Return pointer to normals of DOP
-
-    */
-    virtual Epetra_SerialDenseMatrix Dopnormals() const { return dopnormals_; }
-
-    /*!
-    \brief Return no. of vertices
-
-    */
-    virtual int Kdop() const { return kdop_; }
-
-    /*!
-    \brief Return layer of current TreeNode
-
-    */
-    virtual int Layer() { return layer_; }
-
-    /*!
-    \brief Set layer of current TreeNode
-
-    */
-    virtual void SetLayer(int layer) { layer_ = layer; }
-
-    /*!
-    \brief Return pointer to element list of TreeNode
-
-    */
-    virtual std::vector<int> Elelist() const { return elelist_; }
-
-    /*!
-    \brief Return dim of Problem
-
-    */
-    virtual const int& Dim() { return dim_; }
-
+    void SetParent(Teuchos::RCP<SelfBinaryTreeNode> parent) { parent_ = parent; }
     //@}
 
    private:
@@ -294,9 +220,9 @@ namespace CONTACT
     //! type of SelfBinaryTreeNode
     SelfBinaryTreeNodeType type_;
 
-    //! contact interface discretization
-    DRT::Discretization& idiscret_;
-
+    // the pointers to the parent as well as to the left and right child are not moved to the
+    // BaseBinaryTreeNode as this would require a lot of dynamic casting and thereby complicating
+    // the readability of the code
     //! pointer to the parent SelfBinaryTreeNode
     Teuchos::RCP<SelfBinaryTreeNode> parent_;
 
@@ -306,38 +232,20 @@ namespace CONTACT
     //! pointer to the right child TreeNode
     Teuchos::RCP<SelfBinaryTreeNode> rightchild_;
 
-    //! geometry slabs of TreeNode, saved as Min|Max
-    Epetra_SerialDenseMatrix slabs_;
-
     //! logical array of qualified sample vectors of current tree node
     std::vector<bool> qualifiedvectors_;
 
     //! vector with global IDs of end nodes of a surface (2D), -1 if there are no end-nodes
     std::vector<int> endnodes_;
 
-    //! list with all elements of SelfBinaryTreeNode
-    std::vector<int> elelist_;
-
     //! vector pointers to adjacent treenodes on the same layer
     std::vector<Teuchos::RCP<SelfBinaryTreeNode>> adjacentTreenodes_;
-
-    //! reference to DOP normals
-    const Epetra_SerialDenseMatrix& dopnormals_;
 
     //! reference to sample vectors
     const Epetra_SerialDenseMatrix& samplevectors_;
 
-    //! reference to no. of vertices
-    const int& kdop_;
-
-    //! reference to dim. of problem
-    const int& dim_;
-
     //! reference to number of sample vectors
     const int& nvectors_;
-
-    //! layer of TreeNode in Tree (0=rootnode!)
-    int layer_;
 
     //! reference to storage scheme of all treenodes, sorted by layer
     std::vector<std::vector<Teuchos::RCP<SelfBinaryTreeNode>>>& treenodes_;
@@ -348,10 +256,10 @@ namespace CONTACT
     friend bool operator<(
         const Teuchos::RCP<SelfBinaryTreeNode> node1, const Teuchos::RCP<SelfBinaryTreeNode> node2)
     {
-      if (node1->elelist_.size() < node2->elelist_.size())
+      if (node1->Elelist().size() < node2->Elelist().size())
         return true;
-      else if (node1->elelist_.size() == node2->elelist_.size() and
-               node1->elelist_[0] < node2->elelist_[0])
+      else if (node1->Elelist().size() == node2->Elelist().size() and
+               node1->Elelist()[0] < node2->Elelist()[0])
         return true;
       else
         return false;
@@ -382,9 +290,9 @@ namespace CONTACT
     friend bool operator==(
         const Teuchos::RCP<SelfBinaryTreeNode> node1, const Teuchos::RCP<SelfBinaryTreeNode> node2)
     {
-      if (node1->elelist_.size() != node2->elelist_.size())
+      if (node1->Elelist().size() != node2->Elelist().size())
         return false;
-      else if (node1->elelist_[0] == node2->elelist_[0])
+      else if (node1->Elelist()[0] == node2->Elelist()[0])
         return true;
       else
         return false;
@@ -495,25 +403,25 @@ namespace CONTACT
     \brief Return costs
 
     */
-    virtual double Costs() const { return costs_; }
+    double Costs() const { return costs_; }
 
     /*!
     \brief Return first node of dual edge
 
     */
-    virtual Teuchos::RCP<SelfBinaryTreeNode> GetNode1() const { return node1_; }
+    Teuchos::RCP<SelfBinaryTreeNode> GetNode1() const { return node1_; }
 
     /*!
     \brief Return second node of dual edge
 
     */
-    virtual Teuchos::RCP<SelfBinaryTreeNode> GetNode2() const { return node2_; }
+    Teuchos::RCP<SelfBinaryTreeNode> GetNode2() const { return node2_; }
 
     /*!
     \brief Return common tree node of two dual edges
 
     */
-    virtual Teuchos::RCP<SelfBinaryTreeNode> CommonNode(Teuchos::RCP<SelfDualEdge> treenode)
+    Teuchos::RCP<SelfBinaryTreeNode> CommonNode(Teuchos::RCP<SelfDualEdge> treenode)
     {
       Teuchos::RCP<SelfBinaryTreeNode> node1 = treenode->GetNode1();
       Teuchos::RCP<SelfBinaryTreeNode> node2 = treenode->GetNode2();
@@ -537,7 +445,7 @@ namespace CONTACT
     \brief return greater node of dual edge
 
     */
-    virtual Teuchos::RCP<SelfBinaryTreeNode> GreaterNode()
+    Teuchos::RCP<SelfBinaryTreeNode> GreaterNode()
     {
       if (node1_ > node2_)
         return node1_;
@@ -547,7 +455,7 @@ namespace CONTACT
         return node1_;
     }
 
-    virtual Teuchos::RCP<SelfBinaryTreeNode> LesserNode()
+    Teuchos::RCP<SelfBinaryTreeNode> LesserNode()
     {
       if (node1_ > node2_)
         return node2_;
@@ -585,7 +493,7 @@ namespace CONTACT
   \author popp (popp@lnm.mw.tum.de)
   */
 
-  class SelfBinaryTree : public MORTAR::AbstractBinaryTree
+  class SelfBinaryTree : public MORTAR::BaseBinaryTree
   {
    public:
     /*!
@@ -612,7 +520,7 @@ namespace CONTACT
     //! @name Evaluation methods
 
     /*!
-    \brief Evaluate search self binarytree:
+    \brief Evaluate search self binary tree:
            call SetEnlarge() and SearchContactSeparate()
 
     */
@@ -623,7 +531,6 @@ namespace CONTACT
 
     */
     void Init() final;
-
     //@}
 
    private:
@@ -633,58 +540,31 @@ namespace CONTACT
     \brief Get communicator
 
     */
-    virtual const Epetra_Comm& Comm() const;
-
-    /*!
-    \brief Get discretization of the interface
-
-    */
-    virtual DRT::Discretization& Discret() const { return idiscret_; }
+    const Epetra_Comm& Comm() const;
 
     /*!
     \brief Get local interface communicator (only contains participating processors)
 
     */
-    virtual const Epetra_Comm* lComm() const { return lcomm_; }
-
-    /*!
-    \brief Get matrix of DOP normals
-
-    */
-    virtual const Epetra_SerialDenseMatrix& DopNormals() { return dopnormals_; }
+    const Epetra_Comm* lComm() const { return lcomm_; }
 
     /*!
     \brief Get matrix of sample vectors
 
     */
-    virtual const Epetra_SerialDenseMatrix& SampleVectors() { return samplevectors_; }
-
-    /*!
-    \brief Get number of vertices of DOP
-
-    */
-    virtual const int& Kdop() { return kdop_; }
-
-    /*!
-    \brief Return dim of Problem
-
-    */
-    virtual const int& Dim() { return dim_; }
+    const Epetra_SerialDenseMatrix& SampleVectors() const { return samplevectors_; }
 
     /*!
     \brief Return no. of sample vectors
 
     */
-    virtual const int& Nvectors() { return nvectors_; }
+    const int& Nvectors() const { return nvectors_; }
 
     /*!
-    \brief Return reference to storage scheme of all treenodes
+    \brief Return reference to storage scheme of all tree nodes
 
     */
-    virtual std::vector<std::vector<Teuchos::RCP<SelfBinaryTreeNode>>>& Treenodes()
-    {
-      return treenodes_;
-    }
+    std::vector<std::vector<Teuchos::RCP<SelfBinaryTreeNode>>>& Treenodes() { return treenodes_; }
 
     /*!
     \brief Set the vector of adjacent tree nodes for leaf-nodes in the lowest layer
@@ -697,35 +577,51 @@ namespace CONTACT
 
     */
     void CalculateAdjacentTnodes();
-
-    /*!
-    \brief Return factor "eps" to enlarge dops
-
-    */
-    virtual double& Eps() { return eps_; }
-
-    /*!
-    \brief Return factor "enlarge" to enlarge dops
-
-    */
-    virtual double& Enlarge() { return enlarge_; }
-
     //@}
 
     //! @name Evaluation methods
 
     /*!
+    \brief Calculate the dual graph
+
+    \param [out] dualgraph:  construction of binary tree is based on this data
+    \param [in]  elelist:    list (gids) of all contact elements of the surface
+
+     */
+    void CalculateDualGraph(
+        std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>* dualGraph,
+        const std::vector<int>& elelist);
+
+    /*!
+    \brief Calculate number of slabs intersections of treenode 1 and 2
+
+    \param [in] treenode1:  self binary tree node
+    \param [in] treenode2:  self binary tree node
+
+     */
+    int CalculateSlabsIntercepts(
+        Teuchos::RCP<SelfBinaryTreeNode> treenode1, Teuchos::RCP<SelfBinaryTreeNode> treenode2);
+
+    /*!
     \brief Initialize Tree in a bottom up way based on dual graph
+
+    \param [in] dualgraph:  construction of binary tree is based on this data
 
     */
     void InitializeTreeBottomUp(
         std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>* dualGraph);
 
     /*!
+    \brief Initialize internal variables
+
+     */
+    void InitInternalVariables() final;
+
+    /*!
     \brief Calculate minimal element length / inflation factor "enlarge"
 
     */
-    void SetEnlarge();
+    void SetEnlarge() final;
 
     /*!
     \brief Evaluate Binary search tree for separate update (bottom-up,
@@ -799,17 +695,11 @@ namespace CONTACT
     SelfBinaryTree operator=(const SelfBinaryTree& old);
     SelfBinaryTree(const SelfBinaryTree& old);
 
-    DRT::Discretization& idiscret_;      // contact interface discretization
     const Epetra_Comm* lcomm_;           // local interface communicator
     Teuchos::RCP<Epetra_Map> elements_;  // all contact elements on surface (full map)
 
-    const int dim_;                           // problem dimension (2D or 3D)
-    int kdop_;                                // sets k for DOP (8 for 2D, 18 for 3D)
     int nvectors_;                            // defining number of sample vectors
-    Epetra_SerialDenseMatrix dopnormals_;     // defining vertices of DOP
     Epetra_SerialDenseMatrix samplevectors_;  // defining sample vectors
-    double eps_;                              // epsilon for enlarging dops (of user)
-    double enlarge_;                          // to enlarge dops
 
     // root treenodes
     std::vector<Teuchos::RCP<SelfBinaryTreeNode>> roots_;

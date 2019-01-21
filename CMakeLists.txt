@@ -1694,6 +1694,7 @@ set(OBJS_DRT_TO3_LIB
   src/drt_torsion3/torsion3_input.cpp
 )
 set(OBJS_DRT_MORTAR
+  src/drt_mortar/base_binarytree.cpp
   src/drt_mortar/mortar_binarytree.cpp
   src/drt_mortar/mortar_coupling2d.cpp
   src/drt_mortar/mortar_coupling3d.cpp
