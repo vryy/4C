@@ -14,7 +14,6 @@
 #include "geometry_pair_constants.H"
 
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_beam3/beam3.H"
 
 
 /**
@@ -29,39 +28,21 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::GetEleme
   // Matrix for shape function values.
   LINALG::TMatrix<scalar_type, 1, line::n_nodes_ * line::n_val_> N(true);
 
-  // Get discretization type.
-  const DRT::Element::DiscretizationType distype = Element1()->Shape();
+  // Get values of shape functions.
+  line::EvaluateShapeFunction1D(N, eta, Element1());
 
-  if (line::n_val_ == 1)
+  // Calculate the position.
+  r.Clear();
+  for (unsigned int node = 0; node < line::n_nodes_; node++)
   {
-    dserror("One nodal value for line elements not yet implemented!");
-    DRT::UTILS::shape_function_1D(N, eta, distype);
-  }
-  else if (line::n_val_ == 2)
-  {
-    double length = (dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(Element1()))->RefLength();
-    const DRT::Element::DiscretizationType distype1herm = DRT::Element::line2;
-
-    // Get values of shape functions.
-    DRT::UTILS::shape_function_hermite_1D(N, eta, length, distype1herm);
-
-    // Calculate the position.
-    r.Clear();
     for (unsigned int dim = 0; dim < 3; dim++)
     {
-      for (unsigned int node = 0; node < line::n_nodes_; node++)
+      for (unsigned int val = 0; val < line::n_val_; val++)
       {
-        for (unsigned int val = 0; val < line::n_val_; val++)
-        {
-          r(dim) += q(3 * line::n_val_ * node + 3 * val + dim) * N(line::n_val_ * node + val);
-        }
+        r(dim) += q(3 * line::n_val_ * node + 3 * val + dim) * N(line::n_val_ * node + val);
       }
     }
   }
-  else
-    dserror(
-        "Only line elements with one (nodal positions) or two "
-        "(nodal positions + nodal tangents) values are valid!");
 }
 
 
@@ -77,39 +58,21 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line,
   // Matrix for shape function values.
   LINALG::TMatrix<scalar_type, 1, line::n_dof_> dN(true);
 
-  // Get discretization type.
-  const DRT::Element::DiscretizationType distype = Element1()->Shape();
+  // Get values of shape functions.
+  line::EvaluateShapeFunction1DDeriv1(dN, eta, Element1());
 
-  if (line::n_val_ == 1)
+  // Calculate the derivative of the position.
+  dr.Clear();
+  for (unsigned int node = 0; node < line::n_nodes_; node++)
   {
-    dserror("One nodal value for line elements not yet implemented!");
-    DRT::UTILS::shape_function_1D_deriv1(dN, eta, distype);
-  }
-  else if (line::n_val_ == 2)
-  {
-    double length = (dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(Element1()))->RefLength();
-    const DRT::Element::DiscretizationType distype1herm = DRT::Element::line2;
-
-    // Get values of shape functions.
-    DRT::UTILS::shape_function_hermite_1D_deriv1(dN, eta, length, distype1herm);
-
-    // Calculate the position.
-    dr.Clear();
     for (unsigned int dim = 0; dim < 3; dim++)
     {
-      for (unsigned int node = 0; node < line::n_nodes_; node++)
+      for (unsigned int val = 0; val < line::n_val_; val++)
       {
-        for (unsigned int val = 0; val < line::n_val_; val++)
-        {
-          dr(dim) += q(3 * line::n_val_ * node + 3 * val + dim) * dN(line::n_val_ * node + val);
-        }
+        dr(dim) += q(3 * line::n_val_ * node + 3 * val + dim) * dN(line::n_val_ * node + val);
       }
     }
   }
-  else
-    dserror(
-        "Only line elements with one (nodal positions) or two "
-        "(nodal positions + nodal tangents) values are valid!");
 }
 
 
@@ -123,17 +86,15 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::GetEleme
     const LINALG::TMatrix<scalar_type_get_pos, volume::n_dof_, 1>& q,
     LINALG::TMatrix<scalar_type_get_pos, 3, 1>& r) const
 {
+  // Check what type of volume was given.
+  if (volume::n_val_ != 1)
+    dserror("Only volume elements with one nodal values are implemented and tested!");
+
   // Matrix for shape function values.
   LINALG::TMatrix<scalar_type, 1, volume::n_nodes_ * volume::n_val_> N(true);
 
-  // Check what type of volume was given.
-  if (volume::n_val_ != 1) dserror("Only volume elements with one nodal values are implemented!");
-
-  // Clear shape function matrix.
-  N.Clear();
-
   // Get the shape functions.
-  DRT::UTILS::shape_function_3D(N, xi(0), xi(1), xi(2), Element2()->Shape());
+  volume::EvaluateShapeFunction3D(N, xi);
 
   // Calculate the position.
   r.Clear();
@@ -156,17 +117,15 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line,
     const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q,
     LINALG::TMatrix<scalar_type, 3, 3>& dr) const
 {
+  // Check what type of volume was given.
+  if (volume::n_val_ != 1)
+    dserror("Only volume elements with one nodal values are implemented and tested!");
+
   // Matrix for shape function values.
   LINALG::TMatrix<scalar_type, 3, volume::n_nodes_ * volume::n_val_> dN(true);
 
-  // Check what type of volume was given.
-  if (volume::n_val_ != 1) dserror("Only volume elements with one nodal values are implemented!");
-
-  // Clear shape function matrix.
-  dN.Clear();
-
   // Get the shape functions.
-  DRT::UTILS::shape_function_3D_deriv1(dN, xi(0), xi(1), xi(2), Element2()->Shape());
+  volume::EvaluateShapeFunction3DDeriv1(dN, xi);
 
   // Calculate the position.
   dr.Clear();
