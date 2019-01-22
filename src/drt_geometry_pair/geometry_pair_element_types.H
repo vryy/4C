@@ -24,6 +24,78 @@
 namespace GEOMETRYPAIR
 {
   /**
+   * \brief Get the position in the element.
+   * @param xi (in) Parameter coordinate on the element.
+   * @param q (in) Degrees of freedom for the element.
+   * @param r (out) Position on the element.
+   * @param element (in) Pointer to the element, needed for beam elements.
+   */
+  template <typename element_type, typename T, typename V, typename scalar_type>
+  inline void EvaluatePosition(const T& xi, const V& q, LINALG::TMatrix<scalar_type, 3, 1>& r,
+      const DRT::Element* element = NULL)
+  {
+    // Matrix for shape function values.
+    LINALG::TMatrix<scalar_type, 1, element_type::n_nodes_ * element_type::n_val_> N(true);
+
+    // Evaluate the shape function values.
+    element_type::EvaluateShapeFunction(
+        N, xi, std::integral_constant<unsigned int, element_type::dim_>{}, element);
+
+    // Calculate the position.
+    r.Clear();
+    for (unsigned int node = 0; node < element_type::n_nodes_; node++)
+    {
+      for (unsigned int dim = 0; dim < 3; dim++)
+      {
+        for (unsigned int val = 0; val < element_type::n_val_; val++)
+        {
+          r(dim) += q(3 * element_type::n_val_ * node + 3 * val + dim) *
+                    N(element_type::n_val_ * node + val);
+        }
+      }
+    }
+  }
+
+
+  /**
+   * \brief Get the derivative of the position w.r.t xi in the element.
+   * @param xi (in) Parameter coordinate on the element.
+   * @param q (in) Degrees of freedom for the element.
+   * @param dr (out) Derivative of the position on the element.
+   * @param element (in) Pointer to the element, needed for beam elements.
+   */
+  template <typename element_type, typename T, typename V, typename scalar_type>
+  inline void EvaluatePositionDerivative1(const T& xi, const V& q,
+      LINALG::TMatrix<scalar_type, 3, element_type::dim_>& dr, const DRT::Element* element = NULL)
+  {
+    // Matrix for shape function values.
+    LINALG::TMatrix<scalar_type, element_type::dim_, element_type::n_nodes_ * element_type::n_val_>
+        dN(true);
+
+    // Evaluate the shape function values.
+    element_type::EvaluateShapeFunctionDeriv1(
+        dN, xi, std::integral_constant<unsigned int, element_type::dim_>{}, element);
+
+    // Calculate the derivative of the position.
+    dr.Clear();
+    for (unsigned int dim = 0; dim < 3; dim++)
+    {
+      for (unsigned int direction = 0; direction < element_type::dim_; direction++)
+      {
+        for (unsigned int node = 0; node < element_type::n_nodes_; node++)
+        {
+          for (unsigned int val = 0; val < element_type::n_val_; val++)
+          {
+            dr(dim, direction) += q(3 * element_type::n_val_ * node + 3 * val + dim) *
+                                  dN(direction, element_type::n_val_ * node + val);
+          }
+        }
+      }
+    }
+  }
+
+
+  /**
    * \brief This structure "converts" the DRT discretization type to a volume type.
    *
    * For some geometry pairs we need to know if a volume is a hexaeder or a tetraeder (linear,
@@ -116,15 +188,19 @@ namespace GEOMETRYPAIR
      * \brief Evaluate the 3D shape functions of the element.
      * @param N (out) Array to store shape function values in.
      * @param xi (in) Local coordinates on the element.
+     * @param element (in) Pointer to the element. In this case it is not needed.
+     * @param dimension (in) A type to overload the method, in order to evaluate the correct shape
+     * functions for the dimension of the element.
      */
     template <typename V, typename T>
-    inline static void EvaluateShapeFunction3D(V& N, const T& xi)
+    inline static void EvaluateShapeFunction(V& N, const T& xi,
+        std::integral_constant<unsigned int, 3> dimension, const DRT::Element* element = NULL)
     {
       // Throw a compiler error if this function is called from an element with dim_ != 3.
       static_assert(base::dim_ == 3, "EvaluateShapeFunction3D can only be called for 3D elements!");
 
-      // We need to redefine the discretization here, as otherwise the compiler has problems passing
-      // the static const member of the base class as a reference.
+      // We need to redefine the discretization here, as otherwise the compiler has problems
+      // passing the static const member of the base class as a reference.
       DRT::Element::DiscretizationType discretization = base::discretization_;
 
       // Evaluate the shape functions.
@@ -135,15 +211,19 @@ namespace GEOMETRYPAIR
      * \brief Evaluate the first derivative of the 3D shape functions of the element.
      * @param N (out) Array to store shape function values in.
      * @param xi (in) Local coordinates on the element.
+     * @param element (in) Pointer to the element. In this case it is not needed.
+     * @param dimension (in) A type to overload the method, in order to evaluate the correct shape
+     * functions for the dimension of the element.
      */
     template <typename V, typename T>
-    inline static void EvaluateShapeFunction3DDeriv1(V& N, const T& xi)
+    inline static void EvaluateShapeFunctionDeriv1(V& N, const T& xi,
+        std::integral_constant<unsigned int, 3> dimension, const DRT::Element* element = NULL)
     {
       // Throw a compiler error if this function is called from an element with dim_ != 3.
       static_assert(base::dim_ == 3, "EvaluateShapeFunction3D can only be called for 3D elements!");
 
-      // We need to redefine the discretization here, as otherwise the compiler has problems passing
-      // the static const member of the base class as a reference.
+      // We need to redefine the discretization here, as otherwise the compiler has problems
+      // passing the static const member of the base class as a reference.
       DRT::Element::DiscretizationType discretization = base::discretization_;
 
       // Evaluate the shape functions.
@@ -167,18 +247,25 @@ namespace GEOMETRYPAIR
      * @param xi (in) Local coordinate on the element.
      * @param element (in) Pointer to the element. This is needed for beam elements, as the
      * reference length goes into the shape functions.
+     * @param dimension (in) A type to overload the method, in order to evaluate the correct shape
+     * functions for the dimension of the element.
      */
     template <typename V, typename T>
-    inline static void EvaluateShapeFunction1D(V& N, const T& xi, const DRT::Element* element)
+    inline static void EvaluateShapeFunction(V& N, const T& xi,
+        std::integral_constant<unsigned int, 1> dimension, const DRT::Element* element)
     {
       // Throw a compiler error if this function is called from an element with dim_ != 1.
       static_assert(base::dim_ == 1, "EvaluateShapeFunction1D can only be called for 1D elements!");
 
-      // We need to redefine the discretization here, as otherwise the compiler has problems passing
-      // the static const member of the base class as a reference.
+      // We need to redefine the discretization here, as otherwise the compiler has problems
+      // passing the static const member of the base class as a reference.
       DRT::Element::DiscretizationType discretization = base::discretization_;
 
       // Get the reference length of the beam element.
+      if (element == NULL)
+        dserror(
+            "The element pointer can not be NULL when evaluating the shape functions of a beam, as "
+            "we need to get RefLength()!");
       const double length = (dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element))->RefLength();
 
       // Evaluate the shape functions.
@@ -191,18 +278,25 @@ namespace GEOMETRYPAIR
      * @param xi (in) Local coordinate on the element.
      * @param element (in) Pointer to the element. This is needed for beam elements, as the
      * reference length goes into the shape functions.
+     * @param dimension (in) A type to overload the method, in order to evaluate the correct shape
+     * functions for the dimension of the element.
      */
     template <typename V, typename T>
-    inline static void EvaluateShapeFunction1DDeriv1(V& N, const T& xi, const DRT::Element* element)
+    inline static void EvaluateShapeFunctionDeriv1(V& N, const T& xi,
+        std::integral_constant<unsigned int, 1> dimension, const DRT::Element* element)
     {
       // Throw a compiler error if this function is called from an element with dim_ != 1.
       static_assert(base::dim_ == 1, "EvaluateShapeFunction1D can only be called for 1D elements!");
 
-      // We need to redefine the discretization here, as otherwise the compiler has problems passing
-      // the static const member of the base class as a reference.
+      // We need to redefine the discretization here, as otherwise the compiler has problems
+      // passing the static const member of the base class as a reference.
       DRT::Element::DiscretizationType discretization = base::discretization_;
 
       // Get the reference length of the beam element.
+      if (element == NULL)
+        dserror(
+            "The element pointer can not be NULL when evaluating the shape functions of a beam, as "
+            "we need to get RefLength()!");
       const double length = (dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element))->RefLength();
 
       // Evaluate the shape functions.

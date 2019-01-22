@@ -78,17 +78,16 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
           this->line_to_volume_segments_[i_segment].GetProjectionPoints()[i_gp];
 
       // Get the jacobian in the reference configuration.
-      this->CastGeometryPair()->GetElement1PositionDerivative(
-          projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
+      GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
+          projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref, this->Element1());
 
       // Jacobian including the segment length.
       segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
 
       // Get the current positions on beam and solid.
-      this->CastGeometryPair()->GetElement1Position(
-          projected_gauss_point.GetEta(), this->ele1pos_, r_beam);
-      this->CastGeometryPair()->GetElement2Position(
-          projected_gauss_point.GetXi(), this->ele2pos_, r_solid);
+      GEOMETRYPAIR::EvaluatePosition<beam>(
+          projected_gauss_point.GetEta(), this->ele1pos_, r_beam, this->Element1());
+      GEOMETRYPAIR::EvaluatePosition<solid>(projected_gauss_point.GetXi(), this->ele2pos_, r_solid);
 
       // Calculate the force in this Gauss point. The sign of the force calculated here is the one
       // that acts on the beam.

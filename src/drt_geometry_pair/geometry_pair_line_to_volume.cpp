@@ -20,132 +20,6 @@
  *
  */
 template <typename scalar_type, typename line, typename volume>
-template <typename scalar_type_get_pos>
-void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::GetElement1Position(
-    const scalar_type& eta, const LINALG::TMatrix<scalar_type_get_pos, line::n_dof_, 1>& q,
-    LINALG::TMatrix<scalar_type_get_pos, 3, 1>& r) const
-{
-  // Matrix for shape function values.
-  LINALG::TMatrix<scalar_type, 1, line::n_nodes_ * line::n_val_> N(true);
-
-  // Get values of shape functions.
-  line::EvaluateShapeFunction1D(N, eta, Element1());
-
-  // Calculate the position.
-  r.Clear();
-  for (unsigned int node = 0; node < line::n_nodes_; node++)
-  {
-    for (unsigned int dim = 0; dim < 3; dim++)
-    {
-      for (unsigned int val = 0; val < line::n_val_; val++)
-      {
-        r(dim) += q(3 * line::n_val_ * node + 3 * val + dim) * N(line::n_val_ * node + val);
-      }
-    }
-  }
-}
-
-
-/**
- *
- */
-template <typename scalar_type, typename line, typename volume>
-void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line,
-    volume>::GetElement1PositionDerivative(const scalar_type& eta,
-    const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q,
-    LINALG::TMatrix<scalar_type, 3, 1>& dr) const
-{
-  // Matrix for shape function values.
-  LINALG::TMatrix<scalar_type, 1, line::n_dof_> dN(true);
-
-  // Get values of shape functions.
-  line::EvaluateShapeFunction1DDeriv1(dN, eta, Element1());
-
-  // Calculate the derivative of the position.
-  dr.Clear();
-  for (unsigned int node = 0; node < line::n_nodes_; node++)
-  {
-    for (unsigned int dim = 0; dim < 3; dim++)
-    {
-      for (unsigned int val = 0; val < line::n_val_; val++)
-      {
-        dr(dim) += q(3 * line::n_val_ * node + 3 * val + dim) * dN(line::n_val_ * node + val);
-      }
-    }
-  }
-}
-
-
-/**
- *
- */
-template <typename scalar_type, typename line, typename volume>
-template <typename scalar_type_get_pos>
-void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::GetElement2Position(
-    const LINALG::TMatrix<scalar_type, 3, 1>& xi,
-    const LINALG::TMatrix<scalar_type_get_pos, volume::n_dof_, 1>& q,
-    LINALG::TMatrix<scalar_type_get_pos, 3, 1>& r) const
-{
-  // Check what type of volume was given.
-  if (volume::n_val_ != 1)
-    dserror("Only volume elements with one nodal values are implemented and tested!");
-
-  // Matrix for shape function values.
-  LINALG::TMatrix<scalar_type, 1, volume::n_nodes_ * volume::n_val_> N(true);
-
-  // Get the shape functions.
-  volume::EvaluateShapeFunction3D(N, xi);
-
-  // Calculate the position.
-  r.Clear();
-  for (unsigned int dim = 0; dim < 3; dim++)
-  {
-    for (unsigned int node = 0; node < volume::n_nodes_; node++)
-    {
-      r(dim) += q(3 * node + dim) * N(node);
-    }
-  }
-}
-
-
-/**
- *
- */
-template <typename scalar_type, typename line, typename volume>
-void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line,
-    volume>::GetElement2PositionDerivative(const LINALG::TMatrix<scalar_type, 3, 1>& xi,
-    const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q,
-    LINALG::TMatrix<scalar_type, 3, 3>& dr) const
-{
-  // Check what type of volume was given.
-  if (volume::n_val_ != 1)
-    dserror("Only volume elements with one nodal values are implemented and tested!");
-
-  // Matrix for shape function values.
-  LINALG::TMatrix<scalar_type, 3, volume::n_nodes_ * volume::n_val_> dN(true);
-
-  // Get the shape functions.
-  volume::EvaluateShapeFunction3DDeriv1(dN, xi);
-
-  // Calculate the position.
-  dr.Clear();
-  for (unsigned int dim = 0; dim < 3; dim++)
-  {
-    for (unsigned int direction = 0; direction < 3; direction++)
-    {
-      for (unsigned int node = 0; node < volume::n_nodes_; node++)
-      {
-        dr(dim, direction) += q(3 * node + dim) * dN(direction, node);
-      }
-    }
-  }
-}
-
-
-/**
- *
- */
-template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectPointOnLineToVolume(
     const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
     const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume, const scalar_type& eta,
@@ -173,13 +47,13 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectP
   // Local Newton iteration.
   {
     // Get the position on the beam that the solid should match.
-    GetElement1Position(eta, q_line, r_line);
+    GEOMETRYPAIR::EvaluatePosition<line>(eta, q_line, r_line, Element1());
 
     unsigned int counter = 0;
     while (counter < CONSTANTS::local_newton_iter_max)
     {
       // Get the point coordinates on the volume.
-      GetElement2Position(xi, q_volume, r_volume);
+      GEOMETRYPAIR::EvaluatePosition<volume>(xi, q_volume, r_volume);
 
       // Evaluate the residuum $r_{volume} - r_{line} = R_{pos}$
       residuum = r_volume;
@@ -200,7 +74,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectP
       if (residuum.Norm2() > CONSTANTS::local_newton_res_max) break;
 
       // Get the jacobian.
-      GetElement2PositionDerivative(xi, q_volume, J_J_inv);
+      GEOMETRYPAIR::EvaluatePositionDerivative1<volume>(xi, q_volume, J_J_inv);
 
       // Invert the jacobian and check if the system is solvable.
       if (LINALG::Inverse3x3DoNotThrowErrorOnZeroDeterminant(
@@ -355,8 +229,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
     while (counter < CONSTANTS::local_newton_iter_max)
     {
       // Get the point coordinates on the line and volume.
-      GetElement1Position(eta, q_line, r_line);
-      GetElement2Position(xi, q_volume, r_volume);
+      EvaluatePosition<line>(eta, q_line, r_line, Element1());
+      EvaluatePosition<volume>(xi, q_volume, r_volume);
 
       // Evaluate the residuum $r_{volume} - r_{line} = R_{pos}$ and $xi(i) - value = R_{surf}$
       J_J_inv.PutScalar(0.);
@@ -395,8 +269,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
       if (residuum.Norm2() > CONSTANTS::local_newton_res_max) break;
 
       // Get the positional derivatives.
-      GetElement1PositionDerivative(eta, q_line, dr_line);
-      GetElement2PositionDerivative(xi, q_volume, dr_volume);
+      EvaluatePositionDerivative1<line>(eta, q_line, dr_line, Element1());
+      EvaluatePositionDerivative1<volume>(xi, q_volume, dr_volume);
 
       // Fill up the jacobian.
       for (unsigned int i = 0; i < 3; i++)
@@ -584,68 +458,3 @@ template class GEOMETRYPAIR::GeometryPairLineToVolume<double, GEOMETRYPAIR::t_he
     GEOMETRYPAIR::t_tet4>;
 template class GEOMETRYPAIR::GeometryPairLineToVolume<double, GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_tet10>;
-
-
-/**
- * We need to explicitly initialize the position functions for AD types. For example in case of beam
- * to solid meshtying the geometry interactions are done with the constant reference configuration
- * and therefore doubles, but in the Evaluate function the position needs to be evaluated with AD
- * types to get the difference in the current configuration.
- */
-typedef Sacado::ELRFad::SLFad<double,
-    GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_hex8::n_dof_>
-    t_ad_hermite_hex8;
-typedef Sacado::ELRFad::SLFad<double,
-    GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_hex20::n_dof_>
-    t_ad_hermite_hex20;
-typedef Sacado::ELRFad::SLFad<double,
-    GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_hex27::n_dof_>
-    t_ad_hermite_hex27;
-typedef Sacado::ELRFad::SLFad<double,
-    GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_tet4::n_dof_>
-    t_ad_hermite_tet4;
-typedef Sacado::ELRFad::SLFad<double,
-    GEOMETRYPAIR::t_hermite::n_dof_ + GEOMETRYPAIR::t_tet10::n_dof_>
-    t_ad_hermite_tet10;
-
-template void GEOMETRYPAIR::GeometryPairLineToVolume<double, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_hex8>::GetElement1Position(const double&,
-    const LINALG::TMatrix<t_ad_hermite_hex8, GEOMETRYPAIR::t_hermite::n_dof_, 1>&,
-    LINALG::TMatrix<t_ad_hermite_hex8, 3, 1>&) const;
-template void GEOMETRYPAIR::GeometryPairLineToVolume<double, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_hex20>::GetElement1Position(const double&,
-    const LINALG::TMatrix<t_ad_hermite_hex20, GEOMETRYPAIR::t_hermite::n_dof_, 1>&,
-    LINALG::TMatrix<t_ad_hermite_hex20, 3, 1>&) const;
-template void GEOMETRYPAIR::GeometryPairLineToVolume<double, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_hex27>::GetElement1Position(const double&,
-    const LINALG::TMatrix<t_ad_hermite_hex27, GEOMETRYPAIR::t_hermite::n_dof_, 1>&,
-    LINALG::TMatrix<t_ad_hermite_hex27, 3, 1>&) const;
-template void GEOMETRYPAIR::GeometryPairLineToVolume<double, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_tet4>::GetElement1Position(const double&,
-    const LINALG::TMatrix<t_ad_hermite_tet4, GEOMETRYPAIR::t_hermite::n_dof_, 1>&,
-    LINALG::TMatrix<t_ad_hermite_tet4, 3, 1>&) const;
-template void GEOMETRYPAIR::GeometryPairLineToVolume<double, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_tet10>::GetElement1Position(const double&,
-    const LINALG::TMatrix<t_ad_hermite_tet10, GEOMETRYPAIR::t_hermite::n_dof_, 1>&,
-    LINALG::TMatrix<t_ad_hermite_tet10, 3, 1>&) const;
-
-template void GEOMETRYPAIR::GeometryPairLineToVolume<double, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_hex8>::GetElement2Position(const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<t_ad_hermite_hex8, GEOMETRYPAIR::t_hex8::n_dof_, 1>&,
-    LINALG::TMatrix<t_ad_hermite_hex8, 3, 1>&) const;
-template void GEOMETRYPAIR::GeometryPairLineToVolume<double, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_hex20>::GetElement2Position(const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<t_ad_hermite_hex20, GEOMETRYPAIR::t_hex20::n_dof_, 1>&,
-    LINALG::TMatrix<t_ad_hermite_hex20, 3, 1>&) const;
-template void GEOMETRYPAIR::GeometryPairLineToVolume<double, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_hex27>::GetElement2Position(const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<t_ad_hermite_hex27, GEOMETRYPAIR::t_hex27::n_dof_, 1>&,
-    LINALG::TMatrix<t_ad_hermite_hex27, 3, 1>&) const;
-template void GEOMETRYPAIR::GeometryPairLineToVolume<double, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_tet4>::GetElement2Position(const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<t_ad_hermite_tet4, GEOMETRYPAIR::t_tet4::n_dof_, 1>&,
-    LINALG::TMatrix<t_ad_hermite_tet4, 3, 1>&) const;
-template void GEOMETRYPAIR::GeometryPairLineToVolume<double, GEOMETRYPAIR::t_hermite,
-    GEOMETRYPAIR::t_tet10>::GetElement2Position(const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<t_ad_hermite_tet10, GEOMETRYPAIR::t_tet10::n_dof_, 1>&,
-    LINALG::TMatrix<t_ad_hermite_tet10, 3, 1>&) const;

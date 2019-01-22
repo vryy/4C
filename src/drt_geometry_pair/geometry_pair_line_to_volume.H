@@ -93,50 +93,6 @@ namespace GEOMETRYPAIR
         const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
         std::vector<LineSegment<scalar_type>>& segments) const {};
 
-    /**
-     * \brief Get the position along the first (line) element. This function is templated in case
-     * one wants to get the position with a different type than scalar_type.
-     * @param eta (in) Parameter coordinate on the line.
-     * @param q (in) Degrees of freedom for the line.
-     * @param r (out) Position on line.
-     */
-    template <typename scalar_type_get_pos>
-    void GetElement1Position(const scalar_type& eta,
-        const LINALG::TMatrix<scalar_type_get_pos, line::n_dof_, 1>& q,
-        LINALG::TMatrix<scalar_type_get_pos, 3, 1>& r) const;
-
-    /**
-     * \brief Get the derivative of the position w.r.t xi along the first (line) element.
-     * @param eta (in) Parameter coordinate on the line.
-     * @param q (in) Degrees of freedom for the line.
-     * @param dr (out) Derivative of the position on the line.
-     */
-    void GetElement1PositionDerivative(const scalar_type& eta,
-        const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q,
-        LINALG::TMatrix<scalar_type, 3, 1>& dr) const;
-
-    /**
-     * \brief Get the position in the second (volume) element. This function is templated in case
-     * one wants to get the position with a different type than scalar_type.
-     * @param xi (in) Parameter coordinates in the volume.
-     * @param q (in) Degrees of freedom for the volume.
-     * @param r (out) Position in the volume.
-     */
-    template <typename scalar_type_get_pos>
-    void GetElement2Position(const LINALG::TMatrix<scalar_type, 3, 1>& xi,
-        const LINALG::TMatrix<scalar_type_get_pos, volume::n_dof_, 1>& q,
-        LINALG::TMatrix<scalar_type_get_pos, 3, 1>& r) const;
-
-    /**
-     * \brief Get the derivative of the position w.r.t xi in the second (volume) element.
-     * @param xi (in) Parameter coordinates in the volume.
-     * @param q (in) Degrees of freedom for the volume.
-     * @param dr (out) Derivative of the position in the volume.
-     */
-    void GetElement2PositionDerivative(const LINALG::TMatrix<scalar_type, 3, 1>& xi,
-        const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q,
-        LINALG::TMatrix<scalar_type, 3, 3>& dr) const;
-
    protected:
     /**
      * \brief Project a point on the line to the volume element.
