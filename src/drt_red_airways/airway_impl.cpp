@@ -772,7 +772,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(RedAirway* ele, Epetra_SerialDen
   ele->getParams("PoissonsRatio", nu);
   double C = 0.0;
   double Ec = 0.0;
-  Ec = (Ew * tw * sqrt(M_PI) * (1.0 - nu * nu)) / (2.0 * sqrt(A) * Ao * L);
+  Ec = (Ew * tw * sqrt(M_PI)) / ((1.0 - nu * nu) * 2.0 * sqrt(A) * Ao * L);
   if (Ec != 0.0)
   {
     C = 1.0 / Ec;
