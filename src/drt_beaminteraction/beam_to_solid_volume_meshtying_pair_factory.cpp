@@ -15,6 +15,7 @@
 
 #include "../drt_so3/so_base.H"
 #include "../drt_inpar/inpar_beaminteraction.H"
+#include "../drt_geometry_pair/geometry_pair_element_types.H"
 
 
 /**
@@ -78,23 +79,23 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairFactory(
           case DRT::Element::hex8:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
-                    GEOMETRYPAIR::t_hex8, BEAMINTERACTION::t_mortar_line2>());
+                    GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line2>());
           case DRT::Element::hex20:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
-                    GEOMETRYPAIR::t_hex20, BEAMINTERACTION::t_mortar_line2>());
+                    GEOMETRYPAIR::t_hex20, GEOMETRYPAIR::t_line2>());
           case DRT::Element::hex27:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
-                    GEOMETRYPAIR::t_hex27, BEAMINTERACTION::t_mortar_line2>());
+                    GEOMETRYPAIR::t_hex27, GEOMETRYPAIR::t_line2>());
           case DRT::Element::tet4:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
-                    GEOMETRYPAIR::t_tet4, BEAMINTERACTION::t_mortar_line2>());
+                    GEOMETRYPAIR::t_tet4, GEOMETRYPAIR::t_line2>());
           case DRT::Element::tet10:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
-                    GEOMETRYPAIR::t_tet10, BEAMINTERACTION::t_mortar_line2>());
+                    GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line2>());
           default:
             dserror("Wrong element type for solid element.");
         }
@@ -107,23 +108,23 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairFactory(
           case DRT::Element::hex8:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
-                    GEOMETRYPAIR::t_hex8, BEAMINTERACTION::t_mortar_line3>());
+                    GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line3>());
           case DRT::Element::hex20:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
-                    GEOMETRYPAIR::t_hex20, BEAMINTERACTION::t_mortar_line3>());
+                    GEOMETRYPAIR::t_hex20, GEOMETRYPAIR::t_line3>());
           case DRT::Element::hex27:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
-                    GEOMETRYPAIR::t_hex27, BEAMINTERACTION::t_mortar_line3>());
+                    GEOMETRYPAIR::t_hex27, GEOMETRYPAIR::t_line3>());
           case DRT::Element::tet4:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
-                    GEOMETRYPAIR::t_tet4, BEAMINTERACTION::t_mortar_line3>());
+                    GEOMETRYPAIR::t_tet4, GEOMETRYPAIR::t_line3>());
           case DRT::Element::tet10:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
-                    GEOMETRYPAIR::t_tet10, BEAMINTERACTION::t_mortar_line3>());
+                    GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line3>());
           default:
             dserror("Wrong element type for solid element.");
         }

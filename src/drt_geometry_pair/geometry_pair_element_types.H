@@ -24,6 +24,14 @@
 namespace GEOMETRYPAIR
 {
   /**
+   * \brief Shortcut to typed that are used to overload the get shape function methods.
+   */
+  typedef std::integral_constant<unsigned int, 1> t_1D_element;
+  typedef std::integral_constant<unsigned int, 2> t_2D_element;
+  typedef std::integral_constant<unsigned int, 3> t_3D_element;
+
+
+  /**
    * \brief Get the position in the element.
    * @param xi (in) Parameter coordinate on the element.
    * @param q (in) Degrees of freedom for the element.
@@ -185,6 +193,29 @@ namespace GEOMETRYPAIR
 
    public:
     /**
+     * \brief Evaluate the 1D shape functions of the element.
+     * @param N (out) Array to store shape function values in.
+     * @param xi (in) Local coordinate on the element.
+     * @param element (in) Pointer to the element. In this case it is not needed.
+     * @param dimension (in) A type to overload the method, in order to evaluate the correct shape
+     * functions for the dimension of the element.
+     */
+    template <typename V, typename T>
+    inline static void EvaluateShapeFunction(
+        V& N, const T& xi, t_1D_element dimension, const DRT::Element* element = NULL)
+    {
+      // Throw a compiler error if this function is called from an element with dim_ != 1.
+      static_assert(base::dim_ == 1, "EvaluateShapeFunction1D can only be called for 1D elements!");
+
+      // We need to redefine the discretization here, as otherwise the compiler has problems
+      // passing the static const member of the base class as a reference.
+      DRT::Element::DiscretizationType discretization = base::discretization_;
+
+      // Evaluate the shape functions.
+      DRT::UTILS::shape_function_1D(N, xi, discretization);
+    };
+
+    /**
      * \brief Evaluate the 3D shape functions of the element.
      * @param N (out) Array to store shape function values in.
      * @param xi (in) Local coordinates on the element.
@@ -193,8 +224,8 @@ namespace GEOMETRYPAIR
      * functions for the dimension of the element.
      */
     template <typename V, typename T>
-    inline static void EvaluateShapeFunction(V& N, const T& xi,
-        std::integral_constant<unsigned int, 3> dimension, const DRT::Element* element = NULL)
+    inline static void EvaluateShapeFunction(
+        V& N, const T& xi, t_3D_element dimension, const DRT::Element* element = NULL)
     {
       // Throw a compiler error if this function is called from an element with dim_ != 3.
       static_assert(base::dim_ == 3, "EvaluateShapeFunction3D can only be called for 3D elements!");
@@ -216,8 +247,8 @@ namespace GEOMETRYPAIR
      * functions for the dimension of the element.
      */
     template <typename V, typename T>
-    inline static void EvaluateShapeFunctionDeriv1(V& N, const T& xi,
-        std::integral_constant<unsigned int, 3> dimension, const DRT::Element* element = NULL)
+    inline static void EvaluateShapeFunctionDeriv1(
+        V& N, const T& xi, t_3D_element dimension, const DRT::Element* element = NULL)
     {
       // Throw a compiler error if this function is called from an element with dim_ != 3.
       static_assert(base::dim_ == 3, "EvaluateShapeFunction3D can only be called for 3D elements!");
@@ -251,8 +282,8 @@ namespace GEOMETRYPAIR
      * functions for the dimension of the element.
      */
     template <typename V, typename T>
-    inline static void EvaluateShapeFunction(V& N, const T& xi,
-        std::integral_constant<unsigned int, 1> dimension, const DRT::Element* element)
+    inline static void EvaluateShapeFunction(
+        V& N, const T& xi, t_1D_element dimension, const DRT::Element* element)
     {
       // Throw a compiler error if this function is called from an element with dim_ != 1.
       static_assert(base::dim_ == 1, "EvaluateShapeFunction1D can only be called for 1D elements!");
@@ -282,8 +313,8 @@ namespace GEOMETRYPAIR
      * functions for the dimension of the element.
      */
     template <typename V, typename T>
-    inline static void EvaluateShapeFunctionDeriv1(V& N, const T& xi,
-        std::integral_constant<unsigned int, 1> dimension, const DRT::Element* element)
+    inline static void EvaluateShapeFunctionDeriv1(
+        V& N, const T& xi, t_1D_element dimension, const DRT::Element* element)
     {
       // Throw a compiler error if this function is called from an element with dim_ != 1.
       static_assert(base::dim_ == 1, "EvaluateShapeFunction1D can only be called for 1D elements!");
@@ -310,6 +341,8 @@ namespace GEOMETRYPAIR
    * better readable.
    */
   typedef ElementDiscretizationHermite<ElementDiscretizationBase<DRT::Element::line2, 2>> t_hermite;
+  typedef ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::line2, 1>> t_line2;
+  typedef ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::line3, 1>> t_line3;
   typedef ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::hex8, 1>> t_hex8;
   typedef ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::hex20, 1>> t_hex20;
   typedef ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::hex27, 1>> t_hex27;

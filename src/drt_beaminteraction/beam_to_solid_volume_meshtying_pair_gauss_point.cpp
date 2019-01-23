@@ -41,13 +41,16 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
     LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
     LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22)
 {
-  // Call Evaluate on the geometry Pair.
+  // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
   {
     this->CastGeometryPair()->Evaluate(
         this->ele1posref_, this->ele2posref_, this->line_to_volume_segments_);
     this->meshtying_is_evaluated_ = true;
   }
+
+  // If there are no intersection segments, return no contact status.
+  if (this->line_to_volume_segments_.size() == 0) return false;
 
   // Initialize variables for position and force vectors.
   LINALG::TMatrix<double, 3, 1> dr_beam_ref;
@@ -153,16 +156,8 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
     }
   }
 
-  // Check if there are meshtying contributions.
-  if ((forcevec1 != NULL and forcevec1->NormInf() > 0) or
-      (forcevec2 != NULL and forcevec2->NormInf() > 0) or
-      (stiffmat11 != NULL and stiffmat11->NormInf() > 0) or
-      (stiffmat12 != NULL and stiffmat12->NormInf() > 0) or
-      (stiffmat21 != NULL and stiffmat21->NormInf() > 0) or
-      (stiffmat22 != NULL and stiffmat22->NormInf() > 0))
-    return true;
-  else
-    return false;
+  // Return true as there are meshtying contributions.
+  return true;
 }
 
 

@@ -70,15 +70,18 @@ namespace BEAMINTERACTION
     /**
      * \brief Things that need to be done in a separate loop before the actual evaluation loop over
      * all contact pairs.
-     * @param beam_centerline_dofvec
-     * @param solid_nodal_dofvec
      */
     void PreEvaluate() override;
 
     /**
      * \brief Evaluate this contact element pair.
-     * @param beam_centerline_dofvec
-     * @param solid_nodal_dofvec
+     * @param forcevec1 (out) Force vector on element 1.
+     * @param forcevec2 (out) Force vector on element 2.
+     * @param stiffmat11 (out) Stiffness contributions on element 1 - element 1.
+     * @param stiffmat12 (out) Stiffness contributions on element 1 - element 2.
+     * @param stiffmat21 (out) Stiffness contributions on element 2 - element 1.
+     * @param stiffmat22 (out) Stiffness contributions on element 2 - element 2.
+     * @return True if pair is in contact.
      */
     bool Evaluate(LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
         LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
