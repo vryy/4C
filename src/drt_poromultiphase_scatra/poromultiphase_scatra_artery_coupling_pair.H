@@ -185,7 +185,8 @@ namespace POROMULTIPHASESCATRA
 
     //! recompute if deformable arteries are assumed
     void RecomputeEtaAndXiInDeformedConfiguration(const std::vector<double>& segmentlengths,
-        std::vector<double>& myEta, std::vector<std::vector<double>>& myXi);
+        std::vector<double>& myEta, std::vector<std::vector<double>>& myXi, double& etaA,
+        double& etaB);
 
     //! create segment [eta_a, eta_b]
     void CreateIntegrationSegment(const std::vector<bool>& validprojections);
@@ -236,7 +237,7 @@ namespace POROMULTIPHASESCATRA
     //! evaluate divergence of solid velocity term (only porofluid has this term)
     void EvaluateDivSolidVel(const std::vector<double>& eta,
         const std::vector<std::vector<double>>& xi, const std::vector<double>& segmentlengths,
-        LINALG::SerialDenseVector& forcevec1);
+        LINALG::SerialDenseVector& forcevec1, const double& etaA, const double& etaB);
 
     //! evaluate stiffness for GPTS case
     void EvaluateGPTSStiff(const double& w_gp, const LINALG::Matrix<1, numnodesart_>& N1,
