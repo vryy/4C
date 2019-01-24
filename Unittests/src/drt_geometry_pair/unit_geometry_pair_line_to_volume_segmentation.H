@@ -69,6 +69,11 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
     // Clear the vectors.
     line_elements_.clear();
     volume_elements_.clear();
+
+    // We need to make sure the DRT::Problem instance created in setUp is deleted again. If this is
+    // not done, some troubles arise where unit tests influence each other on some configurations.
+    // We suspect that missing singleton destruction might be the reason for that.
+    DRT::Problem::Done();
   }
 
   /**
