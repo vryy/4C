@@ -145,13 +145,13 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
       TS_ASSERT_EQUALS(segments_vector[0].size(), 2);
 
       // Check the segment coordinates on the line.
-      TS_ASSERT_DELTA(-0.7489626237954943, segments_vector[0][0].GetEtaA(),
+      TS_ASSERT_DELTA(-0.748962623795456, segments_vector[0][0].GetEtaA(),
           GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
-      TS_ASSERT_DELTA(-0.4416363180223215, segments_vector[0][0].GetEtaB(),
+      TS_ASSERT_DELTA(-0.441636318022276, segments_vector[0][0].GetEtaB(),
           GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
-      TS_ASSERT_DELTA(0.07758659040848705, segments_vector[0][1].GetEtaA(),
+      TS_ASSERT_DELTA(0.0775865904109607, segments_vector[0][1].GetEtaA(),
           GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
-      TS_ASSERT_DELTA(0.9517586202020547, segments_vector[0][1].GetEtaB(),
+      TS_ASSERT_DELTA(0.951758620200254, segments_vector[0][1].GetEtaB(),
           GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
     }
   }
@@ -186,13 +186,13 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
       TS_ASSERT_EQUALS(segments_vector[0].size(), 2);
 
       // Check the segment coordinates on the line.
-      TS_ASSERT_DELTA(-0.4120443882994375695, segments_vector[0][0].GetEtaA(),
+      TS_ASSERT_DELTA(-0.412044388317299, segments_vector[0][0].GetEtaA(),
           GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
-      TS_ASSERT_DELTA(-0.08318077992228255224, segments_vector[0][0].GetEtaB(),
+      TS_ASSERT_DELTA(-0.0831807800943276, segments_vector[0][0].GetEtaB(),
           GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
-      TS_ASSERT_DELTA(0.879733788406702466, segments_vector[0][1].GetEtaA(),
+      TS_ASSERT_DELTA(0.879733788402666, segments_vector[0][1].GetEtaA(),
           GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
-      TS_ASSERT_DELTA(0.9787342857050603806, segments_vector[0][1].GetEtaB(),
+      TS_ASSERT_DELTA(0.978734285704557, segments_vector[0][1].GetEtaB(),
           GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
     }
   }
