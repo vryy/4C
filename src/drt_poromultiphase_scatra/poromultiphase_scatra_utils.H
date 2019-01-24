@@ -76,7 +76,7 @@ namespace POROMULTIPHASESCATRA
     //! get oxygen partial pressure in blood
     template <typename T>
     void GetOxyPartialPressure(T& Pb, const T& CaO2, const double& CaO2_max, const double& Pb50,
-        const double& n, const double& alpha)
+        const double& n, const double& alpha_eff)
     {
       // start value
       Pb = Pb50 * 2.0 * CaO2 / CaO2_max;
@@ -87,7 +87,7 @@ namespace POROMULTIPHASESCATRA
       {
         // function
         T f = (std::pow(Pb50, n) + std::pow(Pb, n)) * CaO2 - CaO2_max * std::pow(Pb, n) -
-              Pb * (std::pow(Pb, n) + std::pow(Pb50, n)) * alpha;
+              Pb * (std::pow(Pb, n) + std::pow(Pb50, n)) * alpha_eff;
         if (fabs(f) < 1.0e-10)
         {
           converged = true;
@@ -95,7 +95,7 @@ namespace POROMULTIPHASESCATRA
         }
         // deriv
         T dfdPb = n * std::pow(Pb, (n - 1)) * CaO2 - CaO2_max * n * std::pow(Pb, (n - 1)) -
-                  ((n + 1) * std::pow(Pb, n) + std::pow(Pb50, n)) * alpha;
+                  ((n + 1) * std::pow(Pb, n) + std::pow(Pb50, n)) * alpha_eff;
         // update
         Pb = Pb - f / dfdPb;
       }
