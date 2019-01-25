@@ -72,7 +72,7 @@ namespace POROMULTIPHASESCATRA
     virtual bool IsActive() = 0;
 
     //! things that need to be done in a separate loop before the actual evaluation loop
-    //  over all coupling pairs
+    //! over all coupling pairs
     virtual void PreEvaluate() = 0;
 
     //! evaluate this pair
@@ -137,7 +137,7 @@ namespace POROMULTIPHASESCATRA
     virtual bool IsActive() { return isactive_; }
 
     //! things that need to be done in a separate loop before the actual evaluation loop
-    //  over all coupling pairs
+    //! over all coupling pairs
     void PreEvaluate();
 
     //! reset state
@@ -234,7 +234,15 @@ namespace POROMULTIPHASESCATRA
         LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
         LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22);
 
-    //! evaluate divergence of solid velocity term (only porofluid has this term)
+    /**
+     * evaluate divergence of solid velocity term (only porofluid has this term)
+     * @param eta [in]: GP coordinates in artery element parameter space
+     * @param xi [in]: GP coordinates in porofluid element parameter space
+     * @param segmentlengths [in]: length of all segments of this artery element
+     * @param forcevec1 [in]: rhs-vector to assemble into
+     * @param etaA [in]: beginning of segment in artery element parameter space
+     * @param etaB [in]: end of segment in artery element parameter space
+     */
     void EvaluateDivSolidVel(const std::vector<double>& eta,
         const std::vector<std::vector<double>>& xi, const std::vector<double>& segmentlengths,
         LINALG::SerialDenseVector& forcevec1, const double& etaA, const double& etaB);
@@ -316,11 +324,11 @@ namespace POROMULTIPHASESCATRA
     void SetScalarValuesAsVariables(std::vector<std::pair<std::string, double>>& variables,
         const std::vector<double>& artscalarnpAtGP, const std::vector<double>& scalarnpAtGP);
 
-    // evaluate derivatives w.r.t. fluid of function
+    //! evaluate derivatives w.r.t. fluid of function
     void EvaluateFluidDerivs(std::vector<double>& artderivs, std::vector<double>& contderivs,
         const std::vector<double>& functderivs);
 
-    // evaluate derivatives w.r.t. scalar of function
+    //! evaluate derivatives w.r.t. scalar of function
     void EvaluateScalarDerivs(std::vector<double>& artderivs, std::vector<double>& contderivs,
         const std::vector<double>& functderivs);
 
@@ -375,9 +383,9 @@ namespace POROMULTIPHASESCATRA
 
     //! so far, it is assumed that artery elements always follow the deformation of the underlying
     //! porous medium
-    //  hence, we actually have to evalute them in current configuration
-    //  if this flag is set to true, artery elements will not move and are evaluated in reference
-    //  configuration
+    //! hence, we actually have to evalute them in current configuration
+    //! if this flag is set to true, artery elements will not move and are evaluated in reference
+    //! configuration
     bool evaluate_in_ref_config_;
 
     //! first element of interacting pair (artery element)
@@ -394,7 +402,7 @@ namespace POROMULTIPHASESCATRA
     LINALG::Matrix<numdim_, numnodescont_> ele2pos_;
     LINALG::Matrix<numdim_, numnodescont_> ele2vel_;
 
-    // diameter of the artery element
+    //! diameter of the artery element
     double arterydiam_;
 
     //! numdofs of artery and 2D/3D element
@@ -417,7 +425,7 @@ namespace POROMULTIPHASESCATRA
     int numscalcont_;
     int numscalart_;
 
-    // dof-set number of porofluid (either 0 or 2)
+    //! dof-set number of porofluid (either 0 or 2)
     int nds_porofluid_;
 
     //! stores the number of Gauss points for that element
@@ -455,10 +463,10 @@ namespace POROMULTIPHASESCATRA
     //! nodal continuous-scalar values for scatra coupling
     std::vector<LINALG::Matrix<numnodescont_, 1>> econtscalarnp_;
 
-    // penalty parameter
+    //! penalty parameter
     double pp_;
 
-    // start and end of integration segment
+    //! start and end of integration segment
     double eta_a_;
     double eta_b_;
 
@@ -466,7 +474,7 @@ namespace POROMULTIPHASESCATRA
     double curr_segment_length_;
 
     //! check if constant part (i.e. GPTS and MP part) has already been evaluated if integration
-    //  in reference configuration is performed
+    //! in reference configuration is performed
     bool constant_part_evaluated_;
 
     //! GPTS stiffness matrices
@@ -475,12 +483,12 @@ namespace POROMULTIPHASESCATRA
     LINALG::SerialDenseMatrix GPTS_stiffmat21_;
     LINALG::SerialDenseMatrix GPTS_stiffmat22_;
 
-    // mortar coupling matrices
+    //! mortar coupling matrices
     LINALG::SerialDenseMatrix D_;
     LINALG::SerialDenseMatrix M_;
     LINALG::SerialDenseVector Kappa_;
 
-    // (dX/dxi)^-1
+    //! (dX/dxi)^-1
     std::vector<LINALG::Matrix<numdim_, numdim_>> invJ_;
 
     //! phase manager of the fluid
@@ -494,29 +502,29 @@ namespace POROMULTIPHASESCATRA
     std::vector<std::vector<int>> scale_vec_;
     std::vector<std::vector<DRT::UTILS::VariableExprFunction*>> funct_vec_;
 
-    /// string name used for scalars in function parser
+    //! string name used for scalars in function parser
     std::vector<std::string> scalarnames_;
-    /// string name used for pressure in function parser
+    //! string name used for pressure in function parser
     std::vector<std::string> pressurenames_;
-    /// string name used for saturation in function parser
+    //! string name used for saturation in function parser
     std::vector<std::string> saturationnames_;
-    /// string name used for porosity in function parser
+    //! string name used for porosity in function parser
     const std::string porosityname_;
-    /// string name used for artery-pressure in function parser
+    //! string name used for artery-pressure in function parser
     const std::string artpressname_;
-    /// string name used for artery-scalars in function parser
+    //! string name used for artery-scalars in function parser
     std::vector<std::string> artscalarnames_;
-    /// string name used for volume fractions in function parser
+    //! string name used for volume fractions in function parser
     std::vector<std::string> volfracnames_;
-    /// string name used for volume fraction pressures in function parser
+    //! string name used for volume fraction pressures in function parser
     std::vector<std::string> volfracpressurenames_;
 
-    // dofset of artery pressure in scatra-dis
-    // TODO: find a better way to do this
+    //! dofset of artery pressure in scatra-dis
+    //! TODO: find a better way to do this
     const int ndsscatra_artery_ = 2;
 
-    // dofset of scatra primary variable in artery-dis
-    // TODO: find a better way to do this
+    //! dofset of scatra primary variable in artery-dis
+    //! TODO: find a better way to do this
     const int ndsartery_scatra_ = 2;
 
     //! segment id
@@ -527,7 +535,7 @@ namespace POROMULTIPHASESCATRA
     std::vector<double> timefacrhs_cont_;
 
     //! vector where to assemble rhs-(function) coupling into
-    //  summed up phase requires special treatment
+    //! summed up phase requires special treatment
     std::vector<std::vector<int>> cont_dofs_to_assemble_functions_into_;
   };
 
