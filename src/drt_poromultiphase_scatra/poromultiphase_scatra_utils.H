@@ -87,8 +87,8 @@ namespace POROMULTIPHASESCATRA
      * @param alpha_eff [in]: effective solubility of oxygen in blood
      */
     template <typename T>
-    void GetOxyPartialPressure(T& Pb, const T& CaO2, const double& CaO2_max, const double& Pb50,
-        const double& n, const double& alpha_eff)
+    void GetOxyPartialPressureFromConcentration(T& Pb, const T& CaO2, const double& CaO2_max,
+        const double& Pb50, const double& n, const double& alpha_eff)
     {
       // start value
       Pb = Pb50 * 2.0 * CaO2 / CaO2_max;

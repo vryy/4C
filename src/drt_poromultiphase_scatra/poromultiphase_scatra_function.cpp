@@ -1020,7 +1020,7 @@ double POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont::Evaluate(const 
   // safety check --> should not be larger than CaO2_max, which already correponds to partial
   // pressures of ~250Pa
   CaO2 = std::max(0.0, std::min(CaO2, 1.0 * CaO2_max));
-  POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressure<double>(
+  POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<double>(
       Pb, CaO2, CaO2_max, Pb50, n, alpha_bl_eff);
 
   // evaluate function
@@ -1078,7 +1078,7 @@ std::vector<double> POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont::Ev
   // safety check --> should not be larger than CaO2_max, which already correponds to partial
   // pressures of ~250Pa
   CaO2 = std::max(0.0, std::min(CaO2, 1.0 * CaO2_max));
-  POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressure<FAD>(
+  POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<FAD>(
       Pb, CaO2, CaO2_max, Pb50, n, alpha_bl_eff);
   const double heaviside_oxy((Pb - oxy_mass_frac_if / fac_if) > 0. ? 1. : 0.);
 
@@ -1233,7 +1233,7 @@ double POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc::Evaluate(const 
   // safety check --> should not be larger than CaO2_max, which already correponds to partial
   // pressures of ~250Pa
   CaO2 = std::max(0.0, std::min(CaO2, 1.0 * CaO2_max));
-  POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressure<double>(
+  POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<double>(
       Pb, CaO2, CaO2_max, Pb50, n, alpha_bl_eff);
 
   // evaluate function
@@ -1279,7 +1279,7 @@ std::vector<double> POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc::Ev
   // safety check --> should not be larger than CaO2_max, which already correponds to partial
   // pressures of ~250Pa
   CaO2 = std::max(0.0, std::min(CaO2, 1.0 * CaO2_max));
-  POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressure<FAD>(
+  POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<FAD>(
       Pb, CaO2, CaO2_max, Pb50, n, alpha_bl_eff);
 
   // evaluate function
