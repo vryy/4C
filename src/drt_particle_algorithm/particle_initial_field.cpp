@@ -99,7 +99,7 @@ void PARTICLEALGORITHM::InitialFieldHandler::SetInitialFields()
           particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
       // get number of particles stored in container
-      int particlestored = container->ParticlesStored();
+      const int particlestored = container->ParticlesStored();
 
       // no owned particles of current particle type
       if (particlestored <= 0) continue;
