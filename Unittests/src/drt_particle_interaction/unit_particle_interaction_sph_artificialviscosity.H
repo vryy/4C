@@ -114,7 +114,7 @@ class PARTICLEINTERACTION::SPHArtificialViscosity_TestSuite : public CxxTest::Te
       acc_i_ref[i] = artificialviscosity * mass_j * dWdrij * fac * e_ij[i];
 
     // compare results
-    for (int i = 0; i < 3; ++i) TS_ASSERT_EQUALS(acc_i[i], acc_i_ref[i]);
+    for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_i[i], acc_i_ref[i], 1.0e-14);
   }
 };
 

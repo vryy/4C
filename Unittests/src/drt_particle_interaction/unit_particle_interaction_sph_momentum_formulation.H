@@ -114,7 +114,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
     for (int i = 0; i < 3; ++i) acc_i_ref[i] = pressuregradient * e_ij[i];
 
     // compare results
-    for (int i = 0; i < 3; ++i) TS_ASSERT_EQUALS(acc_i[i], acc_i_ref[i]);
+    for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_i[i], acc_i_ref[i], 1.0e-14);
   }
 
   void test_ShearForces()
@@ -185,7 +185,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
     }
 
     // compare results
-    for (int i = 0; i < 3; ++i) TS_ASSERT_EQUALS(acc_i[i], acc_i_ref[i]);
+    for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_i[i], acc_i_ref[i], 1.0e-14);
   }
 
   void test_StandardBackgroundPressure()
@@ -220,7 +220,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
     for (int i = 0; i < 3; ++i) acc_i_ref[i] = fac * e_ij[i];
 
     // compare results
-    for (int i = 0; i < 3; ++i) TS_ASSERT_EQUALS(acc_i[i], acc_i_ref[i]);
+    for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_i[i], acc_i_ref[i], 1.0e-14);
   }
 
   void test_GeneralizedBackgroundPressure()
@@ -255,7 +255,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
     for (int i = 0; i < 3; ++i) acc_i_ref[i] = fac * e_ij[i];
 
     // compare results
-    for (int i = 0; i < 3; ++i) TS_ASSERT_EQUALS(acc_i[i], acc_i_ref[i]);
+    for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_i[i], acc_i_ref[i], 1.0e-14);
   }
 
   void test_ModifiedVelocityContribution()
@@ -325,7 +325,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
     for (int i = 0; i < 3; ++i) acc_i_ref[i] = specificcoefficient_ij * A_ij_e_ij[i];
 
     // compare results
-    for (int i = 0; i < 3; ++i) TS_ASSERT_EQUALS(acc_i[i], acc_i_ref[i]);
+    for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_i[i], acc_i_ref[i], 1.0e-14);
   }
 };
 
@@ -371,7 +371,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTes
         (std::pow((mass_i / dens_i), 2) + std::pow((mass_j / dens_j), 2)) * (dWdrij / mass_i);
 
     // compare results
-    TS_ASSERT_EQUALS(specificcoefficient_ij, specificcoefficient_ij_ref);
+    TS_ASSERT_DELTA(specificcoefficient_ij, specificcoefficient_ij_ref, 1.0e-14);
   }
 
   void test_PressureGradient()
@@ -406,7 +406,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTes
     for (int i = 0; i < 3; ++i) acc_i_ref[i] = pressuregradient * e_ij[i];
 
     // compare results
-    for (int i = 0; i < 3; ++i) TS_ASSERT_EQUALS(acc_i[i], acc_i_ref[i]);
+    for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_i[i], acc_i_ref[i], 1.0e-14);
   }
 
   void test_ShearForces()
@@ -459,7 +459,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTes
     for (int i = 0; i < 3; ++i) acc_i_ref[i] = laminarviscosity * (vel_i[i] - vel_j[i]);
 
     // compare results
-    for (int i = 0; i < 3; ++i) TS_ASSERT_EQUALS(acc_i[i], acc_i_ref[i]);
+    for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_i[i], acc_i_ref[i], 1.0e-14);
   }
 
   void test_StandardBackgroundPressure()
@@ -493,7 +493,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTes
     for (int i = 0; i < 3; ++i) acc_i_ref[i] = fac * e_ij[i];
 
     // compare results
-    for (int i = 0; i < 3; ++i) TS_ASSERT_EQUALS(acc_i[i], acc_i_ref[i]);
+    for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_i[i], acc_i_ref[i], 1.0e-14);
   }
 
   void test_GeneralizedBackgroundPressure()
@@ -529,7 +529,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTes
     for (int i = 0; i < 3; ++i) acc_i_ref[i] = fac * e_ij[i];
 
     // compare results
-    for (int i = 0; i < 3; ++i) TS_ASSERT_EQUALS(acc_i[i], acc_i_ref[i]);
+    for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_i[i], acc_i_ref[i], 1.0e-14);
   }
 
   void test_ModifiedVelocityContribution()
@@ -597,7 +597,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTes
     for (int i = 0; i < 3; ++i) acc_i_ref[i] = specificcoefficient_ij * A_ij_e_ij[i];
 
     // compare results
-    for (int i = 0; i < 3; ++i) TS_ASSERT_EQUALS(acc_i[i], acc_i_ref[i]);
+    for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_i[i], acc_i_ref[i], 1.0e-14);
   }
 };
 
