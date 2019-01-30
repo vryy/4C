@@ -29,7 +29,7 @@
 CONTACT::SelfBinaryTreeNode::SelfBinaryTreeNode(SelfBinaryTreeNodeType type,
     DRT::Discretization& discret, Teuchos::RCP<SelfBinaryTreeNode> parent, std::vector<int> elelist,
     const Epetra_SerialDenseMatrix& dopnormals, const Epetra_SerialDenseMatrix& samplevectors,
-    const int& kdop, const int& dim, const int& nvectors, const int layer, const bool nonsmooth,
+    const int& kdop, const int& dim, const int& nvectors, const int layer, const bool nonsmoothsurf,
     std::vector<std::vector<Teuchos::RCP<SelfBinaryTreeNode>>>& treenodes)
     : MORTAR::BaseBinaryTreeNode::BaseBinaryTreeNode(
           discret, elelist, dopnormals, kdop, dim, true, layer),
@@ -39,7 +39,7 @@ CONTACT::SelfBinaryTreeNode::SelfBinaryTreeNode(SelfBinaryTreeNodeType type,
       samplevectors_(samplevectors),
       nvectors_(nvectors),
       owner_(-1),
-      nonsmooth_(nonsmooth),
+      nonsmoothsurf_(nonsmoothsurf),
       treenodes_(treenodes)
 {
   return;
@@ -131,7 +131,7 @@ void CONTACT::SelfBinaryTreeNode::CalculateQualifiedVectors()
   // as above criterion is only valid for smooth surfaces, we adapt it for non-smooth surfaces
   // such that possible self contact is detected, if the angle between two surfaces is smaller than
   // 90 degrees
-  if (nonsmooth_) bound = 1.0 / sqrt(2.0);
+  if (nonsmoothsurf_) bound = 1.0 / sqrt(2.0);
 
   // check normal against sample vectors
   for (int i = 0; i < (int)qualifiedvectors_.size(); ++i)
@@ -604,9 +604,10 @@ void CONTACT::SelfBinaryTree::InitLeafNodesAndMap(std::vector<int>& elelist)
 
   if (elelist.size() <= 1) dserror("ERROR: Less than 2 elements for binary tree initialization!");
 
-  // check for non-smooth problem
-  bool nonsmooth(false);
-  if (DRT::INPUT::IntegralValue<int>(iparams_, "NONSMOOTH_GEOMETRIES")) nonsmooth = true;
+  // check for non-smooth contact surface
+  bool nonsmoothsurface(false);
+  if (DRT::INPUT::IntegralValue<int>(iparams_, "NONSMOOTH_CONTACT_SURFACE"))
+    nonsmoothsurface = true;
 
   // build local element list and create leaf nodes
   std::vector<int> localelelist;
@@ -614,9 +615,9 @@ void CONTACT::SelfBinaryTree::InitLeafNodesAndMap(std::vector<int>& elelist)
   {
     localelelist.clear();
     localelelist.push_back(elelist[i]);
-    Teuchos::RCP<SelfBinaryTreeNode> leaf =
-        Teuchos::rcp(new SelfBinaryTreeNode(SELFCO_LEAF, Discret(), Teuchos::null, localelelist,
-            DopNormals(), SampleVectors(), Kdop(), Dim(), Nvectors(), -1, nonsmooth, treenodes_));
+    Teuchos::RCP<SelfBinaryTreeNode> leaf = Teuchos::rcp(
+        new SelfBinaryTreeNode(SELFCO_LEAF, Discret(), Teuchos::null, localelelist, DopNormals(),
+            SampleVectors(), Kdop(), Dim(), Nvectors(), -1, nonsmoothsurface, treenodes_));
     leaf->SetOwner((Discret().gElement(elelist[i]))->Owner());
     leafsmap_[elelist[i]] = leaf;
   }

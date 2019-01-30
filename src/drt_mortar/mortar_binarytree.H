@@ -424,22 +424,26 @@ namespace MORTAR
     BinaryTree operator=(const BinaryTree& old);
     BinaryTree(const BinaryTree& old);
 
-    Teuchos::RCP<Epetra_Map> selements_;  // all slave elements on surface (column map)
-    Teuchos::RCP<Epetra_Map> melements_;  // all master elements on surface (full map)
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>
-        streenodesmap_;  // map of all slave treenodes, sorted by layers
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>
-        mtreenodesmap_;  // map of all master treenodes, sorted by layers
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>
-        couplingmap_;  // map of all treenodes, that possibly couple, st/mt
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>
-        sleafsmap_;  // map of all slave leaf treenodes, [0]=leftchild,[1]=rightchild
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>
-        mleafsmap_;  // map of all master leaf treenodes, [0]=leftchild,[1]=rightlchild
-    Teuchos::RCP<BinaryTreeNode> sroot_;  // slave root treenode
-    Teuchos::RCP<BinaryTreeNode> mroot_;  // master root treenode
-    bool useauxpos_;  // bool whether auxiliary position is used when computing dops
-
+    //! all slave elements on surface (column map)
+    Teuchos::RCP<Epetra_Map> selements_;
+    //! all master elements on surface (full map)
+    Teuchos::RCP<Epetra_Map> melements_;
+    //! map of all slave tree nodes, sorted by layers
+    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>> streenodesmap_;
+    //! map of all master tree nodes, sorted by layers
+    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>> mtreenodesmap_;
+    //! map of all tree nodes, that possibly couple, st/mt
+    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>> couplingmap_;
+    //! map of all slave leaf tree nodes, [0]=left child,[1]=right child
+    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>> sleafsmap_;
+    //! map of all master leaf tree nodes, [0]=left child,[1]=right child
+    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>> mleafsmap_;
+    //! slave root tree node
+    Teuchos::RCP<BinaryTreeNode> sroot_;
+    //! master root tree node
+    Teuchos::RCP<BinaryTreeNode> mroot_;
+    //! bool whether auxiliary position is used when computing dops
+    bool useauxpos_;
   };  // class BinaryTree
 }  // namespace MORTAR
 

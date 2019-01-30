@@ -76,7 +76,9 @@ namespace CONTACT
 
     inline bool IsNonSmoothContact() const { return nonSmoothContact_; }
 
-    inline bool& SetIsTwoHalfPass() { return two_half_pass_; }
+    inline bool IsTwoHalfPass() const { return two_half_pass_; }
+
+    inline bool& IsTwoHalfPass() { return two_half_pass_; }
 
     inline enum INPAR::CONTACT::ConstraintDirection& ConstraintDirection()
     {
@@ -1489,6 +1491,11 @@ namespace CONTACT
      *  corresponding data container, instead! If you have any questions
      *  concerning this, do not hesitate and ask me.
      *                                                          hiermeier 03/17 */
+    // TODO: As already noted by Michael Hiermeier above, the contact interface should not store
+    // references to all member variables of the IDataContainer as it is currently implemented.
+    // Instead, the contact interface should only store a reference to the data container and then
+    // directly access the member variables of the data container using suitable set and get
+    // methods! Please also refer to GitLab Issue 165 for more details.
     /// @{
 
     bool& selfcontact_;       ///< ref. to flag indicating if this is a self contact interface

@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file unbiased_selfcontact_binarytree.H
+\file selfcontact_binarytree_unbiased.H
 
 \brief Search tree for unbiased self-contact problems
 
@@ -8,8 +8,8 @@
 \maintainer Christoph Schmidt
 
 *-----------------------------------------------------------------------*/
-#ifndef UNBIASED_SELFCONTACT_BINARYTREE_SELF_H
-#define UNBIASED_SELFCONTACT_BINARYTREE_SELF_H
+#ifndef SELFCONTACT_BINARYTREE_UNBIASED_H
+#define SELFCONTACT_BINARYTREE_UNBIASED_H
 
 #include "selfcontact_binarytree.H"
 
@@ -126,11 +126,11 @@ namespace CONTACT
     UnbiasedSelfBinaryTree operator=(const SelfBinaryTree& old);
     UnbiasedSelfBinaryTree(const SelfBinaryTree& old);
 
-    const bool Two_half_pass_;                // two half pass approach
-    const bool Check_nonsmooth_selfcontact_;  // perform reference configuration check for
-                                              // non-smooth self contact
-
+    //! use two half pass approach
+    const bool Two_half_pass_;
+    //! perform reference configuration check for non-smooth self contact
+    const bool Check_nonsmooth_selfcontactsurface_;
   };  // class UnbiasedSelfBinaryTree
 }  // namespace CONTACT
 
-#endif  // #ifndef UNBIASED_SELFCONTACT_BINARYTREE_SELF_H
+#endif  // #ifndef SELFCONTACT_BINARYTREE_UNBIASED_H

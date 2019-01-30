@@ -203,13 +203,14 @@ void CONTACT::UTILS::GetMasterSlaveSideInfo(std::vector<bool>& isslave, std::vec
 /*----------------------------------------------------------------------------*
  | gather initialization information                            schmidt 11/18 |
  *----------------------------------------------------------------------------*/
-void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass, bool& Check_nonsmooth_selfcontact,
-    std::vector<bool>& isactive, std::vector<bool>& isslave, std::vector<bool>& isself,
+void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
+    bool& Check_nonsmooth_selfcontactsurface, std::vector<bool>& isactive,
+    std::vector<bool>& isslave, std::vector<bool>& isself,
     const std::vector<DRT::Condition*> cond_grp)
 {
   std::vector<const std::string*> active(cond_grp.size());
   std::vector<int> two_half_pass(cond_grp.size());
-  std::vector<int> check_nonsmooth_selfcontact(cond_grp.size());
+  std::vector<int> check_nonsmooth_selfcontactsurface(cond_grp.size());
 
   for (std::size_t j = 0; j < cond_grp.size(); ++j)
   {
@@ -249,9 +250,10 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass, bool& Check_nons
     two_half_pass[j] = cond_grp[j]->GetDouble("TwoHalfPass");
     if (two_half_pass[j]) Two_half_pass = true;
 
-    // check for reference configuration check for non-smooth self contact method
-    check_nonsmooth_selfcontact[j] = cond_grp[j]->GetDouble("RefConfCheckNonSmoothSelfContact");
-    if (check_nonsmooth_selfcontact[j]) Check_nonsmooth_selfcontact = true;
+    // check for reference configuration check for non-smooth self contact surfaces
+    check_nonsmooth_selfcontactsurface[j] =
+        cond_grp[j]->GetDouble("RefConfCheckNonSmoothSelfContactSurface");
+    if (check_nonsmooth_selfcontactsurface[j]) Check_nonsmooth_selfcontactsurface = true;
   }
 
   // SAFETY CHECKS
@@ -277,11 +279,11 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass, bool& Check_nons
             "Setting 'TwoHalfPass' to true is only reasonable in combination with self contact so "
             "far!");
 
-      if (Check_nonsmooth_selfcontact && (!check_nonsmooth_selfcontact[j]))
+      if (Check_nonsmooth_selfcontactsurface && (!check_nonsmooth_selfcontactsurface[j]))
         dserror(
             "ERROR: Inconsistent definition of contact condition group! You set the "
-            "'RefConfCheckNonSmoothSelfContact' to true for at least one condition. So all other "
-            "contact conditions with same ID need to be defined accordingly!");
+            "'RefConfCheckNonSmoothSelfContactSurface' to true for at least one condition. So all "
+            "other contact conditions with same ID need to be defined accordingly!");
     }
 
     if (problemtype != prb_structure)
@@ -294,11 +296,11 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass, bool& Check_nons
       dserror("two half pass algorithm only with harmonic weighting");
   }
 
-  if ((!Two_half_pass) && Check_nonsmooth_selfcontact)
+  if ((!Two_half_pass) && Check_nonsmooth_selfcontactsurface)
     dserror(
-        "ERROR: 'RefConfCheckNonSmoothSelfContact' is activated, which is only reasonable for "
-        "non-smooth self contact in combination with the two half pass 'TwoHalfPass' approach so "
-        "far!");
+        "ERROR: 'RefConfCheckNonSmoothSelfContactSurface' is activated, which is only reasonable "
+        "for non-smooth self contact surfaces in combination with the two half pass 'TwoHalfPass' "
+        "approach so far!");
 
   if (Two_half_pass && (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(
                             mortar, "ALGORITHM") != INPAR::MORTAR::algorithm_gpts))
@@ -307,12 +309,12 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass, bool& Check_nons
         "Algorithm is NOT 'GPTS'!");
 
 
-  if (Check_nonsmooth_selfcontact &&
-      (!DRT::INPUT::IntegralValue<int>(contact, "NONSMOOTH_GEOMETRIES")))
+  if (Check_nonsmooth_selfcontactsurface &&
+      (!DRT::INPUT::IntegralValue<int>(contact, "NONSMOOTH_CONTACT_SURFACE")))
     dserror(
         "ERROR: You activated the self contact condition reference configuration check for "
-        "non-smooth geometries, but flag 'NONSMOOTH_GEOMETRIES' in the 'CONTACT DYNAMIC' section "
-        "is not true!");
+        "non-smooth contact surfaces, but flag 'NONSMOOTH_CONTACT_SURFACE' in the 'CONTACT "
+        "DYNAMIC' section is not true!");
 
   return;
 }

@@ -180,11 +180,11 @@ void INPAR::MORTAR::SetValidConditions(
   contactcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("TwoHalfPass", true)));
   contactcomponents.push_back(Teuchos::rcp(new RealConditionComponent("TwoHalfPass")));
 
-  // optional reference configuration check for non-smooth self contact
+  // optional reference configuration check for non-smooth self contact surfaces
+  contactcomponents.push_back(Teuchos::rcp(
+      new SeparatorConditionComponent("RefConfCheckNonSmoothSelfContactSurface", true)));
   contactcomponents.push_back(
-      Teuchos::rcp(new SeparatorConditionComponent("RefConfCheckNonSmoothSelfContact", true)));
-  contactcomponents.push_back(
-      Teuchos::rcp(new RealConditionComponent("RefConfCheckNonSmoothSelfContact")));
+      Teuchos::rcp(new RealConditionComponent("RefConfCheckNonSmoothSelfContactSurface")));
 
   Teuchos::RCP<ConditionDefinition> linecontact =
       Teuchos::rcp(new ConditionDefinition("DESIGN LINE MORTAR CONTACT CONDITIONS 2D", "Contact",

@@ -211,10 +211,10 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
     // find out which sides are initialized as In/Active and other initalization data
     std::vector<bool> isactive(currentgroup.size());
     bool Two_half_pass(false);
-    bool Check_nonsmooth_selfcontact(false);
+    bool Check_nonsmooth_selfcontactsurface(false);
 
     CONTACT::UTILS::GetInitializationInfo(
-        Two_half_pass, Check_nonsmooth_selfcontact, isactive, isslave, isself, currentgroup);
+        Two_half_pass, Check_nonsmooth_selfcontactsurface, isactive, isslave, isself, currentgroup);
 
     // create interface local parameter list (copy)
     Teuchos::ParameterList icparams = cparams;
@@ -278,7 +278,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
 
     // add information to contact parameter list of this interface
     icparams.set<bool>("Two_half_pass", Two_half_pass);
-    icparams.set<bool>("Check_nonsmooth_selfcontact", Check_nonsmooth_selfcontact);
+    icparams.set<bool>("Check_nonsmooth_selfcontactsurface", Check_nonsmooth_selfcontactsurface);
 
     // create an empty interface and store it in this Manager
     // create an empty contact interface and store it in this Manager

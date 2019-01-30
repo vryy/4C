@@ -344,6 +344,8 @@ namespace DRT
 
       /*!
       \brief Evaluate Cauchy stress at given point in parameter space
+
+      \note At the moment this method is only used for the nitsche contact formulation
       */
       virtual void GetCauchyAtXi(const LINALG::Matrix<3, 1>& xi, const std::vector<double>& disp,
           const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& t, double& sigma_nt,

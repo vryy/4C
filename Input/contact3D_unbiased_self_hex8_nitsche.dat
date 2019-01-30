@@ -39,7 +39,7 @@ PENALTYPARAM                    2
 NITSCHE_THETA                   0
 NITSCHE_PENALTY_ADAPTIVE        yes
 NITSCHE_WEIGHTING               harmonic
-NONSMOOTH_GEOMETRIES            Yes
+NONSMOOTH_CONTACT_SURFACE       Yes
 ----------------------------------------------------MORTAR COUPLING
 SEARCH_PARAM                    0.3
 ALGORITHM                       gpts
@@ -101,9 +101,9 @@ E 4 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT none none none
 --------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF  2
 // cyl_side_of_cyl-bl_interface
-E 5 - 0 Selfcontact Inactive FrCoeffOrBound 0.0 AdhesionBound 0.0 Solidcontact DoNothing TwoHalfPass 1 RefConfCheckNonSmoothSelfContact 1
+E 5 - 0 Selfcontact Inactive FrCoeffOrBound 0.0 AdhesionBound 0.0 Solidcontact DoNothing TwoHalfPass 1 RefConfCheckNonSmoothSelfContactSurface 1
 // block_side_of_cyl-bl_interface
-E 6 - 0 Selfcontact Inactive FrCoeffOrBound 0.0 AdhesionBound 0.0 Solidcontact DoNothing TwoHalfPass 1 RefConfCheckNonSmoothSelfContact 1
+E 6 - 0 Selfcontact Inactive FrCoeffOrBound 0.0 AdhesionBound 0.0 Solidcontact DoNothing TwoHalfPass 1 RefConfCheckNonSmoothSelfContactSurface 1
 -------------------------DESIGN LINE MORTAR SYMMETRY CONDITIONS 3D
 DLINE  2
 // lines_mrtr_sym_normal_z

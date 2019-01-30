@@ -59,14 +59,15 @@ namespace CONTACT
     \param kdop           reference to no. of vertices
     \param dim            dimension of problem
     \param layer          current layer of tree node
-    \param nonsmooth      non-smooth self contact problem
+    \param nonsmoothsurf  non-smooth self contact surface
     \param treenodes      references to tree nodes storage scheme
 
     */
     SelfBinaryTreeNode(SelfBinaryTreeNodeType type, DRT::Discretization& discret,
         Teuchos::RCP<SelfBinaryTreeNode> parent, std::vector<int> elelist,
         const Epetra_SerialDenseMatrix& dopnormals, const Epetra_SerialDenseMatrix& samplevectors,
-        const int& kdop, const int& dim, const int& nvectors, const int layer, const bool nonsmooth,
+        const int& kdop, const int& dim, const int& nvectors, const int layer,
+        const bool nonsmoothsurf,
         std::vector<std::vector<Teuchos::RCP<SelfBinaryTreeNode>>>& treenodes);
 
     /*!
@@ -270,8 +271,8 @@ namespace CONTACT
     //! owner of the tree node
     int owner_;
 
-    //! non-smooth self contact tree node
-    const bool nonsmooth_;
+    //! tree node is part of a non-smooth self contact surface
+    const bool nonsmoothsurf_;
 
     //! reference to storage scheme of all tree nodes, sorted by layer
     std::vector<std::vector<Teuchos::RCP<SelfBinaryTreeNode>>>& treenodes_;

@@ -23,7 +23,6 @@
 #include "contact_defines.H"
 #include "contact_line_coupling.H"
 #include "friction_node.H"
-#include "unbiased_selfcontact_binarytree.H"
 #include "../drt_mortar/mortar_binarytree.H"
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_projector.H"
@@ -38,6 +37,7 @@
 #include "contact_nitsche_utils.H"
 
 #include <Teuchos_TimeMonitor.hpp>
+#include "selfcontact_binarytree_unbiased.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -94,7 +94,7 @@ CONTACT::CoInterface::CoInterface(const Teuchos::RCP<CONTACT::IDataContainer>& i
       selfcontact_(idata_.IsSelfContact()),
       friction_(idata_.IsFriction()),
       nonSmoothContact_(idata_.IsNonSmoothContact()),
-      two_half_pass_(idata_.SetIsTwoHalfPass()),
+      two_half_pass_(idata_.IsTwoHalfPass()),
       constr_direction_(idata_.ConstraintDirection()),
       activenodes_(idata_.ActiveNodes()),
       activedofs_(idata_.ActiveDofs()),
@@ -137,7 +137,7 @@ CONTACT::CoInterface::CoInterface(const Teuchos::RCP<MORTAR::IDataContainer>& id
       selfcontact_(idata_.IsSelfContact()),
       friction_(idata_.IsFriction()),
       nonSmoothContact_(idata_.IsNonSmoothContact()),
-      two_half_pass_(idata_.SetIsTwoHalfPass()),
+      two_half_pass_(idata_.IsTwoHalfPass()),
       constr_direction_(idata_.ConstraintDirection()),
       activenodes_(idata_.ActiveNodes()),
       activedofs_(idata_.ActiveDofs()),
@@ -216,8 +216,7 @@ void CONTACT::CoInterface::UpdateMasterSlaveSets()
   //********************************************************************
   // do the same business for dofs
   // (get row and column maps of slave and master dofs seperately)
-  if (nonSmoothContact_ && DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-                               idata_.IMortar(), "STRATEGY") != INPAR::CONTACT::solution_nitsche)
+  if (nonSmoothContact_)
   {
     std::vector<int> sVc;  // slave column map
     std::vector<int> sVr;  // slave row map
@@ -4022,9 +4021,8 @@ void CONTACT::CoInterface::EvaluateSTS(
 void CONTACT::CoInterface::EvaluateCoupling(const Epetra_Map& selecolmap,
     const Epetra_Map* snoderowmap, const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
-  // ask if non-smooth contact is activated and STRATEGY is not Nitsche
-  if (nonSmoothContact_ && DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-                               idata_.IMortar(), "STRATEGY") != INPAR::CONTACT::solution_nitsche)
+  // ask if non-smooth contact is activated!
+  if (nonSmoothContact_)
   {
     // 2D: only STS and nts has to be performed
     if (Dim() == 2)

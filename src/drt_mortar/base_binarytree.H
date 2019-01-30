@@ -195,15 +195,22 @@ namespace MORTAR
     //@}
 
    private:
-    const int& dim_;                              // reference to dim. of problem
-    const Epetra_SerialDenseMatrix& dopnormals_;  // reference to DOP normals
-    std::vector<int> elelist_;                    // list with all elements of tree node
-    DRT::Discretization& idiscret_;               // interface discretization
-    const int& kdop_;                             // reference to no. of vertices
-    int layer_;                                   // layer of tree node in tree (0=root node!)
-    Epetra_SerialDenseMatrix slabs_;              // geometry slabs of TreeNode, saved as Min|Max
-    const bool& useauxpos_;  // bool whether auxiliary position is used when computing dops
-
+    //! reference to dimension of the problem
+    const int& dim_;
+    //! reference to DOP normals
+    const Epetra_SerialDenseMatrix& dopnormals_;
+    //! list containing the gids of all elements of the tree node
+    std::vector<int> elelist_;
+    //! interface discretization
+    DRT::Discretization& idiscret_;
+    //! reference to number of vertices
+    const int& kdop_;
+    //! layer of tree node in tree (0=root node!)
+    int layer_;
+    //! geometry slabs of tree node, saved as Min|Max
+    Epetra_SerialDenseMatrix slabs_;
+    //! auxiliary position is used when computing dops
+    const bool& useauxpos_;
   };  // class BaseBinaryTreeNode
 
   /*!
@@ -296,14 +303,18 @@ namespace MORTAR
      */
     virtual void InitInternalVariables() = 0;
 
-    // internal members
-    DRT::Discretization& idiscret_;        // interface discretization
-    const int dim_;                        // problem dimension (2D or 3D)
-    Epetra_SerialDenseMatrix dopnormals_;  // defining vertices of DOP
-    double enlarge_;                       // needed to enlarge dops
-    const double eps_;                     // epsilon for enlarging dops (of user)
-    int kdop_;                             // set k for DOP (8 for 2D, 18 for 3D)
-
+    //! interface discretization
+    DRT::Discretization& idiscret_;
+    //! problem dimension (2D or 3D)
+    const int dim_;
+    //! normals of DOP
+    Epetra_SerialDenseMatrix dopnormals_;
+    //! needed to enlarge dops
+    double enlarge_;
+    //! epsilon for enlarging dops (of user)
+    const double eps_;
+    //! set k for DOP (8 for 2D, 18 for 3D)
+    int kdop_;
   };  // class BaseBinaryTree
 }  // namespace MORTAR
 

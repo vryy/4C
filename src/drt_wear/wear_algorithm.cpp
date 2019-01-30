@@ -239,10 +239,10 @@ void WEAR::Algorithm::CreateMaterialInterface()
     // find out which sides are initialized as Active
     std::vector<bool> isactive(currentgroup.size());
     bool Two_half_pass(false);
-    bool Check_nonsmooth_selfcontact(false);
+    bool Check_nonsmooth_selfcontactsurface(false);
 
     CONTACT::UTILS::GetInitializationInfo(
-        Two_half_pass, Check_nonsmooth_selfcontact, isactive, isslave, isself, currentgroup);
+        Two_half_pass, Check_nonsmooth_selfcontactsurface, isactive, isslave, isself, currentgroup);
 
     // create interface local parameter list (copy)
     Teuchos::ParameterList icparams = cparams;
@@ -302,7 +302,7 @@ void WEAR::Algorithm::CreateMaterialInterface()
 
     // add information to parameter list of this interface
     icparams.set<bool>("Two_half_pass", Two_half_pass);
-    icparams.set<bool>("Check_nonsmooth_selfcontact", Check_nonsmooth_selfcontact);
+    icparams.set<bool>("Check_nonsmooth_selfcontactsurface", Check_nonsmooth_selfcontactsurface);
 
     // for structural contact we currently choose redundant master storage
     // the only exception is self contact where a redundant slave is needed, too

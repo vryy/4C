@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file unbiased_selfcontact_binarytree.cpp
+\file selfcontact_binarytree_unbiased.cpp
 
 \brief Search tree for unbiased self-contact problems
 
@@ -10,7 +10,8 @@
 
 *----------------------------------------------------------------------*/
 
-#include "unbiased_selfcontact_binarytree.H"
+#include "selfcontact_binarytree_unbiased.H"
+
 #include "contact_element.H"
 #include "contact_node.H"
 #include "../drt_lib/drt_utils_reference_configuration.H"
@@ -24,7 +25,7 @@ CONTACT::UnbiasedSelfBinaryTree::UnbiasedSelfBinaryTree(DRT::Discretization& dis
     Teuchos::RCP<Epetra_Map> elements, int dim, double eps)
     : SelfBinaryTree(discret, lcomm, iparams, elements, dim, eps),
       Two_half_pass_(iparams.get<bool>("Two_half_pass")),
-      Check_nonsmooth_selfcontact_(iparams.get<bool>("Check_nonsmooth_selfcontact"))
+      Check_nonsmooth_selfcontactsurface_(iparams.get<bool>("Check_nonsmooth_selfcontactsurface"))
 {
   // safety check
   if (!Two_half_pass_) dserror("Only implemented for the two half pass approach so far!");
@@ -41,7 +42,7 @@ void CONTACT::UnbiasedSelfBinaryTree::AddTreeNodesToContactPairs(
   bool addcontactpair(true);
 
   // check reference configuration for non smooth self contact
-  if (Two_half_pass_ and Check_nonsmooth_selfcontact_)
+  if (Two_half_pass_ and Check_nonsmooth_selfcontactsurface_)
     addcontactpair = RoughCheckRefConfig(treenode1->Elelist()[0], treenode2->Elelist()[0]);
 
   if (addcontactpair)

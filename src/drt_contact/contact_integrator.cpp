@@ -56,6 +56,8 @@ CONTACT::CoIntegrator::CoIntegrator(Teuchos::ParameterList& params,
       wearcoeffm_(-1.0),
       ssslip_(imortar_.get<double>("SSSLIP")),
       nonsmooth_(false),
+      nonsmoothselfcontactsurface_(
+          DRT::INPUT::IntegralValue<int>(imortar_, "NONSMOOTH_CONTACT_SURFACE")),
       integrationtype_(DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(imortar_, "INTTYPE"))
 {
   // init gp
@@ -1924,11 +1926,11 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& 
     //**********************************************************************
     // evaluate at GP and lin char. quantities
     //**********************************************************************
-    if (!nonsmooth_)
+    if (!nonsmoothselfcontactsurface_)
       IntegrateGP_3D(sele, mele, sval, lmval, mval, sderiv, mderiv, lmderiv, dualmap, wgt, jac,
           jacintcellmap, gpn, dnmap_unit, gap[0], dgapgp, sxi, mxi, dsxigp, dmxigp);
-    // for non-smooth geometries we do not use the smoothed normal, but instead we use the normal
-    // that is already used for the projection
+    // for non-smooth (self) contact surfaces we do not use the smoothed normal, but instead we use
+    // the normal that is already used for the projection
     else
       IntegrateGP_3D(sele, mele, sval, lmval, mval, sderiv, mderiv, lmderiv, dualmap, wgt, jac,
           jacintcellmap, cell->Auxn(), cell->GetDerivAuxn(), gap[0], dgapgp, sxi, mxi, dsxigp,
