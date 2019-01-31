@@ -55,7 +55,7 @@ void PARTICLEINTERACTION::SPHEquationOfStateBundle::Init(
   phasetypetoequationofstate_.resize(typevectorsize);
 
   // iterate over particle types
-  for (auto& typeEnum : particlematerial->GetParticleTypes())
+  for (const auto& typeEnum : particlematerial->GetParticleTypes())
   {
     // no equation of state for boundary or rigid particles
     if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)

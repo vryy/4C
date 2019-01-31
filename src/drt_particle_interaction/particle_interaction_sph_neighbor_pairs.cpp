@@ -21,6 +21,8 @@
 
 #include "particle_interaction_sph_kernel.H"
 
+#include "particle_interaction_utils.H"
+
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_container.H"
 
@@ -63,8 +65,8 @@ void PARTICLEINTERACTION::SPHNeighborPairs::Setup(
   // determine size of vectors indexed by particle types
   const int typevectorsize = *(--particlecontainerbundle_->GetParticleTypes().end()) + 1;
 
-  // allocate memory to hold neighbor pairs
-  neighborpairdata_.resize(typevectorsize);
+  // allocate memory to hold index of neighbor pairs for each type
+  indexofneighborpairs_.resize(typevectorsize);
 }
 
 /*---------------------------------------------------------------------------*
@@ -91,33 +93,32 @@ void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateNeighborPairs()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHNeighborPairs::EvaluateNeighborPairs");
 
-  // iterate over particle types
-  for (auto& type_i : particlecontainerbundle_->GetParticleTypes())
-  {
-    // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+  // clear neighbor pair data
+  neighborpairdata_.clear();
 
-    // get number of particles stored in container
-    int particlestored = container_i->ParticlesStored();
+  // clear index of neighbor pairs for each type
+  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+    indexofneighborpairs_[type_i].clear();
 
-    // allocate memory for neighbor pairs of owned particles of current particle type
-    neighborpairdata_[type_i].assign(particlestored, std::vector<SPHNeighborPair>(0));
-  }
+  // index of neighbor pairs
+  int neighborpairindex = 0;
 
   // iterate over potential particle neighbors
-  for (auto& neighborpair : particleengineinterface_->GetPotentialParticleNeighbors())
+  for (auto& potentialneighbors : particleengineinterface_->GetPotentialParticleNeighbors())
   {
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
     PARTICLEENGINE::StatusEnum status_i;
     int particle_i;
-    std::tie(type_i, status_i, particle_i) = neighborpair.first;
+    std::tie(type_i, status_i, particle_i) = potentialneighbors.first;
 
     PARTICLEENGINE::TypeEnum type_j;
     PARTICLEENGINE::StatusEnum status_j;
     int particle_j;
-    std::tie(type_j, status_j, particle_j) = neighborpair.second;
+    std::tie(type_j, status_j, particle_j) = potentialneighbors.second;
+
+    if (type_i == PARTICLEENGINE::BoundaryPhase and type_j == PARTICLEENGINE::BoundaryPhase)
+      continue;
 
     // get corresponding particle containers
     PARTICLEENGINE::ParticleContainerShrdPtr container_i =
@@ -127,7 +128,8 @@ void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateNeighborPairs()
         particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
 
     // declare pointer variables for particle i and j
-    const double *pos_i, *pos_j, *rad_i, *rad_j;
+    const double *pos_i, *rad_i;
+    const double *pos_j, *rad_j;
 
     // get pointer to particle states
     pos_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
@@ -143,69 +145,64 @@ void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateNeighborPairs()
     particleengineinterface_->DistanceBetweenParticles(pos_i, pos_j, r_ji);
 
     // absolute distance between particles
-    const double absdist = std::sqrt(r_ji[0] * r_ji[0] + r_ji[1] * r_ji[1] + r_ji[2] * r_ji[2]);
+    const double absdist = UTILS::vec_norm2(r_ji);
 
-    // particle j within support radius of particle i
-    if (absdist < rad_i[0])
+    if (absdist < rad_i[0] or (absdist < rad_j[0] and status_j == PARTICLEENGINE::Owned))
     {
-      // initialize particle pair
-      (neighborpairdata_[type_i])[particle_i].push_back(
-          std::make_pair(neighborpair.second, SPHParticlePair()));
+      // initialize neighbor pair
+      neighborpairdata_.push_back(SPHNeighborPair());
 
-      // get reference to current particle pair
-      SPHParticlePair& particlepair_i = ((neighborpairdata_[type_i])[particle_i].back()).second;
+      // get reference to current neighbor pair
+      SPHNeighborPair& neighborpair = neighborpairdata_[neighborpairindex];
+
+      // store index of neighbor pairs for each type
+      indexofneighborpairs_[type_i].push_back(neighborpairindex);
+      if (type_i != type_j and status_j == PARTICLEENGINE::Owned)
+        indexofneighborpairs_[type_j].push_back(neighborpairindex);
+
+      // increase index
+      ++neighborpairindex;
+
+      // set local index tuple of particles i and j
+      neighborpair.tuple_i_ = potentialneighbors.first;
+      neighborpair.tuple_j_ = potentialneighbors.second;
 
       // set absolute distance between particles
-      particlepair_i.absdist_ = absdist;
+      neighborpair.absdist_ = absdist;
 
       // versor from particle j to i
-      for (int i = 0; i < 3; ++i) particlepair_i.e_ij_[i] = -r_ji[i] / absdist;
+      UTILS::vec_setscale(neighborpair.e_ij_, -1.0 / absdist, r_ji);
 
-      // evaluate kernel
-      particlepair_i.Wij_ = kernel_->W(absdist, rad_i[0]);
-
-      // evaluate first derivative of kernel
-      particlepair_i.dWdrij_ = kernel_->dWdrij(absdist, rad_i[0]);
-    }
-
-    // particle i within support radius of owned particle j
-    if (absdist < rad_j[0] and (status_j == PARTICLEENGINE::Owned))
-    {
-      // initialize particle pair
-      (neighborpairdata_[type_j])[particle_j].push_back(
-          std::make_pair(neighborpair.first, SPHParticlePair()));
-
-      // get reference to current particle pair
-      SPHParticlePair& particlepair_j = ((neighborpairdata_[type_j])[particle_j].back()).second;
-
-      // set absolute distance between particles
-      particlepair_j.absdist_ = absdist;
-
-      // equal support radius for particle i and j
-      if (rad_i[0] == rad_j[0])
+      // particle j within support radius of particle i
+      if (absdist < rad_i[0])
       {
-        // get reference to current particle pair
-        SPHParticlePair& particlepair_i = ((neighborpairdata_[type_i])[particle_i].back()).second;
-
-        // versor from particle i to j
-        for (int i = 0; i < 3; ++i) particlepair_j.e_ij_[i] = -particlepair_i.e_ij_[i];
-
         // evaluate kernel
-        particlepair_j.Wij_ = particlepair_i.Wij_;
+        neighborpair.Wij_ = kernel_->W(absdist, rad_i[0]);
 
         // evaluate first derivative of kernel
-        particlepair_j.dWdrij_ = particlepair_i.dWdrij_;
+        neighborpair.dWdrij_ = kernel_->dWdrij(absdist, rad_i[0]);
       }
-      else
+
+      // particle i within support radius of owned particle j
+      if (absdist < rad_j[0] and status_j == PARTICLEENGINE::Owned)
       {
-        // versor from particle i to j
-        for (int i = 0; i < 3; ++i) particlepair_j.e_ij_[i] = r_ji[i] / absdist;
+        // equal support radius for particle i and j
+        if (rad_i[0] == rad_j[0])
+        {
+          // evaluate kernel
+          neighborpair.Wji_ = neighborpair.Wij_;
 
-        // evaluate kernel
-        particlepair_j.Wij_ = kernel_->W(absdist, rad_j[0]);
+          // evaluate first derivative of kernel
+          neighborpair.dWdrji_ = neighborpair.dWdrij_;
+        }
+        else
+        {
+          // evaluate kernel
+          neighborpair.Wji_ = kernel_->W(absdist, rad_j[0]);
 
-        // evaluate first derivative of kernel
-        particlepair_j.dWdrij_ = kernel_->dWdrij(absdist, rad_j[0]);
+          // evaluate first derivative of kernel
+          neighborpair.dWdrji_ = kernel_->dWdrij(absdist, rad_j[0]);
+        }
       }
     }
   }

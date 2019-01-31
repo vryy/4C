@@ -70,7 +70,7 @@ void PARTICLEINTERACTION::SPHPressure::Setup(
   {
     std::vector<PARTICLEENGINE::StateEnum> states{PARTICLEENGINE::Pressure};
 
-    for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
+    for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
     {
       // no refreshing of density states for boundary or rigid particles
       if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
@@ -106,7 +106,7 @@ void PARTICLEINTERACTION::SPHPressure::ComputePressure() const
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHPressure::ComputePressure");
 
   // iterate over particle types
-  for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
+  for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
     // no pressure computation for boundary or rigid particles
     if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
@@ -117,7 +117,7 @@ void PARTICLEINTERACTION::SPHPressure::ComputePressure() const
         particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
-    int particlestored = container->ParticlesStored();
+    const int particlestored = container->ParticlesStored();
 
     // no owned particles of current particle type
     if (particlestored <= 0) continue;

@@ -23,8 +23,6 @@
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 08/2018 |
  *---------------------------------------------------------------------------*/
-#include "particle_interaction_typedefs.H"
-
 #include "../drt_particle_engine/particle_enums.H"
 #include "../drt_particle_engine/particle_typedefs.H"
 
@@ -92,7 +90,7 @@ namespace PARTICLEINTERACTION
             particlestatestotypes) = 0;
 
     //! add surface tension contribution to acceleration field
-    virtual void AddAccelerationContribution() const = 0;
+    virtual void AddAccelerationContribution() = 0;
 
    protected:
     //! smoothed particle hydrodynamics specific parameter list
@@ -124,6 +122,9 @@ namespace PARTICLEINTERACTION
 
     //! have boundary or rigid particles
     bool haveboundaryorrigidparticles_;
+
+    //! set of boundary particle types
+    std::set<PARTICLEENGINE::TypeEnum> boundarytypes_;
   };
 
   class SPHSurfaceTensionContinuumSurfaceForce : public SPHSurfaceTensionBase
@@ -152,14 +153,23 @@ namespace PARTICLEINTERACTION
             particlestatestotypes) override;
 
     //! add surface tension contribution to acceleration field
-    virtual void AddAccelerationContribution() const override;
+    virtual void AddAccelerationContribution() override;
 
    private:
     //! compute colorfield gradient
     virtual void ComputeColorfieldGradient() const;
 
-    //! compute wall normal and distance
-    virtual void ComputeWallNormalAndDistance() const;
+    //! determine relevant wall neighbor pair indices
+    virtual void DetermineRelevantWallNeighborPairIndices(std::vector<int>& relwallindices) const;
+
+    //! compute unit wall normal
+    virtual void ComputeUnitWallNormal(std::vector<int>& relwallindices) const;
+
+    //! compute wall distance
+    virtual void ComputeWallDistance(std::vector<int>& relwallindices) const;
+
+    //! compute wall correction factor
+    virtual void ComputeWallCorrectionFactor();
 
     //! extrapolate colorfield gradient at triple point
     virtual void ExtrapolateColorfieldGradientAtTriplePoint() const;
@@ -184,6 +194,9 @@ namespace PARTICLEINTERACTION
 
     //! static contact angle
     const double staticcontactangle_;
+
+    //! wall correction factor
+    std::vector<std::vector<std::vector<double>>> f_i_;
   };
 
 }  // namespace PARTICLEINTERACTION

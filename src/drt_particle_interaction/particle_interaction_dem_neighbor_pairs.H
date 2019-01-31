@@ -23,12 +23,10 @@
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-#include "particle_interaction_typedefs.H"
-
 #include "../drt_particle_engine/particle_enums.H"
 #include "../drt_particle_engine/particle_typedefs.H"
 
-#include "particle_interaction_dem_particle_pair.H"
+#include "particle_interaction_dem_neighbor_pair_struct.H"
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                       sfuchs 11/2018 |
@@ -43,6 +41,14 @@ namespace PARTICLEENGINE
   class ParticleEngineInterface;
   class ParticleContainerBundle;
 }  // namespace PARTICLEENGINE
+
+/*---------------------------------------------------------------------------*
+ | type definitions                                           sfuchs 01/2019 |
+ *---------------------------------------------------------------------------*/
+namespace PARTICLEINTERACTION
+{
+  typedef std::vector<PARTICLEINTERACTION::DEMNeighborPair> DEMNeighborPairData;
+}
 
 /*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 11/2018 |
@@ -82,7 +88,7 @@ namespace PARTICLEINTERACTION
 
    private:
     //! neighbor pair data with evaluated quantities
-    PARTICLEINTERACTION::DEMNeighborPairData neighborpairdata_;
+    DEMNeighborPairData neighborpairdata_;
 
     //! interface to particle engine
     std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface_;

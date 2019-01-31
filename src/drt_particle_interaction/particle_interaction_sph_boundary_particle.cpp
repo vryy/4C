@@ -21,6 +21,8 @@
 
 #include "particle_interaction_sph_neighbor_pairs.H"
 
+#include "particle_interaction_utils.H"
+
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_container.H"
 
@@ -64,12 +66,12 @@ void PARTICLEINTERACTION::SPHBoundaryParticleBase::Setup(
 
   // check if boundary and/or rigid particles are present
   if ((particlecontainerbundle_->GetParticleTypes()).count(PARTICLEENGINE::BoundaryPhase))
-    typestoconsider_.insert(PARTICLEENGINE::BoundaryPhase);
+    boundarytypes_.insert(PARTICLEENGINE::BoundaryPhase);
   if ((particlecontainerbundle_->GetParticleTypes()).count(PARTICLEENGINE::RigidPhase))
-    typestoconsider_.insert(PARTICLEENGINE::RigidPhase);
+    boundarytypes_.insert(PARTICLEENGINE::RigidPhase);
 
   // safety check
-  if (typestoconsider_.size() == 0)
+  if (boundarytypes_.size() == 0)
     dserror("no boundary or rigid particles defined but a boundary particle formulation is set!");
 }
 
@@ -116,28 +118,142 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::Setup(
     std::vector<PARTICLEENGINE::StateEnum> states{
         PARTICLEENGINE::BoundaryPressure, PARTICLEENGINE::BoundaryVelocity};
 
-    for (auto& typeEnum : typestoconsider_)
+    for (const auto& typeEnum : boundarytypes_)
       boundarystatestorefresh_.push_back(std::make_pair(typeEnum, states));
   }
+
+  // determine size of vectors indexed by particle types
+  const int typevectorsize = *(--boundarytypes_.end()) + 1;
+
+  // allocate memory to hold neighbor pairs
+  sumj_Wij_.resize(typevectorsize);
+  sumj_press_j_Wij_.resize(typevectorsize);
+  sumj_dens_j_r_ij_Wij_.resize(typevectorsize);
+  sumj_vel_j_Wij_.resize(typevectorsize);
 }
 
 /*---------------------------------------------------------------------------*
  | initialize modified boundary particle states               sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticles(
-    std::vector<double>& gravity) const
+    std::vector<double>& gravity)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticles");
 
-  // get reference to neighbor pair data
-  const SPHNeighborPairData& neighborpairdata = neighborpairs_->GetRefToNeighborPairData();
-
-  // iterate over particle types
-  for (auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  // iterate over boundary particle types
+  for (const auto& type_i : boundarytypes_)
   {
-    // evaluation only for boundary and rigid particles
-    if (type_i != PARTICLEENGINE::BoundaryPhase and type_i != PARTICLEENGINE::RigidPhase) continue;
+    // get container of owned particles of current particle type
+    PARTICLEENGINE::ParticleContainerShrdPtr container_i =
+        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
 
+    // get number of particles stored in container
+    const int particlestored = container_i->ParticlesStored();
+
+    // allocate memory
+    sumj_Wij_[type_i].assign(particlestored, 0.0);
+    sumj_press_j_Wij_[type_i].assign(particlestored, 0.0);
+    sumj_dens_j_r_ij_Wij_[type_i].assign(particlestored, std::vector<double>(3, 0.0));
+    sumj_vel_j_Wij_[type_i].assign(particlestored, std::vector<double>(3, 0.0));
+  }
+
+  // get reference to index of neighbor pairs for each type
+  const SPHIndexOfNeighborPairs& indexofneighborpairs =
+      neighborpairs_->GetRefToIndexOfNeighborPairs();
+
+  // determine relevant neighbor pair indices
+  std::vector<int> relindices;
+
+  // iterate over boundary particle types
+  for (const auto& type_i : boundarytypes_)
+    relindices.insert(
+        relindices.end(), indexofneighborpairs[type_i].begin(), indexofneighborpairs[type_i].end());
+
+  // sort and erase duplicate indices of relevant neighbor pairs
+  if (boundarytypes_.size() > 1)
+  {
+    std::sort(relindices.begin(), relindices.end());
+    relindices.erase(std::unique(relindices.begin(), relindices.end()), relindices.end());
+  }
+
+  // iterate over relevant neighbor pairs
+  for (const int neighborpairindex : relindices)
+  {
+    const SPHNeighborPair& neighborpair =
+        neighborpairs_->GetRefToNeighborPairData()[neighborpairindex];
+
+    // access values of local index tuples of particle i and j
+    PARTICLEENGINE::TypeEnum type_i;
+    PARTICLEENGINE::StatusEnum status_i;
+    int particle_i;
+    std::tie(type_i, status_i, particle_i) = neighborpair.tuple_i_;
+
+    PARTICLEENGINE::TypeEnum type_j;
+    PARTICLEENGINE::StatusEnum status_j;
+    int particle_j;
+    std::tie(type_j, status_j, particle_j) = neighborpair.tuple_j_;
+
+    // check for boundary or rigid particles
+    bool isboundaryrigid_i = boundarytypes_.count(type_i);
+    bool isboundaryrigid_j = boundarytypes_.count(type_j);
+
+    // no evaluation for both boundary or rigid particles
+    if (isboundaryrigid_i and isboundaryrigid_j) continue;
+
+    // evaluate contribution of neighboring particle j
+    if (isboundaryrigid_i)
+    {
+      // get container of owned particles
+      PARTICLEENGINE::ParticleContainerShrdPtr container_j =
+          particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
+
+      // declare pointer variables for particle j
+      const double *vel_j, *dens_j, *press_j;
+
+      // get pointer to particle states
+      vel_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_j);
+      dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
+      press_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Pressure, particle_j);
+
+      // sum contribution of neighboring particle j
+      sumj_Wij_[type_i][particle_i] += neighborpair.Wij_;
+      sumj_press_j_Wij_[type_i][particle_i] += press_j[0] * neighborpair.Wij_;
+
+      const double fac = dens_j[0] * neighborpair.absdist_ * neighborpair.Wij_;
+      UTILS::vec_addscale(&sumj_dens_j_r_ij_Wij_[type_i][particle_i][0], fac, neighborpair.e_ij_);
+
+      UTILS::vec_addscale(&sumj_vel_j_Wij_[type_i][particle_i][0], neighborpair.Wij_, vel_j);
+    }
+
+    // evaluate contribution of neighboring particle i
+    if (isboundaryrigid_j and status_j == PARTICLEENGINE::Owned)
+    {
+      // get container of owned particles
+      PARTICLEENGINE::ParticleContainerShrdPtr container_i =
+          particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+
+      // declare pointer variables for particle i
+      const double *vel_i, *dens_i, *press_i;
+
+      // get pointer to particle states
+      vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
+      dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
+      press_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Pressure, particle_i);
+
+      // sum contribution of neighboring particle i
+      sumj_Wij_[type_j][particle_j] += neighborpair.Wji_;
+      sumj_press_j_Wij_[type_j][particle_j] += press_i[0] * neighborpair.Wji_;
+
+      const double fac = -dens_i[0] * neighborpair.absdist_ * neighborpair.Wji_;
+      UTILS::vec_addscale(&sumj_dens_j_r_ij_Wij_[type_j][particle_j][0], fac, neighborpair.e_ij_);
+
+      UTILS::vec_addscale(&sumj_vel_j_Wij_[type_j][particle_j][0], neighborpair.Wji_, vel_i);
+    }
+  }
+
+  // iterate over boundary particle types
+  for (const auto& type_i : boundarytypes_)
+  {
     // get container of owned particles
     PARTICLEENGINE::ParticleContainerShrdPtr container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
@@ -149,66 +265,8 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticles(
     // iterate over particles in container
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
     {
-      // get reference to vector of neighbor pairs of current particle
-      const std::vector<SPHNeighborPair>& currentNeighborPairs =
-          (neighborpairdata[type_i])[particle_i];
-
-      // check for neighbor pairs of current particle
-      if (currentNeighborPairs.empty()) continue;
-
-      // initialize sum of evaluated kernel values for particle i due to neighbor particles j
-      double sumj_Wij(0.0);
-      double sumj_press_j_Wij(0.0);
-      double sumj_dens_j_r_ij_Wij[3];
-      double sumj_vel_j_Wij[3];
-      for (int i = 0; i < 3; ++i)
-      {
-        sumj_dens_j_r_ij_Wij[i] = 0.0;
-        sumj_vel_j_Wij[i] = 0.0;
-      }
-
-      // iterate over neighbor pairs
-      for (auto& neighborIt : currentNeighborPairs)
-      {
-        // access values of local index tuple of neighboring particle
-        PARTICLEENGINE::TypeEnum type_j;
-        PARTICLEENGINE::StatusEnum status_j;
-        int particle_j;
-        std::tie(type_j, status_j, particle_j) = neighborIt.first;
-
-        // get reference to current particle pair
-        const SPHParticlePair& particlepair = neighborIt.second;
-
-        // no evaluation for neighboring boundary or rigid particles
-        if (type_j == PARTICLEENGINE::BoundaryPhase or type_j == PARTICLEENGINE::RigidPhase)
-          continue;
-
-        // get container of neighboring particles of current particle type and state
-        PARTICLEENGINE::ParticleContainerShrdPtr container_j =
-            particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
-
-        // declare pointer variables for neighbor particle j
-        const double *vel_j, *dens_j, *press_j;
-
-        // get pointer to particle states
-        vel_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_j);
-        dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
-        press_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Pressure, particle_j);
-
-        // sum up contributions
-        sumj_Wij += particlepair.Wij_;
-        sumj_press_j_Wij += press_j[0] * particlepair.Wij_;
-
-        for (int i = 0; i < 3; ++i)
-        {
-          sumj_dens_j_r_ij_Wij[i] +=
-              dens_j[i] * particlepair.absdist_ * particlepair.e_ij_[i] * particlepair.Wij_;
-          sumj_vel_j_Wij[i] += vel_j[i] * particlepair.Wij_;
-        }
-      }
-
       // set modified boundary particle states
-      if (sumj_Wij > 0.0)
+      if (sumj_Wij_[type_i][particle_i] > 0.0)
       {
         // declare pointer variables for boundary particle i
         const double *vel_i, *acc_i;
@@ -224,17 +282,20 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticles(
 
         // get relative acceleration of boundary particle
         double relacc[3];
-        for (int i = 0; i < 3; ++i) relacc[i] = gravity[i] - acc_i[i];
+        UTILS::vec_set(relacc, &gravity[0]);
+        UTILS::vec_sub(relacc, acc_i);
+
+        const double inv_sumj_Wij = 1.0 / sumj_Wij_[type_i][particle_i];
 
         // set modified boundary pressure
         boundarypress_i[0] =
-            (sumj_press_j_Wij + relacc[0] * sumj_dens_j_r_ij_Wij[0] +
-                relacc[1] * sumj_dens_j_r_ij_Wij[1] + relacc[2] * sumj_dens_j_r_ij_Wij[2]) /
-            sumj_Wij;
+            (sumj_press_j_Wij_[type_i][particle_i] +
+                UTILS::vec_dot(relacc, &sumj_dens_j_r_ij_Wij_[type_i][particle_i][0])) *
+            inv_sumj_Wij;
 
         // set modified boundary velocity
-        for (int i = 0; i < 3; ++i)
-          boundaryvel_i[i] = 2.0 * vel_i[i] - (sumj_vel_j_Wij[i] / sumj_Wij);
+        UTILS::vec_setscale(boundaryvel_i, 2.0, vel_i);
+        UTILS::vec_addscale(boundaryvel_i, -inv_sumj_Wij, &sumj_vel_j_Wij_[type_i][particle_i][0]);
       }
     }
   }

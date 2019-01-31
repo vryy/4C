@@ -19,6 +19,8 @@
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_sph_artificialviscosity.H"
 
+#include "particle_interaction_utils.H"
+
 #include "../drt_lib/drt_dserror.H"
 
 #include <cmath>
@@ -68,29 +70,22 @@ void PARTICLEINTERACTION::SPHArtificialViscosity::ReadRestart(
 /*---------------------------------------------------------------------------*
  | evaluate artificial viscosity                              sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHArtificialViscosity::ArtificialViscosity(const double* dens_i,
-    const double* dens_j, const double* vel_i, const double* vel_j, const double* mass_j,
-    const double& artificialviscosity, const double& dWdrij, const double& h_i, const double& h_j,
-    const double& c_i, const double& c_j, const double& abs_rij, const double* e_ij,
-    double* acc_i) const
+void PARTICLEINTERACTION::SPHArtificialViscosity::ArtificialViscosity(const double* vel_i,
+    const double* vel_j, const double* mass_i, const double* mass_j, const double& artvisc_i,
+    const double& artvisc_j, const double& dWdrij, const double& dWdrji, const double& dens_ij,
+    const double& h_ij, const double& c_ij, const double& abs_rij, const double* e_ij,
+    double* acc_i, double* acc_j) const
 {
-  // particle averaged smoothing length
-  const double h_ij = 0.5 * (h_i + h_j);
-
-  // particle averaged speed of sound
-  const double c_ij = 0.5 * (c_i + c_j);
-
-  // particle averaged density
-  const double dens_ij = 0.5 * (dens_i[0] + dens_j[0]);
-
-  const double e_ij_vrel_ij = ((vel_i[0] - vel_j[0]) * e_ij[0] + (vel_i[1] - vel_j[1]) * e_ij[1] +
-                               (vel_i[2] - vel_j[2]) * e_ij[2]);
+  double vel_ij[3];
+  UTILS::vec_set(vel_ij, vel_i);
+  UTILS::vec_sub(vel_ij, vel_j);
 
   // avoid division by zero for close particles
   const double epsilon = 0.01;
 
-  const double fac = h_ij * c_ij * e_ij_vrel_ij * abs_rij /
-                     (dens_ij * (abs_rij * abs_rij + epsilon * h_ij * h_ij));
+  const double fac = h_ij * c_ij * UTILS::vec_dot(vel_ij, e_ij) * abs_rij /
+                     (dens_ij * (UTILS::pow<2>(abs_rij) + epsilon * UTILS::pow<2>(h_ij)));
 
-  for (int i = 0; i < 3; ++i) acc_i[i] += artificialviscosity * mass_j[0] * dWdrij * fac * e_ij[i];
+  if (acc_i) UTILS::vec_addscale(acc_i, (artvisc_i * mass_j[0] * dWdrij * fac), e_ij);
+  if (acc_j) UTILS::vec_addscale(acc_j, (-artvisc_j * mass_i[0] * dWdrji * fac), e_ij);
 }

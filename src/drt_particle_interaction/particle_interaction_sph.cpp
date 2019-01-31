@@ -271,14 +271,14 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
   double consistentparticlevolume = ComputeConsistentParticleVolume();
 
   // iterate over particle types
-  for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
+  for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainerShrdPtr container =
         particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
-    int particlestored = container->ParticlesStored();
+    const int particlestored = container->ParticlesStored();
 
     // no owned particles of current particle type
     if (particlestored <= 0) continue;

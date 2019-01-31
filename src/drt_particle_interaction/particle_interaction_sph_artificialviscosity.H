@@ -60,11 +60,11 @@ namespace PARTICLEINTERACTION
     virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
     //! evaluate artificial viscosity
-    virtual void ArtificialViscosity(const double* dens_i, const double* dens_j,
-        const double* vel_i, const double* vel_j, const double* mass_j,
-        const double& artificialviscosity, const double& dWdrij, const double& h_i,
-        const double& h_j, const double& c_i, const double& c_j, const double& abs_rij,
-        const double* e_ij, double* acc_i) const;
+    virtual void ArtificialViscosity(const double* vel_i, const double* vel_j, const double* mass_i,
+        const double* mass_j, const double& artvisc_i, const double& artvisc_j,
+        const double& dWdrij, const double& dWdrji, const double& dens_ij, const double& h_ij,
+        const double& c_ij, const double& abs_rij, const double* e_ij, double* acc_i,
+        double* acc_j) const;
   };
 
 }  // namespace PARTICLEINTERACTION

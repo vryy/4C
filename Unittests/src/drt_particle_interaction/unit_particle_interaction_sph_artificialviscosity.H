@@ -26,6 +26,7 @@ interactions
  *---------------------------------------------------------------------------*/
 #include <cxxtest/TestSuite.h>
 #include "src/drt_particle_interaction/particle_interaction_sph_artificialviscosity.H"
+#include "src/drt_particle_interaction/particle_interaction_utils.H"
 
 /*---------------------------------------------------------------------------*
  | forward declaration                                        sfuchs 05/2018 |
@@ -77,9 +78,12 @@ class PARTICLEINTERACTION::SPHArtificialViscosity_TestSuite : public CxxTest::Te
     vel_j[1] = -0.97;
     vel_j[2] = 0.98;
 
+    const double mass_i = 5.85;
     const double mass_j = 10.32;
-    const double artificialviscosity = 0.1;
+    const double artvisc_i = 0.1;
+    const double artvisc_j = 0.2;
     const double dWdrij = 0.76;
+    const double dWdrji = 0.89;
     const double h_i = 0.2;
     const double h_j = 0.25;
     const double c_i = 10.0;
@@ -91,13 +95,8 @@ class PARTICLEINTERACTION::SPHArtificialViscosity_TestSuite : public CxxTest::Te
     e_ij[1] = 2.0 / std::sqrt(21);
     e_ij[2] = 4.0 / std::sqrt(21);
 
-    double acc_i[3];
-    acc_i[0] = 0.0;
-    acc_i[1] = 0.0;
-    acc_i[2] = 0.0;
-
-    artificialviscosity_->ArtificialViscosity(&dens_i, &dens_j, vel_i, vel_j, &mass_j,
-        artificialviscosity, dWdrij, h_i, h_j, c_i, c_j, abs_rij, e_ij, acc_i);
+    double acc_i[3] = {0.0};
+    double acc_j[3] = {0.0};
 
     // compute reference solution
     const double h_ij = 0.5 * (h_i + h_j);
@@ -110,11 +109,17 @@ class PARTICLEINTERACTION::SPHArtificialViscosity_TestSuite : public CxxTest::Te
                        (dens_ij * (std::pow(abs_rij, 2) + epsilon * std::pow(h_ij, 2)));
 
     double acc_i_ref[3];
-    for (int i = 0; i < 3; ++i)
-      acc_i_ref[i] = artificialviscosity * mass_j * dWdrij * fac * e_ij[i];
+    UTILS::vec_setscale(acc_i_ref, (artvisc_i * mass_j * dWdrij * fac), e_ij);
+
+    double acc_j_ref[3];
+    UTILS::vec_setscale(acc_j_ref, (-artvisc_j * mass_i * dWdrji * fac), e_ij);
+
+    artificialviscosity_->ArtificialViscosity(vel_i, vel_j, &mass_i, &mass_j, artvisc_i, artvisc_j,
+        dWdrij, dWdrji, dens_ij, h_ij, c_ij, abs_rij, e_ij, acc_i, acc_j);
 
     // compare results
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_i[i], acc_i_ref[i], 1.0e-14);
+    for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_j[i], acc_j_ref[i], 1.0e-14);
   }
 };
 

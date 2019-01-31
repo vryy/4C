@@ -23,8 +23,6 @@
 /*---------------------------------------------------------------------------*
  | headers                                                     meier 09/2018 |
  *---------------------------------------------------------------------------*/
-#include "particle_interaction_typedefs.H"
-
 #include "../drt_particle_engine/particle_enums.H"
 #include "../drt_particle_engine/particle_typedefs.H"
 
