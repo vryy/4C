@@ -95,7 +95,7 @@ void PARTICLEALGORITHM::InitialFieldHandler::SetInitialFields()
       PARTICLEENGINE::TypeEnum particleType = initialFieldIt.first;
 
       // get container of owned particles of current particle type
-      PARTICLEENGINE::ParticleContainerShrdPtr container =
+      PARTICLEENGINE::ParticleContainer* container =
           particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
       // get number of particles stored in container

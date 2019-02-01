@@ -45,7 +45,7 @@ void PARTICLEENGINE::ParticleContainerBundle::Init()
 void PARTICLEENGINE::ParticleContainerBundle::Setup(
     const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes)
 {
-  ParticleContainerShrdPtr container;
+  std::shared_ptr<PARTICLEENGINE::ParticleContainer> container;
 
   // determine necessary size of vector for particle types
   const int typevectorsize = ((--particlestatestotypes.end())->first) + 1;
@@ -99,8 +99,8 @@ void PARTICLEENGINE::ParticleContainerBundle::PackParticleContainerBundle(
   for (auto& typeEnum : storedtypes_)
   {
     // get container of owned particles
-    PARTICLEENGINE::ParticleContainerShrdPtr container =
-        ((containers_[typeEnum])[PARTICLEENGINE::Owned]);
+    PARTICLEENGINE::ParticleContainer* container =
+        (containers_[typeEnum])[PARTICLEENGINE::Owned].get();
 
     // loop over particles in container
     for (int index = 0; index < container->ParticlesStored(); ++index)
@@ -132,8 +132,8 @@ void PARTICLEENGINE::ParticleContainerBundle::GetVectorOfParticleObjectsOfAllCon
   for (auto& typeEnum : storedtypes_)
   {
     // get container of owned particles
-    PARTICLEENGINE::ParticleContainerShrdPtr container =
-        ((containers_[typeEnum])[PARTICLEENGINE::Owned]);
+    PARTICLEENGINE::ParticleContainer* container =
+        (containers_[typeEnum])[PARTICLEENGINE::Owned].get();
 
     // loop over particles in container
     for (int index = 0; index < container->ParticlesStored(); ++index)

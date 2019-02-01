@@ -52,15 +52,14 @@ namespace PARTICLEENGINE
 
   typedef enum PARTICLEENGINE::ParticleState StateEnum;
 
-  typedef std::shared_ptr<PARTICLEENGINE::ParticleObject> ParticleObjShrdPtr;
-
-  typedef std::shared_ptr<PARTICLEENGINE::ParticleContainer> ParticleContainerShrdPtr;
-
-  typedef std::shared_ptr<PARTICLEENGINE::ParticleContainerBundle> ParticleContainerBundleShrdPtr;
-
   typedef std::map<StateEnum, std::vector<double>> ParticleStates;
 
-  typedef std::vector<std::vector<ParticleContainerShrdPtr>> TypeStatusContainers;
+  typedef std::shared_ptr<PARTICLEENGINE::ParticleObject> ParticleObjShrdPtr;
+
+  typedef std::vector<std::vector<std::shared_ptr<PARTICLEENGINE::ParticleContainer>>>
+      TypeStatusContainers;
+
+  typedef std::shared_ptr<PARTICLEENGINE::ParticleContainerBundle> ParticleContainerBundleShrdPtr;
 
   typedef std::tuple<TypeEnum, StatusEnum, int> LocalIndexTuple;
 

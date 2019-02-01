@@ -206,7 +206,7 @@ void PARTICLEINTERACTION::SPHMomentum::AddAccelerationContribution() const
       if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
 
       // get container of owned particles of current particle type
-      PARTICLEENGINE::ParticleContainerShrdPtr container_i =
+      PARTICLEENGINE::ParticleContainer* container_i =
           particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
 
       // iterate over particles in container
@@ -253,10 +253,10 @@ void PARTICLEINTERACTION::SPHMomentum::AddAccelerationContribution() const
     if (isboundaryrigid_i and (isboundaryrigid_j or status_j == PARTICLEENGINE::Ghosted)) continue;
 
     // get corresponding particle containers
-    PARTICLEENGINE::ParticleContainerShrdPtr container_i =
+    PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
 
-    PARTICLEENGINE::ParticleContainerShrdPtr container_j =
+    PARTICLEENGINE::ParticleContainer* container_j =
         particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
 
     // get material for particle types

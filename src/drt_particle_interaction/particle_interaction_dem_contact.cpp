@@ -125,7 +125,7 @@ void PARTICLEINTERACTION::DEMContact::CheckCriticalTimeStep() const
   for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
     // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container =
+    PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
     // get minimum stored value of state
@@ -171,10 +171,10 @@ void PARTICLEINTERACTION::DEMContact::AddForceContribution() const
     std::tie(type_j, status_j, particle_j) = neighborpair.tuple_j_;
 
     // get corresponding particle containers
-    PARTICLEENGINE::ParticleContainerShrdPtr container_i =
+    PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
 
-    PARTICLEENGINE::ParticleContainerShrdPtr container_j =
+    PARTICLEENGINE::ParticleContainer* container_j =
         particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
 
     // declare pointer variables for particle i and j

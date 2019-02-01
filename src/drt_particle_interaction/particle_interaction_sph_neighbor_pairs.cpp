@@ -121,10 +121,10 @@ void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateNeighborPairs()
       continue;
 
     // get corresponding particle containers
-    PARTICLEENGINE::ParticleContainerShrdPtr container_i =
+    PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
 
-    PARTICLEENGINE::ParticleContainerShrdPtr container_j =
+    PARTICLEENGINE::ParticleContainer* container_j =
         particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
 
     // declare pointer variables for particle i and j

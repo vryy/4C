@@ -136,7 +136,7 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassAndColorfield() const
     if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
 
     // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container_i =
+    PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
 
     // iterate over particles in container
@@ -182,10 +182,10 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassAndColorfield() const
     std::tie(type_j, status_j, particle_j) = neighborpair.tuple_j_;
 
     // get corresponding particle containers
-    PARTICLEENGINE::ParticleContainerShrdPtr container_i =
+    PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
 
-    PARTICLEENGINE::ParticleContainerShrdPtr container_j =
+    PARTICLEENGINE::ParticleContainer* container_j =
         particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
 
     // get material for particle types
@@ -258,7 +258,7 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquation() const
     if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
 
     // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container_i =
+    PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
 
     // clear density dot state
@@ -280,10 +280,10 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquation() const
     std::tie(type_j, status_j, particle_j) = neighborpair.tuple_j_;
 
     // get corresponding particle containers
-    PARTICLEENGINE::ParticleContainerShrdPtr container_i =
+    PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
 
-    PARTICLEENGINE::ParticleContainerShrdPtr container_j =
+    PARTICLEENGINE::ParticleContainer* container_j =
         particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
 
     // get material for particle types
@@ -674,7 +674,7 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::CorrectDensity() const
       continue;
 
     // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container =
+    PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container

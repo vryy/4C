@@ -241,7 +241,7 @@ void PARTICLEALGORITHM::TimInt::AddInitialRandomNoiseToPosition()
   for (auto& particleType : typestointegrate_)
   {
     // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container =
+    PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
@@ -313,7 +313,7 @@ void PARTICLEALGORITHM::TimIntSemiImplicitEuler::PreInteractionRoutine()
   for (auto& particleType : typestointegrate_)
   {
     // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container =
+    PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
     // update velocity of all particles
@@ -368,7 +368,7 @@ void PARTICLEALGORITHM::TimIntVelocityVerlet::SetInitialStates()
   for (auto& particleType : typestointegrate_)
   {
     // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container =
+    PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
     // modified velocity and acceleration states
@@ -395,7 +395,7 @@ void PARTICLEALGORITHM::TimIntVelocityVerlet::PreInteractionRoutine()
   for (auto& particleType : typestointegrate_)
   {
     // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container =
+    PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
     // update velocity of all particles
@@ -453,7 +453,7 @@ void PARTICLEALGORITHM::TimIntVelocityVerlet::PostInteractionRoutine()
   for (auto& particleType : typestointegrate_)
   {
     // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container =
+    PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
     // update velocity of all particles

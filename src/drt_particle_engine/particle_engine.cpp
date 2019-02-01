@@ -480,7 +480,7 @@ void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
       const int ownedindex = particleIt.second;
 
       // get container of owned particles of current particle type
-      ParticleContainerShrdPtr container =
+      ParticleContainer* container =
           particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
       // get global id of particle
@@ -514,7 +514,7 @@ void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
           const int neighborindex = neighborParticleIt.second;
 
           // get container of neighboring particle of current particle type
-          ParticleContainerShrdPtr neighborcontainer =
+          ParticleContainer* neighborcontainer =
               particlecontainerbundle_->GetSpecificContainer(neighborTypeEnum, neighborStatusEnum);
 
           // get global id of neighboring particle
@@ -570,7 +570,7 @@ void PARTICLEENGINE::ParticleEngine::BuildGlobalIDToLocalIndexMap()
     for (auto& statusEnum : {PARTICLEENGINE::Owned, PARTICLEENGINE::Ghosted})
     {
       // get container of current particle type and current status
-      ParticleContainerShrdPtr container =
+      ParticleContainer* container =
           particlecontainerbundle_->GetSpecificContainer(typeEnum, statusEnum);
 
       // get number of particles stored in container
@@ -721,7 +721,7 @@ int PARTICLEENGINE::ParticleEngine::GetNumberOfParticles() const
   for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
     // get container of owned particles of current particle type
-    ParticleContainerShrdPtr container =
+    ParticleContainer* container =
         particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
     // add number of particles stored in container
@@ -740,7 +740,7 @@ int PARTICLEENGINE::ParticleEngine::GetNumberOfParticlesOfSpecificType(
   if (not particlecontainerbundle_->GetParticleTypes().count(typeEnum)) return 0;
 
   // get container of owned particles of specific particle type
-  ParticleContainerShrdPtr container =
+  ParticleContainer* container =
       particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
   return container->ParticlesStored();
@@ -1175,7 +1175,7 @@ void PARTICLEENGINE::ParticleEngine::CheckParticlesAtBoundaries(
       const int ownedindex = particleIt.second;
 
       // get container of owned particle of current particle type
-      ParticleContainerShrdPtr container =
+      ParticleContainer* container =
           particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
       // get position of particle
@@ -1342,7 +1342,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeTransfered(
       const int ownedindex = particleIt.second;
 
       // get container of owned particle of current particle type
-      ParticleContainerShrdPtr container =
+      ParticleContainer* container =
           particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
       // get position of particle
@@ -1412,7 +1412,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeGhosted(
       const int ownedindex = particleIt.second;
 
       // get container of owned particle of current particle type
-      ParticleContainerShrdPtr container =
+      ParticleContainer* container =
           particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
       int globalid(0);
@@ -1448,7 +1448,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeRefreshed(
     if (directghostingtargets_[typeEnum].empty()) continue;
 
     // get container of owned particles of current particle type
-    ParticleContainerShrdPtr container =
+    ParticleContainer* container =
         particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
     // iterate over owned particles of current type
@@ -1496,7 +1496,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineSpecificStatesOfParticlesOfSpecifi
     if (directghostingtargets_[typeEnum].empty()) continue;
 
     // get container of owned particles of current particle type
-    ParticleContainerShrdPtr container =
+    ParticleContainer* container =
         particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
     // iterate over owned particles of current type
@@ -1683,7 +1683,7 @@ void PARTICLEENGINE::ParticleEngine::InsertOwnedParticles(
     if (particlestoinsert[typeEnum].empty()) continue;
 
     // get container of owned particles of current particle type
-    ParticleContainerShrdPtr container =
+    ParticleContainer* container =
         particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
     // iterate over particle objects pairs
@@ -1745,7 +1745,7 @@ void PARTICLEENGINE::ParticleEngine::InsertGhostedParticles(
     if (particlestoinsert[typeEnum].empty()) continue;
 
     // get container of ghosted particles of current particle type
-    ParticleContainerShrdPtr container =
+    ParticleContainer* container =
         particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Ghosted);
 
     // iterate over particle objects pairs
@@ -1809,7 +1809,7 @@ void PARTICLEENGINE::ParticleEngine::InsertRefreshedParticles(
     if (particlestoinsert[typeEnum].empty()) continue;
 
     // get container of ghosted particles of current particle type
-    ParticleContainerShrdPtr container =
+    ParticleContainer* container =
         particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Ghosted);
 
     // iterate over particle objects pairs
@@ -1846,7 +1846,7 @@ void PARTICLEENGINE::ParticleEngine::RemoveParticlesFromContainers(
     if (particlestoremove[typeEnum].empty()) continue;
 
     // get container of owned particles of current particle type
-    ParticleContainerShrdPtr container =
+    ParticleContainer* container =
         particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
     // iterate in reversed order over particles to be removed
@@ -1872,7 +1872,7 @@ void PARTICLEENGINE::ParticleEngine::StorePositionsAfterParticleTransfer()
   for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
     // get container of owned particles of current particle type
-    ParticleContainerShrdPtr container =
+    ParticleContainer* container =
         particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
@@ -1910,7 +1910,7 @@ void PARTICLEENGINE::ParticleEngine::RelateOwnedParticlesToBins()
   for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
     // get container of owned particles of current particle type
-    ParticleContainerShrdPtr container =
+    ParticleContainer* container =
         particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container

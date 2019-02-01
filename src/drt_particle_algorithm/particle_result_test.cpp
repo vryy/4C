@@ -86,7 +86,7 @@ void PARTICLEALGORITHM::ResultTest::TestSpecial(
           particleengineinterface_->GetParticleContainerBundle();
 
       // get container of owned particles of current particle type
-      PARTICLEENGINE::ParticleContainerShrdPtr container =
+      PARTICLEENGINE::ParticleContainer* container =
           particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
       // get result

@@ -185,7 +185,7 @@ void PARTICLEINTERACTION::SPHTemperatureIntegration::EnergyEquation() const
     if (type_i == PARTICLEENGINE::BoundaryPhase) continue;
 
     // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container_i =
+    PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
 
     // clear temperature dot state
@@ -207,10 +207,10 @@ void PARTICLEINTERACTION::SPHTemperatureIntegration::EnergyEquation() const
     std::tie(type_j, status_j, particle_j) = neighborpair.tuple_j_;
 
     // get corresponding particle containers
-    PARTICLEENGINE::ParticleContainerShrdPtr container_i =
+    PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
 
-    PARTICLEENGINE::ParticleContainerShrdPtr container_j =
+    PARTICLEENGINE::ParticleContainer* container_j =
         particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
 
     // get material for particle types

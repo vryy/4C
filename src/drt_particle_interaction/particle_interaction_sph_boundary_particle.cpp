@@ -144,7 +144,7 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticles(
   for (const auto& type_i : boundarytypes_)
   {
     // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container_i =
+    PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
@@ -204,7 +204,7 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticles(
     if (isboundaryrigid_i)
     {
       // get container of owned particles
-      PARTICLEENGINE::ParticleContainerShrdPtr container_j =
+      PARTICLEENGINE::ParticleContainer* container_j =
           particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
 
       // declare pointer variables for particle j
@@ -229,7 +229,7 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticles(
     if (isboundaryrigid_j and status_j == PARTICLEENGINE::Owned)
     {
       // get container of owned particles
-      PARTICLEENGINE::ParticleContainerShrdPtr container_i =
+      PARTICLEENGINE::ParticleContainer* container_i =
           particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
 
       // declare pointer variables for particle i
@@ -255,7 +255,7 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticles(
   for (const auto& type_i : boundarytypes_)
   {
     // get container of owned particles
-    PARTICLEENGINE::ParticleContainerShrdPtr container_i =
+    PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
 
     // clear modified boundary particle states

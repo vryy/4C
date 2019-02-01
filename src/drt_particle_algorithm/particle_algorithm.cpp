@@ -713,7 +713,7 @@ bool PARTICLEALGORITHM::ParticleAlgorithm::CheckParticleTransfer()
   for (auto& typeEnum : particlecontainerbundle->GetParticleTypes())
   {
     // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container =
+    PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
