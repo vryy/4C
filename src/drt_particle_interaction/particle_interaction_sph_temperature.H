@@ -48,6 +48,14 @@ namespace PARTICLEINTERACTION
   class SPHNeighborPairs;
 }  // namespace PARTICLEINTERACTION
 
+namespace MAT
+{
+  namespace PAR
+  {
+    class ParticleMaterialThermo;
+  }
+}  // namespace MAT
+
 /*---------------------------------------------------------------------------*
  | class definitions                                           meier 09/2018 |
  *---------------------------------------------------------------------------*/
@@ -109,6 +117,9 @@ namespace PARTICLEINTERACTION
 
     //! time step size
     double dt_;
+
+    //! pointer to thermo material of particle types
+    std::vector<const MAT::PAR::ParticleMaterialThermo*> thermomaterial_;
   };
 
   class SPHTemperatureIntegration : public SPHTemperatureBase

@@ -79,6 +79,19 @@ void PARTICLEINTERACTION::SPHTemperatureBase::Setup(
       temperaturetorefresh_.push_back(std::make_pair(typeEnum, states));
     }
   }
+
+  // determine size of vectors indexed by particle types
+  const int typevectorsize = *(--particlecontainerbundle_->GetParticleTypes().end()) + 1;
+
+  // allocate memory to hold particle types
+  thermomaterial_.resize(typevectorsize);
+
+  // iterate over particle types
+  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  {
+    thermomaterial_[type_i] = dynamic_cast<const MAT::PAR::ParticleMaterialThermo*>(
+        particlematerial_->GetPtrToParticleMatParameter(type_i));
+  }
 }
 
 /*---------------------------------------------------------------------------*
@@ -201,24 +214,13 @@ void PARTICLEINTERACTION::SPHTemperatureIntegration::EnergyEquation() const
         particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
 
     // get material for particle types
-    const MAT::PAR::ParticleMaterialBase* basematerial_i = NULL;
-    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase)
-      basematerial_i = particlematerial_->GetPtrToParticleMatParameter(type_i);
+    const MAT::PAR::ParticleMaterialBase* basematerial_i =
+        particlematerial_->GetPtrToParticleMatParameter(type_i);
+    const MAT::PAR::ParticleMaterialBase* basematerial_j =
+        particlematerial_->GetPtrToParticleMatParameter(type_j);
 
-    const MAT::PAR::ParticleMaterialBase* basematerial_j = NULL;
-    if (type_j == PARTICLEENGINE::BoundaryPhase or type_j == PARTICLEENGINE::RigidPhase)
-      basematerial_j = particlematerial_->GetPtrToParticleMatParameter(type_j);
-
-    const MAT::PAR::ParticleMaterialThermo* thermomaterial_i =
-        dynamic_cast<const MAT::PAR::ParticleMaterialThermo*>(
-            particlematerial_->GetPtrToParticleMatParameter(type_i));
-
-    const MAT::PAR::ParticleMaterialThermo* thermomaterial_j = NULL;
-    if (type_i == type_j)
-      thermomaterial_j = thermomaterial_i;
-    else
-      thermomaterial_j = dynamic_cast<const MAT::PAR::ParticleMaterialThermo*>(
-          particlematerial_->GetPtrToParticleMatParameter(type_j));
+    const MAT::PAR::ParticleMaterialThermo* thermomaterial_i = thermomaterial_[type_i];
+    const MAT::PAR::ParticleMaterialThermo* thermomaterial_j = thermomaterial_[type_j];
 
     // declare pointer variables for particle i and j
     const double *mass_i, *dens_i, *temp_i;

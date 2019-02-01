@@ -120,6 +120,22 @@ void PARTICLEINTERACTION::SPHMomentum::Setup(
 
   // setup artificial viscosity handler
   artificialviscosity_->Setup();
+
+  // determine size of vectors indexed by particle types
+  const int typevectorsize = *(--particlecontainerbundle_->GetParticleTypes().end()) + 1;
+
+  // allocate memory to hold particle types
+  fluidmaterial_.resize(typevectorsize);
+
+  // iterate over particle types
+  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  {
+    // no fluid material for boundary or rigid particles
+    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
+
+    fluidmaterial_[type_i] = dynamic_cast<const MAT::PAR::ParticleMaterialSPHFluid*>(
+        particlematerial_->GetPtrToParticleMatParameter(type_i));
+  }
 }
 
 /*---------------------------------------------------------------------------*
@@ -244,20 +260,10 @@ void PARTICLEINTERACTION::SPHMomentum::AddAccelerationContribution() const
         particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
 
     // get material for particle types
-    const MAT::PAR::ParticleMaterialSPHFluid* material_i = NULL;
-    if (isboundaryrigid_i)
-      material_i = dynamic_cast<const MAT::PAR::ParticleMaterialSPHFluid*>(
-          particlematerial_->GetPtrToParticleMatParameter(type_j));
-    else
-      material_i = dynamic_cast<const MAT::PAR::ParticleMaterialSPHFluid*>(
-          particlematerial_->GetPtrToParticleMatParameter(type_i));
-
-    const MAT::PAR::ParticleMaterialSPHFluid* material_j = NULL;
-    if (type_i == type_j or isboundaryrigid_j)
-      material_j = material_i;
-    else
-      material_j = dynamic_cast<const MAT::PAR::ParticleMaterialSPHFluid*>(
-          particlematerial_->GetPtrToParticleMatParameter(type_j));
+    const MAT::PAR::ParticleMaterialSPHFluid* material_i =
+        (isboundaryrigid_i) ? fluidmaterial_[type_j] : fluidmaterial_[type_i];
+    const MAT::PAR::ParticleMaterialSPHFluid* material_j =
+        (isboundaryrigid_j) ? fluidmaterial_[type_i] : fluidmaterial_[type_j];
 
     // get equation of state for particle types
     std::shared_ptr<SPHEquationOfStateBase> equationofstate_i;
