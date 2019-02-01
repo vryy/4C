@@ -1343,9 +1343,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
           }
 
   const MAT::ElectromagneticMat* actmat = static_cast<const MAT::ElectromagneticMat*>(mat.get());
-  // double epsilon = actmat->Permittivity(ele->Id());
-  // double mu = actmat->Permeability(ele->Id());
-  double impedance = sqrt(actmat->mu(ele->Id()) / actmat->epsilon(ele->Id()));
+  double impedance = sqrt(actmat->epsilon(ele->Id()) / actmat->mu(ele->Id()));
 
   // MIXED SHAPE FUNCTIONS
   // The matrix that are going to be build here are D,I and J
@@ -1377,7 +1375,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
                 shapesface_->jfac(q) * shapesface_->shfunctI(i, q) * shapesface_->shfunct(j, q);
 
             // Filling the matrices
-            // Imat
+            // Imat = -[H x n]
             //+1 coordinate
             tempI(shapesface_->nfdofs_ * d + j, ((d + 1) % nsd_) * ndofs_ + i) -=
                 temp * shapesface_->normals((d + 2) % nsd_, q);
@@ -1385,19 +1383,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
             tempI(shapesface_->nfdofs_ * d + j, ((d + 2) % nsd_) * ndofs_ + i) +=
                 temp * shapesface_->normals((d + 1) % nsd_, q);
             // Jmat
-            // Own coordinate
-            tempJ(shapesface_->nfdofs_ * d + j, d * ndofs_ + i) +=
-                100000.0 * temp *
-                (pow(shapesface_->normals((d + 1) % nsd_, q), 2) +
-                    pow(shapesface_->normals((d + 2) % nsd_, q), 2));
-            //+1 coordinate
-            tempJ(shapesface_->nfdofs_ * d + j, ((d + 1) % nsd_) * ndofs_ + i) -=
-                100000.0 * temp * shapesface_->normals(d, q) *
-                shapesface_->normals((d + 1) % nsd_, q);
-            //+2 coordinate
-            tempJ(shapesface_->nfdofs_ * d + j, ((d + 2) % nsd_) * ndofs_ + i) -=
-                100000.0 * temp * shapesface_->normals(d, q) *
-                shapesface_->normals((d + 2) % nsd_, q);
+            tempJ(shapesface_->nfdofs_ * d + j, d * shapesface_->nfdofs_ + i) += temp;
           }
         }  // for (unsigned int d = 0; d < nsd_; ++d)
       }    // for (unsigned int j=0; j<ndofs_; ++j)
@@ -1409,20 +1395,14 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
   Epetra_SerialDenseMatrix electricMat(shapesface_->nfdofs_ * (nsd_ - 1), ndofs_ * nsd_);
   magneticMat.Multiply('N', 'N', 1.0, transformatrix, tempI, 0.0);
   electricMat.Multiply('N', 'N', 1.0, transformatrix, tempJ, 0.0);
-  // transformatrix.Print(std::cout);
-  // tempJ.Print(std::cout);
-  tempVec2.Multiply('N', 'N', 1.0, electricMat, tempVec1, 0.0);
-  tempVec2.Multiply('N', 'N', -1.0, electricMat, ele->eleinteriorElectric_, 1.0);
-  // std::cout << "electric" << std::endl;
-  // tempVec1.Print(std::cout);
-  // std::cout << "electric face" << std::endl;
-  // tempVec2.Print(std::cout);
+
+  tempVec2.Multiply('N', 'N', impedance, electricMat, tempVec1, 0.0);
+
   for (unsigned int r = 0; r < ndofs_; ++r)
     for (unsigned int d = 0; d < nsd_; ++d)
       tempVec1(d * ndofs_ + r) = localMat(r, d + nsd_);  // magnetic
 
   tempVec2.Multiply('N', 'N', 1.0, magneticMat, tempVec1, 1.0);
-  // tempVec2.Multiply('N', 'N', 1.0, magneticMat, ele->eleinteriorMagnetic_, 1.0);
 
   unsigned int newindex = shapesface_->nfdofs_ * (nsd_ - 1) * face;
 
@@ -1436,10 +1416,10 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
         for (unsigned int d = 0; d < nsd_ - 1; ++d)
           for (unsigned int q = 0; q < shapesface_->nqpoints_; ++q)
           {
-            const double temp = 100000.0 * shapesface_->jfac(q) * shapesface_->shfunct(i, q) *
+            const double temp = impedance * shapesface_->jfac(q) * shapesface_->shfunct(i, q) *
                                 shapesface_->shfunct(j, q);
             elemat(newindex + shapesface_->nfdofs_ * d + i,
-                newindex + shapesface_->nfdofs_ * d + j) -= temp;
+                newindex + shapesface_->nfdofs_ * d + j) += temp;
           }
   }
 

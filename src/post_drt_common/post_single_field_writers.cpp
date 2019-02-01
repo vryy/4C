@@ -681,6 +681,7 @@ void ElemagFilter::WriteAllResults(PostField* field)
   writer_->WriteResult("electric", "electric", nodebased, 3);
   writer_->WriteResult("magnetic", "magnetic", nodebased, 3);
   writer_->WriteResult("trace", "trace", nodebased, 3);
+  writer_->WriteResult("dft", "dft", nodebased, 3);
   writer_->WriteResult("conductivity", "conductivity", elementbased, 1);
   writer_->WriteResult("permittivity", "permittivity", elementbased, 1);
   writer_->WriteResult("permeability", "permeability", elementbased, 1);
