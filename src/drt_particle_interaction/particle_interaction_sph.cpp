@@ -130,8 +130,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Setup(
 
   // setup surface tension handler
   if (surfacetension_)
-    surfacetension_->Setup(particleengineinterface, kernel_, particlematerial_,
-        equationofstatebundle_, neighborpairs_);
+    surfacetension_->Setup(particleengineinterface, kernel_, particlematerial_, neighborpairs_);
 
   // setup boundary particle handler
   if (boundaryparticle_) boundaryparticle_->Setup(particleengineinterface, neighborpairs_);

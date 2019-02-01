@@ -64,7 +64,6 @@ void PARTICLEINTERACTION::SPHSurfaceTensionBase::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
     const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle,
     const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs)
 {
   // set interface to particle engine
@@ -78,9 +77,6 @@ void PARTICLEINTERACTION::SPHSurfaceTensionBase::Setup(
 
   // set particle material handler
   particlematerial_ = particlematerial;
-
-  // set equation of state handler
-  equationofstatebundle_ = equationofstatebundle;
 
   // set neighbor pair handler
   neighborpairs_ = neighborpairs;
@@ -146,12 +142,10 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
     const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle,
     const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs)
 {
   // call base class setup
-  SPHSurfaceTensionBase::Setup(
-      particleengineinterface, kernel, particlematerial, equationofstatebundle, neighborpairs);
+  SPHSurfaceTensionBase::Setup(particleengineinterface, kernel, particlematerial, neighborpairs);
 
   // setup colorfield gradient and wall distance of ghosted particles to refresh
   {

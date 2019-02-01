@@ -697,8 +697,8 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::CorrectDensity() const
         particlematerial_->GetPtrToParticleMatParameter(typeEnum);
 
     // get equation of state for current particle type
-    std::shared_ptr<SPHEquationOfStateBase> equationofstate =
-        equationofstatebundle_->GetSpecificEquationOfState(typeEnum);
+    const PARTICLEINTERACTION::SPHEquationOfStateBase* equationofstate =
+        equationofstatebundle_->GetPtrToSpecificEquationOfState(typeEnum);
 
     // iterate over owned particles of current type
     for (int i = 0; i < particlestored; ++i)

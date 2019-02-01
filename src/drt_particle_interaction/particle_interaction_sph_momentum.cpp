@@ -266,13 +266,13 @@ void PARTICLEINTERACTION::SPHMomentum::AddAccelerationContribution() const
         (isboundaryrigid_j) ? fluidmaterial_[type_i] : fluidmaterial_[type_j];
 
     // get equation of state for particle types
-    std::shared_ptr<SPHEquationOfStateBase> equationofstate_i;
+    const PARTICLEINTERACTION::SPHEquationOfStateBase* equationofstate_i;
     if (not isboundaryrigid_i)
-      equationofstate_i = equationofstatebundle_->GetSpecificEquationOfState(type_i);
+      equationofstate_i = equationofstatebundle_->GetPtrToSpecificEquationOfState(type_i);
 
-    std::shared_ptr<SPHEquationOfStateBase> equationofstate_j;
+    const PARTICLEINTERACTION::SPHEquationOfStateBase* equationofstate_j;
     if (not isboundaryrigid_j)
-      equationofstate_j = equationofstatebundle_->GetSpecificEquationOfState(type_j);
+      equationofstate_j = equationofstatebundle_->GetPtrToSpecificEquationOfState(type_j);
 
     // declare pointer variables for particle i and j
     const double *vel_i, *rad_i, *mass_i, *dens_i, *press_i;

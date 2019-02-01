@@ -79,8 +79,9 @@ void PARTICLEINTERACTION::SPHEquationOfStateBundle::Init(
         const double exponent = material->exponent_;
 
         phasetypetoequationofstate_[typeEnum] =
-            std::make_shared<PARTICLEINTERACTION::SPHEquationOfStateGenTait>(
-                speedofsound, refdensfac, exponent);
+            std::unique_ptr<PARTICLEINTERACTION::SPHEquationOfStateGenTait>(
+                new PARTICLEINTERACTION::SPHEquationOfStateGenTait(
+                    speedofsound, refdensfac, exponent));
         break;
       }
       case INPAR::PARTICLE::IdealGas:
@@ -88,7 +89,8 @@ void PARTICLEINTERACTION::SPHEquationOfStateBundle::Init(
         const double speedofsound = material->SpeedOfSound();
 
         phasetypetoequationofstate_[typeEnum] =
-            std::make_shared<PARTICLEINTERACTION::SPHEquationOfStateIdealGas>(speedofsound);
+            std::unique_ptr<PARTICLEINTERACTION::SPHEquationOfStateIdealGas>(
+                new PARTICLEINTERACTION::SPHEquationOfStateIdealGas(speedofsound));
         break;
       }
       default:
