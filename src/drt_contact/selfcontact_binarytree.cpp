@@ -270,20 +270,6 @@ void CONTACT::SelfBinaryTreeNode::PrintType()
 }
 
 /*----------------------------------------------------------------------*
- | Set slabs of current treenode with new slabs (public)      popp 10/08|
- *----------------------------------------------------------------------*/
-void CONTACT::SelfBinaryTreeNode::SetSlabs(Epetra_SerialDenseMatrix& newslabs)
-{
-  for (int i = 0; i < Kdop() / 2; ++i)
-  {
-    Slabs()(i, 0) = newslabs(i, 0);
-    Slabs()(i, 1) = newslabs(i, 1);
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  | Set children of current treenode (public)                  popp 11/09|
  *----------------------------------------------------------------------*/
 void CONTACT::SelfBinaryTreeNode::SetChildren(
@@ -916,19 +902,15 @@ int CONTACT::SelfBinaryTree::CalculateSlabsIntercepts(
 
 
 /*----------------------------------------------------------------------*
- |  Evaluate search selfbinarytree (public)                  farah 02/16|
+ |  Evaluate search self binary tree (public)                farah 02/16|
  *----------------------------------------------------------------------*/
 void CONTACT::SelfBinaryTree::EvaluateSearch()
 {
   // calculate minimal element length
   SetEnlarge();
 
-  // TODO: is this outdated?
-  // update and search for contact with a combined algorithm
-  // binarytreeself_->SearchContactCombined();
-
-  // update and search for contact with separate algorithms
-  SearchContactSeparate();
+  // update and search for contact
+  SearchContact();
 
   // bye bye
   return;
@@ -1217,9 +1199,9 @@ void CONTACT::SelfBinaryTree::CalculateAdjacentTnodes()
 }
 
 /*----------------------------------------------------------------------*
- | Search for self contact (public)                           popp 01/11|
+ | Search for self contact (protected)                        popp 01/11|
  *----------------------------------------------------------------------*/
-void CONTACT::SelfBinaryTree::SearchSelfContactSeparate(Teuchos::RCP<SelfBinaryTreeNode> treenode)
+void CONTACT::SelfBinaryTree::SearchSelfContact(Teuchos::RCP<SelfBinaryTreeNode> treenode)
 {
   if (treenode->QualifiedVectors().size() == 0) dserror("no test vectors defined!");
 
@@ -1232,8 +1214,8 @@ void CONTACT::SelfBinaryTree::SearchSelfContactSeparate(Teuchos::RCP<SelfBinaryT
 
   if (treenode->Type() != SELFCO_LEAF)
   {
-    SearchSelfContactSeparate(treenode->Leftchild());
-    SearchSelfContactSeparate(treenode->Rightchild());
+    SearchSelfContact(treenode->Leftchild());
+    SearchSelfContact(treenode->Rightchild());
     EvaluateContactAndAdjacency(treenode->Leftchild(), treenode->Rightchild(), true);
   }
 
@@ -1241,143 +1223,43 @@ void CONTACT::SelfBinaryTree::SearchSelfContactSeparate(Teuchos::RCP<SelfBinaryT
 }
 
 /*----------------------------------------------------------------------*
- | Search for self contact (public)                           popp 05/09|
+ | Search for root contact (protected)                        popp 01/11|
  *----------------------------------------------------------------------*/
-void CONTACT::SelfBinaryTree::SearchSelfContactCombined(Teuchos::RCP<SelfBinaryTreeNode> treenode)
-{
-  if (treenode->QualifiedVectors().size() == 0) dserror("no test vectors defined!");
-
-  // if there is a qualified sample vector, there is no self contact
-  for (int i = 0; i < (int)treenode->QualifiedVectors().size(); i++)
-    if (treenode->QualifiedVectors()[i] == true)
-    {
-      return;
-    }
-
-  if (treenode->Type() != SELFCO_LEAF)
-  {
-    treenode->Leftchild()->CalculateSlabsDop();
-    treenode->Leftchild()->EnlargeGeometry(Enlarge());
-    treenode->Rightchild()->CalculateSlabsDop();
-    treenode->Rightchild()->EnlargeGeometry(Enlarge());
-    SearchSelfContactCombined(treenode->Leftchild());
-    SearchSelfContactCombined(treenode->Rightchild());
-    EvaluateContactAndAdjacency(treenode->Leftchild(), treenode->Rightchild(), true);
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | Search for root contact (public)                           popp 01/11|
- *----------------------------------------------------------------------*/
-void CONTACT::SelfBinaryTree::SearchRootContactSeparate(
+void CONTACT::SelfBinaryTree::SearchRootContact(
     Teuchos::RCP<SelfBinaryTreeNode> treenode1, Teuchos::RCP<SelfBinaryTreeNode> treenode2)
 {
-  // check if treenodes intercept
-  // (they only intercept if ALL slabs intersect!)
+  // check if tree nodes intercept (they only intercept if ALL slabs intersect!)
   int nintercepts = 0;
 
   nintercepts = CalculateSlabsIntercepts(treenode1, treenode2);
 
-  // treenodes intercept
+  // tree nodes intercept
   if (nintercepts == Kdop() / 2)
   {
-    // both treenodes are inner nodes
+    // both tree nodes are inner nodes
     if (treenode1->Type() != SELFCO_LEAF && treenode2->Type() != SELFCO_LEAF)
     {
-      SearchRootContactSeparate(treenode1->Leftchild(), treenode2->Leftchild());
-      SearchRootContactSeparate(treenode1->Leftchild(), treenode2->Rightchild());
-      SearchRootContactSeparate(treenode1->Rightchild(), treenode2->Leftchild());
-      SearchRootContactSeparate(treenode1->Rightchild(), treenode2->Rightchild());
+      SearchRootContact(treenode1->Leftchild(), treenode2->Leftchild());
+      SearchRootContact(treenode1->Leftchild(), treenode2->Rightchild());
+      SearchRootContact(treenode1->Rightchild(), treenode2->Leftchild());
+      SearchRootContact(treenode1->Rightchild(), treenode2->Rightchild());
     }
 
-    // treenode1 is inner, treenode2 is leaf
+    // tree node 1 is inner, tree node 2 is leaf
     if (treenode1->Type() != SELFCO_LEAF && treenode2->Type() == SELFCO_LEAF)
     {
-      SearchRootContactSeparate(treenode1->Leftchild(), treenode2);
-      SearchRootContactSeparate(treenode1->Rightchild(), treenode2);
+      SearchRootContact(treenode1->Leftchild(), treenode2);
+      SearchRootContact(treenode1->Rightchild(), treenode2);
     }
 
-    // treenode1 is leaf, treenode3 is inner
+    // tree node 1 is leaf, tree node 2 is inner
     if (treenode1->Type() == SELFCO_LEAF && treenode2->Type() != SELFCO_LEAF)
     {
-      SearchRootContactSeparate(treenode1, treenode2->Leftchild());
-      SearchRootContactSeparate(treenode1, treenode2->Rightchild());
+      SearchRootContact(treenode1, treenode2->Leftchild());
+      SearchRootContact(treenode1, treenode2->Rightchild());
     }
 
-    // both treenodes are leaf --> feasible pair
-    if (treenode1->Type() == SELFCO_LEAF && treenode2->Type() == SELFCO_LEAF)
-    {
-      int gid1 = (int)treenode1->Elelist()[0];  // global id of first element
-      int gid2 = (int)treenode2->Elelist()[0];  // global id of second element
-      contactpairs_[gid1].push_back(gid2);
-      contactpairs_[gid2].push_back(gid1);
-    }
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | Search for root contact (public)                           popp 01/11|
- *----------------------------------------------------------------------*/
-void CONTACT::SelfBinaryTree::SearchRootContactCombined(
-    Teuchos::RCP<SelfBinaryTreeNode> treenode1, Teuchos::RCP<SelfBinaryTreeNode> treenode2)
-{
-  // check if treenodes intercept
-  // (they only intercept if ALL slabs intersect!)
-  int nintercepts = 0;
-
-  nintercepts = CalculateSlabsIntercepts(treenode1, treenode2);
-
-  // treenodes intercept
-  if (nintercepts == Kdop() / 2)
-  {
-    // both treenodes are inner nodes
-    if (treenode1->Type() != SELFCO_LEAF && treenode2->Type() != SELFCO_LEAF)
-    {
-      // std::cout <<"\n"<< Comm().MyPID() << " 2 inner nodes!";
-      treenode1->Leftchild()->CalculateSlabsDop();
-      treenode1->Leftchild()->EnlargeGeometry(Enlarge());
-      treenode1->Rightchild()->CalculateSlabsDop();
-      treenode1->Rightchild()->EnlargeGeometry(Enlarge());
-      treenode2->Leftchild()->CalculateSlabsDop();
-      treenode2->Leftchild()->EnlargeGeometry(Enlarge());
-      treenode2->Rightchild()->CalculateSlabsDop();
-      treenode2->Rightchild()->EnlargeGeometry(Enlarge());
-
-      SearchRootContactCombined(treenode1->Leftchild(), treenode2->Leftchild());
-      SearchRootContactCombined(treenode1->Leftchild(), treenode2->Rightchild());
-      SearchRootContactCombined(treenode1->Rightchild(), treenode2->Leftchild());
-      SearchRootContactCombined(treenode1->Rightchild(), treenode2->Rightchild());
-    }
-
-    // treenode1 is inner, treenode2 is leaf
-    if (treenode1->Type() != SELFCO_LEAF && treenode2->Type() == SELFCO_LEAF)
-    {
-      treenode1->Leftchild()->CalculateSlabsDop();
-      treenode1->Leftchild()->EnlargeGeometry(Enlarge());
-      treenode1->Rightchild()->CalculateSlabsDop();
-      treenode1->Rightchild()->EnlargeGeometry(Enlarge());
-
-      SearchRootContactCombined(treenode1->Leftchild(), treenode2);
-      SearchRootContactCombined(treenode1->Rightchild(), treenode2);
-    }
-
-    // treenode1 is leaf, treenode3 is inner
-    if (treenode1->Type() == SELFCO_LEAF && treenode2->Type() != SELFCO_LEAF)
-    {
-      treenode2->Leftchild()->CalculateSlabsDop();
-      treenode2->Leftchild()->EnlargeGeometry(Enlarge());
-      treenode2->Rightchild()->CalculateSlabsDop();
-      treenode2->Rightchild()->EnlargeGeometry(Enlarge());
-
-      SearchRootContactCombined(treenode1, treenode2->Leftchild());
-      SearchRootContactCombined(treenode1, treenode2->Rightchild());
-    }
-
-    // both treenodes are leaf --> feasible pair
+    // both tree nodes are leaf --> feasible pair
     if (treenode1->Type() == SELFCO_LEAF && treenode2->Type() == SELFCO_LEAF)
     {
       int gid1 = (int)treenode1->Elelist()[0];  // global id of first element
@@ -1624,9 +1506,9 @@ void CONTACT::SelfBinaryTree::MasterSlaveSorting(int eleID, bool isslave)
 }
 
 /*----------------------------------------------------------------------*
- | Separate update, contact search and master/slave sorting   popp 01/11|
+ | Update, contact search and master/slave sorting            popp 01/11|
  *----------------------------------------------------------------------*/
-void CONTACT::SelfBinaryTree::SearchContactSeparate()
+void CONTACT::SelfBinaryTree::SearchContact()
 {
   // get out of here if not participating in interface
   if (!lComm()) return;
@@ -1638,23 +1520,16 @@ void CONTACT::SelfBinaryTree::SearchContactSeparate()
   // reset contact pairs from last iteration
   contactpairs_.clear();
 
-  // lComm()->Barrier();
-  // const double t_start1 = Teuchos::Time::wallTime();
-
   //**********************************************************************
   // STEP 1: update geometry (DOPs and sample vectors) bottom-up
   //**********************************************************************
-  // update tree bottom up (for every treelayer)
+  // update tree bottom up (for every tree layer)
   for (int i = ((int)(treenodes_.size() - 1)); i >= 0; --i)
   {
     for (int j = 0; j < (int)(treenodes_[i].size()); j++)
       treenodes_[i][j]->UpdateSlabsBottomUp(Enlarge());
   }
   UpdateNormals();
-
-  // lComm()->Barrier();
-  // const double t_end1 = Teuchos::Time::wallTime()-t_start1;
-  // if (lComm()->MyPID()==0) std::cout << "********* Update:\t" << t_end1 << " seconds\n";
 
   //**********************************************************************
   // STEP 2: distribute roots among all processors
@@ -1671,47 +1546,21 @@ void CONTACT::SelfBinaryTree::SearchContactSeparate()
     for (int k = 0; k < ratio + 1; ++k) myroots.push_back(lComm()->MyPID() * (ratio + 1) + k);
 
   // give 'ratio' roots to the remaining procs
-  else /*(lComm()->MyPID() >= rest)*/
+  else
     for (int k = 0; k < ratio; ++k)
       myroots.push_back(rest * (ratio + 1) + (lComm()->MyPID() - rest) * ratio + k);
-
-  // lComm()->Barrier();
-  // const double t_start2 = Teuchos::Time::wallTime();
 
   //**********************************************************************
   // STEP 3: search for self contact starting at root nodes
   //**********************************************************************
-  for (int k = 0; k < (int)myroots.size(); ++k)
-  {
-    // std::cout << "Self search for root node " << myroots[k] << std::endl;
-    SearchSelfContactSeparate(roots_[myroots[k]]);
-  }
-
-  // lComm()->Barrier();
-  // const double t_end2 = Teuchos::Time::wallTime()-t_start2;
-  // if (lComm()->MyPID()==0) std::cout << "********* SelfSe:\t" << t_end2 << " seconds\n";
-
-  // lComm()->Barrier();
-  // const double t_start3 = Teuchos::Time::wallTime();
+  for (int k = 0; k < (int)myroots.size(); ++k) SearchSelfContact(roots_[myroots[k]]);
 
   //**********************************************************************
   // STEP 4: search for two-body contact between different roots
   //**********************************************************************
   for (int k = 0; k < (int)myroots.size(); ++k)
-  {
     for (int m = myroots[k] + 1; m < (int)roots_.size(); ++m)
-    {
-      // std::cout << "-> Root search for pair " << myroots[k] << " " << m << std::endl;
-      SearchRootContactSeparate(roots_[myroots[k]], roots_[m]);
-    }
-  }
-
-  // lComm()->Barrier();
-  // const double t_end3 = Teuchos::Time::wallTime()-t_start3;
-  // if (lComm()->MyPID()==0) std::cout << "********* RootSe:\t" << t_end3 << " seconds\n";
-
-  // lComm()->Barrier();
-  // const double t_start4 = Teuchos::Time::wallTime();
+      SearchRootContact(roots_[myroots[k]], roots_[m]);
 
   //**********************************************************************
   // STEP 5: slave and master facet sorting
@@ -1745,7 +1594,7 @@ void CONTACT::SelfBinaryTree::SearchContactSeparate()
     ++leafiter;
   }
 
-  // set all nonsmooth entities to slave
+  // set all non-smooth entities to slave
   while (leafiterNew != leafiter_end)
   {
     int gid = leafiterNew->first;
@@ -1768,180 +1617,7 @@ void CONTACT::SelfBinaryTree::SearchContactSeparate()
     ++leafiterNew;
   }
 
-  // lComm()->Barrier();
-  // const double t_end4 = Teuchos::Time::wallTime()-t_start4;
-  // if (lComm()->MyPID()==0) std::cout << "********* ResetE:\t" << t_end4 << " seconds\n";
-
-  // lComm()->Barrier();
-  // const double t_start5 = Teuchos::Time::wallTime();
-
-  // make contactpairs information redundant on all procs
-  std::vector<int> locdata;
-  for (int i = 0; i < elements_->NumMyElements(); ++i)
-  {
-    int gid = elements_->GID(i);
-    if (contactpairs_.find(gid) != contactpairs_.end()) locdata.push_back(gid);
-  }
-  Teuchos::RCP<Epetra_Map> mymap =
-      Teuchos::rcp(new Epetra_Map(-1, (int)locdata.size(), &locdata[0], 0, *lComm()));
-  Teuchos::RCP<Epetra_Map> redmap = LINALG::AllreduceEMap(*mymap);
-  DRT::Exporter ex(*mymap, *redmap, *lComm());
-  ex.Export(contactpairs_);
-
-  // lComm()->Barrier();
-  // const double t_end5 = Teuchos::Time::wallTime()-t_start5;
-  // if (lComm()->MyPID()==0) std::cout << "********* Commun:\t" << t_end5 << " seconds\n";
-
-  // lComm()->Barrier();
-  // const double t_start6 = Teuchos::Time::wallTime();
-
-  // now do new slave and master sorting
-  while (!contactpairs_.empty())
-  {
-    DRT::Element* element = Discret().gElement(contactpairs_.begin()->first);
-    CONTACT::CoElement* celement = dynamic_cast<CONTACT::CoElement*>(element);
-    MasterSlaveSorting(contactpairs_.begin()->first, celement->IsSlave());
-  }
-
-  // lComm()->Barrier();
-  // const double t_end6 = Teuchos::Time::wallTime()-t_start6;
-  // if (lComm()->MyPID()==0) std::cout << "********* SortSM:\t" << t_end6 << " seconds\n";
-
-  // lComm()->Barrier();
-  // const double t_start7 = Teuchos::Time::wallTime();
-
-  //**********************************************************************
-  // STEP 6: check consistency of slave and master facet sorting
-  //**********************************************************************
-  for (int i = 0; i < elements_->NumMyElements(); ++i)
-  {
-    int gid1 = elements_->GID(i);
-    DRT::Element* ele1 = Discret().gElement(gid1);
-    if (!ele1) dserror("ERROR: Cannot find element with gid %", gid1);
-    MORTAR::MortarElement* element1 = dynamic_cast<MORTAR::MortarElement*>(ele1);
-
-    // only slave elements store search candidates
-    if (!element1->IsSlave()) continue;
-
-    // loop over the search candidates of elements1
-    for (int j = 0; j < element1->MoData().NumSearchElements(); ++j)
-    {
-      int gid2 = element1->MoData().SearchElements()[j];
-      DRT::Element* ele2 = Discret().gElement(gid2);
-      if (!ele2) dserror("ERROR: Cannot find element with gid %", gid2);
-      MORTAR::MortarElement* element2 = dynamic_cast<MORTAR::MortarElement*>(ele2);
-
-      // error if this is a slave element
-      // (this happens if individual self contact patches are connected,
-      // because our sorting algorithm still fails in that case)
-      if (element2->IsSlave()) dserror("ERROR: Slave / master inconsistency in self contact");
-    }
-  }
-
-  // lComm()->Barrier();
-  // const double t_end7 = Teuchos::Time::wallTime()-t_start7;
-  // if (lComm()->MyPID()==0) std::cout << "********* CheckE:\t" << t_end7 << " seconds\n";
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | Combined update, contact search and master/slave sorting   popp 11/09|
- *----------------------------------------------------------------------*/
-void CONTACT::SelfBinaryTree::SearchContactCombined()
-{
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
-  // check is root node available
-  if ((int)roots_.size() == 0) dserror("ERROR: No root node for search!");
-  if (roots_[0] == Teuchos::null) dserror("ERROR: No root node for search!");
-
-  // reset contact pairs from last iteration
-  contactpairs_.clear();
-
-  //**********************************************************************
-  // STEP 1: update geometry (DOPs and sample vectors)
-  //**********************************************************************
-  for (int k = 0; k < (int)roots_.size(); ++k)
-  {
-    roots_[k]->CalculateSlabsDop();
-    roots_[k]->EnlargeGeometry(Enlarge());
-  }
-  UpdateNormals();
-
-  //**********************************************************************
-  // STEP 2: distribute roots among all processors
-  //**********************************************************************
-  // introduce some parallelization for multibody contact
-  std::vector<int> myroots(0);
-  int nproc = lComm()->NumProc();
-  int nroot = (int)roots_.size();
-  int ratio = nroot / nproc;
-  int rest = nroot % nproc;
-
-  // give 'ratio+1' roots to the first 'rest' procs
-  if (lComm()->MyPID() < rest)
-    for (int k = 0; k < ratio + 1; ++k) myroots.push_back(lComm()->MyPID() * (ratio + 1) + k);
-
-  // give 'ratio' roots to the remaining procs
-  else /*(lComm()->MyPID() >= rest)*/
-    for (int k = 0; k < ratio; ++k)
-      myroots.push_back(rest * (ratio + 1) + (lComm()->MyPID() - rest) * ratio + k);
-
-  //**********************************************************************
-  // STEP 3: search for self contact starting at root nodes
-  //**********************************************************************
-  for (int k = 0; k < (int)myroots.size(); ++k)
-  {
-    // std::cout << "Self search for root node " << myroots[k] << std::endl;
-    SearchSelfContactSeparate(roots_[myroots[k]]);
-  }
-
-  //**********************************************************************
-  // STEP 4: search for two-body contact between different roots
-  //**********************************************************************
-  for (int k = 0; k < (int)myroots.size(); ++k)
-  {
-    for (int m = myroots[k] + 1; m < (int)roots_.size(); ++m)
-    {
-      // std::cout << "-> Root search for pair " << myroots[k] << " " << m << std::endl;
-      SearchRootContactSeparate(roots_[myroots[k]], roots_[m]);
-    }
-  }
-
-  //**********************************************************************
-  // STEP 5: slave and master facet sorting
-  //**********************************************************************
-  std::map<int, Teuchos::RCP<SelfBinaryTreeNode>>::iterator leafiter = leafsmap_.begin();
-  std::map<int, Teuchos::RCP<SelfBinaryTreeNode>>::iterator leafiter_end = leafsmap_.end();
-
-  // first (re)set all contact elements and nodes to master
-  while (leafiter != leafiter_end)
-  {
-    int gid = leafiter->first;
-    DRT::Element* element = Discret().gElement(gid);
-    CONTACT::CoElement* celement = dynamic_cast<CONTACT::CoElement*>(element);
-
-    if (celement->IsSlave() == true)
-    {
-      // reset element to master
-      celement->SetSlave() = false;
-
-      // reset nodes to master
-      for (int i = 0; i < (int)element->NumNode(); ++i)
-      {
-        DRT::Node* node = element->Nodes()[i];
-        CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
-        cnode->SetSlave() = false;
-      }
-    }
-
-    // increment iterator
-    ++leafiter;
-  }
-
-  // make contactpairs information redundant on all procs
+  // make contact pairs information redundant on all procs
   std::vector<int> locdata;
   for (int i = 0; i < elements_->NumMyElements(); ++i)
   {
@@ -1983,9 +1659,8 @@ void CONTACT::SelfBinaryTree::SearchContactCombined()
       if (!ele2) dserror("ERROR: Cannot find element with gid %", gid2);
       MORTAR::MortarElement* element2 = dynamic_cast<MORTAR::MortarElement*>(ele2);
 
-      // error if this is a slave element
-      // (this happens if individual self contact patches are connected,
-      // because our sorting algorithm still fails in that case)
+      // error if this is a slave element (this happens if individual self contact patches are
+      // connected, because our sorting algorithm still fails in that case)
       if (element2->IsSlave()) dserror("ERROR: Slave / master inconsistency in self contact");
     }
   }

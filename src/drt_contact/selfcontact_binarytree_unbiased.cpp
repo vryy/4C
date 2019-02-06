@@ -434,9 +434,9 @@ bool CONTACT::UnbiasedSelfBinaryTree::RoughCheckRefConfig(int ele1gid, int ele2g
 }
 
 /*----------------------------------------------------------------------*
- | Separate update and contact search  (private)           schmidt 01/19|
+ | Update and contact search (private)                     schmidt 01/19|
  *----------------------------------------------------------------------*/
-void CONTACT::UnbiasedSelfBinaryTree::SearchContactSeparate()
+void CONTACT::UnbiasedSelfBinaryTree::SearchContact()
 {
   // get out of here if not participating in interface
   if (!lComm()) return;
@@ -470,14 +470,14 @@ void CONTACT::UnbiasedSelfBinaryTree::SearchContactSeparate()
   //**********************************************************************
   // STEP 3: search for self contact starting at root nodes
   //**********************************************************************
-  for (unsigned k = 0; k < myroots.size(); ++k) SearchSelfContactSeparate(Roots()[myroots[k]]);
+  for (unsigned k = 0; k < myroots.size(); ++k) SearchSelfContact(Roots()[myroots[k]]);
 
   //**********************************************************************
   // STEP 4: search for two-body contact between different roots
   //**********************************************************************
   for (unsigned m = 0; m < myroots.size(); ++m)
     for (unsigned k = 0; k < Roots().size(); ++k)
-      if (myroots[m] != k) SearchRootContactSeparate(Roots()[myroots[m]], Roots()[k]);
+      if (myroots[m] != k) SearchRootContact(Roots()[myroots[m]], Roots()[k]);
 
   //**********************************************************************
   // STEP 5: all contact elements have to be slave elements

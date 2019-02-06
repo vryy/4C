@@ -87,7 +87,7 @@ namespace MORTAR
     \brief Update slabs of current treenode in bottom up way
 
     */
-    void UpdateSlabsBottomUp(double& eps);
+    void UpdateSlabsBottomUp(double& eps) final;
 
     /*!
     \brief Initialize Tree
@@ -106,13 +106,6 @@ namespace MORTAR
 
     */
     void PrintType() final;
-
-    /*!
-    \brief Set slabs of current treenode
-
-    */
-    void SetSlabs(Epetra_SerialDenseMatrix& newslabs);
-
     //@}
 
     //! @name Access and modification methods
@@ -130,12 +123,6 @@ namespace MORTAR
     BinaryTreeNodeType Type() const { return type_; }
 
     /*!
-    \brief Set type of treenode
-
-    */
-    void SetType(MORTAR::BinaryTreeNodeType type) { type_ = type; }
-
-    /*!
     \brief Return pointer to right child
 
     */
@@ -146,41 +133,6 @@ namespace MORTAR
 
     */
     Teuchos::RCP<BinaryTreeNode> Leftchild() const { return leftchild_; }
-
-    /*!
-    \brief Return pointer to parent
-
-    */
-    Teuchos::RCP<BinaryTreeNode> Parent() const { return parent_; }
-
-    /*!
-    \brief Set children of a treenode
-
-    */
-    void SetChildren(
-        Teuchos::RCP<BinaryTreeNode> leftchild, Teuchos::RCP<BinaryTreeNode> rightchild);
-
-    /*!
-    \brief Set parent of treenode
-
-    */
-    void SetParent(Teuchos::RCP<BinaryTreeNode> parent) { parent_ = parent; }
-
-    /*!
-    \brief Return different maps of tree nodes
-
-    */
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& Streenodesmap()
-    {
-      return streenodesmap_;
-    }
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& Mtreenodesmap()
-    {
-      return mtreenodesmap_;
-    }
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& Sleafsmap() { return sleafsmap_; }
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& Mleafsmap() { return mleafsmap_; }
-
     //@}
 
    private:
@@ -322,13 +274,6 @@ namespace MORTAR
 
     */
     Teuchos::RCP<BinaryTreeNode>& Sroot() { return sroot_; }
-
-    /*!
-    \brief Return pointer to mroot-treenode
-
-    */
-    Teuchos::RCP<BinaryTreeNode>& Mroot() { return mroot_; }
-
     //@}
 
     //! @name Evaluation methods
@@ -343,7 +288,7 @@ namespace MORTAR
     \brief Calculate minimal element length / inflation factor "enlarge"
 
     */
-    void SetEnlarge() override;
+    void SetEnlarge() final;
 
     /*!
     \brief Update master and slave tree in a topdown way
@@ -381,44 +326,15 @@ namespace MORTAR
         std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& treenodesmap);
 
     /*!
-    \brief Evaluate Binary search tree for separate update and search
+    \brief Evaluate binary search tree
+
+    \note Search and update is carried out in a separate way. There has also been a combined
+    approach, but this has been removed as part of GitLab Issue 181, as it is outperformed by the
+    separate approach for large problems!
 
     */
-    void SearchSeparate()
-    {
-      EvaluateSearchSeparate(sroot_, mroot_);
-      return;
-    }
-
-    /*!
-    \brief Evaluate Binary search tree for separate update and search
-
-    */
-    void EvaluateSearchSeparate(
+    void EvaluateSearch(
         Teuchos::RCP<BinaryTreeNode> streenode, Teuchos::RCP<BinaryTreeNode> mtreenode);
-
-    /*!
-    \brief Evaluate Binary search tree for combined search and update
-
-    */
-    void SearchCombined()
-    {  // if proc has no slave elements --> return;
-      if (sroot_->Type() == NOSLAVE_ELEMENTS) return;
-      sroot_->CalculateSlabsDop();
-      sroot_->EnlargeGeometry(Enlarge());
-      mroot_->CalculateSlabsDop();
-      mroot_->EnlargeGeometry(Enlarge());
-      EvaluateSearchCombined(sroot_, mroot_);
-      return;
-    }
-
-    /*!
-    \brief Evaluate Binary search tree for combined search and update
-
-    */
-    void EvaluateSearchCombined(
-        Teuchos::RCP<BinaryTreeNode> streenode, Teuchos::RCP<BinaryTreeNode> mtreenode);
-
 
     // don't want = operator and cctor
     BinaryTree operator=(const BinaryTree& old);

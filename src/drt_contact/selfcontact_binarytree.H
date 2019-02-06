@@ -82,7 +82,7 @@ namespace CONTACT
     \brief Update slabs of current tree node in bottom up way
 
     */
-    void UpdateSlabsBottomUp(double& eps);
+    void UpdateSlabsBottomUp(double& eps) final;
 
     /*!
     \brief Calculate the logical array of qualified sample vectors for leaf nodes
@@ -103,25 +103,10 @@ namespace CONTACT
     std::vector<bool> QualifiedVectors() const { return qualifiedvectors_; }
 
     /*!
-    \brief Set logical array of qualified sample vectors
-
-    */
-    void SetQualifiedVectors(std::vector<bool> qualifiedvectors)
-    {
-      qualifiedvectors_ = qualifiedvectors;
-    }
-
-    /*!
     \brief Print type of tree node to std::cout
 
     */
     void PrintType() final;
-
-    /*!
-    \brief Set slabs of current treenode
-
-    */
-    void SetSlabs(Epetra_SerialDenseMatrix& newslabs);
     //@}
 
     //! @name Access methods
@@ -143,12 +128,6 @@ namespace CONTACT
 
     */
     SelfBinaryTreeNodeType Type() const { return type_; }
-
-    /*!
-    \brief Set type of tree node
-
-    */
-    void SetType(SelfBinaryTreeNodeType type) { type_ = type; }
 
     /*!
     \brief Return pointer to adjacent tree nodes
@@ -549,8 +528,7 @@ namespace CONTACT
     //! @name Evaluation methods
 
     /*!
-    \brief Evaluate search self binary tree:
-           call SetEnlarge() and SearchContactSeparate()
+    \brief Evaluate search self binary tree: call SetEnlarge() and SearchContact()
 
     */
     void EvaluateSearch() final;
@@ -643,15 +621,6 @@ namespace CONTACT
     const Epetra_SerialDenseMatrix& SampleVectors() const { return samplevectors_; }
 
     /*!
-    \brief Return write access to storage scheme of all tree nodes
-
-    */
-    std::vector<std::vector<Teuchos::RCP<SelfBinaryTreeNode>>>& SetTreenodes()
-    {
-      return treenodes_;
-    }
-
-    /*!
     \brief Return reference to storage scheme of all tree nodes
 
     */
@@ -734,17 +703,14 @@ namespace CONTACT
     \brief Evaluate Binary search tree for self contact search
 
     */
-    void SearchSelfContactSeparate(Teuchos::RCP<SelfBinaryTreeNode> treenode);
-    void SearchSelfContactCombined(Teuchos::RCP<SelfBinaryTreeNode> treenode);
+    void SearchSelfContact(Teuchos::RCP<SelfBinaryTreeNode> treenode);
 
     /*!
     \brief Evaluate Binary search tree for contact search between separate roots
            (this is more or less identical to two-body contact search)
 
     */
-    void SearchRootContactSeparate(
-        Teuchos::RCP<SelfBinaryTreeNode> treenode1, Teuchos::RCP<SelfBinaryTreeNode> treenode2);
-    void SearchRootContactCombined(
+    void SearchRootContact(
         Teuchos::RCP<SelfBinaryTreeNode> treenode1, Teuchos::RCP<SelfBinaryTreeNode> treenode2);
 
     /*!
@@ -762,7 +728,7 @@ namespace CONTACT
     \param [in/out] dualgraph:  construction of binary tree is based on this data
 
     */
-    virtual void UpdateDualGraph(Teuchos::RCP<SelfDualEdge>& contractedEdge,
+    void UpdateDualGraph(Teuchos::RCP<SelfDualEdge>& contractedEdge,
         std::vector<Teuchos::RCP<SelfDualEdge>>& adjEdges,
         Teuchos::RCP<SelfBinaryTreeNode>& newNode,
         std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>* dualgraph);
@@ -805,21 +771,14 @@ namespace CONTACT
         std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>* dualGraph);
 
     /*!
-    \brief Evaluate Binary search tree for separate update (bottom-up,
-           on whole interface) and search
+    \brief Evaluate binary search tree
 
-    This is the default version, because it outperforms the combined
-    algorithm for large self contact problems.
-
-    */
-    virtual void SearchContactSeparate();
-
-    /*!
-    \brief Evaluate Binary search tree for combined update (top-down,
-           only where necessary) and search
+    \note Search and update is carried out in a separate way. There has also been a combined
+    approach, but this has been removed as part of GitLab Issue 181, as it is outperformed by the
+    separate approach for large self contact problems!
 
     */
-    void SearchContactCombined();
+    virtual void SearchContact();
 
     /*!
     \brief Find contact of adjacent surfaces
