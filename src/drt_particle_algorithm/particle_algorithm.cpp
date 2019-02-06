@@ -603,8 +603,19 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialParticles()
  *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitalWallDistribution()
 {
+  // update bin row and column map
+  particlewall_->UpdateBinRowAndColMap(
+      particleengine_->GetBinRowMap(), particleengine_->GetBinColMap());
+
   // distribute wall elements and nodes
-  particlewall_->DistributeWallElementsAndNodes(particleengine_->GetBinRowMap());
+  particlewall_->DistributeWallElementsAndNodes();
+
+  // relate bins to column wall elements
+  particlewall_->RelateBinsToColWallEles();
+
+  // build particle to wall neighbors
+  if (particleinteraction_)
+    particlewall_->BuildParticleToWallNeighbors(particleengine_->GetParticlesToBins());
 }
 
 /*---------------------------------------------------------------------------*
@@ -712,9 +723,18 @@ void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
       // get number of particles on this processor
       numparticlesafterlastloadbalance_ = particleengine_->GetNumberOfParticles();
 
-      // distribute wall elements and nodes
       if (particlewall_)
-        particlewall_->DistributeWallElementsAndNodes(particleengine_->GetBinRowMap());
+      {
+        // update bin row and column map
+        particlewall_->UpdateBinRowAndColMap(
+            particleengine_->GetBinRowMap(), particleengine_->GetBinColMap());
+
+        // distribute wall elements and nodes
+        particlewall_->DistributeWallElementsAndNodes();
+
+        // relate bins to column wall elements
+        particlewall_->RelateBinsToColWallEles();
+      }
     }
 
     // ghost particles on other processors
@@ -722,6 +742,10 @@ void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
 
     // build overlapping particle to particle neighbors
     if (particleinteraction_) particleengine_->BuildParticleToParticleNeighbors();
+
+    // build particle to wall neighbors
+    if (particleinteraction_ and particlewall_)
+      particlewall_->BuildParticleToWallNeighbors(particleengine_->GetParticlesToBins());
 
     // build global id to local index map
     particleengine_->BuildGlobalIDToLocalIndexMap();

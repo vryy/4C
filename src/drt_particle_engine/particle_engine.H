@@ -128,11 +128,17 @@ namespace PARTICLEENGINE
     //! get bin row map
     const Teuchos::RCP<Epetra_Map> GetBinRowMap() const { return binrowmap_; };
 
+    //! get bin col map
+    const Teuchos::RCP<Epetra_Map> GetBinColMap() const { return bincolmap_; };
+
     //! get particle container bundle
     const ParticleContainerBundleShrdPtr GetParticleContainerBundle() const override
     {
       return particlecontainerbundle_;
     };
+
+    //! get reference to (owned and ghosted) particles to bins
+    const ParticlesToBins& GetParticlesToBins() const;
 
     //! get reference to potential particle neighbors
     const PotentialParticleNeighbors& GetPotentialParticleNeighbors() const override;
@@ -307,7 +313,7 @@ namespace PARTICLEENGINE
     std::unique_ptr<PARTICLEENGINE::ParticleRuntimeVtpWriter> particlevtpwriter_;
 
     //! relate (owned and ghosted) particles to bins
-    std::vector<std::vector<std::pair<PARTICLEENGINE::ParticleType, int>>> particlestobins_;
+    ParticlesToBins particlestobins_;
 
     //! relate potential particle neighbors of all types and statuses
     PotentialParticleNeighbors potentialparticleneighbors_;

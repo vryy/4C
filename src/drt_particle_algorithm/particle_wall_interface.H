@@ -35,6 +35,9 @@ namespace PARTICLEALGORITHM
    public:
     //! virtual destructor
     virtual ~WallHandlerInterface(){};
+
+    //! get reference to potential wall neighbors
+    virtual const PARTICLEENGINE::PotentialWallNeighbors& GetPotentialWallNeighbors() const = 0;
   };
 
 }  // namespace PARTICLEALGORITHM

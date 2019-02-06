@@ -25,11 +25,15 @@
  *---------------------------------------------------------------------------*/
 #include "particle_wall_interface.H"
 
+#include "../drt_particle_engine/particle_typedefs.H"
+
 #include "../linalg/linalg_fixedsizematrix.H"
 
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Teuchos_ParameterList.hpp>
+
+#include "../linalg/linalg_utils.H"
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                       sfuchs 10/2018 |
@@ -88,8 +92,23 @@ namespace PARTICLEALGORITHM
     //! write wall runtime vtu output
     virtual void WriteWallRuntimeVtuOutput(const int step, const double time) const;
 
+    //! update bin row and column map
+    virtual void UpdateBinRowAndColMap(
+        const Teuchos::RCP<Epetra_Map> binrowmap, const Teuchos::RCP<Epetra_Map> bincolmap) final;
+
     //! distribute wall elements and nodes
-    virtual void DistributeWallElementsAndNodes(const Teuchos::RCP<Epetra_Map> binrowmap) = 0;
+    virtual void DistributeWallElementsAndNodes() = 0;
+
+    //! relate bins to column wall elements
+    virtual void RelateBinsToColWallEles() final;
+
+    //! build particle to wall neighbors
+    virtual void BuildParticleToWallNeighbors(
+        const PARTICLEENGINE::ParticlesToBins& particlestobins) final;
+
+    //! get reference to potential wall neighbors
+    virtual const PARTICLEENGINE::PotentialWallNeighbors& GetPotentialWallNeighbors()
+        const override final;
 
    private:
     //! init wall discretization
@@ -104,8 +123,18 @@ namespace PARTICLEALGORITHM
     //! setup wall discretization runtime vtu writer
     virtual void SetupWallVtuWriter() final;
 
+    //! determine nodal positions of column wall element
+    virtual void DetermineColWallEleNodalPos(
+        DRT::Element* ele, std::map<int, LINALG::Matrix<3, 1>>& colelenodalpos) final;
+
     //! setup time of runtime vtu writer
     double setuptime_;
+
+    //! relate bins to column wall elements
+    PARTICLEENGINE::BinsToColWallEles binstocolwalleles_;
+
+    //! relate potential neighboring column wall elements to particles of all types
+    PARTICLEENGINE::PotentialWallNeighbors potentialwallneighbors_;
 
    protected:
     //! communication
@@ -123,11 +152,23 @@ namespace PARTICLEALGORITHM
     //! binning strategy
     std::shared_ptr<BINSTRATEGY::BinningStrategy> binstrategy_;
 
+    //! distribution of row bins
+    Teuchos::RCP<Epetra_Map> binrowmap_;
+
+    //! distribution of col bins
+    Teuchos::RCP<Epetra_Map> bincolmap_;
+
     //! wall discretization
     Teuchos::RCP<DRT::Discretization> walldiscretization_;
 
     //! wall discretization runtime vtu writer
     std::unique_ptr<DiscretizationRuntimeVtuWriter> wallvtuwriter_;
+
+    //! flag denoting valid relation of bins to column wall elements
+    bool validwallelements_;
+
+    //! flag denoting valid relation of wall neighbors
+    bool validwallneighbors_;
   };
 
   class WallHandlerDiscretCondition : public WallHandlerBase
@@ -141,8 +182,7 @@ namespace PARTICLEALGORITHM
     virtual ~WallHandlerDiscretCondition(){};
 
     //! distribute wall elements and nodes
-    virtual void DistributeWallElementsAndNodes(
-        const Teuchos::RCP<Epetra_Map> binrowmap) override final;
+    virtual void DistributeWallElementsAndNodes() override final;
 
    private:
     //! setup wall discretization
@@ -159,8 +199,7 @@ namespace PARTICLEALGORITHM
     virtual ~WallHandlerBoundingBox(){};
 
     //! distribute wall elements and nodes
-    virtual void DistributeWallElementsAndNodes(
-        const Teuchos::RCP<Epetra_Map> binrowmap) override final;
+    virtual void DistributeWallElementsAndNodes() override final;
 
    private:
     //! setup wall discretization

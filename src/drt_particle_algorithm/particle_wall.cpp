@@ -20,6 +20,9 @@
 #include "particle_wall.H"
 
 #include "../drt_particle_engine/particle_engine_interface.H"
+#include "../drt_particle_engine/particle_enums.H"
+#include "../drt_particle_engine/particle_container_bundle.H"
+#include "../drt_particle_engine/particle_container.H"
 
 #include "../drt_binstrategy/binning_strategy.H"
 
@@ -44,7 +47,12 @@
  *---------------------------------------------------------------------------*/
 PARTICLEALGORITHM::WallHandlerBase::WallHandlerBase(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
-    : setuptime_(0.0), comm_(comm), myrank_(comm.MyPID()), params_(params)
+    : setuptime_(0.0),
+      comm_(comm),
+      myrank_(comm.MyPID()),
+      params_(params),
+      validwallelements_(false),
+      validwallneighbors_(false)
 {
   // empty constructor
 }
@@ -165,6 +173,161 @@ void PARTICLEALGORITHM::WallHandlerBase::WriteWallRuntimeVtuOutput(
 }
 
 /*---------------------------------------------------------------------------*
+ | update bin row and column map                              sfuchs 11/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::WallHandlerBase::UpdateBinRowAndColMap(
+    const Teuchos::RCP<Epetra_Map> binrowmap, const Teuchos::RCP<Epetra_Map> bincolmap)
+{
+  binrowmap_ = binrowmap;
+  bincolmap_ = bincolmap;
+}
+
+/*---------------------------------------------------------------------------*
+ | relate bins to column wall elements                        sfuchs 11/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::WallHandlerBase::RelateBinsToColWallEles()
+{
+  // clear vector relating column wall elements to bins
+  binstocolwalleles_.assign(walldiscretization_->NumMyColElements(), std::vector<int>(0));
+
+  // invalidate flags
+  validwallelements_ = false;
+  validwallneighbors_ = false;
+
+  // wall discretization (currently) non-moving
+  Teuchos::RCP<Epetra_Vector> disnp = Teuchos::null;
+
+  // iterate over column wall elements
+  for (int collidofele = 0; collidofele < walldiscretization_->NumMyColElements(); ++collidofele)
+  {
+    // get pointer to current column wall elements
+    DRT::Element* ele = walldiscretization_->lColElement(collidofele);
+
+    // get corresponding bin ids for element
+    std::vector<int> binids;
+    binstrategy_->DistributeElementToBinsUsingEleXAABB(walldiscretization_, ele, binids, disnp);
+
+    // relate ids of owned bins to column wall elements
+    for (int gidofbin : binids)
+      if (not(bincolmap_->LID(gidofbin) < 0)) binstocolwalleles_[collidofele].push_back(gidofbin);
+  }
+
+  // validate flag denoting validity of map relating bins to column wall elements
+  validwallelements_ = true;
+}
+
+/*---------------------------------------------------------------------------*
+ | build particle to wall neighbors                           sfuchs 11/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::WallHandlerBase::BuildParticleToWallNeighbors(
+    const PARTICLEENGINE::ParticlesToBins& particlestobins)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::WallHandlerBase::BuildParticleToWallNeighbors");
+
+  // safety check
+  if ((not validwallelements_)) dserror("invalid relation of bins to column wall elements!");
+
+  // clear potential neighboring column wall elements
+  potentialwallneighbors_.clear();
+
+  // invalidate flag denoting validity of wall neighbors map
+  validwallneighbors_ = false;
+
+  // get particle container bundle
+  PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
+      particleengineinterface_->GetParticleContainerBundle();
+
+  // get minimum relevant bin size
+  const double minbinsize = particleengineinterface_->MinBinSize();
+
+  // iterate over column wall elements
+  for (int collidofele = 0; collidofele < walldiscretization_->NumMyColElements(); ++collidofele)
+  {
+    // set of neighboring bins of current column wall element
+    std::set<int> neighborbins;
+
+    // iterate over bins related to current column wall element
+    for (int gidofbin : binstocolwalleles_[collidofele])
+    {
+      // get neighboring bins to current bin
+      std::vector<int> binvec;
+      binstrategy_->GetNeighborAndOwnBinIds(gidofbin, binvec);
+
+      // insert into set of neighboring bins of current column wall element
+      neighborbins.insert(binvec.begin(), binvec.end());
+    }
+
+    // get pointer to current column wall elements
+    DRT::Element* ele = walldiscretization_->lColElement(collidofele);
+
+    // determine nodal positions of column wall element
+    std::map<int, LINALG::Matrix<3, 1>> colelenodalpos;
+    DetermineColWallEleNodalPos(ele, colelenodalpos);
+
+    // iterate over neighboring bins
+    for (int gidofneighborbin : neighborbins)
+    {
+      // consider only owned neighboring bins
+      if (binrowmap_->LID(gidofneighborbin) < 0) continue;
+
+      // get local id of neighboring bin
+      const int collidofneighboringbin = bincolmap_->LID(gidofneighborbin);
+
+      // check if current neighboring bin contains particles
+      if (particlestobins[collidofneighboringbin].empty()) continue;
+
+      // iterate over particles in current neighboring bin
+      for (auto& neighborParticleIt : particlestobins[collidofneighboringbin])
+      {
+        // get type of neighboring particle
+        PARTICLEENGINE::TypeEnum neighborTypeEnum = neighborParticleIt.first;
+
+        // get local index of neighboring particle
+        const int neighborindex = neighborParticleIt.second;
+
+        // get container of neighboring particle of current particle type
+        PARTICLEENGINE::ParticleContainer* neighborcontainer =
+            particlecontainerbundle->GetSpecificContainer(neighborTypeEnum, PARTICLEENGINE::Owned);
+
+        // get position of neighboring particle
+        const LINALG::Matrix<3, 1> currpos(
+            neighborcontainer->GetPtrToParticleState(PARTICLEENGINE::Position, neighborindex));
+
+        // get coordinates of closest point on current column wall element to particle
+        LINALG::Matrix<3, 1> closestpos;
+        GEO::nearest3DObjectOnElement(ele, colelenodalpos, currpos, closestpos);
+
+        // distance between particle and closest point on current column wall element
+        LINALG::Matrix<3, 1> dist;
+        dist.Update(1.0, currpos, -1.0, closestpos);
+
+        // distance larger than minimum bin size
+        if (dist.Norm2() > minbinsize) continue;
+
+        // append potential wall neighbor pair
+        potentialwallneighbors_.push_back(std::make_pair(
+            std::make_tuple(neighborTypeEnum, PARTICLEENGINE::Owned, neighborindex), ele));
+      }
+    }
+  }
+
+  // validate flag denoting validity of wall neighbors map
+  validwallneighbors_ = true;
+}
+
+/*---------------------------------------------------------------------------*
+ | get reference to potential wall neighbors                  sfuchs 11/2018 |
+ *---------------------------------------------------------------------------*/
+const PARTICLEENGINE::PotentialWallNeighbors&
+PARTICLEALGORITHM::WallHandlerBase::GetPotentialWallNeighbors() const
+{
+  // safety check
+  if (not validwallneighbors_) dserror("invalid wall neighbors!");
+
+  return potentialwallneighbors_;
+}
+
+/*---------------------------------------------------------------------------*
  | init wall discretization                                   sfuchs 10/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::WallHandlerBase::InitWallDiscretization()
@@ -206,6 +369,43 @@ void PARTICLEALGORITHM::WallHandlerBase::SetupWallVtuWriter()
 }
 
 /*---------------------------------------------------------------------------*
+ | determine nodal positions of column wall element           sfuchs 11/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::WallHandlerBase::DetermineColWallEleNodalPos(
+    DRT::Element* ele, std::map<int, LINALG::Matrix<3, 1>>& colelenodalpos)
+{
+  // wall discretization (currently) non-moving
+  Teuchos::RCP<Epetra_Vector> disnp = Teuchos::null;
+
+  // get pointer to nodes of current column wall element
+  DRT::Node** nodes = ele->Nodes();
+  const int numnodes = ele->NumNode();
+
+  // determine nodal displacements
+  std::vector<double> nodal_disp(numnodes * 3, 0.0);
+  if (disnp != Teuchos::null)
+  {
+    std::vector<int> lm_wall;
+    lm_wall.reserve(numnodes * 3);
+    std::vector<int> lmowner;
+    std::vector<int> lmstride;
+    ele->LocationVector(*walldiscretization_, lm_wall, lmowner, lmstride);
+
+    DRT::UTILS::ExtractMyValues(*disnp, nodal_disp, lm_wall);
+  }
+
+  // iterate over nodes of current column wall element
+  for (int k = 0; k < numnodes; ++k)
+  {
+    // get reference to current nodal position
+    LINALG::Matrix<3, 1>& currpos = colelenodalpos[nodes[k]->Id()];
+
+    // determine nodal position
+    for (int dim = 0; dim < 3; ++dim) currpos(dim) = nodes[k]->X()[dim] + nodal_disp[k * 3 + dim];
+  }
+}
+
+/*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 10/2018 |
  *---------------------------------------------------------------------------*/
 PARTICLEALGORITHM::WallHandlerDiscretCondition::WallHandlerDiscretCondition(
@@ -218,10 +418,13 @@ PARTICLEALGORITHM::WallHandlerDiscretCondition::WallHandlerDiscretCondition(
 /*---------------------------------------------------------------------------*
  | distribute wall elements and nodes                         sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallHandlerDiscretCondition::DistributeWallElementsAndNodes(
-    const Teuchos::RCP<Epetra_Map> binrowmap)
+void PARTICLEALGORITHM::WallHandlerDiscretCondition::DistributeWallElementsAndNodes()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::WallHandlerBase::DistributeWallElesAndNodes");
+
+  // invalidate flags
+  validwallelements_ = false;
+  validwallneighbors_ = false;
 
   // wall discretization (currently) non-moving
   Teuchos::RCP<Epetra_Vector> disnp = Teuchos::null;
@@ -230,7 +433,7 @@ void PARTICLEALGORITHM::WallHandlerDiscretCondition::DistributeWallElementsAndNo
   Teuchos::RCP<Epetra_Map> stdelecolmap;
   Teuchos::RCP<Epetra_Map> stdnodecolmapdummy;
   binstrategy_->StandardDiscretizationGhosting(
-      walldiscretization_, binrowmap, disnp, stdelecolmap, stdnodecolmapdummy);
+      walldiscretization_, binrowmap_, disnp, stdelecolmap, stdnodecolmapdummy);
 
   // extended ghosting
   std::map<int, std::set<int>> bintorowelemap;
@@ -337,8 +540,7 @@ PARTICLEALGORITHM::WallHandlerBoundingBox::WallHandlerBoundingBox(
 /*---------------------------------------------------------------------------*
  | distribute wall elements and nodes                         sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallHandlerBoundingBox::DistributeWallElementsAndNodes(
-    const Teuchos::RCP<Epetra_Map> binrowmap)
+void PARTICLEALGORITHM::WallHandlerBoundingBox::DistributeWallElementsAndNodes()
 {
   // no need to distribute wall elements and nodes
 }

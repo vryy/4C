@@ -615,6 +615,18 @@ bool PARTICLEENGINE::ParticleEngine::HaveValidParticleConnectivity() const
 }
 
 /*---------------------------------------------------------------------------*
+ | get reference to (owned and ghosted) particles to bins     sfuchs 11/2018 |
+ *---------------------------------------------------------------------------*/
+const PARTICLEENGINE::ParticlesToBins& PARTICLEENGINE::ParticleEngine::GetParticlesToBins() const
+{
+  // safety check
+  if ((not validownedparticles_) or (not validghostedparticles_))
+    dserror("invalid map relating particles to bins!");
+
+  return particlestobins_;
+}
+
+/*---------------------------------------------------------------------------*
  | get reference to potential particle neighbors              sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
 const PARTICLEENGINE::PotentialParticleNeighbors&
