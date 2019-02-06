@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_interaction_sph_particle_pair.H
+\file particle_interaction_dem_neighbor_pair_struct.H
 
-\brief particle pair structs for smoothed particle hydrodynamics (SPH) interactions
+\brief neighbor pair struct for discrete element method (DEM) interactions
 
 \level 3
 
@@ -15,30 +15,31 @@
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 08/2018 |
+ | definitions                                                sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_INTERACTION_SPH_PARTICLE_PAIR_H
-#define PARTICLE_INTERACTION_SPH_PARTICLE_PAIR_H
+#ifndef PARTICLE_INTERACTION_DEM_NEIGHBOR_PAIR_STRUCT_H
+#define PARTICLE_INTERACTION_DEM_NEIGHBOR_PAIR_STRUCT_H
 
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 08/2018 |
+ | class definitions                                          sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
   //! struct to store quantities of interacting particles
-  struct SPHParticlePair
+  struct DEMNeighborPair
   {
-    //! absolute distance between particles
-    double absdist_;
+    //! local index tuple of particles i and j
+    PARTICLEENGINE::LocalIndexTuple tuple_i_;
+    PARTICLEENGINE::LocalIndexTuple tuple_j_;
 
-    //! versor from particle j to i
-    double e_ij_[3];
+    //! gap between particles
+    double gap_;
 
-    //! kernel
-    double Wij_;
+    //! versor from particle i to j
+    double e_ji_[3];
 
-    //! first derivative of kernel
-    double dWdrij_;
+    //! effective mass of particles i and j
+    double m_eff_;
   };
 }  // namespace PARTICLEINTERACTION
 

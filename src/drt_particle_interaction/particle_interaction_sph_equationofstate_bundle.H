@@ -69,11 +69,11 @@ namespace PARTICLEINTERACTION
     //! read restart of equation of state bundle
     void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
-    //! get specific equation of state
-    inline std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBase> GetSpecificEquationOfState(
+    //! return pointer to specific equation of state
+    inline const PARTICLEINTERACTION::SPHEquationOfStateBase* GetPtrToSpecificEquationOfState(
         PARTICLEENGINE::TypeEnum typeEnum) const
     {
-      return phasetypetoequationofstate_[typeEnum];
+      return phasetypetoequationofstate_[typeEnum].get();
     };
 
    private:
@@ -81,7 +81,7 @@ namespace PARTICLEINTERACTION
     const Teuchos::ParameterList& params_sph_;
 
     //! equation of state handler for all particle types
-    std::vector<std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBase>>
+    std::vector<std::unique_ptr<PARTICLEINTERACTION::SPHEquationOfStateBase>>
         phasetypetoequationofstate_;
 
     //! set of particle types of stored equation of state handlers

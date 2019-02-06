@@ -111,7 +111,7 @@ void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::SetParticleReferenceP
   for (auto& particleType : typessubjectedtodirichletbc_)
   {
     // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container =
+    PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
     // set particle reference position
@@ -152,11 +152,11 @@ void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::EvaluateDirichletBoun
     PARTICLEENGINE::TypeEnum particleType = typeIt.first;
 
     // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container =
+    PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
-    int particlestored = container->ParticlesStored();
+    const int particlestored = container->ParticlesStored();
 
     // no owned particles of current particle type
     if (particlestored <= 0) continue;

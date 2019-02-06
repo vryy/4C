@@ -188,11 +188,11 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
       if (not runtime_vtpwriter) continue;
 
       // get container of current particle type and status
-      ParticleContainerShrdPtr container =
+      ParticleContainer* container =
           particlecontainerbundle_->GetSpecificContainer(typeEnum, statusEnum);
 
       // get number of particles stored in container
-      int particlestored = container->ParticlesStored();
+      const int particlestored = container->ParticlesStored();
 
       // get particle states stored in container
       const std::set<StateEnum>& particlestates = container->GetStoredStates();
