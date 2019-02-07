@@ -1407,6 +1407,11 @@ void CONTACT::CoInterface::CreateSearchTree()
           DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(
               IParams(), "PARALLEL_STRATEGY");
 
+      // get update type of binary tree
+      INPAR::MORTAR::BinaryTreeUpdateType updatetype =
+          DRT::INPUT::IntegralValue<INPAR::MORTAR::BinaryTreeUpdateType>(
+              IParams(), "BINARYTREE_UPDATETYPE");
+
       Teuchos::RCP<Epetra_Map> melefullmap = Teuchos::null;
       if (strat == INPAR::MORTAR::roundrobinghost || strat == INPAR::MORTAR::binningstrategy)
       {
@@ -1424,8 +1429,8 @@ void CONTACT::CoInterface::CreateSearchTree()
         dserror("Chosen parallel strategy not supported!");
 
       // create binary tree object for contact search and setup tree
-      binarytree_ = Teuchos::rcp(new MORTAR::BinaryTree(
-          Discret(), selecolmap_, melefullmap, Dim(), SearchParam(), SearchUseAuxPos()));
+      binarytree_ = Teuchos::rcp(new MORTAR::BinaryTree(Discret(), selecolmap_, melefullmap, Dim(),
+          SearchParam(), updatetype, SearchUseAuxPos()));
       // initialize the binary tree
       binarytree_->Init();
     }

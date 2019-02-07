@@ -376,10 +376,12 @@ void MORTAR::BinaryTreeNode::PrintType()
  |  ctor BinaryTree(public)                                   popp 10/08|
  *----------------------------------------------------------------------*/
 MORTAR::BinaryTree::BinaryTree(DRT::Discretization& discret, Teuchos::RCP<Epetra_Map> selements,
-    Teuchos::RCP<Epetra_Map> melements, int dim, double eps, bool useauxpos)
+    Teuchos::RCP<Epetra_Map> melements, int dim, double eps,
+    INPAR::MORTAR::BinaryTreeUpdateType updatetype, bool useauxpos)
     : MORTAR::BaseBinaryTree(discret, dim, eps),
       selements_(selements),
       melements_(melements),
+      updatetype_(updatetype),
       useauxpos_(useauxpos)
 {
   // keep the constructor clean
@@ -557,9 +559,8 @@ void MORTAR::BinaryTree::InitSearchElements()
 void MORTAR::BinaryTree::EvaluateSearch()
 {
   // We have to explicitly call the updating routine, i.e. UpdateTreeTopDown() or
-  // UpdateTreeBottomUp() before calling the search routine EvaluateSearch(...). Of course, the
-  // bottom-up update makes more sense here. For very large meshtying problems, this version is
-  // preferable and thus chosen as default.
+  // UpdateTreeBottomUp() before calling the search routine EvaluateSearch(...). For very large
+  // mesh tying problems, the BottomUp version is faster and therefore preferable.
 
   // init search elements
   InitSearchElements();
@@ -567,11 +568,19 @@ void MORTAR::BinaryTree::EvaluateSearch()
   // calculate minimal element length
   SetEnlarge();
 
-  // update tree in a top down way
-  // binarytree_->UpdateTreeTopDown();
-
-  // update tree in a bottom up way
-  UpdateTreeBottomUp();
+  // update binary tree according to update type
+  switch (updatetype_)
+  {
+    case INPAR::MORTAR::TOP_DOWN:
+      UpdateTreeTopDown();
+      break;
+    case INPAR::MORTAR::BOTTOM_UP:
+      UpdateTreeBottomUp();
+      break;
+    default:
+      dserror("MORTAR::BinaryTreeUpdateType has to be bottom up or top down!");
+      break;
+  }
 
 #ifdef MORTARGMSHCTN
   for (int i = 0; i < (int)(binarytree_->CouplingMap().size()); i++)

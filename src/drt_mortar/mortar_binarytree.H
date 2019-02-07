@@ -14,6 +14,7 @@
 #include "Epetra_Comm.h"
 #include "Epetra_Map.h"
 #include "base_binarytree.H"
+#include "../drt_inpar/inpar_mortar.H"
 
 // forward declarations
 namespace DRT
@@ -189,12 +190,14 @@ namespace MORTAR
     \param selements (in):   All slave elements (column map)
     \param melements (in):   All master elements (fully overlapping map)
     \param dim (in):         The problem dimension
-    \param eps (in):
-    \param useauxpos (in):
+    \param eps (in):         factor used to enlarge dops
+    \param updatetype (in):  Defining type of binary tree update (top down, or bottom up)
+    \param useauxpos (in):   flag indicating usage of auxiliary position for calculation of slabs
 
     */
     BinaryTree(DRT::Discretization& discret, Teuchos::RCP<Epetra_Map> selements,
-        Teuchos::RCP<Epetra_Map> melements, int dim, double eps, bool useauxpos);
+        Teuchos::RCP<Epetra_Map> melements, int dim, double eps,
+        INPAR::MORTAR::BinaryTreeUpdateType updatetype, bool useauxpos);
 
     /*!
     \brief Destructor
@@ -291,7 +294,7 @@ namespace MORTAR
     void SetEnlarge() final;
 
     /*!
-    \brief Update master and slave tree in a topdown way
+    \brief Update master and slave tree in a top down way
 
     */
     void UpdateTreeTopDown()
@@ -302,7 +305,7 @@ namespace MORTAR
     }
 
     /*!
-    \brief Evaluate update of master and slave tree in a topdown way
+    \brief Evaluate update of master and slave tree in a top down way
 
     */
     void EvaluateUpdateTreeTopDown(Teuchos::RCP<BinaryTreeNode> treenode);
@@ -358,6 +361,8 @@ namespace MORTAR
     Teuchos::RCP<BinaryTreeNode> sroot_;
     //! master root tree node
     Teuchos::RCP<BinaryTreeNode> mroot_;
+    //! update type of binary tree
+    const INPAR::MORTAR::BinaryTreeUpdateType updatetype_;
     //! bool whether auxiliary position is used when computing dops
     bool useauxpos_;
   };  // class BinaryTree
