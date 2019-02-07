@@ -201,8 +201,8 @@ void PARTICLEINTERACTION::DEMContactNormalNonlinearBase::Setup(const double& den
 
   // calculate normal stiffness from relative penetration and other input parameters if necessary
   if (c_ > 0.0)
-    k_normal_ = 10.0 / 3.0 * M_PI * dens_max * UTILS::pow<2>(v_max_) * std::pow(r_max_, 0.5) /
-                std::pow(2.0 * c_, 2.5);
+    k_normal_ = 10.0 / 3.0 * M_PI * dens_max * UTILS::pow<2>(v_max_) * std::sqrt(r_max_) /
+                std::sqrt(UTILS::pow<5>(2.0 * c_));
 
   // calculate normal stiffness from relative penetration and other input parameters if necessary
   if (c_ > 0.0)
@@ -230,7 +230,7 @@ void PARTICLEINTERACTION::DEMContactNormalHertz::NormalContactForce(const double
     const double* radius_i, const double* radius_j, const double& v_rel_normal, const double& m_eff,
     double& normalcontactforce) const
 {
-  normalcontactforce = -k_normal_ * std::pow(-gap, 1.5);
+  normalcontactforce = -k_normal_ * (-gap) * std::sqrt(-gap);
 }
 
 /*---------------------------------------------------------------------------*
@@ -274,7 +274,7 @@ void PARTICLEINTERACTION::DEMContactNormalLeeHerrmann::NormalContactForce(const 
     const double* radius_i, const double* radius_j, const double& v_rel_normal, const double& m_eff,
     double& normalcontactforce) const
 {
-  normalcontactforce = -k_normal_ * std::pow(-gap, 1.5) - m_eff * d_normal_ * v_rel_normal;
+  normalcontactforce = -k_normal_ * (-gap) * std::sqrt(-gap) - m_eff * d_normal_ * v_rel_normal;
 
   // tension cutoff
   if (tension_cutoff_ && normalcontactforce > 0.0) normalcontactforce = 0.0;
@@ -298,7 +298,7 @@ void PARTICLEINTERACTION::DEMContactNormalKuwabaraKono::NormalContactForce(const
     double& normalcontactforce) const
 {
   normalcontactforce =
-      -k_normal_ * std::pow(-gap, 1.5) - d_normal_ * v_rel_normal * std::pow(-gap, 0.5);
+      -k_normal_ * (-gap) * std::sqrt(-gap) - d_normal_ * v_rel_normal * std::sqrt(-gap);
 
   // tension cutoff
   if (tension_cutoff_ && normalcontactforce > 0.0) normalcontactforce = 0.0;
@@ -322,7 +322,7 @@ void PARTICLEINTERACTION::DEMContactNormalTsuji::NormalContactForce(const double
     double& normalcontactforce) const
 {
   normalcontactforce =
-      -k_normal_ * std::pow(-gap, 1.5) - d_normal_ * v_rel_normal * std::pow(-gap, 0.25);
+      -k_normal_ * (-gap) * std::sqrt(-gap) - d_normal_ * v_rel_normal * std::sqrt(std::sqrt(-gap));
 
   // tension cutoff
   if (tension_cutoff_ && normalcontactforce > 0.0) normalcontactforce = 0.0;
