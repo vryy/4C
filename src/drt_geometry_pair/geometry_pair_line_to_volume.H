@@ -54,14 +54,10 @@ namespace GEOMETRYPAIR
   /**
    * \brief Class that handles the geometrical interactions of a line and a volume.
    * @param scalar_type Type that will be used for scalar values.
-   * @param n_nodes_element_1 Number of nodes on element 1.
-   * @param n_nodal_values_element_1 Number of values per node (x3) on element 1.
-   * @param n_nodes_element_2 Number of nodes on element 2.
-   * @param n_nodal_values_element_2 Number of values per node (x3) on element 2.
+   * @param line Type of line element.
+   * @param volume Type of volume element.
    */
-  template <typename scalar_type, unsigned int n_nodes_element_1,
-      unsigned int n_nodal_values_element_1, unsigned int n_nodes_element_2,
-      unsigned int n_nodal_values_element_2>
+  template <typename scalar_type, typename line, typename volume>
   class GeometryPairLineToVolume : public GeometryPair
   {
    public:
@@ -82,11 +78,8 @@ namespace GEOMETRYPAIR
      * @param q_volume (in) Degrees of freedom for the volume.
      * @param segments (out) Vector with the segments of this line to volume pair.
      */
-    virtual void PreEvaluate(
-        const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_1 * n_nodal_values_element_1, 1>&
-            q_line,
-        const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_2 * n_nodal_values_element_2, 1>&
-            q_volume,
+    virtual void PreEvaluate(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
+        const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
         std::vector<LineSegment<scalar_type>>& segments) const {};
 
     /**
@@ -95,11 +88,8 @@ namespace GEOMETRYPAIR
      * @param q_volume (in) Degrees of freedom for the volume.
      * @param segments (out) Vector with the segments of this line to volume pair.
      */
-    virtual void Evaluate(
-        const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_1 * n_nodal_values_element_1, 1>&
-            q_line,
-        const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_2 * n_nodal_values_element_2, 1>&
-            q_volume,
+    virtual void Evaluate(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
+        const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
         std::vector<LineSegment<scalar_type>>& segments) const {};
 
     /**
@@ -111,8 +101,7 @@ namespace GEOMETRYPAIR
      */
     template <typename scalar_type_get_pos>
     void GetElement1Position(const scalar_type& eta,
-        const LINALG::TMatrix<scalar_type_get_pos, 3 * n_nodes_element_1 * n_nodal_values_element_1,
-            1>& q,
+        const LINALG::TMatrix<scalar_type_get_pos, line::n_dof_, 1>& q,
         LINALG::TMatrix<scalar_type_get_pos, 3, 1>& r) const;
 
     /**
@@ -122,7 +111,7 @@ namespace GEOMETRYPAIR
      * @param dr (out) Derivative of the position on the line.
      */
     void GetElement1PositionDerivative(const scalar_type& eta,
-        const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_1 * n_nodal_values_element_1, 1>& q,
+        const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q,
         LINALG::TMatrix<scalar_type, 3, 1>& dr) const;
 
     /**
@@ -134,8 +123,7 @@ namespace GEOMETRYPAIR
      */
     template <typename scalar_type_get_pos>
     void GetElement2Position(const LINALG::TMatrix<scalar_type, 3, 1>& xi,
-        const LINALG::TMatrix<scalar_type_get_pos, 3 * n_nodes_element_2 * n_nodal_values_element_2,
-            1>& q,
+        const LINALG::TMatrix<scalar_type_get_pos, volume::n_dof_, 1>& q,
         LINALG::TMatrix<scalar_type_get_pos, 3, 1>& r) const;
 
     /**
@@ -145,7 +133,7 @@ namespace GEOMETRYPAIR
      * @param dr (out) Derivative of the position in the volume.
      */
     void GetElement2PositionDerivative(const LINALG::TMatrix<scalar_type, 3, 1>& xi,
-        const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_2 * n_nodal_values_element_2, 1>& q,
+        const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q,
         LINALG::TMatrix<scalar_type, 3, 3>& dr) const;
 
    protected:
@@ -159,13 +147,9 @@ namespace GEOMETRYPAIR
      * @param projection_result (out) Flag for the result of the projection.
      * @return
      */
-    void ProjectPointOnLineToVolume(
-        const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_1 * n_nodal_values_element_1, 1>&
-            q_line,
-        const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_2 * n_nodal_values_element_2, 1>&
-            q_volume,
-        const scalar_type& eta, LINALG::TMatrix<scalar_type, 3, 1>& xi,
-        ProjectionResult& projection_result) const;
+    void ProjectPointOnLineToVolume(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
+        const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume, const scalar_type& eta,
+        LINALG::TMatrix<scalar_type, 3, 1>& xi, ProjectionResult& projection_result) const;
 
     /**
      * \brief Project multiple points on the line to the volume. The value of eta and xi in the
@@ -177,11 +161,8 @@ namespace GEOMETRYPAIR
      * @param n_projections_valid (out) Number of valid projections.
      * @param n_projections (out) Number of points, where the nonlinear system could be solved.
      */
-    void ProjectPointsOnLineToVolume(
-        const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_1 * n_nodal_values_element_1, 1>&
-            q_line,
-        const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_2 * n_nodal_values_element_2, 1>&
-            q_volume,
+    void ProjectPointsOnLineToVolume(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
+        const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
         std::vector<ProjectionPointLineToVolume<scalar_type>>& projection_points,
         unsigned int& n_projections_valid, unsigned int& n_projections) const;
 
@@ -194,11 +175,8 @@ namespace GEOMETRYPAIR
      * xi are the start values for the iteration.
      * @param n_projections_valid (out) Number of valid projections.
      */
-    void ProjectPointsOnLineToVolume(
-        const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_1 * n_nodal_values_element_1, 1>&
-            q_line,
-        const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_2 * n_nodal_values_element_2, 1>&
-            q_volume,
+    void ProjectPointsOnLineToVolume(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
+        const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
         std::vector<ProjectionPointLineToVolume<scalar_type>>& projection_points,
         unsigned int& n_projections_valid) const;
 
@@ -211,10 +189,8 @@ namespace GEOMETRYPAIR
      * @param segment (in/out) Vector with found projection points.
      */
     void ProjectGaussPointsOnSegmentToVolume(
-        const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_1 * n_nodal_values_element_1, 1>&
-            q_line,
-        const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_2 * n_nodal_values_element_2, 1>&
-            q_volume,
+        const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
+        const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
         const DRT::UTILS::IntegrationPoints1D& gauss_points,
         LineSegment<scalar_type>& segment) const;
 
@@ -231,11 +207,8 @@ namespace GEOMETRYPAIR
      * values for the Newton iteration.
      * @param projection_result (out) Flag for the result of the intersection.
      */
-    void IntersectLineWithSurface(
-        const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_1 * n_nodal_values_element_1, 1>&
-            q_line,
-        const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_2 * n_nodal_values_element_2, 1>&
-            q_volume,
+    void IntersectLineWithSurface(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
+        const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
         const unsigned int& fixed_parameter, const double& fixed_value, scalar_type& eta,
         LINALG::TMatrix<scalar_type, 3, 1>& xi, ProjectionResult& projection_result) const;
 
@@ -247,11 +220,8 @@ namespace GEOMETRYPAIR
      * @param eta_start (in) start value for parameter coordinate on line.
      * @param xi_start (in) start values for parameter coordinates in volume.
      */
-    void IntersectLineWithVolume(
-        const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_1 * n_nodal_values_element_1, 1>&
-            q_line,
-        const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_2 * n_nodal_values_element_2, 1>&
-            q_volume,
+    void IntersectLineWithVolume(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
+        const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
         std::vector<ProjectionPointLineToVolume<scalar_type>>& intersection_points,
         const scalar_type& eta_start, const LINALG::TMatrix<scalar_type, 3, 1>& xi_start) const;
 
@@ -262,18 +232,9 @@ namespace GEOMETRYPAIR
      * @param q_volume (in) Degrees of freedom for the volume.
      * @param intersection_points (out) vector with the found surface intersections.
      */
-    void IntersectLineWithVolume(
-        const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_1 * n_nodal_values_element_1, 1>&
-            q_line,
-        const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_2 * n_nodal_values_element_2, 1>&
-            q_volume,
+    void IntersectLineWithVolume(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
+        const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
         std::vector<ProjectionPointLineToVolume<scalar_type>>& intersection_points) const;
-
-    /**
-     * \brief Get the shape of the volume element.
-     * @return Shape type of volume element.
-     */
-    DiscretizationTypeVolume GetVolumeType() const;
 
     /**
      * \brief Check if the parameter coordinate eta is in the valid range from -1 to 1.

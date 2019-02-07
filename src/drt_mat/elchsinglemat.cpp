@@ -5,7 +5,10 @@
 \brief abstract interface for electrode and electrolyte materials carrying concentration and
 electric potential as degrees of freedom
 
-\maintainer Rui Fang
+\maintainer Christoph Schmidt
+            schmidt@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089 - 289-15251
 
 \level 2
 */

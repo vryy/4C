@@ -111,7 +111,7 @@ void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::SetParticleReferenceP
   for (auto& particleType : typessubjectedtodirichletbc_)
   {
     // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container =
+    PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
     // set particle reference position
@@ -152,11 +152,11 @@ void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::EvaluateDirichletBoun
     PARTICLEENGINE::TypeEnum particleType = typeIt.first;
 
     // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container =
+    PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
-    int particlestored = container->ParticlesStored();
+    const int particlestored = container->ParticlesStored();
 
     // no owned particles of current particle type
     if (particlestored <= 0) continue;
@@ -177,8 +177,8 @@ void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::EvaluateDirichletBoun
     if (evalvel) vel = container->GetPtrToParticleState(PARTICLEENGINE::Velocity, 0);
     if (evalacc) acc = container->GetPtrToParticleState(PARTICLEENGINE::Acceleration, 0);
 
-    // get dimension of particle position
-    int statedim = PARTICLEENGINE::EnumToStateDim(PARTICLEENGINE::Position);
+    // get particle state dimension
+    int statedim = container->GetParticleStateDim(PARTICLEENGINE::Position);
 
     // safety check
     if (statedim != function.NumberComponents())
@@ -192,7 +192,7 @@ void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::EvaluateDirichletBoun
       {
         // evaluate function, first and second time derivative
         functtimederiv =
-            function.EvaluateTimeDerivative(dim, &(refpos[statedim * i + dim]), evaltime, deg);
+            function.EvaluateTimeDerivative(dim, &(refpos[statedim * i]), evaltime, deg);
 
         // set position state
         if (evalpos)

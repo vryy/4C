@@ -82,9 +82,10 @@ class PARTICLEINTERACTION::SPHEquationOfStateGenTait_TestSuite : public CxxTest:
     const double density = 0.75;
     const double density0 = 0.4;
 
-    TS_ASSERT_DELTA(equationofstate_->DensityToPressure(density, density0), 0.5640046918e2, 1e-8);
     TS_ASSERT_DELTA(
-        equationofstate_special_->DensityToPressure(density, density0), 0.47775e1, 1e-8);
+        equationofstate_->DensityToPressure(density, density0), 0.5640046918e2, 1.0e-08);
+    TS_ASSERT_DELTA(
+        equationofstate_special_->DensityToPressure(density, density0), 0.47775e1, 1.0e-08);
   }
 
   void test_PressureToDensity()
@@ -92,9 +93,9 @@ class PARTICLEINTERACTION::SPHEquationOfStateGenTait_TestSuite : public CxxTest:
     const double pressure = 1.8;
     const double density0 = 0.4;
 
-    TS_ASSERT_DELTA(equationofstate_->PressureToDensity(pressure, density0), 0.477832244, 1e-8);
+    TS_ASSERT_DELTA(equationofstate_->PressureToDensity(pressure, density0), 0.477832244, 1.0e-08);
     TS_ASSERT_DELTA(
-        equationofstate_special_->PressureToDensity(pressure, density0), 0.506938775, 1e-8);
+        equationofstate_special_->PressureToDensity(pressure, density0), 0.506938775, 1.0e-08);
   }
 
   void test_DensityToEnergy()
@@ -104,9 +105,9 @@ class PARTICLEINTERACTION::SPHEquationOfStateGenTait_TestSuite : public CxxTest:
     const double density0 = 0.4;
 
     TS_ASSERT_DELTA(
-        equationofstate_->DensityToEnergy(density, mass, density0), 0.1999413554e2, 1e-8);
-    TS_ASSERT_DELTA(
-        equationofstate_special_->DensityToEnergy(density, mass, density0), -0.5553068732e1, 1e-8);
+        equationofstate_->DensityToEnergy(density, mass, density0), 0.1999413554e2, 1.0e-08);
+    TS_ASSERT_DELTA(equationofstate_special_->DensityToEnergy(density, mass, density0),
+        -0.5553068732e1, 1.0e-08);
   }
 };
 
@@ -142,7 +143,7 @@ class PARTICLEINTERACTION::SPHEquationOfStateIdealGas_TestSuite : public CxxTest
     const double density = 0.75;
     const double density0 = 0.4;
 
-    TS_ASSERT_DELTA(equationofstate_->DensityToPressure(density, density0), 9.1875, 1e-8);
+    TS_ASSERT_DELTA(equationofstate_->DensityToPressure(density, density0), 9.1875, 1.0e-08);
   }
 
   void test_PressureToDensity()
@@ -150,7 +151,7 @@ class PARTICLEINTERACTION::SPHEquationOfStateIdealGas_TestSuite : public CxxTest
     const double pressure = 1.8;
     const double density0 = 0.4;
 
-    TS_ASSERT_DELTA(equationofstate_->PressureToDensity(pressure, density0), 0.146938775, 1e-8);
+    TS_ASSERT_DELTA(equationofstate_->PressureToDensity(pressure, density0), 0.146938775, 1.0e-08);
   }
 
   void test_DensityToEnergy()
@@ -160,7 +161,7 @@ class PARTICLEINTERACTION::SPHEquationOfStateIdealGas_TestSuite : public CxxTest
     const double density0 = 0.4;
 
     TS_ASSERT_DELTA(
-        equationofstate_->DensityToEnergy(density, mass, density0), -0.2752956873e2, 1e-8);
+        equationofstate_->DensityToEnergy(density, mass, density0), -0.2752956873e2, 1.0e-08);
   }
 };
 

@@ -130,8 +130,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Setup(
 
   // setup surface tension handler
   if (surfacetension_)
-    surfacetension_->Setup(particleengineinterface, kernel_, particlematerial_,
-        equationofstatebundle_, neighborpairs_);
+    surfacetension_->Setup(particleengineinterface, kernel_, particlematerial_, neighborpairs_);
 
   // setup boundary particle handler
   if (boundaryparticle_) boundaryparticle_->Setup(particleengineinterface, neighborpairs_);
@@ -271,24 +270,21 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
   double consistentparticlevolume = ComputeConsistentParticleVolume();
 
   // iterate over particle types
-  for (auto& typeIt : particlecontainerbundle_->GetRefToAllContainersMap())
+  for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum type = typeIt.first;
-
     // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container =
-        particlecontainerbundle_->GetSpecificContainer(type, PARTICLEENGINE::Owned);
+    PARTICLEENGINE::ParticleContainer* container =
+        particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
-    int particlestored = container->ParticlesStored();
+    const int particlestored = container->ParticlesStored();
 
     // no owned particles of current particle type
     if (particlestored <= 0) continue;
 
     // get material for current particle type
     const MAT::PAR::ParticleMaterialBase* material =
-        particlematerial_->GetPtrToParticleMatParameter(type);
+        particlematerial_->GetPtrToParticleMatParameter(typeEnum);
 
     // initial density of current phase
     std::vector<double> initdensity(1);
@@ -303,13 +299,14 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
     initradius[0] = material->initRadius_;
 
     // set initial density for all non-boundary and non-rigid particles
-    if (type != PARTICLEENGINE::BoundaryPhase and type != PARTICLEENGINE::RigidPhase)
+    if (typeEnum != PARTICLEENGINE::BoundaryPhase and typeEnum != PARTICLEENGINE::RigidPhase)
       particlecontainerbundle_->SetStateSpecificContainer(
-          initdensity, PARTICLEENGINE::Density, type);
+          initdensity, PARTICLEENGINE::Density, typeEnum);
 
     // set initial mass and radius for all particles of current type
-    particlecontainerbundle_->SetStateSpecificContainer(initmass, PARTICLEENGINE::Mass, type);
-    particlecontainerbundle_->SetStateSpecificContainer(initradius, PARTICLEENGINE::Radius, type);
+    particlecontainerbundle_->SetStateSpecificContainer(initmass, PARTICLEENGINE::Mass, typeEnum);
+    particlecontainerbundle_->SetStateSpecificContainer(
+        initradius, PARTICLEENGINE::Radius, typeEnum);
 
     // initial states for temperature evaluation
     if (temperature_)
@@ -317,7 +314,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
       // get material for current particle type
       const MAT::PAR::ParticleMaterialThermo* material =
           dynamic_cast<const MAT::PAR::ParticleMaterialThermo*>(
-              particlematerial_->GetPtrToParticleMatParameter(type));
+              particlematerial_->GetPtrToParticleMatParameter(typeEnum));
 
       // initial temperature of current phase
       std::vector<double> inittemperature(1);
@@ -325,7 +322,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
 
       // set initial temperature for all particles of current type
       particlecontainerbundle_->SetStateSpecificContainer(
-          inittemperature, PARTICLEENGINE::Temperature, type);
+          inittemperature, PARTICLEENGINE::Temperature, typeEnum);
     }
   }
 }

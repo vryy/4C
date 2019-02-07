@@ -103,9 +103,7 @@ void PARTICLEINTERACTION::SPHKernelBase::KernelSpaceDimension(int& dim) const
 void PARTICLEINTERACTION::SPHKernelBase::GradWij(
     const double& rij, const double& support, const double* eij, double* gradWij) const
 {
-  const double dWdrij = this->dWdrij(rij, support);
-
-  for (int i = 0; i < 3; ++i) gradWij[i] = eij[i] * dWdrij;
+  UTILS::vec_setscale(gradWij, this->dWdrij(rij, support), eij);
 }
 
 /*---------------------------------------------------------------------------*

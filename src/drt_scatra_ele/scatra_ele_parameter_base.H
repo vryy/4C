@@ -11,10 +11,12 @@ parameters are usually set only once at the beginning of a simulation, namely du
 of the global time integrator, and then never touched again throughout the simulation.
 
 <pre>
-Maintainer: Rui Fang
-            fang@lnm.mw.tum.de
+\maintainer Anh-Tu Vuong
+            vuong@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
-            089-289-15251
+            089 - 289-15237
+
+\level 1
 </pre>
 */
 /*----------------------------------------------------------------------*/

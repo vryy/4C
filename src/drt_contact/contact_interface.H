@@ -76,6 +76,10 @@ namespace CONTACT
 
     inline bool IsNonSmoothContact() const { return nonSmoothContact_; }
 
+    inline bool IsTwoHalfPass() const { return two_half_pass_; }
+
+    inline bool& IsTwoHalfPass() { return two_half_pass_; }
+
     inline enum INPAR::CONTACT::ConstraintDirection& ConstraintDirection()
     {
       return constr_direction_;
@@ -192,6 +196,7 @@ namespace CONTACT
     bool selfcontact_;       ///< flag indicating if this is a self contact interface
     bool friction_;          ///< flag for frictional contact
     bool nonSmoothContact_;  ///< flag for non-smooth contact algorithm
+    bool two_half_pass_;     ///< flag for two half pass contact algorithm
     INPAR::CONTACT::ConstraintDirection
         constr_direction_;  ///< direction in which the contact constraints are formulated
 
@@ -298,9 +303,16 @@ namespace CONTACT
     /*!
     \brief Get self contact status of this interface
 
-    \return Boolean flag to indicate self contact status of this interace
+    \return Boolean flag to indicate self contact status of this interface
     */
-    virtual const bool& SelfContact() { return selfcontact_; }
+    virtual const bool& SelfContact() const { return selfcontact_; }
+
+    /*!
+    \brief Get two half pass status of this interface
+
+    \return Boolean flag to indicate if two half pass algorithm shall be used
+    */
+    virtual const bool& TwoHalfPass() const { return two_half_pass_; }
 
     /*!
     \brief Get row map of active nodes
@@ -1479,11 +1491,17 @@ namespace CONTACT
      *  corresponding data container, instead! If you have any questions
      *  concerning this, do not hesitate and ask me.
      *                                                          hiermeier 03/17 */
+    // TODO: As already noted by Michael Hiermeier above, the contact interface should not store
+    // references to all member variables of the IDataContainer as it is currently implemented.
+    // Instead, the contact interface should only store a reference to the data container and then
+    // directly access the member variables of the data container using suitable set and get
+    // methods! Please also refer to GitLab Issue 165 for more details.
     /// @{
 
     bool& selfcontact_;       ///< ref. to flag indicating if this is a self contact interface
     bool& friction_;          ///< ref. to flag for frictional contact
     bool& nonSmoothContact_;  ///< ref. to flag for non-smooth contact algorithm
+    bool& two_half_pass_;     ///< ref. to flag for two half pass contact algorithm
     INPAR::CONTACT::ConstraintDirection&
         constr_direction_;  ///< ref. to direction in which the contact constraints are formulated
 

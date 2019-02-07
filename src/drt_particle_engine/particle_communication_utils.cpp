@@ -35,7 +35,6 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
 
   // number of processors receiving data from this processor
   int const numsendtoprocs = sdata.size();
-  int counter = 0;
 
   // mpi communicator
   const Epetra_MpiComm* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm);
@@ -54,12 +53,15 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
 
   // ---- send size of messages to receiving processors ----
   std::vector<MPI_Request> sizerequest(numsendtoprocs);
-  counter = 0;
+  std::vector<int> sizetargets(numsendtoprocs);
+  int counter = 0;
   for (auto& p : sdata)
   {
-    int torank = p.first;
+    int const torank = p.first;
     if (myrank == torank) dserror("processor should not send messages to itself!");
-    if (torank == -1) dserror("processor can not send messages to processor -1!");
+    if (torank < 0) dserror("processor can not send messages to processor < 0!");
+
+    sizetargets[counter] = torank;
 
     int msgsizetosend = static_cast<int>((p.second).size());
 
@@ -72,68 +74,73 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
 
   // ---- receive size of messages ----
   std::vector<MPI_Request> recvrequest(numrecvfromprocs);
-  std::set<int> recvrunning;
   for (int rec = 0; rec < numrecvfromprocs; ++rec)
   {
-    int msgsize = -1;
-    int msgtag = -1;
-    int msgsource = -1;
-    int msgsizetorecv = -1;
-
     // probe for any message to come
     MPI_Status status;
     MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, mpicomm->Comm(), &status);
 
-    // get sender, tag and size
-    msgsource = status.MPI_SOURCE;
-    msgtag = status.MPI_TAG;
+    // get message sender and tag
+    int const msgsource = status.MPI_SOURCE;
+    int const msgtag = status.MPI_TAG;
+
+    // get message size
+    int msgsize = -1;
     MPI_Get_count(&status, MPI_INT, &msgsize);
 
     // check message tag
     if (msgtag != 1234)
-      dserror("Received on proc %i data with wrong tag from proc %i", myrank, msgsource);
+      dserror("received data on proc %i with wrong tag from proc %i", myrank, msgsource);
 
     // check size of message
     if (msgsize != 1) dserror("message size not correct (one int expected)!");
 
     // perform blocking receive operation
-    MPI_Recv(&msgsizetorecv, msgsize, MPI_INT, msgsource, msgtag, mpicomm->Comm(), &status);
+    int msgsizetorecv = -1;
+    MPI_Recv(
+        &msgsizetorecv, msgsize, MPI_INT, msgsource, msgtag, mpicomm->Comm(), MPI_STATUS_IGNORE);
 
     // check received size of message
     if (msgsizetorecv < 0) dserror("received message size is negative!");
 
     // resize receiving buffer to received size
-    (rdata[msgsource]).resize(msgsizetorecv);
+    std::vector<char>& rbuffer = rdata[msgsource];
+    rbuffer.resize(msgsizetorecv);
 
     // perform non-blocking receive operation
-    MPI_Irecv((void*)(&(rdata[msgsource])[0]), msgsizetorecv, MPI_CHAR, msgsource, msgtag,
-        mpicomm->Comm(), &recvrequest[rec]);
-    recvrunning.insert(rec);
+    MPI_Irecv((void*)(&rbuffer[0]), msgsizetorecv, MPI_CHAR, msgsource, msgtag, mpicomm->Comm(),
+        &recvrequest[rec]);
   }
-
-  // wait until every processor is ready to receive all data
-  comm.Barrier();
 
   // ---- send data to already waiting processors ----
   counter = 0;
-  for (auto& p : sdata)
+  while (counter != numsendtoprocs)
   {
-    // perform blocking send operation
-    MPI_Send((void*)(&((p.second)[0])), static_cast<int>((p.second).size()), MPI_CHAR, p.first,
-        1234, mpicomm->Comm());
+    // test for non-blocking send operation
+    int index = -1;
+    int flag = 0;
+    MPI_Testany(numsendtoprocs, &sizerequest[0], &index, &flag, MPI_STATUS_IGNORE);
 
-    ++counter;
+    if (flag)
+    {
+      int const torank = sizetargets[index];
+      if (myrank == torank) dserror("processor should not send messages to itself!");
+      if (torank < 0) dserror("processor can not send messages to processor < 0!");
+
+      // reference to send buffer
+      std::vector<char>& sbuffer = sdata[torank];
+
+      // perform blocking send operation
+      MPI_Send((void*)(&(sbuffer[0])), static_cast<int>(sbuffer.size()), MPI_CHAR, torank, 1234,
+          mpicomm->Comm());
+
+      ++counter;
+    }
   }
-  if (counter != numsendtoprocs) dserror("number of messages is mixed up!");
 
-  // clear send buffer after all successful communication
+  // clear send buffer after successful communication
   sdata.clear();
 
-  // ---- wait for completion of running receive operations ----
-  for (int rec : recvrunning)
-  {
-    // wait for non-blocking receive operation
-    MPI_Status status;
-    MPI_Wait(&recvrequest[rec], &status);
-  }
+  // ---- wait for completion of receive operations ----
+  MPI_Waitall(numrecvfromprocs, &recvrequest[0], MPI_STATUSES_IGNORE);
 }

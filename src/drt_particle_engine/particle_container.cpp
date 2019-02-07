@@ -21,8 +21,6 @@
 
 #include "../drt_lib/drt_dserror.H"
 
-#include <iostream>
-
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
@@ -49,19 +47,27 @@ void PARTICLEENGINE::ParticleContainer::Setup(
   // set size of particle container (at least one)
   containersize_ = (numContainerSize > 0) ? numContainerSize : 1;
 
+  // set of stored particle states
+  storedstates_ = stateEnumSet;
+
   // allocate memory for global ids
   globalids_.resize(containersize_, -1);
 
-  int stateDim = 0;
-  std::shared_ptr<std::vector<double>> state;
+  // determine necessary size of vector for states
+  const int statesvectorsize = *(--storedstates_.end()) + 1;
 
-  // iterate over set of given particle state enums
-  for (auto& stateEnum : stateEnumSet)
+  // allocate memory to hold particle states and dimension
+  states_.resize(statesvectorsize);
+  statedim_.resize(statesvectorsize);
+
+  // iterate over states to be stored in container
+  for (auto& stateEnum : storedstates_)
   {
+    // set particle state dimension for current state
+    statedim_[stateEnum] = EnumToStateDim(stateEnum);
+
     // allocate memory for current state in particle container
-    stateDim = EnumToStateDim(stateEnum);
-    state = std::make_shared<std::vector<double>>(containersize_ * stateDim);
-    states_.insert(std::make_pair(stateEnum, state));
+    states_[stateEnum].resize(containersize_ * statedim_[stateEnum]);
   }
 }
 
@@ -76,17 +82,11 @@ void PARTICLEENGINE::ParticleContainer::IncreaseContainerSize()
   // resize vector of global ids
   globalids_.resize(containersize_);
 
-  int stateDim = 0;
-  std::shared_ptr<std::vector<double>> state;
-
   // iterate over states stored in container
-  for (auto& it : states_)
+  for (auto& stateEnum : storedstates_)
   {
-    stateDim = EnumToStateDim(it.first);
-    state = it.second;
-
     // resize vector of current state
-    state->resize(containersize_ * stateDim);
+    states_[stateEnum].resize(containersize_ * statedim_[stateEnum]);
   }
 }
 
@@ -110,24 +110,13 @@ void PARTICLEENGINE::ParticleContainer::DecreaseContainerSize()
   // resize vector of global ids
   globalids_.resize(containersize_);
 
-  int stateDim = 0;
-  std::shared_ptr<std::vector<double>> state;
-
   // iterate over states stored in container
-  for (auto& it : states_)
+  for (auto& stateEnum : storedstates_)
   {
-    stateDim = EnumToStateDim(it.first);
-    state = it.second;
-
     // resize vector of current state
-    state->resize(containersize_ * stateDim);
+    states_[stateEnum].resize(containersize_ * statedim_[stateEnum]);
   }
 }
-
-/*---------------------------------------------------------------------------*
- | clear particle container                                   sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleContainer::ClearContainer() { particlestored_ = 0; }
 
 /*---------------------------------------------------------------------------*
  | add particle to particle container and get index           sfuchs 03/2018 |
@@ -141,21 +130,16 @@ void PARTICLEENGINE::ParticleContainer::AddParticle(
   // store global id
   globalids_[particlestored_] = globalid;
 
-  int stateDim = 0;
-  std::shared_ptr<std::vector<double>> state;
-
   // iterate over states stored in container
-  for (auto& it : states_)
+  for (auto& stateEnum : storedstates_)
   {
-    stateDim = EnumToStateDim(it.first);
-    state = it.second;
-
-    auto particleStateIt = particle.find(it.first);
+    auto particleStateIt = particle.find(stateEnum);
     // state not handed over
     if (particleStateIt == particle.end())
     {
       // initialize to zero
-      for (int dim = 0; dim < stateDim; ++dim) (*state)[particlestored_ * stateDim + dim] = 0.0;
+      for (int dim = 0; dim < statedim_[stateEnum]; ++dim)
+        (states_[stateEnum])[particlestored_ * statedim_[stateEnum] + dim] = 0.0;
     }
     // state handed over
     else
@@ -163,13 +147,13 @@ void PARTICLEENGINE::ParticleContainer::AddParticle(
       const std::vector<double>& particleState = particleStateIt->second;
 
       // check dimensions
-      if (static_cast<int>(particleState.size()) != stateDim)
+      if (static_cast<int>(particleState.size()) != statedim_[stateEnum])
         dserror("Cannot add particle: dimensions of state '%s' do not match!",
-            PARTICLEENGINE::EnumToStateName(it.first).c_str());
+            PARTICLEENGINE::EnumToStateName(stateEnum).c_str());
 
       // store state in container
-      for (int dim = 0; dim < stateDim; ++dim)
-        (*state)[particlestored_ * stateDim + dim] = particleState[dim];
+      for (int dim = 0; dim < statedim_[stateEnum]; ++dim)
+        (states_[stateEnum])[particlestored_ * statedim_[stateEnum] + dim] = particleState[dim];
     }
   }
 
@@ -192,16 +176,10 @@ void PARTICLEENGINE::ParticleContainer::ReplaceParticle(
   // replace global id in container
   if (globalid >= 0) globalids_[index] = globalid;
 
-  int stateDim = 0;
-  std::shared_ptr<std::vector<double>> state;
-
   // iterate over states stored in container
-  for (auto& it : states_)
+  for (auto& stateEnum : storedstates_)
   {
-    stateDim = EnumToStateDim(it.first);
-    state = it.second;
-
-    auto particleStateIt = particle.find(it.first);
+    auto particleStateIt = particle.find(stateEnum);
     // state not handed over
     if (particleStateIt == particle.end())
     {
@@ -213,13 +191,13 @@ void PARTICLEENGINE::ParticleContainer::ReplaceParticle(
       const std::vector<double>& particleState = particleStateIt->second;
 
       // check dimensions
-      if (static_cast<int>(particleState.size()) != stateDim)
-        dserror("Cannot replace particle: dimensions of state '%s' do not match!",
-            PARTICLEENGINE::EnumToStateName(it.first).c_str());
+      if (static_cast<int>(particleState.size()) != statedim_[stateEnum])
+        dserror("Cannot add particle: dimensions of state '%s' do not match!",
+            PARTICLEENGINE::EnumToStateName(stateEnum).c_str());
 
       // replace state in container
-      for (int dim = 0; dim < stateDim; ++dim)
-        (*state)[index * stateDim + dim] = particleState[dim];
+      for (int dim = 0; dim < statedim_[stateEnum]; ++dim)
+        (states_[stateEnum])[index * statedim_[stateEnum] + dim] = particleState[dim];
     }
   }
 }
@@ -239,22 +217,14 @@ void PARTICLEENGINE::ParticleContainer::GetParticle(
   // clear particle
   particle.clear();
 
-  int stateDim = 0;
-  std::shared_ptr<std::vector<double>> state;
-
   // iterate over states stored in container
-  for (auto& it : states_)
+  for (auto& stateEnum : storedstates_)
   {
-    stateDim = EnumToStateDim(it.first);
-    state = it.second;
+    // get pointer to particle state
+    const double* state_ptr = &((states_[stateEnum])[index * statedim_[stateEnum]]);
 
-    std::vector<double> particleState(stateDim);
-
-    // store current state in vector
-    for (int dim = 0; dim < stateDim; ++dim) particleState[dim] = (*state)[index * stateDim + dim];
-
-    // get state from container
-    particle.insert(std::make_pair(it.first, particleState));
+    // fill particle state
+    particle[stateEnum].assign(state_ptr, state_ptr + statedim_[stateEnum]);
   }
 }
 
@@ -266,164 +236,23 @@ void PARTICLEENGINE::ParticleContainer::RemoveParticle(int index)
   if (index < 0 or index > (particlestored_ - 1))
     dserror("can not remove particle as index %d out of bounds!", index);
 
-  // to avoid fragmentation of memory: swap particle to be removed with last particle in container
-  SwapParticle(index, (particlestored_ - 1));
-
   // decrease counter of stored particles
   --particlestored_;
 
-  // decrease size of container
-  if (particlestored_ < 0.45 * containersize_) DecreaseContainerSize();
-}
-
-/*---------------------------------------------------------------------------*
- | swap particles at index a and b in particle container      sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleContainer::SwapParticle(int index_a, int index_b)
-{
-  if (index_a < 0 or index_a > (particlestored_ - 1) or index_b < 0 or
-      index_b > (particlestored_ - 1))
-    dserror("can not swap particles as pair of index (%d, %d) out of bounds!", index_a, index_b);
-
-  // swap global ids of particles
-  std::swap(globalids_[index_a], globalids_[index_b]);
-
-  int stateDim = 0;
-  std::shared_ptr<std::vector<double>> state;
+  // overwrite global id in container
+  globalids_[index] = globalids_[particlestored_];
 
   // iterate over states stored in container
-  for (auto& it : states_)
+  for (auto& stateEnum : storedstates_)
   {
-    stateDim = EnumToStateDim(it.first);
-    state = it.second;
-
-    // swap current state of particles
-    for (int dim = 0; dim < stateDim; ++dim)
-      std::swap((*state)[index_a * stateDim + dim], (*state)[index_b * stateDim + dim]);
+    // overwrite state in container
+    for (int dim = 0; dim < statedim_[stateEnum]; ++dim)
+      (states_[stateEnum])[index * statedim_[stateEnum] + dim] =
+          (states_[stateEnum])[particlestored_ * statedim_[stateEnum] + dim];
   }
-}
 
-/*---------------------------------------------------------------------------*
- | return pointer to state of a particle at index             sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
-double* PARTICLEENGINE::ParticleContainer::GetPtrToParticleState(
-    StateEnum stateEnum, int index) const
-{
-  if (index < 0 or index > (particlestored_ - 1))
-    dserror("can not return pointer to state of particle as index %d out of bounds!", index);
-
-  int stateDim = EnumToStateDim(stateEnum);
-
-  auto it = states_.find(stateEnum);
-  if (it == states_.end())
-    dserror("particle state '%s' not found!", PARTICLEENGINE::EnumToStateName(stateEnum).c_str());
-  auto state = it->second;
-
-  return &((*state)[index * stateDim]);
-}
-
-/*---------------------------------------------------------------------------*
- | return pointer to global id of a particle at index         sfuchs 10/2018 |
- *---------------------------------------------------------------------------*/
-int* PARTICLEENGINE::ParticleContainer::GetPtrToParticleGlobalID(int index)
-{
-  if (index < 0 or index > (particlestored_ - 1))
-    dserror("can not return pointer to global id of particle as index %d out of bounds!", index);
-
-  return &(globalids_[index]);
-}
-
-/*---------------------------------------------------------------------------*
- | get state of a particle at index                           sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
-std::vector<double> PARTICLEENGINE::ParticleContainer::GetParticleState(
-    StateEnum stateEnum, int index) const
-{
-  if (index < 0 or index > (particlestored_ - 1))
-    dserror("can not return state of particle as index %d out of bounds!", index);
-
-  int stateDim = EnumToStateDim(stateEnum);
-
-  auto it = states_.find(stateEnum);
-  if (it == states_.end())
-    dserror("particle state '%s' not found!", PARTICLEENGINE::EnumToStateName(stateEnum).c_str());
-  auto state = it->second;
-
-  std::vector<double> particleState(stateDim);
-  for (int dim = 0; dim < stateDim; ++dim) particleState[dim] = (*state)[index * stateDim + dim];
-
-  return particleState;
-}
-
-/*---------------------------------------------------------------------------*
- | scale state of particles                                   sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleContainer::ScaleState(double fac, StateEnum stateEnum) const
-{
-  int stateDim = EnumToStateDim(stateEnum);
-
-  auto it = states_.find(stateEnum);
-  if (it == states_.end())
-    dserror("particle state '%s' not found!", PARTICLEENGINE::EnumToStateName(stateEnum).c_str());
-  auto state = it->second;
-
-  for (int i = 0; i < (particlestored_ * stateDim); ++i) (*state)[i] *= fac;
-}
-
-/*---------------------------------------------------------------------------*
- | scale and add states to update state of particles          sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleContainer::UpdateState(
-    double facA, StateEnum stateEnumA, double facB, StateEnum stateEnumB) const
-{
-  int stateDim = EnumToStateDim(stateEnumA);
-  if (stateDim != EnumToStateDim(stateEnumB)) dserror("dimensions of states do not match!");
-
-  auto it = states_.find(stateEnumA);
-  if (it == states_.end())
-    dserror("particle state '%s' not found!", PARTICLEENGINE::EnumToStateName(stateEnumA).c_str());
-  auto stateA = it->second;
-
-  it = states_.find(stateEnumB);
-  if (it == states_.end())
-    dserror("particle state '%s' not found!", PARTICLEENGINE::EnumToStateName(stateEnumB).c_str());
-  auto stateB = it->second;
-
-  for (int i = 0; i < (particlestored_ * stateDim); ++i)
-    (*stateA)[i] = facA * (*stateA)[i] + facB * (*stateB)[i];
-}
-
-/*---------------------------------------------------------------------------*
- | set state to particles                                     sfuchs 04/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleContainer::SetState(std::vector<double> val, StateEnum stateEnum) const
-{
-  int stateDim = EnumToStateDim(stateEnum);
-
-  if (stateDim != static_cast<int>(val.size())) dserror("dimensions of states do not match!");
-
-  auto it = states_.find(stateEnum);
-  if (it == states_.end())
-    dserror("particle state '%s' not found!", PARTICLEENGINE::EnumToStateName(stateEnum).c_str());
-  auto state = it->second;
-
-  for (int i = 0; i < particlestored_; ++i)
-    for (int dim = 0; dim < stateDim; ++dim) (*state)[i * stateDim + dim] = val[dim];
-}
-
-/*---------------------------------------------------------------------------*
- | clear state of particles                                   sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleContainer::ClearState(StateEnum stateEnum) const
-{
-  int stateDim = EnumToStateDim(stateEnum);
-
-  auto it = states_.find(stateEnum);
-  if (it == states_.end())
-    dserror("particle state '%s' not found!", PARTICLEENGINE::EnumToStateName(stateEnum).c_str());
-  auto state = it->second;
-
-  for (int i = 0; i < (particlestored_ * stateDim); ++i) (*state)[i] = 0.0;
+  // decrease size of container
+  if (particlestored_ < 0.45 * containersize_) DecreaseContainerSize();
 }
 
 /*---------------------------------------------------------------------------*
@@ -433,17 +262,10 @@ double PARTICLEENGINE::ParticleContainer::GetMinValueOfState(StateEnum stateEnum
 {
   if (particlestored_ <= 0) return 0.0;
 
-  int stateDim = EnumToStateDim(stateEnum);
+  double min = (states_[stateEnum])[0];
 
-  auto it = states_.find(stateEnum);
-  if (it == states_.end())
-    dserror("particle state '%s' not found!", PARTICLEENGINE::EnumToStateName(stateEnum).c_str());
-  auto state = it->second;
-
-  double min = (*state)[0];
-
-  for (int i = 0; i < (particlestored_ * stateDim); ++i)
-    if ((*state)[i] < min) min = (*state)[i];
+  for (int i = 0; i < (particlestored_ * statedim_[stateEnum]); ++i)
+    min = std::min(min, states_[stateEnum][i]);
 
   return min;
 }
@@ -455,31 +277,10 @@ double PARTICLEENGINE::ParticleContainer::GetMaxValueOfState(StateEnum stateEnum
 {
   if (particlestored_ <= 0) return 0.0;
 
-  int stateDim = EnumToStateDim(stateEnum);
+  double max = (states_[stateEnum])[0];
 
-  auto it = states_.find(stateEnum);
-  if (it == states_.end())
-    dserror("particle state '%s' not found!", PARTICLEENGINE::EnumToStateName(stateEnum).c_str());
-  auto state = it->second;
-
-  double max = (*state)[0];
-
-  for (int i = 0; i < (particlestored_ * stateDim); ++i)
-    if ((*state)[i] > max) max = (*state)[i];
+  for (int i = 0; i < (particlestored_ * statedim_[stateEnum]); ++i)
+    max = std::max(max, states_[stateEnum][i]);
 
   return max;
-}
-
-/*---------------------------------------------------------------------------*
- | get stored particle states                                 sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
-const std::set<PARTICLEENGINE::StateEnum> PARTICLEENGINE::ParticleContainer::GetParticleStates()
-    const
-{
-  std::set<StateEnum> particlestates;
-
-  // iterate over states stored in container
-  for (auto& it : states_) particlestates.insert(it.first);
-
-  return particlestates;
 }

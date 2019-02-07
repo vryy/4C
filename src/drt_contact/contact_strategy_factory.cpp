@@ -547,29 +547,20 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& cpara
   //                       GPTS-SPECIFIC CHECKS
   // ---------------------------------------------------------------------
   else if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(mortar, "ALGORITHM") ==
-           INPAR::MORTAR::algorithm_nts)
+           INPAR::MORTAR::algorithm_gpts)
   {
     if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
-        INPAR::CONTACT::solution_penalty)
-      dserror("ERROR: GPTS-Algorithm only with penalty strategy");
+            INPAR::CONTACT::solution_penalty &&
+        DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
+            INPAR::CONTACT::solution_nitsche)
+      dserror("ERROR: GPTS-Algorithm only with penalty or nitsche strategy");
 
     if (contact.get<double>("PENALTYPARAM") <= 0.0)
       dserror("ERROR: Penalty parameter eps = 0, must be greater than 0");
 
-    if (problemtype != prb_structure)
-      dserror("ERROR: GPTS algorithm only tested for structural problems");
-
     if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") !=
         INPAR::WEAR::wear_none)
       dserror("GPTS algorithm not implemented for wear");
-
-    if (DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar, "INTTYPE") !=
-        INPAR::MORTAR::inttype_segments)
-      dserror("GPTS algorithm only for segment-based integration");
-
-    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") !=
-        INPAR::CONTACT::friction_none)
-      dserror("GPTS algorithm only for frictionless contact");
 
     if (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar, "LM_QUAD") !=
         INPAR::MORTAR::lagmult_undefined)
@@ -672,7 +663,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& c
   // start building interfaces
   if (Comm().MyPID() == 0)
   {
-    std::cout << "Building contact interface(s)...............";
+    std::cout << "Building contact interface(s)..............." << std::endl;
     fflush(stdout);
   }
 
@@ -745,44 +736,13 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& c
         break;
       }
 
-    // find out which sides are initialized as Active
-    std::vector<const std::string*> active(currentgroup.size());
+    // find out which sides are initialized as In/Active and other initalization data
     std::vector<bool> isactive(currentgroup.size());
+    bool Two_half_pass(false);
+    bool Check_nonsmooth_selfcontactsurface(false);
 
-    for (std::size_t j = 0; j < currentgroup.size(); ++j)
-    {
-      active[j] = currentgroup[j]->Get<std::string>("Initialization");
-      if (isslave[j])  //(*sides[j] == "Slave")
-      {
-        // slave sides may be initialized as "Active" or as "Inactive"
-        if (*active[j] == "Active")
-          isactive[j] = true;
-        else if (*active[j] == "Inactive")
-          isactive[j] = false;
-        else
-          dserror("ERROR: Unknown contact init qualifier!");
-      }
-      else if (isself[j])  //(*sides[j] == "Selfcontact")
-      {
-        // Selfcontact surfs must NOT be initialized as "Active" as this makes no sense
-        if (*active[j] == "Active")
-          dserror("ERROR: Selfcontact surface cannot be active!");
-        else if (*active[j] == "Inactive")
-          isactive[j] = false;
-        else
-          dserror("ERROR: Unknown contact init qualifier!");
-      }
-      else  // if (*sides[j] == "Master")
-      {
-        // master sides must NOT be initialized as "Active" as this makes no sense
-        if (*active[j] == "Active")
-          dserror("ERROR: Master side cannot be active!");
-        else if (*active[j] == "Inactive")
-          isactive[j] = false;
-        else
-          dserror("ERROR: Unknown contact init qualifier!");
-      }
-    }
+    CONTACT::UTILS::GetInitializationInfo(
+        Two_half_pass, Check_nonsmooth_selfcontactsurface, isactive, isslave, isself, currentgroup);
 
     // create interface local parameter list (copy)
     Teuchos::ParameterList icparams = cparams;
@@ -844,16 +804,16 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& c
       icparams.setEntry("ADHESION_BOUND", static_cast<Teuchos::ParameterEntry>(ad_bound[0]));
     }
 
-    // create an empty interface and store it in this Manager
-    // create an empty contact interface and store it in this Manager
-    // (for structural contact we currently choose redundant master storage)
-    // (the only exception is self contact where a redundant slave is needed, too)
+    // add information to contact parameter list of this interface
+    icparams.set<bool>("Two_half_pass", Two_half_pass);
+    icparams.set<bool>("Check_nonsmooth_selfcontactsurface", Check_nonsmooth_selfcontactsurface);
+
+    // for structural contact we currently choose redundant master storage
+    // the only exception is self contact where a redundant slave is needed, too
     INPAR::MORTAR::RedundantStorage redundant =
         DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(icparams, "REDUNDANT_STORAGE");
-    //    if (isself[0]==false && redundant != INPAR::MORTAR::redundant_master)
-    //      dserror("ERROR: CoManager: Contact requires redundant master storage");
-    if (isself[0] == true && redundant != INPAR::MORTAR::redundant_all)
-      dserror("ERROR: CoManager: Self contact requires redundant slave and master storage");
+    if (isanyselfcontact == true && redundant != INPAR::MORTAR::redundant_all)
+      dserror("ERROR: Self contact requires redundant slave and master storage");
 
     // ------------------------------------------------------------------------
     // create the desired interface object
@@ -1938,6 +1898,15 @@ void CONTACT::STRATEGY::Factory::PrintStrategyBanner(
     {
       IO::cout << "================================================================\n";
       IO::cout << "===== Lagrange Multiplier Strategy =============================\n";
+      IO::cout << "===== NONSMOOTH - GEOMETRIES ===================================\n";
+      IO::cout << "================================================================\n\n";
+    }
+    else if (soltype == INPAR::CONTACT::solution_nitsche and
+             algorithm == INPAR::MORTAR::algorithm_gpts)
+    {
+      IO::cout << "================================================================\n";
+      IO::cout << "===== Gauss-Point-To-Segment approach ==========================\n";
+      IO::cout << "===== using Nitsche formulation ================================\n";
       IO::cout << "===== NONSMOOTH - GEOMETRIES ===================================\n";
       IO::cout << "================================================================\n\n";
     }

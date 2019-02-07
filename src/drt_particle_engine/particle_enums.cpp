@@ -24,6 +24,8 @@
  *---------------------------------------------------------------------------*/
 int PARTICLEENGINE::EnumToStateDim(const enum PARTICLEENGINE::ParticleState& stateEnum)
 {
+  // attention: this method should be used only for the initialization of the particle container
+
   int dim = 0;
 
   switch (stateEnum)

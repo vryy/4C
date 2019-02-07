@@ -23,8 +23,6 @@
 /*---------------------------------------------------------------------------*
  | headers                                                     meier 09/2018 |
  *---------------------------------------------------------------------------*/
-#include "particle_interaction_typedefs.H"
-
 #include "../drt_particle_engine/particle_enums.H"
 #include "../drt_particle_engine/particle_typedefs.H"
 
@@ -49,6 +47,14 @@ namespace PARTICLEINTERACTION
   class MaterialHandler;
   class SPHNeighborPairs;
 }  // namespace PARTICLEINTERACTION
+
+namespace MAT
+{
+  namespace PAR
+  {
+    class ParticleMaterialThermo;
+  }
+}  // namespace MAT
 
 /*---------------------------------------------------------------------------*
  | class definitions                                           meier 09/2018 |
@@ -91,9 +97,6 @@ namespace PARTICLEINTERACTION
     virtual void ComputeTemperature() const = 0;
 
    protected:
-    //! refresh temperature of ghosted particles
-    virtual void RefreshTemperature() const final;
-
     //! smoothed particle hydrodynamics specific parameter list
     const Teuchos::ParameterList& params_sph_;
 
@@ -109,8 +112,14 @@ namespace PARTICLEINTERACTION
     //! neighbor pair handler
     std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs_;
 
+    //! temperature of ghosted particles to refresh
+    PARTICLEENGINE::StatesOfTypesToRefresh temperaturetorefresh_;
+
     //! time step size
     double dt_;
+
+    //! pointer to thermo material of particle types
+    std::vector<const MAT::PAR::ParticleMaterialThermo*> thermomaterial_;
   };
 
   class SPHTemperatureIntegration : public SPHTemperatureBase

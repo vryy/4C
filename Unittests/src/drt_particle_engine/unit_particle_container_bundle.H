@@ -68,8 +68,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     // init some particles
     int index(0);
     int globalid(0);
-    std::map<StateEnum, std::vector<double>> particle;
-    ParticleContainerShrdPtr container = nullptr;
+    ParticleStates particle;
 
     std::vector<double> pos(3);
     std::vector<double> mass(1);
@@ -77,7 +76,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
 
     // owned particles for phase 1
     {
-      ParticleContainerShrdPtr container = particlecontainerbundle_->GetSpecificContainer(
+      ParticleContainer* container = particlecontainerbundle_->GetSpecificContainer(
           PARTICLEENGINE::Phase1, PARTICLEENGINE::Owned);
 
       // first particle
@@ -122,7 +121,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
 
     // ghosted particles for phase 1
     {
-      ParticleContainerShrdPtr container = particlecontainerbundle_->GetSpecificContainer(
+      ParticleContainer* container = particlecontainerbundle_->GetSpecificContainer(
           PARTICLEENGINE::Phase1, PARTICLEENGINE::Ghosted);
 
       // first particle
@@ -154,7 +153,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
 
     // owned particles for phase 2
     {
-      ParticleContainerShrdPtr container = particlecontainerbundle_->GetSpecificContainer(
+      ParticleContainer* container = particlecontainerbundle_->GetSpecificContainer(
           PARTICLEENGINE::Phase2, PARTICLEENGINE::Owned);
 
       // first particle
@@ -209,14 +208,14 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     particlecontainerbundle_->ScaleStateSpecificContainer(
         2.0, PARTICLEENGINE::Radius, PARTICLEENGINE::Phase1);
 
-    ParticleContainerShrdPtr container = particlecontainerbundle_->GetSpecificContainer(
+    ParticleContainer* container = particlecontainerbundle_->GetSpecificContainer(
         PARTICLEENGINE::Phase1, PARTICLEENGINE::Owned);
 
     TS_ASSERT_EQUALS(container->ParticlesStored(), 3);
 
     int globalid(0);
-    std::map<StateEnum, std::vector<double>> particle;
-    std::map<StateEnum, std::vector<double>> particle_reference;
+    ParticleStates particle;
+    ParticleStates particle_reference;
     std::vector<double> pos(3);
     std::vector<double> mass(1);
     std::vector<double> rad(1);
@@ -265,14 +264,14 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     particlecontainerbundle_->UpdateStateSpecificContainer(
         2.0, PARTICLEENGINE::Radius, 1.0, PARTICLEENGINE::Mass, PARTICLEENGINE::Phase1);
 
-    ParticleContainerShrdPtr container = particlecontainerbundle_->GetSpecificContainer(
+    ParticleContainer* container = particlecontainerbundle_->GetSpecificContainer(
         PARTICLEENGINE::Phase1, PARTICLEENGINE::Owned);
 
     TS_ASSERT_EQUALS(container->ParticlesStored(), 3);
 
     int globalid(0);
-    std::map<StateEnum, std::vector<double>> particle;
-    std::map<StateEnum, std::vector<double>> particle_reference;
+    ParticleStates particle;
+    ParticleStates particle_reference;
     std::vector<double> pos(3);
     std::vector<double> mass(1);
     std::vector<double> rad(1);
@@ -324,14 +323,14 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     particlecontainerbundle_->SetStateSpecificContainer(
         mass, PARTICLEENGINE::Mass, PARTICLEENGINE::Phase2);
 
-    ParticleContainerShrdPtr container = particlecontainerbundle_->GetSpecificContainer(
+    ParticleContainer* container = particlecontainerbundle_->GetSpecificContainer(
         PARTICLEENGINE::Phase2, PARTICLEENGINE::Owned);
 
     TS_ASSERT_EQUALS(container->ParticlesStored(), 3);
 
     int globalid(0);
-    std::map<StateEnum, std::vector<double>> particle;
-    std::map<StateEnum, std::vector<double>> particle_reference;
+    ParticleStates particle;
+    ParticleStates particle_reference;
     std::vector<double> pos(3);
     std::vector<double> rad(1);
 
@@ -379,14 +378,14 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     particlecontainerbundle_->ClearStateSpecificContainer(
         PARTICLEENGINE::Mass, PARTICLEENGINE::Phase2);
 
-    ParticleContainerShrdPtr container = particlecontainerbundle_->GetSpecificContainer(
+    ParticleContainer* container = particlecontainerbundle_->GetSpecificContainer(
         PARTICLEENGINE::Phase2, PARTICLEENGINE::Owned);
 
     TS_ASSERT_EQUALS(container->ParticlesStored(), 3);
 
     int globalid(0);
-    std::map<StateEnum, std::vector<double>> particle;
-    std::map<StateEnum, std::vector<double>> particle_reference;
+    ParticleStates particle;
+    ParticleStates particle_reference;
     std::vector<double> pos(3);
     std::vector<double> rad(1);
 
@@ -430,10 +429,10 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
   {
     particlecontainerbundle_->ScaleStateAllContainers(2.0, PARTICLEENGINE::Mass);
 
-    ParticleContainerShrdPtr container = nullptr;
+    ParticleContainer* container = nullptr;
     int globalid(0);
-    std::map<StateEnum, std::vector<double>> particle;
-    std::map<StateEnum, std::vector<double>> particle_reference;
+    ParticleStates particle;
+    ParticleStates particle_reference;
     std::vector<double> pos(3);
     std::vector<double> mass(1);
     std::vector<double> rad(1);
@@ -530,10 +529,10 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     particlecontainerbundle_->UpdateStateAllContainers(
         2.0, PARTICLEENGINE::Mass, 1.0, PARTICLEENGINE::Radius);
 
-    ParticleContainerShrdPtr container = nullptr;
+    ParticleContainer* container = nullptr;
     int globalid(0);
-    std::map<StateEnum, std::vector<double>> particle;
-    std::map<StateEnum, std::vector<double>> particle_reference;
+    ParticleStates particle;
+    ParticleStates particle_reference;
     std::vector<double> pos(3);
     std::vector<double> mass(1);
     std::vector<double> rad(1);
@@ -632,10 +631,10 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
 
     particlecontainerbundle_->SetStateAllContainers(mass, PARTICLEENGINE::Mass);
 
-    ParticleContainerShrdPtr container = nullptr;
+    ParticleContainer* container = nullptr;
     int globalid(0);
-    std::map<StateEnum, std::vector<double>> particle;
-    std::map<StateEnum, std::vector<double>> particle_reference;
+    ParticleStates particle;
+    ParticleStates particle_reference;
     std::vector<double> pos(3);
     std::vector<double> rad(1);
 
@@ -727,10 +726,10 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
 
     particlecontainerbundle_->ClearStateAllContainers(PARTICLEENGINE::Mass);
 
-    ParticleContainerShrdPtr container = nullptr;
+    ParticleContainer* container = nullptr;
     int globalid(0);
-    std::map<StateEnum, std::vector<double>> particle;
-    std::map<StateEnum, std::vector<double>> particle_reference;
+    ParticleStates particle;
+    ParticleStates particle_reference;
     std::vector<double> pos(3);
     std::vector<double> rad(1);
 
@@ -819,7 +818,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
   {
     particlecontainerbundle_->ClearAllContainersOfSpecificStatus(PARTICLEENGINE::Ghosted);
 
-    ParticleContainerShrdPtr container = particlecontainerbundle_->GetSpecificContainer(
+    ParticleContainer* container = particlecontainerbundle_->GetSpecificContainer(
         PARTICLEENGINE::Phase1, PARTICLEENGINE::Ghosted);
 
     TS_ASSERT_EQUALS(container->ParticlesStored(), 0);
@@ -834,8 +833,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     TS_ASSERT_EQUALS(particlesstored.size(), 6);
   }
 
-  void compareParticleStates(std::map<StateEnum, std::vector<double>>& particle_reference,
-      std::map<StateEnum, std::vector<double>>& particle)
+  void compareParticleStates(ParticleStates& particle_reference, ParticleStates& particle)
   {
     TS_ASSERT_EQUALS(particle_reference.size(), particle.size());
 

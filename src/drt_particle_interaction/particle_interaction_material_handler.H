@@ -54,13 +54,13 @@ namespace PARTICLEINTERACTION
     explicit MaterialHandler(const Teuchos::ParameterList& params);
 
     //! virtual destructor
-    virtual ~MaterialHandler(){};
+    ~MaterialHandler(){};
 
     //! init particle material handler
-    virtual void Init();
+    void Init();
 
     //! setup particle material handler
-    virtual void Setup();
+    void Setup();
 
     //! write restart of particle material handler
     void WriteRestart(const int step, const double time) const;
@@ -68,27 +68,28 @@ namespace PARTICLEINTERACTION
     //! read restart of particle material handler
     void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
-    //! get reference to particle material parameter map
-    const std::map<PARTICLEENGINE::TypeEnum, const MAT::PAR::ParticleMaterialBase*>&
-    GetRefToParticleMatParMap() const
+    //! return pointer to particle material parameter
+    inline const MAT::PAR::ParticleMaterialBase* GetPtrToParticleMatParameter(
+        PARTICLEENGINE::TypeEnum typeEnum) const
     {
-      return phasetypetoparticlematpar_;
+      return phasetypetoparticlematpar_[typeEnum];
+    }
+
+    //! get particle types of stored particle material parameters
+    inline const std::set<PARTICLEENGINE::TypeEnum> GetParticleTypes() const
+    {
+      return storedtypes_;
     };
 
-    //! return pointer to particle material parameter
-    const MAT::PAR::ParticleMaterialBase* GetPtrToParticleMatParameter(
-        PARTICLEENGINE::TypeEnum particleType) const;
-
-   protected:
-    //! map particle types to particle material parameters
-    virtual void MapParticleTypeToMatParameter(PARTICLEENGINE::TypeEnum particleType, int matID);
-
+   private:
     //! particle simulation parameter list
     const Teuchos::ParameterList& params_;
 
-    //! map relating particle types to particle material parameters
-    std::map<PARTICLEENGINE::TypeEnum, const MAT::PAR::ParticleMaterialBase*>
-        phasetypetoparticlematpar_;
+    //! relate particle types to particle material parameters
+    std::vector<const MAT::PAR::ParticleMaterialBase*> phasetypetoparticlematpar_;
+
+    //! set of particle types of stored particle material parameters
+    std::set<PARTICLEENGINE::TypeEnum> storedtypes_;
   };
 }  // namespace PARTICLEINTERACTION
 

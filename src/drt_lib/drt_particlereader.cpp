@@ -98,7 +98,7 @@ void DRT::INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShr
 
     PARTICLEENGINE::TypeEnum particleType;
     int globalid(0);
-    std::map<PARTICLEENGINE::StateEnum, std::vector<double>> particlestates;
+    PARTICLEENGINE::ParticleStates particlestates;
 
     // note that the last block is special....
     for (int block = 0; block < nblock; ++block)

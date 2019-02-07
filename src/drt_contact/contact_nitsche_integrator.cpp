@@ -227,10 +227,13 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(MORTAR::MortarElement& sele,
           cauchy_nt1_weighted_average, cauchy_nt1_weighted_average_deriv, t1, dt1);
       IntegrateTest<dim>(-1. + theta_2_, sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt,
           cauchy_nt2_weighted_average, cauchy_nt2_weighted_average_deriv, t2, dt2);
-      IntegrateTest<dim>(+1. - theta_2_, mele, mval, mderiv, dmxi, jac, jacintcellmap, wgt,
-          cauchy_nt1_weighted_average, cauchy_nt1_weighted_average_deriv, t1, dt1);
-      IntegrateTest<dim>(+1. - theta_2_, mele, mval, mderiv, dmxi, jac, jacintcellmap, wgt,
-          cauchy_nt2_weighted_average, cauchy_nt2_weighted_average_deriv, t2, dt2);
+      if (!two_half_pass_)
+      {
+        IntegrateTest<dim>(+1. - theta_2_, mele, mval, mderiv, dmxi, jac, jacintcellmap, wgt,
+            cauchy_nt1_weighted_average, cauchy_nt1_weighted_average_deriv, t1, dt1);
+        IntegrateTest<dim>(+1. - theta_2_, mele, mval, mderiv, dmxi, jac, jacintcellmap, wgt,
+            cauchy_nt2_weighted_average, cauchy_nt2_weighted_average_deriv, t2, dt2);
+      }
 
       IntegrateAdjointTest<dim>(-theta_ / pet, jac, jacintcellmap, wgt, cauchy_nt1_weighted_average,
           cauchy_nt1_weighted_average_deriv, sele, t1_adjoint_test_slave,
@@ -238,12 +241,15 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(MORTAR::MortarElement& sele,
       IntegrateAdjointTest<dim>(-theta_ / pet, jac, jacintcellmap, wgt, cauchy_nt2_weighted_average,
           cauchy_nt2_weighted_average_deriv, sele, t2_adjoint_test_slave,
           deriv_t2_adjoint_test_slave);
-      IntegrateAdjointTest<dim>(-theta_ / pet, jac, jacintcellmap, wgt, cauchy_nt1_weighted_average,
-          cauchy_nt1_weighted_average_deriv, mele, t1_adjoint_test_master,
-          deriv_t1_adjoint_test_master);
-      IntegrateAdjointTest<dim>(-theta_ / pet, jac, jacintcellmap, wgt, cauchy_nt2_weighted_average,
-          cauchy_nt2_weighted_average_deriv, mele, t2_adjoint_test_master,
-          deriv_t2_adjoint_test_master);
+      if (!two_half_pass_)
+      {
+        IntegrateAdjointTest<dim>(-theta_ / pet, jac, jacintcellmap, wgt,
+            cauchy_nt1_weighted_average, cauchy_nt1_weighted_average_deriv, mele,
+            t1_adjoint_test_master, deriv_t1_adjoint_test_master);
+        IntegrateAdjointTest<dim>(-theta_ / pet, jac, jacintcellmap, wgt,
+            cauchy_nt2_weighted_average, cauchy_nt2_weighted_average_deriv, mele,
+            t2_adjoint_test_master, deriv_t2_adjoint_test_master);
+      }
     }
 
     if (snn_av_pen_gap >= 0.)
@@ -251,16 +257,22 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(MORTAR::MortarElement& sele,
       IntegrateTest<dim>(-1. + theta_2_, sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt,
           cauchy_nn_weighted_average, cauchy_nn_weighted_average_deriv, contact_normal,
           deriv_contact_normal);
-      IntegrateTest<dim>(+1. - theta_2_, mele, mval, mderiv, dmxi, jac, jacintcellmap, wgt,
-          cauchy_nn_weighted_average, cauchy_nn_weighted_average_deriv, contact_normal,
-          deriv_contact_normal);
+      if (!two_half_pass_)
+      {
+        IntegrateTest<dim>(+1. - theta_2_, mele, mval, mderiv, dmxi, jac, jacintcellmap, wgt,
+            cauchy_nn_weighted_average, cauchy_nn_weighted_average_deriv, contact_normal,
+            deriv_contact_normal);
+      }
 
       IntegrateAdjointTest<dim>(-theta_ / pen, jac, jacintcellmap, wgt, cauchy_nn_weighted_average,
           cauchy_nn_weighted_average_deriv, sele, normal_adjoint_test_slave,
           deriv_normal_adjoint_test_slave);
-      IntegrateAdjointTest<dim>(-theta_ / pen, jac, jacintcellmap, wgt, cauchy_nn_weighted_average,
-          cauchy_nn_weighted_average_deriv, mele, normal_adjoint_test_master,
-          deriv_normal_adjoint_test_master);
+      if (!two_half_pass_)
+      {
+        IntegrateAdjointTest<dim>(-theta_ / pen, jac, jacintcellmap, wgt,
+            cauchy_nn_weighted_average, cauchy_nn_weighted_average_deriv, mele,
+            normal_adjoint_test_master, deriv_normal_adjoint_test_master);
+      }
     }
     else
     {
@@ -268,19 +280,28 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(MORTAR::MortarElement& sele,
       IntegrateTest<dim>(-1., sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt,
           cauchy_nn_weighted_average, cauchy_nn_weighted_average_deriv, contact_normal,
           deriv_contact_normal);
-      IntegrateTest<dim>(+1., mele, mval, mderiv, dmxi, jac, jacintcellmap, wgt,
-          cauchy_nn_weighted_average, cauchy_nn_weighted_average_deriv, contact_normal,
-          deriv_contact_normal);
+      if (!two_half_pass_)
+      {
+        IntegrateTest<dim>(+1., mele, mval, mderiv, dmxi, jac, jacintcellmap, wgt,
+            cauchy_nn_weighted_average, cauchy_nn_weighted_average_deriv, contact_normal,
+            deriv_contact_normal);
+      }
 
       IntegrateTest<dim>(-theta_2_ * pen, sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt, gap,
           dgapgp, contact_normal, deriv_contact_normal);
-      IntegrateTest<dim>(+theta_2_ * pen, mele, mval, mderiv, dmxi, jac, jacintcellmap, wgt, gap,
-          dgapgp, contact_normal, deriv_contact_normal);
+      if (!two_half_pass_)
+      {
+        IntegrateTest<dim>(+theta_2_ * pen, mele, mval, mderiv, dmxi, jac, jacintcellmap, wgt, gap,
+            dgapgp, contact_normal, deriv_contact_normal);
+      }
 
       IntegrateAdjointTest<dim>(theta_, jac, jacintcellmap, wgt, gap, dgapgp, sele,
           normal_adjoint_test_slave, deriv_normal_adjoint_test_slave);
-      IntegrateAdjointTest<dim>(theta_, jac, jacintcellmap, wgt, gap, dgapgp, mele,
-          normal_adjoint_test_master, deriv_normal_adjoint_test_master);
+      if (!two_half_pass_)
+      {
+        IntegrateAdjointTest<dim>(theta_, jac, jacintcellmap, wgt, gap, dgapgp, mele,
+            normal_adjoint_test_master, deriv_normal_adjoint_test_master);
+      }
 
       if (frtype_)
       {
@@ -367,21 +388,27 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(MORTAR::MortarElement& sele,
 
         IntegrateTest<dim>(-theta_2_, sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt,
             sigma_nt1_pen_vt1, d_sigma_nt1_pen_vt1, t1, dt1);
-        IntegrateTest<dim>(+theta_2_, mele, mval, mderiv, dmxi, jac, jacintcellmap, wgt,
-            sigma_nt1_pen_vt1, d_sigma_nt1_pen_vt1, t1, dt1);
         IntegrateTest<dim>(-theta_2_, sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt,
             sigma_nt2_pen_vt2, d_sigma_nt2_pen_vt2, t2, dt2);
-        IntegrateTest<dim>(+theta_2_, mele, mval, mderiv, dmxi, jac, jacintcellmap, wgt,
-            sigma_nt2_pen_vt2, d_sigma_nt2_pen_vt2, t2, dt2);
+        if (!two_half_pass_)
+        {
+          IntegrateTest<dim>(+theta_2_, mele, mval, mderiv, dmxi, jac, jacintcellmap, wgt,
+              sigma_nt1_pen_vt1, d_sigma_nt1_pen_vt1, t1, dt1);
+          IntegrateTest<dim>(+theta_2_, mele, mval, mderiv, dmxi, jac, jacintcellmap, wgt,
+              sigma_nt2_pen_vt2, d_sigma_nt2_pen_vt2, t2, dt2);
+        }
 
         IntegrateAdjointTest<dim>(theta_ / pet, jac, jacintcellmap, wgt, sigma_nt1_pen_vt1,
             d_sigma_nt1_pen_vt1, sele, t1_adjoint_test_slave, deriv_t1_adjoint_test_slave);
-        IntegrateAdjointTest<dim>(theta_ / pet, jac, jacintcellmap, wgt, sigma_nt1_pen_vt1,
-            d_sigma_nt1_pen_vt1, mele, t1_adjoint_test_master, deriv_t1_adjoint_test_master);
         IntegrateAdjointTest<dim>(theta_ / pet, jac, jacintcellmap, wgt, sigma_nt2_pen_vt2,
             d_sigma_nt2_pen_vt2, sele, t2_adjoint_test_slave, deriv_t2_adjoint_test_slave);
-        IntegrateAdjointTest<dim>(theta_ / pet, jac, jacintcellmap, wgt, sigma_nt2_pen_vt2,
-            d_sigma_nt2_pen_vt2, mele, t2_adjoint_test_master, deriv_t2_adjoint_test_master);
+        if (!two_half_pass_)
+        {
+          IntegrateAdjointTest<dim>(theta_ / pet, jac, jacintcellmap, wgt, sigma_nt1_pen_vt1,
+              d_sigma_nt1_pen_vt1, mele, t1_adjoint_test_master, deriv_t1_adjoint_test_master);
+          IntegrateAdjointTest<dim>(theta_ / pet, jac, jacintcellmap, wgt, sigma_nt2_pen_vt2,
+              d_sigma_nt2_pen_vt2, mele, t2_adjoint_test_master, deriv_t2_adjoint_test_master);
+        }
       }
     }
   }
@@ -391,8 +418,11 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(MORTAR::MortarElement& sele,
     {
       IntegrateTest<dim>(-pen, sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt, gap, dgapgp,
           contact_normal, deriv_contact_normal);
-      IntegrateTest<dim>(+pen, mele, mval, mderiv, dmxi, jac, jacintcellmap, wgt, gap, dgapgp,
-          contact_normal, deriv_contact_normal);
+      if (!two_half_pass_)
+      {
+        IntegrateTest<dim>(+pen, mele, mval, mderiv, dmxi, jac, jacintcellmap, wgt, gap, dgapgp,
+            contact_normal, deriv_contact_normal);
+      }
     }
   }
   else
@@ -663,54 +693,23 @@ void CONTACT::UTILS::NitscheWeightsAndScaling(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, const INPAR::CONTACT::NitscheWeighting nit_wgt, const double dt,
     double& ws, double& wm, double& pen, double& pet)
 {
-  double he_slave = -1.;
-  double he_master = -1.;
-  if (sele.IsSlave() && !mele.IsSlave())
-  {
-    he_slave = dynamic_cast<CONTACT::CoElement&>(sele).TraceHE();
-    he_master = dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
-  }
-  else if (!sele.IsSlave() && mele.IsSlave())
-  {
-    he_slave = dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
-    he_master = dynamic_cast<CONTACT::CoElement&>(sele).TraceHE();
-  }
-  else
-    dserror("you should not be here");
+  const double he_slave = dynamic_cast<CONTACT::CoElement&>(sele).TraceHE();
+  const double he_master = dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
+
   switch (nit_wgt)
   {
     case INPAR::CONTACT::NitWgt_slave:
     {
-      if (sele.IsSlave() && !mele.IsSlave())
-      {
-        ws = 1.;
-        wm = 0.;
-      }
-      else if (!sele.IsSlave() && mele.IsSlave())
-      {
-        ws = 0.;
-        wm = 1.;
-      }
-      else
-        dserror("you should not be here");
+      ws = 1.;
+      wm = 0.;
       pen /= he_slave;
       pet /= he_slave;
     }
     break;
     case INPAR::CONTACT::NitWgt_master:
     {
-      if (sele.IsSlave() && !mele.IsSlave())
-      {
-        ws = 0.;
-        wm = 1.;
-      }
-      else if (!sele.IsSlave() && mele.IsSlave())
-      {
-        ws = 1.;
-        wm = 0.;
-      }
-      else
-        dserror("you should not be here");
+      wm = 1.;
+      ws = 0.;
       pen /= he_master;
       pet /= he_master;
     }
@@ -722,17 +721,6 @@ void CONTACT::UTILS::NitscheWeightsAndScaling(MORTAR::MortarElement& sele,
       wm = 1. - ws;
       pen = ws * pen / he_slave + wm * pen / he_master;
       pet = ws * pet / he_slave + wm * pet / he_master;
-      if (sele.IsSlave() && !mele.IsSlave())
-      {
-      }
-      else if (!sele.IsSlave() && mele.IsSlave())
-      {
-        double tmp = ws;
-        ws = wm;
-        wm = tmp;
-      }
-      else
-        dserror("you should not be here");
 
       break;
     default:

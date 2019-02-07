@@ -1,6 +1,6 @@
 //
-// Maintainer: Rui Fang
-// fang@lnm.mw.tum.de
+// Maintainer: Christoph Schmidt
+// schmidt@lnm.mw.tum.de
 // http://www.lnm.mw.tum.de/
 // 089 - 289-15251
 //
@@ -32,6 +32,7 @@ LINEAR_SOLVER                   1
 RESULTSEVRY                     2
 RESTARTEVRY                     5
 CALCERROR                       error_by_condition
+COMPUTEINTEGRALS                repeated
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
 DEFINITION_TAU                  Zero
@@ -97,8 +98,8 @@ SCATRA DIS scatra SPECIAL QUANTITY L2error2_1 VALUE 3.13597000383803864e-02 TOLE
 SCATRA DIS scatra SPECIAL QUANTITY H1error_1 VALUE 7.28616576162150523e+02 TOLERANCE 1.0e-07
 SCATRA DIS scatra SPECIAL QUANTITY H1error2_1 VALUE 3.13599100060702116e-02 TOLERANCE 1.0e-11
 ----------------------------------------------------------DESIGN DESCRIPTION
-NDSURF                          14
-NDVOL                           7
+NDSURF                          20
+NDVOL                           10
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 E 6 - NUMDOF 2 ONOFF 0 1 VAL 0.0 -5.278302597e-4 FUNCT 0 0 Live Mid
@@ -146,6 +147,19 @@ E 6 -
 DVOL                            2
 E 2 - ID 0 Function 2
 E 3 - ID 1 Function 3
+---------------------------------------DESIGN DOMAIN INTEGRAL VOL CONDITIONS
+DVOL                            3
+E 1 - ID 0
+E 2 - ID 1
+E 3 - ID 2
+------------------------------------DESIGN BOUNDARY INTEGRAL SURF CONDITIONS
+DSURF                           6
+E 1 - ID 0
+E 2 - ID 1
+E 3 - ID 2
+E 4 - ID 3
+E 5 - ID 4
+E 6 - ID 5
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE    104 DSURFACE 1
 NODE    106 DSURFACE 1

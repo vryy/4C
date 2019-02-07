@@ -104,16 +104,9 @@ void PARTICLEALGORITHM::TimInt::Setup(
       typesexludedfromtimeintegration.insert(currtype);
   }
 
-  // determine set of particle types to integrate in time
-  for (auto typeIt : particlecontainerbundle->GetRefToAllContainersMap())
-  {
-    // get enum of particle types
-    PARTICLEENGINE::TypeEnum particleType = typeIt.first;
-
-    // insert current particle type into set of particles to integrate in time
-    if (not typesexludedfromtimeintegration.count(particleType))
-      typestointegrate_.insert(particleType);
-  }
+  // determine set of particle types to be integrated in time
+  for (auto& typeEnum : particlecontainerbundle->GetParticleTypes())
+    if (not typesexludedfromtimeintegration.count(typeEnum)) typestointegrate_.insert(typeEnum);
 }
 
 /*---------------------------------------------------------------------------*
@@ -248,17 +241,17 @@ void PARTICLEALGORITHM::TimInt::AddInitialRandomNoiseToPosition()
   for (auto& particleType : typestointegrate_)
   {
     // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container =
+    PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
-    int particlestored = container->ParticlesStored();
+    const int particlestored = container->ParticlesStored();
 
     // no owned particles of current particle type
     if (particlestored <= 0) continue;
 
-    // get dimension of particle state
-    int statedim = PARTICLEENGINE::EnumToStateDim(PARTICLEENGINE::Position);
+    // get particle state dimension
+    int statedim = container->GetParticleStateDim(PARTICLEENGINE::Position);
 
     // get pointer to particle state
     double* pos = container->GetPtrToParticleState(PARTICLEENGINE::Position, 0);
@@ -320,7 +313,7 @@ void PARTICLEALGORITHM::TimIntSemiImplicitEuler::PreInteractionRoutine()
   for (auto& particleType : typestointegrate_)
   {
     // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container =
+    PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
     // update velocity of all particles
@@ -375,7 +368,7 @@ void PARTICLEALGORITHM::TimIntVelocityVerlet::SetInitialStates()
   for (auto& particleType : typestointegrate_)
   {
     // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container =
+    PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
     // modified velocity and acceleration states
@@ -402,7 +395,7 @@ void PARTICLEALGORITHM::TimIntVelocityVerlet::PreInteractionRoutine()
   for (auto& particleType : typestointegrate_)
   {
     // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container =
+    PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
     // update velocity of all particles
@@ -460,7 +453,7 @@ void PARTICLEALGORITHM::TimIntVelocityVerlet::PostInteractionRoutine()
   for (auto& particleType : typestointegrate_)
   {
     // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container =
+    PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
     // update velocity of all particles
