@@ -23,12 +23,10 @@
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 08/2018 |
  *---------------------------------------------------------------------------*/
-#include "particle_interaction_typedefs.H"
-
 #include "../drt_particle_engine/particle_enums.H"
 #include "../drt_particle_engine/particle_typedefs.H"
 
-#include "particle_interaction_sph_particle_pair.H"
+#include "particle_interaction_sph_neighbor_pair_struct.H"
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                       sfuchs 08/2018 |
@@ -48,6 +46,16 @@ namespace PARTICLEINTERACTION
 {
   class SPHKernelBase;
 }
+
+/*---------------------------------------------------------------------------*
+ | type definitions                                           sfuchs 01/2019 |
+ *---------------------------------------------------------------------------*/
+namespace PARTICLEINTERACTION
+{
+  typedef std::vector<PARTICLEINTERACTION::SPHNeighborPair> SPHNeighborPairData;
+
+  typedef std::vector<std::vector<int>> SPHIndexOfNeighborPairs;
+}  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 08/2018 |
@@ -83,12 +91,21 @@ namespace PARTICLEINTERACTION
       return neighborpairdata_;
     };
 
+    //! get reference to index of neighbor pairs for each type
+    inline const SPHIndexOfNeighborPairs& GetRefToIndexOfNeighborPairs() const
+    {
+      return indexofneighborpairs_;
+    };
+
     //! evaluate neighbor pairs
     void EvaluateNeighborPairs();
 
    private:
     //! neighbor pair data with evaluated quantities
-    PARTICLEINTERACTION::SPHNeighborPairData neighborpairdata_;
+    SPHNeighborPairData neighborpairdata_;
+
+    //! index of neighbor pairs for each type
+    SPHIndexOfNeighborPairs indexofneighborpairs_;
 
     //! interface to particle engine
     std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface_;

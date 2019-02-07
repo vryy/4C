@@ -70,16 +70,21 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
     const double mass_i = 0.25;
     const double mass_j = 0.23;
     const double dWdrij = 0.3;
-    double specificcoefficient_ij = 0.0;
+    const double dWdrji = 0.85;
+
+    double speccoeff_ij = 0.0;
+    double speccoeff_ji = 0.0;
 
     momentumformulation_->SpecificCoefficient(
-        &dens_i, &dens_j, &mass_i, &mass_j, dWdrij, specificcoefficient_ij);
+        &dens_i, &dens_j, &mass_i, &mass_j, dWdrij, dWdrji, speccoeff_ij, speccoeff_ji);
 
     // compute reference solution
-    double specificcoefficient_ij_ref = dWdrij * mass_j;
+    const double speccoeff_ij_ref = dWdrij * mass_j;
+    const double speccoeff_ji_ref = dWdrji * mass_i;
 
     // compare results
-    TS_ASSERT_EQUALS(specificcoefficient_ij, specificcoefficient_ij_ref);
+    TS_ASSERT_DELTA(speccoeff_ij, speccoeff_ij_ref, 1.0e-14);
+    TS_ASSERT_DELTA(speccoeff_ji, speccoeff_ji_ref, 1.0e-14);
   }
 
   void test_PressureGradient()
@@ -88,71 +93,63 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
     const double dens_j = 0.97;
     const double press_i = 0.45;
     const double press_j = 0.43;
-    const double specificcoefficient_ij = 12.42;
-
-    double e_ij[3];
+    double e_ij[3] = {0.0};
     e_ij[0] = 1.0 / std::sqrt(21);
     e_ij[1] = 2.0 / std::sqrt(21);
     e_ij[2] = 4.0 / std::sqrt(21);
+    const double speccoeff_ij = 12.42;
+    const double speccoeff_ji = 0.35;
 
-    double acc_i[3];
-    acc_i[0] = 0.0;
-    acc_i[1] = 0.0;
-    acc_i[2] = 0.0;
+    double acc_i[3] = {0.0};
+    double acc_j[3] = {0.0};
 
     momentumformulation_->PressureGradient(
-        &dens_i, &dens_j, &press_i, &press_j, specificcoefficient_ij, e_ij, acc_i);
+        &dens_i, &dens_j, &press_i, &press_j, speccoeff_ij, speccoeff_ji, e_ij, acc_i, acc_j);
 
     // compute reference solution
-    const double pressuregradient =
-        -specificcoefficient_ij * (press_i / std::pow(dens_i, 2) + press_j / std::pow(dens_j, 2));
+    double acc_i_ref[3] = {0.0};
+    double acc_j_ref[3] = {0.0};
 
-    double acc_i_ref[3];
-    acc_i_ref[0] = 0.0;
-    acc_i_ref[1] = 0.0;
-    acc_i_ref[2] = 0.0;
-    for (int i = 0; i < 3; ++i) acc_i_ref[i] = pressuregradient * e_ij[i];
+    const double fac = (press_i / std::pow(dens_i, 2) + press_j / std::pow(dens_j, 2));
+    for (int i = 0; i < 3; ++i) acc_i_ref[i] = -speccoeff_ij * fac * e_ij[i];
+    for (int i = 0; i < 3; ++i) acc_j_ref[i] = speccoeff_ji * fac * e_ij[i];
 
     // compare results
-    for (int i = 0; i < 3; ++i) TS_ASSERT_EQUALS(acc_i[i], acc_i_ref[i]);
+    for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_i[i], acc_i_ref[i], 1.0e-14);
+    for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_j[i], acc_j_ref[i], 1.0e-14);
   }
 
   void test_ShearForces()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
-
-    double vel_i[3];
+    double vel_i[3] = {0.0};
     vel_i[0] = 0.1;
     vel_i[1] = 2.0;
     vel_i[2] = -0.4;
-    double vel_j[3];
+    double vel_j[3] = {0.0};
     vel_j[0] = 0.27;
     vel_j[1] = -1.3;
     vel_j[2] = 0.5;
-
-    const double kernelfac = 3;
-
+    const double abs_rij = 0.3;
+    double e_ij[3] = {0.0};
+    e_ij[0] = 1.0 / std::sqrt(21);
+    e_ij[1] = 2.0 / std::sqrt(21);
+    e_ij[2] = 4.0 / std::sqrt(21);
+    const double speccoeff_ij = 12.42;
+    const double speccoeff_ji = 0.35;
     const double visc_i = 0.03;
     const double visc_j = 0.05;
     const double bulk_visc_i = 0.015;
     const double bulk_visc_j = 0.006;
 
-    const double abs_rij = 0.3;
-    const double specificcoefficient_ij = 12.42;
+    const double kernelfac = 3;
 
-    double e_ij[3];
-    e_ij[0] = 1.0 / std::sqrt(21);
-    e_ij[1] = 2.0 / std::sqrt(21);
-    e_ij[2] = 4.0 / std::sqrt(21);
-
-    double acc_i[3];
-    acc_i[0] = 0.0;
-    acc_i[1] = 0.0;
-    acc_i[2] = 0.0;
+    double acc_i[3] = {0.0};
+    double acc_j[3] = {0.0};
 
     momentumformulation_->ShearForces(&dens_i, &dens_j, vel_i, vel_j, kernelfac, visc_i, visc_j,
-        bulk_visc_i, bulk_visc_j, abs_rij, specificcoefficient_ij, e_ij, acc_i);
+        bulk_visc_i, bulk_visc_j, abs_rij, speccoeff_ij, speccoeff_ji, e_ij, acc_i, acc_j);
 
     // compute reference solution
     double viscosity = 0.0;
@@ -169,136 +166,134 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
     const double e_ij_vrel_ij = ((vel_i[0] - vel_j[0]) * e_ij[0] + (vel_i[1] - vel_j[1]) * e_ij[1] +
                                  (vel_i[2] - vel_j[2]) * e_ij[2]);
 
-    double acc_i_ref[3];
-    acc_i_ref[0] = 0.0;
-    acc_i_ref[1] = 0.0;
-    acc_i_ref[2] = 0.0;
+    double acc_i_ref[3] = {0.0};
+    double acc_j_ref[3] = {0.0};
+
     for (int i = 0; i < 3; ++i)
     {
       // diffusion
-      acc_i_ref[i] = specificcoefficient_ij * diffusioncoefficient * inv_densi_densj_absdist *
-                     (vel_i[i] - vel_j[i]);
+      acc_i_ref[i] =
+          speccoeff_ij * diffusioncoefficient * inv_densi_densj_absdist * (vel_i[i] - vel_j[i]);
+      acc_j_ref[i] =
+          -speccoeff_ji * diffusioncoefficient * inv_densi_densj_absdist * (vel_i[i] - vel_j[i]);
 
       // convection
-      acc_i_ref[i] += specificcoefficient_ij * convectioncoefficient * e_ij_vrel_ij *
-                      inv_densi_densj_absdist * e_ij[i];
+      acc_i_ref[i] +=
+          speccoeff_ij * convectioncoefficient * e_ij_vrel_ij * inv_densi_densj_absdist * e_ij[i];
+      acc_j_ref[i] +=
+          -speccoeff_ji * convectioncoefficient * e_ij_vrel_ij * inv_densi_densj_absdist * e_ij[i];
     }
 
     // compare results
-    for (int i = 0; i < 3; ++i) TS_ASSERT_EQUALS(acc_i[i], acc_i_ref[i]);
+    for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_i[i], acc_i_ref[i], 1.0e-14);
+    for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_j[i], acc_j_ref[i], 1.0e-14);
   }
 
   void test_StandardBackgroundPressure()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
-
-    const double backgroundpressure = 10.0;
-    const double specificcoefficient_ij = 12.42;
-
-    double e_ij[3];
+    double e_ij[3] = {0.0};
     e_ij[0] = 1.0 / std::sqrt(21);
     e_ij[1] = 2.0 / std::sqrt(21);
     e_ij[2] = 4.0 / std::sqrt(21);
+    const double speccoeff_ij = 12.42;
+    const double speccoeff_ji = 0.35;
+    const double bg_press_i = 10.0;
+    const double bg_press_j = 4.5;
 
-    double acc_i[3];
-    acc_i[0] = 0.0;
-    acc_i[1] = 0.0;
-    acc_i[2] = 0.0;
+    double mod_acc_i[3] = {0.0};
+    double mod_acc_j[3] = {0.0};
 
-    momentumformulation_->StandardBackgroundPressure(
-        &dens_i, &dens_j, backgroundpressure, specificcoefficient_ij, e_ij, acc_i);
+    momentumformulation_->StandardBackgroundPressure(&dens_i, &dens_j, bg_press_i, bg_press_j,
+        speccoeff_ij, speccoeff_ji, e_ij, mod_acc_i, mod_acc_j);
 
     // compute reference solution
-    const double fac = -specificcoefficient_ij * backgroundpressure *
-                       (1.0 / std::pow(dens_i, 2) + 1.0 / std::pow(dens_j, 2));
+    const double fac = (1.0 / std::pow(dens_i, 2) + 1.0 / std::pow(dens_j, 2));
 
-    double acc_i_ref[3];
-    acc_i_ref[0] = 0.0;
-    acc_i_ref[1] = 0.0;
-    acc_i_ref[2] = 0.0;
-    for (int i = 0; i < 3; ++i) acc_i_ref[i] = fac * e_ij[i];
+    double mod_acc_i_ref[3] = {0.0};
+    double mod_acc_j_ref[3] = {0.0};
+
+    for (int i = 0; i < 3; ++i) mod_acc_i_ref[i] = -speccoeff_ij * bg_press_i * fac * e_ij[i];
+    for (int i = 0; i < 3; ++i) mod_acc_j_ref[i] = speccoeff_ji * bg_press_j * fac * e_ij[i];
 
     // compare results
-    for (int i = 0; i < 3; ++i) TS_ASSERT_EQUALS(acc_i[i], acc_i_ref[i]);
+    for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(mod_acc_i[i], mod_acc_i_ref[i], 1.0e-14);
+    for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(mod_acc_j[i], mod_acc_j_ref[i], 1.0e-14);
   }
 
   void test_GeneralizedBackgroundPressure()
   {
     const double dens_i = 1.02;
+    const double dens_j = 0.97;
     const double mass_i = 0.25;
     const double mass_j = 0.23;
-
-    const double backgroundpressure_tilde = 8.4;
-    const double dWdrij_tilde = 0.32;
-
-    double e_ij[3];
+    double e_ij[3] = {0.0};
     e_ij[0] = 1.0 / std::sqrt(21);
     e_ij[1] = 2.0 / std::sqrt(21);
     e_ij[2] = 4.0 / std::sqrt(21);
+    const double mod_bg_press_i = 8.4;
+    const double mod_bg_press_j = 4.5;
+    const double mod_dWdrij = 0.32;
+    const double mod_dWdrji = 0.97;
 
-    double acc_i[3];
-    acc_i[0] = 0.0;
-    acc_i[1] = 0.0;
-    acc_i[2] = 0.0;
+    double mod_acc_i[3] = {0.0};
+    double mod_acc_j[3] = {0.0};
 
-    momentumformulation_->GeneralizedBackgroundPressure(
-        &dens_i, &mass_i, &mass_j, backgroundpressure_tilde, dWdrij_tilde, e_ij, acc_i);
+    momentumformulation_->GeneralizedBackgroundPressure(&dens_i, &dens_j, &mass_i, &mass_j,
+        mod_bg_press_i, mod_bg_press_j, mod_dWdrij, mod_dWdrji, e_ij, mod_acc_i, mod_acc_j);
 
     // compute reference solution
-    const double fac = -backgroundpressure_tilde * (mass_j / std::pow(dens_i, 2)) * dWdrij_tilde;
+    double mod_acc_i_ref[3] = {0.0};
+    double mod_acc_j_ref[3] = {0.0};
 
-    double acc_i_ref[3];
-    acc_i_ref[0] = 0.0;
-    acc_i_ref[1] = 0.0;
-    acc_i_ref[2] = 0.0;
-    for (int i = 0; i < 3; ++i) acc_i_ref[i] = fac * e_ij[i];
+    for (int i = 0; i < 3; ++i)
+      mod_acc_i_ref[i] = -mod_bg_press_i * (mass_j / std::pow(dens_i, 2)) * mod_dWdrij * e_ij[i];
+
+    for (int i = 0; i < 3; ++i)
+      mod_acc_j_ref[i] = mod_bg_press_j * (mass_i / std::pow(dens_j, 2)) * mod_dWdrji * e_ij[i];
 
     // compare results
-    for (int i = 0; i < 3; ++i) TS_ASSERT_EQUALS(acc_i[i], acc_i_ref[i]);
+    for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(mod_acc_i[i], mod_acc_i_ref[i], 1.0e-14);
+    for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(mod_acc_j[i], mod_acc_j_ref[i], 1.0e-14);
   }
 
   void test_ModifiedVelocityContribution()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
-
-    double vel_i[3];
+    double vel_i[3] = {0.0};
     vel_i[0] = 0.1;
     vel_i[1] = 2.0;
     vel_i[2] = -0.4;
-    double vel_j[3];
+    double vel_j[3] = {0.0};
     vel_j[0] = 0.27;
     vel_j[1] = -1.3;
     vel_j[2] = 0.5;
-
-    double mod_vel_i[3];
-    mod_vel_i[0] = 0.1;
-    mod_vel_i[1] = 2.0;
-    mod_vel_i[2] = -0.4;
-    double mod_vel_j[3];
-    mod_vel_j[0] = 0.27;
-    mod_vel_j[1] = -1.3;
-    mod_vel_j[2] = 0.5;
-
-    const double specificcoefficient_ij = 12.42;
-
-    double e_ij[3];
+    double mod_vel_i[3] = {0.0};
+    mod_vel_i[0] = 0.12;
+    mod_vel_i[1] = 1.9;
+    mod_vel_i[2] = -0.42;
+    double mod_vel_j[3] = {0.0};
+    mod_vel_j[0] = 0.3;
+    mod_vel_j[1] = -1.2;
+    mod_vel_j[2] = 0.77;
+    double e_ij[3] = {0.0};
     e_ij[0] = 1.0 / std::sqrt(21);
     e_ij[1] = 2.0 / std::sqrt(21);
     e_ij[2] = 4.0 / std::sqrt(21);
+    const double speccoeff_ij = 12.42;
+    const double speccoeff_ji = 0.35;
 
-    double acc_i[3];
-    acc_i[0] = 0.0;
-    acc_i[1] = 0.0;
-    acc_i[2] = 0.0;
+    double acc_i[3] = {0.0};
+    double acc_j[3] = {0.0};
 
-    momentumformulation_->ModifiedVelocityContribution(
-        &dens_i, &dens_j, vel_i, vel_j, mod_vel_i, mod_vel_j, specificcoefficient_ij, e_ij, acc_i);
+    momentumformulation_->ModifiedVelocityContribution(&dens_i, &dens_j, vel_i, vel_j, mod_vel_i,
+        mod_vel_j, speccoeff_ij, speccoeff_ji, e_ij, acc_i, acc_j);
 
     // compute reference solution
-    double A_i[3][3];
-    double A_j[3][3];
+    double A_i[3][3] = {0.0};
+    double A_j[3][3] = {0.0};
 
     for (int i = 0; i < 3; ++i)
       for (int j = 0; j < 3; ++j)
@@ -308,7 +303,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
         A_j[i][j] = dens_j * vel_j[i] * (mod_vel_j[j] - vel_j[j]);
       }
 
-    double A_ij_e_ij[3];
+    double A_ij_e_ij[3] = {0.0};
     for (int i = 0; i < 3; ++i)
     {
       A_ij_e_ij[i] = (1.0 / std::pow(dens_i, 2)) *
@@ -318,14 +313,15 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
                       (A_j[i][0] * e_ij[0] + A_j[i][1] * e_ij[1] + A_j[i][2] * e_ij[2]);
     }
 
-    double acc_i_ref[3];
-    acc_i_ref[0] = 0.0;
-    acc_i_ref[1] = 0.0;
-    acc_i_ref[2] = 0.0;
-    for (int i = 0; i < 3; ++i) acc_i_ref[i] = specificcoefficient_ij * A_ij_e_ij[i];
+    double acc_i_ref[3] = {0.0};
+    double acc_j_ref[3] = {0.0};
+
+    for (int i = 0; i < 3; ++i) acc_i_ref[i] = speccoeff_ij * A_ij_e_ij[i];
+    for (int i = 0; i < 3; ++i) acc_j_ref[i] = -speccoeff_ji * A_ij_e_ij[i];
 
     // compare results
-    for (int i = 0; i < 3; ++i) TS_ASSERT_EQUALS(acc_i[i], acc_i_ref[i]);
+    for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_i[i], acc_i_ref[i], 1.0e-14);
+    for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_j[i], acc_j_ref[i], 1.0e-14);
   }
 };
 
@@ -361,17 +357,22 @@ class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTes
     const double mass_i = 0.25;
     const double mass_j = 0.23;
     const double dWdrij = 0.3;
-    double specificcoefficient_ij = 0.0;
+    const double dWdrji = 0.85;
+
+    double speccoeff_ij = 0.0;
+    double speccoeff_ji = 0.0;
 
     momentumformulation_->SpecificCoefficient(
-        &dens_i, &dens_j, &mass_i, &mass_j, dWdrij, specificcoefficient_ij);
+        &dens_i, &dens_j, &mass_i, &mass_j, dWdrij, dWdrji, speccoeff_ij, speccoeff_ji);
 
     // compute reference solution
-    double specificcoefficient_ij_ref =
-        (std::pow((mass_i / dens_i), 2) + std::pow((mass_j / dens_j), 2)) * (dWdrij / mass_i);
+    const double fac = (std::pow((mass_i / dens_i), 2) + std::pow((mass_j / dens_j), 2));
+    const double speccoeff_ij_ref = fac * (dWdrij / mass_i);
+    const double speccoeff_ji_ref = fac * (dWdrji / mass_j);
 
     // compare results
-    TS_ASSERT_EQUALS(specificcoefficient_ij, specificcoefficient_ij_ref);
+    TS_ASSERT_DELTA(speccoeff_ij, speccoeff_ij_ref, 1.0e-14);
+    TS_ASSERT_DELTA(speccoeff_ji, speccoeff_ji_ref, 1.0e-14);
   }
 
   void test_PressureGradient()
@@ -380,199 +381,186 @@ class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTes
     const double dens_j = 0.97;
     const double press_i = 0.45;
     const double press_j = 0.43;
-    const double specificcoefficient_ij = 12.42;
-
-    double e_ij[3];
+    double e_ij[3] = {0.0};
     e_ij[0] = 1.0 / std::sqrt(21);
     e_ij[1] = 2.0 / std::sqrt(21);
     e_ij[2] = 4.0 / std::sqrt(21);
+    const double speccoeff_ij = 12.42;
+    const double speccoeff_ji = 0.35;
 
-    double acc_i[3];
-    acc_i[0] = 0.0;
-    acc_i[1] = 0.0;
-    acc_i[2] = 0.0;
+    double acc_i[3] = {0.0};
+    double acc_j[3] = {0.0};
 
     momentumformulation_->PressureGradient(
-        &dens_i, &dens_j, &press_i, &press_j, specificcoefficient_ij, e_ij, acc_i);
+        &dens_i, &dens_j, &press_i, &press_j, speccoeff_ij, speccoeff_ji, e_ij, acc_i, acc_j);
 
     // compute reference solution
-    const double pressuregradient =
-        -specificcoefficient_ij * (dens_i * press_j + dens_j * press_i) / (dens_i + dens_j);
+    double acc_i_ref[3] = {0.0};
+    double acc_j_ref[3] = {0.0};
 
-    double acc_i_ref[3];
-    acc_i_ref[0] = 0.0;
-    acc_i_ref[1] = 0.0;
-    acc_i_ref[2] = 0.0;
-    for (int i = 0; i < 3; ++i) acc_i_ref[i] = pressuregradient * e_ij[i];
+    const double fac = (dens_i * press_j + dens_j * press_i) / (dens_i + dens_j);
+    for (int i = 0; i < 3; ++i) acc_i_ref[i] = -speccoeff_ij * fac * e_ij[i];
+    for (int i = 0; i < 3; ++i) acc_j_ref[i] = speccoeff_ji * fac * e_ij[i];
 
     // compare results
-    for (int i = 0; i < 3; ++i) TS_ASSERT_EQUALS(acc_i[i], acc_i_ref[i]);
+    for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_i[i], acc_i_ref[i], 1.0e-14);
+    for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_j[i], acc_j_ref[i], 1.0e-14);
   }
 
   void test_ShearForces()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
-
-    double vel_i[3];
+    double vel_i[3] = {0.0};
     vel_i[0] = 0.1;
     vel_i[1] = 2.0;
     vel_i[2] = -0.4;
-    double vel_j[3];
+    double vel_j[3] = {0.0};
     vel_j[0] = 0.27;
     vel_j[1] = -1.3;
     vel_j[2] = 0.5;
-
-    const double kernelfac = 3;
-
+    const double abs_rij = 0.3;
+    double e_ij[3] = {0.0};
+    e_ij[0] = 1.0 / std::sqrt(21);
+    e_ij[1] = 2.0 / std::sqrt(21);
+    e_ij[2] = 4.0 / std::sqrt(21);
+    const double speccoeff_ij = 12.42;
+    const double speccoeff_ji = 0.35;
     const double visc_i = 0.03;
     const double visc_j = 0.05;
     const double bulk_visc_i = 0.015;
     const double bulk_visc_j = 0.006;
 
-    const double abs_rij = 0.3;
-    const double specificcoefficient_ij = 12.42;
+    const double kernelfac = 3;
 
-    double e_ij[3];
-    e_ij[0] = 1.0 / std::sqrt(21);
-    e_ij[1] = 2.0 / std::sqrt(21);
-    e_ij[2] = 4.0 / std::sqrt(21);
-
-    double acc_i[3];
-    acc_i[0] = 0.0;
-    acc_i[1] = 0.0;
-    acc_i[2] = 0.0;
+    double acc_i[3] = {0.0};
+    double acc_j[3] = {0.0};
 
     momentumformulation_->ShearForces(&dens_i, &dens_j, vel_i, vel_j, kernelfac, visc_i, visc_j,
-        bulk_visc_i, bulk_visc_j, abs_rij, specificcoefficient_ij, e_ij, acc_i);
+        bulk_visc_i, bulk_visc_j, abs_rij, speccoeff_ij, speccoeff_ji, e_ij, acc_i, acc_j);
 
     // compute reference solution
     double viscosity = 0.0;
     if (visc_i > 0.0 and visc_j > 0.0) viscosity = (2.0 * visc_i * visc_j / (visc_i + visc_j));
 
-    const double laminarviscosity = specificcoefficient_ij * viscosity / abs_rij;
+    const double fac = viscosity / abs_rij;
 
-    double acc_i_ref[3];
-    acc_i_ref[0] = 0.0;
-    acc_i_ref[1] = 0.0;
-    acc_i_ref[2] = 0.0;
-    for (int i = 0; i < 3; ++i) acc_i_ref[i] = laminarviscosity * (vel_i[i] - vel_j[i]);
+    double acc_i_ref[3] = {0.0};
+    double acc_j_ref[3] = {0.0};
+
+    for (int i = 0; i < 3; ++i) acc_i_ref[i] = speccoeff_ij * fac * (vel_i[i] - vel_j[i]);
+    for (int i = 0; i < 3; ++i) acc_j_ref[i] = -speccoeff_ji * fac * (vel_i[i] - vel_j[i]);
 
     // compare results
-    for (int i = 0; i < 3; ++i) TS_ASSERT_EQUALS(acc_i[i], acc_i_ref[i]);
+    for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_i[i], acc_i_ref[i], 1.0e-14);
+    for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_j[i], acc_j_ref[i], 1.0e-14);
   }
 
   void test_StandardBackgroundPressure()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
-
-    const double backgroundpressure = 10.0;
-    const double specificcoefficient_ij = 12.42;
-
-    double e_ij[3];
+    double e_ij[3] = {0.0};
     e_ij[0] = 1.0 / std::sqrt(21);
     e_ij[1] = 2.0 / std::sqrt(21);
     e_ij[2] = 4.0 / std::sqrt(21);
+    const double speccoeff_ij = 12.42;
+    const double speccoeff_ji = 0.35;
+    const double bg_press_i = 10.0;
+    const double bg_press_j = 4.5;
 
-    double acc_i[3];
-    acc_i[0] = 0.0;
-    acc_i[1] = 0.0;
-    acc_i[2] = 0.0;
+    double mod_acc_i[3] = {0.0};
+    double mod_acc_j[3] = {0.0};
 
-    momentumformulation_->StandardBackgroundPressure(
-        &dens_i, &dens_j, backgroundpressure, specificcoefficient_ij, e_ij, acc_i);
+    momentumformulation_->StandardBackgroundPressure(&dens_i, &dens_j, bg_press_i, bg_press_j,
+        speccoeff_ij, speccoeff_ji, e_ij, mod_acc_i, mod_acc_j);
 
     // compute reference solution
-    const double fac = -specificcoefficient_ij * backgroundpressure;
+    double mod_acc_i_ref[3] = {0.0};
+    double mod_acc_j_ref[3] = {0.0};
 
-    double acc_i_ref[3];
-    acc_i_ref[0] = 0.0;
-    acc_i_ref[1] = 0.0;
-    acc_i_ref[2] = 0.0;
-    for (int i = 0; i < 3; ++i) acc_i_ref[i] = fac * e_ij[i];
+    for (int i = 0; i < 3; ++i) mod_acc_i_ref[i] = -speccoeff_ij * bg_press_i * e_ij[i];
+    for (int i = 0; i < 3; ++i) mod_acc_j_ref[i] = speccoeff_ji * bg_press_j * e_ij[i];
 
     // compare results
-    for (int i = 0; i < 3; ++i) TS_ASSERT_EQUALS(acc_i[i], acc_i_ref[i]);
+    for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(mod_acc_i[i], mod_acc_i_ref[i], 1.0e-14);
+    for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(mod_acc_j[i], mod_acc_j_ref[i], 1.0e-14);
   }
 
   void test_GeneralizedBackgroundPressure()
   {
     const double dens_i = 1.02;
+    const double dens_j = 0.97;
     const double mass_i = 0.25;
     const double mass_j = 0.23;
-
-    const double backgroundpressure_tilde = 8.4;
-    const double dWdrij_tilde = 0.32;
-
-    double e_ij[3];
+    double e_ij[3] = {0.0};
     e_ij[0] = 1.0 / std::sqrt(21);
     e_ij[1] = 2.0 / std::sqrt(21);
     e_ij[2] = 4.0 / std::sqrt(21);
+    const double mod_bg_press_i = 8.4;
+    const double mod_bg_press_j = 4.5;
+    const double mod_dWdrij = 0.32;
+    const double mod_dWdrji = 0.97;
 
-    double acc_i[3];
-    acc_i[0] = 0.0;
-    acc_i[1] = 0.0;
-    acc_i[2] = 0.0;
+    double mod_acc_i[3] = {0.0};
+    double mod_acc_j[3] = {0.0};
 
-    momentumformulation_->GeneralizedBackgroundPressure(
-        &dens_i, &mass_i, &mass_j, backgroundpressure_tilde, dWdrij_tilde, e_ij, acc_i);
+    momentumformulation_->GeneralizedBackgroundPressure(&dens_i, &dens_j, &mass_i, &mass_j,
+        mod_bg_press_i, mod_bg_press_j, mod_dWdrij, mod_dWdrji, e_ij, mod_acc_i, mod_acc_j);
 
     // compute reference solution
-    const double fac =
-        -(backgroundpressure_tilde / mass_i) * std::pow((mass_i / dens_i), 2) * dWdrij_tilde;
+    double mod_acc_i_ref[3] = {0.0};
+    double mod_acc_j_ref[3] = {0.0};
 
-    double acc_i_ref[3];
-    acc_i_ref[0] = 0.0;
-    acc_i_ref[1] = 0.0;
-    acc_i_ref[2] = 0.0;
-    for (int i = 0; i < 3; ++i) acc_i_ref[i] = fac * e_ij[i];
+    for (int i = 0; i < 3; ++i)
+      mod_acc_i_ref[i] =
+          -(mod_bg_press_i / mass_i) * std::pow((mass_i / dens_i), 2) * mod_dWdrij * e_ij[i];
+
+    for (int i = 0; i < 3; ++i)
+      mod_acc_j_ref[i] =
+          (mod_bg_press_j / mass_j) * std::pow((mass_j / dens_j), 2) * mod_dWdrji * e_ij[i];
 
     // compare results
-    for (int i = 0; i < 3; ++i) TS_ASSERT_EQUALS(acc_i[i], acc_i_ref[i]);
+    for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(mod_acc_i[i], mod_acc_i_ref[i], 1.0e-14);
+    for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(mod_acc_j[i], mod_acc_j_ref[i], 1.0e-14);
   }
 
   void test_ModifiedVelocityContribution()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
-
-    double vel_i[3];
+    double vel_i[3] = {0.0};
     vel_i[0] = 0.1;
     vel_i[1] = 2.0;
     vel_i[2] = -0.4;
-    double vel_j[3];
+    double vel_j[3] = {0.0};
     vel_j[0] = 0.27;
     vel_j[1] = -1.3;
     vel_j[2] = 0.5;
-
-    double mod_vel_i[3];
-    mod_vel_i[0] = 0.1;
-    mod_vel_i[1] = 2.0;
-    mod_vel_i[2] = -0.4;
-    double mod_vel_j[3];
-    mod_vel_j[0] = 0.27;
-    mod_vel_j[1] = -1.3;
-    mod_vel_j[2] = 0.5;
-
-    const double specificcoefficient_ij = 12.42;
-
-    double e_ij[3];
+    double mod_vel_i[3] = {0.0};
+    mod_vel_i[0] = 0.12;
+    mod_vel_i[1] = 1.9;
+    mod_vel_i[2] = -0.42;
+    double mod_vel_j[3] = {0.0};
+    mod_vel_j[0] = 0.3;
+    mod_vel_j[1] = -1.2;
+    mod_vel_j[2] = 0.77;
+    double e_ij[3] = {0.0};
     e_ij[0] = 1.0 / std::sqrt(21);
     e_ij[1] = 2.0 / std::sqrt(21);
     e_ij[2] = 4.0 / std::sqrt(21);
+    const double speccoeff_ij = 12.42;
+    const double speccoeff_ji = 0.35;
 
-    double acc_i[3];
-    acc_i[0] = 0.0;
-    acc_i[1] = 0.0;
-    acc_i[2] = 0.0;
+    double acc_i[3] = {0.0};
+    double acc_j[3] = {0.0};
 
-    momentumformulation_->ModifiedVelocityContribution(
-        &dens_i, &dens_j, vel_i, vel_j, mod_vel_i, mod_vel_j, specificcoefficient_ij, e_ij, acc_i);
+    momentumformulation_->ModifiedVelocityContribution(&dens_i, &dens_j, vel_i, vel_j, mod_vel_i,
+        mod_vel_j, speccoeff_ij, speccoeff_ji, e_ij, acc_i, acc_j);
 
     // compute reference solution
-    double A_i[3][3];
-    double A_j[3][3];
+    double A_i[3][3] = {0.0};
+    double A_j[3][3] = {0.0};
 
     for (int i = 0; i < 3; ++i)
       for (int j = 0; j < 3; ++j)
@@ -582,7 +570,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTes
         A_j[i][j] = dens_j * vel_j[i] * (mod_vel_j[j] - vel_j[j]);
       }
 
-    double A_ij_e_ij[3];
+    double A_ij_e_ij[3] = {0.0};
     for (int i = 0; i < 3; ++i)
     {
       A_ij_e_ij[i] = 0.5 * (A_i[i][0] * e_ij[0] + A_i[i][1] * e_ij[1] + A_i[i][2] * e_ij[2]);
@@ -590,14 +578,15 @@ class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTes
       A_ij_e_ij[i] += 0.5 * (A_j[i][0] * e_ij[0] + A_j[i][1] * e_ij[1] + A_j[i][2] * e_ij[2]);
     }
 
-    double acc_i_ref[3];
-    acc_i_ref[0] = 0.0;
-    acc_i_ref[1] = 0.0;
-    acc_i_ref[2] = 0.0;
-    for (int i = 0; i < 3; ++i) acc_i_ref[i] = specificcoefficient_ij * A_ij_e_ij[i];
+    double acc_i_ref[3] = {0.0};
+    double acc_j_ref[3] = {0.0};
+
+    for (int i = 0; i < 3; ++i) acc_i_ref[i] = speccoeff_ij * A_ij_e_ij[i];
+    for (int i = 0; i < 3; ++i) acc_j_ref[i] = -speccoeff_ji * A_ij_e_ij[i];
 
     // compare results
-    for (int i = 0; i < 3; ++i) TS_ASSERT_EQUALS(acc_i[i], acc_i_ref[i]);
+    for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_i[i], acc_i_ref[i], 1.0e-14);
+    for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_j[i], acc_j_ref[i], 1.0e-14);
   }
 };
 

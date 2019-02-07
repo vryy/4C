@@ -62,10 +62,9 @@ namespace PARTICLEENGINE
     inline const std::set<TypeEnum> GetParticleTypes() const { return storedtypes_; };
 
     //! get specific particle container
-    inline ParticleContainerShrdPtr GetSpecificContainer(
-        TypeEnum typeEnum, StatusEnum statusEnum) const
+    inline ParticleContainer* GetSpecificContainer(TypeEnum typeEnum, StatusEnum statusEnum) const
     {
-      return ((containers_[typeEnum])[statusEnum]);
+      return (containers_[typeEnum])[statusEnum].get();
     };
 
     //! scale state of owned particles in specific container

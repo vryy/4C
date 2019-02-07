@@ -52,7 +52,8 @@ PARTICLEENGINE::ParticleEngine::ParticleEngine(
       validghostedparticles_(false),
       validparticleneighbors_(false),
       validglobalidtolocalindex_(false),
-      validdirectghosting_(false)
+      validdirectghosting_(false),
+      validhalfneighboringbins_(false)
 {
   // empty constructor
 }
@@ -406,8 +407,11 @@ void PARTICLEENGINE::ParticleEngine::DynamicLoadBalancing()
   // clear all containers of owned particles
   particlecontainerbundle_->ClearAllContainersOfSpecificStatus(PARTICLEENGINE::Owned);
 
-  // invalidate all safety flags
-  InvalidateAllSafetyFlags();
+  // invalidate particle safety flags
+  InvalidateParticleSafetyFlags();
+
+  // invalidate flag denoting valid relation of half surrounding neighboring bins to owned bins
+  validhalfneighboringbins_ = false;
 
   // distribute particles to owning processor
   DistributeParticles(particlestodistribute);
@@ -435,7 +439,7 @@ void PARTICLEENGINE::ParticleEngine::TypeChangeParticles(
 }
 
 /*---------------------------------------------------------------------------*
- | build overlapping particle to particle neighbors           sfuchs 05/2018 |
+ | build particle to particle neighbors                       sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
 {
@@ -445,19 +449,11 @@ void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
   if ((not validownedparticles_) or (not validghostedparticles_))
     dserror("invalid relation of particles to bins!");
 
-  // iterate over particle types
-  for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
-  {
-    // get container of owned particles of current particle type
-    ParticleContainerShrdPtr container =
-        particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
+  // relate half neighboring bins to owned bins
+  if (not validhalfneighboringbins_) RelateHalfNeighboringBinsToOwnedBins();
 
-    // get number of particles stored in container
-    int particlestored = container->ParticlesStored();
-
-    // allocate memory for neighbors of owned particles of current particle type
-    particleneighbors_[typeEnum].assign(particlestored, std::vector<LocalIndexTuple>(0));
-  }
+  // clear potential particle neighbors
+  potentialparticleneighbors_.clear();
 
   // invalidate flag denoting validity of particle neighbors map
   validparticleneighbors_ = false;
@@ -474,10 +470,6 @@ void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
     // check if current bin contains owned particles
     if (particlestobins_[collidofbin].empty()) continue;
 
-    // get neighboring bins
-    std::vector<int> binvec;
-    binstrategy_->GetNeighborAndOwnBinIds(gidofbin, binvec);
-
     // iterate over owned particles in current bin
     for (auto& particleIt : particlestobins_[collidofbin])
     {
@@ -488,17 +480,18 @@ void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
       const int ownedindex = particleIt.second;
 
       // get container of owned particles of current particle type
-      ParticleContainerShrdPtr container =
+      ParticleContainer* container =
           particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
-      // get position of particle
-      double* currpos = container->GetPtrToParticleState(PARTICLEENGINE::Position, ownedindex);
+      // get global id of particle
+      const int* currglobalid = container->GetPtrToParticleGlobalID(ownedindex);
 
-      // get reference to vector of neighbors of current particle
-      std::vector<LocalIndexTuple>& currentNeighbors = (particleneighbors_[typeEnum])[ownedindex];
+      // get position of particle
+      const double* currpos =
+          container->GetPtrToParticleState(PARTICLEENGINE::Position, ownedindex);
 
       // iterate over neighboring bins (including current bin)
-      for (int gidofneighborbin : binvec)
+      for (int gidofneighborbin : halfneighboringbinstobins_[rowlidofbin])
       {
         // get local id of neighboring bin
         const int collidofneighboringbin = bincolmap_->LID(gidofneighborbin);
@@ -521,31 +514,33 @@ void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
           const int neighborindex = neighborParticleIt.second;
 
           // get container of neighboring particle of current particle type
-          ParticleContainerShrdPtr neighborcontainer =
+          ParticleContainer* neighborcontainer =
               particlecontainerbundle_->GetSpecificContainer(neighborTypeEnum, neighborStatusEnum);
 
-          // no self-neighboring
-          if (gidofbin == gidofneighborbin and typeEnum == neighborTypeEnum and
-              neighborStatusEnum == PARTICLEENGINE::Owned and ownedindex == neighborindex)
-            continue;
+          // get global id of neighboring particle
+          const int* neighborglobalid = neighborcontainer->GetPtrToParticleGlobalID(neighborindex);
+
+          // avoid duplicate neighbor pairs and self-neighboring
+          if (gidofbin == gidofneighborbin and neighborglobalid[0] <= currglobalid[0]) continue;
 
           // get position of neighboring particle
-          const double* neighborcurrpos =
+          const double* neighborpos =
               neighborcontainer->GetPtrToParticleState(PARTICLEENGINE::Position, neighborindex);
 
           // distance vector from owned particle to neighboring particle
           double dist[3];
 
           // distance between particles considering periodic boundaries
-          DistanceBetweenParticles(currpos, neighborcurrpos, dist);
+          DistanceBetweenParticles(currpos, neighborpos, dist);
 
           // distance between particles larger than minimum bin size
           if (std::sqrt(dist[0] * dist[0] + dist[1] * dist[1] + dist[2] * dist[2]) > minbinsize_)
             continue;
 
-          // insert neighboring particle of current type and status
-          currentNeighbors.push_back(
-              std::make_tuple(neighborTypeEnum, neighborStatusEnum, neighborindex));
+          // append potential particle neighbor pair
+          potentialparticleneighbors_.push_back(
+              std::make_pair(std::make_tuple(typeEnum, PARTICLEENGINE::Owned, ownedindex),
+                  std::make_tuple(neighborTypeEnum, neighborStatusEnum, neighborindex)));
         }
       }
     }
@@ -575,11 +570,11 @@ void PARTICLEENGINE::ParticleEngine::BuildGlobalIDToLocalIndexMap()
     for (auto& statusEnum : {PARTICLEENGINE::Owned, PARTICLEENGINE::Ghosted})
     {
       // get container of current particle type and current status
-      ParticleContainerShrdPtr container =
+      ParticleContainer* container =
           particlecontainerbundle_->GetSpecificContainer(typeEnum, statusEnum);
 
       // get number of particles stored in container
-      int particlestored = container->ParticlesStored();
+      const int particlestored = container->ParticlesStored();
 
       // no particles of current type and current status
       if (particlestored <= 0) continue;
@@ -620,15 +615,15 @@ bool PARTICLEENGINE::ParticleEngine::HaveValidParticleConnectivity() const
 }
 
 /*---------------------------------------------------------------------------*
- | get reference to particle neighbors                        sfuchs 11/2018 |
+ | get reference to potential particle neighbors              sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-const PARTICLEENGINE::ParticleNeighbors& PARTICLEENGINE::ParticleEngine::GetParticleNeighbors()
-    const
+const PARTICLEENGINE::PotentialParticleNeighbors&
+PARTICLEENGINE::ParticleEngine::GetPotentialParticleNeighbors() const
 {
   // safety check
   if (not validparticleneighbors_) dserror("invalid particle neighbors!");
 
-  return particleneighbors_;
+  return potentialparticleneighbors_;
 }
 
 /*---------------------------------------------------------------------------*
@@ -726,7 +721,7 @@ int PARTICLEENGINE::ParticleEngine::GetNumberOfParticles() const
   for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
     // get container of owned particles of current particle type
-    ParticleContainerShrdPtr container =
+    ParticleContainer* container =
         particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
     // add number of particles stored in container
@@ -745,7 +740,7 @@ int PARTICLEENGINE::ParticleEngine::GetNumberOfParticlesOfSpecificType(
   if (not particlecontainerbundle_->GetParticleTypes().count(typeEnum)) return 0;
 
   // get container of owned particles of specific particle type
-  ParticleContainerShrdPtr container =
+  ParticleContainer* container =
       particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
   return container->ParticlesStored();
@@ -904,7 +899,6 @@ void PARTICLEENGINE::ParticleEngine::SetupDataStorage(
   typevectorsize_ = ((--particlestatestotypes.end())->first) + 1;
 
   // allocate memory to hold particle types
-  particleneighbors_.resize(typevectorsize_);
   directghostingtargets_.resize(typevectorsize_);
 }
 
@@ -1088,6 +1082,66 @@ void PARTICLEENGINE::ParticleEngine::DetermineGhostingDependentMapsAndSets()
 }
 
 /*---------------------------------------------------------------------------*
+ | relate half neighboring bins to owned bins                 sfuchs 01/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEENGINE::ParticleEngine::RelateHalfNeighboringBinsToOwnedBins()
+{
+  // allocate memory for neighbors of owned bins
+  halfneighboringbinstobins_.assign(binrowmap_->NumMyElements(), std::set<int>());
+
+  // loop over row bins
+  for (int rowlidofbin = 0; rowlidofbin < binrowmap_->NumMyElements(); ++rowlidofbin)
+  {
+    // get global id of bin
+    const int gidofbin = binrowmap_->GID(rowlidofbin);
+
+    // get ijk of current bin
+    int ijk[3];
+    binstrategy_->ConvertGidToijk(gidofbin, ijk);
+
+    // get reference to neighboring bins (including current bin) of current bin
+    std::set<int>& neighboringbins = halfneighboringbinstobins_[rowlidofbin];
+
+    // insert current bin id
+    neighboringbins.insert(gidofbin);
+
+    // insert half of the surrounding bins following a specific stencil
+    int ijk_range_9bin[] = {ijk[0] - 1, ijk[0] + 1, ijk[1] - 1, ijk[1] + 1, ijk[2] + 1, ijk[2] + 1};
+    binstrategy_->GidsInijkRange(&ijk_range_9bin[0], neighboringbins, false);
+
+    int ijk_range_3bin[] = {ijk[0] + 1, ijk[0] + 1, ijk[1] - 1, ijk[1] + 1, ijk[2], ijk[2]};
+    binstrategy_->GidsInijkRange(&ijk_range_3bin[0], neighboringbins, false);
+
+    int ijk_range_1bin[] = {ijk[0], ijk[0], ijk[1] + 1, ijk[1] + 1, ijk[2], ijk[2]};
+    binstrategy_->GidsInijkRange(&ijk_range_1bin[0], neighboringbins, false);
+  }
+
+  // iterate over bins being ghosted on this processor
+  for (int gidofbin : ghostedbins_)
+  {
+    // get neighboring bins
+    std::vector<int> binvec;
+    binstrategy_->GetNeighborBinIds(gidofbin, binvec);
+
+    // iterate over neighboring bins
+    for (int neighbin : binvec)
+    {
+      // get local id of bin
+      const int rowlidofbin = binrowmap_->LID(neighbin);
+
+      // neighboring bin not owned by this processor
+      if (rowlidofbin < 0) continue;
+
+      // insert neighboring bins being ghosted on this processor
+      halfneighboringbinstobins_[rowlidofbin].insert(gidofbin);
+    }
+  }
+
+  // validate flag denoting valid relation of half surrounding neighboring bins to owned bins
+  validhalfneighboringbins_ = true;
+}
+
+/*---------------------------------------------------------------------------*
  | check particles for periodic boundaries/leaving domain     sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::CheckParticlesAtBoundaries(
@@ -1121,7 +1175,7 @@ void PARTICLEENGINE::ParticleEngine::CheckParticlesAtBoundaries(
       const int ownedindex = particleIt.second;
 
       // get container of owned particle of current particle type
-      ParticleContainerShrdPtr container =
+      ParticleContainer* container =
           particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
       // get position of particle
@@ -1288,7 +1342,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeTransfered(
       const int ownedindex = particleIt.second;
 
       // get container of owned particle of current particle type
-      ParticleContainerShrdPtr container =
+      ParticleContainer* container =
           particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
       // get position of particle
@@ -1358,7 +1412,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeGhosted(
       const int ownedindex = particleIt.second;
 
       // get container of owned particle of current particle type
-      ParticleContainerShrdPtr container =
+      ParticleContainer* container =
           particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
       int globalid(0);
@@ -1394,7 +1448,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeRefreshed(
     if (directghostingtargets_[typeEnum].empty()) continue;
 
     // get container of owned particles of current particle type
-    ParticleContainerShrdPtr container =
+    ParticleContainer* container =
         particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
     // iterate over owned particles of current type
@@ -1442,7 +1496,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineSpecificStatesOfParticlesOfSpecifi
     if (directghostingtargets_[typeEnum].empty()) continue;
 
     // get container of owned particles of current particle type
-    ParticleContainerShrdPtr container =
+    ParticleContainer* container =
         particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
     // iterate over owned particles of current type
@@ -1629,7 +1683,7 @@ void PARTICLEENGINE::ParticleEngine::InsertOwnedParticles(
     if (particlestoinsert[typeEnum].empty()) continue;
 
     // get container of owned particles of current particle type
-    ParticleContainerShrdPtr container =
+    ParticleContainer* container =
         particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
     // iterate over particle objects pairs
@@ -1673,8 +1727,8 @@ void PARTICLEENGINE::ParticleEngine::InsertOwnedParticles(
   // clear after all particles are inserted
   particlestoinsert.clear();
 
-  // invalidate all safety flags
-  InvalidateAllSafetyFlags();
+  // invalidate particle safety flags
+  InvalidateParticleSafetyFlags();
 }
 
 /*---------------------------------------------------------------------------*
@@ -1691,7 +1745,7 @@ void PARTICLEENGINE::ParticleEngine::InsertGhostedParticles(
     if (particlestoinsert[typeEnum].empty()) continue;
 
     // get container of ghosted particles of current particle type
-    ParticleContainerShrdPtr container =
+    ParticleContainer* container =
         particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Ghosted);
 
     // iterate over particle objects pairs
@@ -1755,7 +1809,7 @@ void PARTICLEENGINE::ParticleEngine::InsertRefreshedParticles(
     if (particlestoinsert[typeEnum].empty()) continue;
 
     // get container of ghosted particles of current particle type
-    ParticleContainerShrdPtr container =
+    ParticleContainer* container =
         particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Ghosted);
 
     // iterate over particle objects pairs
@@ -1792,7 +1846,7 @@ void PARTICLEENGINE::ParticleEngine::RemoveParticlesFromContainers(
     if (particlestoremove[typeEnum].empty()) continue;
 
     // get container of owned particles of current particle type
-    ParticleContainerShrdPtr container =
+    ParticleContainer* container =
         particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
     // iterate in reversed order over particles to be removed
@@ -1805,8 +1859,8 @@ void PARTICLEENGINE::ParticleEngine::RemoveParticlesFromContainers(
   // clear after all particles are removed
   particlestoremove.clear();
 
-  // invalidate all safety flags
-  InvalidateAllSafetyFlags();
+  // invalidate particle safety flags
+  InvalidateParticleSafetyFlags();
 }
 
 /*---------------------------------------------------------------------------*
@@ -1818,11 +1872,11 @@ void PARTICLEENGINE::ParticleEngine::StorePositionsAfterParticleTransfer()
   for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
     // get container of owned particles of current particle type
-    ParticleContainerShrdPtr container =
+    ParticleContainer* container =
         particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
-    int particlestored = container->ParticlesStored();
+    const int particlestored = container->ParticlesStored();
 
     // no owned particles of current particle type
     if (particlestored == 0) continue;
@@ -1849,18 +1903,18 @@ void PARTICLEENGINE::ParticleEngine::RelateOwnedParticlesToBins()
   particlestobins_.resize(bincolmap_->NumMyElements());
   for (auto& binIt : particlestobins_) binIt.clear();
 
-  // invalidate all safety flags
-  InvalidateAllSafetyFlags();
+  // invalidate particle safety flags
+  InvalidateParticleSafetyFlags();
 
   // iterate over particle types
   for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
     // get container of owned particles of current particle type
-    ParticleContainerShrdPtr container =
+    ParticleContainer* container =
         particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
-    int particlestored = container->ParticlesStored();
+    const int particlestored = container->ParticlesStored();
 
     // no owned particles of current particle type
     if (particlestored <= 0) continue;
@@ -1937,9 +1991,9 @@ void PARTICLEENGINE::ParticleEngine::DetermineBinWeights()
 }
 
 /*---------------------------------------------------------------------------*
- | invalidate all safety flags                                sfuchs 11/2018 |
+ | invalidate particle safety flags                           sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleEngine::InvalidateAllSafetyFlags()
+void PARTICLEENGINE::ParticleEngine::InvalidateParticleSafetyFlags()
 {
   validownedparticles_ = false;
   validghostedparticles_ = false;

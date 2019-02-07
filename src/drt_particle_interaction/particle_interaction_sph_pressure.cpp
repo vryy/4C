@@ -28,6 +28,8 @@
 
 #include "../drt_lib/drt_dserror.H"
 
+#include <Teuchos_TimeMonitor.hpp>
+
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 08/2018 |
  *---------------------------------------------------------------------------*/
@@ -68,7 +70,7 @@ void PARTICLEINTERACTION::SPHPressure::Setup(
   {
     std::vector<PARTICLEENGINE::StateEnum> states{PARTICLEENGINE::Pressure};
 
-    for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
+    for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
     {
       // no refreshing of density states for boundary or rigid particles
       if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
@@ -101,19 +103,21 @@ void PARTICLEINTERACTION::SPHPressure::ReadRestart(
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHPressure::ComputePressure() const
 {
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHPressure::ComputePressure");
+
   // iterate over particle types
-  for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
+  for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
     // no pressure computation for boundary or rigid particles
     if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
       continue;
 
     // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container =
+    PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
-    int particlestored = container->ParticlesStored();
+    const int particlestored = container->ParticlesStored();
 
     // no owned particles of current particle type
     if (particlestored <= 0) continue;
@@ -127,8 +131,8 @@ void PARTICLEINTERACTION::SPHPressure::ComputePressure() const
         particlematerial_->GetPtrToParticleMatParameter(typeEnum);
 
     // get equation of state for current particle type
-    std::shared_ptr<SPHEquationOfStateBase> equationofstate =
-        equationofstatebundle_->GetSpecificEquationOfState(typeEnum);
+    const PARTICLEINTERACTION::SPHEquationOfStateBase* equationofstate =
+        equationofstatebundle_->GetPtrToSpecificEquationOfState(typeEnum);
 
     // iterate over owned particles of current type
     for (int i = 0; i < particlestored; ++i)

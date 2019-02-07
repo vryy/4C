@@ -130,8 +130,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Setup(
 
   // setup surface tension handler
   if (surfacetension_)
-    surfacetension_->Setup(particleengineinterface, kernel_, particlematerial_,
-        equationofstatebundle_, neighborpairs_);
+    surfacetension_->Setup(particleengineinterface, kernel_, particlematerial_, neighborpairs_);
 
   // setup boundary particle handler
   if (boundaryparticle_) boundaryparticle_->Setup(particleengineinterface, neighborpairs_);
@@ -271,14 +270,14 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
   double consistentparticlevolume = ComputeConsistentParticleVolume();
 
   // iterate over particle types
-  for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
+  for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
     // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container =
+    PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
-    int particlestored = container->ParticlesStored();
+    const int particlestored = container->ParticlesStored();
 
     // no owned particles of current particle type
     if (particlestored <= 0) continue;
