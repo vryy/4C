@@ -964,11 +964,12 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22)
 {
   // safety checks
-  if (m_ != 6.0)
+  if (m_ < 6.0)
     dserror(
-        "The strategy 'SingleLengthSpecific_SmallSepApprox' to evaluate the interaction "
-        "potential is only applicable for exponent 6 of the point potential law, i.e. van der "
-        "Waals interactions!");
+        "Invalid exponent m=%f. The strategy 'SingleLengthSpecific_SmallSepApprox' to evaluate the "
+        "interaction potential is only applicable for exponents m>=6 of the point potential law, "
+        "e.g. van der Waals (m=6) or the repulsive part of Lennard-Jones (m=12)!",
+        m_);
 
   if (not Params()->UseFAD())
     dserror(
@@ -1052,20 +1053,27 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   T beta_exp2 = 0.0;  // beta^2
   T beta_exp3 = 0.0;  // beta^3
   T beta_exp4 = 0.0;  // beta^3
+  T a = 0.0;          // auxiliary quantity
   T Delta = 0.0;      // auxiliary quantity
 
   T beta_partial_x = 0.0;
   T beta_partial_gap_bl = 0.0;
   T beta_partial_cos_alpha = 0.0;
 
+  T a_partial_beta = 0.0;
+  T a_partial_x = 0.0;
+  T a_partial_gap_bl = 0.0;
+  T a_partial_cos_alpha = 0.0;
+
   T Delta_partial_beta = 0.0;
   T Delta_partial_x = 0.0;
   T Delta_partial_gap_bl = 0.0;
   T Delta_partial_cos_alpha = 0.0;
 
-  T interaction_potential = 0.0;
   T interaction_potential_GP = 0.0;
 
+  T pot_ia_partial_beta = 0.0;
+  T pot_ia_partial_a = 0.0;
   T pot_ia_partial_Delta = 0.0;
   T pot_ia_partial_x = 0.0;
   T pot_ia_partial_gap_bl = 0.0;
@@ -1107,6 +1115,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   LINALG::TMatrix<T, 3 * numnodes * numnodalvalues, 1> force_pot_slave_GP(true);
   LINALG::TMatrix<T, 3 * numnodes * numnodalvalues, 1> force_pot_master_GP(true);
 
+  // Todo remove the following two variables, which are required for verification via FAD
   LINALG::TMatrix<double, 3 * numnodes * numnodalvalues, 1> force_pot_slave_GP_calc_via_FAD(true);
   LINALG::TMatrix<double, 3 * numnodes * numnodalvalues, 1> force_pot_master_GP_calc_via_FAD(true);
 
@@ -1131,7 +1140,24 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   LINALG::TMatrix<T, 3, 1> fpot_tmp(true);
   LINALG::TMatrix<T, 3, 3> v_mat_tmp(true);
 
-  double prefactor = 0.125 * k_ * M_PI * M_PI;
+  // constant prefactor of the disk-cylinder interaction potential
+  double prefactor = k_ * M_PI * M_PI * M_PI;
+
+  switch ((int)m_)
+  {
+    case 6:
+      prefactor *= 0.25;
+      break;
+    case 12:
+      prefactor *= 3003 / 128;
+      break;
+    default:
+      dserror(
+          "Please implement the prefactor of the analytical disk-cylinder potential law for "
+          "exponent m=%f. So far, only exponent 6 and 12 is supported.",
+          m_);
+      break;
+  }
 
   //************************** DEBUG ******************************************
   //  this->Print( std::cout );
@@ -1346,11 +1372,11 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     beta_exp3 = beta_exp2 * beta;
     beta_exp4 = beta_exp2 * beta_exp2;
 
-    Delta = 2 *
-                ((gap_bl + radius2_) / beta / radius2_ + cos_alpha * cos_alpha / beta -
-                    x * x * sin_2alpha * sin_2alpha / (4 * beta_exp3)) *
-                (beta - radius2_) -
-            x * x * sin_2alpha * sin_2alpha / (4 * beta_exp2);
+    a = 0.5 / beta *
+        ((gap_bl + radius2_) / radius2_ + cos_alpha * cos_alpha -
+            x * x * sin_2alpha * sin_2alpha / (4.0 * beta_exp2));
+
+    Delta = 4 * a * (beta - radius2_) - x * x * sin_2alpha * sin_2alpha / (4 * beta_exp2);
 
     //************************** DEBUG ******************************************
     //    std::cout << "\nbeta: " << FADUTILS::CastToDouble( beta );
@@ -1362,15 +1388,23 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
     // interaction potential
     interaction_potential_GP =
-        rho1rho2_JacFac_GaussWeight * M_PI / FADUTILS::sqrt<T>(Delta * Delta * Delta) *
-        (1.0 / radius2_ + cos_alpha * cos_alpha / (gap_bl + radius2_) -
-            x * x * sin_2alpha * sin_2alpha / (4.0 * (gap_bl + radius2_) * beta_exp2));
+        beta / (gap_bl + radius2_) * std::pow(a, m_ - 5) * std::pow(Delta, -m_ + 4.5);
 
 
     // partial derivatives of beta
     beta_partial_x = x * sin_alpha * sin_alpha / beta;
     beta_partial_gap_bl = (gap_bl + radius2_) / beta;
     beta_partial_cos_alpha = -x * x * cos_alpha / beta;
+
+    // partial derivatives of a
+    a_partial_beta = -a / beta + x * x * sin_2alpha * sin_2alpha / (4 * beta_exp4);
+
+    a_partial_x = a_partial_beta * beta_partial_x - x * sin_2alpha * sin_2alpha / (4 * beta_exp3);
+
+    a_partial_gap_bl = a_partial_beta * beta_partial_gap_bl + 0.5 / (radius2_ * beta);
+
+    a_partial_cos_alpha = a_partial_beta * beta_partial_cos_alpha + cos_alpha / beta -
+                          x * x * cos_alpha * (1 - 2 * cos_alpha * cos_alpha) / beta_exp3;
 
     // partial derivatives of Delta
     Delta_partial_beta =
@@ -1403,33 +1437,26 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
 
     // partial derivatives of single length specific interaction potential
-    pot_ia_partial_Delta =
-        -1.5 * M_PI * FADUTILS::sqrt<T>(std::pow(Delta, -5)) *
-        (1.0 / radius2_ + cos_alpha * cos_alpha / (gap_bl + radius2_) -
-            x * x * sin_2alpha * sin_2alpha / (4 * (gap_bl + radius2_) * beta_exp2));
+
+    pot_ia_partial_beta = interaction_potential_GP / beta;
+
+    pot_ia_partial_a = (m_ - 5.0) * interaction_potential_GP / a;
+
+    pot_ia_partial_Delta = (-m_ + 4.5) * interaction_potential_GP / Delta;
+
 
     pot_ia_partial_x =
-        pot_ia_partial_Delta * Delta_partial_x -
-        (x * sin_2alpha * sin_2alpha / (gap_bl + radius2_) / beta_exp2 -
-            x * x * sin_2alpha * sin_2alpha / (gap_bl + radius2_) / beta_exp3 * beta_partial_x) *
-            M_PI_2 * FADUTILS::sqrt<T>(std::pow(Delta, -3));
+        pot_ia_partial_beta * beta_partial_x + pot_ia_partial_a * a_partial_x +
+        pot_ia_partial_Delta * Delta_partial_x;  // + interaction_potential_GP / beta;
 
-    pot_ia_partial_gap_bl = pot_ia_partial_Delta * Delta_partial_gap_bl +
-                            (-cos_alpha * cos_alpha / (gap_bl + radius2_) / (gap_bl + radius2_) +
-                                x * x * sin_2alpha * sin_2alpha /
-                                    (4 * (gap_bl + radius2_) * (gap_bl + radius2_) * beta_exp2) +
-                                x * x * sin_2alpha * sin_2alpha /
-                                    (2 * (gap_bl + radius2_) * beta_exp3) * beta_partial_gap_bl) *
-                                M_PI * FADUTILS::sqrt<T>(std::pow(Delta, -3));
+    pot_ia_partial_gap_bl = pot_ia_partial_beta * beta_partial_gap_bl +
+                            pot_ia_partial_a * a_partial_gap_bl +
+                            pot_ia_partial_Delta * Delta_partial_gap_bl -
+                            interaction_potential_GP / (gap_bl + radius2_);
 
-    pot_ia_partial_cos_alpha =
-        pot_ia_partial_Delta * Delta_partial_cos_alpha +
-        (2.0 * cos_alpha / (gap_bl + radius2_) -
-            2.0 * x * x * (cos_alpha - 2.0 * cos_alpha * cos_alpha * cos_alpha) /
-                (gap_bl + radius2_) / beta_exp2 +
-            x * x * sin_2alpha * sin_2alpha / (2.0 * (gap_bl + radius2_) * beta_exp3) *
-                beta_partial_cos_alpha) *
-            M_PI * FADUTILS::sqrt<T>(std::pow(Delta, -3));
+    pot_ia_partial_cos_alpha = pot_ia_partial_beta * beta_partial_cos_alpha +
+                               pot_ia_partial_a * a_partial_cos_alpha +
+                               pot_ia_partial_Delta * Delta_partial_cos_alpha;
 
     //************************** DEBUG ******************************************
     //    std::cout << "\npot_ia_partial_Delta: " << FADUTILS::CastToDouble( pot_ia_partial_Delta );
@@ -1781,20 +1808,17 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
           *stiffmat12, *stiffmat21, *stiffmat22);
     }
 
-
-    interaction_potential_GP *= prefactor;
-    interaction_potential += interaction_potential_GP;
+    // do this scaling down here, because the value without the prefactors is meant to be used
+    // in the force calculation above!
+    interaction_potential_GP *= rho1rho2_JacFac_GaussWeight * prefactor;
 
     // store for energy output
     interaction_potential_ += FADUTILS::CastToDouble(interaction_potential_GP);
 
-    // ************************************ DEBUG *********************************************
-    //    CalcFpotGausspointAutomaticDifferentiationIfRequired(
-    //        force_pot_slave_GP_calc_via_FAD,
-    //        force_pot_master_GP_calc_via_FAD,
-    //        interaction_potential_GP,
-    //        lin_xi_master_slaveDofs,
-    //        lin_xi_master_masterDofs );
+    // ************************************ DEBUG *************************************************
+    CalcFpotGausspointAutomaticDifferentiationIfRequired(force_pot_slave_GP_calc_via_FAD,
+        force_pot_master_GP_calc_via_FAD, interaction_potential_GP, lin_xi_master_slaveDofs,
+        lin_xi_master_masterDofs);
 
     // hard-set values below double precision to zero to ease comparison
     //    for (unsigned int i=0; i<3*numnodes*numnodalvalues; ++i)
@@ -1830,34 +1854,29 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
     // comparison of residuum vectors and print results
 
-    //    const double ABSDIFFTOL = 1e-12;
-    //    const double RELDIFFTOL = 1e-10;
-    //
-    //    for (unsigned int i=0; i<force_pot_slave_GP.M(); ++i)
-    //    {
-    //      if ( std::abs( FADUTILS::CastToDouble( force_pot_slave_GP(i) )
-    //           - force_pot_slave_GP_calc_via_FAD(i) ) > ABSDIFFTOL
-    //          and
-    //          (
-    //          std::abs( force_pot_slave_GP_calc_via_FAD(i) ) >1e-15
-    //          and
-    //          std::abs( (FADUTILS::CastToDouble( force_pot_slave_GP(i) )
-    //                       -
-    //                       force_pot_slave_GP_calc_via_FAD(i))/force_pot_slave_GP_calc_via_FAD(i)
-    //                       )
-    //           > RELDIFFTOL) )
-    //      {
-    //        std::cout << "\n\ndetected difference in force_pot_slave_GP for i=" << i
-    //            << ": abs_diff="
-    //            << std::scientific << std::setprecision(10)
-    //            << FADUTILS::CastToDouble( force_pot_slave_GP(i) )-
-    //            force_pot_slave_GP_calc_via_FAD(i)
-    //            << ", rel_diff="
-    //            << (FADUTILS::CastToDouble( force_pot_slave_GP(i) ) -
-    //            force_pot_slave_GP_calc_via_FAD(i)) /force_pot_slave_GP_calc_via_FAD(i)
-    //            << std::endl;
-    //      }
-    //    }
+    const double ABSDIFFTOL = 1e-12;
+    const double RELDIFFTOL = 1e-10;
+
+    for (unsigned int i = 0; i < force_pot_slave_GP.M(); ++i)
+    {
+      if (std::abs(FADUTILS::CastToDouble(force_pot_slave_GP(i)) -
+                   force_pot_slave_GP_calc_via_FAD(i)) > ABSDIFFTOL and
+          (std::abs(force_pot_slave_GP_calc_via_FAD(i)) > 1e-15 and
+              std::abs((FADUTILS::CastToDouble(force_pot_slave_GP(i)) -
+                           force_pot_slave_GP_calc_via_FAD(i)) /
+                       force_pot_slave_GP_calc_via_FAD(i)) > RELDIFFTOL))
+      {
+        std::cout << "\n\ndetected difference in force_pot_slave_GP for i=" << i
+                  << ": abs_diff=" << std::scientific << std::setprecision(10)
+                  << FADUTILS::CastToDouble(force_pot_slave_GP(i)) -
+                         force_pot_slave_GP_calc_via_FAD(i)
+                  << ", rel_diff="
+                  << (FADUTILS::CastToDouble(force_pot_slave_GP(i)) -
+                         force_pot_slave_GP_calc_via_FAD(i)) /
+                         force_pot_slave_GP_calc_via_FAD(i)
+                  << std::endl;
+      }
+    }
 
 
 
@@ -1886,32 +1905,26 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     //    std::cout << std::endl;
 
 
-    //    for (unsigned int i=0; i<force_pot_master_GP.M(); ++i)
-    //    {
-    //      if ( std::abs( FADUTILS::CastToDouble( force_pot_master_GP(i) )
-    //           - force_pot_master_GP_calc_via_FAD(i) ) > ABSDIFFTOL
-    //          and
-    //          (
-    //          std::abs( force_pot_master_GP_calc_via_FAD(i) ) >1e-15
-    //          and
-    //          std::abs( (FADUTILS::CastToDouble( force_pot_master_GP(i) )
-    //                       -
-    //                       force_pot_master_GP_calc_via_FAD(i))/force_pot_master_GP_calc_via_FAD(i)
-    //                       )
-    //           > RELDIFFTOL) )
-    //      {
-    //        std::cout << "\n\ndetected difference in force_pot_master_GP for i=" << i
-    //            << ": abs_diff="
-    //            << std::scientific << std::setprecision(10)
-    //            << FADUTILS::CastToDouble( force_pot_master_GP(i) )-
-    //            force_pot_master_GP_calc_via_FAD(i)
-    //            << ", rel_diff="
-    //            << (FADUTILS::CastToDouble( force_pot_master_GP(i) ) -
-    //            force_pot_master_GP_calc_via_FAD(i)) /force_pot_master_GP_calc_via_FAD(i)
-    //            << std::endl;
-    //
-    //      }
-    //    }
+    for (unsigned int i = 0; i < force_pot_master_GP.M(); ++i)
+    {
+      if (std::abs(FADUTILS::CastToDouble(force_pot_master_GP(i)) -
+                   force_pot_master_GP_calc_via_FAD(i)) > ABSDIFFTOL and
+          (std::abs(force_pot_master_GP_calc_via_FAD(i)) > 1e-15 and
+              std::abs((FADUTILS::CastToDouble(force_pot_master_GP(i)) -
+                           force_pot_master_GP_calc_via_FAD(i)) /
+                       force_pot_master_GP_calc_via_FAD(i)) > RELDIFFTOL))
+      {
+        std::cout << "\n\ndetected difference in force_pot_master_GP for i=" << i
+                  << ": abs_diff=" << std::scientific << std::setprecision(10)
+                  << FADUTILS::CastToDouble(force_pot_master_GP(i)) -
+                         force_pot_master_GP_calc_via_FAD(i)
+                  << ", rel_diff="
+                  << (FADUTILS::CastToDouble(force_pot_master_GP(i)) -
+                         force_pot_master_GP_calc_via_FAD(i)) /
+                         force_pot_master_GP_calc_via_FAD(i)
+                  << std::endl;
+      }
+    }
 
 
     //    std::cout << "\n\nforce_pot_master_GP (dbl): "
@@ -2041,32 +2054,30 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-// template<unsigned int numnodes, unsigned int numnodalvalues, typename T>
-// void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
-// CalcFpotGausspointAutomaticDifferentiationIfRequired(
-//      LINALG::TMatrix<double,3*numnodes*numnodalvalues,1>& force_pot1,
-//      LINALG::TMatrix<double,3*numnodes*numnodalvalues,1>& force_pot2,
-//      Sacado::Fad::DFad<double> const& interaction_potential,
-//      LINALG::TMatrix<Sacado::Fad::DFad<double>,1,3*numnodes*numnodalvalues> const&
-//      lin_xi_master_slaveDofs,
-//      LINALG::TMatrix<Sacado::Fad::DFad<double>,1,3*numnodes*numnodalvalues> const&
-//      lin_xi_master_masterDofs ) const
-//{
-//  const unsigned int dim = 3*numnodalvalues*numnodes;
-//
-//  for ( unsigned int idof=0; idof<dim; ++idof )
-//  {
-//    force_pot1(idof) =
-//        interaction_potential.dx(idof)
-//        + interaction_potential.dx(2*dim)
-//          * FADUTILS::CastToDouble( lin_xi_master_slaveDofs(idof) );
-//
-//    force_pot2(idof) =
-//        interaction_potential.dx(dim+idof)
-//        + interaction_potential.dx(2*dim)
-//          * FADUTILS::CastToDouble( lin_xi_master_masterDofs(idof) );
-//  }
-//}
+template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
+void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
+    CalcFpotGausspointAutomaticDifferentiationIfRequired(
+        LINALG::TMatrix<double, 3 * numnodes * numnodalvalues, 1>& force_pot1,
+        LINALG::TMatrix<double, 3 * numnodes * numnodalvalues, 1>& force_pot2,
+        Sacado::Fad::DFad<double> const& interaction_potential,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3 * numnodes * numnodalvalues> const&
+            lin_xi_master_slaveDofs,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3 * numnodes * numnodalvalues> const&
+            lin_xi_master_masterDofs) const
+{
+  const unsigned int dim = 3 * numnodalvalues * numnodes;
+
+  for (unsigned int idof = 0; idof < dim; ++idof)
+  {
+    force_pot1(idof) =
+        interaction_potential.dx(idof) +
+        interaction_potential.dx(2 * dim) * FADUTILS::CastToDouble(lin_xi_master_slaveDofs(idof));
+
+    force_pot2(idof) =
+        interaction_potential.dx(dim + idof) +
+        interaction_potential.dx(2 * dim) * FADUTILS::CastToDouble(lin_xi_master_masterDofs(idof));
+  }
+}
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/

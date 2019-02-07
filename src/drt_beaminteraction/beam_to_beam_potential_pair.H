@@ -331,25 +331,25 @@ namespace BEAMINTERACTION
         LINALG::SerialDenseMatrix& stiffmat11, LINALG::SerialDenseMatrix& stiffmat12,
         LINALG::SerialDenseMatrix& stiffmat21, LINALG::SerialDenseMatrix& stiffmat22) const;
 
-    //  void CalcFpotGausspointAutomaticDifferentiationIfRequired(
-    //      LINALG::TMatrix<double,3*numnodes*numnodalvalues,1>& force_pot1,
-    //      LINALG::TMatrix<double,3*numnodes*numnodalvalues,1>& force_pot2,
-    //      Sacado::Fad::DFad<double> const& interaction_potential,
-    //      LINALG::TMatrix<Sacado::Fad::DFad<double>,1,3*numnodes*numnodalvalues> const&
-    //      lin_xi_master_slaveDofs,
-    //      LINALG::TMatrix<Sacado::Fad::DFad<double>,1,3*numnodes*numnodalvalues> const&
-    //      lin_xi_master_masterDofs) const;
-    //
-    //  void CalcFpotGausspointAutomaticDifferentiationIfRequired(
-    //      LINALG::TMatrix<double,3*numnodes*numnodalvalues,1>& force_pot1,
-    //      LINALG::TMatrix<double,3*numnodes*numnodalvalues,1>& force_pot2,
-    //      double const& interaction_potential,
-    //      LINALG::TMatrix<double,1,3*numnodes*numnodalvalues> const& lin_xi_master_slaveDofs,
-    //      LINALG::TMatrix<double,1,3*numnodes*numnodalvalues> const& lin_xi_master_masterDofs)
-    //      const
-    //  {
-    //    // this is a dummy since for type double, no automatic differentiation is available
-    //  }
+    void CalcFpotGausspointAutomaticDifferentiationIfRequired(
+        LINALG::TMatrix<double, 3 * numnodes * numnodalvalues, 1>& force_pot1,
+        LINALG::TMatrix<double, 3 * numnodes * numnodalvalues, 1>& force_pot2,
+        Sacado::Fad::DFad<double> const& interaction_potential,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3 * numnodes * numnodalvalues> const&
+            lin_xi_master_slaveDofs,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3 * numnodes * numnodalvalues> const&
+            lin_xi_master_masterDofs) const;
+
+    void CalcFpotGausspointAutomaticDifferentiationIfRequired(
+        LINALG::TMatrix<double, 3 * numnodes * numnodalvalues, 1>& force_pot1,
+        LINALG::TMatrix<double, 3 * numnodes * numnodalvalues, 1>& force_pot2,
+        double const& interaction_potential,
+        LINALG::TMatrix<double, 1, 3 * numnodes * numnodalvalues> const& lin_xi_master_slaveDofs,
+        LINALG::TMatrix<double, 1, 3 * numnodes * numnodalvalues> const& lin_xi_master_masterDofs)
+        const
+    {
+      // this is a dummy since for type double, no automatic differentiation is available
+    }
 
     /*!
     \brief Calculate shape function values for given parameter values
