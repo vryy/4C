@@ -73,8 +73,10 @@ namespace PARTICLEENGINE
     //! return pointer to state of a particle at index
     inline double* GetPtrToParticleState(StateEnum stateEnum, int index)
     {
+#ifdef DEBUG
       if (index < 0 or index > (particlestored_ - 1))
         dserror("can not return pointer to state of particle as index %d out of bounds!", index);
+#endif
 
       return &((states_[stateEnum])[index * statedim_[stateEnum]]);
     };
@@ -82,9 +84,11 @@ namespace PARTICLEENGINE
     //! return pointer to global id of a particle at index
     inline int* GetPtrToParticleGlobalID(int index)
     {
+#ifdef DEBUG
       if (index < 0 or index > (particlestored_ - 1))
         dserror(
             "can not return pointer to global id of particle as index %d out of bounds!", index);
+#endif
 
       return &(globalids_[index]);
     };
@@ -99,8 +103,10 @@ namespace PARTICLEENGINE
     //! scale and add states to update state of particles
     inline void UpdateState(double facA, StateEnum stateEnumA, double facB, StateEnum stateEnumB)
     {
+#ifdef DEBUG
       if (statedim_[stateEnumA] != statedim_[stateEnumB])
         dserror("dimensions of states do not match!");
+#endif
 
       for (int i = 0; i < (particlestored_ * statedim_[stateEnumA]); ++i)
         (states_[stateEnumA])[i] =
@@ -110,8 +116,10 @@ namespace PARTICLEENGINE
     //! set state to particles
     inline void SetState(std::vector<double> val, StateEnum stateEnum)
     {
+#ifdef DEBUG
       if (statedim_[stateEnum] != static_cast<int>(val.size()))
         dserror("dimensions of states do not match!");
+#endif
 
       for (int i = 0; i < particlestored_; ++i)
         for (int dim = 0; dim < statedim_[stateEnum]; ++dim)

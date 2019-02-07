@@ -1351,10 +1351,12 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeTransfered(
       // get global id of bin
       const int gidofbin = binstrategy_->ConvertPosToGid(currpos);
 
+#ifdef DEBUG
       // particle left computational domain
       if (gidofbin == -1)
         dserror("on processor %d a particle left the computational domain without being detected!",
             myrank_);
+#endif
 
       // particle remains owned on this processor
       if (binrowmap_->LID(gidofbin) >= 0) continue;
@@ -1698,6 +1700,7 @@ void PARTICLEENGINE::ParticleEngine::InsertOwnedParticles(
       // get states of particle
       ParticleStates particleStates = particleobject->ReturnParticleStates();
 
+#ifdef DEBUG
       // get bin of particle
       int gidofbin = particleobject->ReturnBinGid();
 
@@ -1717,6 +1720,7 @@ void PARTICLEENGINE::ParticleEngine::InsertOwnedParticles(
 
       // particle not owned by this processor
       if (binrowmap_->LID(gidofbin) < 0) dserror("particle received not owned on this proc!");
+#endif
 
       // add particle to container of owned particles
       int index(0);
@@ -1932,13 +1936,14 @@ void PARTICLEENGINE::ParticleEngine::RelateOwnedParticlesToBins()
       // get global id of bin
       const int gidofbin = binstrategy_->ConvertPosToGid(&(lasttransferpos[statedim * index]));
 
-      // safety checks
-      {
-        if (gidofbin == -1) dserror("particle out of bounding box but not removed from container!");
+#ifdef DEBUG
+      // particle out of bounding box
+      if (gidofbin == -1) dserror("particle out of bounding box but not removed from container!");
 
-        if (binrowmap_->LID(gidofbin) < 0)
-          dserror("particle not owned by this proc but not removed from container!");
-      }
+      // particle not owned on this processor
+      if (binrowmap_->LID(gidofbin) < 0)
+        dserror("particle not owned by this proc but not removed from container!");
+#endif
 
       // add index relating (owned and ghosted) particles to col bins
       particlestobins_[bincolmap_->LID(gidofbin)].push_back(std::make_pair(typeEnum, index));
