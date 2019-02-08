@@ -103,10 +103,8 @@ namespace PARTICLEENGINE
     //! scale and add states to update state of particles
     inline void UpdateState(double facA, StateEnum stateEnumA, double facB, StateEnum stateEnumB)
     {
-#ifdef DEBUG
-      if (statedim_[stateEnumA] != statedim_[stateEnumB])
-        dserror("dimensions of states do not match!");
-#endif
+      dsassert(
+          statedim_[stateEnumA] == statedim_[stateEnumB], "dimensions of states do not match!");
 
       for (int i = 0; i < (particlestored_ * statedim_[stateEnumA]); ++i)
         (states_[stateEnumA])[i] =
@@ -116,10 +114,8 @@ namespace PARTICLEENGINE
     //! set state to particles
     inline void SetState(std::vector<double> val, StateEnum stateEnum)
     {
-#ifdef DEBUG
-      if (statedim_[stateEnum] != static_cast<int>(val.size()))
-        dserror("dimensions of states do not match!");
-#endif
+      dsassert(statedim_[stateEnum] == static_cast<int>(val.size()),
+          "dimensions of states do not match!");
 
       for (int i = 0; i < particlestored_; ++i)
         for (int dim = 0; dim < statedim_[stateEnum]; ++dim)

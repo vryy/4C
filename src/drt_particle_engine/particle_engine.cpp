@@ -1936,14 +1936,9 @@ void PARTICLEENGINE::ParticleEngine::RelateOwnedParticlesToBins()
       // get global id of bin
       const int gidofbin = binstrategy_->ConvertPosToGid(&(lasttransferpos[statedim * index]));
 
-#ifdef DEBUG
-      // particle out of bounding box
-      if (gidofbin == -1) dserror("particle out of bounding box but not removed from container!");
-
-      // particle not owned on this processor
-      if (binrowmap_->LID(gidofbin) < 0)
-        dserror("particle not owned by this proc but not removed from container!");
-#endif
+      dsassert(gidofbin >= 0, "particle out of bounding box but not removed from container!");
+      dsassert(binrowmap_->LID(gidofbin) >= 0,
+          "particle not owned by this proc but not removed from container!");
 
       // add index relating (owned and ghosted) particles to col bins
       particlestobins_[bincolmap_->LID(gidofbin)].push_back(std::make_pair(typeEnum, index));
