@@ -72,6 +72,7 @@ POT_LAW_PREFACTOR               1e-20
 POT_LAW_EXPONENT                12.0
 BEAMPOTENTIAL_TYPE              Volume
 STRATEGY                        SingleLengthSpecific_SmallSepApprox
+NUM_INTEGRATION_SEGMENTS        2
 NUM_GAUSSPOINTS                 50
 AUTOMATIC_DIFFERENTIATION       yes
 ----------------------------------BEAM POTENTIAL/RUNTIME VTK OUTPUT
