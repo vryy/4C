@@ -63,8 +63,8 @@ namespace INPAR
     /// (this enum represents the input file parameter BINARYTREE_UPDATETYPE)
     enum BinaryTreeUpdateType
     {
-      BOTTOM_UP,  ///< indicates a bottom up update of binary tree
-      TOP_DOWN    ///< indicates a top down update of binary tree
+      binarytree_bottom_up,  ///< indicates a bottom-up update of binary tree
+      binarytree_top_down    ///< indicates a top-down update of binary tree
     };
 
     /// Type of mesh relocation

@@ -571,10 +571,10 @@ void MORTAR::BinaryTree::EvaluateSearch()
   // update binary tree according to update type
   switch (updatetype_)
   {
-    case INPAR::MORTAR::TOP_DOWN:
+    case INPAR::MORTAR::binarytree_top_down:
       UpdateTreeTopDown();
       break;
-    case INPAR::MORTAR::BOTTOM_UP:
+    case INPAR::MORTAR::binarytree_bottom_up:
       UpdateTreeBottomUp();
       break;
     default:
