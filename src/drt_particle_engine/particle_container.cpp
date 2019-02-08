@@ -101,11 +101,12 @@ void PARTICLEENGINE::ParticleContainer::DecreaseContainerSize()
   // set size of particle container (at least one)
   containersize_ = (newsize > 0) ? newsize : 1;
 
-  // safety check
+#ifdef DEBUG
   if (particlestored_ > containersize_)
     dserror(
         "decreasing size of container not possible: particles stored %d > new container size %d!",
         particlestored_, containersize_);
+#endif
 
   // resize vector of global ids
   globalids_.resize(containersize_);
@@ -146,10 +147,12 @@ void PARTICLEENGINE::ParticleContainer::AddParticle(
     {
       const std::vector<double>& particleState = particleStateIt->second;
 
+#ifdef DEBUG
       // check dimensions
       if (static_cast<int>(particleState.size()) != statedim_[stateEnum])
         dserror("Cannot add particle: dimensions of state '%s' do not match!",
             PARTICLEENGINE::EnumToStateName(stateEnum).c_str());
+#endif
 
       // store state in container
       for (int dim = 0; dim < statedim_[stateEnum]; ++dim)
@@ -170,8 +173,10 @@ void PARTICLEENGINE::ParticleContainer::AddParticle(
 void PARTICLEENGINE::ParticleContainer::ReplaceParticle(
     int index, int globalid, const ParticleStates& particle)
 {
+#ifdef DEBUG
   if (index < 0 or index > (particlestored_ - 1))
     dserror("can not replace particle as index %d out of bounds!", index);
+#endif
 
   // replace global id in container
   if (globalid >= 0) globalids_[index] = globalid;
@@ -190,10 +195,12 @@ void PARTICLEENGINE::ParticleContainer::ReplaceParticle(
     {
       const std::vector<double>& particleState = particleStateIt->second;
 
+#ifdef DEBUG
       // check dimensions
       if (static_cast<int>(particleState.size()) != statedim_[stateEnum])
         dserror("Cannot add particle: dimensions of state '%s' do not match!",
             PARTICLEENGINE::EnumToStateName(stateEnum).c_str());
+#endif
 
       // replace state in container
       for (int dim = 0; dim < statedim_[stateEnum]; ++dim)
@@ -208,8 +215,10 @@ void PARTICLEENGINE::ParticleContainer::ReplaceParticle(
 void PARTICLEENGINE::ParticleContainer::GetParticle(
     int index, int& globalid, ParticleStates& particle) const
 {
+#ifdef DEBUG
   if (index < 0 or index > (particlestored_ - 1))
     dserror("can not return particle as index %d out of bounds!", index);
+#endif
 
   // get global id from container
   globalid = globalids_[index];
@@ -233,8 +242,10 @@ void PARTICLEENGINE::ParticleContainer::GetParticle(
  *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleContainer::RemoveParticle(int index)
 {
+#ifdef DEBUG
   if (index < 0 or index > (particlestored_ - 1))
     dserror("can not remove particle as index %d out of bounds!", index);
+#endif
 
   // decrease counter of stored particles
   --particlestored_;
