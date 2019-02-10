@@ -1,7 +1,7 @@
 set_property(GLOBAL APPEND PROPERTY unit_files
 ${CMAKE_CURRENT_SOURCE_DIR}/unit_so_hex8.H
 ${CMAKE_CURRENT_SOURCE_DIR}/unit_so_tet4.H
-${CMAKE_CURRENT_SOURCE_DIR}/unit_so_hex8_determinant_analysis.H
+#${CMAKE_CURRENT_SOURCE_DIR}/unit_so_hex8_determinant_analysis.H
 )
 
 # Automatic version, but it does not detect new tests without rerunning cmake!
