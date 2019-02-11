@@ -77,11 +77,7 @@ void PARTICLEALGORITHM::InputGenerator::AddGeneratedParticle(const std::vector<d
   PARTICLEENGINE::ParticleStates particlestates;
   particlestates.insert(std::make_pair(PARTICLEENGINE::Position, position));
 
-  // create and init new particle object
-  PARTICLEENGINE::ParticleObjShrdPtr particleobject =
-      std::make_shared<PARTICLEENGINE::ParticleObject>();
-  particleobject->Init(particletype, globalid, particlestates);
-
-  // append generated particle
-  particlesgenerated.push_back(particleobject);
+  // construct and store generated particle object
+  particlesgenerated.emplace_back(
+      std::make_shared<PARTICLEENGINE::ParticleObject>(particletype, globalid, particlestates));
 }

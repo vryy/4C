@@ -65,12 +65,12 @@ namespace PARTICLEENGINE
     //! constructor
     ParticleObject();
 
+    //! standard constructor
+    ParticleObject(TypeEnum particletype, int particleglobalid,
+        const ParticleStates& particlestates, int bingid = -1, int containerindex = -1);
+
     //! virtual destructor
     virtual ~ParticleObject(){};
-
-    //! init particle object
-    void Init(TypeEnum particletype, int particleglobalid, const ParticleStates& particlestates_,
-        int bingid = -1, int containerindex = -1);
 
     //! return unique ParObject id
     virtual int UniqueParObjectId() const

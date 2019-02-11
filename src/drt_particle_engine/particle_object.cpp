@@ -44,16 +44,17 @@ PARTICLEENGINE::ParticleObject::ParticleObject()
 }
 
 /*---------------------------------------------------------------------------*
- | init particle object                                       sfuchs 03/2018 |
+ | standard constructor                                       sfuchs 02/2019 |
  *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleObject::Init(TypeEnum particletype, int particleglobalid,
+PARTICLEENGINE::ParticleObject::ParticleObject(TypeEnum particletype, int particleglobalid,
     const ParticleStates& particlestates, int bingid, int containerindex)
+    : particletype_(particletype),
+      particleglobalid_(particleglobalid),
+      particlestates_(particlestates),
+      bingid_(bingid),
+      containerindex_(containerindex)
 {
-  particletype_ = particletype;
-  particleglobalid_ = particleglobalid;
-  particlestates_ = particlestates;
-  bingid_ = bingid;
-  containerindex_ = containerindex;
+  // empty constructor
 }
 
 /*---------------------------------------------------------------------------*

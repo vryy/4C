@@ -187,11 +187,8 @@ void PARTICLEENGINE::ParticleEngine::EraseParticlesOutsideBoundingBox(
   // iterate over particles objects
   for (int i = 0; i < numparticles; ++i)
   {
-    // get particle object
-    ParticleObjShrdPtr particleobject = particlestocheck[i];
-
     // get states of particle
-    ParticleStates particleStates = particleobject->ReturnParticleStates();
+    ParticleStates particleStates = particlestocheck[i]->ReturnParticleStates();
 
     // get position of particle
     auto pos = particleStates.find(PARTICLEENGINE::Position);
@@ -1250,11 +1247,8 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeDistributed(
   // iterate over particles objects
   for (int i = 0; i < numparticles; ++i)
   {
-    // get particle object
-    ParticleObjShrdPtr particleobject = particlestodistribute[i];
-
     // get states of particle
-    ParticleStates particleStates = particleobject->ReturnParticleStates();
+    ParticleStates particleStates = particlestodistribute[i]->ReturnParticleStates();
 
     // get position of particle
     auto pos = particleStates.find(PARTICLEENGINE::Position);
@@ -1296,11 +1290,8 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeDistributed(
   // iterate over particles objects
   for (int i = 0; i < numparticles; ++i)
   {
-    // get particle object
-    ParticleObjShrdPtr particleobject = particlestodistribute[i];
-
     // get type of particle
-    TypeEnum typeEnum = particleobject->ReturnParticleType();
+    TypeEnum typeEnum = particlestodistribute[i]->ReturnParticleType();
 
     // get owner of particle
     int ownerofparticle = pidlist[i];
@@ -1309,10 +1300,11 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeDistributed(
     if (ownerofparticle == -1) ++numparticlesoutside;
     // particle is owned by this processor
     else if (myrank_ == ownerofparticle)
-      particlestokeep[typeEnum].push_back(std::make_pair(ownerofparticle, particleobject));
+      particlestokeep[typeEnum].push_back(
+          std::make_pair(ownerofparticle, particlestodistribute[i]));
     // particle is owned by another processor
     else
-      particlestosend[ownerofparticle].push_back(particleobject);
+      particlestosend[ownerofparticle].push_back(particlestodistribute[i]);
   }
 
   // short screen output
@@ -1383,11 +1375,9 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeTransfered(
       ParticleStates particleStates;
       container->GetParticle(ownedindex, globalid, particleStates);
 
-      ParticleObjShrdPtr particleobject = std::make_shared<PARTICLEENGINE::ParticleObject>();
-      particleobject->Init(typeEnum, globalid, particleStates, gidofbin);
-
       // append particle to be send
-      particlestosend[sendtoproc].push_back(particleobject);
+      particlestosend[sendtoproc].emplace_back(std::make_shared<PARTICLEENGINE::ParticleObject>(
+          typeEnum, globalid, particleStates, gidofbin));
 
       // store index of particle to be removed from containers after particle transfer
       (particlestoremove[typeEnum]).insert(ownedindex);
@@ -1433,14 +1423,12 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeGhosted(
       ParticleStates particleStates;
       container->GetParticle(ownedindex, globalid, particleStates);
 
-      ParticleObjShrdPtr particleobject = std::make_shared<PARTICLEENGINE::ParticleObject>();
-      particleobject->Init(typeEnum, globalid, particleStates, ghostedbin, ownedindex);
-
       // iterate over target processors
       for (int sendtoproc : targetIt.second)
       {
         // append particle to be send
-        particlestosend[sendtoproc].push_back(particleobject);
+        particlestosend[sendtoproc].emplace_back(std::make_shared<PARTICLEENGINE::ParticleObject>(
+            typeEnum, globalid, particleStates, ghostedbin, ownedindex));
       }
     }
   }
@@ -1480,11 +1468,9 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeRefreshed(
         int sendtoproc = targetIt.first;
         int ghostedindex = targetIt.second;
 
-        ParticleObjShrdPtr particleobject = std::make_shared<PARTICLEENGINE::ParticleObject>();
-        particleobject->Init(typeEnum, -1, particleStates, -1, ghostedindex);
-
         // append particle to be send
-        particlestosend[sendtoproc].push_back(particleobject);
+        particlestosend[sendtoproc].emplace_back(std::make_shared<PARTICLEENGINE::ParticleObject>(
+            typeEnum, -1, particleStates, -1, ghostedindex));
       }
     }
   }
@@ -1539,11 +1525,9 @@ void PARTICLEENGINE::ParticleEngine::DetermineSpecificStatesOfParticlesOfSpecifi
         int sendtoproc = targetIt.first;
         int ghostedindex = targetIt.second;
 
-        ParticleObjShrdPtr particleobject = std::make_shared<PARTICLEENGINE::ParticleObject>();
-        particleobject->Init(typeEnum, -1, particleStates, -1, ghostedindex);
-
         // append particle to be send
-        particlestosend[sendtoproc].push_back(particleobject);
+        particlestosend[sendtoproc].emplace_back(std::make_shared<PARTICLEENGINE::ParticleObject>(
+            typeEnum, -1, particleStates, -1, ghostedindex));
       }
     }
   }

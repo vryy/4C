@@ -136,13 +136,9 @@ void DRT::INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShr
             // set global id
             globalid = particlecounter;
 
-            // construct and init particleobject
-            PARTICLEENGINE::ParticleObjShrdPtr particleobject =
-                std::make_shared<PARTICLEENGINE::ParticleObject>();
-            particleobject->Init(particleType, globalid, particlestates);
-
-            // store read in particles
-            particles.push_back(particleobject);
+            // construct and store read in particle object
+            particles.emplace_back(std::make_shared<PARTICLEENGINE::ParticleObject>(
+                particleType, globalid, particlestates));
 
             ++particlecounter;
 
