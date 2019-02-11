@@ -22,6 +22,7 @@
 #include "particle_timint.H"
 #include "particle_input_generator.H"
 #include "particle_gravity.H"
+#include "particle_wall.H"
 #include "particle_initial_field.H"
 #include "particle_result_test.H"
 
@@ -90,6 +91,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Init(
   // init particle gravity handler
   InitParticleGravity();
 
+  // init particle wall handler
+  InitParticleWall();
+
   // set initial particles to vector of particles to be distributed
   particlestodistribute_ = initialparticles;
 
@@ -126,8 +130,14 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Setup()
   // setup gravity handler
   if (particlegravity_) particlegravity_->Setup();
 
+  // setup wall handler
+  if (particlewall_) particlewall_->Setup(particleengine_, particleengine_->GetBinningStrategy());
+
   // setup initial particles
   SetupInitialParticles();
+
+  // setup initial wall distribution
+  if (particlewall_) SetupInitalWallDistribution();
 
   // setup initial states
   if (not isrestarted_) SetupInitialStates();
@@ -162,6 +172,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::ReadRestart(const int restartstep)
 
   // read restart of gravity handler
   if (particlegravity_) particlegravity_->ReadRestart(reader);
+
+  // read restart of wall handler
+  if (particlewall_) particlewall_->ReadRestart(restartstep);
 
   // set time and step after restart
   SetTimeStep(restarttime, restartstep);
@@ -246,9 +259,14 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Output() const
   // write result step
   if (writeresultsthisstep_)
   {
+    // write particle runtime vtp output
     particleengine_->WriteParticleRuntimeVtpOutput(Step(), Time());
 
+    // write binning discretization output (debug feature)
     particleengine_->WriteBinDisOutput(Step(), Time());
+
+    // write wall runtime vtu output
+    if (particlewall_) particlewall_->WriteWallRuntimeVtuOutput(Step(), Time());
   }
 
   // write restart step
@@ -265,6 +283,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Output() const
 
     // write restart of gravity handler
     if (particlegravity_) particlegravity_->WriteRestart(Step(), Time());
+
+    // write restart of wall handler
+    if (particlewall_) particlewall_->WriteRestart(Step(), Time());
 
     // short screen output
     if (myrank_ == 0)
@@ -409,6 +430,46 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleGravity()
 }
 
 /*---------------------------------------------------------------------------*
+ | init particle wall handler                                 sfuchs 10/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleWall()
+{
+  // get type of particle wall source
+  INPAR::PARTICLE::ParticleWallSource particlewallsource =
+      DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleWallSource>(
+          params_, "PARTICLE_WALL_SOURCE");
+
+  // create particle wall handler
+  switch (particlewallsource)
+  {
+    case INPAR::PARTICLE::NoParticleWall:
+    {
+      particlewall_ = std::shared_ptr<PARTICLEALGORITHM::WallHandlerBase>(nullptr);
+      break;
+    }
+    case INPAR::PARTICLE::DiscretCondition:
+    {
+      particlewall_ =
+          std::make_shared<PARTICLEALGORITHM::WallHandlerDiscretCondition>(Comm(), params_);
+      break;
+    }
+    case INPAR::PARTICLE::BoundingBox:
+    {
+      particlewall_ = std::make_shared<PARTICLEALGORITHM::WallHandlerBoundingBox>(Comm(), params_);
+      break;
+    }
+    default:
+    {
+      dserror("unknown type of particle wall source!");
+      break;
+    }
+  }
+
+  // init particle wall handler
+  if (particlewall_) particlewall_->Init();
+}
+
+/*---------------------------------------------------------------------------*
  | generate initial particles                                 sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::GenerateInitialParticles()
@@ -538,6 +599,26 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialParticles()
 }
 
 /*---------------------------------------------------------------------------*
+ | setup initial wall distribution                            sfuchs 11/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitalWallDistribution()
+{
+  // update bin row and column map
+  particlewall_->UpdateBinRowAndColMap(
+      particleengine_->GetBinRowMap(), particleengine_->GetBinColMap());
+
+  // distribute wall elements and nodes
+  particlewall_->DistributeWallElementsAndNodes();
+
+  // relate bins to column wall elements
+  particlewall_->RelateBinsToColWallEles();
+
+  // build particle to wall neighbors
+  if (particleinteraction_)
+    particlewall_->BuildParticleToWallNeighbors(particleengine_->GetParticlesToBins());
+}
+
+/*---------------------------------------------------------------------------*
  | setup initial states                                       sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialStates()
@@ -641,6 +722,19 @@ void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
 
       // get number of particles on this processor
       numparticlesafterlastloadbalance_ = particleengine_->GetNumberOfParticles();
+
+      if (particlewall_)
+      {
+        // update bin row and column map
+        particlewall_->UpdateBinRowAndColMap(
+            particleengine_->GetBinRowMap(), particleengine_->GetBinColMap());
+
+        // distribute wall elements and nodes
+        particlewall_->DistributeWallElementsAndNodes();
+
+        // relate bins to column wall elements
+        particlewall_->RelateBinsToColWallEles();
+      }
     }
 
     // ghost particles on other processors
@@ -648,6 +742,10 @@ void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
 
     // build particle to particle neighbors
     if (particleinteraction_) particleengine_->BuildParticleToParticleNeighbors();
+
+    // build particle to wall neighbors
+    if (particleinteraction_ and particlewall_)
+      particlewall_->BuildParticleToWallNeighbors(particleengine_->GetParticlesToBins());
 
     // build global id to local index map
     particleengine_->BuildGlobalIDToLocalIndexMap();

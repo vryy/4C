@@ -615,6 +615,18 @@ bool PARTICLEENGINE::ParticleEngine::HaveValidParticleConnectivity() const
 }
 
 /*---------------------------------------------------------------------------*
+ | get reference to (owned and ghosted) particles to bins     sfuchs 11/2018 |
+ *---------------------------------------------------------------------------*/
+const PARTICLEENGINE::ParticlesToBins& PARTICLEENGINE::ParticleEngine::GetParticlesToBins() const
+{
+  // safety check
+  if ((not validownedparticles_) or (not validghostedparticles_))
+    dserror("invalid map relating particles to bins!");
+
+  return particlestobins_;
+}
+
+/*---------------------------------------------------------------------------*
  | get reference to potential particle neighbors              sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
 const PARTICLEENGINE::PotentialParticleNeighbors&
@@ -761,7 +773,7 @@ void PARTICLEENGINE::ParticleEngine::WriteBinDisOutput(const int step, const dou
 void PARTICLEENGINE::ParticleEngine::InitBinningStrategy()
 {
   // create and init binning strategy
-  binstrategy_ = std::unique_ptr<BINSTRATEGY::BinningStrategy>(new BINSTRATEGY::BinningStrategy());
+  binstrategy_ = std::make_shared<BINSTRATEGY::BinningStrategy>();
   binstrategy_->Init(comm_);
 }
 

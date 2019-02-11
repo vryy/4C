@@ -2130,7 +2130,17 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     }
     case prb_particle:
     {
-      // nothing to do
+      // create empty discretizations
+      structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
+
+      // create discretization writer - in constructor set into and owned by corresponding discret
+      structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
+
+      AddDis("structure", structdis);
+
+      nodereader.AddElementReader(
+          Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+
       break;
     }
     case prb_particle_old:

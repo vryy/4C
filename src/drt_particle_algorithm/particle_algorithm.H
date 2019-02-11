@@ -34,7 +34,7 @@ namespace PARTICLEALGORITHM
 {
   class TimInt;
   class GravityHandler;
-  class ResultTest;
+  class WallHandlerBase;
 }  // namespace PARTICLEALGORITHM
 
 namespace PARTICLEINTERACTION
@@ -104,6 +104,9 @@ namespace PARTICLEALGORITHM
     //! init particle gravity handler
     void InitParticleGravity();
 
+    //! init particle wall handler
+    void InitParticleWall();
+
     //! generate initial particles
     void GenerateInitialParticles();
 
@@ -115,6 +118,9 @@ namespace PARTICLEALGORITHM
 
     //! setup initial particles
     void SetupInitialParticles();
+
+    //! setup initial wall distribution
+    void SetupInitalWallDistribution();
 
     //! setup initial states
     void SetupInitialStates();
@@ -160,6 +166,9 @@ namespace PARTICLEALGORITHM
 
     //! particle gravity handler
     std::unique_ptr<PARTICLEALGORITHM::GravityHandler> particlegravity_;
+
+    //! particle wall handler
+    std::shared_ptr<PARTICLEALGORITHM::WallHandlerBase> particlewall_;
 
     //! map of particle types and corresponding states
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>> particlestatestotypes_;
