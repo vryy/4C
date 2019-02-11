@@ -75,8 +75,10 @@ void PARTICLEENGINE::ParticleObject::Pack(DRT::PackBuffer& data) const
   // particleglobalid_
   AddtoPack(data, particleglobalid_);
 
-  // particle_
-  AddtoPack(data, particlestates_);
+  // particle states
+  int numstates = particlestates_.size();
+  AddtoPack(data, numstates);
+  for (int i = 0; i < numstates; ++i) AddtoPack(data, particlestates_[i]);
 
   // bingid_
   AddtoPack(data, bingid_);
@@ -103,8 +105,11 @@ void PARTICLEENGINE::ParticleObject::Unpack(const std::vector<char>& data)
   // particleglobalid_
   ExtractfromPack(position, data, particleglobalid_);
 
-  // particle_
-  ExtractfromPack(position, data, particlestates_);
+  // particle states
+  int numstates = 0;
+  ExtractfromPack(position, data, numstates);
+  particlestates_.resize(numstates);
+  for (int i = 0; i < numstates; ++i) ExtractfromPack(position, data, particlestates_[i]);
 
   // bingid_
   ExtractfromPack(position, data, bingid_);

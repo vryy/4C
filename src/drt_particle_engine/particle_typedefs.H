@@ -57,7 +57,7 @@ namespace PARTICLEENGINE
 
   typedef enum PARTICLEENGINE::ParticleState StateEnum;
 
-  typedef std::map<StateEnum, std::vector<double>> ParticleStates;
+  typedef std::vector<std::vector<double>> ParticleStates;
 
   typedef std::shared_ptr<PARTICLEENGINE::ParticleObject> ParticleObjShrdPtr;
 
