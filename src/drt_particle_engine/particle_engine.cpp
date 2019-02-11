@@ -188,10 +188,10 @@ void PARTICLEENGINE::ParticleEngine::EraseParticlesOutsideBoundingBox(
   for (int i = 0; i < numparticles; ++i)
   {
     // get states of particle
-    ParticleStates particleStates = particlestocheck[i]->ReturnParticleStates();
+    const ParticleStates& particleStates = particlestocheck[i]->ReturnParticleStates();
 
     // get position of particle
-    std::vector<double>& pos = particleStates[PARTICLEENGINE::Position];
+    const std::vector<double>& pos = particleStates[PARTICLEENGINE::Position];
 
 #ifdef DEBUG
     // get type of particles
@@ -215,7 +215,7 @@ void PARTICLEENGINE::ParticleEngine::EraseParticlesOutsideBoundingBox(
         // insert particle into set
         particlesoutsideboundingbox.insert(i);
 
-        continue;
+        break;
       }
     }
   }
@@ -1257,10 +1257,10 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeDistributed(
   for (int i = 0; i < numparticles; ++i)
   {
     // get states of particle
-    ParticleStates particleStates = particlestodistribute[i]->ReturnParticleStates();
+    const ParticleStates& particleStates = particlestodistribute[i]->ReturnParticleStates();
 
     // get position of particle
-    std::vector<double>& pos = particleStates[PARTICLEENGINE::Position];
+    const std::vector<double>& pos = particleStates[PARTICLEENGINE::Position];
 
 #ifdef DEBUG
     // get type of particles
@@ -1717,7 +1717,7 @@ void PARTICLEENGINE::ParticleEngine::InsertOwnedParticles(
       int globalid = particleobject->ReturnParticleGlobalID();
 
       // get states of particle
-      ParticleStates particleStates = particleobject->ReturnParticleStates();
+      const ParticleStates& particleStates = particleobject->ReturnParticleStates();
 
 #ifdef DEBUG
       // get bin of particle
@@ -1727,7 +1727,7 @@ void PARTICLEENGINE::ParticleEngine::InsertOwnedParticles(
       if (gidofbin < 0)
       {
         // get position of particle
-        std::vector<double>& pos = particleStates[PARTICLEENGINE::Position];
+        const std::vector<double>& pos = particleStates[PARTICLEENGINE::Position];
 
         // get type of particles
         TypeEnum typeEnum = particleobject->ReturnParticleType();
@@ -1792,7 +1792,7 @@ void PARTICLEENGINE::ParticleEngine::InsertGhostedParticles(
       int globalid = particleobject->ReturnParticleGlobalID();
 
       // get states of particle
-      ParticleStates particleStates = particleobject->ReturnParticleStates();
+      const ParticleStates& particleStates = particleobject->ReturnParticleStates();
 
       // get bin of particle
       const int gidofbin = particleobject->ReturnBinGid();
@@ -1850,7 +1850,7 @@ void PARTICLEENGINE::ParticleEngine::InsertRefreshedParticles(
       ParticleObjShrdPtr particleobject = objectpair.second;
 
       // get states of particle
-      ParticleStates particleStates = particleobject->ReturnParticleStates();
+      const ParticleStates& particleStates = particleobject->ReturnParticleStates();
 
       // get local index of particle in container of ghosted particles on this processor
       int ghostedindex = particleobject->ReturnContainerIndex();

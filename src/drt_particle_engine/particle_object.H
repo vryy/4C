@@ -85,19 +85,19 @@ namespace PARTICLEENGINE
     virtual void Unpack(const std::vector<char>& data);
 
     //! return particle type
-    TypeEnum ReturnParticleType() const { return particletype_; };
+    inline TypeEnum ReturnParticleType() const { return particletype_; };
 
     //! return particle global id
-    int ReturnParticleGlobalID() const { return particleglobalid_; };
+    inline int ReturnParticleGlobalID() const { return particleglobalid_; };
 
-    //! return particle states
-    ParticleStates ReturnParticleStates() const { return particlestates_; };
+    //! return reference to particle states
+    inline const ParticleStates& ReturnParticleStates() const { return particlestates_; };
 
     //! return bin gid
-    int ReturnBinGid() const { return bingid_; };
+    inline int ReturnBinGid() const { return bingid_; };
 
     //! return index
-    int ReturnContainerIndex() const { return containerindex_; };
+    inline int ReturnContainerIndex() const { return containerindex_; };
 
    private:
     //! particle type enum
