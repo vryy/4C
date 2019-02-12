@@ -43,7 +43,6 @@ DENSITYCORRECTION               NoCorrection
 BOUNDARYPARTICLEFORMULATION     AdamiBoundaryFormulation
 BOUNDARYPARTICLEINTERACTION     NoSlipBoundaryParticle
 CONSISTENTPROBLEMVOLUME         0.2
-VISCOUS_DAMPING                 0.0
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 0.0005*(1+cos(x*pi/0.014))*(heaviside(x+0.014)-heaviside(x-0.014))
 COMPONENT 1 FUNCTION 0.0

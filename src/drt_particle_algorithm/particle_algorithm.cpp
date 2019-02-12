@@ -22,6 +22,7 @@
 #include "particle_timint.H"
 #include "particle_input_generator.H"
 #include "particle_gravity.H"
+#include "particle_viscous_damping.H"
 #include "particle_wall.H"
 #include "particle_initial_field.H"
 #include "particle_result_test.H"
@@ -91,6 +92,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Init(
   // init particle gravity handler
   InitParticleGravity();
 
+  // init viscous damping handler
+  InitViscousDamping();
+
   // init particle wall handler
   InitParticleWall();
 
@@ -129,6 +133,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Setup()
 
   // setup gravity handler
   if (particlegravity_) particlegravity_->Setup();
+
+  // setup viscous damping handler
+  if (viscousdamping_) viscousdamping_->Setup(particleengine_);
 
   // setup wall handler
   if (particlewall_) particlewall_->Setup(particleengine_, particleengine_->GetBinningStrategy());
@@ -172,6 +179,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::ReadRestart(const int restartstep)
 
   // read restart of gravity handler
   if (particlegravity_) particlegravity_->ReadRestart(reader);
+
+  // read restart of viscous damping handler
+  if (viscousdamping_) viscousdamping_->ReadRestart(reader);
 
   // read restart of wall handler
   if (particlewall_) particlewall_->ReadRestart(restartstep);
@@ -245,6 +255,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Integrate()
   // evaluate particle interactions
   if (particleinteraction_) particleinteraction_->EvaluateInteractions();
 
+  // apply viscous damping contribution
+  if (viscousdamping_) viscousdamping_->ApplyViscousDamping();
+
   // time integration scheme specific post-interaction routine
   particletimint_->PostInteractionRoutine();
 }
@@ -283,6 +296,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Output() const
 
     // write restart of gravity handler
     if (particlegravity_) particlegravity_->WriteRestart(Step(), Time());
+
+    // write restart of viscous damping handler
+    if (viscousdamping_) viscousdamping_->WriteRestart(Step(), Time());
 
     // write restart of wall handler
     if (particlewall_) particlewall_->WriteRestart(Step(), Time());
@@ -427,6 +443,25 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleGravity()
 
   // init particle gravity handler
   if (particlegravity_) particlegravity_->Init(gravity);
+}
+
+/*---------------------------------------------------------------------------*
+ | init viscous damping handler                               sfuchs 02/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::ParticleAlgorithm::InitViscousDamping()
+{
+  // get viscous damping factor
+  const double viscdampfac = params_.get<double>("VISCOUS_DAMPING");
+
+  // create viscous damping handler
+  if (viscdampfac > 0.0)
+    viscousdamping_ = std::unique_ptr<PARTICLEALGORITHM::ViscousDampingHandler>(
+        new PARTICLEALGORITHM::ViscousDampingHandler(viscdampfac));
+  else
+    viscousdamping_ = std::unique_ptr<PARTICLEALGORITHM::ViscousDampingHandler>(nullptr);
+
+  // init viscous damping handler
+  if (viscousdamping_) viscousdamping_->Init();
 }
 
 /*---------------------------------------------------------------------------*
