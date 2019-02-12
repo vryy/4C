@@ -48,8 +48,8 @@ namespace GEO
       intersection_found = 1,
     };
 
-    //! Map IntersectionStatus enum to std::string
-    static inline std::string IntersectionStatus2String(enum IntersectionStatus istatus)
+    //! Map IntersectionStatus to std::string
+    static inline std::string IntersectionStatus2String(IntersectionStatus istatus)
     {
       switch (istatus)
       {
@@ -69,7 +69,7 @@ namespace GEO
       exit(EXIT_FAILURE);
     };
 
-    inline enum IntersectionStatus IntersectionStatus(unsigned num_cut_points)
+    inline IntersectionStatus IntersectionStatus2Enum(unsigned num_cut_points)
     {
       switch (num_cut_points)
       {
@@ -195,7 +195,7 @@ namespace GEO
        *  See derived class for more information.
        *
        *  \author hiermeier \date 08/16 */
-      virtual enum IntersectionStatus ComputeEdgeSideIntersection(
+      virtual IntersectionStatus ComputeEdgeSideIntersection(
           double& tolerance, bool check_inside = true, std::vector<int>* touched_edges = NULL) = 0;
 
       /** \brief Computes the intersection points of the edge with the specified side
@@ -229,9 +229,9 @@ namespace GEO
       template <unsigned dimside>
       void LocalSideCoordinates(std::vector<LINALG::Matrix<dimside, 1>>& side_rs_cuts)
       {
-        if (IntersectionStatus() < intersect_single_cut_point)
+        if (GetIntersectionStatus() < intersect_single_cut_point)
           dserror("INVALID IntersectionStatus! ( istatus = \"%s\" )",
-              IntersectionStatus2String(IntersectionStatus()).c_str());
+              IntersectionStatus2String(GetIntersectionStatus()).c_str());
 
         side_rs_cuts.clear();
         side_rs_cuts.reserve(NumCutPoints());
@@ -247,9 +247,9 @@ namespace GEO
       template <unsigned probdim>
       void FinalPoints(std::vector<LINALG::Matrix<probdim, 1>>& xyz_cuts)
       {
-        if (IntersectionStatus() < intersect_single_cut_point)
+        if (GetIntersectionStatus() < intersect_single_cut_point)
           dserror("INVALID IntersectionStatus! ( istatus = \"%s\" )",
-              IntersectionStatus2String(IntersectionStatus()).c_str());
+              IntersectionStatus2String(GetIntersectionStatus()).c_str());
 
         xyz_cuts.clear();
         xyz_cuts.reserve(NumCutPoints());
@@ -269,7 +269,7 @@ namespace GEO
      protected:
       virtual unsigned NumCutPoints() const = 0;
 
-      virtual const enum IntersectionStatus& IntersectionStatus() const = 0;
+      virtual const IntersectionStatus& GetIntersectionStatus() const = 0;
 
       inline void CheckInit() const
       {
@@ -426,7 +426,7 @@ namespace GEO
       }
 
       /// get the intersection status
-      virtual const enum IntersectionStatus& IntersectionStatus() const { return istatus_; }
+      virtual const IntersectionStatus& GetIntersectionStatus() const { return istatus_; }
 
       /// get the local cut coordinates
       virtual double* LocalCoordinates() { return xsi_.A(); }
@@ -558,7 +558,7 @@ namespace GEO
        *  All feasible cut points are within the given element bounds.
        *
        *  \author hiermeier \date 08/16 */
-      virtual enum IntersectionStatus ComputeEdgeSideIntersection(
+      virtual IntersectionStatus ComputeEdgeSideIntersection(
           double& tolerance, bool check_inside = true, std::vector<int>* touched_edges = NULL)
       {
         switch (GetOptionsPtr()->GeomIntersect_Floattype())
@@ -579,7 +579,7 @@ namespace GEO
       }
 
       template <INPAR::CUT::CUT_Floattype floattype>
-      enum IntersectionStatus ComputeEdgeSideIntersectionT(
+      IntersectionStatus ComputeEdgeSideIntersectionT(
           double& tolerance, bool check_inside = true, std::vector<int>* touched_edges = NULL)
       {
         CheckInit();
@@ -592,7 +592,7 @@ namespace GEO
          * treatment becomes necessary for multiple cut points. */
         if (success)
         {
-          istatus_ = GEO::CUT::IntersectionStatus(num_cut_points_);
+          istatus_ = GEO::CUT::IntersectionStatus2Enum(num_cut_points_);
           return (istatus_);
         }
 
@@ -644,7 +644,7 @@ namespace GEO
           else
           {
             num_cut_points_ = conv;
-            istatus_ = GEO::CUT::IntersectionStatus(num_cut_points_);
+            istatus_ = GEO::CUT::IntersectionStatus2Enum(num_cut_points_);
           }
           // if we want to get edges back
           if (touched_edges)
@@ -915,7 +915,7 @@ namespace GEO
       }
 
       // Computes tri3 edge intersection used for quad4 -> 2 tri3 splits
-      enum IntersectionStatus ComputeEdgeTri3IntersectionQuad4Split(
+      IntersectionStatus ComputeEdgeTri3IntersectionQuad4Split(
           int triangleid, bool* close_to_shared_edge = NULL)
       {
         switch (GetOptionsPtr()->GeomIntersect_Floattype())
@@ -937,7 +937,7 @@ namespace GEO
       }
 
       template <INPAR::CUT::CUT_Floattype floattype>
-      enum IntersectionStatus ComputeEdgeTri3IntersectionQuad4SplitT(
+      IntersectionStatus ComputeEdgeTri3IntersectionQuad4SplitT(
           int triangleid, bool* close_to_shared_edge = NULL)
       {
         if (triangleid < 0) dserror("The triangle id has to be positive!");
@@ -1215,7 +1215,7 @@ namespace GEO
       unsigned num_cut_points_;
 
       /// intersection status
-      enum IntersectionStatus istatus_;
+      IntersectionStatus istatus_;
 
       /// scaling calculated based on the input element
       double scale_;

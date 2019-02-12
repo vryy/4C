@@ -82,8 +82,8 @@ namespace DRT
           const T sm = 1.0 - s;
           const T r2 = 1.0 - r * r;
           const T s2 = 1.0 - s * s;
-          const T tp = 1 + t;
-          const T tm = 1 - t;
+          const T tp = 1.0 + t;
+          const T tm = 1.0 - t;
 
           funct(0) = 0.125 * (rm * sm - (r2 * sm + s2 * rm)) * tm;
           funct(1) = 0.125 * (rp * sm - (r2 * sm + s2 * rp)) * tm;
@@ -249,10 +249,10 @@ namespace DRT
         {
           const T u = 1.0 - r - s - t;
 
-          funct(0) = u * (2.0 * u - 1);
-          funct(1) = r * (2.0 * r - 1);
-          funct(2) = s * (2.0 * s - 1);
-          funct(3) = t * (2.0 * t - 1);
+          funct(0) = u * (2.0 * u - 1.0);
+          funct(1) = r * (2.0 * r - 1.0);
+          funct(2) = s * (2.0 * s - 1.0);
+          funct(3) = t * (2.0 * t - 1.0);
           funct(4) = 4.0 * r * u;
           funct(5) = 4.0 * r * s;
           funct(6) = 4.0 * s * u;
@@ -451,7 +451,7 @@ namespace DRT
           deriv1(0, 0) = 0.125 * sm * (2.0 * r + s) * tm;
           deriv1(1, 0) = 0.125 * rm * (r + 2.0 * s) * tm;
 
-          deriv1(0, 1) = 0.125 * sm * (2 * r - s) * tm;
+          deriv1(0, 1) = 0.125 * sm * (2.0 * r - s) * tm;
           deriv1(1, 1) = 0.125 * rp * (2.0 * s - r) * tm;
 
           deriv1(0, 2) = 0.125 * sp * (2.0 * r + s) * tm;
@@ -823,21 +823,21 @@ namespace DRT
         {
           const T u = 1.0 - r - s - t;
 
-          deriv1(0, 0) = -4.0 * u + 1;
+          deriv1(0, 0) = -4.0 * u + 1.;
           deriv1(1, 0) = deriv1(0, 0);
           deriv1(2, 0) = deriv1(0, 0);
 
-          deriv1(0, 1) = 4.0 * r - 1;
+          deriv1(0, 1) = 4.0 * r - 1.;
           deriv1(1, 1) = 0.0;
           deriv1(2, 1) = 0.0;
 
           deriv1(0, 2) = 0.0;
-          deriv1(1, 2) = 4.0 * s - 1;
+          deriv1(1, 2) = 4.0 * s - 1.;
           deriv1(2, 2) = 0.0;
 
           deriv1(0, 3) = 0.0;
           deriv1(1, 3) = 0.0;
-          deriv1(2, 3) = 4.0 * t - 1;
+          deriv1(2, 3) = 4.0 * t - 1.;
 
           deriv1(0, 4) = 4.0 * (u - r);
           deriv1(1, 4) = -4.0 * r;
@@ -1267,7 +1267,7 @@ namespace DRT
           deriv2(dtdt, 10) = 0.0;
 
           deriv2(drdt, 11) = 0.125 * sp * (2.0 * r - s);
-          deriv2(dsdt, 11) = 0.125 * rm * (20 * s - r);
+          deriv2(dsdt, 11) = 0.125 * rm * (2.0 * s - r);
           deriv2(dtdt, 11) = 0.0;
 
           deriv2(drdt, 12) = -0.5 * sm * r;
@@ -2293,24 +2293,24 @@ namespace DRT
           const T sm = 1.0 - s;
 
           //          (-1/4) (s - 1.0) (2.0 r + s)
-          deriv1(0, 0) = 0.25 * sm * (2 * r + s);
+          deriv1(0, 0) = 0.25 * sm * (2. * r + s);
           //          (-1/4) (r - 1.0) (r + 2.0 s)
-          deriv1(1, 0) = 0.25 * rm * (r + 2 * s);
+          deriv1(1, 0) = 0.25 * rm * (r + 2. * s);
 
           //          1/4 (s - 1.0) (- 2.0 r + s)
-          deriv1(0, 1) = 0.25 * sm * (2 * r - s);
+          deriv1(0, 1) = 0.25 * sm * (2. * r - s);
           //          1/4 (r + 1.0) (- 1.0 r + 2.0 s)
-          deriv1(1, 1) = 0.25 * rp * (2 * s - r);
+          deriv1(1, 1) = 0.25 * rp * (2. * s - r);
 
           //          1/4 (s + 1.0) (2.0 r + s)
-          deriv1(0, 2) = 0.25 * sp * (2 * r + s);
+          deriv1(0, 2) = 0.25 * sp * (2. * r + s);
           //          1/4 (r + 1.0) (r + 2.0 s)
-          deriv1(1, 2) = 0.25 * rp * (r + 2 * s);
+          deriv1(1, 2) = 0.25 * rp * (r + 2. * s);
 
           //          (-1/4) (s + 1.0) (- 2.0 r + s)
-          deriv1(0, 3) = 0.25 * sp * (2 * r - s);
+          deriv1(0, 3) = 0.25 * sp * (2. * r - s);
           //          (-1/4) (r - 1.0) (- 1.0 r + 2.0 s)
-          deriv1(1, 3) = 0.25 * rm * (2 * s - r);
+          deriv1(1, 3) = 0.25 * rm * (2. * s - r);
 
           //          (s - 1.0) r
           deriv1(0, 4) = -sm * r;
@@ -2532,14 +2532,14 @@ namespace DRT
           //(-1/2) (r - 1.0)
           deriv2(dsds, 0) = 0.5 * rm;
           //(-1/4) (2.0 r + 2.0 s - 1.0)
-          deriv2(drds, 0) = -0.25 * (2 * r + 2 * s - 1.0);
+          deriv2(drds, 0) = -0.25 * (2.0 * r + 2.0 * s - 1.0);
 
           //(-1/2) (s - 1.0)
           deriv2(drdr, 1) = 0.5 * sm;
           // 1/2 (r + 1.0)
           deriv2(dsds, 1) = 0.5 * rp;
           // 1/4 (- 2.0 r + 2.0 s - 1.0)
-          deriv2(drds, 1) = 0.25 * (-2 * r + 2 * s - 1.0);
+          deriv2(drds, 1) = 0.25 * (-2.0 * r + 2.0 * s - 1.0);
 
           // 1/2 (s + 1.0)
           deriv2(drdr, 2) = 0.5 * sp;
@@ -2767,7 +2767,7 @@ namespace DRT
         {
           funct(0) = -0.5 * r * (1.0 - r);
           funct(1) = 0.5 * r * (1.0 + r);
-          funct(2) = 1 - r * r;
+          funct(2) = 1.0 - r * r;
           break;
         }
         case DRT::Element::line4:

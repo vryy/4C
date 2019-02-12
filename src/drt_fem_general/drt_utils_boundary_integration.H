@@ -715,7 +715,7 @@ namespace DRT
               dserror(
                   "The l2-norm of the normal vector is smaller than 0.0!"
                   " ( norm2 = %e )",
-                  norm2);
+                  (const double)norm2);
             normalvec->Scale(1.0 / norm2);
           }
         }
@@ -731,7 +731,7 @@ namespace DRT
               dserror(
                   "The l2-norm of the normal vector is smaller than 0.0!"
                   " ( norm2 = %e )",
-                  norm2);
+                  (const double)norm2);
             normalvec->Scale(1.0 / norm2);
           }
         }
@@ -745,7 +745,7 @@ namespace DRT
           }
           // to handle small normal vectors with dxyzdrs(0,0) < 1e-6
           // and other componets  = 0.0
-          else if (dxyzdrs(0, 2) != 0 or dxyzdrs(0, 1) != 0)
+          else if (dxyzdrs(0, 2) != 0.0 or dxyzdrs(0, 1) != 0.0)
           {
             (*normalvec)(0) = 0.0;
             (*normalvec)(1) = -dxyzdrs(0, 2);
@@ -766,7 +766,7 @@ namespace DRT
               dserror(
                   "The l2-norm of the normal vector is smaller than 0.0!"
                   " ( norm2 = %e )",
-                  norm2);
+                  (const double)norm2);
             normalvec->Scale(1.0 / norm2);
           }
         }

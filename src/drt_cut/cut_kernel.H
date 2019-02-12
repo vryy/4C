@@ -1062,10 +1062,10 @@ namespace GEO
                       << (WithinLimits<elementType>(xsi_) ? "TRUE" : "FALSE") << "\n"
                       << "rsd_.Norm2()             = " << xsi_.Norm2() << "\n"
                       << "dx_.Norm2() / rsd.Norm2()= "
-                      << (iter != 0 ? (dx_.Norm2() / xsi_.Norm2()) : -1.0) << "\n"
+                      << (iter != 0 ? (const double)(dx_.Norm2() / xsi_.Norm2()) : -1.0) << "\n"
                       << "b_.Norm2() ( RHS )       = " << b_.Norm2() << "\n"
                       << "b_.Norm2() / rsd.Norm2() = "
-                      << (iter != 0 ? (b_.Norm2() / xsi_.Norm2()) : -1.0) << "\n"
+                      << (iter != 0 ? (const double)(b_.Norm2() / xsi_.Norm2()) : -1.0) << "\n"
                       << "tol_                     = " << tol_ << "\n"
                       << "rsd_ ( aka xsi_ )        = " << xsi_
                       << "b_ (RHS)                 = " << b_ << "\n"
@@ -1474,7 +1474,7 @@ namespace GEO
 
           // safely convert the values back
           ConvClnDouble(clnxsi_, xsi_);
-          if ((not conv) && (err < CLN_LIMIT_ERROR) && (err > 0)) conv = true;
+          if ((not conv) && (err < CLN_LIMIT_ERROR) && (err > 0.0)) conv = true;
 
 #ifdef CUSTOM_MEMORY_ALLOCATOR
           if (first_run_)
@@ -1981,10 +1981,10 @@ namespace GEO
                       << (WithinLimits<sideType>(xsi_) ? "TRUE" : "FALSE") << "\n"
                       << "rsd_.Norm2()             = " << xsi_.Norm2() << "\n"
                       << "dx_.Norm2() / rsd.Norm2()= "
-                      << (iter != 0 ? (dx_.Norm2() / xsi_.Norm2()) : -1.0) << "\n"
+                      << (iter != 0 ? (const double)(dx_.Norm2() / xsi_.Norm2()) : -1.0) << "\n"
                       << "b_.Norm2() ( RHS )       = " << b_.Norm2() << "\n"
                       << "b_.Norm2() / rsd.Norm2() = "
-                      << (iter != 0 ? (b_.Norm2() / xsi_.Norm2()) : -1.0) << "\n"
+                      << (iter != 0 ? (const double)(b_.Norm2() / xsi_.Norm2()) : -1.0) << "\n"
                       << "tol_                     = " << tol_ << "\n"
                       << "rsd_ ( aka xsi_ )        = " << xsi_
                       << "b_ (RHS)                 = " << b_ << "\n"
@@ -2575,7 +2575,7 @@ namespace GEO
           // now since we converged or went over maximum allowed number of loops  we convert the
           // values back if we did not converge, by newton tolerance, but the error is small enough
           // treat as converged
-          if ((not conv) && (err < CLN_LIMIT_ERROR) && (err > 0)) conv = true;
+          if ((not conv) && (err < CLN_LIMIT_ERROR) && (err > 0.0)) conv = true;
 
           if (cond_infinity_)
           {
@@ -2860,8 +2860,8 @@ namespace GEO
               // we cat only get signed distance for edge edge intersection
               const ClnWrapper distance = Strategy::Distance();
               // some safety checks
-              if (distance < 0) dserror("Not possible");
-              if (err <= 0) dserror("Error should be equal to basic tolerance!");
+              if (distance < 0.0) dserror("Not possible");
+              if (err <= 0.0) dserror("Error should be equal to basic tolerance!");
               if ((distance - err <= 0.0) and (distance + err > 0.0))
                 return on;
               else
@@ -3177,8 +3177,8 @@ namespace GEO
               // we cat only get signed distance for edge edge intersection
               const double distance = Strategy::Distance();
               // some safety checks
-              if (distance < 0) dserror("Not possible");
-              if (err <= 0) dserror("Error should be equal to basic tolerance!");
+              if (distance < 0.0) dserror("Not possible");
+              if (err <= 0.0) dserror("Error should be equal to basic tolerance!");
               if ((distance - err <= 0.0) and (distance + err > 0.0))
                 return on;
               else
@@ -3987,7 +3987,7 @@ namespace GEO
                    (prec < CLN_LIMIT_PREC) && (iter < CLN_LIMIT_ITER));
 
 
-          if ((not conv) && (err < CLN_LIMIT_ERROR) && (err > 0) &&
+          if ((not conv) && (err < CLN_LIMIT_ERROR) && (err > 0.0) &&
               ((dimEdge + dimSide) == probDim))
             conv = true;
           else if (not conv)

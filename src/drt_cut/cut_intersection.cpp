@@ -971,7 +971,7 @@ bool GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside
     case DRT::Element::tri3:
     case DRT::Element::line2:
     {
-      enum IntersectionStatus conv;
+      IntersectionStatus conv;
       try
       {
         conv = ComputeEdgeSideIntersection(itol, true);
@@ -1014,7 +1014,7 @@ bool GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside
       LINALG::Matrix<dimside + dimedge, 1> i_xsi;
       bool close_to_shared_edge[2] = {false, false};
       i_xsi = xsi_;
-      enum IntersectionStatus tri_status[2];
+      IntersectionStatus tri_status[2];
       // compute intersection for each of the triangles
       int cut_point_count = 0;
       bool first_close_to_shared = false;
@@ -1190,7 +1190,7 @@ bool GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside
 #else
 
     double itol = 0.0;
-    enum IntersectionStatus conv;
+    IntersectionStatus conv;
     try
     {
       conv = ComputeEdgeSideIntersection(itol, true);
