@@ -144,10 +144,7 @@ namespace GEO
         value_ = CachedConvert(other, precision_);
         return *this;
       }
-      inline operator double() const
-      {
-        return cln::double_approx(value_);
-      }
+      inline operator double() const { return cln::double_approx(value_); }
       inline ClnWrapper& operator+=(double other)
       {
         value_ += CachedConvert(other, value_);
