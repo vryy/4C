@@ -162,6 +162,13 @@ namespace INPAR
       Redistribute_monolithic  ///< redistribute monolithic graph (fluid + structure)
     };
 
+    /// Coupling variable for Dirichlet-Neumann algorithms
+    enum CoupVarPart
+    {
+      disp, /*!< displacement coupling*/
+      force /*!< force coupling*/
+    };
+
     //@}
 
     /// set the fsi parameters

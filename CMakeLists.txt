@@ -1215,7 +1215,9 @@ set(OBJS_DRT_FSI
   src/drt_fsi/fsi_constrmonolithic_fluidsplit.cpp
   src/drt_fsi/fsi_constrmonolithic_structuresplit.cpp
   src/drt_fsi/fsi_debugwriter.cpp
+  src/drt_fsi/fsi_dirichletneumann_factory.cpp
   src/drt_fsi/fsi_dirichletneumann.cpp
+  src/drt_fsi/fsi_dirichletneumann_disp.cpp
   src/drt_fsi/fsi_dirichletneumannslideale.cpp
   src/drt_fsi/fsi_dirichletneumann_volcoupl.cpp
   src/drt_fsi/fsi_dyn.cpp
