@@ -58,7 +58,18 @@ namespace PARTICLEENGINE
     static ParticleObjectType instance_;
   };
 
-  //! particle object
+  /**
+   * \brief A particle object for parallel communication of particle data.
+   *
+   * The class members of the particle object are either initialized via an constructor with
+   * initializer list or via unpacking of the data (after communication and receiving of packed
+   * data).
+   *
+   * \note A separate method for initializing or modifying of class members is not provided due to
+   * performance reasons (avoid copy operations) and due to the fact that a particle object only
+   * needs to be packed once (without being modified afterwards) and is directly sent to another
+   * processor.
+   */
   class ParticleObject : public DRT::ParObject
   {
    public:
