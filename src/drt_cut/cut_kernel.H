@@ -38,8 +38,6 @@ namespace GEO
 {
   namespace CUT
   {
-    /*! \brief Core geometrical operations like finding the cut points,
-     *   distance calculations takes place here */
     namespace KERNEL
     {
       // functions to compare determinant ot zero, e.g when computing the ConditionNumber

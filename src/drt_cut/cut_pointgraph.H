@@ -32,7 +32,6 @@ namespace GEO
     class Element;
     class Mesh;
 
-    /// implementation details
     namespace IMPL
     {
       /// a planar graph that is used to create facets out of lines and points
