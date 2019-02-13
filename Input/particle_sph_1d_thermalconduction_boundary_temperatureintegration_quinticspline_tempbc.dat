@@ -44,7 +44,6 @@ BOUNDARYPARTICLEFORMULATION     AdamiBoundaryFormulation
 BOUNDARYPARTICLEINTERACTION     NoSlipBoundaryParticle
 TEMPERATUREEVALUATION           TemperatureIntegration
 CONSISTENTPROBLEMVOLUME         0.2
-VISCOUS_DAMPING                 0.0
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 10.0*(heaviside(x)-heaviside(-x))*a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 1.0 10.0 DESCRIPTION t 1.0

@@ -42,7 +42,6 @@ BOUNDARYPARTICLEFORMULATION     AdamiBoundaryFormulation
 BOUNDARYPARTICLEINTERACTION     NoSlipBoundaryParticle
 CONSISTENTPROBLEMVOLUME         0.02
 TRANSPORTVELOCITYFORMULATION    NoTransportVelocity
-VISCOUS_DAMPING                 0.0
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 1.0*t*heaviside(y)
 COMPONENT 1 FUNCTION 0.0

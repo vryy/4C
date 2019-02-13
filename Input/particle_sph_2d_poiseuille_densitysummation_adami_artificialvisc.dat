@@ -42,7 +42,6 @@ BOUNDARYPARTICLEFORMULATION     AdamiBoundaryFormulation
 BOUNDARYPARTICLEINTERACTION     NoSlipBoundaryParticle
 CONSISTENTPROBLEMVOLUME         0.02
 TRANSPORTVELOCITYFORMULATION    NoTransportVelocity
-VISCOUS_DAMPING                 0.0
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 0.25 10 DESCRIPTION 0.5*(1.0-cos((t*pi)/0.25)) 1.0

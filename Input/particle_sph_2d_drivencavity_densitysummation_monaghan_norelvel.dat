@@ -43,7 +43,6 @@ BOUNDARYPARTICLEINTERACTION     NoSlipBoundaryParticle
 CONSISTENTPROBLEMVOLUME         1.0
 TRANSPORTVELOCITYFORMULATION    StandardTransportVelocity
 NO_RELVEL_TERM                  yes
-VISCOUS_DAMPING                 0.0
 ----------------------------PARTICLE DYNAMIC/INITIAL AND BOUNDARY CONDITIONS
 DIRICHLET_BOUNDARY_CONDITION    boundaryphase 1
 ----------------------------------------------------------------------FUNCT1
