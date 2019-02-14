@@ -145,9 +145,6 @@ namespace PARTICLEINTERACTION
     //! no convection of momentum with relative velocity in transport velocity formulation
     bool norelativevelocitycontribution_;
 
-    //! artificial viscous damping factor
-    const double dampingfactor_;
-
     //! pointer to fluid material of particle types
     std::vector<const MAT::PAR::ParticleMaterialSPHFluid*> fluidmaterial_;
   };

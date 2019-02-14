@@ -74,6 +74,10 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "GRAVITY_ACCELERATION", "0.0 0.0 0.0", "acceleration due to gravity", &particledyn);
   IntParameter("GRAVITY_RAMP_FUNCT", -1, "number of function governing gravity ramp", &particledyn);
 
+  // viscous damping factor
+  DoubleParameter("VISCOUS_DAMPING", -1.0,
+      "apply viscous damping force to determine static equilibrium solutions", &particledyn);
+
   // transfer particles to new bins every time step
   BoolParameter(
       "TRANSFER_EVERY", "no", "transfer particles to new bins every time step", &particledyn);
@@ -83,6 +87,14 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
 
   // amplitude of noise added to initial position
   DoubleParameter("INITIAL_POSITION_AMPLITUDE", 0.0, "amplitude of noise added to initial position",
+      &particledyn);
+
+  // type of particle wall source
+  setStringToIntegralParameter<int>("PARTICLE_WALL_SOURCE", "NoParticleWall",
+      "type of particle wall source",
+      tuple<std::string>("NoParticleWall", "DiscretCondition", "BoundingBox"),
+      tuple<int>(INPAR::PARTICLE::NoParticleWall, INPAR::PARTICLE::DiscretCondition,
+          INPAR::PARTICLE::BoundingBox),
       &particledyn);
 
   /*-------------------------------------------------------------------------*
@@ -191,12 +203,6 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "do not apply convection of momentum with relative velocity in case of transport velocity "
       "formulation",
       &particledynsph);
-
-  DoubleParameter("VISCOUS_DAMPING", -1.0,
-      "apply artificial viscous damping force to particles in order to determine static "
-      "equilibrium solutions",
-      &particledynsph);
-
 
   //! type of temperature evaluation scheme
   setStringToIntegralParameter<int>("TEMPERATUREEVALUATION", "NoTemperatureEvaluation",

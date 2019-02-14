@@ -1215,7 +1215,9 @@ set(OBJS_DRT_FSI
   src/drt_fsi/fsi_constrmonolithic_fluidsplit.cpp
   src/drt_fsi/fsi_constrmonolithic_structuresplit.cpp
   src/drt_fsi/fsi_debugwriter.cpp
+  src/drt_fsi/fsi_dirichletneumann_factory.cpp
   src/drt_fsi/fsi_dirichletneumann.cpp
+  src/drt_fsi/fsi_dirichletneumann_disp.cpp
   src/drt_fsi/fsi_dirichletneumannslideale.cpp
   src/drt_fsi/fsi_dirichletneumann_volcoupl.cpp
   src/drt_fsi/fsi_dyn.cpp
@@ -1838,10 +1840,12 @@ set(OBJS_DRT_PARTICLE_ALGORITHM
   src/drt_particle_algorithm/particle_timint.cpp
   src/drt_particle_algorithm/particle_input_generator.cpp
   src/drt_particle_algorithm/particle_gravity.cpp
+  src/drt_particle_algorithm/particle_viscous_damping.cpp
   src/drt_particle_algorithm/particle_dirichlet_bc.cpp
   src/drt_particle_algorithm/particle_temperature_bc.cpp
   src/drt_particle_algorithm/particle_initial_field.cpp
   src/drt_particle_algorithm/particle_result_test.cpp
+  src/drt_particle_algorithm/particle_wall.cpp
   src/drt_particle_algorithm/particle_algorithm_utils.cpp
 )
 set(OBJS_DRT_PARTICLE_INTERACTION

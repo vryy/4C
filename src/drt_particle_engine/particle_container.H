@@ -154,6 +154,9 @@ namespace PARTICLEENGINE
     //! set of stored particle states
     std::set<StateEnum> storedstates_;
 
+    //! size of vector for states
+    int statesvectorsize_;
+
     //! global ids of stored particles
     std::vector<int> globalids_;
 

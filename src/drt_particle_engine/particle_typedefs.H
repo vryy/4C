@@ -41,6 +41,11 @@ namespace PARTICLEENGINE
   class ParticleObject;
 }  // namespace PARTICLEENGINE
 
+namespace DRT
+{
+  class Element;
+}
+
 /*---------------------------------------------------------------------------*
  | type definitions                                           sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
@@ -52,7 +57,7 @@ namespace PARTICLEENGINE
 
   typedef enum PARTICLEENGINE::ParticleState StateEnum;
 
-  typedef std::map<StateEnum, std::vector<double>> ParticleStates;
+  typedef std::vector<std::vector<double>> ParticleStates;
 
   typedef std::shared_ptr<PARTICLEENGINE::ParticleObject> ParticleObjShrdPtr;
 
@@ -65,9 +70,15 @@ namespace PARTICLEENGINE
 
   typedef std::shared_ptr<LocalIndexTuple> LocalIndexTupleShrdPtr;
 
+  typedef std::vector<std::vector<std::pair<PARTICLEENGINE::ParticleType, int>>> ParticlesToBins;
+
   typedef std::vector<std::pair<LocalIndexTuple, LocalIndexTuple>> PotentialParticleNeighbors;
 
   typedef std::vector<std::pair<TypeEnum, std::vector<StateEnum>>> StatesOfTypesToRefresh;
+
+  typedef std::vector<std::vector<int>> BinsToColWallEles;
+
+  typedef std::vector<std::pair<LocalIndexTuple, DRT::Element*>> PotentialWallNeighbors;
 
 }  // namespace PARTICLEENGINE
 

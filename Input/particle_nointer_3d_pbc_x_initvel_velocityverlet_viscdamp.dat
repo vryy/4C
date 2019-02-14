@@ -1,0 +1,83 @@
+//
+// Maintainer: Sebastian Fuchs
+//
+==================================================================
+                  General Data File BACI
+==================================================================
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Particle
+SHAPEFCT                        Meshfree
+RANDSEED                        1
+RESTART                         0
+--------------------------------------------------------------------------IO
+STDOUTEVRY                      100
+VERBOSITY                       standard
+------------------------------------------------------------BINNING STRATEGY
+CUTOFF_RADIUS                   0.1
+PERIODICONOFF                   1 0 0
+BOUNDINGBOX                     -0.4 -0.4 -0.4 0.4 0.4 0.4
+WRITEBINS                       none
+------------------------------------------------------------PARTICLE DYNAMIC
+DYNAMICTYP                      VelocityVerlet
+INTERACTION                     None
+RESULTSEVRY                     10
+RESTARTEVRY                     100
+OUTPUT_DATA_FORMAT              Binary
+WRITE_GHOSTED_PARTICLES         no
+TIMESTEP                        1e-3
+NUMSTEP                         1000
+MAXTIME                         1.0
+GRAVITY_ACCELERATION            0.0 0.0 0.0
+GRAVITY_RAMP_FUNCT              0
+VISCOUS_DAMPING                 0.1
+TRANSFER_EVERY                  no
+----------------------------PARTICLE DYNAMIC/INITIAL AND BOUNDARY CONDITIONS
+INITIAL_VELOCITY_FIELD          phase1 1 phase2 2
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION 1.0-y*y-z*z
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
+----------------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION -2.0
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
+----------------------------------------------------------RESULT DESCRIPTION
+PARTICLE ID 2 QUANTITY posx VALUE -2.17287818637278585e-01 TOLERANCE 1.0e-12
+PARTICLE ID 2 QUANTITY posy VALUE -0.25 TOLERANCE 1.0e-12
+PARTICLE ID 2 QUANTITY posz VALUE 0.25 TOLERANCE 1.0e-12
+PARTICLE ID 2 QUANTITY velx VALUE 7.91768372261861808e-01 TOLERANCE 1.0e-12
+PARTICLE ID 2 QUANTITY accx VALUE -7.91807962659994841e-02 TOLERANCE 1.0e-12
+PARTICLE ID 22 QUANTITY posx VALUE -5.33421288290745824e-02 TOLERANCE 1.0e-12
+PARTICLE ID 22 QUANTITY posy VALUE 0.0 TOLERANCE 1.0e-12
+PARTICLE ID 22 QUANTITY posz VALUE 0.0 TOLERANCE 1.0e-12
+PARTICLE ID 22 QUANTITY velx VALUE -1.80975627945568029e+00 TOLERANCE 1.0e-12
+PARTICLE ID 22 QUANTITY accx VALUE 1.80984677179427011e-01 TOLERANCE 1.0e-12
+-------------------------------------------------------------------PARTICLES
+TYPE phase1 POS -0.25 -0.25 -0.25
+TYPE phase1 POS -0.25 -0.25  0.0
+TYPE phase1 POS -0.25 -0.25  0.25
+TYPE phase1 POS -0.25  0.0  -0.25
+TYPE phase1 POS -0.25  0.0   0.0
+TYPE phase1 POS -0.25  0.0   0.25
+TYPE phase1 POS -0.25  0.25 -0.25
+TYPE phase1 POS -0.25  0.25  0.0
+TYPE phase1 POS -0.25  0.25  0.25
+TYPE phase1 POS  0.0  -0.25 -0.25
+TYPE phase1 POS  0.0  -0.25  0.0
+TYPE phase1 POS  0.0  -0.25  0.25
+TYPE phase1 POS  0.0   0.0  -0.25
+TYPE phase1 POS  0.0   0.0   0.0
+TYPE phase1 POS  0.0   0.0   0.25
+TYPE phase1 POS  0.0   0.25 -0.25
+TYPE phase1 POS  0.0   0.25  0.0
+TYPE phase1 POS  0.0   0.25  0.25
+TYPE phase2 POS  0.25 -0.25 -0.25
+TYPE phase2 POS  0.25 -0.25  0.0
+TYPE phase2 POS  0.25 -0.25  0.25
+TYPE phase2 POS  0.25  0.0  -0.25
+TYPE phase2 POS  0.25  0.0   0.0
+TYPE phase2 POS  0.25  0.0   0.25
+TYPE phase2 POS  0.25  0.25 -0.25
+TYPE phase2 POS  0.25  0.25  0.0
+TYPE phase2 POS  0.25  0.25  0.25
+-------------------------------------------------------------------------END

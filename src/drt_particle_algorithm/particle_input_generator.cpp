@@ -73,15 +73,14 @@ void PARTICLEALGORITHM::InputGenerator::AddGeneratedParticle(const std::vector<d
   if (position.size() != 3)
     dserror("particle can not be generated since position vector needs three entries!");
 
-  // fill position into particle states map
+  // allocate memory to hold particle states
   PARTICLEENGINE::ParticleStates particlestates;
-  particlestates.insert(std::make_pair(PARTICLEENGINE::Position, position));
+  particlestates.assign((PARTICLEENGINE::Position + 1), std::vector<double>(0));
 
-  // create and init new particle object
-  PARTICLEENGINE::ParticleObjShrdPtr particleobject =
-      std::make_shared<PARTICLEENGINE::ParticleObject>();
-  particleobject->Init(particletype, globalid, particlestates);
+  // set position state
+  particlestates[PARTICLEENGINE::Position] = position;
 
-  // append generated particle
-  particlesgenerated.push_back(particleobject);
+  // construct and store generated particle object
+  particlesgenerated.emplace_back(
+      std::make_shared<PARTICLEENGINE::ParticleObject>(particletype, globalid, particlestates));
 }
