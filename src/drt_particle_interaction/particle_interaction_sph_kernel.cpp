@@ -131,11 +131,13 @@ double PARTICLEINTERACTION::SPHKernelCubicSpline::NormalizationConstant(const do
   {
     case INPAR::PARTICLE::Kernel1D:
     {
-      return (2.0 * inv_h / 3.0);
+      // (2.0 / 3.0) * inv_h
+      return 0.6666666666666666 * inv_h;
     }
     case INPAR::PARTICLE::Kernel2D:
     {
-      return (10.0 * M_1_PI * UTILS::pow<2>(inv_h) / 7.0);
+      // (10.0 / 7.0) * M_1_PI * inv_h * inv_h
+      return 0.4547284088339866 * UTILS::pow<2>(inv_h);
     }
     case INPAR::PARTICLE::Kernel3D:
     {
@@ -224,7 +226,8 @@ PARTICLEINTERACTION::SPHKernelQuinticSpline::SPHKernelQuinticSpline(
  *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::SPHKernelQuinticSpline::SmoothingLength(const double& support) const
 {
-  return (support / 3.0);
+  // (support / 3.0)
+  return 0.3333333333333333 * support;
 }
 
 /*---------------------------------------------------------------------------*
@@ -236,15 +239,18 @@ double PARTICLEINTERACTION::SPHKernelQuinticSpline::NormalizationConstant(const 
   {
     case INPAR::PARTICLE::Kernel1D:
     {
-      return inv_h / 120.0;
+      // (inv_h / 120.0)
+      return 0.0083333333333333 * inv_h;
     }
     case INPAR::PARTICLE::Kernel2D:
     {
-      return (7.0 * M_1_PI * UTILS::pow<2>(inv_h) / 478.0);
+      // (7.0 / 478.0) * M_1_PI * inv_h * inv_h
+      return 0.0046614418478797 * UTILS::pow<2>(inv_h);
     }
     case INPAR::PARTICLE::Kernel3D:
     {
-      return (3.0 * M_1_PI * UTILS::pow<3>(inv_h) / 359.0);
+      // (3.0 / 359.0) * M_1_PI * inv_h * inv_h * inv_h
+      return 0.0026599711937364 * UTILS::pow<3>(inv_h);
     }
     default:
     {
