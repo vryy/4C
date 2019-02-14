@@ -20,8 +20,6 @@
 #include "particle_interaction_sph_kernel.H"
 #include "particle_interaction_utils.H"
 
-#include "../drt_inpar/inpar_particle.H"
-
 #include "../drt_lib/drt_dserror.H"
 
 /*---------------------------------------------------------------------------*
@@ -154,6 +152,14 @@ double PARTICLEINTERACTION::SPHKernelCubicSpline::NormalizationConstant(const do
 }
 
 /*---------------------------------------------------------------------------*
+ | evaluate kernel (self-interaction)                         sfuchs 02/2019 |
+ *---------------------------------------------------------------------------*/
+double PARTICLEINTERACTION::SPHKernelCubicSpline::W0(const double& support) const
+{
+  return NormalizationConstant(0.5 * support);
+}
+
+/*---------------------------------------------------------------------------*
  | evaluate kernel                                            sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::SPHKernelCubicSpline::W(const double& rij, const double& support) const
@@ -248,6 +254,14 @@ double PARTICLEINTERACTION::SPHKernelQuinticSpline::NormalizationConstant(const 
   }
 
   return 0.0;
+}
+
+/*---------------------------------------------------------------------------*
+ | evaluate kernel (self-interaction)                         sfuchs 02/2019 |
+ *---------------------------------------------------------------------------*/
+double PARTICLEINTERACTION::SPHKernelQuinticSpline::W0(const double& support) const
+{
+  return 66.0 * NormalizationConstant(support / 3.0);
 }
 
 /*---------------------------------------------------------------------------*
