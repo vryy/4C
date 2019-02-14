@@ -123,23 +123,23 @@ double PARTICLEINTERACTION::SPHKernelCubicSpline::SmoothingLength(const double& 
 }
 
 /*---------------------------------------------------------------------------*
- | get normalization constant from smoothing length           sfuchs 05/2018 |
+ | get normalization constant from inverse smoothing length   sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
-double PARTICLEINTERACTION::SPHKernelCubicSpline::NormalizationConstant(const double& h) const
+double PARTICLEINTERACTION::SPHKernelCubicSpline::NormalizationConstant(const double& inv_h) const
 {
   switch (kernelspacedim_)
   {
     case INPAR::PARTICLE::Kernel1D:
     {
-      return (2.0 / (3.0 * h));
+      return (2.0 * inv_h / 3.0);
     }
     case INPAR::PARTICLE::Kernel2D:
     {
-      return (10.0 * M_1_PI / (7.0 * UTILS::pow<2>(h)));
+      return (10.0 * M_1_PI * UTILS::pow<2>(inv_h) / 7.0);
     }
     case INPAR::PARTICLE::Kernel3D:
     {
-      return M_1_PI / UTILS::pow<3>(h);
+      return M_1_PI * UTILS::pow<3>(inv_h);
     }
     default:
     {
@@ -156,7 +156,7 @@ double PARTICLEINTERACTION::SPHKernelCubicSpline::NormalizationConstant(const do
  *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::SPHKernelCubicSpline::W0(const double& support) const
 {
-  return NormalizationConstant(0.5 * support);
+  return NormalizationConstant(2.0 / support);
 }
 
 /*---------------------------------------------------------------------------*
@@ -164,13 +164,13 @@ double PARTICLEINTERACTION::SPHKernelCubicSpline::W0(const double& support) cons
  *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::SPHKernelCubicSpline::W(const double& rij, const double& support) const
 {
-  const double h = 0.5 * support;
-  const double q = rij / h;
+  const double inv_h = 2.0 / support;
+  const double q = rij * inv_h;
 
   if (q < 1.0)
-    return (1.0 - 1.5 * UTILS::pow<2>(q) + 0.75 * UTILS::pow<3>(q)) * NormalizationConstant(h);
+    return (1.0 - 1.5 * UTILS::pow<2>(q) + 0.75 * UTILS::pow<3>(q)) * NormalizationConstant(inv_h);
   else if (q < 2.0)
-    return (0.25 * UTILS::pow<3>(2.0 - q)) * NormalizationConstant(h);
+    return (0.25 * UTILS::pow<3>(2.0 - q)) * NormalizationConstant(inv_h);
   else
     return 0.0;
 }
@@ -181,13 +181,13 @@ double PARTICLEINTERACTION::SPHKernelCubicSpline::W(const double& rij, const dou
 double PARTICLEINTERACTION::SPHKernelCubicSpline::dWdrij(
     const double& rij, const double& support) const
 {
-  const double h = 0.5 * support;
-  const double q = rij / h;
+  const double inv_h = 2.0 / support;
+  const double q = rij * inv_h;
 
   if (q < 1.0)
-    return (-3.0 * q + 2.25 * UTILS::pow<2>(q)) * (1.0 / h) * NormalizationConstant(h);
+    return (-3.0 * q + 2.25 * UTILS::pow<2>(q)) * inv_h * NormalizationConstant(inv_h);
   else if (q < 2.0)
-    return (-0.75 * UTILS::pow<2>(2.0 - q)) * (1.0 / h) * NormalizationConstant(h);
+    return (-0.75 * UTILS::pow<2>(2.0 - q)) * inv_h * NormalizationConstant(inv_h);
   else
     return 0.0;
 }
@@ -198,13 +198,13 @@ double PARTICLEINTERACTION::SPHKernelCubicSpline::dWdrij(
 double PARTICLEINTERACTION::SPHKernelCubicSpline::d2Wdrij2(
     const double& rij, const double& support) const
 {
-  const double h = 0.5 * support;
-  const double q = rij / h;
+  const double inv_h = 2.0 / support;
+  const double q = rij * inv_h;
 
   if (q < 1.0)
-    return (-3.0 + 4.5 * q) * (1.0 / UTILS::pow<2>(h)) * NormalizationConstant(h);
+    return (-3.0 + 4.5 * q) * UTILS::pow<2>(inv_h) * NormalizationConstant(inv_h);
   else if (q < 2.0)
-    return (1.5 * (2.0 - q)) * (1.0 / UTILS::pow<2>(h)) * NormalizationConstant(h);
+    return (1.5 * (2.0 - q)) * UTILS::pow<2>(inv_h) * NormalizationConstant(inv_h);
   else
     return 0.0;
 }
@@ -228,23 +228,23 @@ double PARTICLEINTERACTION::SPHKernelQuinticSpline::SmoothingLength(const double
 }
 
 /*---------------------------------------------------------------------------*
- | get normalization constant from smoothing length           sfuchs 05/2018 |
+ | get normalization constant from inverse smoothing length   sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
-double PARTICLEINTERACTION::SPHKernelQuinticSpline::NormalizationConstant(const double& h) const
+double PARTICLEINTERACTION::SPHKernelQuinticSpline::NormalizationConstant(const double& inv_h) const
 {
   switch (kernelspacedim_)
   {
     case INPAR::PARTICLE::Kernel1D:
     {
-      return 1.0 / (120.0 * h);
+      return inv_h / 120.0;
     }
     case INPAR::PARTICLE::Kernel2D:
     {
-      return (7.0 * M_1_PI / (478.0 * UTILS::pow<2>(h)));
+      return (7.0 * M_1_PI * UTILS::pow<2>(inv_h) / 478.0);
     }
     case INPAR::PARTICLE::Kernel3D:
     {
-      return (3.0 * M_1_PI / (359.0 * UTILS::pow<3>(h)));
+      return (3.0 * M_1_PI * UTILS::pow<3>(inv_h) / 359.0);
     }
     default:
     {
@@ -261,7 +261,7 @@ double PARTICLEINTERACTION::SPHKernelQuinticSpline::NormalizationConstant(const 
  *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::SPHKernelQuinticSpline::W0(const double& support) const
 {
-  return 66.0 * NormalizationConstant(support / 3.0);
+  return 66.0 * NormalizationConstant(3.0 / support);
 }
 
 /*---------------------------------------------------------------------------*
@@ -270,16 +270,16 @@ double PARTICLEINTERACTION::SPHKernelQuinticSpline::W0(const double& support) co
 double PARTICLEINTERACTION::SPHKernelQuinticSpline::W(
     const double& rij, const double& support) const
 {
-  const double h = support / 3.0;
-  const double q = rij / h;
+  const double inv_h = 3.0 / support;
+  const double q = rij * inv_h;
 
   if (q < 1.0)
     return (UTILS::pow<5>(3.0 - q) - 6.0 * UTILS::pow<5>(2.0 - q) + 15.0 * UTILS::pow<5>(1.0 - q)) *
-           NormalizationConstant(h);
+           NormalizationConstant(inv_h);
   else if (q < 2.0)
-    return (UTILS::pow<5>(3.0 - q) - 6.0 * UTILS::pow<5>(2.0 - q)) * NormalizationConstant(h);
+    return (UTILS::pow<5>(3.0 - q) - 6.0 * UTILS::pow<5>(2.0 - q)) * NormalizationConstant(inv_h);
   else if (q < 3.0)
-    return UTILS::pow<5>(3.0 - q) * NormalizationConstant(h);
+    return UTILS::pow<5>(3.0 - q) * NormalizationConstant(inv_h);
   else
     return 0.0;
 }
@@ -290,18 +290,18 @@ double PARTICLEINTERACTION::SPHKernelQuinticSpline::W(
 double PARTICLEINTERACTION::SPHKernelQuinticSpline::dWdrij(
     const double& rij, const double& support) const
 {
-  const double h = support / 3.0;
-  const double q = rij / h;
+  const double inv_h = 3.0 / support;
+  const double q = rij * inv_h;
 
   if (q < 1.0)
     return (-5.0 * UTILS::pow<4>(3.0 - q) + 30.0 * UTILS::pow<4>(2.0 - q) -
                75.0 * UTILS::pow<4>(1.0 - q)) *
-           (1.0 / h) * NormalizationConstant(h);
+           inv_h * NormalizationConstant(inv_h);
   else if (q < 2.0)
-    return (-5.0 * UTILS::pow<4>(3.0 - q) + 30.0 * UTILS::pow<4>(2.0 - q)) * (1.0 / h) *
-           NormalizationConstant(h);
+    return (-5.0 * UTILS::pow<4>(3.0 - q) + 30.0 * UTILS::pow<4>(2.0 - q)) * inv_h *
+           NormalizationConstant(inv_h);
   else if (q < 3.0)
-    return (-5.0 * UTILS::pow<4>(3.0 - q)) * (1.0 / h) * NormalizationConstant(h);
+    return (-5.0 * UTILS::pow<4>(3.0 - q)) * inv_h * NormalizationConstant(inv_h);
   else
     return 0.0;
 }
@@ -312,18 +312,18 @@ double PARTICLEINTERACTION::SPHKernelQuinticSpline::dWdrij(
 double PARTICLEINTERACTION::SPHKernelQuinticSpline::d2Wdrij2(
     const double& rij, const double& support) const
 {
-  const double h = support / 3.0;
-  const double q = rij / h;
+  const double inv_h = 3.0 / support;
+  const double q = rij * inv_h;
 
   if (q < 1.0)
     return (20.0 * UTILS::pow<3>(3.0 - q) - 120.0 * UTILS::pow<3>(2.0 - q) +
                300.0 * UTILS::pow<3>(1.0 - q)) *
-           (1.0 / UTILS::pow<2>(h)) * NormalizationConstant(h);
+           UTILS::pow<2>(inv_h) * NormalizationConstant(inv_h);
   else if (q < 2.0)
-    return (20.0 * UTILS::pow<3>(3.0 - q) - 120.0 * UTILS::pow<3>(2.0 - q)) *
-           (1.0 / UTILS::pow<2>(h)) * NormalizationConstant(h);
+    return (20.0 * UTILS::pow<3>(3.0 - q) - 120.0 * UTILS::pow<3>(2.0 - q)) * UTILS::pow<2>(inv_h) *
+           NormalizationConstant(inv_h);
   else if (q < 3.0)
-    return (20.0 * UTILS::pow<3>(3.0 - q)) * (1.0 / UTILS::pow<2>(h)) * NormalizationConstant(h);
+    return (20.0 * UTILS::pow<3>(3.0 - q)) * UTILS::pow<2>(inv_h) * NormalizationConstant(inv_h);
   else
     return 0.0;
 }
