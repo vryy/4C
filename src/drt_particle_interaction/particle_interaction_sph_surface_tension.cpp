@@ -999,7 +999,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
       if (not(interfacenormal_i_norm[type_i][particle_i] > 0.0)) continue;
 
       // evaluate kernel
-      const double Wii = kernel_->W(0.0, rad_i[0]);
+      const double Wii = kernel_->W0(rad_i[0]);
 
       // add self-interaction
       sumj_Vj_Wij[type_i][particle_i] += Wii * mass_i[0] / dens_i[0];
