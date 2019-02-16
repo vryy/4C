@@ -1832,7 +1832,7 @@ bool GEO::CUT::VolumeCell::SetPositionCutSideBased()
   }    // for facets
 
   int iter = 0;
-  while (outsidenormal.size() != facets.size() && iter < 1000)
+  while (outsidenormal.size() != facets.size() && iter < 1200)
   {
     for (plain_facet_set::const_iterator i = facets.begin(); i != facets.end(); ++i)
     {
@@ -1857,7 +1857,7 @@ bool GEO::CUT::VolumeCell::SetPositionCutSideBased()
     iter++;
   }
 
-  if (iter == 1000)
+  if (iter == 1200)
   {
     throw std::runtime_error(
         "SetPositionCutSideBased failed: too many iterations (theoretically a facet with many "

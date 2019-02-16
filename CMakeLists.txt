@@ -2452,6 +2452,7 @@ set(OBJS_CUT_TEST
   tests/cut_test/cut_test_bacigenerated_7022.cpp 
   tests/cut_test/cut_test_bacigenerated_238425.cpp
   tests/cut_test/cut_test_bacigenerated_197489.cpp
+  tests/cut_test/cut_test_bacigenerated_79216.cpp
   src/drt_fem_general/drt_utils_gausspoints.cpp
   src/drt_fem_general/drt_utils_fem_shapefunctions.cpp
   src/drt_fem_general/drt_utils_integration.cpp

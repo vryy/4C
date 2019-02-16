@@ -23,6 +23,7 @@
 
 #include <mpi.h>
 
+void test_bacigenerated_79216();
 void test_bacigenerated_197489();
 void test_bacigenerated_238425();
 
@@ -403,6 +404,7 @@ int main(int argc, char** argv)
   functable["cluster_comp_fail3"] = test_bacigenerated_622320;
 #endif
 
+  functable["touching_hole"] = test_bacigenerated_79216;
   // tests that failed, due to the problem with spliting surface with holes
   // in the colored
   functable["split_colored_graph_1"] = test_bacigenerated_197489;
