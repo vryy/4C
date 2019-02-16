@@ -263,6 +263,11 @@ namespace GEO
 
       Edge* CommonCutEdge(Side* side);
 
+      // erase all cut pairs containing this side
+      void ErasedContainingCutPairs(Side* cutside);
+
+      // erased all cut pairs containing this edge
+      void ErasedContainingCutPairs(Edge* cutsideedge);
       /// Erase the cutside from this point because it is deleted in the selfcut
       void EraseCutSide(Side* cutside) { cut_sides_.erase(cutside); }
 

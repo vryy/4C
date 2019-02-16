@@ -56,12 +56,12 @@ namespace GEO
 
       /// If a point with the coordinates "x" does not exists, it creates a new point
       /// correspondingly
-      Point* NewPoint(const double* x, Edge* cut_edge, Side* cut_side, double tolerance,
-          double tol_scale = 1.0);
+      Point* NewPoint(
+          const double* x, Edge* cut_edge, Side* cut_side, double tolerance, int merge_strategy);
 
       /// Get the point with the specified coordinates "x" from the pointpool
       Point* GetPoint(
-          const double* x, Edge* cut_edge, Side* cut_side, double tolerance, double tol_scal = 1.0);
+          const double* x, Edge* cut_edge, Side* cut_side, double tolerance, int merge_strategy);
 
       /// Simply insert p into the pointpool and correspondingly modify the boundingbox size
       void AddPoint(const double* x, Teuchos::RCP<Point> p);
@@ -159,8 +159,7 @@ namespace GEO
       explicit PointPool(double norm = 1);
 
       /// create a new point in the point PointPool
-      Point* NewPoint(
-          const double* x, Edge* cut_edge, Side* cut_side, double tolerance, double tol_scale = 1.0)
+      Point* NewPoint(const double* x, Edge* cut_edge, Side* cut_side, double tolerance)
       {
         switch (probdim_)
         {
@@ -171,10 +170,11 @@ namespace GEO
             std::copy(x, x + 2, x_ext);
 
             return tree_.NewPoint(
-                x_ext, cut_edge, cut_side, GetTolerance(x_ext, tolerance), tol_scale);
+                x_ext, cut_edge, cut_side, GetTolerance(x_ext, tolerance), merge_strategy_);
           }
           case 3:
-            return tree_.NewPoint(x, cut_edge, cut_side, GetTolerance(x, tolerance), tol_scale);
+            return tree_.NewPoint(
+                x, cut_edge, cut_side, GetTolerance(x, tolerance), merge_strategy_);
           default:
             dserror("Unsupported problem dimension! (probdim = %d)", probdim_);
             exit(EXIT_FAILURE);
@@ -185,10 +185,9 @@ namespace GEO
       }
 
       /// get the pointer to a stored point if possible
-      Point* GetPoint(
-          const double* x, Edge* cut_edge, Side* cut_side, double tolerance, double tol_scale = 1.0)
+      Point* GetPoint(const double* x, Edge* cut_edge, Side* cut_side, double tolerance)
       {
-        return tree_.GetPoint(x, cut_edge, cut_side, GetTolerance(x, tolerance), tol_scale);
+        return tree_.GetPoint(x, cut_edge, cut_side, GetTolerance(x, tolerance), merge_strategy_);
       }
 
       /// get default tolerance for the case that the tolerance of a point is set to 0!!!
@@ -233,13 +232,24 @@ namespace GEO
       /// Get Points
       const RCPPointSet& GetPoints() { return tree_.GetPoints(); }
 
+      enum MergeStrategy
+      {
+        InitialLoad,
+        SelfCutLoad,
+        NormalCutLoad
+      };
+
+      void SetMergeStrategy(MergeStrategy strategy) { merge_strategy_ = strategy; }
+
      private:
+
+      MergeStrategy merge_strategy_;
+
       OctTreeNode tree_;  ///< the PointPool class is represented by the first node in the OctTree
 
       /// problem dimension
       const unsigned probdim_;
     };
-
   }  // namespace CUT
 }  // namespace GEO
 

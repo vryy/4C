@@ -139,6 +139,9 @@
 // scale of the tolerance, during initial loading of the mesh
 #define NODAL_POINT_TOLERANCE_SCALE 5.0
 
+// scale of the tolerance, during creation of points in the selcut
+#define NODAL_POINT_TOLERANCE_SELFCUT_SCALE 5.0
+
 // for direct_divergence.cpp volume of bounding box of facets with x-normal zero
 #define MINIMUM_VOLUME_BB_FACETS 1e-13
 

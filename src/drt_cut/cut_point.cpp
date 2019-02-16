@@ -867,6 +867,39 @@ void GEO::CUT::Point::RemoveEdge(Edge* edge)
   cut_edges_.erase(edge);
 }
 
+void GEO::CUT::Point::ErasedContainingCutPairs(Side* side)
+{
+  for (std::set<std::pair<Side*, Edge*>>::iterator i = cut_pairs_.begin(); i != cut_pairs_.end();)
+  {
+    std::pair<Side*, Edge*> cut_pair = *i;
+    if (cut_pair.first == side)
+    {
+      i = cut_pairs_.erase(i);
+    }
+    else
+    {
+      ++i;
+    }
+  }
+}
+
+void GEO::CUT::Point::ErasedContainingCutPairs(Edge* edge)
+{
+  for (std::set<std::pair<Side*, Edge*>>::iterator i = cut_pairs_.begin(); i != cut_pairs_.end();)
+  {
+    std::pair<Side*, Edge*> cut_pair = *i;
+    if (cut_pair.second == edge)
+    {
+      i = cut_pairs_.erase(i);
+    }
+    else
+    {
+      ++i;
+    }
+  }
+}
+
+
 #if CUT_CREATION_INFO
 
 void GEO::CUT::Point::AddCreationInfo(

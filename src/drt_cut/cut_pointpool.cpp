@@ -25,7 +25,7 @@ created
  * If a point with the coordinates "x" does not exists, it creates a new point correspondingly
  *-----------------------------------------------------------------------------------------*/
 GEO::CUT::Point* GEO::CUT::OctTreeNode::NewPoint(
-    const double* x, Edge* cut_edge, Side* cut_side, double tolerance, double tol_scale)
+    const double* x, Edge* cut_edge, Side* cut_side, double tolerance, int merge_strategy)
 {
   // check if the point already exists
 #if CUT_CREATION_INFO
@@ -33,7 +33,7 @@ GEO::CUT::Point* GEO::CUT::OctTreeNode::NewPoint(
 #endif
   LINALG::Matrix<3, 1> px(x);
 
-  Point* p = GetPoint(x, cut_edge, cut_side, tolerance, tol_scale);
+  Point* p = GetPoint(x, cut_edge, cut_side, tolerance, merge_strategy);
 
   if (p == NULL)
   {
@@ -80,7 +80,7 @@ GEO::CUT::Point* GEO::CUT::OctTreeNode::NewPoint(
  * Get the point with the specified coordinates "x" from the pointpool
  *-----------------------------------------------------------------------------------------*/
 GEO::CUT::Point* GEO::CUT::OctTreeNode::GetPoint(
-    const double* x, Edge* cut_edge, Side* cut_side, double tolerance, double tol_scale)
+    const double* x, Edge* cut_edge, Side* cut_side, double tolerance, int merge_strategy)
 {
   // try to find the point in all of the 8 children nodes
   if (not IsLeaf())
@@ -90,7 +90,7 @@ GEO::CUT::Point* GEO::CUT::OctTreeNode::GetPoint(
 
     for (int i = 0; i < 8; ++i)
     {
-      Point* p = nodes_[i]->GetPoint(x, cut_edge, cut_side, tolerance);
+      Point* p = nodes_[i]->GetPoint(x, cut_edge, cut_side, tolerance, merge_strategy);
       if (p != NULL)
       {
         return p;
@@ -102,22 +102,41 @@ GEO::CUT::Point* GEO::CUT::OctTreeNode::GetPoint(
     LINALG::Matrix<3, 1> px(x);
     LINALG::Matrix<3, 1> nx;
 
-    // when we are loading the geometry into the cut  we want the distance to be large than
-    // topological tolerance. Otherwise we might expreience huge problems
-    double tol = TOPOLOGICAL_TOLERANCE * norm_ * tol_scale;
+    double tol = TOPOLOGICAL_TOLERANCE * norm_;
 
-#ifdef NODAL_POINT_TOLERANCE_SCALE
-    if (tol_scale > 1.0)
+
+    switch (merge_strategy)
     {
-      // this should happen with both cut_side and cut_edge equal to NULL
-      // note: be carefull with other cases, apart from mesh loading
-      if (cut_side and cut_edge)
+      case PointPool::MergeStrategy::SelfCutLoad:
       {
-        dserror("Scaling is %lf for non-NULL cut_side and cut_edge. This should not be possible!",
-            tol_scale);
+        tol = TOPOLOGICAL_TOLERANCE * norm_ * NODAL_POINT_TOLERANCE_SELFCUT_SCALE;
+        break;
       }
-    }
+      case PointPool::MergeStrategy::InitialLoad:
+      {
+        // when we are loading the geometry into the cut  we want the distance to be large than
+        // topological tolerance. Otherwise we might experience huge problems
+        tol = TOPOLOGICAL_TOLERANCE * norm_ * NODAL_POINT_TOLERANCE_SCALE;
+        // safety check
+#ifdef NODAL_POINT_TOLERANCE_SCALE
+        // this should happen with both cut_side and cut_edge equal to NULL
+        // note: be carefull with other cases, apart from mesh loading
+        if (cut_side and cut_edge)
+        {
+          dserror("Scaling is %lf for non-NULL cut_side and cut_edge. This should not be possible!",
+              NODAL_POINT_TOLERANCE_SCALE);
+        }
 #endif
+        break;
+      }
+      case PointPool::MergeStrategy::NormalCutLoad:
+      {
+        // no additional scale
+        break;
+      }
+      default:
+        dserror("Unknown merge strategy is equal to %d", merge_strategy);
+    }
 
     // linear search for the node in the current leaf
     std::vector<Point*> merge_candidates;  // canditates for merge
@@ -273,11 +292,11 @@ GEO::CUT::Point* GEO::CUT::OctTreeNode::GetPoint(
         }
 
         // This is done because we want to merge cut_mesh into the normal mesh first
-        // note: be careful here with outher tolerance scaling strategies
-        if (tol_scale > 1.0)
+        if (merge_strategy == PointPool::MergeStrategy::InitialLoad)
         {
           mymerge->MovePoint(x);
         }
+
         return mymerge;
       }
     }

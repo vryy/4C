@@ -218,8 +218,7 @@ GEO::CUT::Point* GEO::CUT::Mesh::NewPoint(
 {
   bb_->AddPoint(x);  // add the point to the mesh's bounding box
   // Point* p = pp_->NewPoint( x, cut_edge, cut_side, setup_ ? SETUPNODECATCHTOL : MINIMALTOL );
-  Point* p = pp_->NewPoint(
-      x, cut_edge, cut_side, tolerance, tol_scale);  // add the point in the point pool
+  Point* p = pp_->NewPoint(x, cut_edge, cut_side, tolerance);  // add the point in the point pool
 #if 0
   std::cout << "Mesh::NewPoint: ";
   p->Print();
@@ -2779,7 +2778,9 @@ GEO::CUT::Node* GEO::CUT::Mesh::GetNode(int nid, const double* xyz, double lsv, 
   //       }
   //     }
   //   }
-  Point* p = NewPoint(xyz, NULL, NULL, tolerance, NODAL_POINT_TOLERANCE_SCALE);
+  pp_->SetMergeStrategy(PointPool::MergeStrategy::InitialLoad);
+  Point* p = NewPoint(xyz, NULL, NULL, tolerance);
+  pp_->SetMergeStrategy(PointPool::MergeStrategy::NormalCutLoad);
   Node* n = new Node(nid, p, lsv);
   nodes_[nid] = Teuchos::rcp(n);
 #ifdef DRT_CUT_DUMPCREATION
