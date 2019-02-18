@@ -26,6 +26,7 @@
 BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
     const INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions& mortar_shape_function)
     : is_setup_(false),
+      is_local_maps_build_(false),
       index_base_(0),
       lambda_dof_rowmap_(Teuchos::null),
       node_gid_to_lambda_gid_(Teuchos::null),
@@ -135,6 +136,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::Setup(
 
   // Set flag for successfull setup.
   is_setup_ = true;
+  is_local_maps_build_ = false;
 }
 
 /**
@@ -221,6 +223,9 @@ void BEAMINTERACTION::BeamToSolidMortarManager::SetLocalMaps(
       temp_elements[i_temp] = (int)((*(*element_gid_to_lambda_gid_copy)(i_temp))[i_element]);
     element_gid_to_lambda_gid_map_[element_gid_needed_rowmap->GID(i_element)] = temp_elements;
   }
+
+  // Set flags for local maps.
+  is_local_maps_build_ = true;
 }
 
 /**
@@ -231,6 +236,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::LocationVector(
     std::vector<int>& lambda_row) const
 {
   CheckSetup();
+  CheckLocalMaps();
 
   // Clear the output vectors.
   lambda_row.clear();
@@ -268,6 +274,29 @@ void BEAMINTERACTION::BeamToSolidMortarManager::LocationVector(
       if (search_key_in_map == element_gid_to_lambda_gid_map_.end())
         dserror("Global element id %d not in map!", element_id);
       for (auto const& lambda_gid : search_key_in_map->second) lambda_row.push_back(lambda_gid);
+    }
+  }
+}
+
+/**
+ *
+ */
+void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalDM(
+    const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& contact_pairs)
+{
+  // Local mortar matrices.
+  LINALG::SerialDenseMatrix mortar_D;
+  LINALG::SerialDenseMatrix mortar_M;
+
+  // Flag if pair has a active contribution.
+  bool mortar_is_active = false;
+
+  for (auto& elepairptr : contact_pairs)
+  {
+    if (elepairptr->IsMortar())
+    {
+      // Check if this pair contributes to the mortar matrices.
+      mortar_is_active = elepairptr->EvaluateDM(mortar_D, mortar_M);
     }
   }
 }

@@ -33,7 +33,6 @@ namespace DRT
 }
 namespace BEAMINTERACTION
 {
-  class BeamContactEvaluationData;
   class BeamContactParams;
   class BeamContactPair;
 
@@ -204,9 +203,6 @@ namespace BEAMINTERACTION
      private:
       //! data container holding all beam contact related parameters
       Teuchos::RCP<BEAMINTERACTION::BeamContactParams> beam_contact_params_ptr_;
-
-      //! data container holding all beam contact related evaluation data
-      Teuchos::RCP<BEAMINTERACTION::BeamContactEvaluationData> beam_contact_evaluation_data_ptr_;
 
       //! data container holding all geometry related evaluation data
       Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> geometry_evaluation_data_ptr_;

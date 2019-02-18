@@ -111,6 +111,11 @@ namespace BEAMINTERACTION
     void LocationVector(const Teuchos::RCP<BEAMINTERACTION::BeamContactPair> contact_pair,
         std::vector<int>& lambda_row) const;
 
+    /**
+     */
+    void EvaluateGlobalDM(
+        const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& contact_pairs);
+
    protected:
     /**
      * \brief Throw an error if setup was not called on the object prior to this function call.
@@ -120,9 +125,21 @@ namespace BEAMINTERACTION
       if (!is_setup_) dserror("Setup not called on BeamToSolidMortarManager!");
     }
 
+    /**
+     * \brief Throw an error if the local maps were not build.
+     */
+    inline void CheckLocalMaps() const
+    {
+      if (!is_local_maps_build_) dserror("Local maps are not build in BeamToSolidMortarManager!");
+    }
+
+
    private:
     //! Flag if setup was called.
     bool is_setup_;
+
+    //! Flag if local maps were build.
+    bool is_local_maps_build_;
 
     //! Base for the index used for the Lagrange multiplier DOFs.
     int index_base_;

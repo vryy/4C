@@ -44,8 +44,17 @@ namespace BEAMINTERACTION
 
     /**
      * \brief Evaluate the mortar matrices $D$ and $M$ for this contact element pair.
+     * @param mortar_D (out) Local mortar matrix $D$.
+     * @param mortar_M (out) Local mortar matrix $M$.
+     * @return True if pair is in contact.
      */
-    void EvaluateDM(LINALG::SerialDenseMatrix* mortar_D, LINALG::SerialDenseMatrix* mortar_M);
+    bool EvaluateDM(
+        LINALG::SerialDenseMatrix& mortar_D, LINALG::SerialDenseMatrix& mortar_M) override;
+
+    /**
+     * \brief This pair contributes to the mortar contact discretization.
+     */
+    inline bool IsMortar() const override { return true; };
 
    private:
     //! Type to be used for scalar AD variables. This can not be inherited from the base class.

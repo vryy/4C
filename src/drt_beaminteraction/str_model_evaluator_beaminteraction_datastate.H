@@ -37,6 +37,11 @@ namespace DRT
   }
 }  // namespace DRT
 
+namespace BEAMINTERACTION
+{
+  class BeamToSolidMortarManager;
+}  // namespace BEAMINTERACTION
+
 namespace STR
 {
   namespace MODELEVALUATOR
@@ -253,6 +258,22 @@ namespace STR
       }
       ///@}
 
+      /**
+       * \brief Set the pointer to the mortar manager.
+       */
+      void SetMortarManager(Teuchos::RCP<BEAMINTERACTION::BeamToSolidMortarManager> mortar_manager)
+      {
+        mortar_manager_ = mortar_manager;
+      }
+
+      /**
+       * \brief Return the pointer to the mortar manager.
+       */
+      Teuchos::RCP<BEAMINTERACTION::BeamToSolidMortarManager>& GetMortarManager()
+      {
+        return mortar_manager_;
+      }
+
      protected:
       /// @name variables for internal use only
       ///@{
@@ -313,6 +334,9 @@ namespace STR
       Teuchos::RCP<LINALG::SparseMatrix> stiff_;
 
       ///@}
+
+      /// Manager for beam to solid mortar interaction.
+      Teuchos::RCP<BEAMINTERACTION::BeamToSolidMortarManager> mortar_manager_;
     };
   }  // namespace MODELEVALUATOR
 }  // namespace STR

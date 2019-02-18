@@ -37,7 +37,8 @@ STR::MODELEVALUATOR::BeamInteractionDataState::BeamInteractionDataState()
       discolnp_(Teuchos::null),
       forcen_(Teuchos::null),
       forcenp_(Teuchos::null),
-      stiff_(Teuchos::null)
+      stiff_(Teuchos::null),
+      mortar_manager_(Teuchos::null)
 {
   // empty constructor
 }

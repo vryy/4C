@@ -35,8 +35,8 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
  *
  */
 template <typename beam, typename solid, typename mortar>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>::EvaluateDM(
-    LINALG::SerialDenseMatrix* mortar_D, LINALG::SerialDenseMatrix* mortar_M)
+bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>::EvaluateDM(
+    LINALG::SerialDenseMatrix& mortar_D, LINALG::SerialDenseMatrix& mortar_M)
 {
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
@@ -47,7 +47,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>:
   }
 
   // If there are no intersection segments, return no contact status.
-  if (this->line_to_volume_segments_.size() == 0) return;
+  if (this->line_to_volume_segments_.size() == 0) return false;
 
   // Initialize variables for local mortar matrices.
   LINALG::TMatrix<double, mortar::n_dof_, beam::n_dof_> D(true);
@@ -122,6 +122,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>:
                     projected_gauss_point.GetGaussWeight() * segment_jacobian;
     }
   }
+
+  // If we get to this point, the pair has a mortar contribution.
+  return true;
 }
 
 

@@ -228,6 +228,22 @@ namespace BEAMINTERACTION
      *  \date 05/16 */
     virtual void PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const = 0;
 
+    /**
+     * \brief Per default pairs are not assumed to have a mortar contact discretization. Overload
+     * this method if the derived pair has a mortar contact discretization.
+     */
+    inline virtual bool IsMortar() const { return false; };
+
+    /**
+     * \brief Evaluate the mortar matrices of this contact pair. Return true if the contribution is
+     * not zero.
+     */
+    virtual bool EvaluateDM(
+        LINALG::SerialDenseMatrix& mortar_D, LINALG::SerialDenseMatrix& mortar_M)
+    {
+      return false;
+    }
+
    protected:
     //! Create the geometry pair for this contact pair. Per default no geometry pair is created.
     virtual void CreateGeometryPair(const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal>

@@ -46,16 +46,17 @@
 #include <NOX_Solver_Generic.H>
 
 #include "beam_to_solid_volume_meshtying_params.H"
+#include "beam_to_solid_mortar_manager.H"
 #include "../drt_geometry_pair/geometry_pair_evaluation_data_global.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_volume_evaluation_data.H"
 #include "../drt_inpar/inpar_geometry_pair.H"
+#include "str_model_evaluator_beaminteraction_datastate.H"
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::BeamContact()
     : beam_contact_params_ptr_(Teuchos::null),
-      beam_contact_evaluation_data_ptr_(Teuchos::null),
       geometry_evaluation_data_ptr_(Teuchos::null),
       contact_elepairs_(Teuchos::null)
 {
@@ -123,8 +124,30 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
     // Set the Gauss rule for the pair.
     geometry_evaluation_data_ptr_->LineToVolumeEvaluationData()->SetGaussRule(
         beam_contact_params_ptr_->BeamToSolidVolumeMeshtyingParams()->GetGaussRule());
-  }
 
+    // If mortar is activated, create the manager and the global matrices.
+    if (Teuchos::getIntegralValue<INPAR::BEAMINTERACTION::BeamToSolidVolumeContactDiscretization>(
+            DRT::Problem::Instance()->BeamInteractionParams().sublist(
+                "BEAM TO SOLID VOLUME MESHTYING"),
+            "CONTACT_DISCRETIZATION") ==
+        INPAR::BEAMINTERACTION::BeamToSolidVolumeContactDiscretization::mortar)
+    {
+      // Get the mortar shapefunction type.
+      INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions mortar_shape_funciton =
+          Teuchos::getIntegralValue<INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions>(
+              DRT::Problem::Instance()->BeamInteractionParams().sublist(
+                  "BEAM TO SOLID VOLUME MESHTYING"),
+              "MORTAR_SHAPE_FUNCTION");
+
+      // Create the mortar manager.
+      Teuchos::RCP<BEAMINTERACTION::BeamToSolidMortarManager> mortar_manager =
+          Teuchos::rcp<BEAMINTERACTION::BeamToSolidMortarManager>(
+              new BEAMINTERACTION::BeamToSolidMortarManager(mortar_shape_funciton));
+
+      // Link to the beam interaction data state.
+      BeamInteractionDataState().SetMortarManager(mortar_manager);
+    }
+  }
 
   // set flag
   issetup_ = true;
@@ -362,6 +385,10 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForceStiff()
           BeamInteractionDataStatePtr()->GetMutableStiff());
     }
   }
+
+  // If there is a mortar manager, let it calculate the mortar terms.
+  if (BeamInteractionDataStatePtr()->GetMortarManager() != Teuchos::null)
+    BeamInteractionDataStatePtr()->GetMortarManager()->EvaluateGlobalDM(contact_elepairs_);
 
   PrintActiveBeamContactSet(IO::cout.os(IO::verbose));
 
@@ -927,6 +954,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
       // add to list of current contact pairs
       contact_elepairs_.push_back(newbeaminteractionpair);
     }
+  }
+
+  // If a mortar manager exists, build the global maps.
+  if (BeamInteractionDataState().GetMortarManager() != Teuchos::null)
+  {
+    // TODO steinbrecher: move this somewhere where it is not created each timestep.
+    BeamInteractionDataState().GetMortarManager()->Setup(DiscretPtr());
+    BeamInteractionDataState().GetMortarManager()->SetLocalMaps(DiscretPtr(), contact_elepairs_);
   }
 
   IO::cout(IO::standard) << "PID " << std::setw(2) << std::right << GState().GetMyRank()
