@@ -24,15 +24,15 @@
  *
  */
 BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
-    Teuchos::RCP<BEAMINTERACTION::BeamContactParams> beam_contact_params)
-    : index_base_(0), lambda_dof_rowmap_(Teuchos::null)
+    const INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions& mortar_shape_function)
+    : is_setup_(false),
+      index_base_(0),
+      lambda_dof_rowmap_(Teuchos::null),
+      node_gid_to_lambda_gid_(Teuchos::null),
+      element_gid_to_lambda_gid_(Teuchos::null)
 {
   // Get the number of Lagrange multiplier DOF on a beam node and on a beam element.
-  if (beam_contact_params->BeamToSolidVolumeMeshtyingParams() == Teuchos::null)
-    dserror("Mortar manager needs to have a BeamToSolidVolumeMeshtyingParams object!");
-  INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions mortar_shape_functions =
-      beam_contact_params->BeamToSolidVolumeMeshtyingParams()->GetMortarShapeFunctionType();
-  switch (mortar_shape_functions)
+  switch (mortar_shape_function)
   {
     case INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions::line2:
     {
@@ -54,9 +54,8 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidMortarManager::GenerateMaps(
-    const Teuchos::RCP<DRT::Discretization> discret,
-    const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> contact_pairs)
+void BEAMINTERACTION::BeamToSolidMortarManager::Setup(
+    const Teuchos::RCP<DRT::Discretization> discret)
 {
   // Get the global ids of all beam centerline nodes on this rank.
   std::vector<int> my_nodes_gid;
@@ -92,19 +91,19 @@ void BEAMINTERACTION::BeamToSolidMortarManager::GenerateMaps(
 
   // Map from global node / element ids to global lagrange multiplier ids. Only create the
   // multivector if it hase one or more columns.
-  Teuchos::RCP<Epetra_MultiVector> node_gid_to_lambda_gid = Teuchos::null;
-  Teuchos::RCP<Epetra_MultiVector> element_gid_to_lambda_gid = Teuchos::null;
+  node_gid_to_lambda_gid_ = Teuchos::null;
+  element_gid_to_lambda_gid_ = Teuchos::null;
   if (n_lambda_node_ > 0)
-    node_gid_to_lambda_gid =
+    node_gid_to_lambda_gid_ =
         Teuchos::rcp(new Epetra_MultiVector(*node_gid_rowmap, n_lambda_node_, true));
   if (n_lambda_element_ > 0)
-    element_gid_to_lambda_gid =
+    element_gid_to_lambda_gid_ =
         Teuchos::rcp(new Epetra_MultiVector(*element_gid_rowmap, n_lambda_element_, true));
 
   // Fill in the entries in the node / element global id to Lagrange multiplier global id vector.
   int error_code = 0;
   int lagrange_gid = -1;
-  if (node_gid_to_lambda_gid != Teuchos::null)
+  if (node_gid_to_lambda_gid_ != Teuchos::null)
   {
     for (unsigned int i_node = 0; i_node < n_nodes; i_node++)
       for (unsigned int i_lambda = 0; i_lambda < n_lambda_node_; i_lambda++)
@@ -114,11 +113,11 @@ void BEAMINTERACTION::BeamToSolidMortarManager::GenerateMaps(
         if (lagrange_gid < index_base_) dserror("Local id not found on this processor!");
 
         // Set the global Lagrange multiplier id for this node.
-        error_code = node_gid_to_lambda_gid->ReplaceMyValue(i_node, i_lambda, lagrange_gid);
+        error_code = node_gid_to_lambda_gid_->ReplaceMyValue(i_node, i_lambda, lagrange_gid);
         if (error_code != 0) dserror("Got error code %d!", error_code);
       }
   }
-  if (element_gid_to_lambda_gid != Teuchos::null)
+  if (element_gid_to_lambda_gid_ != Teuchos::null)
   {
     for (unsigned int i_element = 0; i_element < n_element; i_element++)
       for (unsigned int i_lambda = 0; i_lambda < n_lambda_element_; i_lambda++)
@@ -129,15 +128,28 @@ void BEAMINTERACTION::BeamToSolidMortarManager::GenerateMaps(
         if (lagrange_gid < index_base_) dserror("Local id not found on this processor!");
 
         // Set the global Lagrange multiplier id for this node.
-        error_code = element_gid_to_lambda_gid->ReplaceMyValue(i_element, i_lambda, lagrange_gid);
+        error_code = element_gid_to_lambda_gid_->ReplaceMyValue(i_element, i_lambda, lagrange_gid);
         if (error_code != 0) dserror("Got error code %d!", error_code);
       }
   }
 
-  // At this point the global multi vectors are filled up completely. To get the map for global node
-  // element ids to the global lambda ids we need to be able to extract more than the local values
-  // on this processor. Therefore we need a new map that contains all rows we want to access in the
-  // global multi vector.
+  // Set flag for successfull setup.
+  is_setup_ = true;
+}
+
+/**
+ *
+ */
+void BEAMINTERACTION::BeamToSolidMortarManager::SetLocalMaps(
+    const Teuchos::RCP<DRT::Discretization> discret,
+    const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> contact_pairs)
+{
+  CheckSetup();
+
+  // At this point the global multi vectors are filled up completely. To get the map for global
+  // node element ids to the global lambda ids we need to be able to extract more than the local
+  // values on this processor. Therefore we need a new map that contains all rows we want to
+  // access in the global multi vector.
   std::vector<int> node_gid_needed;
   std::vector<int> element_gid_needed;
 
@@ -187,10 +199,10 @@ void BEAMINTERACTION::BeamToSolidMortarManager::GenerateMaps(
           new Epetra_MultiVector(*element_gid_needed_rowmap, n_lambda_element_, true));
 
   // Export values from the global multi vector to the ones needed on this rank.
-  if (node_gid_to_lambda_gid != Teuchos::null)
-    LINALG::Export(*node_gid_to_lambda_gid, *node_gid_to_lambda_gid_copy);
-  if (element_gid_to_lambda_gid != Teuchos::null)
-    LINALG::Export(*element_gid_to_lambda_gid, *element_gid_to_lambda_gid_copy);
+  if (node_gid_to_lambda_gid_ != Teuchos::null)
+    LINALG::Export(*node_gid_to_lambda_gid_, *node_gid_to_lambda_gid_copy);
+  if (element_gid_to_lambda_gid_ != Teuchos::null)
+    LINALG::Export(*element_gid_to_lambda_gid_, *element_gid_to_lambda_gid_copy);
 
   // Fill in the local maps.
   node_gid_to_lambda_gid_map_.clear();
@@ -218,6 +230,8 @@ void BEAMINTERACTION::BeamToSolidMortarManager::LocationVector(
     const Teuchos::RCP<BEAMINTERACTION::BeamContactPair> contact_pair,
     std::vector<int>& lambda_row) const
 {
+  CheckSetup();
+
   // Clear the output vectors.
   lambda_row.clear();
 
