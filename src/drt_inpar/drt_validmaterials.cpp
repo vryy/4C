@@ -3358,8 +3358,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(m, "DYNAMIC_VISCOSITY", "dynamic shear viscosity");
     AddNamedReal(m, "BULK_VISCOSITY", "bulk viscosity");
     AddNamedReal(m, "ARTIFICIAL_VISCOSITY", "artificial viscosity");
-    AddNamedReal(m, "INITTEMPERATURE", "initial temperature");
-    AddNamedReal(m, "THERMALCONDUCTIVITY", "thermal conductivity");
+    AddNamedReal(m, "INITTEMPERATURE", "initial temperature", 0.0, true);
+    AddNamedReal(m, "THERMALCAPACITY", "thermal capacity", 0.0, true);
+    AddNamedReal(m, "THERMALCONDUCTIVITY", "thermal conductivity", 0.0, true);
 
     AppendMaterialDefinition(matlist, m);
   }
@@ -3373,8 +3374,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
     AddNamedReal(m, "INITRADIUS", "initial radius");
     AddNamedReal(m, "INITDENSITY", "initial density");
-    AddNamedReal(m, "INITTEMPERATURE", "initial temperature");
-    AddNamedReal(m, "THERMALCONDUCTIVITY", "thermal conductivity");
+    AddNamedReal(m, "INITTEMPERATURE", "initial temperature", 0.0, true);
+    AddNamedReal(m, "THERMALCAPACITY", "thermal capacity", 0.0, true);
+    AddNamedReal(m, "THERMALCONDUCTIVITY", "thermal conductivity", 0.0, true);
 
     AppendMaterialDefinition(matlist, m);
   }

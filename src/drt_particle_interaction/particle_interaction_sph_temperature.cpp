@@ -91,6 +91,11 @@ void PARTICLEINTERACTION::SPHTemperatureBase::Setup(
   {
     thermomaterial_[type_i] = dynamic_cast<const MAT::PAR::ParticleMaterialThermo*>(
         particlematerial_->GetPtrToParticleMatParameter(type_i));
+
+    // safety check
+    if (not(thermomaterial_[type_i]->thermalCapacity_ > 0.0))
+      dserror("thermal conductivity for particles of type '%s' not positive!",
+          PARTICLEENGINE::EnumToTypeName(type_i).c_str());
   }
 }
 
@@ -255,10 +260,12 @@ void PARTICLEINTERACTION::SPHTemperatureIntegration::EnergyEquation() const
 
     // no temperature integration for boundary particles
     if (type_i != PARTICLEENGINE::BoundaryPhase)
-      tempdot_i[0] += mass_j[0] * fac * neighborpair.dWdrij_;
+      tempdot_i[0] +=
+          mass_j[0] * fac * neighborpair.dWdrij_ * thermomaterial_i->invThermalCapacity_;
 
     // no temperature integration for boundary particles
     if (type_j != PARTICLEENGINE::BoundaryPhase and status_j == PARTICLEENGINE::Owned)
-      tempdot_j[0] -= mass_i[0] * fac * neighborpair.dWdrji_;
+      tempdot_j[0] -=
+          mass_i[0] * fac * neighborpair.dWdrji_ * thermomaterial_j->invThermalCapacity_;
   }
 }

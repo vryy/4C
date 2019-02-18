@@ -49,6 +49,12 @@ namespace MAT
       //! initial temperature
       const double initTemperature_;
 
+      //! thermal capacity
+      const double thermalCapacity_;
+
+      //! inverse thermal capacity
+      const double invThermalCapacity_;
+
       //! thermal conductivity
       const double thermalConductivity_;
 
