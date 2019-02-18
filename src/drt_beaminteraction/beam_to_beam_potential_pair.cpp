@@ -1451,6 +1451,12 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       // distance vector between unilateral closest points
       dist_ul = FADUTILS::DiffVector(r_slave, r_master);
 
+      if (FADUTILS::CastToDouble(FADUTILS::Norm(dist_ul)) == 0.0)
+      {
+        this->Print(std::cout);
+        dserror("centerline separation |r1-r2|=0! Fatal error.");
+      }
+
       //************************** DEBUG ******************************************
       //      std::cout << "\ndist_ul: " << FADUTILS::CastToDouble<T, 3, 1>(dist_ul);
       //*********************** END DEBUG *****************************************
@@ -1498,6 +1504,9 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       }
       else
       {
+        // Fixme: this is a brutal fix
+        //        continue;
+
         // normal vector at bilateral closest point Fixme
         normal_bl.CrossProduct(r_xi_slave, r_xi_master);
         norm_normal_bl_tilde = FADUTILS::VectorNorm(normal_bl);
@@ -1510,13 +1519,43 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         x = FADUTILS::VectorNorm(r_xi_slave) *
             (r_master.Dot(aux_plane_normal) - r_slave.Dot(aux_plane_normal)) /
             r_xi_slave.Dot(aux_plane_normal);
+
+        //        if (FADUTILS::Norm(x) > 20 * radius2_)
+        //        {
+        //          std::cout << "\nWARNING: Ignored GP with |x|/R="
+        //                    << std::abs(FADUTILS::CastToDouble(x)) / radius2_;
+        //          continue;
+        //        }
       }
 
       // gap of bilateral closest point (also valid for special case alpha=0)
       gap_bl = FADUTILS::Norm(dist_ul.Dot(normal_bl)) - radius1_ - radius2_;
 
-      if (gap_bl < 1e-14)
-        dserror("gap=%f is negative or very close to zero! Take care of this case!",
+
+      if (FADUTILS::Norm(alpha) >= BEAMSCOLINEARANGLETHRESHOLD and gap_bl < -0.9 * radius2_)
+      {
+        std::cout << "\nINFO: Ignored GP (ele GIDs " << Element1()->Id() << "&" << Element2()->Id()
+                  << ": iGP " << igp_total
+                  << ") with alpha=" << FADUTILS::CastToDouble(alpha) * 180 / M_PI
+                  << "° >= " << BEAMSCOLINEARANGLETHRESHOLD * 180 / M_PI
+                  << "° and gap_bl/R=" << FADUTILS::CastToDouble(gap_bl) / radius2_ << " < -0.9 ";
+
+        if (FADUTILS::Norm(x) < 20 * radius2_)
+        {
+          dserror(
+              "Ignoring this GP with negative gap_bl in the non-parallel case "
+              "violates the assumption that this GP is far from the bilateral CP");
+        }
+        else
+        {
+          continue;
+        }
+      }
+
+      if (std::norm(FADUTILS::CastToDouble(gap_bl) + radius2_) < 1e-14)
+        dserror(
+            "bilateral gap=%f is close to negative radius and thus the interaction potential is "
+            "close to singular! Fatal error. Take care of this case!",
             FADUTILS::CastToDouble(gap_bl));
 
       //************************** DEBUG ******************************************
@@ -1528,6 +1567,11 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
       beta = FADUTILS::sqrt<T>(
           (gap_bl + radius2_) * (gap_bl + radius2_) + x * x * sin_alpha * sin_alpha);
+
+      if (beta < 1e-14)
+        dserror("beta=%f is negative or very close to zero! Fatal error. Take care of this case!",
+            FADUTILS::CastToDouble(beta));
+
       beta_exp2 = beta * beta;
       beta_exp3 = beta_exp2 * beta;
       beta_exp4 = beta_exp2 * beta_exp2;
@@ -1546,6 +1590,9 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       //*********************** END DEBUG *****************************************
 
 
+      // Fixme: this is a brutal fix, which might be justified because this can't happen in the
+      // relevant region around the bilateral CP
+      //      if (Delta < 0) continue;
 
       if (regularization_type == INPAR::BEAMPOTENTIAL::regularization_none and Delta < 1e-14)
       {
