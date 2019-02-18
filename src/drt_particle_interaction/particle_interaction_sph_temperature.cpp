@@ -33,8 +33,8 @@
 /*---------------------------------------------------------------------------*
  | constructor                                                 meier 09/2018 |
  *---------------------------------------------------------------------------*/
-PARTICLEINTERACTION::SPHTemperatureBase::SPHTemperatureBase(const Teuchos::ParameterList& params)
-    : params_sph_(params), dt_(0.0)
+PARTICLEINTERACTION::SPHTemperature::SPHTemperature(const Teuchos::ParameterList& params)
+    : params_sph_(params), time_(0.0), dt_(0.0)
 {
   // empty constructor
 }
@@ -42,7 +42,7 @@ PARTICLEINTERACTION::SPHTemperatureBase::SPHTemperatureBase(const Teuchos::Param
 /*---------------------------------------------------------------------------*
  | init temperature handler                                    meier 09/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHTemperatureBase::Init()
+void PARTICLEINTERACTION::SPHTemperature::Init()
 {
   // nothing to do
 }
@@ -50,7 +50,7 @@ void PARTICLEINTERACTION::SPHTemperatureBase::Init()
 /*---------------------------------------------------------------------------*
  | setup temperature handler                                   meier 09/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHTemperatureBase::Setup(
+void PARTICLEINTERACTION::SPHTemperature::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
     const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs)
@@ -102,7 +102,7 @@ void PARTICLEINTERACTION::SPHTemperatureBase::Setup(
 /*---------------------------------------------------------------------------*
  | write restart of temperature handler                        meier 09/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHTemperatureBase::WriteRestart(const int step, const double time) const
+void PARTICLEINTERACTION::SPHTemperature::WriteRestart(const int step, const double time) const
 {
   // nothing to do
 }
@@ -110,34 +110,32 @@ void PARTICLEINTERACTION::SPHTemperatureBase::WriteRestart(const int step, const
 /*---------------------------------------------------------------------------*
  | read restart of temperature handler                         meier 09/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHTemperatureBase::ReadRestart(
+void PARTICLEINTERACTION::SPHTemperature::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // nothing to do
 }
 
 /*---------------------------------------------------------------------------*
- | set current step size                                       meier 09/2018 |
+ | set current time                                           sfuchs 02/2019 |
  *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHTemperatureBase::SetCurrentStepSize(const double currentstepsize)
+void PARTICLEINTERACTION::SPHTemperature::SetCurrentTime(const double currenttime)
+{
+  time_ = currenttime;
+}
+
+/*---------------------------------------------------------------------------*
+ | set current step size                                      sfuchs 02/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::SPHTemperature::SetCurrentStepSize(const double currentstepsize)
 {
   dt_ = currentstepsize;
 }
 
 /*---------------------------------------------------------------------------*
- | constructor                                                 meier 09/2018 |
- *---------------------------------------------------------------------------*/
-PARTICLEINTERACTION::SPHTemperatureIntegration::SPHTemperatureIntegration(
-    const Teuchos::ParameterList& params)
-    : SPHTemperatureBase::SPHTemperatureBase(params)
-{
-  // empty constructor
-}
-
-/*---------------------------------------------------------------------------*
  | insert temperature evaluation dependent states              meier 09/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHTemperatureIntegration::InsertParticleStatesOfParticleTypes(
+void PARTICLEINTERACTION::SPHTemperature::InsertParticleStatesOfParticleTypes(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
     const
 {
@@ -156,9 +154,9 @@ void PARTICLEINTERACTION::SPHTemperatureIntegration::InsertParticleStatesOfParti
 /*---------------------------------------------------------------------------*
  | compute temperature field using energy equation             meier 09/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHTemperatureIntegration::ComputeTemperature() const
+void PARTICLEINTERACTION::SPHTemperature::ComputeTemperature() const
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHTemperatureIntegration::ComputeTemperature");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHTemperature::ComputeTemperature");
 
   // evaluate energy equation
   EnergyEquation();
@@ -181,7 +179,7 @@ void PARTICLEINTERACTION::SPHTemperatureIntegration::ComputeTemperature() const
 /*---------------------------------------------------------------------------*
  | evaluate energy equation                                    meier 09/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHTemperatureIntegration::EnergyEquation() const
+void PARTICLEINTERACTION::SPHTemperature::EnergyEquation() const
 {
   // iterate over particle types
   for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())

@@ -61,14 +61,14 @@ namespace MAT
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  class SPHTemperatureBase
+  class SPHTemperature
   {
    public:
     //! constructor
-    explicit SPHTemperatureBase(const Teuchos::ParameterList& params);
+    explicit SPHTemperature(const Teuchos::ParameterList& params);
 
     //! virtual destructor
-    virtual ~SPHTemperatureBase(){};
+    virtual ~SPHTemperature(){};
 
     //! init temperature handler
     virtual void Init();
@@ -85,18 +85,24 @@ namespace PARTICLEINTERACTION
     //! read restart of temperature handler
     virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
+    //! set current time
+    virtual void SetCurrentTime(const double currenttime);
+
     //! set current step size
-    virtual void SetCurrentStepSize(const double currentstepsize) final;
+    virtual void SetCurrentStepSize(const double currentstepsize);
 
     //! insert temperature evaluation dependent states
     virtual void InsertParticleStatesOfParticleTypes(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
-            particlestatestotypes) const = 0;
+            particlestatestotypes) const;
 
     //! compute temperature field using energy equation
-    virtual void ComputeTemperature() const = 0;
+    virtual void ComputeTemperature() const;
 
-   protected:
+   private:
+    //! evaluate energy equation
+    virtual void EnergyEquation() const;
+
     //! smoothed particle hydrodynamics specific parameter list
     const Teuchos::ParameterList& params_sph_;
 
@@ -115,33 +121,14 @@ namespace PARTICLEINTERACTION
     //! temperature of ghosted particles to refresh
     PARTICLEENGINE::StatesOfTypesToRefresh temperaturetorefresh_;
 
+    //! current time
+    double time_;
+
     //! time step size
     double dt_;
 
     //! pointer to thermo material of particle types
     std::vector<const MAT::PAR::ParticleMaterialThermo*> thermomaterial_;
-  };
-
-  class SPHTemperatureIntegration : public SPHTemperatureBase
-  {
-   public:
-    //! constructor
-    explicit SPHTemperatureIntegration(const Teuchos::ParameterList& params);
-
-    //! virtual destructor
-    virtual ~SPHTemperatureIntegration(){};
-
-    //! insert temperature evaluation dependent states
-    virtual void InsertParticleStatesOfParticleTypes(
-        std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
-            particlestatestotypes) const override;
-
-    //! compute temperature field using energy equation
-    virtual void ComputeTemperature() const override;
-
-   private:
-    //! evaluate energy equation
-    virtual void EnergyEquation() const;
   };
 
 }  // namespace PARTICLEINTERACTION
