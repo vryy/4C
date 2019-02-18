@@ -156,6 +156,14 @@ namespace INPAR
       TemperatureIntegration
     };
 
+    //! type of heat source
+    enum HeatSourceType
+    {
+      NoHeatSource,
+      VolumeHeatSource,
+      SurfaceHeatSource
+    };
+
     //! type of surface tension formulation
     enum SurfaceTensionFormulation
     {

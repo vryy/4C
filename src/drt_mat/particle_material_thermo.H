@@ -58,6 +58,9 @@ namespace MAT
       //! thermal conductivity
       const double thermalConductivity_;
 
+      //! thermal absorptivity
+      const double thermalAbsorptivity_;
+
       //@}
 
       //! create material instance of matching type with parameters

@@ -3361,6 +3361,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(m, "INITTEMPERATURE", "initial temperature", 0.0, true);
     AddNamedReal(m, "THERMALCAPACITY", "thermal capacity", 0.0, true);
     AddNamedReal(m, "THERMALCONDUCTIVITY", "thermal conductivity", 0.0, true);
+    AddNamedReal(m, "THERMALABSORPTIVITY", "thermal absorptivity", 0.0, true);
 
     AppendMaterialDefinition(matlist, m);
   }
@@ -3377,6 +3378,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(m, "INITTEMPERATURE", "initial temperature", 0.0, true);
     AddNamedReal(m, "THERMALCAPACITY", "thermal capacity", 0.0, true);
     AddNamedReal(m, "THERMALCONDUCTIVITY", "thermal conductivity", 0.0, true);
+    AddNamedReal(m, "THERMALABSORPTIVITY", "thermal absorptivity", 0.0, true);
 
     AppendMaterialDefinition(matlist, m);
   }

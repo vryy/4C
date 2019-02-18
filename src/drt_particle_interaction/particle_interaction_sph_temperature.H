@@ -46,6 +46,7 @@ namespace PARTICLEINTERACTION
 {
   class MaterialHandler;
   class SPHNeighborPairs;
+  class SPHHeatSourceBase;
 }  // namespace PARTICLEINTERACTION
 
 namespace MAT
@@ -68,7 +69,7 @@ namespace PARTICLEINTERACTION
     explicit SPHTemperature(const Teuchos::ParameterList& params);
 
     //! virtual destructor
-    virtual ~SPHTemperature(){};
+    virtual ~SPHTemperature();
 
     //! init temperature handler
     virtual void Init();
@@ -100,6 +101,9 @@ namespace PARTICLEINTERACTION
     virtual void ComputeTemperature() const;
 
    private:
+    //! init heat source handler
+    virtual void InitHeatSourceHandler();
+
     //! evaluate energy equation
     virtual void EnergyEquation() const;
 
@@ -117,6 +121,9 @@ namespace PARTICLEINTERACTION
 
     //! neighbor pair handler
     std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs_;
+
+    //! heat source handler
+    std::unique_ptr<PARTICLEINTERACTION::SPHHeatSourceBase> heatsource_;
 
     //! temperature of ghosted particles to refresh
     PARTICLEENGINE::StatesOfTypesToRefresh temperaturetorefresh_;

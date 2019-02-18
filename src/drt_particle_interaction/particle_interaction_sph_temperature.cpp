@@ -22,6 +22,7 @@
 #include "particle_interaction_sph_kernel.H"
 #include "particle_interaction_material_handler.H"
 #include "particle_interaction_sph_neighbor_pairs.H"
+#include "particle_interaction_sph_heatsource.H"
 
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_container.H"
@@ -40,11 +41,21 @@ PARTICLEINTERACTION::SPHTemperature::SPHTemperature(const Teuchos::ParameterList
 }
 
 /*---------------------------------------------------------------------------*
+ | destructor                                                 sfuchs 02/2019 |
+ *---------------------------------------------------------------------------*/
+PARTICLEINTERACTION::SPHTemperature::~SPHTemperature()
+{
+  // note: destructor declaration here since at compile-time a complete type
+  // of class T as used in class member std::unique_ptr<T> ptr_T_ is required
+}
+
+/*---------------------------------------------------------------------------*
  | init temperature handler                                    meier 09/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHTemperature::Init()
 {
-  // nothing to do
+  // init heat source handler
+  InitHeatSourceHandler();
 }
 
 /*---------------------------------------------------------------------------*
@@ -97,6 +108,9 @@ void PARTICLEINTERACTION::SPHTemperature::Setup(
       dserror("thermal conductivity for particles of type '%s' not positive!",
           PARTICLEENGINE::EnumToTypeName(type_i).c_str());
   }
+
+  // setup heat source handler
+  if (heatsource_) heatsource_->Setup(particleengineinterface, particlematerial);
 }
 
 /*---------------------------------------------------------------------------*
@@ -104,7 +118,8 @@ void PARTICLEINTERACTION::SPHTemperature::Setup(
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHTemperature::WriteRestart(const int step, const double time) const
 {
-  // nothing to do
+  // write restart of heat source handler
+  if (heatsource_) heatsource_->WriteRestart(step, time);
 }
 
 /*---------------------------------------------------------------------------*
@@ -113,7 +128,8 @@ void PARTICLEINTERACTION::SPHTemperature::WriteRestart(const int step, const dou
 void PARTICLEINTERACTION::SPHTemperature::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
-  // nothing to do
+  // read restart of heat source handler
+  if (heatsource_) heatsource_->ReadRestart(reader);
 }
 
 /*---------------------------------------------------------------------------*
@@ -161,6 +177,9 @@ void PARTICLEINTERACTION::SPHTemperature::ComputeTemperature() const
   // evaluate energy equation
   EnergyEquation();
 
+  // evaluate heat source
+  if (heatsource_) heatsource_->EvaluateHeatSource(time_);
+
   // iterate over particle types
   for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
@@ -174,6 +193,46 @@ void PARTICLEINTERACTION::SPHTemperature::ComputeTemperature() const
 
   // refresh temperature of ghosted particles
   particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(temperaturetorefresh_);
+}
+
+/*---------------------------------------------------------------------------*
+ | init heat source handler                                   sfuchs 02/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::SPHTemperature::InitHeatSourceHandler()
+{
+  // get type of heat source
+  INPAR::PARTICLE::HeatSourceType heatsourcetype =
+      DRT::INPUT::IntegralValue<INPAR::PARTICLE::HeatSourceType>(params_sph_, "HEATSOURCETYPE");
+
+  // create heat source handler
+  switch (heatsourcetype)
+  {
+    case INPAR::PARTICLE::NoHeatSource:
+    {
+      heatsource_ = std::unique_ptr<PARTICLEINTERACTION::SPHHeatSourceBase>(nullptr);
+      break;
+    }
+    case INPAR::PARTICLE::VolumeHeatSource:
+    {
+      heatsource_ = std::unique_ptr<PARTICLEINTERACTION::SPHHeatSourceVolume>(
+          new PARTICLEINTERACTION::SPHHeatSourceVolume(params_sph_));
+      break;
+    }
+    case INPAR::PARTICLE::SurfaceHeatSource:
+    {
+      heatsource_ = std::unique_ptr<PARTICLEINTERACTION::SPHHeatSourceSurface>(
+          new PARTICLEINTERACTION::SPHHeatSourceSurface(params_sph_));
+      break;
+    }
+    default:
+    {
+      dserror("unknown type of heat source!");
+      break;
+    }
+  }
+
+  // init heat source handler
+  if (heatsource_) heatsource_->Init();
 }
 
 /*---------------------------------------------------------------------------*

@@ -29,7 +29,8 @@ MAT::PAR::ParticleMaterialThermo::ParticleMaterialThermo(Teuchos::RCP<MAT::PAR::
       initTemperature_(matdata->GetDouble("INITTEMPERATURE")),
       thermalCapacity_(matdata->GetDouble("THERMALCAPACITY")),
       invThermalCapacity_((thermalCapacity_ > 0.0) ? (1.0 / thermalCapacity_) : 0.0),
-      thermalConductivity_(matdata->GetDouble("THERMALCONDUCTIVITY"))
+      thermalConductivity_(matdata->GetDouble("THERMALCONDUCTIVITY")),
+      thermalAbsorptivity_(matdata->GetDouble("THERMALABSORPTIVITY"))
 {
   // empty constructor
 }

@@ -211,6 +211,15 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       tuple<int>(INPAR::PARTICLE::NoTemperatureEvaluation, INPAR::PARTICLE::TemperatureIntegration),
       &particledynsph);
 
+  //! type of heat source
+  setStringToIntegralParameter<int>("HEATSOURCETYPE", "NoHeatSource", "type of heat source",
+      tuple<std::string>("NoHeatSource", "VolumeHeatSource", "SurfaceHeatSource"),
+      tuple<int>(INPAR::PARTICLE::NoHeatSource, INPAR::PARTICLE::VolumeHeatSource,
+          INPAR::PARTICLE::SurfaceHeatSource),
+      &particledynsph);
+
+  IntParameter("HEATSOURCE_FUNCT", -1, "number of function governing heat source", &particledynsph);
+
   // type of surface tension formulation
   setStringToIntegralParameter<int>("SURFACETENSIONFORMULATION", "NoSurfaceTension",
       "type of surface tension formulation",
