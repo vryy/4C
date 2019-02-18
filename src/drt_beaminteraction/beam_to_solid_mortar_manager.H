@@ -83,12 +83,27 @@ namespace BEAMINTERACTION
     void GenerateMaps(const Teuchos::RCP<DRT::Discretization> discret,
         const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> contact_pairs);
 
+    /**
+     * \brief Get the global IDs of all Lagrange multipliers for the contact pair.
+     * @param contact_pair (in) pointer to contact pair.
+     * @param lambda_row (out) Standard vector with the global IDs of the Lagrange multipliers for
+     * this pair.
+     */
+    void LocationVector(const Teuchos::RCP<BEAMINTERACTION::BeamContactPair> contact_pair,
+        std::vector<int>& lambda_row) const;
+
    private:
     //! Base for the index used for the Lagrange multiplier DOFs.
     int index_base_;
 
-    //! Pointer to the beam contact parameters.
-    Teuchos::RCP<BEAMINTERACTION::BeamContactParams> beam_contact_params_;
+    //! Number of Lagrange multiplier DOFs on a node.
+    unsigned int n_lambda_node_;
+
+    //! Number of Lagrange multiplier DOFs on an element.
+    unsigned int n_lambda_element_;
+
+    //! Rowmap of the additional Lagrange multiplier DOFs.
+    Teuchos::RCP<Epetra_Map> lambda_dof_rowmap_;
 
     //! Standard map from global node ids to global Lagrange multiplier ids, for all nodes used on
     //! this rank.

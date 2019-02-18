@@ -25,9 +25,30 @@
  */
 BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
     Teuchos::RCP<BEAMINTERACTION::BeamContactParams> beam_contact_params)
-    : index_base_(0), beam_contact_params_(beam_contact_params)
+    : index_base_(0), lambda_dof_rowmap_(Teuchos::null)
 {
-  // Empty constructor.
+  // Get the number of Lagrange multiplier DOF on a beam node and on a beam element.
+  if (beam_contact_params->BeamToSolidVolumeMeshtyingParams() == Teuchos::null)
+    dserror("Mortar manager needs to have a BeamToSolidVolumeMeshtyingParams object!");
+  INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions mortar_shape_functions =
+      beam_contact_params->BeamToSolidVolumeMeshtyingParams()->GetMortarShapeFunctionType();
+  switch (mortar_shape_functions)
+  {
+    case INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions::line2:
+    {
+      n_lambda_node_ = 1 * 3;
+      n_lambda_element_ = 0 * 3;
+      break;
+    }
+    case INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions::line3:
+    {
+      n_lambda_node_ = 1 * 3;
+      n_lambda_element_ = 1 * 3;
+      break;
+    }
+    default:
+      dserror("Mortar shape function not implemented!");
+  }
 }
 
 /**
@@ -37,29 +58,6 @@ void BEAMINTERACTION::BeamToSolidMortarManager::GenerateMaps(
     const Teuchos::RCP<DRT::Discretization> discret,
     const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> contact_pairs)
 {
-  // Get the number of Lagrange multiplier DOF on a beam node and on a beam element.
-  INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions mortar_shape_functions =
-      beam_contact_params_->BeamToSolidVolumeMeshtyingParams()->GetMortarShapeFunctionType();
-  unsigned int n_lambda_node = 0;
-  unsigned int n_lambda_element = 0;
-  switch (mortar_shape_functions)
-  {
-    case INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions::line2:
-    {
-      n_lambda_node = 1 * 3;
-      n_lambda_element = 0 * 3;
-      break;
-    }
-    case INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions::line3:
-    {
-      n_lambda_node = 1 * 3;
-      n_lambda_element = 1 * 3;
-      break;
-    }
-    default:
-      dserror("Mortar shape function not implemented!");
-  }
-
   // Get the global ids of all beam centerline nodes on this rank.
   std::vector<int> my_nodes_gid;
   for (int i_node = 0; i_node < discret->NodeRowMap()->NumMyElements(); i_node++)
@@ -79,11 +77,10 @@ void BEAMINTERACTION::BeamToSolidMortarManager::GenerateMaps(
   // Calculate the local number of centerline nodes, beam elements and Lagrange multiplier DOF.
   const unsigned int n_nodes = my_nodes_gid.size();
   const unsigned int n_element = my_elements_gid.size();
-  const unsigned int n_lambda_dof = n_nodes * n_lambda_node + n_element * n_lambda_element;
+  const unsigned int n_lambda_dof = n_nodes * n_lambda_node_ + n_element * n_lambda_element_;
 
   // Rowmap for the additional DOFs used by the mortar contact discretization.
-  Teuchos::RCP<Epetra_Map> lambda_dof_rowmap =
-      Teuchos::rcp(new Epetra_Map(-1, n_lambda_dof, index_base_, discret->Comm()));
+  lambda_dof_rowmap_ = Teuchos::rcp(new Epetra_Map(-1, n_lambda_dof, index_base_, discret->Comm()));
 
   // We need to be able to get the global ids for a Lagrange multiplier DOF from the global id of a
   // node or element. To do so, we 'abuse' the Epetra_MultiVector as map between the global node /
@@ -97,12 +94,12 @@ void BEAMINTERACTION::BeamToSolidMortarManager::GenerateMaps(
   // multivector if it hase one or more columns.
   Teuchos::RCP<Epetra_MultiVector> node_gid_to_lambda_gid = Teuchos::null;
   Teuchos::RCP<Epetra_MultiVector> element_gid_to_lambda_gid = Teuchos::null;
-  if (n_lambda_node > 0)
+  if (n_lambda_node_ > 0)
     node_gid_to_lambda_gid =
-        Teuchos::rcp(new Epetra_MultiVector(*node_gid_rowmap, n_lambda_node, true));
-  if (n_lambda_element > 0)
+        Teuchos::rcp(new Epetra_MultiVector(*node_gid_rowmap, n_lambda_node_, true));
+  if (n_lambda_element_ > 0)
     element_gid_to_lambda_gid =
-        Teuchos::rcp(new Epetra_MultiVector(*element_gid_rowmap, n_lambda_element, true));
+        Teuchos::rcp(new Epetra_MultiVector(*element_gid_rowmap, n_lambda_element_, true));
 
   // Fill in the entries in the node / element global id to Lagrange multiplier global id vector.
   int error_code = 0;
@@ -110,10 +107,10 @@ void BEAMINTERACTION::BeamToSolidMortarManager::GenerateMaps(
   if (node_gid_to_lambda_gid != Teuchos::null)
   {
     for (unsigned int i_node = 0; i_node < n_nodes; i_node++)
-      for (unsigned int i_lambda = 0; i_lambda < n_lambda_node; i_lambda++)
+      for (unsigned int i_lambda = 0; i_lambda < n_lambda_node_; i_lambda++)
       {
         // Get the global Lagrange multiplier id for this node.
-        lagrange_gid = lambda_dof_rowmap->GID(i_node * n_lambda_node + i_lambda);
+        lagrange_gid = lambda_dof_rowmap_->GID(i_node * n_lambda_node_ + i_lambda);
         if (lagrange_gid < index_base_) dserror("Local id not found on this processor!");
 
         // Set the global Lagrange multiplier id for this node.
@@ -124,11 +121,11 @@ void BEAMINTERACTION::BeamToSolidMortarManager::GenerateMaps(
   if (element_gid_to_lambda_gid != Teuchos::null)
   {
     for (unsigned int i_element = 0; i_element < n_element; i_element++)
-      for (unsigned int i_lambda = 0; i_lambda < n_lambda_element; i_lambda++)
+      for (unsigned int i_lambda = 0; i_lambda < n_lambda_element_; i_lambda++)
       {
         // Get the global Lagrange multiplier id for this node.
-        lagrange_gid = lambda_dof_rowmap->GID(
-            n_nodes * n_lambda_node + i_element * n_lambda_element + i_lambda);
+        lagrange_gid = lambda_dof_rowmap_->GID(
+            n_nodes * n_lambda_node_ + i_element * n_lambda_element_ + i_lambda);
         if (lagrange_gid < index_base_) dserror("Local id not found on this processor!");
 
         // Set the global Lagrange multiplier id for this node.
@@ -156,13 +153,13 @@ void BEAMINTERACTION::BeamToSolidMortarManager::GenerateMaps(
           "same processor as the pair!");
 
     // Get the global id of the nodes / elements that the pairs on this rank need.
-    if (n_lambda_node > 0)
+    if (n_lambda_node_ > 0)
       // There are nodal lambda DOFs, add the gid for the nodes in this element to the vector.
       // The first two nodes are the centerline nodes.
       for (unsigned int i_node = 0; i_node < 2; i_node++)
         node_gid_needed.push_back(pair->Element1()->Nodes()[i_node]->Id());
 
-    if (n_lambda_element > 0)
+    if (n_lambda_element_ > 0)
       // There are element lambda DOFs, add the gid for this element to the vector.
       element_gid_needed.push_back(pair->Element1()->Id());
   }
@@ -184,10 +181,10 @@ void BEAMINTERACTION::BeamToSolidMortarManager::GenerateMaps(
 
   // Create the Multivectors that will be filled with all values needed on this rank.
   Teuchos::RCP<Epetra_MultiVector> node_gid_to_lambda_gid_copy = Teuchos::rcp<Epetra_MultiVector>(
-      new Epetra_MultiVector(*node_gid_needed_rowmap, n_lambda_node, true));
+      new Epetra_MultiVector(*node_gid_needed_rowmap, n_lambda_node_, true));
   Teuchos::RCP<Epetra_MultiVector> element_gid_to_lambda_gid_copy =
       Teuchos::rcp<Epetra_MultiVector>(
-          new Epetra_MultiVector(*element_gid_needed_rowmap, n_lambda_element, true));
+          new Epetra_MultiVector(*element_gid_needed_rowmap, n_lambda_element_, true));
 
   // Export values from the global multi vector to the ones needed on this rank.
   if (node_gid_to_lambda_gid != Teuchos::null)
@@ -198,18 +195,65 @@ void BEAMINTERACTION::BeamToSolidMortarManager::GenerateMaps(
   // Fill in the local maps.
   node_gid_to_lambda_gid_map_.clear();
   element_gid_to_lambda_gid_map_.clear();
-  std::vector<int> temp_node(n_lambda_node);
+  std::vector<int> temp_node(n_lambda_node_);
   for (int i_node = 0; i_node < node_gid_needed_rowmap->NumMyElements(); i_node++)
   {
-    for (unsigned int i_temp = 0; i_temp < n_lambda_node; i_temp++)
+    for (unsigned int i_temp = 0; i_temp < n_lambda_node_; i_temp++)
       temp_node[i_temp] = (int)((*(*node_gid_to_lambda_gid_copy)(i_temp))[i_node]);
     node_gid_to_lambda_gid_map_[node_gid_needed_rowmap->GID(i_node)] = temp_node;
   }
-  std::vector<int> temp_elements(n_lambda_element);
+  std::vector<int> temp_elements(n_lambda_element_);
   for (int i_element = 0; i_element < element_gid_needed_rowmap->NumMyElements(); i_element++)
   {
-    for (unsigned int i_temp = 0; i_temp < n_lambda_element; i_temp++)
+    for (unsigned int i_temp = 0; i_temp < n_lambda_element_; i_temp++)
       temp_elements[i_temp] = (int)((*(*element_gid_to_lambda_gid_copy)(i_temp))[i_element]);
     element_gid_to_lambda_gid_map_[element_gid_needed_rowmap->GID(i_element)] = temp_elements;
+  }
+}
+
+/**
+ *
+ */
+void BEAMINTERACTION::BeamToSolidMortarManager::LocationVector(
+    const Teuchos::RCP<BEAMINTERACTION::BeamContactPair> contact_pair,
+    std::vector<int>& lambda_row) const
+{
+  // Clear the output vectors.
+  lambda_row.clear();
+
+  // Get the global DOFs ids of the nodal Lagrange multipliers.
+  if (n_lambda_node_ > 0)
+  {
+    for (int i_node = 0; i_node < contact_pair->Element1()->NumNode(); i_node++)
+    {
+      const DRT::Node& node = *(contact_pair->Element1()->Nodes()[i_node]);
+      if (BEAMINTERACTION::UTILS::IsBeamCenterlineNode(node))
+      {
+        // Get the global id of the node.
+        int node_id = node.Id();
+
+        // Check if the id is in the map. If it is, add it to the output vector.
+        auto search_key_in_map = node_gid_to_lambda_gid_map_.find(node_id);
+        if (search_key_in_map == node_gid_to_lambda_gid_map_.end())
+          dserror("Global node id %d not in map!", node_id);
+        for (auto const& lambda_gid : search_key_in_map->second) lambda_row.push_back(lambda_gid);
+      }
+    }
+  }
+
+  // Get the global DOFs ids of the element Lagrange multipliers.
+  if (n_lambda_element_ > 0)
+  {
+    if (BEAMINTERACTION::UTILS::IsBeamElement(*contact_pair->Element1()))
+    {
+      // Get the global id of the element.
+      int element_id = contact_pair->Element1()->Id();
+
+      // Check if the id is in the map. If it is, add it to the output vector.
+      auto search_key_in_map = element_gid_to_lambda_gid_map_.find(element_id);
+      if (search_key_in_map == element_gid_to_lambda_gid_map_.end())
+        dserror("Global element id %d not in map!", element_id);
+      for (auto const& lambda_gid : search_key_in_map->second) lambda_row.push_back(lambda_gid);
+    }
   }
 }
