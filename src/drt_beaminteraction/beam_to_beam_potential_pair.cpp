@@ -1288,8 +1288,9 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   }
 
   //************************** DEBUG ******************************************
-  //  this->Print( std::cout );
+  //  this->Print(std::cout);
   //  std::cout << "\n\n\nStart evaluation via Gauss integration..." << std::endl;
+  //  std::cout << "\nnumgp_total=" << numgp_total;
   //*********************** END DEBUG *****************************************
 
 
@@ -1324,6 +1325,11 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     {
       const int igp_total = isegment * numgp_persegment + igp;
 
+      //************************** DEBUG ******************************************
+      //      std::cout << "\nEvaluate igp_total=" << igp_total;
+      //*********************** END DEBUG *****************************************
+
+
       // Get location of GP in element parameter space xi \in [-1;1]
       const double xi_GP_tilde = gausspoints.qxg[igp][0];
 
@@ -1349,13 +1355,14 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
                                            gausspoints.qwgt[igp];
 
       //************************** DEBUG ******************************************
-      //    std::cout << "\n\nGP " << igp_total << ":";
-      //    std::cout << "\nr_slave: " << FADUTILS::CastToDouble<T,3,1>( r_slave );
-      //    std::cout << "\nr_xi_slave: " << FADUTILS::CastToDouble<T,3,1>( r_xi_slave );
-      //    std::cout << "\n|r_xi_slave|: " << FADUTILS::VectorNorm<3>(
-      //    FADUTILS::CastToDouble<T,3,1>( r_xi_slave ) ); std::cout << "\ng1_slave: " <<
-      //    FADUTILS::CastToDouble<T,3,1>( g1_slave ); std::cout << "\n|g1_slave|: " <<
-      //    FADUTILS::VectorNorm<3>( FADUTILS::CastToDouble<T,3,1>( g1_slave ) );
+      //      std::cout << "\n\nGP " << igp_total << ":";
+      //      std::cout << "\nr_slave: " << FADUTILS::CastToDouble<T, 3, 1>(r_slave);
+      //      std::cout << "\nr_xi_slave: " << FADUTILS::CastToDouble<T, 3, 1>(r_xi_slave);
+      //      std::cout << "\n|r_xi_slave|: "
+      //                << FADUTILS::VectorNorm<3>(FADUTILS::CastToDouble<T, 3, 1>(r_xi_slave));
+      //      std::cout << "\ng1_slave: " << FADUTILS::CastToDouble<T, 3, 1>(g1_slave);
+      //      std::cout << "\n|g1_slave|: "
+      //                << FADUTILS::VectorNorm<3>(FADUTILS::CastToDouble<T, 3, 1>(g1_slave));
       //*********************** END DEBUG *****************************************
 
       /* point-to-curve projection, i.e. 'unilateral' closest-point projection
@@ -1429,12 +1436,13 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
 
       //************************** DEBUG ******************************************
-      //    std::cout << "\nr_master: " << FADUTILS::CastToDouble<T,3,1>( r_master );
-      //    std::cout << "\nr_xi_master: " << FADUTILS::CastToDouble<T,3,1>( r_xi_master );
-      //    std::cout << "\n|r_xi_master|: " << FADUTILS::VectorNorm<3>(
-      //    FADUTILS::CastToDouble<T,3,1>( r_xi_master ) ); std::cout << "\ng1_master: " <<
-      //    FADUTILS::CastToDouble<T,3,1>( g1_master ); std::cout << "\n|g1_master|: " <<
-      //    FADUTILS::VectorNorm<3>( FADUTILS::CastToDouble<T,3,1>( g1_master ) );
+      //      std::cout << "\nr_master: " << FADUTILS::CastToDouble<T, 3, 1>(r_master);
+      //      std::cout << "\nr_xi_master: " << FADUTILS::CastToDouble<T, 3, 1>(r_xi_master);
+      //      std::cout << "\n|r_xi_master|: "
+      //                << FADUTILS::VectorNorm<3>(FADUTILS::CastToDouble<T, 3, 1>(r_xi_master));
+      //      std::cout << "\ng1_master: " << FADUTILS::CastToDouble<T, 3, 1>(g1_master);
+      //      std::cout << "\n|g1_master|: "
+      //                << FADUTILS::VectorNorm<3>(FADUTILS::CastToDouble<T, 3, 1>(g1_master));
       //*********************** END DEBUG *****************************************
 
       // store for vtk visualization
@@ -1444,7 +1452,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       dist_ul = FADUTILS::DiffVector(r_slave, r_master);
 
       //************************** DEBUG ******************************************
-      //    std::cout << "\ndist_ul: " << FADUTILS::CastToDouble<T,3,1>( dist_ul );
+      //      std::cout << "\ndist_ul: " << FADUTILS::CastToDouble<T, 3, 1>(dist_ul);
       //*********************** END DEBUG *****************************************
 
       // check cutoff criterion: if specified, contributions are neglected at larger separation
@@ -1458,7 +1466,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
 
       //************************** DEBUG ******************************************
-      //    std::cout << "\nalpha: " << FADUTILS::CastToDouble( alpha*180/M_PI ) << "°";
+      //    std::cout << "\nalpha: " << FADUTILS::CastToDouble(alpha * 180 / M_PI) << "°";
       //    std::cout << "\ncos(alpha): " << FADUTILS::CastToDouble( cos_alpha );
       //    std::cout << "\nsin(alpha): " << FADUTILS::CastToDouble( sin_alpha );
       //*********************** END DEBUG *****************************************
@@ -1471,7 +1479,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
       const double BEAMSCOLINEARANGLETHRESHOLD = 5.0 / 180.0 * M_PI;  // 5 works best so far
 
-      // Fixme what about the FAD linearization in this case?
       if (FADUTILS::Norm(alpha) < BEAMSCOLINEARANGLETHRESHOLD)
       {
         //************************** DEBUG ******************************************
@@ -1513,10 +1520,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
             FADUTILS::CastToDouble(gap_bl));
 
       //************************** DEBUG ******************************************
-      //    std::cout << "\nnormal_bl: " << FADUTILS::CastToDouble<T,3,1>( normal_bl );
-      //    std::cout << "\ngap_bl: " << FADUTILS::CastToDouble( gap_bl );
-      //    std::cout << "\naux_plane_normal: " << FADUTILS::CastToDouble<T,3,1>( aux_plane_normal
-      //    ); std::cout << "\nx: " << FADUTILS::CastToDouble( x ) << std::endl;
+      //      std::cout << "\nnormal_bl: " << FADUTILS::CastToDouble<T, 3, 1>(normal_bl);
+      //      std::cout << "\ngap_bl: " << FADUTILS::CastToDouble(gap_bl);
+      //      std::cout << "\naux_plane_normal: " << FADUTILS::CastToDouble<T, 3,
+      //      1>(aux_plane_normal); std::cout << "\nx: " << FADUTILS::CastToDouble(x) << std::endl;
       //*********************** END DEBUG *****************************************
 
       beta = FADUTILS::sqrt<T>(
@@ -1532,10 +1539,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       Delta = 4 * a * (beta - radius2_) - x * x * sin_2alpha * sin_2alpha / (4 * beta_exp2);
 
       //************************** DEBUG ******************************************
-      //    std::cout << "\nbeta: " << FADUTILS::CastToDouble( beta );
+      //    std::cout << "\nbeta: " << FADUTILS::CastToDouble(beta);
       //    std::cout << "\nbeta^2: " << FADUTILS::CastToDouble( beta*beta );
       //    std::cout << "\nbeta^3: " << FADUTILS::CastToDouble( beta*beta*beta );
-      //    std::cout << "\nDelta: " << FADUTILS::CastToDouble( Delta );
+      //    std::cout << "\nDelta: " << FADUTILS::CastToDouble(Delta);
       //*********************** END DEBUG *****************************************
 
 
@@ -1921,7 +1928,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
        */
       LINALG::TMatrix<double, 3, 3> spin_pseudo_moment_tmp(true);
 
-      // Fixme: wrong results, if we evaluate this pair twice, e.g. with contributions two exponents
       LARGEROTATIONS::computespin(spin_pseudo_moment_tmp, moment_pot_tmp);
 
       moment_pot_tmp.Multiply(1.0 / FADUTILS::CastToDouble(norm_r_xi_slave), spin_pseudo_moment_tmp,
@@ -1985,10 +1991,15 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       pot_ia_partial_x *= rho1rho2_JacFac_GaussWeight;
 
       //************************** DEBUG ******************************************
-      //    std::cout << "\nprefactor: " << FADUTILS::CastToDouble( prefactor );
-      //    std::cout << "\nrho1rho2_JacFac_GaussWeight: " << FADUTILS::CastToDouble(
-      //    rho1rho2_JacFac_GaussWeight ); std::cout << "\npot_ia_partial_cos_alpha: " <<
-      //    FADUTILS::CastToDouble( pot_ia_partial_cos_alpha );
+      //      std::cout << "\nprefactor: " << FADUTILS::CastToDouble(prefactor);
+      //      std::cout << "\nrho1rho2_JacFac_GaussWeight: "
+      //                << FADUTILS::CastToDouble(rho1rho2_JacFac_GaussWeight);
+      //
+      //      std::cout << "\npot_ia_partial_x: " << FADUTILS::CastToDouble(pot_ia_partial_x);
+      //      std::cout << "\npot_ia_partial_gap_bl: " <<
+      //      FADUTILS::CastToDouble(pot_ia_partial_gap_bl); std::cout <<
+      //      "\npot_ia_partial_cos_alpha: "
+      //                << FADUTILS::CastToDouble(pot_ia_partial_cos_alpha);
       //*********************** END DEBUG *****************************************
 
 
@@ -2093,6 +2104,11 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
       // store for energy output
       interaction_potential_ += FADUTILS::CastToDouble(interaction_potential_GP);
+
+      //************************** DEBUG ******************************************
+      //      std::cout << "\ninteraction_potential_GP: "
+      //                << FADUTILS::CastToDouble(interaction_potential_GP);
+      //*********************** END DEBUG *****************************************
 
       // ************************************ DEBUG
       // *************************************************
