@@ -267,9 +267,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
           "No valid BEAMPOTENTIAL_TYPE specified. Choose either Surface or Volume in input file!");
   }
 
-  // reset interaction potential of this pair
-  interaction_potential_ = 0.0;
-
   // prepare data storage for vtk visualization
   centerline_coords_GP1_.resize(numgp_perelement);
   centerline_coords_GP2_.resize(numgp_perelement);
@@ -670,8 +667,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   }
 
 
-  // reset interaction potential of this pair
-  interaction_potential_ = 0.0;
 
   // prepare data storage for vtk visualization
   centerline_coords_GP1_.resize(numgp_perelement);
@@ -1277,8 +1272,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   //  std::cout << "\n\n\nStart evaluation via Gauss integration..." << std::endl;
   //*********************** END DEBUG *****************************************
 
-  // reset interaction potential of this pair
-  interaction_potential_ = 0.0;
 
   // prepare data storage for vtk visualization
   centerline_coords_GP1_.resize(numgp_total);
@@ -1751,34 +1744,37 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
           dist_ul, r_xi_master, r_xixi_master);
 
       // store for vtk visualization
-      forces_pot_GP1_[igp_total].Update(FADUTILS::CastToDouble(pot_ia_partial_gap_bl),
+      double prefactor_vtk = -1.0 * prefactor * rho1 * rho2;
+
+      forces_pot_GP1_[igp_total].Update(
+          prefactor_vtk * FADUTILS::CastToDouble(pot_ia_partial_gap_bl),
           FADUTILS::CastToDouble<T, 3, 1>(gap_bl_partial_r_slave), 1.0);
 
       forces_pot_GP1_[igp_total].UpdateT(
-          FADUTILS::CastToDouble(pot_ia_partial_gap_bl * gap_bl_partial_xi_master),
+          prefactor_vtk * FADUTILS::CastToDouble(pot_ia_partial_gap_bl * gap_bl_partial_xi_master),
           FADUTILS::CastToDouble<T, 1, 3>(xi_master_partial_r_slave), 1.0);
 
       forces_pot_GP1_[igp_total].UpdateT(
-          FADUTILS::CastToDouble(pot_ia_partial_cos_alpha * cos_alpha_partial_xi_master),
+          prefactor_vtk *
+              FADUTILS::CastToDouble(pot_ia_partial_cos_alpha * cos_alpha_partial_xi_master),
           FADUTILS::CastToDouble<T, 1, 3>(xi_master_partial_r_slave), 1.0);
 
-      forces_pot_GP1_[igp_total].Update(FADUTILS::CastToDouble(pot_ia_partial_x),
+      forces_pot_GP1_[igp_total].Update(prefactor_vtk * FADUTILS::CastToDouble(pot_ia_partial_x),
           FADUTILS::CastToDouble<T, 3, 1>(x_partial_r_slave), 1.0);
 
       forces_pot_GP1_[igp_total].UpdateT(
-          FADUTILS::CastToDouble(pot_ia_partial_x * x_partial_xi_master),
+          prefactor_vtk * FADUTILS::CastToDouble(pot_ia_partial_x * x_partial_xi_master),
           FADUTILS::CastToDouble<T, 1, 3>(xi_master_partial_r_slave), 1.0);
 
-      forces_pot_GP1_[igp_total].Scale(-1.0 * prefactor * rho1 * rho2);
+      LINALG::TMatrix<double, 3, 1> moment_pot_tmp(true);
 
+      moment_pot_tmp.Update(FADUTILS::CastToDouble(pot_ia_partial_gap_bl),
+          FADUTILS::CastToDouble<T, 3, 1>(gap_bl_partial_r_xi_slave));
 
-      moments_pot_GP1_[igp_total].Update(FADUTILS::CastToDouble(pot_ia_partial_gap_bl),
-          FADUTILS::CastToDouble<T, 3, 1>(gap_bl_partial_r_xi_slave), 1.0);
-
-      moments_pot_GP1_[igp_total].Update(FADUTILS::CastToDouble(pot_ia_partial_cos_alpha),
+      moment_pot_tmp.Update(FADUTILS::CastToDouble(pot_ia_partial_cos_alpha),
           FADUTILS::CastToDouble<T, 3, 1>(cos_alpha_partial_r_xi_slave), 1.0);
 
-      moments_pot_GP1_[igp_total].Update(FADUTILS::CastToDouble(pot_ia_partial_x),
+      moment_pot_tmp.Update(FADUTILS::CastToDouble(pot_ia_partial_x),
           FADUTILS::CastToDouble<T, 3, 1>(x_partial_r_xi_slave), 1.0);
 
       /* note: relation between variation of tangent vector r_xi and variation of (transversal part
@@ -1786,62 +1782,63 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
        *       identify (distributed) moments as follows: m_pot = 1/|r_xi| * ( m_pot_pseudo x g1 )
        */
       LINALG::TMatrix<double, 3, 3> spin_pseudo_moment_tmp(true);
-      LARGEROTATIONS::computespin(spin_pseudo_moment_tmp, moments_pot_GP1_[igp_total]);
 
-      moments_pot_GP1_[igp_total].Multiply(1.0 / FADUTILS::CastToDouble(norm_r_xi_slave),
-          spin_pseudo_moment_tmp, FADUTILS::CastToDouble<T, 3, 1>(g1_slave));
+      // Fixme: wrong results, if we evaluate this pair twice, e.g. with contributions two exponents
+      LARGEROTATIONS::computespin(spin_pseudo_moment_tmp, moment_pot_tmp);
 
-      moments_pot_GP1_[igp_total].Scale(-1.0 * prefactor * rho1 * rho2);
+      moment_pot_tmp.Multiply(1.0 / FADUTILS::CastToDouble(norm_r_xi_slave), spin_pseudo_moment_tmp,
+          FADUTILS::CastToDouble<T, 3, 1>(g1_slave));
+
+      moments_pot_GP1_[igp_total].Update(prefactor_vtk, moment_pot_tmp, 1.0);
 
 
-      forces_pot_GP2_[igp_total].Update(FADUTILS::CastToDouble(pot_ia_partial_gap_bl),
+      forces_pot_GP2_[igp_total].Update(
+          prefactor_vtk * FADUTILS::CastToDouble(pot_ia_partial_gap_bl),
           FADUTILS::CastToDouble<T, 3, 1>(gap_bl_partial_r_master), 1.0);
 
       forces_pot_GP2_[igp_total].UpdateT(
-          FADUTILS::CastToDouble(pot_ia_partial_gap_bl * gap_bl_partial_xi_master),
+          prefactor_vtk * FADUTILS::CastToDouble(pot_ia_partial_gap_bl * gap_bl_partial_xi_master),
           FADUTILS::CastToDouble<T, 1, 3>(xi_master_partial_r_master), 1.0);
 
       forces_pot_GP2_[igp_total].UpdateT(
-          FADUTILS::CastToDouble(pot_ia_partial_cos_alpha * cos_alpha_partial_xi_master),
+          prefactor_vtk *
+              FADUTILS::CastToDouble(pot_ia_partial_cos_alpha * cos_alpha_partial_xi_master),
           FADUTILS::CastToDouble<T, 1, 3>(xi_master_partial_r_master), 1.0);
 
-      forces_pot_GP2_[igp_total].Update(FADUTILS::CastToDouble(pot_ia_partial_x),
+      forces_pot_GP2_[igp_total].Update(prefactor_vtk * FADUTILS::CastToDouble(pot_ia_partial_x),
           FADUTILS::CastToDouble<T, 3, 1>(x_partial_r_master), 1.0);
 
       forces_pot_GP2_[igp_total].UpdateT(
-          FADUTILS::CastToDouble(pot_ia_partial_x * x_partial_xi_master),
+          prefactor_vtk * FADUTILS::CastToDouble(pot_ia_partial_x * x_partial_xi_master),
           FADUTILS::CastToDouble<T, 1, 3>(xi_master_partial_r_master), 1.0);
 
-      forces_pot_GP2_[igp_total].Scale(-1.0 * prefactor * rho1 * rho2);
 
+      moment_pot_tmp.Update(FADUTILS::CastToDouble(pot_ia_partial_gap_bl),
+          FADUTILS::CastToDouble<T, 3, 1>(gap_bl_partial_r_xi_master));
 
-      moments_pot_GP2_[igp_total].Update(FADUTILS::CastToDouble(pot_ia_partial_gap_bl),
-          FADUTILS::CastToDouble<T, 3, 1>(gap_bl_partial_r_xi_master), 1.0);
-
-      moments_pot_GP2_[igp_total].UpdateT(
+      moment_pot_tmp.UpdateT(
           FADUTILS::CastToDouble(pot_ia_partial_gap_bl * gap_bl_partial_xi_master),
           FADUTILS::CastToDouble<T, 1, 3>(xi_master_partial_r_xi_master), 1.0);
 
-      moments_pot_GP2_[igp_total].Update(FADUTILS::CastToDouble(pot_ia_partial_cos_alpha),
+      moment_pot_tmp.Update(FADUTILS::CastToDouble(pot_ia_partial_cos_alpha),
           FADUTILS::CastToDouble<T, 3, 1>(cos_alpha_partial_r_xi_master), 1.0);
 
-      moments_pot_GP2_[igp_total].UpdateT(
+      moment_pot_tmp.UpdateT(
           FADUTILS::CastToDouble(pot_ia_partial_cos_alpha * cos_alpha_partial_xi_master),
           FADUTILS::CastToDouble<T, 1, 3>(xi_master_partial_r_xi_master), 1.0);
 
-      moments_pot_GP2_[igp_total].Update(FADUTILS::CastToDouble(pot_ia_partial_x),
+      moment_pot_tmp.Update(FADUTILS::CastToDouble(pot_ia_partial_x),
           FADUTILS::CastToDouble<T, 3, 1>(x_partial_r_xi_master), 1.0);
 
-      moments_pot_GP2_[igp_total].UpdateT(
-          FADUTILS::CastToDouble(pot_ia_partial_x * x_partial_xi_master),
+      moment_pot_tmp.UpdateT(FADUTILS::CastToDouble(pot_ia_partial_x * x_partial_xi_master),
           FADUTILS::CastToDouble<T, 1, 3>(xi_master_partial_r_xi_master), 1.0);
 
-      LARGEROTATIONS::computespin(spin_pseudo_moment_tmp, moments_pot_GP2_[igp_total]);
+      LARGEROTATIONS::computespin(spin_pseudo_moment_tmp, moment_pot_tmp);
 
-      moments_pot_GP2_[igp_total].Multiply(1.0 / FADUTILS::CastToDouble(norm_r_xi_master),
+      moment_pot_tmp.Multiply(1.0 / FADUTILS::CastToDouble(norm_r_xi_master),
           spin_pseudo_moment_tmp, FADUTILS::CastToDouble<T, 3, 1>(g1_master));
 
-      moments_pot_GP2_[igp_total].Scale(-1.0 * prefactor * rho1 * rho2);
+      moments_pot_GP2_[igp_total].Update(prefactor_vtk, moment_pot_tmp, 1.0);
 
 
       // integration factor
@@ -2311,11 +2308,13 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Rese
     ele2pos_(i) = centerline_dofvec_ele2[i];
   }
 
+  // reset interaction potential as well as interaction forces and moments of this pair
+  interaction_potential_ = 0.0;
 
-  forces_pot_GP1_.clear();
-  forces_pot_GP2_.clear();
-  moments_pot_GP1_.clear();
-  moments_pot_GP2_.clear();
+  for (auto& forcevec : forces_pot_GP1_) forcevec.Clear();
+  for (auto& forcevec : forces_pot_GP2_) forcevec.Clear();
+  for (auto& momentvec : moments_pot_GP1_) momentvec.Clear();
+  for (auto& momentvec : moments_pot_GP2_) momentvec.Clear();
 }
 
 /*-----------------------------------------------------------------------------------------------*
