@@ -1285,16 +1285,18 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   for (unsigned int isegment = 0; isegment < num_integration_segments; ++isegment)
   {
     // compute element parameter coordinate for lower and upper limit of current integration segment
-    double integration_segment_lower_limit = -1.0 + isegment * 2.0 / num_integration_segments;
-    double integration_segment_upper_limit = -1.0 + (isegment + 1) * 2.0 / num_integration_segments;
+    double integration_segment_lower_limit =
+        -1.0 + (double)isegment * 2.0 / (double)num_integration_segments;
+    double integration_segment_upper_limit =
+        -1.0 + (double)(isegment + 1) * 2.0 / (double)num_integration_segments;
 
     double jacobifactor_segment =
         0.5 * (integration_segment_upper_limit - integration_segment_lower_limit);
 
     // Evaluate shape functions at Gauss points of slave element and store values
-    DRT::UTILS::BEAM::EvaluateShapeFunctionsAndDerivsAllGPs<numnodes, numnodalvalues>(
-        gausspoints, N_i_slave, N_i_xi_slave, BeamElement1()->Shape(), ele1length_);
-
+    DRT::UTILS::BEAM::EvaluateShapeFunctionsAndDerivsAllGPs<numnodes, numnodalvalues>(gausspoints,
+        N_i_slave, N_i_xi_slave, BeamElement1()->Shape(), ele1length_,
+        integration_segment_lower_limit, integration_segment_upper_limit);
 
     // loop over gauss points of element 1
     // so far, element 1 is always treated as the slave element!
