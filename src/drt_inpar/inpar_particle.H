@@ -166,7 +166,8 @@ namespace INPAR
     //! type of phase change
     enum PhaseChangeType
     {
-      NoPhaseChange
+      NoPhaseChange,
+      TwoWayScalarPhaseChange
     };
 
     /*---------------------------------------------------------------------------*

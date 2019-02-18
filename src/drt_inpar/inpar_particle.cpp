@@ -229,8 +229,12 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
 
   // type of phase change
   setStringToIntegralParameter<int>("PHASECHANGETYPE", "NoPhaseChange", "type of phase change",
-      tuple<std::string>("NoPhaseChange"), tuple<int>(INPAR::PARTICLE::NoPhaseChange),
+      tuple<std::string>("NoPhaseChange", "TwoWayScalarPhaseChange"),
+      tuple<int>(INPAR::PARTICLE::NoPhaseChange, INPAR::PARTICLE::TwoWayScalarPhaseChange),
       &particledynsph);
+
+  // definition of phase change
+  StringParameter("PHASECHANGEDEFINITION", "", "phase change definition", &particledynsph);
 
   /*-------------------------------------------------------------------------*
    | discrete element method (DEM) specific control parameters               |

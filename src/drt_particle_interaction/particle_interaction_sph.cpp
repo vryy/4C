@@ -136,7 +136,8 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Setup(
   if (boundaryparticle_) boundaryparticle_->Setup(particleengineinterface, neighborpairs_);
 
   // setup phase change handler
-  if (phasechange_) phasechange_->Setup(particleengineinterface);
+  if (phasechange_)
+    phasechange_->Setup(particleengineinterface, particlematerial_, equationofstatebundle_);
 }
 
 /*---------------------------------------------------------------------------*
@@ -648,6 +649,12 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitPhaseChangeHandler()
     case INPAR::PARTICLE::NoPhaseChange:
     {
       phasechange_ = std::unique_ptr<PARTICLEINTERACTION::SPHPhaseChangeBase>(nullptr);
+      break;
+    }
+    case INPAR::PARTICLE::TwoWayScalarPhaseChange:
+    {
+      phasechange_ = std::unique_ptr<PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar>(
+          new PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar(params_sph_));
       break;
     }
     default:
