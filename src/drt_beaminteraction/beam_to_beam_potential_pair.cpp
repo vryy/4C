@@ -1093,6 +1093,13 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   // get cutoff radius
   const double cutoff_radius = Params()->CutoffRadius();
 
+  // get regularization type and separation
+  const INPAR::BEAMPOTENTIAL::BeamPotentialRegularizationType regularization_type =
+      Params()->RegularizationType();
+
+  const double regularization_separation = Params()->RegularizationSeparation();
+
+
   /* parameter coordinate of the closest point on the master beam,
    * determined via point-to-curve projection */
   T xi_master = 0.0;
@@ -1163,6 +1170,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   T beta_exp4 = 0.0;  // beta^3
   T a = 0.0;          // auxiliary quantity
   T Delta = 0.0;      // auxiliary quantity
+  T Delta_regularized = 0.0;
 
   T beta_partial_x = 0.0;
   T beta_partial_gap_bl = 0.0;
@@ -1183,6 +1191,18 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   T pot_ia_partial_beta = 0.0;
   T pot_ia_partial_a = 0.0;
   T pot_ia_partial_Delta = 0.0;
+  T pot_ia_partial_Delta_atregsep = 0.0;
+  T pot_ia_partial_2ndderiv_Delta = 0.0;
+
+  T pot_ia_partial_Delta_partial_beta = 0.0;
+  T pot_ia_partial_2ndderiv_Delta_partial_beta = 0.0;
+
+  T pot_ia_partial_Delta_partial_a = 0.0;
+  T pot_ia_partial_2ndderiv_Delta_partial_a = 0.0;
+
+  T pot_ia_partial_Delta_partial_gap_bl = 0.0;
+  T pot_ia_partial_2ndderiv_Delta_partial_gap_bl = 0.0;
+
   T pot_ia_partial_x = 0.0;
   T pot_ia_partial_gap_bl = 0.0;
   T pot_ia_partial_cos_alpha = 0.0;
@@ -1519,9 +1539,54 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       //*********************** END DEBUG *****************************************
 
 
+
+      if (regularization_type == INPAR::BEAMPOTENTIAL::regularization_none and Delta < 1e-14)
+      {
+        this->Print(std::cout);
+
+        std::cout << "\ngap_bl: " << FADUTILS::CastToDouble(gap_bl);
+        std::cout << "\nalpha: " << FADUTILS::CastToDouble(alpha * 180 / M_PI) << "°";
+        std::cout << "\nx: " << FADUTILS::CastToDouble(x) << std::endl;
+
+        std::cout << "\nbeta: " << FADUTILS::CastToDouble(beta);
+        std::cout << "\na: " << FADUTILS::CastToDouble(a);
+
+        dserror("Delta=%f is negative or very close to zero! Use a regularization to handle this!",
+            FADUTILS::CastToDouble(Delta));
+      }
+
+      Delta_regularized = Delta;
+
+      if (regularization_type == INPAR::BEAMPOTENTIAL::regularization_linear and
+          Delta < regularization_separation)
+      {
+        Delta_regularized = regularization_separation;
+
+        //************************** DEBUG ******************************************
+        std::cout << "\nDelta: " << FADUTILS::CastToDouble(Delta) << ": regularization active!";
+        std::cout << "\nDelta_regularized: " << FADUTILS::CastToDouble(Delta_regularized);
+
+        this->Print(std::cout);
+        std::cout << "\nigp_total: " << igp_total;
+
+        std::cout << "\ngap_bl: " << FADUTILS::CastToDouble(gap_bl);
+        std::cout << "\nalpha: " << FADUTILS::CastToDouble(alpha * 180 / M_PI) << "°";
+        std::cout << "\nx: " << FADUTILS::CastToDouble(x) << std::endl;
+
+        std::cout << "\nbeta: " << FADUTILS::CastToDouble(beta);
+        std::cout << "\na: " << FADUTILS::CastToDouble(a);
+        //*********************** END DEBUG *****************************************
+      }
+
+      if (Delta_regularized <= 0)
+        dserror(
+            "regularized Delta <= 0! Fatal error since force law is not defined for "
+            "zero/negative Delta! Use positive regularization separation!");
+
+
       // interaction potential
       interaction_potential_GP =
-          beta / (gap_bl + radius2_) * std::pow(a, m_ - 5) * std::pow(Delta, -m_ + 4.5);
+          beta / (gap_bl + radius2_) * std::pow(a, m_ - 5) * std::pow(Delta_regularized, -m_ + 4.5);
 
 
       // partial derivatives of beta
@@ -1575,12 +1640,58 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
       pot_ia_partial_a = (m_ - 5.0) * interaction_potential_GP / a;
 
-      pot_ia_partial_Delta = (-m_ + 4.5) * interaction_potential_GP / Delta;
+      pot_ia_partial_Delta = (-m_ + 4.5) * interaction_potential_GP / Delta_regularized;
 
 
-      pot_ia_partial_x =
-          pot_ia_partial_beta * beta_partial_x + pot_ia_partial_a * a_partial_x +
-          pot_ia_partial_Delta * Delta_partial_x;  // + interaction_potential_GP / beta;
+      if (regularization_type == INPAR::BEAMPOTENTIAL::regularization_linear and
+          Delta < regularization_separation)
+      {
+        // partial derivative w.r.t. Delta
+
+        // store this as an intermediate result that is needed below
+        pot_ia_partial_Delta_atregsep = pot_ia_partial_Delta;
+
+        //************************** DEBUG ******************************************
+        std::cout << "\npot_ia_partial_Delta_atregsep: "
+                  << FADUTILS::CastToDouble(pot_ia_partial_Delta_atregsep);
+        //*********************** END DEBUG *****************************************
+
+        pot_ia_partial_2ndderiv_Delta =
+            (-m_ + 3.5) / Delta_regularized * pot_ia_partial_Delta_atregsep;
+
+        //************************** DEBUG ******************************************
+        std::cout << "\npot_ia_partial_2ndderiv_Delta_atregsep: "
+                  << FADUTILS::CastToDouble(pot_ia_partial_2ndderiv_Delta);
+        //*********************** END DEBUG *****************************************
+
+        pot_ia_partial_Delta += pot_ia_partial_2ndderiv_Delta * (Delta - regularization_separation);
+
+        // partial derivative w.r.t. beta
+        pot_ia_partial_Delta_partial_beta = pot_ia_partial_Delta_atregsep / beta;
+        pot_ia_partial_2ndderiv_Delta_partial_beta = pot_ia_partial_2ndderiv_Delta / beta;
+
+        pot_ia_partial_beta +=
+            pot_ia_partial_Delta_partial_beta * (Delta - regularization_separation) +
+            0.5 * pot_ia_partial_2ndderiv_Delta_partial_beta * (Delta - regularization_separation) *
+                (Delta - regularization_separation);
+
+        // partial derivative w.r.t. a
+        pot_ia_partial_Delta_partial_a = (m_ - 5.0) * pot_ia_partial_Delta_atregsep / a;
+        pot_ia_partial_2ndderiv_Delta_partial_a = (m_ - 5.0) * pot_ia_partial_2ndderiv_Delta / a;
+
+        pot_ia_partial_a += pot_ia_partial_Delta_partial_a * (Delta - regularization_separation) +
+                            0.5 * pot_ia_partial_2ndderiv_Delta_partial_a *
+                                (Delta - regularization_separation) *
+                                (Delta - regularization_separation);
+
+
+        //************************** DEBUG ******************************************
+        std::cout << ", pot_ia_partial_Delta: " << FADUTILS::CastToDouble(pot_ia_partial_Delta);
+        //*********************** END DEBUG *****************************************
+      }
+
+      pot_ia_partial_x = pot_ia_partial_beta * beta_partial_x + pot_ia_partial_a * a_partial_x +
+                         pot_ia_partial_Delta * Delta_partial_x;
 
       pot_ia_partial_gap_bl = pot_ia_partial_beta * beta_partial_gap_bl +
                               pot_ia_partial_a * a_partial_gap_bl +
@@ -1591,11 +1702,36 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
                                  pot_ia_partial_a * a_partial_cos_alpha +
                                  pot_ia_partial_Delta * Delta_partial_cos_alpha;
 
-      //************************** DEBUG ******************************************
-      //    std::cout << "\npot_ia_partial_Delta: " << FADUTILS::CastToDouble( pot_ia_partial_Delta
-      //    ); std::cout << "\npot_ia_partial_cos_alpha: " << FADUTILS::CastToDouble(
-      //    pot_ia_partial_cos_alpha );
-      //*********************** END DEBUG *****************************************
+
+      if (regularization_type == INPAR::BEAMPOTENTIAL::regularization_linear and
+          Delta < regularization_separation)
+      {
+        // partial derivative w.r.t. bilateral gap
+        pot_ia_partial_Delta_partial_gap_bl =
+            (-1.0) * pot_ia_partial_Delta_atregsep / (gap_bl + radius2_);
+        pot_ia_partial_2ndderiv_Delta_partial_gap_bl =
+            (-1.0) * pot_ia_partial_2ndderiv_Delta / (gap_bl + radius2_);
+
+        pot_ia_partial_gap_bl +=
+            pot_ia_partial_Delta_partial_gap_bl * (Delta - regularization_separation) +
+            0.5 * pot_ia_partial_2ndderiv_Delta_partial_gap_bl *
+                (Delta - regularization_separation) * (Delta - regularization_separation);
+      }
+
+
+
+      /* now that we don't need the interaction potential at Delta=regularization_separation as
+       * an intermediate result anymore, we can
+       * add the additional (linear and quadratic) contributions in case of active
+       * regularization also to the interaction potential */
+      if (regularization_type == INPAR::BEAMPOTENTIAL::regularization_linear and
+          Delta < regularization_separation)
+      {
+        interaction_potential_GP +=
+            pot_ia_partial_Delta_atregsep * (Delta - regularization_separation) +
+            0.5 * pot_ia_partial_2ndderiv_Delta * (Delta - regularization_separation) *
+                (Delta - regularization_separation);
+      }
 
 
       // components from variation of bilateral gap

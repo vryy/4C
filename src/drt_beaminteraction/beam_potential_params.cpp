@@ -113,12 +113,13 @@ void BEAMINTERACTION::BeamPotentialParams::Init()
       DRT::INPUT::IntegralValue<INPAR::BEAMPOTENTIAL::BeamPotentialRegularizationType>(
           beam_potential_params_list, "REGULARIZATION_TYPE");
 
-  if (regularization_type_ != INPAR::BEAMPOTENTIAL::regularization_none and
-      strategy_ != INPAR::BEAMPOTENTIAL::strategy_doublelengthspec_smallsepapprox)
+  if ((regularization_type_ != INPAR::BEAMPOTENTIAL::regularization_none and
+          strategy_ == INPAR::BEAMPOTENTIAL::strategy_doublelengthspec_largesepapprox) or
+      (regularization_type_ == INPAR::BEAMPOTENTIAL::regularization_constant and
+          strategy_ == INPAR::BEAMPOTENTIAL::strategy_singlelengthspec_smallsepapprox))
   {
     dserror(
-        "Regularization of force law only implemented for strategy "
-        "'DoubleLengthSpecific_SmallSepApprox' yet!");
+        "This kind of regularization of the force law is not implemented for this strategy yet!");
   }
 
   /****************************************************************************/
