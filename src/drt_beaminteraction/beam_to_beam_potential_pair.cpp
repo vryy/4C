@@ -2134,7 +2134,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
       // comparison of residuum vectors and print results
 
-      const double ABSDIFFTOL = 1e-12;
+      const double ABSDIFFTOL = 1e-14;
       const double RELDIFFTOL = 1e-10;
 
       for (unsigned int i = 0; i < force_pot_slave_GP.M(); ++i)
@@ -2147,7 +2147,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
                          force_pot_slave_GP_calc_via_FAD(i)) > RELDIFFTOL))
         {
           std::cout << "\n\ndetected difference in force_pot_slave_GP for i=" << i
-                    << ": abs_diff=" << std::scientific << std::setprecision(10)
+                    << ": FAD predicts " << std::scientific << std::setprecision(10)
+                    << force_pot_slave_GP_calc_via_FAD(i) << ", abs_diff="
                     << FADUTILS::CastToDouble(force_pot_slave_GP(i)) -
                            force_pot_slave_GP_calc_via_FAD(i)
                     << ", rel_diff="
@@ -2195,7 +2196,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
                          force_pot_master_GP_calc_via_FAD(i)) > RELDIFFTOL))
         {
           std::cout << "\n\ndetected difference in force_pot_master_GP for i=" << i
-                    << ": abs_diff=" << std::scientific << std::setprecision(10)
+                    << ": FAD predicts " << std::scientific << std::setprecision(10)
+                    << force_pot_master_GP_calc_via_FAD(i) << ", abs_diff="
                     << FADUTILS::CastToDouble(force_pot_master_GP(i)) -
                            force_pot_master_GP_calc_via_FAD(i)
                     << ", rel_diff="
