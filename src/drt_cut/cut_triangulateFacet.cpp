@@ -21,6 +21,7 @@
 #include "cut_side.H"
 #include "cut_boundingbox.H"
 #include "cut_position.H"
+#include "cut_output.H"
 #include <math.h>
 
 /*-----------------------------------------------------------------------------------------------------------*
@@ -246,6 +247,7 @@ void GEO::CUT::TriangulateFacet::SplitGeneralFacet(std::vector<int> ptConcavity)
 
   while (1)
   {
+    int start_size = ptlist_.size();
     if ((num - concsize) < 4)  // this means that no Quad cells can be formed for this geometry
     {
       EarClipping(ptConcavity);
@@ -254,6 +256,7 @@ void GEO::CUT::TriangulateFacet::SplitGeneralFacet(std::vector<int> ptConcavity)
 
     newCell.clear();
     int ncross = 0;
+
     for (int i = 0; i < num; ++i)
     {
       newCell.clear();
@@ -383,6 +386,16 @@ void GEO::CUT::TriangulateFacet::SplitGeneralFacet(std::vector<int> ptConcavity)
         SplitConvex_1ptConcave_Facet(ptConcavity);
         return;
       }
+      if (num == start_size)
+      {
+        // we can not split it with the normal strategy.
+        // trianglulate the rest with earclipping
+        // one may want more elaborate strategy here
+        // if somethin goes wrong
+        EarClipping(ptConcavity, true, true);
+        return;
+        // dserror("Starting infinite loop!");
+      }
     }
   }
 }
@@ -408,6 +421,120 @@ bool GEO::CUT::TriangulateFacet::HasTwoContinuousConcavePts(std::vector<int> ptC
       return true;
   }
   return false;
+}
+
+
+void GEO::CUT::TriangulateFacet::RestoreLastEar(int ear_head_index, std::vector<int>& ptConcavity)
+{
+  std::vector<Point*> last_added_ear = split_.back();
+  split_.pop_back();
+  ptlist_.insert(ptlist_.begin() + ear_head_index, last_added_ear[1]);
+
+  GEO::CUT::FacetShape str1;
+  ptConcavity.clear();
+  ptConcavity =
+      KERNEL::CheckConvexity(ptlist_, str1, true, false);  // concave points for the new polygon
+}
+
+
+void GEO::CUT::TriangulateFacet::SplitTriangleWithPointsOnLine(unsigned int start_id)
+{
+  unsigned int polPts = ptlist_.size();
+  unsigned int split_start = (start_id + 1) % polPts;
+  unsigned int split_end = (start_id == 0) ? (polPts - 1) : (start_id - 1) % polPts;
+
+  for (unsigned int i = split_start; i != split_end; i = (i + 1) % polPts)
+  {
+    std::vector<Point*> tri(3);
+    tri[0] = ptlist_[start_id];
+    tri[1] = ptlist_[i];
+    tri[2] = ptlist_[(i + 1) % polPts];
+    split_.push_back(tri);
+  }
+
+  // we are done with everything
+  ptlist_.clear();
+}
+
+
+unsigned int GEO::CUT::TriangulateFacet::FindSecondBestEar(
+    std::vector<std::pair<std::vector<Point*>, unsigned int>>& ears, const std::vector<int>& reflex)
+{
+  unsigned int polPts = ptlist_.size();
+  std::vector<int> filtered_ears;
+  unsigned int counter = 0;
+
+  // first try to find ears, that do not contain other points,
+  // using precice checks and ignoring 'inline' info
+  for (auto& ear : ears)
+  {
+    std::vector<Point*> tri = ear.first;
+    unsigned int i = ear.second;
+    // recover the points
+    unsigned ind0 = i - 1;
+    if (i == 0) ind0 = polPts - 1;
+    unsigned ind2 = (i + 1) % polPts;
+
+    bool isEar = true;
+
+    LINALG::Matrix<3, 3> tri_coord;
+    tri[0]->Coordinates(tri_coord.A());
+    tri[1]->Coordinates(tri_coord.A() + 3);
+    tri[2]->Coordinates(tri_coord.A() + 6);
+    // check whether any point of polygon is inside
+    for (unsigned j = 0; j < reflex.size(); j++)
+    {
+      unsigned reflInd = reflex[j];
+      // skip points of the triangle itself
+      if (reflInd == ind0 || reflInd == ind2) continue;
+
+      LINALG::Matrix<3, 1> point_cord(ptlist_[reflInd]);
+      Teuchos::RCP<GEO::CUT::Position> pos =
+          GEO::CUT::Position::Create(tri_coord, point_cord, DRT::Element::tri3);
+      // precice computation if it is inside
+      bool is_inside = pos->Compute(0.0);
+      if (is_inside)
+      {
+        // another check if it is not the same point as triangle's vertexes
+        if (ptlist_[reflInd] != ptlist_[ind0] and ptlist_[reflInd] != ptlist_[i] and
+            ptlist_[reflInd] != ptlist_[ind2])
+        {
+          isEar = false;
+          break;
+        }
+      }
+    }
+
+    if (isEar)
+    {
+      filtered_ears.push_back(counter);
+    }
+    counter++;
+  }
+
+
+  if (filtered_ears.empty())
+  {
+    dserror("Could find suitable ear for triangulation");
+  }
+
+  // now out of the filtered ears we try to find
+  // the "thinnest"
+  double ear_head_proximity;
+  unsigned int best_index;
+  for (unsigned int index : filtered_ears)
+  {
+    std::vector<Point*> tri = ears[index].first;
+    double tri_ear_head_proximity = GEO::CUT::DistanceBetweenPoints(tri[1], tri[0]) +
+                                    GEO::CUT::DistanceBetweenPoints(tri[1], tri[2]);
+    if (tri_ear_head_proximity < ear_head_proximity or index == 0)
+    {
+      best_index = index;
+      ear_head_proximity = tri_ear_head_proximity;
+    }
+  }
+
+  return best_index;
 }
 
 /*-------------------------------------------------------------------------------------------------*
@@ -455,6 +582,11 @@ void GEO::CUT::TriangulateFacet::EarClipping(
     ptConcavity = KERNEL::CheckConvexity(ptlist_, geoType, true, DeleteInlinePts);
   }
 
+
+  // to fix cases, with vertexes on one line and no possiblity of triangulation
+  std::vector<Point*> last_added_ear;
+  int last_added_ear_head;
+
   while (1)
   {
     unsigned int split_size = split_.size();
@@ -467,6 +599,7 @@ void GEO::CUT::TriangulateFacet::EarClipping(
     // They are non-reflex points of the polygon
     int conNum = 0;
 
+    std::vector<std::pair<std::vector<Point*>, unsigned int>> discarded_ears;
     for (int i = 0; i < polPts; i++)
     {
       if (ptConcavity.size() > 0 && i == ptConcavity[0])
@@ -532,7 +665,18 @@ void GEO::CUT::TriangulateFacet::EarClipping(
         }
       }
 
-      if (!isEar) continue;
+      // the only places where ear is discarded
+      // if we  we discard all ears also, to process
+      // them later on with the different algo
+      // if( !isEar ) {
+      if (!isEar)
+      {
+        discarded_ears.push_back(std::make_pair(tri, i));
+        continue;
+      }
+      // last added ear is not needd
+      last_added_ear = tri;
+      last_added_ear_head = i;
 
       split_.push_back(tri);
       ptlist_.erase(
@@ -578,8 +722,68 @@ void GEO::CUT::TriangulateFacet::EarClipping(
         return;
       }
     }
+    // one of the reason to fail is cases with triangles
+    // with multiple points on the line,  we handle it
+    // here
     if (split_size == split_.size())
     {
+      if (discarded_ears.size() > 1)
+      {
+        unsigned int best_ear_index =
+            (discarded_ears.size() == 1) ? 0 : FindSecondBestEar(discarded_ears, reflex);
+
+        std::vector<Point*> tri = discarded_ears[best_ear_index].first;
+        unsigned int i = discarded_ears[best_ear_index].second;
+
+        split_.push_back(tri);
+        ptlist_.erase(ptlist_.begin() + i);
+
+        if (ptlist_.size() == 3)
+        {
+          split_.push_back(ptlist_);
+          break;
+        }
+        /// update triangle shape info
+        ptConcavity.clear();
+        GEO::CUT::FacetShape str1;
+        ptConcavity = KERNEL::CheckConvexity(
+            ptlist_, str1, true, DeleteInlinePts);  // concave points for the new polygon
+        last_added_ear = tri;
+        last_added_ear_head = i;
+        continue;
+      }
+      // either we wrongfully deleted an ear on iteration before
+      // or haven't considered it in the current
+      else
+      {
+        if (last_added_ear.size() != 0 or discarded_ears.size() != 0)
+        {
+          // recover last added ear
+          if (discarded_ears.size() == 0) RestoreLastEar(last_added_ear_head, ptConcavity);
+          // use discareded one
+          else
+            last_added_ear_head = discarded_ears[0].second;
+
+          // if last ear was convex, which it should be
+          unsigned int split_start;
+          if (std::find(ptConcavity.begin(), ptConcavity.end(), last_added_ear_head) ==
+              ptConcavity.end())
+            split_start = last_added_ear_head;
+          else
+            dserror("Unknown case!");
+
+          SplitTriangleWithPointsOnLine(split_start);
+          return;
+        }
+        else
+        {
+          if (convex.size() == 0)
+            dserror("Not sure how to split a triangle with all points on one line");
+          else
+            dserror("Unknown case!");
+        }
+      }
+
       Teuchos::RCP<BoundingBox> bb = Teuchos::rcp(BoundingBox::Create());
       std::cout << "The facet points are as follows\n";
       for (std::vector<Point*>::iterator it = ptlist_.begin(); it != ptlist_.end(); it++)

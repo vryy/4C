@@ -23,6 +23,9 @@
 
 #include <mpi.h>
 
+
+void test_bacigenerated_238343();
+void test_bacigenerated_369096();
 void test_bacigenerated_79216();
 void test_bacigenerated_197489();
 void test_bacigenerated_238425();
@@ -405,6 +408,12 @@ int main(int argc, char** argv)
 #endif
 
   functable["touching_hole"] = test_bacigenerated_79216;
+
+  // tests to test small edge cases in triangulation
+  // they fail, but due to other problems, not related to triangulation
+  // functable["narrow_triangulation"] = test_bacigenerated_369096;
+  // functable["split_facet"] = test_bacigenerated_238343;
+
   // tests that failed, due to the problem with spliting surface with holes
   // in the colored
   functable["split_colored_graph_1"] = test_bacigenerated_197489;
