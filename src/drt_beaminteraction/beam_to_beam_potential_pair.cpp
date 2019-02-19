@@ -1463,7 +1463,16 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
       // check cutoff criterion: if specified, contributions are neglected at larger separation
       if (cutoff_radius != -1.0 and FADUTILS::CastToDouble(FADUTILS::Norm(dist_ul)) > cutoff_radius)
+      {
+        //************************** DEBUG ******************************************
+        // std::cout << "\nINFO: Ignored GP (ele GIDs " << Element1()->Id() << "&" <<
+        // Element2()->Id()
+        //          << ": iGP " << igp_total
+        //          << ") with |dist_ul|=" << FADUTILS::CastToDouble(FADUTILS::Norm(dist_ul))
+        //          << " > cutoff=" << cutoff_radius << std::endl;
+        //*********************** END DEBUG *****************************************
         continue;
+      }
 
       // mutual angle of tangent vectors at unilateral closest points
       BEAMINTERACTION::GEO::CalcEnclosedAngle(alpha, cos_alpha, r_xi_slave, r_xi_master);
@@ -1531,14 +1540,20 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       // gap of bilateral closest point (also valid for special case alpha=0)
       gap_bl = FADUTILS::Norm(dist_ul.Dot(normal_bl)) - radius1_ - radius2_;
 
+      const double MAXNEGATIVEBILATERALGAP = -0.9 * radius2_;
 
-      if (FADUTILS::Norm(alpha) >= BEAMSCOLINEARANGLETHRESHOLD and gap_bl < -0.9 * radius2_)
+      if (FADUTILS::Norm(alpha) >= BEAMSCOLINEARANGLETHRESHOLD and gap_bl < MAXNEGATIVEBILATERALGAP)
       {
-        std::cout << "\nINFO: Ignored GP (ele GIDs " << Element1()->Id() << "&" << Element2()->Id()
-                  << ": iGP " << igp_total
-                  << ") with alpha=" << FADUTILS::CastToDouble(alpha) * 180 / M_PI
-                  << "° >= " << BEAMSCOLINEARANGLETHRESHOLD * 180 / M_PI
-                  << "° and gap_bl/R=" << FADUTILS::CastToDouble(gap_bl) / radius2_ << " < -0.9 ";
+        //************************** DEBUG **********************************************
+        // std::cout << "\nINFO: Ignored GP (ele GIDs " << Element1()->Id() << "&" <<
+        // Element2()->Id()
+        //          << ": iGP " << igp_total
+        //          << ") with alpha=" << FADUTILS::CastToDouble(alpha) * 180 / M_PI
+        //          << "° >= " << BEAMSCOLINEARANGLETHRESHOLD * 180 / M_PI
+        //          << "° and gap_bl/R=" << FADUTILS::CastToDouble(gap_bl) / radius2_ << " < "
+        //          << MAXNEGATIVEBILATERALGAP / radius2_
+        //          << " and x/R=" << FADUTILS::CastToDouble(x) / radius2_ << std::endl;
+        ////*********************** END DEBUG *********************************************
 
         if (FADUTILS::Norm(x) < 20 * radius2_)
         {
@@ -1582,6 +1597,23 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
       Delta = 4 * a * (beta - radius2_) - x * x * sin_2alpha * sin_2alpha / (4 * beta_exp2);
 
+
+      if (gap_bl < 0.0)
+      {
+        //************************** DEBUG **********************************************
+        // std::cout << "\nINFO: GP with negative gap_bl (ele GIDs " << Element1()->Id() << "&"
+        //          << Element2()->Id() << ": iGP " << igp_total
+        //          << ") with alpha=" << FADUTILS::CastToDouble(alpha) * 180 / M_PI
+        //          << "° and gap_bl/R=" << FADUTILS::CastToDouble(gap_bl) / radius2_
+        //          << " and x/R=" << FADUTILS::CastToDouble(x) / radius2_;
+        //
+        // std::cout << "\n|dist_ul|: " << FADUTILS::CastToDouble(FADUTILS::Norm(dist_ul));
+        // std::cout << "\nbeta: " << FADUTILS::CastToDouble(beta);
+        // std::cout << "\na: " << FADUTILS::CastToDouble(a);
+        // std::cout << "\nDelta: " << FADUTILS::CastToDouble(Delta);
+        //*********************** END DEBUG *********************************************
+      }
+
       //************************** DEBUG ******************************************
       //    std::cout << "\nbeta: " << FADUTILS::CastToDouble(beta);
       //    std::cout << "\nbeta^2: " << FADUTILS::CastToDouble( beta*beta );
@@ -1617,18 +1649,18 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         Delta_regularized = regularization_separation;
 
         //************************** DEBUG ******************************************
-        std::cout << "\nDelta: " << FADUTILS::CastToDouble(Delta) << ": regularization active!";
-        std::cout << "\nDelta_regularized: " << FADUTILS::CastToDouble(Delta_regularized);
-
-        this->Print(std::cout);
-        std::cout << "\nigp_total: " << igp_total;
-
-        std::cout << "\ngap_bl: " << FADUTILS::CastToDouble(gap_bl);
-        std::cout << "\nalpha: " << FADUTILS::CastToDouble(alpha * 180 / M_PI) << "°";
-        std::cout << "\nx: " << FADUTILS::CastToDouble(x) << std::endl;
-
-        std::cout << "\nbeta: " << FADUTILS::CastToDouble(beta);
-        std::cout << "\na: " << FADUTILS::CastToDouble(a);
+        // std::cout << "\nDelta: " << FADUTILS::CastToDouble(Delta) << ": regularization active!";
+        // std::cout << "\nDelta_regularized: " << FADUTILS::CastToDouble(Delta_regularized);
+        //
+        // this->Print(std::cout);
+        // std::cout << "\nigp_total: " << igp_total;
+        //
+        // std::cout << "\ngap_bl: " << FADUTILS::CastToDouble(gap_bl);
+        // std::cout << "\nalpha: " << FADUTILS::CastToDouble(alpha * 180 / M_PI) << "°";
+        // std::cout << "\nx: " << FADUTILS::CastToDouble(x) << std::endl;
+        //
+        // std::cout << "\nbeta: " << FADUTILS::CastToDouble(beta);
+        // std::cout << "\na: " << FADUTILS::CastToDouble(a);
         //*********************** END DEBUG *****************************************
       }
 
