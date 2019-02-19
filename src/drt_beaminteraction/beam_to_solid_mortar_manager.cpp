@@ -18,6 +18,9 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_serialdensevector.H"
+
+#include <Epetra_FEVector.h>
 
 
 /**
@@ -37,7 +40,8 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
       node_gid_to_lambda_gid_(Teuchos::null),
       element_gid_to_lambda_gid_(Teuchos::null),
       global_D_(Teuchos::null),
-      global_M_(Teuchos::null)
+      global_M_(Teuchos::null),
+      global_kappa_(Teuchos::null)
 {
   // Get the number of Lagrange multiplier DOF on a beam node and on a beam element.
   switch (mortar_shape_function)
@@ -146,6 +150,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::Setup()
       *lambda_dof_rowmap_, 30, true, true, LINALG::SparseMatrix::FE_MATRIX));
   global_M_ = Teuchos::rcp(new LINALG::SparseMatrix(
       *lambda_dof_rowmap_, 100, true, true, LINALG::SparseMatrix::FE_MATRIX));
+  global_kappa_ = Teuchos::rcp(new Epetra_FEVector(*lambda_dof_rowmap_));
 
   // Create the maps for beam and solid DOFs.
   SetGlobalMaps();
@@ -332,9 +337,10 @@ void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalDM(
   // Local mortar matrices that will be filled up by EvaluateDM.
   LINALG::SerialDenseMatrix local_D_centerlineDOFs;
   LINALG::SerialDenseMatrix local_M;
+  LINALG::SerialDenseVector local_kappa;
 
-  // For the D matrix we need to assemble the centerline DOF to the element dof. This is done into
-  // this matrix.
+  // For the D matrix we need to assemble the centerline DOF to the element dof. This is done
+  // into this matrix.
   LINALG::SerialDenseMatrix local_D_elementDOFs;
 
   // Flag if pair has a active contribution.
@@ -347,7 +353,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalDM(
     {
       // Evaluate the mortar contributions on the pair, if there are some, assemble into the global
       // matrices.
-      mortar_is_active = elepairptr->EvaluateDM(local_D_centerlineDOFs, local_M);
+      mortar_is_active = elepairptr->EvaluateDM(local_D_centerlineDOFs, local_M, local_kappa);
 
       if (mortar_is_active)
       {
@@ -370,9 +376,20 @@ void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalDM(
         elepairptr->Element1()->LocationVector(*discret_, beam_row, dummy_1, dummy_2);
         elepairptr->Element2()->LocationVector(*discret_, solid_row, dummy_1, dummy_2);
 
+        // Save check the matrix sizes.
+        if (local_D_elementDOFs.RowDim() != (int)lambda_row.size() &&
+            local_D_elementDOFs.ColDim() != (int)beam_row.size())
+          dserror("Size of local D matrix does not match the GID vectors!");
+        if (local_M.RowDim() != (int)lambda_row.size() && local_M.ColDim() != (int)solid_row.size())
+          dserror("Size of local M matrix does not match the GID vectors!");
+        if (local_kappa.RowDim() != (int)lambda_row.size() && local_kappa.ColDim() != 1)
+          dserror("Size of local kappa vector does not match the GID vector!");
+
         // Assemble into the global matrices.
         global_D_->FEAssemble(local_D_elementDOFs, lambda_row, beam_row);
         global_M_->FEAssemble(local_M, lambda_row, solid_row);
+        global_kappa_->SumIntoGlobalValues(
+            local_kappa.RowDim(), &lambda_row[0], local_kappa.Values());
       }
     }
   }

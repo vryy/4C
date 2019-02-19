@@ -235,10 +235,14 @@ namespace BEAMINTERACTION
     inline virtual bool IsMortar() const { return false; };
 
     /**
-     * \brief Evaluate the mortar matrices of this contact pair. Return true if the contribution is
-     * not zero.
+     * \brief Evaluate the mortar matrices $D$ and $M$ for this contact element pair.
+     * @param local_D (out) Local mortar matrix $D$.
+     * @param local_M (out) Local mortar matrix $M$.
+     * @param local_kappa (out) Local scaling vector.
+     * @return True if pair is in contact.
      */
-    virtual bool EvaluateDM(LINALG::SerialDenseMatrix& local_D, LINALG::SerialDenseMatrix& local_M)
+    virtual bool EvaluateDM(LINALG::SerialDenseMatrix& local_D, LINALG::SerialDenseMatrix& local_M,
+        LINALG::SerialDenseVector& local_kappa)
     {
       return false;
     }

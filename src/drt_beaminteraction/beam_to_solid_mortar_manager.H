@@ -21,6 +21,7 @@
 // Forward declarations.
 class Epetra_Map;
 class Epetra_MultiVector;
+class Epetra_FEVector;
 namespace DRT
 {
   class Discretization;
@@ -205,6 +206,9 @@ namespace BEAMINTERACTION
 
     //! Global \f$M\f$ matrix.
     Teuchos::RCP<LINALG::SparseMatrix> global_M_;
+
+    //! Global \f$\kappa\f$ vector.
+    Teuchos::RCP<Epetra_FEVector> global_kappa_;
   };
 }  // namespace BEAMINTERACTION
 

@@ -44,12 +44,13 @@ namespace BEAMINTERACTION
 
     /**
      * \brief Evaluate the mortar matrices $D$ and $M$ for this contact element pair.
-     * @param mortar_D (out) Local mortar matrix $D$.
-     * @param mortar_M (out) Local mortar matrix $M$.
+     * @param local_D (out) Local mortar matrix $D$.
+     * @param local_M (out) Local mortar matrix $M$.
+     * @param local_kappa (out) Local scaling vector.
      * @return True if pair is in contact.
      */
-    bool EvaluateDM(
-        LINALG::SerialDenseMatrix& local_D, LINALG::SerialDenseMatrix& local_M) override;
+    bool EvaluateDM(LINALG::SerialDenseMatrix& local_D, LINALG::SerialDenseMatrix& local_M,
+        LINALG::SerialDenseVector& local_kappa) override;
 
     /**
      * \brief This pair contributes to the mortar contact discretization.
