@@ -310,10 +310,13 @@ void PARTICLEINTERACTION::SPHTemperature::EnergyEquation() const
     else
       dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
 
-    // factor containing temperature difference
-    const double fac =
-        (thermomaterial_i->thermalConductivity_ + thermomaterial_j->thermalConductivity_) *
-        (temp_i[0] - temp_j[0]) / (dens_i[0] * dens_j[0] * neighborpair.absdist_);
+    // thermal conductivities
+    const double& k_i = thermomaterial_i->thermalConductivity_;
+    const double& k_j = thermomaterial_j->thermalConductivity_;
+
+    // factor containing effective conductivity and temperature difference
+    const double fac = (4.0 * k_i * k_j) * (temp_i[0] - temp_j[0]) /
+                       (dens_i[0] * dens_j[0] * (k_i + k_j) * neighborpair.absdist_);
 
     // no temperature integration for boundary particles
     if (type_i != PARTICLEENGINE::BoundaryPhase)
