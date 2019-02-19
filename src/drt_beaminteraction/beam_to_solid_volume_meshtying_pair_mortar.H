@@ -49,7 +49,7 @@ namespace BEAMINTERACTION
      * @return True if pair is in contact.
      */
     bool EvaluateDM(
-        LINALG::SerialDenseMatrix& mortar_D, LINALG::SerialDenseMatrix& mortar_M) override;
+        LINALG::SerialDenseMatrix& local_D, LINALG::SerialDenseMatrix& local_M) override;
 
     /**
      * \brief This pair contributes to the mortar contact discretization.

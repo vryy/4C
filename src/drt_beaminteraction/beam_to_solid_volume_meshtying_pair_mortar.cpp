@@ -36,7 +36,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
  */
 template <typename beam, typename solid, typename mortar>
 bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>::EvaluateDM(
-    LINALG::SerialDenseMatrix& mortar_D, LINALG::SerialDenseMatrix& mortar_M)
+    LINALG::SerialDenseMatrix& local_D, LINALG::SerialDenseMatrix& local_M)
 {
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
@@ -97,7 +97,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>:
       solid::EvaluateShapeFunction(
           N_solid, projected_gauss_point.GetXi(), std::integral_constant<unsigned int, 3>{});
 
-      // Fill in the local mortar matrix D.
+      // Fill in the local templated mortar matrix D.
       for (unsigned int i_mortar_node = 0; i_mortar_node < mortar::n_nodes_; i_mortar_node++)
         for (unsigned int i_mortar_val = 0; i_mortar_val < mortar::n_val_; i_mortar_val++)
           for (unsigned int i_beam_node = 0; i_beam_node < beam::n_nodes_; i_beam_node++)
@@ -109,7 +109,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>:
                     N_beam(i_beam_node * beam::n_val_ + i_beam_val) *
                     projected_gauss_point.GetGaussWeight() * segment_jacobian;
 
-      // Fill in the local mortar matrix M.
+      // Fill in the local templated mortar matrix M.
       for (unsigned int i_mortar_node = 0; i_mortar_node < mortar::n_nodes_; i_mortar_node++)
         for (unsigned int i_mortar_val = 0; i_mortar_val < mortar::n_val_; i_mortar_val++)
           for (unsigned int i_solid_node = 0; i_solid_node < solid::n_nodes_; i_solid_node++)
@@ -122,6 +122,16 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>:
                     projected_gauss_point.GetGaussWeight() * segment_jacobian;
     }
   }
+
+  // Put the values of the templated matrices into the local matrices that are returned.
+  local_D.Shape(mortar::n_dof_, beam::n_dof_);
+  local_M.Shape(mortar::n_dof_, solid::n_dof_);
+  for (unsigned int i_row = 0; i_row < mortar::n_dof_; i_row++)
+    for (unsigned int i_col = 0; i_col < beam::n_dof_; i_col++)
+      local_D(i_row, i_col) = D(i_row, i_col);
+  for (unsigned int i_row = 0; i_row < mortar::n_dof_; i_row++)
+    for (unsigned int i_col = 0; i_col < solid::n_dof_; i_col++)
+      local_M(i_row, i_col) = M(i_row, i_col);
 
   // If we get to this point, the pair has a mortar contribution.
   return true;

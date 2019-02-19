@@ -238,8 +238,7 @@ namespace BEAMINTERACTION
      * \brief Evaluate the mortar matrices of this contact pair. Return true if the contribution is
      * not zero.
      */
-    virtual bool EvaluateDM(
-        LINALG::SerialDenseMatrix& mortar_D, LINALG::SerialDenseMatrix& mortar_M)
+    virtual bool EvaluateDM(LINALG::SerialDenseMatrix& local_D, LINALG::SerialDenseMatrix& local_M)
     {
       return false;
     }

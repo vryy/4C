@@ -38,6 +38,10 @@ namespace BEAMINTERACTION
   class BeamContactPair;
 }  // namespace BEAMINTERACTION
 
+namespace LINALG
+{
+  class SparseMatrix;
+}  // namespace LINALG
 
 namespace BEAMINTERACTION
 {
@@ -68,7 +72,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Standard Constructor
      */
-    BeamToSolidMortarManager(
+    BeamToSolidMortarManager(const Teuchos::RCP<DRT::Discretization> discret,
         const INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions& mortar_shape_function);
 
     /**
@@ -82,10 +86,17 @@ namespace BEAMINTERACTION
      *
      * @param discret Pointer to the discretization.
      */
-    void Setup(const Teuchos::RCP<DRT::Discretization> discret);
+    void Setup();
 
     /**
-     * \brief This method builds the local maps from the global multi vector created in Setup.
+     * \brief Calculate the maps for the beam and solid dofs. The calcualted maps are used in
+     * Complete of the mortar matrices.
+     */
+    void SetGlobalMaps();
+
+    /**
+     * \brief This method builds the local maps from the global multi vector created in Setup. The
+     * global mortar matrices are also created.
      *
      * Since some nodes of this pair, that have Lagrange multipliers may not be on this processor,
      * we need to get the node ID to Lagrange multiplier ID form the processor that holds the
@@ -99,8 +110,8 @@ namespace BEAMINTERACTION
      * @param discret Pointer to the discretization.
      * @param contact_pairs All contact pairs on this processor.
      */
-    void SetLocalMaps(const Teuchos::RCP<DRT::Discretization> discret,
-        const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> contact_pairs);
+    void SetLocalMaps(
+        const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& contact_pairs);
 
     /**
      * \brief Get the global IDs of all Lagrange multipliers for the contact pair.
@@ -108,10 +119,12 @@ namespace BEAMINTERACTION
      * @param lambda_row (out) Standard vector with the global IDs of the Lagrange multipliers for
      * this pair.
      */
-    void LocationVector(const Teuchos::RCP<BEAMINTERACTION::BeamContactPair> contact_pair,
+    void LocationVector(const Teuchos::RCP<BEAMINTERACTION::BeamContactPair>& contact_pair,
         std::vector<int>& lambda_row) const;
 
     /**
+     * \brief Evaluate D and M on all pairs and assemble them into the global matrices.
+     * @param contact_pairs (in) Vector with all beam contact pairs in the model evaluator.
      */
     void EvaluateGlobalDM(
         const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& contact_pairs);
@@ -130,6 +143,14 @@ namespace BEAMINTERACTION
      */
     inline void CheckLocalMaps() const
     {
+      if (!is_global_maps_build_) dserror("Global maps are not build in BeamToSolidMortarManager!");
+    }
+
+    /**
+     * \brief Throw an error if the global maps were not build.
+     */
+    inline void CheckGlobalMaps() const
+    {
       if (!is_local_maps_build_) dserror("Local maps are not build in BeamToSolidMortarManager!");
     }
 
@@ -141,6 +162,9 @@ namespace BEAMINTERACTION
     //! Flag if local maps were build.
     bool is_local_maps_build_;
 
+    //! Flag if global maps were build.
+    bool is_global_maps_build_;
+
     //! Base for the index used for the Lagrange multiplier DOFs.
     int index_base_;
 
@@ -150,8 +174,17 @@ namespace BEAMINTERACTION
     //! Number of Lagrange multiplier DOFs on an element.
     unsigned int n_lambda_element_;
 
+    //! Pointer to the discretization.
+    const Teuchos::RCP<DRT::Discretization> discret_;
+
     //! Rowmap of the additional Lagrange multiplier DOFs.
     Teuchos::RCP<Epetra_Map> lambda_dof_rowmap_;
+
+    //! Rowmap of the beam DOFs.
+    Teuchos::RCP<Epetra_Map> beam_dof_rowmap_;
+
+    //! Rowmap of the solid DOFs.
+    Teuchos::RCP<Epetra_Map> solid_dof_rowmap_;
 
     //! Multivector that connects the global node IDs with the Lagrange multiplier DOF IDs.
     Teuchos::RCP<Epetra_MultiVector> node_gid_to_lambda_gid_;
@@ -166,6 +199,12 @@ namespace BEAMINTERACTION
     //! Standard map from global element ids to global Lagrange multiplier ids, for all elements
     //! used on this rank.
     std::map<int, std::vector<int>> element_gid_to_lambda_gid_map_;
+
+    //! Global \f$D\f$ matrix.
+    Teuchos::RCP<LINALG::SparseMatrix> global_D_;
+
+    //! Global \f$M\f$ matrix.
+    Teuchos::RCP<LINALG::SparseMatrix> global_M_;
   };
 }  // namespace BEAMINTERACTION
 

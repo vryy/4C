@@ -24,13 +24,20 @@
  *
  */
 BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
+    const Teuchos::RCP<DRT::Discretization> discret,
     const INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions& mortar_shape_function)
     : is_setup_(false),
       is_local_maps_build_(false),
+      is_global_maps_build_(false),
       index_base_(0),
+      discret_(discret),
       lambda_dof_rowmap_(Teuchos::null),
+      beam_dof_rowmap_(Teuchos::null),
+      solid_dof_rowmap_(Teuchos::null),
       node_gid_to_lambda_gid_(Teuchos::null),
-      element_gid_to_lambda_gid_(Teuchos::null)
+      element_gid_to_lambda_gid_(Teuchos::null),
+      global_D_(Teuchos::null),
+      global_M_(Teuchos::null)
 {
   // Get the number of Lagrange multiplier DOF on a beam node and on a beam element.
   switch (mortar_shape_function)
@@ -55,22 +62,21 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidMortarManager::Setup(
-    const Teuchos::RCP<DRT::Discretization> discret)
+void BEAMINTERACTION::BeamToSolidMortarManager::Setup()
 {
   // Get the global ids of all beam centerline nodes on this rank.
   std::vector<int> my_nodes_gid;
-  for (int i_node = 0; i_node < discret->NodeRowMap()->NumMyElements(); i_node++)
+  for (int i_node = 0; i_node < discret_->NodeRowMap()->NumMyElements(); i_node++)
   {
-    DRT::Node const& node = *(discret->lRowNode(i_node));
+    DRT::Node const& node = *(discret_->lRowNode(i_node));
     if (BEAMINTERACTION::UTILS::IsBeamCenterlineNode(node)) my_nodes_gid.push_back(node.Id());
   }
 
   // Get the global ids of all beam elements on this rank.
   std::vector<int> my_elements_gid;
-  for (int i_element = 0; i_element < discret->ElementRowMap()->NumMyElements(); i_element++)
+  for (int i_element = 0; i_element < discret_->ElementRowMap()->NumMyElements(); i_element++)
   {
-    DRT::Element const& element = *(discret->lRowElement(i_element));
+    DRT::Element const& element = *(discret_->lRowElement(i_element));
     if (BEAMINTERACTION::UTILS::IsBeamElement(element)) my_elements_gid.push_back(element.Id());
   }
 
@@ -80,15 +86,16 @@ void BEAMINTERACTION::BeamToSolidMortarManager::Setup(
   const unsigned int n_lambda_dof = n_nodes * n_lambda_node_ + n_element * n_lambda_element_;
 
   // Rowmap for the additional DOFs used by the mortar contact discretization.
-  lambda_dof_rowmap_ = Teuchos::rcp(new Epetra_Map(-1, n_lambda_dof, index_base_, discret->Comm()));
+  lambda_dof_rowmap_ =
+      Teuchos::rcp(new Epetra_Map(-1, n_lambda_dof, index_base_, discret_->Comm()));
 
   // We need to be able to get the global ids for a Lagrange multiplier DOF from the global id of a
   // node or element. To do so, we 'abuse' the Epetra_MultiVector as map between the global node /
   // element ids and the global Lagrange multiplier DOF ids.
   Teuchos::RCP<Epetra_Map> node_gid_rowmap =
-      Teuchos::rcp(new Epetra_Map(-1, n_nodes, &my_nodes_gid[0], 0, discret->Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, n_nodes, &my_nodes_gid[0], 0, discret_->Comm()));
   Teuchos::RCP<Epetra_Map> element_gid_rowmap =
-      Teuchos::rcp(new Epetra_Map(-1, n_element, &my_elements_gid[0], 0, discret->Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, n_element, &my_elements_gid[0], 0, discret_->Comm()));
 
   // Map from global node / element ids to global lagrange multiplier ids. Only create the
   // multivector if it hase one or more columns.
@@ -134,7 +141,16 @@ void BEAMINTERACTION::BeamToSolidMortarManager::Setup(
       }
   }
 
-  // Set flag for successfull setup.
+  // Create the global mortar matrices.
+  global_D_ = Teuchos::rcp(new LINALG::SparseMatrix(
+      *lambda_dof_rowmap_, 30, true, true, LINALG::SparseMatrix::FE_MATRIX));
+  global_M_ = Teuchos::rcp(new LINALG::SparseMatrix(
+      *lambda_dof_rowmap_, 100, true, true, LINALG::SparseMatrix::FE_MATRIX));
+
+  // Create the maps for beam and solid DOFs.
+  SetGlobalMaps();
+
+  // Set flag for successful setup.
   is_setup_ = true;
   is_local_maps_build_ = false;
 }
@@ -142,9 +158,35 @@ void BEAMINTERACTION::BeamToSolidMortarManager::Setup(
 /**
  *
  */
+void BEAMINTERACTION::BeamToSolidMortarManager::SetGlobalMaps()
+{
+  // Loop over all nodes on this processor -> we assume all beam and solid DOFs are based on nodes.
+  std::vector<int> beam_dofs(0);
+  std::vector<int> solid_dofs(0);
+  for (int i_node = 0; i_node < discret_->NodeRowMap()->NumMyElements(); i_node++)
+  {
+    const DRT::Node* node = discret_->lRowNode(i_node);
+    if (BEAMINTERACTION::UTILS::IsBeamNode(*node))
+      discret_->Dof(node, beam_dofs);
+    else
+      discret_->Dof(node, solid_dofs);
+  }
+
+  // Create the beam and solid maps.
+  beam_dof_rowmap_ =
+      Teuchos::rcp(new Epetra_Map(-1, beam_dofs.size(), &beam_dofs[0], 0, discret_->Comm()));
+  solid_dof_rowmap_ =
+      Teuchos::rcp(new Epetra_Map(-1, solid_dofs.size(), &solid_dofs[0], 0, discret_->Comm()));
+
+  // Set flags for global maps.
+  is_global_maps_build_ = true;
+}
+
+/**
+ *
+ */
 void BEAMINTERACTION::BeamToSolidMortarManager::SetLocalMaps(
-    const Teuchos::RCP<DRT::Discretization> discret,
-    const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> contact_pairs)
+    const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& contact_pairs)
 {
   CheckSetup();
 
@@ -161,7 +203,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::SetLocalMaps(
     const Teuchos::RCP<BEAMINTERACTION::BeamContactPair>& pair = contact_pairs[i_pair];
 
     // The first (beam) element should always be on the same processor as the pair.
-    if (pair->Element1()->Owner() != discret->Comm().MyPID())
+    if (pair->Element1()->Owner() != discret_->Comm().MyPID())
       dserror(
           "The current implementation need the first element of a beam contact pair to be on the "
           "same processor as the pair!");
@@ -189,9 +231,9 @@ void BEAMINTERACTION::BeamToSolidMortarManager::SetLocalMaps(
 
   // Create the maps for the extraction of the values.
   Teuchos::RCP<Epetra_Map> node_gid_needed_rowmap = Teuchos::rcp<Epetra_Map>(
-      new Epetra_Map(-1, node_gid_needed.size(), &node_gid_needed[0], 0, discret->Comm()));
+      new Epetra_Map(-1, node_gid_needed.size(), &node_gid_needed[0], 0, discret_->Comm()));
   Teuchos::RCP<Epetra_Map> element_gid_needed_rowmap = Teuchos::rcp<Epetra_Map>(
-      new Epetra_Map(-1, element_gid_needed.size(), &element_gid_needed[0], 0, discret->Comm()));
+      new Epetra_Map(-1, element_gid_needed.size(), &element_gid_needed[0], 0, discret_->Comm()));
 
   // Create the Multivectors that will be filled with all values needed on this rank.
   Teuchos::RCP<Epetra_MultiVector> node_gid_to_lambda_gid_copy = Teuchos::rcp<Epetra_MultiVector>(
@@ -232,7 +274,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::SetLocalMaps(
  *
  */
 void BEAMINTERACTION::BeamToSolidMortarManager::LocationVector(
-    const Teuchos::RCP<BEAMINTERACTION::BeamContactPair> contact_pair,
+    const Teuchos::RCP<BEAMINTERACTION::BeamContactPair>& contact_pair,
     std::vector<int>& lambda_row) const
 {
   CheckSetup();
@@ -284,19 +326,58 @@ void BEAMINTERACTION::BeamToSolidMortarManager::LocationVector(
 void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalDM(
     const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& contact_pairs)
 {
-  // Local mortar matrices.
-  LINALG::SerialDenseMatrix mortar_D;
-  LINALG::SerialDenseMatrix mortar_M;
+  CheckSetup();
+  CheckGlobalMaps();
+
+  // Local mortar matrices that will be filled up by EvaluateDM.
+  LINALG::SerialDenseMatrix local_D_centerlineDOFs;
+  LINALG::SerialDenseMatrix local_M;
+
+  // For the D matrix we need to assemble the centerline DOF to the element dof. This is done into
+  // this matrix.
+  LINALG::SerialDenseMatrix local_D_elementDOFs;
 
   // Flag if pair has a active contribution.
   bool mortar_is_active = false;
 
+  // Loop over elements and assemble the local D and M matrices into the global ones.
   for (auto& elepairptr : contact_pairs)
   {
     if (elepairptr->IsMortar())
     {
-      // Check if this pair contributes to the mortar matrices.
-      mortar_is_active = elepairptr->EvaluateDM(mortar_D, mortar_M);
+      // Evaluate the mortar contributions on the pair, if there are some, assemble into the global
+      // matrices.
+      mortar_is_active = elepairptr->EvaluateDM(local_D_centerlineDOFs, local_M);
+
+      if (mortar_is_active)
+      {
+        // We got contributions from the pair. Now we have to assemble into the global matrices. We
+        // use the FEAssembly here, since the contact pairs are not ghosted.
+
+        // Assemble the centerline matrix calculated by EvaluateDM into the full element matrix.
+        BEAMINTERACTION::UTILS::AssembleCenterlineDofColMatrixIntoElementColMatrix(
+            *discret_, elepairptr->Element1(), local_D_centerlineDOFs, local_D_elementDOFs);
+
+        // Get the GIDs of the Lagrange multipliers.
+        std::vector<int> lambda_row;
+        LocationVector(elepairptr, lambda_row);
+
+        // Get the GIDs of the beam DOF.
+        std::vector<int> beam_row;
+        std::vector<int> solid_row;
+        std::vector<int> dummy_1;
+        std::vector<int> dummy_2;
+        elepairptr->Element1()->LocationVector(*discret_, beam_row, dummy_1, dummy_2);
+        elepairptr->Element2()->LocationVector(*discret_, solid_row, dummy_1, dummy_2);
+
+        // Assemble into the global matrices.
+        global_D_->FEAssemble(local_D_elementDOFs, lambda_row, beam_row);
+        global_M_->FEAssemble(local_M, lambda_row, solid_row);
+      }
     }
   }
+
+  // Complete the global mortar matrices.
+  global_D_->Complete(*beam_dof_rowmap_, *lambda_dof_rowmap_);
+  global_M_->Complete(*solid_dof_rowmap_, *lambda_dof_rowmap_);
 }
