@@ -241,11 +241,14 @@ void BEAMINTERACTION::BeamToSolidMortarManager::SetLocalMaps(
       new Epetra_Map(-1, element_gid_needed.size(), &element_gid_needed[0], 0, discret_->Comm()));
 
   // Create the Multivectors that will be filled with all values needed on this rank.
-  Teuchos::RCP<Epetra_MultiVector> node_gid_to_lambda_gid_copy = Teuchos::rcp<Epetra_MultiVector>(
-      new Epetra_MultiVector(*node_gid_needed_rowmap, n_lambda_node_, true));
-  Teuchos::RCP<Epetra_MultiVector> element_gid_to_lambda_gid_copy =
-      Teuchos::rcp<Epetra_MultiVector>(
-          new Epetra_MultiVector(*element_gid_needed_rowmap, n_lambda_element_, true));
+  Teuchos::RCP<Epetra_MultiVector> node_gid_to_lambda_gid_copy = Teuchos::null;
+  Teuchos::RCP<Epetra_MultiVector> element_gid_to_lambda_gid_copy = Teuchos::null;
+  if (node_gid_to_lambda_gid_ != Teuchos::null)
+    node_gid_to_lambda_gid_copy = Teuchos::rcp<Epetra_MultiVector>(
+        new Epetra_MultiVector(*node_gid_needed_rowmap, n_lambda_node_, true));
+  if (element_gid_to_lambda_gid_ != Teuchos::null)
+    element_gid_to_lambda_gid_copy = Teuchos::rcp<Epetra_MultiVector>(
+        new Epetra_MultiVector(*element_gid_needed_rowmap, n_lambda_element_, true));
 
   // Export values from the global multi vector to the ones needed on this rank.
   if (node_gid_to_lambda_gid_ != Teuchos::null)
@@ -256,19 +259,25 @@ void BEAMINTERACTION::BeamToSolidMortarManager::SetLocalMaps(
   // Fill in the local maps.
   node_gid_to_lambda_gid_map_.clear();
   element_gid_to_lambda_gid_map_.clear();
-  std::vector<int> temp_node(n_lambda_node_);
-  for (int i_node = 0; i_node < node_gid_needed_rowmap->NumMyElements(); i_node++)
+  if (node_gid_to_lambda_gid_ != Teuchos::null)
   {
-    for (unsigned int i_temp = 0; i_temp < n_lambda_node_; i_temp++)
-      temp_node[i_temp] = (int)((*(*node_gid_to_lambda_gid_copy)(i_temp))[i_node]);
-    node_gid_to_lambda_gid_map_[node_gid_needed_rowmap->GID(i_node)] = temp_node;
+    std::vector<int> temp_node(n_lambda_node_);
+    for (int i_node = 0; i_node < node_gid_needed_rowmap->NumMyElements(); i_node++)
+    {
+      for (unsigned int i_temp = 0; i_temp < n_lambda_node_; i_temp++)
+        temp_node[i_temp] = (int)((*(*node_gid_to_lambda_gid_copy)(i_temp))[i_node]);
+      node_gid_to_lambda_gid_map_[node_gid_needed_rowmap->GID(i_node)] = temp_node;
+    }
   }
-  std::vector<int> temp_elements(n_lambda_element_);
-  for (int i_element = 0; i_element < element_gid_needed_rowmap->NumMyElements(); i_element++)
+  if (element_gid_to_lambda_gid_ != Teuchos::null)
   {
-    for (unsigned int i_temp = 0; i_temp < n_lambda_element_; i_temp++)
-      temp_elements[i_temp] = (int)((*(*element_gid_to_lambda_gid_copy)(i_temp))[i_element]);
-    element_gid_to_lambda_gid_map_[element_gid_needed_rowmap->GID(i_element)] = temp_elements;
+    std::vector<int> temp_elements(n_lambda_element_);
+    for (int i_element = 0; i_element < element_gid_needed_rowmap->NumMyElements(); i_element++)
+    {
+      for (unsigned int i_temp = 0; i_temp < n_lambda_element_; i_temp++)
+        temp_elements[i_temp] = (int)((*(*element_gid_to_lambda_gid_copy)(i_temp))[i_element]);
+      element_gid_to_lambda_gid_map_[element_gid_needed_rowmap->GID(i_element)] = temp_elements;
+    }
   }
 
   // Set flags for local maps.
@@ -333,6 +342,11 @@ void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalDM(
 {
   CheckSetup();
   CheckGlobalMaps();
+
+  // Clear the old values of D, M and kappa.
+  global_D_->PutScalar(0.);
+  global_M_->PutScalar(0.);
+  global_kappa_->PutScalar(0.);
 
   // Local mortar matrices that will be filled up by EvaluateDM.
   LINALG::SerialDenseMatrix local_D_centerlineDOFs;
