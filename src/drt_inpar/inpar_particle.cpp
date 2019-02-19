@@ -220,6 +220,9 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
 
   IntParameter("HEATSOURCE_FUNCT", -1, "number of function governing heat source", &particledynsph);
 
+  setNumericStringParameter(
+      "HEATSOURCE_DIRECTION", "0.0 0.0 0.0", "direction of surface heat source", &particledynsph);
+
   // type of surface tension formulation
   setStringToIntegralParameter<int>("SURFACETENSIONFORMULATION", "NoSurfaceTension",
       "type of surface tension formulation",

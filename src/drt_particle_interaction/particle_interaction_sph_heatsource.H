@@ -45,7 +45,8 @@ namespace PARTICLEENGINE
 namespace PARTICLEINTERACTION
 {
   class MaterialHandler;
-}
+  class SPHNeighborPairs;
+}  // namespace PARTICLEINTERACTION
 
 namespace MAT
 {
@@ -75,7 +76,8 @@ namespace PARTICLEINTERACTION
     //! setup heat source handler
     virtual void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-        const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial);
+        const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
+        const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
 
     //! write restart of heat source handler
     virtual void WriteRestart(const int step, const double time) const;
@@ -87,6 +89,9 @@ namespace PARTICLEINTERACTION
     virtual void EvaluateHeatSource(const double& evaltime) const = 0;
 
    protected:
+    //! smoothed particle hydrodynamics specific parameter list
+    const Teuchos::ParameterList& params_sph_;
+
     //! interface to particle engine
     std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface_;
 
@@ -96,11 +101,17 @@ namespace PARTICLEINTERACTION
     //! particle material handler
     std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial_;
 
+    //! neighbor pair handler
+    std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs_;
+
     //! pointer to thermo material of particle types
     std::vector<const MAT::PAR::ParticleMaterialThermo*> thermomaterial_;
 
     //! heat source function number
     const int heatsourcefctnumber_;
+
+    //! set of absorbing particle types
+    std::set<PARTICLEENGINE::TypeEnum> absorbingtypes_;
   };
 
   class SPHHeatSourceVolume : public SPHHeatSourceBase
@@ -125,8 +136,18 @@ namespace PARTICLEINTERACTION
     //! virtual destructor
     virtual ~SPHHeatSourceSurface(){};
 
+    //! init heat source handler
+    virtual void Init();
+
     //! evaluate heat source
     virtual void EvaluateHeatSource(const double& evaltime) const override;
+
+   private:
+    //! heat source direction vector
+    std::vector<double> direction_;
+
+    //! evaluate heat source direction
+    bool eval_direction_;
   };
 
 }  // namespace PARTICLEINTERACTION

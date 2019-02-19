@@ -110,7 +110,7 @@ void PARTICLEINTERACTION::SPHTemperature::Setup(
   }
 
   // setup heat source handler
-  if (heatsource_) heatsource_->Setup(particleengineinterface, particlematerial);
+  if (heatsource_) heatsource_->Setup(particleengineinterface, particlematerial, neighborpairs);
 }
 
 /*---------------------------------------------------------------------------*
