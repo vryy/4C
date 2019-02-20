@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_interaction_sph_temperature.H
+\file particle_interaction_sph_heatsource.H
 
-\brief temperature handler for smoothed particle hydrodynamics (SPH) interactions
+\brief heat source handler for smoothed particle hydrodynamics (SPH) interactions
 
 \level 3
 
@@ -15,13 +15,13 @@
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                 meier 09/2018 |
+ | definitions                                                sfuchs 02/2019 |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_INTERACTION_SPH_TEMPERATURE_H
-#define PARTICLE_INTERACTION_SPH_TEMPERATURE_H
+#ifndef PARTICLE_INTERACTION_SPH_HEATSOURCE_H
+#define PARTICLE_INTERACTION_SPH_HEATSOURCE_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                     meier 09/2018 |
+ | headers                                                    sfuchs 02/2019 |
  *---------------------------------------------------------------------------*/
 #include "../drt_particle_engine/particle_enums.H"
 #include "../drt_particle_engine/particle_typedefs.H"
@@ -29,7 +29,7 @@
 #include "../drt_inpar/inpar_particle.H"
 
 /*---------------------------------------------------------------------------*
- | forward declarations                                        meier 09/2018 |
+ | forward declarations                                       sfuchs 02/2019 |
  *---------------------------------------------------------------------------*/
 namespace IO
 {
@@ -46,7 +46,6 @@ namespace PARTICLEINTERACTION
 {
   class MaterialHandler;
   class SPHNeighborPairs;
-  class SPHHeatSourceBase;
 }  // namespace PARTICLEINTERACTION
 
 namespace MAT
@@ -58,55 +57,38 @@ namespace MAT
 }  // namespace MAT
 
 /*---------------------------------------------------------------------------*
- | class definitions                                           meier 09/2018 |
+ | class definitions                                          sfuchs 02/2019 |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  class SPHTemperature
+  class SPHHeatSourceBase
   {
    public:
     //! constructor
-    explicit SPHTemperature(const Teuchos::ParameterList& params);
+    explicit SPHHeatSourceBase(const Teuchos::ParameterList& params);
 
     //! virtual destructor
-    virtual ~SPHTemperature();
+    virtual ~SPHHeatSourceBase(){};
 
-    //! init temperature handler
+    //! init heat source handler
     virtual void Init();
 
-    //! setup temperature handler
+    //! setup heat source handler
     virtual void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
 
-    //! write restart of temperature handler
+    //! write restart of heat source handler
     virtual void WriteRestart(const int step, const double time) const;
 
-    //! read restart of temperature handler
+    //! read restart of heat source handler
     virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
-    //! set current time
-    virtual void SetCurrentTime(const double currenttime);
+    //! evaluate heat source
+    virtual void EvaluateHeatSource(const double& evaltime) const = 0;
 
-    //! set current step size
-    virtual void SetCurrentStepSize(const double currentstepsize);
-
-    //! insert temperature evaluation dependent states
-    virtual void InsertParticleStatesOfParticleTypes(
-        std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
-            particlestatestotypes) const;
-
-    //! compute temperature field using energy equation
-    virtual void ComputeTemperature() const;
-
-   private:
-    //! init heat source handler
-    virtual void InitHeatSourceHandler();
-
-    //! evaluate energy equation
-    virtual void EnergyEquation() const;
-
+   protected:
     //! smoothed particle hydrodynamics specific parameter list
     const Teuchos::ParameterList& params_sph_;
 
@@ -122,20 +104,50 @@ namespace PARTICLEINTERACTION
     //! neighbor pair handler
     std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs_;
 
-    //! heat source handler
-    std::unique_ptr<PARTICLEINTERACTION::SPHHeatSourceBase> heatsource_;
-
-    //! temperature of ghosted particles to refresh
-    PARTICLEENGINE::StatesOfTypesToRefresh temperaturetorefresh_;
-
-    //! current time
-    double time_;
-
-    //! time step size
-    double dt_;
-
     //! pointer to thermo material of particle types
     std::vector<const MAT::PAR::ParticleMaterialThermo*> thermomaterial_;
+
+    //! heat source function number
+    const int heatsourcefctnumber_;
+
+    //! set of absorbing particle types
+    std::set<PARTICLEENGINE::TypeEnum> absorbingtypes_;
+  };
+
+  class SPHHeatSourceVolume : public SPHHeatSourceBase
+  {
+   public:
+    //! constructor
+    explicit SPHHeatSourceVolume(const Teuchos::ParameterList& params);
+
+    //! virtual destructor
+    virtual ~SPHHeatSourceVolume(){};
+
+    //! evaluate heat source
+    virtual void EvaluateHeatSource(const double& evaltime) const override;
+  };
+
+  class SPHHeatSourceSurface : public SPHHeatSourceBase
+  {
+   public:
+    //! constructor
+    explicit SPHHeatSourceSurface(const Teuchos::ParameterList& params);
+
+    //! virtual destructor
+    virtual ~SPHHeatSourceSurface(){};
+
+    //! init heat source handler
+    virtual void Init();
+
+    //! evaluate heat source
+    virtual void EvaluateHeatSource(const double& evaltime) const override;
+
+   private:
+    //! heat source direction vector
+    std::vector<double> direction_;
+
+    //! evaluate heat source direction
+    bool eval_direction_;
   };
 
 }  // namespace PARTICLEINTERACTION

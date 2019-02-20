@@ -26,6 +26,8 @@
 #include "../drt_particle_engine/particle_enums.H"
 #include "../drt_particle_engine/particle_typedefs.H"
 
+#include "../drt_inpar/inpar_particle.H"
+
 /*---------------------------------------------------------------------------*
  | forward declarations                                       sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
@@ -40,6 +42,12 @@ namespace PARTICLEENGINE
   class ParticleContainerBundle;
 }  // namespace PARTICLEENGINE
 
+namespace PARTICLEINTERACTION
+{
+  class MaterialHandler;
+  class SPHEquationOfStateBundle;
+}  // namespace PARTICLEINTERACTION
+
 /*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
@@ -49,7 +57,7 @@ namespace PARTICLEINTERACTION
   {
    public:
     //! constructor
-    explicit SPHPhaseChangeBase();
+    explicit SPHPhaseChangeBase(const Teuchos::ParameterList& params);
 
     //! virtual destructor
     virtual ~SPHPhaseChangeBase(){};
@@ -59,7 +67,9 @@ namespace PARTICLEINTERACTION
 
     //! setup phase change handler
     virtual void Setup(
-        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
+        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
+        const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
+        const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle);
 
     //! write restart of phase change handler
     virtual void WriteRestart(const int step, const double time) const;
@@ -71,11 +81,49 @@ namespace PARTICLEINTERACTION
     virtual void EvaluatePhaseChange() const = 0;
 
    protected:
+    //! smoothed particle hydrodynamics specific parameter list
+    const Teuchos::ParameterList& params_sph_;
+
     //! interface to particle engine
     std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface_;
 
     //! particle container bundle
     PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle_;
+
+    //! particle material handler
+    std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial_;
+
+    //! equation of state bundle
+    std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle_;
+  };
+
+  class SPHPhaseChangeTwoWayScalar : public SPHPhaseChangeBase
+  {
+   public:
+    //! constructor
+    explicit SPHPhaseChangeTwoWayScalar(const Teuchos::ParameterList& params);
+
+    //! virtual destructor
+    virtual ~SPHPhaseChangeTwoWayScalar(){};
+
+    //! init phase change handler
+    virtual void Init();
+
+    //! evaluate phase change
+    virtual void EvaluatePhaseChange() const override;
+
+   private:
+    //! phase below transition value
+    PARTICLEENGINE::TypeEnum belowphase_;
+
+    //! phase above transition value
+    PARTICLEENGINE::TypeEnum abovephase_;
+
+    //! transition state of phase change
+    PARTICLEENGINE::StateEnum transitionstate_;
+
+    //! transition value of phase change
+    double transitionvalue_;
   };
 
 }  // namespace PARTICLEINTERACTION
