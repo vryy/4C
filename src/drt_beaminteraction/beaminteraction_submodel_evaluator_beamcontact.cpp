@@ -42,7 +42,7 @@
 #include "../drt_rigidsphere/rigidsphere.H"
 
 #include <Teuchos_TimeMonitor.hpp>
-
+#include <Epetra_FEVector.h>
 #include <NOX_Solver_Generic.H>
 
 #include "beam_to_solid_volume_meshtying_params.H"
@@ -133,17 +133,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
             "CONTACT_DISCRETIZATION") ==
         INPAR::BEAMINTERACTION::BeamToSolidVolumeContactDiscretization::mortar)
     {
-      // Get the mortar shapefunction type.
-      INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions mortar_shape_funciton =
-          Teuchos::getIntegralValue<INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions>(
-              DRT::Problem::Instance()->BeamInteractionParams().sublist(
-                  "BEAM TO SOLID VOLUME MESHTYING"),
-              "MORTAR_SHAPE_FUNCTION");
-
       // Create the mortar manager.
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidMortarManager> mortar_manager =
           Teuchos::rcp<BEAMINTERACTION::BeamToSolidMortarManager>(
-              new BEAMINTERACTION::BeamToSolidMortarManager(DiscretPtr(), mortar_shape_funciton));
+              new BEAMINTERACTION::BeamToSolidMortarManager(
+                  DiscretPtr(), beam_contact_params_ptr_));
 
       // Link to the beam interaction data state.
       BeamInteractionDataState().SetMortarManager(mortar_manager);
@@ -265,6 +259,18 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForce()
           eleforce, dummystiff, BeamInteractionDataStatePtr()->GetMutableForceNp(), Teuchos::null);
     }
   }
+
+
+  // If there is a mortar manager, let it calculate the mortar terms.
+  if (BeamInteractionDataStatePtr()->GetMortarManager() != Teuchos::null)
+  {
+    BeamInteractionDataStatePtr()->GetMortarManager()->EvaluateGlobalDM(contact_elepairs_);
+    BeamInteractionDataStatePtr()->GetMortarManager()->AddGlobalForceStiffnessPenaltyContributions(
+        BeamInteractionDataStatePtr()->GetDisColNp(), Teuchos::null,
+        BeamInteractionDataStatePtr()->GetMutableForceNp());
+  }
+
+
   return true;
 }
 
@@ -320,6 +326,17 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateStiff()
           dummyforce, elestiff, Teuchos::null, BeamInteractionDataStatePtr()->GetMutableStiff());
     }
   }
+
+
+  // If there is a mortar manager, let it calculate the mortar terms.
+  if (BeamInteractionDataStatePtr()->GetMortarManager() != Teuchos::null)
+  {
+    BeamInteractionDataStatePtr()->GetMortarManager()->EvaluateGlobalDM(contact_elepairs_);
+    BeamInteractionDataStatePtr()->GetMortarManager()->AddGlobalForceStiffnessPenaltyContributions(
+        Teuchos::null, BeamInteractionDataStatePtr()->GetMutableStiff(), Teuchos::null);
+  }
+
+
   return true;
 }
 
@@ -387,9 +404,17 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForceStiff()
     }
   }
 
+
   // If there is a mortar manager, let it calculate the mortar terms.
   if (BeamInteractionDataStatePtr()->GetMortarManager() != Teuchos::null)
+  {
     BeamInteractionDataStatePtr()->GetMortarManager()->EvaluateGlobalDM(contact_elepairs_);
+    BeamInteractionDataStatePtr()->GetMortarManager()->AddGlobalForceStiffnessPenaltyContributions(
+        BeamInteractionDataStatePtr()->GetDisColNp(),
+        BeamInteractionDataStatePtr()->GetMutableStiff(),
+        BeamInteractionDataStatePtr()->GetMutableForceNp());
+  }
+
 
   PrintActiveBeamContactSet(IO::cout.os(IO::verbose));
 

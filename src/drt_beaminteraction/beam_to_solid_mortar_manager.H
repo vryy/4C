@@ -21,6 +21,7 @@
 // Forward declarations.
 class Epetra_Map;
 class Epetra_MultiVector;
+class Epetra_Vector;
 class Epetra_FEVector;
 namespace DRT
 {
@@ -74,7 +75,7 @@ namespace BEAMINTERACTION
      * \brief Standard Constructor
      */
     BeamToSolidMortarManager(const Teuchos::RCP<DRT::Discretization> discret,
-        const INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions& mortar_shape_function);
+        Teuchos::RCP<const BEAMINTERACTION::BeamContactParams> params);
 
     /**
      * \brief This method builds the global maps for the global node / element IDs to the Lagrange
@@ -130,6 +131,15 @@ namespace BEAMINTERACTION
     void EvaluateGlobalDM(
         const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& contact_pairs);
 
+    /**
+     * \brief Add the mortar penalty contributions to the global force vector and stiffness matrix.
+     * @param disp (in) Global displacement vector.
+     * @param stiff (out) Global stiffness matrix. Mortar terms are added to it.
+     * @param force (out) Global force vector. Mortar terms are added to it.
+     */
+    void AddGlobalForceStiffnessPenaltyContributions(Teuchos::RCP<const Epetra_Vector> disp,
+        Teuchos::RCP<LINALG::SparseMatrix> stiff, Teuchos::RCP<Epetra_FEVector> force) const;
+
    protected:
     /**
      * \brief Throw an error if setup was not called on the object prior to this function call.
@@ -140,17 +150,17 @@ namespace BEAMINTERACTION
     }
 
     /**
-     * \brief Throw an error if the local maps were not build.
+     * \brief Throw an error if the global maps were not build.
      */
-    inline void CheckLocalMaps() const
+    inline void CheckGlobalMaps() const
     {
       if (!is_global_maps_build_) dserror("Global maps are not build in BeamToSolidMortarManager!");
     }
 
     /**
-     * \brief Throw an error if the global maps were not build.
+     * \brief Throw an error if the local maps were not build.
      */
-    inline void CheckGlobalMaps() const
+    inline void CheckLocalMaps() const
     {
       if (!is_local_maps_build_) dserror("Local maps are not build in BeamToSolidMortarManager!");
     }
@@ -176,7 +186,10 @@ namespace BEAMINTERACTION
     unsigned int n_lambda_element_;
 
     //! Pointer to the discretization.
-    const Teuchos::RCP<DRT::Discretization> discret_;
+    Teuchos::RCP<const DRT::Discretization> discret_;
+
+    //! Pointer to the beam contact parameters.
+    Teuchos::RCP<const BEAMINTERACTION::BeamContactParams> beam_contact_parameters_ptr_;
 
     //! Rowmap of the additional Lagrange multiplier DOFs.
     Teuchos::RCP<Epetra_Map> lambda_dof_rowmap_;
