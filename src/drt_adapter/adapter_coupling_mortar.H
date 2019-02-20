@@ -189,7 +189,7 @@ namespace ADAPTER
     /// @name Conversion between master and slave
     //@{
 
-    /*! \bfief Transfer a dof vector from master to slave
+    /*! \brief Transfer a dof vector from master to slave
      *
      *  \return Slave vector
      */
@@ -197,7 +197,7 @@ namespace ADAPTER
         Teuchos::RCP<Epetra_Vector> mv  ///< [in] master vector (to be transferred)
         ) const;
 
-    /*! \bfief Transfer a dof vector from master to slave
+    /*! \brief Transfer a dof vector from master to slave
      *
      *  \return Slave vector
      */
@@ -205,7 +205,7 @@ namespace ADAPTER
         Teuchos::RCP<Epetra_MultiVector> mv  ///< [in] master vector (to be transferred)
         ) const;
 
-    /*! \bfief Transfer a dof vector from master to slave (const version)
+    /*! \brief Transfer a dof vector from master to slave (const version)
      *
      *  \return Slave vector
      */
@@ -213,7 +213,7 @@ namespace ADAPTER
         Teuchos::RCP<const Epetra_Vector> mv  ///< [in] master vector (to be transferred)
         ) const;
 
-    /*! \bfief Transfer a dof vector from master to slave (const version)
+    /*! \brief Transfer a dof vector from master to slave (const version)
      *
      *  \return Slave vector
      */
