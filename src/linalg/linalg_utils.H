@@ -326,8 +326,20 @@ void SymmetricEigenProblem(IO::DiscretizationWriter& output,
     return det;
   }
 
+  /*!
+   * \brief Explicit inverse of a nonsymmetric 4x4 matrix
+   *
+   * If the determinant is zero and the flag fail_on_zero_determinant is false, the function will
+   * return without an error, but the values in matrix A may not be used in further calculations.
+   * The user has to make sure this case is handled correctly.
+   *
+   * @param A (in/out) Matrix to be inverted. The inverse will be stored in this variable.
+   * @param fail_on_zero_det (flag) If true, a dserror will be raised if the determinant of A is
+   * zero.
+   * @return the determinant of the matrix A
+   */
   template <typename T>
-  T Inverse4x4(LINALG::TMatrix<T, 4, 4>& A)
+  T Inverse4x4(LINALG::TMatrix<T, 4, 4>& A, bool fail_on_zero_determinant = true)
   {
     T a00 = A(0, 0);
     T a01 = A(0, 1);
@@ -394,13 +406,32 @@ void SymmetricEigenProblem(IO::DiscretizationWriter& output,
             a32 * a23 * a10 * a01 - a32 * a21 * a10 * a03 - a32 * a20 * a01 * a13 -
             a30 * a02 * a21 * a13 - a31 * a12 * a20 * a03 - a30 * a01 * a12 * a23;
 
-    if (det == 0.0) dserror("Determinant of 4x4 matrix is exactly zero");
-    A.Scale(1. / det);
+    if (det == 0.0)
+    {
+      if (fail_on_zero_determinant) dserror("Determinant of 4x4 matrix is exactly zero");
+    }
+    else
+    {
+      // Only scale the matrix if the determinant is not 0.
+      A.Scale(1. / det);
+    }
     return det;
-  }
+  }  // namespace LINALG
 
+  /*!
+   * \brief Explicit inverse of a nonsymmetric 3x3 matrix
+   *
+   * If the determinant is zero and the flag fail_on_zero_determinant is false, the function will
+   * return without an error, but the values in matrix A may not be used in further calculations.
+   * The user has to make sure this case is handled correctly.
+   *
+   * @param A (in/out) Matrix to be inverted. The inverse will be stored in this variable.
+   * @param fail_on_zero_det (flag) If true, a dserror will be raised if the determinant of A is
+   * zero.
+   * @return the determinant of the matrix A
+   */
   template <typename T>
-  T Inverse3x3(LINALG::TMatrix<T, 3, 3>& A)
+  T Inverse3x3(LINALG::TMatrix<T, 3, 3>& A, bool fail_on_zero_determinant = true)
   {
     T b00 = A(0, 0);
     T b01 = A(0, 1);
@@ -421,13 +452,32 @@ void SymmetricEigenProblem(IO::DiscretizationWriter& output,
     A(1, 2) = -b00 * b12 + b10 * b02;
     A(2, 2) = b00 * b11 - b10 * b01;
     T det = b00 * A(0, 0) + b01 * A(1, 0) + b02 * A(2, 0);
-    if (det == 0.0) dserror("Determinant of 3x3 matrix is exactly zero");
-    A.Scale(1. / det);
+    if (det == 0.0)
+    {
+      if (fail_on_zero_determinant) dserror("Determinant of 3x3 matrix is exactly zero");
+    }
+    else
+    {
+      // Only scale the matrix if the determinant is not 0.
+      A.Scale(1. / det);
+    }
     return det;
   }
 
+  /*!
+   * \brief Explicit inverse of a nonsymmetric 2x2 matrix
+   *
+   * If the determinant is zero and the flag fail_on_zero_determinant is true, the function will
+   * return without an error, but the values in matrix A may not be used in further calculations.
+   * The user has to make sure this case is handled correctly.
+   *
+   * @param A (in/out) Matrix to be inverted. The inverse will be stored in this variable.
+   * @param fail_on_zero_det (flag) If true, a dserror will be raised if the determinant of A is
+   * zero.
+   * @return the determinant of the matrix A
+   */
   template <typename T>
-  T Inverse2x2(LINALG::TMatrix<T, 2, 2>& A)
+  T Inverse2x2(LINALG::TMatrix<T, 2, 2>& A, bool fail_on_zero_determinant = true)
   {
     T b00 = A(0, 0);
     T b01 = A(0, 1);
@@ -438,8 +488,15 @@ void SymmetricEigenProblem(IO::DiscretizationWriter& output,
     A(0, 1) = -b01;
     A(1, 1) = b00;
     T det = b00 * b11 - b01 * b10;
-    if (det == 0.0) dserror("Determinant of 2x2 matrix is exactly zero");
-    A.Scale(1. / det);
+    if (det == 0.0)
+    {
+      if (fail_on_zero_determinant) dserror("Determinant of 2x2 matrix is exactly zero");
+    }
+    else
+    {
+      // Only scale the matrix if the determinant is not 0.
+      A.Scale(1. / det);
+    }
     return det;
   }
 
