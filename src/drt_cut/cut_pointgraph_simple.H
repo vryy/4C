@@ -1,18 +1,16 @@
 /*----------------------------------------------------------------------------*/
-/**
+/*!
 \file cut_pointgraph_simple.H
 
 \brief Create a simple point graph for 1-D and 2-D elements ( embedded in a
        higher dimensional space )
 
-\maintainer Michael Hiermeier
-
 \date Nov 12, 2016
 
 \level 2
 
-*/
-/*----------------------------------------------------------------------------*/
+\maintainer Christoph Ager
+ *------------------------------------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_CUT_CUT_POINTGRAPH_SIMPLE_H_
 #define SRC_DRT_CUT_CUT_POINTGRAPH_SIMPLE_H_

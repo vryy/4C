@@ -3,13 +3,10 @@
 
  \brief class representing a geometrical node
 
- <pre>
-\level 3
-\maintainer Andy Wirtz
- wirtz@lnm.mw.tum.de
- http://www.lnm.mw.tum.de
- 089 - 289-15270
- </pre>
+
+\level 2
+
+\maintainer Christoph Ager
  *------------------------------------------------------------------------------------------------*/
 
 #ifndef CUT_NODE_H

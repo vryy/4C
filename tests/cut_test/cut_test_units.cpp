@@ -1,15 +1,11 @@
-/*---------------------------------------------------------------------------*/
-/*!
+/*!----------------------------------------------------------------------
+\brief Test for the CUT Library
 \file cut_test_units.cpp
-
-\brief cut test cpp file
 
 \level 1
 
-\maintainer Christoph Ager
-
-*/
-/*---------------------------------------------------------------------------*/
+\maintainer Ager Christoph
+*----------------------------------------------------------------------*/
 
 #include "../../src/drt_cut/cut_options.H"
 #include "../../src/drt_cut/cut_mesh.H"
@@ -24,6 +20,7 @@ void test_unit_intersection_touch()
   {
     double x = std::pow(0.1, i);
     GEO::CUT::Options options;
+    options.Init_for_Cuttests();  // use cln
     GEO::CUT::Mesh mesh(options, x);
 
     Epetra_SerialDenseMatrix xyze(3, 4);

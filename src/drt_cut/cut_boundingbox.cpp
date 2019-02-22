@@ -40,6 +40,14 @@ GEO::CUT::BoundingBox* GEO::CUT::BoundingBox::Create()
   return NULL;
 }
 
+
+GEO::CUT::BoundingBox* GEO::CUT::BoundingBox::Create(Node& node)
+{
+  BoundingBox* box = Create();
+  box->Init(node);
+  return box;
+}
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 GEO::CUT::BoundingBox* GEO::CUT::BoundingBox::Create(Edge& edge)
@@ -84,6 +92,14 @@ GEO::CUT::BoundingBox* GEO::CUT::BoundingBox::Create(Element& element)
   return box;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::BoundingBox::Init(Node& node)
+{
+  double x[3];
+  node.Coordinates(x);
+  AddPoint(x);
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

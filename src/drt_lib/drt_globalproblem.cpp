@@ -343,6 +343,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--COUPLED REDUCED-D AIRWAYS AND TISSUE DYNAMIC", *list);
   reader.ReadGidSection("--SEARCH TREE", *list);
   reader.ReadGidSection("--XFEM GENERAL", *list);
+  reader.ReadGidSection("--CUT GENERAL", *list);
   reader.ReadGidSection("--XFLUID DYNAMIC", *list);
   reader.ReadGidSection("--XFLUID DYNAMIC/GENERAL", *list);
   reader.ReadGidSection("--XFLUID DYNAMIC/STABILIZATION", *list);

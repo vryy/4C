@@ -101,7 +101,7 @@ ML_SMOOTHERFINE                 SGS
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     2 0 0 0 1                     // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ----------------------------------------------------------------XFEM GENERAL
-VOLUME_GAUSS_POINTS_BY          Tessellation
+VOLUME_GAUSS_POINTS_BY          DirectDivergence
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUIDFLUID                     yes

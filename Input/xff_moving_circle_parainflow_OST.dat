@@ -105,6 +105,7 @@ GHOST_PENALTY_STAB              yes
 GHOST_PENALTY_FAC               0.05
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  No
+VOLUME_GAUSS_POINTS_BY          DirectDivergence
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUIDFLUID                     yes
 XFLUID_TIMEINT                  STD=COPY/PROJ_and_GHOST=COPY/PROJ/GP

@@ -5,12 +5,7 @@
 
 \level 1
 
-<pre>
-\maintainer  Ager Christoph
-             ager@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15249
-</pre>
+\maintainer Christoph Ager
  *------------------------------------------------------------------------------------------------*/
 
 
@@ -695,7 +690,19 @@ void GEO::CUT::Parallel::exportDofSetData(bool include_inner)
                 str << "cut_element" << my_vc->ParentElement()->Id() << "_fail.pos";
                 std::ofstream file(str.str().c_str());
                 GEO::CUT::OUTPUT::GmshCompleteCutElement(file, my_vc->ParentElement());
+                GEO::CUT::OUTPUT::GmshNewSection(file, "MyVC");
+                GEO::CUT::OUTPUT::GmshVolumecellDump(file, my_vc);
+                GEO::CUT::OUTPUT::GmshNewSection(file, "OtherPointsVC", true);
+                for (std::vector<LINALG::Matrix<3, 1>>::iterator rec_it =
+                         ((*vc_data)->cut_points_coords_).begin();
+                     rec_it != ((*vc_data)->cut_points_coords_).end(); rec_it++)
+                {
+                  GEO::CUT::OUTPUT::GmshCoordDump(file, (*rec_it), 0);
+                }
+                GEO::CUT::OUTPUT::GmshEndSection(file, true);
                 std::cout << "Is the element cut = " << my_vc->ParentElement()->IsCut() << "\n";
+                std::cout << "VC_DATA is inside: Is the element cut = " << (*vc_data)->inside_cell_
+                          << "\n";
                 dserror("the nds-vector of volume cell in element %d on proc %d has size %d",
                     my_vc->ParentElement()->Id(), myrank_, (int)(nds.size()));
               }
@@ -863,14 +870,16 @@ GEO::CUT::VolumeCell* GEO::CUT::Parallel::findVolumeCell(MeshIntersection::DofSe
     // find received cut_points in my_cut_points
 
     // compare the size of vecs
-    if (my_cut_points.size() != (vc_data.cut_points_coords_).size())
-    {
-      // std::cout << "my_cut_points.size() != (vc_data->cut_points_coords_).size()" << std::endl;
-      // no identical number of points found!
-      // this volumecell is not a candidate
-      vc_found = false;
-    }
-    else
+    //    if(my_cut_points.size() != (vc_data.cut_points_coords_).size())
+    //    {
+    //
+    //      //std::cout << "my_cut_points.size() != (vc_data->cut_points_coords_).size()" <<
+    //      std::endl;
+    //      // no identical number of points found!
+    //      // this volumecell is not a candidate
+    //      vc_found = false;
+    //    }
+    //    else
     {
       // std::cout << "my_cut_points.size() == (vc_data->cut_points_coords_).size()" << std::endl;
       // identical number of points found! this vc is a candidate: check the points"
@@ -908,7 +917,45 @@ GEO::CUT::VolumeCell* GEO::CUT::Parallel::findVolumeCell(MeshIntersection::DofSe
           break;  // do not search for the next points, it is the wrong volumecell
         }
       }  // end loop over my_points
-    }    // end else
+
+      // now check the other way around
+      if (vc_found)
+      {
+        // brute force search for identical point coords
+        for (std::vector<LINALG::Matrix<3, 1>>::iterator rec_it =
+                 (vc_data.cut_points_coords_).begin();
+             rec_it != (vc_data.cut_points_coords_).end(); rec_it++)
+        {
+          bool point_found = true;
+          for (plain_point_set::iterator my_it = my_cut_points.begin();
+               my_it != my_cut_points.end(); my_it++)
+          {
+            point_found = true;
+
+            // compare the coordinates
+            for (int i = 0; i < 3; i++)
+            {
+              if (fabs((*my_it)->X()[i] - (*rec_it)(i)) > PARALLEL_COORD_TOL)
+              {
+                point_found = false;
+                break;  // stop the loop over coordinates
+              }
+            }
+
+            if (point_found == true)
+              break;  // stop the inner! loop over received vc's points if the point is already
+                      // found
+
+          }  // inner loop over received vc's points
+
+          if (point_found == false)
+          {
+            vc_found = false;
+            break;  // do not search for the next points, it is the wrong volumecell
+          }
+        }  // end loop over my_points
+      }
+    }  // end else
 
 
     if (vc_found == true)
@@ -917,16 +964,111 @@ GEO::CUT::VolumeCell* GEO::CUT::Parallel::findVolumeCell(MeshIntersection::DofSe
       // std::cout << "volumecell has been found!!! Happy :-)" << std::endl;
       break;  // stop the loop over volumecells
     }
-    else
-    {
-      // my_vc = NULL;
-      // std::cout << "volumecell has not been found!!! :-(" << std::endl;
-    }
-
 
     //-----------------------------------------------------------------------------
   }  // it over volumecells
 
+  //  if (vc_found == false)  //Do a fallbackstrategy
+  //  {
+  //    //identify by center
+  //    std::cout << "==| Do center idendification |== " << std::endl;
+  //    LINALG::Matrix<3,1> vc_center(true);
+  //    for(std::vector<LINALG::Matrix<3,1> >::iterator rec_it=(vc_data.cut_points_coords_).begin();
+  //       rec_it != (vc_data.cut_points_coords_).end();
+  //       rec_it++)
+  //    {
+  //     vc_center.Update(1.0,(*rec_it),1.0);
+  //    }
+  //    vc_center.Scale(1.0/(vc_data.cut_points_coords_).size());
+  //
+  //    for(plain_volumecell_set::iterator c = my_vcs.begin(); c!=my_vcs.end(); c++)
+  //    {
+  //     vc_found=true;
+  //
+  //     VolumeCell* cell = *c;
+  //     // get points for my_vc
+  //     plain_point_set my_cut_points;
+  //     const plain_facet_set & facets = cell->Facets();
+  //
+  //     for(plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); i++)
+  //     {
+  //       Facet* f = *i;
+  //       const std::vector<Point*> & facetpoints = f->Points();
+  //       std::copy(facetpoints.begin(), facetpoints.end(), std::inserter(my_cut_points,
+  //       my_cut_points.begin()));
+  //     }
+  //     LINALG::Matrix<3,1> my_center(true);
+  //     for(plain_point_set::iterator my_it=my_cut_points.begin(); my_it!=my_cut_points.end();
+  //     my_it++)
+  //     {
+  //       LINALG::Matrix<3,1> coord((*my_it)->X(),true);
+  //       my_center.Update(1.0,coord,1.0);
+  //     }
+  //     my_center.Scale(1.0/(my_cut_points.size()));
+  //
+  //     for(int i=0; i<3; i++)
+  //     {
+  //       if(fabs(my_center(i) - vc_center(i)) > PARALLEL_COORD_TOL)
+  //       {
+  //         vc_found=false;
+  //         break; // do not search for the next points, it is the wrong volumecell
+  //       }
+  //     }
+  //     my_vc = cell;
+  //    }
+  //    if (vc_found == true)
+  //     std::cout << "==| identified vc by center |== " << std::endl;
+  //   }
+
+  if (vc_found == false)
+  {
+    std::stringstream str;
+    str << "NIVC_" << myrank_ << ".pos";
+    std::ofstream file(str.str());
+
+    GEO::CUT::OUTPUT::GmshNewSection(file, "OtherPoints");
+    for (std::vector<LINALG::Matrix<3, 1>>::iterator rec_it = (vc_data.cut_points_coords_).begin();
+         rec_it != (vc_data.cut_points_coords_).end(); rec_it++)
+    {
+      GEO::CUT::OUTPUT::GmshCoordDump(file, (*rec_it), 0);
+    }
+    for (plain_volumecell_set::iterator c = my_vcs.begin(); c != my_vcs.end(); c++)
+    {
+      GEO::CUT::OUTPUT::GmshNewSection(file, "MyPoints", true);
+      VolumeCell* cell = *c;
+      // get points for my_vc
+      plain_point_set my_cut_points;
+      const plain_facet_set& facets = cell->Facets();
+
+      for (plain_facet_set::const_iterator i = facets.begin(); i != facets.end(); i++)
+      {
+        Facet* f = *i;
+        const std::vector<Point*>& facetpoints = f->Points();
+        std::copy(facetpoints.begin(), facetpoints.end(),
+            std::inserter(my_cut_points, my_cut_points.begin()));
+      }
+      for (plain_point_set::iterator my_it = my_cut_points.begin(); my_it != my_cut_points.end();
+           my_it++)
+      {
+        LINALG::Matrix<3, 1> coord((*my_it)->X(), true);
+        GEO::CUT::OUTPUT::GmshCoordDump(file, coord, 0);
+      }
+    }
+    //  GEO::CUT::OUTPUT::GmshEndSection(file, true);
+    for (plain_volumecell_set::iterator c = my_vcs.begin(); c != my_vcs.end(); c++)
+    {
+      VolumeCell* cell = *c;
+      const plain_facet_set& facete = cell->Facets();
+      GEO::CUT::OUTPUT::GmshNewSection(file, "VolumeCell", true);
+      GEO::CUT::OUTPUT::GmshVolumecellDump(file, cell, "lines", true);
+      for (plain_facet_set::const_iterator it = facete.begin(); it != facete.end(); ++it)
+      {
+        GEO::CUT::OUTPUT::GmshNewSection(file, "Facet", true);
+        GEO::CUT::OUTPUT::GmshFacetDump(file, *it, "sides", true);
+      }
+    }
+    GEO::CUT::OUTPUT::GmshEndSection(file, true);
+  }
 
   if (vc_found == false)
     dserror("no corresponding volumecell for vc in element %d found for node %d", vc_data.peid_);

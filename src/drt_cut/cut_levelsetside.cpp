@@ -8,7 +8,7 @@ levelset
 \level 2
 
 <pre>
-\maintainer Christoph Ager & Christoph Ager
+\maintainer Christoph Ager
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15249
@@ -30,6 +30,14 @@ bool GEO::CUT::LevelSetSide<probdim>::Cut(Mesh& mesh, Edge& edge, PointSet& cut_
 {
   return edge.LevelSetCut(mesh, *this, cut_points);
 }
+
+template <int probdim>
+bool GEO::CUT::LevelSetSide<probdim>::FindCutPointsDispatch(
+    Mesh& mesh, Element* element, Side& side, Edge& e)
+{
+  return e.FindCutPointsLevelSet(mesh, element, side, *this);
+}
+
 
 #if 0
 /*----------------------------------------------------------------------------*

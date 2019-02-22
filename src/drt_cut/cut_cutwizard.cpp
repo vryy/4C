@@ -27,6 +27,7 @@ surface meshes
 #include "../drt_cut/cut_combintersection.H"
 #include "../drt_cut/cut_elementhandle.H"
 #include "../drt_cut/cut_node.H"
+#include "../drt_cut/cut_volumecell.H"
 #include "../drt_cut/cut_parallel.H"
 #include "../drt_cut/cut_sidehandle.H"
 
@@ -68,7 +69,8 @@ GEO::CutWizard::CutWizard(const Teuchos::RCP<DRT::Discretization>& backdis)
       tetcellsonly_(false),
       screenoutput_(false),
       lsv_only_plus_domain_(true),
-      is_set_options_(false)
+      is_set_options_(false),
+      is_cut_prepare_performed_(false)
 {
 }
 
@@ -120,6 +122,9 @@ void GEO::CutWizard::SetOptions(
   // set position option to the intersection class
   intersection_->SetFindPositions(positions);
   intersection_->SetNodalDofSetStrategy(nodal_dofset_strategy);
+
+  // Initialize Cut Parameters based on dat file section CUT GENERAL
+  intersection_->GetOptions().Init_by_Paramlist();
 
   is_set_options_ = true;
 }
@@ -411,6 +416,29 @@ void GEO::CutWizard::AddMeshCuttingSide(
         // update x-position of cutter node for current time step (update with displacement)
         x.Update(1, disp, 1);
       }
+
+      if (1)
+      {
+        std::vector<DRT::Condition*> conds;
+        cutterdis->GetCondition("XFEMSurfCutOffset", conds);
+        if (conds.size())
+        {
+          // static const double offset_idx;
+          static const int offset_idx = 0;
+          // static double offset;
+          static double offset = 0;
+          for (uint cidx = 0; cidx < conds.size(); ++cidx)
+          {
+            if (conds[cidx]->ContainsNode(node.Id()))
+            {
+              offset = conds[cidx]->GetDouble("xoffset");
+              x(offset_idx, 0) += offset;
+              break;
+            }
+          }
+        }
+      }
+
       std::copy(x.A(), x.A() + 3, &xyze(0, i));
     }
 
@@ -455,6 +483,32 @@ void GEO::CutWizard::AddBackgroundElements()
     LINALG::SerialDenseMatrix xyze;
 
     GetPhysicalNodalCoordinates(element, xyze);
+
+    std::vector<DRT::Condition*> conds;
+    back_mesh_->Get().GetCondition("XFEMVolCutOffset", conds);
+
+    if (conds.size())
+    {
+      // static const double offset_idx;
+      static const int offset_idx = 0;
+      // static double offset;
+      static double offset = 0;
+      for (uint cidx = 0; cidx < conds.size(); ++cidx)
+      {
+        if (conds[cidx]->ContainsNode(element->Nodes()[0]->Id()))
+        {
+          offset = conds[cidx]->GetDouble("xoffset");
+          if (xyze.N() != 8 || xyze.M() != 3)
+            dserror("Please implement here for other element type than hex8!");
+          else
+          {
+            LINALG::Matrix<3, 8> xyze_mat(xyze, true);
+            for (int nidx = 0; nidx < 8; ++nidx) xyze_mat(offset_idx, nidx) += offset;
+          }
+          break;
+        }
+      }
+    }
 
     if (back_mesh_->IsLevelSet())
     {
@@ -657,10 +711,7 @@ void GEO::CutWizard::FindPositionDofSets(bool include_inner)
 
   //----------------------------------------------------------
 
-  GEO::CUT::Options options;
-  intersection_->GetOptions(options);
-
-  if (options.FindPositions())
+  if (intersection_->GetOptions().FindPositions())
   {
     GEO::CUT::Mesh& m = intersection_->NormalMesh();
 
@@ -804,6 +855,15 @@ GEO::CUT::SideHandle* GEO::CutWizard::GetSide(std::vector<int>& nodeids)
 
 GEO::CUT::SideHandle* GEO::CutWizard::GetSide(int sid) { return intersection_->GetSide(sid); }
 
+GEO::CUT::SideHandle* GEO::CutWizard::GetCutSide(int sid)
+{
+  if (intersection_ == Teuchos::null) dserror("No Intersection object available!");
+  Teuchos::RCP<GEO::CUT::MeshIntersection> meshintersection =
+      Teuchos::rcp_dynamic_cast<GEO::CUT::MeshIntersection>(intersection_);
+  if (meshintersection == Teuchos::null) dserror("Cast to MeshIntersection failed!");
+  return meshintersection->GetCutSide(sid);
+}
+
 GEO::CUT::ElementHandle* GEO::CutWizard::GetElement(const DRT::Element* ele) const
 {
   return intersection_->GetElement(ele->Id());
@@ -817,3 +877,86 @@ GEO::CUT::SideHandle* GEO::CutWizard::GetMeshCuttingSide(int sid, int mi)
 }
 
 bool GEO::CutWizard::HasLSCuttingSide(int sid) { return intersection_->HasLSCuttingSide(sid); }
+
+
+/// run after the Run_Cut routine has been called
+void GEO::CutWizard::Post_Run_Cut(bool include_inner) { Post_UpdateBC_Offset(); }
+
+void GEO::CutWizard::Post_UpdateBC_Offset()
+{
+  // std::cout << "==| Start Post_UpdateBC_Offset |==" << std::endl;
+  // Move the boundary cells back from offset!
+  for (std::map<int, Teuchos::RCP<CutterMesh>>::iterator cmit = cutter_meshes_.begin();
+       cmit != cutter_meshes_.end(); ++cmit)
+  {
+    Teuchos::RCP<DRT::Discretization> cutterdis = (cmit->second)->cutterdis_;
+    std::vector<DRT::Condition*> conds;
+    cutterdis->GetCondition("XFEMSurfCutOffset", conds);
+    if (conds.size())
+    {
+      int numcutelements = cutterdis->NumMyColElements();
+      for (int lid = 0; lid < numcutelements; ++lid)
+      {
+        DRT::Element* element = cutterdis->lColElement(lid);
+        DRT::Node** nodes = element->Nodes();
+
+        static const int offset_idx = 0;
+        static double offset = 0;
+        for (uint cidx = 0; cidx < conds.size(); ++cidx)  // loop offset conditions
+        {
+          if (conds[cidx]->ContainsNode(nodes[0]->Id()))
+          {
+            offset = -conds[cidx]->GetDouble(
+                "xoffset");  // negative offset as we move the coordinate back ...
+            GEO::CUT::SideHandle* sh = GetCutSide(element->Id() + (*cmit->second).start_ele_gid_);
+            if (!sh) dserror("Couldn't get sidehandle!");
+            GEO::CUT::plain_side_set subsides;
+            sh->CollectSides(subsides);
+            for (uint ssidx = 0; ssidx < subsides.size(); ++ssidx)  // loop subsides
+            {
+              GEO::CUT::Side* side = subsides[ssidx];
+              for (std::vector<GEO::CUT::Facet*>::const_iterator fit = side->Facets().begin();
+                   fit != side->Facets().end(); ++fit)  // loop facets on subside
+              {
+                GEO::CUT::Facet* facet = *fit;
+                for (GEO::CUT::plain_volumecell_set::const_iterator vit = facet->Cells().begin();
+                     vit != facet->Cells().end(); ++vit)  // loop volumecells on facet
+                {
+                  GEO::CUT::VolumeCell* vc = *vit;
+                  for (GEO::CUT::plain_boundarycell_set::const_iterator bcit =
+                           vc->BoundaryCells().begin();
+                       bcit != vc->BoundaryCells().end();
+                       ++bcit)  // loop boundarycells in volumecell
+                  {
+                    GEO::CUT::BoundaryCell* bc = *bcit;
+                    if (bc->GetFacet() != facet)
+                      continue;  // is this the boundarycell we are looking for
+                    switch (bc->Shape())
+                    {
+                      case DRT::Element::tri3:
+                      {
+                        bc->AssignOffset<DRT::Element::tri3>(offset_idx, offset);
+                        break;
+                      }
+                      case DRT::Element::quad4:
+                      {
+                        bc->AssignOffset<DRT::Element::quad4>(offset_idx, offset);
+                        break;
+                      }
+                      default:
+                        dserror("Add your shape here!");
+                    }
+                    break;
+                  }
+                }
+              }
+            }
+            break;
+          }
+        }
+      }
+    }
+  }
+  // std::cout << "==| End Post_UpdateBC_Offset |==" << std::endl;
+  return;
+}

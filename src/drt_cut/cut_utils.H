@@ -7,9 +7,8 @@
 
 \level 2
 
-\maintainer Michael Hiermeier
-
-*----------------------------------------------------------------------*/
+\maintainer Christoph Ager
+ *------------------------------------------------------------------------------------------------*/
 
 #ifndef CUT_UTILS_H
 #define CUT_UTILS_H
@@ -141,34 +140,39 @@ namespace GEO
      *  \date 07/16
      *  \author hiermeier */
 #if __cplusplus < 201103L
-    template <unsigned probdim, DRT::Element::DiscretizationType distype>
-    double EvalDerivsInParameterSpace(
+    template <unsigned probdim, DRT::Element::DiscretizationType distype, typename valtype>
+    valtype EvalDerivsInParameterSpace(
         const LINALG::Matrix<probdim,
-            DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& xyze,
-        const LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim, 1>& rst,
-        LINALG::Matrix<probdim, DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>&
-            deriv1,
+            DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, valtype>& xyze,
+        const LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim, 1, valtype>& rst,
+        LINALG::Matrix<probdim, DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
+            valtype>& deriv1,
         LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim,
-            DRT::UTILS::DisTypeToDim<distype>::dim>& metrictensor,
-        LINALG::Matrix<probdim, probdim>& xjm, LINALG::Matrix<probdim, probdim>* xij,
-        LINALG::Matrix<probdim, 1>* normalvec1, LINALG::Matrix<probdim, 1>* normalvec2,
-        bool unit_normal)
+            DRT::UTILS::DisTypeToDim<distype>::dim, valtype>& metrictensor,
+        LINALG::Matrix<probdim, probdim, valtype>& xjm,
+        LINALG::Matrix<probdim, probdim, valtype>* xij,
+        LINALG::Matrix<probdim, 1, valtype>* normalvec1,
+        LINALG::Matrix<probdim, 1, valtype>* normalvec2, bool unit_normal)
     {
       const unsigned dim = DRT::UTILS::DisTypeToDim<distype>::dim;
       const unsigned numNodesElement =
           DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 #else
-    template <unsigned probdim, DRT::Element::DiscretizationType distype,
+    template <unsigned probdim, DRT::Element::DiscretizationType distype, typename valtype,
         unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
         unsigned dim = DRT::UTILS::DisTypeToDim<distype>::dim>
-    double EvalDerivsInParameterSpace(const LINALG::Matrix<probdim, numNodesElement>& xyze,
-        const LINALG::Matrix<dim, 1>& rst, LINALG::Matrix<probdim, numNodesElement>& deriv1,
-        LINALG::Matrix<dim, dim>& metrictensor, LINALG::Matrix<probdim, probdim>& xjm,
-        LINALG::Matrix<probdim, probdim>* xij, LINALG::Matrix<probdim, 1>* normalvec1,
-        LINALG::Matrix<probdim, 1>* normalvec2, bool unit_normal)
+    valtype EvalDerivsInParameterSpace(
+        const LINALG::Matrix<probdim, numNodesElement, valtype>& xyze,
+        const LINALG::Matrix<dim, 1, valtype>& rst,
+        LINALG::Matrix<probdim, numNodesElement, valtype>& deriv1,
+        LINALG::Matrix<dim, dim, valtype>& metrictensor,
+        LINALG::Matrix<probdim, probdim, valtype>& xjm,
+        LINALG::Matrix<probdim, probdim, valtype>* xij,
+        LINALG::Matrix<probdim, 1, valtype>* normalvec1,
+        LINALG::Matrix<probdim, 1, valtype>* normalvec2, bool unit_normal)
     {
 #endif
-      double det = 0.0;
+      valtype det = 0.0;
 
       // ---------------------------------------------------------------
       // element dimension is equal to the problem dimension (standard)
@@ -180,9 +184,13 @@ namespace GEO
         xjm.MultiplyNT(deriv1, xyze);
         // compute the inverse Jacobian and the determinant
         if (xij)
+        {
           det = xij->Invert(xjm);
+        }
         else
+        {
           det = xjm.Determinant();
+        }
       }
       // ---------------------------------------------------------------
       // element dimension is smaller than problem dimension ( manifold )
@@ -194,7 +202,7 @@ namespace GEO
               "The normalvec1 is necessary to calculate the extended "
               "jacobian!");
 
-        LINALG::Matrix<dim, numNodesElement> deriv1_red;
+        LINALG::Matrix<dim, numNodesElement, valtype> deriv1_red;
         DRT::UTILS::shape_function_deriv1<distype>(rst, deriv1_red);
         // the metric tensor and the area of an infinitesimal surface/line element
         // optional-1 : get unit normal at integration point as well
@@ -205,7 +213,7 @@ namespace GEO
 
         /* transform the derivatives and Jacobians to the higher dimensional
          * coordinates (problem dimension) */
-        LINALG::Matrix<dim, probdim> xjm_red;
+        LINALG::Matrix<dim, probdim, valtype> xjm_red;
         xjm_red.MultiplyNT(deriv1_red, xyze);
 
         for (unsigned i = 0; i < probdim; ++i)
@@ -239,13 +247,11 @@ namespace GEO
           if (unit_normal)
           {
             // normalize
-            const double norm2 = normalvec2->Norm2();
+            const valtype norm2 = normalvec2->Norm2();
             if (norm2 < 1.0e-16)
-              run_time_error(
-                  "The l2-norm of the normal vector is smaller than 1.0e-16!"
-                  " ( norm2 = %e )",
-                  norm2);
-            normalvec2->Scale(1 / norm2);
+              run_time_error("The l2-norm of the normal vector is smaller than 1.0e-16!");
+            //   " ( norm2 = %e )", norm2 ); // commented out in order for cln to work
+            normalvec2->Scale(1.0 / norm2);
           }
 
           // extend the jacobian a 2nd time
@@ -270,31 +276,35 @@ namespace GEO
      *  \author hiermeier
      *  \date 08/16 */
 #if __cplusplus < 201103L
-    template <unsigned probdim, DRT::Element::DiscretizationType distype>
-    inline double EvalDerivsInParameterSpace(
+    template <unsigned probdim, DRT::Element::DiscretizationType distype, typename valtype>
+    inline valtype EvalDerivsInParameterSpace(
         const LINALG::Matrix<probdim,
-            DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& xyze,
-        const LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim, 1>& rst,
-        LINALG::Matrix<probdim, DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>&
-            deriv1,
-        LINALG::Matrix<probdim, probdim>& xjm, LINALG::Matrix<probdim, probdim>* xij,
-        LINALG::Matrix<probdim, 1>* normalvec1, LINALG::Matrix<probdim, 1>* normalvec2,
-        bool unit_normal)
+            DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, valtype>& xyze,
+        const LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim, 1, valtype>& rst,
+        LINALG::Matrix<probdim, DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
+            valtype>& deriv1,
+        LINALG::Matrix<probdim, probdim, valtype>& xjm,
+        LINALG::Matrix<probdim, probdim, valtype>* xij,
+        LINALG::Matrix<probdim, 1, valtype>* normalvec1,
+        LINALG::Matrix<probdim, 1, valtype>* normalvec2, bool unit_normal)
     {
       const unsigned dim = DRT::UTILS::DisTypeToDim<distype>::dim;
 #else
-    template <unsigned probdim, DRT::Element::DiscretizationType distype,
+    template <unsigned probdim, DRT::Element::DiscretizationType distype, typename valtype,
         unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
         unsigned dim = DRT::UTILS::DisTypeToDim<distype>::dim>
-    inline double EvalDerivsInParameterSpace(const LINALG::Matrix<probdim, numNodesElement>& xyze,
-        const LINALG::Matrix<dim, 1>& rst, LINALG::Matrix<probdim, numNodesElement>& deriv1,
-        LINALG::Matrix<probdim, probdim>& xjm, LINALG::Matrix<probdim, probdim>* xij,
-        LINALG::Matrix<probdim, 1>* normalvec1, LINALG::Matrix<probdim, 1>* normalvec2,
-        bool unit_normal)
+    inline valtype EvalDerivsInParameterSpace(
+        const LINALG::Matrix<probdim, numNodesElement, valtype>& xyze,
+        const LINALG::Matrix<dim, 1, valtype>& rst,
+        LINALG::Matrix<probdim, numNodesElement, valtype>& deriv1,
+        LINALG::Matrix<probdim, probdim, valtype>& xjm,
+        LINALG::Matrix<probdim, probdim, valtype>* xij,
+        LINALG::Matrix<probdim, 1, valtype>* normalvec1,
+        LINALG::Matrix<probdim, 1, valtype>* normalvec2, bool unit_normal)
     {
 #endif
-      LINALG::Matrix<dim, dim> metrictensor;
-      return EvalDerivsInParameterSpace<probdim, distype>(
+      LINALG::Matrix<dim, dim, valtype> metrictensor;
+      return EvalDerivsInParameterSpace<probdim, distype, valtype>(
           xyze, rst, deriv1, metrictensor, xjm, xij, normalvec1, normalvec2, unit_normal);
     }
 
@@ -446,14 +456,14 @@ namespace GEO
       if (normalvec2)
       {
         LINALG::Matrix<probdim, 1> normalvec2_linalg((*normalvec2).A(), true);
-        EvalDerivsInParameterSpace<probdim, distype>(xyze_linalg, rst_linalg, deriv1, xjm, NULL,
-            &normalvec1_linalg, &normalvec2_linalg, unit_normal);
+        EvalDerivsInParameterSpace<probdim, distype, double>(xyze_linalg, rst_linalg, deriv1, xjm,
+            NULL, &normalvec1_linalg, &normalvec2_linalg, unit_normal);
 
         std::fill(normalvec2->A() + probdim, normalvec2->A() + normalvec2->M(), 0.0);
       }
       else
       {
-        EvalDerivsInParameterSpace<probdim, distype>(
+        EvalDerivsInParameterSpace<probdim, distype, double>(
             xyze_linalg, rst_linalg, deriv1, xjm, NULL, &normalvec1_linalg, NULL, unit_normal);
       }
       std::fill(normalvec1.A() + probdim, normalvec1.A() + normalvec1.M(), 0.0);
@@ -496,7 +506,6 @@ namespace GEO
           exit(EXIT_FAILURE);
       }
     }
-
   }  // namespace CUT
 }  // namespace GEO
 

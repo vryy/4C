@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
-/**
+/*!
 \file cut_combintersection.cpp
 
 \brief provides the basic functionality for cutting a mesh with a level set function and/or a
@@ -22,6 +22,7 @@
 #include "cut_meshintersection.H"
 
 #include "cut_combintersection.H"
+#include "cut_tolerance.H"  // for EXTENDED_CUT_DEBUG_OUTPUT
 
 /*-----------------------------------------------------------------------------------------*
  * constructur for Combined Intersection class (Levelset and Mesh intersection in one class)
@@ -51,13 +52,42 @@ void GEO::CUT::CombIntersection::Cut(bool screenoutput)
   {
     m.Cut(*side_);
   }
-
-  // find cut points with cut mesh
+//
+// find cut points with cut mesh
+#if EXTENDED_CUT_DEBUG_OUTPUT
+  if (myrank_ == 0 and screenoutput) IO::cout << "\t\t...Finding cut points";
+  double t_start = Teuchos::Time::wallTime();
+#endif
   m.FindCutPoints();
-
+#if EXTENDED_CUT_DEBUG_OUTPUT
+  double t_diff = Teuchos::Time::wallTime() - t_start;
+  if (myrank_ == 0 and screenoutput)
+    IO::cout << "\t\t\t... Success (" << t_diff << " secs)" << IO::endl;
+  if (myrank_ == 0 and screenoutput) IO::cout << "\t\t...Finding cut lines" << IO::endl;
+  t_start = Teuchos::Time::wallTime();
+#endif
   m.MakeCutLines();
+#if EXTENDED_CUT_DEBUG_OUTPUT
+  t_diff = Teuchos::Time::wallTime() - t_start;
+  if (myrank_ == 0 and screenoutput)
+    IO::cout << "\t\t\t... Success (" << t_diff << " secs)" << IO::endl;
+  if (myrank_ == 0 and screenoutput) IO::cout << "\t\t...Finding cut facets" << IO::endl;
+  t_start = Teuchos::Time::wallTime();
+#endif
   m.MakeFacets();
+#if EXTENDED_CUT_DEBUG_OUTPUT
+  t_diff = Teuchos::Time::wallTime() - t_start;
+  if (myrank_ == 0 and screenoutput)
+    IO::cout << "\t\t\t... Success (" << t_diff << " secs)" << IO::endl;
+  if (myrank_ == 0 and screenoutput) IO::cout << "\t\t...Finding cut cells" << IO::endl;
+  t_start = Teuchos::Time::wallTime();
+#endif
   m.MakeVolumeCells();
+#if EXTENDED_CUT_DEBUG_OUTPUT
+  t_diff = Teuchos::Time::wallTime() - t_start;
+  if (myrank_ == 0 and screenoutput)
+    IO::cout << "\t\t\t... Success (" << t_diff << " secs)" << IO::endl;
+#endif
 }
 
 

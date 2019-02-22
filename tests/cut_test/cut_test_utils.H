@@ -1,3 +1,11 @@
+/*!----------------------------------------------------------------------
+\brief Test for the CUT Library
+\file cut_test_utils.H
+
+\level 1
+
+\maintainer Ager Christoph
+*----------------------------------------------------------------------*/
 #ifndef GEOMETRY_TEST_UTILS_H
 #define GEOMETRY_TEST_UTILS_H
 

@@ -1,16 +1,11 @@
-/*---------------------------------------------------------------------------*/
-/*!
+/*!----------------------------------------------------------------------
+\brief Test for the CUT Library
 \file cut_test_utils.cpp
-
-\brief cut test utilities
 
 \level 1
 
-\maintainer Christoph Ager
-
-*/
-/*---------------------------------------------------------------------------*/
-
+\maintainer Ager Christoph
+*----------------------------------------------------------------------*/
 
 #include "cut_test_utils.H"
 #include "../../src/drt_cut/cut_mesh.H"
@@ -370,7 +365,11 @@ void cutmesh(GEO::CUT::Mesh& mesh)
 }
 
 
-SimpleWrapper::SimpleWrapper() : side_count_(0) { mesh_ = new GEO::CUT::MeshIntersection; }
+SimpleWrapper::SimpleWrapper() : side_count_(0)
+{
+  mesh_ = new GEO::CUT::MeshIntersection;
+  mesh_->GetOptions().Init_for_Cuttests();  // use full cln
+}
 
 SimpleWrapper::~SimpleWrapper() { delete mesh_; }
 
@@ -519,7 +518,7 @@ void SimpleWrapper::Status() { mesh_->Status(); }
 
 void SimpleWrapper::CutTest_Cut(bool include_inner, bool do_Cut_Positions_Dofsets)
 {
-  mesh_->CutTest_Cut(include_inner, INPAR::CUT::VCellGaussPts_Tessellation,
+  mesh_->CutTest_Cut(include_inner, INPAR::CUT::VCellGaussPts_DirectDivergence,
       INPAR::CUT::BCellGaussPts_Tessellation, true, true, do_Cut_Positions_Dofsets);
 }
 

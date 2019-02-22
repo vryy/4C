@@ -25,7 +25,7 @@ surface meshes
 #include "Epetra_SerialDenseMatrix.h"
 #include "../linalg/linalg_fixedsizematrix.H"
 
-// forward declarations
+
 namespace DRT
 {
   class Discretization;
@@ -234,6 +234,9 @@ namespace GEO
     //! Get this side (not from cut meshes) from the cut libraries
     GEO::CUT::SideHandle* GetSide(int sid);
 
+    //! Get this side from cut meshes from the cut libraries
+    GEO::CUT::SideHandle* GetCutSide(int sid);
+
     //! Get this element from the cut libraries
     GEO::CUT::ElementHandle* GetElement(const DRT::Element* ele) const;
 
@@ -260,8 +263,10 @@ namespace GEO
         const DRT::Element* element, LINALG::SerialDenseMatrix& xyze) const;
 
     /// run after the Run_Cut routine has been called
-    virtual void Post_Run_Cut(bool include_inner){
-        /* nothing to do in the base class implementation */};
+    virtual void Post_Run_Cut(bool include_inner);
+
+    /// If Cut Offset is used, reposition boundary cells for subsequent interface integration
+    virtual void Post_UpdateBC_Offset();
 
     GEO::CUT::CombIntersection& Intersection()
     {

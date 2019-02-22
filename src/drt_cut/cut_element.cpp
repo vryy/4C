@@ -200,7 +200,7 @@ std::vector<GEO::CUT::Node*> GEO::CUT::Element::getQuadCorners()
  *            Called by Tetmeshintersection and LS!!!!!!
  *            but not for normal meshintersection!!!
  *--------------------------------------------------------------------*/
-bool GEO::CUT::Element::Cut(Mesh& mesh, Side& cut_side, int recursion)
+bool GEO::CUT::Element::Cut(Mesh& mesh, Side& cut_side)
 {
   bool cut = false;
 
@@ -233,7 +233,7 @@ bool GEO::CUT::Element::Cut(Mesh& mesh, Side& cut_side, int recursion)
   for (std::vector<Side*>::const_iterator i = sides.begin(); i != sides.end(); ++i)
   {
     Side* s = *i;
-    if (FindCutPoints(mesh, *s, cut_side, recursion))
+    if (FindCutPoints(mesh, *s, cut_side))
     {
       cut = true;
     }
@@ -254,13 +254,13 @@ bool GEO::CUT::Element::Cut(Mesh& mesh, Side& cut_side, int recursion)
 /*--------------------------------------------------------------------*
  * cut this element with its cut faces                    wirtz 08/14 *
  *--------------------------------------------------------------------*/
-void GEO::CUT::Element::FindCutPoints(Mesh& mesh, int recursion)
+void GEO::CUT::Element::FindCutPoints(Mesh& mesh)
 {
   for (plain_side_set::iterator i = cut_faces_.begin(); i != cut_faces_.end();
       /* do not increment */)
   {
     Side& cut_side = **i;
-    bool cut = FindCutPoints(mesh, cut_side, recursion);
+    bool cut = FindCutPoints(mesh, cut_side);
 
     /* insert this side into cut_faces_, also the case when a side just
      * touches the element at a single point, edge or the whole side */
@@ -278,7 +278,7 @@ void GEO::CUT::Element::FindCutPoints(Mesh& mesh, int recursion)
 /*--------------------------------------------------------------------*
  * cut this element with given cut_side                   wirtz 08/14 *
  *--------------------------------------------------------------------*/
-bool GEO::CUT::Element::FindCutPoints(Mesh& mesh, Side& cut_side, int recursion)
+bool GEO::CUT::Element::FindCutPoints(Mesh& mesh, Side& cut_side)
 {
   bool cut = false;
 
@@ -303,32 +303,18 @@ bool GEO::CUT::Element::FindCutPoints(Mesh& mesh, Side& cut_side, int recursion)
       cut = true;
     }
   }
-  //  std::cout << "\n---------------------------------------\n";
-  //  std::cout << Id() << " Cut Inside = " << ( cut ? "TRUE" : "FALSE" ) << std::endl;
   // all the other cut points lie on sides of the element (s is an element side, cut_side is the
   // cutter side)
   const std::vector<Side*>& sides = Sides();
   for (std::vector<Side*>::const_iterator i = sides.begin(); i != sides.end(); ++i)
   {
     Side* s = *i;
-    if (FindCutPoints(mesh, *s, cut_side, recursion))
+    if (FindCutPoints(mesh, *s, cut_side))
     {
       cut = true;
     }
   }
 
-  //  std::cout << Id() << " Cut On Side = " << ( cut ? "TRUE" : "FALSE" ) << std::endl;
-  //  std::cout << "num cut points = " << cut_side.CutPoints().size() << std::endl;
-  //  if ( cut )
-  //  {
-  //    for ( PointPositionSet::const_iterator cit = cut_side.CutPoints().begin();
-  //        cit != cut_side.CutPoints().end(); ++cit )
-  //    {
-  //      std::cout << "side = " << (*cit)->Id() << std::endl;
-  //      (*cit)->Print( std::cout );
-  //      std::cout << std::endl;
-  //    }
-  //  }
 
   return cut;
 }
@@ -350,30 +336,6 @@ void GEO::CUT::Element::MakeCutLines(Mesh& mesh)
       Side* s = *i;
       FindCutLines(mesh, *s, cut_side);
     }
-
-    // find lines inside the element
-    // here lines are constructed, which are based on edges of the cut side
-    // and not directly part of an intersection!
-    const std::vector<Edge*>& side_edges = cut_side.Edges();
-    for (std::vector<Edge*>::const_iterator i = side_edges.begin(); i != side_edges.end(); ++i)
-    {
-      Edge* e = *i;
-      std::vector<Point*> line;
-      e->CutPointsInside(this, line);
-      mesh.NewLinesBetween(line, &cut_side, NULL, this);
-    }
-
-    //    std::cout << "-----------------------------\n";
-    //    std::cout << "Element " << Id() << " | Side " << cut_side.Id() <<
-    //        " [ num cutlines per side = " << cut_side.CutLines().size() << " ]" << std::endl;
-    //    for ( std::vector<Line*>::const_iterator cit = cut_side.CutLines().begin();
-    //        cit != cut_side.CutLines().end(); ++cit )
-    //    {
-    //      (*cit)->BeginPoint()->Print( std::cout );
-    //      std::cout << " -- ";
-    //      (*cit)->EndPoint()->Print( std::cout );
-    //      std::cout << std::endl;
-    //    }
   }
 }
 
@@ -381,15 +343,15 @@ void GEO::CUT::Element::MakeCutLines(Mesh& mesh)
  * Find cut points between a background element side and a cut side
  * Cut points are stored correspondingly
  *-----------------------------------------------------------------------------*/
-bool GEO::CUT::Element::FindCutPoints(Mesh& mesh, Side& ele_side, Side& cut_side, int recursion)
+bool GEO::CUT::Element::FindCutPoints(Mesh& mesh, Side& ele_side, Side& cut_side)
 {
   TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 4/6 --- Cut_MeshIntersection --- FindCutPoints(ele)");
 
   // edges of element side cuts through cut side
-  bool cut = ele_side.FindCutPoints(mesh, this, cut_side, recursion);
+  bool cut = ele_side.FindCutPoints(mesh, this, cut_side);
   // edges of cut side cuts through element side
   // ( does nothing for the level-set case, since a level-set side has no edges! )
-  bool reverse_cut = cut_side.FindCutPoints(mesh, this, ele_side, recursion);
+  bool reverse_cut = cut_side.FindCutPoints(mesh, this, ele_side);
   return cut or reverse_cut;
 }
 
@@ -849,20 +811,6 @@ bool GEO::CUT::Element::PositionByAngle(Point* p, Point* cutpoint, Side* s)
   // in case of the right side the "angle-criterion" leads to the right decision (position)
 
   LINALG::Matrix<2, 1> rs(true);  // local coordinates of the cut-point w.r.t side
-  double dist = 0.0;              // just used for within-side-check, has to be about 0.0
-  bool within_side = s->WithinSide(cut_point_xyz, rs, dist);
-
-  if (!within_side)
-  {
-    std::cout << "Side: " << std::endl;
-    s->Print();
-    std::cout << "Point: " << std::endl;
-    p->Print(std::cout);
-    std::cout << "local coordinates " << rs << " dist " << dist << std::endl;
-    run_time_error(
-        "cut-point does not lie on side! That's wrong, because it is "
-        "a side's cut-point!");
-  }
 
   LINALG::Matrix<3, 1> normal(true);
   s->Normal(rs, normal);  // outward pointing normal at cut-point
@@ -874,12 +822,13 @@ bool GEO::CUT::Element::PositionByAngle(Point* p, Point* cutpoint, Side* s)
   // check the cosine between normal and line_vec
   double n_norm = normal.Norm2();
   double l_norm = line_vec.Norm2();
-  if (n_norm < REFERENCETOL or l_norm < REFERENCETOL)
+  if (n_norm < MERGING_TOLERANCE or l_norm < MERGING_TOLERANCE)
   {
+    double distance_between = GEO::CUT::DistanceBetweenPoints(p, cutpoint);
     dserror(
-        " the norm of line_vec or n_norm is smaller than %d, should these "
-        "points be one point in pointpool?, lnorm=%d, nnorm=%d",
-        REFERENCETOL, l_norm, n_norm);
+        " the norm of line_vec or n_norm is smaller than %lf, should these "
+        "points be one point in pointpool?, lnorm=%lf, nnorm=%lf, distance between them = %lf",
+        REFERENCETOL, l_norm, n_norm, distance_between);
   }
 
   // cosine between the line-vector and the normal vector
@@ -907,6 +856,7 @@ bool GEO::CUT::Element::PositionByAngle(Point* p, Point* cutpoint, Side* s)
   //------------------------------------------------------------------------
   return false;
 }
+
 
 /*------------------------------------------------------------------------------------------*
  *  check if the side's normal vector is orthogonal to the line between p and the cutpoint

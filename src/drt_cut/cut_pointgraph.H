@@ -58,7 +58,7 @@ namespace GEO
          *  Call this method to get the pointgraph which fits to your problem dimension.
          *
          *  \author hiermeier \date 11/16 */
-        static PointGraph* Create(Mesh& mesh, Element* element, Side* side,
+        static PointGraph *Create(Mesh &mesh, Element *element, Side *side,
             PointGraph::Location location, PointGraph::Strategy strategy);
 
        protected:
@@ -75,34 +75,44 @@ namespace GEO
 
           void AddEdge(int row, int col);
 
-          void AddEdge(Point* p1, Point* p2);
+          void AddEdge(Point *p1, Point *p2);
 
-          Point* GetPoint(int i);
+          Point *GetPoint(int i);
 
-          void Print(std::ostream& stream = std::cout);
+          void Print(std::ostream &stream = std::cout);
 
-          void PlotAllPoints(std::ostream& stream = std::cout);
+          void PlotAllPoints(std::ostream &stream = std::cout);
 
-          void PlotPoints(Element* element);
+          void PlotPoints(Element *element);
 
           /** Creates maincycles (outer polygons) and holecycles (inner polygons = holes)
            *  of the selfcut graph */
-          void FindCycles(Side* side, Cycle& cycle);
+          void FindCycles(Side *side, Cycle &cycle);
 
           virtual void FindCycles(
-              Element* element, Side* side, Cycle& cycle, Location location, Strategy strategy);
+              Element *element, Side *side, Cycle &cycle, Location location, Strategy strategy);
 
           /*!
           \brief Any edge with single point in the graph is deleted
            */
-          void FixSinglePoints(Cycle& cycle);
+          void FixSinglePoints(Cycle &cycle);
 
           virtual bool HasSinglePoints(Location location);
 
-          void GnuplotDumpCycles(const std::string& filename, const std::vector<Cycle>& cycles);
+          virtual bool HasTouchingEdge(Element *element, Side *side);
+
+          // Simplify connection if the single point lies close to the nodal point
+          // and touches the same edges as the nodal point
+          // however because of the way pointgraph is constructed only connection from nodal
+          // to this point is created
+          // In this case we remove connection to nodal point, and treat cut point and "new nodal
+          // point"
+          virtual bool SimplifyConnections(Element *element, Side *side);
+
+          void GnuplotDumpCycles(const std::string &filename, const std::vector<Cycle> &cycles);
 
           std::map<int, plain_int_set> graph_;
-          std::map<int, Point*> all_points_;
+          std::map<int, Point *> all_points_;
           std::vector<Cycle> main_cycles_;
           std::vector<std::vector<Cycle>> hole_cycles_;
 
@@ -117,10 +127,10 @@ namespace GEO
         typedef std::vector<Cycle>::iterator facet_iterator;
         typedef std::vector<std::vector<Cycle>>::iterator hole_iterator;
 
-        PointGraph(Mesh& mesh, Element* element, Side* side, Location location, Strategy strategy);
+        PointGraph(Mesh &mesh, Element *element, Side *side, Location location, Strategy strategy);
 
         /// Constructor for the selfcut
-        PointGraph(Side* side);
+        PointGraph(Side *side);
 
         /// destructor
         virtual ~PointGraph(){};
@@ -138,26 +148,25 @@ namespace GEO
        protected:
         /*! \brief Graph is filled with all edges that are created due to additional
          *  cut points and cut lines */
-        void FillGraph(Element* element, Side* side, Cycle& cycle, Strategy strategy);
+        void FillGraph(Element *element, Side *side, Cycle &cycle, Strategy strategy);
 
         /** Graph is filled with all edges of the selfcut: uncutted edges,
          *  selfcutedges and new splitted edges; but no the cutted edges */
-        void FillGraph(Side* side, Cycle& cycle);
+        void FillGraph(Side *side, Cycle &cycle);
 
         /** \brief add cut lines to graph
          *
          *  no need to add any more point to cycle because cut lines just join already
          *  existing points on the edge. making cut lines do not introduce additional
          *  points */
-        virtual void AddCutLinesToGraph(
-            Element* element, Side* side, Strategy strategy, Cycle& cycle);
+        virtual void AddCutLinesToGraph(Element *element, Side *side, Strategy strategy);
 
-        virtual void BuildCycle(const std::vector<Point*>& edge_points, Cycle& cycle) const;
+        virtual void BuildCycle(const std::vector<Point *> &edge_points, Cycle &cycle) const;
 
         /// access the graph of the most derived class
-        virtual inline PointGraph::Graph& GetGraph() { return *graph_; }
+        virtual inline PointGraph::Graph &GetGraph() { return *graph_; }
 
-        virtual inline const Teuchos::RCP<PointGraph::Graph>& GraphPtr() { return graph_; }
+        virtual inline const Teuchos::RCP<PointGraph::Graph> &GraphPtr() { return graph_; }
 
        private:
         Teuchos::RCP<GEO::CUT::IMPL::PointGraph::Graph> CreateGraph(unsigned dim);
@@ -166,11 +175,11 @@ namespace GEO
       };  // class PointGraph
 
       // non-member function
-      bool FindCycles(graph_t& g, Cycle& cycle, std::map<vertex_t, LINALG::Matrix<3, 1>>& local,
-          std::vector<Cycle>& cycles);
+      bool FindCycles(graph_t &g, Cycle &cycle, std::map<vertex_t, LINALG::Matrix<3, 1>> &local,
+          std::vector<Cycle> &cycles);
 
-      Teuchos::RCP<PointGraph> CreatePointGraph(Mesh& mesh, Element* element, Side* side,
-          const PointGraph::Location& location, const PointGraph::Strategy& strategy);
+      Teuchos::RCP<PointGraph> CreatePointGraph(Mesh &mesh, Element *element, Side *side,
+          const PointGraph::Location &location, const PointGraph::Strategy &strategy);
     }  // namespace IMPL
   }    // namespace CUT
 }  // namespace GEO

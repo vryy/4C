@@ -316,6 +316,5 @@ namespace INPAR
   }  // namespace XFEM
 
 }  // namespace INPAR
-
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef INPAR_XFEM_H

@@ -97,6 +97,12 @@ namespace GEO
           std::ofstream& file, const Side* s, bool to_local = false, Element* ele = NULL);
 
       /*!
+      \brief Write output of a side with given name
+       */
+      void GmshSideDump(std::ofstream& file, const Side* s, const std::string& sname,
+          bool to_local = false, Element* ele = NULL);
+
+      /*!
       \brief Write output of a Triside
        */
       void GmshTriSideDump(std::ofstream& file, std::vector<Point*> points, bool to_local = false,
@@ -168,6 +174,12 @@ namespace GEO
           std::ofstream& file, GEO::CUT::Edge* edge, bool to_local = false, Element* ele = NULL);
 
       /*!
+      \brief Write output of a edge
+       */
+      void GmshEdgeDump(std::ofstream& file, GEO::CUT::Edge* edge, const std::string& ename,
+          bool to_local = false, Element* ele = NULL);
+
+      /*!
       \brief Write output of a node
        */
       void GmshNodeDump(
@@ -178,6 +190,12 @@ namespace GEO
        */
       void GmshPointDump(std::ofstream& file, GEO::CUT::Point* point, int idx,
           bool to_local = false, Element* ele = NULL);
+
+      /*!
+      \brief Write output of a point with special idx and special name
+       */
+      void GmshPointDump(std::ofstream& file, GEO::CUT::Point* point, int idx,
+          const std::string& pname, bool to_local, Element* ele);
 
       /*!
       \brief Write output of a point with point position as idx
@@ -249,6 +267,13 @@ namespace GEO
        */
       void GmshEndSection(std::ofstream& file, bool close_file = false);
 
+      /// generate combination of output of this particular edge and intersection, useful for
+      /// debugging cut libraries
+      void GmshCutPairDump(
+          std::ofstream& file, Side* side, Edge* edge, int id, const std::string& suffix);
+
+      void GmshCutPairDump(std::ofstream& file, const std::pair<Side*, Edge*>& pair, int id,
+          const std::string& suffix);
 
       // void GmshObjectDump2(std::ofstream & file, GEO::CUT::Facet* f)
       //{
@@ -282,6 +307,17 @@ namespace GEO
 
       void GmshWriteCoords(
           std::ofstream& file, Point* point, bool to_local = false, Element* ele = NULL);
+
+      // Generate debug output for various critical cases
+      void DebugDump_ThreePointsOnEdge(
+          Side* first, Side* second, Edge* e, Point* p, const PointSet& cut);
+
+      void DebugDump_MoreThanTwoIntersectionPoints(
+          Edge* edge, Side* other, const std::vector<Point*>& point_stack);
+
+      void DebugDump_MultipleCutPointsSpecial(Side* first, Side* second, const PointSet& cut,
+          const PointSet& collected_points, const point_line_set& new_lines);
+
     }  // namespace OUTPUT
 
   } /* namespace CUT */
