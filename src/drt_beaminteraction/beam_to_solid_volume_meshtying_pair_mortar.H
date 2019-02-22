@@ -17,6 +17,13 @@ functions for the traction.
 #include "beam_to_solid_volume_meshtying_pair_base.H"
 
 
+// Forward declarations.
+namespace BEAMINTERACTION
+{
+  class BeamToSolidVolumeMeshtyingPairMortar_TestSuite;
+}
+
+
 namespace BEAMINTERACTION
 {
   /**
@@ -31,6 +38,9 @@ namespace BEAMINTERACTION
   class BeamToSolidVolumeMeshtyingPairMortar
       : public BeamToSolidVolumeMeshtyingPairBase<beam, solid>
   {
+    //! Define the unit test class as friend so it can set up a valid pair state for the test cases.
+    friend BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite;
+
    public:
     /**
      * \brief Standard Constructor
