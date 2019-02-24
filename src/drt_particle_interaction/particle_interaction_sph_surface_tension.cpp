@@ -450,7 +450,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeUnitWal
       wallnormal_i = container_i->GetPtrToParticleState(PARTICLEENGINE::UnitWallNormal, particle_i);
 
       // (current) inverse volume of particle i
-      const double inv_V_i = mass_i[0] / dens_i[0];
+      const double inv_V_i = dens_i[0] / mass_i[0];
 
       // (initial) volume of boundary particle j
       const double V_j = mass_i[0] / material_i->initDensity_;
@@ -481,7 +481,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeUnitWal
       wallnormal_j = container_j->GetPtrToParticleState(PARTICLEENGINE::UnitWallNormal, particle_j);
 
       // (current) inverse volume of particle j
-      const double inv_V_j = mass_j[0] / dens_j[0];
+      const double inv_V_j = dens_j[0] / mass_j[0];
 
       // (initial) volume of boundary particle i
       const double V_i = mass_j[0] / material_j->initDensity_;
@@ -579,6 +579,12 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallDis
       wallnormal_i = container_i->GetPtrToParticleState(PARTICLEENGINE::UnitWallNormal, particle_i);
       walldistance_i = container_i->GetPtrToParticleState(PARTICLEENGINE::WallDistance, particle_i);
 
+      // norm of wall normal
+      const double wallnormal_i_norm = UTILS::vec_norm2(wallnormal_i);
+
+      // no interacting boundary particle
+      if (not(wallnormal_i_norm > 0.0)) continue;
+
       // distance of particle i to neighboring boundary particle j
       const double currentwalldistance =
           neighborpair.absdist_ * UTILS::vec_dot(wallnormal_i, neighborpair.e_ij_);
@@ -601,6 +607,12 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallDis
       // get pointer to particle states
       wallnormal_j = container_j->GetPtrToParticleState(PARTICLEENGINE::UnitWallNormal, particle_j);
       walldistance_j = container_j->GetPtrToParticleState(PARTICLEENGINE::WallDistance, particle_j);
+
+      // norm of wall normal
+      const double wallnormal_j_norm = UTILS::vec_norm2(wallnormal_j);
+
+      // no interacting boundary particle
+      if (not(wallnormal_j_norm > 0.0)) continue;
 
       // distance of particle j to neighboring boundary particle i
       const double currentwalldistance =
@@ -793,7 +805,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
   // iterate over particle types
   for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
   {
-    // no curvature evaluation for boundary or rigid particles
+    // no colorfield gradient extrapolation for boundary or rigid particles
     if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
 
     // get container of owned particles of current particle type
