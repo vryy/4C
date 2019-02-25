@@ -55,7 +55,7 @@ class LINALG::Linalg_TestSuite : public CxxTest::TestSuite
 
     // Invert the matrices.
     LINALG::Inverse2x2(A1);
-    LINALG::Inverse2x2DoNotThrowErrorOnZeroDeterminant(A2, 1e-12);
+    TS_ASSERT_EQUALS(true, LINALG::Inverse2x2DoNotThrowErrorOnZeroDeterminant(A2, 1e-12));
 
     // Check the inverse matrix.
     TS_ASSERT_DELTA(A1(0, 0), -0.019983345434747187407, 1e-14);
@@ -72,7 +72,7 @@ class LINALG::Linalg_TestSuite : public CxxTest::TestSuite
     LINALG::TMatrix<double, 2, 2> A_singular(true);
     A_singular(0, 0) = 1.;
     TS_ASSERT_THROWS_ANYTHING(LINALG::Inverse2x2(A_singular));
-    LINALG::Inverse2x2DoNotThrowErrorOnZeroDeterminant(A_singular, 1e-12);
+    TS_ASSERT_EQUALS(false, LINALG::Inverse2x2DoNotThrowErrorOnZeroDeterminant(A_singular, 1e-12));
   }
 
   /**
@@ -104,7 +104,7 @@ class LINALG::Linalg_TestSuite : public CxxTest::TestSuite
 
     // Invert the matrices.
     LINALG::Inverse3x3(A1);
-    LINALG::Inverse3x3DoNotThrowErrorOnZeroDeterminant(A2, 1e-12);
+    TS_ASSERT_EQUALS(true, LINALG::Inverse3x3DoNotThrowErrorOnZeroDeterminant(A2, 1e-12));
 
     // Check the inverse matrix.
     TS_ASSERT_DELTA(A1(0, 0), -1.1432496777455423383, 1e-14);
@@ -132,7 +132,7 @@ class LINALG::Linalg_TestSuite : public CxxTest::TestSuite
     A_singular(0, 0) = 1.;
     A_singular(1, 1) = 1.;
     TS_ASSERT_THROWS_ANYTHING(LINALG::Inverse3x3(A_singular));
-    LINALG::Inverse3x3DoNotThrowErrorOnZeroDeterminant(A_singular, 1e-12);
+    TS_ASSERT_EQUALS(false, LINALG::Inverse3x3DoNotThrowErrorOnZeroDeterminant(A_singular, 1e-12));
   }
 
   /**
@@ -171,7 +171,7 @@ class LINALG::Linalg_TestSuite : public CxxTest::TestSuite
 
     // Invert the matrices.
     LINALG::Inverse4x4(A1);
-    LINALG::Inverse4x4DoNotThrowErrorOnZeroDeterminant(A2, 1e-12);
+    TS_ASSERT_EQUALS(true, LINALG::Inverse4x4DoNotThrowErrorOnZeroDeterminant(A2, 1e-12));
 
     // Check the inverse matrix.
     TS_ASSERT_DELTA(A1(0, 0), -0.43977637337572104289, 1e-14);
@@ -214,7 +214,7 @@ class LINALG::Linalg_TestSuite : public CxxTest::TestSuite
     A_singular(1, 1) = 1.;
     A_singular(2, 2) = 1.;
     TS_ASSERT_THROWS_ANYTHING(LINALG::Inverse4x4(A_singular));
-    LINALG::Inverse4x4DoNotThrowErrorOnZeroDeterminant(A_singular, 1e-12);
+    TS_ASSERT_EQUALS(false, LINALG::Inverse4x4DoNotThrowErrorOnZeroDeterminant(A_singular, 1e-12));
   }
 };
 
