@@ -98,7 +98,30 @@ namespace DRT
       //! get information, whether the formulation should be symmetric/skew-symmetric in the adjoint
       //! viscous terms
       //! @return true, in case of a symmetric adjoint term
-      bool IsViscousAdjointSymmetric() const { return is_visc_adjoint_symmetric_; }
+      bool IsViscousAdjointSymmetric() const
+      {
+        if (visc_adjoint_scaling_ == INPAR::XFEM::adj_none)
+          dserror("Do not call IsViscousAdjointSymmetric with adj_none");
+        return visc_adjoint_scaling_ == INPAR::XFEM::adj_sym;
+      }
+
+      //! get information, whether the formulation should be symmetric/skew-symmetric/none in the
+      //! adjoint viscous terms
+      //! @return double with scaling
+      double GetViscousAdjointScaling() const
+      {
+        switch (visc_adjoint_scaling_)
+        {
+          case INPAR::XFEM::adj_none:
+            return 0.0;
+          case INPAR::XFEM::adj_sym:
+            return 1.0;
+          case INPAR::XFEM::adj_skew:
+            return -1.0;
+          default:
+            dserror("Unkown type of AdjointScaling!");
+        }
+      }
 
       //! get the flag if the simulation is run as pseudo 2D simulation with only one element in the
       //! third dimension and strong Dirichlet condition to fix u_z = 0
@@ -208,9 +231,9 @@ namespace DRT
       //! split
       double nit_stab_gamma_tang_;
 
-      //! flag, that indicates matching signs between the viscous and adjoint viscous Nitsche terms
+      //! enum, that indicates matching signs between the viscous and adjoint viscous Nitsche terms
       //! or between the equivalent MHVS-terms
-      bool is_visc_adjoint_symmetric_;
+      INPAR::XFEM::AdjointScaling visc_adjoint_scaling_;
 
       //@}
 

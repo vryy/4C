@@ -201,8 +201,12 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           ),
       &xfluid_stab);
 
-  BoolParameter("VISC_ADJOINT_SYMMETRY", "yes",
-      "viscous and adjoint viscous interface terms with matching sign?", &xfluid_stab);
+  setStringToIntegralParameter<int>("VISC_ADJOINT_SYMMETRY", "yes",
+      "viscous and adjoint viscous interface terms with matching sign?",
+      tuple<std::string>("yes", "no", "sym", "skew", "none"),
+      tuple<int>(INPAR::XFEM::adj_sym, INPAR::XFEM::adj_skew, INPAR::XFEM::adj_sym,
+          INPAR::XFEM::adj_skew, INPAR::XFEM::adj_none),
+      &xfluid_stab);
 
   // viscous and convective Nitsche/MSH stabilization parameter
   DoubleParameter(
@@ -220,6 +224,13 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                                           // solving a local element-wise eigenvalue
                                                           // problem
           ),
+      &xfluid_stab);
+
+  setStringToIntegralParameter<int>("UPDATE_EIGENVALUE_TRACE_ESTIMATE", "every_iter",
+      "how often should the local eigenvalue problem be updated",
+      tuple<std::string>("every_iter", "every_timestep", "once"),
+      tuple<int>(INPAR::XFEM::Eigenvalue_update_every_iter,
+          INPAR::XFEM::Eigenvalue_update_every_timestep, INPAR::XFEM::Eigenvalue_update_once),
       &xfluid_stab);
 
   setStringToIntegralParameter<int>("VISC_STAB_HK", "ele_vol_div_by_max_ele_surf",

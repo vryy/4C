@@ -1888,6 +1888,7 @@ baci_test(xfsi_comp_struct_fsi_2D_mono_fine_touched_TimeintEOS_full_Semilagrange
 baci_test(xfsi_comp_struct_fsi_2D_mono_full_Semilagrange 4 "2")
 baci_test(xfsi_comp_struct_fsi_2D_mono_full_Semilagrange_2ndorder_theta066 4 "2")
 baci_test(xfsi_comp_struct_fsi_2D_mono_ale 3 "2")
+baci_test(xfsi_comp_struct_fsi_2D_mono_solidsided 3 "")
 baci_test(one_d_3_artery_network 1 9999)
 baci_test(one_d_3_artery_network_stationary 2 8)
 post_processing(one_d_3_artery_network_stationary 2 "" "" 10)

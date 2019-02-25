@@ -62,7 +62,7 @@ DRT::ELEMENTS::FluidEleParameterXFEM::FluidEleParameterXFEM()
       visc_stab_hk_(INPAR::XFEM::ViscStab_hk_vol_equivalent),
       nit_stab_gamma_(0.0),
       nit_stab_gamma_tang_(0.0),
-      is_visc_adjoint_symmetric_(true),
+      visc_adjoint_scaling_(INPAR::XFEM::adj_sym),
       is_pseudo_2D_(false),
       xff_conv_stab_scaling_(INPAR::XFEM::XFF_ConvStabScaling_none),
       conv_stab_scaling_(INPAR::XFEM::ConvStabScaling_none),
@@ -76,7 +76,8 @@ DRT::ELEMENTS::FluidEleParameterXFEM::FluidEleParameterXFEM()
 //----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidEleParameterXFEM::CheckParameterConsistency(int myrank) const
 {
-  if (is_visc_adjoint_symmetric_ && coupling_method_ == INPAR::XFEM::Hybrid_LM_viscous_stress)
+  if (visc_adjoint_scaling_ == INPAR::XFEM::adj_sym &&
+      coupling_method_ == INPAR::XFEM::Hybrid_LM_viscous_stress)
   {
     if (myrank == 0)
       IO::cout << "Be warned: the symmetric hybrid/viscous stress-based LM approach is known for "
@@ -216,8 +217,8 @@ void DRT::ELEMENTS::FluidEleParameterXFEM::SetElementXFEMParameter(
 
   nit_stab_gamma_tang_ = params_xf_stab.get<double>("NIT_STAB_FAC_TANG");
 
-  is_visc_adjoint_symmetric_ =
-      DRT::INPUT::IntegralValue<bool>(params_xf_stab, "VISC_ADJOINT_SYMMETRY");
+  visc_adjoint_scaling_ = DRT::INPUT::IntegralValue<INPAR::XFEM::AdjointScaling>(
+      params_xf_stab, "VISC_ADJOINT_SYMMETRY");
 
   is_pseudo_2D_ = (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab, "IS_PSEUDO_2D");
 
