@@ -73,6 +73,15 @@ namespace GEOMETRYPAIR
     ~GeometryPairLineToVolume(){};
 
     /**
+     * \brief Initialize the pair.
+     * @param evaluation_data_ptr Pointer to the evaluation data.
+     * @param element1 Pointer to the first element.
+     * @param element2 Pointer to the second element.
+     */
+    void Init(Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> evaluation_data_ptr,
+        const DRT::Element* element1, const DRT::Element* element2) override;
+
+    /**
      * \brief Do stuff that can not be done in the Evaluate call. All pairs call PreEvaluate before
      * Evaluate is called on one of them.
      * @param q_line (in) Degrees of freedom for the line.

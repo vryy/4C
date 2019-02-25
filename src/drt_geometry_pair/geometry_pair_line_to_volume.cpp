@@ -20,6 +20,30 @@
  *
  */
 template <typename scalar_type, typename line, typename volume>
+void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Init(
+    Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> evaluation_data_ptr,
+    const DRT::Element* element1, const DRT::Element* element2)
+{
+  // Call init of base class.
+  GeometryPair::Init(evaluation_data_ptr, element1, element2);
+
+  // For the current implementation, the line element has to be on the same processor as the pair
+  // object. This is because the tracking vector in LineToVolumeEvaluationData is only local and we
+  // need this vector for segmentation e.t.c.
+  int myrank = -1;
+  MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+  if (element1->Owner() != myrank)
+    dserror(
+        "The GeometryPairLineToVolume pair has to be on the same processor as the line element! "
+        "Currently the pair is on rank %d, the line element on %d!",
+        myrank, element1->Owner());
+}
+
+
+/**
+ *
+ */
+template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectPointOnLineToVolume(
     const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
     const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume, const scalar_type& eta,
