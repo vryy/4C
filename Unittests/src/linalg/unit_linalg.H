@@ -42,13 +42,15 @@ class LINALG::Linalg_TestSuite : public CxxTest::TestSuite
   {
     // Variable definition.
     LINALG::TMatrix<double, 2, 2> A1;
-    LINALG::TMatrix<double, 2, 2> A2;
 
     // Set the matrix values.
-    A1(0, 0) = A2(0, 0) = 0.72903241936703114203;
-    A1(1, 0) = A2(1, 0) = 0.81862230026150939335;
-    A1(0, 1) = A2(0, 1) = 0.32707405507901372465;
-    A1(1, 1) = A2(1, 1) = 0.0052737129228371719370;
+    A1(0, 0) = 0.72903241936703114203;
+    A1(1, 0) = 0.81862230026150939335;
+    A1(0, 1) = 0.32707405507901372465;
+    A1(1, 1) = 0.0052737129228371719370;
+
+    // Copy matrix.
+    LINALG::TMatrix<double, 2, 2> A2(A1);
 
     // Check the determinant function.
     TS_ASSERT_DELTA(LINALG::Determinant2x2(A1), -0.2639054076334587, 1e-14);
@@ -57,7 +59,7 @@ class LINALG::Linalg_TestSuite : public CxxTest::TestSuite
     LINALG::Inverse2x2(A1);
     TS_ASSERT_EQUALS(true, LINALG::Inverse2x2DoNotThrowErrorOnZeroDeterminant(A2, 1e-12));
 
-    // Check the inverse matrix.
+    // Check each entry of the the inverse matrices.
     TS_ASSERT_DELTA(A1(0, 0), -0.019983345434747187407, 1e-14);
     TS_ASSERT_DELTA(A1(1, 0), 3.1019534900872646712, 1e-14);
     TS_ASSERT_DELTA(A1(0, 1), 1.2393609438018440619, 1e-14);
@@ -86,18 +88,20 @@ class LINALG::Linalg_TestSuite : public CxxTest::TestSuite
   {
     // Variable definition.
     LINALG::TMatrix<double, 3, 3> A1;
-    LINALG::TMatrix<double, 3, 3> A2;
 
     // Set the matrix values.
-    A1(0, 0) = A2(0, 0) = 0.72903241936703114203;
-    A1(1, 0) = A2(1, 0) = 0.0052737129228371719370;
-    A1(2, 0) = A2(2, 0) = 0.36847164343389089096;
-    A1(0, 1) = A2(0, 1) = 0.32707405507901372465;
-    A1(1, 1) = A2(1, 1) = 0.87570663114228933311;
-    A1(2, 1) = A2(2, 1) = 0.76895132151127114661;
-    A1(0, 2) = A2(0, 2) = 0.81862230026150939335;
-    A1(1, 2) = A2(1, 2) = 0.64019842179333806573;
-    A1(2, 2) = A2(2, 2) = 0.69378923027976465858;
+    A1(0, 0) = 0.72903241936703114203;
+    A1(1, 0) = 0.0052737129228371719370;
+    A1(2, 0) = 0.36847164343389089096;
+    A1(0, 1) = 0.32707405507901372465;
+    A1(1, 1) = 0.87570663114228933311;
+    A1(2, 1) = 0.76895132151127114661;
+    A1(0, 2) = 0.81862230026150939335;
+    A1(1, 2) = 0.64019842179333806573;
+    A1(2, 2) = 0.69378923027976465858;
+
+    // Copy matrix.
+    LINALG::TMatrix<double, 3, 3> A2(A1);
 
     // Check the determinant function.
     TS_ASSERT_DELTA(LINALG::Determinant3x3(A1), -0.1008304741716571, 1e-14);
@@ -106,7 +110,7 @@ class LINALG::Linalg_TestSuite : public CxxTest::TestSuite
     LINALG::Inverse3x3(A1);
     TS_ASSERT_EQUALS(true, LINALG::Inverse3x3DoNotThrowErrorOnZeroDeterminant(A2, 1e-12));
 
-    // Check the inverse matrix.
+    // Check each entry of the the inverse matrices.
     TS_ASSERT_DELTA(A1(0, 0), -1.1432496777455423383, 1e-14);
     TS_ASSERT_DELTA(A1(1, 0), -2.3032334349351217883, 1e-14);
     TS_ASSERT_DELTA(A1(2, 0), 3.1599358789014842560, 1e-14);
@@ -146,25 +150,27 @@ class LINALG::Linalg_TestSuite : public CxxTest::TestSuite
   {
     // Variable definition.
     LINALG::TMatrix<double, 4, 4> A1;
-    LINALG::TMatrix<double, 4, 4> A2;
 
     // Set the matrix values.
-    A1(0, 0) = A2(0, 0) = 0.72903241936703114203;
-    A1(1, 0) = A2(1, 0) = 0.87570663114228933311;
-    A1(2, 0) = A2(2, 0) = 0.69378923027976465858;
-    A1(3, 0) = A2(3, 0) = 0.019637190415090362652;
-    A1(0, 1) = A2(0, 1) = 0.32707405507901372465;
-    A1(1, 1) = A2(1, 1) = 0.64019842179333806573;
-    A1(2, 1) = A2(2, 1) = 0.15928293569477706215;
-    A1(3, 1) = A2(3, 1) = 0.13119201434024140151;
-    A1(0, 2) = A2(0, 2) = 0.81862230026150939335;
-    A1(1, 2) = A2(1, 2) = 0.36847164343389089096;
-    A1(2, 2) = A2(2, 2) = 0.12278929762839221138;
-    A1(3, 2) = A2(3, 2) = 0.12028240083390837511;
-    A1(0, 3) = A2(0, 3) = 0.0052737129228371719370;
-    A1(1, 3) = A2(1, 3) = 0.76895132151127114661;
-    A1(2, 3) = A2(2, 3) = 0.024003735765356129168;
-    A1(3, 3) = A2(3, 3) = 0.27465069811053651449;
+    A1(0, 0) = 0.72903241936703114203;
+    A1(1, 0) = 0.87570663114228933311;
+    A1(2, 0) = 0.69378923027976465858;
+    A1(3, 0) = 0.019637190415090362652;
+    A1(0, 1) = 0.32707405507901372465;
+    A1(1, 1) = 0.64019842179333806573;
+    A1(2, 1) = 0.15928293569477706215;
+    A1(3, 1) = 0.13119201434024140151;
+    A1(0, 2) = 0.81862230026150939335;
+    A1(1, 2) = 0.36847164343389089096;
+    A1(2, 2) = 0.12278929762839221138;
+    A1(3, 2) = 0.12028240083390837511;
+    A1(0, 3) = 0.0052737129228371719370;
+    A1(1, 3) = 0.76895132151127114661;
+    A1(2, 3) = 0.024003735765356129168;
+    A1(3, 3) = 0.27465069811053651449;
+
+    // Copy matrix.
+    LINALG::TMatrix<double, 4, 4> A2(A1);
 
     // Check the determinant function.
     TS_ASSERT_DELTA(LINALG::Determinant4x4(A1), -0.01620776397174742, 1e-14);
@@ -173,7 +179,7 @@ class LINALG::Linalg_TestSuite : public CxxTest::TestSuite
     LINALG::Inverse4x4(A1);
     TS_ASSERT_EQUALS(true, LINALG::Inverse4x4DoNotThrowErrorOnZeroDeterminant(A2, 1e-12));
 
-    // Check the inverse matrix.
+    // Check each entry of the the inverse matrices.
     TS_ASSERT_DELTA(A1(0, 0), -0.43977637337572104289, 1e-14);
     TS_ASSERT_DELTA(A1(1, 0), 1.1896143886050492292, 1e-14);
     TS_ASSERT_DELTA(A1(2, 0), 1.1445983336121054974, 1e-14);
