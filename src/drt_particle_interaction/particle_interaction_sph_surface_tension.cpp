@@ -80,6 +80,12 @@ void PARTICLEINTERACTION::SPHSurfaceTensionBase::Setup(
 
   // set neighbor pair handler
   neighborpairs_ = neighborpairs;
+
+  // determine set of boundary particle types
+  if ((particlecontainerbundle_->GetParticleTypes()).count(PARTICLEENGINE::BoundaryPhase))
+    boundarytypes_.insert(PARTICLEENGINE::BoundaryPhase);
+  if ((particlecontainerbundle_->GetParticleTypes()).count(PARTICLEENGINE::RigidPhase))
+    boundarytypes_.insert(PARTICLEENGINE::RigidPhase);
 }
 
 /*---------------------------------------------------------------------------*
@@ -178,12 +184,6 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::Setup(
       cfgintnormtorefresh_.push_back(std::make_pair(typeEnum, states));
     }
   }
-
-  // determine set of boundary particle types
-  if ((particlecontainerbundle_->GetParticleTypes()).count(PARTICLEENGINE::BoundaryPhase))
-    boundarytypes_.insert(PARTICLEENGINE::BoundaryPhase);
-  if ((particlecontainerbundle_->GetParticleTypes()).count(PARTICLEENGINE::RigidPhase))
-    boundarytypes_.insert(PARTICLEENGINE::RigidPhase);
 
   // determine size of vectors indexed by particle types
   const int typevectorsize = *(--particlecontainerbundle_->GetParticleTypes().end()) + 1;

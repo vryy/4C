@@ -1,15 +1,11 @@
-/*---------------------------------------------------------------------------*/
-/*!
+/*!----------------------------------------------------------------------
+\brief Test for the CUT Library
 \file cut_test_simple.cpp
-
-\brief cut test cpp file
 
 \level 1
 
-\maintainer Christoph Ager
-
-*/
-/*---------------------------------------------------------------------------*/
+\maintainer Ager Christoph
+*----------------------------------------------------------------------*/
 
 #include "../../src/drt_cut/cut_options.H"
 #include "../../src/drt_cut/cut_mesh.H"
@@ -75,13 +71,14 @@ GEO::CUT::Side* create_quad4(
 void test_hex8_simple()
 {
   GEO::CUT::Options options;
+  options.Init_for_Cuttests();
   GEO::CUT::Mesh mesh(options);
   GEO::CUT::Element* e = create_hex8(mesh);
   GEO::CUT::Side* s = create_quad4(mesh, 0.5, 0.1, 0);
 
   mesh.Status();
 
-  e->Cut(mesh, *(s), 0);
+  e->Cut(mesh, *(s));
 
   cutmesh(mesh);
 }
@@ -89,6 +86,7 @@ void test_hex8_simple()
 void test_tet4_simple()
 {
   GEO::CUT::Options options;
+  options.Init_for_Cuttests();
   GEO::CUT::Mesh mesh(options);
 
   Epetra_SerialDenseMatrix xyze(3, 4);
@@ -114,7 +112,7 @@ void test_tet4_simple()
 
   mesh.Status();
 
-  e->Cut(mesh, *(s), 0);
+  e->Cut(mesh, *(s));
 
   cutmesh(mesh);
 }
@@ -122,6 +120,7 @@ void test_tet4_simple()
 void test_pyramid5_simple()
 {
   GEO::CUT::Options options;
+  options.Init_for_Cuttests();
   GEO::CUT::Mesh mesh(options);
 
   Epetra_SerialDenseMatrix xyze(3, 5);
@@ -151,7 +150,7 @@ void test_pyramid5_simple()
 
   mesh.Status();
 
-  e->Cut(mesh, *(s), 0);
+  e->Cut(mesh, *(s));
 
   cutmesh(mesh);
 }
@@ -159,6 +158,7 @@ void test_pyramid5_simple()
 void test_wedge6_simple()
 {
   GEO::CUT::Options options;
+  options.Init_for_Cuttests();
   GEO::CUT::Mesh mesh(options);
 
   Epetra_SerialDenseMatrix xyze(3, 6);
@@ -192,7 +192,7 @@ void test_wedge6_simple()
 
   mesh.Status();
 
-  e->Cut(mesh, *(s), 0);
+  e->Cut(mesh, *(s));
 
   cutmesh(mesh);
 }
@@ -201,13 +201,14 @@ void test_wedge6_simple()
 void test_hex8_fullside()
 {
   GEO::CUT::Options options;
+  options.Init_for_Cuttests();
   GEO::CUT::Mesh mesh(options);
   GEO::CUT::Element* e = create_hex8(mesh);
   GEO::CUT::Side* s = create_quad4(mesh, 1, 0, 0);
 
   mesh.Status();
 
-  e->Cut(mesh, *(s), 0);
+  e->Cut(mesh, *(s));
 
   cutmesh(mesh);
 }
@@ -215,16 +216,18 @@ void test_hex8_fullside()
 void test_hex8_diagonal()
 {
   GEO::CUT::Options options;
+  options.Init_for_Cuttests();
   GEO::CUT::Mesh mesh(options);
   GEO::CUT::Element* e = create_hex8(mesh);
   GEO::CUT::Side* s = create_quad4(mesh, 0.5, 1, 0);
 
   mesh.Status();
 
-  e->Cut(mesh, *(s), 0);
+  e->Cut(mesh, *(s));
 
   cutmesh(mesh);
 }
+
 
 void test_hex8_tet4()
 {
@@ -456,6 +459,7 @@ void test_hex8_tet4_touch2()
 void test_hex8_mesh()
 {
   GEO::CUT::Options options;
+  options.Init_for_Cuttests();
   GEO::CUT::Mesh mesh(options);
 
   create_hex8_mesh(mesh, 10, 10, 10);
@@ -466,7 +470,7 @@ void test_hex8_mesh()
 
   GEO::CUT::plain_element_set done;
   GEO::CUT::plain_element_set elements_done;
-  mesh.Cut(*(s), done, elements_done, 0);
+  mesh.Cut(*(s), done, elements_done);
 
   cutmesh(mesh);
 }
@@ -474,6 +478,7 @@ void test_hex8_mesh()
 void test_hex8_double()
 {
   GEO::CUT::Options options;
+  options.Init_for_Cuttests();
   GEO::CUT::Mesh mesh(options);
   GEO::CUT::Element* e = create_hex8(mesh);
   GEO::CUT::Side* s1 = create_quad4(mesh, 0.4, 0.1, 0);
@@ -481,40 +486,16 @@ void test_hex8_double()
 
   mesh.Status();
 
-  e->Cut(mesh, *(s1), 0);
-  e->Cut(mesh, *(s2), 0);
+  e->Cut(mesh, *(s1));
+  e->Cut(mesh, *(s2));
 
   cutmesh(mesh);
-}
-
-void test_hex8_multiple()
-{
-  for (int step = 0; step < 2; ++step)
-  {
-    GEO::CUT::Options options(INPAR::CUT::NDS_Strategy_full, true, step != 0);
-    GEO::CUT::Mesh mesh(options);
-    GEO::CUT::Element* e = create_hex8(mesh);
-
-    for (int i = 1; i < 10; ++i)
-    {
-      double x = 0.1 * i;
-      GEO::CUT::Side* s = create_quad4(mesh, x, 0.1, 0, i % 2 == 0);
-
-      // mesh.Status();
-
-      e->Cut(mesh, *(s), 0);
-
-      // mesh.Status();
-    }
-
-    cutmesh(mesh);
-    mesh.PrintCellStats();
-  }
 }
 
 void test_hex8_bad1()
 {
   GEO::CUT::Options options;
+  options.Init_for_Cuttests();
   GEO::CUT::Mesh mesh(options);
 
   Epetra_SerialDenseMatrix xyze(3, 8);
@@ -573,7 +554,7 @@ void test_hex8_bad1()
 
   mesh.Status();
 
-  e->Cut(mesh, *(quad4), 0);
+  e->Cut(mesh, *(quad4));
 
   cutmesh(mesh);
 }
@@ -581,6 +562,7 @@ void test_hex8_bad1()
 void test_hex8_bad2()
 {
   GEO::CUT::Options options;
+  options.Init_for_Cuttests();
   GEO::CUT::Mesh mesh(options);
 
   Epetra_SerialDenseMatrix xyze(3, 8);
@@ -639,7 +621,7 @@ void test_hex8_bad2()
 
   mesh.Status();
 
-  e->Cut(mesh, *(quad4), 0);
+  e->Cut(mesh, *(quad4));
 
   cutmesh(mesh);
 }
@@ -647,6 +629,7 @@ void test_hex8_bad2()
 void test_hex8_bad3()
 {
   GEO::CUT::Options options;
+  options.Init_for_Cuttests();
   GEO::CUT::Mesh mesh(options);
 
   Epetra_SerialDenseMatrix xyze(3, 8);
@@ -705,7 +688,7 @@ void test_hex8_bad3()
 
   mesh.Status();
 
-  e->Cut(mesh, *(quad4), 0);
+  e->Cut(mesh, *(quad4));
 
   cutmesh(mesh);
 }
@@ -721,6 +704,7 @@ void test_hex8_bad3()
 void test_hex8_bad4()
 {
   GEO::CUT::Options options;
+  options.Init_for_Cuttests();
   GEO::CUT::Mesh mesh(options);
 
   double hex8_xyz[24] = {0.944444, 0, 0.05, 0.944444, 0, 6.55604e-19, 0.944444, 0.0555556,
@@ -741,7 +725,7 @@ void test_hex8_bad4()
 
   mesh.Status();
 
-  e->Cut(mesh, *(quad4), 0);
+  e->Cut(mesh, *(quad4));
 
   cutmesh(mesh);
 }
@@ -1550,6 +1534,7 @@ void test_quad4_quad4_simple()
 void test_hex8_quad4_mesh()
 {
   GEO::CUT::Options options;
+  options.Init_for_Cuttests();
   GEO::CUT::Mesh mesh(options);
 
   create_hex8_mesh(mesh, 2, 2, 2);
@@ -1564,7 +1549,7 @@ void test_hex8_quad4_mesh()
     GEO::CUT::Side* quad4 = *i;
     GEO::CUT::plain_element_set done;
     GEO::CUT::plain_element_set elements_done;
-    mesh.Cut(*(quad4), done, elements_done, 0);
+    mesh.Cut(*(quad4), done, elements_done);
   }
 
   cutmesh(mesh);
@@ -1606,6 +1591,9 @@ void test_position2d()
   side_xyze.Scale(scale);
   xyz.Scale(scale);
 
+  GEO::CUT::PositionFactory::SpecifyGeneralDistFloattype(INPAR::CUT::floattype_cln);    // use cln
+  GEO::CUT::PositionFactory::SpecifyGeneralPosFloattype(INPAR::CUT::floattype_double);  // use
+                                                                                        // double
   Teuchos::RCP<GEO::CUT::Position> pos =
       GEO::CUT::Position::Create(side_xyze, xyz, DRT::Element::tri3);
   pos->Compute();

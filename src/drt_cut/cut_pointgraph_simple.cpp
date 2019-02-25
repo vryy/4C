@@ -1,18 +1,17 @@
 /*----------------------------------------------------------------------------*/
-/**
+/*!
 \file cut_pointgraph_simple.cpp
 
 \brief Create a simple point graph for 1-D and 2-D elements ( embedded in a
        higher dimensional space )
 
-\maintainer Michael Hiermeier
 
 \date Nov 12, 2016
 
 \level 2
 
-*/
-/*----------------------------------------------------------------------------*/
+\maintainer Christoph Ager
+ *------------------------------------------------------------------------------------------------*/
 
 #include "cut_pointgraph_simple.H"
 
@@ -147,11 +146,14 @@ void GEO::CUT::IMPL::SimplePointGraph_2D::Graph::FindCycles(
   else
   {
     if (all_points_.size() > 2)
+    {
+      for (auto i = all_points_.begin(); i != all_points_.end(); ++i) i->second->Print();
       dserror(
           "A cut_side point cycle with more than 2 points is currently not "
           "supported in the 2-D case, since it cannot happen for level-set "
           "cut cases ( always straight cuts ). Check this scenario if you run "
           "into this and extend the functionality.");
+    }
 
     unsigned lcount = 0;
     std::vector<Point *> line(2, NULL);

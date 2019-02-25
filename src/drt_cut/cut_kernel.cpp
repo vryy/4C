@@ -10,10 +10,8 @@
 
 \level 1
 
-\maintainer Michael Hiermeier
-
-*/
-/*----------------------------------------------------------------------*/
+\maintainer Christoph Ager
+ *------------------------------------------------------------------------------------------------*/
 
 
 #include "cut_kernel.H"
@@ -960,3 +958,39 @@ double GEO::CUT::KERNEL::getAreaConvexQuad(std::vector<Point*>& poly)
   double area2 = getAreaTri(tri2);
   return (area1 + area2);
 }
+
+
+
+bool GEO::CUT::KERNEL::closeToZero(const double a) { return ((a < 1e-30) and (a > -1e-30)); };
+
+
+bool GEO::CUT::KERNEL::closeToZero(const GEO::CUT::ClnWrapper& a)
+{
+  cln::cl_F lpf = cln::least_positive_float(cln::float_format(a.Value()));
+  cln::cl_F lnf = cln::least_negative_float(cln::float_format(a.Value()));
+  return ((a < lpf) and (a > lnf));
+};
+
+  // non templated static data from cut_kernel
+
+#ifdef DEBUG_MEMORY_ALLOCATION
+
+bool GEO::CUT::KERNEL::AdaptiveKernelSharedData::custom_allocator_run_ = false;
+
+bool GEO::CUT::KERNEL::AdaptiveKernelSharedData::all_intersections_done_once_ = false;
+
+bool GEO::CUT::KERNEL::AdaptiveKernelSharedData::all_distance_done_once_ = false;
+
+bool GEO::CUT::KERNEL::AdaptiveKernelSharedData::all_position_done_once_ = true;
+
+size_t GEO::CUT::KERNEL::AdaptiveKernelSharedData::cln_byte_size_[] = {48, 56, 56, 64};
+
+boost::unordered_map<size_t, int> GEO::CUT::KERNEL::AdaptiveKernelSharedData::memory_allocations_;
+
+std::map<size_t, int> GEO::CUT::KERNEL::AdaptiveKernelSharedData::memory_allocations_intersection_;
+
+std::map<size_t, int> GEO::CUT::KERNEL::AdaptiveKernelSharedData::memory_allocations_position_;
+
+std::map<size_t, int> GEO::CUT::KERNEL::AdaptiveKernelSharedData::memory_allocations_distance_;
+
+#endif

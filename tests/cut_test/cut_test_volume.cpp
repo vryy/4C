@@ -1,18 +1,10 @@
-/*---------------------------------------------------------------------*/
-/*!
+/*!----------------------------------------------------------------------
+\brief Test for the CUT Library
 \file cut_test_volume.cpp
 
-\brief cut test of volume, originally from kuettler
+\level 1
 
-\level 3
-
-<pre>
-\maintainer Christoph Ager
-            ager@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15236
-</pre>
-
+\maintainer Ager Christoph
 *----------------------------------------------------------------------*/
 
 #include <iostream>
@@ -28,7 +20,7 @@
 void test_cut_volumes()
 {
   GEO::CUT::Options options;
-
+  options.Init_for_Cuttests();
   // this is meant to be used with matching boundaries. Thus, no
   // inside/outside positions.
   options.SetFindPositions(false);
@@ -46,7 +38,7 @@ void test_cut_volumes()
 
   GEO::CUT::plain_element_set elements_done;
 
-  mesh2.Cut(mesh1, elements_done, 0);
+  mesh2.Cut(mesh1, elements_done);
 
   cutmesh(mesh1);
 
@@ -62,7 +54,7 @@ void test_cut_volumes2()
       for (int k = 2; k < 5; ++k)
       {
         GEO::CUT::Options options;
-
+        options.Init_for_Cuttests();
         // this is meant to be used with matching boundaries. Thus, no
         // inside/outside positions.
         options.SetFindPositions(false);
@@ -85,7 +77,7 @@ void test_cut_volumes2()
 
         GEO::CUT::plain_element_set elements_done;
 
-        mesh2.Cut(mesh1, elements_done, 0);
+        mesh2.Cut(mesh1, elements_done);
 
         cutmesh(mesh1);
 

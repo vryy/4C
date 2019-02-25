@@ -46,7 +46,6 @@ namespace PARTICLEINTERACTION
 {
   class SPHKernelBase;
   class MaterialHandler;
-  class SPHEquationOfStateBundle;
   class SPHNeighborPairs;
 }  // namespace PARTICLEINTERACTION
 

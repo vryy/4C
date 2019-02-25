@@ -60,6 +60,7 @@ NAME                            Ale_Solver
 SOLVER                          UMFPACK
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  No
+VOLUME_GAUSS_POINTS_BY          DirectDivergence
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Hybrid_LM_Cauchy_stress
 XFF_CONV_STAB_SCALING           none

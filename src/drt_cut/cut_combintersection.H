@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
-/**
+/*!
 \file cut_combintersection.H
 
 \brief provides the basic functionality for cutting a mesh with a level set function and/or a

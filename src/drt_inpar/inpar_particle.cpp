@@ -211,6 +211,18 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       tuple<int>(INPAR::PARTICLE::NoTemperatureEvaluation, INPAR::PARTICLE::TemperatureIntegration),
       &particledynsph);
 
+  //! type of heat source
+  setStringToIntegralParameter<int>("HEATSOURCETYPE", "NoHeatSource", "type of heat source",
+      tuple<std::string>("NoHeatSource", "VolumeHeatSource", "SurfaceHeatSource"),
+      tuple<int>(INPAR::PARTICLE::NoHeatSource, INPAR::PARTICLE::VolumeHeatSource,
+          INPAR::PARTICLE::SurfaceHeatSource),
+      &particledynsph);
+
+  IntParameter("HEATSOURCE_FUNCT", -1, "number of function governing heat source", &particledynsph);
+
+  setNumericStringParameter(
+      "HEATSOURCE_DIRECTION", "0.0 0.0 0.0", "direction of surface heat source", &particledynsph);
+
   // type of surface tension formulation
   setStringToIntegralParameter<int>("SURFACETENSIONFORMULATION", "NoSurfaceTension",
       "type of surface tension formulation",
@@ -229,8 +241,12 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
 
   // type of phase change
   setStringToIntegralParameter<int>("PHASECHANGETYPE", "NoPhaseChange", "type of phase change",
-      tuple<std::string>("NoPhaseChange"), tuple<int>(INPAR::PARTICLE::NoPhaseChange),
+      tuple<std::string>("NoPhaseChange", "TwoWayScalarPhaseChange"),
+      tuple<int>(INPAR::PARTICLE::NoPhaseChange, INPAR::PARTICLE::TwoWayScalarPhaseChange),
       &particledynsph);
+
+  // definition of phase change
+  StringParameter("PHASECHANGEDEFINITION", "", "phase change definition", &particledynsph);
 
   /*-------------------------------------------------------------------------*
    | discrete element method (DEM) specific control parameters               |

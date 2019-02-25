@@ -27,6 +27,7 @@
 #include "../linalg/linalg_fixedsizematrix.H"
 
 #include "cut_utils.H"
+#include "cut_tolerance.H"
 
 namespace GEO
 {
@@ -112,6 +113,32 @@ namespace GEO
         }
       }
 
+      /// removing element from the list of elements cut by this point (can be used when position
+      /// was determined wrongly)
+      void RemoveElement(Element* e) { cut_elements_.erase(e); }
+
+      /// adding pair of side-edge to container of intersected, does not insert if such pair already
+      /// exists
+      void AddPair(Side* side, Edge* edge, const std::pair<Side*, Edge*>& or_pair);
+
+      /// default call
+      void AddPair(Side* side, Edge* edge);
+
+      /// called during merging
+      void AddPair(const std::pair<Side*, Edge*>& pair,
+          const std::pair<Side*, Edge*>& original_pair, Point* source);
+
+      /// Add all topological connections of intersection of this edge and other edge ( all
+      /// necessery pairs, etc)
+      void AddEdgeIntersection(Edge* first, Edge* second,
+          const std::pair<Side*, Edge*>& original_cut_pair, const std::string& extra_msg = "");
+
+      void AddEdgeIntersection(Edge* first, Edge* second, Side* original_side, Edge* original_edge,
+          const std::string& extra_msg = "");
+
+      /// returns true if this point is created by this pair of side and edge intersection
+      bool IsCut(Side* side, Edge* edge);
+
       /*! \brief Returns true if the edge is cut by this point */
       bool IsCut(Edge* e) { return cut_edges_.count(e) > 0; }
 
@@ -123,6 +150,9 @@ namespace GEO
 
       /*! \brief Returns true if this point cuts the element */
       bool IsCut(Element* s) { return cut_elements_.count(s) > 0; }
+
+      /// Checks is this cut point is the result of s1 x s2 by checking cut_pairs
+      bool IsCut(Side* s1, Side* s2);
 
       /*
        * Return if this point associated with a facet which is either a cut-side or a marked side
@@ -169,6 +199,8 @@ namespace GEO
 
       const plain_side_set& CutSides() { return cut_sides_; }
 
+      const std::set<std::pair<Side*, Edge*>>& CutPairs() { return cut_pairs_; }
+
       Side* CutSide(Side* side, Point* other);
 
       void CutEdge(Side* side, Line* other_line, std::vector<Edge*>& matches);
@@ -199,11 +231,21 @@ namespace GEO
        *  \param edge (in) : edge which we want to check */
       double t(Edge* edge);
 
+      /// Same as above.
+      /// But it can happen that origanl intersection point is merged into different location.
+      /// However, we want to obtain position of the cut_point
+      /// on the edge based on the real intersection( before mergin),to be consistest with rest of
+      /// the code
+      double t(Edge* edge, const LINALG::Matrix<3, 1>& coord);
+
       // void t( Edge* edge, double pos ) { t_[edge] = pos; }
 
       unsigned Pid() const { return pid_; }
 
       bool NodalPoint(const std::vector<Node*>& nodes) const;
+
+      // checking if the cut_point is close enough to the nodal point
+      bool AlmostNodalPoint(const std::vector<Node*>& nodes, double tolerance = 1e-10) const;
 
       Node* CutNode();
 
@@ -239,6 +281,88 @@ namespace GEO
         }
       }
 
+      /// Removes information that this point was created by cut from everywhere (e.g. sides,
+      /// edges, element)
+      void RemoveConnectivityInfo();
+
+      void RemoveEdge(Edge* edge);
+
+      void RemoveSide(Side* side);
+
+      void RemovePair(std::pair<Side*, Edge*>& pair) { cut_pairs_.erase(pair); };
+
+      // move point slighlty (used for merging)
+      virtual void MovePoint(const double* new_coord) = 0;
+
+      // Merge point into anothe r
+      void Merge(Point* dest);
+
+      /// Dump all information of how this point was created, edges x sides intersections. Useful to
+      /// debug reasons crashing
+      void DumpConnectivityInfo();
+
+#if CUT_CREATION_INFO
+      // Add merged pair. If the coord = NULL, it means it was inserted without actual computation
+      // of the coordinate, solely on topology e.g. in the InsertCut
+      void AddMergedPair(const std::pair<Side*, Edge*>& inter, LINALG::Matrix<3, 1>* coord);
+
+      const std::map<std::pair<Side*, Edge*>, std::pair<LINALG::Matrix<3, 1>, bool>>&
+      GetMergedPointsInfo()
+      {
+        return merged_points_info_;
+      };
+
+      // Add info about based on which side and edge this point was created (with optional message)
+      void AddCreationInfo(const std::pair<Side*, Edge*>& cut_pair, const std::string& info);
+
+      // Add creation info, that does not depended on particular cut pair
+      void AddAdditionalCreationInfo(const std::string& info);
+
+      const std::string& GetAdditionalCreationInfo();
+
+      // returns empty string if there is no info for this pair
+      const std::string& GetCreationInfo(const std::pair<Side*, Edge*>& pair)
+      {
+        return creation_info_[pair];
+      };
+
+
+      // for particular cut pair gives info if it is really cut or added later on during topology
+      // identification (e.g. because of neigboring edges )
+      bool IsReallyCut(const std::pair<Side*, Edge*>& pair)
+      {
+        std::map<std::pair<Side*, Edge*>, std::pair<std::pair<Side*, Edge*>, Point*>>::iterator it =
+            cut_pairs_info_.find(pair);
+        if (it != cut_pairs_info_.end())
+        {
+          std::pair<Side*, Edge*> found_pair = it->second.first;
+          return (found_pair == it->first);
+        }
+        else
+        {
+          dserror("Following cut_pair does not exist!");
+        }
+        return false;
+      }
+
+      const std::pair<Side*, Edge*>& AddedFrom(const std::pair<Side*, Edge*>& resultant_pair)
+      {
+        std::map<std::pair<Side*, Edge*>, std::pair<std::pair<Side*, Edge*>, Point*>>::iterator it =
+            cut_pairs_info_.find(resultant_pair);
+        if (it != cut_pairs_info_.end())
+        {
+          return (it->second.first);
+        }
+        else
+        {
+          dserror("Following cut pair does not exists!");
+        }
+        // should not reach here, just to make compiler happy
+        return cut_pairs_info_.begin()->second.first;
+      }
+
+#endif
+
      protected:
       // internal stored point coordinates (always of dimension 3!)
       double x_[3];
@@ -265,6 +389,39 @@ namespace GEO
 
       plain_line_set lines_;
       plain_facet_set facets_;
+
+      // stores cut pairs of side and edge intersections for this point in associative containers
+      // for easy lookup and insert
+      std::set<std::pair<Side*, Edge*>> cut_pairs_;
+
+
+#if CUT_CREATION_INFO
+
+      // Map that indicates whether cut pairs whether originally (during point creation) or later
+      // (during neighbors identification), key is the pair that was added, value is the original
+      // pair that result in this add. if they are same it was added directly in intersection, if
+      // different - during topology identification Point represent origin source point, that was
+      // merged into this one
+      std::map<std::pair<Side*, Edge*>, std::pair<std::pair<Side*, Edge*>, Point*>> cut_pairs_info_;
+
+      // Map that indicates what intersections (keys of the map)  merged coordinates in the the
+      // first part of value pair to the Point* of second part of value parit.Indicates what
+      // coordinates were merged in this particular point, due to closeness
+      std::map<std::pair<Side*, Edge*>, std::pair<LINALG::Matrix<3, 1>, bool>> merged_points_info_;
+
+      // Displays why particular cut pair is intersected in this point
+      std::map<std::pair<Side*, Edge*>, std::string> creation_info_;
+
+      // additional creation info that might be cut pair independent
+      std::string additional_creation_info_;
+
+      // Indicates actuall real points, that were merged here (due to mergin in pointpool)
+      std::vector<Point*> real_merged_points_;
+
+      // point that this point got merged into
+      Point* merged_to_;
+
+#endif
     };  // class Point
 
     /*--------------------------------------------------------------------------*/
@@ -300,6 +457,8 @@ namespace GEO
         {
           AddSide(cut_side);
         }
+
+        if ((cut_side != NULL) && (cut_edge != NULL)) this->AddPair(cut_side, cut_edge);
       };
 
       /// destructor
@@ -307,6 +466,8 @@ namespace GEO
 
       /** \brief Get the coordinates of this point */
       virtual void Coordinates(double* x) const { std::copy(this->x_, this->x_ + probDim, x); };
+
+      virtual void MovePoint(const double* new_coord);
 
     };  // class ConcretePoint
 
@@ -501,6 +662,14 @@ namespace GEO
       p3->Intersection(sides);
       p4->Intersection(sides);
     }
+
+    /// Find magnitude of distance between points
+    double DistanceBetweenPoints(
+        const LINALG::Matrix<3, 1>& coord_a, const LINALG::Matrix<3, 1>& coord_b);
+
+    double DistanceBetweenPoints(Point* p1, Point* p2);
+
+    double DistanceBetweenPoints(Point* p1, const LINALG::Matrix<3, 1>& coord_b);
 
   }  // namespace CUT
 }  // namespace GEO

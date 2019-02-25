@@ -8,7 +8,7 @@ levelset
 \level 2
 
 <pre>
-\maintainer Christoph Ager & Christoph Ager
+\maintainer Christoph Ager
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15249
@@ -94,6 +94,9 @@ namespace GEO
 
       // a levelset-side returns true
       virtual bool IsLevelSetSide() { return true; };
+
+
+      virtual bool FindCutPointsDispatch(Mesh& mesh, Element* element, Side& side, Edge& e);
 
      protected:
       /*! \brief is this side closer to the start-point as the other side? */

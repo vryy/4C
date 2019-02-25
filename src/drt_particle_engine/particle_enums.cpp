@@ -158,6 +158,29 @@ std::string PARTICLEENGINE::EnumToStateName(const enum PARTICLEENGINE::ParticleS
 }
 
 /*---------------------------------------------------------------------------*
+ | get enum of particle states                                sfuchs 02/2019 |
+ *---------------------------------------------------------------------------*/
+enum PARTICLEENGINE::ParticleState PARTICLEENGINE::EnumFromStateName(const std::string& stateName)
+{
+  // attention: this method is expensive (comparison of strings)
+  //            and should be used only for initialization or result testing
+  // note:      only relevant particle states are listed below (e.g., needed for input)
+
+  enum PARTICLEENGINE::ParticleState state;
+
+  if (stateName == "density")
+    state = PARTICLEENGINE::Density;
+  else if (stateName == "pressure")
+    state = PARTICLEENGINE::Pressure;
+  else if (stateName == "temperature")
+    state = PARTICLEENGINE::Temperature;
+  else
+    dserror("particle state '%s' unknown!", stateName.c_str());
+
+  return state;
+}
+
+/*---------------------------------------------------------------------------*
  | get name of particle type                                  sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
 std::string PARTICLEENGINE::EnumToTypeName(const enum PARTICLEENGINE::ParticleType& typeEnum)

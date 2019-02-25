@@ -22,6 +22,7 @@
 #include "particle_interaction_sph_kernel.H"
 #include "particle_interaction_material_handler.H"
 #include "particle_interaction_sph_neighbor_pairs.H"
+#include "particle_interaction_sph_heatsource.H"
 
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_container.H"
@@ -33,24 +34,34 @@
 /*---------------------------------------------------------------------------*
  | constructor                                                 meier 09/2018 |
  *---------------------------------------------------------------------------*/
-PARTICLEINTERACTION::SPHTemperatureBase::SPHTemperatureBase(const Teuchos::ParameterList& params)
-    : params_sph_(params), dt_(0.0)
+PARTICLEINTERACTION::SPHTemperature::SPHTemperature(const Teuchos::ParameterList& params)
+    : params_sph_(params), time_(0.0), dt_(0.0)
 {
   // empty constructor
 }
 
 /*---------------------------------------------------------------------------*
+ | destructor                                                 sfuchs 02/2019 |
+ *---------------------------------------------------------------------------*/
+PARTICLEINTERACTION::SPHTemperature::~SPHTemperature()
+{
+  // note: destructor declaration here since at compile-time a complete type
+  // of class T as used in class member std::unique_ptr<T> ptr_T_ is required
+}
+
+/*---------------------------------------------------------------------------*
  | init temperature handler                                    meier 09/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHTemperatureBase::Init()
+void PARTICLEINTERACTION::SPHTemperature::Init()
 {
-  // nothing to do
+  // init heat source handler
+  InitHeatSourceHandler();
 }
 
 /*---------------------------------------------------------------------------*
  | setup temperature handler                                   meier 09/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHTemperatureBase::Setup(
+void PARTICLEINTERACTION::SPHTemperature::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
     const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs)
@@ -91,48 +102,56 @@ void PARTICLEINTERACTION::SPHTemperatureBase::Setup(
   {
     thermomaterial_[type_i] = dynamic_cast<const MAT::PAR::ParticleMaterialThermo*>(
         particlematerial_->GetPtrToParticleMatParameter(type_i));
+
+    // safety check
+    if (not(thermomaterial_[type_i]->thermalCapacity_ > 0.0))
+      dserror("thermal conductivity for particles of type '%s' not positive!",
+          PARTICLEENGINE::EnumToTypeName(type_i).c_str());
   }
+
+  // setup heat source handler
+  if (heatsource_) heatsource_->Setup(particleengineinterface, particlematerial, neighborpairs);
 }
 
 /*---------------------------------------------------------------------------*
  | write restart of temperature handler                        meier 09/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHTemperatureBase::WriteRestart(const int step, const double time) const
+void PARTICLEINTERACTION::SPHTemperature::WriteRestart(const int step, const double time) const
 {
-  // nothing to do
+  // write restart of heat source handler
+  if (heatsource_) heatsource_->WriteRestart(step, time);
 }
 
 /*---------------------------------------------------------------------------*
  | read restart of temperature handler                         meier 09/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHTemperatureBase::ReadRestart(
+void PARTICLEINTERACTION::SPHTemperature::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
-  // nothing to do
+  // read restart of heat source handler
+  if (heatsource_) heatsource_->ReadRestart(reader);
 }
 
 /*---------------------------------------------------------------------------*
- | set current step size                                       meier 09/2018 |
+ | set current time                                           sfuchs 02/2019 |
  *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHTemperatureBase::SetCurrentStepSize(const double currentstepsize)
+void PARTICLEINTERACTION::SPHTemperature::SetCurrentTime(const double currenttime)
+{
+  time_ = currenttime;
+}
+
+/*---------------------------------------------------------------------------*
+ | set current step size                                      sfuchs 02/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::SPHTemperature::SetCurrentStepSize(const double currentstepsize)
 {
   dt_ = currentstepsize;
 }
 
 /*---------------------------------------------------------------------------*
- | constructor                                                 meier 09/2018 |
- *---------------------------------------------------------------------------*/
-PARTICLEINTERACTION::SPHTemperatureIntegration::SPHTemperatureIntegration(
-    const Teuchos::ParameterList& params)
-    : SPHTemperatureBase::SPHTemperatureBase(params)
-{
-  // empty constructor
-}
-
-/*---------------------------------------------------------------------------*
  | insert temperature evaluation dependent states              meier 09/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHTemperatureIntegration::InsertParticleStatesOfParticleTypes(
+void PARTICLEINTERACTION::SPHTemperature::InsertParticleStatesOfParticleTypes(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
     const
 {
@@ -151,12 +170,15 @@ void PARTICLEINTERACTION::SPHTemperatureIntegration::InsertParticleStatesOfParti
 /*---------------------------------------------------------------------------*
  | compute temperature field using energy equation             meier 09/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHTemperatureIntegration::ComputeTemperature() const
+void PARTICLEINTERACTION::SPHTemperature::ComputeTemperature() const
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHTemperatureIntegration::ComputeTemperature");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHTemperature::ComputeTemperature");
 
   // evaluate energy equation
   EnergyEquation();
+
+  // evaluate heat source
+  if (heatsource_) heatsource_->EvaluateHeatSource(time_);
 
   // iterate over particle types
   for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
@@ -174,9 +196,49 @@ void PARTICLEINTERACTION::SPHTemperatureIntegration::ComputeTemperature() const
 }
 
 /*---------------------------------------------------------------------------*
+ | init heat source handler                                   sfuchs 02/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::SPHTemperature::InitHeatSourceHandler()
+{
+  // get type of heat source
+  INPAR::PARTICLE::HeatSourceType heatsourcetype =
+      DRT::INPUT::IntegralValue<INPAR::PARTICLE::HeatSourceType>(params_sph_, "HEATSOURCETYPE");
+
+  // create heat source handler
+  switch (heatsourcetype)
+  {
+    case INPAR::PARTICLE::NoHeatSource:
+    {
+      heatsource_ = std::unique_ptr<PARTICLEINTERACTION::SPHHeatSourceBase>(nullptr);
+      break;
+    }
+    case INPAR::PARTICLE::VolumeHeatSource:
+    {
+      heatsource_ = std::unique_ptr<PARTICLEINTERACTION::SPHHeatSourceVolume>(
+          new PARTICLEINTERACTION::SPHHeatSourceVolume(params_sph_));
+      break;
+    }
+    case INPAR::PARTICLE::SurfaceHeatSource:
+    {
+      heatsource_ = std::unique_ptr<PARTICLEINTERACTION::SPHHeatSourceSurface>(
+          new PARTICLEINTERACTION::SPHHeatSourceSurface(params_sph_));
+      break;
+    }
+    default:
+    {
+      dserror("unknown type of heat source!");
+      break;
+    }
+  }
+
+  // init heat source handler
+  if (heatsource_) heatsource_->Init();
+}
+
+/*---------------------------------------------------------------------------*
  | evaluate energy equation                                    meier 09/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHTemperatureIntegration::EnergyEquation() const
+void PARTICLEINTERACTION::SPHTemperature::EnergyEquation() const
 {
   // iterate over particle types
   for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
@@ -248,17 +310,22 @@ void PARTICLEINTERACTION::SPHTemperatureIntegration::EnergyEquation() const
     else
       dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
 
-    // factor containing temperature difference
-    const double fac =
-        (thermomaterial_i->thermalConductivity_ + thermomaterial_j->thermalConductivity_) *
-        (temp_i[0] - temp_j[0]) / (dens_i[0] * dens_j[0] * neighborpair.absdist_);
+    // thermal conductivities
+    const double& k_i = thermomaterial_i->thermalConductivity_;
+    const double& k_j = thermomaterial_j->thermalConductivity_;
+
+    // factor containing effective conductivity and temperature difference
+    const double fac = (4.0 * k_i * k_j) * (temp_i[0] - temp_j[0]) /
+                       (dens_i[0] * dens_j[0] * (k_i + k_j) * neighborpair.absdist_);
 
     // no temperature integration for boundary particles
     if (type_i != PARTICLEENGINE::BoundaryPhase)
-      tempdot_i[0] += mass_j[0] * fac * neighborpair.dWdrij_;
+      tempdot_i[0] +=
+          mass_j[0] * fac * neighborpair.dWdrij_ * thermomaterial_i->invThermalCapacity_;
 
     // no temperature integration for boundary particles
     if (type_j != PARTICLEENGINE::BoundaryPhase and status_j == PARTICLEENGINE::Owned)
-      tempdot_j[0] -= mass_i[0] * fac * neighborpair.dWdrji_;
+      tempdot_j[0] -=
+          mass_i[0] * fac * neighborpair.dWdrji_ * thermomaterial_j->invThermalCapacity_;
   }
 }

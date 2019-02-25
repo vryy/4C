@@ -66,6 +66,7 @@ SOLVER                          UMFPACK
 NAME                            Ale_Solver
 SOLVER                          UMFPACK
 ----------------------------------------------------------------XFEM GENERAL
+VOLUME_GAUSS_POINTS_BY          DirectDivergence
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Hybrid_LM_Cauchy_stress       // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 XFF_CONV_STAB_SCALING           none
