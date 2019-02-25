@@ -270,14 +270,6 @@ void SymmetricEigenProblem(IO::DiscretizationWriter& output,
   }
 
   /*!
-   \brief Explicit inverse and determinant of nonsymmetric 3x3 matrix
-
-   \param A (in/out): Matrix to be inverted
-   \param dim (in) :  Dimension of matrix
-   */
-  double NonsymInverse3x3(Epetra_SerialDenseMatrix& A);
-
-  /*!
    \brief Determinant of a nonsymmetric matrix using SVD
 
    \return the determinant of the matrix A if nonzero
@@ -765,14 +757,6 @@ void SymmetricEigenProblem(IO::DiscretizationWriter& output,
    \param dim (in) :  Dimension of matrix
    */
   void SymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim);
-
-  /*!
-   \brief Invert a nonsymmetric dim*dim square matrix
-
-   \param A (in/out): Matrix to be inverted
-   \param dim (in) :  Dimension of matrix
-   */
-  void NonSymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim);
 
   /*!
    \brief Assemble an Epetra_SerialDenseMatrix into an Epetra_CrsMatrix
