@@ -5,10 +5,7 @@
 
 \level 2
 
-\maintainer  Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15240
+\maintainer  Christoph Ager
 *----------------------------------------------------------------------*/
 #ifndef FLUID_ELE_BOUNDARY_CALC_PORO_H
 #define FLUID_ELE_BOUNDARY_CALC_PORO_H

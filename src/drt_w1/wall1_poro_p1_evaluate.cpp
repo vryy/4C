@@ -7,9 +7,7 @@
 
  \level 2
 
- \maintainer Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
+\maintainer  Christoph Ager
 
  *----------------------------------------------------------------------*/
 

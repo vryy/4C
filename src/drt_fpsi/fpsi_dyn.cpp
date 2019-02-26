@@ -2,7 +2,7 @@
  \file fpsi_dyn.cpp
  \brief control routine of fluid-porous-structure-interaction problems
  \level 2
- \maintainer Andreas Rauch
+\maintainer  Christoph Ager
  *------------------------------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*

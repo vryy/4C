@@ -2,8 +2,9 @@
 /*!
  \file fpsi_utils.H
  \brief  Utility Methods For Fluid Porous Structure Interaction Problems
- \level 3
- \maintainer Andreas Rauch
+\level 3
+
+\maintainer  Christoph Ager
  *-----------------------------------------------------------------------*/
 #ifndef FPSI_UTILS_H_
 #define FPSI_UTILS_H_
