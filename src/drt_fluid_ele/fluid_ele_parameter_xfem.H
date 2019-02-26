@@ -121,6 +121,7 @@ namespace DRT
           default:
             dserror("Unkown type of AdjointScaling!");
         }
+        return 0.0;  // make compiler happy
       }
 
       //! get the flag if the simulation is run as pseudo 2D simulation with only one element in the
