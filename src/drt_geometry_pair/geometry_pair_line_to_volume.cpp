@@ -199,9 +199,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectP
   // Point on volume.
   LINALG::TMatrix<scalar_type, 3, 1> r_volume;
 
-  // Jacobian.
-  LINALG::TMatrix<scalar_type, 3, 3> J;
-  LINALG::TMatrix<scalar_type, 3, 3> J_inverse;
+  // Jacobian / inverse.
+  LINALG::TMatrix<scalar_type, 3, 3> J_J_inv;
 
   // Increment of xi.
   LINALG::TMatrix<scalar_type, 3, 1> delta_xi;
@@ -242,18 +241,21 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectP
       if (residuum.Norm2() > CONSTANTS::local_newton_res_max) break;
 
       // Get the jacobian.
-      GetElement2PositionDerivative(xi, q_volume, J);
+      GetElement2PositionDerivative(xi, q_volume, J_J_inv);
 
-      // Check the determinant of the jacobian.
-      if (J.Determinant() < CONSTANTS::local_newton_det_tol) break;
+      // Invert the jacobian and check if the system is solvable.
+      if (LINALG::Inverse3x3DoNotThrowErrorOnZeroDeterminant(
+              J_J_inv, CONSTANTS::local_newton_det_tol))
+      {
+        // Solve the linearized system.
+        delta_xi.Multiply(J_J_inv, residuum);
+        xi -= delta_xi;
 
-      // Solve the linearized system.
-      J_inverse.Invert(J);
-      delta_xi.Multiply(J_inverse, residuum);
-      xi -= delta_xi;
-
-      // Advance Newton iteration counter.
-      counter++;
+        // Advance Newton iteration counter.
+        counter++;
+      }
+      else
+        break;
     }
   }
 }
@@ -382,12 +384,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
   LINALG::TMatrix<scalar_type, 4, 1> residuum;
   LINALG::TMatrix<scalar_type, 4, 1> delta_x;
 
-  // Jacobian.
-  LINALG::TMatrix<scalar_type, 4, 4> J;
-  LINALG::TMatrix<scalar_type, 4, 4> J_inverse;
-
-  // Solver.
-  LINALG::FixedSizeSerialDenseSolver<4, 4> matrix_solver;
+  // Jacobian / inverse.
+  LINALG::TMatrix<scalar_type, 4, 4> J_J_inv;
 
   // Reset the projection result flag.
   projection_result = ProjectionResult::projection_not_found;
@@ -402,7 +400,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
       GetElement2Position(xi, q_volume, r_volume);
 
       // Evaluate the residuum $r_{volume} - r_{line} = R_{pos}$ and $xi(i) - value = R_{surf}$
-      J.PutScalar(0.);
+      J_J_inv.PutScalar(0.);
       residuum.PutScalar(0.);
       for (unsigned int i = 0; i < 3; i++)
       {
@@ -411,14 +409,14 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
       if (fixed_parameter < 3)
       {
         residuum(3) = xi(fixed_parameter) - fixed_value;
-        J(3, fixed_parameter) = 1.;
+        J_J_inv(3, fixed_parameter) = 1.;
       }
       else
       {
         for (unsigned int i = 0; i < 3; i++)
         {
           residuum(3) += xi(i);
-          J(3, i) = 1.;
+          J_J_inv(3, i) = 1.;
         }
         residuum(3) -= fixed_value;
       }
@@ -446,24 +444,27 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
       {
         for (unsigned int j = 0; j < 3; j++)
         {
-          J(i, j) = dr_volume(i, j);
+          J_J_inv(i, j) = dr_volume(i, j);
         }
-        J(i, 3) = -dr_line(i);
+        J_J_inv(i, 3) = -dr_line(i);
       }
 
-      // Solve the linearized system.
-      if (abs(J.Determinant()) < CONSTANTS::local_newton_det_tol) break;
-      matrix_solver.SetMatrix(J);
-      matrix_solver.SetVectors(delta_x, residuum);
-      int err = matrix_solver.Solve();
-      if (err != 0) break;
+      // Invert the jacobian and check if the determinant is not 0.
+      if (LINALG::Inverse4x4DoNotThrowErrorOnZeroDeterminant(
+              J_J_inv, CONSTANTS::local_newton_det_tol))
+      {
+        // Solve the linearized system.
+        delta_x.Multiply(J_J_inv, residuum);
 
-      // Set the new parameter coordinates.
-      eta -= delta_x(3);
-      for (unsigned int i = 0; i < 3; i++) xi(i) -= delta_x(i);
+        // Set the new parameter coordinates.
+        eta -= delta_x(3);
+        for (unsigned int i = 0; i < 3; i++) xi(i) -= delta_x(i);
 
-      // Advance Newton iteration counter.
-      counter++;
+        // Advance Newton iteration counter.
+        counter++;
+      }
+      else
+        break;
     }
   }
 }
