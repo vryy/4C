@@ -19,6 +19,7 @@
  | Header                                                   farah 01/14 |
  *----------------------------------------------------------------------*/
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_inverse.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 // nurbs specific

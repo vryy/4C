@@ -13,7 +13,7 @@
 #include "mortar_node.H"
 #include "mortar_defines.H"
 #include "mortar_shape_utils.H"
-#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_inverse.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_serialdensematrix.H"
 
