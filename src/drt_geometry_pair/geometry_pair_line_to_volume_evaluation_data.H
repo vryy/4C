@@ -118,7 +118,8 @@ namespace GEOMETRYPAIR
     //! Number of points for segmentation search.
     unsigned int n_search_points_;
 
-    //! Segment tracking vector for segmentation.
+    //! Segment tracking vector for segmentation. We use double in this case, because otherwise the
+    //! class would have to be templated on the type of this tracker.
     std::map<int, std::set<LineSegment<double>>> segment_tracker_;
   };
 }  // namespace GEOMETRYPAIR
