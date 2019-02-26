@@ -257,7 +257,7 @@ namespace XFEM
     }
 
     //! reset all evaluated trace estimates, next time the are required will be calculated again!
-    void ResetEvaluatedTraceEstimates() { ele_to_max_eigenvalue_->clear(); }
+    void ResetEvaluatedTraceEstimates();
 
     //! get the estimation of the penalty scaling in Nitsche's method from the trace inequality for
     //! a specific face element via solving a local eigenvalue problem
@@ -289,6 +289,12 @@ namespace XFEM
 
     //! bool to indicate if volume coupling is initialized
     bool init_volcoupling_;
+
+    //! when should the local eigenvalue problem be updated
+    INPAR::XFEM::TraceEstimate_eigenvalue_update traceEstimate_eigenvalue_update_;
+
+    //! last reset of local eigenvalue problem
+    int reset_step_;
   };
 
   /*!
