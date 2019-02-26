@@ -4,7 +4,7 @@
 
 \level 1
 
-\maintainer Ager Christoph
+\maintainer Christoph Ager
 *----------------------------------------------------------------------*/
 
 #include "../../src/drt_cut/cut_mesh.H"
