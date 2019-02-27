@@ -2,7 +2,7 @@
 \file so3_poro_fwd.hpp
 \brief forward declarations (explicit instantiation) of the templated poro elements
 
-\maintainer Ager Christoph
+\maintainer Christoph Ager
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289 15249

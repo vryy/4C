@@ -3,7 +3,7 @@
 \file inpar_fpsi.cpp
 \brief fpsi parameters
 \level 1
-\maintainer Andreas Rauch
+\maintainer  Christoph Ager
 */
 /*----------------------------------------------------------------------*/
 

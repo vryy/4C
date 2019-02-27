@@ -4,7 +4,7 @@
 
 \level 1
 
-\maintainer Ager Christoph
+\maintainer Christoph Ager
 *----------------------------------------------------------------------*/
 
 #ifndef CUT_TEST_LOADER_H

@@ -3,7 +3,7 @@
 \file fluid_timint_poro.cpp
 \brief base class of time integration schemes for porous fluid
 
-\maintainer Ager Christoph
+\maintainer Christoph Ager
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289 15249

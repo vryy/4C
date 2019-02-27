@@ -4,7 +4,7 @@
 
 \level 1
 
-\maintainer Ager Christoph
+\maintainer Christoph Ager
 *----------------------------------------------------------------------*/
 // Issues with non-local cut!
 // Tried to be resolved here (Only for small deformation created from cubit).
