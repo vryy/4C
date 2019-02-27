@@ -891,7 +891,7 @@ void XFEM::MeshCouplingBC::EvaluateImplementation(std::vector<double>& final_val
     arg = -angle_vel * (time - t_4) + M_PI / T * (t_2 - t_1) + 2.0 * M_PI / T * (t_3 - t_2);
   }
   else
-    dserror("for that time we did not define an implemented rotation %d", time);
+    dserror("for that time we did not define an implemented rotation %f", time);
 
 
   // rotation with constant angle velocity around point
@@ -2093,8 +2093,9 @@ void XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP(double& kappa_m,  //< flui
 )
 {
 #ifdef DEBUG
-  if (kappa_m != 1)
-    dserror("XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP: kappa_m == %d", kappa_m);
+  if ((kappa_m != 1 && GetAveragingStrategy() == INPAR::XFEM::Xfluid_Sided) ||
+      (kappa_m != 0 && GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided))
+    dserror("XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP: kappa_m == %f", kappa_m);
 #endif
 
   if (GetAveragingStrategy() == INPAR::XFEM::Xfluid_Sided)
