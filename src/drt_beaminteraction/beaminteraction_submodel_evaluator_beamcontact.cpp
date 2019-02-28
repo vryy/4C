@@ -125,12 +125,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
     geometry_evaluation_data_ptr_->LineToVolumeEvaluationData()->SetGaussRule(
         beam_contact_params_ptr_->BeamToSolidVolumeMeshtyingParams()->GetGaussRule());
 
-    // TODO steinbrecher remove the calls to the input file here and get the values from the data
-    // container. If mortar is activated, create the manager and the global matrices.
-    if (Teuchos::getIntegralValue<INPAR::BEAMINTERACTION::BeamToSolidVolumeContactDiscretization>(
-            DRT::Problem::Instance()->BeamInteractionParams().sublist(
-                "BEAM TO SOLID VOLUME MESHTYING"),
-            "CONTACT_DISCRETIZATION") ==
+    // If mortar is activated, create the manager and the global matrices.
+    if (beam_contact_params_ptr_->BeamToSolidVolumeMeshtyingParams()->GetContactDiscretization() ==
         INPAR::BEAMINTERACTION::BeamToSolidVolumeContactDiscretization::mortar)
     {
       // Create the mortar manager.
@@ -985,7 +981,6 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
   // If a mortar manager exists, build the global maps.
   if (BeamInteractionDataState().GetMortarManager() != Teuchos::null)
   {
-    // TODO steinbrecher: move this somewhere where it is not created each timestep.
     BeamInteractionDataState().GetMortarManager()->Setup();
     BeamInteractionDataState().GetMortarManager()->SetLocalMaps(contact_elepairs_);
   }
