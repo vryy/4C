@@ -155,27 +155,25 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
       beaminteraction.sublist("BEAM TO SOLID VOLUME MESHTYING", false, "");
 
   setStringToIntegralParameter<BeamToSolidVolumeContactDiscretization>("CONTACT_DISCRETIZATION",
-      "None", "Type of employed contact discretization",
-      tuple<std::string>("None", "none", "gauss_point_to_segment", "mortar"),
+      "none", "Type of employed contact discretization",
+      tuple<std::string>("none", "gauss_point_to_segment", "mortar"),
       tuple<BeamToSolidVolumeContactDiscretization>(BeamToSolidVolumeContactDiscretization::none,
-          BeamToSolidVolumeContactDiscretization::none,
           BeamToSolidVolumeContactDiscretization::gauss_point_to_segment,
           BeamToSolidVolumeContactDiscretization::mortar),
       &beam_to_solid_volume_mestying);
 
   setStringToIntegralParameter<BeamToSolidVolumeConstraintEnforcement>("CONSTRAINT_STRATEGY",
-      "None", "Type of employed constraint enforcement strategy",
-      tuple<std::string>("None", "none", "penalty"),
+      "none", "Type of employed constraint enforcement strategy",
+      tuple<std::string>("none", "penalty"),
       tuple<BeamToSolidVolumeConstraintEnforcement>(BeamToSolidVolumeConstraintEnforcement::none,
-          BeamToSolidVolumeConstraintEnforcement::none,
           BeamToSolidVolumeConstraintEnforcement::penalty),
       &beam_to_solid_volume_mestying);
 
   setStringToIntegralParameter<BeamToSolidVolumeMortarShapefunctions>("MORTAR_SHAPE_FUNCTION",
-      "None", "Shape function for the mortar Lagrange-multiplicators",
-      tuple<std::string>("None", "none", "line2", "line3"),
+      "none", "Shape function for the mortar Lagrange-multiplicators",
+      tuple<std::string>("none", "line2", "line3"),
       tuple<BeamToSolidVolumeMortarShapefunctions>(BeamToSolidVolumeMortarShapefunctions::none,
-          BeamToSolidVolumeMortarShapefunctions::none, BeamToSolidVolumeMortarShapefunctions::line2,
+          BeamToSolidVolumeMortarShapefunctions::line2,
           BeamToSolidVolumeMortarShapefunctions::line3),
       &beam_to_solid_volume_mestying);
 
