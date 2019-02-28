@@ -545,7 +545,8 @@ void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
           DistanceBetweenParticles(currpos, neighborpos, dist);
 
           // distance between particles larger than minimum bin size
-          if (std::sqrt(dist[0] * dist[0] + dist[1] * dist[1] + dist[2] * dist[2]) > minbinsize_)
+          if (dist[0] * dist[0] + dist[1] * dist[1] + dist[2] * dist[2] >
+              (minbinsize_ * minbinsize_))
             continue;
 
           // append potential particle neighbor pair
