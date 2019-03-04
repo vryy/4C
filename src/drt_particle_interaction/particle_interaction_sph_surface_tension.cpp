@@ -354,13 +354,13 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeColorfi
         (dens_i[0] + dens_j[0]);
 
     // sum contribution of neighboring particle j
-    UTILS::vec_addscale(
-        colorfieldgrad_i, fac * dens_i[0] * neighborpair.dWdrij_, neighborpair.e_ij_);
+    UTILS::vec_addscale(colorfieldgrad_i,
+        fac * UTILS::pow<2>(dens_i[0]) / mass_i[0] * neighborpair.dWdrij_, neighborpair.e_ij_);
 
     // sum contribution of neighboring particle i
     if (status_j == PARTICLEENGINE::Owned)
-      UTILS::vec_addscale(
-          colorfieldgrad_j, -fac * dens_j[0] * neighborpair.dWdrji_, neighborpair.e_ij_);
+      UTILS::vec_addscale(colorfieldgrad_j,
+          -fac * UTILS::pow<2>(dens_j[0]) / mass_j[0] * neighborpair.dWdrji_, neighborpair.e_ij_);
   }
 }
 
@@ -1110,12 +1110,12 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
     {
       // declare pointer variables for particle i
-      const double *rad_i, *mass_i, *colorfieldgrad_i;
+      const double *rad_i, *dens_i, *colorfieldgrad_i;
       double *acc_i, *curvature_i;
 
       // get pointer to particle states
       rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-      mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+      dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
       colorfieldgrad_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_i);
       acc_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_i);
@@ -1130,7 +1130,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
 
         // add contribution to acceleration
         UTILS::vec_addscale(acc_i,
-            -timefac * surfacetensioncoefficient_ * curvature_i[0] / mass_i[0], colorfieldgrad_i);
+            -timefac * surfacetensioncoefficient_ * curvature_i[0] / dens_i[0], colorfieldgrad_i);
       }
     }
   }
