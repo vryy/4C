@@ -137,8 +137,8 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::Init()
   // safety check
   if (not(surfacetensioncoefficient_ > 0.0))
     dserror(
-        "the parameter 'SURFACETENSIONCOEFFICIENT' must be positiv when applying continuum surface "
-        "force formulation!");
+        "the parameter 'SURFACETENSIONCOEFFICIENT' must be positive when applying continuum "
+        "surface force formulation!");
 }
 
 /*---------------------------------------------------------------------------*
@@ -224,8 +224,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase) continue;
 
     // states for surface tension evaluation scheme
-    particlestates.insert({PARTICLEENGINE::ColorfieldGradient, PARTICLEENGINE::InterfaceNormal,
-        PARTICLEENGINE::Curvature});
+    particlestates.insert({PARTICLEENGINE::ColorfieldGradient, PARTICLEENGINE::InterfaceNormal});
 
     if (haveboundaryorrigidparticles_)
       particlestates.insert({PARTICLEENGINE::UnitWallNormal, PARTICLEENGINE::WallDistance});
@@ -277,8 +276,8 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::AddAcceleratio
   // refresh colorfield gradient and interface normal
   particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(cfgintnormtorefresh_);
 
-  // compute curvature and add acceleration contribution
-  ComputeCurvatureAndAddAccelerationContribution();
+  // compute surface tension contribution
+  ComputeSurfaceTensionContribution();
 }
 
 /*---------------------------------------------------------------------------*
@@ -893,7 +892,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::CorrectTripleP
   // iterate over particle types
   for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
   {
-    // no curvature evaluation for boundary or rigid particles
+    // no triple point correction for boundary or rigid particles
     if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
 
     // get container of owned particles of current particle type
@@ -958,10 +957,10 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::CorrectTripleP
 }
 
 /*---------------------------------------------------------------------------*
- | compute curvature and add acceleration contribution        sfuchs 08/2018 |
+ | compute surface tension contribution                       sfuchs 08/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
-    ComputeCurvatureAndAddAccelerationContribution() const
+    ComputeSurfaceTensionContribution() const
 {
   // determine size of vectors indexed by particle types
   const int typevectorsize = *(--particlecontainerbundle_->GetParticleTypes().end()) + 1;
@@ -979,9 +978,6 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
-
-    // clear curvature state
-    container_i->ClearState(PARTICLEENGINE::Curvature);
 
     // get number of particles stored in container
     const int particlestored = container_i->ParticlesStored();
@@ -1111,7 +1107,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     {
       // declare pointer variables for particle i
       const double *rad_i, *dens_i, *colorfieldgrad_i;
-      double *acc_i, *curvature_i;
+      double* acc_i;
 
       // get pointer to particle states
       rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
@@ -1119,18 +1115,17 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
       colorfieldgrad_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_i);
       acc_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_i);
-      curvature_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Curvature, particle_i);
 
       // only add meaningful contributions
       if (std::abs(sumj_Vj_Wij[type_i][particle_i]) > (1.0e-10 * rad_i[0]))
       {
         // compute curvature
-        curvature_i[0] =
+        const double curvature_i =
             -sumj_nij_Vj_eij_dWij[type_i][particle_i] / sumj_Vj_Wij[type_i][particle_i];
 
         // add contribution to acceleration
-        UTILS::vec_addscale(acc_i,
-            -timefac * surfacetensioncoefficient_ * curvature_i[0] / dens_i[0], colorfieldgrad_i);
+        UTILS::vec_addscale(acc_i, -timefac * surfacetensioncoefficient_ * curvature_i / dens_i[0],
+            colorfieldgrad_i);
       }
     }
   }

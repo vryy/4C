@@ -42,7 +42,6 @@ int PARTICLEENGINE::EnumToStateDim(const enum PARTICLEENGINE::ParticleState& sta
     case PARTICLEENGINE::BoundaryPressure:
     case PARTICLEENGINE::Colorfield:
     case PARTICLEENGINE::WallDistance:
-    case PARTICLEENGINE::Curvature:
       dim = 1;
       break;
 
@@ -147,9 +146,6 @@ std::string PARTICLEENGINE::EnumToStateName(const enum PARTICLEENGINE::ParticleS
       break;
     case PARTICLEENGINE::WallDistance:
       name = "wall distance";
-      break;
-    case PARTICLEENGINE::Curvature:
-      name = "curvature";
       break;
     case PARTICLEENGINE::TemperatureGradient:
       name = "temperaturegradient";

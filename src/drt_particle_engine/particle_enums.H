@@ -53,7 +53,6 @@ namespace PARTICLEENGINE
     InterfaceNormal,
     UnitWallNormal,
     WallDistance,
-    Curvature,
     TemperatureGradient
   };
 
