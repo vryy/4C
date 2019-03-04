@@ -24,6 +24,8 @@
 #include "particle_interaction_sph_neighbor_pairs.H"
 #include "particle_interaction_sph_heatsource.H"
 
+#include "particle_interaction_utils.H"
+
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_container.H"
 
@@ -35,7 +37,10 @@
  | constructor                                                 meier 09/2018 |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHTemperature::SPHTemperature(const Teuchos::ParameterList& params)
-    : params_sph_(params), time_(0.0), dt_(0.0)
+    : params_sph_(params),
+      time_(0.0),
+      dt_(0.0),
+      temperaturegradient_(DRT::INPUT::IntegralValue<int>(params_sph_, "TEMPERATUREGRADIENT"))
 {
   // empty constructor
 }
@@ -87,7 +92,7 @@ void PARTICLEINTERACTION::SPHTemperature::Setup(
       // no refreshing of density states for boundary or rigid particles
       if (typeEnum == PARTICLEENGINE::BoundaryPhase) continue;
 
-      temperaturetorefresh_.push_back(std::make_pair(typeEnum, states));
+      temptorefresh_.push_back(std::make_pair(typeEnum, states));
     }
   }
 
@@ -158,12 +163,23 @@ void PARTICLEINTERACTION::SPHTemperature::InsertParticleStatesOfParticleTypes(
   // iterate over particle types
   for (auto& typeIt : particlestatestotypes)
   {
+    // get type of particles
+    PARTICLEENGINE::TypeEnum type = typeIt.first;
+
     // set of particle states for current particle type
     std::set<PARTICLEENGINE::StateEnum>& particlestates = typeIt.second;
 
-    // states for temperature evaluation scheme
+    // set temperature state
     particlestates.insert(PARTICLEENGINE::Temperature);
+
+    // no temperature integration for boundary particles
+    if (type == PARTICLEENGINE::BoundaryPhase) continue;
+
+    // state for temperature evaluation scheme
     particlestates.insert(PARTICLEENGINE::TemperatureDot);
+
+    // state for temperature gradient evaluation
+    if (temperaturegradient_) particlestates.insert(PARTICLEENGINE::TemperatureGradient);
   }
 }
 
@@ -192,7 +208,10 @@ void PARTICLEINTERACTION::SPHTemperature::ComputeTemperature() const
   }
 
   // refresh temperature of ghosted particles
-  particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(temperaturetorefresh_);
+  particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(temptorefresh_);
+
+  // evaluate temperature gradient
+  if (temperaturegradient_) TemperatureGradient();
 }
 
 /*---------------------------------------------------------------------------*
@@ -294,7 +313,9 @@ void PARTICLEINTERACTION::SPHTemperature::EnergyEquation() const
     // get pointer to particle states
     mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
     temp_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Temperature, particle_i);
-    tempdot_i = container_i->GetPtrToParticleState(PARTICLEENGINE::TemperatureDot, particle_i);
+
+    if (type_i != PARTICLEENGINE::BoundaryPhase)
+      tempdot_i = container_i->GetPtrToParticleState(PARTICLEENGINE::TemperatureDot, particle_i);
 
     if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase)
       dens_i = &(basematerial_i->initDensity_);
@@ -303,7 +324,9 @@ void PARTICLEINTERACTION::SPHTemperature::EnergyEquation() const
 
     mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
     temp_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Temperature, particle_j);
-    tempdot_j = container_j->GetPtrToParticleState(PARTICLEENGINE::TemperatureDot, particle_j);
+
+    if (type_j != PARTICLEENGINE::BoundaryPhase)
+      tempdot_j = container_j->GetPtrToParticleState(PARTICLEENGINE::TemperatureDot, particle_j);
 
     if (type_j == PARTICLEENGINE::BoundaryPhase or type_j == PARTICLEENGINE::RigidPhase)
       dens_j = &(basematerial_j->initDensity_);
@@ -327,5 +350,101 @@ void PARTICLEINTERACTION::SPHTemperature::EnergyEquation() const
     if (type_j != PARTICLEENGINE::BoundaryPhase and status_j == PARTICLEENGINE::Owned)
       tempdot_j[0] -=
           mass_i[0] * fac * neighborpair.dWdrji_ * thermomaterial_j->invThermalCapacity_;
+  }
+}
+
+/*---------------------------------------------------------------------------*
+ | evaluate temperature gradient                              sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::SPHTemperature::TemperatureGradient() const
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHTemperature::TemperatureGradient");
+
+  // iterate over particle types
+  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  {
+    // no temperature gradient for boundary particles
+    if (type_i == PARTICLEENGINE::BoundaryPhase) continue;
+
+    // get container of owned particles of current particle type
+    PARTICLEENGINE::ParticleContainer* container_i =
+        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+
+    // clear temperature gradient state
+    container_i->ClearState(PARTICLEENGINE::TemperatureGradient);
+  }
+
+  // iterate over neighbor pairs
+  for (auto& neighborpair : neighborpairs_->GetRefToNeighborPairData())
+  {
+    // access values of local index tuples of particle i and j
+    PARTICLEENGINE::TypeEnum type_i;
+    PARTICLEENGINE::StatusEnum status_i;
+    int particle_i;
+    std::tie(type_i, status_i, particle_i) = neighborpair.tuple_i_;
+
+    PARTICLEENGINE::TypeEnum type_j;
+    PARTICLEENGINE::StatusEnum status_j;
+    int particle_j;
+    std::tie(type_j, status_j, particle_j) = neighborpair.tuple_j_;
+
+    // get corresponding particle containers
+    PARTICLEENGINE::ParticleContainer* container_i =
+        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+
+    PARTICLEENGINE::ParticleContainer* container_j =
+        particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
+
+    // get material for particle types
+    const MAT::PAR::ParticleMaterialBase* basematerial_i =
+        particlematerial_->GetPtrToParticleMatParameter(type_i);
+    const MAT::PAR::ParticleMaterialBase* basematerial_j =
+        particlematerial_->GetPtrToParticleMatParameter(type_j);
+
+    // declare pointer variables for particle i and j
+    const double *mass_i, *dens_i, *temp_i;
+    double* tempgrad_i;
+
+    const double *mass_j, *dens_j, *temp_j;
+    double* tempgrad_j;
+
+    // get pointer to particle states
+    mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+    temp_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Temperature, particle_i);
+
+    if (type_i != PARTICLEENGINE::BoundaryPhase)
+      tempgrad_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::TemperatureGradient, particle_i);
+
+    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase)
+      dens_i = &(basematerial_i->initDensity_);
+    else
+      dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
+
+    mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
+    temp_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Temperature, particle_j);
+
+    if (type_j != PARTICLEENGINE::BoundaryPhase)
+      tempgrad_j =
+          container_j->GetPtrToParticleState(PARTICLEENGINE::TemperatureGradient, particle_j);
+
+    if (type_j == PARTICLEENGINE::BoundaryPhase or type_j == PARTICLEENGINE::RigidPhase)
+      dens_j = &(basematerial_j->initDensity_);
+    else
+      dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
+
+    const double fac =
+        (UTILS::pow<2>(mass_i[0] / dens_i[0]) + UTILS::pow<2>(mass_j[0] / dens_j[0])) *
+        (dens_i[0] * temp_j[0] + dens_j[0] * temp_i[0]) / (dens_i[0] + dens_j[0]);
+
+    // sum contribution of neighboring particle j
+    if (type_i != PARTICLEENGINE::BoundaryPhase)
+      UTILS::vec_addscale(
+          tempgrad_i, (dens_i[0] / mass_i[0]) * fac * neighborpair.dWdrij_, neighborpair.e_ij_);
+
+    // sum contribution of neighboring particle i
+    if (type_j != PARTICLEENGINE::BoundaryPhase and status_j == PARTICLEENGINE::Owned)
+      UTILS::vec_addscale(
+          tempgrad_j, -(dens_j[0] / mass_j[0]) * fac * neighborpair.dWdrji_, neighborpair.e_ij_);
   }
 }
