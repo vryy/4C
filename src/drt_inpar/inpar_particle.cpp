@@ -104,6 +104,10 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       particledyn.sublist("INITIAL AND BOUNDARY CONDITIONS", false,
           "control parameters for initial/boundary conditions in particle simulations\n");
 
+  // initial temperature field of particle phase given by function
+  StringParameter("INITIAL_TEMP_FIELD", "",
+      "initial temperature field of particle phase given by function", &particledynconditions);
+
   // initial velocity field of particle phase given by function
   StringParameter("INITIAL_VELOCITY_FIELD", "",
       "initial velocity field of particle phase given by function", &particledynconditions);

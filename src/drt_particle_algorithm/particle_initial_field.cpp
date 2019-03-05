@@ -48,6 +48,7 @@ void PARTICLEALGORITHM::InitialFieldHandler::Init()
 
   // relate particle state to input name
   std::map<std::string, PARTICLEENGINE::StateEnum> initialfieldtostateenum = {
+      std::make_pair("INITIAL_TEMP_FIELD", PARTICLEENGINE::Temperature),
       std::make_pair("INITIAL_VELOCITY_FIELD", PARTICLEENGINE::Velocity),
       std::make_pair("INITIAL_ACCELERATION_FIELD", PARTICLEENGINE::Acceleration)};
 
@@ -118,6 +119,12 @@ void PARTICLEALGORITHM::InitialFieldHandler::SetInitialFields()
 
       // get pointer to particle state
       double* state = container->GetPtrToParticleState(particleState, 0);
+
+#ifdef DEBUG
+      if (not container->GetStoredStates().count(particleState))
+        dserror("particle state '%s' not stored in container!",
+            PARTICLEENGINE::EnumToStateName(particleState).c_str());
+#endif
 
       // get particle state dimension
       int statedim = container->GetParticleStateDim(particleState);
