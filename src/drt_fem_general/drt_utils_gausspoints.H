@@ -405,7 +405,7 @@ namespace DRT
       static Teuchos::RCP<GaussPoints> ProjectGaussPointsGlobalToLocal(
           const LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim,
               DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& xie,
-          GaussIntegration& intpoints)
+          GaussIntegration& intpoints, const bool& throw_error = true)
       {
         const int nsd = DRT::UTILS::DisTypeToDim<distype>::dim;
         const int nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
@@ -425,7 +425,7 @@ namespace DRT
           LINALG::Matrix<nsd, 1> glo(iquad.Point());
 
           bool insideele = GEO::currentToVolumeElementCoordinates(distype, xie, glo, xi);
-          if (not insideele)
+          if (not insideele && throw_error)
           {
             dserror("Given Gauss points not inside the element?");
           }

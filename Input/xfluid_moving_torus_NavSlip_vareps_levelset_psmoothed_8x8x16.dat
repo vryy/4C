@@ -88,6 +88,8 @@ NODAL_DOFSET_STRATEGY           OneDofset_PerNodeAndPosition
 MAX_NUM_DOFSETS                 3
 VOLUME_GAUSS_POINTS_BY          DirectDivergence              //Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation                  //Tessellation
+------------------------------------------------------------------CUT GENERAL
+DIRECT_DIVERGENCE_REFPLANE      diagonal_side
 --------------------------------------------------------------XFLUID DYNAMIC
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche

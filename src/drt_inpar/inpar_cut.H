@@ -83,6 +83,17 @@ namespace INPAR
       floattype_none
     };
 
+    //! Specifiy which Referenceplanes are used in DirectDivergence
+    enum CUT_DirectDivergence_Refplane
+    {
+      DirDiv_refplane_all,            ///< use all strategies for Referenceplane
+      DirDiv_refplane_diagonal_side,  ///< use diagonal and side based Referenceplane
+      DirDiv_refplane_facet,          ///< use only facet based Referenceplane
+      DirDiv_refplane_diagonal,       ///< use only diagonal based Referenceplane
+      DirDiv_refplane_side,           ///< use only side based Referenceplane
+      DirDiv_refplane_none            ///< specify no Referenceplane
+    };
+
     /// set the cut parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 

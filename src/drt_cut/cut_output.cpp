@@ -1183,6 +1183,7 @@ void GEO::CUT::OUTPUT::GmshElementCutTest(
   else
     file << "  GEO::CUT::CombIntersection intersection(-1);"
          << "\n";
+  file << "  intersection.GetOptions().Init_for_Cuttests();  // use full cln\n";
   file << "  std::vector<int> nids;"
        << "\n";
   file << ""
