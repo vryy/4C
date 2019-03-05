@@ -110,7 +110,7 @@ void PARTICLEINTERACTION::SPHTemperature::Setup(
 
     // safety check
     if (not(thermomaterial_[type_i]->thermalCapacity_ > 0.0))
-      dserror("thermal conductivity for particles of type '%s' not positive!",
+      dserror("thermal capacity for particles of type '%s' not positive!",
           PARTICLEENGINE::EnumToTypeName(type_i).c_str());
   }
 
