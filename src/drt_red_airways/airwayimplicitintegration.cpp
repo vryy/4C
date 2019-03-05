@@ -206,6 +206,9 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
   elemVolume0_ = LINALG::CreateVector(*elementcolmap, true);
   elemArea0_ = LINALG::CreateVector(*elementcolmap, true);
 
+  // Element radius at time n+1
+  elemRadius_np_ = LINALG::CreateVector(*elementcolmap, true);
+
   // This vector will be used to test convergence
   residual_ = LINALG::CreateVector(*dofrowmap, true);
   bc_residual_ = LINALG::CreateVector(*dofcolmap, true);
@@ -798,18 +801,31 @@ void AIRWAY::RedAirwayImplicitTimeInt::NonLin_Solve(
   double error_norm1 = 1.e7;
   double error_norm2 = 1.e7;
 
-  // Evaluate Lung volume
-  double lung_volume_np = 0.0;
-  bool err = this->SumAllColElemVal(acini_e_volumenp_, acini_bc_, lung_volume_np);
-  if (err)
+  // Evaluate total acinar volume
+  double acinar_volume_np = 0.0;
+  bool err1 = this->SumAllColElemVal(acini_e_volumenp_, acini_bc_, acinar_volume_np);
+  if (err1)
   {
-    dserror("Error by summing all acinar volumes");
+    dserror("Error in summing acinar volumes");
   }
 
-  // Print out the total lung volume
+  // Evaluate total airway volume
+  double airway_volume_np = 0.0;
+  bool err2 = this->SumAllColElemVal(elemVolumenp_, open_, airway_volume_np);
+  if (err2)
+  {
+    dserror("Error in summing airway volumes");
+  }
+
+  // Evaluate total lung volume (in acini and airways)
+  double lung_volume_np = acinar_volume_np + airway_volume_np;
+
+  // Print out the different volumes
   if (!myrank_)
   {
-    std::cout << "time: " << time_ - dta_ << " LungVolume: " << lung_volume_np << std::endl;
+    std::cout << "time: " << time_ - dta_ << "\t\tTotalLungVolume: " << lung_volume_np
+              << "\tAirwayVolume: " << airway_volume_np << "\tAcinarVolume: " << acinar_volume_np
+              << std::endl;
   }
 
   // Loop over nonlinear iterations
@@ -1177,6 +1193,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
     eleparams.set("acinar_vnp", acini_e_volumenp_);
     eleparams.set("elemVolumen", elemVolumen_);
     eleparams.set("elemVolumenp", elemVolumenp_);
+    eleparams.set("elemRadius_np", elemRadius_np_);
 
     // call standard loop over all elements
     discret_->Evaluate(
@@ -1912,6 +1929,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(
     output_.WriteVector("elemVolumen", qexp_);
     LINALG::Export(*elemVolumenp_, *qexp_);
     output_.WriteVector("elemVolumenp", qexp_);
+
+    LINALG::Export(*elemRadius_np_, *qexp_);
+    output_.WriteVector("elemRadius_current", qexp_);
 
     {
       Epetra_Export exporter(acini_e_volumenm_->Map(), qexp_->Map());

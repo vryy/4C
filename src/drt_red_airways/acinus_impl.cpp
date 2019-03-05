@@ -894,6 +894,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcElemVolume(RedAcinus* ele,
   Teuchos::RCP<Epetra_Vector> acinar_vnp = params.get<Teuchos::RCP<Epetra_Vector>>("acinar_vnp");
   Teuchos::RCP<Epetra_Vector> elemVolumenp =
       params.get<Teuchos::RCP<Epetra_Vector>>("elemVolumenp");
+  Teuchos::RCP<Epetra_Vector> elemRadiusnp =
+      params.get<Teuchos::RCP<Epetra_Vector>>("elemRadius_np");
 
   // Get acinus size
   double evolnp = (*elemVolumenp)[ele->LID()];
@@ -903,6 +905,10 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcElemVolume(RedAcinus* ele,
 
   // Update elem
   elemVolumenp->ReplaceGlobalValues(1, &evolnp, &gid);
+
+  // calculate and update element radius
+  double eRadiusnp = pow(evolnp * 3.0 / 4.0 * M_1_PI, 1.0 / 3.0);
+  elemRadiusnp->ReplaceGlobalValues(1, &eRadiusnp, &gid);
 }
 
 /*----------------------------------------------------------------------*

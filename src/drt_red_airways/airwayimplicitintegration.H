@@ -404,6 +404,10 @@ namespace AIRWAY
     Teuchos::RCP<Epetra_Vector> elemVolume0_;
     Teuchos::RCP<Epetra_Vector> elemArea0_;
 
+    //! @name element radius at time n+1
+    Teuchos::RCP<Epetra_Vector> elemRadius_np_;
+    //@}
+
     //@}
     //! @name node Id vector
     Teuchos::RCP<Epetra_Vector> nodeIds_;

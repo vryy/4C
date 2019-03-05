@@ -1433,6 +1433,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcElemVolume(RedAirway* ele,
   Teuchos::RCP<Epetra_Vector> elemVolumen = params.get<Teuchos::RCP<Epetra_Vector>>("elemVolumen");
   Teuchos::RCP<Epetra_Vector> elemVolumenp =
       params.get<Teuchos::RCP<Epetra_Vector>>("elemVolumenp");
+  Teuchos::RCP<Epetra_Vector> elemRadiusnp =
+      params.get<Teuchos::RCP<Epetra_Vector>>("elemRadius_np");
 
   // extract all essential element variables from their corresponding variables
   double qinnp = (*qin_np)[ele->LID()];
@@ -1476,6 +1478,10 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcElemVolume(RedAirway* ele,
   }
   // update elem
   elemVolumenp->ReplaceGlobalValues(1, &eVolumenp, &gid);
+
+  // calculate and update element radius
+  double eRadiusnp = sqrt(eVolumenp / L * M_1_PI);
+  elemRadiusnp->ReplaceGlobalValues(1, &eRadiusnp, &gid);
 }  // CalcElemVolume
 
 
