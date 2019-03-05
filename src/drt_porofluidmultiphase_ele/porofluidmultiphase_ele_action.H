@@ -30,6 +30,7 @@ namespace POROFLUIDMULTIPHASE
     calc_pres_and_sat,            // calculate pressure and saturation
     calc_solidpressure,           // calculate solid pressure
     calc_porosity,                // calculate porosity
+    calc_domain_integrals,        // calculate domain integrals
     calc_error,                   // calc_error
     recon_flux_at_nodes,          // reconstruct flux at nodes
     get_access_from_scatra,       // get access from scatra-framework to evaluate variables

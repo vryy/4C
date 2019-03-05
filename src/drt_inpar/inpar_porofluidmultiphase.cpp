@@ -143,6 +143,10 @@ void INPAR::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
           ),
       &porofluidmultiphasedyn);
 
+  // functions used for domain integrals
+  setNumericStringParameter(
+      "DOMAININT_FUNCT", "-1.0", "functions used for domain integrals", &porofluidmultiphasedyn);
+
   // coupling with 1D artery network active
   BoolParameter(
       "ARTERY_COUPLING", "No", "Coupling with 1D blood vessels.", &porofluidmultiphasedyn);

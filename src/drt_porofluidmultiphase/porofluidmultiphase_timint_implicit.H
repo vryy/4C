@@ -363,6 +363,9 @@ namespace POROFLUIDMULTIPHASE
     //! reconstruct porosity from current solution
     void ReconstructPorosity();
 
+    //! evaluate domain integrals
+    void EvaluateDomainIntegrals();
+
     /*--- query and output ---------------------------------------------------*/
 
     //! is output needed for the current time step?
@@ -450,8 +453,9 @@ namespace POROFLUIDMULTIPHASE
 
     /*--- query and output ---------------------------------------------------*/
 
-    //! flag for printing out mean values of pressures
-    const bool outmean_;
+    //! parameters for domain integration
+    std::vector<int> domainint_funct_;
+    int num_domainint_funct_;
 
     //! flag for error calculation
     const INPAR::POROFLUIDMULTIPHASE::CalcError calcerr_;

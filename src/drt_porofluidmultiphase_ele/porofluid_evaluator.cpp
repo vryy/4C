@@ -365,6 +365,13 @@ DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<nsd, nen>::CreateEvaluator
 
       break;
     }
+    case POROFLUIDMULTIPHASE::calc_domain_integrals:
+    {
+      Teuchos::RCP<AssembleInterface> assembler = Teuchos::rcp(new AssembleStandard(-1, false));
+      evaluator = Teuchos::rcp(new EvaluatorDomainIntegrals<nsd, nen>(assembler, -1));
+
+      break;
+    }
     default:
     {
       dserror("unknown action for evaluation class!");
@@ -2770,6 +2777,71 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPorosity<nsd,
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
 void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPorosity<nsd,
+    nen>::EvaluateMatrixODScatraAndAssemble(std::vector<Epetra_SerialDenseMatrix*>& elemat,
+    const LINALG::Matrix<nen, 1>& funct, const LINALG::Matrix<nsd, nen>& derxy, int curphase,
+    int phasetoadd, int numdofpernode, const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    double fac)
+{
+  // nothing to do
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ * **********************************************************************
+ *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | evaluate element matrix                             kremheller 03/19 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd,
+    nen>::EvaluateMatrixAndAssemble(std::vector<Epetra_SerialDenseMatrix*>& elemat,
+    const LINALG::Matrix<nen, 1>& funct, const LINALG::Matrix<nsd, nen>& derxy, int curphase,
+    int phasetoadd, int numdofpernode, const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    double fac, bool inittimederiv)
+{
+  // do nothing
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate RHS vector                                 kremheller 03/19 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd,
+    nen>::EvaluateVectorAndAssemble(std::vector<Epetra_SerialDenseVector*>& elevec,
+    const LINALG::Matrix<nen, 1>& funct, const LINALG::Matrix<nsd, nen>& derxy, int curphase,
+    int phasetoadd, int numdofpernode, const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+    double fac, bool inittimederiv)
+
+    {
+
+        // dserror("TODO for Antonia");
+    };
+
+/*----------------------------------------------------------------------*
+ | evaluate off-diagonal coupling matrix with structure kremheller 03/19 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd,
+    nen>::EvaluateMatrixODStructAndAssemble(std::vector<Epetra_SerialDenseMatrix*>& elemat,
+    const LINALG::Matrix<nen, 1>& funct, const LINALG::Matrix<nsd, nen>& deriv,
+    const LINALG::Matrix<nsd, nen>& derxy, const LINALG::Matrix<nsd, nsd>& xjm, int curphase,
+    int phasetoadd, int numdofpernode, const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    double fac, double det)
+{
+  // nothing to do
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate off-diagonal coupling matrix with scatra   kremheller 03/19 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd,
     nen>::EvaluateMatrixODScatraAndAssemble(std::vector<Epetra_SerialDenseMatrix*>& elemat,
     const LINALG::Matrix<nen, 1>& funct, const LINALG::Matrix<nsd, nen>& derxy, int curphase,
     int phasetoadd, int numdofpernode, const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,

@@ -82,7 +82,8 @@ DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::PoroFluidMultiPhaseEleParameter(
       nds_vel_(-1),
       nds_solidpressure_(-1),
       nds_scalar_(-1),
-      isset_generalparams_(false)
+      isset_generalparams_(false),
+      domainint_funct_(0)
 {
   return;
 }
@@ -177,6 +178,16 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::SetGeneralParameters(
   nds_solidpressure_ = parameters.get<int>("nds_solidpressure", false);
   // set number of dof set related to solid pressure
   nds_scalar_ = parameters.get<int>("nds_scalar", false);
+  // get number of domain integral functions and resize vector
+  const int num_domainint_funct = parameters.get<int>("num_domainint_funct", false);
+  domainint_funct_.resize(num_domainint_funct);
+
+  // set functions into vector
+  for (int ifunct = 0; ifunct < num_domainint_funct; ifunct++)
+  {
+    domainint_funct_[ifunct] =
+        parameters.get<int>("domainint_funct_" + std::to_string(ifunct), false);
+  }
 
   // done
   isset_generalparams_ = true;

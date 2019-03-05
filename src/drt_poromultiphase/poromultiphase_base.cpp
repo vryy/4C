@@ -261,6 +261,9 @@ void POROMULTIPHASE::PoroMultiPhaseBase::UpdateAndOutput()
   // evaluate error if desired
   FluidField()->EvaluateErrorComparedToAnalyticalSol();
 
+  // set structure on fluid (necessary for possible domain integrals)
+  SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
+
   // output single fields
   StructureField()->Output();
   FluidField()->Output();

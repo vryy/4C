@@ -144,6 +144,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvaluateAction(DRT::Elem
     case POROFLUIDMULTIPHASE::calc_mat_and_rhs:
     case POROFLUIDMULTIPHASE::calc_initial_time_deriv:
     case POROFLUIDMULTIPHASE::recon_flux_at_nodes:
+    case POROFLUIDMULTIPHASE::calc_domain_integrals:
     {
       // loop over gauss points and evaluate terms (standard call)
       GaussPointLoop(ele, elemat, elevec, discretization, la);
