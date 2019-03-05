@@ -177,6 +177,9 @@ namespace PARTICLEINTERACTION
     //! compute surface tension contribution
     virtual void ComputeSurfaceTensionContribution() const;
 
+    //! compute temperature gradient driven contribution
+    virtual void ComputeTempGradDrivenContribution() const;
+
     //! colorfield gradient and wall distance of ghosted particles to refresh
     PARTICLEENGINE::StatesOfTypesToRefresh cfgwalldisttorefresh_;
 
@@ -188,6 +191,9 @@ namespace PARTICLEINTERACTION
 
     //! static contact angle
     const double staticcontactangle_;
+
+    //! derivative of surface tension coefficient
+    const double surfacetensionderivfac_;
 
     //! wall correction factor
     std::vector<std::vector<std::vector<double>>> f_i_;

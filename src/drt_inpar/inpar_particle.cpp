@@ -244,6 +244,9 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   DoubleParameter("STATICCONTACTANGLE", 0.0,
       "static contact angle in degree in continuum surface force formulation with wetting effects",
       &particledynsph);
+  DoubleParameter("SURFACETENSIONDERIVFAC", -1.0,
+      "derivative of surface tension coefficient (linear) in continuum surface force formulation",
+      &particledynsph);
 
   // type of phase change
   setStringToIntegralParameter<int>("PHASECHANGETYPE", "NoPhaseChange", "type of phase change",
