@@ -29,6 +29,7 @@
 void test_bacigenerated_197489()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;

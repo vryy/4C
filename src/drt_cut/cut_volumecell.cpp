@@ -1691,7 +1691,7 @@ void GEO::CUT::VolumeCell::ProjectGaussPointsToLocalCoodinates()
         LINALG::Matrix<3, 20> xyze;
         element_->CoordinatesQuad(xyze.A());
         gp_ = DRT::UTILS::GaussIntegration::ProjectGaussPointsGlobalToLocal<DRT::Element::hex20>(
-            xyze, intpoints);
+            xyze, intpoints, false);
         break;
       }
       case DRT::Element::hex27:
@@ -1699,7 +1699,7 @@ void GEO::CUT::VolumeCell::ProjectGaussPointsToLocalCoodinates()
         LINALG::Matrix<3, 27> xyze;
         element_->CoordinatesQuad(xyze.A());
         gp_ = DRT::UTILS::GaussIntegration::ProjectGaussPointsGlobalToLocal<DRT::Element::hex27>(
-            xyze, intpoints);
+            xyze, intpoints, false);
         break;
       }
       default:
@@ -1716,7 +1716,7 @@ void GEO::CUT::VolumeCell::ProjectGaussPointsToLocalCoodinates()
     LINALG::Matrix<3, 8> xyze;
     element_->Coordinates(xyze.A());
     gp_ = DRT::UTILS::GaussIntegration::ProjectGaussPointsGlobalToLocal<DRT::Element::hex8>(
-        xyze, intpoints);
+        xyze, intpoints, false);
   }
 }
 

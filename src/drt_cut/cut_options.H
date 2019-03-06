@@ -38,6 +38,7 @@ namespace GEO
             geomdistance_floattype_(INPAR::CUT::floattype_double),
             general_position_dist_floattype_(INPAR::CUT::floattype_none),
             general_position_pos_floattype_(INPAR::CUT::floattype_none),
+            direct_divergence_refplane_(INPAR::CUT::DirDiv_refplane_none),
             nodal_dofset_strategy_(nodal_dofset_strategy),
             positions_(positions),
             simpleshapes_(simpleshapes),
@@ -95,6 +96,12 @@ namespace GEO
         return geomdistance_floattype_;
       }
 
+      /** \brief Which Referenceplanes are used in DirectDivergence */
+      enum INPAR::CUT::CUT_DirectDivergence_Refplane Direct_Divergence_Refplane() const
+      {
+        return direct_divergence_refplane_;
+      }
+
       enum INPAR::CUT::BoundaryCellPosition GenBoundaryCellPosition() const
       {
         return gen_bcell_position_;
@@ -128,6 +135,9 @@ namespace GEO
 
       /** \brief Float_type used in GEO::CUT::POSITION for ComputePosition*/
       INPAR::CUT::CUT_Floattype general_position_pos_floattype_;
+
+      /** \brief Specifies which Referenceplanes are used in DirectDivergence*/
+      INPAR::CUT::CUT_DirectDivergence_Refplane direct_divergence_refplane_;
 
       INPAR::CUT::NodalDofSetStrategy nodal_dofset_strategy_;
 

@@ -37,6 +37,9 @@ void GEO::CUT::Options::Init_by_Paramlist(const Teuchos::ParameterList& cutparam
       cutparams, "GENERAL_POSITON_DISTANCE_FLOATTYPE");
   general_position_pos_floattype_ = DRT::INPUT::IntegralValue<INPAR::CUT::CUT_Floattype>(
       cutparams, "GENERAL_POSITON_POSITION_FLOATTYPE");
+  direct_divergence_refplane_ =
+      DRT::INPUT::IntegralValue<INPAR::CUT::CUT_DirectDivergence_Refplane>(
+          cutparams, "DIRECT_DIVERGENCE_REFPLANE");
   GEO::CUT::PositionFactory::SpecifyGeneralDistFloattype(general_position_dist_floattype_);
   GEO::CUT::PositionFactory::SpecifyGeneralPosFloattype(general_position_pos_floattype_);
 }
@@ -48,6 +51,7 @@ void GEO::CUT::Options::Init_for_Cuttests()
   geomdistance_floattype_ = INPAR::CUT::floattype_cln;
   general_position_dist_floattype_ = INPAR::CUT::floattype_cln;
   general_position_pos_floattype_ = INPAR::CUT::floattype_double;
+  direct_divergence_refplane_ = INPAR::CUT::DirDiv_refplane_all;
   GEO::CUT::PositionFactory::SpecifyGeneralDistFloattype(general_position_dist_floattype_);
   GEO::CUT::PositionFactory::SpecifyGeneralPosFloattype(general_position_pos_floattype_);
 }
