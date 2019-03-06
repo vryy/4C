@@ -38,6 +38,8 @@ namespace BEAMINTERACTION
 
   namespace SUBMODELEVALUATOR
   {
+    class BeamContactAssemblyManager;
+
     class BeamContact : public Generic
     {
      public:
@@ -212,6 +214,10 @@ namespace BEAMINTERACTION
 
       //! interacting pairs of beam elements that might exert forces on each other
       std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> contact_elepairs_;
+
+      //! Objects to evaluate system contributions for stiffness and force terms.
+      std::vector<Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager>>
+          assembly_managers_;
 
       //! mapping beam ele (elegid) to set of spatially proximal eles (pointer to elements)
       std::map<int, std::set<DRT::Element*>> nearby_elements_map_;

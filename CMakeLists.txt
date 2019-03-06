@@ -927,6 +927,9 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
   src/drt_beaminteraction/beaminteraction_submodel_evaluator_factory.cpp
   src/drt_beaminteraction/beaminteraction_submodel_evaluator_generic.cpp
   src/drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact.cpp
+  src/drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact_assembly_manager.cpp
+  src/drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact_assembly_manager_direct.cpp
+  src/drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact_assembly_manager_indirect.cpp
   src/drt_beaminteraction/beaminteraction_submodel_evaluator_potential.cpp
   src/drt_beaminteraction/beaminteraction_calc_utils.cpp
   src/drt_beaminteraction/beaminteraction_data.cpp

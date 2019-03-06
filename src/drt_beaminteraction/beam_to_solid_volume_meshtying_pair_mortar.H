@@ -63,9 +63,15 @@ namespace BEAMINTERACTION
         LINALG::SerialDenseVector& local_kappa) override;
 
     /**
-     * \brief This pair contributes to the mortar contact discretization.
+     * \brief This pair has no terms that need to be directly assembled into the global matrices.
      */
-    inline bool IsMortar() const override { return true; };
+    inline bool IsAssemblyDirect() const override { return false; };
+
+    /**
+     * \brief This pair has terms that need to be indirectly (mortar like) assembled into the global
+     * matrices.
+     */
+    inline bool IsAssemblyIndirect() const override { return true; };
 
    private:
     //! Type to be used for scalar AD variables. This can not be inherited from the base class.

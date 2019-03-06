@@ -375,48 +375,45 @@ void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalDM(
   // Loop over elements and assemble the local D and M matrices into the global ones.
   for (auto& elepairptr : contact_pairs)
   {
-    if (elepairptr->IsMortar())
+    // Evaluate the mortar contributions on the pair, if there are some, assemble into the global
+    // matrices.
+    mortar_is_active = elepairptr->EvaluateDM(local_D_centerlineDOFs, local_M, local_kappa);
+
+    if (mortar_is_active)
     {
-      // Evaluate the mortar contributions on the pair, if there are some, assemble into the global
-      // matrices.
-      mortar_is_active = elepairptr->EvaluateDM(local_D_centerlineDOFs, local_M, local_kappa);
+      // We got contributions from the pair. Now we have to assemble into the global matrices. We
+      // use the FEAssembly here, since the contact pairs are not ghosted.
 
-      if (mortar_is_active)
-      {
-        // We got contributions from the pair. Now we have to assemble into the global matrices. We
-        // use the FEAssembly here, since the contact pairs are not ghosted.
+      // Assemble the centerline matrix calculated by EvaluateDM into the full element matrix.
+      BEAMINTERACTION::UTILS::AssembleCenterlineDofColMatrixIntoElementColMatrix(
+          *discret_, elepairptr->Element1(), local_D_centerlineDOFs, local_D_elementDOFs);
 
-        // Assemble the centerline matrix calculated by EvaluateDM into the full element matrix.
-        BEAMINTERACTION::UTILS::AssembleCenterlineDofColMatrixIntoElementColMatrix(
-            *discret_, elepairptr->Element1(), local_D_centerlineDOFs, local_D_elementDOFs);
+      // Get the GIDs of the Lagrange multipliers.
+      std::vector<int> lambda_row;
+      LocationVector(elepairptr, lambda_row);
 
-        // Get the GIDs of the Lagrange multipliers.
-        std::vector<int> lambda_row;
-        LocationVector(elepairptr, lambda_row);
+      // Get the GIDs of the beam DOF.
+      std::vector<int> beam_row;
+      std::vector<int> solid_row;
+      std::vector<int> dummy_1;
+      std::vector<int> dummy_2;
+      elepairptr->Element1()->LocationVector(*discret_, beam_row, dummy_1, dummy_2);
+      elepairptr->Element2()->LocationVector(*discret_, solid_row, dummy_1, dummy_2);
 
-        // Get the GIDs of the beam DOF.
-        std::vector<int> beam_row;
-        std::vector<int> solid_row;
-        std::vector<int> dummy_1;
-        std::vector<int> dummy_2;
-        elepairptr->Element1()->LocationVector(*discret_, beam_row, dummy_1, dummy_2);
-        elepairptr->Element2()->LocationVector(*discret_, solid_row, dummy_1, dummy_2);
+      // Save check the matrix sizes.
+      if (local_D_elementDOFs.RowDim() != (int)lambda_row.size() &&
+          local_D_elementDOFs.ColDim() != (int)beam_row.size())
+        dserror("Size of local D matrix does not match the GID vectors!");
+      if (local_M.RowDim() != (int)lambda_row.size() && local_M.ColDim() != (int)solid_row.size())
+        dserror("Size of local M matrix does not match the GID vectors!");
+      if (local_kappa.RowDim() != (int)lambda_row.size() && local_kappa.ColDim() != 1)
+        dserror("Size of local kappa vector does not match the GID vector!");
 
-        // Save check the matrix sizes.
-        if (local_D_elementDOFs.RowDim() != (int)lambda_row.size() &&
-            local_D_elementDOFs.ColDim() != (int)beam_row.size())
-          dserror("Size of local D matrix does not match the GID vectors!");
-        if (local_M.RowDim() != (int)lambda_row.size() && local_M.ColDim() != (int)solid_row.size())
-          dserror("Size of local M matrix does not match the GID vectors!");
-        if (local_kappa.RowDim() != (int)lambda_row.size() && local_kappa.ColDim() != 1)
-          dserror("Size of local kappa vector does not match the GID vector!");
-
-        // Assemble into the global matrices.
-        global_D_->FEAssemble(local_D_elementDOFs, lambda_row, beam_row);
-        global_M_->FEAssemble(local_M, lambda_row, solid_row);
-        global_kappa_->SumIntoGlobalValues(
-            local_kappa.RowDim(), &lambda_row[0], local_kappa.Values());
-      }
+      // Assemble into the global matrices.
+      global_D_->FEAssemble(local_D_elementDOFs, lambda_row, beam_row);
+      global_M_->FEAssemble(local_M, lambda_row, solid_row);
+      global_kappa_->SumIntoGlobalValues(
+          local_kappa.RowDim(), &lambda_row[0], local_kappa.Values());
     }
   }
 

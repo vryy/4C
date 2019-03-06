@@ -229,10 +229,16 @@ namespace BEAMINTERACTION
     virtual void PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const = 0;
 
     /**
-     * \brief Per default pairs are not assumed to have a mortar contact discretization. Overload
-     * this method if the derived pair has a mortar contact discretization.
+     * \brief Per default it is assumed, that the contributions of a pair can be directly assembled
+     * into the global force and stiffness matrices.
      */
-    inline virtual bool IsMortar() const { return false; };
+    inline virtual bool IsAssemblyDirect() const { return true; };
+
+    /**
+     * \brief Per default it is assumed, that the pair does not give any contributions to the system
+     * that have to be indirectly assembled (for example mortar like terms).
+     */
+    inline virtual bool IsAssemblyIndirect() const { return false; };
 
     /**
      * \brief Evaluate the mortar matrices $D$ and $M$ for this contact element pair.
