@@ -104,6 +104,10 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       particledyn.sublist("INITIAL AND BOUNDARY CONDITIONS", false,
           "control parameters for initial/boundary conditions in particle simulations\n");
 
+  // initial temperature field of particle phase given by function
+  StringParameter("INITIAL_TEMP_FIELD", "",
+      "initial temperature field of particle phase given by function", &particledynconditions);
+
   // initial velocity field of particle phase given by function
   StringParameter("INITIAL_VELOCITY_FIELD", "",
       "initial velocity field of particle phase given by function", &particledynconditions);
@@ -211,6 +215,8 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       tuple<int>(INPAR::PARTICLE::NoTemperatureEvaluation, INPAR::PARTICLE::TemperatureIntegration),
       &particledynsph);
 
+  BoolParameter("TEMPERATUREGRADIENT", "no", "evaluate temperature gradient", &particledynsph);
+
   //! type of heat source
   setStringToIntegralParameter<int>("HEATSOURCETYPE", "NoHeatSource", "type of heat source",
       tuple<std::string>("NoHeatSource", "VolumeHeatSource", "SurfaceHeatSource"),
@@ -237,6 +243,9 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "surface tension coefficient in continuum surface force formulation", &particledynsph);
   DoubleParameter("STATICCONTACTANGLE", 0.0,
       "static contact angle in degree in continuum surface force formulation with wetting effects",
+      &particledynsph);
+  DoubleParameter("SURFACETENSIONDERIVFAC", -1.0,
+      "derivative of surface tension coefficient (linear) in continuum surface force formulation",
       &particledynsph);
 
   // type of phase change

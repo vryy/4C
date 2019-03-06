@@ -42,7 +42,6 @@ int PARTICLEENGINE::EnumToStateDim(const enum PARTICLEENGINE::ParticleState& sta
     case PARTICLEENGINE::BoundaryPressure:
     case PARTICLEENGINE::Colorfield:
     case PARTICLEENGINE::WallDistance:
-    case PARTICLEENGINE::Curvature:
       dim = 1;
       break;
 
@@ -59,6 +58,7 @@ int PARTICLEENGINE::EnumToStateDim(const enum PARTICLEENGINE::ParticleState& sta
     case PARTICLEENGINE::ColorfieldGradient:
     case PARTICLEENGINE::InterfaceNormal:
     case PARTICLEENGINE::UnitWallNormal:
+    case PARTICLEENGINE::TemperatureGradient:
       dim = 3;
       break;
 
@@ -136,7 +136,7 @@ std::string PARTICLEENGINE::EnumToStateName(const enum PARTICLEENGINE::ParticleS
       name = "colorfield";
       break;
     case PARTICLEENGINE::ColorfieldGradient:
-      name = "colorfiel gradient";
+      name = "colorfield gradient";
       break;
     case PARTICLEENGINE::InterfaceNormal:
       name = "interface normal";
@@ -147,8 +147,8 @@ std::string PARTICLEENGINE::EnumToStateName(const enum PARTICLEENGINE::ParticleS
     case PARTICLEENGINE::WallDistance:
       name = "wall distance";
       break;
-    case PARTICLEENGINE::Curvature:
-      name = "curvature";
+    case PARTICLEENGINE::TemperatureGradient:
+      name = "temperaturegradient";
       break;
     default:
       dserror("particle state enum unknown!");

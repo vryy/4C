@@ -53,7 +53,7 @@ namespace PARTICLEENGINE
     InterfaceNormal,
     UnitWallNormal,
     WallDistance,
-    Curvature
+    TemperatureGradient
   };
 
   //! get dimension of particle state

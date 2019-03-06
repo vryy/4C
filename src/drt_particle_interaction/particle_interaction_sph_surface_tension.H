@@ -174,8 +174,11 @@ namespace PARTICLEINTERACTION
     //! correct normal vector of particles close to triple point
     virtual void CorrectTriplePointNormal() const;
 
-    //! compute curvature and acceleration contribution
-    virtual void ComputeCurvatureAndAddAccelerationContribution() const;
+    //! compute surface tension contribution
+    virtual void ComputeSurfaceTensionContribution() const;
+
+    //! compute temperature gradient driven contribution
+    virtual void ComputeTempGradDrivenContribution() const;
 
     //! colorfield gradient and wall distance of ghosted particles to refresh
     PARTICLEENGINE::StatesOfTypesToRefresh cfgwalldisttorefresh_;
@@ -188,6 +191,9 @@ namespace PARTICLEINTERACTION
 
     //! static contact angle
     const double staticcontactangle_;
+
+    //! derivative of surface tension coefficient
+    const double surfacetensionderivfac_;
 
     //! wall correction factor
     std::vector<std::vector<std::vector<double>>> f_i_;

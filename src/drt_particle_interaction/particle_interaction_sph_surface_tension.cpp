@@ -121,7 +121,8 @@ PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::SPHSurfaceTensionCo
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::SPHSurfaceTensionBase(params),
       surfacetensioncoefficient_(params_sph_.get<double>("SURFACETENSIONCOEFFICIENT")),
-      staticcontactangle_(params_sph_.get<double>("STATICCONTACTANGLE"))
+      staticcontactangle_(params_sph_.get<double>("STATICCONTACTANGLE")),
+      surfacetensionderivfac_(params_sph_.get<double>("SURFACETENSIONDERIVFAC"))
 {
   // empty constructor
 }
@@ -137,8 +138,22 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::Init()
   // safety check
   if (not(surfacetensioncoefficient_ > 0.0))
     dserror(
-        "the parameter 'SURFACETENSIONCOEFFICIENT' must be positiv when applying continuum surface "
-        "force formulation!");
+        "the parameter 'SURFACETENSIONCOEFFICIENT' must be positive when applying continuum "
+        "surface force formulation!");
+
+  if (surfacetensionderivfac_ > 0.0)
+  {
+    if (DRT::INPUT::IntegralValue<INPAR::PARTICLE::TemperatureEvaluationScheme>(
+            params_sph_, "TEMPERATUREEVALUATION") == INPAR::PARTICLE::NoTemperatureEvaluation)
+      dserror(
+          "set 'TEMPERATUREEVALUATION' for surface tension formulation with temperature gradient "
+          "driven contribution!");
+
+    if (DRT::INPUT::IntegralValue<int>(params_sph_, "TEMPERATUREGRADIENT") == false)
+      dserror(
+          "set 'TEMPERATUREGRADIENT' for surface tension formulation with temperature gradient "
+          "driven contribution!");
+  }
 }
 
 /*---------------------------------------------------------------------------*
@@ -224,8 +239,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase) continue;
 
     // states for surface tension evaluation scheme
-    particlestates.insert({PARTICLEENGINE::ColorfieldGradient, PARTICLEENGINE::InterfaceNormal,
-        PARTICLEENGINE::Curvature});
+    particlestates.insert({PARTICLEENGINE::ColorfieldGradient, PARTICLEENGINE::InterfaceNormal});
 
     if (haveboundaryorrigidparticles_)
       particlestates.insert({PARTICLEENGINE::UnitWallNormal, PARTICLEENGINE::WallDistance});
@@ -277,8 +291,11 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::AddAcceleratio
   // refresh colorfield gradient and interface normal
   particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(cfgintnormtorefresh_);
 
-  // compute curvature and add acceleration contribution
-  ComputeCurvatureAndAddAccelerationContribution();
+  // compute surface tension contribution
+  ComputeSurfaceTensionContribution();
+
+  // compute temperature gradient driven contribution
+  if (surfacetensionderivfac_ > 0.0) ComputeTempGradDrivenContribution();
 }
 
 /*---------------------------------------------------------------------------*
@@ -354,13 +371,13 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeColorfi
         (dens_i[0] + dens_j[0]);
 
     // sum contribution of neighboring particle j
-    UTILS::vec_addscale(
-        colorfieldgrad_i, fac * dens_i[0] * neighborpair.dWdrij_, neighborpair.e_ij_);
+    UTILS::vec_addscale(colorfieldgrad_i,
+        fac * UTILS::pow<2>(dens_i[0]) / mass_i[0] * neighborpair.dWdrij_, neighborpair.e_ij_);
 
     // sum contribution of neighboring particle i
     if (status_j == PARTICLEENGINE::Owned)
-      UTILS::vec_addscale(
-          colorfieldgrad_j, -fac * dens_j[0] * neighborpair.dWdrji_, neighborpair.e_ij_);
+      UTILS::vec_addscale(colorfieldgrad_j,
+          -fac * UTILS::pow<2>(dens_j[0]) / mass_j[0] * neighborpair.dWdrji_, neighborpair.e_ij_);
   }
 }
 
@@ -579,11 +596,8 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallDis
       wallnormal_i = container_i->GetPtrToParticleState(PARTICLEENGINE::UnitWallNormal, particle_i);
       walldistance_i = container_i->GetPtrToParticleState(PARTICLEENGINE::WallDistance, particle_i);
 
-      // norm of wall normal
-      const double wallnormal_i_norm = UTILS::vec_norm2(wallnormal_i);
-
       // no interacting boundary particle
-      if (not(wallnormal_i_norm > 0.0)) continue;
+      if (not(UTILS::vec_norm2(wallnormal_i) > 0.0)) continue;
 
       // distance of particle i to neighboring boundary particle j
       const double currentwalldistance =
@@ -608,11 +622,8 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallDis
       wallnormal_j = container_j->GetPtrToParticleState(PARTICLEENGINE::UnitWallNormal, particle_j);
       walldistance_j = container_j->GetPtrToParticleState(PARTICLEENGINE::WallDistance, particle_j);
 
-      // norm of wall normal
-      const double wallnormal_j_norm = UTILS::vec_norm2(wallnormal_j);
-
       // no interacting boundary particle
-      if (not(wallnormal_j_norm > 0.0)) continue;
+      if (not(UTILS::vec_norm2(wallnormal_j) > 0.0)) continue;
 
       // distance of particle j to neighboring boundary particle i
       const double currentwalldistance =
@@ -893,7 +904,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::CorrectTripleP
   // iterate over particle types
   for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
   {
-    // no curvature evaluation for boundary or rigid particles
+    // no triple point correction for boundary or rigid particles
     if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
 
     // get container of owned particles of current particle type
@@ -958,10 +969,10 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::CorrectTripleP
 }
 
 /*---------------------------------------------------------------------------*
- | compute curvature and add acceleration contribution        sfuchs 08/2018 |
+ | compute surface tension contribution                       sfuchs 08/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
-    ComputeCurvatureAndAddAccelerationContribution() const
+    ComputeSurfaceTensionContribution() const
 {
   // determine size of vectors indexed by particle types
   const int typevectorsize = *(--particlecontainerbundle_->GetParticleTypes().end()) + 1;
@@ -979,9 +990,6 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
-
-    // clear curvature state
-    container_i->ClearState(PARTICLEENGINE::Curvature);
 
     // get number of particles stored in container
     const int particlestored = container_i->ParticlesStored();
@@ -1110,28 +1118,80 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
     {
       // declare pointer variables for particle i
-      const double *rad_i, *mass_i, *colorfieldgrad_i;
-      double *acc_i, *curvature_i;
+      const double *rad_i, *dens_i, *colorfieldgrad_i;
+      double* acc_i;
 
       // get pointer to particle states
       rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-      mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+      dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
       colorfieldgrad_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_i);
       acc_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_i);
-      curvature_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Curvature, particle_i);
 
       // only add meaningful contributions
       if (std::abs(sumj_Vj_Wij[type_i][particle_i]) > (1.0e-10 * rad_i[0]))
       {
         // compute curvature
-        curvature_i[0] =
+        const double curvature_i =
             -sumj_nij_Vj_eij_dWij[type_i][particle_i] / sumj_Vj_Wij[type_i][particle_i];
 
         // add contribution to acceleration
-        UTILS::vec_addscale(acc_i,
-            -timefac * surfacetensioncoefficient_ * curvature_i[0] / mass_i[0], colorfieldgrad_i);
+        UTILS::vec_addscale(acc_i, -timefac * surfacetensioncoefficient_ * curvature_i / dens_i[0],
+            colorfieldgrad_i);
       }
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*
+ | compute temperature gradient driven contribution           sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
+    ComputeTempGradDrivenContribution() const
+{
+  // evaluate surface tension ramp function
+  double timefac = 1.0;
+  if (surfacetensionrampfctnumber_ > 0)
+    timefac = DRT::Problem::Instance()->Funct(surfacetensionrampfctnumber_ - 1).EvaluateTime(time_);
+
+  // iterate over particle types
+  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  {
+    // no surface tension evaluation for boundary or rigid particles
+    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
+
+    // get container of owned particles of current particle type
+    PARTICLEENGINE::ParticleContainer* container_i =
+        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+
+    // iterate over particles in container
+    for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
+    {
+      // declare pointer variables for particle i
+      const double *colorfieldgrad_i, *interfacenormal_i, *tempgrad_i;
+      double* acc_i;
+
+      // get pointer to particle states
+      colorfieldgrad_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_i);
+      interfacenormal_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::InterfaceNormal, particle_i);
+      tempgrad_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::TemperatureGradient, particle_i);
+      acc_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_i);
+
+      // evaluation only for non-zero interface normal
+      if (not(UTILS::vec_norm2(interfacenormal_i) > 0.0)) continue;
+
+      // projection of temperature gradient onto tangential plane defined by interface normal
+      double tempgrad_i_proj[3];
+      UTILS::vec_set(tempgrad_i_proj, tempgrad_i);
+      UTILS::vec_addscale(
+          tempgrad_i_proj, -UTILS::vec_dot(tempgrad_i, interfacenormal_i), interfacenormal_i);
+
+      // add contribution to acceleration
+      UTILS::vec_addscale(acc_i,
+          -timefac * surfacetensionderivfac_ * UTILS::vec_norm2(colorfieldgrad_i), tempgrad_i_proj);
     }
   }
 }

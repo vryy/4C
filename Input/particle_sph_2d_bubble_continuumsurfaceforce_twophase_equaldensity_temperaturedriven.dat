@@ -14,8 +14,8 @@ STDOUTEVRY                      100
 VERBOSITY                       standard
 ------------------------------------------------------------BINNING STRATEGY
 CUTOFF_RADIUS                   0.06
-PERIODICONOFF                   1 1 0
-BOUNDINGBOX                     -0.5 -0.5 -0.03 0.5 0.5 0.03
+PERIODICONOFF                   1 0 0
+BOUNDINGBOX                     -0.5 -0.56 -0.03 0.5 0.56 0.03
 WRITEBINS                       none
 ------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      VelocityVerlet
@@ -28,33 +28,45 @@ TIMESTEP                        1e-4
 NUMSTEP                         500
 MAXTIME                         1.0
 TRANSFER_EVERY                  no
-PHASE_TO_MATERIAL_ID            phase1 1 phase2 2
+PHASE_TO_MATERIAL_ID            phase1 1 phase2 2 boundaryphase 3
+----------------------------PARTICLE DYNAMIC/INITIAL AND BOUNDARY CONDITIONS
+INITIAL_TEMP_FIELD              phase1 1 phase2 1
+TEMPERATURE_BOUNDARY_CONDITION  boundaryphase 2
 --------------------------------------------------------PARTICLE DYNAMIC/SPH
 KERNEL                          QuinticSpline
 KERNEL_SPACE_DIM                Kernel2D
 EQUATIONOFSTATE                 GenTait
 MOMENTUMFORMULATION             AdamiMomentumFormulation
 DENSITYEVALUATION               DensitySummation
+BOUNDARYPARTICLEFORMULATION     AdamiBoundaryFormulation
+BOUNDARYPARTICLEINTERACTION     NoSlipBoundaryParticle
 DENSITYCORRECTION               NoCorrection
 CONSISTENTPROBLEMVOLUME         1.0
 TRANSPORTVELOCITYFORMULATION    StandardTransportVelocity
+TEMPERATUREEVALUATION           TemperatureIntegration
+TEMPERATUREGRADIENT             yes
 SURFACETENSIONFORMULATION       ContinuumSurfaceForce
-SURFACETENSION_RAMP_FUNCT       1
 SURFACETENSIONCOEFFICIENT       1.0
+SURFACETENSIONDERIVFAC          0.1
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
-VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 0.05 10 DESCRIPTION 0.5*(1.0-cos((t*pi)/0.05)) 1.0
+COMPONENT 0 FUNCTION (10.0/0.5)*y
+----------------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION 10.0*(heaviside(y)-heaviside(-y))
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_ParticleSPHFluid INITRADIUS 0.06 INITDENSITY 1.0 REFDENSFAC 1.0 EXPONENT 1.0 BACKGROUNDPRESSURE 100.0 BULK_MODULUS 100.0 DYNAMIC_VISCOSITY 0.2 BULK_VISCOSITY 0.0 ARTIFICIAL_VISCOSITY 0.0
-MAT 2 MAT_ParticleSPHFluid INITRADIUS 0.06 INITDENSITY 0.001 REFDENSFAC 1.0 EXPONENT 1.0 BACKGROUNDPRESSURE 0.1 BULK_MODULUS 0.1 DYNAMIC_VISCOSITY 0.001 BULK_VISCOSITY 0.0 ARTIFICIAL_VISCOSITY 0.0
+MAT 1 MAT_ParticleSPHFluid INITRADIUS 0.06 INITDENSITY 1.0 REFDENSFAC 1.0 EXPONENT 1.0 BACKGROUNDPRESSURE 100.0 BULK_MODULUS 100.0 DYNAMIC_VISCOSITY 0.2 BULK_VISCOSITY 0.0 ARTIFICIAL_VISCOSITY 0.0 INITTEMPERATURE 0.0 THERMALCONDUCTIVITY 1.0e-3 THERMALCAPACITY 1.0e-2
+MAT 2 MAT_ParticleSPHFluid INITRADIUS 0.06 INITDENSITY 1.0 REFDENSFAC 1.0 EXPONENT 1.0 BACKGROUNDPRESSURE 100.0 BULK_MODULUS 100.0 DYNAMIC_VISCOSITY 0.2 BULK_VISCOSITY 0.0 ARTIFICIAL_VISCOSITY 0.0 INITTEMPERATURE 0.0 THERMALCONDUCTIVITY 1.0e-3 THERMALCAPACITY 1.0e-2
+MAT 3 MAT_ParticleSPHBoundary INITRADIUS 0.06 INITDENSITY 1.0 INITTEMPERATURE 0.0 THERMALCONDUCTIVITY 1.0e-3 THERMALCAPACITY 1.0e-2
 ----------------------------------------------------------RESULT DESCRIPTION
-PARTICLE ID 898 QUANTITY posx VALUE 2.63500353954866873e-01 TOLERANCE 1.0e-12
-PARTICLE ID 898 QUANTITY posy VALUE 2.43103589496985267e-01 TOLERANCE 1.0e-12
+PARTICLE ID 898 QUANTITY posx VALUE 2.67620560414885189e-01 TOLERANCE 1.0e-12
+PARTICLE ID 898 QUANTITY posy VALUE 2.34616543025068819e-01 TOLERANCE 1.0e-12
 PARTICLE ID 898 QUANTITY posz VALUE 0.0 TOLERANCE 1.0e-12
-PARTICLE ID 898 QUANTITY velx VALUE -8.13341366259577425e-01 TOLERANCE 1.0e-12
-PARTICLE ID 898 QUANTITY vely VALUE -7.62231060954542516e-01 TOLERANCE 1.0e-12
+PARTICLE ID 898 QUANTITY velx VALUE -2.52673847798014384e-01 TOLERANCE 1.0e-12
+PARTICLE ID 898 QUANTITY vely VALUE -6.40299187636072631e-01 TOLERANCE 1.0e-12
 PARTICLE ID 898 QUANTITY velz VALUE 0.0 TOLERANCE 1.0e-12
-PARTICLE ID 898 QUANTITY density VALUE 9.84957272799844574e-01 TOLERANCE 1.0e-12
+PARTICLE ID 898 QUANTITY density VALUE 1.02308495805859967e+00 TOLERANCE 1.0e-12
+PARTICLE ID 898 QUANTITY temperature VALUE 5.02470687546485806e+00 TOLERANCE 1.0e-12
+PARTICLE ID 898 QUANTITY tempgradx VALUE -2.56782793247455743e+01 TOLERANCE 1.0e-12
+PARTICLE ID 898 QUANTITY tempgrady VALUE 1.81357624118768221e+01 TOLERANCE 1.0e-12
 -------------------------------------------------------------------PARTICLES
 TYPE phase1 POS -0.29 -0.29 0.0
 TYPE phase1 POS -0.29 -0.27 0.0
@@ -2556,4 +2568,304 @@ TYPE phase2 POS 0.49 0.43 0.0
 TYPE phase2 POS 0.49 0.45 0.0
 TYPE phase2 POS 0.49 0.47 0.0
 TYPE phase2 POS 0.49 0.49 0.0
+TYPE boundaryphase POS -0.49 -0.55 0.0
+TYPE boundaryphase POS -0.49 -0.53 0.0
+TYPE boundaryphase POS -0.49 -0.51 0.0
+TYPE boundaryphase POS -0.49 0.55 0.0
+TYPE boundaryphase POS -0.49 0.53 0.0
+TYPE boundaryphase POS -0.49 0.51 0.0
+TYPE boundaryphase POS -0.47 -0.55 0.0
+TYPE boundaryphase POS -0.47 -0.53 0.0
+TYPE boundaryphase POS -0.47 -0.51 0.0
+TYPE boundaryphase POS -0.47 0.55 0.0
+TYPE boundaryphase POS -0.47 0.53 0.0
+TYPE boundaryphase POS -0.47 0.51 0.0
+TYPE boundaryphase POS -0.45 -0.55 0.0
+TYPE boundaryphase POS -0.45 -0.53 0.0
+TYPE boundaryphase POS -0.45 -0.51 0.0
+TYPE boundaryphase POS -0.45 0.55 0.0
+TYPE boundaryphase POS -0.45 0.53 0.0
+TYPE boundaryphase POS -0.45 0.51 0.0
+TYPE boundaryphase POS -0.43 -0.55 0.0
+TYPE boundaryphase POS -0.43 -0.53 0.0
+TYPE boundaryphase POS -0.43 -0.51 0.0
+TYPE boundaryphase POS -0.43 0.55 0.0
+TYPE boundaryphase POS -0.43 0.53 0.0
+TYPE boundaryphase POS -0.43 0.51 0.0
+TYPE boundaryphase POS -0.41 -0.55 0.0
+TYPE boundaryphase POS -0.41 -0.53 0.0
+TYPE boundaryphase POS -0.41 -0.51 0.0
+TYPE boundaryphase POS -0.41 0.55 0.0
+TYPE boundaryphase POS -0.41 0.53 0.0
+TYPE boundaryphase POS -0.41 0.51 0.0
+TYPE boundaryphase POS -0.39 -0.55 0.0
+TYPE boundaryphase POS -0.39 -0.53 0.0
+TYPE boundaryphase POS -0.39 -0.51 0.0
+TYPE boundaryphase POS -0.39 0.55 0.0
+TYPE boundaryphase POS -0.39 0.53 0.0
+TYPE boundaryphase POS -0.39 0.51 0.0
+TYPE boundaryphase POS -0.37 -0.55 0.0
+TYPE boundaryphase POS -0.37 -0.53 0.0
+TYPE boundaryphase POS -0.37 -0.51 0.0
+TYPE boundaryphase POS -0.37 0.55 0.0
+TYPE boundaryphase POS -0.37 0.53 0.0
+TYPE boundaryphase POS -0.37 0.51 0.0
+TYPE boundaryphase POS -0.35 -0.55 0.0
+TYPE boundaryphase POS -0.35 -0.53 0.0
+TYPE boundaryphase POS -0.35 -0.51 0.0
+TYPE boundaryphase POS -0.35 0.55 0.0
+TYPE boundaryphase POS -0.35 0.53 0.0
+TYPE boundaryphase POS -0.35 0.51 0.0
+TYPE boundaryphase POS -0.33 -0.55 0.0
+TYPE boundaryphase POS -0.33 -0.53 0.0
+TYPE boundaryphase POS -0.33 -0.51 0.0
+TYPE boundaryphase POS -0.33 0.55 0.0
+TYPE boundaryphase POS -0.33 0.53 0.0
+TYPE boundaryphase POS -0.33 0.51 0.0
+TYPE boundaryphase POS -0.31 -0.55 0.0
+TYPE boundaryphase POS -0.31 -0.53 0.0
+TYPE boundaryphase POS -0.31 -0.51 0.0
+TYPE boundaryphase POS -0.31 0.55 0.0
+TYPE boundaryphase POS -0.31 0.53 0.0
+TYPE boundaryphase POS -0.31 0.51 0.0
+TYPE boundaryphase POS -0.29 -0.55 0.0
+TYPE boundaryphase POS -0.29 -0.53 0.0
+TYPE boundaryphase POS -0.29 -0.51 0.0
+TYPE boundaryphase POS -0.29 0.55 0.0
+TYPE boundaryphase POS -0.29 0.53 0.0
+TYPE boundaryphase POS -0.29 0.51 0.0
+TYPE boundaryphase POS -0.27 -0.55 0.0
+TYPE boundaryphase POS -0.27 -0.53 0.0
+TYPE boundaryphase POS -0.27 -0.51 0.0
+TYPE boundaryphase POS -0.27 0.55 0.0
+TYPE boundaryphase POS -0.27 0.53 0.0
+TYPE boundaryphase POS -0.27 0.51 0.0
+TYPE boundaryphase POS -0.25 -0.55 0.0
+TYPE boundaryphase POS -0.25 -0.53 0.0
+TYPE boundaryphase POS -0.25 -0.51 0.0
+TYPE boundaryphase POS -0.25 0.55 0.0
+TYPE boundaryphase POS -0.25 0.53 0.0
+TYPE boundaryphase POS -0.25 0.51 0.0
+TYPE boundaryphase POS -0.23 -0.55 0.0
+TYPE boundaryphase POS -0.23 -0.53 0.0
+TYPE boundaryphase POS -0.23 -0.51 0.0
+TYPE boundaryphase POS -0.23 0.55 0.0
+TYPE boundaryphase POS -0.23 0.53 0.0
+TYPE boundaryphase POS -0.23 0.51 0.0
+TYPE boundaryphase POS -0.21 -0.55 0.0
+TYPE boundaryphase POS -0.21 -0.53 0.0
+TYPE boundaryphase POS -0.21 -0.51 0.0
+TYPE boundaryphase POS -0.21 0.55 0.0
+TYPE boundaryphase POS -0.21 0.53 0.0
+TYPE boundaryphase POS -0.21 0.51 0.0
+TYPE boundaryphase POS -0.19 -0.55 0.0
+TYPE boundaryphase POS -0.19 -0.53 0.0
+TYPE boundaryphase POS -0.19 -0.51 0.0
+TYPE boundaryphase POS -0.19 0.55 0.0
+TYPE boundaryphase POS -0.19 0.53 0.0
+TYPE boundaryphase POS -0.19 0.51 0.0
+TYPE boundaryphase POS -0.17 -0.55 0.0
+TYPE boundaryphase POS -0.17 -0.53 0.0
+TYPE boundaryphase POS -0.17 -0.51 0.0
+TYPE boundaryphase POS -0.17 0.55 0.0
+TYPE boundaryphase POS -0.17 0.53 0.0
+TYPE boundaryphase POS -0.17 0.51 0.0
+TYPE boundaryphase POS -0.15 -0.55 0.0
+TYPE boundaryphase POS -0.15 -0.53 0.0
+TYPE boundaryphase POS -0.15 -0.51 0.0
+TYPE boundaryphase POS -0.15 0.55 0.0
+TYPE boundaryphase POS -0.15 0.53 0.0
+TYPE boundaryphase POS -0.15 0.51 0.0
+TYPE boundaryphase POS -0.13 -0.55 0.0
+TYPE boundaryphase POS -0.13 -0.53 0.0
+TYPE boundaryphase POS -0.13 -0.51 0.0
+TYPE boundaryphase POS -0.13 0.55 0.0
+TYPE boundaryphase POS -0.13 0.53 0.0
+TYPE boundaryphase POS -0.13 0.51 0.0
+TYPE boundaryphase POS -0.11 -0.55 0.0
+TYPE boundaryphase POS -0.11 -0.53 0.0
+TYPE boundaryphase POS -0.11 -0.51 0.0
+TYPE boundaryphase POS -0.11 0.55 0.0
+TYPE boundaryphase POS -0.11 0.53 0.0
+TYPE boundaryphase POS -0.11 0.51 0.0
+TYPE boundaryphase POS -0.09 -0.55 0.0
+TYPE boundaryphase POS -0.09 -0.53 0.0
+TYPE boundaryphase POS -0.09 -0.51 0.0
+TYPE boundaryphase POS -0.09 0.55 0.0
+TYPE boundaryphase POS -0.09 0.53 0.0
+TYPE boundaryphase POS -0.09 0.51 0.0
+TYPE boundaryphase POS -0.07 -0.55 0.0
+TYPE boundaryphase POS -0.07 -0.53 0.0
+TYPE boundaryphase POS -0.07 -0.51 0.0
+TYPE boundaryphase POS -0.07 0.55 0.0
+TYPE boundaryphase POS -0.07 0.53 0.0
+TYPE boundaryphase POS -0.07 0.51 0.0
+TYPE boundaryphase POS -0.05 -0.55 0.0
+TYPE boundaryphase POS -0.05 -0.53 0.0
+TYPE boundaryphase POS -0.05 -0.51 0.0
+TYPE boundaryphase POS -0.05 0.55 0.0
+TYPE boundaryphase POS -0.05 0.53 0.0
+TYPE boundaryphase POS -0.05 0.51 0.0
+TYPE boundaryphase POS -0.03 -0.55 0.0
+TYPE boundaryphase POS -0.03 -0.53 0.0
+TYPE boundaryphase POS -0.03 -0.51 0.0
+TYPE boundaryphase POS -0.03 0.55 0.0
+TYPE boundaryphase POS -0.03 0.53 0.0
+TYPE boundaryphase POS -0.03 0.51 0.0
+TYPE boundaryphase POS -0.01 -0.55 0.0
+TYPE boundaryphase POS -0.01 -0.53 0.0
+TYPE boundaryphase POS -0.01 -0.51 0.0
+TYPE boundaryphase POS -0.01 0.55 0.0
+TYPE boundaryphase POS -0.01 0.53 0.0
+TYPE boundaryphase POS -0.01 0.51 0.0
+TYPE boundaryphase POS 0.01 -0.55 0.0
+TYPE boundaryphase POS 0.01 -0.53 0.0
+TYPE boundaryphase POS 0.01 -0.51 0.0
+TYPE boundaryphase POS 0.01 0.55 0.0
+TYPE boundaryphase POS 0.01 0.53 0.0
+TYPE boundaryphase POS 0.01 0.51 0.0
+TYPE boundaryphase POS 0.03 -0.55 0.0
+TYPE boundaryphase POS 0.03 -0.53 0.0
+TYPE boundaryphase POS 0.03 -0.51 0.0
+TYPE boundaryphase POS 0.03 0.55 0.0
+TYPE boundaryphase POS 0.03 0.53 0.0
+TYPE boundaryphase POS 0.03 0.51 0.0
+TYPE boundaryphase POS 0.05 -0.55 0.0
+TYPE boundaryphase POS 0.05 -0.53 0.0
+TYPE boundaryphase POS 0.05 -0.51 0.0
+TYPE boundaryphase POS 0.05 0.55 0.0
+TYPE boundaryphase POS 0.05 0.53 0.0
+TYPE boundaryphase POS 0.05 0.51 0.0
+TYPE boundaryphase POS 0.07 -0.55 0.0
+TYPE boundaryphase POS 0.07 -0.53 0.0
+TYPE boundaryphase POS 0.07 -0.51 0.0
+TYPE boundaryphase POS 0.07 0.55 0.0
+TYPE boundaryphase POS 0.07 0.53 0.0
+TYPE boundaryphase POS 0.07 0.51 0.0
+TYPE boundaryphase POS 0.09 -0.55 0.0
+TYPE boundaryphase POS 0.09 -0.53 0.0
+TYPE boundaryphase POS 0.09 -0.51 0.0
+TYPE boundaryphase POS 0.09 0.55 0.0
+TYPE boundaryphase POS 0.09 0.53 0.0
+TYPE boundaryphase POS 0.09 0.51 0.0
+TYPE boundaryphase POS 0.11 -0.55 0.0
+TYPE boundaryphase POS 0.11 -0.53 0.0
+TYPE boundaryphase POS 0.11 -0.51 0.0
+TYPE boundaryphase POS 0.11 0.55 0.0
+TYPE boundaryphase POS 0.11 0.53 0.0
+TYPE boundaryphase POS 0.11 0.51 0.0
+TYPE boundaryphase POS 0.13 -0.55 0.0
+TYPE boundaryphase POS 0.13 -0.53 0.0
+TYPE boundaryphase POS 0.13 -0.51 0.0
+TYPE boundaryphase POS 0.13 0.55 0.0
+TYPE boundaryphase POS 0.13 0.53 0.0
+TYPE boundaryphase POS 0.13 0.51 0.0
+TYPE boundaryphase POS 0.15 -0.55 0.0
+TYPE boundaryphase POS 0.15 -0.53 0.0
+TYPE boundaryphase POS 0.15 -0.51 0.0
+TYPE boundaryphase POS 0.15 0.55 0.0
+TYPE boundaryphase POS 0.15 0.53 0.0
+TYPE boundaryphase POS 0.15 0.51 0.0
+TYPE boundaryphase POS 0.17 -0.55 0.0
+TYPE boundaryphase POS 0.17 -0.53 0.0
+TYPE boundaryphase POS 0.17 -0.51 0.0
+TYPE boundaryphase POS 0.17 0.55 0.0
+TYPE boundaryphase POS 0.17 0.53 0.0
+TYPE boundaryphase POS 0.17 0.51 0.0
+TYPE boundaryphase POS 0.19 -0.55 0.0
+TYPE boundaryphase POS 0.19 -0.53 0.0
+TYPE boundaryphase POS 0.19 -0.51 0.0
+TYPE boundaryphase POS 0.19 0.55 0.0
+TYPE boundaryphase POS 0.19 0.53 0.0
+TYPE boundaryphase POS 0.19 0.51 0.0
+TYPE boundaryphase POS 0.21 -0.55 0.0
+TYPE boundaryphase POS 0.21 -0.53 0.0
+TYPE boundaryphase POS 0.21 -0.51 0.0
+TYPE boundaryphase POS 0.21 0.55 0.0
+TYPE boundaryphase POS 0.21 0.53 0.0
+TYPE boundaryphase POS 0.21 0.51 0.0
+TYPE boundaryphase POS 0.23 -0.55 0.0
+TYPE boundaryphase POS 0.23 -0.53 0.0
+TYPE boundaryphase POS 0.23 -0.51 0.0
+TYPE boundaryphase POS 0.23 0.55 0.0
+TYPE boundaryphase POS 0.23 0.53 0.0
+TYPE boundaryphase POS 0.23 0.51 0.0
+TYPE boundaryphase POS 0.25 -0.55 0.0
+TYPE boundaryphase POS 0.25 -0.53 0.0
+TYPE boundaryphase POS 0.25 -0.51 0.0
+TYPE boundaryphase POS 0.25 0.55 0.0
+TYPE boundaryphase POS 0.25 0.53 0.0
+TYPE boundaryphase POS 0.25 0.51 0.0
+TYPE boundaryphase POS 0.27 -0.55 0.0
+TYPE boundaryphase POS 0.27 -0.53 0.0
+TYPE boundaryphase POS 0.27 -0.51 0.0
+TYPE boundaryphase POS 0.27 0.55 0.0
+TYPE boundaryphase POS 0.27 0.53 0.0
+TYPE boundaryphase POS 0.27 0.51 0.0
+TYPE boundaryphase POS 0.29 -0.55 0.0
+TYPE boundaryphase POS 0.29 -0.53 0.0
+TYPE boundaryphase POS 0.29 -0.51 0.0
+TYPE boundaryphase POS 0.29 0.55 0.0
+TYPE boundaryphase POS 0.29 0.53 0.0
+TYPE boundaryphase POS 0.29 0.51 0.0
+TYPE boundaryphase POS 0.31 -0.55 0.0
+TYPE boundaryphase POS 0.31 -0.53 0.0
+TYPE boundaryphase POS 0.31 -0.51 0.0
+TYPE boundaryphase POS 0.31 0.55 0.0
+TYPE boundaryphase POS 0.31 0.53 0.0
+TYPE boundaryphase POS 0.31 0.51 0.0
+TYPE boundaryphase POS 0.33 -0.55 0.0
+TYPE boundaryphase POS 0.33 -0.53 0.0
+TYPE boundaryphase POS 0.33 -0.51 0.0
+TYPE boundaryphase POS 0.33 0.55 0.0
+TYPE boundaryphase POS 0.33 0.53 0.0
+TYPE boundaryphase POS 0.33 0.51 0.0
+TYPE boundaryphase POS 0.35 -0.55 0.0
+TYPE boundaryphase POS 0.35 -0.53 0.0
+TYPE boundaryphase POS 0.35 -0.51 0.0
+TYPE boundaryphase POS 0.35 0.55 0.0
+TYPE boundaryphase POS 0.35 0.53 0.0
+TYPE boundaryphase POS 0.35 0.51 0.0
+TYPE boundaryphase POS 0.37 -0.55 0.0
+TYPE boundaryphase POS 0.37 -0.53 0.0
+TYPE boundaryphase POS 0.37 -0.51 0.0
+TYPE boundaryphase POS 0.37 0.55 0.0
+TYPE boundaryphase POS 0.37 0.53 0.0
+TYPE boundaryphase POS 0.37 0.51 0.0
+TYPE boundaryphase POS 0.39 -0.55 0.0
+TYPE boundaryphase POS 0.39 -0.53 0.0
+TYPE boundaryphase POS 0.39 -0.51 0.0
+TYPE boundaryphase POS 0.39 0.55 0.0
+TYPE boundaryphase POS 0.39 0.53 0.0
+TYPE boundaryphase POS 0.39 0.51 0.0
+TYPE boundaryphase POS 0.41 -0.55 0.0
+TYPE boundaryphase POS 0.41 -0.53 0.0
+TYPE boundaryphase POS 0.41 -0.51 0.0
+TYPE boundaryphase POS 0.41 0.55 0.0
+TYPE boundaryphase POS 0.41 0.53 0.0
+TYPE boundaryphase POS 0.41 0.51 0.0
+TYPE boundaryphase POS 0.43 -0.55 0.0
+TYPE boundaryphase POS 0.43 -0.53 0.0
+TYPE boundaryphase POS 0.43 -0.51 0.0
+TYPE boundaryphase POS 0.43 0.55 0.0
+TYPE boundaryphase POS 0.43 0.53 0.0
+TYPE boundaryphase POS 0.43 0.51 0.0
+TYPE boundaryphase POS 0.45 -0.55 0.0
+TYPE boundaryphase POS 0.45 -0.53 0.0
+TYPE boundaryphase POS 0.45 -0.51 0.0
+TYPE boundaryphase POS 0.45 0.55 0.0
+TYPE boundaryphase POS 0.45 0.53 0.0
+TYPE boundaryphase POS 0.45 0.51 0.0
+TYPE boundaryphase POS 0.47 -0.55 0.0
+TYPE boundaryphase POS 0.47 -0.53 0.0
+TYPE boundaryphase POS 0.47 -0.51 0.0
+TYPE boundaryphase POS 0.47 0.55 0.0
+TYPE boundaryphase POS 0.47 0.53 0.0
+TYPE boundaryphase POS 0.47 0.51 0.0
+TYPE boundaryphase POS 0.49 -0.55 0.0
+TYPE boundaryphase POS 0.49 -0.53 0.0
+TYPE boundaryphase POS 0.49 -0.51 0.0
+TYPE boundaryphase POS 0.49 0.55 0.0
+TYPE boundaryphase POS 0.49 0.53 0.0
+TYPE boundaryphase POS 0.49 0.51 0.0
 -------------------------------------------------------------------------END

@@ -107,6 +107,9 @@ namespace PARTICLEINTERACTION
     //! evaluate energy equation
     virtual void EnergyEquation() const;
 
+    //! evaluate temperature gradient
+    virtual void TemperatureGradient() const;
+
     //! smoothed particle hydrodynamics specific parameter list
     const Teuchos::ParameterList& params_sph_;
 
@@ -126,13 +129,16 @@ namespace PARTICLEINTERACTION
     std::unique_ptr<PARTICLEINTERACTION::SPHHeatSourceBase> heatsource_;
 
     //! temperature of ghosted particles to refresh
-    PARTICLEENGINE::StatesOfTypesToRefresh temperaturetorefresh_;
+    PARTICLEENGINE::StatesOfTypesToRefresh temptorefresh_;
 
     //! current time
     double time_;
 
     //! time step size
     double dt_;
+
+    //! evaluate temperature gradient
+    bool temperaturegradient_;
 
     //! pointer to thermo material of particle types
     std::vector<const MAT::PAR::ParticleMaterialThermo*> thermomaterial_;
