@@ -6,7 +6,7 @@
        with sliding ALE-structure interfaces
 
 
-\maintainer Andreas Rauch
+\maintainer Matthias Mayr
 
 \level 1
 
@@ -25,7 +25,7 @@
 #include "../drt_adapter/adapter_coupling_mortar.H"
 #include "../drt_lib/drt_globalproblem.H"
 
-
+#include "../drt_inpar/inpar_fsi.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -33,7 +33,7 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::DirichletNeumannSlideale::DirichletNeumannSlideale(const Epetra_Comm& comm)
-    : DirichletNeumann(comm), displacementcoupling_(false)
+    : DirichletNeumann(comm)
 {
   // empty constructor
 }
@@ -48,7 +48,8 @@ void FSI::DirichletNeumannSlideale::Setup()
 
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
-  displacementcoupling_ = fsipart.get<std::string>("COUPVARIABLE") == "Displacement";
+  SetKinematicCoupling(
+      DRT::INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::disp);
 
   INPAR::FSI::SlideALEProj aletype = DRT::INPUT::IntegralValue<INPAR::FSI::SlideALEProj>(
       DRT::Problem::Instance()->FSIDynamicParams(), "SLIDEALEPROJ");
@@ -150,7 +151,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannSlideale::StructOp(
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannSlideale::InitialGuess()
 {
-  if (displacementcoupling_)
+  if (GetKinematicCoupling())
   {
     // real displacement of slave side at time step begin on master side --> for calcualtion of
     // FluidOp

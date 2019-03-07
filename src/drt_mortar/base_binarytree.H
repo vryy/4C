@@ -195,22 +195,22 @@ namespace MORTAR
     //@}
 
    private:
-    //! reference to dimension of the problem
-    const int& dim_;
+    //! dimension of the problem
+    const int dim_;
     //! reference to DOP normals
     const Epetra_SerialDenseMatrix& dopnormals_;
     //! list containing the gids of all elements of the tree node
     std::vector<int> elelist_;
     //! interface discretization
     DRT::Discretization& idiscret_;
-    //! reference to number of vertices
-    const int& kdop_;
+    //! number of vertices
+    const int kdop_;
     //! layer of tree node in tree (0=root node!)
     int layer_;
     //! geometry slabs of tree node, saved as Min|Max
     Epetra_SerialDenseMatrix slabs_;
     //! auxiliary position is used when computing dops
-    const bool& useauxpos_;
+    const bool useauxpos_;
   };  // class BaseBinaryTreeNode
 
   /*!

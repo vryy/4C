@@ -155,10 +155,9 @@ void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateNeighborPairs()
       // get reference to current neighbor pair
       SPHNeighborPair& neighborpair = neighborpairdata_[neighborpairindex];
 
-      // store index of neighbor pairs for each type
+      // store index of neighbor pairs for each type (owned and ghosted status)
       indexofneighborpairs_[type_i].push_back(neighborpairindex);
-      if (type_i != type_j and status_j == PARTICLEENGINE::Owned)
-        indexofneighborpairs_[type_j].push_back(neighborpairindex);
+      if (type_i != type_j) indexofneighborpairs_[type_j].push_back(neighborpairindex);
 
       // increase index
       ++neighborpairindex;

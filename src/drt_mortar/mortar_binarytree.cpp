@@ -373,25 +373,15 @@ void MORTAR::BinaryTreeNode::PrintType()
 }
 
 /*----------------------------------------------------------------------*
- | Set slabs of current treenode with new slabs(public)       popp 10/08|
- *----------------------------------------------------------------------*/
-void MORTAR::BinaryTreeNode::SetSlabs(Epetra_SerialDenseMatrix& newslabs)
-{
-  for (int i = 0; i < Kdop() / 2; ++i)
-  {
-    Slabs()(i, 0) = newslabs(i, 0);
-    Slabs()(i, 1) = newslabs(i, 1);
-  }
-}
-
-/*----------------------------------------------------------------------*
  |  ctor BinaryTree(public)                                   popp 10/08|
  *----------------------------------------------------------------------*/
 MORTAR::BinaryTree::BinaryTree(DRT::Discretization& discret, Teuchos::RCP<Epetra_Map> selements,
-    Teuchos::RCP<Epetra_Map> melements, int dim, double eps, bool useauxpos)
+    Teuchos::RCP<Epetra_Map> melements, int dim, double eps,
+    INPAR::MORTAR::BinaryTreeUpdateType updatetype, bool useauxpos)
     : MORTAR::BaseBinaryTree(discret, dim, eps),
       selements_(selements),
       melements_(melements),
+      updatetype_(updatetype),
       useauxpos_(useauxpos)
 {
   // keep the constructor clean
@@ -568,22 +558,9 @@ void MORTAR::BinaryTree::InitSearchElements()
  *----------------------------------------------------------------------*/
 void MORTAR::BinaryTree::EvaluateSearch()
 {
-  // *********************************************************************
-  // Possible versions for general mortar setting:
-  // *********************************************************************
-  //
-  // 1) Combined Update and Search
-  // -> In this case we only have to call SearchCombined(), which
-  //    does buth top-down update (where necessary) and search.
-  //
-  // 2) Separate Update and Search
-  // -> In this case we have to explicitly call and updating routine, i.e.
-  //    UpdateTreeTopDown() or UpdateTreeBottomUp() before calling the
-  //    search routine SearchSeparate(). Of course, the bottom-up
-  //    update makes more sense here. For very large meshtying problems,
-  //    this version is preferable and thus chosen as default.
-  //
-  // *********************************************************************
+  // We have to explicitly call the updating routine, i.e. UpdateTreeTopDown() or
+  // UpdateTreeBottomUp() before calling the search routine EvaluateSearch(...). For very large
+  // mesh tying problems, the BottomUp version is faster and therefore preferable.
 
   // init search elements
   InitSearchElements();
@@ -591,11 +568,19 @@ void MORTAR::BinaryTree::EvaluateSearch()
   // calculate minimal element length
   SetEnlarge();
 
-  // update tree in a top down way
-  // binarytree_->UpdateTreeTopDown();
-
-  // update tree in a bottom up way
-  UpdateTreeBottomUp();
+  // update binary tree according to update type
+  switch (updatetype_)
+  {
+    case INPAR::MORTAR::binarytree_top_down:
+      UpdateTreeTopDown();
+      break;
+    case INPAR::MORTAR::binarytree_bottom_up:
+      UpdateTreeBottomUp();
+      break;
+    default:
+      dserror("MORTAR::BinaryTreeUpdateType has to be bottom up or top down!");
+      break;
+  }
 
 #ifdef MORTARGMSHCTN
   for (int i = 0; i < (int)(binarytree_->CouplingMap().size()); i++)
@@ -603,11 +588,9 @@ void MORTAR::BinaryTree::EvaluateSearch()
   binarytree_->CouplingMap().clear();
   binarytree_->CouplingMap().resize(2);
 #endif  // MORTARGMSHCTN
-  // search with a separate algorithm
-  SearchSeparate();
+  // evaluate search algorithm
+  EvaluateSearch(sroot_, mroot_);
 
-  // search with an combined algorithm
-  // binarytree_->SearchCombined();
   return;
 }
 
@@ -743,7 +726,7 @@ void MORTAR::BinaryTree::EvaluateUpdateTreeBottomUp(
 /*----------------------------------------------------------------------*
  | Search for contact (public)                                popp 10/08|
  *----------------------------------------------------------------------*/
-void MORTAR::BinaryTree::EvaluateSearchSeparate(
+void MORTAR::BinaryTree::EvaluateSearch(
     Teuchos::RCP<BinaryTreeNode> streenode, Teuchos::RCP<BinaryTreeNode> mtreenode)
 {
   // tree needs to be updated before running contact search!
@@ -751,8 +734,7 @@ void MORTAR::BinaryTree::EvaluateSearchSeparate(
   // if there are no elements
   if (streenode->Type() == NOSLAVE_ELEMENTS || mtreenode->Type() == NOMASTER_ELEMENTS) return;
 
-  // check if treenodes intercept
-  // (they only intercept if ALL slabs intercept!)
+  // check if tree nodes intercept (they only intercept if ALL slabs intercept!)
   int nintercepts = 0;
 
   for (int i = 0; i < Kdop() / 2; ++i)
@@ -773,149 +755,37 @@ void MORTAR::BinaryTree::EvaluateSearchSeparate(
     }
   }
 
-  // treenodes intercept
+  // tree nodes intercept
   if (nintercepts == Kdop() / 2)
   {
-    // slave and master treenodes are inner nodes
+    // slave and master tree nodes are inner nodes
     if (streenode->Type() == SLAVE_INNER && mtreenode->Type() == MASTER_INNER)
     {
-      // std::cout <<"\n"<< Comm().MyPID() << " 2 inner nodes!";
-      EvaluateSearchSeparate(streenode->Leftchild(), mtreenode->Leftchild());
-      EvaluateSearchSeparate(streenode->Leftchild(), mtreenode->Rightchild());
-      EvaluateSearchSeparate(streenode->Rightchild(), mtreenode->Leftchild());
-      EvaluateSearchSeparate(streenode->Rightchild(), mtreenode->Rightchild());
+      EvaluateSearch(streenode->Leftchild(), mtreenode->Leftchild());
+      EvaluateSearch(streenode->Leftchild(), mtreenode->Rightchild());
+      EvaluateSearch(streenode->Rightchild(), mtreenode->Leftchild());
+      EvaluateSearch(streenode->Rightchild(), mtreenode->Rightchild());
     }
 
-    // slave treenode is inner, master treenode is leaf
+    // slave tree node is inner, master tree node is leaf
     if (streenode->Type() == SLAVE_INNER && mtreenode->Type() == MASTER_LEAF)
     {
-      // std::cout <<"\n"<< Comm().MyPID() << " slafe inner, master leaf!";
-      EvaluateSearchSeparate(streenode->Leftchild(), mtreenode);
-      EvaluateSearchSeparate(streenode->Rightchild(), mtreenode);
+      EvaluateSearch(streenode->Leftchild(), mtreenode);
+      EvaluateSearch(streenode->Rightchild(), mtreenode);
     }
 
-    // slave treenode is leaf,  master treenode is inner
+    // slave tree node is leaf,  master tree node is inner
     if (streenode->Type() == SLAVE_LEAF && mtreenode->Type() == MASTER_INNER)
     {
-      // std::cout <<"\n"<< Comm().MyPID() << " slave leaf, master inner!";
-      EvaluateSearchSeparate(streenode, mtreenode->Leftchild());
-      EvaluateSearchSeparate(streenode, mtreenode->Rightchild());
+      EvaluateSearch(streenode, mtreenode->Leftchild());
+      EvaluateSearch(streenode, mtreenode->Rightchild());
     }
 
-    // both treenodes are leaf --> feasible pair
+    // both tree nodes are leaf --> feasible pair
     if (streenode->Type() == SLAVE_LEAF && mtreenode->Type() == MASTER_LEAF)
     {
-      int sgid = (int)streenode->Elelist()[0];  // global id of slave element
-      int mgid = (int)mtreenode->Elelist()[0];  // global id of masterelement
-      // std::cout <<"\n"<< Comm().MyPID() << "TreeDividedContact found between slave-Element: "
-      //     << sgid <<"and master-Element: "<< mgid;
-      DRT::Element* element = Discret().gElement(sgid);
-      MORTAR::MortarElement* selement = dynamic_cast<MORTAR::MortarElement*>(element);
-      selement->AddSearchElements(mgid);
-    }
-  }
-
-#ifdef MORTARGMSHCTN  // for plotting contacting treenodes
-  if (streenode->Type() == SLAVE_LEAF && mtreenode->Type() == MASTER_LEAF &&
-      nintercepts == kdop_ / 2)
-  {
-    couplingmap_[0].push_back(streenode);
-    couplingmap_[1].push_back(mtreenode);
-  }
-#endif  // #ifdef MORTARGMSHCTN
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | Search for contact (public)                                popp 10/08|
- *----------------------------------------------------------------------*/
-void MORTAR::BinaryTree::EvaluateSearchCombined(
-    Teuchos::RCP<BinaryTreeNode> streenode, Teuchos::RCP<BinaryTreeNode> mtreenode)
-{
-  // root nodes need to be updated before running combined contact search!
-
-  // if there are no elements
-  if (streenode->Type() == NOSLAVE_ELEMENTS || mtreenode->Type() == NOMASTER_ELEMENTS) return;
-
-  // check if treenodes intercept
-  // (they only intercept if ALL slabs intercept!)
-  int nintercepts = 0;
-
-  for (int i = 0; i < Kdop() / 2; ++i)
-  {
-    if (streenode->Slabs()(i, 0) <= mtreenode->Slabs()(i, 0))
-    {
-      if (streenode->Slabs()(i, 1) >= mtreenode->Slabs()(i, 0))
-        nintercepts++;
-      else if (streenode->Slabs()(i, 1) >= mtreenode->Slabs()(i, 1))
-        nintercepts++;
-    }
-    else if (streenode->Slabs()(i, 0) >= mtreenode->Slabs()(i, 0))
-    {
-      if (mtreenode->Slabs()(i, 1) >= streenode->Slabs()(i, 1))
-        nintercepts++;
-      else if (mtreenode->Slabs()(i, 1) >= streenode->Slabs()(i, 0))
-        nintercepts++;
-    }
-  }
-
-  // treenodes intercept
-  if (nintercepts == Kdop() / 2)
-  {
-    // slave and master treenodes are inner nodes
-    if (streenode->Type() == SLAVE_INNER && mtreenode->Type() == MASTER_INNER)
-    {
-      // std::cout <<"\n"<< Comm().MyPID() << " 2 inner nodes!";
-      streenode->Leftchild()->CalculateSlabsDop();
-      streenode->Leftchild()->EnlargeGeometry(Enlarge());
-      streenode->Rightchild()->CalculateSlabsDop();
-      streenode->Rightchild()->EnlargeGeometry(Enlarge());
-      mtreenode->Leftchild()->CalculateSlabsDop();
-      mtreenode->Leftchild()->EnlargeGeometry(Enlarge());
-      mtreenode->Rightchild()->CalculateSlabsDop();
-      mtreenode->Rightchild()->EnlargeGeometry(Enlarge());
-
-      EvaluateSearchCombined(streenode->Leftchild(), mtreenode->Leftchild());
-      EvaluateSearchCombined(streenode->Leftchild(), mtreenode->Rightchild());
-      EvaluateSearchCombined(streenode->Rightchild(), mtreenode->Leftchild());
-      EvaluateSearchCombined(streenode->Rightchild(), mtreenode->Rightchild());
-    }
-
-    // slave treenode is inner,  master treenode is leaf
-    if (streenode->Type() == SLAVE_INNER && mtreenode->Type() == MASTER_LEAF)
-    {
-      // std::cout <<"\n"<< Comm().MyPID() << " slafe inner, master leaf!";
-      streenode->Leftchild()->CalculateSlabsDop();
-      streenode->Leftchild()->EnlargeGeometry(Enlarge());
-      streenode->Rightchild()->CalculateSlabsDop();
-      streenode->Rightchild()->EnlargeGeometry(Enlarge());
-
-      EvaluateSearchCombined(streenode->Leftchild(), mtreenode);
-      EvaluateSearchCombined(streenode->Rightchild(), mtreenode);
-    }
-
-    // slave treenode is leaf,  master treenode is inner
-    if (streenode->Type() == SLAVE_LEAF && mtreenode->Type() == MASTER_INNER)
-    {
-      // std::cout <<"\n"<< Comm().MyPID() << " slave leaf, master inner!";
-      mtreenode->Leftchild()->CalculateSlabsDop();
-      mtreenode->Leftchild()->EnlargeGeometry(Enlarge());
-      mtreenode->Rightchild()->CalculateSlabsDop();
-      mtreenode->Rightchild()->EnlargeGeometry(Enlarge());
-
-      EvaluateSearchCombined(streenode, mtreenode->Leftchild());
-      EvaluateSearchCombined(streenode, mtreenode->Rightchild());
-    }
-
-    // both treenodes are leaf --> feasible pair
-    if (streenode->Type() == SLAVE_LEAF && mtreenode->Type() == MASTER_LEAF)
-    {
-      // std::cout <<"\n"<< Comm().MyPID() << " 2 leaf nodes!";
       int sgid = (int)streenode->Elelist()[0];  // global id of slave element
       int mgid = (int)mtreenode->Elelist()[0];  // global id of master element
-      // std::cout <<"\n"<< Comm().MyPID() << "TreeCombinedContact found between slave-Element: "
-      //     << sgid <<"and master-Element: "<< mgid;
       DRT::Element* element = Discret().gElement(sgid);
       MORTAR::MortarElement* selement = dynamic_cast<MORTAR::MortarElement*>(element);
       selement->AddSearchElements(mgid);

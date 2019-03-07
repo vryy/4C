@@ -4,7 +4,7 @@
 
 \level 1
 
-\maintainer Ager Christoph
+\maintainer Christoph Ager
 *----------------------------------------------------------------------*/
 
 #include "../../src/drt_cut/cut_mesh.H"
@@ -401,11 +401,9 @@ int main(int argc, char** argv)
   // all of then expreience the same problem:
   // "Could not find reference plane with all gausspoints inside!" in
   // src/drt_cut/direct_divergence_refplane.cpp
-#if 0
   functable["cluster_comp_fail1"] = test_bacigenerated_622829;
-  functable["cluster_comp_fail2"] = test_bacigenerated_627558;
+  // functable["cluster_comp_fail2"] = test_bacigenerated_627558;
   functable["cluster_comp_fail3"] = test_bacigenerated_622320;
-#endif
 
   functable["touching_hole"] = test_bacigenerated_79216;
 

@@ -269,7 +269,7 @@ void GEO::CUT::DirectDivergence::ListFacets(
   // When we construct integration rule in global coordinate system,
   // we need a reference plane such that when the main Gauss points are projected over
   // this plane, this line of projection must be completely within the background element
-  DirectDivergenceGlobalRefplane ddg(elem1_);
+  DirectDivergenceGlobalRefplane ddg(elem1_, volcell_, mesh_.GetOptions());
   RefPlaneEqn = ddg.GetReferencePlane();
   refPtsGmsh_ = ddg.GetReferencePointGmsh();
 #endif

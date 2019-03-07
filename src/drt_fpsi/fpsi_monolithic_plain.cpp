@@ -5,11 +5,9 @@
 \brief Solve FPSI problem with matching grids using a monolithic scheme
        in its plain form. Only interface ale displacements are condensed.
 
-<pre>
-Maintainer: Andreas Rauch
-            rauch@lnm.mw.tum.de
+\level 3
 
-</pre>
+\maintainer  Christoph Ager
 */
 
 /*----------------------------------------------------------------------*/

@@ -48,9 +48,7 @@ PARTICLEINTERACTION::SPHMomentum::SPHMomentum(const Teuchos::ParameterList& para
           DRT::INPUT::IntegralValue<INPAR::PARTICLE::TransportVelocityFormulation>(
               params_sph_, "TRANSPORTVELOCITYFORMULATION")),
       applytransportvelocity_(false),
-      norelativevelocitycontribution_(
-          DRT::INPUT::IntegralValue<int>(params_sph_, "NO_RELVEL_TERM")),
-      dampingfactor_(params_sph_.get<double>("VISCOUS_DAMPING"))
+      norelativevelocitycontribution_(DRT::INPUT::IntegralValue<int>(params_sph_, "NO_RELVEL_TERM"))
 {
   // empty constructor
 }
@@ -195,36 +193,6 @@ void PARTICLEINTERACTION::SPHMomentum::InsertParticleStatesOfParticleTypes(
 void PARTICLEINTERACTION::SPHMomentum::AddAccelerationContribution() const
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHMomentum::AddAccelerationContribution");
-
-  // check viscous damping factor
-  if (dampingfactor_ > 0.0)
-  {
-    // iterate over particle types
-    for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
-    {
-      // no acceleration evaluation for boundary or rigid particles
-      if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
-
-      // get container of owned particles of current particle type
-      PARTICLEENGINE::ParticleContainer* container_i =
-          particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
-
-      // iterate over particles in container
-      for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
-      {
-        // declare pointer variables for particle i
-        const double* vel_i;
-        double* acc_i;
-
-        // get pointer to particle states
-        vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
-        acc_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_i);
-
-        // add contributions due to artificial viscous damping
-        UTILS::vec_addscale(acc_i, -dampingfactor_, vel_i);
-      }
-    }
-  }
 
   // declare temp variables
   double temp(0.0);

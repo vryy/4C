@@ -14,6 +14,8 @@
 #include <stdexcept>
 #include <cmath>
 
+#include "../drt_cut/cut_clnwrapper.H"
+
 namespace LINALG
 {
   /*!

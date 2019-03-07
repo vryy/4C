@@ -21,8 +21,6 @@
 
 #include "particle_object.H"
 
-#include "../drt_lib/drt_dserror.H"
-
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
@@ -109,8 +107,8 @@ void PARTICLEENGINE::ParticleContainerBundle::PackParticleContainerBundle(
       ParticleStates particleStates;
       container->GetParticle(index, globalid, particleStates);
 
-      ParticleObjShrdPtr particleobject = std::make_shared<PARTICLEENGINE::ParticleObject>();
-      particleobject->Init(typeEnum, globalid, particleStates);
+      ParticleObjShrdPtr particleobject =
+          std::make_shared<PARTICLEENGINE::ParticleObject>(typeEnum, globalid, particleStates);
 
       // pack data for writing
       DRT::PackBuffer data;
@@ -142,10 +140,8 @@ void PARTICLEENGINE::ParticleContainerBundle::GetVectorOfParticleObjectsOfAllCon
       ParticleStates particleStates;
       container->GetParticle(index, globalid, particleStates);
 
-      ParticleObjShrdPtr particleobject = std::make_shared<PARTICLEENGINE::ParticleObject>();
-      particleobject->Init(typeEnum, globalid, particleStates);
-
-      particlesstored.push_back(particleobject);
+      particlesstored.emplace_back(
+          std::make_shared<PARTICLEENGINE::ParticleObject>(typeEnum, globalid, particleStates));
     }
   }
 }

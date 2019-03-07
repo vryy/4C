@@ -8,7 +8,7 @@
 \level 2
 
 <pre>
-\maintainer  Ager Christoph
+\maintainer  Christoph Ager
              ager@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15249
@@ -81,6 +81,17 @@ namespace INPAR
       floattype_double,  ///< use double type for geometric intersection
       floattype_cln,     ///< use cln type (arbitrary precision) for geometric intersection
       floattype_none
+    };
+
+    //! Specifiy which Referenceplanes are used in DirectDivergence
+    enum CUT_DirectDivergence_Refplane
+    {
+      DirDiv_refplane_all,            ///< use all strategies for Referenceplane
+      DirDiv_refplane_diagonal_side,  ///< use diagonal and side based Referenceplane
+      DirDiv_refplane_facet,          ///< use only facet based Referenceplane
+      DirDiv_refplane_diagonal,       ///< use only diagonal based Referenceplane
+      DirDiv_refplane_side,           ///< use only side based Referenceplane
+      DirDiv_refplane_none            ///< specify no Referenceplane
     };
 
     /// set the cut parameters

@@ -158,7 +158,7 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassAndColorfield() const
       }
 
       // evaluate kernel
-      const double Wii = kernel_->W(0.0, rad_i[0]);
+      const double Wii = kernel_->W0(rad_i[0]);
 
       // add self-interaction
       denssum_i[0] = Wii * mass_i[0];

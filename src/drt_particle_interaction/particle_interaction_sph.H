@@ -37,7 +37,7 @@ namespace PARTICLEINTERACTION
   class SPHNeighborPairs;
   class SPHDensityBase;
   class SPHPressure;
-  class SPHTemperatureBase;
+  class SPHTemperature;
   class SPHMomentum;
   class SPHSurfaceTensionBase;
   class SPHBoundaryParticleBase;
@@ -144,7 +144,7 @@ namespace PARTICLEINTERACTION
     std::unique_ptr<PARTICLEINTERACTION::SPHPressure> pressure_;
 
     //! temperature handler
-    std::unique_ptr<PARTICLEINTERACTION::SPHTemperatureBase> temperature_;
+    std::unique_ptr<PARTICLEINTERACTION::SPHTemperature> temperature_;
 
     //! momentum handler
     std::unique_ptr<PARTICLEINTERACTION::SPHMomentum> momentum_;

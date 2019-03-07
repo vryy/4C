@@ -46,6 +46,11 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
           search_binarytree, search_binarytree),
       &mortar);
 
+  setStringToIntegralParameter<int>("BINARYTREE_UPDATETYPE", "BottomUp",
+      "Type of binary tree update, which is either a bottom up or a top down approach.",
+      tuple<std::string>("BottomUp", "TopDown"),
+      tuple<int>(binarytree_bottom_up, binarytree_top_down), &mortar);
+
   DoubleParameter(
       "SEARCH_PARAM", 0.3, "Radius / Bounding volume inflation for contact search", &mortar);
 

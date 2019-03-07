@@ -270,14 +270,6 @@ void SymmetricEigenProblem(IO::DiscretizationWriter& output,
   }
 
   /*!
-   \brief Explicit inverse and determinant of nonsymmetric 3x3 matrix
-
-   \param A (in/out): Matrix to be inverted
-   \param dim (in) :  Dimension of matrix
-   */
-  double NonsymInverse3x3(Epetra_SerialDenseMatrix& A);
-
-  /*!
    \brief Determinant of a nonsymmetric matrix using SVD
 
    \return the determinant of the matrix A if nonzero
@@ -291,13 +283,83 @@ void SymmetricEigenProblem(IO::DiscretizationWriter& output,
    */
   double DeterminantLU(const Epetra_SerialDenseMatrix& A);
 
-  /*!
-   \brief Explicit determinant of a nonsymmetric 3x3 matrix
-
-   \return the determinant of the matrix A
+  /**
+   *\brief Explicit determinant of a nonsymmetric 2x2 matrix.
+   *
+   * @param A (in) Matrix A.
+   * @return Determinant of matrix A.
    */
   template <typename T>
-  T Determinant3x3(LINALG::TMatrix<T, 3, 3>& A)
+  T Determinant2x2(const LINALG::TMatrix<T, 2, 2>& A)
+  {
+    T b00 = A(0, 0);
+    T b01 = A(0, 1);
+    T b10 = A(1, 0);
+    T b11 = A(1, 1);
+    T det = b00 * b11 - b01 * b10;
+    return det;
+  }
+
+  /**
+   * \brief Reorder the matrix entries for the inverse of a nonsymmetric 2x2 matrix.
+   *
+   * @param A (in/out) Matrix A.
+   */
+  template <typename T>
+  void Inverse2x2ReorderMatrixEntries(LINALG::TMatrix<T, 2, 2>& A)
+  {
+    T b00 = A(0, 0);
+    T b01 = A(0, 1);
+    T b10 = A(1, 0);
+    T b11 = A(1, 1);
+    A(0, 0) = b11;
+    A(1, 0) = -b10;
+    A(0, 1) = -b01;
+    A(1, 1) = b00;
+  }
+
+  /*!
+   * \brief Explicit inverse of a nonsymmetric 2x2 matrix. If the matrix is singular an error will
+   * be thrown.
+   *
+   * @param A (in/out) Matrix to be inverted. The inverse will be stored in this variable.
+   */
+  template <typename T>
+  void Inverse2x2(LINALG::TMatrix<T, 2, 2>& A)
+  {
+    T det = Determinant2x2(A);
+    if (det == 0.0) dserror("Determinant of 2x2 matrix is exactly zero");
+    Inverse2x2ReorderMatrixEntries(A);
+    A.Scale(1. / det);
+  }
+
+  /*!
+   * \brief Explicit inverse of a nonsymmetric 2x2 matrix. If the matrix is singular no error will
+   * be thrown, and the original matrix will remain untouched.
+   *
+   * @param A (in/out) Matrix to be inverted. The inverse will be stored in this variable.
+   * @param eps (in) If the absolute value of the determinant is smaller than this value, the matrix
+   * is considered to be singular.
+   * @return True if matrix could be inverted, false if matrix is singular.
+   */
+  template <typename T>
+  bool Inverse2x2DoNotThrowErrorOnZeroDeterminant(LINALG::TMatrix<T, 2, 2>& A, double eps)
+  {
+    T det = Determinant2x2(A);
+    if (abs(det) < eps) return false;
+    Inverse2x2ReorderMatrixEntries(A);
+    A.Scale(1. / det);
+    return true;
+  }
+
+  /**
+   *\brief Explicit determinant of a nonsymmetric 3x3 matrix.
+   *
+   * @param A (in) Matrix A.
+   * @return Determinant of matrix A.
+   */
+  template <typename T>
+  T Determinant3x3(const LINALG::TMatrix<T, 3, 3>& A)
   {
     T b00 = A(0, 0);
     T b01 = A(0, 1);
@@ -315,19 +377,115 @@ void SymmetricEigenProblem(IO::DiscretizationWriter& output,
     return det;
   }
 
+  /**
+   * \brief Reorder the matrix entries for the inverse of a nonsymmetric 3x3 matrix.
+   *
+   * @param A (in/out) Matrix A.
+   */
   template <typename T>
-  T Determinant2x2(LINALG::TMatrix<T, 2, 2>& A)
+  void Inverse3x3ReorderMatrixEntries(LINALG::TMatrix<T, 3, 3>& A)
   {
     T b00 = A(0, 0);
     T b01 = A(0, 1);
+    T b02 = A(0, 2);
     T b10 = A(1, 0);
     T b11 = A(1, 1);
-    T det = b00 * b11 - b01 * b10;
+    T b12 = A(1, 2);
+    T b20 = A(2, 0);
+    T b21 = A(2, 1);
+    T b22 = A(2, 2);
+    A(0, 0) = b11 * b22 - b21 * b12;
+    A(1, 0) = -b10 * b22 + b20 * b12;
+    A(2, 0) = b10 * b21 - b20 * b11;
+    A(0, 1) = -b01 * b22 + b21 * b02;
+    A(1, 1) = b00 * b22 - b20 * b02;
+    A(2, 1) = -b00 * b21 + b20 * b01;
+    A(0, 2) = b01 * b12 - b11 * b02;
+    A(1, 2) = -b00 * b12 + b10 * b02;
+    A(2, 2) = b00 * b11 - b10 * b01;
+  }
+
+  /*!
+   * \brief Explicit inverse of a nonsymmetric 3x3 matrix. If the matrix is singular an error will
+   * be thrown.
+   *
+   * @param A (in/out) Matrix to be inverted. The inverse will be stored in this variable.
+   */
+  template <typename T>
+  void Inverse3x3(LINALG::TMatrix<T, 3, 3>& A)
+  {
+    T det = Determinant3x3(A);
+    if (det == 0.0) dserror("Determinant of 3x3 matrix is exactly zero");
+    Inverse3x3ReorderMatrixEntries(A);
+    A.Scale(1. / det);
+  }
+
+  /*!
+   * \brief Explicit inverse of a nonsymmetric 3x3 matrix. If the matrix is singular no error will
+   * be thrown, and the original matrix will remain untouched.
+   *
+   * @param A (in/out) Matrix to be inverted. The inverse will be stored in this variable.
+   * @param eps (in) If the absolute value of the determinant is smaller than this value, the matrix
+   * is considered to be singular.
+   * @return True if matrix could be inverted, false if matrix is singular.
+   */
+  template <typename T>
+  bool Inverse3x3DoNotThrowErrorOnZeroDeterminant(LINALG::TMatrix<T, 3, 3>& A, double eps)
+  {
+    T det = Determinant3x3(A);
+    if (abs(det) < eps) return false;
+    Inverse3x3ReorderMatrixEntries(A);
+    A.Scale(1. / det);
+    return true;
+  }
+
+  /**
+   *\brief Explicit determinant of a nonsymmetric 4x4 matrix.
+   *
+   * @param A (in) Matrix A.
+   * @return Determinant of matrix A.
+   */
+  template <typename T>
+  T Determinant4x4(const LINALG::TMatrix<T, 4, 4>& A)
+  {
+    T a00 = A(0, 0);
+    T a01 = A(0, 1);
+    T a02 = A(0, 2);
+    T a03 = A(0, 3);
+
+    T a10 = A(1, 0);
+    T a11 = A(1, 1);
+    T a12 = A(1, 2);
+    T a13 = A(1, 3);
+
+    T a20 = A(2, 0);
+    T a21 = A(2, 1);
+    T a22 = A(2, 2);
+    T a23 = A(2, 3);
+
+    T a30 = A(3, 0);
+    T a31 = A(3, 1);
+    T a32 = A(3, 2);
+    T a33 = A(3, 3);
+
+    T det = a00 * a11 * a33 * a22 - a00 * a11 * a32 * a23 - a00 * a31 * a13 * a22 +
+            a00 * a32 * a21 * a13 + a00 * a31 * a12 * a23 - a00 * a33 * a21 * a12 +
+            a11 * a30 * a02 * a23 - a11 * a33 * a20 * a02 + a11 * a32 * a20 * a03 -
+            a11 * a30 * a03 * a22 - a31 * a10 * a02 * a23 - a33 * a22 * a10 * a01 +
+            a33 * a21 * a10 * a02 + a33 * a20 * a01 * a12 + a30 * a03 * a21 * a12 +
+            a31 * a13 * a20 * a02 + a31 * a10 * a03 * a22 + a30 * a01 * a13 * a22 +
+            a32 * a23 * a10 * a01 - a32 * a21 * a10 * a03 - a32 * a20 * a01 * a13 -
+            a30 * a02 * a21 * a13 - a31 * a12 * a20 * a03 - a30 * a01 * a12 * a23;
     return det;
   }
 
+  /**
+   * \brief Reorder the matrix entries for the inverse of a nonsymmetric 4x4 matrix.
+   *
+   * @param A (in/out) Matrix A.
+   */
   template <typename T>
-  T Inverse4x4(LINALG::TMatrix<T, 4, 4>& A)
+  void Inverse4x4ReorderMatrixEntries(LINALG::TMatrix<T, 4, 4>& A)
   {
     T a00 = A(0, 0);
     T a01 = A(0, 1);
@@ -384,63 +542,40 @@ void SymmetricEigenProblem(IO::DiscretizationWriter& output,
                 a31 * a10 * a02 + a30 * a01 * a12);
     A(3, 3) = a22 * a00 * a11 - a22 * a10 * a01 - a20 * a02 * a11 - a21 * a00 * a12 +
               a21 * a10 * a02 + a20 * a01 * a12;
+  }
 
-    T det = a00 * a11 * a33 * a22 - a00 * a11 * a32 * a23 - a00 * a31 * a13 * a22 +
-            a00 * a32 * a21 * a13 + a00 * a31 * a12 * a23 - a00 * a33 * a21 * a12 +
-            a11 * a30 * a02 * a23 - a11 * a33 * a20 * a02 + a11 * a32 * a20 * a03 -
-            a11 * a30 * a03 * a22 - a31 * a10 * a02 * a23 - a33 * a22 * a10 * a01 +
-            a33 * a21 * a10 * a02 + a33 * a20 * a01 * a12 + a30 * a03 * a21 * a12 +
-            a31 * a13 * a20 * a02 + a31 * a10 * a03 * a22 + a30 * a01 * a13 * a22 +
-            a32 * a23 * a10 * a01 - a32 * a21 * a10 * a03 - a32 * a20 * a01 * a13 -
-            a30 * a02 * a21 * a13 - a31 * a12 * a20 * a03 - a30 * a01 * a12 * a23;
-
+  /*!
+   * \brief Explicit inverse of a nonsymmetric 4x4 matrix. If the matrix is singular an error will
+   * be thrown.
+   *
+   * @param A (in/out) Matrix to be inverted. The inverse will be stored in this variable.
+   */
+  template <typename T>
+  void Inverse4x4(LINALG::TMatrix<T, 4, 4>& A)
+  {
+    T det = Determinant4x4(A);
     if (det == 0.0) dserror("Determinant of 4x4 matrix is exactly zero");
+    Inverse4x4ReorderMatrixEntries(A);
     A.Scale(1. / det);
-    return det;
   }
 
+  /*!
+   * \brief Explicit inverse of a nonsymmetric 4x4 matrix. If the matrix is singular no error will
+   * be thrown, and the original matrix will remain untouched.
+   *
+   * @param A (in/out) Matrix to be inverted. The inverse will be stored in this variable.
+   * @param eps (in) If the absolute value of the determinant is smaller than this value, the matrix
+   * is considered to be singular.
+   * @return True if matrix could be inverted, false if matrix is singular.
+   */
   template <typename T>
-  T Inverse3x3(LINALG::TMatrix<T, 3, 3>& A)
+  bool Inverse4x4DoNotThrowErrorOnZeroDeterminant(LINALG::TMatrix<T, 4, 4>& A, double eps)
   {
-    T b00 = A(0, 0);
-    T b01 = A(0, 1);
-    T b02 = A(0, 2);
-    T b10 = A(1, 0);
-    T b11 = A(1, 1);
-    T b12 = A(1, 2);
-    T b20 = A(2, 0);
-    T b21 = A(2, 1);
-    T b22 = A(2, 2);
-    A(0, 0) = b11 * b22 - b21 * b12;
-    A(1, 0) = -b10 * b22 + b20 * b12;
-    A(2, 0) = b10 * b21 - b20 * b11;
-    A(0, 1) = -b01 * b22 + b21 * b02;
-    A(1, 1) = b00 * b22 - b20 * b02;
-    A(2, 1) = -b00 * b21 + b20 * b01;
-    A(0, 2) = b01 * b12 - b11 * b02;
-    A(1, 2) = -b00 * b12 + b10 * b02;
-    A(2, 2) = b00 * b11 - b10 * b01;
-    T det = b00 * A(0, 0) + b01 * A(1, 0) + b02 * A(2, 0);
-    if (det == 0.0) dserror("Determinant of 3x3 matrix is exactly zero");
+    T det = Determinant4x4(A);
+    if (abs(det) < eps) return false;
+    Inverse4x4ReorderMatrixEntries(A);
     A.Scale(1. / det);
-    return det;
-  }
-
-  template <typename T>
-  T Inverse2x2(LINALG::TMatrix<T, 2, 2>& A)
-  {
-    T b00 = A(0, 0);
-    T b01 = A(0, 1);
-    T b10 = A(1, 0);
-    T b11 = A(1, 1);
-    A(0, 0) = b11;
-    A(1, 0) = -b10;
-    A(0, 1) = -b01;
-    A(1, 1) = b00;
-    T det = b00 * b11 - b01 * b10;
-    if (det == 0.0) dserror("Determinant of 2x2 matrix is exactly zero");
-    A.Scale(1. / det);
-    return det;
+    return true;
   }
 
   /*!
@@ -622,14 +757,6 @@ void SymmetricEigenProblem(IO::DiscretizationWriter& output,
    \param dim (in) :  Dimension of matrix
    */
   void SymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim);
-
-  /*!
-   \brief Invert a nonsymmetric dim*dim square matrix
-
-   \param A (in/out): Matrix to be inverted
-   \param dim (in) :  Dimension of matrix
-   */
-  void NonSymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim);
 
   /*!
    \brief Assemble an Epetra_SerialDenseMatrix into an Epetra_CrsMatrix

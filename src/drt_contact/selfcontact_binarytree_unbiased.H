@@ -115,11 +115,10 @@ namespace CONTACT
     bool RoughCheckRefConfig(int leaf1elegid, int leaf2elegid);
 
     /*!
-    \brief Evaluate unbiased binary search tree for separate update (bottom-up, on whole interface)
-    and search
+    \brief Evaluate unbiased binary search tree
 
     */
-    void SearchContactSeparate() final;
+    void SearchContact() final;
     //@}
 
     // don't want = operator and cctor

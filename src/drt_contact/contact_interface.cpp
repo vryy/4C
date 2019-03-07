@@ -1407,6 +1407,11 @@ void CONTACT::CoInterface::CreateSearchTree()
           DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(
               IParams(), "PARALLEL_STRATEGY");
 
+      // get update type of binary tree
+      INPAR::MORTAR::BinaryTreeUpdateType updatetype =
+          DRT::INPUT::IntegralValue<INPAR::MORTAR::BinaryTreeUpdateType>(
+              IParams(), "BINARYTREE_UPDATETYPE");
+
       Teuchos::RCP<Epetra_Map> melefullmap = Teuchos::null;
       if (strat == INPAR::MORTAR::roundrobinghost || strat == INPAR::MORTAR::binningstrategy)
       {
@@ -1424,8 +1429,8 @@ void CONTACT::CoInterface::CreateSearchTree()
         dserror("Chosen parallel strategy not supported!");
 
       // create binary tree object for contact search and setup tree
-      binarytree_ = Teuchos::rcp(new MORTAR::BinaryTree(
-          Discret(), selecolmap_, melefullmap, Dim(), SearchParam(), SearchUseAuxPos()));
+      binarytree_ = Teuchos::rcp(new MORTAR::BinaryTree(Discret(), selecolmap_, melefullmap, Dim(),
+          SearchParam(), updatetype, SearchUseAuxPos()));
       // initialize the binary tree
       binarytree_->Init();
     }
@@ -6946,26 +6951,12 @@ void CONTACT::CoInterface::ExportNodalNormals() const
  *----------------------------------------------------------------------*/
 bool CONTACT::CoInterface::EvaluateSearchBinarytree()
 {
-  // ***WARNING:*** This is commented out here, as UpdateMasterSlaveSets()
-  // needs all the procs around, not only the interface local ones!
-  // if (!lComm()) return true;
-
   // *********************************************************************
-  // Possible versions for self contact:
+  // self contact:
   // *********************************************************************
-  //
-  // 1) Combined Update and Search
-  // -> In this case we have to call SearchContactCombined(), which
-  //    does both top-down update (where necessary) and search. Then
-  //    the dynamics master/slave assignment routine UpdateMasterSlaveSets()
-  //    is called and the new slave nodes' data containers are initialized.
-  //
-  // 2) Separate Update and Search
-  // -> In this case we have to call SearchContactSeparate(), which
-  //    does both bottom-up update (on whole interface) and search. Then
-  //    the dynamics master/slave assignment routine UpdateMasterSlaveSets()
-  //    is called and the new slave nodes' data containers are initialized.
-  //
+  // We call EvaluateSearch(), which does both, the bottom-up update (on the whole interface) and
+  // the search. Then the dynamic master/slave assignment routine UpdateMasterSlaveSets() is called
+  // and the new slave nodes' data containers are initialized.
   // *********************************************************************
   if (SelfContact())
   {
@@ -6993,22 +6984,6 @@ bool CONTACT::CoInterface::EvaluateSearchBinarytree()
     // (this was already done in SetElementAreas())
   }
 
-  // *********************************************************************
-  // Possible versions for 2-body contact:
-  // *********************************************************************
-  //
-  // 1) Combined Update and Contact Search
-  // -> In this case we only have to call SearchContactCombined(), which
-  //    does both top-down update (where necessary) and search.
-  //
-  // 2) Separate Update and Contact Search
-  // -> In this case we have to explicitly call and updating routine, i.e.
-  //    UpdateTreeTopDown() or UpdateTreeBottomUp() before calling the
-  //    search routine SearchContactSeparate(). Of course, the bottom-up
-  //    update makes more sense here. For very large contact problems,
-  //    this version is preferable and thus chosen as default.
-  //
-  // *********************************************************************
   else
   {
     // call mortar routine

@@ -2,11 +2,9 @@
 /*!
  \file ad_ale_fpsi.cpp
 
- <pre>
-Maintainer: Andreas Rauch
-            rauch@lnm.mw.tum.de
-            089 - 289-15240
- </pre>
+ \level 2
+
+\maintainer  Christoph Ager
  */
 /*----------------------------------------------------------------------------*/
 

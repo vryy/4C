@@ -47,25 +47,69 @@ namespace FSI
     class DebugWriter;
   }
 
-  /// Partitioned FSI base
-  /*!
-
-    This is the framework for partitioned FSI. The actual work is done by
-    subclasses.
-
-    \author u.kue
-    \date 04/08
+  /**
+   *
+   * \brief Base class for all partitioned FSI algorithms
+   *
+   * This is the framework for partitioned FSI. The actual work is done by
+   * subclasses.
+   *
+   * This is the algorithm class of partitioned FSI problems. Here we
+   * do the time loop and the coupling between fields. The fields
+   * themselves are solved using appropriate field algorithms (that are
+   * used for standalone solvers as well.) The FSI interface problem is
+   * solved using NOX.
+   *
+   * Many different things come together in this class. First and
+   * foremost there is the Timeloop() method that contains the overall
+   * FSI time stepping scheme. The time loop is build around the FSI
+   * interface problem, that is the problem of finding the correct interface
+   * coupling quantities that satisfy the coupled problem. The time loop knows
+   *  nothing about the fields themselves.
+   *
+   * Inside the time loop the interface problem is solved using NOX. To
+   * do so Timeloop() needs to know an object which defines the nonlinear
+   * residual of the FSI problem. This is always a Teuchos::RCP to the
+   * DirichletNeumannCoupling object itself!
+   *
+   * So the second part of this class consists of the interface residual
+   * evaluation computeF(). This method does one FSI cycle, that is one
+   * solve of all participating fields. But for sake of clarity
+   * this cycle is expressed via the two operator methods FluidOp() and
+   * StructOp().
+   *
+   * This coupling process build on the available field solvers. However,
+   * the independent parallel distribution of the fields complicates the
+   * exchange of coupling information. Therefore three instances of the
+   * Coupling class are used that couple those fields. On top of these
+   * there are helper methods StructToAle(), StructToFluid(),
+   * FluidToStruct() and AleToFluid() to easily exchange distributed
+   * interface vectors between fields.
+   *
+   * The FSI algorithm requires repeated evaluations of the interface
+   * residual via computeF(). So the field solvers themselves must be
+   * clean, subsequent calls with the same interface input must yield the
+   * same results. The time stepping therefore needs the further methods
+   * PrepareTimeStep() to start a new time step as wellas Update() and
+   * Output() to finish the current step, save the result and write the
+   * files.
    */
   class Partitioned : public Algorithm, public NOX::Epetra::Interface::Required
   {
    public:
-    /// setup FSI algorithm
+    /*! \brief Constructor
+     *
+     * \param[in] comm Communicator
+     */
     explicit Partitioned(const Epetra_Comm& comm);
 
     /// setup this object
     virtual void Setup();
 
-    /// outer level FSI time loop
+    /*! \brief Outer level FSI time loop
+     *
+     * @param interface Our interface to NOX
+     */
     virtual void Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
 
     /// compute FSI interface residual S^{-1}(F(d)) - d

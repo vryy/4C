@@ -136,7 +136,8 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Setup(
   if (boundaryparticle_) boundaryparticle_->Setup(particleengineinterface, neighborpairs_);
 
   // setup phase change handler
-  if (phasechange_) phasechange_->Setup(particleengineinterface);
+  if (phasechange_)
+    phasechange_->Setup(particleengineinterface, particlematerial_, equationofstatebundle_);
 }
 
 /*---------------------------------------------------------------------------*
@@ -376,6 +377,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetCurrentTime(const double cu
   ParticleInteractionBase::SetCurrentTime(currenttime);
 
   // set current time
+  if (temperature_) temperature_->SetCurrentTime(currenttime);
+
+  // set current time
   if (surfacetension_) surfacetension_->SetCurrentTime(currenttime);
 }
 
@@ -529,18 +533,18 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitTemperatureHandler()
   {
     case INPAR::PARTICLE::NoTemperatureEvaluation:
     {
-      temperature_ = std::unique_ptr<PARTICLEINTERACTION::SPHTemperatureBase>(nullptr);
+      temperature_ = std::unique_ptr<PARTICLEINTERACTION::SPHTemperature>(nullptr);
       break;
     }
     case INPAR::PARTICLE::TemperatureIntegration:
     {
-      temperature_ = std::unique_ptr<PARTICLEINTERACTION::SPHTemperatureIntegration>(
-          new PARTICLEINTERACTION::SPHTemperatureIntegration(params_sph_));
+      temperature_ = std::unique_ptr<PARTICLEINTERACTION::SPHTemperature>(
+          new PARTICLEINTERACTION::SPHTemperature(params_sph_));
       break;
     }
     default:
     {
-      dserror("unknown surface tension formulation type!");
+      dserror("unknown temperature evaluation scheme!");
       break;
     }
   }
@@ -648,6 +652,12 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitPhaseChangeHandler()
     case INPAR::PARTICLE::NoPhaseChange:
     {
       phasechange_ = std::unique_ptr<PARTICLEINTERACTION::SPHPhaseChangeBase>(nullptr);
+      break;
+    }
+    case INPAR::PARTICLE::TwoWayScalarPhaseChange:
+    {
+      phasechange_ = std::unique_ptr<PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar>(
+          new PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar(params_sph_));
       break;
     }
     default:

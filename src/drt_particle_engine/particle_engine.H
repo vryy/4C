@@ -119,11 +119,26 @@ namespace PARTICLEENGINE
     //! check for valid particle connectivity
     bool HaveValidParticleConnectivity() const;
 
+    //! get binning strategy
+    const std::shared_ptr<BINSTRATEGY::BinningStrategy> GetBinningStrategy() const
+    {
+      return binstrategy_;
+    };
+
+    //! get bin row map
+    const Teuchos::RCP<Epetra_Map> GetBinRowMap() const { return binrowmap_; };
+
+    //! get bin col map
+    const Teuchos::RCP<Epetra_Map> GetBinColMap() const { return bincolmap_; };
+
     //! get particle container bundle
     const ParticleContainerBundleShrdPtr GetParticleContainerBundle() const override
     {
       return particlecontainerbundle_;
     };
+
+    //! get reference to (owned and ghosted) particles to bins
+    const ParticlesToBins& GetParticlesToBins() const;
 
     //! get reference to potential particle neighbors
     const PotentialParticleNeighbors& GetPotentialParticleNeighbors() const override;
@@ -271,7 +286,7 @@ namespace PARTICLEENGINE
     const Teuchos::ParameterList& params_;
 
     //! binning strategy
-    std::unique_ptr<BINSTRATEGY::BinningStrategy> binstrategy_;
+    std::shared_ptr<BINSTRATEGY::BinningStrategy> binstrategy_;
 
     //! distribution of row bins
     Teuchos::RCP<Epetra_Map> binrowmap_;
@@ -298,7 +313,7 @@ namespace PARTICLEENGINE
     std::unique_ptr<PARTICLEENGINE::ParticleRuntimeVtpWriter> particlevtpwriter_;
 
     //! relate (owned and ghosted) particles to bins
-    std::vector<std::vector<std::pair<PARTICLEENGINE::ParticleType, int>>> particlestobins_;
+    ParticlesToBins particlestobins_;
 
     //! relate potential particle neighbors of all types and statuses
     PotentialParticleNeighbors potentialparticleneighbors_;

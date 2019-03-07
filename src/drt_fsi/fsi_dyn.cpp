@@ -19,7 +19,8 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "fsi_dyn.H"
-#include "fsi_dirichletneumann.H"
+#include "fsi_dirichletneumann_factory.H"
+#include "fsi_dirichletneumann_disp.H"
 #include "fsi_dirichletneumannslideale.H"
 #include "fsi_dirichletneumann_volcoupl.H"
 #include "fsi_monolithicfluidsplit.H"
@@ -329,7 +330,6 @@ void fluid_freesurf_drt()
     }
   }
 }
-
 /*----------------------------------------------------------------------*/
 // entry point for FSI using ALE in DRT
 /*----------------------------------------------------------------------*/
@@ -647,24 +647,18 @@ void fsi_ale_drt()
           DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(
               fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED");
 
-      if (method == INPAR::FSI::DirichletNeumannSlideale)
+      switch (method)
       {
-        fsi = Teuchos::rcp(new FSI::DirichletNeumannSlideale(comm));
-        Teuchos::rcp_dynamic_cast<FSI::DirichletNeumannSlideale>(fsi, true)->Setup();
+        case INPAR::FSI::DirichletNeumann:
+        case INPAR::FSI::DirichletNeumannSlideale:
+        case INPAR::FSI::DirichletNeumannVolCoupl:
+          fsi = FSI::DirichletNeumannFactory::CreateAlgorithm(comm, fsidyn);
+          Teuchos::rcp_dynamic_cast<FSI::DirichletNeumann>(fsi, true)->Setup();
+          break;
+        default:
+          dserror("unsupported partitioned FSI scheme");
+          break;
       }
-      else if (method == INPAR::FSI::DirichletNeumann)
-      {
-        fsi = Teuchos::rcp(new FSI::DirichletNeumann(comm));
-        Teuchos::rcp_dynamic_cast<FSI::DirichletNeumann>(fsi, true)->Setup();
-      }
-      else if (method == INPAR::FSI::DirichletNeumannVolCoupl)
-      {
-        fsi = Teuchos::rcp(new FSI::DirichletNeumannVolCoupl(comm));
-        Teuchos::rcp_dynamic_cast<FSI::DirichletNeumannVolCoupl>(fsi, true)->Setup();
-      }
-      else
-        dserror("unsupported partitioned FSI scheme");
-
       const int restart = DRT::Problem::Instance()->Restart();
       if (restart)
       {
@@ -808,13 +802,16 @@ void xfsi_drt()
           DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(
               fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED");
 
-      if (method == INPAR::FSI::DirichletNeumann)
+      switch (method)
       {
-        fsi = Teuchos::rcp(new FSI::DirichletNeumann(comm));
-        fsi->Setup();
+        case INPAR::FSI::DirichletNeumann:
+          fsi = FSI::DirichletNeumannFactory::CreateAlgorithm(comm, fsidyn);
+          Teuchos::rcp_dynamic_cast<FSI::DirichletNeumann>(fsi, true)->Setup();
+          break;
+        default:
+          dserror("only Dirichlet-Neumann partitioned schemes with XFEM");
+          break;
       }
-      else
-        dserror("only Dirichlet-Neumann partitioned schemes with XFEM");
 
       const int restart = DRT::Problem::Instance()->Restart();
       if (restart)

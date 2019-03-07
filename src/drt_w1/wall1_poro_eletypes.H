@@ -4,7 +4,7 @@
 
 \brief element types of the 2D solid-poro element
 
-\maintainer Ager Christoph
+\maintainer Christoph Ager
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289 15249

@@ -180,8 +180,27 @@ void PARTICLEALGORITHM::ResultTest::TestSpecial(
         // get component of result
         dim = 0;
       }
+      // temperature gradient
+      else if (quantity == "tempgradx" or quantity == "tempgrady" or quantity == "tempgradz")
+      {
+        // get enum of particle state
+        particleState = PARTICLEENGINE::TemperatureGradient;
+
+        // get component of result
+        if (quantity == "tempgradx")
+          dim = 0;
+        else if (quantity == "tempgrady")
+          dim = 1;
+        else if (quantity == "tempgradz")
+          dim = 2;
+      }
       else
         dserror("result check failed with unknown quantity '%s'!", quantity.c_str());
+
+      // container contains current particle state
+      if (not(container->GetStoredStates()).count(particleState))
+        dserror("state '%s' not found in container!",
+            PARTICLEENGINE::EnumToStateName(particleState).c_str());
 
       // get pointer to particle state
       const double* state = container->GetPtrToParticleState(particleState, 0);

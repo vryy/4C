@@ -7,7 +7,7 @@
 \level 2
 
 <pre>
-\maintainer  Ager Christoph
+\maintainer  Christoph Ager
              ager@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15249
@@ -61,5 +61,14 @@ void INPAR::CUT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<std::string>("none", "cln", "double"),
       tuple<int>(
           INPAR::CUT::floattype_none, INPAR::CUT::floattype_cln, INPAR::CUT::floattype_double),
+      &cut_general);
+
+  // Specifiy which Referenceplanes are used in DirectDivergence
+  setStringToIntegralParameter<int>("DIRECT_DIVERGENCE_REFPLANE", "all",
+      "Specifiy which Referenceplanes are used in DirectDivergence",
+      tuple<std::string>("all", "diagonal_side", "facet", "diagonal", "side", "none"),
+      tuple<int>(INPAR::CUT::DirDiv_refplane_all, INPAR::CUT::DirDiv_refplane_diagonal_side,
+          INPAR::CUT::DirDiv_refplane_facet, INPAR::CUT::DirDiv_refplane_diagonal,
+          INPAR::CUT::DirDiv_refplane_side, INPAR::CUT::DirDiv_refplane_none),
       &cut_general);
 }
