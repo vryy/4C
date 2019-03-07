@@ -185,7 +185,7 @@ namespace BEAMINTERACTION
     //! Number of Lagrange multiplier DOFs on an element.
     unsigned int n_lambda_element_;
 
-    //! Pointer to the discretization.
+    //! Pointer to the discretization containing the solid and beam elements.
     Teuchos::RCP<const DRT::Discretization> discret_;
 
     //! Pointer to the beam contact parameters.
@@ -201,9 +201,15 @@ namespace BEAMINTERACTION
     Teuchos::RCP<Epetra_Map> solid_dof_rowmap_;
 
     //! Multivector that connects the global node IDs with the Lagrange multiplier DOF IDs.
+    //! The global row ID of the multi vector is the global ID of the node that a Lagrange
+    //! multiplier is defined on. The columns hold the corresponding global IDs of the Lagrange
+    //! multipliers.
     Teuchos::RCP<Epetra_MultiVector> node_gid_to_lambda_gid_;
 
     //! Multivector that connects the global element IDs with the Lagrange multiplier DOF IDs.
+    //! The global row ID of the multi vector is the global ID of the element that a Lagrange
+    //! multiplier is defined on. The columns hold the corresponding global IDs of the Lagrange
+    //! multipliers.
     Teuchos::RCP<Epetra_MultiVector> element_gid_to_lambda_gid_;
 
     //! Standard map from global node ids to global Lagrange multiplier ids, for all
@@ -220,7 +226,10 @@ namespace BEAMINTERACTION
     //! Global \f$M\f$ matrix.
     Teuchos::RCP<LINALG::SparseMatrix> global_M_;
 
-    //! Global \f$\kappa\f$ vector.
+    //! Global \f$\kappa\f$ vector. This vector is used to scale the mortar matrices. See Yang et
+    //! al: Two dimensional mortar contact methods for large deformation frictional sliding (eq.
+    //! 37).
+    //! With this scaling correct units and pass patch tests are achieved (in the penalty case).
     Teuchos::RCP<Epetra_FEVector> global_kappa_;
   };
 }  // namespace BEAMINTERACTION
