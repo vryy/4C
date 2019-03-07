@@ -29,7 +29,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<scalar_type, line, volum
   // Check if a segment tracker exists for this line element. If not a new one is created.
   int line_element_id = this->Element1()->Id();
   std::map<int, std::set<LineSegment<double>>>& segment_tracker_map =
-      this->EvaluationData()->LineToVolumeEvaluationData()->SegmentTrackerMutable();
+      this->EvaluationData()->LineToVolumeEvaluationData()->GetSegmentTrackerMutable();
 
   if (segment_tracker_map.find(line_element_id) == segment_tracker_map.end())
   {
@@ -220,7 +220,7 @@ std::set<GEOMETRYPAIR::LineSegment<double>>& GEOMETRYPAIR::GeometryPairLineToVol
   // Get the segment tracker for this line element.
   int line_element_id = this->Element1()->Id();
   std::map<int, std::set<GEOMETRYPAIR::LineSegment<double>>>& segment_tracker_map =
-      this->EvaluationData()->LineToVolumeEvaluationData()->SegmentTrackerMutable();
+      this->EvaluationData()->LineToVolumeEvaluationData()->GetSegmentTrackerMutable();
   return segment_tracker_map[line_element_id];
 }
 

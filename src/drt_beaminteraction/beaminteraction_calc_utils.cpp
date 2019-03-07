@@ -618,6 +618,33 @@ namespace BEAMINTERACTION
       }
     }
 
+    /**
+     *
+     */
+    void GetElementCenterlineDOFIndices(DRT::Discretization const& discret, const DRT::Element* ele,
+        std::vector<unsigned int>& ele_centerline_dof_indices, unsigned int& num_dof)
+    {
+      // Todo implement method in DRT::Element or find alternative way of doing this
+      // find out the elements' number of Dofs (=dimension of element vector/matrices)
+      std::vector<int> lmrow;
+      std::vector<int> dummy1, dummy2;
+
+      ele->LocationVector(discret, lmrow, dummy1, dummy2);
+      num_dof = lmrow.size();
+
+      const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+
+      if (beamele != NULL)
+      {
+        beamele->CenterlineDofIndicesOfElement(ele_centerline_dof_indices);
+      }
+      else
+      {
+        ele_centerline_dof_indices.resize(num_dof);
+        for (unsigned int i = 0; i < num_dof; ++i) ele_centerline_dof_indices[i] = i;
+      }
+    }
+
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
     void AssembleCenterlineDofForceStiffIntoElementForceStiff(DRT::Discretization const& discret,
@@ -633,26 +660,8 @@ namespace BEAMINTERACTION
       for (unsigned int iele = 0; iele < 2; ++iele)
       {
         DRT::Element* ele = discret.gElement(elegid[iele]);
-
-        // Todo implement method in DRT::Element or find alternative way of doing this
-        // find out the elements' number of Dofs (=dimension of element vector/matrices)
-        std::vector<int> lmrow;
-        std::vector<int> dummy1, dummy2;
-
-        ele->LocationVector(discret, lmrow, dummy1, dummy2);
-        numdof_ele[iele] = lmrow.size();
-
-        DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele);
-
-        if (beamele != NULL)
-        {
-          beamele->CenterlineDofIndicesOfElement(ele_centerlinedofindices[iele]);
-        }
-        else
-        {
-          ele_centerlinedofindices[iele].resize(numdof_ele[iele]);
-          for (unsigned int i = 0; i < numdof_ele[iele]; ++i) ele_centerlinedofindices[iele][i] = i;
-        }
+        GetElementCenterlineDOFIndices(
+            discret, ele, ele_centerlinedofindices[iele], numdof_ele[iele]);
       }
 
 
@@ -713,6 +722,36 @@ namespace BEAMINTERACTION
           }
         }
       }
+    }
+
+    /**
+     *
+     */
+    void AssembleCenterlineDofColMatrixIntoElementColMatrix(DRT::Discretization const& discret,
+        const DRT::Element* element, LINALG::SerialDenseMatrix const& row_matrix_centerlineDOFs,
+        LINALG::SerialDenseMatrix& row_matrix_elementDOFs)
+    {
+      // Get the centerline DOFs of the element.
+      unsigned int numdof_ele;
+      std::vector<unsigned int> ele_centerlinedofindices;
+      GetElementCenterlineDOFIndices(discret, element, ele_centerlinedofindices, numdof_ele);
+
+      // Fill in the centerline matrix into the full element matrix.
+      // Resize and clear output matrix variable.
+      row_matrix_elementDOFs.Shape(row_matrix_centerlineDOFs.RowDim(), numdof_ele);
+
+      // Safety check: dimensions.
+      if ((unsigned int)row_matrix_centerlineDOFs.ColDim() != ele_centerlinedofindices.size())
+        dserror(
+            "Size mismatch! Need to assemble %d col values of centerline-Dof based "
+            "stiffness matrix into element matrix but only got %d element-local Dof indices",
+            row_matrix_centerlineDOFs.ColDim(), ele_centerlinedofindices.size());
+
+      // Fill in the values.
+      for (unsigned int i_row = 0; i_row < (unsigned int)row_matrix_elementDOFs.RowDim(); ++i_row)
+        for (unsigned int i_col = 0; i_col < ele_centerlinedofindices.size(); ++i_col)
+          row_matrix_elementDOFs(i_row, ele_centerlinedofindices[i_col]) =
+              row_matrix_centerlineDOFs(i_row, i_col);
     }
 
     /*-----------------------------------------------------------------------------*
