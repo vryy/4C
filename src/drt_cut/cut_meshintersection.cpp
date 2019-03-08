@@ -279,13 +279,13 @@ void GEO::CUT::MeshIntersection::Cut_SelfCut(bool include_inner, bool screenoutp
 
   Teuchos::RCP<PointPool> point_pool = CutMesh().Points();
 
-  point_pool->SetMergeStrategy(PointPool::MergeStrategy::SelfCutLoad);
+  point_pool->SetMergeStrategy(Pointpool_MergeStrategy::SelfCutLoad);
 
   SelfCut selfcut(CutMesh());
 
   selfcut.PerformSelfCut();
 
-  point_pool->SetMergeStrategy(PointPool::MergeStrategy::NormalCutLoad);
+  point_pool->SetMergeStrategy(Pointpool_MergeStrategy::NormalCutLoad);
 }
 
 /*------------------------------------------------------------------------------------------------*

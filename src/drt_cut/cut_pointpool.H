@@ -34,6 +34,14 @@ namespace GEO
     class Edge;
     class Side;
 
+    ///< Specifies the merge Strategy of the Pointpool
+    enum Pointpool_MergeStrategy
+    {
+      InitialLoad,
+      SelfCutLoad,
+      NormalCutLoad
+    };
+
     /// OctTreeNode class that implements a single node of an OctTree
     /*!
      * Might need some speedup. (Uli)
@@ -56,12 +64,12 @@ namespace GEO
 
       /// If a point with the coordinates "x" does not exists, it creates a new point
       /// correspondingly
-      Point* NewPoint(
-          const double* x, Edge* cut_edge, Side* cut_side, double tolerance, int merge_strategy);
+      Point* NewPoint(const double* x, Edge* cut_edge, Side* cut_side, double tolerance,
+          Pointpool_MergeStrategy merge_strategy);
 
       /// Get the point with the specified coordinates "x" from the pointpool
-      Point* GetPoint(
-          const double* x, Edge* cut_edge, Side* cut_side, double tolerance, int merge_strategy);
+      Point* GetPoint(const double* x, Edge* cut_edge, Side* cut_side, double tolerance,
+          Pointpool_MergeStrategy merge_strategy);
 
       /// Simply insert p into the pointpool and correspondingly modify the boundingbox size
       void AddPoint(const double* x, Teuchos::RCP<Point> p);
@@ -232,20 +240,14 @@ namespace GEO
       /// Get Points
       const RCPPointSet& GetPoints() { return tree_.GetPoints(); }
 
-      enum MergeStrategy
-      {
-        InitialLoad,
-        SelfCutLoad,
-        NormalCutLoad
-      };
-
-      void SetMergeStrategy(MergeStrategy strategy) { merge_strategy_ = strategy; }
+      void SetMergeStrategy(Pointpool_MergeStrategy strategy) { merge_strategy_ = strategy; }
 
      private:
+      ///< Current Merge Strategy of the Pointpool
+      Pointpool_MergeStrategy merge_strategy_;
 
-      MergeStrategy merge_strategy_;
-
-      OctTreeNode tree_;  ///< the PointPool class is represented by the first node in the OctTree
+      ///< the PointPool class is represented by the first node in the OctTree
+      OctTreeNode tree_;
 
       /// problem dimension
       const unsigned probdim_;

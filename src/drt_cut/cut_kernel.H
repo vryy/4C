@@ -2222,8 +2222,8 @@ namespace GEO
 #endif
           if (std::abs(det) == 0.0)  // here might lie problem for the cln
           {
-          /* then calculation of a normal to a line like this makes no sense at
-           * all! */
+            /* then calculation of a normal to a line like this makes no sense at
+             * all! */
 #if EXTENDED_CUT_DEBUG_OUTPUT
             std::cout << "Absolute value of the determinant is zero " << std::endl;
 #endif
@@ -2450,7 +2450,6 @@ namespace GEO
         /// constructor
         ComputeDistanceAdaptivePrecision(LINALG::Matrix<probDim, 1>& xsi, bool checklimits)
             : Strategy(clnxsi_, checklimits), xsi_(xsi), clnxsi_(true), cond_infinity_(false)
-
         {
         }
 
@@ -2979,7 +2978,7 @@ namespace GEO
 
             if (major_fail or result_fail)
             {
-            // CutKernelStatistics::getCutKernelStatistics().ClnDistanceCounter();
+              // CutKernelStatistics::getCutKernelStatistics().ClnDistanceCounter();
 
 #endif
               {
@@ -3003,7 +3002,7 @@ namespace GEO
                 cond_infinity_ = cln_calc.IsConditionInfinity();
                 ClnWrapper::ResetPrecision();
               }
-                // finalize memory allocator
+              // finalize memory allocator
 #ifdef CUSTOM_MEMORY_ALLOCATOR
               GEO::CUT::MemorySingleton::getInstance().Finalize();
 #endif
@@ -3086,7 +3085,7 @@ namespace GEO
         PointOnSurfaceLoc GetSideLocation() { return location_; }
 
         //  Converts tolerance in the local coordinates and computes topological information, such
-        //  as touched_edges and  location on the surface. In case we cannot produce valid
+        //  as touched_edges and  location on the surface. In the case we cannot produce a valid
         //  conversion from global to local tolerance return false
         bool GetTopologyInformation()
         {

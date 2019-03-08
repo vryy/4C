@@ -638,7 +638,7 @@ void GEO::CUT::COLOREDGRAPH::Graph::SplitSplittrace(const std::vector<int>& spli
           std::remove(connected_lines.begin(), connected_lines.end(), l), connected_lines.end());
       if (connected_lines.size() != 2)
       {
-        // check if most of lines come from the same poitn ( of course there is one more line
+        // check if most of lines come from the same point ( of course there is one more line
         // connected on the other end)
         if (end_lines.size() == 2 or front_lines.size() == 2)
         {

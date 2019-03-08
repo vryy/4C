@@ -24,8 +24,8 @@ created
 /*-----------------------------------------------------------------------------------------*
  * If a point with the coordinates "x" does not exists, it creates a new point correspondingly
  *-----------------------------------------------------------------------------------------*/
-GEO::CUT::Point* GEO::CUT::OctTreeNode::NewPoint(
-    const double* x, Edge* cut_edge, Side* cut_side, double tolerance, int merge_strategy)
+GEO::CUT::Point* GEO::CUT::OctTreeNode::NewPoint(const double* x, Edge* cut_edge, Side* cut_side,
+    double tolerance, Pointpool_MergeStrategy merge_strategy)
 {
   // check if the point already exists
 #if CUT_CREATION_INFO
@@ -79,8 +79,8 @@ GEO::CUT::Point* GEO::CUT::OctTreeNode::NewPoint(
 /*-----------------------------------------------------------------------------------------*
  * Get the point with the specified coordinates "x" from the pointpool
  *-----------------------------------------------------------------------------------------*/
-GEO::CUT::Point* GEO::CUT::OctTreeNode::GetPoint(
-    const double* x, Edge* cut_edge, Side* cut_side, double tolerance, int merge_strategy)
+GEO::CUT::Point* GEO::CUT::OctTreeNode::GetPoint(const double* x, Edge* cut_edge, Side* cut_side,
+    double tolerance, Pointpool_MergeStrategy merge_strategy)
 {
   // try to find the point in all of the 8 children nodes
   if (not IsLeaf())
@@ -107,12 +107,12 @@ GEO::CUT::Point* GEO::CUT::OctTreeNode::GetPoint(
 
     switch (merge_strategy)
     {
-      case PointPool::MergeStrategy::SelfCutLoad:
+      case Pointpool_MergeStrategy::SelfCutLoad:
       {
         tol = TOPOLOGICAL_TOLERANCE * norm_ * NODAL_POINT_TOLERANCE_SELFCUT_SCALE;
         break;
       }
-      case PointPool::MergeStrategy::InitialLoad:
+      case Pointpool_MergeStrategy::InitialLoad:
       {
         // when we are loading the geometry into the cut  we want the distance to be large than
         // topological tolerance. Otherwise we might experience huge problems
@@ -129,7 +129,7 @@ GEO::CUT::Point* GEO::CUT::OctTreeNode::GetPoint(
 #endif
         break;
       }
-      case PointPool::MergeStrategy::NormalCutLoad:
+      case Pointpool_MergeStrategy::NormalCutLoad:
       {
         // no additional scale
         break;
@@ -292,11 +292,10 @@ GEO::CUT::Point* GEO::CUT::OctTreeNode::GetPoint(
         }
 
         // This is done because we want to merge cut_mesh into the normal mesh first
-        if (merge_strategy == PointPool::MergeStrategy::InitialLoad)
+        if (merge_strategy == Pointpool_MergeStrategy::InitialLoad)
         {
           mymerge->MovePoint(x);
         }
-
         return mymerge;
       }
     }

@@ -256,7 +256,6 @@ void GEO::CUT::TriangulateFacet::SplitGeneralFacet(std::vector<int> ptConcavity)
 
     newCell.clear();
     int ncross = 0;
-
     for (int i = 0; i < num; ++i)
     {
       newCell.clear();
@@ -668,7 +667,6 @@ void GEO::CUT::TriangulateFacet::EarClipping(
       // the only places where ear is discarded
       // if we  we discard all ears also, to process
       // them later on with the different algo
-      // if( !isEar ) {
       if (!isEar)
       {
         discarded_ears.push_back(std::make_pair(tri, i));

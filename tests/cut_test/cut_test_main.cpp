@@ -409,8 +409,8 @@ int main(int argc, char** argv)
 
   // tests to test small edge cases in triangulation
   // they fail, but due to other problems, not related to triangulation
-  // functable["narrow_triangulation"] = test_bacigenerated_369096;
-  // functable["split_facet"] = test_bacigenerated_238343;
+  functable["narrow_triangulation"] = test_bacigenerated_369096;
+  functable["split_facet"] = test_bacigenerated_238343;
 
   // tests that failed, due to the problem with spliting surface with holes
   // in the colored

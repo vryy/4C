@@ -1832,7 +1832,8 @@ bool GEO::CUT::VolumeCell::SetPositionCutSideBased()
   }    // for facets
 
   int iter = 0;
-  while (outsidenormal.size() != facets.size() && iter < 1200)
+  bool done = false;
+  while (outsidenormal.size() != facets.size() && iter < 1000)
   {
     for (plain_facet_set::const_iterator i = facets.begin(); i != facets.end(); ++i)
     {
@@ -1849,6 +1850,8 @@ bool GEO::CUT::VolumeCell::SetPositionCutSideBased()
               outsidenormal[ff] = outsidenormal[on->first];
             else
               outsidenormal[ff] = !outsidenormal[on->first];
+            done = true;  // If we can a least identify the direction on one CutSide facet this is
+                          // fine in principle
             break;
           }
         }
@@ -1857,7 +1860,7 @@ bool GEO::CUT::VolumeCell::SetPositionCutSideBased()
     iter++;
   }
 
-  if (iter == 1200)
+  if (iter == 1000 && !done)
   {
     throw std::runtime_error(
         "SetPositionCutSideBased failed: too many iterations (theoretically a facet with many "
