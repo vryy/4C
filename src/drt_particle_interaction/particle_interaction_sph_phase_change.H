@@ -109,6 +109,12 @@ namespace PARTICLEINTERACTION
     //! init phase change handler
     virtual void Init();
 
+    //! setup phase change handler
+    virtual void Setup(
+        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
+        const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
+        const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle);
+
     //! evaluate phase change
     virtual void EvaluatePhaseChange() const override;
 
