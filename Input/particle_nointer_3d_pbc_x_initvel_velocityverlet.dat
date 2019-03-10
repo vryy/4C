@@ -30,6 +30,7 @@ MAXTIME                         1.0
 GRAVITY_ACCELERATION            0.0 0.0 0.0
 GRAVITY_RAMP_FUNCT              0
 TRANSFER_EVERY                  no
+PHASE_TO_DYNLOADBALFAC          phase1 1.0 phase2 1.0
 ----------------------------PARTICLE DYNAMIC/INITIAL AND BOUNDARY CONDITIONS
 INITIAL_VELOCITY_FIELD          phase1 1 phase2 2
 ----------------------------------------------------------------------FUNCT1

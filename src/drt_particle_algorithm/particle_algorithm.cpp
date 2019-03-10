@@ -19,6 +19,8 @@
  *---------------------------------------------------------------------------*/
 #include "particle_algorithm.H"
 
+#include "particle_algorithm_utils.H"
+
 #include "particle_timint.H"
 #include "particle_input_generator.H"
 #include "particle_gravity.H"
@@ -524,64 +526,23 @@ void PARTICLEALGORITHM::ParticleAlgorithm::GenerateInitialParticles()
  *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::DetermineParticleTypes()
 {
-  // determine all particle types from particles to be distributed on this processor
-  std::set<PARTICLEENGINE::TypeEnum> particletypes;
-  for (auto& particle : particlestodistribute_)
-    particletypes.insert(particle->ReturnParticleType());
+  // init map relating particle types to dynamic load balance factor
+  std::map<PARTICLEENGINE::TypeEnum, double> typetodynloadbal;
 
-  // prepare buffer for sending and receiving
-  std::map<int, std::vector<char>> sdata;
-  std::map<int, std::vector<char>> rdata;
-
-  // number of processors
-  int const numproc = Comm().NumProc();
-
-  // ---- pack data for sending ----
-  DRT::PackBuffer data;
-  DRT::ParObject::AddtoPack(data, particletypes);
-  data.StartPacking();
-  DRT::ParObject::AddtoPack(data, particletypes);
-
-  // communicate particle types between all processors
-  for (int torank = 0; torank < numproc; ++torank)
-  {
-    if (torank == myrank_) continue;
-
-    sdata[torank].insert(sdata[torank].end(), data().begin(), data().end());
-  }
-
-  // communicate data via non-buffered send from proc to proc
-  PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(Comm(), sdata, rdata);
-
-  // init receiving vector
-  std::vector<PARTICLEENGINE::TypeEnum> receivedtypes;
-
-  // insert received bins
-  for (auto& p : rdata)
-  {
-    int msgsource = p.first;
-    std::vector<char>& rmsg = p.second;
-
-    std::vector<char>::size_type position = 0;
-
-    while (position < rmsg.size())
-    {
-      DRT::ParObject::ExtractfromPack(position, rmsg, receivedtypes);
-
-      // iterate over received types
-      for (PARTICLEENGINE::TypeEnum receivedtype : receivedtypes)
-        particletypes.insert(receivedtype);
-    }
-
-    if (position != (rdata[msgsource]).size())
-      dserror("mismatch in size of data %d <-> %d", static_cast<int>((rdata[msgsource]).size()),
-          position);
-  }
+  // read parameters relating particle types to values
+  PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues(
+      params_, "PHASE_TO_DYNLOADBALFAC", typetodynloadbal);
 
   // insert into map of particle types and corresponding states with empty set
-  for (auto& particleType : particletypes)
+  for (auto& typeIt : typetodynloadbal)
     particlestatestotypes_.insert(
-        std::make_pair(particleType, std::set<PARTICLEENGINE::StateEnum>()));
+        std::make_pair(typeIt.first, std::set<PARTICLEENGINE::StateEnum>()));
+
+  // safety check
+  for (auto& particle : particlestodistribute_)
+    if (not particlestatestotypes_.count(particle->ReturnParticleType()))
+      dserror("particle type '%s' of initial particle not defined!",
+          PARTICLEENGINE::EnumToTypeName(particle->ReturnParticleType()).c_str());
 }
 
 /*---------------------------------------------------------------------------*
