@@ -59,8 +59,8 @@ void PARTICLEALGORITHM::InitialFieldHandler::Init()
     std::map<PARTICLEENGINE::TypeEnum, int>& currentstatetypetofunctidmap =
         statetotypetofunctidmap_[stateIt.second];
 
-    // read parameters relating particle types to IDs
-    PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToIDs(
+    // read parameters relating particle types to values
+    PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues(
         params_conditions, stateIt.first, currentstatetypetofunctidmap);
   }
 }

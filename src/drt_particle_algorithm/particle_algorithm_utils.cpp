@@ -22,56 +22,59 @@
 #include "../drt_lib/drt_dserror.H"
 
 /*---------------------------------------------------------------------------*
- | read parameters relating particle types to IDs             sfuchs 07/2018 |
+ | read parameters relating particle types to values          sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToIDs(const Teuchos::ParameterList& params,
-    const std::string& name, std::map<PARTICLEENGINE::TypeEnum, int>& typetoidmap)
+template <typename valtype>
+void PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues(const Teuchos::ParameterList& params,
+    const std::string& name, std::map<PARTICLEENGINE::TypeEnum, valtype>& typetovalmap)
 {
   // read from input file
-  std::vector<std::string> typetoid;
+  std::vector<std::string> typetoval;
   std::string word;
-  std::istringstream typetoidstream(Teuchos::getNumericStringParameter(params, name));
-  while (typetoidstream >> word) typetoid.push_back(word);
+  std::istringstream typetovalstream(Teuchos::getNumericStringParameter(params, name));
+  while (typetovalstream >> word) typetoval.push_back(word);
 
   // safety check
-  if ((int)typetoid.size() % 2)
-    dserror("input of '%s' (vector size = %d) relating particle type to ID is odd!", name.c_str(),
-        typetoid.size());
-
-  int numoftypestoids = typetoid.size() / 2;
+  if ((int)typetoval.size() % 2)
+    dserror("input of '%s' (size = %d) relating particle type to value is odd!", name.c_str(),
+        typetoval.size());
 
   std::string typestring;
-  std::string idstring;
-  for (int i = 0; i < numoftypestoids; ++i)
+  std::string valstring;
+  for (int i = 0; i < (int)(typetoval.size() / 2); ++i)
   {
-    typestring = typetoid[2 * i];
-    idstring = typetoid[2 * i + 1];
+    typestring = typetoval[2 * i];
+    valstring = typetoval[2 * i + 1];
 
     // get enum of particle types
     PARTICLEENGINE::TypeEnum particleType = PARTICLEENGINE::EnumFromTypeName(typestring);
 
-    // get function id
-    int id = -1;
+    // get numeric value
+    valtype val;
     try
     {
-      id = std::stoi(idstring);
+      // standard conversion (double to valtype) via assignment
+      val = std::stod(valstring);
     }
     catch (const std::invalid_argument& e)
     {
-      dserror(
-          "wrong format provided: expecting an integer of corresponding ID following the name of "
-          "the particle type!");
+      dserror("wrong format of numeric value provided following the name of the particle type!");
     }
 
-    // safety check
-    if (id < 0) dserror("negative function ID = %d not possible!", id);
-
     // insert into map
-    auto iterator = typetoidmap.insert(std::make_pair(particleType, id));
+    auto iterator = typetovalmap.insert(std::make_pair(particleType, val));
 
     // safety check
     if (not iterator.second)
-      dserror("failed inserting pair ('%s', '%d') into map since key already existing!",
-          PARTICLEENGINE::EnumToTypeName(particleType).c_str(), id);
+      dserror("failed inserting numeric value into map since key '%s' is already existing!",
+          PARTICLEENGINE::EnumToTypeName(particleType).c_str());
   }
 }
+
+template void PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues<int>(
+    const Teuchos::ParameterList& params, const std::string& name,
+    std::map<PARTICLEENGINE::TypeEnum, int>& typetovalmap);
+
+template void PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues<double>(
+    const Teuchos::ParameterList& params, const std::string& name,
+    std::map<PARTICLEENGINE::TypeEnum, double>& typetovalmap);
