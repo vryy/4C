@@ -412,8 +412,8 @@ void GEO::CUT::SelfCut::FindSelfCutPoints()
 }
 
 /*-------------------------------------------------------------------------------------*
- * gets all cutted sides and there nodes and edges to store them as
- * privat variables                                                         wirtz 05/13
+ * gets all cutted sides and their nodes and edges to store them as
+ * private variables                                                         wirtz 05/13
  *-------------------------------------------------------------------------------------*/
 void GEO::CUT::SelfCut::GetSelfCutObjects()
 {
@@ -1064,7 +1064,7 @@ void GEO::CUT::SelfCut::PropagateSelfCutPosition()
 
 /*-------------------------------------------------------------------------------------*
  * erases sides which lies inside a structure body by locating
- * there position                                                           wirtz 05/13
+ * their position                                                           wirtz 05/13
  *-------------------------------------------------------------------------------------*/
 void GEO::CUT::SelfCut::EraseInsideSides()
 {
@@ -1086,7 +1086,7 @@ void GEO::CUT::SelfCut::EraseInsideSides()
 
 /*-------------------------------------------------------------------------------------*
  * erases edges which lies inside a structure body by locating
- * there position                                                           wirtz 05/13
+ * their position                                                           wirtz 05/13
  *-------------------------------------------------------------------------------------*/
 void GEO::CUT::SelfCut::EraseInsideEdges()
 {
@@ -3031,7 +3031,7 @@ void GEO::CUT::SelfCut::PerformSelfCut(Side& cutside, Side& otherside, PointSet&
   {
     Edge* cutsideedge = *i;
     PointSet sidepairselfcutpoints;
-    otherside.Cut(mesh_, *cutsideedge, sidepairselfcutpoints);
+    cutsideedge->FindCutPointsMeshCut(mesh_, NULL, cutside, otherside, &sidepairselfcutpoints);
     for (PointSet::iterator i = sidepairselfcutpoints.begin(); i != sidepairselfcutpoints.end();
          ++i)
     {
@@ -3114,6 +3114,7 @@ void GEO::CUT::SelfCut::EraseSidePointer(Side& cutside)
   {
     Point* cutsidepoint = *i;
     cutsidepoint->EraseCutSide(&cutside);
+    cutsidepoint->ErasedContainingCutPairs(&cutside);
   }
 }
 
@@ -3148,6 +3149,7 @@ void GEO::CUT::SelfCut::EraseEdgePointer(Edge& cutsideedge)
   {
     Point* cutsideedgepoint = *i;
     cutsideedgepoint->EraseCutSideEdge(&cutsideedge);
+    cutsideedgepoint->ErasedContainingCutPairs(&cutsideedge);
   }
 }
 

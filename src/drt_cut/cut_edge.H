@@ -211,7 +211,8 @@ namespace GEO
       /*!
       \brief Computes the points at which both the sides intersect
        */
-      bool FindCutPointsMeshCut(Mesh& mesh, Element* element, Side& side, Side& other);
+      bool FindCutPointsMeshCut(
+          Mesh& mesh, Element* element, Side& side, Side& other, PointSet* cutpoints = NULL);
 
       /*!
       \brief Simplified version of the FindCutPoints as used by the function LevelSetCut

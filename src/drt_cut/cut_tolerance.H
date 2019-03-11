@@ -76,7 +76,7 @@
 // We may get volumecells with all facets on a plane
 // in such case directdivergence may produce negative volume, because it works only for closed
 // geometries if volume of cell is less than this, we do not generate gauss rules
-#define REF_VOL_DIRDIV 1e-26
+#define REF_VOL_DIRDIV 1e-6
 
 #define SELF_CUT_POS_TOL 1e-10
 
@@ -138,6 +138,9 @@
 
 // scale of the tolerance, during initial loading of the mesh
 #define NODAL_POINT_TOLERANCE_SCALE 5.0
+
+// scale of the tolerance, during creation of points in the selcut
+#define NODAL_POINT_TOLERANCE_SELFCUT_SCALE 2.5
 
 // for direct_divergence.cpp volume of bounding box of facets with x-normal zero
 #define MINIMUM_VOLUME_BB_FACETS 1e-13

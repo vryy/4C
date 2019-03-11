@@ -216,9 +216,8 @@ namespace GEO
           }
           plain_int_set& row = graph[facet];
           // check if this facet visited connected lines to it
-          for (plain_int_set::iterator i = row.begin(); i != row.end(); ++i)
+          for (const int& line : row)
           {
-            int line = *i;
             // if this facet is free, but the line connected to it is not free,
             // this means that lines connected to it leads outside, hence it is "first" free facet
             if (not IsFree(used, free, line))
@@ -232,9 +231,8 @@ namespace GEO
 
       bool IsValidFacet(plain_int_set& row, const std::vector<int>& visited)
       {
-        for (plain_int_set::iterator i = row.begin(); i != row.end(); ++i)
+        for (const int& line : row)
         {
-          int line = *i;
           // if it is visited more than once
           if (visited[line] >= 2)
           {
@@ -257,9 +255,8 @@ namespace GEO
         visited[facet] += 1;
         if (visited[facet] > 1) throw std::runtime_error("facet visited more than once");
         // iterate over lines connected to this facet
-        for (plain_int_set::iterator i = row.begin(); i != row.end(); ++i)
+        for (const int& line : row)
         {
-          int line = *i;
           if (IsFree(used, free, line))
           {
             if (visited[line] == 0) num_split_lines += 1;
@@ -375,7 +372,7 @@ namespace GEO
                 {
                   // build split_trace
 
-                  // iterate over the line from that facets
+                  // iterate over all visited lines
                   for (std::vector<int>::iterator i = visited.begin() + graph.Split();
                        i != visited.end(); ++i)
                   {
@@ -404,17 +401,15 @@ namespace GEO
                 }
 
                 // try neighbouring facets
-                for (plain_int_set::iterator i = row.begin(); i != row.end(); ++i)
+                for (const int& line : row)
                 {
-                  int line = *i;
                   // facet not visited and does not lead us outside
                   if (visited[line] < 2 and IsFree(used, free, line))
                   {
                     plain_int_set& row = graph[line];
                     // get all the facets connected to that line and push it for traversal
-                    for (plain_int_set::iterator i = row.begin(); i != row.end(); ++i)
+                    for (const int& f : row)
                     {
-                      int f = *i;
                       if (facet_color[f] == 0 and IsFree(used, free, f))
                       {
                         facet_stack.push_back(f);
@@ -533,9 +528,8 @@ void GEO::CUT::COLOREDGRAPH::Graph::FindFreeFacets(Graph& graph, Graph& used, pl
     {
       int facet = i - visited.begin();
       plain_int_set& row = graph[facet];
-      for (plain_int_set::iterator i = row.begin(); i != row.end(); ++i)
+      for (const int& line : row)
       {
-        int line = *i;
         used.Add(line, facet);
         Add(line, facet);
         free.erase(line);
@@ -613,42 +607,68 @@ void GEO::CUT::COLOREDGRAPH::Graph::SplitSplittrace(const std::vector<int>& spli
 
   std::set<int> split_trace_set(split_trace.begin(), split_trace.end());
 
-  std::stack<int> stack;
+  std::stack<int> lines_to_explore;
   unsigned int seed = split_trace.front();
-  stack.push(seed);
+  lines_to_explore.push(seed);
   bool visited_all_loops = false;
 
+  // lines that we proccessed over (not to
+  // go though them again if we have connected split loops)
+
+  std::set<int> done_lines;
   // while there are still isolated loops in the split trace
   while (not visited_all_loops)
   {
     std::set<int> visited;
 
-    while (not stack.empty())
+    while (not lines_to_explore.empty())
     {
-      unsigned int l = stack.top();
-      stack.pop();
+      unsigned int l = lines_to_explore.top();
+      lines_to_explore.pop();
       // get our line
       std::pair<Point*, Point*> line =
           *static_cast<std::pair<Point*, Point*>*>(datagraph.GetPointer(l));
       // get lines connected to it
-      std::vector<int>& end_lines = point_line_map[line.second];
-      std::vector<int> connected_lines = point_line_map[line.first];
+      const std::vector<int>& end_lines = point_line_map[line.second];
+      const std::vector<int>& front_lines = point_line_map[line.first];
+      std::vector<int> connected_lines(front_lines);
       connected_lines.insert(connected_lines.begin(), end_lines.begin(), end_lines.end());
       // remove connected to 'l' line itself
       connected_lines.erase(
           std::remove(connected_lines.begin(), connected_lines.end(), l), connected_lines.end());
       if (connected_lines.size() != 2)
-        dserror(
-            "Point of the split trace is connected to %d lines at the same time"
-            "It should be 2",
-            connected_lines.size());
+      {
+        // check if most of lines come from the same point ( of course there is one more line
+        // connected on the other end)
+        if (end_lines.size() == 2 or front_lines.size() == 2)
+        {
+          connected_lines = (end_lines.size() < front_lines.size() ? end_lines : front_lines);
+          for (std::vector<int>::iterator it = connected_lines.begin(); it != connected_lines.end();
+              /**/)
+          {
+            if (done_lines.find(*it) != done_lines.end())
+            {
+              it = connected_lines.erase(it);
+            }
+            else
+              ++it;
+          }
+        }
+        else
+        {
+          dserror(
+              "Unknown case of the line in split trace connected to %d lines at the same time"
+              "It should be 2",
+              connected_lines.size());
+        }
+      }
 
       visited.insert(l);
       for (const int& connected_line : connected_lines)
       {
         if (visited.count(connected_line) == 0)
         {
-          stack.push(connected_line);
+          lines_to_explore.push(connected_line);
         }
       }
     }
@@ -660,10 +680,10 @@ void GEO::CUT::COLOREDGRAPH::Graph::SplitSplittrace(const std::vector<int>& spli
 
     // need to push_back difference to the list
     isolated_components.push_back(std::vector<int>(visited.begin(), visited.end()));
+    done_lines.insert(visited.begin(), visited.end());
 
     std::swap(split_trace_set_new, split_trace_set);
 
-    // also need to remove
     if (split_trace_set.empty())
     {
       visited_all_loops = true;
@@ -671,7 +691,7 @@ void GEO::CUT::COLOREDGRAPH::Graph::SplitSplittrace(const std::vector<int>& spli
 
     else
     {
-      stack.push(*split_trace_set.begin());
+      lines_to_explore.push(*split_trace_set.begin());
     }
   }
 #if EXTENDED_CUT_DEBUG_OUTPUT
@@ -684,39 +704,38 @@ void GEO::CUT::COLOREDGRAPH::Graph::Split(Graph& used, plain_int_set& free, Grap
 {
   // find lhs and rhs starting from split trace
 
-  plain_int_set* row = NULL;
-  plain_int_set* tmp_row = NULL;
-  for (std::vector<int>::const_iterator i = split_trace.begin(); i != split_trace.end(); ++i)
+  plain_int_set* facet_row = NULL;
+  plain_int_set* facet_tmp_row = NULL;
+  for (const int& line : split_trace)
   {
-    int p = *i;
-    tmp_row = &at(p);
-    if (tmp_row->size() == 2)
+    facet_tmp_row = &at(line);
+    if (facet_tmp_row->size() == 2)
     {
-      row = tmp_row;
+      facet_row = facet_tmp_row;
     }
   }
-  if (row == NULL) row = tmp_row;  // last passed
+  if (facet_row == NULL) facet_row = facet_tmp_row;  // last passed
 
-  if (row->size() != 2)
+  if (facet_row->size() != 2)
   {
     // This might happen and it might be a valid split. How to deal with it?
     run_time_error("expect two facets at line");
   }
 
-  plain_int_set::iterator i = row->begin();
+  plain_int_set::iterator facet_it = facet_row->begin();
 
-  Fill(split_trace, used, free, connection, *i, c1);
-  ++i;
-  Fill(split_trace, used, free, connection, *i, c2);
+  Fill(split_trace, used, free, connection, *facet_it, c1);
+  ++facet_it;
+  Fill(split_trace, used, free, connection, *facet_it, c2);
 
 
   // detect anomalies, where split line is connected to facets from both cycles
   auto not_connected_line = std::find_if(split_trace.begin(), split_trace.end(),
-      [&c1, &c2](int p) { return (c1[p].size() == 1 or c2[p].size() == 1); });
+      [&c1, &c2](int line) { return (c1[line].size() == 1 or c2[line].size() == 1); });
   // we are fine
-  if (not_connected_line == split_trace.end())
-    return;
+  if (not_connected_line == split_trace.end()) return;
 
+  // try to detect which cycles lacks closing facets and add them
   else
   {
     // it might happen, when we have holes in the split trace , we try to generate corresponding
@@ -737,35 +756,34 @@ void GEO::CUT::COLOREDGRAPH::Graph::Split(Graph& used, plain_int_set& free, Grap
                 << std::endl;
     }
 
-    for (std::vector<int>::const_iterator i = split_trace.begin(); i != split_trace.end(); ++i)
+    for (const int& line : split_trace)
     {
-      int p = *i;
-      unsigned c1rowlen = c1[p].size();
-      unsigned c2rowlen = c2[p].size();
+      unsigned c1_connected_facets = c1[line].size();
+      unsigned c2_connected_facets = c2[line].size();
 
-      Graph* fine = NULL;
-      Graph* open = NULL;
+      Graph* fine_cycle = NULL;
+      Graph* open_cycle = NULL;
 
-      if (c1rowlen > 1 and c2rowlen > 1)
+      if (c1_connected_facets > 1 and c2_connected_facets > 1)
       {
         // fine
       }
-      else if (c1rowlen == 1 and c2rowlen > 1)
+      else if (c1_connected_facets == 1 and c2_connected_facets > 1)
       {
-        fine = &c2;
-        open = &c1;
+        fine_cycle = &c2;
+        open_cycle = &c1;
       }
-      else if (c1rowlen > 1 and c2rowlen == 1)
+      else if (c1_connected_facets > 1 and c2_connected_facets == 1)
       {
-        fine = &c1;
-        open = &c2;
+        fine_cycle = &c1;
+        open_cycle = &c2;
       }
       else
       {
         run_time_error("open line after graph split");
       }
 
-      if (open != NULL)
+      if (open_cycle != NULL)
       {
 #if EXTENDED_CUT_DEBUG_OUTPUT
         std::cout << "NOTICE: One of the graph split results is open" << std::endl;
@@ -778,7 +796,7 @@ void GEO::CUT::COLOREDGRAPH::Graph::Split(Graph& used, plain_int_set& free, Grap
         {
           const std::vector<int>& component = *c_it;
           // try to find line on this component
-          if (std::find(component.begin(), component.end(), p) != component.end()) break;
+          if (std::find(component.begin(), component.end(), line) != component.end()) break;
         }
 
         if (c_it == isolated_components.end())
@@ -788,20 +806,20 @@ void GEO::CUT::COLOREDGRAPH::Graph::Split(Graph& used, plain_int_set& free, Grap
 
         const std::vector<int>& isolated_split_trace = *c_it;
 
-        plain_int_set& row = at(p);
-        if (row.size() != 2) run_time_error("Expect two facets at line");
-        plain_int_set::iterator i = row.begin();
+        plain_int_set& facet_row = at(line);
+        if (facet_row.size() != 2) run_time_error("Expect two facets at line");
+        plain_int_set::iterator i = facet_row.begin();
         int f1 = *i;
         ++i;
         int f2 = *i;
         // select where to start the split
-        if (fine->count(f1) > 0)
+        if (fine_cycle->count(f1) > 0)
         {
-          Fill(isolated_split_trace, used, free, connection, f2, *open);
+          Fill(isolated_split_trace, used, free, connection, f2, *open_cycle);
         }
-        else if (fine->count(f2) > 0)
+        else if (fine_cycle->count(f2) > 0)
         {
-          Fill(isolated_split_trace, used, free, connection, f1, *open);
+          Fill(isolated_split_trace, used, free, connection, f1, *open_cycle);
         }
         else
         {
@@ -815,35 +833,33 @@ void GEO::CUT::COLOREDGRAPH::Graph::Split(Graph& used, plain_int_set& free, Grap
 void GEO::CUT::COLOREDGRAPH::Graph::Fill(const std::vector<int>& split_trace, Graph& used,
     plain_int_set& free, Graph& connection, int seed, Graph& c)
 {
-  plain_int_set done;
-  done.insert(split_trace.begin(), split_trace.end());
-  std::stack<int> stack;
+  plain_int_set visited;
+  visited.insert(split_trace.begin(), split_trace.end());
+  std::stack<int> facets_to_explore;
 
-  stack.push(seed);
+  facets_to_explore.push(seed);
 
-  while (not stack.empty())
+  while (not facets_to_explore.empty())
   {
-    int f = stack.top();
-    stack.pop();
+    int f = facets_to_explore.top();
+    facets_to_explore.pop();
 
-    done.insert(f);
+    visited.insert(f);
 
-    plain_int_set& row = at(f);
-    for (plain_int_set::iterator i = row.begin(); i != row.end(); ++i)
+    plain_int_set& lines_row = at(f);
+    for (const int& line : lines_row)
     {
-      int p = *i;
-      c.Add(f, p);
+      c.Add(f, line);
       // if we have not come to split trace again ( finished )
-      if (done.count(p) == 0)  // and IsFree( used, free, p ) )
+      if (visited.count(line) == 0)  // and IsFree( used, free, line ) )
       {
-        plain_int_set& row = at(p);
+        plain_int_set& facets_row = at(line);
         // discover new facet and visit it
-        for (plain_int_set::iterator i = row.begin(); i != row.end(); ++i)
+        for (const int& f : facets_row)
         {
-          int f = *i;
-          if (done.count(f) == 0)
+          if (visited.count(f) == 0)
           {
-            stack.push(f);
+            facets_to_explore.push(f);
           }
         }
       }
@@ -853,9 +869,9 @@ void GEO::CUT::COLOREDGRAPH::Graph::Fill(const std::vector<int>& split_trace, Gr
   // adding internal connection to close the cycle
   for (Graph::const_iterator i = connection.begin(); i != connection.end(); ++i)
   {
-    int p = i->first;
-    const plain_int_set& row = i->second;
-    c.Add(p, row);
+    int line = i->first;
+    const plain_int_set& facets = i->second;
+    c.Add(line, facets);
   }
 }
 
@@ -961,11 +977,7 @@ void GEO::CUT::COLOREDGRAPH::CycleList::PushBack(Graph& g)
 
 void GEO::CUT::COLOREDGRAPH::CycleList::Print() const
 {
-  for (std::list<Cycle>::const_iterator i = cycles_.begin(); i != cycles_.end(); ++i)
-  {
-    const Cycle& c = *i;
-    c.Print();
-  }
+  for (const Cycle& c : cycles_) c.Print();
 }
 
 void GEO::CUT::COLOREDGRAPH::Graph::TestSplit()

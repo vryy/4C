@@ -1893,7 +1893,7 @@ namespace GEO
         const LINALG::Matrix<probDim, 1, floatType>& LocalCoordinates() const { return xsi_; }
 
         /// transform tolerance from global to local coordinates
-        void GetLocalTolerance(const floatType& global_tolerance,
+        bool GetLocalTolerance(const floatType& global_tolerance,
             LINALG::Matrix<dimSide, 1, floatType>& scaled_tolerance)
 
         {
@@ -1911,9 +1911,17 @@ namespace GEO
           LINALG::Matrix<dimSide, probDim, floatType> aux;
           TN_inv.MultiplyTN(A, A);
 
+
+          // we will not be able to find inverse
+          floatType det = TN_inv.Determinant();
+          if (KERNEL::closeToZero(det)) return false;
+
+
           TN_inv.Invert();
           aux.MultiplyNT(TN_inv, A);
           scaled_tolerance.Multiply(aux, real_tolerance);
+
+          return true;
         }
 
         /// return isInfinite and possibly floatType
@@ -2468,6 +2476,7 @@ namespace GEO
           ClnWrapper cond_number;
           int iter = 0;
           cond_infinity_ = false;
+          bool zero_area = false;
 
           // converting everythign to the cln precision
 #ifdef CUSTOM_MEMORY_ALLOCATOR
@@ -2558,16 +2567,20 @@ namespace GEO
             {
               cond_infinity_ = true;
             }
-            err = ComputeError(xyze_side, px, this->LocalCoordinates(), this->GetNormalVector(),
-                      this->SignedDistance(), CLN_REFERENCE_PREC) *
-                  cond_number;
+            // if side is zerorea-ed, we should' not divide by vector norm in the error calculation,
+            // but just continue increase in the precision
+            zero_area = this->ZeroArea();
+            if (not zero_area)
+              err = ComputeError(xyze_side, px, this->LocalCoordinates(), this->GetNormalVector(),
+                        this->SignedDistance(), CLN_REFERENCE_PREC) *
+                    cond_number;
 #if DEBUG_MEMORY_ALLOCATION
             UpdateMemoryUsage(prec, iter);
 #endif
             prec += CLN_INCREMENT_STEP;
             iter++;
 
-          } while (((!conv) || (err > CLN_LIMIT_ERROR) || (cond_infinity_)) &&
+          } while (((!conv) || (err > CLN_LIMIT_ERROR) || (cond_infinity_) || zero_area) &&
                    (prec < CLN_LIMIT_PREC) && (iter < CLN_LIMIT_ITER));
 
           // now since we converged or went over maximum allowed number of loops  we convert the
@@ -2951,13 +2964,19 @@ namespace GEO
                 exit(EXIT_FAILURE);
             }
           }
-          GetTopologyInformation();
+          bool got_topology_info = GetTopologyInformation();
 #ifdef CLN_CALC
-          if (computeCln)
+          if (computeCln or !got_topology_info)
           {
 #if DOUBLE_PLUS_CLN_COMPUTE
-            if ((ComputeError(xyze_side, px) > DOUBLE_LIMIT_ERROR) or (not conv) or
-                (cond_infinity_))
+            bool result_fail = false;
+            bool major_fail =
+                this->ZeroArea() or (not conv) or (cond_infinity_) or (!got_topology_info);
+            // otherwise computation will run into error for the
+            // case of zero area
+            if (!major_fail) result_fail = ComputeError(xyze_side, px) > DOUBLE_LIMIT_ERROR;
+
+            if (major_fail or result_fail)
             {
               // CutKernelStatistics::getCutKernelStatistics().ClnDistanceCounter();
 
@@ -3066,14 +3085,16 @@ namespace GEO
         PointOnSurfaceLoc GetSideLocation() { return location_; }
 
         //  Converts tolerance in the local coordinates and computes topological information, such
-        //  as touched_edges and  location on the surface
-        void GetTopologyInformation()
+        //  as touched_edges and  location on the surface. In the case we cannot produce a valid
+        //  conversion from global to local tolerance return false
+        bool GetTopologyInformation()
         {
           LINALG::Matrix<probDim, 1> xsi = this->LocalCoordinates();
           // set up required tolerances
           LINALG::Matrix<dimSide, 1> scaled_tolerance;
           double distance_tolerance = SIDE_DETECTION_TOLERANCE;
-          this->GetLocalTolerance(distance_tolerance, scaled_tolerance);
+          bool success = this->GetLocalTolerance(distance_tolerance, scaled_tolerance);
+          if (not success) return false;
           LINALG::Matrix<dimSide, 1> zero_tolerance_side;
           zero_tolerance_side = 0.0;
           // find location
@@ -3089,6 +3110,7 @@ namespace GEO
             GetEdgesAt<sideType>(xsi, touched_edges_ids_, scaled_tolerance);
             GetNodesAt<sideType>(xsi, touched_nodes_ids_, scaled_tolerance);
           }
+          return true;
         }
 
         void WritetoGmsh(std::ofstream& file) { Strategy::WritetoGmsh(file); }
@@ -3377,7 +3399,7 @@ namespace GEO
           return std::make_pair(true, cond);
         }
 
-        void GetLocalToleranceEdge(const floatType& global_tolerance,
+        bool GetLocalToleranceEdge(const floatType& global_tolerance,
             LINALG::Matrix<dimEdge, 1, floatType>& scaled_tolerance)
         {
           LINALG::Matrix<probDim, 1, floatType> real_tolerance;
@@ -3404,12 +3426,18 @@ namespace GEO
           LINALG::Matrix<dimEdge, probDim, floatType> aux;
           TN_inv.MultiplyTN(A, A);
 
+          floatType det = TN_inv.Determinant();
+          // we will not be able to find inverse
+          if (KERNEL::closeToZero(det)) return false;
+
           TN_inv.Invert();
           aux.MultiplyNT(TN_inv, A);
           scaled_tolerance.Multiply(aux, real_tolerance);
+
+          return true;
         }
 
-        void GetLocalToleranceSide(const floatType& global_tolerance,
+        bool GetLocalToleranceSide(const floatType& global_tolerance,
             LINALG::Matrix<dimSide, 1, floatType>& scaled_tolerance)
         {
           LINALG::Matrix<probDim, 1, floatType> real_tolerance;
@@ -3436,9 +3464,15 @@ namespace GEO
           LINALG::Matrix<dimSide, probDim, floatType> aux;
           TN_inv.MultiplyTN(A, A);
 
+
+          floatType det = TN_inv.Determinant();
+          // we will not be able to find inverse
+          if (KERNEL::closeToZero(det)) return false;
+
           TN_inv.Invert();
           aux.MultiplyNT(TN_inv, A);
           scaled_tolerance.Multiply(aux, real_tolerance);
+          return true;
         }
 
         const LINALG::Matrix<dimEdge + dimSide, 1, floatType>& LocalCoordinates() const
@@ -4335,14 +4369,16 @@ namespace GEO
           bool conv;
           this->Setup(xyze_side, xyze_edge);
           conv = this->Solve();
-          GetTopologyInformation();
+          bool got_topology_info = GetTopologyInformation();
 
 #ifdef CLN_CALC
-          if (computeCln)
+          if (computeCln or (!got_topology_info))
           {
 #if DOUBLE_PLUS_CLN_COMPUTE
-            if ((ComputeError(xyze_side, xyze_edge, xsi_) > DOUBLE_LIMIT_ERROR) or (not conv) or
-                (cond_infinity_))
+            bool major_fail = (not conv) or (cond_infinity_) or (!got_topology_info);
+            bool result_fail = ComputeError(xyze_side, xyze_edge, xsi_) > DOUBLE_LIMIT_ERROR;
+
+            if (major_fail or result_fail)
             {
 //             CutKernelStatistics::getCutKernelStatistics().ClnIntersectionCounter();
 #endif
@@ -4458,7 +4494,7 @@ namespace GEO
        private:
         // Get local tolerance and based on it get location of the point on the surface
         // as well as touched edges
-        void GetTopologyInformation()
+        bool GetTopologyInformation()
         {
           LINALG::Matrix<dimEdge + dimSide, 1> xsi = Strategy::LocalCoordinates();
           // tolerance of getting nearby edges
@@ -4467,10 +4503,13 @@ namespace GEO
           LINALG::Matrix<dimEdge, 1> scaled_tolerance_edge;
           LINALG::Matrix<dimSide, 1> scaled_tolerance_side;
           // compute location finally
-          this->GetLocalToleranceEdge(INSIDE_OUTSIDE_TOLERANCE, scaled_tolerance_edge);
-          this->GetLocalToleranceSide(INSIDE_OUTSIDE_TOLERANCE, scaled_tolerance_side);
-          this->GetLocalToleranceSide(
-              SIDE_DETECTION_TOLERANCE, scaled_tolerance_side_touched_edges);
+          if ((not this->GetLocalToleranceEdge(INSIDE_OUTSIDE_TOLERANCE, scaled_tolerance_edge)) or
+              (not this->GetLocalToleranceSide(INSIDE_OUTSIDE_TOLERANCE, scaled_tolerance_side)) or
+              (not this->GetLocalToleranceSide(
+                  SIDE_DETECTION_TOLERANCE, scaled_tolerance_side_touched_edges)))
+          {
+            return false;
+          }
           // compute inside-outside relation
           if (WithinLimits<sideType>(xsi, scaled_tolerance_side))
             sideLocation_ = PointOnSurfaceLoc(true, true);
@@ -4488,6 +4527,7 @@ namespace GEO
           {
             GetEdgesAt<sideType>(xsi, touched_edges_ids_, scaled_tolerance_side_touched_edges);
           }
+          return true;
         }
 
 

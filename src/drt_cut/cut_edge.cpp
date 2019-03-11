@@ -80,7 +80,8 @@ bool GEO::CUT::Edge::FindCutPoints(Mesh& mesh, Element* element, Side& side, Sid
 /*-----------------------------------------------------------------------------*
  *  Find points at which this edge which is in "side" cuts the "other"
  *-----------------------------------------------------------------------------*/
-bool GEO::CUT::Edge::FindCutPointsMeshCut(Mesh& mesh, Element* element, Side& side, Side& other)
+bool GEO::CUT::Edge::FindCutPointsMeshCut(
+    Mesh& mesh, Element* element, Side& side, Side& other, PointSet* cutpoints)
 {
   bool cut = false;
   bool parallel_cut = false;
@@ -154,6 +155,12 @@ bool GEO::CUT::Edge::FindCutPointsMeshCut(Mesh& mesh, Element* element, Side& si
 
   if ((not parallel_cut) and cut)
   {
+    if (cutpoints)
+    {
+      *cutpoints = cut_points;
+      std::copy(
+          point_stack.begin(), point_stack.end(), std::inserter(*cutpoints, cutpoints->end()));
+    }
     return true;
   }
 
@@ -174,6 +181,11 @@ bool GEO::CUT::Edge::FindCutPointsMeshCut(Mesh& mesh, Element* element, Side& si
     AddPoint(p);
   }
 
+  if (cutpoints)
+  {
+    *cutpoints = cut_points;
+    std::copy(point_stack.begin(), point_stack.end(), std::inserter(*cutpoints, cutpoints->end()));
+  }
   return cut_points.size() > 0;
 }
 
