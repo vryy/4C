@@ -55,6 +55,9 @@ namespace PARTICLEENGINE
     //! get reference to potential particle neighbors
     virtual const PotentialParticleNeighbors& GetPotentialParticleNeighbors() const = 0;
 
+    //! get reference to particles being communicated to target processors
+    virtual const std::vector<std::vector<int>>& GetCommunicatedParticleTargets() const = 0;
+
     //! get local index in specific particle container
     virtual const LocalIndexTupleShrdPtr GetLocalIndexInSpecificContainer(int globalid) const = 0;
 

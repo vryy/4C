@@ -923,6 +923,9 @@ void PARTICLEENGINE::ParticleEngine::SetupDataStorage(
 
   // allocate memory to hold particle types
   directghostingtargets_.resize(typevectorsize_);
+
+  // allocate memory for particles being communicated to target processors
+  communicatedparticletargets_.assign(comm_.NumProc(), std::vector<int>(0));
 }
 
 /*---------------------------------------------------------------------------*
@@ -1269,8 +1272,11 @@ void PARTICLEENGINE::ParticleEngine::CheckParticlesAtBoundaries(
 void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeDistributed(
     std::vector<ParticleObjShrdPtr>& particlestodistribute,
     std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend,
-    std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestokeep) const
+    std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestokeep)
 {
+  // clear particles being communicated to target processors
+  communicatedparticletargets_.assign(comm_.NumProc(), std::vector<int>(0));
+
   // number of particles to distribute
   int numparticles = particlestodistribute.size();
 
@@ -1346,7 +1352,14 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeDistributed(
           std::make_pair(ownerofparticle, particlestodistribute[i]));
     // particle is owned by another processor
     else
+    {
+      // append particle to be send
       particlestosend[ownerofparticle].push_back(particlestodistribute[i]);
+
+      // append global id of particle to be send
+      communicatedparticletargets_[ownerofparticle].emplace_back(
+          particlestodistribute[i]->ReturnParticleGlobalID());
+    }
   }
 
   // short screen output
@@ -1364,10 +1377,13 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeDistributed(
  *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeTransfered(
     std::vector<std::set<int>>& particlestoremove,
-    std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend) const
+    std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend)
 {
   // safety check
   if (not validownedparticles_) dserror("invalid relation of owned particles to bins!");
+
+  // clear particles being communicated to target processors
+  communicatedparticletargets_.assign(comm_.NumProc(), std::vector<int>(0));
 
   // iterate over this processors bins being touched by other processors
   for (int touchedbin : touchedbins_)
@@ -1423,6 +1439,9 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeTransfered(
 
       // store index of particle to be removed from containers after particle transfer
       (particlestoremove[typeEnum]).insert(ownedindex);
+
+      // append global id of particle to be send
+      communicatedparticletargets_[sendtoproc].emplace_back(globalid);
     }
   }
 }
