@@ -26,6 +26,8 @@
 #include "particle_object.H"
 #include "particle_runtime_vtp_writer.H"
 
+#include "../drt_particle_algorithm/particle_algorithm_utils.H"
+
 #include "../drt_binstrategy/binning_strategy.H"
 
 #include "../drt_inpar/inpar_particle.H"
@@ -99,6 +101,9 @@ void PARTICLEENGINE::ParticleEngine::Setup(
 
   // setup particle runtime vtp writer
   SetupParticleVtpWriter();
+
+  // setup particle type weights for dynamic load balancing
+  SetupTypeWeights();
 }
 
 /*---------------------------------------------------------------------------*
@@ -945,6 +950,25 @@ void PARTICLEENGINE::ParticleEngine::SetupParticleVtpWriter() const
 
   // setup particle runtime vtp writer
   particlevtpwriter_->Setup(write_binary_output, write_ghosted_particles);
+}
+
+/*---------------------------------------------------------------------------*
+ | setup particle type weights for dynamic load balancing     sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEENGINE::ParticleEngine::SetupTypeWeights()
+{
+  // allocate memory to hold particle types
+  typeweights_.resize(typevectorsize_);
+
+  // init map relating particle types to dynamic load balance factor
+  std::map<PARTICLEENGINE::TypeEnum, double> typetodynloadbal;
+
+  // read parameters relating particle types to values
+  PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues(
+      params_, "PHASE_TO_DYNLOADBALFAC", typetodynloadbal);
+
+  // insert weight of particle type
+  for (auto& typeIt : typetodynloadbal) typeweights_[typeIt.first] = typeIt.second;
 }
 
 /*---------------------------------------------------------------------------*
@@ -2012,8 +2036,12 @@ void PARTICLEENGINE::ParticleEngine::DetermineBinWeights()
     // get global id of bin
     const int gidofbin = binrowmap_->GID(rowlidofbin);
 
-    // add number of particles in current bin to weights
-    (*binweights_)[0][rowlidofbin] += particlestobins_[bincolmap_->LID(gidofbin)].size();
+    // iterate over owned particles in current bin
+    for (auto& particleIt : particlestobins_[bincolmap_->LID(gidofbin)])
+    {
+      // add weight of particle of specific type
+      (*binweights_)[0][rowlidofbin] += typeweights_[particleIt.first];
+    }
   }
 }
 

@@ -28,6 +28,7 @@ TIMESTEP                        1e-4
 NUMSTEP                         500
 MAXTIME                         1.0
 TRANSFER_EVERY                  no
+PHASE_TO_DYNLOADBALFAC          phase1 1.0 phase2 1.0
 PHASE_TO_MATERIAL_ID            phase1 1 phase2 2
 --------------------------------------------------------PARTICLE DYNAMIC/SPH
 KERNEL                          QuinticSpline

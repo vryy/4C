@@ -82,6 +82,10 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   BoolParameter(
       "TRANSFER_EVERY", "no", "transfer particles to new bins every time step", &particledyn);
 
+  // considered particle phases with dynamic load balance weighting factor
+  StringParameter("PHASE_TO_DYNLOADBALFAC", "",
+      "considered particle phases with dynamic load balance weighting factor", &particledyn);
+
   // relate particle phase to material id
   StringParameter("PHASE_TO_MATERIAL_ID", "", "relate particle phase to material id", &particledyn);
 

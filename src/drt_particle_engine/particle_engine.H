@@ -203,6 +203,9 @@ namespace PARTICLEENGINE
     //! setup particle runtime vtp writer
     void SetupParticleVtpWriter() const;
 
+    //! setup particle type weights for dynamic load balancing
+    void SetupTypeWeights();
+
     //! determine bin distribution dependent maps/sets
     void DetermineBinDisDependentMapsAndSets();
 
@@ -305,6 +308,9 @@ namespace PARTICLEENGINE
 
     //! vector of bin weights
     Teuchos::RCP<Epetra_MultiVector> binweights_;
+
+    //! vector of particle type weights for dynamic load balancing
+    std::vector<double> typeweights_;
 
     //! particle container bundle
     ParticleContainerBundleShrdPtr particlecontainerbundle_;

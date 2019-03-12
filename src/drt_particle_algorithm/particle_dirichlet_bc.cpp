@@ -47,8 +47,8 @@ void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::Init()
   const Teuchos::ParameterList& params_conditions =
       params_.sublist("INITIAL AND BOUNDARY CONDITIONS");
 
-  // read parameters relating particle types to IDs
-  PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToIDs(
+  // read parameters relating particle types to values
+  PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues(
       params_conditions, "DIRICHLET_BOUNDARY_CONDITION", dirichletbctypetofunctid_);
 
   // iterate over particle types and insert into set
