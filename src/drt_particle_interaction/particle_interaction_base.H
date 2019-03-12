@@ -90,6 +90,12 @@ namespace PARTICLEINTERACTION
     //! maximum interaction distance (on this processor)
     virtual double MaxInteractionDistance() const = 0;
 
+    //! distribute interaction history
+    virtual void DistributeInteractionHistory() const = 0;
+
+    //! communicate interaction history
+    virtual void CommunicateInteractionHistory() const = 0;
+
     //! set current time
     virtual void SetCurrentTime(const double currenttime);
 

@@ -198,6 +198,22 @@ double PARTICLEINTERACTION::ParticleInteractionDEM::MaxInteractionDistance() con
 }
 
 /*---------------------------------------------------------------------------*
+ | distribute interaction history                             sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::ParticleInteractionDEM::DistributeInteractionHistory() const
+{
+  // nothing to do
+}
+
+/*---------------------------------------------------------------------------*
+ | communicate interaction history                            sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::ParticleInteractionDEM::CommunicateInteractionHistory() const
+{
+  // nothing to do
+}
+
+/*---------------------------------------------------------------------------*
  | set current step size                                      sfuchs 08/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionDEM::SetCurrentStepSize(const double currentstepsize)

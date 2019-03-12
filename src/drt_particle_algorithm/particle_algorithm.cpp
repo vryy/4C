@@ -590,6 +590,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialParticles()
   // build particle to particle neighbors
   if (particleinteraction_) particleengine_->BuildParticleToParticleNeighbors();
 
+  // distribute interaction history
+  if (particleinteraction_) particleinteraction_->DistributeInteractionHistory();
+
   // build global id to local index map
   particleengine_->BuildGlobalIDToLocalIndexMap();
 }
@@ -708,6 +711,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
     // transfer particles to new bins and processors
     particleengine_->TransferParticles();
 
+    // communicate interaction history
+    if (particleinteraction_) particleinteraction_->CommunicateInteractionHistory();
+
     // check load balancing
     bool loadbalanceneeded = CheckLoadBalancing();
 
@@ -715,6 +721,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
     {
       // dynamic load balancing
       particleengine_->DynamicLoadBalancing();
+
+      // communicate interaction history
+      if (particleinteraction_) particleinteraction_->CommunicateInteractionHistory();
 
       // get number of particles on this processor
       numparticlesafterlastloadbalance_ = particleengine_->GetNumberOfParticles();

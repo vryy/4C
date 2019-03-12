@@ -77,6 +77,12 @@ namespace PARTICLEINTERACTION
     //! maximum interaction distance (on this processor)
     virtual double MaxInteractionDistance() const override;
 
+    //! distribute interaction history
+    virtual void DistributeInteractionHistory() const override;
+
+    //! communicate interaction history
+    virtual void CommunicateInteractionHistory() const override;
+
     //! set current step size
     virtual void SetCurrentStepSize(const double currentstepsize);
 
