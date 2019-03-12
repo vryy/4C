@@ -1,7 +1,5 @@
 //
-// Maintainer: Michael Hiermeier
-// hiermeier@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
+// Maintainer: Matthias Mayr
 //
 // Test of the steepest ascent solving strategy
 // element based integration
@@ -72,15 +70,15 @@ INTTYPE                         Elements
 NUMGP_PER_DIM                   3
 ---------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
-STRATEGY                        SteepestAscent // StdLagrange // Combo // SteepestAscent // Augmented
+STRATEGY                        SteepestAscent
 SYSTEM                          SaddlePoint
 FRICTION                        None
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  2.5e2
 SEMI_SMOOTH_CT                  1.0
 -----------------------------------------CONTACT DYNAMIC/AUGMENTED
-PRINT_LINEAR_CONSERVATION       No// Yes
-PRINT_ANGULAR_CONSERVATION      No// Yes
+PRINT_LINEAR_CONSERVATION       No
+PRINT_ANGULAR_CONSERVATION      No
 VARIATIONAL_APPROACH            incomplete
 --------------------------CONTACT DYNAMIC/AUGMENTED/STEEPESTASCENT
 PENALTY_UPDATE                  SufficientLinearReduction
@@ -117,13 +115,9 @@ MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 3 DENS 0.1
 MAT 3   ELAST_CoupNeoHooke YOUNG 2500 NUE 0.25
 MAT 2   MAT_ElastHyper   NUMMAT 1 MATIDS 4 DENS 0.1
 MAT 4   ELAST_CoupNeoHooke YOUNG 25000 NUE 0.25
------------------------------------------------CLONING MATERIAL MAP
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.00000 1.0 2.0 VALUES 0 -7.0 -4.0
--------------------------------------------------------------FUNCT2
--------------------------------------------------------------FUNCT3
--------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 932 QUANTITY dispx VALUE 4.27030414099786648e-01 TOLERANCE 1.0e-08
 STRUCTURE DIS structure NODE 932 QUANTITY dispy VALUE 2.00454241867450822e+00 TOLERANCE 1.0e-08
@@ -3134,10 +3128,5 @@ NODE 1457    COORD  2.2000000000000000e+01  5.0000000000000000e+00  0.0000000000
    1348 WALL QUAD4  1455 1424 1423 1454    MAT 2 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
    1349 WALL QUAD4  1456 1425 1424 1455    MAT 2 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
    1350 WALL QUAD4  1457 1426 1425 1456    MAT 2 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------ACOUSTIC ELEMENTS
 ---------------------------------------------------------------END
 // END
