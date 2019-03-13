@@ -15,7 +15,7 @@ or
 \level 1
 
 <pre>
-\maintainer Lena Yoshihara
+\maintainer Fabian Braeu
 </pre>
 */
 /*----------------------------------------------------------------------*/
