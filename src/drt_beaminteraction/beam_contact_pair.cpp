@@ -18,7 +18,7 @@
 #include <Teuchos_RCP.hpp>
 
 #include "beam_to_beam_contact_pair.H"
-#include "beam_to_solid_volume_meshtying_pair_factory.H"
+#include "beam_to_solid_volume_meshtying_pair.H"
 #include "beam_to_sphere_contact_pair.H"
 
 #include "../drt_beam3/beam3_base.H"
@@ -84,8 +84,7 @@ void BEAMINTERACTION::BeamContactPair::Setup()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair::Create(
-    std::vector<DRT::Element const*> const& ele_ptrs,
-    const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr)
+    std::vector<DRT::Element const*> const& ele_ptrs)
 {
   // note: numnodes is to be interpreted as number of nodes used for centerline interpolation.
   // numnodalvalues = 1: only positions as primary nodal DoFs ==> Lagrange interpolation
@@ -217,8 +216,53 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair:
           }
           else if (dynamic_cast<DRT::ELEMENTS::So_base const*>(ele_ptrs[1]) != NULL)
           {
-            // Create the beam to solid pair.
-            return BeamToSolidVolumeMeshtyingPairFactory(ele_ptrs, params_ptr);
+            // if the second element is a solid element, additionally the number of nodes
+            // of that element have to be considered
+            DRT::ELEMENTS::So_base const* solidele =
+                dynamic_cast<DRT::ELEMENTS::So_base const*>(ele_ptrs[1]);
+
+            const unsigned int numnodessol = solidele->NumNode();
+
+            switch (numnodessol)
+            {
+              case 8:
+              {
+                return Teuchos::rcp(
+                    new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<GEOMETRYPAIR::t_hermite,
+                        GEOMETRYPAIR::t_hex8>());
+              }
+              case 20:
+              {
+                return Teuchos::rcp(
+                    new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<GEOMETRYPAIR::t_hermite,
+                        GEOMETRYPAIR::t_hex20>());
+              }
+              case 27:
+              {
+                return Teuchos::rcp(
+                    new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<GEOMETRYPAIR::t_hermite,
+                        GEOMETRYPAIR::t_hex27>());
+              }
+              case 4:
+              {
+                return Teuchos::rcp(
+                    new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<GEOMETRYPAIR::t_hermite,
+                        GEOMETRYPAIR::t_tet4>());
+              }
+              case 10:
+              {
+                return Teuchos::rcp(
+                    new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<GEOMETRYPAIR::t_hermite,
+                        GEOMETRYPAIR::t_tet10>());
+              }
+              default:
+              {
+                dserror(
+                    "ERROR: So far only numnodessol = 8, 20, 27, 4, 10 are "
+                    "implemented for Beam-to-solid volume meshtying)");
+                break;
+              }
+            }
           }
           else if (dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele_ptrs[1]) != NULL)
           {

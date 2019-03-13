@@ -15,6 +15,8 @@
 
 #include "geometry_pair_line_to_volume.H"
 
+#include "../drt_fem_general/drt_utils_integration.H"
+
 
 namespace GEOMETRYPAIR
 {
