@@ -31,7 +31,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, lin
   // created.
   int line_element_id = this->Element1()->Id();
   std::map<int, std::vector<bool>>& projection_tracker =
-      this->EvaluationData()->LineToVolumeEvaluationData()->GetGaussPointProjectionTrackerMutable();
+      this->EvaluationData()->LineToVolumeEvaluationData()->GaussPointProjectionTrackerMutable();
 
   if (projection_tracker.find(line_element_id) == projection_tracker.end())
   {
@@ -174,7 +174,7 @@ std::vector<bool>& GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<sc
   // Get the Gauss point projection tracker for this line element.
   int line_element_id = this->Element1()->Id();
   std::map<int, std::vector<bool>>& projection_tracker =
-      this->EvaluationData()->LineToVolumeEvaluationData()->GetGaussPointProjectionTrackerMutable();
+      this->EvaluationData()->LineToVolumeEvaluationData()->GaussPointProjectionTrackerMutable();
   return projection_tracker[line_element_id];
 }
 
