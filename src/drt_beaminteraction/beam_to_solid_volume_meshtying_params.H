@@ -133,6 +133,9 @@ namespace BEAMINTERACTION
 
     //! Gauss rule to be used.
     DRT::UTILS::GaussRule1D gauss_rule_;
+
+    //! Number of Gauss points along the circumfencial direction in the cylinder projection.
+    unsigned int gauss_points_circumfence_;
   };
 
 }  // namespace BEAMINTERACTION

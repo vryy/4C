@@ -184,6 +184,12 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
   IntParameter("GAUSS_POINTS", 6, "Number of Gauss Points for the integral evaluations",
       &beam_to_solid_volume_mestying);
 
+  IntParameter("GAUSS_POINTS_CIRCUMFENCE", 6,
+      "Number of Integration points along the circumfencial direction of the beam. This is "
+      "parameter is only used in beam to cylinder meshtying. To be exact no gauss integration is "
+      "used along the circumfencial direction, euqally spaces integration points are used.",
+      &beam_to_solid_volume_mestying);
+
   // ...
 }
 
