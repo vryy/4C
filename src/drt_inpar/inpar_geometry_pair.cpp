@@ -1,14 +1,10 @@
 /*!
-\file inpar_geometry_pair.H
+\file inpar_geometry_pair.cpp
 
 \brief Input parameter for geometry pairs.
 
-<pre>
 \level 3
 \maintainer Ivo Steinbrecher
-            ivo.steinbrecher@unibw.de
-            +49 89 6004-4403
-</pre>
 */
 
 
@@ -31,9 +27,11 @@ void INPAR::GEOMETRYPAIR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList
     // Segmentation strategy.
     Teuchos::setStringToIntegralParameter<LineToVolumeStrategy>("STRATEGY", "segmentation",
         "Type of employed segmentation strategy",
-        Teuchos::tuple<std::string>("segmentation", "gauss_point_projection"),
-        Teuchos::tuple<LineToVolumeStrategy>(
-            LineToVolumeStrategy::segmentation, LineToVolumeStrategy::gauss_point_projection),
+        Teuchos::tuple<std::string>(
+            "segmentation", "gauss_point_projection", "gauss_point_projection_cylinder"),
+        Teuchos::tuple<LineToVolumeStrategy>(LineToVolumeStrategy::segmentation,
+            LineToVolumeStrategy::gauss_point_projection,
+            LineToVolumeStrategy::gauss_point_projection_cylinder),
         &line_to_volume);
 
     // Number of search points for segmentation.

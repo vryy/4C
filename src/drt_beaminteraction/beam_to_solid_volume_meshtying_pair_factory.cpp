@@ -10,6 +10,7 @@
 
 #include "beam_to_solid_volume_meshtying_pair_factory.H"
 #include "beam_to_solid_volume_meshtying_pair_gauss_point.H"
+#include "beam_to_solid_volume_meshtying_pair_gauss_point_cylinder.H"
 #include "beam_to_solid_volume_meshtying_pair_mortar.H"
 #include "beam_to_solid_volume_meshtying_params.H"
 
@@ -132,6 +133,30 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairFactory(
       }
       default:
         dserror("Wrong mortar shape function.");
+    }
+  }
+  if (contact_discretization ==
+      INPAR::BEAMINTERACTION::BeamToSolidVolumeContactDiscretization::gauss_point_to_cylinder)
+  {
+    switch (shape)
+    {
+      case DRT::Element::hex8:
+        return Teuchos::rcp(new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<
+            GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>());
+      case DRT::Element::hex20:
+        return Teuchos::rcp(new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<
+            GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex20>());
+      case DRT::Element::hex27:
+        return Teuchos::rcp(new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<
+            GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex27>());
+      case DRT::Element::tet4:
+        return Teuchos::rcp(new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<
+            GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet4>());
+      case DRT::Element::tet10:
+        return Teuchos::rcp(new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<
+            GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10>());
+      default:
+        dserror("Wrong element type for solid element.");
     }
   }
 

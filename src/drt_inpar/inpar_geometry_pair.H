@@ -3,13 +3,10 @@
 
 \brief Input parameter for geometry pairs.
 
-<pre>
 \level 3
 \maintainer Ivo Steinbrecher
-            ivo.steinbrecher@unibw.de
-            +49 89 6004-4403
-</pre>
 */
+// End doxygen header.
 
 
 #ifndef INPAR_GEOMETRYPAIR_H
@@ -39,7 +36,8 @@ namespace INPAR
       none,                    ///< Default value.
       gauss_point_projection,  ///< Project the Gauss points, segment lines that poke out of the
                                ///< volume.
-      segmentation             ///< Segment the line with the volume.
+      gauss_point_projection_cylinder,  ///< Project the Gauss points to the cylinder surface.
+      segmentation                      ///< Segment the line with the volume.
     };
 
     /**
