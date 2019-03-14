@@ -18,7 +18,7 @@ on the surface of the (circular) beam cross section.
 #include "beam_contact_params.H"
 #include "beam_to_solid_volume_meshtying_params.H"
 #include "../drt_geometry_pair/geometry_pair_element_types.H"
-#include "../drt_geometry_pair/geometry_pair_line_to_volume.H"
+#include "../drt_geometry_pair/geometry_pair_line_to_volume_gauss_point_projection_cylinder.H"
 #include "../drt_geometry_pair/geometry_pair_evaluation_data_global.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_volume_evaluation_data.H"
 
@@ -185,6 +185,21 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<beam, sol
   // Return true as there are meshtying contributions.
   return true;
 }
+
+
+/**
+ *
+ */
+template <typename beam, typename solid>
+Teuchos::RCP<
+    GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<double, beam, solid>>
+BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<beam,
+    solid>::CastGeometryPairCylinder() const
+{
+  return Teuchos::rcp_dynamic_cast<
+      GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<double, beam, solid>>(
+      this->geometry_pair_, true);
+};
 
 
 /**

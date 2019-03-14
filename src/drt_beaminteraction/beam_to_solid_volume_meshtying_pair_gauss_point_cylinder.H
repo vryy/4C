@@ -17,6 +17,14 @@ on the surface of the (circular) beam cross section.
 #include "beam_to_solid_volume_meshtying_pair_base.H"
 
 
+// Forward declaration.
+namespace GEOMETRYPAIR
+{
+  template <typename scalar_type, typename line, typename volume>
+  class GeometryPairLineToVolumeGaussPointProjectionCylinder;
+}  // namespace GEOMETRYPAIR
+
+
 namespace BEAMINTERACTION
 {
   /**
@@ -61,9 +69,20 @@ namespace BEAMINTERACTION
         LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
         LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22) override;
 
+    /**
+     * \brief Return a cast of the geometry pair to the cylinder projection type.
+     * @return RPC with the cylinder projection pair.
+     */
+    Teuchos::RCP<
+        GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<double, beam, solid>>
+    CastGeometryPairCylinder() const;
+
    private:
     //! Type to be used for scalar AD variables. This can not be inherited from the base class.
     typedef Sacado::ELRFad::SLFad<double, beam::n_dof_ + solid::n_dof_> TYPE_BTS_VMT_AD;
+
+    //! Vector with all Integration points for this pair.
+    std::vector<GEOMETRYPAIR::LineSegment<double>> line_to_volume_segments_;
   };
 }  // namespace BEAMINTERACTION
 
