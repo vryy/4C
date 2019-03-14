@@ -17,8 +17,11 @@
 #include "../drt_lib/drt_element.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
-#define n_gauss_points_cylinder_axis 5
-#define n_gauss_points_cylinder_circ 5
+#include <math.h>
+
+
+#define radius 0.1
+
 
 /**
  *
@@ -38,7 +41,9 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<scalar_t
 
   if (projection_tracker.find(line_element_id) == projection_tracker.end())
   {
-    int n_gauss_points = n_gauss_points_cylinder_axis * n_gauss_points_cylinder_circ;
+    int n_gauss_points =
+        this->EvaluationData()->LineToVolumeEvaluationData()->GetNumberOfGaussPoints() *
+        this->EvaluationData()->LineToVolumeEvaluationData()->GetGaussPointsCircumfence();
     std::vector<bool> new_tracking_vector;
     new_tracking_vector.resize(n_gauss_points, false);
     projection_tracker[line_element_id] = new_tracking_vector;
@@ -51,9 +56,10 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<scalar_t
  */
 template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<scalar_type, line,
-    volume>::PreEvaluate(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
+    volume>::PreEvaluateCylinder(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
     const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
-    std::vector<LineSegment<scalar_type>>& segments) const
+    std::vector<GEOMETRYPAIR::ProjectionPointVolumeToVolume<scalar_type>>&
+        cylinder_to_volume_points) const
 {
   // Check if the element is initialized.
   this->CheckInitSetup();
@@ -63,60 +69,58 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<scalar_t
 
   // Gauss rule.
   DRT::UTILS::IntegrationPoints1D gauss_points_axis =
-      DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::intrule_line_5point);
-  DRT::UTILS::IntegrationPoints1D gauss_points_circumfence =
-      DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::intrule_line_5point);
+      this->EvaluationData()->LineToVolumeEvaluationData()->GetGaussPoints();
+  unsigned int n_gauss_points_axis =
+      this->EvaluationData()->LineToVolumeEvaluationData()->GetNumberOfGaussPoints();
+  unsigned int n_gauss_points_circ =
+      this->EvaluationData()->LineToVolumeEvaluationData()->GetGaussPointsCircumfence();
 
   // Initilaize variables for the projection.
   scalar_type eta;
-  LINALG::TMatrix<scalar_type, 3, 1> xi;
+  double alpha;
+  LINALG::TMatrix<scalar_type, 3, 1> r_beam;
+  LINALG::TMatrix<scalar_type, 3, 1> xi_beam;
+  LINALG::TMatrix<scalar_type, 3, 1> xi_solid;
   ProjectionResult projection_result;
-  LineSegment<scalar_type> line_segment;
-  bool one_projects = false;
-
-  double angle, eta_axis, eta_circ;
-  double radius = 0.1;
-  LINALG::TMatrix<scalar_type, 3, 1> pos_on_cylinder;
+  cylinder_to_volume_points.clear();
 
   // Loop over Gauss points and check if they project to this volume.
-  for (unsigned int index_gp_axis = 0; index_gp_axis < n_gauss_points_cylinder_axis;
-       index_gp_axis++)
+  for (unsigned int index_gp_axis = 0; index_gp_axis < n_gauss_points_axis; index_gp_axis++)
   {
-    for (unsigned int index_gp_circ = 0; index_gp_circ < n_gauss_points_cylinder_circ;
-         index_gp_circ++)
+    for (unsigned int index_gp_circ = 0; index_gp_circ < n_gauss_points_circ; index_gp_circ++)
     {
+      // Index of the current Gauss point in the tracking vector.
+      unsigned int index_gp = index_gp_axis * n_gauss_points_circ + index_gp_circ;
+
       // Only check points that do not already have a valid projection.
-      if (line_projection_tracker[index_gp_axis * index_gp_axis + index_gp_circ] == false)
+      if (line_projection_tracker[index_gp] == false)
       {
-        eta_axis = gauss_points_axis.qxg[index_gp_axis][0];
-        eta_circ = gauss_points_circumfence.qxg[index_gp_circ][0];
+        // Centerline coordinate.
+        eta = gauss_points_axis.qxg[index_gp_axis][0];
 
-        // Get the point on the circumfence of the beam.
-        // This only works if the tangent of the beam in the reference configuration is [1, 0, 0].
-        angle = 0.5 * (eta_circ + 1.) * 2. * 3.14159265358979323846;
-        EvaluatePosition<line>(eta_axis, q_line, pos_on_cylinder, this->Element1());
-        pos_on_cylinder(1) += cos(angle) * radius;
-        pos_on_cylinder(2) += sin(angle) * radius;
-        this->ProjectPointToVolume(pos_on_cylinder, q_volume, xi, projection_result);
+        // Get the spatial position of the beam centerline.
+        GEOMETRYPAIR::EvaluatePosition<line>(eta, q_line, r_beam, this->Element1());
 
+        // Add the in crossection position.
+        alpha = 2. * M_PI / double(n_gauss_points_circ) * index_gp_circ;
+        r_beam(1) += radius * cos(alpha);
+        r_beam(2) += radius * sin(alpha);
+
+        // Parameter coordinates on the beam.
+        r_beam(0) = eta;
+        r_beam(1) = cos(alpha);
+        r_beam(2) = sin(alpha);
+
+        this->ProjectPointToVolume(r_beam, q_volume, xi_solid, projection_result);
         if (projection_result == ProjectionResult::projection_found_valid)
         {
           // Valid Gauss point was found, add to this segment and set tracking point to true.
-          line_segment.AddProjectionPoint(
-              ProjectionPointLineToVolume<scalar_type>(eta_axis, xi, 1.));
-          line_projection_tracker[index_gp_axis * index_gp_axis + index_gp_circ] = true;
-
-          one_projects = true;
+          cylinder_to_volume_points.push_back(ProjectionPointVolumeToVolume<scalar_type>(xi_beam,
+              xi_solid, gauss_points_axis.qwgt[index_gp_axis] * 2. / double(n_gauss_points_circ)));
+          line_projection_tracker[index_gp] = true;
         }
       }
     }
-  }
-
-  if (one_projects)
-  {
-    // Clear the segment vector and add the found segment for the current line to volume pair.
-    segments.clear();
-    segments.push_back(line_segment);
   }
 }
 
@@ -126,10 +130,12 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<scalar_t
  */
 template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<scalar_type, line,
-    volume>::Evaluate(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
+    volume>::EvaluateCylinder(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
     const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
-    std::vector<LineSegment<scalar_type>>& segments) const
+    std::vector<GEOMETRYPAIR::ProjectionPointVolumeToVolume<scalar_type>>&
+        cylinder_to_volume_points) const
 {
+#if 0
   // Check if the element is initialized.
   this->CheckInitSetup();
 
@@ -183,6 +189,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<scalar_t
           this->EvaluationData()->LineToVolumeEvaluationData()->GetGaussPoints(), segments[0]);
     }
   }
+#endif
 }
 
 

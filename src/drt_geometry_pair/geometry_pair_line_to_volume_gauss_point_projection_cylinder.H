@@ -16,6 +16,14 @@
 #include "geometry_pair_line_to_volume.H"
 
 
+// Forward declaration.
+namespace GEOMETRYPAIR
+{
+  template <typename scalar_type>
+  class ProjectionPointVolumeToVolume;
+}  // namespace GEOMETRYPAIR
+
+
 namespace GEOMETRYPAIR
 {
   /**
@@ -56,9 +64,10 @@ namespace GEOMETRYPAIR
      * @param q_volume (in) Degrees of freedom for the volume.
      * @param segments (out) Vector with the segments of this line to volume pair.
      */
-    void PreEvaluate(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
+    void PreEvaluateCylinder(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
         const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
-        std::vector<LineSegment<scalar_type>>& segments) const;
+        std::vector<GEOMETRYPAIR::ProjectionPointVolumeToVolume<scalar_type>>&
+            cylinder_to_volume_points) const;
 
     /**
      * \brief Check if a Gauss point projected valid for this pair in PreEvaluate. If so, all Gauss
@@ -68,9 +77,10 @@ namespace GEOMETRYPAIR
      * @param q_volume (in) Degrees of freedom for the volume.
      * @param segments (out) Vector with the segments of this line to volume pair.
      */
-    void Evaluate(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
+    void EvaluateCylinder(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
         const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
-        std::vector<LineSegment<scalar_type>>& segments) const;
+        std::vector<GEOMETRYPAIR::ProjectionPointVolumeToVolume<scalar_type>>&
+            cylinder_to_volume_points) const;
 
    private:
     /**

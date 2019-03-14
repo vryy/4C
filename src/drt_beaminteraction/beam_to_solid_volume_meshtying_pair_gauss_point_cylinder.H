@@ -56,6 +56,12 @@ namespace BEAMINTERACTION
         std::vector<DRT::Element const*> elements) override;
 
     /**
+     * \brief Things that need to be done in a separate loop before the actual evaluation loop over
+     * all contact pairs.
+     */
+    void PreEvaluate() override;
+
+    /**
      * \brief Evaluate this contact element pair.
      * @param forcevec1 (out) Force vector on element 1.
      * @param forcevec2 (out) Force vector on element 2.
@@ -81,8 +87,8 @@ namespace BEAMINTERACTION
     //! Type to be used for scalar AD variables. This can not be inherited from the base class.
     typedef Sacado::ELRFad::SLFad<double, beam::n_dof_ + solid::n_dof_> TYPE_BTS_VMT_AD;
 
-    //! Vector with all Integration points for this pair.
-    std::vector<GEOMETRYPAIR::LineSegment<double>> line_to_volume_segments_;
+    //! Vector with the segments of the line to volume pair.
+    std::vector<GEOMETRYPAIR::ProjectionPointVolumeToVolume<double>> cylinder_to_volume_points_;
   };
 }  // namespace BEAMINTERACTION
 

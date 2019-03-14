@@ -126,6 +126,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
     // Set the Gauss rule for the pair.
     geometry_evaluation_data_ptr_->LineToVolumeEvaluationData()->SetGaussRule(
         beam_contact_params_ptr_->BeamToSolidVolumeMeshtyingParams()->GetGaussRule());
+    geometry_evaluation_data_ptr_->LineToVolumeEvaluationData()->SetGaussPointsCircumfence(
+        beam_contact_params_ptr_->BeamToSolidVolumeMeshtyingParams()->GetGaussPointsCircumfence());
   }
 
   // set flag

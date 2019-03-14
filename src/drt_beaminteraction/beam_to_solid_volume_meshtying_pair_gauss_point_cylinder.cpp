@@ -62,6 +62,21 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<beam, sol
  *
  */
 template <typename beam, typename solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<beam, solid>::PreEvaluate()
+{
+  // Call PreEvaluate on the geometry Pair.
+  if (!this->meshtying_is_evaluated_)
+  {
+    this->CastGeometryPairCylinder()->PreEvaluateCylinder(
+        this->ele1posref_, this->ele2posref_, cylinder_to_volume_points_);
+  }
+}
+
+
+/**
+ *
+ */
+template <typename beam, typename solid>
 bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<beam, solid>::Evaluate(
     LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
     LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
@@ -70,8 +85,8 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<beam, sol
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
   {
-    this->CastGeometryPair()->Evaluate(
-        this->ele1posref_, this->ele2posref_, this->line_to_volume_segments_);
+    this->CastGeometryPairCylinder()->EvaluateCylinder(
+        this->ele1posref_, this->ele2posref_, cylinder_to_volume_points_);
     this->meshtying_is_evaluated_ = true;
   }
 

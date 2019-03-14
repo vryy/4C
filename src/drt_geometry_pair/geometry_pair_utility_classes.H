@@ -330,6 +330,69 @@ namespace GEOMETRYPAIR
     std::vector<ProjectionPointLineToVolume<scalar_type>> segment_projection_points_;
   };
 
+
+  /**
+   * \brief Class that represents a projection from a volume to a volume.
+   */
+  template <typename scalar_type>
+  class ProjectionPointVolumeToVolume
+  {
+   public:
+    /**
+     * \brief Constructor.
+     * @param xi1 Parameter coordinate on the first volume.
+     * @param xi2 Parameter coordinate on the second volume.
+     * @param gauss_weight Gauss weight for this point.
+     */
+    ProjectionPointVolumeToVolume(LINALG::TMatrix<scalar_type, 3, 1> xi1,
+        LINALG::TMatrix<scalar_type, 3, 1> xi2, double gauss_weight)
+        : xi1_(xi1),
+          xi2_(xi2),
+          projection_result_(ProjectionResult::none),
+          gauss_weight_(gauss_weight){};
+
+    /**
+     * \brief Get the parameter coordinate in the first volume.
+     */
+    inline LINALG::TMatrix<scalar_type, 3, 1> GetXi1() const { return xi1_; };
+
+    /**
+     * \brief Get the parameter coordinate in the second volume.
+     */
+    inline LINALG::TMatrix<scalar_type, 3, 1> GetXi2() const { return xi2_; };
+
+    /**
+     * \brief Set the Gauss weight for this point.
+     * @param gauss_weight
+     */
+    inline void SetGaussWeight(double gauss_weight) { gauss_weight_ = gauss_weight; };
+
+    /**
+     * \brief Get the Gauss weight for this point, if none is defined, an error is thrown.
+     */
+    inline double GetGaussWeight() const
+    {
+      if (gauss_weight_ < 0.)
+        dserror(
+            "Negative Gauss weight not possible. Probably the default value was not overwritten!");
+      return gauss_weight_;
+    };
+
+   private:
+    //! Parameter coordinate in the first volume.
+    LINALG::TMatrix<scalar_type, 3, 1> xi1_;
+
+    //! Parameter coordinate in the second volume.
+    LINALG::TMatrix<scalar_type, 3, 1> xi2_;
+
+    //! Projection result.
+    ProjectionResult projection_result_;
+
+    //! Gauss weight for this point.
+    double gauss_weight_;
+  };
+
+
 }  // namespace GEOMETRYPAIR
 
 
