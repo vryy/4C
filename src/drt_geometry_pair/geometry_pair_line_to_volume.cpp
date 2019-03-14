@@ -44,14 +44,12 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Init(
  *
  */
 template <typename scalar_type, typename line, typename volume>
-void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectPointOnLineToVolume(
-    const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
-    const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume, const scalar_type& eta,
+void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectPointToVolume(
+    const LINALG::TMatrix<scalar_type, 3, 1>& point,
+    const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
     LINALG::TMatrix<scalar_type, 3, 1>& xi, ProjectionResult& projection_result) const
 {
   // Initialize data structures
-  // Point on line.
-  LINALG::TMatrix<scalar_type, 3, 1> r_line;
 
   // Point on volume.
   LINALG::TMatrix<scalar_type, 3, 1> r_volume;
@@ -70,9 +68,6 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectP
 
   // Local Newton iteration.
   {
-    // Get the position on the beam that the solid should match.
-    GEOMETRYPAIR::EvaluatePosition<line>(eta, q_line, r_line, Element1());
-
     unsigned int counter = 0;
     while (counter < CONSTANTS::local_newton_iter_max)
     {
@@ -81,7 +76,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectP
 
       // Evaluate the residuum $r_{volume} - r_{line} = R_{pos}$
       residuum = r_volume;
-      residuum -= r_line;
+      residuum -= point;
 
       // Check if tolerance is fulfilled.
       if (residuum.Norm2() < CONSTANTS::local_newton_res_tol)
@@ -115,6 +110,24 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectP
         break;
     }
   }
+}
+
+
+/**
+ *
+ */
+template <typename scalar_type, typename line, typename volume>
+void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectPointOnLineToVolume(
+    const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
+    const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume, const scalar_type& eta,
+    LINALG::TMatrix<scalar_type, 3, 1>& xi, ProjectionResult& projection_result) const
+{
+  // Get the point on the line.
+  LINALG::TMatrix<scalar_type, 3, 1> r_line;
+  GEOMETRYPAIR::EvaluatePosition<line>(eta, q_line, r_line, Element1());
+
+  // Project the point to the solid.
+  ProjectPointToVolume(r_line, q_volume, xi, projection_result);
 }
 
 

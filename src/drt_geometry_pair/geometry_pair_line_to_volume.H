@@ -104,6 +104,19 @@ namespace GEOMETRYPAIR
 
    protected:
     /**
+     * \brief Project a point in space to the volume element.
+     * @param point (in) Point in space.
+     * @param q_volume (in) Degrees of freedom for the volume.
+     * @param xi (in/out) Parameter coordinates in the volume. The given values are the start values
+     * for the Newton iteration.
+     * @param projection_result (out) Flag for the result of the projection.
+     * @return
+     */
+    void ProjectPointToVolume(const LINALG::TMatrix<scalar_type, 3, 1>& point,
+        const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
+        LINALG::TMatrix<scalar_type, 3, 1>& xi, ProjectionResult& projection_result) const;
+
+    /**
      * \brief Project a point on the line to the volume element.
      * @param q_line (in) Degrees of freedom for the line.
      * @param q_volume (in) Degrees of freedom for the volume.
