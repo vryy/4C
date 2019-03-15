@@ -139,7 +139,15 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<scalar_t
     bool all_projected =
         std::all_of(projection_vector.begin(), projection_vector.end(), [](bool v) { return v; });
     if (!all_projected)
-      dserror("The cylinder projection currently only works if all points on a beam projected!");
+    {
+      unsigned int valid_projection_points = 0;
+      for (auto const& value : projection_vector)
+        if (value) valid_projection_points += 1;
+      dserror(
+          "The cylinder projection currently only works if all points on a beam project! Of the "
+          "%d points, only %d projected.",
+          projection_vector.size(), valid_projection_points);
+    }
   }
 }
 

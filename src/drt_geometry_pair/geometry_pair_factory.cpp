@@ -12,7 +12,6 @@
 #include "geometry_pair_element_types.H"
 #include "geometry_pair_line_to_volume.H"
 #include "geometry_pair_line_to_volume_gauss_point_projection.H"
-#include "geometry_pair_line_to_volume_gauss_point_projection_cylinder.H"
 #include "geometry_pair_line_to_volume_segmentation.H"
 #include "geometry_pair_evaluation_data_global.H"
 #include "geometry_pair_line_to_volume_evaluation_data.H"
@@ -37,11 +36,11 @@ Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToVolumeF
           new GeometryPairLineToVolumeGaussPointProjection<scalar_type, line, volume>());
     case INPAR::GEOMETRYPAIR::LineToVolumeStrategy::segmentation:
       return Teuchos::rcp(new GeometryPairLineToVolumeSegmentation<scalar_type, line, volume>());
-    case INPAR::GEOMETRYPAIR::LineToVolumeStrategy::gauss_point_projection_cylinder:
-      return Teuchos::rcp(
-          new GeometryPairLineToVolumeGaussPointProjectionCylinder<scalar_type, line, volume>());
     default:
+    {
+      dserror("The given geometry pair strategy is not valid!");
       return Teuchos::null;
+    }
   }
 }
 

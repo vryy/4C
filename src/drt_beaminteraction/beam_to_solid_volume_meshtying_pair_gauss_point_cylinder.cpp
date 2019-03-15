@@ -198,6 +198,28 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<beam, sol
  *
  */
 template <typename beam, typename solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<beam,
+    solid>::CreateGeometryPair(const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal>
+        geometry_evaluation_data_ptr)
+{
+  // Check that the cylinder strategy is given in the input file.
+  INPAR::GEOMETRYPAIR::LineToVolumeStrategy strategy =
+      geometry_evaluation_data_ptr->LineToVolumeEvaluationData()->GetStrategy();
+  if (strategy != INPAR::GEOMETRYPAIR::LineToVolumeStrategy::gauss_point_projection_cylinder)
+    dserror("The cylinder projection only works with cylinder projection in the geometry pairs.");
+
+  // Explicitly create the cylinder pair here, as it only works with this kind of beam contact
+  // pair.
+  this->geometry_pair_ =
+      Teuchos::rcp(new GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<double,
+          beam, solid>());
+}
+
+
+/**
+ *
+ */
+template <typename beam, typename solid>
 Teuchos::RCP<
     GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<double, beam, solid>>
 BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<beam,

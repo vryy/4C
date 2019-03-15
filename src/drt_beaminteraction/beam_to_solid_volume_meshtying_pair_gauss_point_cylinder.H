@@ -76,6 +76,15 @@ namespace BEAMINTERACTION
         LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22) override;
 
     /**
+     * \brief Create the geometry pair for this contact pair. We overload that function because this
+     * pair requires the geometry pair cylinder projection to be created.
+     * @param geometry_evaluation_data_ptr Evaluation data that will be linked to the pair.
+     */
+    void CreateGeometryPair(
+        const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> geometry_evaluation_data_ptr)
+        override;
+
+    /**
      * \brief Return a cast of the geometry pair to the cylinder projection type.
      * @return RPC with the cylinder projection pair.
      */
