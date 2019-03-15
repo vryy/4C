@@ -106,11 +106,12 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<scalar_t
         r_beam(1) += radius * cos(alpha);
         r_beam(2) += radius * sin(alpha);
 
-        // Parameter coordinates on the beam.
-        r_beam(0) = eta;
-        r_beam(1) = cos(alpha);
-        r_beam(2) = sin(alpha);
+        // Parameter coordinates on the line.
+        xi_beam(0) = eta;
+        xi_beam(1) = cos(alpha);
+        xi_beam(2) = sin(alpha);
 
+        // Project point to the volume.
         this->ProjectPointToVolume(r_beam, q_volume, xi_solid, projection_result);
         if (projection_result == ProjectionResult::projection_found_valid)
         {
@@ -135,61 +136,19 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<scalar_t
     std::vector<GEOMETRYPAIR::ProjectionPointVolumeToVolume<scalar_type>>&
         cylinder_to_volume_points) const
 {
-#if 0
   // Check if the element is initialized.
   this->CheckInitSetup();
 
-  // Only zero one segments are expected.
-  if (segments.size() > 1)
-    dserror(
-        "There should be zero or one segments for the Gauss point projection method. The actual "
-        "value is %d!",
-        segments.size());
-
   // Check if one point projected in PreEvaluate.
-  if (segments.size() == 1 && segments[0].GetNumberOfProjectionPoints() > 0)
+  if (cylinder_to_volume_points.size() > 1)
   {
-    // Flag if segmentation is needed.
-    bool need_segmentation = false;
-
-    // Check if all Gauss points projected for this line.
-    const std::vector<bool>& line_projection_tracker = GetLineProjectionVectorMutable();
-    for (auto const& projects : line_projection_tracker)
-      if (!projects) need_segmentation = true;
-
-    if (need_segmentation)
-    {
-      // Segmentation is needed. First get the intersection points with the volume.
-      std::vector<ProjectionPointLineToVolume<scalar_type>> intersection_points;
-      this->IntersectLineWithVolume(q_line, q_volume, intersection_points);
-
-      // This algorithm only works if one intersection point was found.
-      if (intersection_points.size() != 1)
-        dserror("In the segmentation case we expect exactly one found intersection point. Got: %d!",
-            intersection_points.size());
-
-      // Get the limits of the segmented line.
-      scalar_type eta_a, eta_b, eta_intersection_point, eta_first_gauss_point;
-      eta_intersection_point = intersection_points[0].GetEta();
-      eta_first_gauss_point = segments[0].GetProjectionPoints()[0].GetEta();
-      if (eta_intersection_point < eta_first_gauss_point)
-      {
-        eta_a = eta_intersection_point;
-        eta_b = 1.;
-      }
-      else
-      {
-        eta_a = -1.;
-        eta_b = eta_intersection_point;
-      }
-
-      // Reproject the Gauss points on the segmented line.
-      segments[0] = LineSegment<scalar_type>(eta_a, eta_b);
-      this->ProjectGaussPointsOnSegmentToVolume(q_line, q_volume,
-          this->EvaluationData()->LineToVolumeEvaluationData()->GetGaussPoints(), segments[0]);
-    }
+    // Check if all points of this beam projected.
+    const std::vector<bool>& projection_vector = GetLineProjectionVectorMutable();
+    bool all_projected =
+        std::all_of(projection_vector.begin(), projection_vector.end(), [](bool v) { return v; });
+    if (!all_projected)
+      dserror("The cylinder projection currently only works if all points on a beam projected!");
   }
-#endif
 }
 
 
