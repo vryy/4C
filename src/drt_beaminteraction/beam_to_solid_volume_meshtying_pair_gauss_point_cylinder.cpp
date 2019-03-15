@@ -90,8 +90,8 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<beam, sol
     this->meshtying_is_evaluated_ = true;
   }
 
-  // If there are no intersection segments, return no contact status.
-  if (this->line_to_volume_segments_.size() == 0) return false;
+  // If there are no projection points, return no contact status.
+  if (this->cylinder_to_volume_points_.size() == 0) return false;
 
   // Initialize variables for position and force vectors.
   LINALG::TMatrix<double, 3, 1> dr_beam_ref;
@@ -102,54 +102,45 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<beam, sol
   LINALG::TMatrix<TYPE_BTS_VMT_AD, solid::n_dof_, 1> force_element_2(true);
 
   // Initialize scalar variables.
-  double segment_jacobian, beam_segmentation_factor;
+  double beam_jacobian;
   double penalty_parameter =
       this->Params()->BeamToSolidVolumeMeshtyingParams()->GetPenaltyParameter();
 
   // Calculate the meshtying forces.
   // Loop over segments.
-  for (unsigned int i_segment = 0; i_segment < this->line_to_volume_segments_.size(); i_segment++)
+  for (unsigned int i_integration_point = 0;
+       i_integration_point < this->cylinder_to_volume_points_.size(); i_integration_point++)
   {
-    // Factor to account for a segment length not from -1 to 1.
-    beam_segmentation_factor = 0.5 * this->line_to_volume_segments_[i_segment].GetSegmentLength();
+    // Get the current Gauss point.
+    const GEOMETRYPAIR::ProjectionPointVolumeToVolume<double>& projected_gauss_point =
+        this->cylinder_to_volume_points_[i_integration_point];
 
-    // Gauss point loop.
-    for (unsigned int i_gp = 0;
-         i_gp < this->line_to_volume_segments_[i_segment].GetProjectionPoints().size(); i_gp++)
-    {
-      // Get the current Gauss point.
-      const GEOMETRYPAIR::ProjectionPointLineToVolume<double>& projected_gauss_point =
-          this->line_to_volume_segments_[i_segment].GetProjectionPoints()[i_gp];
+    // Get the jacobian in the reference configuration.
+    GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
+        projected_gauss_point.GetXi1()(0), this->ele1posref_, dr_beam_ref, this->Element1());
+    beam_jacobian = 0.5 * dr_beam_ref.Norm2();
 
-      // Get the jacobian in the reference configuration.
-      GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
-          projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref, this->Element1());
+    // Get the current positions on beam and solid.
+    GEOMETRYPAIR::EvaluatePosition<beam>(
+        projected_gauss_point.GetXi1()(0), this->ele1pos_, r_beam, this->Element1());
+    GEOMETRYPAIR::EvaluatePosition<solid>(projected_gauss_point.GetXi2(), this->ele2pos_, r_solid);
 
-      // Jacobian including the segment length.
-      segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
+    // Calculate the force in this Gauss point. The sign of the force calculated here is the one
+    // that acts on the beam.
+    force = r_solid;
+    force -= r_beam;
+    force.Scale(penalty_parameter);
 
-      // Get the current positions on beam and solid.
-      GEOMETRYPAIR::EvaluatePosition<beam>(
-          projected_gauss_point.GetEta(), this->ele1pos_, r_beam, this->Element1());
-      GEOMETRYPAIR::EvaluatePosition<solid>(projected_gauss_point.GetXi(), this->ele2pos_, r_solid);
-
-      // Calculate the force in this Gauss point. The sign of the force calculated here is the one
-      // that acts on the beam.
-      force = r_solid;
-      force -= r_beam;
-      force.Scale(penalty_parameter);
-
-      // The force vector is in R3, we need to calculate the equivalent nodal forces on the element
-      // dof. This is done with the virtual work equation $F \delta r = f \delta q$.
-      for (unsigned int i_dof = 0; i_dof < beam::n_dof_; i_dof++)
-        for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-          force_element_1(i_dof) += force(i_dir) * r_beam(i_dir).dx(i_dof) *
-                                    projected_gauss_point.GetGaussWeight() * segment_jacobian;
-      for (unsigned int i_dof = 0; i_dof < solid::n_dof_; i_dof++)
-        for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-          force_element_2(i_dof) -= force(i_dir) * r_solid(i_dir).dx(i_dof + beam::n_dof_) *
-                                    projected_gauss_point.GetGaussWeight() * segment_jacobian;
-    }
+    // The force vector is in R3, we need to calculate the equivalent nodal forces on the element
+    // dof. This is done with the virtual work equation $F \delta r = f \delta q$.
+    for (unsigned int i_dof = 0; i_dof < beam::n_dof_; i_dof++)
+      for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
+        force_element_1(i_dof) += force(i_dir) * r_beam(i_dir).dx(i_dof) *
+                                  projected_gauss_point.GetGaussWeight() * beam_jacobian;
+    for (unsigned int i_dof = 0; i_dof < solid::n_dof_; i_dof++)
+      for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
+        force_element_2(i_dof) -= force(i_dir) * r_solid(i_dir).dx(i_dof + beam::n_dof_) *
+                                  projected_gauss_point.GetGaussWeight() * beam_jacobian;
   }
 
 
