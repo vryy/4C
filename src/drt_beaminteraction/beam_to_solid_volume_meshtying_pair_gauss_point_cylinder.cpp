@@ -18,6 +18,7 @@ on the surface of the (circular) beam cross section.
 #include "beam_contact_params.H"
 #include "beam_to_solid_volume_meshtying_params.H"
 #include "../drt_geometry_pair/geometry_pair_element_types.H"
+#include "../drt_geometry_pair/geometry_pair_utility_functions.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_volume_gauss_point_projection_cylinder.H"
 #include "../drt_geometry_pair/geometry_pair_evaluation_data_global.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_volume_evaluation_data.H"
@@ -121,8 +122,8 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<beam, sol
     beam_jacobian = 0.5 * dr_beam_ref.Norm2();
 
     // Get the current positions on beam and solid.
-    GEOMETRYPAIR::EvaluatePosition<beam>(
-        projected_gauss_point.GetXi1()(0), this->ele1pos_, r_beam, this->Element1());
+    GEOMETRYPAIR::EvaluatePositionLineVolume<beam>(
+        projected_gauss_point.GetXi1(), this->ele1pos_, r_beam, this->Element1());
     GEOMETRYPAIR::EvaluatePosition<solid>(projected_gauss_point.GetXi2(), this->ele2pos_, r_solid);
 
     // Calculate the force in this Gauss point. The sign of the force calculated here is the one

@@ -13,14 +13,12 @@
 #include "geometry_pair_evaluation_data_global.H"
 #include "geometry_pair_line_to_volume_evaluation_data.H"
 #include "geometry_pair_utility_classes.H"
+#include "geometry_pair_utility_functions.H"
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
 #include <math.h>
-
-
-#define radius 0.1
 
 
 /**
@@ -95,21 +93,15 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<scalar_t
       // Only check points that do not already have a valid projection.
       if (line_projection_tracker[index_gp] == false)
       {
-        // Centerline coordinate.
+        // Centerline coordinate and coodrinates in the cross section.
         eta = gauss_points_axis.qxg[index_gp_axis][0];
-
-        // Get the spatial position of the beam centerline.
-        GEOMETRYPAIR::EvaluatePosition<line>(eta, q_line, r_beam, this->Element1());
-
-        // Add the in crossection position.
         alpha = 2. * M_PI / double(n_gauss_points_circ) * index_gp_circ;
-        r_beam(1) += radius * cos(alpha);
-        r_beam(2) += radius * sin(alpha);
-
-        // Parameter coordinates on the line.
         xi_beam(0) = eta;
         xi_beam(1) = cos(alpha);
         xi_beam(2) = sin(alpha);
+
+        // Position of beam in the cross section.
+        GEOMETRYPAIR::EvaluatePositionLineVolume<line>(xi_beam, q_line, r_beam, this->Element1());
 
         // Project point to the volume.
         this->ProjectPointToVolume(r_beam, q_volume, xi_solid, projection_result);
