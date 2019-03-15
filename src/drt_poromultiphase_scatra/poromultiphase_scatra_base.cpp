@@ -415,7 +415,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ApplyAdditionalDBCForVolFra
             }
           }
           else
-            dserror("only MAT_scatra_multiporo_(fluid,volfrac) valid here");
+            dserror("only MAT_scatra_multiporo_(fluid,volfrac,solid,temperature) valid here");
         }
       }
     }

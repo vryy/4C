@@ -39,7 +39,7 @@ PROBLEMTYP                      Multiphase_Poroelasticity_ScaTra // Multiphase_P
 RESTART                         0
 ----------------------------------------------------------POROMULTIPHASESCATRA DYNAMIC
 RESULTSEVRY                     1
-RESTARTEVRY                     24
+RESTARTEVRY                     1
 NUMSTEP                         10
 MAXTIME                         4147200
 TIMESTEP                        1800

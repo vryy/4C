@@ -403,13 +403,13 @@ namespace DRT
             saturation_(0),
             density_(0),
             solidpressure_(0.0),
-            scalartophaseID_(numscal, -1),
             delta_(numscal, 0.0),
             thermaldiffusivity_(numscal, 0.0),
             heatcapacityeff_(0.0),
             min_val_of_phase_(numscal, 0.0),
             evaluate_scalar_(numscal, true),
-            species_type_(numscal, MAT::ScatraMatMultiPoro::SpeciesType::species_undefined),
+            scalartophasemap_(
+                numscal, {-1, MAT::ScatraMatMultiPoro::SpeciesType::species_undefined}),
             materialset_(false),
             myaction_(SCATRA::Action::calc_mat_and_rhs)
       {
@@ -508,8 +508,6 @@ namespace DRT
               phasemanager_->DynViscosity(k, abspressuregrad_[k], ndsscatra_porofluid_));
 
           // Insert Darcy's law: porosity*S^\pi*(v^\pi - v_s) = - k/\mu * grad p
-          // additional scaling with density since
-          // \rho*porosity*S^\pi*(v^\pi - v_s) = - rho*k/\mu * grad p
           multiconvelint_[k].Multiply(-1.0, difftensorsfluid_[k], pressuregrad_[k]);
 
           temperatureconvelint_.Update(
@@ -545,8 +543,6 @@ namespace DRT
                         ndsscatra_porofluid_));  // -1.0 --> don't need abspressgrad
 
           // Insert Darcy's law: porosity*(v^\pi - v_s) = - k/\mu * grad p
-          // additional scaling with density since
-          // \rho*porosity*(v^\pi - v_s) = - rho*k/\mu * grad p
           multiconvelint_[k].Multiply(-1.0, difftensorsfluid_[k], pressuregrad_[k]);
 
           temperatureconvelint_.Update(
@@ -566,11 +562,11 @@ namespace DRT
         {
           // overwrite convective term
           // - rho * k/\mu*grad p * grad phi
-          switch (species_type_[k])
+          switch (scalartophasemap_[k].species_type)
           {
             case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
             case MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac:
-              my::conv_phi_[k] = multiconvelint_[scalartophaseID_[k]].Dot(my::gradphi_[k]);
+              my::conv_phi_[k] = multiconvelint_[scalartophasemap_[k].phaseID].Dot(my::gradphi_[k]);
               break;
 
             case MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid:
@@ -582,7 +578,8 @@ namespace DRT
               break;
 
             default:
-              dserror("unknown species type %i for species %i!", species_type_[k], k);
+              dserror(
+                  "unknown species type %i for species %i!", scalartophasemap_[k].species_type, k);
               break;
           }
           // set flag if we actually have to evaluate the species
@@ -616,21 +613,21 @@ namespace DRT
         }
 
         // check if the IDs make sense
-        for (std::vector<int>::iterator it = scalartophaseID_.begin(); it != scalartophaseID_.end();
-             ++it)
+        for (unsigned int k = 0; k < scalartophasemap_.size(); ++k)
         {
-          if (*it < -1 or *it >= numfluidphases) dserror("Invalid phase ID %i", *it);
+          if (scalartophasemap_[k].phaseID < 0 or scalartophasemap_[k].phaseID >= numfluidphases)
+            dserror("Invalid phase ID %i", scalartophasemap_[k].phaseID);
         }
 
         // overwrite convective term
         for (int k = 0; k < my::numscal_; ++k)
         {
-          switch (species_type_[k])
+          switch (scalartophasemap_[k].species_type)
           {
             case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
             case MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac:
             case MAT::ScatraMatMultiPoro::SpeciesType::species_temperature:
-              my::conv_phi_[k] = multiconvelint_[scalartophaseID_[k]].Dot(my::gradphi_[k]);
+              my::conv_phi_[k] = multiconvelint_[scalartophasemap_[k].phaseID].Dot(my::gradphi_[k]);
               break;
 
             case MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid:
@@ -638,7 +635,8 @@ namespace DRT
               break;
 
             default:
-              dserror("unknown species type %i for species %i!", species_type_[k], k);
+              dserror(
+                  "unknown species type %i for species %i!", scalartophasemap_[k].species_type, k);
               break;
           }
         }
@@ -666,11 +664,11 @@ namespace DRT
       //! return convective velocity
       virtual const LINALG::Matrix<NSD, 1>& ConVel(const int k) const
       {
-        switch (species_type_[k])
+        switch (scalartophasemap_[k].species_type)
         {
           case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
           case MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac:
-            return multiconvelint_[scalartophaseID_[k]];
+            return multiconvelint_[scalartophasemap_[k].phaseID];
 
           case MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid:
             return zeroconvelint_;
@@ -680,7 +678,8 @@ namespace DRT
 
           case MAT::ScatraMatMultiPoro::SpeciesType::species_undefined:
           default:
-            dserror("unknown species type %i for species %i!", species_type_[k], k);
+            dserror(
+                "unknown species type %i for species %i!", scalartophasemap_[k].species_type, k);
         }
         return zeroconvelint_;
       };
@@ -688,11 +687,11 @@ namespace DRT
       //! return convective part in convective form
       virtual const LINALG::Matrix<NEN, 1>& Conv(const int k) const
       {
-        switch (species_type_[k])
+        switch (scalartophasemap_[k].species_type)
         {
           case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
           case MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac:
-            return multiconv_[scalartophaseID_[k]];
+            return multiconv_[scalartophasemap_[k].phaseID];
 
           case MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid:
             return zeroconv_;
@@ -701,7 +700,8 @@ namespace DRT
             return temperatureconv_;
 
           default:
-            dserror("unknown species type %i for species %i!", species_type_[k], k);
+            dserror(
+                "unknown species type %i for species %i!", scalartophasemap_[k].species_type, k);
             return zeroconv_;
         }
       };
@@ -709,14 +709,13 @@ namespace DRT
       //! return pressure associated with scalar k
       double Pressure(const int k) const
       {
-        switch (species_type_[k])
+        switch (scalartophasemap_[k].species_type)
         {
           case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
-            // case MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac:
-            return pressure_[scalartophaseID_[k]];
+            return pressure_[scalartophasemap_[k].phaseID];
 
           default:
-            dserror("ScalartophaseID = %i for species %i", scalartophaseID_[k], k);
+            dserror("ScalartophaseID = %i for species %i", scalartophasemap_[k].phaseID, k);
             return 0;
         }
       };
@@ -727,14 +726,13 @@ namespace DRT
       //! return saturation associated with scalar k
       double Saturation(const int k) const
       {
-        switch (species_type_[k])
+        switch (scalartophasemap_[k].species_type)
         {
           case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
-            // case MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac:
-            return saturation_[scalartophaseID_[k]];
+            return saturation_[scalartophasemap_[k].phaseID];
 
           default:
-            dserror("ScalartophaseID = %i for species %i", scalartophaseID_[k], k);
+            dserror("ScalartophaseID = %i for species %i", scalartophasemap_[k].phaseID, k);
             return 0;
         }
       };
@@ -745,20 +743,22 @@ namespace DRT
       //! return density associated with scalar k
       double Density(const int k) const
       {
-        switch (species_type_[k])
+        switch (scalartophasemap_[k].species_type)
         {
           case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
           case MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac:
-            return density_[scalartophaseID_[k]];
+            return density_[scalartophasemap_[k].phaseID];
 
           case MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid:
             return phasemanager_->SolidDensity();
 
           case MAT::ScatraMatMultiPoro::SpeciesType::species_temperature:
+            // set to 1.0 because densities are included in the effective heat capacity
             return 1.0;
 
           default:
-            dserror("unknown species type %i for species %i!", species_type_[k], k);
+            dserror(
+                "unknown species type %i for species %i!", scalartophasemap_[k].species_type, k);
             return 0;
         }
       };
@@ -772,14 +772,14 @@ namespace DRT
       //! return volume fraction associated with scalar k
       double VolFrac(const int k) const
       {
-        switch (species_type_[k])
+        switch (scalartophasemap_[k].species_type)
         {
           // case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
           case MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac:
             return volfrac_[GetPhaseID(k) - phasemanager_->NumFluidPhases()];
 
           default:
-            dserror("ScalartophaseID = %i for species %i", scalartophaseID_[k], k);
+            dserror("ScalartophaseID = %i for species %i", scalartophasemap_[k].phaseID, k);
             return 0;
         }
       };
@@ -794,17 +794,24 @@ namespace DRT
       void SetPhaseIDAndSpeciesType(const int scalarID, const int phaseID,
           const MAT::ScatraMatMultiPoro::SpeciesType& spectype)
       {
-        scalartophaseID_[scalarID] = phaseID;
-        species_type_[scalarID] = spectype;
+        scalartophasemap_[scalarID].phaseID = phaseID;
+        scalartophasemap_[scalarID].species_type = spectype;
       };
 
       //! get phase ID from scalar ID
       int GetPhaseID(const int scalarID) const
       {
-        if (scalartophaseID_[scalarID] < 0)
-          dserror("ScalartophaseID = %i for species %i", scalartophaseID_[scalarID], scalarID);
+        if (scalartophasemap_[scalarID].phaseID < 0)
+          dserror(
+              "ScalartophaseID = %i for species %i", scalartophasemap_[scalarID].phaseID, scalarID);
 
-        return scalartophaseID_[scalarID];
+        return scalartophasemap_[scalarID].phaseID;
+      };
+
+      //! get species type of scalar 'k'
+      MAT::ScatraMatMultiPoro::SpeciesType GetSpeciesType(const int k)
+      {
+        return scalartophasemap_[k].species_type;
       };
 
       //! set delta for evaluation of effective diffusivity
@@ -812,6 +819,9 @@ namespace DRT
 
       //! set heat capacity
       void SetHeatCapacity(std::vector<double> cp) { heatcapacity_ = cp; };
+
+      //! set effective heat capacity
+      void SetEffectiveHeatCapacity(double cp_eff) { heatcapacityeff_ = cp_eff; };
 
       //! set thermal diffusivity
       void SetThermalDiffusivity(std::vector<double> kappa) { thermaldiffusivity_ = kappa; };
@@ -829,13 +839,14 @@ namespace DRT
       //! get delta
       double GetDelta(const int k) { return delta_[k]; };
 
+      //! get heat capacity
       double GetHeatCapacity(const int j) { return heatcapacity_[j]; }
 
-      std::vector<double> GetHeatCapacity() { return heatcapacity_; }
+      //! get effective heat capacity
+      double GetEffectiveHeatCapacity() { return heatcapacityeff_; }
 
+      //! get thermal diffusivity
       double GetThermalDiffusivity(const int j) { return thermaldiffusivity_[j]; }
-
-      std::vector<double> GetThermalDiffusivity() { return thermaldiffusivity_; }
 
       //! get evaluate scalar flag
       bool EvaluateScalar(const int k) { return evaluate_scalar_[k]; };
@@ -849,7 +860,7 @@ namespace DRT
       {
         double prefac = fac;
 
-        switch (species_type_[k])
+        switch (scalartophasemap_[k].species_type)
         {
           case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
           {
@@ -893,26 +904,15 @@ namespace DRT
               const int numdofs = phasemanager_->NumFluidPhases() + phasemanager_->NumVolFrac();
               const int numfluidphases = phasemanager_->NumFluidPhases();
 
-              std::vector<double> const cp = GetHeatCapacity();
+              double cp_eff = GetEffectiveHeatCapacity();
 
-              double cp_eff = (1 - phasemanager_->Porosity() - phasemanager_->SumAddVolFrac()) *
-                              phasemanager_->SolidDensity() * cp[numdofs];
-
-              for (int phase = 0; phase < numfluidphases; ++phase)
-                cp_eff += cp[phase] * phasemanager_->Porosity() * phasemanager_->Saturation(phase) *
-                          phasemanager_->Density(phase);
-
-              for (int phase = numfluidphases; phase < numdofs; ++phase)
-                cp_eff += cp[phase] * phasemanager_->VolFrac(phase - numfluidphases) *
-                          phasemanager_->VolFracDensity(phase - numfluidphases);
-
-              prefac += fac / cp_eff * phasemanager_->SolidDensity() * cp[numdofs] * (-1.0) *
-                        phasemanager_->JacobianDefGrad() *
+              prefac += fac / cp_eff * phasemanager_->SolidDensity() * GetHeatCapacity(numdofs) *
+                        (-1.0) * phasemanager_->JacobianDefGrad() *
                         phasemanager_->PorosityDerivWrtJacobianDefGrad();
 
               for (int phase = 0; phase < numfluidphases; ++phase)
               {
-                prefac += fac / cp_eff * phasemanager_->Density(phase) * cp[phase] *
+                prefac += fac / cp_eff * phasemanager_->Density(phase) * GetHeatCapacity(phase) *
                           phasemanager_->JacobianDefGrad() * phasemanager_->Saturation(phase) *
                           phasemanager_->PorosityDerivWrtJacobianDefGrad();
               }
@@ -920,7 +920,8 @@ namespace DRT
             break;
           }
           default:
-            dserror("unknown species type %i for species %i!", species_type_[k], k);
+            dserror(
+                "unknown species type %i for species %i!", scalartophasemap_[k].species_type, k);
             break;
         }  // switch(species type)
 
@@ -935,7 +936,7 @@ namespace DRT
 
         const int numfluidphases = phasemanager_->NumFluidPhases();
 
-        switch (species_type_[k])
+        switch (scalartophasemap_[k].species_type)
         {
           case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
           {
@@ -980,45 +981,36 @@ namespace DRT
             const int numdofs = phasemanager_->NumFluidPhases() + phasemanager_->NumVolFrac();
             const int totalnummultiphasedofpernode = MultiphaseMat()->NumMat();
 
-            std::vector<double> const cp = GetHeatCapacity();
-
-            double cp_eff = (1 - phasemanager_->Porosity() - phasemanager_->SumAddVolFrac()) *
-                            phasemanager_->SolidDensity() * cp[numdofs];
-
-            for (int phase = 0; phase < numfluidphases; ++phase)
-              cp_eff += cp[phase] * phasemanager_->Porosity() * phasemanager_->Saturation(phase) *
-                        phasemanager_->Density(phase);
-
-            for (int phase = numfluidphases; phase < numdofs; ++phase)
-              cp_eff += cp[phase] * phasemanager_->VolFrac(phase - numfluidphases) *
-                        phasemanager_->VolFracDensity(phase - numfluidphases);
+            double cp_eff = GetEffectiveHeatCapacity();
 
             for (int phase = 0; phase < numfluidphases; ++phase)
             {
               for (int idof = 0; idof < numfluidphases; ++idof)
                 (*prefaclinmassodfluid)[idof] += phasemanager_->SaturationDeriv(phase, idof) /
                                                  cp_eff * phasemanager_->Density(phase) *
-                                                 cp[phase] * phasemanager_->Porosity();
+                                                 GetHeatCapacity(phase) * phasemanager_->Porosity();
 
               if (phasemanager_->PorosityDependsOnFluid())
               {
                 for (int idof = 0; idof < totalnummultiphasedofpernode; ++idof)
-                  (*prefaclinmassodfluid)[idof] += phasemanager_->PorosityDeriv(idof) / cp_eff *
-                                                   phasemanager_->Density(phase) * cp[phase] *
-                                                   phasemanager_->Saturation(phase);
+                  (*prefaclinmassodfluid)[idof] +=
+                      phasemanager_->PorosityDeriv(idof) / cp_eff * phasemanager_->Density(phase) *
+                      GetHeatCapacity(phase) * phasemanager_->Saturation(phase);
               }
             }
 
             for (int phase = numfluidphases; phase < numdofs; ++phase)
             {
               (*prefaclinmassodfluid)[phase] +=
-                  cp[phase] * phasemanager_->VolFracDensity(phase - numfluidphases) / cp_eff;
+                  GetHeatCapacity(phase) * phasemanager_->VolFracDensity(phase - numfluidphases) /
+                  cp_eff;
             }
             break;
           }
           default:
           {
-            dserror("unknown species type %i for species %i!", species_type_[k], k);
+            dserror(
+                "unknown species type %i for species %i!", scalartophasemap_[k].species_type, k);
             break;
           }
         }  // switch(species type)
@@ -1039,7 +1031,7 @@ namespace DRT
         double laplawf(0.0);
         for (unsigned j = 0; j < NSD; j++) laplawf += derxy(j, ui) * gradphiTdifftensor(0, j);
 
-        switch (species_type_[k])
+        switch (scalartophasemap_[k].species_type)
         {
           case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
           {
@@ -1093,15 +1085,14 @@ namespace DRT
           {
             const int numfluidphases = phasemanager_->NumFluidPhases();
             const int numvolfrac = phasemanager_->NumVolFrac();
-            std::vector<double> const cp = GetHeatCapacity();
 
             if (phase < numfluidphases)
             {
               // derivative after fluid pressures
               for (int idof = 0; idof < numfluidphases; ++idof)
-                (*prefaclinconvodfluid)[idof] += laplawf *
-                                                 phasemanager_->PressureDeriv(phase, idof) *
-                                                 phasemanager_->Density(phase) * cp[phase];
+                (*prefaclinconvodfluid)[idof] +=
+                    laplawf * phasemanager_->PressureDeriv(phase, idof) *
+                    phasemanager_->Density(phase) * GetHeatCapacity(phase);
 
               // derivative after relative permeabilty
               if (not phasemanager_->HasConstantRelPermeability(phase))
@@ -1122,20 +1113,23 @@ namespace DRT
                   laplawf += gradpres(j) * gradphiTdifftensor(0, j);
 
                 for (int idof = 0; idof < numfluidphases; ++idof)
-                  (*prefaclinconvodfluid)[idof] +=
-                      laplawf * funct(ui) * phasemanager_->SaturationDeriv(phase, idof) * cp[phase];
+                  (*prefaclinconvodfluid)[idof] += laplawf * funct(ui) *
+                                                   phasemanager_->SaturationDeriv(phase, idof) *
+                                                   GetHeatCapacity(phase);
               }
             }
             else
             {
               (*prefaclinconvodfluid)[phase + numvolfrac] +=
-                  laplawf * phasemanager_->VolFracDensity(phase - numfluidphases) * cp[phase];
+                  laplawf * phasemanager_->VolFracDensity(phase - numfluidphases) *
+                  GetHeatCapacity(phase);
             }
             break;
           }
           default:
           {
-            dserror("unknown species type %i for species %i!", species_type_[k], k);
+            dserror(
+                "unknown species type %i for species %i!", scalartophasemap_[k].species_type, k);
             break;
           }
         }  // switch(species type)
@@ -1149,7 +1143,7 @@ namespace DRT
       {
         double prefac = 0.0;
 
-        switch (species_type_[k])
+        switch (scalartophasemap_[k].species_type)
         {
           case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
           {
@@ -1208,20 +1202,21 @@ namespace DRT
             {
               const int numdofs = phasemanager_->NumFluidPhases() + phasemanager_->NumVolFrac();
               const int numfluidphases = phasemanager_->NumFluidPhases();
-              std::vector<double> const kappa = GetThermalDiffusivity();
 
-              prefac = rhsfac * kappa[numdofs] * (-1.0) * phasemanager_->JacobianDefGrad() *
+              prefac = rhsfac * GetThermalDiffusivity(numdofs) * (-1.0) *
+                       phasemanager_->JacobianDefGrad() *
                        phasemanager_->PorosityDerivWrtJacobianDefGrad();
 
               for (int phase = 0; phase < numfluidphases; ++phase)
-                prefac += rhsfac * kappa[phase] * phasemanager_->JacobianDefGrad() *
+                prefac += rhsfac * GetThermalDiffusivity(phase) * phasemanager_->JacobianDefGrad() *
                           phasemanager_->Saturation(phase) *
                           phasemanager_->PorosityDerivWrtJacobianDefGrad();
             }
             break;
           }
           default:
-            dserror("unknown species type %i for species %i!", species_type_[k], k);
+            dserror(
+                "unknown species type %i for species %i!", scalartophasemap_[k].species_type, k);
             break;
         }  // switch(species type)
 
@@ -1235,7 +1230,7 @@ namespace DRT
         // reset to zero
         std::fill(prefacdiffodfluid->begin(), prefacdiffodfluid->end(), 0.0);
 
-        switch (species_type_[k])
+        switch (scalartophasemap_[k].species_type)
         {
           case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
           {
@@ -1300,28 +1295,30 @@ namespace DRT
             const int numfluidphases = phasemanager_->NumFluidPhases();
             const int numdofs = numfluidphases + phasemanager_->NumVolFrac();
             const int totalnummultiphasedofpernode = MultiphaseMat()->NumMat();
-            std::vector<double> const kappa = GetThermalDiffusivity();
 
             for (int phase = 0; phase < numfluidphases; ++phase)
             {
               for (int idof = 0; idof < numfluidphases; ++idof)
                 (*prefacdiffodfluid)[idof] += rhsfac * phasemanager_->SaturationDeriv(phase, idof) *
-                                              kappa[phase] * phasemanager_->Porosity();
+                                              GetThermalDiffusivity(phase) *
+                                              phasemanager_->Porosity();
 
               if (phasemanager_->PorosityDependsOnFluid())
                 for (int idof = 0; idof < totalnummultiphasedofpernode; ++idof)
                   (*prefacdiffodfluid)[idof] += rhsfac * phasemanager_->PorosityDeriv(idof) *
-                                                kappa[phase] * phasemanager_->Saturation(phase);
+                                                GetThermalDiffusivity(phase) *
+                                                phasemanager_->Saturation(phase);
             }
 
             for (int phase = numfluidphases; phase < numdofs; ++phase)
-              (*prefacdiffodfluid)[phase] += rhsfac * kappa[phase];
+              (*prefacdiffodfluid)[phase] += rhsfac * GetThermalDiffusivity(phase);
 
             break;
           }
           default:
           {
-            dserror("unknown species type %i for species %i!", species_type_[k], k);
+            dserror(
+                "unknown species type %i for species %i!", scalartophasemap_[k].species_type, k);
             break;
           }
         }  // switch(species type)
@@ -1332,7 +1329,7 @@ namespace DRT
       //! get difftensor of fluid phases (permeability*relpermeability/mu)
       void GetDiffTensorFluid(const int k, LINALG::Matrix<NSD, NSD>& difftensor, const int phase)
       {
-        switch (species_type_[k])
+        switch (scalartophasemap_[k].species_type)
         {
           case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
           case MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac:
@@ -1343,7 +1340,8 @@ namespace DRT
           }
           case MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid:
           default:
-            dserror("unknown species type %i for species %i!", species_type_[k], k);
+            dserror(
+                "unknown species type %i for species %i!", scalartophasemap_[k].species_type, k);
             break;
         }  // switch(species type)
 
@@ -1356,7 +1354,7 @@ namespace DRT
       {
         refgradpres.Clear();
 
-        switch (species_type_[k])
+        switch (scalartophasemap_[k].species_type)
         {
           case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
           {
@@ -1413,7 +1411,8 @@ namespace DRT
           }
 
           default:
-            dserror("unknown species type %i for species %i!", species_type_[k], k);
+            dserror(
+                "unknown species type %i for species %i!", scalartophasemap_[k].species_type, k);
             break;
         }  // switch(species type)
 
@@ -1425,19 +1424,20 @@ namespace DRT
       {
         const int numfluidphases = phasemanager_->NumFluidPhases();
 
-        switch (species_type_[k])
+        switch (scalartophasemap_[k].species_type)
         {
           case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
           {
             // if smaller than threshold (at GP) we do not evaluate
-            evaluate_scalar_[k] = (fabs(saturation_[scalartophaseID_[k]]) > min_val_of_phase_[k]);
+            evaluate_scalar_[k] =
+                (fabs(saturation_[scalartophasemap_[k].phaseID]) > min_val_of_phase_[k]);
             break;
           }
           case MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac:
           {
             // if smaller than minimum nodal volume fraction in element we do not evaluate
             evaluate_scalar_[k] = variablemanager_->ElementHasValidVolFracSpecies(
-                scalartophaseID_[k] - numfluidphases);
+                scalartophasemap_[k].phaseID - numfluidphases);
             break;
           }
           case MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid:
@@ -1452,7 +1452,8 @@ namespace DRT
           }
           default:
           {
-            dserror("unknown species type %i for species %i!", species_type_[k], k);
+            dserror(
+                "unknown species type %i for species %i!", scalartophasemap_[k].species_type, k);
             break;
           }
         }  // switch(species type)
@@ -1468,7 +1469,7 @@ namespace DRT
         //    call base class with fac*rhsint
         double prefac = fac * rhsint;
 
-        switch (species_type_[k])
+        switch (scalartophasemap_[k].species_type)
         {
           case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
           {
@@ -1511,26 +1512,15 @@ namespace DRT
             const int numdofs = phasemanager_->NumFluidPhases() + phasemanager_->NumVolFrac();
             const int numfluidphases = phasemanager_->NumFluidPhases();
 
-            std::vector<double> const cp = GetHeatCapacity();
+            double cp_eff = GetEffectiveHeatCapacity();
 
-            double cp_eff = (1 - phasemanager_->Porosity() - phasemanager_->SumAddVolFrac()) *
-                            phasemanager_->SolidDensity() * cp[numdofs];
-
-            for (int phase = 0; phase < numfluidphases; ++phase)
-              cp_eff += cp[phase] * phasemanager_->Porosity() * phasemanager_->Saturation(phase) *
-                        phasemanager_->Density(phase);
-
-            for (int phase = numfluidphases; phase < numdofs; ++phase)
-              cp_eff += cp[phase] * phasemanager_->VolFrac(phase - numfluidphases) *
-                        phasemanager_->VolFracDensity(phase - numfluidphases);
-
-            prefac += fac * hist * densnp / cp_eff * phasemanager_->SolidDensity() * cp[numdofs] *
-                      (-1.0) * phasemanager_->JacobianDefGrad() *
+            prefac += fac * hist * densnp / cp_eff * phasemanager_->SolidDensity() *
+                      GetHeatCapacity(numdofs) * (-1.0) * phasemanager_->JacobianDefGrad() *
                       phasemanager_->PorosityDerivWrtJacobianDefGrad();
 
             for (int phase = 0; phase < numfluidphases; ++phase)
-              prefac += fac * hist * densnp / cp_eff * phasemanager_->Density(phase) * cp[phase] *
-                        phasemanager_->Saturation(phase) *
+              prefac += fac * hist * densnp / cp_eff * phasemanager_->Density(phase) *
+                        GetHeatCapacity(phase) * phasemanager_->Saturation(phase) *
                         phasemanager_->PorosityDerivWrtJacobianDefGrad() *
                         phasemanager_->JacobianDefGrad();
 
@@ -1538,7 +1528,8 @@ namespace DRT
           }
 
           default:
-            dserror("unknown species type %i for species %i!", species_type_[k], k);
+            dserror(
+                "unknown species type %i for species %i!", scalartophasemap_[k].species_type, k);
             break;
         }  // switch(species type)
 
@@ -1550,13 +1541,6 @@ namespace DRT
       {
         // return
         return myaction_;
-      };
-
-      //! get species type of scalar 'k'
-      MAT::ScatraMatMultiPoro::SpeciesType GetSpeciesType(const int k)
-      {
-        // return
-        return species_type_[k];
       };
 
       //! return pressure gradient of current phase
@@ -1576,9 +1560,6 @@ namespace DRT
 
         return multiphasemat_;
       }
-
-      //! return species type
-      double SpeciesType(const int k) { return species_type_[k]; };
 
       //! Setup phasemanager and variablemanager of fluid
       void SetupPoroFluidManagers(DRT::Element* ele, Teuchos::ParameterList& params,
@@ -1669,8 +1650,6 @@ namespace DRT
       //! fluid-poro multiphase material
       Teuchos::RCP<MAT::FluidPoroMultiPhase> multiphasemat_;
 
-      //! mapping from scalar ID to phase ID
-      std::vector<int> scalartophaseID_;
       //! delta for effective diffusivity
       std::vector<double> delta_;
       //! heat capacity
@@ -1684,8 +1663,8 @@ namespace DRT
       std::vector<double> min_val_of_phase_;
       //! flag to check if we have to evaluate the species equation in this element
       std::vector<bool> evaluate_scalar_;
-      //! species type of scalar 'k'
-      std::vector<MAT::ScatraMatMultiPoro::SpeciesType> species_type_;
+      //! scalar to phase map
+      std::vector<MAT::ScatraMatMultiPoro::ScalarToPhaseMap> scalartophasemap_;
       //! check if multiphase material has been set
       bool materialset_;
 

@@ -1499,10 +1499,6 @@ namespace DRT
 
         //! flags indicating whether the phase is involved in a reaction
         std::vector<bool> isreactive_;
-        //! scalar to phase ids
-        std::vector<int> scalartophaseid_;
-        //! species types
-        std::vector<MAT::ScatraMatMultiPoro::SpeciesType> species_type_;
         //! scalar to phase map
         std::vector<MAT::ScatraMatMultiPoro::ScalarToPhaseMap> scalartophasemap_;
         //! number of scalars

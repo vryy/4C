@@ -160,7 +160,8 @@ inline INPAR::MAT::MaterialType MAT::StructPoro::PoroLawType() const
 double MAT::StructPoro::InvBulkmodulus() const { return params_->porolaw_->InvBulkmodulus(); }
 
 /*----------------------------------------------------------------------*
-                                                              vuong 06/11|
+ |                                                           vuong 06/11|
+ | Density with respect to the poro domain in reference configuration   |
 *----------------------------------------------------------------------*/
 double MAT::StructPoro::Density() const
 {
@@ -170,7 +171,12 @@ double MAT::StructPoro::Density() const
     return ((1.0 - params_->initporosity_) * mat_->Density());
 }
 
-double MAT::StructPoro::InitDensity() const { return mat_->Density(); }
+/*----------------------------------------------------------------------*
+ |                                                           vuong 06/11|
+ | Density of the solid phase as part of the poro domain in reference   |
+ | configuration                                                        |
+*----------------------------------------------------------------------*/
+double MAT::StructPoro::DensitySolidPhase() const { return mat_->Density(); }
 
 /*----------------------------------------------------------------------*
                                                               vuong 06/11|
