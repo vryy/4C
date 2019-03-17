@@ -277,8 +277,16 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
           INPAR::PARTICLE::NormalKuwabaraKono, INPAR::PARTICLE::NormalTsuji),
       &particledyndem);
 
+  // type of tangential contact law
+  setStringToIntegralParameter<int>("TANGENTIALCONTACTLAW", "NoTangentialContact",
+      "tangential contact law for particles",
+      tuple<std::string>("NoTangentialContact", "TangentialLinSpringDamp"),
+      tuple<int>(INPAR::PARTICLE::NoTangentialContact, INPAR::PARTICLE::TangentialLinSpringDamp),
+      &particledyndem);
+
   DoubleParameter("MAX_RADIUS", -1.0, "maximum expected particle radius", &particledyndem);
   DoubleParameter("MAX_VELOCITY", -1.0, "maximum expected particle velocity", &particledyndem);
+
   DoubleParameter("REL_PENETRATION", -1.0,
       "maximum allowed relative penetration (particle-particle)", &particledyndem);
   DoubleParameter(
@@ -291,4 +299,9 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "linearly regularized damping normal force in the interval |g| < (DAMP_REG_FAC * r_min)",
       &particledyndem);
   BoolParameter("TENSION_CUTOFF", "no", "switch on/off tension cutoff", &particledyndem);
+
+  DoubleParameter("POISSON_RATIO", -1.0, "poisson ratio", &particledyndem);
+
+  DoubleParameter("FRICT_COEFF_TANG", -1.0,
+      "dynamic friction coefficient for tangential contact (particle-particle)", &particledyndem);
 }

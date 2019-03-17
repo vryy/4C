@@ -193,6 +193,13 @@ namespace INPAR
       NormalTsuji
     };
 
+    //! type of tangential contact law
+    enum TangentialContact
+    {
+      NoTangentialContact,
+      TangentialLinSpringDamp
+    };
+
 
     //! set the particle parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);

@@ -144,6 +144,20 @@ void PARTICLEALGORITHM::ResultTest::TestSpecial(
         else if (quantity == "accz")
           dim = 2;
       }
+      // angular velocity
+      else if (quantity == "angvelx" or quantity == "angvely" or quantity == "angvelz")
+      {
+        // get enum of particle state
+        particleState = PARTICLEENGINE::AngularVelocity;
+
+        // get component of result
+        if (quantity == "angvelx")
+          dim = 0;
+        else if (quantity == "angvely")
+          dim = 1;
+        else if (quantity == "angvelz")
+          dim = 2;
+      }
       // radius
       else if (quantity == "radius")
       {
