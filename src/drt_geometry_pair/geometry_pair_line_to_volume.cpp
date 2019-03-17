@@ -348,11 +348,15 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
     face_fixed_parameters = {0, 0, 1, 1, 2, 2};
     face_fixed_values = {-1., 1., -1., 1., -1., 1.};
   }
-  else
+  else if (volume::volume_type_ == DiscretizationTypeVolume::tetraeder)
   {
     n_faces = 4;
     face_fixed_parameters = {0, 1, 2, 3};
     face_fixed_values = {0., 0., 0., 1.};
+  }
+  else
+  {
+    dserror("Wrong volume type given!");
   }
 
   // Clear the input vector.
@@ -431,12 +435,16 @@ bool GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ValidPar
   {
     if (fabs(xi(0)) < xi_limit && fabs(xi(1)) < xi_limit && fabs(xi(2)) < xi_limit) return true;
   }
-  else
+  else if (volume::volume_type_ == DiscretizationTypeVolume::tetraeder)
   {
     if (xi(0) > -CONSTANTS::projection_xi_eta_tol && xi(1) > -CONSTANTS::projection_xi_eta_tol &&
         xi(2) > -CONSTANTS::projection_xi_eta_tol &&
         xi(0) + xi(1) + xi(2) < 1.0 + CONSTANTS::projection_xi_eta_tol)
       return true;
+  }
+  else
+  {
+    dserror("Wrong volume type given!");
   }
 
   // Default value.
@@ -464,8 +472,10 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::SetStart
 {
   if (volume::volume_type_ == DiscretizationTypeVolume::hexaeder)
     xi.PutScalar(0.0);
-  else
+  else if (volume::volume_type_ == DiscretizationTypeVolume::tetraeder)
     xi.PutScalar(0.25);
+  else
+    dserror("Wrong element type given!");
 }
 
 

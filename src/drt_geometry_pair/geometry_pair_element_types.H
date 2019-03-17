@@ -113,6 +113,8 @@ namespace GEOMETRYPAIR
   template <DRT::Element::DiscretizationType discretization>
   struct ElementDiscretizationToVolumeType
   {
+    static const GEOMETRYPAIR::DiscretizationTypeVolume volume_type_ =
+        GEOMETRYPAIR::DiscretizationTypeVolume::none;
   };
   template <>
   struct ElementDiscretizationToVolumeType<DRT::Element::hex8>
