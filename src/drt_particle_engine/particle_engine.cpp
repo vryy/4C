@@ -666,6 +666,15 @@ PARTICLEENGINE::ParticleEngine::GetLocalIndexInSpecificContainer(int globalid) c
 }
 
 /*---------------------------------------------------------------------------*
+ | get bin discretization writer                              sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
+const std::shared_ptr<IO::DiscretizationWriter>
+PARTICLEENGINE::ParticleEngine::GetBinDiscretizationWriter() const
+{
+  return Teuchos::get_shared_ptr(binstrategy_->BinDiscret()->Writer());
+}
+
+/*---------------------------------------------------------------------------*
  | relate all particles to all processors                     sfuchs 03/2019 |
  *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::RelateAllParticlesToAllProcs(

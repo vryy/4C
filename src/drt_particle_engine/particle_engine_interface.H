@@ -28,7 +28,18 @@
 
 #include "../linalg/linalg_fixedsizematrix.H"
 
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_RCPStdSharedPtrConversions.hpp>
+
 #include <unordered_map>
+
+/*---------------------------------------------------------------------------*
+ | forward declarations                                       sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
+namespace IO
+{
+  class DiscretizationWriter;
+}
 
 /*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 05/2018 |
@@ -60,6 +71,9 @@ namespace PARTICLEENGINE
 
     //! get local index in specific particle container
     virtual const LocalIndexTupleShrdPtr GetLocalIndexInSpecificContainer(int globalid) const = 0;
+
+    //! get bin discretization writer
+    virtual const std::shared_ptr<IO::DiscretizationWriter> GetBinDiscretizationWriter() const = 0;
 
     //! relate all particles to all processors
     virtual void RelateAllParticlesToAllProcs(std::vector<int>& particlestoproc) const = 0;

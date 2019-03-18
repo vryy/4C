@@ -30,7 +30,6 @@
 #include <Epetra_Comm.h>
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
 /*---------------------------------------------------------------------------*
@@ -51,8 +50,9 @@ namespace BINSTRATEGY
 
 namespace IO
 {
+  class DiscretizationWriter;
   class DiscretizationReader;
-}
+}  // namespace IO
 
 /*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 03/2018 |
@@ -151,6 +151,9 @@ namespace PARTICLEENGINE
 
     //! get local index in specific particle container
     const LocalIndexTupleShrdPtr GetLocalIndexInSpecificContainer(int globalid) const override;
+
+    //! get bin discretization writer
+    const std::shared_ptr<IO::DiscretizationWriter> GetBinDiscretizationWriter() const override;
 
     //! relate all particles to all processors
     void RelateAllParticlesToAllProcs(std::vector<int>& particlestoproc) const override;
