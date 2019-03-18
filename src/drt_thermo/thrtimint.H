@@ -150,7 +150,7 @@ namespace THR
     //! Do the nonlinear solve, i.e. (multiple) corrector,
     //! for the time step. All boundary conditions have
     //! been set.
-    virtual void Solve() = 0;
+    virtual INPAR::THR::ConvergenceStatus Solve() = 0;
 
     //! build linear system tangent matrix, rhs/force residual
     //! Monolithic TSI accesses the linearised thermo problem
@@ -187,7 +187,7 @@ namespace THR
     //! Thus the last converged state is copied back on the predictor
     //! for current time step. This applies only to elemet-wise
     //! quantities
-    void ResetStep();
+    virtual void ResetStep();
 
     //! set the initial thermal field
     void SetInitialField(const INPAR::THR::InitialField,  //!< type of initial field
@@ -236,6 +236,12 @@ namespace THR
 
     //! Energy output
     void OutputEnergy();
+
+    //! phase information in SLM
+    void OutputPhase(bool& datawritten);
+
+    //! postproc output of material parameters
+    void OutputConductivityAndCapacity(bool& datawritten);
 
     //! Write internal and external forces (if necessary for restart)
     virtual void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) = 0;
@@ -491,6 +497,9 @@ namespace THR
     //! Get number of time steps
     virtual int NumStep() const { return stepmax_; }
 
+    //! Update number of time steps (in adaptivity)
+    virtual void SetNumStep(const int newNumStep) { stepmax_ = newNumStep; }
+
     //! Get communicator
     virtual inline const Epetra_Comm& Comm() const { return discret_->Comm(); }
 
@@ -543,6 +552,7 @@ namespace THR
     int writeglobevery_;     //!< write state every given step
     INPAR::THR::HeatFluxType writeheatflux_;
     INPAR::THR::TempGradType writetempgrad_;
+    INPAR::THR::PhaseType writephase_;
     int writeenergyevery_;             //!< write system energy every given step
     std::ofstream* energyfile_;        //!< outputfile for energy
     INPAR::THR::CalcError calcerror_;  //!< evaluate error compared to analytical solution
@@ -587,7 +597,6 @@ namespace THR
     Teuchos::RCP<Epetra_Vector> raten_;  //!< global temperature rates
                                          //!< \f${R}_{n+1}\f$
                                          //!< at \f$t_{n+1}\f$
-
     //@}
 
     //! @name Interface stuff

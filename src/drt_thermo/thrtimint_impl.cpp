@@ -38,9 +38,12 @@ THR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
       itermax_(tdynparams.get<int>("MAXITER")),
       itermin_(tdynparams.get<int>("MINITER")),
       divcontype_(DRT::INPUT::IntegralValue<INPAR::THR::DivContAct>(tdynparams, "DIVERCONT")),
+      divcontrefinelevel_(0),
+      divcontfinesteps_(0),
       toltempi_(tdynparams.get<double>("TOLTEMP")),
       tolfres_(tdynparams.get<double>("TOLRES")),
       iter_(-1),
+      resetiter_(0),
       normcharforce_(0.0),
       normchartemp_(0.0),
       normfres_(0.0),
@@ -49,8 +52,15 @@ THR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
       tempinc_(Teuchos::null),
       timer_(actdis->Comm()),
       fres_(Teuchos::null),
-      freact_(Teuchos::null)
+      freact_(Teuchos::null),
+      fmelt_(Teuchos::null),
+      heatint_(DRT::INPUT::IntegralValue<int>(tdynparams, "HEATINTEGRATION") == 1),
+      melttol_(tdynparams.get<double>("TOLMELT"))
 {
+  if (heatint_)
+  {
+    if (!lumpcapa_) dserror("Heat integration is only possible with a lumped capacity.");
+  }
   // create empty residual force vector
   fres_ = LINALG::CreateVector(*discret_->DofRowMap(), false);
 
@@ -63,6 +73,20 @@ THR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
 
   // incremental temperature increments IncT_{n+1}
   tempinc_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
+
+  // artificial melting force accountig for latent heat
+  fmelt_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
+  if (heatint_)
+  {
+    // evaluate the element-wise available latent heat, non-assembled quantity
+    discret_->ClearState();
+    Teuchos::ParameterList params;
+    params.set<double>("total time", 0);
+    params.set<int>("action", calc_thermo_totallatentheat);
+    params.set<double>("delta time", (*dt_)[0]);
+    discret_->Evaluate(params);
+  }
+
 
   // setup mortar coupling
   if (DRT::Problem::Instance()->ProblemType() == prb_thermo)
@@ -128,8 +152,7 @@ void THR::TimIntImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> tempi)
   UpdateIterIncrementally(tempi);
 
   // builds tangent, residual and applies DBC
-  EvaluateRhsTangResidual();
-  PrepareSystemForNewtonSolve();
+  Evaluate();
 }
 
 /*----------------------------------------------------------------------*
@@ -441,29 +464,25 @@ bool THR::TimIntImpl::Converged()
 /*----------------------------------------------------------------------*
  | solve equilibrium                                        bborn 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::Solve()
+INPAR::THR::ConvergenceStatus THR::TimIntImpl::Solve()
 {
   // choose solution technique in accordance with user's will
   switch (itertype_)
   {
     case INPAR::THR::soltech_newtonfull:
-      NewtonFull();
-      break;
+      return NewtonFull();
     // catch problems
     default:
       dserror("Solution technique \"%s\" is not implemented",
           INPAR::THR::NonlinSolTechString(itertype_).c_str());
-      break;
+      return INPAR::THR::conv_nonlin_fail;  // compiler happiness
   }
-
-  // see you
-  return;
 }
 
 /*----------------------------------------------------------------------*
  | solution with full Newton-Raphson iteration              bborn 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::NewtonFull()
+INPAR::THR::ConvergenceStatus THR::TimIntImpl::NewtonFull()
 {
   // we do a Newton-Raphson iteration here.
   // the specific time integration has set the following
@@ -475,6 +494,8 @@ void THR::TimIntImpl::NewtonFull()
   {
     dserror("Effective tangent matrix must be filled here");
   }
+
+  fmelt_->PutScalar(0);
 
   // initialise equilibrium loop
   iter_ = 1;
@@ -518,28 +539,31 @@ void THR::TimIntImpl::NewtonFull()
     // update end-point temperatures etc
     UpdateIter(iter_);
 
+    if (heatint_)
+    {
+#ifdef LATENTHEAT_FIXPOINT_ITER
+      EvaluateRhsTangResidual();
+      BlankDirichletAndCalcNorms();
+
+      if (Converged())
+      {
+        std::cout << "inner Newton converged (res=" << normfres_ << ") -> applying latent heat"
+                  << std::endl;
+        ApplyLatentHeatIntegration();
+        // reevlaute residuals and norms
+        EvaluateRhsTangResidual();
+        BlankDirichletAndCalcNorms();
+      }
+#else
+      ApplyLatentHeatIntegration();
+#endif
+    }
+
     // compute residual forces #fres_ and tangent #tang_
     // whose components are globally oriented
     EvaluateRhsTangResidual();
 
-    // extract reaction forces
-    // reactions are negative to balance residual on DBC
-    freact_->Update(-1.0, *fres_, 0.0);
-    // copie the dbc onto freact_,
-    // everything that is not DBC node ("OtherVector") is blanked
-    dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact_);
-
-    // blank residual at DOFs on Dirichlet BC
-    // DBC node do not enter the residual, because values are known at the nodes
-    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
-
-    // do mortar condensation
-    if (adaptermeshtying_ != Teuchos::null) adaptermeshtying_->MortarCondensation(tang_, fres_);
-
-    // build residual force norm
-    normfres_ = THR::AUX::CalculateVectorNorm(iternorm_, fres_);
-    // build residual temperature norm
-    normtempi_ = THR::AUX::CalculateVectorNorm(iternorm_, tempi_);
+    BlankDirichletAndCalcNorms();
 
     // print stuff
     PrintNewtonIter();
@@ -551,13 +575,60 @@ void THR::TimIntImpl::NewtonFull()
   // correct iteration counter
   iter_ -= 1;
 
-  // Only simple divcont actions are implemented (divcont_stop and divcont_continue)
-  NewtonFullErrorCheck();
-  // Hence we do not return an error code
-  return;
+  return NewtonFullErrorCheck();
 }
 
-int THR::TimIntImpl::NewtonFullErrorCheck()
+
+void THR::TimIntImpl::ApplyLatentHeatIntegration()
+{
+  Teuchos::ParameterList p;
+  const THR::Action action = THR::calc_thermo_phasechangeinc;
+  p.set<int>("action", action);
+  // other parameters that might be needed by the elements
+  p.set("total time", timen_);
+  p.set("delta time", (*dt_)[0]);
+  p.set("melt tolerance", melttol_);
+  // apply the source term for melting
+  discret_->ClearState();
+  // SetState(0,...) in case of multiple dofsets (e.g. TSI)
+  discret_->SetState(0, "temperature", tempn_);
+  // required for linearization of T-dependent capacity
+  discret_->SetState(0, "last temperature", (*temp_)(0));
+  // TODO create these vectors only once
+  Teuchos::RCP<Epetra_Vector> fmeltinc = LINALG::CreateVector(*discret_->DofRowMap(), true);
+  Teuchos::RCP<Epetra_Vector> tempnmod = LINALG::CreateVector(*discret_->DofRowMap(), true);
+  discret_->Evaluate(p, Teuchos::null, Teuchos::null, fmeltinc, tempnmod, Teuchos::null);
+  discret_->ClearState();
+  fmelt_->Update(1.0, *fmeltinc, 1.0);
+  tempn_->Update(1.0, *tempnmod, 0.0);
+}
+
+
+void THR::TimIntImpl::BlankDirichletAndCalcNorms()
+{
+  // extract reaction forces
+  // reactions are negative to balance residual on DBC
+  freact_->Update(-1.0, *fres_, 0.0);
+  // copie the dbc onto freact_,
+  // everything that is not DBC node ("OtherVector") is blanked
+  dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact_);
+
+  // blank residual at DOFs on Dirichlet BC
+  // DBC node do not enter the residual, because values are known at the nodes
+  dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
+
+  // do mortar condensation
+  if (adaptermeshtying_ != Teuchos::null) adaptermeshtying_->MortarCondensation(tang_, fres_);
+
+  // build residual force norm
+  normfres_ = THR::AUX::CalculateVectorNorm(iternorm_, fres_);
+  // build residual temperature norm
+  normtempi_ = THR::AUX::CalculateVectorNorm(iternorm_, tempi_);
+}
+
+
+
+INPAR::THR::ConvergenceStatus THR::TimIntImpl::NewtonFullErrorCheck()
 {
   // do some error checks
   if ((iter_ >= itermax_) and (divcontype_ == INPAR::THR::divcont_stop))
@@ -566,33 +637,99 @@ int THR::TimIntImpl::NewtonFullErrorCheck()
     Output(true);
 
     dserror("Newton unconverged in %d iterations", iter_);
-    return 0;
+    return INPAR::THR::conv_nonlin_fail;
   }
   else if ((iter_ >= itermax_) and (divcontype_ == INPAR::THR::divcont_continue))
   {
     if (myrank_ == 0)
       IO::cout << "Newton unconverged in " << iter_ << " iterations, continuing" << IO::endl;
-    return 0;
+    return INPAR::THR::conv_success;
+  }
+  else if ((iter_ >= itermax_) and divcontype_ == INPAR::THR::divcont_halve_step)
+  {
+    HalveTimeStep();
+    return INPAR::THR::conv_fail_repeat;
   }
   else if (divcontype_ == INPAR::THR::divcont_repeat_step or
-           divcontype_ == INPAR::THR::divcont_halve_step or
            divcontype_ == INPAR::THR::divcont_repeat_simulation)
   {
     if (myrank_ == 0)
       dserror(
           "Fatal failure in NewtonFullErrorCheck()! divcont_repeat_step and "
           "divcont_repeat_simulation not implemented for THR");
-    return 0;
+    return INPAR::THR::conv_nonlin_fail;
   }
   // if everything is fine print to screen and return
   if (Converged())
   {
-    if (myrank_ == 0) PrintNewtonConv();
-    return 0;
+    CheckForTimeStepIncrease();
+    return INPAR::THR::conv_success;
   }
-  return 0;  // make compiler happy
+  else
+    return INPAR::THR::conv_nonlin_fail;
 
 }  // NewtonFull()
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void THR::TimIntImpl::HalveTimeStep()
+{
+  const double old_dt = Dt();
+  const double new_dt = old_dt * 0.5;
+  const int endstep = NumStep() + (NumStep() - Step()) + 1;
+  SetDt(new_dt);
+  SetTimen(TimeOld() + new_dt);
+  SetNumStep(endstep);
+  ResetStep();
+  // TODO limit the maximum number of refinement levels?
+  // go down one refinement level
+  divcontrefinelevel_++;
+  divcontfinesteps_ = 0;
+
+  // remember number of iterations
+  resetiter_ += iter_;
+  if (Comm().MyPID() == 0)
+    IO::cout << "Nonlinear solver failed to converge in step " << Step()
+             << ". Divide timestep in half. "
+             << "Old time step: " << old_dt << IO::endl
+             << "New time step: " << new_dt << IO::endl
+             << IO::endl;
+}
+
+/*-----------------------------------------------------------------------------*
+ * check, if according to divercont flag                            proell 09/18
+ * time step size can be increased
+ *-----------------------------------------------------------------------------*/
+void THR::TimIntImpl::CheckForTimeStepIncrease()
+{
+  const int maxnumfinestep = 4;
+
+  if (divcontype_ != INPAR::THR::divcont_halve_step)
+    return;
+  else if (divcontrefinelevel_ != 0)
+  {
+    // increment for the current, converged step
+    divcontfinesteps_++;
+    if (divcontfinesteps_ >= maxnumfinestep)
+    {
+      // increase the step size if the remaining number of steps is a even number
+      if (((NumStep() - Step()) % 2) == 0 and NumStep() != Step())
+      {
+        if (Comm().MyPID() == 0)
+          IO::cout << "Nonlinear solver successful. Double timestep size!" << IO::endl;
+
+        // step up one refinement level
+        divcontrefinelevel_--;
+        divcontfinesteps_ = 0;
+        // update total number of steps and next time step
+        const int endstep = NumStep() - (NumStep() - Step()) / 2;
+        SetNumStep(endstep);
+        SetDt(Dt() * 2.0);
+      }
+    }
+  }
+}
 
 
 /*----------------------------------------------------------------------*
@@ -681,6 +818,9 @@ void THR::TimIntImpl::Update()
   UpdateStepElement();
   // update time and step
   UpdateStepTime();
+  // correct iteration counter by adding all reset iterations
+  iter_ += resetiter_;
+  resetiter_ = 0;
   return;
 
 }  // Update()
@@ -939,7 +1079,7 @@ void THR::TimIntImpl::PrintStepText(FILE* ofile)
       " | time %-14.8E"
       " | dt %-14.8E"
       " | numiter %3d\n",
-      step_, stepmax_, (*time_)[0], (*dt_)[0], iter_);
+      step_, stepmax_, (*time_)[0], (*dt_)[0], iter_ + resetiter_);
   // print a beautiful line made exactly of 80 dashes
   fprintf(ofile,
       "--------------------------------------------------------------"
