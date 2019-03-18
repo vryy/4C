@@ -1,13 +1,13 @@
 ///
-// Maintainer: Ager Christoph
+// Maintainer: Christoph Ager
 // ager@lnm.mw.tum.de
 // http://www.lnm.mw.tum.de
 // 089 - 289-15249
 //
 //
-// volumecell gaus points by MomentFitting
+// volumecell gaus points by DirectDivergence
 //
-// boundarycell gauss points by MomentFitting
+// boundarycell gauss points by Tesselation
 ==================================================================
 General Data File CCARAT
 ==================================================================

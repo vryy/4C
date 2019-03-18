@@ -23,8 +23,6 @@
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 08/2018 |
  *---------------------------------------------------------------------------*/
-#include "particle_interaction_typedefs.H"
-
 #include "../drt_particle_engine/particle_enums.H"
 #include "../drt_particle_engine/particle_typedefs.H"
 
@@ -96,9 +94,6 @@ namespace PARTICLEINTERACTION
     virtual void ComputeDensity() const = 0;
 
    protected:
-    //! refresh density of ghosted particles
-    virtual void RefreshDensity() const final;
-
     //! evaluate sum of weighted mass and colorfield
     virtual void SumWeightedMassAndColorfield() const final;
 
@@ -125,6 +120,9 @@ namespace PARTICLEINTERACTION
 
     //! neighbor pair handler
     std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs_;
+
+    //! density of ghosted particles to refresh
+    PARTICLEENGINE::StatesOfTypesToRefresh densitytorefresh_;
 
     //! time step size
     double dt_;

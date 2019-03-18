@@ -152,8 +152,17 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
       tuple<std::string>("no", "tanh"), tuple<int>(reg_none, reg_tanh), &scontact);
 
   setStringToIntegralParameter<int>("NONSMOOTH_GEOMETRIES", "No",
-      "If chosen the contact algorithm combines mortar and nts formulations.", yesnotuple,
-      yesnovalue, &scontact);
+      "If chosen the contact algorithm combines mortar and nts formulations. This is needed if "
+      "contact between entities of different geometric dimension (such as contact between surfaces "
+      "and lines, or lines and nodes) can occur",
+      yesnotuple, yesnovalue, &scontact);
+
+  setStringToIntegralParameter<int>("NONSMOOTH_CONTACT_SURFACE", "No",
+      "This flag is used to alter the criterion for the evaluation of the so-called qualified "
+      "vectors in the case of a self contact scenario. This is needed as the standard criterion is "
+      "only valid for smooth surfaces and thus has to be altered, if the surface that is defined "
+      "to be a self contact surface is non-smooth!",
+      yesnotuple, yesnovalue, &scontact);
 
   DoubleParameter("HYBRID_ANGLE_MIN", -1.0,
       "Non-smooth contact: angle between cpp normal and element normal: begin transition (Mortar)",

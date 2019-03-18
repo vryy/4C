@@ -32,9 +32,8 @@
 /**
  *
  */
-template <unsigned int numnodessol, unsigned int numnodes, unsigned int numnodalvalues>
-BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<numnodessol, numnodes,
-    numnodalvalues>::BeamToSolidVolumeMeshtyingPair()
+template <typename beam, typename solid>
+BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<beam, solid>::BeamToSolidVolumeMeshtyingPair()
     : BeamContactPair(), meshtying_is_evaluated_(false), line_to_volume_segments_()
 {
   // Empty constructor.
@@ -44,8 +43,8 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<numnodessol, numnodes,
 /**
  *
  */
-template <unsigned int numnodessol, unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<numnodessol, numnodes, numnodalvalues>::Init(
+template <typename beam, typename solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<beam, solid>::Init(
     const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
     const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> geometry_evaluation_data_ptr,
     std::vector<DRT::Element const*> elements)
@@ -58,8 +57,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<numnodessol, numnodes, numn
 /**
  *
  */
-template <unsigned int numnodessol, unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<numnodessol, numnodes, numnodalvalues>::Setup()
+template <typename beam, typename solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<beam, solid>::Setup()
 {
   CheckInit();
 
@@ -67,22 +66,22 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<numnodessol, numnodes, numn
   BeamContactPair::Setup();
 
   // Initialize reference nodal positions (and tangents) for beam element
-  for (unsigned int i = 0; i < 3 * numnodes * numnodalvalues; i++) ele1posref_(i) = 0.0;
+  for (unsigned int i = 0; i < beam::n_dof_; i++) ele1posref_(i) = 0.0;
 
   // Set reference nodal positions (and tangents) for beam element
-  for (unsigned int n = 0; n < numnodes; ++n)
+  for (unsigned int n = 0; n < beam::n_nodes_; ++n)
   {
     const DRT::Node* node = Element1()->Nodes()[n];
-    for (int d = 0; d < 3; ++d) ele1posref_(3 * numnodalvalues * n + d) = node->X()[d];
+    for (int d = 0; d < 3; ++d) ele1posref_(3 * beam::n_val_ * n + d) = node->X()[d];
 
     // tangents
-    if (numnodalvalues == 2)
+    if (beam::n_val_ == 2)
     {
       LINALG::Matrix<3, 1> tan;
       const DRT::ElementType& eot = Element1()->ElementType();
       if (eot == DRT::ELEMENTS::Beam3Type::Instance())
       {
-        dserror("ERROR: Beam3tosolidmeshtying: numnodalvalues=2 detected for beam3 element");
+        dserror("ERROR: Beam3tosolidmeshtying: beam::n_val_=2 detected for beam3 element");
       }
       else if (eot == DRT::ELEMENTS::Beam3rType::Instance())
       {
@@ -91,7 +90,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<numnodessol, numnodes, numn
           tan = ele->Tref()[n];
         else
           dserror(
-              "ERROR: Beam3tosolidmeshtying: numnodalvalues=2 detected for beam3r element w/o "
+              "ERROR: Beam3tosolidmeshtying: beam::n_val_=2 detected for beam3r element w/o "
               "Hermite CL");
       }
       else if (eot == DRT::ELEMENTS::Beam3kType::Instance())
@@ -109,25 +108,25 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<numnodessol, numnodes, numn
         dserror("ERROR: Beam3tosolidmeshtying: Invalid beam element type");
       }
 
-      for (int d = 0; d < 3; ++d) ele1posref_(3 * numnodalvalues * n + d + 3) = tan(d, 0);
+      for (int d = 0; d < 3; ++d) ele1posref_(3 * beam::n_val_ * n + d + 3) = tan(d, 0);
     }
   }
 
   // Initialize reference nodal positions for solid surface element
-  for (unsigned int i = 0; i < 3 * numnodessol; i++) ele2posref_(i) = 0.0;
+  for (unsigned int i = 0; i < solid::n_dof_; i++) ele2posref_(i) = 0.0;
 
   // Set reference nodal positions for solid surface element
-  for (unsigned int n = 0; n < numnodessol; ++n)
+  for (unsigned int n = 0; n < solid::n_nodes_; ++n)
   {
     const DRT::Node* node = Element2()->Nodes()[n];
     for (int d = 0; d < 3; ++d) ele2posref_(3 * n + d) = node->X()[d];
   }
 
   // Initialize current nodal positions (and tangents) for beam element
-  for (unsigned int i = 0; i < 3 * numnodes * numnodalvalues; i++) ele1pos_(i) = 0.0;
+  for (unsigned int i = 0; i < beam::n_dof_; i++) ele1pos_(i) = 0.0;
 
   // Initialize current nodal positions for solid surface element
-  for (unsigned int i = 0; i < 3 * numnodessol; i++) ele2pos_(i) = 0.0;
+  for (unsigned int i = 0; i < solid::n_dof_; i++) ele2pos_(i) = 0.0;
 
   issetup_ = true;
 }
@@ -136,28 +135,24 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<numnodessol, numnodes, numn
 /**
  *
  */
-template <unsigned int numnodessol, unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<numnodessol, numnodes, numnodalvalues>::
-    CreateGeometryPair(
-        const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> geometry_evaluation_data_ptr)
+template <typename beam, typename solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<beam, solid>::CreateGeometryPair(
+    const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> geometry_evaluation_data_ptr)
 {
   // Set up the geometry pair, it will be initialized in the Init call of the base class.
-  geometry_pair_ = GEOMETRYPAIR::GeometryPairLineToVolumeFactory<double, numnodes, numnodalvalues,
-      numnodessol, 1>(geometry_evaluation_data_ptr);
+  geometry_pair_ = GEOMETRYPAIR::GeometryPairLineToVolumeFactory<double, beam, solid>(
+      geometry_evaluation_data_ptr);
 }
 
 
 /**
  *
  */
-template <unsigned int numnodessol, unsigned int numnodes, unsigned int numnodalvalues>
-Teuchos::RCP<
-    GEOMETRYPAIR::GeometryPairLineToVolume<double, numnodes, numnodalvalues, numnodessol, 1>>
-BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<numnodessol, numnodes,
-    numnodalvalues>::CastGeometryPair() const
+template <typename beam, typename solid>
+Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolume<double, beam, solid>>
+BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<beam, solid>::CastGeometryPair() const
 {
-  return Teuchos::rcp_dynamic_cast<
-      GEOMETRYPAIR::GeometryPairLineToVolume<double, numnodes, numnodalvalues, numnodessol, 1>>(
+  return Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::GeometryPairLineToVolume<double, beam, solid>>(
       geometry_pair_, true);
 }
 
@@ -165,9 +160,8 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<numnodessol, numnodes,
 /**
  *
  */
-template <unsigned int numnodessol, unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<numnodessol, numnodes,
-    numnodalvalues>::PreEvaluate()
+template <typename beam, typename solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<beam, solid>::PreEvaluate()
 {
   // Call PreEvaluate on the geometry Pair.
   if (!meshtying_is_evaluated_)
@@ -180,12 +174,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<numnodessol, numnodes,
 /**
  *
  */
-template <unsigned int numnodessol, unsigned int numnodes, unsigned int numnodalvalues>
-bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<numnodessol, numnodes,
-    numnodalvalues>::Evaluate(LINALG::SerialDenseVector* forcevec1,
-    LINALG::SerialDenseVector* forcevec2, LINALG::SerialDenseMatrix* stiffmat11,
-    LINALG::SerialDenseMatrix* stiffmat12, LINALG::SerialDenseMatrix* stiffmat21,
-    LINALG::SerialDenseMatrix* stiffmat22)
+template <typename beam, typename solid>
+bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<beam, solid>::Evaluate(
+    LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
+    LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
+    LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22)
 {
   // Call Evaluate on the geometry Pair.
   if (!meshtying_is_evaluated_)
@@ -199,8 +192,8 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<numnodessol, numnodes,
   LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> r_beam;
   LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> r_solid;
   LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> force;
-  LINALG::TMatrix<TYPE_BTS_VMT_AD, n_dof_element_1_, 1> force_element_1(true);
-  LINALG::TMatrix<TYPE_BTS_VMT_AD, n_dof_element_2_, 1> force_element_2(true);
+  LINALG::TMatrix<TYPE_BTS_VMT_AD, beam::n_dof_, 1> force_element_1(true);
+  LINALG::TMatrix<TYPE_BTS_VMT_AD, solid::n_dof_, 1> force_element_2(true);
 
   // Initialize scalar variables.
   double segment_jacobian, beam_segmentation_factor;
@@ -240,13 +233,13 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<numnodessol, numnodes,
 
       // The force vector is in R3, we need to calculate the equivalent nodal forces on the element
       // dof. This is done with the virtual work equation $F \delta r = f \delta q$.
-      for (unsigned int i_dof = 0; i_dof < n_dof_element_1_; i_dof++)
+      for (unsigned int i_dof = 0; i_dof < beam::n_dof_; i_dof++)
         for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
           force_element_1(i_dof) += force(i_dir) * r_beam(i_dir).dx(i_dof) *
                                     projected_gauss_point.GetGaussWeight() * segment_jacobian;
-      for (unsigned int i_dof = 0; i_dof < n_dof_element_2_; i_dof++)
+      for (unsigned int i_dof = 0; i_dof < solid::n_dof_; i_dof++)
         for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-          force_element_2(i_dof) -= force(i_dir) * r_solid(i_dir).dx(i_dof + n_dof_element_1_) *
+          force_element_2(i_dof) -= force(i_dir) * r_solid(i_dir).dx(i_dof + beam::n_dof_) *
                                     projected_gauss_point.GetGaussWeight() * segment_jacobian;
     }
   }
@@ -255,46 +248,44 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<numnodessol, numnodes,
   // Fill in the entries for the local matrices and vectors.
   {
     // Resize and initialize the return variables.
-    if (forcevec1 != NULL) forcevec1->Size(n_dof_element_1_);
-    if (forcevec2 != NULL) forcevec2->Size(n_dof_element_2_);
-    if (stiffmat11 != NULL) stiffmat11->Shape(n_dof_element_1_, n_dof_element_1_);
-    if (stiffmat12 != NULL) stiffmat12->Shape(n_dof_element_1_, n_dof_element_2_);
-    if (stiffmat21 != NULL) stiffmat21->Shape(n_dof_element_2_, n_dof_element_1_);
-    if (stiffmat22 != NULL) stiffmat22->Shape(n_dof_element_2_, n_dof_element_2_);
+    if (forcevec1 != NULL) forcevec1->Size(beam::n_dof_);
+    if (forcevec2 != NULL) forcevec2->Size(solid::n_dof_);
+    if (stiffmat11 != NULL) stiffmat11->Shape(beam::n_dof_, beam::n_dof_);
+    if (stiffmat12 != NULL) stiffmat12->Shape(beam::n_dof_, solid::n_dof_);
+    if (stiffmat21 != NULL) stiffmat21->Shape(solid::n_dof_, beam::n_dof_);
+    if (stiffmat22 != NULL) stiffmat22->Shape(solid::n_dof_, solid::n_dof_);
 
     if (forcevec1 != NULL && forcevec2 != NULL)
     {
       // $f_1$
-      for (unsigned int i_dof = 0; i_dof < n_dof_element_1_; i_dof++)
+      for (unsigned int i_dof = 0; i_dof < beam::n_dof_; i_dof++)
         (*forcevec1)(i_dof) = force_element_1(i_dof).val();
       // $f_2$
-      for (unsigned int i_dof = 0; i_dof < n_dof_element_2_; i_dof++)
+      for (unsigned int i_dof = 0; i_dof < solid::n_dof_; i_dof++)
         (*forcevec2)(i_dof) = force_element_2(i_dof).val();
     }
 
     if (stiffmat11 != NULL && stiffmat12 != NULL && stiffmat21 != NULL && stiffmat22 != NULL)
     {
       // $k_{11}$
-      for (unsigned int i_dof_1 = 0; i_dof_1 < n_dof_element_1_; i_dof_1++)
-        for (unsigned int i_dof_2 = 0; i_dof_2 < n_dof_element_1_; i_dof_2++)
+      for (unsigned int i_dof_1 = 0; i_dof_1 < beam::n_dof_; i_dof_1++)
+        for (unsigned int i_dof_2 = 0; i_dof_2 < beam::n_dof_; i_dof_2++)
           (*stiffmat11)(i_dof_1, i_dof_2) = -force_element_1(i_dof_1).dx(i_dof_2);
 
       // $k_{12}, k_{21}$
-      for (unsigned int i_dof_1 = 0; i_dof_1 < n_dof_element_1_; i_dof_1++)
+      for (unsigned int i_dof_1 = 0; i_dof_1 < beam::n_dof_; i_dof_1++)
       {
-        for (unsigned int i_dof_2 = 0; i_dof_2 < n_dof_element_2_; i_dof_2++)
+        for (unsigned int i_dof_2 = 0; i_dof_2 < solid::n_dof_; i_dof_2++)
         {
-          (*stiffmat12)(i_dof_1, i_dof_2) =
-              -force_element_1(i_dof_1).dx(n_dof_element_1_ + i_dof_2);
+          (*stiffmat12)(i_dof_1, i_dof_2) = -force_element_1(i_dof_1).dx(beam::n_dof_ + i_dof_2);
           (*stiffmat21)(i_dof_2, i_dof_1) = -force_element_2(i_dof_2).dx(i_dof_1);
         }
       }
 
       // $k_{22}$
-      for (unsigned int i_dof_1 = 0; i_dof_1 < n_dof_element_2_; i_dof_1++)
-        for (unsigned int i_dof_2 = 0; i_dof_2 < n_dof_element_2_; i_dof_2++)
-          (*stiffmat22)(i_dof_1, i_dof_2) =
-              -force_element_2(i_dof_1).dx(n_dof_element_1_ + i_dof_2);
+      for (unsigned int i_dof_1 = 0; i_dof_1 < solid::n_dof_; i_dof_1++)
+        for (unsigned int i_dof_2 = 0; i_dof_2 < solid::n_dof_; i_dof_2++)
+          (*stiffmat22)(i_dof_1, i_dof_2) = -force_element_2(i_dof_1).dx(beam::n_dof_ + i_dof_2);
     }
   }
 
@@ -314,23 +305,22 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<numnodessol, numnodes,
 /**
  *
  */
-template <unsigned int numnodessol, unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<numnodessol, numnodes,
-    numnodalvalues>::ResetState(const std::vector<double>& beam_centerline_dofvec,
+template <typename beam, typename solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<beam, solid>::ResetState(
+    const std::vector<double>& beam_centerline_dofvec,
     const std::vector<double>& solid_nodal_dofvec)
 {
   // Beam element.
-  for (unsigned int i = 0; i < n_dof_element_1_; i++)
+  for (unsigned int i = 0; i < beam::n_dof_; i++)
   {
-    ele1pos_(i) =
-        TYPE_BTS_VMT_AD(n_dof_element_1_ + n_dof_element_2_, i, beam_centerline_dofvec[i]);
+    ele1pos_(i) = TYPE_BTS_VMT_AD(beam::n_dof_ + solid::n_dof_, i, beam_centerline_dofvec[i]);
   }
 
   // Solid element.
-  for (unsigned int i = 0; i < n_dof_element_2_; i++)
+  for (unsigned int i = 0; i < solid::n_dof_; i++)
   {
-    ele2pos_(i) = TYPE_BTS_VMT_AD(
-        n_dof_element_1_ + n_dof_element_2_, n_dof_element_1_ + i, solid_nodal_dofvec[i]);
+    ele2pos_(i) =
+        TYPE_BTS_VMT_AD(beam::n_dof_ + solid::n_dof_, beam::n_dof_ + i, solid_nodal_dofvec[i]);
   }
 }
 
@@ -338,9 +328,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<numnodessol, numnodes,
 /**
  *
  */
-template <unsigned int numnodessol, unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<numnodessol, numnodes, numnodalvalues>::Print(
-    std::ostream& out) const
+template <typename beam, typename solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<beam, solid>::Print(std::ostream& out) const
 {
   CheckInitSetup();
 
@@ -360,9 +349,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<numnodessol, numnodes, numn
 /**
  *
  */
-template <unsigned int numnodessol, unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<numnodessol, numnodes,
-    numnodalvalues>::PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const
+template <typename beam, typename solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<beam,
+    solid>::PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const
 {
   CheckInitSetup();
 
@@ -391,12 +380,17 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<numnodessol, numnodes,
  * Explicit template initialization of template class.
  */
 // Hermite beam element, hex8 solid element.
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<8, 2, 2>;
+template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_hex8>;
 // Hermite beam element, hex20 solid element.
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<20, 2, 2>;
+template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_hex20>;
 // Hermite beam element, hex27 solid element.
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<27, 2, 2>;
+template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_hex27>;
 // Hermite beam element, tet4 solid element.
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<4, 2, 2>;
+template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_tet4>;
 // Hermite beam element, tet10 solid element.
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<10, 2, 2>;
+template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_tet10>;

@@ -23,8 +23,6 @@
 /*---------------------------------------------------------------------------*
  | headers                                                     meier 09/2018 |
  *---------------------------------------------------------------------------*/
-#include "particle_interaction_typedefs.H"
-
 #include "../drt_particle_engine/particle_enums.H"
 #include "../drt_particle_engine/particle_typedefs.H"
 
@@ -48,21 +46,30 @@ namespace PARTICLEINTERACTION
 {
   class MaterialHandler;
   class SPHNeighborPairs;
+  class SPHHeatSourceBase;
 }  // namespace PARTICLEINTERACTION
+
+namespace MAT
+{
+  namespace PAR
+  {
+    class ParticleMaterialThermo;
+  }
+}  // namespace MAT
 
 /*---------------------------------------------------------------------------*
  | class definitions                                           meier 09/2018 |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  class SPHTemperatureBase
+  class SPHTemperature
   {
    public:
     //! constructor
-    explicit SPHTemperatureBase(const Teuchos::ParameterList& params);
+    explicit SPHTemperature(const Teuchos::ParameterList& params);
 
     //! virtual destructor
-    virtual ~SPHTemperatureBase(){};
+    virtual ~SPHTemperature();
 
     //! init temperature handler
     virtual void Init();
@@ -79,20 +86,29 @@ namespace PARTICLEINTERACTION
     //! read restart of temperature handler
     virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
+    //! set current time
+    virtual void SetCurrentTime(const double currenttime);
+
     //! set current step size
-    virtual void SetCurrentStepSize(const double currentstepsize) final;
+    virtual void SetCurrentStepSize(const double currentstepsize);
 
     //! insert temperature evaluation dependent states
     virtual void InsertParticleStatesOfParticleTypes(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
-            particlestatestotypes) const = 0;
+            particlestatestotypes) const;
 
     //! compute temperature field using energy equation
-    virtual void ComputeTemperature() const = 0;
+    virtual void ComputeTemperature() const;
 
-   protected:
-    //! refresh temperature of ghosted particles
-    virtual void RefreshTemperature() const final;
+   private:
+    //! init heat source handler
+    virtual void InitHeatSourceHandler();
+
+    //! evaluate energy equation
+    virtual void EnergyEquation() const;
+
+    //! evaluate temperature gradient
+    virtual void TemperatureGradient() const;
 
     //! smoothed particle hydrodynamics specific parameter list
     const Teuchos::ParameterList& params_sph_;
@@ -109,30 +125,23 @@ namespace PARTICLEINTERACTION
     //! neighbor pair handler
     std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs_;
 
+    //! heat source handler
+    std::unique_ptr<PARTICLEINTERACTION::SPHHeatSourceBase> heatsource_;
+
+    //! temperature of ghosted particles to refresh
+    PARTICLEENGINE::StatesOfTypesToRefresh temptorefresh_;
+
+    //! current time
+    double time_;
+
     //! time step size
     double dt_;
-  };
 
-  class SPHTemperatureIntegration : public SPHTemperatureBase
-  {
-   public:
-    //! constructor
-    explicit SPHTemperatureIntegration(const Teuchos::ParameterList& params);
+    //! evaluate temperature gradient
+    bool temperaturegradient_;
 
-    //! virtual destructor
-    virtual ~SPHTemperatureIntegration(){};
-
-    //! insert temperature evaluation dependent states
-    virtual void InsertParticleStatesOfParticleTypes(
-        std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
-            particlestatestotypes) const override;
-
-    //! compute temperature field using energy equation
-    virtual void ComputeTemperature() const override;
-
-   private:
-    //! evaluate energy equation
-    virtual void EnergyEquation() const;
+    //! pointer to thermo material of particle types
+    std::vector<const MAT::PAR::ParticleMaterialThermo*> thermomaterial_;
   };
 
 }  // namespace PARTICLEINTERACTION

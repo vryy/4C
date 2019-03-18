@@ -1,3 +1,11 @@
+/*!----------------------------------------------------------------------
+\brief Test for the CUT Library
+\file cut_test_levelset.cpp
+
+\level 1
+
+\maintainer Christoph Ager
+*----------------------------------------------------------------------*/
 
 #include "../../src/drt_cut/cut_options.H"
 #include "../../src/drt_cut/cut_mesh.H"
@@ -10,6 +18,7 @@
 void test_ls_hex8_florian1()
 {
   GEO::CUT::LevelSetIntersection lsi;
+  lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
@@ -69,6 +78,7 @@ void test_ls_hex8_florian1()
 void test_ls_hex8_florian2()
 {
   GEO::CUT::LevelSetIntersection lsi;
+  lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
@@ -128,6 +138,7 @@ void test_ls_hex8_florian2()
 void test_ls_hex8_florian3()
 {
   GEO::CUT::LevelSetIntersection lsi;
+  lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
@@ -187,6 +198,7 @@ void test_ls_hex8_florian3()
 void test_ls_hex8_florian4()
 {
   GEO::CUT::LevelSetIntersection lsi;
+  lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
@@ -246,6 +258,7 @@ void test_ls_hex8_florian4()
 void test_ls_hex8_florian5()
 {
   GEO::CUT::LevelSetIntersection lsi;
+  lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
@@ -305,6 +318,7 @@ void test_ls_hex8_florian5()
 void test_ls_hex8_florian6()
 {
   GEO::CUT::LevelSetIntersection lsi;
+  lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
@@ -364,6 +378,7 @@ void test_ls_hex8_florian6()
 void test_ls_hex8_florian7()
 {
   GEO::CUT::LevelSetIntersection lsi;
+  lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
@@ -423,6 +438,7 @@ void test_ls_hex8_florian7()
 void test_ls_hex8_florian8()
 {
   GEO::CUT::LevelSetIntersection lsi;
+  lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
@@ -482,6 +498,7 @@ void test_ls_hex8_florian8()
 void test_ls_hex8_florian9()
 {
   GEO::CUT::LevelSetIntersection lsi;
+  lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
@@ -541,6 +558,7 @@ void test_ls_hex8_florian9()
 void test_ls_hex8_florian10()
 {
   GEO::CUT::LevelSetIntersection lsi;
+  lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
@@ -600,6 +618,7 @@ void test_ls_hex8_florian10()
 void test_ls_hex8_florian11()
 {
   GEO::CUT::LevelSetIntersection lsi;
+  lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
@@ -659,6 +678,7 @@ void test_ls_hex8_florian11()
 void test_ls_hex8_florian12()
 {
   GEO::CUT::LevelSetIntersection lsi;
+  lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
@@ -718,6 +738,7 @@ void test_ls_hex8_florian12()
 void test_ls_hex8_florian13()
 {
   GEO::CUT::LevelSetIntersection lsi;
+  lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
@@ -777,6 +798,7 @@ void test_ls_hex8_florian13()
 void test_ls_hex8_ursula1()
 {
   GEO::CUT::LevelSetIntersection lsi;
+  lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
@@ -836,6 +858,7 @@ void test_ls_hex8_ursula1()
 void test_ls_hex8_ursula2()
 {
   GEO::CUT::LevelSetIntersection lsi;
+  lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
@@ -895,6 +918,7 @@ void test_ls_hex8_ursula2()
 void test_ls_hex8_ursula3()
 {
   GEO::CUT::LevelSetIntersection lsi;
+  lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
@@ -954,6 +978,7 @@ void test_ls_hex8_ursula3()
 void test_ls_hex8_ursula4()
 {
   GEO::CUT::LevelSetIntersection lsi;
+  lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
@@ -1013,6 +1038,7 @@ void test_ls_hex8_ursula4()
 void test_ls_hex8_ursula5()
 {
   GEO::CUT::LevelSetIntersection lsi;
+  lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
@@ -1072,6 +1098,7 @@ void test_ls_hex8_ursula5()
 void test_ls_hex8_ursula6()
 {
   GEO::CUT::LevelSetIntersection lsi;
+  lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
@@ -1131,6 +1158,7 @@ void test_ls_hex8_ursula6()
 void test_ls_hex8_simple()
 {
   GEO::CUT::LevelSetIntersection lsi;
+  lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
@@ -1184,6 +1212,7 @@ void test_ls_hex8_simple()
 void test_ls_hex8_simple2()
 {
   GEO::CUT::LevelSetIntersection lsi;
+  lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
@@ -1237,6 +1266,7 @@ void test_ls_hex8_simple2()
 void test_ls_hex8_simple3()
 {
   GEO::CUT::LevelSetIntersection lsi;
+  lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
@@ -1290,6 +1320,7 @@ void test_ls_hex8_simple3()
 void test_ls_hex8_simple4()
 {
   GEO::CUT::LevelSetIntersection lsi;
+  lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
@@ -1344,6 +1375,7 @@ void test_ls_hex8_simple4()
 void test_ls_hex8_simple4()
 {
   GEO::CUT::LevelSetIntersection lsi;
+  lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids( 8 );
@@ -1402,6 +1434,7 @@ void test_ls_hex8_simple4()
 void test_ls_hex8_simple5()
 {
   GEO::CUT::LevelSetIntersection lsi;
+  lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
@@ -1456,6 +1489,7 @@ void test_ls_hex8_simple5()
 void test_ls_hex8_simple6()
 {
   GEO::CUT::LevelSetIntersection lsi;
+  lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
@@ -1517,6 +1551,7 @@ void test_ls_hex8_simple7()
     double dy = 0.1 * a;
 
     GEO::CUT::LevelSetIntersection lsi;
+    lsi.GetOptions().Init_for_Cuttests();
 
     // simple hex8 element
     std::vector<int> nids(8);
@@ -1577,6 +1612,7 @@ void test_ls_hex8_simple7()
 void test_ls_hex8_touch()
 {
   GEO::CUT::LevelSetIntersection lsi;
+  lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
@@ -1651,6 +1687,7 @@ void test_ls_hex8_between()
   for (int e = 0; e < 2; ++e)
   {
     GEO::CUT::LevelSetIntersection lsi;
+    lsi.GetOptions().Init_for_Cuttests();
 
     // simple hex8 element
     std::vector<int> nids(8);
@@ -1673,6 +1710,7 @@ void test_ls_hex8_between()
 void test_ls_hex8_experiment()
 {
   GEO::CUT::LevelSetIntersection lsi;
+  lsi.GetOptions().Init_for_Cuttests();
 
   GEO::CUT::Options options;
   lsi.GetOptions(options);

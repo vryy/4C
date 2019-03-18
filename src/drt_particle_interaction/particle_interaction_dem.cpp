@@ -135,24 +135,21 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::InsertParticleStatesOfParticle
 void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialStates()
 {
   // iterate over particle types
-  for (auto& typeIt : particlecontainerbundle_->GetRefToAllContainersMap())
+  for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum type = typeIt.first;
-
     // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container =
-        particlecontainerbundle_->GetSpecificContainer(type, PARTICLEENGINE::Owned);
+    PARTICLEENGINE::ParticleContainer* container =
+        particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
-    int particlestored = container->ParticlesStored();
+    const int particlestored = container->ParticlesStored();
 
     // no owned particles of current particle type
     if (particlestored <= 0) continue;
 
     // get material for current particle type
     const MAT::PAR::ParticleMaterialBase* material =
-        particlematerial_->GetPtrToParticleMatParameter(type);
+        particlematerial_->GetPtrToParticleMatParameter(typeEnum);
 
     // (initial) radius of current phase
     std::vector<double> initradius(1);
@@ -163,8 +160,9 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialStates()
     initmass[0] = material->initDensity_ * 4.0 / 3.0 * M_PI * UTILS::pow<3>(material->initRadius_);
 
     // set initial mass and radius for all particles of current type
-    particlecontainerbundle_->SetStateSpecificContainer(initmass, PARTICLEENGINE::Mass, type);
-    particlecontainerbundle_->SetStateSpecificContainer(initradius, PARTICLEENGINE::Radius, type);
+    particlecontainerbundle_->SetStateSpecificContainer(initmass, PARTICLEENGINE::Mass, typeEnum);
+    particlecontainerbundle_->SetStateSpecificContainer(
+        initradius, PARTICLEENGINE::Radius, typeEnum);
   }
 }
 
@@ -242,14 +240,11 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::InitContactHandler()
 void PARTICLEINTERACTION::ParticleInteractionDEM::ClearForceState() const
 {
   // iterate over particle types
-  for (auto& typeIt : particlecontainerbundle_->GetRefToAllContainersMap())
+  for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum type = typeIt.first;
-
     // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container =
-        particlecontainerbundle_->GetSpecificContainer(type, PARTICLEENGINE::Owned);
+    PARTICLEENGINE::ParticleContainer* container =
+        particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
     // clear force of all particles
     container->ClearState(PARTICLEENGINE::Force);
@@ -261,24 +256,23 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::ClearForceState() const
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionDEM::ComputeAcceleration() const
 {
-  // iterate over particle types
-  for (auto& typeIt : particlecontainerbundle_->GetRefToAllContainersMap())
-  {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum type = typeIt.first;
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionDEM::ComputeAcceleration");
 
+  // iterate over particle types
+  for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
+  {
     // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container =
-        particlecontainerbundle_->GetSpecificContainer(type, PARTICLEENGINE::Owned);
+    PARTICLEENGINE::ParticleContainer* container =
+        particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
-    int particlestored = container->ParticlesStored();
+    const int particlestored = container->ParticlesStored();
 
     // no owned particles of current particle type
     if (particlestored <= 0) continue;
 
-    // get dimension of particle state
-    int statedim = PARTICLEENGINE::EnumToStateDim(PARTICLEENGINE::Acceleration);
+    // get particle state dimension
+    const int statedim = container->GetParticleStateDim(PARTICLEENGINE::Acceleration);
 
     // get pointer to particle state
     const double* mass = container->GetPtrToParticleState(PARTICLEENGINE::Mass, 0);
@@ -287,12 +281,6 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::ComputeAcceleration() const
 
     // iterate over owned particles of current type
     for (int i = 0; i < particlestored; ++i)
-    {
-      // iterate over spatial dimension
-      for (int dim = 0; dim < statedim; ++dim)
-      {
-        acc[statedim * i + dim] = force[statedim * i + dim] / mass[i];
-      }
-    }
+      UTILS::vec_addscale(&acc[statedim * i], (1.0 / mass[i]), &force[statedim * i]);
   }
 }

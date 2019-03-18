@@ -4,7 +4,7 @@
 
 \brief Internal implementation of fluid internal faces elements
 
-\maintainer  Ager Christoph
+\maintainer  Christoph Ager
 
 \level 2
 

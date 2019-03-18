@@ -240,7 +240,7 @@ void SCATRA::ScaTraTimIntPoroMulti::OutputOxygenPartialPressure()
     const double CaO2_max = conditions[0]->GetDouble("CaO2_max");
     const double Pb50 = conditions[0]->GetDouble("Pb50");
     const double n = conditions[0]->GetDouble("n");
-    const double alpha = conditions[0]->GetDouble("alpha");
+    const double alpha_eff = conditions[0]->GetDouble("alpha_bl_eff");
     const double rho_oxy = conditions[0]->GetDouble("rho_oxy");
     const double rho_bl = conditions[0]->GetDouble("rho_bl");
 
@@ -265,8 +265,8 @@ void SCATRA::ScaTraTimIntPoroMulti::OutputOxygenPartialPressure()
           // compute CaO2
           const double CaO2 = (*phinp_)[lidoxydof] * rho_bl / rho_oxy;
           // compute Pb
-          POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressure<double>(
-              Pb, CaO2, CaO2_max, Pb50, n, alpha);
+          POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<double>(
+              Pb, CaO2, CaO2_max, Pb50, n, alpha_eff);
           // replace value
           oxypartpress->ReplaceGlobalValue(node->Id(), 0, Pb);
         }

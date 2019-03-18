@@ -6,12 +6,9 @@
 
 Can only be used in conjunction with #FluidImplicitTimeInt
 
-<pre>
-Maintainer: Andreas Rauch
-            rauch@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15240
-</pre>
+\level 2
+
+\maintainer  Christoph Ager
 */
 /*----------------------------------------------------------------------*/
 #include "ad_fld_fluid_fpsi.H"

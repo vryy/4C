@@ -103,6 +103,19 @@ namespace GEO
        */
       const Epetra_SerialDenseMatrix& Coordinates() const { return xyz_; }
 
+      /*!
+      \brief Move the corner points of the boundary cell by a specific offset
+       */
+      template <DRT::Element::DiscretizationType celldistype>
+      void AssignOffset(int idx, double offset)
+      {
+        LINALG::Matrix<3, DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement>
+            xyz_mat(xyz_, true);
+        for (uint n = 0; n < DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement;
+             ++n)
+          xyz_mat(idx, n) += offset;
+      }
+
       /*! \brief Get the coodinates of the corner points of boundarycell
        *
        *  To make it easier with DD data structures (should be removed at some point)

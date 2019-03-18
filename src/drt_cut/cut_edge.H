@@ -3,18 +3,15 @@
 
  \brief class representing a geometrical edge
 
- <pre>
-\level 3
-\maintainer Andy Wirtz
- wirtz@lnm.mw.tum.de
- http://www.lnm.mw.tum.de
- 089 - 289-15270
- </pre>
+\level 2
+
+\maintainer Christoph Ager
  *------------------------------------------------------------------------------------------------*/
 
 #ifndef CUT_EDGE_H
 #define CUT_EDGE_H
 
+#include "../drt_inpar/inpar_cut.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
 #include "cut_node.H"
@@ -62,6 +59,11 @@ namespace GEO
           n->point()->AddEdge(this);
         }
         selfcutposition_ = Point::undecided;
+#if CUT_CREATION_INFO
+        std::stringstream id;
+        id << BeginNode()->point()->Id() << "->" << EndNode()->point()->Id();
+        id_ = id.str();
+#endif
       }
 
       virtual ~Edge() {}
@@ -101,9 +103,16 @@ namespace GEO
       /*! \brief Get all the sides on which this edge is a part of */
       const plain_side_set& Sides() { return sides_; }
 
+      virtual void GetTouchingPoints(const std::vector<Node*>& nodes, std::vector<Node*>& points,
+          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) = 0;
+
       /*! \brief Get the intersection points of this edge with the given side and
        * store the cut points in cuts */
       virtual bool Cut(Mesh& mesh, Side& side, PointSet& cuts) = 0;
+
+      /*! Tries to compute side x edge intersection, if edge was parallel to side (using only
+       * ComputeDistance and Edge-edge intersection), no real intersection */
+      virtual bool JustParallelCut(Mesh& mesh, Side& side, PointSet& cuts, int skip_id = -1) = 0;
 
       /*! \brief Get the intersection points of this edge with the level-set side
        *  and store the cut points in cuts */
@@ -168,6 +177,7 @@ namespace GEO
        *
        *  \param mesh       (in)  : cut mesh, necessary to add cut points to the point pool
        *  \param other      (in)  : pointer to the other edge object
+       *  \param side       (in)  : pointer to the other side object(can be NULL)
        *  \param cut_points (out) : if the cut was successful, this set will hold the new cut points
        *  \param tolerance  (out) : tolerance used for the intersection ( defined by the cut kernel
        * )
@@ -176,7 +186,8 @@ namespace GEO
        *  point is within the edge limits.
        *
        *  \author hiermeier \date 12/16 */
-      virtual bool ComputeCut(Mesh* mesh, Edge* other, PointSet* cut_points, double& tolerance) = 0;
+      virtual bool ComputeCut(
+          Mesh* mesh, Edge* other, Side* side, PointSet* cut_points, double& tolerance) = 0;
 
       Node* BeginNode() { return nodes_.front(); }
 
@@ -192,10 +203,21 @@ namespace GEO
 
       const std::vector<Node*>& Nodes() const { return nodes_; }
 
+      /// Find common points (excluding cut_points points) between two edges
+      void CommonNodalPoints(Edge* edge, std::vector<Point*>& nodes);
+
+      bool FindCutPoints(Mesh& mesh, Element* element, Side& side, Side& other);
+
       /*!
       \brief Computes the points at which both the sides intersect
        */
-      bool FindCutPoints(Mesh& mesh, Element* element, Side& side, Side& other, int recursion);
+      bool FindCutPointsMeshCut(
+          Mesh& mesh, Element* element, Side& side, Side& other, PointSet* cutpoints = NULL);
+
+      /*!
+      \brief Simplified version of the FindCutPoints as used by the function LevelSetCut
+       */
+      bool FindCutPointsLevelSet(Mesh& mesh, Element* element, Side& side, Side& other);
 
       /*!
       \brief Cut points falling on this edge that are common to the two given sides are extracted
@@ -229,7 +251,26 @@ namespace GEO
        */
       void replaceNode(Node* nod, Node* replwith);
 
+      // remove information about this point
+      void RemovePoint(Point* p) { cut_points_.erase(p); };
+
+      /*!
+       \brief Add all topological connections of interesection of this edge and other edge ( all
+       necessery pairs, etc)
+       */
+      void AddConnections(Edge* other, const std::pair<Side*, Edge*>& original_cut_pair);
+
+      void AddConnections(Edge* other, Side* original_side, Edge* original_edge);
+
+#if CUT_CREATION_INFO
+      std::string Id() { return id_; };
+#endif
+
      private:
+#if CUT_CREATION_INFO
+      std::string id_;
+#endif
+
       std::vector<Node*> nodes_;
 
       plain_side_set sides_;
@@ -279,6 +320,15 @@ namespace GEO
         }
       }
 
+      virtual void GetTouchingPoints(const std::vector<Node*>& nodes, std::vector<Node*>& points,
+          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double);
+
+      /*! \brief Handles intersection of two edges that are close to each other */
+      virtual bool HandleParallelCut(Edge* other, Side* side, PointSet* cut_points,
+          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double);
+
+      virtual bool JustParallelCut(Mesh& mesh, Side& side, PointSet& cuts, int skip_id = -1);
+
       /*! \brief Get the intersection points of this edge with the given side and
        * store the cut points in cuts */
       virtual bool Cut(Mesh& mesh, Side& side, PointSet& cuts);
@@ -288,6 +338,7 @@ namespace GEO
        *
        *  \param mesh       (in)  : cut mesh, necessary to add cut points to the point pool
        *  \param other      (in)  : pointer to the other edge object
+       *  \param side       (in)  : pointer to the other side object(can be NULL)
        *  \param cut_points (out) : if the cut was successful, this set will hold the new cut points
        *  \param tolerance  (out) : tolerance used for the intersection ( defined by the cut kernel
        * )
@@ -296,7 +347,8 @@ namespace GEO
        *  point is within the edge limits.
        *
        *  \author hiermeier \date 12/16 */
-      virtual bool ComputeCut(Mesh* mesh, Edge* other, PointSet* cut_points, double& tolerance);
+      virtual bool ComputeCut(
+          Mesh* mesh, Edge* other, Side* side, PointSet* cut_points, double& tolerance);
 
       /*! \brief Get the intersection points of this edge with the level-set side
        *  and store the cut points in cuts */
@@ -388,4 +440,4 @@ namespace GEO
   }     // namespace CUT
 }  // namespace GEO
 
-#endif
+#endif /* CUT_EDGE_H */

@@ -69,6 +69,14 @@ namespace INPAR
       ascii
     };
 
+    //! type of particle wall source
+    enum ParticleWallSource
+    {
+      NoParticleWall,    //! no particle wall
+      DiscretCondition,  //! particle wall from discretization condition
+      BoundingBox        //! particle wall from bounding box
+    };
+
     /*---------------------------------------------------------------------------*
      | smoothed particle hydrodynamics (SPH) specific control parameters         |
      *---------------------------------------------------------------------------*/
@@ -148,6 +156,14 @@ namespace INPAR
       TemperatureIntegration
     };
 
+    //! type of heat source
+    enum HeatSourceType
+    {
+      NoHeatSource,
+      VolumeHeatSource,
+      SurfaceHeatSource
+    };
+
     //! type of surface tension formulation
     enum SurfaceTensionFormulation
     {
@@ -158,7 +174,8 @@ namespace INPAR
     //! type of phase change
     enum PhaseChangeType
     {
-      NoPhaseChange
+      NoPhaseChange,
+      TwoWayScalarPhaseChange
     };
 
     /*---------------------------------------------------------------------------*

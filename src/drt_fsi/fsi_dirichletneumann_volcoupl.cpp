@@ -1,11 +1,12 @@
 /*!----------------------------------------------------------------------
 \file fsi_dirichletneumann_volcoupl.cpp
 
-<pre>
+\brief Solve FSI problems using a Dirichlet-Neumann partitioned approach
+       with volume coupling
+
 \level 3
 
-\maintainer Andrea La Spina
-</pre>
+\maintainer Anh-Tu Vuong
 
 *----------------------------------------------------------------------*/
 
@@ -14,6 +15,8 @@
  *---------------------------------------------------------------------*/
 #include "fsi_dirichletneumann_volcoupl.H"
 #include "fsi_debugwriter.H"
+
+#include "../drt_inpar/inpar_fsi.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -39,7 +42,7 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::DirichletNeumannVolCoupl::DirichletNeumannVolCoupl(const Epetra_Comm& comm)
-    : DirichletNeumann(comm), displacementcoupling_(false), coupsa_(Teuchos::null)
+    : DirichletNeumannDisp(comm), coupsa_(Teuchos::null)
 {
 }
 
@@ -51,9 +54,10 @@ void FSI::DirichletNeumannVolCoupl::Setup()
 
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
-  displacementcoupling_ = fsipart.get<std::string>("COUPVARIABLE") == "Displacement";
+  SetKinematicCoupling(
+      DRT::INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::disp);
 
-  if (!displacementcoupling_) dserror("Currently only displacement coupling is supported!");
+  if (!GetKinematicCoupling()) dserror("Currently only displacement coupling is supported!");
 
   SetupCouplingStructAle(fsidyn, Comm());
 

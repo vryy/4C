@@ -19,9 +19,13 @@
  *---------------------------------------------------------------------------*/
 #include "particle_algorithm.H"
 
+#include "particle_algorithm_utils.H"
+
 #include "particle_timint.H"
 #include "particle_input_generator.H"
 #include "particle_gravity.H"
+#include "particle_viscous_damping.H"
+#include "particle_wall.H"
 #include "particle_initial_field.H"
 #include "particle_result_test.H"
 
@@ -90,6 +94,12 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Init(
   // init particle gravity handler
   InitParticleGravity();
 
+  // init viscous damping handler
+  InitViscousDamping();
+
+  // init particle wall handler
+  InitParticleWall();
+
   // set initial particles to vector of particles to be distributed
   particlestodistribute_ = initialparticles;
 
@@ -126,8 +136,17 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Setup()
   // setup gravity handler
   if (particlegravity_) particlegravity_->Setup();
 
+  // setup viscous damping handler
+  if (viscousdamping_) viscousdamping_->Setup(particleengine_);
+
+  // setup wall handler
+  if (particlewall_) particlewall_->Setup(particleengine_, particleengine_->GetBinningStrategy());
+
   // setup initial particles
   SetupInitialParticles();
+
+  // setup initial wall distribution
+  if (particlewall_) SetupInitalWallDistribution();
 
   // setup initial states
   if (not isrestarted_) SetupInitialStates();
@@ -162,6 +181,12 @@ void PARTICLEALGORITHM::ParticleAlgorithm::ReadRestart(const int restartstep)
 
   // read restart of gravity handler
   if (particlegravity_) particlegravity_->ReadRestart(reader);
+
+  // read restart of viscous damping handler
+  if (viscousdamping_) viscousdamping_->ReadRestart(reader);
+
+  // read restart of wall handler
+  if (particlewall_) particlewall_->ReadRestart(restartstep);
 
   // set time and step after restart
   SetTimeStep(restarttime, restartstep);
@@ -232,6 +257,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Integrate()
   // evaluate particle interactions
   if (particleinteraction_) particleinteraction_->EvaluateInteractions();
 
+  // apply viscous damping contribution
+  if (viscousdamping_) viscousdamping_->ApplyViscousDamping();
+
   // time integration scheme specific post-interaction routine
   particletimint_->PostInteractionRoutine();
 }
@@ -246,9 +274,14 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Output() const
   // write result step
   if (writeresultsthisstep_)
   {
+    // write particle runtime vtp output
     particleengine_->WriteParticleRuntimeVtpOutput(Step(), Time());
 
+    // write binning discretization output (debug feature)
     particleengine_->WriteBinDisOutput(Step(), Time());
+
+    // write wall runtime vtu output
+    if (particlewall_) particlewall_->WriteWallRuntimeVtuOutput(Step(), Time());
   }
 
   // write restart step
@@ -265,6 +298,12 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Output() const
 
     // write restart of gravity handler
     if (particlegravity_) particlegravity_->WriteRestart(Step(), Time());
+
+    // write restart of viscous damping handler
+    if (viscousdamping_) viscousdamping_->WriteRestart(Step(), Time());
+
+    // write restart of wall handler
+    if (particlewall_) particlewall_->WriteRestart(Step(), Time());
 
     // short screen output
     if (myrank_ == 0)
@@ -409,6 +448,65 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleGravity()
 }
 
 /*---------------------------------------------------------------------------*
+ | init viscous damping handler                               sfuchs 02/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::ParticleAlgorithm::InitViscousDamping()
+{
+  // get viscous damping factor
+  const double viscdampfac = params_.get<double>("VISCOUS_DAMPING");
+
+  // create viscous damping handler
+  if (viscdampfac > 0.0)
+    viscousdamping_ = std::unique_ptr<PARTICLEALGORITHM::ViscousDampingHandler>(
+        new PARTICLEALGORITHM::ViscousDampingHandler(viscdampfac));
+  else
+    viscousdamping_ = std::unique_ptr<PARTICLEALGORITHM::ViscousDampingHandler>(nullptr);
+
+  // init viscous damping handler
+  if (viscousdamping_) viscousdamping_->Init();
+}
+
+/*---------------------------------------------------------------------------*
+ | init particle wall handler                                 sfuchs 10/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleWall()
+{
+  // get type of particle wall source
+  INPAR::PARTICLE::ParticleWallSource particlewallsource =
+      DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleWallSource>(
+          params_, "PARTICLE_WALL_SOURCE");
+
+  // create particle wall handler
+  switch (particlewallsource)
+  {
+    case INPAR::PARTICLE::NoParticleWall:
+    {
+      particlewall_ = std::shared_ptr<PARTICLEALGORITHM::WallHandlerBase>(nullptr);
+      break;
+    }
+    case INPAR::PARTICLE::DiscretCondition:
+    {
+      particlewall_ =
+          std::make_shared<PARTICLEALGORITHM::WallHandlerDiscretCondition>(Comm(), params_);
+      break;
+    }
+    case INPAR::PARTICLE::BoundingBox:
+    {
+      particlewall_ = std::make_shared<PARTICLEALGORITHM::WallHandlerBoundingBox>(Comm(), params_);
+      break;
+    }
+    default:
+    {
+      dserror("unknown type of particle wall source!");
+      break;
+    }
+  }
+
+  // init particle wall handler
+  if (particlewall_) particlewall_->Init();
+}
+
+/*---------------------------------------------------------------------------*
  | generate initial particles                                 sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::GenerateInitialParticles()
@@ -428,64 +526,23 @@ void PARTICLEALGORITHM::ParticleAlgorithm::GenerateInitialParticles()
  *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::DetermineParticleTypes()
 {
-  // determine all particle types from particles to be distributed on this processor
-  std::set<PARTICLEENGINE::TypeEnum> particletypes;
-  for (auto& particle : particlestodistribute_)
-    particletypes.insert(particle->ReturnParticleType());
+  // init map relating particle types to dynamic load balance factor
+  std::map<PARTICLEENGINE::TypeEnum, double> typetodynloadbal;
 
-  // prepare buffer for sending and receiving
-  std::map<int, std::vector<char>> sdata;
-  std::map<int, std::vector<char>> rdata;
-
-  // number of processors
-  int const numproc = Comm().NumProc();
-
-  // ---- pack data for sending ----
-  DRT::PackBuffer data;
-  DRT::ParObject::AddtoPack(data, particletypes);
-  data.StartPacking();
-  DRT::ParObject::AddtoPack(data, particletypes);
-
-  // communicate particle types between all processors
-  for (int torank = 0; torank < numproc; ++torank)
-  {
-    if (torank == myrank_) continue;
-
-    sdata[torank].insert(sdata[torank].end(), data().begin(), data().end());
-  }
-
-  // communicate data via non-buffered send from proc to proc
-  PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(Comm(), sdata, rdata);
-
-  // init receiving vector
-  std::vector<PARTICLEENGINE::TypeEnum> receivedtypes;
-
-  // insert received bins
-  for (auto& p : rdata)
-  {
-    int msgsource = p.first;
-    std::vector<char>& rmsg = p.second;
-
-    std::vector<char>::size_type position = 0;
-
-    while (position < rmsg.size())
-    {
-      DRT::ParObject::ExtractfromPack(position, rmsg, receivedtypes);
-
-      // iterate over received types
-      for (PARTICLEENGINE::TypeEnum receivedtype : receivedtypes)
-        particletypes.insert(receivedtype);
-    }
-
-    if (position != (rdata[msgsource]).size())
-      dserror("mismatch in size of data %d <-> %d", static_cast<int>((rdata[msgsource]).size()),
-          position);
-  }
+  // read parameters relating particle types to values
+  PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues(
+      params_, "PHASE_TO_DYNLOADBALFAC", typetodynloadbal);
 
   // insert into map of particle types and corresponding states with empty set
-  for (auto& particleType : particletypes)
+  for (auto& typeIt : typetodynloadbal)
     particlestatestotypes_.insert(
-        std::make_pair(particleType, std::set<PARTICLEENGINE::StateEnum>()));
+        std::make_pair(typeIt.first, std::set<PARTICLEENGINE::StateEnum>()));
+
+  // safety check
+  for (auto& particle : particlestodistribute_)
+    if (not particlestatestotypes_.count(particle->ReturnParticleType()))
+      dserror("particle type '%s' of initial particle not defined!",
+          PARTICLEENGINE::EnumToTypeName(particle->ReturnParticleType()).c_str());
 }
 
 /*---------------------------------------------------------------------------*
@@ -530,11 +587,31 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialParticles()
   // ghost particles on other processors
   particleengine_->GhostParticles();
 
-  // build overlapping particle to particle neighbor map
+  // build particle to particle neighbors
   if (particleinteraction_) particleengine_->BuildParticleToParticleNeighbors();
 
   // build global id to local index map
   particleengine_->BuildGlobalIDToLocalIndexMap();
+}
+
+/*---------------------------------------------------------------------------*
+ | setup initial wall distribution                            sfuchs 11/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitalWallDistribution()
+{
+  // update bin row and column map
+  particlewall_->UpdateBinRowAndColMap(
+      particleengine_->GetBinRowMap(), particleengine_->GetBinColMap());
+
+  // distribute wall elements and nodes
+  particlewall_->DistributeWallElementsAndNodes();
+
+  // relate bins to column wall elements
+  particlewall_->RelateBinsToColWallEles();
+
+  // build particle to wall neighbors
+  if (particleinteraction_)
+    particlewall_->BuildParticleToWallNeighbors(particleengine_->GetParticlesToBins());
 }
 
 /*---------------------------------------------------------------------------*
@@ -641,13 +718,30 @@ void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
 
       // get number of particles on this processor
       numparticlesafterlastloadbalance_ = particleengine_->GetNumberOfParticles();
+
+      if (particlewall_)
+      {
+        // update bin row and column map
+        particlewall_->UpdateBinRowAndColMap(
+            particleengine_->GetBinRowMap(), particleengine_->GetBinColMap());
+
+        // distribute wall elements and nodes
+        particlewall_->DistributeWallElementsAndNodes();
+
+        // relate bins to column wall elements
+        particlewall_->RelateBinsToColWallEles();
+      }
     }
 
     // ghost particles on other processors
     particleengine_->GhostParticles();
 
-    // build overlapping particle to particle neighbor map
+    // build particle to particle neighbors
     if (particleinteraction_) particleengine_->BuildParticleToParticleNeighbors();
+
+    // build particle to wall neighbors
+    if (particleinteraction_ and particlewall_)
+      particlewall_->BuildParticleToWallNeighbors(particleengine_->GetParticlesToBins());
 
     // build global id to local index map
     particleengine_->BuildGlobalIDToLocalIndexMap();
@@ -710,17 +804,14 @@ bool PARTICLEALGORITHM::ParticleAlgorithm::CheckParticleTransfer()
       particleengine_->GetParticleContainerBundle();
 
   // iterate over particle types
-  for (auto& typeIt : particlecontainerbundle->GetRefToAllContainersMap())
+  for (auto& typeEnum : particlecontainerbundle->GetParticleTypes())
   {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum particleType = typeIt.first;
-
     // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container =
-        particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
+    PARTICLEENGINE::ParticleContainer* container =
+        particlecontainerbundle->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
-    int particlestored = container->ParticlesStored();
+    const int particlestored = container->ParticlesStored();
 
     // no owned particles of current particle type
     if (particlestored == 0) continue;
@@ -730,8 +821,8 @@ bool PARTICLEALGORITHM::ParticleAlgorithm::CheckParticleTransfer()
     const double* lasttransferpos =
         container->GetPtrToParticleState(PARTICLEENGINE::LastTransferPosition, 0);
 
-    // get dimension of particle position
-    int statedim = PARTICLEENGINE::EnumToStateDim(PARTICLEENGINE::Position);
+    // get particle state dimension
+    int statedim = container->GetParticleStateDim(PARTICLEENGINE::Position);
 
     // iterate over coordinate values of owned particles of current type
     for (int i = 0; i < (statedim * particlestored); ++i)
@@ -843,18 +934,15 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetGravityAcceleration()
       particleengine_->GetParticleContainerBundle();
 
   // iterate over particle types
-  for (auto& typeIt : particlecontainerbundle->GetRefToAllContainersMap())
+  for (auto& typeEnum : particlecontainerbundle->GetParticleTypes())
   {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum particleType = typeIt.first;
-
     // gravity is not set for boundary or rigid particles
-    if (particleType == PARTICLEENGINE::BoundaryPhase or particleType == PARTICLEENGINE::RigidPhase)
+    if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
       continue;
 
     // set gravity acceleration for all particles of current type
     particlecontainerbundle->SetStateSpecificContainer(
-        scaled_gravity, PARTICLEENGINE::Acceleration, particleType);
+        scaled_gravity, PARTICLEENGINE::Acceleration, typeEnum);
   }
 
   // set scaled gravity in particle interaction handler

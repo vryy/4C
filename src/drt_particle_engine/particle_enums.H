@@ -53,7 +53,7 @@ namespace PARTICLEENGINE
     InterfaceNormal,
     UnitWallNormal,
     WallDistance,
-    Curvature
+    TemperatureGradient
   };
 
   //! get dimension of particle state
@@ -61,6 +61,9 @@ namespace PARTICLEENGINE
 
   //! get name of particle state
   std::string EnumToStateName(const enum PARTICLEENGINE::ParticleState& stateEnum);
+
+  //! get enum of particle states
+  enum PARTICLEENGINE::ParticleState EnumFromStateName(const std::string& stateName);
 
 
   //! enums of particle types

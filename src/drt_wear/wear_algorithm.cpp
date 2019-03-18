@@ -28,6 +28,7 @@
 #include "../drt_contact/contact_element.H"
 #include "../drt_contact_aug/contact_augmented_interface.H"
 #include "../drt_contact/contact_strategy_factory.H"
+#include "../drt_contact/contact_utils.H"
 
 #include "../drt_adapter/ad_str_structure.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
@@ -174,6 +175,8 @@ void WEAR::Algorithm::CreateMaterialInterface()
   if ((wlaw != INPAR::WEAR::wear_none) || (cparams.get<int>("PROBTYPE") == INPAR::CONTACT::tsi))
     friplus = true;
 
+  bool isanyselfcontact = false;
+
   for (int i = 0; i < (int)contactconditions.size(); ++i)
   {
     // initialize vector for current group of conditions and temp condition
@@ -223,88 +226,23 @@ void WEAR::Algorithm::CreateMaterialInterface()
     ++numgroupsfound;
 
     // find out which sides are Master and Slave
-    bool hasslave = false;
-    bool hasmaster = false;
-    std::vector<const std::string*> sides((int)currentgroup.size());
-    std::vector<bool> isslave((int)currentgroup.size());
-    std::vector<bool> isself((int)currentgroup.size());
-
-    for (int j = 0; j < (int)sides.size(); ++j)
-    {
-      sides[j] = currentgroup[j]->Get<std::string>("Side");
-      if (*sides[j] == "Slave")
+    std::vector<bool> isslave(0);
+    std::vector<bool> isself(0);
+    CONTACT::UTILS::GetMasterSlaveSideInfo(isslave, isself, currentgroup);
+    for (const bool is : isself)
+      if (is)
       {
-        hasslave = true;
-        isslave[j] = true;
-        isself[j] = false;
+        isanyselfcontact = true;
+        break;
       }
-      else if (*sides[j] == "Master")
-      {
-        hasmaster = true;
-        isslave[j] = false;
-        isself[j] = false;
-      }
-      else if (*sides[j] == "Selfcontact")
-      {
-        hasmaster = true;
-        hasslave = true;
-        isslave[j] = false;
-        isself[j] = true;
-      }
-      else
-        dserror("ERROR: CoManager: Unknown contact side qualifier!");
-    }
-
-    if (!hasslave) dserror("Slave side missing in contact condition group!");
-    if (!hasmaster) dserror("Master side missing in contact condition group!");
-
-    // check for self contact group
-    if (isself[0])
-    {
-      for (int j = 1; j < (int)isself.size(); ++j)
-        if (!isself[j]) dserror("Inconsistent definition of self contact condition group!");
-    }
 
     // find out which sides are initialized as Active
-    std::vector<const std::string*> active((int)currentgroup.size());
-    std::vector<bool> isactive((int)currentgroup.size());
+    std::vector<bool> isactive(currentgroup.size());
+    bool Two_half_pass(false);
+    bool Check_nonsmooth_selfcontactsurface(false);
 
-    for (int j = 0; j < (int)sides.size(); ++j)
-    {
-      active[j] = currentgroup[j]->Get<std::string>("Initialization");
-      if (*sides[j] == "Slave")
-      {
-        // slave sides may be initialized as "Active" or as "Inactive"
-        if (*active[j] == "Active")
-          isactive[j] = true;
-        else if (*active[j] == "Inactive")
-          isactive[j] = false;
-        else
-          dserror("ERROR: Unknown contact init qualifier!");
-      }
-      else if (*sides[j] == "Master")
-      {
-        // master sides must NOT be initialized as "Active" as this makes no sense
-        if (*active[j] == "Active")
-          dserror("ERROR: Master side cannot be active!");
-        else if (*active[j] == "Inactive")
-          isactive[j] = false;
-        else
-          dserror("ERROR: Unknown contact init qualifier!");
-      }
-      else if (*sides[j] == "Selfcontact")
-      {
-        // Selfcontact surfs must NOT be initialized as "Active" as this makes no sense
-        if (*active[j] == "Active")
-          dserror("ERROR: Selfcontact surface cannot be active!");
-        else if (*active[j] == "Inactive")
-          isactive[j] = false;
-        else
-          dserror("ERROR: Unknown contact init qualifier!");
-      }
-      else
-        dserror("ERROR: CoManager: Unknown contact side qualifier!");
-    }
+    CONTACT::UTILS::GetInitializationInfo(
+        Two_half_pass, Check_nonsmooth_selfcontactsurface, isactive, isslave, isself, currentgroup);
 
     // create interface local parameter list (copy)
     Teuchos::ParameterList icparams = cparams;
@@ -362,16 +300,16 @@ void WEAR::Algorithm::CreateMaterialInterface()
       icparams.setEntry("ADHESION_BOUND", static_cast<Teuchos::ParameterEntry>(ad_bound[0]));
     }
 
-    // create an empty interface and store it in this Manager
-    // create an empty contact interface and store it in this Manager
-    // (for structural contact we currently choose redundant master storage)
-    // (the only exception is self contact where a redundant slave is needed, too)
+    // add information to parameter list of this interface
+    icparams.set<bool>("Two_half_pass", Two_half_pass);
+    icparams.set<bool>("Check_nonsmooth_selfcontactsurface", Check_nonsmooth_selfcontactsurface);
+
+    // for structural contact we currently choose redundant master storage
+    // the only exception is self contact where a redundant slave is needed, too
     INPAR::MORTAR::RedundantStorage redundant =
         DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(icparams, "REDUNDANT_STORAGE");
-    //    if (isself[0]==false && redundant != INPAR::MORTAR::redundant_master)
-    //      dserror("ERROR: CoManager: Contact requires redundant master storage");
-    if (isself[0] == true && redundant != INPAR::MORTAR::redundant_all)
-      dserror("ERROR: CoManager: Self contact requires redundant slave and master storage");
+    if (isanyselfcontact == true && redundant != INPAR::MORTAR::redundant_all)
+      dserror("ERROR: Self contact requires redundant slave and master storage");
 
     // decide between contactinterface, augmented interface and wearinterface
     Teuchos::RCP<CONTACT::CoInterface> newinterface = CONTACT::STRATEGY::Factory::CreateInterface(

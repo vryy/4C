@@ -409,6 +409,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ApplyAdditionalDBCForVolFra
                             fluiddofs[scalartophaseid + numvolfrac])] < 1)
             {
               mydirichdofs.push_back(scatradofs[idof]);
+              ScatraAlgo()->ScaTraField()->Phinp()->ReplaceGlobalValue(scatradofs[idof], 0, 0.0);
             }
           }
           else

@@ -1,5 +1,5 @@
 //
-// Maintainer: Ager Christoph
+// Maintainer: Christoph Ager
 // ager@lnm.mw.tum.de
 // http://www.lnm.mw.tum.de
 // 089 - 289-15249
@@ -45,7 +45,7 @@ NONLINITER                      Newton                        //fixed_point_like
 ITEMAX                          10
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-13
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 RESTARTEVRY                     200
 NUMSTEP                         1
 NUMSTASTEPS                     0
@@ -81,15 +81,12 @@ GMSH_DEBUG_OUT                  No
 GMSH_SOL_OUT                    No
 GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
-VOLUME_GAUSS_POINTS_BY          Tessellation
+VOLUME_GAUSS_POINTS_BY          DirectDivergence
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Hybrid_LM_Cauchy_stress
 HYBRID_LM_L2_PROJ               full_ele_proj                 //full_ele_proj // part_ele_proj
-//NIT_STAB_FAC                  100.0
-//VISC_STAB_TRACE_ESTIMATE      CT_div_by_hk                  // eigenvalue
-//VISC_STAB_HK                  vol_equivalent                // vol_div_by_surf // longest_ele_length
 CONV_STAB_SCALING               abs_inflow                    //abs_normal_vel // inflow // const // none
 GHOST_PENALTY_STAB              Yes
 GHOST_PENALTY_FAC               0.1
@@ -106,7 +103,6 @@ IFPACKGFILL                     3                             // (3 for edgebase
 AZTOL                           1.0E-08                       // tolerance in unscaled residual
 AZCONV                          AZ_r0                         // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER                          1000                          // max iterations
-//AZSUB                         150                           // size of krylov space for gmres
 IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
 ML_MAXCOARSESIZE                1                             //2500 // ML stop coarsening when coarse ndof smaller then this (1: each level has to be used)
 ML_MAXLEVEL                     3                             // ML max number of levels
@@ -132,14 +128,14 @@ COMPONENT 1 FUNCTION 0.0 //0.01*x // 0.0100051*x
 COMPONENT 2 FUNCTION 0.0
 COMPONENT 3 FUNCTION 0.0 // pressure
 ----------------------------------------------------------RESULT DESCRIPTION
-XFLUID DIS fluid NODE 1103 QUANTITY velx VALUE 6.23970939492337950e-01 TOLERANCE 1e-8
+XFLUID DIS fluid NODE 1103 QUANTITY velx VALUE  6.23970974959064395e-01 TOLERANCE 1e-8
 XFLUID DIS fluid NODE 1103 QUANTITY vely VALUE 1.45313097416988803e-02 TOLERANCE 1e-8
 XFLUID DIS fluid NODE 1103 QUANTITY velz VALUE 0.00000000000000000e+00 TOLERANCE 1e-9
-XFLUID DIS fluid NODE 1103 QUANTITY pressure VALUE 1.14137357449617269e+01 TOLERANCE 1e-6
-XFLUID DIS fluid NODE 803 QUANTITY velx VALUE 1.20060772659452897e+00 TOLERANCE 1e-8
-XFLUID DIS fluid NODE 803 QUANTITY vely VALUE 3.08159829638936456e-01 TOLERANCE 1e-8
+XFLUID DIS fluid NODE 1103 QUANTITY pressure VALUE  1.14137341788747015e+01 TOLERANCE 1e-6
+XFLUID DIS fluid NODE 803 QUANTITY velx VALUE  1.20060779640270088e+00 TOLERANCE 1e-8
+XFLUID DIS fluid NODE 803 QUANTITY vely VALUE  3.08159845446719760e-01 TOLERANCE 1e-8
 XFLUID DIS fluid NODE 803 QUANTITY velz VALUE 0.00000000000000000e+00 TOLERANCE 1e-9
-XFLUID DIS fluid NODE 803 QUANTITY pressure VALUE 1.32701170089512530e+01 TOLERANCE 1e-6
+XFLUID DIS fluid NODE 803 QUANTITY pressure VALUE  1.32701156157434514e+01 TOLERANCE 1e-6
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 34
 NDLINE 57

@@ -25,25 +25,19 @@ namespace GEOMETRYPAIR
    * Gauss points from the line to the volume. In case a line pokes out of the volumes it is
    * segmented.
    * @param scalar_type Type that will be used for scalar values.
-   * @param n_nodes_element_1 Number of nodes on element 1.
-   * @param n_nodal_values_element_1 Number of values per node (x3) on element 1.
-   * @param n_nodes_element_2 Number of nodes on element 2.
-   * @param n_nodal_values_element_2 Number of values per node (x3) on element 2.
+   * @param line Type of line element.
+   * @param volume Type of volume element.
    */
-  template <typename scalar_type, unsigned int n_nodes_element_1,
-      unsigned int n_nodal_values_element_1, unsigned int n_nodes_element_2,
-      unsigned int n_nodal_values_element_2>
+  template <typename scalar_type, typename line, typename volume>
   class GeometryPairLineToVolumeGaussPointProjection
-      : public GeometryPairLineToVolume<scalar_type, n_nodes_element_1, n_nodal_values_element_1,
-            n_nodes_element_2, n_nodal_values_element_2>
+      : public GeometryPairLineToVolume<scalar_type, line, volume>
   {
    public:
     /**
      * \brief Constructor.
      */
     GeometryPairLineToVolumeGaussPointProjection()
-        : GeometryPairLineToVolume<scalar_type, n_nodes_element_1, n_nodal_values_element_1,
-              n_nodes_element_2, n_nodal_values_element_2>(){};
+        : GeometryPairLineToVolume<scalar_type, line, volume>(){};
 
     /**
      * \brief Destructor.
@@ -64,11 +58,8 @@ namespace GEOMETRYPAIR
      * @param q_volume (in) Degrees of freedom for the volume.
      * @param segments (out) Vector with the segments of this line to volume pair.
      */
-    void PreEvaluate(
-        const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_1 * n_nodal_values_element_1, 1>&
-            q_line,
-        const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_2 * n_nodal_values_element_2, 1>&
-            q_volume,
+    void PreEvaluate(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
+        const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
         std::vector<LineSegment<scalar_type>>& segments) const;
 
     /**
@@ -79,11 +70,8 @@ namespace GEOMETRYPAIR
      * @param q_volume (in) Degrees of freedom for the volume.
      * @param segments (out) Vector with the segments of this line to volume pair.
      */
-    void Evaluate(
-        const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_1 * n_nodal_values_element_1, 1>&
-            q_line,
-        const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_2 * n_nodal_values_element_2, 1>&
-            q_volume,
+    void Evaluate(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
+        const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
         std::vector<LineSegment<scalar_type>>& segments) const;
 
    private:

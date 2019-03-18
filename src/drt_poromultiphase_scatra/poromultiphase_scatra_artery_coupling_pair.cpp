@@ -603,9 +603,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 
   std::vector<double> myEta(n_gp_);
   std::vector<std::vector<double>> myXi(n_gp_, std::vector<double>(numdim_, 0.0));
+  double etaA = 0.0;
+  double etaB = 0.0;
 
   // recompute eta and xi --> see note in this function
-  RecomputeEtaAndXiInDeformedConfiguration(segmentlengths, myEta, myXi);
+  RecomputeEtaAndXiInDeformedConfiguration(segmentlengths, myEta, myXi, etaA, etaB);
 
   switch (couplmethod_)
   {
@@ -630,7 +632,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
         stiffmat12, stiffmat21, stiffmat22);
 
   // evaluate divergence of solid velocity
-  EvaluateDivSolidVel(myEta, myXi, segmentlengths, *forcevec1);
+  EvaluateDivSolidVel(myEta, myXi, segmentlengths, *forcevec1, etaA, etaB);
 
   return;
 }
@@ -739,7 +741,7 @@ template <DRT::Element::DiscretizationType distypeArt, DRT::Element::Discretizat
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
     distypeCont>::RecomputeEtaAndXiInDeformedConfiguration(const std::vector<double>&
                                                                segmentlengths,
-    std::vector<double>& myEta, std::vector<std::vector<double>>& myXi)
+    std::vector<double>& myEta, std::vector<std::vector<double>>& myXi, double& etaA, double& etaB)
 {
   // NOTE: we assume that the 1D artery element completely follows the deformation of the underlying
   //       porous medium, so its length might change. Interaction between artery element and porous
@@ -777,8 +779,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
     const double curr_seg_length = segmentlengths[segmentid_];
 
     // get new etaA and etaB
-    const double etaA = -1.0 + 2.0 * (length_so_far / curr_ele_length);
-    const double etaB = -1.0 + 2.0 * ((length_so_far + curr_seg_length) / curr_ele_length);
+    etaA = -1.0 + 2.0 * (length_so_far / curr_ele_length);
+    etaB = -1.0 + 2.0 * ((length_so_far + curr_seg_length) / curr_ele_length);
 
     DRT::UTILS::IntegrationPoints1D gaussPoints =
         DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::intrule_line_3point);
@@ -1032,7 +1034,7 @@ template <DRT::Element::DiscretizationType distypeArt, DRT::Element::Discretizat
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
     distypeCont>::EvaluateDivSolidVel(const std::vector<double>& eta,
     const std::vector<std::vector<double>>& xi, const std::vector<double>& segmentlengths,
-    LINALG::SerialDenseVector& forcevec1)
+    LINALG::SerialDenseVector& forcevec1, const double& etaA, const double& etaB)
 {
   if (evaluate_in_ref_config_ || coupltype_ == type_scatra) return;
 
@@ -1057,16 +1059,19 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   static LINALG::Matrix<numdim_, numdim_> dvs_x;  // dv^s/dx
   static LINALG::Matrix<numdim_, 1> dvs_eta;      // dv^s/deta
 
-  const double curr_seg_length = segmentlengths[segmentid_];
+  // Evaluate the term $\int_a^b N^(1)*pi*R^2*d(lambda_t*v_s)/ds ds$ with partial integration
+  // equivalent to: $ - \int_a^b d(N^(1))/ds*lambda_t*v_s*pi*R^2 ds
+  //                + N^(1)*lambda_t*v_s*pi*R^2 |_b - N^(1)*lambda_t*v_s*pi*R^2 |_a $
 
+
+  // first part: int_a^b d(N^(1))/ds*lambda_t*v_s*pi*R^2 ds
+  const double jac = (etaB - etaA) / 2.0;
   for (int i_gp = 0; i_gp < n_gp_; i_gp++)
   {
     // Get constant values from projection
     const double w_gp = wgp_[i_gp];
     const double myeta = eta[i_gp];
     const std::vector<double> myxi = xi[i_gp];
-
-    const double jac = curr_seg_length / 2.0;
 
     // Update shape functions and their derivatives for 1D and 2D/3D element
     Get1DShapeFunctions<double>(N1, N1_eta, myeta);
@@ -1089,18 +1094,101 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
     lambda_t.Multiply(defgrad, lambda0_);
     lambda_t.Scale(1.0 / lambda_t.Norm2());
 
-    // dN/dx
-    derxy.Multiply(xji, N2_xi);
-    // dv^s/dx = v^s * N_x^T
-    dvs_x.MultiplyNT(ele2vel_, derxy);
+    std::vector<double> myvel(3, 0.0);
+    for (unsigned int j = 0; j < numnodescont_; j++)
+      for (unsigned int idim = 0; idim < numdim_; idim++) myvel[idim] += N2(j) * ele2vel_(idim, j);
 
-    // dv^s/deta = dv^s/dx * lambda_t
-    dvs_eta.Multiply(dvs_x, lambda_t);
-    // dv^s/deta (in direction of lambda_t) = dv^s/deta * lambda_t
-    const double dvetadeta = dvs_eta.Dot(lambda_t);
+    double lambda_t_vel = 0.0;
+    for (unsigned int idim = 0; idim < numdim_; idim++)
+      lambda_t_vel += myvel[idim] * lambda_t(idim);
 
     for (unsigned int i = 0; i < numnodesart_; i++)
-      forcevec1(i) -= N1(i) * w_gp * jac * dvetadeta * arterydiam_ * arterydiam_ * M_PI / 4.0;
+      forcevec1(i) +=
+          N1_eta(i) * w_gp * jac * lambda_t_vel * arterydiam_ * arterydiam_ * M_PI / 4.0;
+  }
+
+  // second part: + N^(1)*lambda_t*v_s*pi*R^2 |_b
+  {
+    std::vector<double> xiB(numdim_, 0.0);
+
+    bool projection_valid = false;
+    // xi_B does not change --> we can use the original eta_a_ here
+    Projection<double>(eta_b_, xiB, projection_valid);
+    if (!projection_valid) dserror("no projection could be found for eta_b");
+
+    // Update shape functions and their derivatives for 1D and 2D/3D element
+    Get1DShapeFunctions<double>(N1, N1_eta, etaB);
+    Get2D3DShapeFunctions<double>(N2, N2_xi, xiB);
+
+    xjm.MultiplyNT(N2_xi, ele2pos_);
+    xji.Invert(xjm);
+
+    // dX/dpsi
+    xjm0.MultiplyNT(N2_xi, ele2posref_);
+    // dpsi/dX
+    // note: cannot use invJ_ here -> defined at original Gauss points
+    invJ.Invert(xjm0);
+    // dN/dX = dN/dxi * dxi/dX = dN/dxi * (dX/dxi)^-1
+    N2_XYZ.Multiply(invJ, N2_xi);
+    // dx/dX = x * N_XYZ^T
+    defgrad.MultiplyNT(ele2pos_, N2_XYZ);
+
+    // current direction of artery element at GP
+    lambda_t.Multiply(defgrad, lambda0_);
+    lambda_t.Scale(1.0 / lambda_t.Norm2());
+
+    std::vector<double> myvel(3, 0.0);
+    for (unsigned int j = 0; j < numnodescont_; j++)
+      for (unsigned int idim = 0; idim < numdim_; idim++) myvel[idim] += N2(j) * ele2vel_(idim, j);
+
+    double lambda_t_vel = 0.0;
+    for (unsigned int idim = 0; idim < numdim_; idim++)
+      lambda_t_vel += myvel[idim] * lambda_t(idim);
+
+    for (unsigned int i = 0; i < numnodesart_; i++)
+      forcevec1(i) -= N1(i) * lambda_t_vel * arterydiam_ * arterydiam_ * M_PI / 4.0;
+  }
+
+  // third part: - N^(1)*lambda_t*v_s*pi*R^2 |_a
+  {
+    std::vector<double> xiA(numdim_, 0.0);
+
+    bool projection_valid = false;
+    // xi_A does not change --> we can use the original eta_a_ here
+    Projection<double>(eta_a_, xiA, projection_valid);
+    if (!projection_valid) dserror("no projection could be found for eta_a");
+
+    // Update shape functions and their derivatives for 1D and 2D/3D element
+    Get1DShapeFunctions<double>(N1, N1_eta, etaA);
+    Get2D3DShapeFunctions<double>(N2, N2_xi, xiA);
+
+    xjm.MultiplyNT(N2_xi, ele2pos_);
+    xji.Invert(xjm);
+
+    // dX/dpsi
+    xjm0.MultiplyNT(N2_xi, ele2posref_);
+    // dpsi/dX
+    // note: cannot use invJ_ here -> defined at original Gauss points
+    invJ.Invert(xjm0);
+    // dN/dX = dN/dxi * dxi/dX = dN/dxi * (dX/dxi)^-1
+    N2_XYZ.Multiply(invJ, N2_xi);
+    // dx/dX = x * N_XYZ^T
+    defgrad.MultiplyNT(ele2pos_, N2_XYZ);
+
+    // current direction of artery element at GP
+    lambda_t.Multiply(defgrad, lambda0_);
+    lambda_t.Scale(1.0 / lambda_t.Norm2());
+
+    std::vector<double> myvel(3, 0.0);
+    for (unsigned int j = 0; j < numnodescont_; j++)
+      for (unsigned int idim = 0; idim < numdim_; idim++) myvel[idim] += N2(j) * ele2vel_(idim, j);
+
+    double lambda_t_vel = 0.0;
+    for (unsigned int idim = 0; idim < numdim_; idim++)
+      lambda_t_vel += myvel[idim] * lambda_t(idim);
+
+    for (unsigned int i = 0; i < numnodesart_; i++)
+      forcevec1(i) += N1(i) * lambda_t_vel * arterydiam_ * arterydiam_ * M_PI / 4.0;
   }
   return;
 }

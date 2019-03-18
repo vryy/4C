@@ -641,6 +641,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::TWOPHASE::SetValidParameters(list);
   INPAR::LOMA::SetValidParameters(list);
   INPAR::TOPOPT::SetValidParameters(list);
+  INPAR::CUT::SetValidParameters(list);
   INPAR::XFEM::SetValidParameters(list);
 
   INPAR::LUBRICATION::SetValidParameters(list);

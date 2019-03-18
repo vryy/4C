@@ -238,21 +238,28 @@ double GEO::CUT::Tri3BoundaryCell::Area()
   double areasqr = (a + (b + c)) * (c - (a - b)) * (c + (a - b)) * (a + (b - c));
   if (areasqr < 0.0)
   {
-    std::ofstream file("Invalid_boundary_cell.pos");
-
-    // Write BCs for outside VolumeCell:
-    file << "View \"BoundaryCells\" {\n";
-
-    DumpGmsh(file);
-
-    file << "};\n";
-
-    file << "View \"BoundaryCellsNormal\" {\n";
-
-    DumpGmshNormal(file);
-
-    file << "};\n";
-    dserror("Boundary Cell not valid! Written GMSH output in Invalid_boundary_cell.pos!");
+    if (std::abs(areasqr) > AREA_BC_TOL)
+    {
+      std::ofstream file("invalid_boundary_cell.pos");
+      // Write BCs for outside VolumeCell:
+      GEO::CUT::OUTPUT::GmshNewSection(file, "BoundaryCells");
+      DumpGmsh(file);
+      GEO::CUT::OUTPUT::GmshEndSection(file, false);
+      GEO::CUT::OUTPUT::GmshNewSection(file, "BoundaryCellsNormal");
+      DumpGmshNormal(file);
+      GEO::CUT::OUTPUT::GmshEndSection(file);
+      dserror("Boundary Cell not valid! Written GMSH output in Invalid_boundary_cell.pos!");
+    }
+    else
+    {
+#if EXTENDED_CUT_DEBUG_OUTPUT
+      std::cout << "NOTE: Boundary cell area calculated with Heron's formula is negative"
+                << std::endl;
+#endif
+      // TODO: What should we really do here?
+      // For now we create really small boundary cells
+      areasqr *= -1;
+    }
   }
   double area = 0.25 * sqrt(areasqr);
 

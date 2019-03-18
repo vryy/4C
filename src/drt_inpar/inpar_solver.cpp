@@ -4,12 +4,9 @@
 
 \brief Input parameters for linear solvers
 
-<pre>
-Maintainer: Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+\maintainer Martin Kronbichler
+
+\level 1
 */
 
 /*----------------------------------------------------------------------*/
@@ -145,7 +142,10 @@ namespace INPAR
           "The amount of overlap used for the ifpack \"ilu\" and \"ilut\" preconditioners.", &list);
 
       IntParameter("IFPACKGFILL", 0,
-          "The amount of fill allowed for the internal \"ilu\" preconditioner.", &list);
+          "This parameter has multiple meanings:\n1. The amount of fill-in into the graph allowed "
+          "for the internal \"ilu\" preconditioner\n2. Number of sweeos for IFPACK-based point "
+          "relaxation schemes.",
+          &list);
 
       DoubleParameter("IFPACKFILL", 1.0,
           "The amount of fill allowed for an internal \"ilut\" preconditioner.", &list);
@@ -158,31 +158,12 @@ namespace INPAR
           "The tolerance below which an entry from the factors of an internal \"ilut\"\n"
           "preconditioner will be dropped.",
           &list);
-      //   IntParameter(
-      //     Steps_name, 3,
-      //     "Number of steps taken for the \"Jacobi\" or the \"Symmetric Gauss-Seidel\"\n"
-      //     "internal preconditioners for each preconditioner application.",
-      //     &list
-      //     );
+
       IntParameter("AZPOLY", 3,
           "The order for of the polynomials used for the \"Polynomial\" and\n"
           "\"Least-squares Polynomial\" internal preconditioners.",
           &list);
-      //   setStringToIntegralParameter(
-      //     RCMReordering_name, "Disabled",
-      //     "Determines if RCM reordering is used with the internal\n"
-      //     "\"ilu\" or \"ilut\" preconditioners.",
-      //     tuple<std::string>("Enabled","Disabled"),
-      //     tuple<int>(1,0),
-      //     &list
-      //     );
-      //   setStringToIntegralParameter(
-      //     Orthogonalization_name, "Classical",
-      //     "The type of orthogonalization to use with the \"GMRES\" solver.",
-      //     tuple<std::string>("Classical","Modified"),
-      //     tuple<int>(AZ_classic,AZ_modified),
-      //     &list
-      //     );
+
       IntParameter("AZSUB", 50,
           "The maximum size of the Krylov subspace used with \"GMRES\" before\n"
           "a restart is performed.",
@@ -194,12 +175,7 @@ namespace INPAR
           tuple<int>(AZ_r0, AZ_rhs, AZ_Anorm, AZ_noscaled, AZ_sol, AZ_weighted, AZ_expected_values,
               AZTECOO_conv_test, AZ_inf_noscaled),
           &list);
-      //   DoubleParameter(
-      //     IllConditioningThreshold_name, 1e+11,
-      //     "The threshold tolerance above which a system is considered\n"
-      //     "ill conditioned.",
-      //     &list
-      //     );
+
       IntParameter("AZOUTPUT", 0,  // By default, no output from Aztec!
           "The number of iterations between each output of the solver's progress.", &list);
 
@@ -446,7 +422,7 @@ namespace INPAR
       /*----------------------------------------------------------------------*/
       // UMFPACK solver section
       // some people just need a solver quickly. We provide a special parameter set
-      // for UMFPACK that users can just use temporarely without introducing a
+      // for UMFPACK that users can just use temporarily without introducing a
       // separate solver block.
       Teuchos::ParameterList& solver_u =
           list->sublist("UMFPACK SOLVER", false, "solver parameters for UMFPACK");

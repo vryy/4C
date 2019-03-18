@@ -6,7 +6,7 @@ mesh
 
 \level 3
 <pre>
-\maintainer  Ager Christoph
+\maintainer  Christoph Ager
              ager@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15249
@@ -142,8 +142,11 @@ namespace GEO
       //! @name Create-routines for points, lines, facets and volumecells
       /*========================================================================*/
 
-      /// creates a new point, optional information about cut-edge and cut-side
-      Point* NewPoint(const double* x, Edge* cut_edge, Side* cut_side, double tolerance);
+      /// creates a new point, optional information about cut-edge and cut-side, and whether this is
+      /// hapenning during
+      // loading of the mesh
+      Point* NewPoint(const double* x, Edge* cut_edge, Side* cut_side, double tolerance,
+          double tol_scale = 1.0);
 
       /// creates a new line
       void NewLine(Point* p1, Point* p2, Side* cut_side1, Side* cut_side2, Element* cut_element,
@@ -259,11 +262,10 @@ namespace GEO
       /*========================================================================*/
 
       /// Cuts the background elements of the mesh with all the cut sides
-      void Cut(Mesh& mesh, plain_element_set& elements_done, int recursion);
+      void Cut(Mesh& mesh, plain_element_set& elements_done);
 
       /// Cuts the background elements with this considered side
-      void Cut(Side& side, const plain_element_set& done, plain_element_set& elements_done,
-          int recursion);
+      void Cut(Side& side, const plain_element_set& done, plain_element_set& elements_done);
 
       /// Cuts the background elements with this levelset side
       void Cut(Side& side);
@@ -272,7 +274,7 @@ namespace GEO
       void RectifyCutNumerics();
 
       /// finds intersections between sides and edges
-      void FindCutPoints(int recursion = 0);
+      void FindCutPoints();
 
       /*========================================================================*/
       //! @name Basic routines to create lines, facets and volumecells
@@ -520,11 +522,17 @@ namespace GEO
       //     Only used in cut_test_volume.cpp
       void CreateSideIds_CutTest(int lastid = 0);
 
+      // only used for testing
+      int CreateSideIdsAll_CutTest(int lastid = 0);
+
       //     Only used in cut_test_volume.cpp
       void AssignOtherVolumeCells_CutTest(const Mesh& other);
 
       /// return the options
       Options& CreateOptions() { return options_; }
+
+      /// return the options
+      Options& GetOptions() const { return options_; }
 
       /// ???
       void TestVolumeSurface();

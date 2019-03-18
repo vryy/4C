@@ -46,6 +46,11 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
           search_binarytree, search_binarytree),
       &mortar);
 
+  setStringToIntegralParameter<int>("BINARYTREE_UPDATETYPE", "BottomUp",
+      "Type of binary tree update, which is either a bottom up or a top down approach.",
+      tuple<std::string>("BottomUp", "TopDown"),
+      tuple<int>(binarytree_bottom_up, binarytree_top_down), &mortar);
+
   DoubleParameter(
       "SEARCH_PARAM", 0.3, "Radius / Bounding volume inflation for contact search", &mortar);
 
@@ -175,6 +180,16 @@ void INPAR::MORTAR::SetValidConditions(
       Teuchos::tuple<int>(static_cast<int>(DBCHandling::do_nothing),
           static_cast<int>(DBCHandling::remove_dbc_nodes_from_slave_side)),
       true)));
+
+  // optional two half pass approach
+  contactcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("TwoHalfPass", true)));
+  contactcomponents.push_back(Teuchos::rcp(new RealConditionComponent("TwoHalfPass")));
+
+  // optional reference configuration check for non-smooth self contact surfaces
+  contactcomponents.push_back(Teuchos::rcp(
+      new SeparatorConditionComponent("RefConfCheckNonSmoothSelfContactSurface", true)));
+  contactcomponents.push_back(
+      Teuchos::rcp(new RealConditionComponent("RefConfCheckNonSmoothSelfContactSurface")));
 
   Teuchos::RCP<ConditionDefinition> linecontact =
       Teuchos::rcp(new ConditionDefinition("DESIGN LINE MORTAR CONTACT CONDITIONS 2D", "Contact",

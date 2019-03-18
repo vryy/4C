@@ -25,10 +25,6 @@
  *---------------------------------------------------------------------------*/
 #include "particle_enums.H"
 #include "particle_typedefs.H"
-#include <map>
-#include <set>
-#include <vector>
-#include <memory>
 
 /*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 03/2018 |
@@ -57,7 +53,7 @@ namespace PARTICLEENGINE
     void DecreaseContainerSize();
 
     //! clear particle container
-    void ClearContainer();
+    inline void ClearContainer() { particlestored_ = 0; };
 
     //! add particle to particle container and get index
     void AddParticle(int& index, int globalid, const ParticleStates& particle);
@@ -71,44 +67,82 @@ namespace PARTICLEENGINE
     //! remove particle from particle container
     void RemoveParticle(int index);
 
-    //! swap particles at index a and b in particle container
-    void SwapParticle(int index_a, int index_b);
+    //! return particle state dimension
+    inline int GetParticleStateDim(StateEnum stateEnum) { return statedim_[stateEnum]; };
 
     //! return pointer to state of a particle at index
-    double* GetPtrToParticleState(StateEnum stateEnum, int index) const;
+    inline double* GetPtrToParticleState(StateEnum stateEnum, int index)
+    {
+#ifdef DEBUG
+      if (index < 0 or index > (particlestored_ - 1))
+        dserror("can not return pointer to state of particle as index %d out of bounds!", index);
+#endif
+
+      return &((states_[stateEnum])[index * statedim_[stateEnum]]);
+    };
 
     //! return pointer to global id of a particle at index
-    int* GetPtrToParticleGlobalID(int index);
+    inline int* GetPtrToParticleGlobalID(int index)
+    {
+#ifdef DEBUG
+      if (index < 0 or index > (particlestored_ - 1))
+        dserror(
+            "can not return pointer to global id of particle as index %d out of bounds!", index);
+#endif
 
-    //! get state of a particle at index
-    std::vector<double> GetParticleState(StateEnum stateEnum, int index) const;
+      return &(globalids_[index]);
+    };
 
     //! scale state of particles
-    void ScaleState(double fac, StateEnum stateEnum) const;
+    inline void ScaleState(double fac, StateEnum stateEnum)
+    {
+      for (int i = 0; i < (particlestored_ * statedim_[stateEnum]); ++i)
+        (states_[stateEnum])[i] *= fac;
+    };
 
     //! scale and add states to update state of particles
-    void UpdateState(double facA, StateEnum stateEnumA, double facB, StateEnum stateEnumB) const;
+    inline void UpdateState(double facA, StateEnum stateEnumA, double facB, StateEnum stateEnumB)
+    {
+      dsassert(
+          statedim_[stateEnumA] == statedim_[stateEnumB], "dimensions of states do not match!");
+
+      for (int i = 0; i < (particlestored_ * statedim_[stateEnumA]); ++i)
+        (states_[stateEnumA])[i] =
+            facA * (states_[stateEnumA])[i] + facB * (states_[stateEnumB])[i];
+    };
 
     //! set state to particles
-    void SetState(std::vector<double> val, StateEnum stateEnum) const;
+    inline void SetState(std::vector<double> val, StateEnum stateEnum)
+    {
+      dsassert(statedim_[stateEnum] == static_cast<int>(val.size()),
+          "dimensions of states do not match!");
+
+      for (int i = 0; i < particlestored_; ++i)
+        for (int dim = 0; dim < statedim_[stateEnum]; ++dim)
+          (states_[stateEnum])[i * statedim_[stateEnum] + dim] = val[dim];
+    };
 
     //! clear state of particles
-    void ClearState(StateEnum stateEnum) const;
+    inline void ClearState(StateEnum stateEnum)
+    {
+      for (int i = 0; i < (particlestored_ * statedim_[stateEnum]); ++i)
+        (states_[stateEnum])[i] = 0.0;
+    };
+
+    //! get stored particle states
+    inline const std::set<StateEnum>& GetStoredStates() const { return storedstates_; };
+
+    //! get size of particle container
+    inline int ContainerSize() const { return containersize_; };
+
+    //! get number of particles stored in container
+    inline int ParticlesStored() const { return particlestored_; };
 
     //! get minimum stored value of state
     double GetMinValueOfState(StateEnum stateEnum) const;
 
     //! get maximum stored value of state
     double GetMaxValueOfState(StateEnum stateEnum) const;
-
-    //! get stored particle states
-    const std::set<StateEnum> GetParticleStates() const;
-
-    //! get size of particle container
-    int ContainerSize() const { return containersize_; };
-
-    //! get number of particles stored in container
-    int ParticlesStored() const { return particlestored_; };
 
    private:
     //! size of particles container
@@ -117,11 +151,20 @@ namespace PARTICLEENGINE
     //! number of particles stored in container
     int particlestored_;
 
+    //! set of stored particle states
+    std::set<StateEnum> storedstates_;
+
+    //! size of vector for states
+    int statesvectorsize_;
+
     //! global ids of stored particles
     std::vector<int> globalids_;
 
-    //! maps type of particle state to corresponding data type
-    std::map<StateEnum, std::shared_ptr<std::vector<double>>> states_;
+    //! particle states in container indexed by state enum
+    std::vector<std::vector<double>> states_;
+
+    //! particle state dimension indexed by state enum
+    std::vector<int> statedim_;
   };
 
 }  // namespace PARTICLEENGINE

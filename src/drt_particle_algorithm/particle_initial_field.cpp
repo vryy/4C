@@ -48,6 +48,7 @@ void PARTICLEALGORITHM::InitialFieldHandler::Init()
 
   // relate particle state to input name
   std::map<std::string, PARTICLEENGINE::StateEnum> initialfieldtostateenum = {
+      std::make_pair("INITIAL_TEMP_FIELD", PARTICLEENGINE::Temperature),
       std::make_pair("INITIAL_VELOCITY_FIELD", PARTICLEENGINE::Velocity),
       std::make_pair("INITIAL_ACCELERATION_FIELD", PARTICLEENGINE::Acceleration)};
 
@@ -58,8 +59,8 @@ void PARTICLEALGORITHM::InitialFieldHandler::Init()
     std::map<PARTICLEENGINE::TypeEnum, int>& currentstatetypetofunctidmap =
         statetotypetofunctidmap_[stateIt.second];
 
-    // read parameters relating particle types to IDs
-    PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToIDs(
+    // read parameters relating particle types to values
+    PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues(
         params_conditions, stateIt.first, currentstatetypetofunctidmap);
   }
 }
@@ -95,11 +96,11 @@ void PARTICLEALGORITHM::InitialFieldHandler::SetInitialFields()
       PARTICLEENGINE::TypeEnum particleType = initialFieldIt.first;
 
       // get container of owned particles of current particle type
-      PARTICLEENGINE::ParticleContainerShrdPtr container =
+      PARTICLEENGINE::ParticleContainer* container =
           particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
       // get number of particles stored in container
-      int particlestored = container->ParticlesStored();
+      const int particlestored = container->ParticlesStored();
 
       // no owned particles of current particle type
       if (particlestored <= 0) continue;
@@ -113,14 +114,20 @@ void PARTICLEALGORITHM::InitialFieldHandler::SetInitialFields()
       // get pointer to particle position
       const double* pos = container->GetPtrToParticleState(PARTICLEENGINE::Position, 0);
 
-      // get dimension of particle position
-      int posstatedim = PARTICLEENGINE::EnumToStateDim(PARTICLEENGINE::Position);
+      // get particle state dimension
+      int posstatedim = container->GetParticleStateDim(PARTICLEENGINE::Position);
 
       // get pointer to particle state
       double* state = container->GetPtrToParticleState(particleState, 0);
 
-      // get dimension of particle state
-      int statedim = PARTICLEENGINE::EnumToStateDim(particleState);
+#ifdef DEBUG
+      if (not container->GetStoredStates().count(particleState))
+        dserror("particle state '%s' not stored in container!",
+            PARTICLEENGINE::EnumToStateName(particleState).c_str());
+#endif
+
+      // get particle state dimension
+      int statedim = container->GetParticleStateDim(particleState);
 
       // safety check
       if (statedim != function.NumberComponents())
@@ -132,7 +139,7 @@ void PARTICLEALGORITHM::InitialFieldHandler::SetInitialFields()
       {
         // evaluate function to set initial field
         for (int dim = 0; dim < statedim; ++dim)
-          state[statedim * i + dim] = function.Evaluate(dim, &(pos[posstatedim * i + dim]), 0.0);
+          state[statedim * i + dim] = function.Evaluate(dim, &(pos[posstatedim * i]), 0.0);
       }
     }
   }

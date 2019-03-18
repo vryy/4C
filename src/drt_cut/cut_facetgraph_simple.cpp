@@ -1,18 +1,16 @@
 /*----------------------------------------------------------------------------*/
-/**
+/*!
 \file cut_facetgraph_simple.cpp
 
 \brief Create a simple facet graph for 1-D and 2-D elements ( embedded in a
        higher dimensional space )
 
-\maintainer Michael Hiermeier
-
 \date Nov 14, 2016
 
 \level 2
 
-*/
-/*----------------------------------------------------------------------------*/
+\maintainer Christoph Ager
+ *------------------------------------------------------------------------------------------------*/
 #include "cut_facetgraph_simple.H"
 
 #include "cut_facet.H"

@@ -3,7 +3,6 @@
 \file cut_coloredgraph.H
 
 \brief colored graph to create volumecells from facets
-\warning do we still use this graph?
 
 \level 3
 
@@ -127,7 +126,7 @@ namespace GEO
         void SetSplit(int color_split) { color_split_ = color_split; }
 
         void Split(Graph& used, plain_int_set& free, Graph& connection,
-            const std::vector<int>& split_trace, Graph& c1, Graph& c2);
+            const std::vector<int>& split_trace, Graph& c1, Graph& c2, Graph& datagraph);
 
         bool ContainsTrace(const std::vector<int>& split_trace);
 
@@ -140,6 +139,27 @@ namespace GEO
 
         void DumpGraph(const std::string& name);
 
+        void Map(std::map<int, const void*>* index_value_map)
+        {
+          index_value_map_ = index_value_map;
+        };
+
+        // get pointer to the underlying object
+        void* GetPointer(int Id) const
+        {
+          std::map<int, const void*>::iterator it = index_value_map_->find(Id);
+          if (it != index_value_map_->end())
+          {
+            return const_cast<void*>(it->second);
+          }
+          else
+            dserror("Invalid element with id %d", Id);
+          return NULL;
+        }
+        // Split split trace into the closed loops
+        void SplitSplittrace(const std::vector<int>& split_trace, Graph& datagraph,
+            std::vector<std::vector<int>>& isolated_components);
+
        private:
         void Fill(const std::vector<int>& split_trace, Graph& used, plain_int_set& free,
             Graph& connection, int seed, Graph& c);
@@ -148,6 +168,9 @@ namespace GEO
 
         /// position where lines start
         int color_split_;
+
+        // mapping between Ids and pointers to the underlying objects
+        std::map<int, const void*>* index_value_map_;
       };
 
       /// One graph that represents the outside facets of one or more volumes
@@ -163,9 +186,9 @@ namespace GEO
         void Print() const;
 
         void Split(Graph& used, plain_int_set& free, Graph& connection,
-            const std::vector<int>& split_trace, Graph& c1, Graph& c2)
+            const std::vector<int>& split_trace, Graph& c1, Graph& c2, Graph& datagraph)
         {
-          cycle_.Split(used, free, connection, split_trace, c1, c2);
+          cycle_.Split(used, free, connection, split_trace, c1, c2, datagraph);
         }
 
         bool ContainsTrace(const std::vector<int>& split_trace)

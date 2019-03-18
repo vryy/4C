@@ -23,7 +23,6 @@
 #include "contact_defines.H"
 #include "contact_line_coupling.H"
 #include "friction_node.H"
-#include "selfcontact_binarytree.H"
 #include "../drt_mortar/mortar_binarytree.H"
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_projector.H"
@@ -38,6 +37,7 @@
 #include "contact_nitsche_utils.H"
 
 #include <Teuchos_TimeMonitor.hpp>
+#include "selfcontact_binarytree_unbiased.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -45,6 +45,7 @@ CONTACT::IDataContainer::IDataContainer()
     : selfcontact_(false),
       friction_(false),
       nonSmoothContact_(false),
+      two_half_pass_(false),
       constr_direction_(INPAR::CONTACT::constr_vague),
       activenodes_(Teuchos::null),
       activedofs_(Teuchos::null),
@@ -93,6 +94,7 @@ CONTACT::CoInterface::CoInterface(const Teuchos::RCP<CONTACT::IDataContainer>& i
       selfcontact_(idata_.IsSelfContact()),
       friction_(idata_.IsFriction()),
       nonSmoothContact_(idata_.IsNonSmoothContact()),
+      two_half_pass_(idata_.IsTwoHalfPass()),
       constr_direction_(idata_.ConstraintDirection()),
       activenodes_(idata_.ActiveNodes()),
       activedofs_(idata_.ActiveDofs()),
@@ -135,6 +137,7 @@ CONTACT::CoInterface::CoInterface(const Teuchos::RCP<MORTAR::IDataContainer>& id
       selfcontact_(idata_.IsSelfContact()),
       friction_(idata_.IsFriction()),
       nonSmoothContact_(idata_.IsNonSmoothContact()),
+      two_half_pass_(idata_.IsTwoHalfPass()),
       constr_direction_(idata_.ConstraintDirection()),
       activenodes_(idata_.ActiveNodes()),
       activedofs_(idata_.ActiveDofs()),
@@ -164,6 +167,7 @@ CONTACT::CoInterface::CoInterface(const Teuchos::RCP<MORTAR::IDataContainer>& id
 {
   selfcontact_ = selfcontact;
   nonSmoothContact_ = DRT::INPUT::IntegralValue<int>(icontact, "NONSMOOTH_GEOMETRIES");
+  two_half_pass_ = icontact.get<bool>("Two_half_pass");
   constr_direction_ = DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>(
       icontact, "CONSTRAINT_DIRECTIONS");
   smpairs_ = 0;
@@ -182,11 +186,15 @@ CONTACT::CoInterface::CoInterface(const Teuchos::RCP<MORTAR::IDataContainer>& id
   if (icontact.get<int>("PROBTYPE") == INPAR::CONTACT::ehl) SetEhlFlag(true);
 
   // check for redundant slave storage
-  // (needed for self contact but not wanted for general contact)
-  //  if ((selfcontact_ or nonSmoothContact_) && redundant != INPAR::MORTAR::redundant_all)
-  //    dserror("ERROR: We need redundant interface storage (slave+master) for self contact");
+  // needed for self contact but not wanted for general contact
+  // for self contact this is ensured in BuildInterfaces in contact_strategy_factory.cpp
+  // so we only print a warning here, as it is possible to have another contact interface with a
+  // different ID that does not need to be a self contact interface
   if (!(selfcontact_ or nonSmoothContact_) && redundant == INPAR::MORTAR::redundant_all)
-    dserror("ERROR: We do not want redundant interface storage for contact");
+    if (Comm().MyPID() == 0)
+      std::cout << "WARNING: We do not want redundant interface storage for contact where not "
+                   "needed, as it is very expensive. But we need it e.g. for self contact."
+                << std::endl;
 
   // init extended ghosting for RR loop
   eextendedghosting_ = Teuchos::null;
@@ -1370,9 +1378,21 @@ void CONTACT::CoInterface::CreateSearchTree()
       Teuchos::RCP<Epetra_Map> elefullmap = LINALG::AllreduceEMap(*idiscret_->ElementRowMap());
 
       // create binary tree object for self contact search
-      // (NOTE THAT SELF CONTACT SEARCH IS NOT YET FULLY PARALLELIZED!)
-      binarytreeself_ = Teuchos::rcp(
-          new CONTACT::SelfBinaryTree(Discret(), lComm(), elefullmap, Dim(), SearchParam()));
+      if (!TwoHalfPass())
+      {
+        // (NOTE THAT SELF CONTACT SEARCH IS NOT YET FULLY PARALLELIZED!)
+        binarytreeself_ = Teuchos::rcp(new CONTACT::SelfBinaryTree(
+            Discret(), lComm(), IParams(), elefullmap, Dim(), SearchParam()));
+      }
+      else
+      {
+        // if we use the two half pass algorithm, we use the unbiased self binary tree
+        // implementation
+        binarytreeself_ = Teuchos::rcp(new CONTACT::UnbiasedSelfBinaryTree(
+            Discret(), lComm(), IParams(), elefullmap, Dim(), SearchParam()));
+      }
+      // initialize the self binary tree
+      binarytreeself_->Init();
     }
     //*****TWO BODY CONTACT*****
     else
@@ -1386,6 +1406,11 @@ void CONTACT::CoInterface::CreateSearchTree()
       INPAR::MORTAR::ParallelStrategy strat =
           DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(
               IParams(), "PARALLEL_STRATEGY");
+
+      // get update type of binary tree
+      INPAR::MORTAR::BinaryTreeUpdateType updatetype =
+          DRT::INPUT::IntegralValue<INPAR::MORTAR::BinaryTreeUpdateType>(
+              IParams(), "BINARYTREE_UPDATETYPE");
 
       Teuchos::RCP<Epetra_Map> melefullmap = Teuchos::null;
       if (strat == INPAR::MORTAR::roundrobinghost || strat == INPAR::MORTAR::binningstrategy)
@@ -1404,11 +1429,10 @@ void CONTACT::CoInterface::CreateSearchTree()
         dserror("Chosen parallel strategy not supported!");
 
       // create binary tree object for contact search and setup tree
-      binarytree_ = Teuchos::rcp(new MORTAR::BinaryTree(
-          Discret(), selecolmap_, melefullmap, Dim(), SearchParam(), SearchUseAuxPos()));
-
-      // initialize active contact nodes via binarytree
-      // binarytree_->SearchContactInit(binarytree_->Sroot(), binarytree_->Mroot());
+      binarytree_ = Teuchos::rcp(new MORTAR::BinaryTree(Discret(), selecolmap_, melefullmap, Dim(),
+          SearchParam(), updatetype, SearchUseAuxPos()));
+      // initialize the binary tree
+      binarytree_->Init();
     }
   }
 
@@ -3505,89 +3529,88 @@ void CONTACT::CoInterface::AddLTLstiffness(Teuchos::RCP<LINALG::SparseMatrix> kt
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::PostEvaluate(const int step, const int iter)
 {
-  // nonsmooth contact
-  if (nonSmoothContact_)
+  // decide which type of coupling should be evaluated
+  INPAR::MORTAR::AlgorithmType algo =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
+
+  switch (algo)
   {
-    // store lts into mortar data container
-    StoreLTSvalues();
-
-    // store nts into mortar data container
-    StoreNTSvalues();
-
-    // FINAL TEST:
-  }
-  // node assemble of terms
-  else
-  {
-    // decide which type of coupling should be evaluated
-    INPAR::MORTAR::AlgorithmType algo =
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
-
-    // smooth contact
-    switch (algo)
+    //*********************************
+    // Mortar Coupling (STS)    (2D/3D)
+    //*********************************
+    case INPAR::MORTAR::algorithm_mortar:
     {
-      //*********************************
-      // Mortar Coupling (STS)    (2D/3D)
-      // Gauß-Point-To-Segment (GPTS)
-      //*********************************
-      case INPAR::MORTAR::algorithm_mortar:
-      case INPAR::MORTAR::algorithm_gpts:
-      {
-        // already stored
-        return;
-        break;
-      }
-      //*********************************
-      // Line-to-Segment Coupling (3D)
-      //*********************************
-      case INPAR::MORTAR::algorithm_lts:
+      // non-smooth contact
+      if (nonSmoothContact_)
       {
         // store lts into mortar data container
         StoreLTSvalues();
-        break;
-      }
-      //*********************************
-      // Node-to-Segment Coupling (2D/3D)
-      //*********************************
-      case INPAR::MORTAR::algorithm_nts:
-      {
+
         // store nts into mortar data container
         StoreNTSvalues();
-        break;
       }
-      //*********************************
-      // line-to-line Coupling (3D)
-      //*********************************
-      case INPAR::MORTAR::algorithm_ltl:
-      {
-        return;
-        break;
-      }
-      //*********************************
-      // Node-to-Line Coupling (3D)
-      //*********************************
-      case INPAR::MORTAR::algorithm_ntl:
-      {
-        dserror("ERROR: not yet implemented!");
-        break;
-      }
-      //*********************************
-      // Segment-to-Line Coupling (3D)
-      //*********************************
-      case INPAR::MORTAR::algorithm_stl:
-      {
-        // store lts into mortar data container
-        StoreLTSvalues();
-        break;
-      }
-      //*********************************
-      // Default case
-      //*********************************
-      default:
-      {
-        dserror("ERROR: Unknown discr. type for constraints!");
-        break;
-      }
+      return;
+      break;
+    }
+    //*********************************
+    // Gauß-Point-To-Segment (GPTS)
+    //*********************************
+    case INPAR::MORTAR::algorithm_gpts:
+    {
+      // already stored
+      return;
+      break;
+    }
+    //*********************************
+    // Line-to-Segment Coupling (3D)
+    //*********************************
+    case INPAR::MORTAR::algorithm_lts:
+    {
+      // store lts into mortar data container
+      StoreLTSvalues();
+      break;
+    }
+    //*********************************
+    // Node-to-Segment Coupling (2D/3D)
+    //*********************************
+    case INPAR::MORTAR::algorithm_nts:
+    {
+      // store nts into mortar data container
+      StoreNTSvalues();
+      break;
+    }
+    //*********************************
+    // line-to-line Coupling (3D)
+    //*********************************
+    case INPAR::MORTAR::algorithm_ltl:
+    {
+      return;
+      break;
+    }
+    //*********************************
+    // Node-to-Line Coupling (3D)
+    //*********************************
+    case INPAR::MORTAR::algorithm_ntl:
+    {
+      dserror("ERROR: not yet implemented!");
+      break;
+    }
+    //*********************************
+    // Segment-to-Line Coupling (3D)
+    //*********************************
+    case INPAR::MORTAR::algorithm_stl:
+    {
+      // store lts into mortar data container
+      StoreLTSvalues();
+      break;
+    }
+    //*********************************
+    // Default case
+    //*********************************
+    default:
+    {
+      dserror("ERROR: Unknown discr. type for constraints!");
+      break;
     }
   }
 
@@ -4003,7 +4026,7 @@ void CONTACT::CoInterface::EvaluateSTS(
 void CONTACT::CoInterface::EvaluateCoupling(const Epetra_Map& selecolmap,
     const Epetra_Map* snoderowmap, const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
-  // ask if nonsmooth contact is activated!
+  // ask if non-smooth contact is activated!
   if (nonSmoothContact_)
   {
     // 2D: only STS and nts has to be performed
@@ -6928,26 +6951,12 @@ void CONTACT::CoInterface::ExportNodalNormals() const
  *----------------------------------------------------------------------*/
 bool CONTACT::CoInterface::EvaluateSearchBinarytree()
 {
-  // ***WARNING:*** This is commented out here, as UpdateMasterSlaveSets()
-  // needs all the procs around, not only the interface local ones!
-  // if (!lComm()) return true;
-
   // *********************************************************************
-  // Possible versions for self contact:
+  // self contact:
   // *********************************************************************
-  //
-  // 1) Combined Update and Search
-  // -> In this case we have to call SearchContactCombined(), which
-  //    does both top-down update (where necessary) and search. Then
-  //    the dynamics master/slave assignment routine UpdateMasterSlaveSets()
-  //    is called and the new slave nodes' data containers are initialized.
-  //
-  // 2) Separate Update and Search
-  // -> In this case we have to call SearchContactSeparate(), which
-  //    does both bottom-up update (on whole interface) and search. Then
-  //    the dynamics master/slave assignment routine UpdateMasterSlaveSets()
-  //    is called and the new slave nodes' data containers are initialized.
-  //
+  // We call EvaluateSearch(), which does both, the bottom-up update (on the whole interface) and
+  // the search. Then the dynamic master/slave assignment routine UpdateMasterSlaveSets() is called
+  // and the new slave nodes' data containers are initialized.
   // *********************************************************************
   if (SelfContact())
   {
@@ -6975,22 +6984,6 @@ bool CONTACT::CoInterface::EvaluateSearchBinarytree()
     // (this was already done in SetElementAreas())
   }
 
-  // *********************************************************************
-  // Possible versions for 2-body contact:
-  // *********************************************************************
-  //
-  // 1) Combined Update and Contact Search
-  // -> In this case we only have to call SearchContactCombined(), which
-  //    does both top-down update (where necessary) and search.
-  //
-  // 2) Separate Update and Contact Search
-  // -> In this case we have to explicitly call and updating routine, i.e.
-  //    UpdateTreeTopDown() or UpdateTreeBottomUp() before calling the
-  //    search routine SearchContactSeparate(). Of course, the bottom-up
-  //    update makes more sense here. For very large contact problems,
-  //    this version is preferable and thus chosen as default.
-  //
-  // *********************************************************************
   else
   {
     // call mortar routine

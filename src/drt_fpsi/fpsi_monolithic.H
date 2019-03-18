@@ -4,10 +4,9 @@
 
  \brief General framework for monolithic fpsi solution schemes
 
- <pre>
- Maintainer: Andreas Rauch
- rauch@lnm.mw.tum.de
- </pre>
+\level 3
+
+\maintainer  Christoph Ager
  */
 
 /*----------------------------------------------------------------------*/

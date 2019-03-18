@@ -796,6 +796,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ApplyAdditionalDBCForVolFracPress()
                     mydirichdofs.end()))
             {
               mydirichdofs.push_back(dofs[idof]);
+              phinp_->ReplaceGlobalValue(dofs[idof], 0, 0.0);
             }
         }
       }

@@ -223,6 +223,9 @@ void ADAPTER::CouplingNonLinMortar::ReadMortarCondition(Teuchos::RCP<DRT::Discre
           INPAR::MORTAR::shape_petrovgalerkin)
     if (myrank_ == 0) dserror("Mortar coupling adapter only works for dual shape functions");
 
+  // as two half pass approach is not implemented for this approach set false
+  input.set<bool>("Two_half_pass", false);
+
   return;
 }
 
@@ -638,6 +641,9 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
   }
   else
     input.set<bool>("NURBS", false);
+
+  // as two half pass approach is not implemented for this approach set false
+  input.set<bool>("Two_half_pass", false);
 
   // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
   const int dim = DRT::Problem::Instance()->NDim();

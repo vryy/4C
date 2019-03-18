@@ -413,6 +413,10 @@ namespace DRT
     {
       return getParameterList()->sublist("CELL DYNAMIC");
     }
+    const Teuchos::ParameterList& CutGeneralParams() const
+    {
+      return getParameterList()->sublist("CUT GENERAL");
+    }
     const Teuchos::ParameterList& XFEMGeneralParams() const
     {
       return getParameterList()->sublist("XFEM GENERAL");

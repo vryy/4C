@@ -94,7 +94,7 @@ void LINALG::SOLVER::AztecSolver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
   // after this call, the solver can access the preconditioner object using the
   // Preconditioner() function.
   int reuse = azlist.get("reuse", 0);
-  bool create = AllowReusePreconditioner(reuse, reset) == false;
+  const bool create = AllowReusePreconditioner(reuse, reset) == false;
   if (create)
   {
     ncall_ = 0;

@@ -158,13 +158,13 @@ namespace GEO
       }
 
       //! \brief Cutting the element with the given cut side
-      bool Cut(Mesh& mesh, Side& cut_side, int recursion);
+      bool Cut(Mesh& mesh, Side& cut_side);
 
       /*! \brief cut this element with its cut faces */
-      void FindCutPoints(Mesh& mesh, int recursion = 0);
+      void FindCutPoints(Mesh& mesh);
 
       /*! \brief cut this element with given cut_side */
-      bool FindCutPoints(Mesh& mesh, Side& cut_side, int recursion);
+      bool FindCutPoints(Mesh& mesh, Side& cut_side);
 
       /*! \brief Create cut lines over this element by connecting appropriate cut points */
       void MakeCutLines(Mesh& mesh);
@@ -445,7 +445,7 @@ namespace GEO
         else if (dim < probdim)
         {
           LINALG::Matrix<dim, dim> metrictensor;
-          DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype, probdim>(
+          DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype, probdim, double>(
               xyze, deriv, metrictensor, det, NULL);
         }
         else
@@ -589,7 +589,7 @@ namespace GEO
      private:
       /*! \brief Returns true if there is at least one cut point between the background
        *  element side and the cut side ("other") */
-      bool FindCutPoints(Mesh& mesh, Side& side, Side& other, int recursion);
+      bool FindCutPoints(Mesh& mesh, Side& side, Side& other);
 
       bool FindCutLines(Mesh& mesh, Side& side, Side& other);
 

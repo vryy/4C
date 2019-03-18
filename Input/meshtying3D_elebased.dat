@@ -13,6 +13,7 @@ General Data File CCARAT
 // - element-based integration with 6 GP per tri
 // - tet-slave, hex-master
 // - testing bad-shaped elements
+// - top down update of binary tree
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    93
 //NODES       71
@@ -58,6 +59,7 @@ SYSTEM                          sp
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     dual
 SEARCH_ALGORITHM                BinaryTree
+BINARYTREE_UPDATETYPE           TopDown
 SEARCH_PARAM                    0.8
 INTTYPE                         elements
 NUMGP_PER_DIM                   2

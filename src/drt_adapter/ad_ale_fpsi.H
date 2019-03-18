@@ -4,11 +4,9 @@
 
  \brief FPSI wrapper for the ALE time integration
 
- <pre>
-Maintainer: Andreas Rauch
-            rauch@lnm.mw.tum.de
-            089 - 289-15240
- </pre>
+ \level 2
+
+\maintainer  Christoph Ager
  */
 /*----------------------------------------------------------------------------*/
 

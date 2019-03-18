@@ -6,10 +6,7 @@
 
 \level 2
 
-<pre>
-\maintainer Andreas Rauch
-            rauch@lnm.mw.tum.de
-</pre>
+\maintainer  Christoph Ager
 
  *------------------------------------------------------------------------------------------------*/
 #ifndef FPSI_DEFINES_H
