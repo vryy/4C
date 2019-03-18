@@ -224,6 +224,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
       dserror(
           "Fixed_parameter in IntersectLineWithVolume has to be smaller than 3 with a hexaeder "
           "element.");
+    else if (volume::volume_type_ == DiscretizationTypeVolume::none)
+      dserror("Wrong DiscretizationTypeVolume type given.");
     else if (fixed_parameter > 3)
       dserror("fixed_parameter in IntersectLineWithVolume can be 3 at maximum.");
   }
