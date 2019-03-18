@@ -175,7 +175,6 @@ void ELEMAG::ElemagTimeInt::Integrate()
   AssembleMatAndRHS();
 
   // apply Dirichlet boundary conditions to system of equations
-  // ApplyDirichletToSystem();
   ComputeSilverMueller(false);
 
   // Output of the initial condition plus the boundary conditions
@@ -487,22 +486,6 @@ void ELEMAG::ElemagTimeInt::AssembleMatAndRHS()
   // called or after an UnComplete() call has been made.
   discret_->Evaluate(eleparams, sysmat_, Teuchos::null, residual_, Teuchos::null, Teuchos::null);
   discret_->ClearState(true);
-
-  // ComputeSilverMueller(resonly);
-
-  // dserror("test");
-  // absorbing boundary conditions
-  // std::string condname = "Absorbing";
-  // std::vector<DRT::Condition *> absorbingBC;
-  // discret_->GetCondition(condname, absorbingBC);
-  // if (absorbingBC.size())
-  //{
-  //  eleparams.remove("action", false);
-  //  eleparams.set<int>("action", ELEMAG::calc_abc);
-  //  discret_->EvaluateCondition(
-  //      eleparams, sysmat_, Teuchos::null, residual_, Teuchos::null, Teuchos::null, condname);
-  //}
-
   sysmat_->Complete();
 
   return;
