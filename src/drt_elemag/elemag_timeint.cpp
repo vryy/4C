@@ -841,6 +841,8 @@ void ELEMAG::ElemagTimeInt::ReadRestart(int step)
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   discret_->ClearState(true);
 
+  if (myrank_ == 0) std::cout << "Restart time: " << time_ << std::endl;
+
   return;
 }  // ReadRestart
 
