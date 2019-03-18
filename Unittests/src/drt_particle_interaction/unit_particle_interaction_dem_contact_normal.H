@@ -87,7 +87,7 @@ class PARTICLEINTERACTION::DEMContactNormalLinearSpring_TestSuite : public CxxTe
     const double k_normal =
         2.0 / 3.0 * r_max_ * M_PI * dens_max_ * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
 
-    TS_ASSERT_DELTA(contactnormal_->GetNormalContactStiffness(), k_normal, 1e-14);
+    TS_ASSERT_DELTA(contactnormal_->GetNormalContactStiffness(), k_normal, 1.0e-12);
   }
 
   void GetTimeCriticalStiffness()
@@ -97,7 +97,7 @@ class PARTICLEINTERACTION::DEMContactNormalLinearSpring_TestSuite : public CxxTe
 
     const double k_tcrit = k_normal;
 
-    TS_ASSERT_DELTA(contactnormal_->GetTimeCriticalStiffness(), k_tcrit, 1e-14);
+    TS_ASSERT_DELTA(contactnormal_->GetTimeCriticalStiffness(), k_tcrit, 1.0e-12);
   }
 
   void test_NormalContactForce()
@@ -114,7 +114,7 @@ class PARTICLEINTERACTION::DEMContactNormalLinearSpring_TestSuite : public CxxTe
     contactnormal_->NormalContactForce(
         gap, &rad_i, &rad_j, v_rel_normal, m_eff, normalcontactforce);
 
-    TS_ASSERT_DELTA(normalcontactforce, normalcontactforce_ref, 1e-14);
+    TS_ASSERT_DELTA(normalcontactforce, normalcontactforce_ref, 1.0e-12);
   }
 };
 
@@ -176,7 +176,7 @@ class PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp_TestSuite : public C
     const double k_normal =
         2.0 / 3.0 * r_max_ * M_PI * dens_max_ * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
 
-    TS_ASSERT_DELTA(contactnormal_->GetNormalContactStiffness(), k_normal, 1e-14);
+    TS_ASSERT_DELTA(contactnormal_->GetNormalContactStiffness(), k_normal, 1.0e-12);
   }
 
   void GetTimeCriticalStiffness()
@@ -186,7 +186,7 @@ class PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp_TestSuite : public C
 
     const double k_tcrit = k_normal;
 
-    TS_ASSERT_DELTA(contactnormal_->GetTimeCriticalStiffness(), k_tcrit, 1e-14);
+    TS_ASSERT_DELTA(contactnormal_->GetTimeCriticalStiffness(), k_tcrit, 1.0e-12);
   }
 
   void test_NormalContactForce()
@@ -208,7 +208,7 @@ class PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp_TestSuite : public C
     contactnormal_->NormalContactForce(
         gap, &rad_i, &rad_j, v_rel_normal, m_eff, normalcontactforce);
 
-    TS_ASSERT_DELTA(normalcontactforce, normalcontactforce_ref, 1e-14);
+    TS_ASSERT_DELTA(normalcontactforce, normalcontactforce_ref, 1.0e-12);
 
 
 
@@ -219,7 +219,7 @@ class PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp_TestSuite : public C
     contactnormal_ezero_->NormalContactForce(
         gap, &rad_i, &rad_j, v_rel_normal, m_eff, normalcontactforce_ezero);
 
-    TS_ASSERT_DELTA(normalcontactforce_ezero, normalcontactforce_ezero_ref, 1e-14);
+    TS_ASSERT_DELTA(normalcontactforce_ezero, normalcontactforce_ezero_ref, 1.0e-12);
   }
 };
 
@@ -265,7 +265,7 @@ class PARTICLEINTERACTION::DEMContactNormalHertz_TestSuite : public CxxTest::Tes
     const double k_normal = 10.0 / 3.0 * M_PI * dens_max_ * UTILS::pow<2>(v_max_) *
                             std::pow(r_max_, 0.5) / std::pow(2.0 * c_, 2.5);
 
-    TS_ASSERT_DELTA(contactnormal_->GetNormalContactStiffness(), k_normal, 1e-14);
+    TS_ASSERT_DELTA(contactnormal_->GetNormalContactStiffness(), k_normal, 1.0e-12);
   }
 
   void GetTimeCriticalStiffness()
@@ -273,7 +273,7 @@ class PARTICLEINTERACTION::DEMContactNormalHertz_TestSuite : public CxxTest::Tes
     const double k_tcrit =
         2.0 / 3.0 * r_max_ * M_PI * dens_max_ * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
 
-    TS_ASSERT_DELTA(contactnormal_->GetTimeCriticalStiffness(), k_tcrit, 1e-14);
+    TS_ASSERT_DELTA(contactnormal_->GetTimeCriticalStiffness(), k_tcrit, 1.0e-12);
   }
 
   void test_NormalContactForce()
@@ -291,7 +291,7 @@ class PARTICLEINTERACTION::DEMContactNormalHertz_TestSuite : public CxxTest::Tes
     contactnormal_->NormalContactForce(
         gap, &rad_i, &rad_j, v_rel_normal, m_eff, normalcontactforce);
 
-    TS_ASSERT_DELTA(normalcontactforce, normalcontactforce_ref, 1e-14);
+    TS_ASSERT_DELTA(normalcontactforce, normalcontactforce_ref, 1.0e-12);
   }
 };
 
@@ -341,7 +341,7 @@ class PARTICLEINTERACTION::DEMContactNormalLeeHerrmann_TestSuite : public CxxTes
     const double k_normal = 10.0 / 3.0 * M_PI * dens_max_ * UTILS::pow<2>(v_max_) *
                             std::pow(r_max_, 0.5) / std::pow(2.0 * c_, 2.5);
 
-    TS_ASSERT_DELTA(contactnormal_->GetNormalContactStiffness(), k_normal, 1e-14);
+    TS_ASSERT_DELTA(contactnormal_->GetNormalContactStiffness(), k_normal, 1.0e-12);
   }
 
   void GetTimeCriticalStiffness()
@@ -349,7 +349,7 @@ class PARTICLEINTERACTION::DEMContactNormalLeeHerrmann_TestSuite : public CxxTes
     const double k_tcrit =
         2.0 / 3.0 * r_max_ * M_PI * dens_max_ * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
 
-    TS_ASSERT_DELTA(contactnormal_->GetTimeCriticalStiffness(), k_tcrit, 1e-14);
+    TS_ASSERT_DELTA(contactnormal_->GetTimeCriticalStiffness(), k_tcrit, 1.0e-12);
   }
 
   void test_NormalContactForce()
@@ -368,7 +368,7 @@ class PARTICLEINTERACTION::DEMContactNormalLeeHerrmann_TestSuite : public CxxTes
     contactnormal_->NormalContactForce(
         gap, &rad_i, &rad_j, v_rel_normal, m_eff, normalcontactforce);
 
-    TS_ASSERT_DELTA(normalcontactforce, normalcontactforce_ref, 1e-14);
+    TS_ASSERT_DELTA(normalcontactforce, normalcontactforce_ref, 1.0e-12);
   }
 };
 
@@ -418,7 +418,7 @@ class PARTICLEINTERACTION::DEMContactNormalKuwabaraKono_TestSuite : public CxxTe
     const double k_normal = 10.0 / 3.0 * M_PI * dens_max_ * UTILS::pow<2>(v_max_) *
                             std::pow(r_max_, 0.5) / std::pow(2.0 * c_, 2.5);
 
-    TS_ASSERT_DELTA(contactnormal_->GetNormalContactStiffness(), k_normal, 1e-14);
+    TS_ASSERT_DELTA(contactnormal_->GetNormalContactStiffness(), k_normal, 1.0e-12);
   }
 
   void GetTimeCriticalStiffness()
@@ -426,7 +426,7 @@ class PARTICLEINTERACTION::DEMContactNormalKuwabaraKono_TestSuite : public CxxTe
     const double k_tcrit =
         2.0 / 3.0 * r_max_ * M_PI * dens_max_ * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
 
-    TS_ASSERT_DELTA(contactnormal_->GetTimeCriticalStiffness(), k_tcrit, 1e-14);
+    TS_ASSERT_DELTA(contactnormal_->GetTimeCriticalStiffness(), k_tcrit, 1.0e-12);
   }
 
   void test_NormalContactForce()
@@ -445,7 +445,7 @@ class PARTICLEINTERACTION::DEMContactNormalKuwabaraKono_TestSuite : public CxxTe
     contactnormal_->NormalContactForce(
         gap, &rad_i, &rad_j, v_rel_normal, m_eff, normalcontactforce);
 
-    TS_ASSERT_DELTA(normalcontactforce, normalcontactforce_ref, 1e-14);
+    TS_ASSERT_DELTA(normalcontactforce, normalcontactforce_ref, 1.0e-12);
   }
 };
 
@@ -495,7 +495,7 @@ class PARTICLEINTERACTION::DEMContactNormalTsuji_TestSuite : public CxxTest::Tes
     const double k_normal = 10.0 / 3.0 * M_PI * dens_max_ * UTILS::pow<2>(v_max_) *
                             std::pow(r_max_, 0.5) / std::pow(2.0 * c_, 2.5);
 
-    TS_ASSERT_DELTA(contactnormal_->GetNormalContactStiffness(), k_normal, 1e-14);
+    TS_ASSERT_DELTA(contactnormal_->GetNormalContactStiffness(), k_normal, 1.0e-12);
   }
 
   void GetTimeCriticalStiffness()
@@ -503,7 +503,7 @@ class PARTICLEINTERACTION::DEMContactNormalTsuji_TestSuite : public CxxTest::Tes
     const double k_tcrit =
         2.0 / 3.0 * r_max_ * M_PI * dens_max_ * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
 
-    TS_ASSERT_DELTA(contactnormal_->GetTimeCriticalStiffness(), k_tcrit, 1e-14);
+    TS_ASSERT_DELTA(contactnormal_->GetTimeCriticalStiffness(), k_tcrit, 1.0e-12);
   }
 
   void test_NormalContactForce()
@@ -522,7 +522,7 @@ class PARTICLEINTERACTION::DEMContactNormalTsuji_TestSuite : public CxxTest::Tes
     contactnormal_->NormalContactForce(
         gap, &rad_i, &rad_j, v_rel_normal, m_eff, normalcontactforce);
 
-    TS_ASSERT_DELTA(normalcontactforce, normalcontactforce_ref, 1e-14);
+    TS_ASSERT_DELTA(normalcontactforce, normalcontactforce_ref, 1.0e-12);
   }
 };
 

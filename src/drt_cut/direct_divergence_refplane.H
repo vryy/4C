@@ -23,6 +23,7 @@ namespace GEO
 {
   namespace CUT
   {
+    class Options;
     class Point;
 
     // When direct divergence is used in local coordinate system, a reference plane can be easily
@@ -35,7 +36,10 @@ namespace GEO
     class DirectDivergenceGlobalRefplane
     {
      public:
-      DirectDivergenceGlobalRefplane(Element* elem) : elem1_(elem) {}
+      DirectDivergenceGlobalRefplane(Element* elem, VolumeCell* vc, Options& options)
+          : elem1_(elem), volcell_(vc), options_(options)
+      {
+      }
 
       ~DirectDivergenceGlobalRefplane(){};
 
@@ -54,17 +58,23 @@ namespace GEO
       /*!
       \brief Compute reference plane based on the diagonals of the element
        */
-      bool DiagonalBasedRef(std::vector<double>& RefPlaneEqn);
+      bool DiagonalBasedRef(
+          std::vector<double>& RefPlaneEqn, std::vector<Point*> points, double tol);
 
+      /*!
+      \brief Compute reference plane based on the facets of the volumecell
+       */
+      bool FacetBasedRef(std::vector<double>& RefPlaneEqn, std::vector<Point*> points, double tol);
       /*!
       \brief Compute reference plane based on the sides of the element
        */
-      bool SideBasedRef(std::vector<double>& RefPlaneEqn);
+      bool SideBasedRef(std::vector<double>& RefPlaneEqn, std::vector<Point*> points, double tol);
 
       /*!
       \brief Returns true if all the projected points are within the element
        */
-      bool isAllProjectedCornersInsideEle(std::vector<double>& RefPlaneEqn);
+      bool isAllProjectedCornersInsideEle(
+          std::vector<double>& RefPlaneEqn, std::vector<Point*> points, double tol = 1e-8);
 
       /*!
       \brief Scale the given equation of plane
@@ -82,8 +92,20 @@ namespace GEO
       //! background element that contains the volumecell
       Element* elem1_;
 
+      //! volumecell over which we construct integration scheme
+      VolumeCell* volcell_;
+
+      //! options container
+      Options& options_;
+
       //! Points that define the reference plane used for this volumecell
       std::vector<Point*> refPtsGmsh_;
+
+      //! Triangular diagonals in an hex8 element
+      static const unsigned tri_diags_[24][3];
+
+      //! Split of a side
+      static const unsigned side_split_[4][3];
     };
 
   } /* namespace CUT */

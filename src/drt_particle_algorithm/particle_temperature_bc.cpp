@@ -47,8 +47,8 @@ void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::Init()
   const Teuchos::ParameterList& params_conditions =
       params_.sublist("INITIAL AND BOUNDARY CONDITIONS");
 
-  // read parameters relating particle types to IDs
-  PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToIDs(
+  // read parameters relating particle types to values
+  PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues(
       params_conditions, "TEMPERATURE_BOUNDARY_CONDITION", temperaturebctypetofunctid_);
 
   // iterate over particle types and insert into set
@@ -112,7 +112,7 @@ void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::SetParticleReferenc
   for (auto& particleType : typessubjectedtotemperaturebc_)
   {
     // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container =
+    PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
     // set particle reference position
@@ -140,11 +140,11 @@ void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::EvaluateTemperature
     PARTICLEENGINE::TypeEnum particleType = typeIt.first;
 
     // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container =
+    PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
-    int particlestored = container->ParticlesStored();
+    const int particlestored = container->ParticlesStored();
 
     // no owned particles of current particle type
     if (particlestored <= 0) continue;
@@ -163,8 +163,8 @@ void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::EvaluateTemperature
     refpos = container->GetPtrToParticleState(PARTICLEENGINE::ReferencePosition, 0);
     temp = container->GetPtrToParticleState(PARTICLEENGINE::Temperature, 0);
 
-    // get dimension of particle position
-    int statedim = PARTICLEENGINE::EnumToStateDim(PARTICLEENGINE::Position);
+    // get particle state dimension
+    int statedim = container->GetParticleStateDim(PARTICLEENGINE::Position);
 
     // safety check
     if (function.NumberComponents() != 1)

@@ -30,6 +30,7 @@ MAXTIME                         1.0
 GRAVITY_ACCELERATION            10.0 0.0 0.0
 GRAVITY_RAMP_FUNCT              1
 TRANSFER_EVERY                  no
+PHASE_TO_DYNLOADBALFAC          phase1 1.0 phase2 1.0
 INITIAL_POSITION_AMPLITUDE      0.05
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a

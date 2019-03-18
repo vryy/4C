@@ -7,7 +7,7 @@
 \level 2
 
 <pre>
-\maintainer  Ager Christoph
+\maintainer  Christoph Ager
              ager@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15249
@@ -464,7 +464,10 @@ bool XFEM::XFLUID_TIMEINT_BASE::callSideEdgeIntersectionT(GEO::CUT::SideHandle* 
 
   Teuchos::RCP<GEO::CUT::IntersectionBase> intersect =
       GEO::CUT::IntersectionBase::Create(DRT::Element::line2, sidetype);
-  intersect->Init(xyze_lineElement, xyze_surfaceElement, false, false, false);
+  Teuchos::RCP<GEO::CUT::Options> options =
+      Teuchos::rcp(new GEO::CUT::Options());  // Create cut options for intersection (specify to use
+                                              // double prec.)
+  intersect->Init(xyze_lineElement, xyze_surfaceElement, false, false, false, options.getRawPtr());
 
   // check also limits during the newton scheme and when converged
   double itol;

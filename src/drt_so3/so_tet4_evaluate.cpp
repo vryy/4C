@@ -31,6 +31,7 @@
 #include "prestress.H"
 
 #include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
 //#define PRINT_DEBUG
 #ifdef PRINT_DEBUG
@@ -2307,4 +2308,369 @@ void DRT::ELEMENTS::So_tet4::so_tet4_remodel(std::vector<int>& lm,  // location 
       }
     }  // end loop over gauss points
   }
+}
+
+/*----------------------------------------------------------------------*
+ |  evaluate cauchy stress tensor                            seitz 11/16|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_tet4::GetCauchyAtXi(const LINALG::Matrix<3, 1>& xi,
+    const std::vector<double>& disp, const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& t,
+    double& sigma_nt, Epetra_SerialDenseMatrix* dsntdd, Epetra_SerialDenseMatrix* d2sntdd2,
+    Epetra_SerialDenseMatrix* d2sntDdDn, Epetra_SerialDenseMatrix* d2sntDdDt,
+    Epetra_SerialDenseMatrix* d2sntDdDpxi, LINALG::Matrix<3, 1>* dsntdn,
+    LINALG::Matrix<3, 1>* dsntdt, LINALG::Matrix<3, 1>* dsntdpxi, const std::vector<double>* temp,
+    Epetra_SerialDenseMatrix* dsntdT, Epetra_SerialDenseMatrix* d2sntDdDT)
+{
+  if (temp || dsntdT || d2sntDdDT)
+    dserror("Thermo-elastic Nitsche contact not yet implemented in so tet4");
+
+  sigma_nt = 0.;
+
+  LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> xrefe;  // reference coord. of element
+  LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> xcurr;  // current  coord. of element
+  DRT::Node** nodes = Nodes();
+
+  for (int i = 0; i < NUMNOD_SOTET4; ++i)
+  {
+    const double* x = nodes[i]->X();
+    for (int d = 0; d < NUMDIM_SOTET4; ++d)
+    {
+      xrefe(i, d) = x[d];
+      xcurr(i, d) = xrefe(i, d) + disp[i * NODDOF_SOTET4 + d];
+    }
+  }
+
+  LINALG::Matrix<NUMDIM_SOTET4, NUMNOD_SOTET4> deriv;
+  DRT::UTILS::shape_function_deriv1<DRT::Element::tet4>(xi, deriv);
+
+  LINALG::Matrix<NUMDIM_SOTET4, NUMNOD_SOTET4> N_XYZ;
+
+  LINALG::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> invJ;
+  invJ.Multiply(deriv, xrefe);
+  invJ.Invert();
+  N_XYZ.Multiply(invJ, deriv);
+  LINALG::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> defgrd;
+  defgrd.MultiplyTT(xcurr, N_XYZ);
+
+  LINALG::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> b;
+  b.MultiplyNT(defgrd, defgrd);
+
+  LINALG::Matrix<NUMDIM_SOTET4, NUMNOD_SOTET4> F_N_XYZ;
+  F_N_XYZ.Multiply(defgrd, N_XYZ);
+
+  LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOTET4> bop;  // here: linearization of b=FF^T !!!
+  if (dsntdd || d2sntDdDn || d2sntDdDt || d2sntDdDpxi)
+  {
+    for (int i = 0; i < NUMNOD_SOTET4; ++i)
+    {
+      for (int x = 0; x < NUMDIM_SOTET4; ++x)
+        bop(x, NODDOF_SOTET4 * i + x) += F_N_XYZ(x, i);  // defgrd(x,g)*N_XYZ(g,i);
+      {
+        bop(3, NODDOF_SOTET4 * i + 0) += F_N_XYZ(1, i);  // defgrd(1,g)*N_XYZ(g,i);
+        bop(3, NODDOF_SOTET4 * i + 1) += F_N_XYZ(0, i);  // defgrd(0,g)*N_XYZ(g,i);
+        bop(4, NODDOF_SOTET4 * i + 2) += F_N_XYZ(1, i);  // defgrd(1,g)*N_XYZ(g,i);
+        bop(4, NODDOF_SOTET4 * i + 1) += F_N_XYZ(2, i);  // defgrd(2,g)*N_XYZ(g,i);
+        bop(5, NODDOF_SOTET4 * i + 0) += F_N_XYZ(2, i);  // defgrd(2,g)*N_XYZ(g,i);
+        bop(5, NODDOF_SOTET4 * i + 2) += F_N_XYZ(0, i);  // defgrd(0,g)*N_XYZ(g,i);
+      }
+    }
+    bop.Scale(2.);
+  }
+
+  LINALG::Matrix<6, 1> dsntdb;
+  LINALG::Matrix<6, 6> d2sntdb2;
+  LINALG::Matrix<6, NUMDIM_SOTET4> d2sntDbDn;
+  LINALG::Matrix<6, NUMDIM_SOTET4> d2sntDbDt;
+  SolidMaterial()->EvaluateCauchy(
+      b, n, t, sigma_nt, &dsntdb, &d2sntdb2, &d2sntDbDn, &d2sntDbDt, dsntdn, dsntdt, 0);
+
+  if (dsntdd)
+  {
+    dsntdd->Reshape(NUMDOF_SOTET4, 1);
+    LINALG::Matrix<NUMDOF_SOTET4, 1> dsntdd_m(dsntdd->A(), true);
+    dsntdd_m.MultiplyTN(bop, dsntdb);
+  }
+
+  if (d2sntDdDn)
+  {
+    d2sntDdDn->Reshape(NUMDOF_SOTET4, NUMDIM_SOTET4);
+    LINALG::Matrix<NUMDOF_SOTET4, NUMDIM_SOTET4> d2sntDdDn_m(d2sntDdDn->A(), true);
+    d2sntDdDn_m.MultiplyTN(bop, d2sntDbDn);
+  }
+
+  if (d2sntDdDt)
+  {
+    d2sntDdDt->Reshape(NUMDOF_SOTET4, NUMDIM_SOTET4);
+    LINALG::Matrix<NUMDOF_SOTET4, NUMDIM_SOTET4> d2sntDdDt_m(d2sntDdDt->A(), true);
+    d2sntDdDt_m.MultiplyTN(bop, d2sntDbDt);
+  }
+
+  if (d2sntdd2)
+  {
+    d2sntdd2->Reshape(NUMDOF_SOTET4, NUMDOF_SOTET4);
+    LINALG::Matrix<NUMDOF_SOTET4, NUMDOF_SOTET4> d2sntdd2_linalg(d2sntdd2->A(), true);
+    d2sntdd2_linalg.Clear();
+    LINALG::Matrix<6, NUMDOF_SOTET4> d2sntdb2Bop;
+    d2sntdb2Bop.Multiply(d2sntdb2, bop);
+    d2sntdd2_linalg.MultiplyTN(1., bop, d2sntdb2Bop, 1.);
+
+    LINALG::Matrix<NUMNOD_SOTET4, NUMNOD_SOTET4> NN;
+    NN.MultiplyTN(N_XYZ, N_XYZ);
+
+    for (int i = 0; i < NUMNOD_SOTET4; ++i)
+    {
+      for (int k = 0; k < NUMNOD_SOTET4; ++k)
+      {
+        for (int x = 0; x < NUMDIM_SOTET4; ++x)
+          d2sntdd2_linalg(NODDOF_SOTET4 * i + x, NODDOF_SOTET4 * k + x) +=
+              dsntdb(x) * 2. * NN(i, k);  // *N_XYZ(g,i)*N_XYZ(g,k);
+
+        d2sntdd2_linalg(NODDOF_SOTET4 * i + 0, NODDOF_SOTET4 * k + 1) +=
+            dsntdb(3) * 2. * NN(i, k);  // *N_XYZ(g,i)*N_XYZ(g,k);
+        d2sntdd2_linalg(NODDOF_SOTET4 * i + 1, NODDOF_SOTET4 * k + 0) +=
+            dsntdb(3) * 2. * NN(i, k);  // *N_XYZ(g,i)*N_XYZ(g,k);
+
+        d2sntdd2_linalg(NODDOF_SOTET4 * i + 1, NODDOF_SOTET4 * k + 2) +=
+            dsntdb(4) * 2. * NN(i, k);  // *N_XYZ(g,i)*N_XYZ(g,k);
+        d2sntdd2_linalg(NODDOF_SOTET4 * i + 2, NODDOF_SOTET4 * k + 1) +=
+            dsntdb(4) * 2. * NN(i, k);  // *N_XYZ(g,i)*N_XYZ(g,k);
+
+        d2sntdd2_linalg(NODDOF_SOTET4 * i + 0, NODDOF_SOTET4 * k + 2) +=
+            dsntdb(5) * 2. * NN(i, k);  // *N_XYZ(g,i)*N_XYZ(g,k);
+        d2sntdd2_linalg(NODDOF_SOTET4 * i + 2, NODDOF_SOTET4 * k + 0) +=
+            dsntdb(5) * 2. * NN(i, k);  // *N_XYZ(g,i)*N_XYZ(g,k);
+      }
+    }
+  }
+
+  if (d2sntDdDpxi)
+  {
+    d2sntDdDpxi->Reshape(NUMDOF_SOTET4, NUMDIM_SOTET4);
+
+    LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::tet4>::numderiv2, NUMNOD_SOTET4>
+        deriv2;
+    DRT::UTILS::shape_function_deriv2<DRT::Element::tet4>(xi, deriv2);
+
+    LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> xXF(xcurr);
+    xXF.MultiplyNT(-1., xrefe, defgrd, 1.);
+
+    LINALG::Matrix<NUMDIM_SOTET4, DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::tet4>::numderiv2>
+        xXFsec;
+    xXFsec.MultiplyTT(1., xXF, deriv2, 0.);
+
+    LINALG::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> jift;
+    jift.MultiplyTT(invJ, defgrd);
+
+    LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDIM_SOTET4> dbdxi(true);
+
+    int VOIGT3X3SYM_[3][3] = {{0, 3, 5}, {3, 1, 4}, {5, 4, 2}};
+
+    for (int i = 0; i < NUMDIM_SOTET4; ++i)
+      for (int j = 0; j < NUMDIM_SOTET4; ++j)
+      {
+        dbdxi(VOIGT3X3SYM_[i][j], 0) += xXFsec(i, 0) * jift(0, j) + xXFsec(i, 3) * jift(1, j) +
+                                        xXFsec(i, 4) * jift(2, j) + xXFsec(j, 0) * jift(0, i) +
+                                        xXFsec(j, 3) * jift(1, i) + xXFsec(j, 4) * jift(2, i);
+
+        dbdxi(VOIGT3X3SYM_[i][j], 1) += xXFsec(i, 3) * jift(0, j) + xXFsec(i, 1) * jift(1, j) +
+                                        xXFsec(i, 5) * jift(2, j) + xXFsec(j, 3) * jift(0, i) +
+                                        xXFsec(j, 1) * jift(1, i) + xXFsec(j, 5) * jift(2, i);
+
+        dbdxi(VOIGT3X3SYM_[i][j], 2) += xXFsec(i, 4) * jift(0, j) + xXFsec(i, 5) * jift(1, j) +
+                                        xXFsec(i, 2) * jift(2, j) + xXFsec(j, 4) * jift(0, i) +
+                                        xXFsec(j, 5) * jift(1, i) + xXFsec(j, 2) * jift(2, i);
+      }
+
+    dsntdpxi->MultiplyTN(dbdxi, dsntdb);
+
+    LINALG::Matrix<NUMDOF_SOTET4, NUMDIM_SOTET4> d2sntDdDpxi_m(d2sntDdDpxi->A(), true);
+    d2sntDdDpxi_m.Clear();
+
+    LINALG::Matrix<6, NUMDOF_SOTET4> d2sntdb2Bop;
+    d2sntdb2Bop.Multiply(d2sntdb2, bop);
+    d2sntDdDpxi_m.MultiplyTN(d2sntdb2Bop, dbdxi);
+
+    LINALG::Matrix<NUMDIM_SOTET4, NUMNOD_SOTET4> invJ_N_XYZ;
+    invJ_N_XYZ.MultiplyTN(invJ, N_XYZ);
+    LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::tet4>::numderiv2, NUMDIM_SOTET4>
+        Xsec;
+    Xsec.Multiply(deriv2, xrefe);
+    LINALG::Matrix<NUMNOD_SOTET4, 6> N_XYZ_Xsec;
+    N_XYZ_Xsec.MultiplyTT(N_XYZ, Xsec);
+    for (int i = 0; i < NUMNOD_SOTET4; ++i)
+    {
+      {
+        int x = 0;
+        for (x = 0; x < NUMDIM_SOTET4; ++x)
+        {
+          d2sntDdDpxi_m(NODDOF_SOTET4 * i + x, 0) +=
+              dsntdb(x) * 2. *
+              (invJ_N_XYZ(0, i) * xXFsec(x, 0) + invJ_N_XYZ(1, i) * xXFsec(x, 3) +
+                  invJ_N_XYZ(2, i) * xXFsec(x, 4) + jift(0, x) * deriv2(0, i) +
+                  jift(1, x) * deriv2(3, i) + jift(2, x) * deriv2(4, i) -
+                  jift(0, x) * N_XYZ_Xsec(i, 0) - jift(1, x) * N_XYZ_Xsec(i, 3) -
+                  jift(2, x) * N_XYZ_Xsec(i, 4));
+
+          d2sntDdDpxi_m(NODDOF_SOTET4 * i + x, 1) +=
+              dsntdb(x) * 2. *
+              (invJ_N_XYZ(0, i) * xXFsec(x, 3) + invJ_N_XYZ(1, i) * xXFsec(x, 1) +
+                  invJ_N_XYZ(2, i) * xXFsec(x, 5) + jift(0, x) * deriv2(3, i) +
+                  jift(1, x) * deriv2(1, i) + jift(2, x) * deriv2(5, i) -
+                  jift(0, x) * N_XYZ_Xsec(i, 3) - jift(1, x) * N_XYZ_Xsec(i, 1) -
+                  jift(2, x) * N_XYZ_Xsec(i, 5));
+
+          d2sntDdDpxi_m(NODDOF_SOTET4 * i + x, 2) +=
+              dsntdb(x) * 2. *
+              (invJ_N_XYZ(0, i) * xXFsec(x, 4) + invJ_N_XYZ(1, i) * xXFsec(x, 5) +
+                  invJ_N_XYZ(2, i) * xXFsec(x, 2) + jift(0, x) * deriv2(4, i) +
+                  jift(1, x) * deriv2(5, i) + jift(2, x) * deriv2(2, i) -
+                  jift(0, x) * N_XYZ_Xsec(i, 4) - jift(1, x) * N_XYZ_Xsec(i, 5) -
+                  jift(2, x) * N_XYZ_Xsec(i, 2));
+        }
+
+        x = 1;
+        int y = 0;
+        d2sntDdDpxi_m(NODDOF_SOTET4 * i + y, 0) +=
+            dsntdb(3) * 2. *
+            (invJ_N_XYZ(0, i) * xXFsec(x, 0) + invJ_N_XYZ(1, i) * xXFsec(x, 3) +
+                invJ_N_XYZ(2, i) * xXFsec(x, 4) + jift(0, x) * deriv2(0, i) +
+                jift(1, x) * deriv2(3, i) + jift(2, x) * deriv2(4, i) -
+                jift(0, x) * N_XYZ_Xsec(i, 0) - jift(1, x) * N_XYZ_Xsec(i, 3) -
+                jift(2, x) * N_XYZ_Xsec(i, 4));
+        d2sntDdDpxi_m(NODDOF_SOTET4 * i + y, 1) +=
+            dsntdb(3) * 2. *
+            (invJ_N_XYZ(0, i) * xXFsec(x, 3) + invJ_N_XYZ(1, i) * xXFsec(x, 1) +
+                invJ_N_XYZ(2, i) * xXFsec(x, 5) + jift(0, x) * deriv2(3, i) +
+                jift(1, x) * deriv2(1, i) + jift(2, x) * deriv2(5, i) -
+                jift(0, x) * N_XYZ_Xsec(i, 3) - jift(1, x) * N_XYZ_Xsec(i, 1) -
+                jift(2, x) * N_XYZ_Xsec(i, 5));
+        d2sntDdDpxi_m(NODDOF_SOTET4 * i + y, 2) +=
+            dsntdb(3) * 2. *
+            (invJ_N_XYZ(0, i) * xXFsec(x, 4) + invJ_N_XYZ(1, i) * xXFsec(x, 5) +
+                invJ_N_XYZ(2, i) * xXFsec(x, 2) + jift(0, x) * deriv2(4, i) +
+                jift(1, x) * deriv2(5, i) + jift(2, x) * deriv2(2, i) -
+                jift(0, x) * N_XYZ_Xsec(i, 4) - jift(1, x) * N_XYZ_Xsec(i, 5) -
+                jift(2, x) * N_XYZ_Xsec(i, 2));
+        x = 0;
+        y = 1;
+        d2sntDdDpxi_m(NODDOF_SOTET4 * i + y, 0) +=
+            dsntdb(3) * 2. *
+            (invJ_N_XYZ(0, i) * xXFsec(x, 0) + invJ_N_XYZ(1, i) * xXFsec(x, 3) +
+                invJ_N_XYZ(2, i) * xXFsec(x, 4) + jift(0, x) * deriv2(0, i) +
+                jift(1, x) * deriv2(3, i) + jift(2, x) * deriv2(4, i) -
+                jift(0, x) * N_XYZ_Xsec(i, 0) - jift(1, x) * N_XYZ_Xsec(i, 3) -
+                jift(2, x) * N_XYZ_Xsec(i, 4));
+        d2sntDdDpxi_m(NODDOF_SOTET4 * i + y, 1) +=
+            dsntdb(3) * 2. *
+            (invJ_N_XYZ(0, i) * xXFsec(x, 3) + invJ_N_XYZ(1, i) * xXFsec(x, 1) +
+                invJ_N_XYZ(2, i) * xXFsec(x, 5) + jift(0, x) * deriv2(3, i) +
+                jift(1, x) * deriv2(1, i) + jift(2, x) * deriv2(5, i) -
+                jift(0, x) * N_XYZ_Xsec(i, 3) - jift(1, x) * N_XYZ_Xsec(i, 1) -
+                jift(2, x) * N_XYZ_Xsec(i, 5));
+        d2sntDdDpxi_m(NODDOF_SOTET4 * i + y, 2) +=
+            dsntdb(3) * 2. *
+            (invJ_N_XYZ(0, i) * xXFsec(x, 4) + invJ_N_XYZ(1, i) * xXFsec(x, 5) +
+                invJ_N_XYZ(2, i) * xXFsec(x, 2) + jift(0, x) * deriv2(4, i) +
+                jift(1, x) * deriv2(5, i) + jift(2, x) * deriv2(2, i) -
+                jift(0, x) * N_XYZ_Xsec(i, 4) - jift(1, x) * N_XYZ_Xsec(i, 5) -
+                jift(2, x) * N_XYZ_Xsec(i, 2));
+
+        x = 1;
+        y = 2;
+        d2sntDdDpxi_m(NODDOF_SOTET4 * i + y, 0) +=
+            dsntdb(4) * 2. *
+            (invJ_N_XYZ(0, i) * xXFsec(x, 0) + invJ_N_XYZ(1, i) * xXFsec(x, 3) +
+                invJ_N_XYZ(2, i) * xXFsec(x, 4) + jift(0, x) * deriv2(0, i) +
+                jift(1, x) * deriv2(3, i) + jift(2, x) * deriv2(4, i) -
+                jift(0, x) * N_XYZ_Xsec(i, 0) - jift(1, x) * N_XYZ_Xsec(i, 3) -
+                jift(2, x) * N_XYZ_Xsec(i, 4));
+        d2sntDdDpxi_m(NODDOF_SOTET4 * i + y, 1) +=
+            dsntdb(4) * 2. *
+            (invJ_N_XYZ(0, i) * xXFsec(x, 3) + invJ_N_XYZ(1, i) * xXFsec(x, 1) +
+                invJ_N_XYZ(2, i) * xXFsec(x, 5) + jift(0, x) * deriv2(3, i) +
+                jift(1, x) * deriv2(1, i) + jift(2, x) * deriv2(5, i) -
+                jift(0, x) * N_XYZ_Xsec(i, 3) - jift(1, x) * N_XYZ_Xsec(i, 1) -
+                jift(2, x) * N_XYZ_Xsec(i, 5));
+        d2sntDdDpxi_m(NODDOF_SOTET4 * i + y, 2) +=
+            dsntdb(4) * 2. *
+            (invJ_N_XYZ(0, i) * xXFsec(x, 4) + invJ_N_XYZ(1, i) * xXFsec(x, 5) +
+                invJ_N_XYZ(2, i) * xXFsec(x, 2) + jift(0, x) * deriv2(4, i) +
+                jift(1, x) * deriv2(5, i) + jift(2, x) * deriv2(2, i) -
+                jift(0, x) * N_XYZ_Xsec(i, 4) - jift(1, x) * N_XYZ_Xsec(i, 5) -
+                jift(2, x) * N_XYZ_Xsec(i, 2));
+        x = 2;
+        y = 1;
+        d2sntDdDpxi_m(NODDOF_SOTET4 * i + y, 0) +=
+            dsntdb(4) * 2. *
+            (invJ_N_XYZ(0, i) * xXFsec(x, 0) + invJ_N_XYZ(1, i) * xXFsec(x, 3) +
+                invJ_N_XYZ(2, i) * xXFsec(x, 4) + jift(0, x) * deriv2(0, i) +
+                jift(1, x) * deriv2(3, i) + jift(2, x) * deriv2(4, i) -
+                jift(0, x) * N_XYZ_Xsec(i, 0) - jift(1, x) * N_XYZ_Xsec(i, 3) -
+                jift(2, x) * N_XYZ_Xsec(i, 4));
+        d2sntDdDpxi_m(NODDOF_SOTET4 * i + y, 1) +=
+            dsntdb(4) * 2. *
+            (invJ_N_XYZ(0, i) * xXFsec(x, 3) + invJ_N_XYZ(1, i) * xXFsec(x, 1) +
+                invJ_N_XYZ(2, i) * xXFsec(x, 5) + jift(0, x) * deriv2(3, i) +
+                jift(1, x) * deriv2(1, i) + jift(2, x) * deriv2(5, i) -
+                jift(0, x) * N_XYZ_Xsec(i, 3) - jift(1, x) * N_XYZ_Xsec(i, 1) -
+                jift(2, x) * N_XYZ_Xsec(i, 5));
+        d2sntDdDpxi_m(NODDOF_SOTET4 * i + y, 2) +=
+            dsntdb(4) * 2. *
+            (invJ_N_XYZ(0, i) * xXFsec(x, 4) + invJ_N_XYZ(1, i) * xXFsec(x, 5) +
+                invJ_N_XYZ(2, i) * xXFsec(x, 2) + jift(0, x) * deriv2(4, i) +
+                jift(1, x) * deriv2(5, i) + jift(2, x) * deriv2(2, i) -
+                jift(0, x) * N_XYZ_Xsec(i, 4) - jift(1, x) * N_XYZ_Xsec(i, 5) -
+                jift(2, x) * N_XYZ_Xsec(i, 2));
+
+        x = 0;
+        y = 2;
+        d2sntDdDpxi_m(NODDOF_SOTET4 * i + y, 0) +=
+            dsntdb(5) * 2. *
+            (invJ_N_XYZ(0, i) * xXFsec(x, 0) + invJ_N_XYZ(1, i) * xXFsec(x, 3) +
+                invJ_N_XYZ(2, i) * xXFsec(x, 4) + jift(0, x) * deriv2(0, i) +
+                jift(1, x) * deriv2(3, i) + jift(2, x) * deriv2(4, i) -
+                jift(0, x) * N_XYZ_Xsec(i, 0) - jift(1, x) * N_XYZ_Xsec(i, 3) -
+                jift(2, x) * N_XYZ_Xsec(i, 4));
+        d2sntDdDpxi_m(NODDOF_SOTET4 * i + y, 1) +=
+            dsntdb(5) * 2. *
+            (invJ_N_XYZ(0, i) * xXFsec(x, 3) + invJ_N_XYZ(1, i) * xXFsec(x, 1) +
+                invJ_N_XYZ(2, i) * xXFsec(x, 5) + jift(0, x) * deriv2(3, i) +
+                jift(1, x) * deriv2(1, i) + jift(2, x) * deriv2(5, i) -
+                jift(0, x) * N_XYZ_Xsec(i, 3) - jift(1, x) * N_XYZ_Xsec(i, 1) -
+                jift(2, x) * N_XYZ_Xsec(i, 5));
+        d2sntDdDpxi_m(NODDOF_SOTET4 * i + y, 2) +=
+            dsntdb(5) * 2. *
+            (invJ_N_XYZ(0, i) * xXFsec(x, 4) + invJ_N_XYZ(1, i) * xXFsec(x, 5) +
+                invJ_N_XYZ(2, i) * xXFsec(x, 2) + jift(0, x) * deriv2(4, i) +
+                jift(1, x) * deriv2(5, i) + jift(2, x) * deriv2(2, i) -
+                jift(0, x) * N_XYZ_Xsec(i, 4) - jift(1, x) * N_XYZ_Xsec(i, 5) -
+                jift(2, x) * N_XYZ_Xsec(i, 2));
+        x = 2;
+        y = 0;
+        d2sntDdDpxi_m(NODDOF_SOTET4 * i + y, 0) +=
+            dsntdb(5) * 2. *
+            (invJ_N_XYZ(0, i) * xXFsec(x, 0) + invJ_N_XYZ(1, i) * xXFsec(x, 3) +
+                invJ_N_XYZ(2, i) * xXFsec(x, 4) + jift(0, x) * deriv2(0, i) +
+                jift(1, x) * deriv2(3, i) + jift(2, x) * deriv2(4, i) -
+                jift(0, x) * N_XYZ_Xsec(i, 0) - jift(1, x) * N_XYZ_Xsec(i, 3) -
+                jift(2, x) * N_XYZ_Xsec(i, 4));
+        d2sntDdDpxi_m(NODDOF_SOTET4 * i + y, 1) +=
+            dsntdb(5) * 2. *
+            (invJ_N_XYZ(0, i) * xXFsec(x, 3) + invJ_N_XYZ(1, i) * xXFsec(x, 1) +
+                invJ_N_XYZ(2, i) * xXFsec(x, 5) + jift(0, x) * deriv2(3, i) +
+                jift(1, x) * deriv2(1, i) + jift(2, x) * deriv2(5, i) -
+                jift(0, x) * N_XYZ_Xsec(i, 3) - jift(1, x) * N_XYZ_Xsec(i, 1) -
+                jift(2, x) * N_XYZ_Xsec(i, 5));
+        d2sntDdDpxi_m(NODDOF_SOTET4 * i + y, 2) +=
+            dsntdb(5) * 2. *
+            (invJ_N_XYZ(0, i) * xXFsec(x, 4) + invJ_N_XYZ(1, i) * xXFsec(x, 5) +
+                invJ_N_XYZ(2, i) * xXFsec(x, 2) + jift(0, x) * deriv2(4, i) +
+                jift(1, x) * deriv2(5, i) + jift(2, x) * deriv2(2, i) -
+                jift(0, x) * N_XYZ_Xsec(i, 4) - jift(1, x) * N_XYZ_Xsec(i, 5) -
+                jift(2, x) * N_XYZ_Xsec(i, 2));
+      }
+    }
+  }
+
+  return;
 }

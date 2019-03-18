@@ -20,6 +20,8 @@
 #include "particle_interaction_dem_contact.H"
 
 #include "particle_interaction_material_handler.H"
+#include "particle_interaction_utils.H"
+
 #include "particle_interaction_dem_neighbor_pairs.H"
 #include "particle_interaction_dem_contact_normal.H"
 
@@ -27,6 +29,8 @@
 #include "../drt_particle_engine/particle_container.H"
 
 #include "../drt_lib/drt_dserror.H"
+
+#include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 11/2018 |
@@ -118,14 +122,11 @@ void PARTICLEINTERACTION::DEMContact::CheckCriticalTimeStep() const
   double minmass = 0.0;
 
   // iterate over particle types
-  for (auto& typeIt : particlecontainerbundle_->GetRefToAllContainersMap())
+  for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum type = typeIt.first;
-
     // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container =
-        particlecontainerbundle_->GetSpecificContainer(type, PARTICLEENGINE::Owned);
+    PARTICLEENGINE::ParticleContainer* container =
+        particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
     // get minimum stored value of state
     double currminmass = container->GetMinValueOfState(PARTICLEENGINE::Mass);
@@ -134,7 +135,7 @@ void PARTICLEINTERACTION::DEMContact::CheckCriticalTimeStep() const
   }
 
   // currently no particles in simulation domain
-  if (minmass == 0) return;
+  if (minmass == 0.0) return;
 
   // get time critical contact stiffness
   const double k_tcrit = contactnormal_->GetTimeCriticalStiffness();
@@ -142,7 +143,7 @@ void PARTICLEINTERACTION::DEMContact::CheckCriticalTimeStep() const
   // critical time step size based on particle-particle contact
   const double safety = 0.75;
   const double factor = 0.34;  // todo set to 0.22 if also tangential contact is considered!
-  double dt_crit = safety * factor * std::sqrt(minmass / k_tcrit);
+  const double dt_crit = safety * factor * std::sqrt(minmass / k_tcrit);
 
   // checks time step
   if (dt_ > dt_crit) dserror("time step %f larger than critical time step %f!", dt_, dt_crit);
@@ -153,90 +154,62 @@ void PARTICLEINTERACTION::DEMContact::CheckCriticalTimeStep() const
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContact::AddForceContribution() const
 {
-  // iterate over particle types
-  for (auto& typeIt : neighborpairs_->GetRefToNeighborPairsMap())
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::DEMContact::AddForceContribution");
+
+  // iterate over neighbor pairs
+  for (const auto& neighborpair : neighborpairs_->GetRefToNeighborPairData())
   {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum type_i = typeIt.first;
+    // access values of local index tuples of particle i and j
+    PARTICLEENGINE::TypeEnum type_i;
+    PARTICLEENGINE::StatusEnum status_i;
+    int particle_i;
+    std::tie(type_i, status_i, particle_i) = neighborpair.tuple_i_;
 
-    // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+    PARTICLEENGINE::TypeEnum type_j;
+    PARTICLEENGINE::StatusEnum status_j;
+    int particle_j;
+    std::tie(type_j, status_j, particle_j) = neighborpair.tuple_j_;
 
-    // particles of current type with neighbors
-    const auto& currparticles = typeIt.second;
+    // get corresponding particle containers
+    PARTICLEENGINE::ParticleContainer* container_i =
+        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
 
-    // iterate over particles of current type
-    for (auto& particleIt : currparticles)
-    {
-      // get local index of particle i
-      const int particle_i = particleIt.first;
+    PARTICLEENGINE::ParticleContainer* container_j =
+        particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
 
-      // declare pointer variables for particle i
-      const double *vel_i, *rad_i;
-      double* force_i;
+    // declare pointer variables for particle i and j
+    const double *vel_i, *rad_i;
+    double* force_i;
 
-      // get pointer to particle states
-      vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
-      rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-      force_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Force, particle_i);
+    const double *vel_j, *rad_j;
+    double* force_j;
 
-      // iterate over particle types of neighboring particles
-      for (auto& neighborTypeIt : particleIt.second)
-      {
-        // get type of neighboring particles
-        PARTICLEENGINE::TypeEnum type_j = neighborTypeIt.first;
+    // get pointer to particle states
+    vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
+    rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
+    force_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Force, particle_i);
 
-        // iterate over particle status of neighboring particles
-        for (auto& neighborStatusIt : neighborTypeIt.second)
-        {
-          // get status of neighboring particles of current type
-          PARTICLEENGINE::StatusEnum status_j = neighborStatusIt.first;
+    vel_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_j);
+    rad_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_j);
+    force_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Force, particle_j);
 
-          // get container of neighboring particles of current particle type and state
-          PARTICLEENGINE::ParticleContainerShrdPtr container_j =
-              particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
+    // relative velocity in contact point c between particle i and j
+    double vel_rel[3];
+    UTILS::vec_set(vel_rel, vel_i);
+    UTILS::vec_sub(vel_rel, vel_j);
 
-          // iterate over neighboring particles of current type and status
-          for (auto& neighborParticleIt : neighborStatusIt.second)
-          {
-            // get local index of neighbor particle j
-            const int particle_j = neighborParticleIt.first;
+    // magnitude of relative velocity in normal direction
+    const double vel_rel_normal = UTILS::vec_dot(vel_rel, neighborpair.e_ji_);
 
-            // get reference to particle pair
-            const ParticlePairDEM& particlepair = neighborParticleIt.second;
+    // calculate normal contact force
+    double normalcontactforce(0.0);
+    contactnormal_->NormalContactForce(
+        neighborpair.gap_, rad_i, rad_j, vel_rel_normal, neighborpair.m_eff_, normalcontactforce);
 
-            // declare pointer variables for neighbor particle j
-            const double *vel_j, *rad_j;
-
-            // get pointer to particle states
-            vel_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_j);
-            rad_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_j);
-
-            // evaluate relative velocity in normal direction
-            double vel_rel_normal(0.0), vel_rel[3];
-
-            // iterate over spatial dimension
-            for (int dim = 0; dim < 3; ++dim)
-            {
-              // relative velocity between particles
-              vel_rel[dim] = vel_i[dim] - vel_j[dim];
-
-              // relative velocity between particles in normal direction
-              vel_rel_normal += vel_rel[dim] * particlepair.e_ji_[dim];
-            }
-
-            // calculate normal contact force
-            double normalcontactforce(0.0);
-            contactnormal_->NormalContactForce(particlepair.gap_, rad_i, rad_j, vel_rel_normal,
-                particlepair.m_eff_, normalcontactforce);
-
-            // add contact contribution
-            for (int i = 0; i < 3; ++i) force_i[i] += normalcontactforce * particlepair.e_ji_[i];
-          }
-        }
-      }
-    }
+    // add normal contact force contribution
+    UTILS::vec_addscale(force_i, normalcontactforce, neighborpair.e_ji_);
+    if (status_j == PARTICLEENGINE::Owned)
+      UTILS::vec_addscale(force_j, -normalcontactforce, neighborpair.e_ji_);
   }
 }
 
@@ -308,16 +281,14 @@ double PARTICLEINTERACTION::DEMContact::GetMaxDensityOfAllMaterials() const
   double maxdensity(0.0);
 
   // iterate over particle types
-  for (auto& typeIt : particlecontainerbundle_->GetRefToAllContainersMap())
+  for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum type = typeIt.first;
-
     // get material for current particle type
     const MAT::PAR::ParticleMaterialBase* material =
-        particlematerial_->GetPtrToParticleMatParameter(type);
+        particlematerial_->GetPtrToParticleMatParameter(typeEnum);
 
-    if (material->initDensity_ > maxdensity) maxdensity = material->initDensity_;
+    // compare to current maximum
+    maxdensity = std::max(maxdensity, material->initDensity_);
   }
 
   return maxdensity;

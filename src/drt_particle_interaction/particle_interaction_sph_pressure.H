@@ -23,8 +23,6 @@
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 08/2018 |
  *---------------------------------------------------------------------------*/
-#include "particle_interaction_typedefs.H"
-
 #include "../drt_particle_engine/particle_enums.H"
 #include "../drt_particle_engine/particle_typedefs.H"
 
@@ -81,9 +79,6 @@ namespace PARTICLEINTERACTION
     virtual void ComputePressure() const;
 
    protected:
-    //! refresh pressure of ghosted particles
-    virtual void RefreshPressure() const;
-
     //! interface to particle engine
     std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface_;
 
@@ -95,6 +90,9 @@ namespace PARTICLEINTERACTION
 
     //! equation of state bundle
     std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle_;
+
+    //! pressure of ghosted particles to refresh
+    PARTICLEENGINE::StatesOfTypesToRefresh pressuretorefresh_;
   };
 
 }  // namespace PARTICLEINTERACTION

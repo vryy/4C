@@ -1691,7 +1691,7 @@ void GEO::CUT::VolumeCell::ProjectGaussPointsToLocalCoodinates()
         LINALG::Matrix<3, 20> xyze;
         element_->CoordinatesQuad(xyze.A());
         gp_ = DRT::UTILS::GaussIntegration::ProjectGaussPointsGlobalToLocal<DRT::Element::hex20>(
-            xyze, intpoints);
+            xyze, intpoints, false);
         break;
       }
       case DRT::Element::hex27:
@@ -1699,7 +1699,7 @@ void GEO::CUT::VolumeCell::ProjectGaussPointsToLocalCoodinates()
         LINALG::Matrix<3, 27> xyze;
         element_->CoordinatesQuad(xyze.A());
         gp_ = DRT::UTILS::GaussIntegration::ProjectGaussPointsGlobalToLocal<DRT::Element::hex27>(
-            xyze, intpoints);
+            xyze, intpoints, false);
         break;
       }
       default:
@@ -1716,7 +1716,7 @@ void GEO::CUT::VolumeCell::ProjectGaussPointsToLocalCoodinates()
     LINALG::Matrix<3, 8> xyze;
     element_->Coordinates(xyze.A());
     gp_ = DRT::UTILS::GaussIntegration::ProjectGaussPointsGlobalToLocal<DRT::Element::hex8>(
-        xyze, intpoints);
+        xyze, intpoints, false);
   }
 }
 
@@ -1832,6 +1832,7 @@ bool GEO::CUT::VolumeCell::SetPositionCutSideBased()
   }    // for facets
 
   int iter = 0;
+  bool done = false;
   while (outsidenormal.size() != facets.size() && iter < 1000)
   {
     for (plain_facet_set::const_iterator i = facets.begin(); i != facets.end(); ++i)
@@ -1849,6 +1850,8 @@ bool GEO::CUT::VolumeCell::SetPositionCutSideBased()
               outsidenormal[ff] = outsidenormal[on->first];
             else
               outsidenormal[ff] = !outsidenormal[on->first];
+            done = true;  // If we can a least identify the direction on one CutSide facet this is
+                          // fine in principle
             break;
           }
         }
@@ -1857,7 +1860,7 @@ bool GEO::CUT::VolumeCell::SetPositionCutSideBased()
     iter++;
   }
 
-  if (iter == 1000)
+  if (iter == 1000 && !done)
   {
     throw std::runtime_error(
         "SetPositionCutSideBased failed: too many iterations (theoretically a facet with many "

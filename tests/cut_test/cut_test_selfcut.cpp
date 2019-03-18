@@ -1,3 +1,11 @@
+/*!----------------------------------------------------------------------
+\brief Test for the CUT Library
+\file cut_test_selfcut.cpp
+
+\level 1
+
+\maintainer Christoph Ager
+*----------------------------------------------------------------------*/
 #include <iostream>
 #include <map>
 #include <string>
@@ -17,6 +25,7 @@
 void test_hex8quad4selfcut20()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -115,6 +124,7 @@ void test_hex8quad4selfcut20()
 void test_hex8quad4selfcut21()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -213,6 +223,7 @@ void test_hex8quad4selfcut21()
 void test_hex8quad4selfcut22()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -311,6 +322,7 @@ void test_hex8quad4selfcut22()
 void test_hex8quad4selfcut23()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -409,6 +421,7 @@ void test_hex8quad4selfcut23()
 void test_hex8quad4selfcut24()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -507,6 +520,7 @@ void test_hex8quad4selfcut24()
 void test_hex8quad4selfcut30()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -632,6 +646,7 @@ void test_hex8quad4selfcut30()
 void test_hex8quad4selfcut31()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -757,6 +772,7 @@ void test_hex8quad4selfcut31()
 void test_hex8quad4selfcut32()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -882,6 +898,7 @@ void test_hex8quad4selfcut32()
 void test_hex8quad4selfcut33()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -1007,6 +1024,7 @@ void test_hex8quad4selfcut33()
 void test_hex8quad4selfcut34()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -1132,6 +1150,7 @@ void test_hex8quad4selfcut34()
 void test_hex8quad4selfcut35()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -1257,6 +1276,7 @@ void test_hex8quad4selfcut35()
 void test_hex8quad4selfcut36()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -1382,6 +1402,7 @@ void test_hex8quad4selfcut36()
 void test_hex8quad4selfcut37()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -1507,6 +1528,7 @@ void test_hex8quad4selfcut37()
 void test_hex8quad4selfcut38()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -1632,6 +1654,7 @@ void test_hex8quad4selfcut38()
 void test_hex8quad4selfcut39()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -1751,13 +1774,13 @@ void test_hex8quad4selfcut39()
   intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
 
   intersection.Status();
-  //  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut41()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -1904,27 +1927,13 @@ void test_hex8quad4selfcut41()
   intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
 
   intersection.Status();
-  intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_Tessellation);
-
-
-  std::vector<double> dirdivVol;
-
-  GEO::CUT::Mesh mesh = intersection.NormalMesh();
-  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>& other_cells = mesh.VolumeCells();
-  for (std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
-       i != other_cells.end(); ++i)
-  {
-    GEO::CUT::VolumeCell* vc = &**i;
-    dirdivVol.push_back(vc->Volume());
-  }
-
-  for (uint i = 0; i < dirdivVol.size(); ++i)
-    std::cout << "volume is: " << dirdivVol[i] << std::endl;
+  intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut42()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -2091,6 +2100,7 @@ void test_hex8quad4selfcut42()
 void test_hex8quad4selfcut43()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -2243,6 +2253,7 @@ void test_hex8quad4selfcut43()
 void test_hex8quad4selfcut51()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -2422,6 +2433,7 @@ void test_hex8quad4selfcut51()
 void test_hex8quad4selfcut52()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -2601,6 +2613,7 @@ void test_hex8quad4selfcut52()
 void test_hex8quad4selfcut53()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -2780,6 +2793,7 @@ void test_hex8quad4selfcut53()
 void test_hex8quad4selfcut61()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -2986,6 +3000,7 @@ void test_hex8quad4selfcut61()
 void test_hex8quad4selfcut62()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -3192,6 +3207,7 @@ void test_hex8quad4selfcut62()
 void test_hex8quad4selfcut63()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -3392,27 +3408,13 @@ void test_hex8quad4selfcut63()
   intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
 
   intersection.Status();
-  intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_Tessellation);
-
-
-  std::vector<double> dirdivVol;
-
-  GEO::CUT::Mesh mesh = intersection.NormalMesh();
-  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>& other_cells = mesh.VolumeCells();
-  for (std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
-       i != other_cells.end(); ++i)
-  {
-    GEO::CUT::VolumeCell* vc = &**i;
-    dirdivVol.push_back(vc->Volume());
-  }
-
-  for (uint i = 0; i < dirdivVol.size(); ++i)
-    std::cout << "volume is: " << dirdivVol[i] << std::endl;
+  intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut64()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -3613,12 +3615,13 @@ void test_hex8quad4selfcut64()
   intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
 
   intersection.Status();
-  intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_Tessellation);
+  intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8quad4selfcut65()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -3825,6 +3828,7 @@ void test_hex8quad4selfcut65()
 void test_hex8quad4selfcut66()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -4031,6 +4035,7 @@ void test_hex8quad4selfcut66()
 void test_hex8quad4selfcut71()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -4296,7 +4301,6 @@ void test_hex8quad4selfcut71()
   {
     std::cout << tessVol[i] << "\t\t" << momFitVol[i] << "\t\t" << dirDivVol[i] << "\n";
     if (fabs(tessVol[i] - momFitVol[i]) > 1e-9 || fabs(dirDivVol[i] - momFitVol[i]) > 1e-9)
-      // dserror("volume predicted by either one of the method is wrong");
       std::cout << "WARNING: volume predicted by either one of the method is wrong\n";
   }
 }
@@ -4304,6 +4308,7 @@ void test_hex8quad4selfcut71()
 void test_hex8quad4selfcut72()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -4537,6 +4542,7 @@ void test_hex8quad4selfcut72()
 void test_hex8quad4selfcut81()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -4797,6 +4803,7 @@ void test_hex8quad4selfcut81()
 void test_hex8quad4selfcut82()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -5057,6 +5064,7 @@ void test_hex8quad4selfcut82()
 void test_hex8quad4selfcut83()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -5318,6 +5326,7 @@ void test_hex8quad4selfcut83()
 void test_hex8quad4selfcut84()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -5579,6 +5588,7 @@ void test_hex8quad4selfcut84()
 void test_hex8quad4selfcut85()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -5840,6 +5850,7 @@ void test_hex8quad4selfcut85()
 void test_hex8quad4selfcut86()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -6101,6 +6112,7 @@ void test_hex8quad4selfcut86()
 void test_hex8quad4selfcut91()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -6388,6 +6400,7 @@ void test_hex8quad4selfcut91()
 void test_hex8quad4selfcut92()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -6679,6 +6692,7 @@ void test_hex8quad4selfcut92()
 void test_hex8quad4alignedEdges()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -6770,44 +6784,6 @@ void test_hex8quad4alignedEdges()
   intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
 
   intersection.Status();
-  intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_Tessellation);
 
-  std::vector<double> tessVol, momFitVol, dirDivVol;
-
-  GEO::CUT::Mesh mesh = intersection.NormalMesh();
-  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>& other_cells = mesh.VolumeCells();
-  for (std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
-       i != other_cells.end(); ++i)
-  {
-    GEO::CUT::VolumeCell* vc = &**i;
-    tessVol.push_back(vc->Volume());
-  }
-
-  intersection.Status();
-
-  for (std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
-       i != other_cells.end(); ++i)
-  {
-    GEO::CUT::VolumeCell* vc = &**i;
-    vc->MomentFitGaussWeights(
-        vc->ParentElement(), mesh, true, INPAR::CUT::BCellGaussPts_Tessellation);
-    momFitVol.push_back(vc->Volume());
-  }
-
-  for (std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
-       i != other_cells.end(); ++i)
-  {
-    GEO::CUT::VolumeCell* vc = &**i;
-    vc->DirectDivergenceGaussRule(
-        vc->ParentElement(), mesh, true, INPAR::CUT::BCellGaussPts_Tessellation);
-    dirDivVol.push_back(vc->Volume());
-  }
-
-  std::cout << "the volumes predicted by\n tessellation \t MomentFitting \t DirectDivergence\n";
-  for (unsigned i = 0; i < tessVol.size(); i++)
-  {
-    std::cout << tessVol[i] << "\t" << momFitVol[i] << "\t" << dirDivVol[i] << "\n";
-    if (fabs(tessVol[i] - momFitVol[i]) > 1e-9 || fabs(dirDivVol[i] - momFitVol[i]) > 1e-9)
-      dserror("volume predicted by either one of the method is wrong");
-  }
+  intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
 }

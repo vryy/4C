@@ -1,5 +1,5 @@
 //
-// Maintainer: Ager Christoph
+// Maintainer: Christoph Ager
 // ager@lnm.mw.tum.de
 // http://www.lnm.mw.tum.de
 // 089 - 289-15249
@@ -81,7 +81,7 @@ GMSH_DEBUG_OUT                  No
 GMSH_SOL_OUT                    No
 GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
-VOLUME_GAUSS_POINTS_BY          Tessellation
+VOLUME_GAUSS_POINTS_BY          DirectDivergence
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION

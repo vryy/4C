@@ -185,7 +185,11 @@ void GEO::CUT::OUTPUT::GmshElementDump(std::ofstream& file,
     GEO::CUT::Node* n = *i;
     GEO::CUT::Point* p = n->point();
     if (i != nodes.begin()) file << ",";
+#if CUT_DEVELOP
+    file << p->Id();
+#else
     file << p->Position();
+#endif
   }
   file << "};\n";
 }
@@ -222,6 +226,14 @@ void GEO::CUT::OUTPUT::GmshCellDump(std::ofstream& file, DRT::Element::Discretiz
     else
       file << 0.0;
   }
+  file << "};\n";
+}
+
+void GEO::CUT::OUTPUT::GmshSideDump(
+    std::ofstream& file, const Side* s, const std::string& sname, bool to_local, Element* ele)
+{
+  GmshNewSection(file, sname, false);
+  GmshSideDump(file, s, false, ele);
   file << "};\n";
 }
 
@@ -441,13 +453,17 @@ void GEO::CUT::OUTPUT::GmshCompleteCutElement(std::ofstream& file, Element* ele,
   }
 
   // write details of volumecells
-  GmshNewSection(file, "Volumecells", true);
+  // GmshNewSection( file, "Volumecells",true);
   const plain_volumecell_set& vcs = ele->VolumeCells();
   for (plain_volumecell_set::const_iterator its = vcs.begin(); its != vcs.end(); its++)
+  {
+    GmshNewSection(file, "Volumecells", true);
     GmshVolumecellDump(file, *its, "sides", true, to_local, ele);
+    GmshEndSection(file);
+  }
 
   // write details of cut sides
-  GmshNewSection(file, "Cut sides", true);
+  GmshNewSection(file, "Cut sides", false);
   const plain_side_set& cutsides = ele->CutSides();
   for (plain_side_set::const_iterator its = cutsides.begin(); its != cutsides.end(); its++)
     GmshSideDump(file, *its, to_local, ele);
@@ -495,15 +511,53 @@ void GEO::CUT::OUTPUT::GmshLineDump(std::ofstream& file, GEO::CUT::Point* p1, GE
   file << "};\n";
 }
 
+
+void GEO::CUT::OUTPUT::GmshCutPairDump(
+    std::ofstream& file, Side* side, Edge* edge, int id, const std::string& suffix)
+{
+  std::stringstream side_section_name;
+  side_section_name << "Side" << suffix << id;
+  GEO::CUT::OUTPUT::GmshNewSection(file, side_section_name.str());
+  GEO::CUT::OUTPUT::GmshSideDump(file, side, false, NULL);
+  GEO::CUT::OUTPUT::GmshEndSection(file, false);
+
+  std::stringstream edge_section_name;
+  edge_section_name << "Edge" << suffix << id;
+  GEO::CUT::OUTPUT::GmshNewSection(file, edge_section_name.str());
+  GEO::CUT::OUTPUT::GmshEdgeDump(file, edge, false, NULL);
+  GEO::CUT::OUTPUT::GmshEndSection(file, false);
+}
+
+
+void GEO::CUT::OUTPUT::GmshCutPairDump(
+    std::ofstream& file, const std::pair<Side*, Edge*>& pair, int id, const std::string& suffix)
+{
+  GmshCutPairDump(file, pair.first, pair.second, id, suffix);
+}
+
 /*--------------------------------------------------------------------------------------*
  * Write GMSH output of given edge                                           ager 04/15
  *--------------------------------------------------------------------------------------*/
 void GEO::CUT::OUTPUT::GmshEdgeDump(
     std::ofstream& file, GEO::CUT::Edge* edge, bool to_local, Element* ele)
 {
+#if CUT_DEVELOP
+  GmshLineDump(file, edge->BeginNode()->point(), edge->EndNode()->point(),
+      edge->BeginNode()->point()->Id(), edge->EndNode()->point()->Id(), to_local, ele);
+#else
   GmshLineDump(file, edge->BeginNode()->point(), edge->EndNode()->point(), edge->BeginNode()->Id(),
-      to_local, ele);
+      edge->EndNode()->Id(), to_local, ele);
+#endif
 }
+
+void GEO::CUT::OUTPUT::GmshEdgeDump(std::ofstream& file, GEO::CUT::Edge* edge,
+    const std::string& ename, bool to_local, Element* ele)
+{
+  GmshNewSection(file, ename, false);
+  GmshEdgeDump(file, edge, to_local, ele);
+  file << "};\n";
+}
+
 
 /*--------------------------------------------------------------------------------------*
  * Write GMSH output of given node                                           ager 04/15
@@ -524,6 +578,16 @@ void GEO::CUT::OUTPUT::GmshPointDump(
   GmshWriteCoords(file, point, to_local, ele);
   file << "){";
   file << idx;
+  file << "};\n";
+}
+
+
+
+void GEO::CUT::OUTPUT::GmshPointDump(std::ofstream& file, GEO::CUT::Point* point, int idx,
+    const std::string& pname, bool to_local, Element* ele)
+{
+  GmshNewSection(file, pname, false);
+  GmshPointDump(file, point, idx, to_local, ele);
   file << "};\n";
 }
 
@@ -961,7 +1025,7 @@ void GEO::CUT::OUTPUT::GmshWriteCoords(
     GmshWriteCoords(file, rst, false, NULL);  // rst are already local coords!
     return;
   }
-  file << xyz(0) << "," << xyz(1) << "," << xyz(2);
+  file << std::setprecision(15) << xyz(0) << "," << xyz(1) << "," << xyz(2);
 }
 
 
@@ -977,7 +1041,7 @@ void GEO::CUT::OUTPUT::GmshWriteCoords(
     LINALG::Matrix<3, 1> xyz = coord;
     ele->LocalCoordinates(xyz, coord);
   }
-  file << coord(0, 0) << "," << coord(1, 0) << "," << coord(2, 0);
+  file << std::setprecision(15) << coord(0, 0) << "," << coord(1, 0) << "," << coord(2, 0);
 }
 
 
@@ -1066,6 +1130,8 @@ void GEO::CUT::OUTPUT::GmshElementCutTest(
 {
   std::cout << "Write Cut Test for Element " << ele->Id() << " ... " << std::flush;
 
+  // default precision for coordinates
+  file << std::setprecision(20);
   // -- 1 -- header of cut_test -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
   file << "// This test was automatically generated by CUT::OUTPUT::GmshElementCutTest(), "
        << "\n";
@@ -1093,7 +1159,7 @@ void GEO::CUT::OUTPUT::GmshElementCutTest(
        << "\n";
   file << "#include \"../../src/drt_cut/cut_levelsetintersection.H\""
        << "\n";
-  file << "#include \"../../src/drt_cut/cut_combintersectio.H\""
+  file << "#include \"../../src/drt_cut/cut_combintersection.H\""
        << "\n";
   file << "#include \"../../src/drt_cut/cut_tetmeshintersection.H\""
        << "\n";
@@ -1117,6 +1183,7 @@ void GEO::CUT::OUTPUT::GmshElementCutTest(
   else
     file << "  GEO::CUT::CombIntersection intersection(-1);"
          << "\n";
+  file << "  intersection.GetOptions().Init_for_Cuttests();  // use full cln\n";
   file << "  std::vector<int> nids;"
        << "\n";
   file << ""
@@ -1233,9 +1300,11 @@ void GEO::CUT::OUTPUT::GmshElementCutTest(
        << "\n";
   file << ""
        << "\n";
-  file << "  intersection.CutTest_Cut( true);"
+
+  file << "  intersection.CutTest_Cut( true,INPAR::CUT::VCellGaussPts_DirectDivergence, "
+          "INPAR::CUT::BCellGaussPts_Tessellation );"
        << "\n";
-  file << "  intersection.Cut_Finalize( true, INPAR::CUT::VCellGaussPts_Tessellation, "
+  file << "  intersection.Cut_Finalize( true, INPAR::CUT::VCellGaussPts_DirectDivergence, "
           "INPAR::CUT::BCellGaussPts_Tessellation, false, true );"
        << "\n";
   file << ""
@@ -1343,4 +1412,113 @@ void GEO::CUT::OUTPUT::GmshElementCutTest(
   file << "}"
        << "\n";
   std::cout << "done " << std::endl;
+}
+
+// Debug related functions
+
+void GEO::CUT::OUTPUT::DebugDump_ThreePointsOnEdge(
+    Side* first, Side* second, Edge* e, Point* p, const PointSet& cut)
+{
+  std::ofstream file("three_points_on_the_edge.pos");
+  GEO::CUT::OUTPUT::GmshSideDump(file, first, std::string("FirstSide"));
+  GEO::CUT::OUTPUT::GmshSideDump(file, second, std::string("SecondSide"));
+  file << "// Edge is " << e->BeginNode()->point() << "->" << e->EndNode()->point() << std::endl;
+  GEO::CUT::OUTPUT::GmshEdgeDump(file, e, std::string("NotTouchedEdge"));
+  GEO::CUT::OUTPUT::GmshPointDump(file, p, p->Id(), std::string("NotTouchedPoint"), false, NULL);
+  for (PointSet::const_iterator it = cut.begin(); it != cut.end(); ++it)
+  {
+    std::stringstream point_name;
+    point_name << "CutPoint" << std::distance(cut.begin(), it);
+    GEO::CUT::OUTPUT::GmshPointDump(file, *it, (*it)->Id(), point_name.str(), false, NULL);
+    (*it)->DumpConnectivityInfo();
+  }
+
+  const PointPositionSet& edge_cut_points = e->CutPoints();
+  for (PointPositionSet::const_iterator it = edge_cut_points.begin(); it != edge_cut_points.end();
+       ++it)
+  {
+    std::stringstream point_name;
+    point_name << "EdgeCutPoint" << std::distance(edge_cut_points.begin(), it);
+    GEO::CUT::OUTPUT::GmshPointDump(file, *it, (*it)->Id(), point_name.str(), false, NULL);
+  }
+  file.close();
+}
+
+void GEO::CUT::OUTPUT::DebugDump_MoreThanTwoIntersectionPoints(
+    Edge* edge, Side* other, const std::vector<Point*>& point_stack)
+{
+  std::ofstream file("multiple_intersection_points.pos");
+  // dump everything
+  for (std::vector<Point*>::const_iterator it = point_stack.begin(); it != point_stack.end(); ++it)
+  {
+    std::stringstream section_name;
+    section_name << "Point" << (*it)->Id();
+    GEO::CUT::OUTPUT::GmshNewSection(file, section_name.str());
+    GEO::CUT::OUTPUT::GmshPointDump(file, *it, (*it)->Id(), false, NULL);
+    GEO::CUT::OUTPUT::GmshEndSection(file, false);
+#if CUT_CREATION_INFO
+    const std::pair<Side*, Edge*>& cu_pair = std::make_pair(other, edge);
+    const std::pair<Side*, Edge*>& or_pair = (*it)->AddedFrom(cu_pair);
+    GEO::CUT::OUTPUT::GmshCutPairDump(file, or_pair, 0, std::string("added_from"));
+    if (or_pair != cu_pair)
+    {
+      file << "// original added becase: " << (*it)->GetCreationInfo(or_pair) << "\n";
+      file << "// common added because: " << (*it)->GetCreationInfo(cu_pair) << "\n";
+    }
+    else
+      file << "// original added becase: " << (*it)->GetCreationInfo(cu_pair) << "\n";
+#endif
+
+    (*it)->DumpConnectivityInfo();
+  }
+  // Compute all possible differences between points
+
+  for (std::vector<Point*>::const_iterator it = point_stack.begin(); it != point_stack.end(); ++it)
+  {
+    for (std::vector<Point*>::const_iterator jt = point_stack.begin(); jt != point_stack.end();
+         ++jt)
+    {
+      if (*it != *jt)
+      {
+        std::cout << "Diference between " << (*it)->Id() << " and " << (*jt)->Id() << " is "
+                  << GEO::CUT::DistanceBetweenPoints(*jt, *it) << std::endl;
+      }
+    }
+  }
+  GEO::CUT::OUTPUT::GmshCutPairDump(file, other, edge, 0, std::string("common"));
+  file.close();
+}
+
+void GEO::CUT::OUTPUT::DebugDump_MultipleCutPointsSpecial(Side* first, Side* second,
+    const PointSet& cut, const PointSet& collected_points, const point_line_set& new_lines)
+{
+  std::ofstream file("special_case_multiple_cut_points.pos");
+  GEO::CUT::OUTPUT::GmshSideDump(file, first, std::string("ThisSide"));
+  GEO::CUT::OUTPUT::GmshSideDump(file, second, std::string("OtherSide"));
+  for (PointSet::const_iterator it = cut.begin(); it != cut.end(); ++it)
+  {
+    std::stringstream pname;
+    pname << "CutPoint" << std::distance(cut.begin(), it);
+    GEO::CUT::OUTPUT::GmshPointDump(file, *it, (*it)->Id(), pname.str(), false, NULL);
+    (*it)->DumpConnectivityInfo();
+  }
+  file.close();
+
+  std::cout << "Collected " << collected_points.size() << " points " << std::endl;
+  for (PointSet::const_iterator it = collected_points.begin(); it != collected_points.end(); ++it)
+  {
+    std::cout << (*it)->Id() << "  " << std::endl;
+  }
+  std::cout << "Totally there are  " << cut.size() << " points " << std::endl;
+  for (PointSet::const_iterator it = cut.begin(); it != cut.end(); ++it)
+  {
+    std::cout << (*it)->Id() << "  " << std::endl;
+  }
+  std::cout << "Got " << new_lines.size() << " cut lines"
+            << " for " << cut.size() << " cut points\n";
+  std::cout << "Cut lines are: \n";
+  for (point_line_set::const_iterator it = new_lines.begin(); it != new_lines.end(); ++it)
+  {
+    std::cout << it->first << "--" << it->second << std::endl;
+  }
 }

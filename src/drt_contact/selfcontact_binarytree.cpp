@@ -29,35 +29,26 @@
 CONTACT::SelfBinaryTreeNode::SelfBinaryTreeNode(SelfBinaryTreeNodeType type,
     DRT::Discretization& discret, Teuchos::RCP<SelfBinaryTreeNode> parent, std::vector<int> elelist,
     const Epetra_SerialDenseMatrix& dopnormals, const Epetra_SerialDenseMatrix& samplevectors,
-    const int& kdop, const int& dim, const int& nvectors, const int layer,
+    const int& kdop, const int& dim, const int& nvectors, const int layer, const bool nonsmoothsurf,
     std::vector<std::vector<Teuchos::RCP<SelfBinaryTreeNode>>>& treenodes)
-    : type_(type),
-      idiscret_(discret),
+    : MORTAR::BaseBinaryTreeNode::BaseBinaryTreeNode(
+          discret, elelist, dopnormals, kdop, dim, true, layer),
+      // useauxpos_ is always true for contact problems, at least this was the case so far
+      type_(type),
       parent_(parent),
-      elelist_(elelist),
-      dopnormals_(dopnormals),
       samplevectors_(samplevectors),
-      kdop_(kdop),
-      dim_(dim),
       nvectors_(nvectors),
-      layer_(layer),
+      owner_(-1),
+      nonsmoothsurf_(nonsmoothsurf),
       treenodes_(treenodes)
 {
-  // reshape slabs matrix
-  if (dim_ == 2)
-    slabs_.Reshape(kdop_ / 2, 2);
-  else if (dim_ == 3)
-    slabs_.Reshape(kdop_ / 2, 2);
-  else
-    dserror("ERROR: Problem dimension must be 2D or 3D!");
-
   return;
 }
 
 /*----------------------------------------------------------------------*
  |  get communicator (public)                                 popp 11/09|
  *----------------------------------------------------------------------*/
-const Epetra_Comm& CONTACT::SelfBinaryTreeNode::Comm() const { return idiscret_.Comm(); }
+const Epetra_Comm& CONTACT::SelfBinaryTreeNode::Comm() const { return Discret().Comm(); }
 
 /*----------------------------------------------------------------------*
  | complete the tree storage in a top down way (public)       popp 11/09|
@@ -78,21 +69,21 @@ void CONTACT::SelfBinaryTreeNode::CompleteTree(int layer, double& enlarge)
       dserror("ERROR: root must be inner node in treenodes scheme");
   }
 
-  // build treenode storage recursively
+  // build tree node storage recursively
   if (type_ == SELFCO_INNER)
   {
-    leftchild_->SetLayer(layer_ + 1);
-    rightchild_->SetLayer(layer_ + 1);
+    leftchild_->SetLayer(Layer() + 1);
+    rightchild_->SetLayer(Layer() + 1);
 
-    // if map of treenodes does not have enogh rows-->resize!
-    if ((int)(treenodes_.size()) <= (layer_ + 1)) treenodes_.resize((layer_ + 2));
+    // if map of tree nodes does not have enough rows-->resize!
+    if ((int)(treenodes_.size()) <= (Layer() + 1)) treenodes_.resize((Layer() + 2));
 
     // put new pointers to children into map
-    treenodes_[(layer_ + 1)].push_back(leftchild_);
-    treenodes_[(layer_ + 1)].push_back(rightchild_);
+    treenodes_[(Layer() + 1)].push_back(leftchild_);
+    treenodes_[(Layer() + 1)].push_back(rightchild_);
 
-    rightchild_->CompleteTree(layer_ + 1, enlarge);
-    leftchild_->CompleteTree(layer_ + 1, enlarge);
+    rightchild_->CompleteTree(Layer() + 1, enlarge);
+    leftchild_->CompleteTree(Layer() + 1, enlarge);
   }
 
   // do nothing if arrived at leaf level
@@ -113,7 +104,7 @@ void CONTACT::SelfBinaryTreeNode::CalculateQualifiedVectors()
   // we first need the element center:
   // for line2, line3, quad4, quad8, quad9 elements: xi = eta = 0.0
   // for tri3, tri6 elements: xi = eta = 1/3
-  CoElement* celement = dynamic_cast<CoElement*>(idiscret_.gElement(elelist_[0]));
+  CoElement* celement = dynamic_cast<CoElement*>(Discret().gElement(Elelist()[0]));
   double loccenter[2];
 
   DRT::Element::DiscretizationType dt = celement->Shape();
@@ -135,13 +126,20 @@ void CONTACT::SelfBinaryTreeNode::CalculateQualifiedVectors()
   double normal[3] = {0.0, 0.0, 0.0};
   celement->ComputeUnitNormalAtXi(loccenter, normal);
 
+  // bound according to curvature criterion (cf. Semesterarbeit of Anh-Tu Vuong, 2009)
+  double bound(0.0);
+  // as above criterion is only valid for smooth surfaces, we adapt it for non-smooth surfaces
+  // such that possible self contact is detected, if the angle between two surfaces is smaller than
+  // 90 degrees
+  if (nonsmoothsurf_) bound = 1.0 / sqrt(2.0);
+
   // check normal against sample vectors
   for (int i = 0; i < (int)qualifiedvectors_.size(); ++i)
   {
     double scalar = (double)samplevectors_(i, 0) * normal[0] +
                     (double)samplevectors_(i, 1) * normal[1] +
                     (double)samplevectors_(i, 2) * normal[2];
-    if (scalar > 0)
+    if (scalar > bound)
       qualifiedvectors_[i] = true;
     else
       qualifiedvectors_[i] = false;
@@ -157,8 +155,8 @@ void CONTACT::SelfBinaryTreeNode::UpdateQualifiedVectorsBottomUp()
 {
   if (type_ == SELFCO_LEAF) dserror("ERROR: Update qual. vec. called for leaf node!");
 
-  // calculate the qualified vectors (= valid samplevectors) of an inner
-  // treenode by comparing the qualified vectors of the children
+  // calculate the qualified vectors (= valid sample vectors) of an inner tree node by comparing the
+  // qualified vectors of the children
   qualifiedvectors_.resize(nvectors_);
 
   for (int i = 0; i < (int)qualifiedvectors_.size(); ++i)
@@ -217,89 +215,6 @@ void CONTACT::SelfBinaryTreeNode::UpdateEndnodes()
 }
 
 /*----------------------------------------------------------------------*
- | Calculate slabs of DOP out of current node postions        popp 10/08|
- *----------------------------------------------------------------------*/
-void CONTACT::SelfBinaryTreeNode::CalculateSlabsDop()
-{
-  // initialize slabs
-  for (int j = 0; j < kdop_ / 2; j++)
-  {
-    slabs_(j, 0) = 1.0e12;
-    slabs_(j, 1) = -1.0e12;
-  }
-
-  // calculate slabs for every element
-  for (int i = 0; i < (int)elelist_.size(); ++i)
-  {
-    int gid = Elelist()[i];
-    DRT::Element* element = idiscret_.gElement(gid);
-    if (!element) dserror("ERROR: Cannot find element with gid %\n", gid);
-    CoElement* celement = dynamic_cast<CoElement*>(element);
-    DRT::Node** nodes = celement->Nodes();
-    if (!nodes) dserror("ERROR: Null pointer!");
-
-    // calculate slabs for every node on every element
-    for (int k = 0; k < celement->NumNode(); ++k)
-    {
-      CoNode* cnode = dynamic_cast<CoNode*>(nodes[k]);
-      if (!cnode) dserror("ERROR: Null pointer!");
-
-      // get current position
-      double pos[3] = {0.0, 0.0, 0.0};
-      for (int j = 0; j < dim_; ++j) pos[j] = cnode->xspatial()[j];
-
-      // calculate slabs
-      for (int j = 0; j < kdop_ / 2; ++j)
-      {
-        //= ax+by+cz=d/sqrt(aa+bb+cc)
-        const double num =
-            dopnormals_(j, 0) * pos[0] + dopnormals_(j, 1) * pos[1] + dopnormals_(j, 2) * pos[2];
-        const double denom =
-            sqrt((dopnormals_(j, 0) * dopnormals_(j, 0)) + (dopnormals_(j, 1) * dopnormals_(j, 1)) +
-                 (dopnormals_(j, 2) * dopnormals_(j, 2)));
-        const double dcurrent = num / denom;
-
-        if (dcurrent > slabs_(j, 1)) slabs_(j, 1) = dcurrent;
-        if (dcurrent < slabs_(j, 0)) slabs_(j, 0) = dcurrent;
-      }
-
-      // add auxiliary positions
-      // calculate element normal at current node
-      double xi[2] = {0.0, 0.0};
-      double normal[3] = {0.0, 0.0, 0.0};
-      celement->LocalCoordinatesOfNode(k, xi);
-      celement->ComputeUnitNormalAtXi(xi, normal);
-
-      // now the auxiliary position
-      double auxpos[3] = {0.0, 0.0, 0.0};
-      double scalar = 0.0;
-      for (int j = 0; j < dim_; ++j)
-        scalar = scalar + (cnode->X()[j] + cnode->uold()[j] - cnode->xspatial()[j]) * normal[j];
-      for (int j = 0; j < dim_; ++j) auxpos[j] = cnode->xspatial()[j] + scalar * normal[j];
-
-      for (int j = 0; j < kdop_ / 2; ++j)
-      {
-        //= ax+by+cz=d/sqrt(aa+bb+cc)
-        const double num = dopnormals_(j, 0) * auxpos[0] + dopnormals_(j, 1) * auxpos[1] +
-                           dopnormals_(j, 2) * auxpos[2];
-        const double denom =
-            sqrt((dopnormals_(j, 0) * dopnormals_(j, 0)) + (dopnormals_(j, 1) * dopnormals_(j, 1)) +
-                 (dopnormals_(j, 2) * dopnormals_(j, 2)));
-        const double dcurrent = num / denom;
-
-        if (dcurrent > slabs_(j, 1)) slabs_(j, 1) = dcurrent;
-        if (dcurrent < slabs_(j, 0)) slabs_(j, 0) = dcurrent;
-      }
-    }
-  }
-
-  // Prints slabs to std::cout
-  // PrintSlabs();
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  | Update slabs bottom-up (public)                            popp 10/08|
  *----------------------------------------------------------------------*/
 void CONTACT::SelfBinaryTreeNode::UpdateSlabsBottomUp(double& enlarge)
@@ -307,98 +222,28 @@ void CONTACT::SelfBinaryTreeNode::UpdateSlabsBottomUp(double& enlarge)
   // if current treenode is inner node
   if (type_ == SELFCO_INNER)
   {
-    for (int k = 0; k < kdop_ / 2; ++k)
+    for (int k = 0; k < Kdop() / 2; ++k)
     {
       // for minimum
       if (leftchild_->Slabs()(k, 0) <= rightchild_->Slabs()(k, 0))
-        slabs_(k, 0) = leftchild_->Slabs()(k, 0);
+        Slabs()(k, 0) = leftchild_->Slabs()(k, 0);
       else
-        slabs_(k, 0) = rightchild_->Slabs()(k, 0);
+        Slabs()(k, 0) = rightchild_->Slabs()(k, 0);
 
       // for maximum
       if (leftchild_->Slabs()(k, 1) >= rightchild_->Slabs()(k, 1))
-        slabs_(k, 1) = leftchild_->Slabs()(k, 1);
+        Slabs()(k, 1) = leftchild_->Slabs()(k, 1);
       else
-        slabs_(k, 1) = rightchild_->Slabs()(k, 1);
+        Slabs()(k, 1) = rightchild_->Slabs()(k, 1);
     }
   }
 
   // if current treenode is leaf node
   if (type_ == SELFCO_LEAF)
   {
-    // initialize slabs
-    for (int j = 0; j < kdop_ / 2; ++j)
-    {
-      slabs_(j, 0) = 1.0e12;
-      slabs_(j, 1) = -1.0e12;
-    }
+    CalculateSlabsDop();
 
-    int gid = Elelist()[0];
-    DRT::Element* element = idiscret_.gElement(gid);
-    if (!element) dserror("ERROR: Cannot find element with gid %\n", gid);
-    CoElement* celement = dynamic_cast<CoElement*>(element);
-    DRT::Node** nodes = celement->Nodes();
-    if (!nodes) dserror("ERROR: Null pointer!");
-
-    // update slabs for every node
-    for (int k = 0; k < celement->NumNode(); ++k)
-    {
-      CoNode* cnode = dynamic_cast<CoNode*>(nodes[k]);
-      if (!cnode) dserror("ERROR: Null pointer!");
-
-      // decide which position is relevant (initial or current)
-      double pos[3] = {0.0, 0.0, 0.0};
-      for (int j = 0; j < dim_; ++j) pos[j] = cnode->xspatial()[j];
-
-      // calculate slabs
-      for (int j = 0; j < kdop_ / 2; ++j)
-      {
-        //= ax+by+cz=d/sqrt(aa+bb+cc)
-        const double num =
-            dopnormals_(j, 0) * pos[0] + dopnormals_(j, 1) * pos[1] + dopnormals_(j, 2) * pos[2];
-        const double denom =
-            sqrt((dopnormals_(j, 0) * dopnormals_(j, 0)) + (dopnormals_(j, 1) * dopnormals_(j, 1)) +
-                 (dopnormals_(j, 2) * dopnormals_(j, 2)));
-        const double dcurrent = num / denom;
-
-        if (dcurrent > slabs_(j, 1)) slabs_(j, 1) = dcurrent;
-        if (dcurrent < slabs_(j, 0)) slabs_(j, 0) = dcurrent;
-      }
-
-      // enlarge slabs with aux. position
-      // first calculate element normal at current node
-      double xi[2] = {0.0, 0.0};
-      double normal[3] = {0.0, 0.0, 0.0};
-      celement->LocalCoordinatesOfNode(k, xi);
-      celement->ComputeUnitNormalAtXi(xi, normal);
-
-      // now the auxiliary position
-      double auxpos[3] = {0.0, 0.0, 0.0};
-      double scalar = 0.0;
-      for (int j = 0; j < dim_; ++j)
-        scalar = scalar + (cnode->X()[j] + cnode->uold()[j] - cnode->xspatial()[j]) * normal[j];
-      for (int j = 0; j < dim_; ++j) auxpos[j] = cnode->xspatial()[j] + scalar * normal[j];
-
-      for (int j = 0; j < kdop_ / 2; ++j)
-      {
-        //= ax+by+cz=d/sqrt(aa+bb+cc)
-        const double num = dopnormals_(j, 0) * auxpos[0] + dopnormals_(j, 1) * auxpos[1] +
-                           dopnormals_(j, 2) * auxpos[2];
-        const double denom =
-            sqrt((dopnormals_(j, 0) * dopnormals_(j, 0)) + (dopnormals_(j, 1) * dopnormals_(j, 1)) +
-                 (dopnormals_(j, 2) * dopnormals_(j, 2)));
-        const double dcurrent = num / denom;
-
-        if (dcurrent > slabs_(j, 1)) slabs_(j, 1) = dcurrent;
-        if (dcurrent < slabs_(j, 0)) slabs_(j, 0) = dcurrent;
-      }
-    }
-
-    for (int i = 0; i < kdop_ / 2; ++i)
-    {
-      slabs_(i, 0) = slabs_(i, 0) - enlarge;
-      slabs_(i, 1) = slabs_(i, 1) + enlarge;
-    }
+    EnlargeGeometry(enlarge);
 
     // Prints slabs to std::cout
     // PrintSlabs();
@@ -425,37 +270,6 @@ void CONTACT::SelfBinaryTreeNode::PrintType()
 }
 
 /*----------------------------------------------------------------------*
- | Print slabs to std::cout (public)                          popp 10/08|
- *----------------------------------------------------------------------*/
-void CONTACT::SelfBinaryTreeNode::PrintSlabs()
-{
-  std::cout << std::endl
-            << Comm().MyPID() << "************************************************************";
-  PrintType();
-  std::cout << "slabs:";
-  for (int i = 0; i < slabs_.M(); ++i)
-    std::cout << "\nslab: " << i << " min: " << slabs_.operator()(i, 0)
-              << " max: " << slabs_.operator()(i, 1);
-  std::cout << "\n**********************************************************\n";
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | Set slabs of current treenode with new slabs (public)      popp 10/08|
- *----------------------------------------------------------------------*/
-void CONTACT::SelfBinaryTreeNode::SetSlabs(Epetra_SerialDenseMatrix& newslabs)
-{
-  for (int i = 0; i < kdop_ / 2; ++i)
-  {
-    slabs_(i, 0) = newslabs(i, 0);
-    slabs_(i, 1) = newslabs(i, 1);
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  | Set children of current treenode (public)                  popp 11/09|
  *----------------------------------------------------------------------*/
 void CONTACT::SelfBinaryTreeNode::SetChildren(
@@ -468,16 +282,18 @@ void CONTACT::SelfBinaryTreeNode::SetChildren(
 }
 
 /*----------------------------------------------------------------------*
- | Enlarge geometry of treenode (public)                      popp 10/08|
+ | Set owner of parent tree node (public)                  schmidt 01/19|
  *----------------------------------------------------------------------*/
-void CONTACT::SelfBinaryTreeNode::EnlargeGeometry(double& enlarge)
+void CONTACT::SelfBinaryTreeNode::SetParentOwner(int leftchildowner, int rightchildowner)
 {
-  // scale slabs with scalar enlarge
-  for (int i = 0; i < kdop_ / 2; ++i)
-  {
-    slabs_(i, 0) = slabs_(i, 0) - enlarge;
-    slabs_(i, 1) = slabs_(i, 1) + enlarge;
-  }
+  // safety checks
+  if (leftchildowner != rightchildowner)
+    dserror(
+        "It is only allowed to combine tree nodes of the same processor to a parent node for the "
+        "unbiased self contact tree implementation!");
+  if (leftchildowner < 0) dserror("Something went wrong! Owner can not be smaller than 0");
+
+  owner_ = leftchildowner;
 
   return;
 }
@@ -507,7 +323,7 @@ void CONTACT::SelfDualEdge::CalculateCosts()
 
   // build parent slab for dual edge
   Epetra_SerialDenseMatrix parentslabs;
-  int n = node1_->Kdop();
+  const int n = node1_->Kdop();
   parentslabs.Reshape(n / 2, 2);
 
   for (int k = 0; k < n / 2; ++k)
@@ -612,177 +428,159 @@ void CONTACT::SelfDualEdge::CalculateCosts()
  |  ctor SelfBinaryTree (public)                              popp 11/09|
  *----------------------------------------------------------------------*/
 CONTACT::SelfBinaryTree::SelfBinaryTree(DRT::Discretization& discret, const Epetra_Comm* lcomm,
-    Teuchos::RCP<Epetra_Map> elements, int dim, double eps)
-    : MORTAR::AbstractBinaryTree(),
-      idiscret_(discret),
+    const Teuchos::ParameterList& iparams, Teuchos::RCP<Epetra_Map> elements, int dim, double eps)
+    : MORTAR::BaseBinaryTree(discret, dim, eps),
       lcomm_(lcomm),
       elements_(elements),
-      dim_(dim),
-      kdop_(-1),
-      nvectors_(-1),
-      eps_(eps),
-      enlarge_(-1.0)
+      iparams_(iparams),
+      nvectors_(-1)
 {
   // keep the constructor clean
   return;
 }
 
 /*----------------------------------------------------------------------*
- | initialize the binary tree                              schmidt 12/18|
+ | initialize the self binary tree                         schmidt 12/18|
  *----------------------------------------------------------------------*/
 void CONTACT::SelfBinaryTree::Init()
 {
   // get out of here if not participating in interface
   if (!lComm()) return;
 
-  // initialize sizes
-  treenodes_.resize(1);
-  leafsmap_.clear();
+  // call initialization method of the base class
+  MORTAR::BaseBinaryTree::Init();
+
+  // initialize internal variables
+  InitInternalVariables();
 
   // calculate min. element length and set enlargement accordingly
   SetEnlarge();
 
-  //**********************************************************************
-  // check for problem dimension
-  //**********************************************************************
-  // two-dimensional case
-  if (dim_ == 2)
-  {
-    // set number of DOP sides
-    kdop_ = 8;
-
-    // set number of sample vectors
-    nvectors_ = 16;
-
-    // setup normals for DOP
-    dopnormals_.Reshape(4, 3);
-    dopnormals_(0, 0) = 1;
-    dopnormals_(0, 1) = 0;
-    dopnormals_(0, 2) = 0;
-    dopnormals_(1, 0) = 0;
-    dopnormals_(1, 1) = 1;
-    dopnormals_(1, 2) = 0;
-    dopnormals_(2, 0) = 1;
-    dopnormals_(2, 1) = 1;
-    dopnormals_(2, 2) = 0;
-    dopnormals_(3, 0) = -1;
-    dopnormals_(3, 1) = 1;
-    dopnormals_(3, 2) = 0;
-
-    // setup sample vectors
-    samplevectors_.Reshape(16, 3);
-    samplevectors_(0, 0) = 1.0;
-    samplevectors_(0, 1) = 0.0;
-    samplevectors_(0, 2) = 0.0;
-    samplevectors_(8, 0) = -1.0;
-    samplevectors_(8, 1) = 0.0;
-    samplevectors_(8, 2) = 0.0;
-
-    for (int i = 1; i < 4; ++i)
-    {
-      samplevectors_(i, 0) = cos(M_PI * (double)i / 8);
-      samplevectors_(i, 1) = sin(M_PI * (double)i / 8);
-      samplevectors_(i, 2) = 0;
-
-      samplevectors_(i + 8, 0) = cos(M_PI * (double)i / 8);
-      samplevectors_(i + 8, 1) = -1 * sin(M_PI * (double)i / 8);
-      samplevectors_(i + 8, 2) = 0;
-    }
-
-    samplevectors_(4, 0) = 0.0;
-    samplevectors_(4, 1) = 1.0;
-    samplevectors_(4, 2) = 0.0;
-    samplevectors_(12, 0) = 0.0;
-    samplevectors_(12, 1) = -1.0;
-    samplevectors_(12, 2) = 0.0;
-
-    for (int i = 5; i < 8; ++i)
-    {
-      samplevectors_(i, 0) = cos(M_PI * (double)i / 8);
-      samplevectors_(i, 1) = sin(M_PI * (double)i / 8);
-      samplevectors_(i, 2) = 0;
-
-      samplevectors_(i + 8, 0) = cos(M_PI * (double)i / 8);
-      samplevectors_(i + 8, 1) = -1 * sin(M_PI * (double)i / 8);
-      samplevectors_(i + 8, 2) = 0;
-    }
-  }
-
-  // three-dimensional case
-  else if (dim_ == 3)
-  {
-    // set number of DOP sides
-    kdop_ = 18;
-
-    // set number of sample vectors
-    nvectors_ = 50;
-
-    // setup normals for DOP
-    dopnormals_.Reshape(9, 3);
-    dopnormals_(0, 0) = 1;
-    dopnormals_(0, 1) = 0;
-    dopnormals_(0, 2) = 0;
-    dopnormals_(1, 0) = 0;
-    dopnormals_(1, 1) = 1;
-    dopnormals_(1, 2) = 0;
-    dopnormals_(2, 0) = 0;
-    dopnormals_(2, 1) = 0;
-    dopnormals_(2, 2) = 1;
-    dopnormals_(3, 0) = 1;
-    dopnormals_(3, 1) = 1;
-    dopnormals_(3, 2) = 0;
-    dopnormals_(4, 0) = 1;
-    dopnormals_(4, 1) = 0;
-    dopnormals_(4, 2) = 1;
-    dopnormals_(5, 0) = 0;
-    dopnormals_(5, 1) = 1;
-    dopnormals_(5, 2) = 1;
-    dopnormals_(6, 0) = 1;
-    dopnormals_(6, 1) = 0;
-    dopnormals_(6, 2) = -1;
-    dopnormals_(7, 0) = 1;
-    dopnormals_(7, 1) = -1;
-    dopnormals_(7, 2) = 0;
-    dopnormals_(8, 0) = 0;
-    dopnormals_(8, 1) = 1;
-    dopnormals_(8, 2) = -1;
-
-    // setup sample vectors
-    samplevectors_.Reshape(50, 3);
-    samplevectors_(0, 0) = 0;
-    samplevectors_(0, 1) = 0.0;
-    samplevectors_(0, 2) = 1.0;
-    samplevectors_(1, 0) = 0;
-    samplevectors_(1, 1) = 0.0;
-    samplevectors_(1, 2) = -1.0;
-
-    for (int i = 0; i < 8; ++i)
-    {
-      for (int j = 1; j < 4; ++j)
-      {
-        samplevectors_(1 + 6 * i + j, 0) = sin(M_PI * (double)j / 8) * cos(M_PI * (double)i / 8);
-        samplevectors_(1 + 6 * i + j, 1) = sin(M_PI * (double)j / 8) * sin(M_PI * (double)i / 8);
-        samplevectors_(1 + 6 * i + j, 2) = cos(M_PI * (double)j / 8);
-      }
-      for (int j = 5; j < 8; ++j)
-      {
-        samplevectors_(6 * i + j, 0) = sin(M_PI * (double)j / 8) * cos(M_PI * (double)i / 8);
-        samplevectors_(6 * i + j, 1) = sin(M_PI * (double)j / 8) * sin(M_PI * (double)i / 8);
-        samplevectors_(6 * i + j, 2) = cos(M_PI * (double)j / 8);
-      }
-    }
-  }
-
-  else
-    dserror("ERROR: Problem dimension must be 2D or 3D!");
-
-  //**********************************************************************
-  // initialize binary tree leaf nodes
-  //**********************************************************************
-  // create element lists
+  // initialize binary tree leaf nodes and create element list
   std::vector<int> elelist;
-  std::vector<int> localelelist;
+  InitLeafNodesAndMap(elelist);
 
+  // initialize and calculate dual graph
+  std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>> dualgraph;
+  CalculateDualGraph(&dualgraph, elelist);
+
+  // plots for debug purposes
+  // plot adjacency matrix
+  // PlotAdjacencyMatrix();
+  // plot dual graph
+  // PlotDualGraph(dualgraph);
+
+  // now initialize SelfBinaryTree in a bottom-up way based on dual graph
+  InitializeTreeBottomUp(&dualgraph);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Initialize internal variables (protected)              schmidt 01/19|
+ *----------------------------------------------------------------------*/
+void CONTACT::SelfBinaryTree::InitInternalVariables()
+{
+  // initialize sizes
+  treenodes_.resize(1);
+  leafsmap_.clear();
+
+  switch (Dim())
+  {
+    // two-dimensional case
+    case 2:
+    {
+      // set number of sample vectors
+      nvectors_ = 16;
+
+      // setup sample vectors
+      samplevectors_.Reshape(16, 3);
+      samplevectors_(0, 0) = 1.0;
+      samplevectors_(0, 1) = 0.0;
+      samplevectors_(0, 2) = 0.0;
+      samplevectors_(8, 0) = -1.0;
+      samplevectors_(8, 1) = 0.0;
+      samplevectors_(8, 2) = 0.0;
+
+      for (int i = 1; i < 4; ++i)
+      {
+        samplevectors_(i, 0) = cos(M_PI * (double)i / 8);
+        samplevectors_(i, 1) = sin(M_PI * (double)i / 8);
+        samplevectors_(i, 2) = 0;
+
+        samplevectors_(i + 8, 0) = cos(M_PI * (double)i / 8);
+        samplevectors_(i + 8, 1) = -1 * sin(M_PI * (double)i / 8);
+        samplevectors_(i + 8, 2) = 0;
+      }
+
+      samplevectors_(4, 0) = 0.0;
+      samplevectors_(4, 1) = 1.0;
+      samplevectors_(4, 2) = 0.0;
+      samplevectors_(12, 0) = 0.0;
+      samplevectors_(12, 1) = -1.0;
+      samplevectors_(12, 2) = 0.0;
+
+      for (int i = 5; i < 8; ++i)
+      {
+        samplevectors_(i, 0) = cos(M_PI * (double)i / 8);
+        samplevectors_(i, 1) = sin(M_PI * (double)i / 8);
+        samplevectors_(i, 2) = 0;
+
+        samplevectors_(i + 8, 0) = cos(M_PI * (double)i / 8);
+        samplevectors_(i + 8, 1) = -1 * sin(M_PI * (double)i / 8);
+        samplevectors_(i + 8, 2) = 0;
+      }
+      break;
+    }
+    // three-dimensional case
+    case 3:
+    {
+      // set number of sample vectors
+      nvectors_ = 50;
+
+      // setup sample vectors
+      samplevectors_.Reshape(50, 3);
+      samplevectors_(0, 0) = 0;
+      samplevectors_(0, 1) = 0.0;
+      samplevectors_(0, 2) = 1.0;
+      samplevectors_(1, 0) = 0;
+      samplevectors_(1, 1) = 0.0;
+      samplevectors_(1, 2) = -1.0;
+
+      for (int i = 0; i < 8; ++i)
+      {
+        for (int j = 1; j < 4; ++j)
+        {
+          samplevectors_(1 + 6 * i + j, 0) = sin(M_PI * (double)j / 8) * cos(M_PI * (double)i / 8);
+          samplevectors_(1 + 6 * i + j, 1) = sin(M_PI * (double)j / 8) * sin(M_PI * (double)i / 8);
+          samplevectors_(1 + 6 * i + j, 2) = cos(M_PI * (double)j / 8);
+        }
+        for (int j = 5; j < 8; ++j)
+        {
+          samplevectors_(6 * i + j, 0) = sin(M_PI * (double)j / 8) * cos(M_PI * (double)i / 8);
+          samplevectors_(6 * i + j, 1) = sin(M_PI * (double)j / 8) * sin(M_PI * (double)i / 8);
+          samplevectors_(6 * i + j, 2) = cos(M_PI * (double)j / 8);
+        }
+      }
+      break;
+    }
+    // not 2D or 3D
+    default:
+    {
+      dserror("ERROR: Problem dimension must be 2D or 3D!");
+      break;
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Initialize the leaf nodes and related map (protected)  schmidt 01/19|
+ *----------------------------------------------------------------------*/
+void CONTACT::SelfBinaryTree::InitLeafNodesAndMap(std::vector<int>& elelist)
+{
   // build global element list
   for (int i = 0; i < elements_->NumMyElements(); ++i)
   {
@@ -791,58 +589,241 @@ void CONTACT::SelfBinaryTree::Init()
   }
 
   if (elelist.size() <= 1) dserror("ERROR: Less than 2 elements for binary tree initialization!");
-  // std::cout << "Elelistsize: " << (int)elelist.size() << std::endl;
 
+  // check for non-smooth contact surface
+  bool nonsmoothsurface(false);
+  if (DRT::INPUT::IntegralValue<int>(iparams_, "NONSMOOTH_CONTACT_SURFACE"))
+    nonsmoothsurface = true;
 
   // build local element list and create leaf nodes
-  for (int i = 0; i < (int)(elelist.size()); ++i)
+  std::vector<int> localelelist;
+  for (unsigned i = 0; i < elelist.size(); ++i)
   {
     localelelist.clear();
     localelelist.push_back(elelist[i]);
-    Teuchos::RCP<SelfBinaryTreeNode> leaf =
-        Teuchos::rcp(new SelfBinaryTreeNode(SELFCO_LEAF, idiscret_, Teuchos::null, localelelist,
-            DopNormals(), SampleVectors(), Kdop(), Dim(), Nvectors(), -1, treenodes_));
+    Teuchos::RCP<SelfBinaryTreeNode> leaf = Teuchos::rcp(
+        new SelfBinaryTreeNode(SELFCO_LEAF, Discret(), Teuchos::null, localelelist, DopNormals(),
+            SampleVectors(), Kdop(), Dim(), Nvectors(), -1, nonsmoothsurface, treenodes_));
+    leaf->SetOwner((Discret().gElement(elelist[i]))->Owner());
     leafsmap_[elelist[i]] = leaf;
   }
 
   // double-check if there is at the least one leaf node in tree now
   if (leafsmap_.size() == 0) dserror("ERROR: SelfBinaryTree: No contact elements defined!");
 
-  //**********************************************************************
-  // find adjacent tree nodes and build dual graph
-  //**********************************************************************
-  // initialize dual graph
-  std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>> dualgraph;
+  return;
+}
 
+/*----------------------------------------------------------------------*
+ |  Get number of first order nodes of element (protected) schmidt 01/19|
+ *----------------------------------------------------------------------*/
+int CONTACT::SelfBinaryTree::GetEleSpecificNumNodes(DRT::Element* element)
+{
+  // find all first-order nodes of current element we exclude higher-order nodes (i.e. edge and
+  // center nodes) in both 2D and 3D as they do not bring in any additional information about
+  // connectivity / adjacency
+  int numnode = 0;
+  MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(element);
+
+  switch (mele->Shape())
+  {
+    case DRT::Element::line2:
+    case DRT::Element::line3:
+    {
+      numnode = 2;
+      break;
+    }
+    case DRT::Element::tri3:
+    case DRT::Element::tri6:
+    {
+      numnode = 3;
+      break;
+    }
+    case DRT::Element::quad4:
+    case DRT::Element::quad8:
+    case DRT::Element::quad9:
+    {
+      numnode = 4;
+      break;
+    }
+    default:
+    {
+      dserror("ERROR: Unknown mortar element type");
+      break;
+    }
+  }
+
+  return numnode;
+}
+
+/*----------------------------------------------------------------------*
+ |  Get the contracted node (protected)                    schmidt 01/19|
+ *----------------------------------------------------------------------*/
+void CONTACT::SelfBinaryTree::GetContractedNode(
+    Teuchos::RCP<SelfDualEdge>& contractedEdge, Teuchos::RCP<SelfBinaryTreeNode>& contractedNode)
+{
+  Teuchos::RCP<SelfBinaryTreeNode> node1 = contractedEdge->GetNode1();
+  Teuchos::RCP<SelfBinaryTreeNode> node2 = contractedEdge->GetNode2();
+
+  // combine list of elements of both tree nodes to get new list
+  std::vector<int> list = node1->Elelist();
+  std::vector<int> list2 = node2->Elelist();
+  for (unsigned i = 0; i < node2->Elelist().size(); ++i) list.push_back(list2[i]);
+
+  // define new (contracted) tree node
+  contractedNode = Teuchos::rcp(new SelfBinaryTreeNode(SELFCO_INNER, Discret(), Teuchos::null, list,
+      DopNormals(), SampleVectors(), Kdop(), Dim(), Nvectors(), -1, false, treenodes_));
+  contractedNode->SetChildren(node1, node2);
+  node1->SetParent(contractedNode);
+  node2->SetParent(contractedNode);
+
+  // in 2D we simply save the end nodes as adjacency criterion
+  if (Dim() == 2) contractedNode->UpdateEndnodes();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Calculate adjacent tree nodes & dual edges (protected) schmidt 01/19|
+ *----------------------------------------------------------------------*/
+void CONTACT::SelfBinaryTree::CalculateAdjacentTreeNodesAndDualEdges(std::vector<int>& possadjids,
+    const int gid, DRT::Element* adjElementk, Teuchos::RCP<SelfBinaryTreeNode>& node1,
+    std::vector<Teuchos::RCP<SelfBinaryTreeNode>>& adjtreenodes,
+    std::vector<Teuchos::RCP<SelfDualEdge>>& adjdualedges)
+{
+  const int eleID = adjElementk->Id();
+
+  // if eleID isn't the currently considered element, it could be a neighbor
+  if (eleID != gid)
+  {
+    // if there are not yet any possibly adjacent elements
+    if (possadjids.size() == 0)
+    {
+      // in 2D one common node implies adjacency
+      if (Dim() == 2)
+      {
+        // get second node from leafs map
+        Teuchos::RCP<SelfBinaryTreeNode> node2 = leafsmap_[eleID];
+        if (node2 == Teuchos::null) dserror("adjacent leaf tree node not found in leafs map!!");
+
+        // get the finite element nodes of the element equal to tree node 2 and save them as end
+        // nodes of the tree node
+        std::vector<int> nodeIds;
+        nodeIds.clear();
+        nodeIds.push_back(adjElementk->NodeIds()[0]);
+        nodeIds.push_back(adjElementk->NodeIds()[1]);
+        node2->SetEndnodes(nodeIds);
+
+        // add tree node to list of adjacent tree nodes of current tree node
+        adjtreenodes.push_back(node2);
+
+        // create edge and add it to the list
+        Teuchos::RCP<SelfDualEdge> edge = Teuchos::rcp(new SelfDualEdge(node1, node2, Dim()));
+        adjdualedges.push_back(edge);
+      }
+      // in 3D adjacency is more complicated
+      else
+      {
+        // get second node from leafs map
+        Teuchos::RCP<SelfBinaryTreeNode> node2 = leafsmap_[eleID];
+        adjtreenodes.push_back(node2);
+        possadjids.push_back(eleID);
+      }
+    }
+    // if there are already possible adjacent elements in possadjids
+    else
+    {
+      bool saved = false;
+
+      // in 2D one common node implies adjacency
+      if (Dim() == 2)
+      {
+        // get second node from leafs map
+        Teuchos::RCP<SelfBinaryTreeNode> node2 = leafsmap_[eleID];
+        if (node2 == Teuchos::null) dserror("adjacent tree node not found in leafs map!!");
+
+        // get the finite element nodes of the element equal to tree node 2 and save them as end
+        // nodes of the tree node
+        std::vector<int> nodeIds;
+        nodeIds.push_back(adjElementk->NodeIds()[0]);
+        nodeIds.push_back(adjElementk->NodeIds()[1]);
+        node2->SetEndnodes(nodeIds);
+
+        // add tree node in list of adjacent tree nodes of current tree node
+        adjtreenodes.push_back(node2);
+
+        // create edge and add it to the list
+        Teuchos::RCP<SelfDualEdge> edge = Teuchos::rcp(new SelfDualEdge(node1, node2, Dim()));
+        adjdualedges.push_back(edge);
+      }
+      // in 3D adjacency is more complicated (adjacent elements have at least 2 common nodes)
+      else
+      {
+        // get second node from leafs map
+        Teuchos::RCP<SelfBinaryTreeNode> node2 = leafsmap_[eleID];
+
+        for (unsigned l = 0; l < possadjids.size(); ++l)
+        {
+          // check if possible adjacent element is already in the list. If true, there are 2 common
+          // nodes, which means it is a neighbor
+          if (eleID == possadjids[l])
+          {
+            saved = true;
+            if (node2 == Teuchos::null) dserror("adjacent tree node not found in leafs map!!");
+
+            // create edge and add it to the list
+            Teuchos::RCP<SelfDualEdge> edge = Teuchos::rcp(new SelfDualEdge(node1, node2, Dim()));
+            adjdualedges.push_back(edge);
+            break;
+          }
+        }
+        // possible adjacent element is not yet in the list --> add
+        if (!saved)
+        {
+          possadjids.push_back(eleID);
+          adjtreenodes.push_back(node2);
+        }
+      }  // else 3D
+    }    // else possadjids empty
+  }      // if eleID!=gid
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Calculate the dual graph (private)                     schmidt 12/18|
+ *----------------------------------------------------------------------*/
+void CONTACT::SelfBinaryTree::CalculateDualGraph(
+    std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>* dualGraph,
+    const std::vector<int>& elelist)
+{
   // loop over all self contact elements
-  for (int i = 0; i < (int)elelist.size(); ++i)
+  for (unsigned i = 0; i < elelist.size(); ++i)
   {
     // global id of current element
-    int gid = elelist[i];
+    const int gid = elelist[i];
 
     // initialize
-    // ... vector of adjacent treenodes (elements) of current element
-    // ... vector of global IDs of adjacent elements of current element
+    // ... vector of adjacent tree nodes (elements) of current element
     // ... vector of adjacent dual edges containing current element
     // ... vector of global IDs of possible adjacent elements
     std::vector<Teuchos::RCP<SelfBinaryTreeNode>> adjtreenodes;
-    std::vector<int> adjids;
     std::vector<Teuchos::RCP<SelfDualEdge>> adjdualedges;
     std::vector<int> possadjids;
 
-    // get curent elements and its nodes
-    DRT::Element* element = idiscret_.gElement(gid);
+    // get current elements and its nodes
+    DRT::Element* element = Discret().gElement(gid);
     if (!element) dserror("ERROR: Cannot find element with gid %\n", gid);
     DRT::Node** nodes = element->Nodes();
     if (!nodes) dserror("ERROR: Null pointer!");
 
-    // first treenode of one dual edge which includes current element
-    // is the element itself saved as a treenode
+    // first tree node of one dual edge which includes current element is the element itself saved
+    // as a tree node
     Teuchos::RCP<SelfBinaryTreeNode> node1 = leafsmap_[gid];
 
-    // for 2D only: get the finite element nodes of the element
-    // and save them as endnodes of the treenode
-    if (dim_ == 2)
+    // for 2D only: get the finite element nodes of the element and save them as end nodes of the
+    // tree node
+    if (Dim() == 2)
     {
       std::vector<int> nodeIds;
       nodeIds.push_back(element->NodeIds()[0]);
@@ -850,45 +831,12 @@ void CONTACT::SelfBinaryTree::Init()
       node1->SetEndnodes(nodeIds);
     }
 
-    // find all first-order nodes of current element
-    // we exclude higher-order nodes (i.e. edge and center nodes)
-    // in both 2D and 3D as they do not bring in any additional
-    // information about connectivity / adjacency
-    int numnode = 0;
-    MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(element);
+    // get element specific first order nodes
+    const int numnode = GetEleSpecificNumNodes(element);
 
-    switch (mele->Shape())
-    {
-      case DRT::Element::line2:
-      case DRT::Element::line3:
-      {
-        numnode = 2;
-        break;
-      }
-      case DRT::Element::tri3:
-      case DRT::Element::tri6:
-      {
-        numnode = 3;
-        break;
-      }
-      case DRT::Element::quad4:
-      case DRT::Element::quad8:
-      case DRT::Element::quad9:
-      {
-        numnode = 4;
-        break;
-      }
-      default:
-      {
-        dserror("ERROR: Unknown mortar element type");
-        break;
-      }
-    }
-
-    // loop over all first-order nodes of current element
-    // (here we make use of the fact that first-order nodes
-    // are always stored before higher-order nodes)
-    for (int j = 0; j < numnode; j++)
+    // loop over all first-order nodes of current element (here we make use of the fact that
+    // first-order nodes are always stored before higher-order nodes)
+    for (int j = 0; j < numnode; ++j)
     {
       DRT::Node* node = nodes[j];
       if (!node) dserror("ERROR: Null pointer!");
@@ -901,212 +849,68 @@ void CONTACT::SelfBinaryTree::Init()
       // loop over all adjacent elements of current node
       for (int k = 0; k < numE; ++k)
       {
-        int eleID = adjElements[k]->Id();
+        DRT::Element* adjElementk = adjElements[k];
 
-        // if eleID isn't the currently considered element, it could be a neighbour
-        if (eleID != gid)
-        {
-          // if there are not yet any possibly adjacent elements
-          if (possadjids.size() == 0)
-          {
-            // in 2D one common node implies adjacency
-            if (dim_ == 2)
-            {
-              // get second node from leafsmap
-              Teuchos::RCP<SelfBinaryTreeNode> node2 = leafsmap_[eleID];
-              if (node2 == Teuchos::null)
-                dserror("adjacent leaf tree node not found in leafsmap!!");
+        CalculateAdjacentTreeNodesAndDualEdges(
+            possadjids, gid, adjElementk, node1, adjtreenodes, adjdualedges);
+      }  // all adjacent elements
+    }    // all nodes
 
-              // get the finite element nodes of the element equal to treenode 2
-              // and save them as endnodes of the treenode
-              std::vector<int> nodeIds;
-              nodeIds.clear();
-              nodeIds.push_back(adjElements[k]->NodeIds()[0]);
-              nodeIds.push_back(adjElements[k]->NodeIds()[1]);
-              node2->SetEndnodes(nodeIds);
-
-              // add treenode in list of adjacent treenodes of current treenode
-              adjtreenodes.push_back(node2);
-              adjids.push_back(eleID);
-
-              // create edge and add it to the list
-              Teuchos::RCP<SelfDualEdge> edge = Teuchos::rcp(new SelfDualEdge(node1, node2, Dim()));
-              adjdualedges.push_back(edge);
-            }
-            // in 3D adjacency is more complicated
-            else
-            {
-              // get second node from leafsmap
-              Teuchos::RCP<SelfBinaryTreeNode> node2 = leafsmap_[eleID];
-              adjtreenodes.push_back(node2);
-              possadjids.push_back(eleID);
-            }
-          }
-
-          // if there are already possibly adjacent elements in possasdjids
-          else
-          {
-            bool saved = false;
-
-            // in 2D one common node implies adjacency
-            if (dim_ == 2)
-            {
-              // get second node from leafsmap
-              Teuchos::RCP<SelfBinaryTreeNode> node2 = leafsmap_[eleID];
-              if (node2 == Teuchos::null) dserror("adjacent tree node not found in leafsmap!!");
-
-              // get the finite element nodes of the element equal to treenode 2
-              // and save them as endnodes of the treenode
-              std::vector<int> nodeIds;
-              nodeIds.push_back(adjElements[k]->NodeIds()[0]);
-              nodeIds.push_back(adjElements[k]->NodeIds()[1]);
-              node2->SetEndnodes(nodeIds);
-
-              // add treenode in list of adjacent treenodes of current treenode
-              adjtreenodes.push_back(node2);
-              adjids.push_back(eleID);
-
-              // create edge and add it to the list
-              Teuchos::RCP<SelfDualEdge> edge = Teuchos::rcp(new SelfDualEdge(node1, node2, Dim()));
-              adjdualedges.push_back(edge);
-            }
-            // in 3D adjacency is more complicated
-            // (adjacent elements have at least 2 common nodes)
-            else
-            {
-              // get second node from leafsmap
-              Teuchos::RCP<SelfBinaryTreeNode> node2 = leafsmap_[eleID];
-
-              for (int l = 0; l < (int)possadjids.size(); ++l)
-              {
-                // check if possibly adjacent element is already in the list
-                // if true, there are 2 common nodes, which means it is a neighbour
-                if (eleID == possadjids[l])
-                {
-                  saved = true;
-                  if (node2 == Teuchos::null) dserror("adjacent tree node not found in leafsmap!!");
-
-                  // add treenode in list of adjacent treenodes of current treenode
-                  // adjtreenodes.push_back(node2);
-                  adjids.push_back(eleID);
-
-                  // create edge and add it to the list
-                  Teuchos::RCP<SelfDualEdge> edge =
-                      Teuchos::rcp(new SelfDualEdge(node1, node2, Dim()));
-                  adjdualedges.push_back(edge);
-                  break;
-                }
-              }
-
-              // possibly adjacent element is not yet in the list --> add
-              if (!saved)
-              {
-                possadjids.push_back(eleID);
-                adjtreenodes.push_back(node2);
-              }
-            }  // else 3D
-          }    // else possadjids empty
-        }      // if eleID!=gid
-      }        // all adjacent elements
-    }          // all nodes
-
-    // add the vector of adjacent tree nodes to the adjcencymatrix
-    // we only need the matrix in 3D, because in 2D the adjacencytest works by
-    // comparing endnodes only
-    if (dim_ == 3) adjacencymatrix_[gid] = adjtreenodes;
+    // add the vector of adjacent tree nodes to the adjacency matrix. We only need the matrix in 3D,
+    // because in 2D the adjacency test works by comparing end nodes only
+    if (Dim() == 3) adjacencymatrix_[gid] = adjtreenodes;
 
     // get adjacent dual edges
-    for (int k = 0; k < (int)adjdualedges.size(); ++k)
-    {
-      for (int j = 0; j < (int)adjdualedges.size(); ++j)
-      {
-        if (j != k)
-        {
-          adjdualedges[k]->CommonNode(adjdualedges[j]);
-          dualgraph[adjdualedges[k]].push_back(adjdualedges[j]);
-        }
-      }
-    }
+    for (unsigned k = 0; k < adjdualedges.size(); ++k)
+      for (unsigned j = 0; j < adjdualedges.size(); ++j)
+        if (j != k) (*dualGraph)[adjdualedges[k]].push_back(adjdualedges[j]);
   }  // all elements
 
-  // plot adjacencymatrix
-  /*
-  std::map<int,std::vector<Teuchos::RCP<SelfBinaryTreeNode> > > ::iterator iter2 =
-  adjacencymatrix_.begin(); std::map<int,std::vector<Teuchos::RCP<SelfBinaryTreeNode> > > ::iterator
-  iter2_end = adjacencymatrix_.end();
-
-  std::cout << "\n" << leafsmap_.size() << " elements in leafsmap\n";
-  std::cout << adjacencymatrix_.size() << " elements in adjazencymatrix\n";
-
-
-  while (iter2 != iter2_end)
-  {
-    std::cout << "element " << (*iter2).first << ": ";
-    //int adj_cnt= 0 ;
-
-    std::vector<Teuchos::RCP<SelfBinaryTreeNode > >  adj_ = (*iter2).second;
-    std::cout << adj_.size() << " elements: ";
-    for (int i=0;i<(int)adj_.size();++i)
-      std::cout << adj_[i]->Elelist()[0] << " ";
-    std::cout << "\n";
-    ++iter2;
-  }
-  */
-
-  // plot dual graph
-  /*
-  std::cout << "\n" <<leafsmap_.size() << " elements in leafmap\n";
-  std::cout << dualgraph.size() << " edges in dual graph\n";
-
-  std::map<Teuchos::RCP<SelfDualEdge>,std::vector<Teuchos::RCP<SelfDualEdge> > > ::iterator iter3 =
-  dualgraph.begin(); std::map<Teuchos::RCP<SelfDualEdge>,std::vector<Teuchos::RCP<SelfDualEdge> > >
-  ::iterator iter3_end = dualgraph.end();
-
-  std::cout << dualgraph.max_size() << " maximal\n";
-  int cnt = 0;
-
-  while (iter3 != iter3_end)
-  {
-    std::cout << "\n Kante " << cnt << ": " << ((*iter3).first)->GetNode1()->Elelist()[0] << " "
-         << ((*iter3).first)->GetNode2()->Elelist()[0] << "\n";
-    std::cout << "Kosten: " << ((*iter3).first)->Costs() << "\n";
-
-    std::vector<Teuchos::RCP<SelfDualEdge> > edges = (*iter3).second;
-    std::cout << edges.size() << " NachbarKanten:\n ";
-    for (int i=0;i<(int)edges.size();++i)
-    {
-      std::cout << edges[i]->GetNode1()->Elelist()[0] << " ";
-      std::cout << edges[i]->GetNode2()->Elelist()[0] << " ";
-      std::cout << "Kosten: " << edges[i]->Costs() << " \n";
-    }
-
-    std::cout << "\n";
-    ++iter3;
-    ++cnt;
-  }
-  */
-
-  // now initialze SelfBinaryTree in a bottom-up way based on dualgraph
-  InitializeTreeBottomUp(&dualgraph);
-
   return;
-}
+}  // CalculateDualGraph
 
 
 /*----------------------------------------------------------------------*
- |  Evaluate search selfbinarytree (public)                  farah 02/16|
+ |  Calculate number of slabs intersections (private)      schmidt 12/18|
+ *----------------------------------------------------------------------*/
+int CONTACT::SelfBinaryTree::CalculateSlabsIntercepts(
+    Teuchos::RCP<SelfBinaryTreeNode> treenode1, Teuchos::RCP<SelfBinaryTreeNode> treenode2)
+{
+  int nintercepts = 0;
+
+  for (int i = 0; i < Kdop() / 2; ++i)
+  {
+    if (treenode1->Slabs()(i, 0) <= treenode2->Slabs()(i, 0))
+    {
+      if (treenode1->Slabs()(i, 1) >= treenode2->Slabs()(i, 0))
+        nintercepts++;
+      else if (treenode1->Slabs()(i, 1) >= treenode2->Slabs()(i, 1))
+        nintercepts++;
+    }
+    else if (treenode1->Slabs()(i, 0) >= treenode2->Slabs()(i, 0))
+    {
+      if (treenode2->Slabs()(i, 1) >= treenode1->Slabs()(i, 1))
+        nintercepts++;
+      else if (treenode2->Slabs()(i, 1) >= treenode1->Slabs()(i, 0))
+        nintercepts++;
+    }
+  }
+
+  return nintercepts;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  Evaluate search self binary tree (public)                farah 02/16|
  *----------------------------------------------------------------------*/
 void CONTACT::SelfBinaryTree::EvaluateSearch()
 {
   // calculate minimal element length
   SetEnlarge();
 
-  // TODO: is this outdated?
-  // update and search for contact with a combined algorithm
-  // binarytreeself_->SearchContactCombined();
-
-  // update and search for contact with separate algorithms
-  SearchContactSeparate();
+  // update and search for contact
+  SearchContact();
 
   // bye bye
   return;
@@ -1114,12 +918,12 @@ void CONTACT::SelfBinaryTree::EvaluateSearch()
 
 
 /*----------------------------------------------------------------------*
- |  get communicator (public)                                 popp 11/09|
+ |  get communicator (protected)                              popp 11/09|
  *----------------------------------------------------------------------*/
-const Epetra_Comm& CONTACT::SelfBinaryTree::Comm() const { return idiscret_.Comm(); }
+const Epetra_Comm& CONTACT::SelfBinaryTree::Comm() const { return Discret().Comm(); }
 
 /*----------------------------------------------------------------------*
- | Find minimal length of contact elements (public)           popp 11/09|
+ | Find minimal length of contact elements (protected)        popp 11/09|
  *----------------------------------------------------------------------*/
 void CONTACT::SelfBinaryTree::SetEnlarge()
 {
@@ -1133,7 +937,7 @@ void CONTACT::SelfBinaryTree::SetEnlarge()
   for (int i = 0; i < elements_->NumMyElements(); ++i)
   {
     int gid = elements_->GID(i);
-    DRT::Element* element = idiscret_.gElement(gid);
+    DRT::Element* element = Discret().gElement(gid);
     if (!element) dserror("ERROR: Cannot find element with gid %\n", gid);
     CONTACT::CoElement* celement = dynamic_cast<CoElement*>(element);
     double mincurrent = celement->MinEdgeSize();
@@ -1143,352 +947,91 @@ void CONTACT::SelfBinaryTree::SetEnlarge()
   if (lmin <= 0.0) dserror("ERROR: Minimal element length < 0!");
 
   // set the class variable
-  enlarge_ = eps_ * lmin;
+  Enlarge() = Eps() * lmin;
 
   return;
 }
 
 /*----------------------------------------------------------------------*
- | Initialize tree bottum-up based on dual graph (public)     popp 11/09|
+ | Initialize tree bottom-up based on dual graph (private)    popp 11/09|
  *----------------------------------------------------------------------*/
 void CONTACT::SelfBinaryTree::InitializeTreeBottomUp(
     std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>* dualGraph)
 {
   // vector collecting root nodes
   roots_.resize(0);
-  // std::cout << "Initial dual graph size: " << (*dualGraph).size() << std::endl;
 
   //**********************************************************************
   // the idea is to empty the dual graph step by step
   //**********************************************************************
   while (!(*dualGraph).empty())
   {
-    // get the edge with lowest costs (= the first edge in the dual graph as
-    // the map is automatically sorted by the costs)  to contract it
+    // get the edge with lowest costs (= the first edge in the dual graph as the map is
+    // automatically sorted by the costs)  to contract it
     std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>::iterator iter =
         (*dualGraph).begin();
     Teuchos::RCP<SelfDualEdge> contractedEdge = (*iter).first;
-    Teuchos::RCP<SelfBinaryTreeNode> node1 = contractedEdge->GetNode1();
-    Teuchos::RCP<SelfBinaryTreeNode> node2 = contractedEdge->GetNode2();
+    Teuchos::RCP<SelfBinaryTreeNode> newNode(Teuchos::null);
+    GetContractedNode(contractedEdge, newNode);
 
-    // combine list of elements of both tree nodes to get new list
-    std::vector<int> list = node1->Elelist();
-    std::vector<int> list2 = node2->Elelist();
-    for (int i = 0; i < (int)(node2->Elelist().size()); ++i) list.push_back(list2[i]);
-
-    // define new tree node
-    Teuchos::RCP<SelfBinaryTreeNode> newNode =
-        Teuchos::rcp(new SelfBinaryTreeNode(SELFCO_INNER, idiscret_, Teuchos::null, list,
-            DopNormals(), SampleVectors(), Kdop(), Dim(), Nvectors(), -1, treenodes_));
-    newNode->SetChildren(node1, node2);
-    node1->SetParent(newNode);
-    node2->SetParent(newNode);
-
-    // in 2D we simply save the endnodes as adjacency criterion
-    if (dim_ == 2) newNode->UpdateEndnodes();
-
-    // update dualGraph
-    // this means we have to create new edges, which include the new treenode and
-    // delete the edges, which are adjacent to the contracted edge and update
-    // their neighbours
-    // additionally we have to check if the tree is nearly complete
+    // update the dual graph
+    // this means we have to create new edges, which include the new tree node and delete the edges,
+    // which are adjacent to the contracted edge and update their neighbors additionally we have to
+    // check if the tree is nearly complete
 
     // get the adjacent edges of the contracted edge
     std::vector<Teuchos::RCP<SelfDualEdge>> adjEdges = (*iter).second;
 
-    // check if the new treenode includes whole selfcontact-surface
-    // in this case the treenode has saved itself as adjacent edge
+    // check if the new tree node includes the whole self contact-surface in this case the tree node
+    // has saved itself as adjacent edge
     if (adjEdges[0] == contractedEdge)
     {
-      // std::cout << "Found root node (size " << (int)newNode->Elelist().size() << ")" <<
-      // std::endl; std::cout << "Elelist: "; for (int a=0;a<(int)newNode->Elelist().size();++a)
-      //  std::cout << newNode->Elelist()[a] << " ";
-      // std::cout << std::endl;
-
       // save the tree node as root and continue the loop
       roots_.push_back(newNode);
       (*dualGraph).erase(contractedEdge);
       continue;
     }
 
-    // std::cout << "Found non-root node (size " << (int)newNode->Elelist().size() << ")" <<
-    // std::endl; std::cout << "Elelist: "; for (int a=0;a<(int)newNode->Elelist().size();++a)
-    //  std::cout << newNode->Elelist()[a] << " ";
-    // std::cout << std::endl;
-
-    // vector of all new edges
-    std::vector<Teuchos::RCP<SelfDualEdge>> newAdjEdges;
-
-    // when contracting an edge, we need to update all adjacent edges
-    for (int j = 0; j < (int)adjEdges.size(); ++j)
-    {
-      // define new edge
-      Teuchos::RCP<SelfDualEdge> newEdge;
-
-      if (adjEdges[j]->GetNode1() != node1 && adjEdges[j]->GetNode1() != node2)
-        newEdge = Teuchos::rcp(new SelfDualEdge(newNode, adjEdges[j]->GetNode1(), Dim()));
-
-      else if (adjEdges[j]->GetNode2() != node1 && adjEdges[j]->GetNode2() != node2)
-        newEdge = Teuchos::rcp(new SelfDualEdge(newNode, adjEdges[j]->GetNode2(), Dim()));
-
-      else
-        dserror("ERROR: Tried to contract identical tree nodes!!");
-
-      // get the neighbours of the new edges
-      std::vector<Teuchos::RCP<SelfDualEdge>> adjEdgesOfNeighbour = (*dualGraph)[adjEdges[j]];
-
-      // if there are two adjacent surfaces left,
-      // the new edge contains the whole self-contact surface.
-      // in this case we save the edge as neighbour of itself
-      if (adjEdges.size() == 1 && adjEdgesOfNeighbour.size() == 1)
-        (*dualGraph)[newEdge].push_back(newEdge);
-
-      // otherwise we need to update the neighbours of the adjacent edges:
-      // first add all neighbours of the current adjacent edge -except the contracted edge-
-      // as neighbour of newedge and delete the old adjacent edge
-      else
-      {
-        // two-dimensional case
-        if (dim_ == 2)
-        {
-          // in 2D every edge has 2 neighbours at the most
-          newAdjEdges.push_back(newEdge);
-          for (int k = 0; k < (int)adjEdgesOfNeighbour.size(); ++k)
-          {
-            if (adjEdgesOfNeighbour[k] != contractedEdge)
-            {
-              // save the neighbours of the old edge as neighbours of the new one
-              (*dualGraph)[newEdge].push_back(adjEdgesOfNeighbour[k]);
-
-              // we have to update all neighbours of our old edge
-              std::map<Teuchos::RCP<SelfDualEdge>,
-                  std::vector<Teuchos::RCP<SelfDualEdge>>>::iterator edge_iter =
-                  (*dualGraph).find(adjEdgesOfNeighbour[k]);
-
-              // find the old edge in the list of neighbours and replace it by the new edge
-              for (int a = 0; a < (int)edge_iter->second.size(); ++a)
-              {
-                if (edge_iter->second.at(a) == adjEdges[j]) edge_iter->second.at(a) = newEdge;
-              }
-            }
-          }
-        }
-        // three-dimensional case
-        else
-        {
-          // in 3D every edge can have a arbirary number of neighbours which
-          // could also be adjacent to each other (3 edges form a "ring").
-          // We have to check if the new edge has already been created.
-          // (in 2D this occurs only when the tree is almost finished, in 3D
-          // this could happen any time)
-
-          bool issaved = false;
-          for (int n = 0; n < (int)newAdjEdges.size(); ++n)
-          {
-            // here we make use of the customized == operator in dual edge
-            if (newAdjEdges[n] == newEdge)
-            {
-              issaved = true;
-              break;
-            }
-          }
-
-          // save the neighbours of the old edge as neighbours of the new one
-          if (!issaved) newAdjEdges.push_back(newEdge);
-
-          // we have to update all neighbours of the old/new edge
-          // we just update those edges wich aren't adjacent edges of the contracted
-          // edge, as we have to update those seperately
-
-          // get the common (tree)node of the contracted edge and the old edge
-          Teuchos::RCP<SelfBinaryTreeNode> commonnode = contractedEdge->CommonNode(adjEdges[j]);
-
-          // loop over all neighbours of old edge
-          for (int k = 0; k < (int)adjEdgesOfNeighbour.size(); ++k)
-          {
-            // check if it the current edge is not the contracted edge
-            // or a neigbour of the contracted edge (we do not need to update
-            // these edges now)
-            if (adjEdgesOfNeighbour[k] != contractedEdge &&
-                adjEdges[j]->CommonNode(adjEdgesOfNeighbour[k]) != commonnode)
-            {
-              // if the current edge (=neighbour of the new and old edge) is not a
-              // neighbour of the contracted edge, they do not have a common node
-              Teuchos::RCP<SelfBinaryTreeNode> commonnode2 =
-                  contractedEdge->CommonNode(adjEdgesOfNeighbour[k]);
-
-              // now we want to save the current edge as neighbour of the new edge
-              if (commonnode2 == Teuchos::null)
-              {
-                // first find the new edge in the dual graph
-                std::map<Teuchos::RCP<SelfDualEdge>,
-                    std::vector<Teuchos::RCP<SelfDualEdge>>>::iterator edge_iter1 =
-                    (*dualGraph).find(newEdge);
-                std::map<Teuchos::RCP<SelfDualEdge>,
-                    std::vector<Teuchos::RCP<SelfDualEdge>>>::iterator end = (*dualGraph).end();
-
-                // if the edge has been found, check if the current edge has
-                // already been saved as neighbour
-                if (edge_iter1 != end)
-                {
-                  bool edgesaved = false;
-                  for (int z = 0; z < (int)edge_iter1->second.size(); ++z)
-                  {
-                    if (edge_iter1->second.at(z) == adjEdgesOfNeighbour[k]) edgesaved = true;
-                  }
-                  // if not yet saved, save it
-                  if (!edgesaved) edge_iter1->second.push_back(adjEdgesOfNeighbour[k]);
-                }
-
-                // if the new edge itself hasn't been saved yet,
-                // the neighbour hasn't been saved either
-                else
-                  (*dualGraph)[newEdge].push_back(adjEdgesOfNeighbour[k]);
-
-                // find the old edge in the list of neighbours and replace it
-                // by the new edge
-
-                // find the current edge in the dual graph
-                std::map<Teuchos::RCP<SelfDualEdge>,
-                    std::vector<Teuchos::RCP<SelfDualEdge>>>::iterator edge_iter2 =
-                    (*dualGraph).find(adjEdgesOfNeighbour[k]);
-
-                bool egdeerased = false;
-                bool newedgesaved = false;
-
-                // loop over all neighbours of the current edge
-                std::vector<Teuchos::RCP<SelfDualEdge>>::iterator adjIter =
-                    edge_iter2->second.begin();
-                while (adjIter != edge_iter2->second.end())
-                {
-                  if (*adjIter == adjEdges[j])
-                  {
-                    // erase the old edge
-                    adjIter = edge_iter2->second.erase(adjIter);
-                    egdeerased = true;
-                  }
-                  else
-                  {
-                    if (*adjIter == newEdge) newedgesaved = true;
-                    ++adjIter;
-                  }
-                }
-
-                // as we could update the same edge several times (only in 3D),
-                // we only save the new edge as neighbour if not already done so
-                if (egdeerased && !newedgesaved) edge_iter2->second.push_back(newEdge);
-              }
-            }
-          }  // loop over all adjacent edges of neighbours
-        }    // 3D
-      }      // else-block (not 2 adjacent treenodes left)
-    }        // loop over all adjacent edges
-
-    // check for a ring of three dual edges in 3D
-    // (i.e. the edge to be contracted and two adjacent edges)
-    // (in 2D there is no need to treat this case separately)
-    if (adjEdges.size() == 2 && dim_ == 3)
-    {
-      // pointers to adjacent edge nodes
-      Teuchos::RCP<SelfBinaryTreeNode> anode1 = adjEdges[0]->GetNode1();
-      Teuchos::RCP<SelfBinaryTreeNode> anode2 = adjEdges[0]->GetNode2();
-      Teuchos::RCP<SelfBinaryTreeNode> bnode1 = adjEdges[1]->GetNode1();
-      Teuchos::RCP<SelfBinaryTreeNode> bnode2 = adjEdges[1]->GetNode2();
-
-      // check for ring (eight possible combinations)
-      if ((node1 == anode1 && node2 == bnode1 && anode2 == bnode2) ||
-          (node1 == anode2 && node2 == bnode1 && anode1 == bnode2) ||
-          (node1 == anode1 && node2 == bnode2 && anode2 == bnode1) ||
-          (node1 == anode2 && node2 == bnode2 && anode1 == bnode1) ||
-          (node1 == bnode1 && node2 == anode1 && bnode2 == anode2) ||
-          (node1 == bnode2 && node2 == anode1 && bnode1 == anode2) ||
-          (node1 == bnode1 && node2 == anode2 && bnode2 == anode1) ||
-          (node1 == bnode2 && node2 == anode2 && bnode1 == anode1))
-      {
-        // check for inconsistency
-        if (newAdjEdges.size() != 1) dserror("ERROR: Inconsistent 3D ring in dual graph");
-
-        // check if the resulting edge already exists in dual graph
-        std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>::iterator
-            edge_iter3 = (*dualGraph).find(newAdjEdges[0]);
-        std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>::iterator
-            end = (*dualGraph).end();
-
-        // add if not so
-        if (edge_iter3 == end) (*dualGraph)[newAdjEdges[0]].push_back(newAdjEdges[0]);
-      }
-    }
-
-    // delete all adjacent edges of contracted edge
-    for (int j = 0; j < (int)adjEdges.size(); ++j) (*dualGraph).erase(adjEdges[j]);
-
-    // now all new adjacent edges have been created.
-    // save all adjacent edges as neigbour, respectively
-    for (int l = 0; l < (int)newAdjEdges.size(); ++l)
-    {
-      for (int m = 0; m < (int)newAdjEdges.size(); ++m)
-        if (l != m && newAdjEdges[l] != newAdjEdges[m])
-          (*dualGraph)[newAdjEdges[l]].push_back(newAdjEdges[m]);
-    }
-
-    // delete the contracted edge
-    (*dualGraph).erase(contractedEdge);
-
+    UpdateDualGraph(contractedEdge, adjEdges, newNode, dualGraph);
   }  // while(!(*dualGraph).empty())
   //**********************************************************************
 
   // complete the tree starting from its roots (top-down)
-  if ((int)roots_.size() == 0) dserror("ERROR: No root treenode found!");
-  for (int k = 0; k < (int)roots_.size(); ++k) roots_[k]->CompleteTree(0, enlarge_);
+  if (roots_.size() == 0) dserror("ERROR: No root tree node found!");
+  for (unsigned k = 0; k < roots_.size(); ++k) roots_[k]->CompleteTree(0, Enlarge());
 
   // output to screen
   if (Comm().MyPID() == 0)
-    std::cout << "\nFound " << (int)roots_.size() << " root node(s) for binary tree." << std::endl;
+    std::cout << "\nFound " << roots_.size() << " root node(s) for self binary tree." << std::endl;
 
-  // in 3D we have to calculate adjacent treenodes
-  if (dim_ == 3)
+  // in 3D we have to calculate adjacent tree nodes
+  if (Dim() == 3)
   {
     CalculateAdjacentLeaves();
     CalculateAdjacentTnodes();
   }
 
-  /*
-  // debug output
-  if (Comm().MyPID()==0)
-  {
-    // print roots
-    for (int k=0;k<(int)roots_.size();++k)
-    {
-      std::vector<int> rootElelist = roots_[k]->Elelist();
-      std::cout << "\nRoot " << k << " (size " << (int)rootElelist.size() << "): ";
-      for (int d=0;d<(int)rootElelist.size();++d)
-        std::cout << rootElelist[d] << " ";
-      std::cout << "\n";
-    }
-
-    // print tree
-    for (int i=0;i<(int)(treenodes_.size());++i)
-    {
-      std::cout << "\n Tree at layer: " << i << " Elements: ";
-      for (int k=0;k<(int)(treenodes_[i].size());++k)
-      {
-        Teuchos::RCP<SelfBinaryTreeNode> currentnode = treenodes_[i][k];
-        std::cout << " (";
-        for (int l=0;l<(int)(currentnode->Elelist().size());++l)
-        {
-          std::cout << currentnode->Elelist().at(l) << " ";
-          if (currentnode->Type()== SELFCO_LEAF) std::cout << "(Leaf) ";
-        }
-        std::cout << ") ";
-      }
-    }
-    std::cout << std::endl;
-  }
-  */
-
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | Add tree nodes to contact pairs (protected)             schmidt 01/19|
+ *----------------------------------------------------------------------*/
+void CONTACT::SelfBinaryTree::AddTreeNodesToContactPairs(
+    Teuchos::RCP<SelfBinaryTreeNode> treenode1, Teuchos::RCP<SelfBinaryTreeNode> treenode2)
+{
+  bool isadjacent(true);
+
+  if (Dim() == 2) isadjacent = TestAdjacent2D(treenode1, treenode2);
+  if (Dim() == 3) isadjacent = TestAdjacent3D(treenode1, treenode2);
+  if (!isadjacent)
+  {
+    contactpairs_[treenode1->Elelist()[0]].push_back(treenode2->Elelist()[0]);
+    contactpairs_[treenode2->Elelist()[0]].push_back(treenode1->Elelist()[0]);
+  }
+
+  return;
+}
 /*----------------------------------------------------------------------*
  | Set adjacent treenodes of leaf-nodes in lowest layer (3D)  popp 11/09|
  *----------------------------------------------------------------------*/
@@ -1656,9 +1199,9 @@ void CONTACT::SelfBinaryTree::CalculateAdjacentTnodes()
 }
 
 /*----------------------------------------------------------------------*
- | Search for self contact (public)                           popp 01/11|
+ | Search for self contact (protected)                        popp 01/11|
  *----------------------------------------------------------------------*/
-void CONTACT::SelfBinaryTree::SearchSelfContactSeparate(Teuchos::RCP<SelfBinaryTreeNode> treenode)
+void CONTACT::SelfBinaryTree::SearchSelfContact(Teuchos::RCP<SelfBinaryTreeNode> treenode)
 {
   if (treenode->QualifiedVectors().size() == 0) dserror("no test vectors defined!");
 
@@ -1671,8 +1214,8 @@ void CONTACT::SelfBinaryTree::SearchSelfContactSeparate(Teuchos::RCP<SelfBinaryT
 
   if (treenode->Type() != SELFCO_LEAF)
   {
-    SearchSelfContactSeparate(treenode->Leftchild());
-    SearchSelfContactSeparate(treenode->Rightchild());
+    SearchSelfContact(treenode->Leftchild());
+    SearchSelfContact(treenode->Rightchild());
     EvaluateContactAndAdjacency(treenode->Leftchild(), treenode->Rightchild(), true);
   }
 
@@ -1680,175 +1223,43 @@ void CONTACT::SelfBinaryTree::SearchSelfContactSeparate(Teuchos::RCP<SelfBinaryT
 }
 
 /*----------------------------------------------------------------------*
- | Search for self contact (public)                           popp 05/09|
+ | Search for root contact (protected)                        popp 01/11|
  *----------------------------------------------------------------------*/
-void CONTACT::SelfBinaryTree::SearchSelfContactCombined(Teuchos::RCP<SelfBinaryTreeNode> treenode)
-{
-  if (treenode->QualifiedVectors().size() == 0) dserror("no test vectors defined!");
-
-  // if there is a qualified sample vector, there is no self contact
-  for (int i = 0; i < (int)treenode->QualifiedVectors().size(); i++)
-    if (treenode->QualifiedVectors()[i] == true)
-    {
-      return;
-    }
-
-  if (treenode->Type() != SELFCO_LEAF)
-  {
-    treenode->Leftchild()->CalculateSlabsDop();
-    treenode->Leftchild()->EnlargeGeometry(enlarge_);
-    treenode->Rightchild()->CalculateSlabsDop();
-    treenode->Rightchild()->EnlargeGeometry(enlarge_);
-    SearchSelfContactCombined(treenode->Leftchild());
-    SearchSelfContactCombined(treenode->Rightchild());
-    EvaluateContactAndAdjacency(treenode->Leftchild(), treenode->Rightchild(), true);
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | Search for root contact (public)                           popp 01/11|
- *----------------------------------------------------------------------*/
-void CONTACT::SelfBinaryTree::SearchRootContactSeparate(
+void CONTACT::SelfBinaryTree::SearchRootContact(
     Teuchos::RCP<SelfBinaryTreeNode> treenode1, Teuchos::RCP<SelfBinaryTreeNode> treenode2)
 {
-  // check if treenodes intercept
-  // (they only intercept if ALL slabs intersect!)
+  // check if tree nodes intercept (they only intercept if ALL slabs intersect!)
   int nintercepts = 0;
 
-  for (int i = 0; i < kdop_ / 2; ++i)
-  {
-    if (treenode1->Slabs()(i, 0) <= treenode2->Slabs()(i, 0))
-    {
-      if (treenode1->Slabs()(i, 1) >= treenode2->Slabs()(i, 0))
-        nintercepts++;
-      else if (treenode1->Slabs()(i, 1) >= treenode2->Slabs()(i, 1))
-        nintercepts++;
-    }
-    else if (treenode1->Slabs()(i, 0) >= treenode2->Slabs()(i, 0))
-    {
-      if (treenode2->Slabs()(i, 1) >= treenode1->Slabs()(i, 1))
-        nintercepts++;
-      else if (treenode2->Slabs()(i, 1) >= treenode1->Slabs()(i, 0))
-        nintercepts++;
-    }
-  }
+  nintercepts = CalculateSlabsIntercepts(treenode1, treenode2);
 
-  // treenodes intercept
-  if (nintercepts == kdop_ / 2)
+  // tree nodes intercept
+  if (nintercepts == Kdop() / 2)
   {
-    // both treenodes are inner nodes
+    // both tree nodes are inner nodes
     if (treenode1->Type() != SELFCO_LEAF && treenode2->Type() != SELFCO_LEAF)
     {
-      SearchRootContactSeparate(treenode1->Leftchild(), treenode2->Leftchild());
-      SearchRootContactSeparate(treenode1->Leftchild(), treenode2->Rightchild());
-      SearchRootContactSeparate(treenode1->Rightchild(), treenode2->Leftchild());
-      SearchRootContactSeparate(treenode1->Rightchild(), treenode2->Rightchild());
+      SearchRootContact(treenode1->Leftchild(), treenode2->Leftchild());
+      SearchRootContact(treenode1->Leftchild(), treenode2->Rightchild());
+      SearchRootContact(treenode1->Rightchild(), treenode2->Leftchild());
+      SearchRootContact(treenode1->Rightchild(), treenode2->Rightchild());
     }
 
-    // treenode1 is inner, treenode2 is leaf
+    // tree node 1 is inner, tree node 2 is leaf
     if (treenode1->Type() != SELFCO_LEAF && treenode2->Type() == SELFCO_LEAF)
     {
-      SearchRootContactSeparate(treenode1->Leftchild(), treenode2);
-      SearchRootContactSeparate(treenode1->Rightchild(), treenode2);
+      SearchRootContact(treenode1->Leftchild(), treenode2);
+      SearchRootContact(treenode1->Rightchild(), treenode2);
     }
 
-    // treenode1 is leaf, treenode3 is inner
+    // tree node 1 is leaf, tree node 2 is inner
     if (treenode1->Type() == SELFCO_LEAF && treenode2->Type() != SELFCO_LEAF)
     {
-      SearchRootContactSeparate(treenode1, treenode2->Leftchild());
-      SearchRootContactSeparate(treenode1, treenode2->Rightchild());
+      SearchRootContact(treenode1, treenode2->Leftchild());
+      SearchRootContact(treenode1, treenode2->Rightchild());
     }
 
-    // both treenodes are leaf --> feasible pair
-    if (treenode1->Type() == SELFCO_LEAF && treenode2->Type() == SELFCO_LEAF)
-    {
-      int gid1 = (int)treenode1->Elelist()[0];  // global id of first element
-      int gid2 = (int)treenode2->Elelist()[0];  // global id of second element
-      contactpairs_[gid1].push_back(gid2);
-      contactpairs_[gid2].push_back(gid1);
-    }
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | Search for root contact (public)                           popp 01/11|
- *----------------------------------------------------------------------*/
-void CONTACT::SelfBinaryTree::SearchRootContactCombined(
-    Teuchos::RCP<SelfBinaryTreeNode> treenode1, Teuchos::RCP<SelfBinaryTreeNode> treenode2)
-{
-  // check if treenodes intercept
-  // (they only intercept if ALL slabs intersect!)
-  int nintercepts = 0;
-
-  for (int i = 0; i < kdop_ / 2; ++i)
-  {
-    if (treenode1->Slabs()(i, 0) <= treenode2->Slabs()(i, 0))
-    {
-      if (treenode1->Slabs()(i, 1) >= treenode2->Slabs()(i, 0))
-        nintercepts++;
-      else if (treenode1->Slabs()(i, 1) >= treenode2->Slabs()(i, 1))
-        nintercepts++;
-    }
-    else if (treenode1->Slabs()(i, 0) >= treenode2->Slabs()(i, 0))
-    {
-      if (treenode2->Slabs()(i, 1) >= treenode1->Slabs()(i, 1))
-        nintercepts++;
-      else if (treenode2->Slabs()(i, 1) >= treenode1->Slabs()(i, 0))
-        nintercepts++;
-    }
-  }
-
-  // treenodes intercept
-  if (nintercepts == kdop_ / 2)
-  {
-    // both treenodes are inner nodes
-    if (treenode1->Type() != SELFCO_LEAF && treenode2->Type() != SELFCO_LEAF)
-    {
-      // std::cout <<"\n"<< Comm().MyPID() << " 2 inner nodes!";
-      treenode1->Leftchild()->CalculateSlabsDop();
-      treenode1->Leftchild()->EnlargeGeometry(enlarge_);
-      treenode1->Rightchild()->CalculateSlabsDop();
-      treenode1->Rightchild()->EnlargeGeometry(enlarge_);
-      treenode2->Leftchild()->CalculateSlabsDop();
-      treenode2->Leftchild()->EnlargeGeometry(enlarge_);
-      treenode2->Rightchild()->CalculateSlabsDop();
-      treenode2->Rightchild()->EnlargeGeometry(enlarge_);
-
-      SearchRootContactCombined(treenode1->Leftchild(), treenode2->Leftchild());
-      SearchRootContactCombined(treenode1->Leftchild(), treenode2->Rightchild());
-      SearchRootContactCombined(treenode1->Rightchild(), treenode2->Leftchild());
-      SearchRootContactCombined(treenode1->Rightchild(), treenode2->Rightchild());
-    }
-
-    // treenode1 is inner, treenode2 is leaf
-    if (treenode1->Type() != SELFCO_LEAF && treenode2->Type() == SELFCO_LEAF)
-    {
-      treenode1->Leftchild()->CalculateSlabsDop();
-      treenode1->Leftchild()->EnlargeGeometry(enlarge_);
-      treenode1->Rightchild()->CalculateSlabsDop();
-      treenode1->Rightchild()->EnlargeGeometry(enlarge_);
-
-      SearchRootContactCombined(treenode1->Leftchild(), treenode2);
-      SearchRootContactCombined(treenode1->Rightchild(), treenode2);
-    }
-
-    // treenode1 is leaf, treenode3 is inner
-    if (treenode1->Type() == SELFCO_LEAF && treenode2->Type() != SELFCO_LEAF)
-    {
-      treenode2->Leftchild()->CalculateSlabsDop();
-      treenode2->Leftchild()->EnlargeGeometry(enlarge_);
-      treenode2->Rightchild()->CalculateSlabsDop();
-      treenode2->Rightchild()->EnlargeGeometry(enlarge_);
-
-      SearchRootContactCombined(treenode1, treenode2->Leftchild());
-      SearchRootContactCombined(treenode1, treenode2->Rightchild());
-    }
-
-    // both treenodes are leaf --> feasible pair
+    // both tree nodes are leaf --> feasible pair
     if (treenode1->Type() == SELFCO_LEAF && treenode2->Type() == SELFCO_LEAF)
     {
       int gid1 = (int)treenode1->Elelist()[0];  // global id of first element
@@ -1872,30 +1283,14 @@ void CONTACT::SelfBinaryTree::EvaluateContactAndAdjacency(
   // (they only intercept if ALL slabs intersect!)
   int nintercepts = 0;
 
-  for (int i = 0; i < kdop_ / 2; ++i)
-  {
-    if (treenode1->Slabs()(i, 0) <= treenode2->Slabs()(i, 0))
-    {
-      if (treenode1->Slabs()(i, 1) >= treenode2->Slabs()(i, 0))
-        nintercepts++;
-      else if (treenode1->Slabs()(i, 1) >= treenode2->Slabs()(i, 1))
-        nintercepts++;
-    }
-    else if (treenode1->Slabs()(i, 0) >= treenode2->Slabs()(i, 0))
-    {
-      if (treenode2->Slabs()(i, 1) >= treenode1->Slabs()(i, 1))
-        nintercepts++;
-      else if (treenode2->Slabs()(i, 1) >= treenode1->Slabs()(i, 0))
-        nintercepts++;
-    }
-  }
+  nintercepts = CalculateSlabsIntercepts(treenode1, treenode2);
 
-  if (nintercepts == kdop_ / 2)
+  if (nintercepts == Kdop() / 2)
   {
     // teenodes intersect
     if (isadjacent)
     {
-      if (dim_ == 2)
+      if (Dim() == 2)
         isadjacent = TestAdjacent2D(treenode1, treenode2);
       else
       {
@@ -1928,9 +1323,9 @@ void CONTACT::SelfBinaryTree::EvaluateContactAndAdjacency(
       if (treenode1->Type() != SELFCO_LEAF)
       {
         treenode1->Leftchild()->CalculateSlabsDop();
-        treenode1->Leftchild()->EnlargeGeometry(enlarge_);
+        treenode1->Leftchild()->EnlargeGeometry(Enlarge());
         treenode1->Rightchild()->CalculateSlabsDop();
-        treenode1->Rightchild()->EnlargeGeometry(enlarge_);
+        treenode1->Rightchild()->EnlargeGeometry(Enlarge());
         EvaluateContactAndAdjacency(treenode1->Leftchild(), treenode2, isadjacent);
         EvaluateContactAndAdjacency(treenode1->Rightchild(), treenode2, isadjacent);
       }
@@ -1941,22 +1336,14 @@ void CONTACT::SelfBinaryTree::EvaluateContactAndAdjacency(
       if (treenode2->Type() != SELFCO_LEAF)
       {
         treenode2->Leftchild()->CalculateSlabsDop();
-        treenode2->Leftchild()->EnlargeGeometry(enlarge_);
+        treenode2->Leftchild()->EnlargeGeometry(Enlarge());
         treenode2->Rightchild()->CalculateSlabsDop();
-        treenode2->Rightchild()->EnlargeGeometry(enlarge_);
+        treenode2->Rightchild()->EnlargeGeometry(Enlarge());
         EvaluateContactAndAdjacency(treenode2->Leftchild(), treenode1, isadjacent);
         EvaluateContactAndAdjacency(treenode2->Rightchild(), treenode1, isadjacent);
       }
       else  // both tree nodes are leaves
-      {
-        if (dim_ == 2) isadjacent = TestAdjacent2D(treenode1, treenode2);
-        if (dim_ == 3) isadjacent = TestAdjacent3D(treenode1, treenode2);
-        if (!isadjacent)
-        {
-          contactpairs_[treenode1->Elelist()[0]].push_back(treenode2->Elelist()[0]);
-          contactpairs_[treenode2->Elelist()[0]].push_back(treenode1->Elelist()[0]);
-        }
-      }
+        AddTreeNodesToContactPairs(treenode1, treenode2);
     }
   }
   else  // dops do not intercept;
@@ -1969,7 +1356,7 @@ void CONTACT::SelfBinaryTree::EvaluateContactAndAdjacency(
 bool CONTACT::SelfBinaryTree::TestAdjacent2D(
     Teuchos::RCP<SelfBinaryTreeNode> treenode1, Teuchos::RCP<SelfBinaryTreeNode> treenode2)
 {
-  if (dim_ != 2) dserror("TestAdjacent2D: problem must be 2D!!\n");
+  if (Dim() != 2) dserror("TestAdjacent2D: problem must be 2D!!\n");
 
   std::vector<int> endnodes1 = treenode1->Endnodes();
   std::vector<int> endnodes2 = treenode2->Endnodes();
@@ -2009,7 +1396,7 @@ bool CONTACT::SelfBinaryTree::TestAdjacent2D(
 bool CONTACT::SelfBinaryTree::TestAdjacent3D(
     Teuchos::RCP<SelfBinaryTreeNode> treenode1, Teuchos::RCP<SelfBinaryTreeNode> treenode2)
 {
-  if (dim_ != 3) dserror("TestAdjacent3D: problem must be 3D!!\n");
+  if (Dim() != 3) dserror("TestAdjacent3D: problem must be 3D!!\n");
 
   // if the treenodes are in the same layer check the vector of adjacent treenodes
   if (treenode1->Layer() == treenode2->Layer())
@@ -2031,26 +1418,10 @@ bool CONTACT::SelfBinaryTree::TestAdjacent3D(
     // (they only intercept if ALL slabs intercept!)
     int nintercepts = 0;
 
-    for (int i = 0; i < kdop_ / 2; ++i)
-    {
-      if (treenode1->Slabs()(i, 0) <= treenode2->Slabs()(i, 0))
-      {
-        if (treenode1->Slabs()(i, 1) >= treenode2->Slabs()(i, 0))
-          nintercepts++;
-        else if (treenode1->Slabs()(i, 1) >= treenode2->Slabs()(i, 1))
-          nintercepts++;
-      }
-      else if (treenode1->Slabs()(i, 0) >= treenode2->Slabs()(i, 0))
-      {
-        if (treenode2->Slabs()(i, 1) >= treenode1->Slabs()(i, 1))
-          nintercepts++;
-        else if (treenode2->Slabs()(i, 1) >= treenode1->Slabs()(i, 0))
-          nintercepts++;
-      }
-    }
+    nintercepts = CalculateSlabsIntercepts(treenode1, treenode2);
 
     // if the bounding voumes overlap
-    if (nintercepts == kdop_ / 2)
+    if (nintercepts == Kdop() / 2)
     {
       if (treenode1->Type() == SELFCO_LEAF and treenode2->Type() == SELFCO_LEAF)
       {
@@ -2098,7 +1469,7 @@ void CONTACT::SelfBinaryTree::MasterSlaveSorting(int eleID, bool isslave)
   if (contactpairs_.find(eleID) != contactpairs_.end() && !contactpairs_.empty())
   {
     // set the current element to content of "isslave"
-    DRT::Element* element = idiscret_.gElement(eleID);
+    DRT::Element* element = Discret().gElement(eleID);
     CONTACT::CoElement* celement = dynamic_cast<CONTACT::CoElement*>(element);
     celement->SetSlave() = isslave;
 
@@ -2135,9 +1506,9 @@ void CONTACT::SelfBinaryTree::MasterSlaveSorting(int eleID, bool isslave)
 }
 
 /*----------------------------------------------------------------------*
- | Separate update, contact search and master/slave sorting   popp 01/11|
+ | Update, contact search and master/slave sorting            popp 01/11|
  *----------------------------------------------------------------------*/
-void CONTACT::SelfBinaryTree::SearchContactSeparate()
+void CONTACT::SelfBinaryTree::SearchContact()
 {
   // get out of here if not participating in interface
   if (!lComm()) return;
@@ -2149,23 +1520,16 @@ void CONTACT::SelfBinaryTree::SearchContactSeparate()
   // reset contact pairs from last iteration
   contactpairs_.clear();
 
-  // lComm()->Barrier();
-  // const double t_start1 = Teuchos::Time::wallTime();
-
   //**********************************************************************
   // STEP 1: update geometry (DOPs and sample vectors) bottom-up
   //**********************************************************************
-  // update tree bottom up (for every treelayer)
+  // update tree bottom up (for every tree layer)
   for (int i = ((int)(treenodes_.size() - 1)); i >= 0; --i)
   {
     for (int j = 0; j < (int)(treenodes_[i].size()); j++)
-      treenodes_[i][j]->UpdateSlabsBottomUp(enlarge_);
+      treenodes_[i][j]->UpdateSlabsBottomUp(Enlarge());
   }
   UpdateNormals();
-
-  // lComm()->Barrier();
-  // const double t_end1 = Teuchos::Time::wallTime()-t_start1;
-  // if (lComm()->MyPID()==0) std::cout << "********* Update:\t" << t_end1 << " seconds\n";
 
   //**********************************************************************
   // STEP 2: distribute roots among all processors
@@ -2182,47 +1546,21 @@ void CONTACT::SelfBinaryTree::SearchContactSeparate()
     for (int k = 0; k < ratio + 1; ++k) myroots.push_back(lComm()->MyPID() * (ratio + 1) + k);
 
   // give 'ratio' roots to the remaining procs
-  else /*(lComm()->MyPID() >= rest)*/
+  else
     for (int k = 0; k < ratio; ++k)
       myroots.push_back(rest * (ratio + 1) + (lComm()->MyPID() - rest) * ratio + k);
-
-  // lComm()->Barrier();
-  // const double t_start2 = Teuchos::Time::wallTime();
 
   //**********************************************************************
   // STEP 3: search for self contact starting at root nodes
   //**********************************************************************
-  for (int k = 0; k < (int)myroots.size(); ++k)
-  {
-    // std::cout << "Self search for root node " << myroots[k] << std::endl;
-    SearchSelfContactSeparate(roots_[myroots[k]]);
-  }
-
-  // lComm()->Barrier();
-  // const double t_end2 = Teuchos::Time::wallTime()-t_start2;
-  // if (lComm()->MyPID()==0) std::cout << "********* SelfSe:\t" << t_end2 << " seconds\n";
-
-  // lComm()->Barrier();
-  // const double t_start3 = Teuchos::Time::wallTime();
+  for (int k = 0; k < (int)myroots.size(); ++k) SearchSelfContact(roots_[myroots[k]]);
 
   //**********************************************************************
   // STEP 4: search for two-body contact between different roots
   //**********************************************************************
   for (int k = 0; k < (int)myroots.size(); ++k)
-  {
     for (int m = myroots[k] + 1; m < (int)roots_.size(); ++m)
-    {
-      // std::cout << "-> Root search for pair " << myroots[k] << " " << m << std::endl;
-      SearchRootContactSeparate(roots_[myroots[k]], roots_[m]);
-    }
-  }
-
-  // lComm()->Barrier();
-  // const double t_end3 = Teuchos::Time::wallTime()-t_start3;
-  // if (lComm()->MyPID()==0) std::cout << "********* RootSe:\t" << t_end3 << " seconds\n";
-
-  // lComm()->Barrier();
-  // const double t_start4 = Teuchos::Time::wallTime();
+      SearchRootContact(roots_[myroots[k]], roots_[m]);
 
   //**********************************************************************
   // STEP 5: slave and master facet sorting
@@ -2235,7 +1573,7 @@ void CONTACT::SelfBinaryTree::SearchContactSeparate()
   while (leafiter != leafiter_end)
   {
     int gid = leafiter->first;
-    DRT::Element* element = idiscret_.gElement(gid);
+    DRT::Element* element = Discret().gElement(gid);
     CONTACT::CoElement* celement = dynamic_cast<CONTACT::CoElement*>(element);
 
     if (celement->IsSlave() == true)
@@ -2256,11 +1594,11 @@ void CONTACT::SelfBinaryTree::SearchContactSeparate()
     ++leafiter;
   }
 
-  // set all nonsmooth entities to slave
+  // set all non-smooth entities to slave
   while (leafiterNew != leafiter_end)
   {
     int gid = leafiterNew->first;
-    DRT::Element* element = idiscret_.gElement(gid);
+    DRT::Element* element = Discret().gElement(gid);
     CONTACT::CoElement* celement = dynamic_cast<CONTACT::CoElement*>(element);
 
     // reset nodes to master
@@ -2279,180 +1617,7 @@ void CONTACT::SelfBinaryTree::SearchContactSeparate()
     ++leafiterNew;
   }
 
-  // lComm()->Barrier();
-  // const double t_end4 = Teuchos::Time::wallTime()-t_start4;
-  // if (lComm()->MyPID()==0) std::cout << "********* ResetE:\t" << t_end4 << " seconds\n";
-
-  // lComm()->Barrier();
-  // const double t_start5 = Teuchos::Time::wallTime();
-
-  // make contactpairs information redundant on all procs
-  std::vector<int> locdata;
-  for (int i = 0; i < elements_->NumMyElements(); ++i)
-  {
-    int gid = elements_->GID(i);
-    if (contactpairs_.find(gid) != contactpairs_.end()) locdata.push_back(gid);
-  }
-  Teuchos::RCP<Epetra_Map> mymap =
-      Teuchos::rcp(new Epetra_Map(-1, (int)locdata.size(), &locdata[0], 0, *lComm()));
-  Teuchos::RCP<Epetra_Map> redmap = LINALG::AllreduceEMap(*mymap);
-  DRT::Exporter ex(*mymap, *redmap, *lComm());
-  ex.Export(contactpairs_);
-
-  // lComm()->Barrier();
-  // const double t_end5 = Teuchos::Time::wallTime()-t_start5;
-  // if (lComm()->MyPID()==0) std::cout << "********* Commun:\t" << t_end5 << " seconds\n";
-
-  // lComm()->Barrier();
-  // const double t_start6 = Teuchos::Time::wallTime();
-
-  // now do new slave and master sorting
-  while (!contactpairs_.empty())
-  {
-    DRT::Element* element = idiscret_.gElement(contactpairs_.begin()->first);
-    CONTACT::CoElement* celement = dynamic_cast<CONTACT::CoElement*>(element);
-    MasterSlaveSorting(contactpairs_.begin()->first, celement->IsSlave());
-  }
-
-  // lComm()->Barrier();
-  // const double t_end6 = Teuchos::Time::wallTime()-t_start6;
-  // if (lComm()->MyPID()==0) std::cout << "********* SortSM:\t" << t_end6 << " seconds\n";
-
-  // lComm()->Barrier();
-  // const double t_start7 = Teuchos::Time::wallTime();
-
-  //**********************************************************************
-  // STEP 6: check consistency of slave and master facet sorting
-  //**********************************************************************
-  for (int i = 0; i < elements_->NumMyElements(); ++i)
-  {
-    int gid1 = elements_->GID(i);
-    DRT::Element* ele1 = idiscret_.gElement(gid1);
-    if (!ele1) dserror("ERROR: Cannot find element with gid %", gid1);
-    MORTAR::MortarElement* element1 = dynamic_cast<MORTAR::MortarElement*>(ele1);
-
-    // only slave elements store search candidates
-    if (!element1->IsSlave()) continue;
-
-    // loop over the search candidates of elements1
-    for (int j = 0; j < element1->MoData().NumSearchElements(); ++j)
-    {
-      int gid2 = element1->MoData().SearchElements()[j];
-      DRT::Element* ele2 = idiscret_.gElement(gid2);
-      if (!ele2) dserror("ERROR: Cannot find element with gid %", gid2);
-      MORTAR::MortarElement* element2 = dynamic_cast<MORTAR::MortarElement*>(ele2);
-
-      // error if this is a slave element
-      // (this happens if individual self contact patches are connected,
-      // because our sorting algorithm still fails in that case)
-      if (element2->IsSlave()) dserror("ERROR: Slave / master inconsistency in self contact");
-    }
-  }
-
-  // lComm()->Barrier();
-  // const double t_end7 = Teuchos::Time::wallTime()-t_start7;
-  // if (lComm()->MyPID()==0) std::cout << "********* CheckE:\t" << t_end7 << " seconds\n";
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | Combined update, contact search and master/slave sorting   popp 11/09|
- *----------------------------------------------------------------------*/
-void CONTACT::SelfBinaryTree::SearchContactCombined()
-{
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-
-  // check is root node available
-  if ((int)roots_.size() == 0) dserror("ERROR: No root node for search!");
-  if (roots_[0] == Teuchos::null) dserror("ERROR: No root node for search!");
-
-  // reset contact pairs from last iteration
-  contactpairs_.clear();
-
-  //**********************************************************************
-  // STEP 1: update geometry (DOPs and sample vectors)
-  //**********************************************************************
-  for (int k = 0; k < (int)roots_.size(); ++k)
-  {
-    roots_[k]->CalculateSlabsDop();
-    roots_[k]->EnlargeGeometry(enlarge_);
-  }
-  UpdateNormals();
-
-  //**********************************************************************
-  // STEP 2: distribute roots among all processors
-  //**********************************************************************
-  // introduce some parallelization for multibody contact
-  std::vector<int> myroots(0);
-  int nproc = lComm()->NumProc();
-  int nroot = (int)roots_.size();
-  int ratio = nroot / nproc;
-  int rest = nroot % nproc;
-
-  // give 'ratio+1' roots to the first 'rest' procs
-  if (lComm()->MyPID() < rest)
-    for (int k = 0; k < ratio + 1; ++k) myroots.push_back(lComm()->MyPID() * (ratio + 1) + k);
-
-  // give 'ratio' roots to the remaining procs
-  else /*(lComm()->MyPID() >= rest)*/
-    for (int k = 0; k < ratio; ++k)
-      myroots.push_back(rest * (ratio + 1) + (lComm()->MyPID() - rest) * ratio + k);
-
-  //**********************************************************************
-  // STEP 3: search for self contact starting at root nodes
-  //**********************************************************************
-  for (int k = 0; k < (int)myroots.size(); ++k)
-  {
-    // std::cout << "Self search for root node " << myroots[k] << std::endl;
-    SearchSelfContactSeparate(roots_[myroots[k]]);
-  }
-
-  //**********************************************************************
-  // STEP 4: search for two-body contact between different roots
-  //**********************************************************************
-  for (int k = 0; k < (int)myroots.size(); ++k)
-  {
-    for (int m = myroots[k] + 1; m < (int)roots_.size(); ++m)
-    {
-      // std::cout << "-> Root search for pair " << myroots[k] << " " << m << std::endl;
-      SearchRootContactSeparate(roots_[myroots[k]], roots_[m]);
-    }
-  }
-
-  //**********************************************************************
-  // STEP 5: slave and master facet sorting
-  //**********************************************************************
-  std::map<int, Teuchos::RCP<SelfBinaryTreeNode>>::iterator leafiter = leafsmap_.begin();
-  std::map<int, Teuchos::RCP<SelfBinaryTreeNode>>::iterator leafiter_end = leafsmap_.end();
-
-  // first (re)set all contact elements and nodes to master
-  while (leafiter != leafiter_end)
-  {
-    int gid = leafiter->first;
-    DRT::Element* element = idiscret_.gElement(gid);
-    CONTACT::CoElement* celement = dynamic_cast<CONTACT::CoElement*>(element);
-
-    if (celement->IsSlave() == true)
-    {
-      // reset element to master
-      celement->SetSlave() = false;
-
-      // reset nodes to master
-      for (int i = 0; i < (int)element->NumNode(); ++i)
-      {
-        DRT::Node* node = element->Nodes()[i];
-        CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
-        cnode->SetSlave() = false;
-      }
-    }
-
-    // increment iterator
-    ++leafiter;
-  }
-
-  // make contactpairs information redundant on all procs
+  // make contact pairs information redundant on all procs
   std::vector<int> locdata;
   for (int i = 0; i < elements_->NumMyElements(); ++i)
   {
@@ -2468,7 +1633,7 @@ void CONTACT::SelfBinaryTree::SearchContactCombined()
   // now do new slave and master sorting
   while (!contactpairs_.empty())
   {
-    DRT::Element* element = idiscret_.gElement(contactpairs_.begin()->first);
+    DRT::Element* element = Discret().gElement(contactpairs_.begin()->first);
     CONTACT::CoElement* celement = dynamic_cast<CONTACT::CoElement*>(element);
     MasterSlaveSorting(contactpairs_.begin()->first, celement->IsSlave());
   }
@@ -2479,7 +1644,7 @@ void CONTACT::SelfBinaryTree::SearchContactCombined()
   for (int i = 0; i < elements_->NumMyElements(); ++i)
   {
     int gid1 = elements_->GID(i);
-    DRT::Element* ele1 = idiscret_.gElement(gid1);
+    DRT::Element* ele1 = Discret().gElement(gid1);
     if (!ele1) dserror("ERROR: Cannot find element with gid %", gid1);
     MORTAR::MortarElement* element1 = dynamic_cast<MORTAR::MortarElement*>(ele1);
 
@@ -2490,13 +1655,12 @@ void CONTACT::SelfBinaryTree::SearchContactCombined()
     for (int j = 0; j < element1->MoData().NumSearchElements(); ++j)
     {
       int gid2 = element1->MoData().SearchElements()[j];
-      DRT::Element* ele2 = idiscret_.gElement(gid2);
+      DRT::Element* ele2 = Discret().gElement(gid2);
       if (!ele2) dserror("ERROR: Cannot find element with gid %", gid2);
       MORTAR::MortarElement* element2 = dynamic_cast<MORTAR::MortarElement*>(ele2);
 
-      // error if this is a slave element
-      // (this happens if individual self contact patches are connected,
-      // because our sorting algorithm still fails in that case)
+      // error if this is a slave element (this happens if individual self contact patches are
+      // connected, because our sorting algorithm still fails in that case)
       if (element2->IsSlave()) dserror("ERROR: Slave / master inconsistency in self contact");
     }
   }
@@ -2525,6 +1689,329 @@ void CONTACT::SelfBinaryTree::UpdateNormals()
     for (int j = 0; j < (int)treenodes_[i].size(); ++j)
       if (treenodes_[i][j]->Type() != SELFCO_LEAF)
         treenodes_[i][j]->UpdateQualifiedVectorsBottomUp();
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Update the dual graph (protected)                      schmidt 01/19|
+ *----------------------------------------------------------------------*/
+void CONTACT::SelfBinaryTree::UpdateDualGraph(Teuchos::RCP<SelfDualEdge>& contractedEdge,
+    std::vector<Teuchos::RCP<SelfDualEdge>>& adjEdges, Teuchos::RCP<SelfBinaryTreeNode>& newNode,
+    std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>* dualgraph)
+{
+  // get nodes of contracted edge
+  Teuchos::RCP<SelfBinaryTreeNode> node1 = contractedEdge->GetNode1();
+  Teuchos::RCP<SelfBinaryTreeNode> node2 = contractedEdge->GetNode2();
+
+  // vector of all new edges
+  std::vector<Teuchos::RCP<SelfDualEdge>> newAdjEdges;
+
+  // when contracting an edge, we need to update all adjacent edges
+  for (unsigned j = 0; j < adjEdges.size(); ++j)
+  {
+    // define new edge
+    Teuchos::RCP<SelfDualEdge> newEdge(Teuchos::null);
+
+    if (adjEdges[j]->GetNode1() != node1 && adjEdges[j]->GetNode1() != node2)
+      newEdge = Teuchos::rcp(new SelfDualEdge(newNode, adjEdges[j]->GetNode1(), Dim()));
+
+    else if (adjEdges[j]->GetNode2() != node1 && adjEdges[j]->GetNode2() != node2)
+      newEdge = Teuchos::rcp(new SelfDualEdge(newNode, adjEdges[j]->GetNode2(), Dim()));
+
+    else
+      dserror("ERROR: Tried to contract identical tree nodes!!");
+
+    // get the neighbors of the new edges
+    std::vector<Teuchos::RCP<SelfDualEdge>> adjEdgesOfNeighbor = (*dualgraph)[adjEdges[j]];
+
+    // if there are two adjacent surfaces left, the new edge contains the whole self-contact
+    // surface. in this case we save the edge as neighbor of itself
+    if (adjEdges.size() == 1 && adjEdgesOfNeighbor.size() == 1)
+      (*dualgraph)[newEdge].push_back(newEdge);
+
+    // otherwise we need to update the neighbors of the adjacent edges: first add all neighbors of
+    // the current adjacent edge -except the contracted edge- as neighbor of the new edge and delete
+    // the old adjacent edge
+    else
+    {
+      if (Dim() == 2)
+      {
+        // in 2D every edge has 2 neighbors at the most
+        newAdjEdges.push_back(newEdge);
+        for (unsigned k = 0; k < adjEdgesOfNeighbor.size(); ++k)
+        {
+          if (adjEdgesOfNeighbor[k] != contractedEdge)
+          {
+            // save the neighbors of the old edge as neighbors of the new one
+            (*dualgraph)[newEdge].push_back(adjEdgesOfNeighbor[k]);
+
+            // we have to update all neighbors of our old edge
+            std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>::iterator
+                edge_iter = dualgraph->find(adjEdgesOfNeighbor[k]);
+
+            // find the old edge in the list of neighbors and replace it by the new edge
+            for (unsigned a = 0; a < edge_iter->second.size(); ++a)
+            {
+              if (edge_iter->second.at(a) == adjEdges[j]) edge_iter->second.at(a) = newEdge;
+            }
+          }
+        }
+      }
+      // three-dimensional case
+      else
+      {
+        // in 3D every edge can have a arbitrary number of neighbors which could also be adjacent to
+        // each other (3 edges form a "ring"). We have to check if the new edge has already been
+        // created. (in 2D this occurs only when the tree is almost finished, in 3D this could
+        // happen any time)
+
+        bool issaved = false;
+        for (unsigned n = 0; n < newAdjEdges.size(); ++n)
+        {
+          // here we make use of the customized == operator in dual edge
+          if (newAdjEdges[n] == newEdge)
+          {
+            issaved = true;
+            break;
+          }
+        }
+        // save the neighbors of the old edge as neighbors of the new one
+        if (!issaved) newAdjEdges.push_back(newEdge);
+
+        // we have to update all neighbors of the old/new edge; we just update those edges which
+        // aren't adjacent edges of the contracted edge, as we have to update those separately
+
+        // get the common (tree)node of the contracted edge and the old edge
+        Teuchos::RCP<SelfBinaryTreeNode> commonnode = contractedEdge->CommonNode(adjEdges[j]);
+
+        // loop over all neighbors of old edge
+        for (unsigned k = 0; k < adjEdgesOfNeighbor.size(); ++k)
+        {
+          // check if the current edge is not the contracted edge or a neighbor of the contracted
+          // edge (we do not need to update these edges now)
+          if (adjEdgesOfNeighbor[k] != contractedEdge &&
+              adjEdges[j]->CommonNode(adjEdgesOfNeighbor[k]) != commonnode)
+          {
+            // if the current edge (=neighbor of the new and old edge) is not a neighbor of the
+            // contracted edge, they do not have a common node
+            Teuchos::RCP<SelfBinaryTreeNode> commonnode2 =
+                contractedEdge->CommonNode(adjEdgesOfNeighbor[k]);
+
+            // now we want to save the current edge as neighbor of the new edge
+            if (commonnode2 == Teuchos::null)
+            {
+              // first find the new edge in the dual graph
+              std::map<Teuchos::RCP<SelfDualEdge>,
+                  std::vector<Teuchos::RCP<SelfDualEdge>>>::iterator edge_iter1 =
+                  dualgraph->find(newEdge);
+              std::map<Teuchos::RCP<SelfDualEdge>,
+                  std::vector<Teuchos::RCP<SelfDualEdge>>>::iterator end = dualgraph->end();
+
+              // if the edge has been found, check if the current edge has already been saved as
+              // neighbor
+              if (edge_iter1 != end)
+              {
+                bool edgesaved = false;
+                for (unsigned z = 0; z < edge_iter1->second.size(); ++z)
+                {
+                  if (edge_iter1->second.at(z) == adjEdgesOfNeighbor[k]) edgesaved = true;
+                }
+                // if not yet saved, save it
+                if (!edgesaved) edge_iter1->second.push_back(adjEdgesOfNeighbor[k]);
+              }
+
+              // if the new edge itself hasn't been saved yet, the neighbor hasn't been saved either
+              else
+                (*dualgraph)[newEdge].push_back(adjEdgesOfNeighbor[k]);
+
+              // find the old edge in the list of neighbors and replace it by the new edge
+              // find the current edge in the dual graph
+              std::map<Teuchos::RCP<SelfDualEdge>,
+                  std::vector<Teuchos::RCP<SelfDualEdge>>>::iterator edge_iter2 =
+                  dualgraph->find(adjEdgesOfNeighbor[k]);
+
+              bool egdeerased = false;
+              bool newedgesaved = false;
+
+              // loop over all neighbors of the current edge
+              std::vector<Teuchos::RCP<SelfDualEdge>>::iterator adjIter =
+                  edge_iter2->second.begin();
+              while (adjIter != edge_iter2->second.end())
+              {
+                if (*adjIter == adjEdges[j])
+                {
+                  // erase the old edge
+                  adjIter = edge_iter2->second.erase(adjIter);
+                  egdeerased = true;
+                }
+                else
+                {
+                  if (*adjIter == newEdge) newedgesaved = true;
+                  ++adjIter;
+                }
+              }
+              // as we could update the same edge several times (only in 3D), we only save the new
+              // edge as neighbor if not already done so
+              if (egdeerased && !newedgesaved) edge_iter2->second.push_back(newEdge);
+            }
+          }
+        }  // loop over all adjacent edges of neighbors
+      }    // 3D
+    }      // else-block (not 2 adjacent tree nodes left)
+  }        // loop over all adjacent edges
+
+  // check for a ring of three dual edges in 3D (i.e. the edge to be contracted and two adjacent
+  // edges) (in 2D there is no need to treat this case separately)
+  if (adjEdges.size() == 2 && Dim() == 3)
+  {
+    // pointers to adjacent edge nodes
+    Teuchos::RCP<SelfBinaryTreeNode> anode1 = adjEdges[0]->GetNode1();
+    Teuchos::RCP<SelfBinaryTreeNode> anode2 = adjEdges[0]->GetNode2();
+    Teuchos::RCP<SelfBinaryTreeNode> bnode1 = adjEdges[1]->GetNode1();
+    Teuchos::RCP<SelfBinaryTreeNode> bnode2 = adjEdges[1]->GetNode2();
+
+    // check for ring (eight possible combinations)
+    if ((node1 == anode1 && node2 == bnode1 && anode2 == bnode2) ||
+        (node1 == anode2 && node2 == bnode1 && anode1 == bnode2) ||
+        (node1 == anode1 && node2 == bnode2 && anode2 == bnode1) ||
+        (node1 == anode2 && node2 == bnode2 && anode1 == bnode1) ||
+        (node1 == bnode1 && node2 == anode1 && bnode2 == anode2) ||
+        (node1 == bnode2 && node2 == anode1 && bnode1 == anode2) ||
+        (node1 == bnode1 && node2 == anode2 && bnode2 == anode1) ||
+        (node1 == bnode2 && node2 == anode2 && bnode1 == anode1))
+    {
+      // check for inconsistency
+      if (newAdjEdges.size() != 1) dserror("ERROR: Inconsistent 3D ring in dual graph");
+
+      // check if the resulting edge already exists in dual graph
+      std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>::iterator
+          edge_iter3 = dualgraph->find(newAdjEdges[0]);
+      std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>::iterator end =
+          dualgraph->end();
+
+      // add if not so
+      if (edge_iter3 == end) (*dualgraph)[newAdjEdges[0]].push_back(newAdjEdges[0]);
+    }
+  }
+
+  // delete all adjacent edges of contracted edge
+  for (unsigned j = 0; j < adjEdges.size(); ++j) dualgraph->erase(adjEdges[j]);
+
+  // now all new adjacent edges have been created. Save all adjacent edges as neighbor, respectively
+  for (unsigned l = 0; l < newAdjEdges.size(); ++l)
+    for (unsigned m = 0; m < newAdjEdges.size(); ++m)
+      if (l != m && newAdjEdges[l] != newAdjEdges[m])
+        (*dualgraph)[newAdjEdges[l]].push_back(newAdjEdges[m]);
+
+  // delete the contracted edge
+  dualgraph->erase(contractedEdge);
+
+  return;
+}  // UpdateDualGraph
+
+/*----------------------------------------------------------------------*
+ | Plot the adjacency matrix                                  popp 11/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::SelfBinaryTree::PlotAdjacencyMatrix()
+{
+  std::map<int, std::vector<Teuchos::RCP<SelfBinaryTreeNode>>>::iterator iter2 =
+      adjacencymatrix_.begin();
+  std::map<int, std::vector<Teuchos::RCP<SelfBinaryTreeNode>>>::iterator iter2_end =
+      adjacencymatrix_.end();
+
+  std::cout << "\n" << leafsmap_.size() << " elements in leafs map\n";
+  std::cout << adjacencymatrix_.size() << " elements in adjacency matrix\n";
+
+  while (iter2 != iter2_end)
+  {
+    std::cout << "element " << (*iter2).first << ": ";
+
+    std::vector<Teuchos::RCP<SelfBinaryTreeNode>> adj_ = (*iter2).second;
+    std::cout << adj_.size() << " elements: ";
+    for (unsigned i = 0; i < adj_.size(); ++i) std::cout << adj_[i]->Elelist()[0] << " ";
+    std::cout << "\n";
+    ++iter2;
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | Plot the dual graph                                        popp 11/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::SelfBinaryTree::PlotDualGraph(
+    std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>> dualgraph)
+{
+  std::cout << "\n" << leafsmap_.size() << " elements in leafmap\n";
+  std::cout << dualgraph.size() << " edges in dual graph\n";
+
+  std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>::iterator iter3 =
+      dualgraph.begin();
+  std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>::iterator
+      iter3_end = dualgraph.end();
+
+  std::cout << dualgraph.max_size() << " maximal\n";
+  int cnt = 0;
+
+  while (iter3 != iter3_end)
+  {
+    std::cout << "\n Kante " << cnt << ": " << ((*iter3).first)->GetNode1()->Elelist()[0] << " "
+              << ((*iter3).first)->GetNode2()->Elelist()[0] << "\n";
+    std::cout << "Kosten: " << ((*iter3).first)->Costs() << "\n";
+
+    std::vector<Teuchos::RCP<SelfDualEdge>> edges = (*iter3).second;
+    std::cout << edges.size() << " NachbarKanten:\n ";
+    for (unsigned i = 0; i < edges.size(); ++i)
+    {
+      std::cout << edges[i]->GetNode1()->Elelist()[0] << " ";
+      std::cout << edges[i]->GetNode2()->Elelist()[0] << " ";
+      std::cout << "Kosten: " << edges[i]->Costs() << " \n";
+    }
+
+    std::cout << "\n";
+    ++iter3;
+    ++cnt;
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | Plot the root nodes and the self binary tree               popp 11/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::SelfBinaryTree::PlotRootsAndTree()
+{
+  // debug output
+  if (Comm().MyPID() == 0)
+  {
+    // print roots
+    for (unsigned k = 0; k < roots_.size(); ++k)
+    {
+      std::vector<int> rootElelist = roots_[k]->Elelist();
+      std::cout << "\nRoot " << k << " (size " << (int)rootElelist.size() << "): ";
+      for (int d = 0; d < (int)rootElelist.size(); ++d) std::cout << rootElelist[d] << " ";
+      std::cout << "\n";
+    }
+
+    // print tree
+    for (unsigned i = 0; i < treenodes_.size(); ++i)
+    {
+      std::cout << "\n Tree at layer: " << i << " Elements: ";
+      for (unsigned k = 0; k < treenodes_[i].size(); ++k)
+      {
+        Teuchos::RCP<SelfBinaryTreeNode> currentnode = treenodes_[i][k];
+        std::cout << " (";
+        for (unsigned l = 0; l < currentnode->Elelist().size(); ++l)
+        {
+          std::cout << currentnode->Elelist().at(l) << " ";
+          if (currentnode->Type() == SELFCO_LEAF) std::cout << "(Leaf) ";
+        }
+        std::cout << ") ";
+      }
+    }
+    std::cout << std::endl;
   }
 
   return;

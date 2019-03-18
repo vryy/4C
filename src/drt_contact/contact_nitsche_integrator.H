@@ -72,7 +72,8 @@ namespace CONTACT
           frcoeff_(imortar_.get<double>("FRCOEFF", -1.)),
           frbound_(imortar_.get<double>("FRBOUND", -1.)),
           frtype_(DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(imortar_, "FRICTION")),
-          dt_(imortar_.get<double>("TIMESTEP"))
+          dt_(imortar_.get<double>("TIMESTEP")),
+          two_half_pass_(imortar_.get<bool>("Two_half_pass"))
     {
     }
 
@@ -179,6 +180,7 @@ namespace CONTACT
     double frbound_;  // tresca
     INPAR::CONTACT::FrictionType frtype_;
     double dt_;
+    bool two_half_pass_;
   };
 
   namespace UTILS

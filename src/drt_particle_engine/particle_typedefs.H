@@ -41,6 +41,11 @@ namespace PARTICLEENGINE
   class ParticleObject;
 }  // namespace PARTICLEENGINE
 
+namespace DRT
+{
+  class Element;
+}
+
 /*---------------------------------------------------------------------------*
  | type definitions                                           sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
@@ -52,23 +57,28 @@ namespace PARTICLEENGINE
 
   typedef enum PARTICLEENGINE::ParticleState StateEnum;
 
+  typedef std::vector<std::vector<double>> ParticleStates;
+
   typedef std::shared_ptr<PARTICLEENGINE::ParticleObject> ParticleObjShrdPtr;
 
-  typedef std::shared_ptr<PARTICLEENGINE::ParticleContainer> ParticleContainerShrdPtr;
+  typedef std::vector<std::vector<std::shared_ptr<PARTICLEENGINE::ParticleContainer>>>
+      TypeStatusContainers;
 
   typedef std::shared_ptr<PARTICLEENGINE::ParticleContainerBundle> ParticleContainerBundleShrdPtr;
 
-  typedef std::map<StateEnum, std::vector<double>> ParticleStates;
-
-  typedef std::map<TypeEnum, std::map<StatusEnum, ParticleContainerShrdPtr>> TypeStatusContainerMap;
-
-  typedef std::map<TypeEnum, std::map<StatusEnum, std::set<int>>> TypeStatusIndexMap;
-
-  typedef std::map<TypeEnum, std::map<int, TypeStatusIndexMap>> ParticleNeighborsMap;
-
-  typedef std::tuple<PARTICLEENGINE::TypeEnum, PARTICLEENGINE::StatusEnum, int> LocalIndexTuple;
+  typedef std::tuple<TypeEnum, StatusEnum, int> LocalIndexTuple;
 
   typedef std::shared_ptr<LocalIndexTuple> LocalIndexTupleShrdPtr;
+
+  typedef std::vector<std::vector<std::pair<PARTICLEENGINE::ParticleType, int>>> ParticlesToBins;
+
+  typedef std::vector<std::pair<LocalIndexTuple, LocalIndexTuple>> PotentialParticleNeighbors;
+
+  typedef std::vector<std::pair<TypeEnum, std::vector<StateEnum>>> StatesOfTypesToRefresh;
+
+  typedef std::vector<std::vector<int>> BinsToColWallEles;
+
+  typedef std::vector<std::pair<LocalIndexTuple, DRT::Element*>> PotentialWallNeighbors;
 
 }  // namespace PARTICLEENGINE
 

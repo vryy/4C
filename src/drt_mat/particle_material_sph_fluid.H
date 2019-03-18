@@ -43,7 +43,7 @@ namespace MAT
       virtual ~ParticleMaterialSPHFluid(){};
 
       //! speed of sound
-      virtual double SpeedOfSound() const { return std::pow(bulkModulus_ / initDensity_, 0.5); };
+      virtual double SpeedOfSound() const { return std::sqrt(bulkModulus_ / initDensity_); };
 
       //! @name material parameters
       //@{

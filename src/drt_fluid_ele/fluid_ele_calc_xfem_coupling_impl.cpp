@@ -7,7 +7,7 @@
 \level 2
 
 <pre>
-\maintainer  Ager Christoph
+\maintainer  Christoph Ager
              ager@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15249
@@ -659,7 +659,7 @@ namespace DRT
             fldparaxfem_(fldparaxfem),
             C_umum_(C_umum.A(), true),
             rhC_um_(rhC_um.A(), true),
-            adj_visc_scale_(fldparaxfem_.IsViscousAdjointSymmetric() ? 1.0 : -1.0),
+            adj_visc_scale_(fldparaxfem_.GetViscousAdjointScaling()),
             eval_coupling_(false)
       {
       }
@@ -679,7 +679,7 @@ namespace DRT
             fldparaxfem_(fldparaxfem),
             C_umum_(C_umum.A(), true),
             rhC_um_(rhC_um.A(), true),
-            adj_visc_scale_(fldparaxfem_.IsViscousAdjointSymmetric() ? 1.0 : -1.0),
+            adj_visc_scale_(fldparaxfem_.GetViscousAdjointScaling()),
             eval_coupling_(false)
       {
       }
@@ -707,7 +707,7 @@ namespace DRT
             C_usus_(C_usus.A(), true),
             rhC_um_(rhC_um.A(), true),
             rhC_us_(rhC_us.A(), true),
-            adj_visc_scale_(fldparaxfem_.IsViscousAdjointSymmetric() ? 1.0 : -1.0),
+            adj_visc_scale_(fldparaxfem_.GetViscousAdjointScaling()),
             eval_coupling_(true)
       {
       }
@@ -1547,7 +1547,7 @@ namespace DRT
         // RHS: dv<d(sigma)/dv|u*n,uF-uS>
         // Lin: dv<d(sigma)/dv|u*n>duF-dv<d(sigma)/dv|u*n>duS+dv<d(sigma)/dv|du/dus*n,uF-uS>duS
 
-        const double facs = s_row.second * timefacfac;
+        const double facs = s_row.second * timefacfac * adj_visc_scale_;
         for (unsigned ir = 0; ir < nen_; ++ir)
         {
           for (unsigned jvel = 0; jvel < nsd_; ++jvel)
@@ -1563,8 +1563,8 @@ namespace DRT
 
         if (only_rhs) return;
 
-        const double facsm = s_row.second * m_col.second * timefacfac;
-        const double facss = s_row.second * s_col.second * timefacfac;
+        const double facsm = s_row.second * m_col.second * timefacfac * adj_visc_scale_;
+        const double facss = s_row.second * s_col.second * timefacfac * adj_visc_scale_;
 
         for (unsigned ir = 0; ir < slave_nen_; ++ir)
         {

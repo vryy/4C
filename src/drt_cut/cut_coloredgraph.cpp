@@ -3,7 +3,6 @@
 \file cut_coloredgraph.cpp
 
 \brief colored graph to create volumecells from facets
-\warning do we still use this graph?
 
 \level 3
 
@@ -22,6 +21,9 @@
 #include <algorithm>
 #include <stdexcept>
 
+// For useful debug output
+#include "cut_facet.H"
+#include "cut_output.H"
 #include "cut_coloredgraph.H"
 
 bool GEO::CUT::COLOREDGRAPH::ForkFinder::operator()(
@@ -47,6 +49,7 @@ bool GEO::CUT::COLOREDGRAPH::ForkFinder::operator()(
   return false;
 }
 
+// add connection in the graph
 void GEO::CUT::COLOREDGRAPH::Graph::Add(int row, int col)
 {
   if (row >= color_split_ and col >= color_split_) run_time_error("two lines connected");
@@ -66,20 +69,26 @@ void GEO::CUT::COLOREDGRAPH::Graph::Add(int p, const plain_int_set& row)
 int GEO::CUT::COLOREDGRAPH::Graph::FindNext(
     Graph& used, int point, Graph& cycle, const plain_int_set& free)
 {
+  // find current connections of the point
   plain_int_set& row = graph_[point];
+  // find which directions were already visisited
   plain_int_set& used_row = used[point];
   for (plain_int_set::iterator i = row.begin(); i != row.end(); ++i)
   {
     int p = *i;
+    // if not visited yet
     if (used_row.count(p) == 0)
     {
+      // if it is in array of free edges
       if (free.count(p) > 0) return p;
+      // if it is in array of free cycles
       if (cycle.count(p) > 0) return p;
     }
   }
   return -1;
 }
 
+// get all number of the graph in the plain int set
 void GEO::CUT::COLOREDGRAPH::Graph::GetAll(plain_int_set& all)
 {
   for (std::map<int, plain_int_set>::iterator i = graph_.begin(); i != graph_.end(); ++i)
@@ -113,6 +122,9 @@ void GEO::CUT::COLOREDGRAPH::Graph::FixSingleLines()
   }
 }
 
+
+
+// Test if all edges of the graph has more than 1 connection (then it is closed)
 void GEO::CUT::COLOREDGRAPH::Graph::TestClosed()
 {
   for (std::map<int, plain_int_set>::iterator i = graph_.begin(); i != graph_.end(); ++i)
@@ -151,6 +163,7 @@ void GEO::CUT::COLOREDGRAPH::Graph::TestFacets()
   for (std::map<int, plain_int_set>::iterator i = graph_.begin(); i != graph_.end(); ++i)
   {
     int p = i->first;
+    // for all facets
     if (p < color_split_)
     {
       plain_int_set& row = i->second;
@@ -202,9 +215,11 @@ namespace GEO
             throw std::runtime_error("no free facet but free lines");
           }
           plain_int_set& row = graph[facet];
-          for (plain_int_set::iterator i = row.begin(); i != row.end(); ++i)
+          // check if this facet visited connected lines to it
+          for (const int& line : row)
           {
-            int line = *i;
+            // if this facet is free, but the line connected to it is not free,
+            // this means that lines connected to it leads outside, hence it is "first" free facet
             if (not IsFree(used, free, line))
             {
               return facet;
@@ -216,11 +231,13 @@ namespace GEO
 
       bool IsValidFacet(plain_int_set& row, const std::vector<int>& visited)
       {
-        for (plain_int_set::iterator i = row.begin(); i != row.end(); ++i)
+        for (const int& line : row)
         {
-          int line = *i;
+          // if it is visited more than once
           if (visited[line] >= 2)
           {
+            // dserror("Invalid facet!");
+            throw std::runtime_error("Invalid facet");
             return false;
           }
         }
@@ -231,19 +248,25 @@ namespace GEO
           std::vector<int>& visited, int& num_split_lines)
       {
         // mark facet and lines
+        if (facet >= used.Split())  // means this is a line
+        {
+          dserror("This should not happen");
+        }
         visited[facet] += 1;
         if (visited[facet] > 1) throw std::runtime_error("facet visited more than once");
-        for (plain_int_set::iterator i = row.begin(); i != row.end(); ++i)
+        // iterate over lines connected to this facet
+        for (const int& line : row)
         {
-          int line = *i;
           if (IsFree(used, free, line))
           {
-            if (visited[line] == 0)
-              num_split_lines += 1;
+            if (visited[line] == 0) num_split_lines += 1;
+            // was connected by another facet already
             else if (visited[line] == 1)
               num_split_lines -= 1;
           }
+          // visit it
           visited[line] += 1;
+          // was visited by more than two facets
           if (visited[line] > 2) throw std::runtime_error("too many facets at line");
         }
       }
@@ -318,109 +341,166 @@ namespace GEO
           const std::vector<std::pair<Point*, Point*>>& all_lines, std::vector<int>& visited,
           std::vector<int>& split_trace)
       {
-        std::vector<int> facet_stack;
-        facet_stack.push_back(facet);
-
-        int num_split_lines = 0;
-        std::vector<int> facet_color(graph.size(), 0);
-
-        while (not facet_stack.empty())
+        try
         {
-          facet = facet_stack.back();
-          facet_stack.pop_back();
+          std::vector<int> facet_stack;
+          facet_stack.push_back(facet);
 
-          if (facet_color[facet] == 0)  // white
+          int num_split_lines = 0;
+          std::vector<int> facet_color(graph.size(), 0);
+
+          // performing depth-first graph traversal while there is not more facets left
+          while (not facet_stack.empty())
           {
-            plain_int_set& row = graph[facet];
+            facet = facet_stack.back();
+            facet_stack.pop_back();
 
-            if (IsValidFacet(row, visited))
-            {
-              MarkFacet(used, free, facet, row, visited, num_split_lines);
-
-              facet_color[facet] = 1;
-              facet_stack.push_back(facet);
-
-              // test for success: only non-free lines are open
-              if (num_split_lines == 0)
-              {
-                // build split_trace
-                for (std::vector<int>::iterator i = visited.begin() + graph.Split();
-                     i != visited.end(); ++i)
-                {
-                  if (*i == 1)
-                  {
-                    int line = i - visited.begin();
-                    if (not IsFree(used, free, line))
-                    {
-                      split_trace.push_back(line);
-                    }
-                  }
-                }
-                if (split_trace.size() == 0)
-                {
-                  run_time_error("no split trace");
-                }
-
-                // ok. all points connected.
-                // if ( IsOneCycle( all_lines, split_trace, graph.Split() ) )
-                return true;
-              }
-
-              // try neighbouring facets
-              for (plain_int_set::iterator i = row.begin(); i != row.end(); ++i)
-              {
-                int line = *i;
-                if (visited[line] < 2 and IsFree(used, free, line))
-                {
-                  plain_int_set& row = graph[line];
-                  for (plain_int_set::iterator i = row.begin(); i != row.end(); ++i)
-                  {
-                    int f = *i;
-                    if (facet_color[f] == 0 and IsFree(used, free, f))
-                    {
-                      facet_stack.push_back(f);
-                    }
-                  }
-                }
-              }
-            }
-          }
-          else if (facet_color[facet] == 1)  // gray
-          {
-            // search for any facet within the stack that can be added
-            int pos = facet_stack.size() - 1;
-            for (; pos >= 0; --pos)
-            {
-              int f = facet_stack[pos];
-              if (facet_color[f] == 0 and IsValidFacet(graph[f], visited))
-              {
-                facet_stack.push_back(facet);
-                facet_stack.push_back(f);
-                break;
-              }
-            }
-
-            // clear current facet if there is nothing more to add
-            if (pos < 0)
+            if (facet_color[facet] == 0)  // white - not visited before
             {
               plain_int_set& row = graph[facet];
-              UnMarkFacet(used, free, facet, row, visited, num_split_lines);
 
-              if (std::find(facet_stack.begin(), facet_stack.end(), facet) == facet_stack.end())
-                facet_color[facet] = 0;
-              else
-                facet_color[facet] = 2;
+              if (IsValidFacet(row, visited))
+              {
+                MarkFacet(used, free, facet, row, visited, num_split_lines);
+
+                facet_color[facet] = 1;
+                facet_stack.push_back(facet);
+
+                // test for success: only non-free lines are open, meaning, all the internal lines
+                // have been visited and found matching facets
+                if (num_split_lines == 0)
+                {
+                  // build split_trace
+
+                  // iterate over all visited lines
+                  for (std::vector<int>::iterator i = visited.begin() + graph.Split();
+                       i != visited.end(); ++i)
+                  {
+                    // if it was visited only once, meaning no other facet visited this line, means
+                    // it is open
+                    if (*i == 1)
+                    {
+                      // getting its id
+                      int line = i - visited.begin();
+                      // if lies not inside
+                      if (not IsFree(used, free, line))
+                      {
+                        split_trace.push_back(line);
+                      }
+                    }
+                  }
+                  // otherwise throw error, we could not find what lines split the volume
+                  if (split_trace.size() == 0)
+                  {
+                    run_time_error("no split trace");
+                  }
+
+                  // ok. all points connected.
+                  // if ( IsOneCycle( all_lines, split_trace, graph.Split() ) )
+                  return true;
+                }
+
+                // try neighbouring facets
+                for (const int& line : row)
+                {
+                  // facet not visited and does not lead us outside
+                  if (visited[line] < 2 and IsFree(used, free, line))
+                  {
+                    plain_int_set& row = graph[line];
+                    // get all the facets connected to that line and push it for traversal
+                    for (const int& f : row)
+                    {
+                      if (facet_color[f] == 0 and IsFree(used, free, f))
+                      {
+                        facet_stack.push_back(f);
+                      }
+                    }
+                  }
+                }
+              }
             }
-          }
-          else if (facet_color[facet] == 2)  // black
-          {
-            // if a black facet is poped for the last time (it is not any more
-            // on the stack), we make it available again.
-            if (std::find(facet_stack.begin(), facet_stack.end(), facet) == facet_stack.end())
+            else if (facet_color[facet] == 1)  // gray - we finished all the the "tree" of this
+                                               // facet - need to travserse something else
             {
-              facet_color[facet] = 0;
+              // search for any facet within the stack that can be added
+              int pos = facet_stack.size() - 1;
+              for (; pos >= 0; --pos)
+              {
+                int f = facet_stack[pos];
+                if (facet_color[f] == 0 and IsValidFacet(graph[f], visited))
+                {
+                  facet_stack.push_back(facet);
+                  facet_stack.push_back(f);
+                  break;
+                }
+              }
+
+              // clear current facet if there is nothing more to add
+              if (pos < 0)
+              {
+                plain_int_set& row = graph[facet];
+                UnMarkFacet(used, free, facet, row, visited, num_split_lines);
+
+                if (std::find(facet_stack.begin(), facet_stack.end(), facet) == facet_stack.end())
+                  facet_color[facet] = 0;
+                else
+                  facet_color[facet] = 2;
+              }
+            }
+            else if (facet_color[facet] == 2)  // black
+            {
+              // if a black facet is poped for the last time (it is not any more
+              // on the stack), we make it available again.
+              if (std::find(facet_stack.begin(), facet_stack.end(), facet) == facet_stack.end())
+              {
+                facet_color[facet] = 0;
+              }
             }
           }
+        }
+        catch (std::runtime_error& err)
+        {
+          std::cout << "Failed in the colored graph in the DFS search" << std::endl;
+          std::cout << "Last processed facet is" << facet << std::endl;
+          std::ofstream file("facetgraph_failed.pos");
+          for (int facet_id = 0; facet_id < facet; ++facet_id)
+          {
+            std::stringstream section_name;
+            section_name << "Facet" << facet_id;
+            GEO::CUT::OUTPUT::GmshNewSection(file, section_name.str());
+            GEO::CUT::OUTPUT::GmshFacetDump(file,
+                static_cast<GEO::CUT::Facet*>(graph.GetPointer(facet_id)), "lines", true, false,
+                NULL);
+            GEO::CUT::OUTPUT::GmshEndSection(file, false);
+          }
+          file.close();
+
+          std::ofstream filenext("facetgraph_failed_last_facet.pos");
+          GEO::CUT::OUTPUT::GmshNewSection(filenext, "Facets");
+          GEO::CUT::OUTPUT::GmshFacetDump(filenext,
+              static_cast<GEO::CUT::Facet*>(graph.GetPointer(facet)), "lines", true, false, NULL);
+          GEO::CUT::OUTPUT::GmshEndSection(filenext, true);
+
+
+          std::cout << "Point IDs of failed facet are " << std::endl;
+          static_cast<GEO::CUT::Facet*>(graph.GetPointer(facet))->PrintPointIds();
+
+          std::ofstream filevisited("facetgraph_visited_facets.pos");
+          for (std::vector<int>::iterator i = visited.begin(); i != visited.begin() + graph.Split();
+               ++i)
+          {
+            if (*i == 1)
+            {
+              int facet = i - visited.begin();
+              GEO::CUT::OUTPUT::GmshNewSection(filevisited, "Facets");
+              GEO::CUT::OUTPUT::GmshFacetDump(filevisited,
+                  static_cast<GEO::CUT::Facet*>(graph.GetPointer(facet)), "lines", true, false,
+                  NULL);
+              GEO::CUT::OUTPUT::GmshEndSection(filevisited, false);
+            }
+          }
+          filevisited.close();
+          throw err;
         }
         return false;
       }
@@ -438,31 +518,34 @@ void GEO::CUT::COLOREDGRAPH::Graph::FindFreeFacets(Graph& graph, Graph& used, pl
 
   if (not VisitFacetDFS(graph, used, free, free_facet, all_lines, visited, split_trace))
   {
-    throw std::runtime_error("failed to find volume split");
+    throw std::runtime_error("Failed to find volume split. DFS search failed");
   }
 
+  // iterate over all facets that are visited and check ( only internal should be visited )
   for (std::vector<int>::iterator i = visited.begin(); i != visited.begin() + graph.Split(); ++i)
   {
     if (*i == 1)
     {
       int facet = i - visited.begin();
       plain_int_set& row = graph[facet];
-      for (plain_int_set::iterator i = row.begin(); i != row.end(); ++i)
+      for (const int& line : row)
       {
-        int line = *i;
         used.Add(line, facet);
         Add(line, facet);
         free.erase(line);
       }
+      // erased from internal free facets
       free.erase(facet);
     }
     else if (*i > 1)
     {
-      run_time_error("same facet twice");
+      run_time_error("same facet was visited twice");
     }
   }
 }
 
+
+// find set of lines which are connected only to one facet
 void GEO::CUT::COLOREDGRAPH::Graph::FindSplitTrace(std::vector<int>& split_trace)
 {
   for (Graph::const_iterator i = begin(); i != end(); ++i)
@@ -479,6 +562,7 @@ void GEO::CUT::COLOREDGRAPH::Graph::FindSplitTrace(std::vector<int>& split_trace
   }
 }
 
+// check if the graph contain given set of edges
 bool GEO::CUT::COLOREDGRAPH::Graph::ContainsTrace(const std::vector<int>& split_trace)
 {
   for (std::vector<int>::const_iterator i = split_trace.begin(); i != split_trace.end(); ++i)
@@ -496,80 +580,251 @@ void GEO::CUT::COLOREDGRAPH::Cycle::Print() const
   std::cout << "\n";
 }
 
-void GEO::CUT::COLOREDGRAPH::Graph::Split(Graph& used, plain_int_set& free, Graph& connection,
-    const std::vector<int>& split_trace, Graph& c1, Graph& c2)
+// splits splittrace into isolated components, and pushes it into splitted_trace
+void GEO::CUT::COLOREDGRAPH::Graph::SplitSplittrace(const std::vector<int>& split_trace,
+    Graph& datagraph, std::vector<std::vector<int>>& isolated_components)
 {
-  // find lhs and rhs starting from split trace
-
-  plain_int_set* row = NULL;
-  for (std::vector<int>::const_iterator i = split_trace.begin(); i != split_trace.end(); ++i)
+  // first construct point -> line relations from the datagraph
+  std::map<Point*, std::vector<int>> point_line_map;
+  for (std::vector<int>::const_iterator it = split_trace.begin(); it != split_trace.end(); ++it)
   {
-    int p = *i;
-    row = &at(p);
-    if (row->size() == 2)
+    int line_id = *it;
+    if (line_id < Split())
     {
-      break;
+      dserror("Only lines are allowed in the split trace!");
+    }
+    else
+    {
+      // get our lines to the map
+      std::pair<Point*, Point*> line =
+          *static_cast<std::pair<Point*, Point*>*>(datagraph.GetPointer(line_id));
+      point_line_map[line.first].push_back(line_id);
+      point_line_map[line.second].push_back(line_id);
     }
   }
 
-  if (row->size() != 2)
+  // second pass, now constructor connectivity
+
+  std::set<int> split_trace_set(split_trace.begin(), split_trace.end());
+
+  std::stack<int> lines_to_explore;
+  unsigned int seed = split_trace.front();
+  lines_to_explore.push(seed);
+  bool visited_all_loops = false;
+
+  // lines that we proccessed over (not to
+  // go though them again if we have connected split loops)
+
+  std::set<int> done_lines;
+  // while there are still isolated loops in the split trace
+  while (not visited_all_loops)
+  {
+    std::set<int> visited;
+
+    while (not lines_to_explore.empty())
+    {
+      unsigned int l = lines_to_explore.top();
+      lines_to_explore.pop();
+      // get our line
+      std::pair<Point*, Point*> line =
+          *static_cast<std::pair<Point*, Point*>*>(datagraph.GetPointer(l));
+      // get lines connected to it
+      const std::vector<int>& end_lines = point_line_map[line.second];
+      const std::vector<int>& front_lines = point_line_map[line.first];
+      std::vector<int> connected_lines(front_lines);
+      connected_lines.insert(connected_lines.begin(), end_lines.begin(), end_lines.end());
+      // remove connected to 'l' line itself
+      connected_lines.erase(
+          std::remove(connected_lines.begin(), connected_lines.end(), l), connected_lines.end());
+      if (connected_lines.size() != 2)
+      {
+        // check if most of lines come from the same point ( of course there is one more line
+        // connected on the other end)
+        if (end_lines.size() == 2 or front_lines.size() == 2)
+        {
+          connected_lines = (end_lines.size() < front_lines.size() ? end_lines : front_lines);
+          for (std::vector<int>::iterator it = connected_lines.begin(); it != connected_lines.end();
+              /**/)
+          {
+            if (done_lines.find(*it) != done_lines.end())
+            {
+              it = connected_lines.erase(it);
+            }
+            else
+              ++it;
+          }
+        }
+        else
+        {
+          dserror(
+              "Unknown case of the line in split trace connected to %d lines at the same time"
+              "It should be 2",
+              connected_lines.size());
+        }
+      }
+
+      visited.insert(l);
+      for (const int& connected_line : connected_lines)
+      {
+        if (visited.count(connected_line) == 0)
+        {
+          lines_to_explore.push(connected_line);
+        }
+      }
+    }
+
+    std::set<int> split_trace_set_new;
+
+    std::set_difference(split_trace_set.begin(), split_trace_set.end(), visited.begin(),
+        visited.end(), std::inserter(split_trace_set_new, split_trace_set_new.end()));
+
+    // need to push_back difference to the list
+    isolated_components.push_back(std::vector<int>(visited.begin(), visited.end()));
+    done_lines.insert(visited.begin(), visited.end());
+
+    std::swap(split_trace_set_new, split_trace_set);
+
+    if (split_trace_set.empty())
+    {
+      visited_all_loops = true;
+    }
+
+    else
+    {
+      lines_to_explore.push(*split_trace_set.begin());
+    }
+  }
+#if EXTENDED_CUT_DEBUG_OUTPUT
+  std::cout << "Number of isolated loops is " << isolated_components.size() << std::endl;
+#endif
+}
+
+void GEO::CUT::COLOREDGRAPH::Graph::Split(Graph& used, plain_int_set& free, Graph& connection,
+    const std::vector<int>& split_trace, Graph& c1, Graph& c2, Graph& datagraph)
+{
+  // find lhs and rhs starting from split trace
+
+  plain_int_set* facet_row = NULL;
+  plain_int_set* facet_tmp_row = NULL;
+  for (const int& line : split_trace)
+  {
+    facet_tmp_row = &at(line);
+    if (facet_tmp_row->size() == 2)
+    {
+      facet_row = facet_tmp_row;
+    }
+  }
+  if (facet_row == NULL) facet_row = facet_tmp_row;  // last passed
+
+  if (facet_row->size() != 2)
   {
     // This might happen and it might be a valid split. How to deal with it?
     run_time_error("expect two facets at line");
   }
 
-  plain_int_set::iterator i = row->begin();
-  Fill(split_trace, used, free, connection, *i, c1);
-  ++i;
-  Fill(split_trace, used, free, connection, *i, c2);
+  plain_int_set::iterator facet_it = facet_row->begin();
 
-  for (std::vector<int>::const_iterator i = split_trace.begin(); i != split_trace.end(); ++i)
+  Fill(split_trace, used, free, connection, *facet_it, c1);
+  ++facet_it;
+  Fill(split_trace, used, free, connection, *facet_it, c2);
+
+
+  // detect anomalies, where split line is connected to facets from both cycles
+  auto not_connected_line = std::find_if(split_trace.begin(), split_trace.end(),
+      [&c1, &c2](int line) { return (c1[line].size() == 1 or c2[line].size() == 1); });
+  // we are fine
+  if (not_connected_line == split_trace.end()) return;
+
+  // try to detect which cycles lacks closing facets and add them
+  else
   {
-    int p = *i;
-    unsigned c1rowlen = c1[p].size();
-    unsigned c2rowlen = c2[p].size();
+    // it might happen, when we have holes in the split trace , we try to generate corresponding
+    // cycles as well
+    std::vector<std::vector<int>> isolated_components;
+    SplitSplittrace(split_trace, datagraph, isolated_components);
 
-    Graph* fine = NULL;
-    Graph* open = NULL;
-
-    if (c1rowlen > 1 and c2rowlen > 1)
+    unsigned int n_components = isolated_components.size();
+    if (n_components == 1)
+      dserror(
+          "Number of isolated components of the split trace is, but graph is open anyway. Check "
+          "this case");
+    else if (n_components > 2)
     {
-      // fine
-    }
-    else if (c1rowlen == 1 and c2rowlen > 1)
-    {
-      fine = &c2;
-      open = &c1;
-    }
-    else if (c1rowlen > 1 and c2rowlen == 1)
-    {
-      fine = &c1;
-      open = &c2;
-    }
-    else
-    {
-      run_time_error("open line after graph split");
+      std::cout << "WARNING: Number of isolated components of the split trace is " << n_components
+                << "this case probably will work fine, but it was not detaily though of. In case "
+                   "of problem, check output"
+                << std::endl;
     }
 
-    if (open != NULL)
+    for (const int& line : split_trace)
     {
-      plain_int_set& row = at(p);
-      if (row.size() != 2) run_time_error("expect two facets at line");
-      plain_int_set::iterator i = row.begin();
-      int f1 = *i;
-      ++i;
-      int f2 = *i;
-      if (fine->count(f1) > 0)
+      unsigned c1_connected_facets = c1[line].size();
+      unsigned c2_connected_facets = c2[line].size();
+
+      Graph* fine_cycle = NULL;
+      Graph* open_cycle = NULL;
+
+      if (c1_connected_facets > 1 and c2_connected_facets > 1)
       {
-        open->Add(f2, at(f2));
+        // fine
       }
-      else if (fine->count(f2) > 0)
+      else if (c1_connected_facets == 1 and c2_connected_facets > 1)
       {
-        open->Add(f1, at(f1));
+        fine_cycle = &c2;
+        open_cycle = &c1;
+      }
+      else if (c1_connected_facets > 1 and c2_connected_facets == 1)
+      {
+        fine_cycle = &c1;
+        open_cycle = &c2;
       }
       else
       {
-        run_time_error("confused");
+        run_time_error("open line after graph split");
+      }
+
+      if (open_cycle != NULL)
+      {
+#if EXTENDED_CUT_DEBUG_OUTPUT
+        std::cout << "NOTICE: One of the graph split results is open" << std::endl;
+#endif
+        // Find split trace component where this line belongs too
+        // If speed up is needed, we can just first filter the not-connected lines and then
+        // match them with the isolated_components of the split trace
+        std::vector<std::vector<int>>::const_iterator c_it = isolated_components.begin();
+        for (; c_it != isolated_components.end(); ++c_it)
+        {
+          const std::vector<int>& component = *c_it;
+          // try to find line on this component
+          if (std::find(component.begin(), component.end(), line) != component.end()) break;
+        }
+
+        if (c_it == isolated_components.end())
+          dserror(
+              "Could not find isolated component of the split trace where line belongs to. Check "
+              "this case");
+
+        const std::vector<int>& isolated_split_trace = *c_it;
+
+        plain_int_set& facet_row = at(line);
+        if (facet_row.size() != 2) run_time_error("Expect two facets at line");
+        plain_int_set::iterator i = facet_row.begin();
+        int f1 = *i;
+        ++i;
+        int f2 = *i;
+        // select where to start the split
+        if (fine_cycle->count(f1) > 0)
+        {
+          Fill(isolated_split_trace, used, free, connection, f2, *open_cycle);
+        }
+        else if (fine_cycle->count(f2) > 0)
+        {
+          Fill(isolated_split_trace, used, free, connection, f1, *open_cycle);
+        }
+        else
+        {
+          run_time_error("Could fill found the seed facet for cycle creation");
+        }
       }
     }
   }
@@ -578,44 +833,45 @@ void GEO::CUT::COLOREDGRAPH::Graph::Split(Graph& used, plain_int_set& free, Grap
 void GEO::CUT::COLOREDGRAPH::Graph::Fill(const std::vector<int>& split_trace, Graph& used,
     plain_int_set& free, Graph& connection, int seed, Graph& c)
 {
-  plain_int_set done;
-  done.insert(split_trace.begin(), split_trace.end());
-  std::stack<int> stack;
+  plain_int_set visited;
+  visited.insert(split_trace.begin(), split_trace.end());
+  std::stack<int> facets_to_explore;
 
-  stack.push(seed);
+  facets_to_explore.push(seed);
 
-  while (not stack.empty())
+  while (not facets_to_explore.empty())
   {
-    int f = stack.top();
-    stack.pop();
+    int f = facets_to_explore.top();
+    facets_to_explore.pop();
 
-    done.insert(f);
+    visited.insert(f);
 
-    plain_int_set& row = at(f);
-    for (plain_int_set::iterator i = row.begin(); i != row.end(); ++i)
+    plain_int_set& lines_row = at(f);
+    for (const int& line : lines_row)
     {
-      int p = *i;
-      c.Add(f, p);
-      if (done.count(p) == 0)  // and IsFree( used, free, p ) )
+      c.Add(f, line);
+      // if we have not come to split trace again ( finished )
+      if (visited.count(line) == 0)  // and IsFree( used, free, line ) )
       {
-        plain_int_set& row = at(p);
-        for (plain_int_set::iterator i = row.begin(); i != row.end(); ++i)
+        plain_int_set& facets_row = at(line);
+        // discover new facet and visit it
+        for (const int& f : facets_row)
         {
-          int f = *i;
-          if (done.count(f) == 0)
+          if (visited.count(f) == 0)
           {
-            stack.push(f);
+            facets_to_explore.push(f);
           }
         }
       }
     }
   }
 
+  // adding internal connection to close the cycle
   for (Graph::const_iterator i = connection.begin(); i != connection.end(); ++i)
   {
-    int p = i->first;
-    const plain_int_set& row = i->second;
-    c.Add(p, row);
+    int line = i->first;
+    const plain_int_set& facets = i->second;
+    c.Add(line, facets);
   }
 }
 
@@ -624,8 +880,10 @@ void GEO::CUT::COLOREDGRAPH::CycleList::AddPoints(Graph& graph, Graph& used, Gra
 {
   PushBack(cycle);
 
+  // while there are elements to loop over  ( while there are still "cutted-parts" of the element)
   while (free.size() > 0)
   {
+    // create new graph with the same separation of line and facets
     Graph connection(graph.Split());
 
     // find connection graph and trace lines
@@ -659,7 +917,8 @@ void GEO::CUT::COLOREDGRAPH::CycleList::AddPoints(Graph& graph, Graph& used, Gra
       connection.DumpGraph("connection.py");
 #endif
 
-      c.Split(used, free, connection, split_trace, c1, c2);
+      // split the cycle into two cycles based on 'split trace'
+      c.Split(used, free, connection, split_trace, c1, c2, graph);
 
 #ifdef DEBUGCUTLIBRARY
       c1.DumpGraph("cycle1.py");
@@ -672,6 +931,8 @@ void GEO::CUT::COLOREDGRAPH::CycleList::AddPoints(Graph& graph, Graph& used, Gra
         {
           PushBack(c1);
 
+          // this is happens when after finding split trace, both division along it produces same
+          // cycles
           run_time_error("bad luck");
 
           cycles_.erase(*ilist);
@@ -716,11 +977,7 @@ void GEO::CUT::COLOREDGRAPH::CycleList::PushBack(Graph& g)
 
 void GEO::CUT::COLOREDGRAPH::CycleList::Print() const
 {
-  for (std::list<Cycle>::const_iterator i = cycles_.begin(); i != cycles_.end(); ++i)
-  {
-    const Cycle& c = *i;
-    c.Print();
-  }
+  for (const Cycle& c : cycles_) c.Print();
 }
 
 void GEO::CUT::COLOREDGRAPH::Graph::TestSplit()

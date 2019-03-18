@@ -5,7 +5,7 @@
 
 \level 3
 <pre>
-\maintainer  Ager Christoph
+\maintainer  Christoph Ager
              ager@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15249
@@ -276,9 +276,16 @@ void GEO::CUT::MeshIntersection::Cut_SelfCut(bool include_inner, bool screenoutp
 
   if (myrank_ == 0 and screenoutput) IO::cout << "\t * 2/6 Cut_SelfCut ...";
 
+
+  Teuchos::RCP<PointPool> point_pool = CutMesh().Points();
+
+  point_pool->SetMergeStrategy(Pointpool_MergeStrategy::SelfCutLoad);
+
   SelfCut selfcut(CutMesh());
 
   selfcut.PerformSelfCut();
+
+  point_pool->SetMergeStrategy(Pointpool_MergeStrategy::NormalCutLoad);
 }
 
 /*------------------------------------------------------------------------------------------------*

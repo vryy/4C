@@ -108,7 +108,7 @@ AZOMEGA                         0
 AZOUTPUT                        10
 AZPOLY                          3
 AZPREC                          MueLu_contactSP
-AZREUSE                         0
+AZREUSE                         2
 AZSCAL                          none
 AZSOLVE                         GMRES
 AZSUB                           300

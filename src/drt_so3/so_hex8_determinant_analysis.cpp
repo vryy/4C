@@ -33,8 +33,8 @@ const unsigned DRT::ELEMENTS::So_Hex8_Determinant_Analysis::bezier_indices_[27][
     {0, 1, 1}, {1, 1, 2}, {1, 1, 1}              // 25 to 27
 };
 bool DRT::ELEMENTS::So_Hex8_Determinant_Analysis::issetup_ = false;
-LINALG::Matrix<27, 20> DRT::ELEMENTS::So_Hex8_Determinant_Analysis::map_q_(false);
-LINALG::Matrix<27, 27> DRT::ELEMENTS::So_Hex8_Determinant_Analysis::map_l2b_(false);
+LINALG::Matrix<27, 20> DRT::ELEMENTS::So_Hex8_Determinant_Analysis::map_q_(true);
+LINALG::Matrix<27, 27> DRT::ELEMENTS::So_Hex8_Determinant_Analysis::map_l2b_(true);
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

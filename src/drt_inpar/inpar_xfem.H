@@ -7,7 +7,7 @@
 \level 2
 
 <pre>
-\maintainer  Ager Christoph
+\maintainer  Christoph Ager
              ager@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15249
@@ -67,6 +67,14 @@ namespace INPAR
       navierslip        /// general navier boundary condition
     };
 
+    /// how is the adjoint consistency term scaled
+    enum AdjointScaling
+    {
+      adj_sym,   /// symmetric adjoint consistency term
+      adj_skew,  /// skew-symmetric adjoint consistency term
+      adj_none   /// no adjoint consistency term
+    };
+
     /// L2 stress projection on whole fluid element or on partial fluid element
     enum Hybrid_LM_L2_Proj
     {
@@ -82,6 +90,14 @@ namespace INPAR
                                             /// divided by a characteristic element length
       ViscStab_TraceEstimate_eigenvalue     /// estimate of the trace-inequality by solving an
                                             /// eigenvalue problem
+    };
+
+    /// how often should the local eigenvalue problem be updated
+    enum TraceEstimate_eigenvalue_update
+    {
+      Eigenvalue_update_every_iter,      /// every Newton iteration
+      Eigenvalue_update_every_timestep,  /// every timestep
+      Eigenvalue_update_once             /// once at the beginning of the simlation
     };
 
     /// definition of characteristic element length in cut elements
@@ -316,6 +332,5 @@ namespace INPAR
   }  // namespace XFEM
 
 }  // namespace INPAR
-
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef INPAR_XFEM_H

@@ -23,8 +23,6 @@
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 08/2018 |
  *---------------------------------------------------------------------------*/
-#include "particle_interaction_typedefs.H"
-
 #include "../drt_particle_engine/particle_enums.H"
 #include "../drt_particle_engine/particle_typedefs.H"
 
@@ -53,6 +51,14 @@ namespace PARTICLEINTERACTION
   class SPHMomentumFormulationBase;
   class SPHArtificialViscosity;
 }  // namespace PARTICLEINTERACTION
+
+namespace MAT
+{
+  namespace PAR
+  {
+    class ParticleMaterialSPHFluid;
+  }
+}  // namespace MAT
 
 /*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 08/2018 |
@@ -139,8 +145,8 @@ namespace PARTICLEINTERACTION
     //! no convection of momentum with relative velocity in transport velocity formulation
     bool norelativevelocitycontribution_;
 
-    //! artificial viscous damping factor
-    const double dampingfactor_;
+    //! pointer to fluid material of particle types
+    std::vector<const MAT::PAR::ParticleMaterialSPHFluid*> fluidmaterial_;
   };
 
 }  // namespace PARTICLEINTERACTION

@@ -29,7 +29,6 @@
 #include "../linalg/linalg_fixedsizematrix.H"
 
 #include <unordered_map>
-#include <tuple>
 
 /*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 05/2018 |
@@ -42,19 +41,19 @@ namespace PARTICLEENGINE
     //! virtual destructor
     virtual ~ParticleEngineInterface(){};
 
-    //! refresh specific states of particles of specific types
-    virtual void RefreshSpecificStatesOfParticlesOfSpecificTypes(
-        const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes) const = 0;
+    //! refresh particles of specific states and types
+    virtual void RefreshParticlesOfSpecificStatesAndTypes(
+        const StatesOfTypesToRefresh& particlestatestotypes) const = 0;
 
     //! change type of particles
-    virtual void TypeChangeParticles(std::map<TypeEnum, std::set<int>>& particlestoremove,
-        std::map<TypeEnum, std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert) = 0;
+    virtual void TypeChangeParticles(std::vector<std::set<int>>& particlestoremove,
+        std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert) = 0;
 
     //! get particle container bundle
     virtual const ParticleContainerBundleShrdPtr GetParticleContainerBundle() const = 0;
 
-    //! get reference to particle neighbors map
-    virtual const ParticleNeighborsMap& GetParticleNeighborsMap() const = 0;
+    //! get reference to potential particle neighbors
+    virtual const PotentialParticleNeighbors& GetPotentialParticleNeighbors() const = 0;
 
     //! get local index in specific particle container
     virtual const LocalIndexTupleShrdPtr GetLocalIndexInSpecificContainer(int globalid) const = 0;

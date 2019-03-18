@@ -139,7 +139,7 @@ bool LINALG::SOLVER::KrylovSolver::AllowReusePreconditioner(const int reuse, con
   CheckReuseStatusOfActiveSet(bAllowReuse, linSysParams);
 
   // true, if preconditioner must not reused but is to re-created!
-  bool create = reset or not Ncall() or not reuse or (Ncall() % reuse) == 0;
+  const bool create = reset or not Ncall() or not reuse or (Ncall() % reuse) == 0;
   if (create) bAllowReuse = false;  // we have to create a new preconditioner
 
   // here, each processor has its own local decision made
@@ -183,27 +183,21 @@ void LINALG::SOLVER::KrylovSolver::CheckReuseStatusOfActiveSet(
         // Do we have history information available?
         if (activeDofMap_.is_null())
         {
-          // This is the first appliation of the preconditioner. We cannot reuse it.
+          /* No history available.
+           * This is the first application of the preconditioner. We cannot reuse it.
+           */
           bAllowReuse = false;
         }
         else
         {
-          // A quick but not highly accurate check first
-          if (epActiveDofMap->NumMyElements() != activeDofMap_->NumMyElements())
+          /* History is available. We actually have to check for a change in the active set
+           * by comparing the current map of active DOFs with the stored map of active DOFs
+           * from the previous application of the preconditioner.
+           */
+          if (not epActiveDofMap->PointSameAs(*activeDofMap_))
           {
-            /* Number of active nodes has changed, hence active set has changed
-             * -> force preconditioner to be rebuilt
-             */
+            // Map of active nodes has changed -> force preconditioner to be rebuilt
             bAllowReuse = false;
-          }
-          else
-          {
-            // Number of active nodes is still the same. Perform further checks
-            if (not epActiveDofMap->PointSameAs(*activeDofMap_))
-            {
-              // Map of active nodes has changed -> force preconditioner to be rebuilt
-              bAllowReuse = false;
-            }
           }
         }
 

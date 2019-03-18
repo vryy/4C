@@ -9,9 +9,8 @@
 
 \level 2
 
-\maintainer Michael Hiermeier
-*/
-/*----------------------------------------------------------------------------*/
+\maintainer Christoph Ager
+ *------------------------------------------------------------------------------------------------*/
 
 #ifndef CUT_POSITION_H
 #define CUT_POSITION_H
@@ -35,7 +34,7 @@ namespace GEO
      public:
       /** \brief Status of the position computation.
        *
-       *  Please not that the ordering is important, since the assigned integers are
+       *  Please note that the ordering is important, since the assigned integers are
        *  used for comparison operations. As soon as all position cases are working
        *  flawlessly this enum list can and should be adapted.
        *
@@ -82,47 +81,55 @@ namespace GEO
        *
        *  \param element (in) : Cut element. We check whether the given
        *                        point lies inside / on it.
-       *  \param point   (in) : Given global point object. */
-      static Teuchos::RCP<Position> Create(const Element& element, const Point& point);
+       *  \param point   (in) : Given global point object.
+       *  \param floattype (in) : Floattype to compute geometric operations. */
+      static Teuchos::RCP<Position> Create(const Element& element, const Point& point,
+          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double);
 
       /** \brief build variant #2
        *
        *  \param element (in) : Cut element. We check whether the given
        *                        point lies inside / on it.
        *  \param xyz     (in) : Global coordinates of the given point.
+       *  \param floattype (in) : Floattype to compute geometric operations.
        *
        *  \author hiermeier \date 08/16 */
       template <unsigned rdim>
-      static Teuchos::RCP<Position> Create(
-          const Element& element, const LINALG::Matrix<rdim, 1>& xyz);
-
+      static Teuchos::RCP<Position> Create(const Element& element,
+          const LINALG::Matrix<rdim, 1>& xyz,
+          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double);
       /** \brief build variant #3
        *
        *  \param xyze    (in) : Global nodal positions of the element.
        *  \param xyz     (in) : Global coordinates of the given point.
        *  \param distype (in) : element discretization type.
+       *  \param floattype (in) : Floattype to compute geometric operations.
        *
        *  \author hiermeier \date 08/16 */
       template <unsigned rdim, unsigned cdim, unsigned rdim_2>
       static Teuchos::RCP<Position> Create(const LINALG::Matrix<rdim, cdim>& xyze,
-          const LINALG::Matrix<rdim_2, 1>& xyz, const DRT::Element::DiscretizationType& distype);
+          const LINALG::Matrix<rdim_2, 1>& xyz, const DRT::Element::DiscretizationType& distype,
+          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double);
 
       /// \brief build variant #3-1 (Epetra_SerialDenseMatrix)
       template <unsigned rdim>
       static Teuchos::RCP<Position> Create(const Epetra_SerialDenseMatrix& xyze,
-          const LINALG::Matrix<rdim, 1>& xyz, const DRT::Element::DiscretizationType& distype);
+          const LINALG::Matrix<rdim, 1>& xyz, const DRT::Element::DiscretizationType& distype,
+          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double);
 
       /** \brief build variant #4
        *
        *  \param nodes   (in) : Nodes of the element we want to check.
        *  \param xyz     (in) : Global coordinates of the given point.
        *  \param distype (in) : element discretization type (optional).
+       *  \param floattype (in) : Floattype to compute geometric operations.
        *
        *  \author hiermeier \date 08/16 */
       template <unsigned rdim>
       static Teuchos::RCP<Position> Create(const std::vector<Node*> nodes,
           const LINALG::Matrix<rdim, 1>& xyz,
-          DRT::Element::DiscretizationType distype = DRT::Element::dis_none);
+          DRT::Element::DiscretizationType distype = DRT::Element::dis_none,
+          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double);
 
       /// @}
      public:
@@ -243,7 +250,8 @@ namespace GEO
      *  \date 08/16 */
     template <unsigned probdim, DRT::Element::DiscretizationType eletype,
         unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement,
-        unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim>
+        unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim,
+        INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double>
     class PositionGeneric : public Position
     {
      public:
@@ -390,14 +398,16 @@ namespace GEO
      *  \author hiermeier \date 08/16 */
     template <unsigned probdim, DRT::Element::DiscretizationType eletype,
         unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement,
-        unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim>
-    class ComputePosition : public PositionGeneric<probdim, eletype>
+        unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim,
+        INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double>
+    class ComputePosition
+        : public PositionGeneric<probdim, eletype, numNodesElement, dim, floattype>
     {
      public:
       /// constructor
       ComputePosition(const LINALG::Matrix<probdim, numNodesElement>& xyze,
           const LINALG::Matrix<probdim, 1>& xyz)
-          : PositionGeneric<probdim, eletype>(xyze, xyz){};
+          : PositionGeneric<probdim, eletype, numNodesElement, dim, floattype>(xyze, xyz){};
 
       /// destructor
       virtual ~ComputePosition(){};
@@ -432,14 +442,16 @@ namespace GEO
      *  \author hiermeier \date 08/16 */
     template <unsigned probdim, DRT::Element::DiscretizationType eletype,
         unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement,
-        unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim>
-    class ComputeEmbeddedPosition : public PositionGeneric<probdim, eletype>
+        unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim,
+        INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double>
+    class ComputeEmbeddedPosition
+        : public PositionGeneric<probdim, eletype, numNodesElement, dim, floattype>
     {
      public:
       /// constructor
       ComputeEmbeddedPosition(const LINALG::Matrix<probdim, numNodesElement>& xyze,
           const LINALG::Matrix<probdim, 1>& xyz)
-          : PositionGeneric<probdim, eletype>(xyze, xyz)
+          : PositionGeneric<probdim, eletype, numNodesElement, dim, floattype>(xyze, xyz)
       {
         this->xsi_.SetView(xsi_aug_.A());
       };
@@ -581,31 +593,49 @@ namespace GEO
        *
        *  \param element (in) : Cut element. We check whether the given
        *                        point lies inside / on it.
-       *  \param point   (in) : Given global point */
-      Teuchos::RCP<Position> CreatePosition(const Element& element, const Point& point) const;
+       *  \param point   (in) : Given global point
+       *  \param floattype (in) : Floattype to compute geometric operations. */
+      Teuchos::RCP<Position> CreatePosition(const Element& element, const Point& point,
+          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const;
 
       /** \brief build variant #2
        *
        *  \param element (in) : Cut element. We check whether the given
        *                        point lies inside / on it.
-       *  \param xyz     (in) : Global coordinates of the given point. */
-      Teuchos::RCP<Position> CreatePosition(const Element& element, const double* xyz) const;
+       *  \param xyz     (in) : Global coordinates of the given point
+       *  *  \param floattype (in) : Floattype to compute geometric operations. */
+      Teuchos::RCP<Position> CreatePosition(const Element& element, const double* xyz,
+          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const;
 
       /** \brief build variant #3
        *
        *  \param xyze    (in) : Global nodal positions of the element.
        *  \param xyz     (in) : Global coordinates of the given point.
-       *  \param distype (in) : element discretization type. */
+       *  \param distype (in) : element discretization type.
+       *  \param floattype (in) : Floattype to compute geometric operations. */
       Teuchos::RCP<Position> CreatePosition(const double* xyze, const double* xyz,
-          const DRT::Element::DiscretizationType& distype) const;
+          const DRT::Element::DiscretizationType& distype,
+          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const;
 
       /** \brief build variant #4
        *
        *  \param nodes   (in) : Nodes of the element we want to check.
        *  \param xyz     (in) : Global coordinates of the given point.
-       *  \param distype (in) : element discretization type. (optional)*/
+       *  \param distype (in) : element discretization type. (optional)
+       *  \param floattype (in) : Floattype to compute geometric operations. */
       Teuchos::RCP<Position> CreatePosition(const std::vector<Node*> nodes, const double* xyz,
-          DRT::Element::DiscretizationType distype = DRT::Element::dis_none) const;
+          DRT::Element::DiscretizationType distype = DRT::Element::dis_none,
+          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const;
+
+      /// \brief specify general floattype for all geometric operations in GEO::CUT::POSITON
+      static void SpecifyGeneralPosFloattype(INPAR::CUT::CUT_Floattype floattype)
+      {
+        general_pos_floattype_ = floattype;
+      }
+      static void SpecifyGeneralDistFloattype(INPAR::CUT::CUT_Floattype floattype)
+      {
+        general_dist_floattype_ = floattype;
+      }
 
      private:
       /// template class for the actual position creation
@@ -616,7 +646,8 @@ namespace GEO
       {
        public:
         static Position* Create(const LINALG::Matrix<probdim, numNodesElement>& xyze,
-            const LINALG::Matrix<probdim, 1>& xyz)
+            const LINALG::Matrix<probdim, 1>& xyz,
+            INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
         {
           return NULL;
         }
@@ -630,8 +661,9 @@ namespace GEO
       class PositionCreator<true, dim, dim, eletype, numNodesElement>
       {
        public:
-        static Position* Create(
-            const LINALG::Matrix<dim, numNodesElement>& xyze, const LINALG::Matrix<dim, 1>& xyz)
+        static Position* Create(const LINALG::Matrix<dim, numNodesElement>& xyze,
+            const LINALG::Matrix<dim, 1>& xyz,
+            INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
         {
           dserror(
               "Wrong template combination: ProbDim must be unequal"
@@ -644,8 +676,9 @@ namespace GEO
       class PositionCreator<true, 1, 2, eletype, numNodesElement>
       {
        public:
-        static Position* Create(
-            const LINALG::Matrix<1, numNodesElement>& xyze, const LINALG::Matrix<1, 1>& xyz)
+        static Position* Create(const LINALG::Matrix<1, numNodesElement>& xyze,
+            const LINALG::Matrix<1, 1>& xyz,
+            INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
         {
           dserror(
               "Wrong template combination: ProbDim must be larger"
@@ -658,8 +691,9 @@ namespace GEO
       class PositionCreator<true, 1, 3, eletype, numNodesElement>
       {
        public:
-        static Position* Create(
-            const LINALG::Matrix<1, numNodesElement>& xyze, const LINALG::Matrix<1, 1>& xyz)
+        static Position* Create(const LINALG::Matrix<1, numNodesElement>& xyze,
+            const LINALG::Matrix<1, 1>& xyz,
+            INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
         {
           dserror(
               "Wrong template combination: ProbDim must be larger"
@@ -672,8 +706,9 @@ namespace GEO
       class PositionCreator<true, 2, 3, eletype, numNodesElement>
       {
        public:
-        static Position* Create(
-            const LINALG::Matrix<2, numNodesElement>& xyze, const LINALG::Matrix<2, 1>& xyz)
+        static Position* Create(const LINALG::Matrix<2, numNodesElement>& xyze,
+            const LINALG::Matrix<2, 1>& xyz,
+            INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
         {
           dserror(
               "Wrong template combination: ProbDim must be larger"
@@ -688,7 +723,8 @@ namespace GEO
       {
        public:
         static Position* Create(const LINALG::Matrix<probdim, numNodesElement>& xyze,
-            const LINALG::Matrix<probdim, 1>& xyz)
+            const LINALG::Matrix<probdim, 1>& xyz,
+            INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
         {
           dserror(
               "Wrong template combination: ProbDim must be equal"
@@ -706,9 +742,27 @@ namespace GEO
       {
        public:
         static Position* Create(const LINALG::Matrix<probdim, numNodesElement>& xyze,
-            const LINALG::Matrix<probdim, 1>& xyz)
+            const LINALG::Matrix<probdim, 1>& xyz,
+            INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
         {
-          return new ComputeEmbeddedPosition<probdim, eletype>(xyze, xyz);
+          switch (UseDistFloattype(floattype))
+          {
+            case INPAR::CUT::floattype_double:
+            {
+              return new ComputeEmbeddedPosition<probdim, eletype, numNodesElement,
+                  DRT::UTILS::DisTypeToDim<eletype>::dim, INPAR::CUT::floattype_double>(xyze, xyz);
+              break;
+            }
+            case INPAR::CUT::floattype_cln:
+            {
+              return new ComputeEmbeddedPosition<probdim, eletype, numNodesElement,
+                  DRT::UTILS::DisTypeToDim<eletype>::dim, INPAR::CUT::floattype_cln>(xyze, xyz);
+              break;
+            }
+            default:
+              dserror("Unsupported floattype!");
+          }
+          return NULL;
         }
       };
 
@@ -717,10 +771,28 @@ namespace GEO
       class PositionCreator<false, dim, dim, eletype, numNodesElement>
       {
        public:
-        static Position* Create(
-            const LINALG::Matrix<dim, numNodesElement>& xyze, const LINALG::Matrix<dim, 1>& xyz)
+        static Position* Create(const LINALG::Matrix<dim, numNodesElement>& xyze,
+            const LINALG::Matrix<dim, 1>& xyz,
+            INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
         {
-          return new ComputePosition<dim, eletype>(xyze, xyz);
+          switch (UsePosFloattype(floattype))
+          {
+            case INPAR::CUT::floattype_double:
+            {
+              return new ComputePosition<dim, eletype, numNodesElement,
+                  DRT::UTILS::DisTypeToDim<eletype>::dim, INPAR::CUT::floattype_double>(xyze, xyz);
+              break;
+            }
+            case INPAR::CUT::floattype_cln:
+            {
+              return new ComputePosition<dim, eletype, numNodesElement,
+                  DRT::UTILS::DisTypeToDim<eletype>::dim, INPAR::CUT::floattype_cln>(xyze, xyz);
+              break;
+            }
+            default:
+              dserror("Unsupported floattype!");
+          }
+          return NULL;
         }
       };
 
@@ -748,7 +820,8 @@ namespace GEO
       template <unsigned probdim, DRT::Element::DiscretizationType eletype,
           unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim,
           unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
-      Teuchos::RCP<Position> BuildPosition(const Element& element, const Point& point) const
+      Teuchos::RCP<Position> BuildPosition(const Element& element, const Point& point,
+          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const
       {
 #endif
         LINALG::Matrix<probdim, numNodesElement> xyze;
@@ -758,11 +831,13 @@ namespace GEO
 
         if (probdim > dim)
         {
-          return Teuchos::rcp(PositionCreator<true, probdim, dim, eletype>::Create(xyze, px));
+          return Teuchos::rcp(
+              PositionCreator<true, probdim, dim, eletype>::Create(xyze, px, floattype));
         }
         else if (probdim == dim)
         {
-          return Teuchos::rcp(PositionCreator<false, probdim, dim, eletype>::Create(xyze, px));
+          return Teuchos::rcp(
+              PositionCreator<false, probdim, dim, eletype>::Create(xyze, px, floattype));
         }
         else
           dserror(
@@ -775,8 +850,8 @@ namespace GEO
 
       /// concrete create variant #1
       template <DRT::Element::DiscretizationType eletype>
-      Teuchos::RCP<Position> CreateConcretePosition(
-          const Element& element, const Point& point) const
+      Teuchos::RCP<Position> CreateConcretePosition(const Element& element, const Point& point,
+          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const
       {
         const int dim = DRT::UTILS::DisTypeToDim<eletype>::dim;
         if (dim > probdim_)
@@ -788,9 +863,9 @@ namespace GEO
         switch (probdim_)
         {
           case 2:
-            return BuildPosition<2, eletype>(element, point);
+            return BuildPosition<2, eletype>(element, point, floattype);
           case 3:
-            return BuildPosition<3, eletype>(element, point);
+            return BuildPosition<3, eletype>(element, point, floattype);
           default:
             dserror("Unsupported problem dimension! (probdim = %d)", probdim_);
             exit(EXIT_FAILURE);
@@ -824,8 +899,9 @@ namespace GEO
       template <unsigned probdim, DRT::Element::DiscretizationType eletype,
           unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim,
           unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
-      static Teuchos::RCP<Position> BuildPosition(
-          const Element& element, const LINALG::Matrix<probdim, 1>& xyz)
+      static Teuchos::RCP<Position> BuildPosition(const Element& element,
+          const LINALG::Matrix<probdim, 1>& xyz,
+          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
       {
 #endif
         LINALG::Matrix<probdim, numNodesElement> xyze;
@@ -833,11 +909,13 @@ namespace GEO
 
         if (probdim > dim)
         {
-          return Teuchos::rcp(PositionCreator<true, probdim, dim, eletype>::Create(xyze, xyz));
+          return Teuchos::rcp(
+              PositionCreator<true, probdim, dim, eletype>::Create(xyze, xyz, floattype));
         }
         else if (probdim == dim)
         {
-          return Teuchos::rcp(PositionCreator<false, probdim, dim, eletype>::Create(xyze, xyz));
+          return Teuchos::rcp(
+              PositionCreator<false, probdim, dim, eletype>::Create(xyze, xyz, floattype));
         }
         else
           dserror(
@@ -851,7 +929,8 @@ namespace GEO
      private:
       /// concrete create variant #2
       template <DRT::Element::DiscretizationType eletype>
-      Teuchos::RCP<Position> CreateConcretePosition(const Element& element, const double* xyz) const
+      Teuchos::RCP<Position> CreateConcretePosition(const Element& element, const double* xyz,
+          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const
       {
         const int dim = DRT::UTILS::DisTypeToDim<eletype>::dim;
         if (dim > probdim_)
@@ -865,12 +944,12 @@ namespace GEO
           case 2:
           {
             LINALG::Matrix<2, 1> xyz_mat(xyz, true);
-            return BuildPosition<2, eletype>(element, xyz_mat);
+            return BuildPosition<2, eletype>(element, xyz_mat, floattype);
           }
           case 3:
           {
             LINALG::Matrix<3, 1> xyz_mat(xyz, true);
-            return BuildPosition<3, eletype>(element, xyz_mat);
+            return BuildPosition<3, eletype>(element, xyz_mat, floattype);
           }
           default:
             dserror("Unsupported problem dimension! (probdim = %d)", probdim_);
@@ -906,17 +985,20 @@ namespace GEO
           unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
       static Teuchos::RCP<Position> BuildPosition(
           const LINALG::Matrix<probdim, numNodesElement>& xyze,
-          const LINALG::Matrix<probdim, 1>& xyz)
+          const LINALG::Matrix<probdim, 1>& xyz,
+          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
       {
 #endif
 
         if (probdim > dim)
         {
-          return Teuchos::rcp(PositionCreator<true, probdim, dim, eletype>::Create(xyze, xyz));
+          return Teuchos::rcp(
+              PositionCreator<true, probdim, dim, eletype>::Create(xyze, xyz, floattype));
         }
         else if (probdim == dim)
         {
-          return Teuchos::rcp(PositionCreator<false, probdim, dim, eletype>::Create(xyze, xyz));
+          return Teuchos::rcp(
+              PositionCreator<false, probdim, dim, eletype>::Create(xyze, xyz, floattype));
         }
         else
           dserror(
@@ -930,7 +1012,8 @@ namespace GEO
      private:
       /// concrete create variant #3
       template <DRT::Element::DiscretizationType eletype>
-      Teuchos::RCP<Position> CreateConcretePosition(const double* xyze, const double* xyz) const
+      Teuchos::RCP<Position> CreateConcretePosition(const double* xyze, const double* xyz,
+          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const
       {
         const unsigned num_nodes_ele =
             DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement;
@@ -940,13 +1023,13 @@ namespace GEO
           {
             LINALG::Matrix<2, num_nodes_ele> xyze_mat(xyze, true);
             LINALG::Matrix<2, 1> xyz_mat(xyz, true);
-            return BuildPosition<2, eletype>(xyze_mat, xyz_mat);
+            return BuildPosition<2, eletype>(xyze_mat, xyz_mat, floattype);
           }
           case 3:
           {
             LINALG::Matrix<3, num_nodes_ele> xyze_mat(xyze, true);
             LINALG::Matrix<3, 1> xyz_mat(xyz, true);
-            return BuildPosition<3, eletype>(xyze_mat, xyz_mat);
+            return BuildPosition<3, eletype>(xyze_mat, xyz_mat, floattype);
           }
           default:
             dserror("Unsupported problem dimension! (probdim = %d)", probdim_);
@@ -980,8 +1063,9 @@ namespace GEO
       template <unsigned probdim, DRT::Element::DiscretizationType eletype,
           unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim,
           unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
-      static Teuchos::RCP<Position> BuildPosition(
-          const std::vector<Node*> nodes, const LINALG::Matrix<probdim, 1>& xyz)
+      static Teuchos::RCP<Position> BuildPosition(const std::vector<Node*> nodes,
+          const LINALG::Matrix<probdim, 1>& xyz,
+          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
       {
 #endif
         if (not(nodes.size() == numNodesElement))
@@ -999,11 +1083,13 @@ namespace GEO
 
         if (probdim > dim)
         {
-          return Teuchos::rcp(PositionCreator<true, probdim, dim, eletype>::Create(xyze, xyz));
+          return Teuchos::rcp(
+              PositionCreator<true, probdim, dim, eletype>::Create(xyze, xyz, floattype));
         }
         else if (probdim == dim)
         {
-          return Teuchos::rcp(PositionCreator<false, probdim, dim, eletype>::Create(xyze, xyz));
+          return Teuchos::rcp(
+              PositionCreator<false, probdim, dim, eletype>::Create(xyze, xyz, floattype));
         }
         else
           dserror(
@@ -1017,20 +1103,21 @@ namespace GEO
      private:
       /// concrete create variant #4
       template <DRT::Element::DiscretizationType eletype>
-      Teuchos::RCP<Position> CreateConcretePosition(
-          const std::vector<Node*> nodes, const double* xyz) const
+      Teuchos::RCP<Position> CreateConcretePosition(const std::vector<Node*> nodes,
+          const double* xyz,
+          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const
       {
         switch (probdim_)
         {
           case 2:
           {
             LINALG::Matrix<2, 1> xyz_mat(xyz, true);
-            return BuildPosition<2, eletype>(nodes, xyz_mat);
+            return BuildPosition<2, eletype>(nodes, xyz_mat, floattype);
           }
           case 3:
           {
             LINALG::Matrix<3, 1> xyz_mat(xyz, true);
-            return BuildPosition<3, eletype>(nodes, xyz_mat);
+            return BuildPosition<3, eletype>(nodes, xyz_mat, floattype);
           }
           default:
             dserror("Unsupported problem dimension! (probdim = %d)", probdim_);
@@ -1041,6 +1128,14 @@ namespace GEO
       }
 
       /// @}
+
+      /*! \brief get general floattype for all geometric operations in GEO::CUT::POSITON*/
+      static INPAR::CUT::CUT_Floattype UsePosFloattype(INPAR::CUT::CUT_Floattype floattype);
+      static INPAR::CUT::CUT_Floattype UseDistFloattype(INPAR::CUT::CUT_Floattype floattype);
+
+      /*! \brief general floattype for all geometric operations in GEO::CUT::POSITON*/
+      static INPAR::CUT::CUT_Floattype general_pos_floattype_;
+      static INPAR::CUT::CUT_Floattype general_dist_floattype_;
 
       /// problem dimension
       unsigned probdim_;

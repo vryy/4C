@@ -5,7 +5,7 @@
 
 \level 3
 
-\maintainer Michael Gee
+\maintainer Anh-Tu Vuong
 *-----------------------------------------------------------------------*/
 
 #ifndef UNIT_SO_TET4_H_
@@ -14,6 +14,8 @@
 #include <cxxtest/TestSuite.h>
 #include <Epetra_SerialComm.h>
 #include "src/drt_so3/so_tet4.H"
+#include "src/drt_lib/drt_globalproblem.H"
+
 
 namespace DRT
 {
@@ -23,14 +25,15 @@ namespace DRT
   }
 }  // namespace DRT
 
+/**
+ * Class to test main functionality of tet4 element
+ */
 class DRT::ELEMENTS::So_tet4_TestSuite : public CxxTest::TestSuite
 {
- private:
-  Teuchos::RCP<Discretization> testdis_;
-  Teuchos::RCP<So_tet4> testele_;
-  Teuchos::RCP<So_tet4> copytestele_;
-
  public:
+  /**
+   * Set up the testing environment.
+   */
   void setUp()
   {
     // create a discretization, that creates node to element pointers and keeps the nodes alive
@@ -51,13 +54,24 @@ class DRT::ELEMENTS::So_tet4_TestSuite : public CxxTest::TestSuite
     copytestele_ = Teuchos::rcp(new DRT::ELEMENTS::So_tet4(*testele_));
   }
 
+  /**
+   * Delete pointers.
+   */
   void tearDown()
   {
     copytestele_ = Teuchos::null;
     testele_ = Teuchos::null;
     testdis_ = Teuchos::null;
+
+    // We need to make sure the DRT::Problem instance created in setUp is deleted again. If this is
+    // not done, some troubles arise where unit tests influence each other on some configurations.
+    // We suspect that missing singleton destruction might be the reason for that.
+    DRT::Problem::Done();
   }
 
+  /**
+   * Test Number of DOFs per node function
+   */
   void test_NumDofPerNode()
   {
     double pd[3] = {1, 2, 3};
@@ -66,36 +80,54 @@ class DRT::ELEMENTS::So_tet4_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_EQUALS(copytestele_->NumDofPerNode(node_dummy), 3);
   }
 
+  /**
+   * Test Number of DOFs per element
+   */
   void test_NumDofPerElement()
   {
     TS_ASSERT_EQUALS(testele_->NumDofPerElement(), 0);
     TS_ASSERT_EQUALS(copytestele_->NumDofPerElement(), 0);
   }
 
+  /**
+   * Test the polynomial degree
+   */
   void test_Degree()
   {
     TS_ASSERT_EQUALS(testele_->Degree(), 1);
     TS_ASSERT_EQUALS(copytestele_->Degree(), 1);
   }
 
+  /**
+   * Test the number of volumes the element is composed of
+   */
   void test_NumVolume()
   {
     TS_ASSERT_EQUALS(testele_->NumVolume(), 1);
     TS_ASSERT_EQUALS(copytestele_->NumVolume(), 1);
   }
 
+  /**
+   * Test the number of surfaces the element is composed of
+   */
   void test_NumSurface()
   {
     TS_ASSERT_EQUALS(testele_->NumSurface(), 4);
     TS_ASSERT_EQUALS(copytestele_->NumSurface(), 4);
   }
 
+  /**
+   * Test the number of lines the element is composed of
+   */
   void test_NumLine()
   {
     TS_ASSERT_EQUALS(testele_->NumLine(), 6);
     TS_ASSERT_EQUALS(copytestele_->NumLine(), 6);
   }
 
+  /**
+   * Test the calculation of the element center coordinates
+   */
   void test_ElementCenterRefeCoords()
   {
     double midpoint[3] = {0.5625, 0.2050, 0.6550};
@@ -105,6 +137,14 @@ class DRT::ELEMENTS::So_tet4_TestSuite : public CxxTest::TestSuite
       TS_ASSERT_DELTA(copytestele_->ElementCenterRefeCoords()[i], midpoint[i], 1e-14);
     }
   }
+
+ private:
+  //! dummy discretization for holding element and node pointers
+  Teuchos::RCP<Discretization> testdis_;
+  //! the tet4 element to be tested
+  Teuchos::RCP<So_tet4> testele_;
+  //! a copy of the tet element to test the copy constructor
+  Teuchos::RCP<So_tet4> copytestele_;
 };
 
 #endif /* UNIT_SO_TET4_H_ */

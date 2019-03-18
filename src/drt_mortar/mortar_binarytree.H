@@ -11,11 +11,10 @@
 #ifndef MORTAR_BINARYTREE_H
 #define MORTAR_BINARYTREE_H
 
-#include "Teuchos_RCP.hpp"
 #include "Epetra_Comm.h"
 #include "Epetra_Map.h"
-#include "Epetra_SerialDenseMatrix.h"
-#include "abstract_binarytree.H"
+#include "base_binarytree.H"
+#include "../drt_inpar/inpar_mortar.H"
 
 // forward declarations
 namespace DRT
@@ -50,7 +49,7 @@ namespace MORTAR
 
   \author popp (popp@lnm.mw.tum.de)
   */
-  class BinaryTreeNode
+  class BinaryTreeNode : public BaseBinaryTreeNode
   {
    public:
     /*!
@@ -61,10 +60,10 @@ namespace MORTAR
     \param parent      points to parent tree node
     \param elelist     list of all elements in BinaryTreeNode
     \param dopnormals  reference to DOP normals
-    \param kdop        refernece to no. of vertices
+    \param kdop        reference to no. of vertices
     \param dim         dimension of problem
     \param useauxpos   bool whether auxiliary position is used when computing dops
-    \param layer       current layer of treenode
+    \param layer       current layer of tree node
     \param ...map      references to maps
 
     */
@@ -86,16 +85,10 @@ namespace MORTAR
     //! @name Evaluation methods
 
     /*!
-    \brief Calculate slabs of dop
-
-    */
-    void CalculateSlabsDop();
-
-    /*!
     \brief Update slabs of current treenode in bottom up way
 
     */
-    void UpdateSlabsBottomUp(double& eps);
+    void UpdateSlabsBottomUp(double& eps) final;
 
     /*!
     \brief Initialize Tree
@@ -104,35 +97,16 @@ namespace MORTAR
     void InitializeTree(double& eps);
 
     /*!
-    \brief Enlarge geometry of a Treenode by an offset, dependent on size
-
-    */
-    void EnlargeGeometry(double& eps);
-
-    /*!
     \brief Divide a TreeNode into two child nodes
 
     */
     void DivideTreeNode();
 
     /*!
-    \brief Print type of TreeNode to std::cout
+    \brief Print type of tree node to std::cout
 
     */
-    void PrintType();
-
-    /*!
-    \brief Print slabs to std::cout
-
-    */
-    void PrintSlabs();
-
-    /*!
-    \brief Set slabs of current treenode
-
-    */
-    void SetSlabs(Epetra_SerialDenseMatrix& newslabs);
-
+    void PrintType() final;
     //@}
 
     //! @name Access and modification methods
@@ -141,145 +115,25 @@ namespace MORTAR
     \brief Get communicator
 
     */
-    virtual const Epetra_Comm& Comm() const;
-
-    /*!
-    \brief Get discretization of the interface
-
-    */
-    virtual DRT::Discretization& Discret() const { return idiscret_; }
+    const Epetra_Comm& Comm() const;
 
     /*!
     \brief Return type of treenode
 
     */
-    virtual BinaryTreeNodeType Type() const { return type_; }
-
-    /*!
-    \brief Set type of treenode
-
-    */
-    virtual void SetType(MORTAR::BinaryTreeNodeType type) { type_ = type; }
+    BinaryTreeNodeType Type() const { return type_; }
 
     /*!
     \brief Return pointer to right child
 
     */
-    virtual Teuchos::RCP<BinaryTreeNode> Rightchild() const { return rightchild_; }
+    Teuchos::RCP<BinaryTreeNode> Rightchild() const { return rightchild_; }
 
     /*!
     \brief Return pointer to left child
 
     */
-    virtual Teuchos::RCP<BinaryTreeNode> Leftchild() const { return leftchild_; }
-
-    /*!
-    \brief Return pointer to parent
-
-    */
-    virtual Teuchos::RCP<BinaryTreeNode> Parent() const { return parent_; }
-
-    /*!
-    \brief Set children of a treenode
-
-    */
-    void SetChildren(
-        Teuchos::RCP<BinaryTreeNode> leftchild, Teuchos::RCP<BinaryTreeNode> rightchild);
-
-    /*!
-    \brief Set parent of treenode
-
-    */
-    virtual void SetParent(Teuchos::RCP<BinaryTreeNode> parent) { parent_ = parent; }
-
-    /*!
-    \brief Return slabs of DOP
-
-    */
-    virtual Epetra_SerialDenseMatrix& Slabs() { return slabs_; }
-
-    /*!
-    \brief Return number of k-DOP vertices
-
-    */
-    virtual int Kdop() const { return kdop_; }
-
-    /*!
-    \brief Return layer of current TreeNode
-
-    */
-    virtual int Layer() const { return layer_; }
-
-    /*!
-    \brief Set layer of current TreeNode
-
-    */
-    virtual void SetLayer(int layer) { layer_ = layer; }
-
-    /*!
-    \brief Return reference to element list of TreeNode
-
-    */
-    virtual std::vector<int>& Elelist() { return elelist_; }
-
-    /*!
-    \brief Return dim of Problem
-
-    */
-    virtual const int& Dim() { return dim_; }
-
-    /*!
-    \brief Return different maps of tree nodes
-
-    */
-    virtual std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& Streenodesmap()
-    {
-      return streenodesmap_;
-    }
-    virtual std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& Mtreenodesmap()
-    {
-      return mtreenodesmap_;
-    }
-    virtual std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& Sleafsmap()
-    {
-      return sleafsmap_;
-    }
-    virtual std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& Mleafsmap()
-    {
-      return mleafsmap_;
-    }
-
-    //@}
-
-    //! @name Visualization methods (GMSH)
-
-    /*!
-    \brief Print slabs of DOP to file for GMSH output
-    \param filename     filename to which treenodes are plotted
-
-    */
-    void PrintDopsForGmsh(std::string filename);
-
-    /*!
-    \brief Plot a point in GMSH to given file
-
-    */
-    void PlotGmshPoint(std::string filename, double* position0, int nr);
-
-    /*!
-    \brief Plot a quadrangle in GMSH to given file
-
-    */
-    void PlotGmshQuadrangle(std::string filename, double* position0, double* position1,
-        double* position2, double* position3);
-
-    /*!
-    \brief Plot a triangle in GMSH to given file
-
-    */
-    void PlotGmshTriangle(
-        std::string filename, double* position0, double* position1, double* position2);
-
+    Teuchos::RCP<BinaryTreeNode> Leftchild() const { return leftchild_; }
     //@}
 
    private:
@@ -290,9 +144,9 @@ namespace MORTAR
     //! type of BinaryTreeNode
     MORTAR::BinaryTreeNodeType type_;
 
-    //! interface discretization
-    DRT::Discretization& idiscret_;
-
+    // the pointers to the parent as well as to the left and right child are not moved to the
+    // BaseBinaryTreeNode as this would require a lot of dynamic casting and thereby complicating
+    // the readability of the code
     //! pointer to the parent BinaryTreeNode
     Teuchos::RCP<BinaryTreeNode> parent_;
 
@@ -301,27 +155,6 @@ namespace MORTAR
 
     //! pointer to the right child TreeNode
     Teuchos::RCP<BinaryTreeNode> rightchild_;
-
-    //! geometry slabs of TreeNode, saved as Min|Max
-    Epetra_SerialDenseMatrix slabs_;
-
-    //! list with all elements of BinaryTreeNode
-    std::vector<int> elelist_;
-
-    //! reference to DOP normals
-    const Epetra_SerialDenseMatrix& dopnormals_;
-
-    //! reference to no. of vertices
-    const int& kdop_;
-
-    //! reference to dim. of problem
-    const int& dim_;
-
-    //! bool whether auxiliary position is used when computing dops
-    const bool& useauxpos_;
-
-    //! layer of TreeNode in Tree (0=rootnode!)
-    int layer_;
 
     //! reference to map of all slave treenodes, sorted by layer
     std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& streenodesmap_;
@@ -345,7 +178,7 @@ namespace MORTAR
 
   \author popp (popp@lnm.mw.tum.de)
   */
-  class BinaryTree : public AbstractBinaryTree
+  class BinaryTree : public BaseBinaryTree
   {
    public:
     /*!
@@ -357,12 +190,14 @@ namespace MORTAR
     \param selements (in):   All slave elements (column map)
     \param melements (in):   All master elements (fully overlapping map)
     \param dim (in):         The problem dimension
-    \param eps (in):
-    \param useauxpos (in):
+    \param eps (in):         factor used to enlarge dops
+    \param updatetype (in):  Defining type of binary tree update (top down, or bottom up)
+    \param useauxpos (in):   flag indicating usage of auxiliary position for calculation of slabs
 
     */
     BinaryTree(DRT::Discretization& discret, Teuchos::RCP<Epetra_Map> selements,
-        Teuchos::RCP<Epetra_Map> melements, int dim, double eps, bool useauxpos);
+        Teuchos::RCP<Epetra_Map> melements, int dim, double eps,
+        INPAR::MORTAR::BinaryTreeUpdateType updatetype, bool useauxpos);
 
     /*!
     \brief Destructor
@@ -411,37 +246,13 @@ namespace MORTAR
     \brief Get communicator
 
     */
-    virtual const Epetra_Comm& Comm() const;
-
-    /*!
-    \brief Get discretization of the interface
-
-    */
-    virtual DRT::Discretization& Discret() const { return idiscret_; }
-
-    /*!
-    \brief Get matrix of DOP normals
-
-    */
-    virtual const Epetra_SerialDenseMatrix& DopNormals() { return dopnormals_; }
-
-    /*!
-    \brief Get number of vertices of DOP
-
-    */
-    virtual const int& Kdop() { return kdop_; }
-
-    /*!
-    \brief Return dim of Problem
-
-    */
-    virtual const int& Dim() { return dim_; }
+    const Epetra_Comm& Comm() const;
 
     /*!
     \brief Return reference to slave treenodesmap
 
     */
-    virtual std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& Streenodesmap()
+    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& Streenodesmap()
     {
       return streenodesmap_;
     }
@@ -450,7 +261,7 @@ namespace MORTAR
     \brief Return reference to master treenodesmap
 
     */
-    virtual std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& Mtreenodesmap()
+    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& Mtreenodesmap()
     {
       return mtreenodesmap_;
     }
@@ -459,53 +270,31 @@ namespace MORTAR
     \brief Return reference to coupling treenodesmap
 
     */
-    virtual std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& CouplingMap()
-    {
-      return couplingmap_;
-    }
+    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& CouplingMap() { return couplingmap_; }
 
     /*!
     \brief Return pointer to sroot-treenode
 
     */
-    virtual Teuchos::RCP<BinaryTreeNode>& Sroot() { return sroot_; }
-
-    /*!
-    \brief Return pointer to mroot-treenode
-
-    */
-    virtual Teuchos::RCP<BinaryTreeNode>& Mroot() { return mroot_; }
-
-    /*!
-    \brief Return minimal element length
-
-    */
-    virtual double& MinLengthEle() { return minlengthele_; }
-
-    /*!
-    \brief Return factor "eps" to enlarge dops
-
-    */
-    virtual double& Eps() { return eps_; }
-
-    /*!
-    \brief Return factor "enlarge" to enlarge dops
-
-    */
-    virtual double& Enlarge() { return enlarge_; }
-
+    Teuchos::RCP<BinaryTreeNode>& Sroot() { return sroot_; }
     //@}
 
     //! @name Evaluation methods
 
     /*!
+    \brief Initialize internal variables
+
+     */
+    void InitInternalVariables() final;
+
+    /*!
     \brief Calculate minimal element length / inflation factor "enlarge"
 
     */
-    void SetEnlarge();
+    void SetEnlarge() final;
 
     /*!
-    \brief Update master and slave tree in a topdown way
+    \brief Update master and slave tree in a top down way
 
     */
     void UpdateTreeTopDown()
@@ -516,7 +305,7 @@ namespace MORTAR
     }
 
     /*!
-    \brief Evaluate update of master and slave tree in a topdown way
+    \brief Evaluate update of master and slave tree in a top down way
 
     */
     void EvaluateUpdateTreeTopDown(Teuchos::RCP<BinaryTreeNode> treenode);
@@ -540,72 +329,42 @@ namespace MORTAR
         std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& treenodesmap);
 
     /*!
-    \brief Evaluate Binary search tree for separate update and search
+    \brief Evaluate binary search tree
+
+    \note Search and update is carried out in a separate way. There has also been a combined
+    approach, but this has been removed as part of GitLab Issue 181, as it is outperformed by the
+    separate approach for large problems!
 
     */
-    void SearchSeparate()
-    {
-      EvaluateSearchSeparate(sroot_, mroot_);
-      return;
-    }
-
-    /*!
-    \brief Evaluate Binary search tree for separate update and search
-
-    */
-    void EvaluateSearchSeparate(
+    void EvaluateSearch(
         Teuchos::RCP<BinaryTreeNode> streenode, Teuchos::RCP<BinaryTreeNode> mtreenode);
-
-    /*!
-    \brief Evaluate Binary search tree for combined search and update
-
-    */
-    void SearchCombined()
-    {  // if proc has no slave elements --> return;
-      if (sroot_->Type() == NOSLAVE_ELEMENTS) return;
-      sroot_->CalculateSlabsDop();
-      sroot_->EnlargeGeometry(enlarge_);
-      mroot_->CalculateSlabsDop();
-      mroot_->EnlargeGeometry(enlarge_);
-      EvaluateSearchCombined(sroot_, mroot_);
-      return;
-    }
-
-    /*!
-    \brief Evaluate Binary search tree for combined search and update
-
-    */
-    void EvaluateSearchCombined(
-        Teuchos::RCP<BinaryTreeNode> streenode, Teuchos::RCP<BinaryTreeNode> mtreenode);
-
 
     // don't want = operator and cctor
     BinaryTree operator=(const BinaryTree& old);
     BinaryTree(const BinaryTree& old);
 
-    DRT::Discretization& idiscret_;       // mortar interface discretization
-    Teuchos::RCP<Epetra_Map> selements_;  // all slave elements on surface (column map)
-    Teuchos::RCP<Epetra_Map> melements_;  // all master elements on surface (full map)
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>
-        streenodesmap_;  // map of all slave treenodes, sorted by layers
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>
-        mtreenodesmap_;  // map of all master treenodes, sorted by layers
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>
-        couplingmap_;  // map of all treenodes, that possibly couple, st/mt
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>
-        sleafsmap_;  // map of all slave leaf treenodes, [0]=leftchild,[1]=rightchild
-    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>
-        mleafsmap_;  // map of all master leaf treenodes, [0]=leftchild,[1]=rightlchild
-    Teuchos::RCP<BinaryTreeNode> sroot_;  // slave root treenode
-    Teuchos::RCP<BinaryTreeNode> mroot_;  // master root treenode
-    double minlengthele_;                 // minimum of length of fe-elements
-    const int dim_;                       // problem dimension (2D or 3D)
-    double eps_;                          // epsilon for enlarging dops (of user)
-    bool useauxpos_;  // bool whether auxiliary position is used when computing dops
-    double enlarge_;  // to enlarge dops
-    Epetra_SerialDenseMatrix dopnormals_;  // defining vertices of DOP
-    int kdop_;                             // sets k for DOP (8 for 2D, 18 for 3D)
-
+    //! all slave elements on surface (column map)
+    Teuchos::RCP<Epetra_Map> selements_;
+    //! all master elements on surface (full map)
+    Teuchos::RCP<Epetra_Map> melements_;
+    //! map of all slave tree nodes, sorted by layers
+    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>> streenodesmap_;
+    //! map of all master tree nodes, sorted by layers
+    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>> mtreenodesmap_;
+    //! map of all tree nodes, that possibly couple, st/mt
+    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>> couplingmap_;
+    //! map of all slave leaf tree nodes, [0]=left child,[1]=right child
+    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>> sleafsmap_;
+    //! map of all master leaf tree nodes, [0]=left child,[1]=right child
+    std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>> mleafsmap_;
+    //! slave root tree node
+    Teuchos::RCP<BinaryTreeNode> sroot_;
+    //! master root tree node
+    Teuchos::RCP<BinaryTreeNode> mroot_;
+    //! update type of binary tree
+    const INPAR::MORTAR::BinaryTreeUpdateType updatetype_;
+    //! bool whether auxiliary position is used when computing dops
+    bool useauxpos_;
   };  // class BinaryTree
 }  // namespace MORTAR
 

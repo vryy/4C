@@ -169,8 +169,9 @@ void INPAR::POROMULTIPHASESCATRA::SetValidConditions(
       oxypartpresscomponents.push_back(Teuchos::rcp(new RealConditionComponent("Pb50")));
       oxypartpresscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("CaO2_max")));
       oxypartpresscomponents.push_back(Teuchos::rcp(new RealConditionComponent("CaO2_max")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("alpha")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new RealConditionComponent("alpha")));
+      oxypartpresscomponents.push_back(
+          Teuchos::rcp(new SeparatorConditionComponent("alpha_bl_eff")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new RealConditionComponent("alpha_bl_eff")));
       oxypartpresscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("rho_oxy")));
       oxypartpresscomponents.push_back(Teuchos::rcp(new RealConditionComponent("rho_oxy")));
       oxypartpresscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("rho_bl")));

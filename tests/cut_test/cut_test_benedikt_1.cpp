@@ -1,3 +1,11 @@
+/*!----------------------------------------------------------------------
+\brief Test for the CUT Library
+\file cut_test_benedikt_1.cpp
+
+\level 1
+
+\maintainer Christoph Ager
+*----------------------------------------------------------------------*/
 
 #include <iostream>
 #include <map>
@@ -17,14 +25,9 @@
 void test_benedikt1()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
-  //  side with id 594[ (1781; 0.05030222279960472,0.5164896689179502,0)--(1784;
-  //  0.05022204783542078,0.5141348415851575,0) ;
-  //                    (1784; 0.05022204783542078,0.5141348415851575,0)--(1786;
-  //                    0.05026213531751275,0.5153122552515541,-0.0025) ; (1786;
-  //                    0.05026213531751275,0.5153122552515541,-0.0025)--(1781;
-  //                    0.05030222279960472,0.5164896689179502,0) ;  ]
   int sidecount = 0;
   {
     Epetra_SerialDenseMatrix tri3_xyze(3, 3);
@@ -44,12 +47,6 @@ void test_benedikt1()
     nids.push_back(1786);
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
   }
-  //  side with id 594[ (1784; 0.05022204783542078,0.5141348415851575,0)--(1785;
-  //  0.05022204783542078,0.5141348415851579,-0.005) ;
-  //                    (1785; 0.05022204783542078,0.5141348415851579,-0.005)--(1786;
-  //                    0.05026213531751275,0.5153122552515541,-0.0025) ; (1784;
-  //                    0.05022204783542078,0.5141348415851575,0)--(1786;
-  //                    0.05026213531751275,0.5153122552515541,-0.0025) ;  ]
   {
     Epetra_SerialDenseMatrix tri3_xyze(3, 3);
 
@@ -68,12 +65,6 @@ void test_benedikt1()
     nids.push_back(1786);
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
   }
-  //  side with id 594[ (1785; 0.05022204783542078,0.5141348415851579,-0.005)--(1782;
-  //  0.05030222279960472,0.5164896689179506,-0.005) ;
-  //                    (1782; 0.05030222279960472,0.5164896689179506,-0.005)--(1786;
-  //                    0.05026213531751275,0.5153122552515541,-0.0025) ; (1785;
-  //                    0.05022204783542078,0.5141348415851579,-0.005)--(1786;
-  //                    0.05026213531751275,0.5153122552515541,-0.0025) ;  ]
   {
     Epetra_SerialDenseMatrix tri3_xyze(3, 3);
 
@@ -119,77 +110,6 @@ void test_benedikt1()
     intersection.AddCutSide(595, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  //   the same with four tri3 subsides instead of one quad4 side
-  //
-  ////  side with id 595[ (1784; 0.05022204783542078,0.5141348415851575,0)--(1787;
-  /// 0.05015420376099927,0.5117796267385427,0) ; /                    (1787;
-  /// 0.05015420376099927,0.5117796267385427,0)--(1789;
-  /// 0.05018812579821003,0.5129572341618502,-0.0025) ; /                    (1789;
-  /// 0.05018812579821003,0.5129572341618502,-0.0025)--(1784;
-  /// 0.05022204783542078,0.5141348415851575,0) ;  ]
-  //  {
-  //    Epetra_SerialDenseMatrix tri3_xyze( 3, 3 );
-  //
-  //    tri3_xyze(0,0) = 0.05022204783542078;
-  //    tri3_xyze(1,0) = 0.5141348415851575;
-  //    tri3_xyze(2,0) = 0.0;
-  //    tri3_xyze(0,1) = 0.05015420376099927;
-  //    tri3_xyze(1,1) = 0.5117796267385427;
-  //    tri3_xyze(2,1) = 0.0;
-  //    tri3_xyze(0,2) = 0.05018812579821003;
-  //    tri3_xyze(1,2) = 0.5129572341618502;
-  //    tri3_xyze(2,2) = -0.0025;
-  //    nids.clear();
-  //    nids.push_back( 1784 );
-  //    nids.push_back( 1787 );
-  //    nids.push_back( 1789 );
-  //    intersection.AddCutSide( sidecount, nids, tri3_xyze, DRT::Element::tri3 );
-  //  }
-  ////  side with id 595[ (1788; 0.05015420376099927,0.511779626738543,-0.005)--(1785;
-  /// 0.05022204783542078,0.5141348415851579,-0.005) ; /                    (1785;
-  /// 0.05022204783542078,0.5141348415851579,-0.005)--(1789;
-  /// 0.05018812579821003,0.5129572341618502,-0.0025) ; /                    (1788;
-  /// 0.05015420376099927,0.511779626738543,-0.005)--(1789;
-  /// 0.05018812579821003,0.5129572341618502,-0.0025) ;  ]
-  //  {
-  //    Epetra_SerialDenseMatrix tri3_xyze( 3, 3 );
-  //
-  //    tri3_xyze(0,0) = 0.05015420376099927;
-  //    tri3_xyze(1,0) = 0.511779626738543;
-  //    tri3_xyze(2,0) = -0.005;
-  //    tri3_xyze(0,1) = 0.05022204783542078;
-  //    tri3_xyze(1,1) = 0.5141348415851579;
-  //    tri3_xyze(2,1) = -0.005;
-  //    tri3_xyze(0,2) =  0.05018812579821003;
-  //    tri3_xyze(1,2) = 0.5129572341618502;
-  //    tri3_xyze(2,2) = -0.0025;
-  //    nids.clear();
-  //    nids.push_back( 1788 );
-  //    nids.push_back( 1785 );
-  //    nids.push_back( 1789 );
-  //    intersection.AddCutSide( sidecount, nids, tri3_xyze, DRT::Element::tri3 );
-  //  }
-  //  // (1784; 0.05022204783542078,0.5141348415851575,0)
-  //  // (1785; 0.05022204783542078,0.5141348415851579,-0.005)
-  //  // (1789; 0.05018812579821003,0.5129572341618502,-0.0025)
-  //  {
-  //    Epetra_SerialDenseMatrix tri3_xyze( 3, 3 );
-  //
-  //    tri3_xyze(0,0) = 0.05022204783542078;
-  //    tri3_xyze(1,0) = 0.5141348415851575;
-  //    tri3_xyze(2,0) = 0.0;
-  //    tri3_xyze(0,1) = 0.05022204783542078;
-  //    tri3_xyze(1,1) = 0.5141348415851579;
-  //    tri3_xyze(2,1) = -0.005;
-  //    tri3_xyze(0,2) = 0.05018812579821003;
-  //    tri3_xyze(1,2) = 0.5129572341618502;
-  //    tri3_xyze(2,2) = -0.0025;
-  //    nids.clear();
-  //    nids.push_back( 1784 );
-  //    nids.push_back( 1785 );
-  //    nids.push_back( 1789 );
-  //    intersection.AddCutSide( sidecount, nids, tri3_xyze, DRT::Element::tri3 );
-  //  }
 
   Epetra_SerialDenseMatrix hex8_xyze(3, 8);
 
@@ -260,7 +180,6 @@ void test_benedikt1()
 
 
 
-  // 388178, 388180, 388580, 388578, 388179, 388181, 388581, 388579
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
@@ -269,43 +188,5 @@ void test_benedikt1()
   intersection.AddElement(eid, nids, hex8_xyze, DRT::Element::hex8);
 
   intersection.Status();
-  intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_Tessellation);
-
-  std::vector<double> tessVol, momFitVol, dirDivVol;
-
-  GEO::CUT::Mesh mesh = intersection.NormalMesh();
-  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>& other_cells = mesh.VolumeCells();
-  for (std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
-       i != other_cells.end(); ++i)
-  {
-    GEO::CUT::VolumeCell* vc = &**i;
-    tessVol.push_back(vc->Volume());
-  }
-
-  intersection.Status();
-  for (std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
-       i != other_cells.end(); ++i)
-  {
-    GEO::CUT::VolumeCell* vc = &**i;
-    vc->MomentFitGaussWeights(
-        vc->ParentElement(), mesh, true, INPAR::CUT::BCellGaussPts_Tessellation);
-    momFitVol.push_back(vc->Volume());
-  }
-
-  for (std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
-       i != other_cells.end(); ++i)
-  {
-    GEO::CUT::VolumeCell* vc = &**i;
-    vc->DirectDivergenceGaussRule(
-        vc->ParentElement(), mesh, true, INPAR::CUT::BCellGaussPts_Tessellation);
-    dirDivVol.push_back(vc->Volume());
-  }
-
-  std::cout << "the volumes predicted by\n tessellation \t MomentFitting \t DirectDivergence\n";
-  for (unsigned i = 0; i < tessVol.size(); i++)
-  {
-    std::cout << tessVol[i] << "\t" << momFitVol[i] << "\t" << dirDivVol[i] << "\n";
-    if (fabs(tessVol[i] - momFitVol[i]) > 1e-9 || fabs(dirDivVol[i] - momFitVol[i]) > 1e-5)
-      dserror("volume predicted by either one of the method is wrong");
-  }
+  intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
 }

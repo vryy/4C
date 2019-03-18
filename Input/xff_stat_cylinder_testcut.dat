@@ -1,5 +1,5 @@
 //
-// Maintainer: Ager Christoph
+// Maintainer: Christoph Ager
 // ager@lnm.mw.tum.de
 // http://www.lnm.mw.tum.de
 // 089 - 289-15249
@@ -111,6 +111,7 @@ ML_DAMPFINE                     0.2                           // damping fine gr
 ML_DAMPMED                      0.2                           // damping med grids
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
 ----------------------------------------------------------------XFEM GENERAL
+VOLUME_GAUSS_POINTS_BY          DirectDivergence
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Hybrid_LM_Cauchy_stress       // BoundaryTypeNitsche // BoundaryTypeNeumann
 NIT_STAB_FAC                    1.0
