@@ -827,7 +827,9 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
     {
       // evaluation only for particles with contributions from neighboring particles
-      if (not(sumj_fj_Vj_Wij[type_i][particle_i] > 0.0)) continue;
+      if (not(sumj_fj_Vj_Wij[type_i][particle_i] > 0.0) or
+          not(UTILS::vec_norm2(&sumj_fj_Vj_Wij_CFGj[type_i][particle_i][0]) > 0.0))
+        continue;
 
       // declare pointer variables for particle i
       double* colorfieldgrad_i;
