@@ -201,6 +201,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
               Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroTemperature>(singlemat);
 
           // assemble heat capacities of fluid phases, volfracs and solid phase
+          // cp order [ <fluid>  <volfrac>  <solid> ]
           std::vector<double> cp;
           std::vector<double> cp_fluid(poromat->CP_Fluid());
           std::vector<double> cp_volfrac(poromat->CP_Volfrac());
@@ -212,6 +213,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
           VarManager()->SetHeatCapacity(cp);
 
           // assemble thermal diffusivities of fluid phases, volfracs and solid phase
+          // kappa order [ <fluid>  <volfrac>  <solid> ]
           std::vector<double> kappa;
           std::vector<double> kappa_fluid(poromat->KAPPA_Fluid());
           std::vector<double> kappa_volfrac(poromat->KAPPA_Volfrac());

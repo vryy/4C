@@ -840,12 +840,14 @@ namespace DRT
       double GetDelta(const int k) { return delta_[k]; };
 
       //! get heat capacity
+      //! heat capacity order [ <fluid>  <volfrac>  <solid> ]
       double GetHeatCapacity(const int j) { return heatcapacity_[j]; }
 
       //! get effective heat capacity
       double GetEffectiveHeatCapacity() { return heatcapacityeff_; }
 
       //! get thermal diffusivity
+      //! thermal diffusivity order [ <fluid>  <volfrac>  <solid> ]
       double GetThermalDiffusivity(const int j) { return thermaldiffusivity_[j]; }
 
       //! get evaluate scalar flag
@@ -1653,8 +1655,10 @@ namespace DRT
       //! delta for effective diffusivity
       std::vector<double> delta_;
       //! heat capacity
+      //! order [ <fluid>  <volfrac>  <solid> ]
       std::vector<double> heatcapacity_;
       //! thermal diffusivity
+      //! order [ <fluid>  <volfrac>  <solid> ]
       std::vector<double> thermaldiffusivity_;
       //! effective heat capacity
       double heatcapacityeff_;
