@@ -63,21 +63,6 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<beam, sol
  *
  */
 template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<beam, solid>::PreEvaluate()
-{
-  // Call PreEvaluate on the geometry Pair.
-  if (!this->meshtying_is_evaluated_)
-  {
-    this->CastGeometryPairCylinder()->PreEvaluateCylinder(
-        this->ele1posref_, this->ele2posref_, cylinder_to_volume_points_);
-  }
-}
-
-
-/**
- *
- */
-template <typename beam, typename solid>
 bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<beam, solid>::Evaluate(
     LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
     LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
@@ -86,13 +71,24 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<beam, sol
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
   {
-    this->CastGeometryPairCylinder()->EvaluateCylinder(
-        this->ele1posref_, this->ele2posref_, cylinder_to_volume_points_);
+    this->CastGeometryPair()->Evaluate(
+        this->ele1posref_, this->ele2posref_, this->line_to_volume_segments_);
     this->meshtying_is_evaluated_ = true;
   }
 
+  // If there are no segments, this pair has no contribution. Also there can be no more than one
+  // segment.
+  if (this->line_to_volume_segments_.size() == 0)
+    return false;
+  else if (this->line_to_volume_segments_.size() > 1)
+    dserror("There can be a maximum of one segment!");
+
+  // Get the vector with the projection points for this pair.
+  const std::vector<GEOMETRYPAIR::ProjectionPointLineToVolume<double>>& projection_points =
+      this->line_to_volume_segments_[0].GetProjectionPoints();
+
   // If there are no projection points, return no contact status.
-  if (this->cylinder_to_volume_points_.size() == 0) return false;
+  if (projection_points.size() == 0) return false;
 
   // Initialize variables for position and force vectors.
   LINALG::TMatrix<double, 3, 1> dr_beam_ref;
@@ -109,22 +105,23 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<beam, sol
 
   // Calculate the meshtying forces.
   // Loop over segments.
-  for (unsigned int i_integration_point = 0;
-       i_integration_point < this->cylinder_to_volume_points_.size(); i_integration_point++)
+  for (unsigned int i_integration_point = 0; i_integration_point < projection_points.size();
+       i_integration_point++)
   {
     // Get the current Gauss point.
     const GEOMETRYPAIR::ProjectionPointVolumeToVolume<double>& projected_gauss_point =
-        this->cylinder_to_volume_points_[i_integration_point];
+        dynamic_cast<const GEOMETRYPAIR::ProjectionPointVolumeToVolume<double>&>(
+            projection_points[i_integration_point]);
 
     // Get the jacobian in the reference configuration.
     GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
-        projected_gauss_point.GetXi1()(0), this->ele1posref_, dr_beam_ref, this->Element1());
+        projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref, this->Element1());
     beam_jacobian = 0.5 * dr_beam_ref.Norm2();
 
     // Get the current positions on beam and solid.
-    GEOMETRYPAIR::EvaluatePositionLineVolume<beam>(
-        projected_gauss_point.GetXi1(), this->ele1pos_, r_beam, this->Element1());
-    GEOMETRYPAIR::EvaluatePosition<solid>(projected_gauss_point.GetXi2(), this->ele2pos_, r_solid);
+    GEOMETRYPAIR::EvaluatePositionLineCrossSection<beam>(projected_gauss_point.GetEta(),
+        projected_gauss_point.GetEtaCrossSection(), this->ele1pos_, r_beam, this->Element1());
+    GEOMETRYPAIR::EvaluatePosition<solid>(projected_gauss_point.GetXi(), this->ele2pos_, r_solid);
 
     // Calculate the force in this Gauss point. The sign of the force calculated here is the one
     // that acts on the beam.
@@ -214,21 +211,6 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<beam,
       Teuchos::rcp(new GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<double,
           beam, solid>());
 }
-
-
-/**
- *
- */
-template <typename beam, typename solid>
-Teuchos::RCP<
-    GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<double, beam, solid>>
-BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<beam,
-    solid>::CastGeometryPairCylinder() const
-{
-  return Teuchos::rcp_dynamic_cast<
-      GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<double, beam, solid>>(
-      this->geometry_pair_, true);
-};
 
 
 /**

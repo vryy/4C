@@ -54,10 +54,9 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<scalar_t
  */
 template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<scalar_type, line,
-    volume>::PreEvaluateCylinder(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
+    volume>::PreEvaluate(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
     const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
-    std::vector<GEOMETRYPAIR::ProjectionPointVolumeToVolume<scalar_type>>&
-        cylinder_to_volume_points) const
+    std::vector<LineSegment<scalar_type>>& segments) const
 {
   // Check if the element is initialized.
   this->CheckInitSetup();
@@ -77,10 +76,12 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<scalar_t
   scalar_type eta;
   double alpha;
   LINALG::TMatrix<scalar_type, 3, 1> r_beam;
-  LINALG::TMatrix<scalar_type, 3, 1> xi_beam;
+  LINALG::TMatrix<scalar_type, 2, 1> eta_cross_section;
   LINALG::TMatrix<scalar_type, 3, 1> xi_solid;
   ProjectionResult projection_result;
-  cylinder_to_volume_points.clear();
+  segments.clear();
+  bool one_projects = false;
+  LineSegment<scalar_type> projection_point_segment;
 
   // Loop over Gauss points and check if they project to this volume.
   for (unsigned int index_gp_axis = 0; index_gp_axis < n_gauss_points_axis; index_gp_axis++)
@@ -96,24 +97,34 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<scalar_t
         // Centerline coordinate and coodrinates in the cross section.
         eta = gauss_points_axis.qxg[index_gp_axis][0];
         alpha = 2. * M_PI / double(n_gauss_points_circ) * index_gp_circ;
-        xi_beam(0) = eta;
-        xi_beam(1) = cos(alpha);
-        xi_beam(2) = sin(alpha);
+        eta_cross_section(0) = cos(alpha);
+        eta_cross_section(1) = sin(alpha);
 
-        // Position of beam in the cross section.
-        GEOMETRYPAIR::EvaluatePositionLineVolume<line>(xi_beam, q_line, r_beam, this->Element1());
+        // Position of point in the cross section.
+        GEOMETRYPAIR::EvaluatePositionLineCrossSection<line>(
+            eta, eta_cross_section, q_line, r_beam, this->Element1());
 
         // Project point to the volume.
         this->ProjectPointToVolume(r_beam, q_volume, xi_solid, projection_result);
         if (projection_result == ProjectionResult::projection_found_valid)
         {
           // Valid Gauss point was found, add to this segment and set tracking point to true.
-          cylinder_to_volume_points.push_back(ProjectionPointVolumeToVolume<scalar_type>(xi_beam,
-              xi_solid, gauss_points_axis.qwgt[index_gp_axis] * 2. / double(n_gauss_points_circ)));
+          projection_point_segment.AddProjectionPoint(
+              ProjectionPointVolumeToVolume<scalar_type>(eta, eta_cross_section, xi_solid,
+                  gauss_points_axis.qwgt[index_gp_axis] * 2. / double(n_gauss_points_circ)));
           line_projection_tracker[index_gp] = true;
+
+          one_projects = true;
         }
       }
     }
+  }
+
+  if (one_projects)
+  {
+    // Clear the segment vector and add the found segment for the current line to volume pair.
+    segments.clear();
+    segments.push_back(projection_point_segment);
   }
 }
 
@@ -123,16 +134,22 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<scalar_t
  */
 template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<scalar_type, line,
-    volume>::EvaluateCylinder(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
+    volume>::Evaluate(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
     const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
-    std::vector<GEOMETRYPAIR::ProjectionPointVolumeToVolume<scalar_type>>&
-        cylinder_to_volume_points) const
+    std::vector<LineSegment<scalar_type>>& segments) const
 {
   // Check if the element is initialized.
   this->CheckInitSetup();
 
+  // Only zero one segments are expected.
+  if (segments.size() > 1)
+    dserror(
+        "There should be zero or one segments for the Gauss point cylinder projection method. The "
+        "actual value is %d!",
+        segments.size());
+
   // Check if one point projected in PreEvaluate.
-  if (cylinder_to_volume_points.size() > 1)
+  if (segments.size() == 1 && segments[0].GetNumberOfProjectionPoints() > 0)
   {
     // Check if all points of this beam projected.
     const std::vector<bool>& projection_vector = GetLineProjectionVectorMutable();

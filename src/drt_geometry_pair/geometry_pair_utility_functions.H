@@ -31,18 +31,18 @@ namespace GEOMETRYPAIR
    * @param r (out) Position on the element.
    * @param element (in) Pointer to the element, needed for beam elements.
    */
-  template <typename element_type, typename T, typename V, typename scalar_type>
-  void EvaluatePositionLineVolume(const T& xi, const V& q, LINALG::TMatrix<scalar_type, 3, 1>& r,
-      const DRT::Element* element = NULL)
+  template <typename element_type, typename T1, typename T2, typename V, typename scalar_type>
+  void EvaluatePositionLineCrossSection(const T1& eta, const T2& eta_cross_section, const V& q,
+      LINALG::TMatrix<scalar_type, 3, 1>& r, const DRT::Element* element = NULL)
   {
     // Get the radius from the beam element.
     const double radius = (dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element))
                               ->GetCircularCrossSectionRadiusForInteractions();
 
     // Get the position and tangent along the centerline.
-    EvaluatePosition<element_type>(xi(0), q, r, element);
+    EvaluatePosition<element_type>(eta, q, r, element);
     LINALG::TMatrix<scalar_type, 3, 1> tangent, cross_section_director_2, cross_section_director_3;
-    EvaluatePositionDerivative1<element_type>(xi(0), q, tangent, element);
+    EvaluatePositionDerivative1<element_type>(eta, q, tangent, element);
 
     // The current implementation only allows tangential vectors in the x-y plane.
     if (abs(tangent(2)) > CONSTANTS::pos_tol)
@@ -60,8 +60,8 @@ namespace GEOMETRYPAIR
 
     // Add the in cross section components of the position.
     for (unsigned int dir = 0; dir < 3; dir++)
-      r(dir) +=
-          radius * (xi(1) * cross_section_director_2(dir) + xi(2) * cross_section_director_3(dir));
+      r(dir) += radius * (eta_cross_section(0) * cross_section_director_2(dir) +
+                             eta_cross_section(1) * cross_section_director_3(dir));
   }
 }  // namespace GEOMETRYPAIR
 

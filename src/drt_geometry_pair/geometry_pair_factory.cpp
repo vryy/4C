@@ -38,7 +38,9 @@ Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToVolumeF
       return Teuchos::rcp(new GeometryPairLineToVolumeSegmentation<scalar_type, line, volume>());
     default:
     {
-      dserror("The given geometry pair strategy is not valid!");
+      dserror(
+          "The given geometry pair strategy is not universally valid. You might want to create "
+          "your pair directly if you need certain features (for example cylinder integration)!");
       return Teuchos::null;
     }
   }
