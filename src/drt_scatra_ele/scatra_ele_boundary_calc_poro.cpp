@@ -4,12 +4,13 @@
 
 \brief evaluation of scatra boundary terms at integration points
 
- <pre>
-   Maintainer: Moritz Thon & Andre Hemmler
+\level 2
+
+\maintainer  Moritz Thon & Andre Hemmler
                thon@mhpc.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-10364
- </pre>
+
  */
 /*----------------------------------------------------------------------*/
 
@@ -103,6 +104,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::EvaluateAction(DRT::FaceE
     case SCATRA::bd_calc_fps3i_surface_permeability:
     case SCATRA::bd_calc_fs3i_surface_permeability:
     case SCATRA::bd_calc_Neumann:
+    case SCATRA::bd_calc_Robin:
     case SCATRA::bd_calc_normal_vectors:
     case SCATRA::bd_integrate_shape_functions:
     {

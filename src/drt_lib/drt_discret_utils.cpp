@@ -218,7 +218,7 @@ void DRT::Discretization::ComputeNullSpace(
   if (sumdimns != dimns * numproc) dserror("dimns not consistent among procs");
 
   // check if dimns is possible
-  if (dimns > 6) dserror("Nullspace size only upto 6 supported");
+  if (dimns > 10) dserror("Nullspace size only upto 10 supported");
 
   // compute nullspace for simple case: vector of ones
   if (dimns == 1 && numdf == 1)

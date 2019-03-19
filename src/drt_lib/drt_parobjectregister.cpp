@@ -349,6 +349,8 @@ std::string DRT::ParObjectList()
     << " " << MAT::ScatraMatPoroECMType::Instance().Name() << " "
     << MAT::ScatraMatMultiPoroFluidType::Instance().Name() << " "
     << MAT::ScatraMatMultiPoroVolFracType::Instance().Name() << " "
+    << MAT::ScatraMatMultiPoroSolidType::Instance().Name() << " "
+    << MAT::ScatraMatMultiPoroTemperatureType::Instance().Name() << " "
     << MAT::StVenantKirchhoffType::Instance().Name() << " "
     << MAT::SutherlandType::Instance().Name() << " " << MAT::TempDepWaterType::Instance().Name()
     << " " << MAT::ThermoStVenantKirchhoffType::Instance().Name() << " "

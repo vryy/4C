@@ -391,7 +391,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ApplyAdditionalDBCForVolFra
         {
           int matid = scatramat.MatID(idof);
           Teuchos::RCP<MAT::Material> singlemat = scatramat.MaterialById(matid);
-          if (singlemat->MaterialType() == INPAR::MAT::m_scatra_multiporo_fluid)
+          if (singlemat->MaterialType() == INPAR::MAT::m_scatra_multiporo_fluid ||
+              singlemat->MaterialType() == INPAR::MAT::m_scatra_multiporo_solid ||
+              singlemat->MaterialType() == INPAR::MAT::m_scatra_multiporo_temperature)
           {
             // do nothing
           }
@@ -413,7 +415,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ApplyAdditionalDBCForVolFra
             }
           }
           else
-            dserror("only MAT_scatra_multiporo_(fluid,volfrac) valid here");
+            dserror("only MAT_scatra_multiporo_(fluid,volfrac,solid,temperature) valid here");
         }
       }
     }

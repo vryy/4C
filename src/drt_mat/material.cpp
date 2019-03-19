@@ -351,6 +351,22 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
           static_cast<MAT::PAR::ScatraMatMultiPoroVolFrac*>(curmat->Parameter());
       return params->CreateMaterial();
     }
+    case INPAR::MAT::m_scatra_multiporo_solid:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::ScatraMatMultiPoroSolid(curmat));
+      MAT::PAR::ScatraMatMultiPoroSolid* params =
+          static_cast<MAT::PAR::ScatraMatMultiPoroSolid*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_scatra_multiporo_temperature:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::ScatraMatMultiPoroTemperature(curmat));
+      MAT::PAR::ScatraMatMultiPoroTemperature* params =
+          static_cast<MAT::PAR::ScatraMatMultiPoroTemperature*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
     case INPAR::MAT::m_scatra_bondreac:
     {
       if (curmat->Parameter() == NULL)
