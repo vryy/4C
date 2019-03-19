@@ -152,6 +152,11 @@ namespace ELEMAG
 
     /*!
     \brief Compute Silver-Mueller boundary conditions.
+
+    The functions ask the elements to compute the element matrices and vectors and assembles.
+
+    \param[in]  resonly Boolean indicating if it is only necessary to recompute the RHS (true) or if
+    it necessary to compute the matrices AND the RHS (false).
     */
     void ComputeSilverMueller(bool resonly);
 
