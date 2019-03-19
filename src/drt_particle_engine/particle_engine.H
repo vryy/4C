@@ -152,6 +152,9 @@ namespace PARTICLEENGINE
     //! get local index in specific particle container
     const LocalIndexTupleShrdPtr GetLocalIndexInSpecificContainer(int globalid) const override;
 
+    //! relate all particles to all processors
+    void RelateAllParticlesToAllProcs(std::vector<int>& particlestoproc) const override;
+
     //! return bin size
     const double* BinSize() const override;
 

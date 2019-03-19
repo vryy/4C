@@ -666,6 +666,57 @@ PARTICLEENGINE::ParticleEngine::GetLocalIndexInSpecificContainer(int globalid) c
 }
 
 /*---------------------------------------------------------------------------*
+ | relate all particles to all processors                     sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEENGINE::ParticleEngine::RelateAllParticlesToAllProcs(
+    std::vector<int>& particlestoproc) const
+{
+  // global ids on this processor
+  std::set<int> thisprocglobalids;
+
+  // iterate over particle types
+  for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
+  {
+    // get container of owned particles of current particle type
+    ParticleContainer* container =
+        particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
+
+    // get number of particles stored in container
+    const int particlestored = container->ParticlesStored();
+
+    // no particles of current type and current status
+    if (particlestored <= 0) continue;
+
+    // get pointer to global id of particles
+    int* globalids = container->GetPtrToParticleGlobalID(0);
+
+    // insert global id of particles
+    thisprocglobalids.insert(globalids, globalids + particlestored);
+  }
+
+  // get maximum global id on this processor
+  int thisprocmaxglobalid = (thisprocglobalids.size() == 0) ? 0 : *thisprocglobalids.rbegin();
+
+  // get maximum global id on all processors
+  int allprocmaxglobalid(0);
+  comm_.MaxAll(&thisprocmaxglobalid, &allprocmaxglobalid, 1);
+
+  // resize to hold all particles
+  const int vecsize = allprocmaxglobalid + 1;
+  particlestoproc.resize(vecsize, -1);
+
+  // relate this processor id to its global ids
+  for (int globalid : thisprocglobalids) particlestoproc[globalid] = myrank_;
+
+  // mpi communicator
+  const Epetra_MpiComm* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm_);
+  if (!mpicomm) dserror("dynamic cast to Epetra_MpiComm failed!");
+
+  // communicate global ids between all processors
+  MPI_Allreduce(MPI_IN_PLACE, &particlestoproc[0], vecsize, MPI_INT, MPI_MAX, mpicomm->Comm());
+}
+
+/*---------------------------------------------------------------------------*
  | return bin size                                            sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
 const double* PARTICLEENGINE::ParticleEngine::BinSize() const { return binstrategy_->BinSize(); }

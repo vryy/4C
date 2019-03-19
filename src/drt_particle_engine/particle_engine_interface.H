@@ -61,6 +61,9 @@ namespace PARTICLEENGINE
     //! get local index in specific particle container
     virtual const LocalIndexTupleShrdPtr GetLocalIndexInSpecificContainer(int globalid) const = 0;
 
+    //! relate all particles to all processors
+    virtual void RelateAllParticlesToAllProcs(std::vector<int>& particlestoproc) const = 0;
+
     //! return bin size
     virtual const double* BinSize() const = 0;
 
