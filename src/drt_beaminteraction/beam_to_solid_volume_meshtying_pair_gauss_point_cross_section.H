@@ -1,5 +1,5 @@
 /*!
-\file beam_to_solid_volume_meshtying_pair_gauss_point_cylinder.H
+\file beam_to_solid_volume_meshtying_pair_gauss_point_cross_section.H
 
 \brief Meshtying element for meshtying between a beam and a 3D solid element using Gauss points
 on the surface of the (circular) beam cross section.
@@ -10,8 +10,8 @@ on the surface of the (circular) beam cross section.
 // End doxygen header.
 
 
-#ifndef BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_GAUSS_POINT_CYLINDER_H_
-#define BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_GAUSS_POINT_CYLINDER_H_
+#ifndef BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_GAUSS_POINT_CROSS_SECTION_H_
+#define BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_GAUSS_POINT_CROSS_SECTION_H_
 
 
 #include "beam_to_solid_volume_meshtying_pair_base.H"
@@ -21,7 +21,7 @@ on the surface of the (circular) beam cross section.
 namespace GEOMETRYPAIR
 {
   template <typename scalar_type, typename line, typename volume>
-  class GeometryPairLineToVolumeGaussPointProjectionCylinder;
+  class GeometryPairLineToVolumeGaussPointProjectionCrossSection;
 }  // namespace GEOMETRYPAIR
 
 
@@ -34,19 +34,19 @@ namespace BEAMINTERACTION
    * @param solid Type from GEOMETRYPAIR::ElementDiscretization... representing the solid.
    */
   template <typename beam, typename solid>
-  class BeamToSolidVolumeMeshtyingPairGaussPointCylinder
+  class BeamToSolidVolumeMeshtyingPairGaussPointCrossSection
       : public BeamToSolidVolumeMeshtyingPairBase<beam, solid>
   {
    public:
     /**
      * \brief Standard Constructor
      */
-    BeamToSolidVolumeMeshtyingPairGaussPointCylinder();
+    BeamToSolidVolumeMeshtyingPairGaussPointCrossSection();
 
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToSolidVolumeMeshtyingPairGaussPointCylinder(){};
+    virtual ~BeamToSolidVolumeMeshtyingPairGaussPointCrossSection(){};
 
     /**
      * \brief Initialize this pair. Check that the correct geometry pair is given in the input file.

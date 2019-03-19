@@ -1,5 +1,5 @@
 /*!
-\file beam_to_solid_volume_meshtying_pair_gauss_point_cylinder.cpp
+\file beam_to_solid_volume_meshtying_pair_gauss_point_cross_section.cpp
 
 \brief Meshtying element for meshtying between a beam and a 3D solid element using Gauss points
 on the surface of the (circular) beam cross section.
@@ -9,8 +9,6 @@ on the surface of the (circular) beam cross section.
 */
 
 
-#include "beam_to_solid_volume_meshtying_pair_gauss_point_cylinder.H"
-
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
@@ -19,17 +17,18 @@ on the surface of the (circular) beam cross section.
 #include "beam_to_solid_volume_meshtying_params.H"
 #include "../drt_geometry_pair/geometry_pair_element_types.H"
 #include "../drt_geometry_pair/geometry_pair_utility_functions.H"
-#include "../drt_geometry_pair/geometry_pair_line_to_volume_gauss_point_projection_cylinder.H"
 #include "../drt_geometry_pair/geometry_pair_evaluation_data_global.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_volume_evaluation_data.H"
+#include "../drt_geometry_pair/geometry_pair_line_to_volume_gauss_point_projection_cross_section.H"
+#include "beam_to_solid_volume_meshtying_pair_gauss_point_cross_section.H"
 
 
 /**
  *
  */
 template <typename beam, typename solid>
-BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<beam,
-    solid>::BeamToSolidVolumeMeshtyingPairGaussPointCylinder()
+BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
+    solid>::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection()
     : BeamToSolidVolumeMeshtyingPairBase<beam, solid>()
 {
   // Empty constructor.
@@ -40,18 +39,18 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<beam,
  *
  */
 template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<beam, solid>::Init(
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam, solid>::Init(
     const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
     const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> geometry_evaluation_data_ptr,
     std::vector<DRT::Element const*> elements)
 {
   // Check that the correct geometry pair is given.
-  if (INPAR::GEOMETRYPAIR::LineToVolumeStrategy::gauss_point_projection_cylinder !=
+  if (INPAR::GEOMETRYPAIR::LineToVolumeStrategy::gauss_point_projection_cross_section !=
       geometry_evaluation_data_ptr->LineToVolumeEvaluationData()->GetStrategy())
     dserror(
         "The class BeamToSolidVolumeMeshtyingPairGaussPointCylinder can only be used with the "
         "geometry pair GeometryPairLineToVolumeGaussPointProjectionCylinder set by the input "
-        "parameter STRATEGY gauss_point_projection_cylinder");
+        "parameter STRATEGY gauss_point_projection_cross_section");
 
   // Call Init of base class, the geometry pair will be created and initialized there.
   BeamToSolidVolumeMeshtyingPairBase<beam, solid>::Init(
@@ -63,7 +62,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<beam, sol
  *
  */
 template <typename beam, typename solid>
-bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<beam, solid>::Evaluate(
+bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam, solid>::Evaluate(
     LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
     LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
     LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22)
@@ -195,21 +194,23 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<beam, sol
  *
  */
 template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<beam,
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
     solid>::CreateGeometryPair(const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal>
         geometry_evaluation_data_ptr)
 {
   // Check that the cylinder strategy is given in the input file.
   INPAR::GEOMETRYPAIR::LineToVolumeStrategy strategy =
       geometry_evaluation_data_ptr->LineToVolumeEvaluationData()->GetStrategy();
-  if (strategy != INPAR::GEOMETRYPAIR::LineToVolumeStrategy::gauss_point_projection_cylinder)
-    dserror("The cylinder projection only works with cylinder projection in the geometry pairs.");
+  if (strategy != INPAR::GEOMETRYPAIR::LineToVolumeStrategy::gauss_point_projection_cross_section)
+    dserror(
+        "The cross section projection only works with cross section projection in the geometry "
+        "pairs.");
 
   // Explicitly create the cylinder pair here, as this contact pair only works with this kind of
   // geometry pair.
-  this->geometry_pair_ =
-      Teuchos::rcp(new GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<double,
-          beam, solid>());
+  this->geometry_pair_ = Teuchos::rcp(
+      new GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<double, beam,
+          solid>());
 }
 
 
@@ -217,17 +218,17 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<beam,
  * Explicit template initialization of template class.
  */
 // Hermite beam element, hex8 solid element.
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<
+template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<
     GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>;
 // Hermite beam element, hex20 solid element.
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<
+template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<
     GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex20>;
 // Hermite beam element, hex27 solid element.
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<
+template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<
     GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex27>;
 // Hermite beam element, tet4 solid element.
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<
+template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<
     GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet4>;
 // Hermite beam element, tet10 solid element.
-template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<
+template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<
     GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10>;

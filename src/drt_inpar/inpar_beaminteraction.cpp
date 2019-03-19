@@ -156,11 +156,11 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
 
   setStringToIntegralParameter<BeamToSolidVolumeContactDiscretization>("CONTACT_DISCRETIZATION",
       "none", "Type of employed contact discretization",
-      tuple<std::string>("none", "gauss_point_to_segment", "mortar", "gauss_point_to_cylinder"),
+      tuple<std::string>("none", "gauss_point_to_segment", "mortar", "gauss_point_cross_section"),
       tuple<BeamToSolidVolumeContactDiscretization>(BeamToSolidVolumeContactDiscretization::none,
           BeamToSolidVolumeContactDiscretization::gauss_point_to_segment,
           BeamToSolidVolumeContactDiscretization::mortar,
-          BeamToSolidVolumeContactDiscretization::gauss_point_to_cylinder),
+          BeamToSolidVolumeContactDiscretization::gauss_point_cross_section),
       &beam_to_solid_volume_mestying);
 
   setStringToIntegralParameter<BeamToSolidVolumeConstraintEnforcement>("CONSTRAINT_STRATEGY",

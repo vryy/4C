@@ -103,8 +103,8 @@ namespace INPAR
       none,
       //! Gauss point to segment approach.
       gauss_point_to_segment,
-      //! Gauss point to cylinder approach.
-      gauss_point_to_cylinder,
+      //! Gauss point on cross section method.
+      gauss_point_cross_section,
       //! Mortar type coupling.
       mortar
     };

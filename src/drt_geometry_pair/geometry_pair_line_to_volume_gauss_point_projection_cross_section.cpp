@@ -1,5 +1,5 @@
 /*!incomplete
-\file geometry_pair_line_to_volume_gauss_point_projection_cylinder.cpp
+\file geometry_pair_line_to_volume_gauss_point_projection_cross_section.cpp
 
 \brief Line to volume interaction with Gauss point projection on the cylinder surface along the
 line.
@@ -9,7 +9,8 @@ line.
 */
 
 
-#include "geometry_pair_line_to_volume_gauss_point_projection_cylinder.H"
+#include "geometry_pair_line_to_volume_gauss_point_projection_cross_section.H"
+
 #include "geometry_pair_element_types.H"
 #include "geometry_pair_evaluation_data_global.H"
 #include "geometry_pair_line_to_volume_evaluation_data.H"
@@ -26,7 +27,7 @@ line.
  *
  */
 template <typename scalar_type, typename line, typename volume>
-void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<scalar_type, line,
+void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scalar_type, line,
     volume>::Setup()
 {
   // Call Setup on the base class.
@@ -54,7 +55,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<scalar_t
  *
  */
 template <typename scalar_type, typename line, typename volume>
-void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<scalar_type, line,
+void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scalar_type, line,
     volume>::PreEvaluate(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
     const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
     std::vector<LineSegment<scalar_type>>& segments) const
@@ -134,7 +135,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<scalar_t
  *
  */
 template <typename scalar_type, typename line, typename volume>
-void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<scalar_type, line,
+void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scalar_type, line,
     volume>::Evaluate(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
     const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
     std::vector<LineSegment<scalar_type>>& segments) const
@@ -174,8 +175,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<scalar_t
  *
  */
 template <typename scalar_type, typename line, typename volume>
-std::vector<bool>& GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<scalar_type,
-    line, volume>::GetLineProjectionVectorMutable() const
+std::vector<bool>& GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<
+    scalar_type, line, volume>::GetLineProjectionVectorMutable() const
 {
   // Get the Gauss point projection tracker for this line element.
   int line_element_id = this->Element1()->Id();
@@ -188,13 +189,13 @@ std::vector<bool>& GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCyl
 /**
  * Explicit template initialization of template class.
  */
-template class GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<double,
+template class GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<double,
     GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>;
-template class GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<double,
+template class GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<double,
     GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex20>;
-template class GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<double,
+template class GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<double,
     GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex27>;
-template class GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<double,
+template class GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<double,
     GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet4>;
-template class GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<double,
+template class GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<double,
     GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10>;

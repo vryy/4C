@@ -1,5 +1,5 @@
 /*!
-\file geometry_pair_line_to_volume_gauss_point_projection_cylinder.H
+\file geometry_pair_line_to_volume_gauss_point_projection_cross_section.H
 
 \brief Line to volume interaction with Gauss point projection on the cylinder surface along the
 line.
@@ -10,8 +10,8 @@ line.
 // End doxygen header.
 
 
-#ifndef GEOMETRY_PAIR_LINE_TO_VOLUME_GAUSS_POINT_PROJECTION_CYLINDER_H
-#define GEOMETRY_PAIR_LINE_TO_VOLUME_GAUSS_POINT_PROJECTION_CYLINDER_H
+#ifndef GEOMETRY_PAIR_LINE_TO_VOLUME_GAUSS_POINT_PROJECTION_CROSS_SECTION_H
+#define GEOMETRY_PAIR_LINE_TO_VOLUME_GAUSS_POINT_PROJECTION_CROSS_SECTION_H
 
 
 #include "geometry_pair_line_to_volume.H"
@@ -36,20 +36,20 @@ namespace GEOMETRYPAIR
    * @param volume Type of volume element.
    */
   template <typename scalar_type, typename line, typename volume>
-  class GeometryPairLineToVolumeGaussPointProjectionCylinder
+  class GeometryPairLineToVolumeGaussPointProjectionCrossSection
       : public GeometryPairLineToVolume<scalar_type, line, volume>
   {
    public:
     /**
      * \brief Constructor.
      */
-    GeometryPairLineToVolumeGaussPointProjectionCylinder()
+    GeometryPairLineToVolumeGaussPointProjectionCrossSection()
         : GeometryPairLineToVolume<scalar_type, line, volume>(){};
 
     /**
      * \brief Destructor.
      */
-    ~GeometryPairLineToVolumeGaussPointProjectionCylinder(){};
+    ~GeometryPairLineToVolumeGaussPointProjectionCrossSection(){};
 
     /**
      * \brief Setup the projection tracker for this line element.

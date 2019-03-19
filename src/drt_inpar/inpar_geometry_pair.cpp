@@ -28,10 +28,10 @@ void INPAR::GEOMETRYPAIR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList
     Teuchos::setStringToIntegralParameter<LineToVolumeStrategy>("STRATEGY", "segmentation",
         "Type of employed segmentation strategy",
         Teuchos::tuple<std::string>(
-            "segmentation", "gauss_point_projection", "gauss_point_projection_cylinder"),
+            "segmentation", "gauss_point_projection", "gauss_point_projection_cross_section"),
         Teuchos::tuple<LineToVolumeStrategy>(LineToVolumeStrategy::segmentation,
             LineToVolumeStrategy::gauss_point_projection,
-            LineToVolumeStrategy::gauss_point_projection_cylinder),
+            LineToVolumeStrategy::gauss_point_projection_cross_section),
         &line_to_volume);
 
     // Number of search points for segmentation.
