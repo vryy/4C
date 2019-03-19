@@ -216,6 +216,11 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
       .AddOptionalNamedInt("NUMPARAMS")
       .AddOptionalNamedPairOfStringAndDoubleVector("PARAMS", "NUMPARAMS");
 
+  DRT::INPUT::LineDefinition fastpolynomial_funct;
+  fastpolynomial_funct.AddTag("FASTPOLYNOMIAL")
+      .AddNamedInt("NUMCOEFF")
+      .AddNamedDoubleVector("COEFF", "NUMCOEFF");
+
   lines->Add(componentvarfunct);
   lines->Add(varfunct);
   lines->Add(linelin);
@@ -249,6 +254,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(ramptovalue);
   lines->Add(nodenormal);
   lines->Add(poromultiphasescatra_funct);
+  lines->Add(fastpolynomial_funct);
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   DRT::UTILS::CombustValidFunctionLines(lines);
@@ -553,6 +559,13 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         function->ExtractString("FILE", fileName);
 
         functions_.push_back(Teuchos::rcp(new AccelerationProfileFunction(fileName)));
+      }
+      else if (function->HaveNamed("FASTPOLYNOMIAL"))
+      {
+        std::vector<double> coefficients;
+        function->ExtractDoubleVector("COEFF", coefficients);
+
+        functions_.push_back(Teuchos::rcp(new FastPolynomialFunction(&coefficients)));
       }
       else if (function->HaveNamed("VARFUNCTION"))
       {
@@ -2042,4 +2055,27 @@ double DRT::UTILS::AccelerationProfileFunction::Evaluate(
   // Return the acceleration of the node for the given index
   // *****************************************************************************
   return acc_B_(index, 0);
+}
+
+DRT::UTILS::FastPolynomialFunction::FastPolynomialFunction(std::vector<double>* coefficients)
+    : Function(), mypoly_(new Polynomial(*coefficients))
+{
+}
+
+/*---------------------------------------------------------------------*
+ | Evaluate                                                proell 01/19 |
+ *---------------------------------------------------------------------*/
+double DRT::UTILS::FastPolynomialFunction::Evaluate(const double argument) const
+{
+  return mypoly_->Evaluate(argument);
+}
+
+/*---------------------------------------------------------------------*
+ | Evaluate derivative                                    proell 01/19 |
+ *---------------------------------------------------------------------*/
+double DRT::UTILS::FastPolynomialFunction::EvaluateDerivative(const double argument) const
+{
+  LINALG::Matrix<2, 1> derivs(false);
+  mypoly_->Evaluate(argument, derivs);
+  return derivs(1);
 }

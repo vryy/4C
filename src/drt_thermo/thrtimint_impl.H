@@ -161,16 +161,23 @@ namespace THR
     //! Solve dynamic equilibrium
     //!
     //! This is a general wrapper around the specific techniques.
-    void Solve();
+    virtual INPAR::THR::ConvergenceStatus Solve();
 
     //! Do full Newton-Raphson iteration
     //!
     //! This routines expects a prepared negative reisdual force #fres_
     //! and associated effective tangent matrix #tang_
-    void NewtonFull();
+    virtual INPAR::THR::ConvergenceStatus NewtonFull();
+
+
+    void ApplyLatentHeatIntegration();
+
+    //! Blank Dirichlet dofs form residual and reactions
+    //! calculate norms for convergence checks
+    void BlankDirichletAndCalcNorms();
 
     // check for success of nonlinear solve
-    int NewtonFullErrorCheck();
+    INPAR::THR::ConvergenceStatus NewtonFullErrorCheck();
 
     //! Do (so-called) modified Newton-Raphson iteration in which
     //! the initial tangent is kept and not adapted to the current
@@ -348,6 +355,11 @@ namespace THR
     //! copy constructor is NOT wanted
     TimIntImpl(const TimIntImpl& old);
 
+    // called when unconverged AND dicvont_halve_step
+    void HalveTimeStep();
+
+    void CheckForTimeStepIncrease();
+
     //! @name General purpose algorithm parameters
     //@{
     enum INPAR::THR::PredEnum pred_;  //!< predictor
@@ -367,18 +379,21 @@ namespace THR
     int itermax_;                             //!< maximally permitted iterations
     int itermin_;                             //!< minimally requested iterations
     enum INPAR::THR::DivContAct divcontype_;  // what to do when nonlinear solution fails
-    double toltempi_;                         //!< tolerance residual temperatures
-    double tolfres_;                          //!< tolerance force residual
-    int iter_;                                //!< iteration step
-    double normcharforce_;                    //!< characteristic norm for residual force
-    double normchartemp_;                     //!< characteristic norm for residual temperatures
-    double normfres_;                         //!< norm of residual forces
-    double normtempi_;                        //!< norm of residual temperatures
-    Teuchos::RCP<Epetra_Vector> tempi_;       //!< residual temperatures
-                                              //!< \f$\Delta{T}^{<k>}_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> tempinc_;     //!< sum of temperature vectors already applied,
-                                              //!< i.e. the incremental temperature
-    Epetra_Time timer_;                       //!< timer for solution technique
+    int divcontrefinelevel_;                  //!< refinement level of adaptive time stepping
+    int divcontfinesteps_;  //!< number of time steps already performed at current refinement level
+    double toltempi_;       //!< tolerance residual temperatures
+    double tolfres_;        //!< tolerance force residual
+    int iter_;              //!< iteration step
+    int resetiter_;  //<! number of iterations already performed in resets of the current step
+    double normcharforce_;                 //!< characteristic norm for residual force
+    double normchartemp_;                  //!< characteristic norm for residual temperatures
+    double normfres_;                      //!< norm of residual forces
+    double normtempi_;                     //!< norm of residual temperatures
+    Teuchos::RCP<Epetra_Vector> tempi_;    //!< residual temperatures
+                                           //!< \f$\Delta{T}^{<k>}_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> tempinc_;  //!< sum of temperature vectors already applied,
+                                           //!< i.e. the incremental temperature
+    Epetra_Time timer_;                    //!< timer for solution technique
     Teuchos::RCP<ADAPTER::CouplingMortar> adaptermeshtying_;  //!< mortar coupling adapter
     //@}
 
@@ -386,6 +401,14 @@ namespace THR
     //@{
     Teuchos::RCP<Epetra_Vector> fres_;    //!< force residual used for solution
     Teuchos::RCP<Epetra_Vector> freact_;  //!< reaction force
+    //@}
+
+    //! @name melting stuff
+    //@{
+    Teuchos::RCP<Epetra_Vector> fmelt_;  //!< artificial source term accounting for latent heat
+    const bool heatint_;                 //!< should heat integration be performed
+    const double melttol_;  //!< tolerance until which heat source increments are applied
+
     //@}
 
   };  // class TimIntImpl

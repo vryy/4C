@@ -94,6 +94,9 @@ void INPAR::THR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           divcont_repeat_simulation),
       &tdyn);
 
+  IntParameter("MAXDIVCONREFINEMENTLEVEL", 10,
+      "number of times timestep is halved in case nonlinear solver diverges", &tdyn);
+
   setStringToIntegralParameter<int>("NLNSOL", "fullnewton", "Nonlinear solution technique",
       tuple<std::string>("vague", "fullnewton"), tuple<int>(soltech_vague, soltech_newtonfull),
       &tdyn);
@@ -114,6 +117,9 @@ void INPAR::THR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   setStringToIntegralParameter<int>("LUMPCAPA", "No",
       "Lump the capacity matrix for explicit time integration", yesnotuple, yesnovalue, &tdyn);
+
+  BoolParameter("HEATINTEGRATION", "no", "use heat integration method by Rolph and Bathe", &tdyn);
+  DoubleParameter("TOLMELT", 0.0, "Tolerance until which latent heat is integrated.", &tdyn);
 
   // number of linear solver used for thermal problems
   IntParameter("LINEAR_SOLVER", -1, "number of linear solver used for thermal problems", &tdyn);

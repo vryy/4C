@@ -495,6 +495,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/cavitationfluid.cpp
   src/drt_mat/cnst_1d_art.cpp
   src/drt_mat/compogden.cpp
+  src/drt_mat/consolidation.cpp
   src/drt_mat/constraintmixture.cpp
   src/drt_mat/crosslinkermat.cpp
   src/drt_mat/constraintmixture_history.cpp
@@ -518,6 +519,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/fluidporo_relpermeability_law.cpp
   src/drt_mat/fluidporo_viscosity_law.cpp
   src/drt_mat/fourieriso.cpp
+  src/drt_mat/fouriervar.cpp
   src/drt_mat/membrane_elasthyper.cpp
   src/drt_mat/membrane_active_strain.cpp
   src/drt_mat/growthremodel_elasthyper.cpp
