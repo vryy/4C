@@ -88,7 +88,7 @@ namespace GEOMETRYPAIR
     inline int GetNumberOfGaussPoints() const { return GetGaussPoints().nquad; };
 
     /**
-     * \brief Sets the number of integration points along the circumfence of the beams cross
+     * \brief Sets the number of integration points along the circumfence of the line cross
      * section.
      */
     inline void SetGaussPointsCircumfence(const unsigned int gauss_points_circumfence)
@@ -97,7 +97,7 @@ namespace GEOMETRYPAIR
     }
 
     /**
-     * \brief Returns the number of integration points along the circumfence of the beams cross
+     * \brief Returns the number of integration points along the circumfence of the line cross
      * section.
      * @return number of integration points in cirumfencial direction.
      */
@@ -128,7 +128,7 @@ namespace GEOMETRYPAIR
     //! Gauss rule for Gauss point projection method.
     DRT::UTILS::GaussRule1D gauss_rule_;
 
-    //! Number of integration points in the circumfencial direction of the beam cross section.
+    //! Number of integration points in the circumfencial direction of the line cross section.
     unsigned int gauss_points_circumfence_;
 
     //! Gauss point projection tracking vector.

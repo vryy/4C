@@ -115,7 +115,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Returns the number of integration points along the circumfence of the beams cross
      * section.
-     * @return number of points rule.
+     * @return Number of points.
      */
     inline unsigned int GetGaussPointsCircumfence() const { return gauss_points_circumfence_; }
 
@@ -141,7 +141,8 @@ namespace BEAMINTERACTION
     //! Gauss rule to be used.
     DRT::UTILS::GaussRule1D gauss_rule_;
 
-    //! Number of Gauss points along the circumfencial direction in the cylinder projection.
+    //! Number of integration points along the circumfencial direction in the cross section
+    //! projection.
     unsigned int gauss_points_circumfence_;
   };
 

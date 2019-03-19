@@ -40,7 +40,8 @@ Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToVolumeF
     {
       dserror(
           "The given geometry pair strategy is not universally valid. You might want to create "
-          "your pair directly if you need certain features (for example cylinder integration)!");
+          "your pair directly if you need certain features (for example cross section "
+          "projection)!");
       return Teuchos::null;
     }
   }

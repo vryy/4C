@@ -64,7 +64,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Init()
     gauss_rule_ = INPAR::BEAMINTERACTION::IntToGaussRule1D(
         beam_to_solid_contact_params_list.get<int>("GAUSS_POINTS"));
 
-    // Gauss rule for integration along the beam (segments).
+    // Number of integrations points along the circumfence of the cross section.
     gauss_points_circumfence_ =
         beam_to_solid_contact_params_list.get<int>("GAUSS_POINTS_CIRCUMFENCE");
   }

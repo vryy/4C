@@ -1,7 +1,7 @@
 /*!
 \file beam_to_solid_volume_meshtying_pair_gauss_point_cylinder.cpp
 
-\brief Meshtying element for meshtying between a 3D beam and a 3D solid element using Gauss points
+\brief Meshtying element for meshtying between a beam and a 3D solid element using Gauss points
 on the surface of the (circular) beam cross section.
 
 \level 3
@@ -109,8 +109,8 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<beam, sol
        i_integration_point++)
   {
     // Get the current Gauss point.
-    const GEOMETRYPAIR::ProjectionPointVolumeToVolume<double>& projected_gauss_point =
-        dynamic_cast<const GEOMETRYPAIR::ProjectionPointVolumeToVolume<double>&>(
+    const GEOMETRYPAIR::ProjectionPointLineCrossSectionToVolume<double>& projected_gauss_point =
+        dynamic_cast<const GEOMETRYPAIR::ProjectionPointLineCrossSectionToVolume<double>&>(
             projection_points[i_integration_point]);
 
     // Get the jacobian in the reference configuration.
@@ -205,8 +205,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCylinder<beam,
   if (strategy != INPAR::GEOMETRYPAIR::LineToVolumeStrategy::gauss_point_projection_cylinder)
     dserror("The cylinder projection only works with cylinder projection in the geometry pairs.");
 
-  // Explicitly create the cylinder pair here, as it only works with this kind of beam contact
-  // pair.
+  // Explicitly create the cylinder pair here, as this contact pair only works with this kind of
+  // geometry pair.
   this->geometry_pair_ =
       Teuchos::rcp(new GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<double,
           beam, solid>());

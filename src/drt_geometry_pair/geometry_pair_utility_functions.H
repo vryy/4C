@@ -23,13 +23,23 @@
 namespace GEOMETRYPAIR
 {
   /**
-   * \brief Get the in a line element but with the line interpreted as a cylinder. The parameter
-   * space for this element is [-1, 1] in all directions, but it is a circle in xi2 and xi2
-   * direction. The radius is taken from the element pointer.
-   * @param xi (in) Parameter coordinate on the element.
-   * @param q (in) Degrees of freedom for the element.
-   * @param r (out) Position on the element.
-   * @param element (in) Pointer to the element, needed for beam elements.
+   * \brief Get the spatial position in a volume defined by a centerline and a cross section.
+   *
+   * The parameter coordinates in the cross section are from -1 t 1 in eta2 and eta3 direction. The
+   * radius is taken from the element pointer. The current implementation does not take rotations
+   * along the centerline into account. Therefore following triad along the centerline is assumed:
+   *   - director 1: Tangent along the centerline.
+   *   - director 2: Normal to director 1 in x-y plane.
+   *   - director 3: Normal to director 1 and director 2.
+   * This works fine as long as the line only deforms in the x-y plane. Other deformations will
+   * cause a runtime error.
+   *
+   * @param eta (in) Parameter coordinate along the centerline.
+   * @param eta_cross_section (in) Parameter coordinates in the cross section. They will be
+   * multiplied with the radius of the cylindrical surface on the centerline.
+   * @param q (in) DOF for of the line.
+   * @param r (out) Spatial position in the cross section.
+   * @param element (in) Pointer to the line element.
    */
   template <typename element_type, typename T1, typename T2, typename V, typename scalar_type>
   void EvaluatePositionLineCrossSection(const T1& eta, const T2& eta_cross_section, const V& q,

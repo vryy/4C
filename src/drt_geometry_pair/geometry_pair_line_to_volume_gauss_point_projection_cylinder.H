@@ -1,7 +1,8 @@
 /*!
 \file geometry_pair_line_to_volume_gauss_point_projection_cylinder.H
 
-\brief Line to volume interaction with simple Gauss point projection and boundary segmentation.
+\brief Line to volume interaction with Gauss point projection on the cylinder surface along the
+line.
 
 \level 1
 \maintainer Ivo Steinbrecher
@@ -27,9 +28,9 @@ namespace GEOMETRYPAIR
 namespace GEOMETRYPAIR
 {
   /**
-   * \brief Class that handles the geometrical interactions of a line and a volume by projecting
-   * Gauss points from the line to the volume. In case a line pokes out of the volumes it is
-   * segmented.
+   * \brief This geometry pair projects Gauss points from a line to a volume, but the Gauss points
+   * are not exactly on the centerline but on a cross section defined by the centerline.
+   *
    * @param scalar_type Type that will be used for scalar values.
    * @param line Type of line element.
    * @param volume Type of volume element.
@@ -56,8 +57,7 @@ namespace GEOMETRYPAIR
     void Setup();
 
     /**
-     * \brief Do stuff that can not be done in the Evaluate call. All pairs call PreEvaluate before
-     * Evaluate is called on one of them.
+     * \brief Try to project the points on the surface of the line to the volume.
      * @param q_line (in) Degrees of freedom for the line.
      * @param q_volume (in) Degrees of freedom for the volume.
      * @param segments (out) Vector with the segments of this line to volume pair.
@@ -67,8 +67,8 @@ namespace GEOMETRYPAIR
         std::vector<LineSegment<scalar_type>>& segments) const;
 
     /**
-     * \brief The only purpose of this method is to check that all points projected valid for this
-     * beam in PreEvaluate.
+     * \brief The only purpose of this method is to check that all points on this line element
+     * projected valid (not necessarily in this pair) in PreEvaluate.
      * @param q_line (in) Degrees of freedom for the line.
      * @param q_volume (in) Degrees of freedom for the volume.
      * @param segments (out) Vector with the segments of this line to volume pair.

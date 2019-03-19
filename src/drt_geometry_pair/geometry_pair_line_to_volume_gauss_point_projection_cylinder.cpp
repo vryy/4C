@@ -1,7 +1,8 @@
 /*!incomplete
 \file geometry_pair_line_to_volume_gauss_point_projection_cylinder.cpp
 
-\brief Line to volume interaction with simple Gauss point projection and boundary segmentation.
+\brief Line to volume interaction with Gauss point projection on the cylinder surface along the
+line.
 
 \level 1
 \maintainer Ivo Steinbrecher
@@ -110,7 +111,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCylinder<scalar_t
         {
           // Valid Gauss point was found, add to this segment and set tracking point to true.
           projection_point_segment.AddProjectionPoint(
-              ProjectionPointVolumeToVolume<scalar_type>(eta, eta_cross_section, xi_solid,
+              ProjectionPointLineCrossSectionToVolume<scalar_type>(eta, eta_cross_section, xi_solid,
                   gauss_points_axis.qwgt[index_gp_axis] * 2. / double(n_gauss_points_circ)));
           line_projection_tracker[index_gp] = true;
 

@@ -1,7 +1,7 @@
 /*!
 \file beam_to_solid_volume_meshtying_pair_gauss_point_cylinder.H
 
-\brief Meshtying element for meshtying between a 3D beam and a 3D solid element using Gauss points
+\brief Meshtying element for meshtying between a beam and a 3D solid element using Gauss points
 on the surface of the (circular) beam cross section.
 
 \level 3
@@ -49,7 +49,7 @@ namespace BEAMINTERACTION
     virtual ~BeamToSolidVolumeMeshtyingPairGaussPointCylinder(){};
 
     /**
-     * \brief Initialize this pair. Check that the correct geometry pair is given.
+     * \brief Initialize this pair. Check that the correct geometry pair is given in the input file.
      */
     void Init(const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
         const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> geometry_evaluation_data_ptr,
@@ -71,7 +71,7 @@ namespace BEAMINTERACTION
 
     /**
      * \brief Create the geometry pair for this contact pair. We overload that function because this
-     * pair requires the geometry pair cylinder projection to be created.
+     * pair requires explicitly that a cross section projection pair is created.
      * @param geometry_evaluation_data_ptr Evaluation data that will be linked to the pair.
      */
     void CreateGeometryPair(

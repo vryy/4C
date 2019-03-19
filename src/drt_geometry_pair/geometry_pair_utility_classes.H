@@ -193,26 +193,28 @@ namespace GEOMETRYPAIR
 
 
   /**
-   * \brief Class that represents a projection from a volume to a volume.
+   * \brief Class that represents a projection from a point on the cross section of a line to a
+   * volume.
    */
   template <typename scalar_type>
-  class ProjectionPointVolumeToVolume : public ProjectionPointLineToVolume<scalar_type>
+  class ProjectionPointLineCrossSectionToVolume : public ProjectionPointLineToVolume<scalar_type>
   {
    public:
     /**
      * \brief Constructor.
-     * @param xi1 Parameter coordinate on the first volume.
-     * @param xi2 Parameter coordinate on the second volume.
+     * @param eta Parameter coordinate on the centerline.
+     * @param eta_cross_section Parameter coordinates in the cross section.
+     * @param xi Parameter coordinate in the volume.
      * @param gauss_weight Gauss weight for this point.
      */
-    ProjectionPointVolumeToVolume(scalar_type eta,
+    ProjectionPointLineCrossSectionToVolume(scalar_type eta,
         LINALG::TMatrix<scalar_type, 2, 1> eta_cross_section, LINALG::TMatrix<scalar_type, 3, 1> xi,
         double gauss_weight)
         : ProjectionPointLineToVolume<scalar_type>(eta, xi, gauss_weight),
           eta_cross_section_(eta_cross_section){};
 
     /**
-     * \brief Get the parameter coordinate in the first volume.
+     * \brief Get the parameter coordinates in the cross section.
      */
     inline LINALG::TMatrix<scalar_type, 2, 1> GetEtaCrossSection() const
     {
@@ -220,7 +222,7 @@ namespace GEOMETRYPAIR
     };
 
    private:
-    //! Parameter coordinate in the first volume.
+    //! Parameter coordinates in the cross section.
     LINALG::TMatrix<scalar_type, 2, 1> eta_cross_section_;
   };
 
