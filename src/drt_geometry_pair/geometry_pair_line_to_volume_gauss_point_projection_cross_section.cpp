@@ -111,9 +111,10 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
         if (projection_result == ProjectionResult::projection_found_valid)
         {
           // Valid Gauss point was found, add to this segment and set tracking point to true.
-          projection_point_segment.AddProjectionPoint(
-              ProjectionPointLineCrossSectionToVolume<scalar_type>(eta, eta_cross_section, xi_solid,
-                  gauss_points_axis.qwgt[index_gp_axis] * 2. / double(n_gauss_points_circ)));
+          ProjectionPointLineToVolume<scalar_type> new_point(eta, xi_solid,
+              gauss_points_axis.qwgt[index_gp_axis] * 2. / double(n_gauss_points_circ));
+          new_point.SetEtaCrossSection(eta_cross_section);
+          projection_point_segment.AddProjectionPoint(new_point);
           line_projection_tracker[index_gp] = true;
 
           one_projects = true;

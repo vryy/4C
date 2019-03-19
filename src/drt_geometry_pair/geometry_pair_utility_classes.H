@@ -71,7 +71,9 @@ namespace GEOMETRYPAIR
         : eta_(eta),
           xi_(xi),
           projection_result_(ProjectionResult::none),
-          gauss_weight_(gauss_weight){};
+          gauss_weight_(gauss_weight),
+          eta_cross_section_(true),
+          is_cross_section_point_(false){};
 
     /**
      * \brief Constructor.
@@ -110,6 +112,24 @@ namespace GEOMETRYPAIR
      * \brief Get the parameter coordinates in the volume as a reference.
      */
     inline LINALG::TMatrix<scalar_type, 3, 1>& GetXiMutable() { return xi_; };
+
+    /**
+     * \brief Set the parameter coordinates in the cross section.
+     */
+    inline void SetEtaCrossSection(LINALG::TMatrix<scalar_type, 2, 1> eta_cross_section)
+    {
+      eta_cross_section_ = eta_cross_section;
+      is_cross_section_point_ = true;
+    };
+
+    /**
+     * \brief Get the parameter coordinates in the cross section.
+     */
+    inline LINALG::TMatrix<scalar_type, 2, 1> GetEtaCrossSection() const
+    {
+      if (!is_cross_section_point_) dserror("The cross section coordinate has not been set!");
+      return eta_cross_section_;
+    };
 
     /**
      * Set the projection result for this projection point.
@@ -189,43 +209,13 @@ namespace GEOMETRYPAIR
 
     //! Gauss weight for this point.
     double gauss_weight_;
-  };
 
-
-  /**
-   * \brief Class that represents a projection from a point on the cross section of a line to a
-   * volume.
-   */
-  template <typename scalar_type>
-  class ProjectionPointLineCrossSectionToVolume : public ProjectionPointLineToVolume<scalar_type>
-  {
-   public:
-    /**
-     * \brief Constructor.
-     * @param eta Parameter coordinate on the centerline.
-     * @param eta_cross_section Parameter coordinates in the cross section.
-     * @param xi Parameter coordinate in the volume.
-     * @param gauss_weight Gauss weight for this point.
-     */
-    ProjectionPointLineCrossSectionToVolume(scalar_type eta,
-        LINALG::TMatrix<scalar_type, 2, 1> eta_cross_section, LINALG::TMatrix<scalar_type, 3, 1> xi,
-        double gauss_weight)
-        : ProjectionPointLineToVolume<scalar_type>(eta, xi, gauss_weight),
-          eta_cross_section_(eta_cross_section){};
-
-    /**
-     * \brief Get the parameter coordinates in the cross section.
-     */
-    inline LINALG::TMatrix<scalar_type, 2, 1> GetEtaCrossSection() const
-    {
-      return eta_cross_section_;
-    };
-
-   private:
     //! Parameter coordinates in the cross section.
     LINALG::TMatrix<scalar_type, 2, 1> eta_cross_section_;
-  };
 
+    //! Flag if this is a point on a cross section.
+    bool is_cross_section_point_;
+  };
 
   /**
    * \brief Class to manage a segment on a line.

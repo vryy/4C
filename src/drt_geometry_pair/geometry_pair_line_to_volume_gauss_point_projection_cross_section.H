@@ -62,9 +62,9 @@ namespace GEOMETRYPAIR
      * @param q_volume (in) Degrees of freedom for the volume.
      * @param segments (out) Vector with the segments of this line to volume pair.
      */
-    virtual void PreEvaluate(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
+    void PreEvaluate(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
         const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
-        std::vector<LineSegment<scalar_type>>& segments) const;
+        std::vector<LineSegment<scalar_type>>& segments) const override;
 
     /**
      * \brief The only purpose of this method is to check that all points on this line element
@@ -73,9 +73,9 @@ namespace GEOMETRYPAIR
      * @param q_volume (in) Degrees of freedom for the volume.
      * @param segments (out) Vector with the segments of this line to volume pair.
      */
-    virtual void Evaluate(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
+    void Evaluate(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
         const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
-        std::vector<LineSegment<scalar_type>>& segments) const;
+        std::vector<LineSegment<scalar_type>>& segments) const override;
 
    private:
     /**

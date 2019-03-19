@@ -108,9 +108,8 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
        i_integration_point++)
   {
     // Get the current Gauss point.
-    const GEOMETRYPAIR::ProjectionPointLineCrossSectionToVolume<double>& projected_gauss_point =
-        dynamic_cast<const GEOMETRYPAIR::ProjectionPointLineCrossSectionToVolume<double>&>(
-            projection_points[i_integration_point]);
+    const GEOMETRYPAIR::ProjectionPointLineToVolume<double>& projected_gauss_point =
+        projection_points[i_integration_point];
 
     // Get the jacobian in the reference configuration.
     GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
