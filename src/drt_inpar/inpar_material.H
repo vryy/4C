@@ -71,6 +71,7 @@ namespace INPAR
       m_cavitation,               ///< fluid with varying density
       m_cnst_art,                 ///< 1D_Artery constant material properties
       m_compogden,                ///< compressible Ogden material (with shell8)
+      m_consolidation,            ///< material providing a general interface for consolidation
       m_constraintmixture,        ///< growth and remodeling of arteries
       m_crosslinkermat,           ///< material for crosslinker in biopolymer networks
       m_elasthyper,               ///< collection of hyperelastic materials
@@ -209,6 +210,7 @@ namespace INPAR
       m_sutherland,          ///< material with temperature dependence according to Sutherland law
       m_tempdepwater,        ///< temperature-dependent water
       m_th_fourier_iso,      ///< isotropic (linear) Fourier's law of heat conduction
+      m_th_fourier_var,      ///< Fourier's law with variable conductivity
       m_thermoplhyperelast,  ///< Temperature-dependent hyperelasticity and von Mises plasticity
       m_thermopllinelast,    ///< Temperature-dependent Hooke elasticity and von Mises plasticity
       m_thermostvenant,      ///< St.Venant Kirchhoff material with temperature

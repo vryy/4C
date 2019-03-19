@@ -325,7 +325,10 @@ namespace DRT
       void Ctemp(LINALG::Matrix<numstr_, 1>* ctemp,  //!< temperature dependent material tangent
           Teuchos::ParameterList& params  //!< parameter list to access time, etc. in materials
       );
-
+      // TODO this should really not be necessary if we use one consistent GP definition
+      // throughout baci
+      //! map the Intrepid gp numbering to the so_hex8 numbering, do nothing if not hex8
+      int MapMyGpToSoHex8(int myGp);
       //@}
 
       //! calculate nonlinear B-operator (6x24)

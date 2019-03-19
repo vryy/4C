@@ -781,6 +781,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::lin_fint_tsi(
     DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
     DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
 
+    params.set<int>("gp", MapMyGpToSoHex8(gp));
+
     /* get the inverse of the Jacobian matrix which looks like:
     **            [ x_,r  y_,r  z_,r ]^-1
     **     J^-1 = [ x_,s  y_,s  z_,s ]
@@ -816,7 +818,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::lin_fint_tsi(
     LINALG::Matrix<numstr_, 1> couplstress(true);
     LINALG::Matrix<numstr_, numstr_> cmat(true);
     LINALG::Matrix<numstr_, 1> glstrain(true);
-    params.set<int>("gp", gp);
+    params.set<int>("gp", MapMyGpToSoHex8(gp));
     // insert strain increment into parameter list
     // calculate iterative strains
     LINALG::Matrix<numstr_, 1> straininc(true);
@@ -948,6 +950,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::lin_kdT_tsi(DRT::Element::Loca
     // shape functions (shapefunct) and their first derivatives (deriv)
     DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
     DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
+
+    params.set<int>("gp", MapMyGpToSoHex8(gp));
 
     /* get the inverse of the Jacobian matrix which looks like:
     **            [ x_,r  y_,r  z_,r ]^-1
@@ -1178,7 +1182,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi(
     LINALG::Matrix<numstr_, 1> couplstress(true);
     LINALG::Matrix<numstr_, numstr_> cmat_T(true);
     LINALG::Matrix<numstr_, 1> glstrain(true);
-    params.set<int>("gp", gp);
+    params.set<int>("gp", MapMyGpToSoHex8(gp));
     // insert strain increment into parameter list
     // calculate iterative strains
     LINALG::Matrix<numstr_, 1> straininc(true);
@@ -1391,6 +1395,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi(DRT::Element::Loca
     else
       DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
           shapefunct, deriv, xsi_[gp], myknots, weights, DRT::Element::nurbs27);
+
+    params.set<int>("gp", MapMyGpToSoHex8(gp));
 
     /* get the inverse of the Jacobian matrix which looks like:
     **            [ x_,r  y_,r  z_,r ]^-1
@@ -1606,6 +1612,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
       DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
       DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
 
+      params.set<int>("gp", MapMyGpToSoHex8(gp));
+
       /* get the inverse of the Jacobian matrix which looks like:
       **            [ x_,r  y_,r  z_,r ]^-1
       **     J^-1 = [ x_,s  y_,s  z_,s ]
@@ -1698,7 +1706,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
       LINALG::Matrix<numstr_, 1> couplstress_bar(true);   // S_bar_{vol,T}
       LINALG::Matrix<numstr_, numstr_> cmat_T_bar(true);  // dC_T_dE
       LINALG::Matrix<numstr_, 1> glstrain(true);
-      params.set<int>("gp", gp);
+      params.set<int>("gp", MapMyGpToSoHex8(gp));
       // insert strain increment into parameter list which is only required for robinson
       // calculate iterative strains
       LINALG::Matrix<numstr_, 1> straininc(true);
@@ -1946,6 +1954,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi_fbar(DRT::Element:
       // shape functions (shapefunct) and their first derivatives (deriv)
       DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
       DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
+
+      params.set<int>("gp", MapMyGpToSoHex8(gp));
 
       /* get the inverse of the Jacobian matrix which looks like:
       **            [ x_,r  y_,r  z_,r ]^-1
@@ -2477,6 +2487,24 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::InitJacobianMapping(DRT::Discr
 
   return;
 }  // InitJacobianMapping()
+
+/*----------------------------------------------------------------------------------*
+ | map the GP ordering as defined in Intrepid to the So_hex8 ordering  proell 05/18 |
+ *----------------------------------------------------------------------------------*/
+template <class so3_ele, DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::MapMyGpToSoHex8(int myGp)
+{
+  switch (distype)
+  {
+    case DRT::Element::hex8:
+    {
+      const int hex8_map[NUMGPT_SOH8] = {6, 7, 5, 4, 2, 3, 1, 0};
+      return hex8_map[myGp];
+    }
+    default:
+      return myGp;
+  }
+}
 
 
 /*----------------------------------------------------------------------*/

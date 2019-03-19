@@ -75,6 +75,7 @@
 #include "plastic_VarConstUpdate.H"
 #include "cnst_1d_art.H"
 #include "fourieriso.H"
+#include "fouriervar.H"
 #include "soret.H"
 #include "membrane_elasthyper.H"
 #include "membrane_active_strain.H"
@@ -960,6 +961,18 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     {
       if (curmat->Parameter() == NULL) curmat->SetParameter(new MAT::PAR::FourierIso(curmat));
       MAT::PAR::FourierIso* params = static_cast<MAT::PAR::FourierIso*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_th_fourier_var:
+    {
+      if (curmat->Parameter() == NULL) curmat->SetParameter(new MAT::PAR::FourierVar(curmat));
+      MAT::PAR::FourierVar* params = static_cast<MAT::PAR::FourierVar*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_consolidation:
+    {
+      if (curmat->Parameter() == NULL) curmat->SetParameter(new MAT::PAR::Consolidation(curmat));
+      MAT::PAR::Consolidation* params = static_cast<MAT::PAR::Consolidation*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_soret:

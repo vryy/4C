@@ -161,12 +161,16 @@ void THR::TimIntOneStepTheta::EvaluateRhsTangResidual()
   // with R_{n+theta}     = M_cap . ( T_{n+1} - T_n ) / dt = fcapn_ - fcap_
   //      F_{int;n+theta} = theta * F_{int;n+1} + (1 - theta) * F_{int;n}
   //      F_{ext;n+theta} = - theta * F_{ext;n+1} - (1 - theta) * F_{ext;n}
-  fres_->Update(1.0, *fcapn_, -1.0, *fcap_, 0.0);
+
   // here the time derivative is introduced needed for fcap depending on T'!
-  fres_->Scale(1.0 / (*dt_)[0]);
+  fres_->Scale(1.0, *fcapn_);  // fcap already contains full R_{n+theta}
   fres_->Update(theta_, *fintn_, (1.0 - theta_), *fint_, 1.0);
   // here is the negative sign for the external forces (heatfluxes)
   fres_->Update(-theta_, *fextn_, -(1.0 - theta_), *fext_, 1.0);
+  // add artificial heating for phase change
+
+  // TODO latent heat integration should be refactored out of base thermo stuff
+  fres_->Update(-1.0, *fmelt_, 1.0);
 
   // no further modification on tang_ required
   // tang_ is already effective dynamic tangent matrix
@@ -322,6 +326,9 @@ void THR::TimIntOneStepTheta::UpdateStepState()
   //    F_{cap;n} := F_{cap;n+1}
   fcap_->Update(1.0, *fcapn_, 0.0);
 
+  // reset the melt force //TODO should be moved somewhere else
+  fmelt_->PutScalar(0.0);
+
   // look out
   return;
 
@@ -393,6 +400,7 @@ void THR::TimIntOneStepTheta::ApplyForceTangInternal(const double time,  //!< ev
   // set parameters
   p.set<double>("theta", theta_);
   p.set<double>("timefac", theta_);
+  p.set<bool>("lump capa matrix", lumpcapa_);
   // call the base function
   TimInt::ApplyForceTangInternal(p, time, dt, temp, tempi, fcap, fint, tang);
   // finish
