@@ -45,6 +45,7 @@
 #include "inpar_beampotential.H"
 #include "inpar_beaminteraction.H"
 #include "inpar_poromultiphase_scatra.H"
+#include "inpar_elemag.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -1178,6 +1179,8 @@ DRT::INPUT::ValidConditions()
   INPAR::LEVELSET::SetValidConditions(condlist);
 
   INPAR::ACOU::SetValidConditions(condlist);
+
+  INPAR::ELEMAG::SetValidConditions(condlist);
 
   INPAR::BEAMPOTENTIAL::SetValidConditions(condlist);
 

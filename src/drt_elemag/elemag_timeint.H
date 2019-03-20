@@ -151,6 +151,16 @@ namespace ELEMAG
     void ApplyDirichletToSystem();
 
     /*!
+    \brief Compute Silver-Mueller boundary conditions.
+
+    The functions ask the elements to compute the element matrices and vectors and assembles.
+
+    \param[in]  resonly Boolean indicating if it is only necessary to recompute the RHS (true) or if
+    it necessary to compute the matrices AND the RHS (false).
+    */
+    void ComputeSilverMueller(bool resonly);
+
+    /*!
     \brief Solve the system for trace and interior variables.
     */
     virtual void Solve();
@@ -196,7 +206,7 @@ namespace ELEMAG
     This function still ha to be implemented.
     This function is supposed to work as a matlab or numpy spy().
     */
-    void SpySysmat();
+    void SpySysmat(std::ostream& out);
 
     /*!
     \brief increment time and step value
