@@ -510,8 +510,7 @@ namespace DRT
           // Insert Darcy's law: porosity*S^\pi*(v^\pi - v_s) = - k/\mu * grad p
           multiconvelint_[k].Multiply(-1.0, difftensorsfluid_[k], pressuregrad_[k]);
 
-          temperatureconvelint_.Update(
-              1.0, temperatureconvelint_, heatcapacity_[k] * density_[k], multiconvelint_[k]);
+          temperatureconvelint_.Update(heatcapacity_[k] * density_[k], multiconvelint_[k], 1.0);
 
           // phase pressure
           pressure_[k] = phasemanager_->Pressure(k);
@@ -522,8 +521,7 @@ namespace DRT
           // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
           multiconv_[k].MultiplyTN(derxy, multiconvelint_[k]);
 
-          temperatureconv_.Update(
-              1.0, temperatureconv_, heatcapacity_[k] * density_[k], multiconv_[k]);
+          temperatureconv_.Update(heatcapacity_[k] * density_[k], multiconv_[k], 1.0);
         }
 
         for (int k = numfluidphases; k < numfluidphases + numvolfrac; ++k)
@@ -545,14 +543,12 @@ namespace DRT
           // Insert Darcy's law: porosity*(v^\pi - v_s) = - k/\mu * grad p
           multiconvelint_[k].Multiply(-1.0, difftensorsfluid_[k], pressuregrad_[k]);
 
-          temperatureconvelint_.Update(
-              1.0, temperatureconvelint_, heatcapacity_[k] * density_[k], multiconvelint_[k]);
+          temperatureconvelint_.Update(heatcapacity_[k] * density_[k], multiconvelint_[k], 1.0);
 
           // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
           multiconv_[k].MultiplyTN(derxy, multiconvelint_[k]);
 
-          temperatureconv_.Update(
-              1.0, temperatureconv_, heatcapacity_[k] * density_[k], multiconv_[k]);
+          temperatureconv_.Update(heatcapacity_[k] * density_[k], multiconv_[k], 1.0);
         }
 
         // solid pressure
