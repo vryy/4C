@@ -369,6 +369,22 @@ double PARTICLEINTERACTION::ParticleInteractionSPH::MaxInteractionDistance() con
 }
 
 /*---------------------------------------------------------------------------*
+ | distribute interaction history                             sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::ParticleInteractionSPH::DistributeInteractionHistory() const
+{
+  // nothing to do
+}
+
+/*---------------------------------------------------------------------------*
+ | communicate interaction history                            sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::ParticleInteractionSPH::CommunicateInteractionHistory() const
+{
+  // nothing to do
+}
+
+/*---------------------------------------------------------------------------*
  | set current time                                           sfuchs 08/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionSPH::SetCurrentTime(const double currenttime)

@@ -71,6 +71,9 @@ void PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues(const Teuchos::Par
   }
 }
 
+/*---------------------------------------------------------------------------*
+ | template instantiations                                    sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
 template void PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues<int>(
     const Teuchos::ParameterList& params, const std::string& name,
     std::map<PARTICLEENGINE::TypeEnum, int>& typetovalmap);

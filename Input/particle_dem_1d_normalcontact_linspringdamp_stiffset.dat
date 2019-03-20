@@ -33,7 +33,7 @@ PHASE_TO_MATERIAL_ID            phase1 1
 ----------------------------PARTICLE DYNAMIC/INITIAL AND BOUNDARY CONDITIONS
 INITIAL_VELOCITY_FIELD          phase1 1
 --------------------------------------------------------PARTICLE DYNAMIC/DEM
-NORMALCONTACTLAW                LinearSpringDamp
+NORMALCONTACTLAW                NormalLinearSpringDamp
 MAX_RADIUS                      0.01
 MAX_VELOCITY                    3.0e-2
 NORMAL_STIFF                    3.5e-5
