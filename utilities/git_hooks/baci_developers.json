@@ -298,5 +298,25 @@
     "web_url": "https://gitlab.lrz.de/agebauer",
     "access_level": 30,
     "expires_at": null
+  },
+  {
+    "id": 15054,
+    "name": "Jan Schnabel",
+    "username": "SchnabeJ",
+    "state": "active",
+    "avatar_url": null,
+    "web_url": "https://gitlab.lrz.de/SchnabeJ",
+    "access_level": 30,
+    "expires_at": null
+  },
+  {
+    "id": 11140,
+    "name": "Volker Gravemeier",
+    "username": "vgravemeier",
+    "state": "active",
+    "avatar_url": "https://gitlab.lrz.de/uploads/-/system/user/avatar/11140/avatar.png",
+    "web_url": "https://gitlab.lrz.de/vgravemeier",
+    "access_level": 30,
+    "expires_at": null
   }
 ]
