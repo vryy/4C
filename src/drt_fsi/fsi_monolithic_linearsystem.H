@@ -1,4 +1,14 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_monolithic_linearsystem.H
 
+\brief Linear system for solving FSI problems with NOX
+
+\level 2
+
+\maintainer Matthias Mayr
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef FSI_MONOLITHIC_LINEARSYSTEM_H
 #define FSI_MONOLITHIC_LINEARSYSTEM_H

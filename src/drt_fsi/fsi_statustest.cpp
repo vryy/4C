@@ -6,7 +6,7 @@
 
 \level 1
 
-\maintainer Matthias Mayr</pre>
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 
