@@ -318,8 +318,8 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Output() const
 std::shared_ptr<DRT::ResultTest> PARTICLEALGORITHM::ParticleAlgorithm::CreateResultTest()
 {
   // create and init particle result test
-  std::shared_ptr<PARTICLEALGORITHM::ResultTest> resulttest =
-      std::make_shared<PARTICLEALGORITHM::ResultTest>(Comm());
+  std::shared_ptr<PARTICLEALGORITHM::ParticleResultTest> resulttest =
+      std::make_shared<PARTICLEALGORITHM::ParticleResultTest>();
   resulttest->Init();
 
   // setup particle result test
