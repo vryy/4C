@@ -904,7 +904,11 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
   src/drt_beaminteraction/beam_to_beam_contact_pair.cpp
   src/drt_beaminteraction/beam_to_beam_contact_params.cpp
   src/drt_beaminteraction/beam_to_beam_contact_variables.cpp
-  src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair.cpp
+  src/drt_beaminteraction/beam_to_solid_mortar_manager.cpp
+  src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_base.cpp
+  src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_gauss_point.cpp
+  src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_mortar.cpp
+  src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_factory.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_params.cpp
   src/drt_beaminteraction/beam_to_sphere_contact_pair.cpp
   src/drt_beaminteraction/beam_to_sphere_contact_params.cpp
@@ -925,6 +929,9 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
   src/drt_beaminteraction/beaminteraction_submodel_evaluator_factory.cpp
   src/drt_beaminteraction/beaminteraction_submodel_evaluator_generic.cpp
   src/drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact.cpp
+  src/drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact_assembly_manager.cpp
+  src/drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact_assembly_manager_direct.cpp
+  src/drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact_assembly_manager_indirect.cpp
   src/drt_beaminteraction/beaminteraction_submodel_evaluator_potential.cpp
   src/drt_beaminteraction/beaminteraction_calc_utils.cpp
   src/drt_beaminteraction/beaminteraction_data.cpp

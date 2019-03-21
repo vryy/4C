@@ -1,7 +1,7 @@
 /*!
-\file beam_to_solid_volume_meshtying_pair.H
+\file beam_to_solid_volume_meshtying_pair_base.H
 
-\brief Meshtying element for meshtying between a 3D beam and a 3D solid element.
+\brief Base meshtying element for meshtying between a 3D beam and a 3D solid element.
 
 \level 3
 \maintainer Ivo Steinbrecher
@@ -9,14 +9,13 @@
 // End doxygen header.
 
 
-#ifndef BEAM_TO_SOLID_VOLUME_MESHTYING_H
-#define BEAM_TO_SOLID_VOLUME_MESHTYING_H
+#ifndef BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_BASE_H_
+#define BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_BASE_H_
 
 
 #include "beam_contact_pair.H"
 
 #include "beam3contact_defines.H"
-#include "../drt_geometry_pair/geometry_pair_element_types.H"
 #include "../drt_geometry_pair/geometry_pair_utility_classes.H"
 
 #include "../linalg/linalg_fixedsizematrix.H"
@@ -44,18 +43,18 @@ namespace BEAMINTERACTION
    * @param solid Type from GEOMETRYPAIR::ElementDiscretization... representing the solid.
    */
   template <typename beam, typename solid>
-  class BeamToSolidVolumeMeshtyingPair : public BeamContactPair
+  class BeamToSolidVolumeMeshtyingPairBase : public BeamContactPair
   {
    public:
     /**
      * \brief Standard Constructor
      */
-    BeamToSolidVolumeMeshtyingPair();
+    BeamToSolidVolumeMeshtyingPairBase();
 
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToSolidVolumeMeshtyingPair(){};
+    virtual ~BeamToSolidVolumeMeshtyingPairBase(){};
     /**
      * \brief Initialize the contact pair.
      */
@@ -71,19 +70,25 @@ namespace BEAMINTERACTION
     /**
      * \brief Things that need to be done in a separate loop before the actual evaluation loop over
      * all contact pairs.
-     * @param beam_centerline_dofvec
-     * @param solid_nodal_dofvec
      */
     void PreEvaluate() override;
 
     /**
      * \brief Evaluate this contact element pair.
-     * @param beam_centerline_dofvec
-     * @param solid_nodal_dofvec
+     * @param forcevec1 (out) Force vector on element 1.
+     * @param forcevec2 (out) Force vector on element 2.
+     * @param stiffmat11 (out) Stiffness contributions on element 1 - element 1.
+     * @param stiffmat12 (out) Stiffness contributions on element 1 - element 2.
+     * @param stiffmat21 (out) Stiffness contributions on element 2 - element 1.
+     * @param stiffmat22 (out) Stiffness contributions on element 2 - element 2.
+     * @return True if pair is in contact.
      */
     bool Evaluate(LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
         LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
-        LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22) override;
+        LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22) override
+    {
+      return false;
+    };
 
     /**
      * \brief Update state of translational nodal DoFs (absolute positions and tangents) of both
@@ -183,12 +188,17 @@ namespace BEAMINTERACTION
      * @return RPC with the type of geometry pair for this beam contact pair.
      */
     inline Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolume<double, beam, solid>>
-    CastGeometryPair() const;
+    CastGeometryPair() const
+    {
+      return Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::GeometryPairLineToVolume<double, beam, solid>>(
+          geometry_pair_, true);
+    };
 
    private:
     //! Type to be used for scalar AD variables.
     typedef Sacado::ELRFad::SLFad<double, beam::n_dof_ + solid::n_dof_> TYPE_BTS_VMT_AD;
 
+   protected:
     //! Flag if the meshtying has been evaluated already.
     bool meshtying_is_evaluated_;
 

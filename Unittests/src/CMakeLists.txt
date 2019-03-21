@@ -1,3 +1,4 @@
+add_subdirectory ( drt_beaminteraction )
 add_subdirectory ( drt_geometry_pair )
 add_subdirectory ( drt_io )
 add_subdirectory ( drt_lib )
