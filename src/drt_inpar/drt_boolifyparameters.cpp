@@ -4,12 +4,9 @@
 
 \brief Auxiliar routine to boolify integral Yes/No data
 
-<pre>
-Maintainer: Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+\maintainer Martin Kronbichler
+
+\level 0
 */
 
 /*----------------------------------------------------------------------*/
