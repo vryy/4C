@@ -218,6 +218,17 @@ namespace BEAMINTERACTION
         std::vector<std::vector<LINALG::SerialDenseMatrix>> const& elemat,
         Teuchos::RCP<Epetra_FEVector> fe_sysvec, Teuchos::RCP<LINALG::SparseMatrix> fe_sysmat);
 
+    /**
+     * \brief Get the local indices of the centerline DOFs of an element.
+     * @param discret (in) Pointer to the discretization.
+     * @param ele (in) Pointer to the element.
+     * @param ele_centerline_dof_indices (out) Vector with local indices of centerline DOFs in the
+     * element.
+     * @param num_dof (out) Number total DOFs on the element.
+     */
+    void GetElementCenterlineDOFIndices(DRT::Discretization const& discret, const DRT::Element* ele,
+        std::vector<unsigned int>& ele_centerline_dof_indices, unsigned int& num_dof);
+
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
     void AssembleCenterlineDofForceStiffIntoElementForceStiff(DRT::Discretization const& discret,
@@ -226,6 +237,21 @@ namespace BEAMINTERACTION
         std::vector<std::vector<LINALG::SerialDenseMatrix>> const& elestiff_centerlineDOFs,
         std::vector<LINALG::SerialDenseVector>* eleforce,
         std::vector<std::vector<LINALG::SerialDenseMatrix>>* elestiff);
+
+    /**
+     * \brief Assemble a matrix with columns based on centerline DOFs of an element into a matrix
+     * with columns based on all DOFs of the element. Example: Mortar coupling matrices as the rows
+     * correspond the Lagrange multipliers and the columns correspond to the centerline DOFs.
+     * @param discret (in) Pointer to the discretization.
+     * @param element (in) Pointer to the element.
+     * @param row_matrix_centerlineDOFs (in) Matrix where the columns correspond to the centerline
+     * DOFs.
+     * @param row_matrix_elementDOFs (out) Matrix where the columns correspond to all Element DOFs
+     * (the rest will be 0).
+     */
+    void AssembleCenterlineDofColMatrixIntoElementColMatrix(DRT::Discretization const& discret,
+        const DRT::Element* element, LINALG::SerialDenseMatrix const& row_matrix_centerlineDOFs,
+        LINALG::SerialDenseMatrix& row_matrix_elementDOFs);
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/

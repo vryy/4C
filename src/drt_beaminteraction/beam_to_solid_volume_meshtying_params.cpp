@@ -9,7 +9,6 @@
 
 
 #include "beam_to_solid_volume_meshtying_params.H"
-#include "../drt_inpar/inpar_beaminteraction.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -20,6 +19,9 @@
 BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::BeamToSolidVolumeMeshtyingParams()
     : isinit_(false),
       issetup_(false),
+      constraint_enforcement_(INPAR::BEAMINTERACTION::BeamToSolidVolumeConstraintEnforcement::none),
+      contact_discretization_(INPAR::BEAMINTERACTION::BeamToSolidVolumeContactDiscretization::none),
+      mortar_shape_function_(INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions::none),
       penalty_parameter_(-1.0),
       gauss_rule_(DRT::UTILS::GaussRule1D::intrule1D_undefined)
 {
@@ -38,12 +40,27 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Init()
 
   // Get parameters form input file.
   {
+    // Constraint enforcement.
+    constraint_enforcement_ =
+        Teuchos::getIntegralValue<INPAR::BEAMINTERACTION::BeamToSolidVolumeConstraintEnforcement>(
+            beam_to_solid_contact_params_list, "CONSTRAINT_STRATEGY");
+
+    // Contact discretization to be used.
+    contact_discretization_ =
+        Teuchos::getIntegralValue<INPAR::BEAMINTERACTION::BeamToSolidVolumeContactDiscretization>(
+            beam_to_solid_contact_params_list, "CONTACT_DISCRETIZATION");
+
+    // Contact discretization to be used.
+    mortar_shape_function_ =
+        Teuchos::getIntegralValue<INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions>(
+            beam_to_solid_contact_params_list, "MORTAR_SHAPE_FUNCTION");
+
     // Penalty parameter.
     penalty_parameter_ = beam_to_solid_contact_params_list.get<double>("PENALTY_PARAMETER");
     if (penalty_parameter_ < 0.0)
       dserror("beam-to-volume-meshtying penalty parameter must not be negative!");
 
-    // Gauss rule for integration along the beam.
+    // Gauss rule for integration along the beam (segments).
     gauss_rule_ = INPAR::BEAMINTERACTION::IntToGaussRule1D(
         beam_to_solid_contact_params_list.get<int>("GAUSS_POINTS"));
   }
