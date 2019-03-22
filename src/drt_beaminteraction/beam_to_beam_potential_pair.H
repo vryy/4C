@@ -251,6 +251,30 @@ namespace BEAMINTERACTION
         LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
         LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22);
 
+    /** \brief Evaluate all quantities which are specific for the applied disk-cylinder potential
+     *
+     *  \author grill
+     *  \date 03/19 */
+    bool EvaluateDiskCylinderPotential(T interaction_potential_GP,
+        LINALG::TMatrix<T, 3 * numnodes * numnodalvalues, 1>& force_pot_slave_GP,
+        LINALG::TMatrix<T, 3 * numnodes * numnodalvalues, 1>& force_pot_master_GP,
+        LINALG::TMatrix<T, 3, 1> const& r_slave, LINALG::TMatrix<T, 3, 1> const& r_xi_slave,
+        LINALG::TMatrix<T, 3, 1> const& g1_slave, LINALG::TMatrix<T, 3, 1> const& r_master,
+        LINALG::TMatrix<T, 3, 1> const& r_xi_master, LINALG::TMatrix<T, 3, 1> const& r_xixi_master,
+        LINALG::TMatrix<T, 3, 1> const& g1_master, T alpha, T cos_alpha,
+        LINALG::TMatrix<T, 3, 1> const& dist_ul,
+        LINALG::TMatrix<T, 1, 3> const& xi_master_partial_r_slave,
+        LINALG::TMatrix<T, 1, 3> const& xi_master_partial_r_master,
+        LINALG::TMatrix<T, 1, 3> const& xi_master_partial_r_xi_master, double prefactor_vtk,
+        LINALG::TMatrix<double, 3, 1>& vtk_force_pot_slave_GP,
+        LINALG::TMatrix<double, 3, 1>& vtk_force_pot_master_GP,
+        LINALG::TMatrix<double, 3, 1>& vtk_moment_pot_slave_GP,
+        LINALG::TMatrix<double, 3, 1>& vtk_moment_pot_master_GP, double rho1rho2_JacFac_GaussWeight,
+        LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N_i_slave,
+        LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N_i_xi_slave,
+        LINALG::TMatrix<T, 1, numnodes * numnodalvalues> const& N_i_master,
+        LINALG::TMatrix<T, 1, numnodes * numnodalvalues> const& N_i_xi_master);
+
     /** \brief scale given stiffness matrices by given scalar factor
      *
      *  \author grill
