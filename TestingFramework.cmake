@@ -263,6 +263,8 @@ baci_test(beam3eb_genalpha_BTB_contact_elstat_attraction_twocrossedbeams_FAD 2 "
 baci_test(beam3eb_genalpha_BTSPH_contact_elstat_attraction 2 80)
 baci_test(beam3eb_genalpha_lineload_dynamic 2 "")
 result_file(beam3eb_genalpha_lineload_dynamic 2 energy xxx_energy.csv beam3eb_genalpha_lineload_dynamic_energy.csv)
+baci_test(beam3eb_static_beam_to_solid_volume_meshtying_hex27_cross_section_projection_penalty_bending 2 "")
+baci_test(beam3eb_static_beam_to_solid_volume_meshtying_hex27_cross_section_projection_penalty_patch 2 "")
 baci_test(beam3eb_static_contact_beamtosolidcontact_solidcontact 2 "")
 baci_test(beam3eb_static_contact_penalty_newgap_twocrossedbeams 2 "")
 baci_test(beam3eb_static_contact_penalty_linpen_limitdispperiter_twobeamstwisting 2 "")
