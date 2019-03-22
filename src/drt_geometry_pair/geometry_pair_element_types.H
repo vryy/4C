@@ -188,8 +188,7 @@ namespace GEOMETRYPAIR
   class ElementDiscretizationStandard : public base
   {
    public:
-    //! Volume type of the element. This member will be defined for hex8/20/27 tet4/10. If it is
-    //! accessed for a different element type, there will be a compiler error.
+    //! Volume type of the element. This member will be defined for hex8/20/27 tet4/10.
     static const GEOMETRYPAIR::DiscretizationTypeVolume volume_type_ =
         ElementDiscretizationToVolumeType<base::discretization_>::volume_type_;
 
