@@ -1513,9 +1513,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       }
       else
       {
-        // Fixme: this is a brutal fix
-        //        continue;
-
         // normal vector at bilateral closest point Fixme
         normal_bl.CrossProduct(r_xi_slave, r_xi_master);
         norm_normal_bl_tilde = FADUTILS::VectorNorm(normal_bl);
@@ -1528,13 +1525,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         x = FADUTILS::VectorNorm(r_xi_slave) *
             (r_master.Dot(aux_plane_normal) - r_slave.Dot(aux_plane_normal)) /
             r_xi_slave.Dot(aux_plane_normal);
-
-        //        if (FADUTILS::Norm(x) > 20 * radius2_)
-        //        {
-        //          std::cout << "\nWARNING: Ignored GP with |x|/R="
-        //                    << std::abs(FADUTILS::CastToDouble(x)) / radius2_;
-        //          continue;
-        //        }
       }
 
       // gap of bilateral closest point (also valid for special case alpha=0)
@@ -1553,7 +1543,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         //          << "° and gap_bl/R=" << FADUTILS::CastToDouble(gap_bl) / radius2_ << " < "
         //          << MAXNEGATIVEBILATERALGAP / radius2_
         //          << " and x/R=" << FADUTILS::CastToDouble(x) / radius2_ << std::endl;
-        ////*********************** END DEBUG *********************************************
+        //*********************** END DEBUG *********************************************
 
         if (FADUTILS::Norm(x) < 20 * radius2_)
         {
@@ -1598,21 +1588,21 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       Delta = 4 * a * (beta - radius2_) - x * x * sin_2alpha * sin_2alpha / (4 * beta_exp2);
 
 
-      if (gap_bl < 0.0)
-      {
-        //************************** DEBUG **********************************************
-        // std::cout << "\nINFO: GP with negative gap_bl (ele GIDs " << Element1()->Id() << "&"
-        //          << Element2()->Id() << ": iGP " << igp_total
-        //          << ") with alpha=" << FADUTILS::CastToDouble(alpha) * 180 / M_PI
-        //          << "° and gap_bl/R=" << FADUTILS::CastToDouble(gap_bl) / radius2_
-        //          << " and x/R=" << FADUTILS::CastToDouble(x) / radius2_;
-        //
-        // std::cout << "\n|dist_ul|: " << FADUTILS::CastToDouble(FADUTILS::Norm(dist_ul));
-        // std::cout << "\nbeta: " << FADUTILS::CastToDouble(beta);
-        // std::cout << "\na: " << FADUTILS::CastToDouble(a);
-        // std::cout << "\nDelta: " << FADUTILS::CastToDouble(Delta);
-        //*********************** END DEBUG *********************************************
-      }
+      //      if (gap_bl < 0.0)
+      //      {
+      //      ************************** DEBUG **********************************************
+      //      std::cout << "\nINFO: GP with negative gap_bl (ele GIDs " << Element1()->Id() << "&"
+      //                << Element2()->Id() << ": iGP " << igp_total
+      //                << ") with alpha=" << FADUTILS::CastToDouble(alpha) * 180 / M_PI
+      //                << "° and gap_bl/R=" << FADUTILS::CastToDouble(gap_bl) / radius2_
+      //                << " and x/R=" << FADUTILS::CastToDouble(x) / radius2_;
+      //
+      //      std::cout << "\n|dist_ul|: " << FADUTILS::CastToDouble(FADUTILS::Norm(dist_ul));
+      //      std::cout << "\nbeta: " << FADUTILS::CastToDouble(beta);
+      //      std::cout << "\na: " << FADUTILS::CastToDouble(a);
+      //      std::cout << "\nDelta: " << FADUTILS::CastToDouble(Delta);
+      //      *********************** END DEBUG *********************************************
+      //      }
 
       //************************** DEBUG ******************************************
       //    std::cout << "\nbeta: " << FADUTILS::CastToDouble(beta);
@@ -1621,10 +1611,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       //    std::cout << "\nDelta: " << FADUTILS::CastToDouble(Delta);
       //*********************** END DEBUG *****************************************
 
-
-      // Fixme: this is a brutal fix, which might be justified because this can't happen in the
-      // relevant region around the bilateral CP
-      //      if (Delta < 0) continue;
 
       if (regularization_type == INPAR::BEAMPOTENTIAL::regularization_none and Delta < 1e-14)
       {
@@ -1649,8 +1635,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         Delta_regularized = regularization_separation;
 
         //************************** DEBUG ******************************************
-        // std::cout << "\nDelta: " << FADUTILS::CastToDouble(Delta) << ": regularization active!";
-        // std::cout << "\nDelta_regularized: " << FADUTILS::CastToDouble(Delta_regularized);
+        std::cout << "\nDelta: " << FADUTILS::CastToDouble(Delta) << ": regularization active!";
+        std::cout << "\nDelta_regularized: " << FADUTILS::CastToDouble(Delta_regularized);
         //
         // this->Print(std::cout);
         // std::cout << "\nigp_total: " << igp_total;
@@ -1738,16 +1724,16 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         pot_ia_partial_Delta_atregsep = pot_ia_partial_Delta;
 
         //************************** DEBUG ******************************************
-        std::cout << "\npot_ia_partial_Delta_atregsep: "
-                  << FADUTILS::CastToDouble(pot_ia_partial_Delta_atregsep);
+        //        std::cout << "\npot_ia_partial_Delta_atregsep: "
+        //                  << FADUTILS::CastToDouble(pot_ia_partial_Delta_atregsep);
         //*********************** END DEBUG *****************************************
 
         pot_ia_partial_2ndderiv_Delta =
             (-m_ + 3.5) / Delta_regularized * pot_ia_partial_Delta_atregsep;
 
         //************************** DEBUG ******************************************
-        std::cout << "\npot_ia_partial_2ndderiv_Delta_atregsep: "
-                  << FADUTILS::CastToDouble(pot_ia_partial_2ndderiv_Delta);
+        //        std::cout << "\npot_ia_partial_2ndderiv_Delta_atregsep: "
+        //                  << FADUTILS::CastToDouble(pot_ia_partial_2ndderiv_Delta);
         //*********************** END DEBUG *****************************************
 
         pot_ia_partial_Delta += pot_ia_partial_2ndderiv_Delta * (Delta - regularization_separation);
@@ -1772,7 +1758,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
 
         //************************** DEBUG ******************************************
-        std::cout << ", pot_ia_partial_Delta: " << FADUTILS::CastToDouble(pot_ia_partial_Delta);
+        //        std::cout << ", pot_ia_partial_Delta: " <<
+        //        FADUTILS::CastToDouble(pot_ia_partial_Delta);
         //*********************** END DEBUG *****************************************
       }
 
