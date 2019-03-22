@@ -89,8 +89,8 @@ namespace PARTICLEALGORITHM
     //! output particle time step
     void Output() const;
 
-    //! create result test
-    std::shared_ptr<DRT::ResultTest> CreateResultTest();
+    //! create particle field specific result test objects
+    std::vector<std::shared_ptr<DRT::ResultTest>> CreateResultTests();
 
    private:
     //! init particle engine

@@ -194,9 +194,6 @@ void PARTICLEALGORITHM::WallHandlerBase::RelateBinsToColWallEles()
   validwallelements_ = false;
   validwallneighbors_ = false;
 
-  // wall discretization (currently) non-moving
-  Teuchos::RCP<Epetra_Vector> disnp = Teuchos::null;
-
   // iterate over column wall elements
   for (int collidofele = 0; collidofele < walldiscretization_->NumMyColElements(); ++collidofele)
   {
@@ -205,7 +202,7 @@ void PARTICLEALGORITHM::WallHandlerBase::RelateBinsToColWallEles()
 
     // get corresponding bin ids for element
     std::vector<int> binids;
-    binstrategy_->DistributeElementToBinsUsingEleXAABB(walldiscretization_, ele, binids, disnp);
+    binstrategy_->DistributeElementToBinsUsingEleXAABB(walldiscretization_, ele, binids, disnp_);
 
     // relate ids of owned bins to column wall elements
     for (int gidofbin : binids)
@@ -374,16 +371,13 @@ void PARTICLEALGORITHM::WallHandlerBase::SetupWallVtuWriter()
 void PARTICLEALGORITHM::WallHandlerBase::DetermineColWallEleNodalPos(
     DRT::Element* ele, std::map<int, LINALG::Matrix<3, 1>>& colelenodalpos)
 {
-  // wall discretization (currently) non-moving
-  Teuchos::RCP<Epetra_Vector> disnp = Teuchos::null;
-
   // get pointer to nodes of current column wall element
   DRT::Node** nodes = ele->Nodes();
   const int numnodes = ele->NumNode();
 
   // determine nodal displacements
   std::vector<double> nodal_disp(numnodes * 3, 0.0);
-  if (disnp != Teuchos::null)
+  if (disnp_ != Teuchos::null)
   {
     std::vector<int> lm_wall;
     lm_wall.reserve(numnodes * 3);
@@ -391,7 +385,7 @@ void PARTICLEALGORITHM::WallHandlerBase::DetermineColWallEleNodalPos(
     std::vector<int> lmstride;
     ele->LocationVector(*walldiscretization_, lm_wall, lmowner, lmstride);
 
-    DRT::UTILS::ExtractMyValues(*disnp, nodal_disp, lm_wall);
+    DRT::UTILS::ExtractMyValues(*disnp_, nodal_disp, lm_wall);
   }
 
   // iterate over nodes of current column wall element
@@ -426,19 +420,16 @@ void PARTICLEALGORITHM::WallHandlerDiscretCondition::DistributeWallElementsAndNo
   validwallelements_ = false;
   validwallneighbors_ = false;
 
-  // wall discretization (currently) non-moving
-  Teuchos::RCP<Epetra_Vector> disnp = Teuchos::null;
-
   // standard ghosting
   Teuchos::RCP<Epetra_Map> stdelecolmap;
   Teuchos::RCP<Epetra_Map> stdnodecolmapdummy;
   binstrategy_->StandardDiscretizationGhosting(
-      walldiscretization_, binrowmap_, disnp, stdelecolmap, stdnodecolmapdummy);
+      walldiscretization_, binrowmap_, disnp_, stdelecolmap, stdnodecolmapdummy);
 
   // extended ghosting
   std::map<int, std::set<int>> bintorowelemap;
   binstrategy_->DistributeRowElementsToBinsUsingEleXAABB(
-      walldiscretization_, bintorowelemap, disnp);
+      walldiscretization_, bintorowelemap, disnp_);
 
   std::map<int, std::set<int>> ext_bintoele_ghosting;
   Teuchos::RCP<Epetra_Map> extendedelecolmap = binstrategy_->ExtendGhosting(

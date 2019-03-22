@@ -63,11 +63,13 @@ void particle_drt()
 
   // perform result tests
   {
-    // create particle field specific result test object
-    std::shared_ptr<DRT::ResultTest> resulttest = particlealgorithm->CreateResultTest();
+    // create particle field specific result test objects
+    std::vector<std::shared_ptr<DRT::ResultTest>> allresulttests =
+        particlealgorithm->CreateResultTests();
 
-    // add particle field specific result test object
-    problem->AddFieldTest(Teuchos::rcp(resulttest));
+    // add particle field specific result test objects
+    for (auto& resulttest : allresulttests)
+      if (resulttest) problem->AddFieldTest(Teuchos::rcp(resulttest));
 
     // perform all tests
     problem->TestAll(comm);

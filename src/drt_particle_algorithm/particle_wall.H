@@ -106,6 +106,15 @@ namespace PARTICLEALGORITHM
     virtual void BuildParticleToWallNeighbors(
         const PARTICLEENGINE::ParticlesToBins& particlestobins) final;
 
+    //! get wall discretization
+    virtual Teuchos::RCP<const DRT::Discretization> GetWallDiscretization() const override final
+    {
+      return walldiscretization_;
+    };
+
+    //! get wall displacements
+    virtual Teuchos::RCP<const Epetra_Vector> GetDisnp() const override final { return disnp_; };
+
     //! get reference to potential wall neighbors
     virtual const PARTICLEENGINE::PotentialWallNeighbors& GetPotentialWallNeighbors()
         const override final;
@@ -160,6 +169,9 @@ namespace PARTICLEALGORITHM
 
     //! wall discretization
     Teuchos::RCP<DRT::Discretization> walldiscretization_;
+
+    //! wall displacements
+    Teuchos::RCP<Epetra_Vector> disnp_;
 
     //! wall discretization runtime vtu writer
     std::unique_ptr<DiscretizationRuntimeVtuWriter> wallvtuwriter_;

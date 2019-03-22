@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_wall_interface.H
+\file particle_wall_result_test.H
 
-\brief pure virtual interface to provide access to particle wall handler
+\brief particle wall result test for particle simulations
 
 \level 3
 
@@ -15,47 +15,64 @@
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 11/2018 |
+ | definitions                                                sfuchs 03/2019 |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_WALL_INTERFACE_H
-#define PARTICLE_WALL_INTERFACE_H
+#ifndef PARTICLE_WALL_RESULT_TEST_H
+#define PARTICLE_WALL_RESULT_TEST_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 11/2018 |
+ | headers                                                    sfuchs 03/2019 |
  *---------------------------------------------------------------------------*/
 #include "../drt_particle_engine/particle_typedefs.H"
 
-#include <Epetra_Vector.h>
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_RCPStdSharedPtrConversions.hpp>
+#include "../drt_lib/drt_resulttest.H"
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                       sfuchs 03/2019 |
  *---------------------------------------------------------------------------*/
+namespace PARTICLEALGORITHM
+{
+  class WallHandlerInterface;
+}
+
 namespace DRT
 {
   class Discretization;
 }
 
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 11/2018 |
+ | class definitions                                          sfuchs 03/2019 |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEALGORITHM
 {
-  class WallHandlerInterface
+  class WallResultTest : public DRT::ResultTest
   {
    public:
+    //! constructor
+    explicit WallResultTest();
+
     //! virtual destructor
-    virtual ~WallHandlerInterface(){};
+    virtual ~WallResultTest(){};
 
-    //! get wall discretization
-    virtual Teuchos::RCP<const DRT::Discretization> GetWallDiscretization() const = 0;
+    //! init wall result test
+    virtual void Init();
 
-    //! get wall displacements
-    virtual Teuchos::RCP<const Epetra_Vector> GetDisnp() const = 0;
+    //! setup wall result test
+    virtual void Setup(
+        const std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface);
 
-    //! get reference to potential wall neighbors
-    virtual const PARTICLEENGINE::PotentialWallNeighbors& GetPotentialWallNeighbors() const = 0;
+    //! test node value
+    virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+
+    //! test special quantity
+    virtual void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+
+   private:
+    //! interface to particle wall handler
+    std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface_;
+
+    //! wall discretization
+    Teuchos::RCP<const DRT::Discretization> walldiscretization_;
   };
 
 }  // namespace PARTICLEALGORITHM

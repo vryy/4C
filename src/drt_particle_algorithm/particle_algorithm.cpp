@@ -28,6 +28,7 @@
 #include "particle_wall.H"
 #include "particle_initial_field.H"
 #include "particle_result_test.H"
+#include "particle_wall_result_test.H"
 
 #include "../drt_particle_interaction/particle_interaction_base.H"
 #include "../drt_particle_interaction/particle_interaction_sph.H"
@@ -313,19 +314,41 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Output() const
 }
 
 /*---------------------------------------------------------------------------*
- | create result test                                         sfuchs 07/2018 |
+ | create particle field specific result test objects         sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-std::shared_ptr<DRT::ResultTest> PARTICLEALGORITHM::ParticleAlgorithm::CreateResultTest()
+std::vector<std::shared_ptr<DRT::ResultTest>>
+PARTICLEALGORITHM::ParticleAlgorithm::CreateResultTests()
 {
-  // create and init particle result test
-  std::shared_ptr<PARTICLEALGORITHM::ParticleResultTest> resulttest =
-      std::make_shared<PARTICLEALGORITHM::ParticleResultTest>();
-  resulttest->Init();
+  std::vector<std::shared_ptr<DRT::ResultTest>> allresulttests(0);
 
-  // setup particle result test
-  resulttest->Setup(particleengine_);
+  // particle result test
+  {
+    // create and init particle result test
+    std::shared_ptr<PARTICLEALGORITHM::ParticleResultTest> particleresulttest =
+        std::make_shared<PARTICLEALGORITHM::ParticleResultTest>();
+    particleresulttest->Init();
 
-  return resulttest;
+    // setup particle result test
+    particleresulttest->Setup(particleengine_);
+
+    allresulttests.push_back(particleresulttest);
+  }
+
+  // wall result test
+  if (particlewall_)
+  {
+    // create and init wall result test
+    std::shared_ptr<PARTICLEALGORITHM::WallResultTest> wallresulttest =
+        std::make_shared<PARTICLEALGORITHM::WallResultTest>();
+    wallresulttest->Init();
+
+    // setup wall result test
+    wallresulttest->Setup(particlewall_);
+
+    allresulttests.push_back(wallresulttest);
+  }
+
+  return allresulttests;
 }
 
 /*---------------------------------------------------------------------------*
