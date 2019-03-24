@@ -91,9 +91,10 @@ namespace GEOMETRYPAIR
      * \brief Sets the number of integration points along the circumfence of the line cross
      * section.
      */
-    inline void SetGaussPointsCircumfence(const unsigned int gauss_points_circumfence)
+    inline void SetNumberOfIntegrationPointsCircumfence(
+        const unsigned int integration_points_circumfence)
     {
-      gauss_points_circumfence_ = gauss_points_circumfence;
+      integration_points_circumfence_ = integration_points_circumfence;
     }
 
     /**
@@ -101,7 +102,10 @@ namespace GEOMETRYPAIR
      * section.
      * @return number of integration points in cirumfencial direction.
      */
-    inline unsigned int GetGaussPointsCircumfence() const { return gauss_points_circumfence_; }
+    inline unsigned int GetNumberOfIntegrationPointsCircumfence() const
+    {
+      return integration_points_circumfence_;
+    }
 
     /**
      * \brief Return a reference to the gauss point projection tracker.
@@ -129,7 +133,7 @@ namespace GEOMETRYPAIR
     DRT::UTILS::GaussRule1D gauss_rule_;
 
     //! Number of integration points in the circumfencial direction of the line cross section.
-    unsigned int gauss_points_circumfence_;
+    unsigned int integration_points_circumfence_;
 
     //! Gauss point projection tracking vector.
     std::map<int, std::vector<bool>> gauss_point_projection_tracker_;

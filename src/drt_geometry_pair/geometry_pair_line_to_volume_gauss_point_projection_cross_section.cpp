@@ -43,7 +43,9 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
   {
     int n_gauss_points =
         this->EvaluationData()->LineToVolumeEvaluationData()->GetNumberOfGaussPoints() *
-        this->EvaluationData()->LineToVolumeEvaluationData()->GetGaussPointsCircumfence();
+        this->EvaluationData()
+            ->LineToVolumeEvaluationData()
+            ->GetNumberOfIntegrationPointsCircumfence();
     std::vector<bool> new_tracking_vector;
     new_tracking_vector.resize(n_gauss_points, false);
     projection_tracker[line_element_id] = new_tracking_vector;
@@ -71,13 +73,14 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
       this->EvaluationData()->LineToVolumeEvaluationData()->GetGaussPoints();
   unsigned int n_gauss_points_axis =
       this->EvaluationData()->LineToVolumeEvaluationData()->GetNumberOfGaussPoints();
-  unsigned int n_gauss_points_circ =
-      this->EvaluationData()->LineToVolumeEvaluationData()->GetGaussPointsCircumfence();
+  unsigned int n_integration_points_circ = this->EvaluationData()
+                                               ->LineToVolumeEvaluationData()
+                                               ->GetNumberOfIntegrationPointsCircumfence();
 
   // Initilaize variables for the projection.
   scalar_type eta;
   double alpha;
-  LINALG::TMatrix<scalar_type, 3, 1> r_beam;
+  LINALG::TMatrix<scalar_type, 3, 1> r_line_cross_section;
   LINALG::TMatrix<scalar_type, 2, 1> eta_cross_section;
   LINALG::TMatrix<scalar_type, 3, 1> xi_solid;
   ProjectionResult projection_result;
@@ -88,31 +91,31 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
   // Loop over Gauss points and check if they project to this volume.
   for (unsigned int index_gp_axis = 0; index_gp_axis < n_gauss_points_axis; index_gp_axis++)
   {
-    for (unsigned int index_gp_circ = 0; index_gp_circ < n_gauss_points_circ; index_gp_circ++)
+    for (unsigned int index_gp_circ = 0; index_gp_circ < n_integration_points_circ; index_gp_circ++)
     {
       // Index of the current Gauss point in the tracking vector.
-      unsigned int index_gp = index_gp_axis * n_gauss_points_circ + index_gp_circ;
+      unsigned int index_gp = index_gp_axis * n_integration_points_circ + index_gp_circ;
 
       // Only check points that do not already have a valid projection.
       if (line_projection_tracker[index_gp] == false)
       {
         // Centerline coordinate and coodrinates in the cross section.
         eta = gauss_points_axis.qxg[index_gp_axis][0];
-        alpha = 2. * M_PI / double(n_gauss_points_circ) * index_gp_circ;
+        alpha = 2. * M_PI / double(n_integration_points_circ) * index_gp_circ;
         eta_cross_section(0) = cos(alpha);
         eta_cross_section(1) = sin(alpha);
 
         // Position of point in the cross section.
         GEOMETRYPAIR::EvaluatePositionLineCrossSection<line>(
-            eta, eta_cross_section, q_line, r_beam, this->Element1());
+            eta, eta_cross_section, q_line, r_line_cross_section, this->Element1());
 
         // Project point to the volume.
-        this->ProjectPointToVolume(r_beam, q_volume, xi_solid, projection_result);
+        this->ProjectPointToVolume(r_line_cross_section, q_volume, xi_solid, projection_result);
         if (projection_result == ProjectionResult::projection_found_valid)
         {
           // Valid Gauss point was found, add to this segment and set tracking point to true.
           ProjectionPointLineToVolume<scalar_type> new_point(eta, xi_solid,
-              gauss_points_axis.qwgt[index_gp_axis] * 2. / double(n_gauss_points_circ));
+              gauss_points_axis.qwgt[index_gp_axis] * 2. / double(n_integration_points_circ));
           new_point.SetEtaCrossSection(eta_cross_section);
           projection_point_segment.AddProjectionPoint(new_point);
           line_projection_tracker[index_gp] = true;
@@ -154,7 +157,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
   // Check if one point projected in PreEvaluate.
   if (segments.size() == 1 && segments[0].GetNumberOfProjectionPoints() > 0)
   {
-    // Check if all points of this beam projected.
+    // Check if all points of this line projected.
     const std::vector<bool>& projection_vector = GetLineProjectionVectorMutable();
     bool all_projected =
         std::all_of(projection_vector.begin(), projection_vector.end(), [](bool v) { return v; });
@@ -164,8 +167,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
       for (auto const& value : projection_vector)
         if (value) valid_projection_points += 1;
       dserror(
-          "The cylinder projection currently only works if all points on a beam project! Of the "
-          "%d points, only %d projected.",
+          "The cross section projection currently only works if all points on a line project! Of "
+          "the %d points, only %d projected.",
           projection_vector.size(), valid_projection_points);
     }
   }

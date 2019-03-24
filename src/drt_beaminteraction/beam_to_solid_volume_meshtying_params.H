@@ -117,7 +117,10 @@ namespace BEAMINTERACTION
      * section.
      * @return Number of points.
      */
-    inline unsigned int GetGaussPointsCircumfence() const { return gauss_points_circumfence_; }
+    inline unsigned int GetNumberOfIntegrationPointsCircumfence() const
+    {
+      return integration_points_circumfence_;
+    }
 
    private:
     //! Flag if Init was called.
@@ -143,7 +146,7 @@ namespace BEAMINTERACTION
 
     //! Number of integration points along the circumfencial direction in the cross section
     //! projection.
-    unsigned int gauss_points_circumfence_;
+    unsigned int integration_points_circumfence_;
   };
 
 }  // namespace BEAMINTERACTION

@@ -65,8 +65,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Init()
         beam_to_solid_contact_params_list.get<int>("GAUSS_POINTS"));
 
     // Number of integrations points along the circumfence of the cross section.
-    gauss_points_circumfence_ =
-        beam_to_solid_contact_params_list.get<int>("GAUSS_POINTS_CIRCUMFENCE");
+    integration_points_circumfence_ =
+        beam_to_solid_contact_params_list.get<int>("INTEGRATION_POINTS_CIRCUMFENCE");
   }
 
   isinit_ = true;

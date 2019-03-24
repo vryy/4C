@@ -61,7 +61,7 @@ CONTACT_DISCRETIZATION                gauss_point_cross_section
 CONSTRAINT_STRATEGY                   penalty
 PENALTY_PARAMETER                     10
 GAUSS_POINTS                          6
-GAUSS_POINTS_CIRCUMFENCE              10
+INTEGRATION_POINTS_CIRCUMFENCE        10
 ----------------------------------------------------GEOMETRY PAIR/LINE TO VOLUME
 STRATEGY                              gauss_point_projection_cross_section
 --------------------------------------------------------------RESULT DESCRIPTION
