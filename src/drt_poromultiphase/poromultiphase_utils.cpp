@@ -35,9 +35,9 @@
 /*----------------------------------------------------------------------*
  | setup discretizations and dofsets                         vuong 08/16 |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASE::UTILS::SetupDiscretizationsAndFieldCoupling(const Epetra_Comm& comm,
-    const std::string& struct_disname, const std::string& fluid_disname, int& nds_disp,
-    int& nds_vel, int& nds_solidpressure)
+std::map<int, std::set<int>> POROMULTIPHASE::UTILS::SetupDiscretizationsAndFieldCoupling(
+    const Epetra_Comm& comm, const std::string& struct_disname, const std::string& fluid_disname,
+    int& nds_disp, int& nds_vel, int& nds_solidpressure)
 {
   // Scheme   : the structure discretization is received from the input.
   //            Then, a poro fluid disc. is cloned.
@@ -48,7 +48,10 @@ void POROMULTIPHASE::UTILS::SetupDiscretizationsAndFieldCoupling(const Epetra_Co
 
   // 1.-Initialization.
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis(struct_disname);
-  // possible redistribution
+
+  // possible interaction partners [artelegid; contelegid_1, ... contelegid_n]
+  std::map<int, std::set<int>> nearbyelepairs;
+
   if (DRT::Problem::Instance()->DoesExistDis("artery"))
   {
     Teuchos::RCP<DRT::Discretization> arterydis = Teuchos::null;
@@ -71,10 +74,9 @@ void POROMULTIPHASE::UTILS::SetupDiscretizationsAndFieldCoupling(const Epetra_Co
       case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::gpts:
       case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp:
       {
-        // if we have a PoroMultiphaseScatra-Problem, we can only ghost after defining all
-        // DofSets -> done in poromultiphase_scatra_utils.cpp
-        if (problem->ProblemType() != prb_poromultiphasescatra)
-          POROFLUIDMULTIPHASE::UTILS::GhostArteryDiscretizationOnAllProcs(arterydis);
+        // perform extended ghosting on artery discretization
+        nearbyelepairs =
+            POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryDiscretization(structdis, arterydis);
         break;
       }
       default:
@@ -82,7 +84,7 @@ void POROMULTIPHASE::UTILS::SetupDiscretizationsAndFieldCoupling(const Epetra_Co
         break;
       }
     }
-    arterydis->FillComplete();
+    if (!arterydis->Filled()) arterydis->FillComplete();
   }
 
   Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis(fluid_disname);
@@ -126,7 +128,7 @@ void POROMULTIPHASE::UTILS::SetupDiscretizationsAndFieldCoupling(const Epetra_Co
   structdis->FillComplete();
   fluiddis->FillComplete();
 
-  return;
+  return nearbyelepairs;
 }
 
 /*----------------------------------------------------------------------*

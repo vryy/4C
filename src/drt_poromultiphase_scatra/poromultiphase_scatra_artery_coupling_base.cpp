@@ -126,3 +126,14 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::SetSolutionVectors(
   // do nothing
   return;
 }
+
+
+/*-------------------------------------------------------------------------*
+ | set element pairs that are close                       kremheller 03/19 |
+ *------------------------------------------------------------------------ */
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::SetNearbyElePairs(
+    const std::map<int, std::set<int>>* nearbyelepairs)
+{
+  // do nothing
+  return;
+}

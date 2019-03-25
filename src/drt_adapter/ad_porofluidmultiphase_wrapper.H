@@ -48,12 +48,15 @@ namespace ADAPTER
     virtual ~PoroFluidMultiphaseWrapper(){};
 
     /// initialization
-    void Init(const bool isale,        ///< ALE flag
-        const int nds_disp,            ///< number of dofset associated with displacements
-        const int nds_vel,             ///< number of dofset associated with fluid velocities
-        const int nds_solidpressure,   ///< number of dofset associated with solid pressure
-        const int ndsporofluid_scatra  ///< number of dofset associated with scalar on fluid
-                                       ///< discretization
+    void Init(const bool isale,         ///< ALE flag
+        const int nds_disp,             ///< number of dofset associated with displacements
+        const int nds_vel,              ///< number of dofset associated with fluid velocities
+        const int nds_solidpressure,    ///< number of dofset associated with solid pressure
+        const int ndsporofluid_scatra,  ///< number of dofset associated with scalar on fluid
+                                        ///< discretization
+        const std::map<int, std::set<int>>*
+            nearbyelepairs  ///< possible interaction partners between porofluid and artery
+                            ///< discretization
     );
 
     /// create result test for multiphase porous fluid field

@@ -55,11 +55,20 @@ namespace DRT
       void CopyConditions(const DRT::Discretization& sourcedis, DRT::Discretization& targetdis,
           const std::map<std::string, std::string>& conditions_to_copy) const;
 
-      //! generate identical clone of sourcedis (eles, nodes, dofs and conditions
-      //  are copied to returned new discretization)
+
+      /**
+       * generate identical clone of sourcedis (eles, nodes, dofs and conditions)
+       * @param sourcedis: discretization based on which clone will be generated
+       * @param targetdisname: name of cloned discretization
+       * @param clonedofs: should Dofs be cloned?
+       * @param assigndegreesoffreedom: flag for call to fill complete on cloned dis
+       * @param initelements: flag for call to fill complete on cloned dis
+       * @param doboundaryconditions:  flag for call to fill complete on cloned dis
+       * @return the cloned discretization
+       */
       Teuchos::RCP<DRT::Discretization> CreateMatchingDiscretization(
           const Teuchos::RCP<DRT::Discretization>& sourcedis, const std::string& targetdisname,
-          bool assigndegreesoffreedom = true, bool initelements = true,
+          bool clonedofs = true, bool assigndegreesoffreedom = true, bool initelements = true,
           bool doboundaryconditions = true) const;
 
       //! Base class version for creation of matching discretization without material

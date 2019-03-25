@@ -34,7 +34,7 @@ namespace POROMULTIPHASE
   namespace UTILS
   {
     /// setup discretizations and dofsets
-    void SetupDiscretizationsAndFieldCoupling(const Epetra_Comm& comm,
+    std::map<int, std::set<int>> SetupDiscretizationsAndFieldCoupling(const Epetra_Comm& comm,
         const std::string& struct_disname, const std::string& fluid_disname, int& nds_disp,
         int& nds_vel, int& nds_solidpressure);
 

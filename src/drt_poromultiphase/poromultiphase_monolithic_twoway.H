@@ -56,7 +56,8 @@ namespace POROMULTIPHASE
         const Teuchos::ParameterList& algoparams, const Teuchos::ParameterList& structparams,
         const Teuchos::ParameterList& fluidparams, const std::string& struct_disname,
         const std::string& fluid_disname, bool isale, int nds_disp, int nds_vel,
-        int nds_solidpressure, int ndsporofluid_scatra);
+        int nds_solidpressure, int ndsporofluid_scatra,
+        const std::map<int, std::set<int>>* nearbyelepairs);
 
     /// setup
     virtual void SetupSystem();

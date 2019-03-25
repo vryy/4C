@@ -70,6 +70,10 @@ void porofluidmultiphase_dyn(int restart)
   Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
   actdis = DRT::Problem::Instance()->GetDis(fluid_disname);
 
+  // possible interaction partners as seen from the artery elements
+  // [artelegid; contelegid_1, ...contelegid_n]
+  std::map<int, std::set<int>> nearbyelepairs;
+
   if (DRT::Problem::Instance()->DoesExistDis(artery_disname))
   {
     Teuchos::RCP<DRT::Discretization> arterydis = Teuchos::null;
@@ -84,7 +88,8 @@ void porofluidmultiphase_dyn(int restart)
       case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp:
       {
         actdis->FillComplete();
-        POROFLUIDMULTIPHASE::UTILS::GhostArteryDiscretizationOnAllProcs(arterydis);
+        nearbyelepairs =
+            POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryDiscretization(actdis, arterydis);
         break;
       }
       default:
@@ -130,8 +135,8 @@ void porofluidmultiphase_dyn(int restart)
       -1,                 //  no displacements
       -1,                 // no velocities
       nds_solidpressure,  // dof set for post processing solid pressure
-      -1                  // no scalar field
-  );
+      -1,                 // no scalar field
+      &nearbyelepairs);   // possible interaction pairs
 
   // read the restart information, set vectors and variables
   if (restart) algo->ReadRestart(restart);

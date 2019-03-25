@@ -22,6 +22,7 @@
 
 #include "../drt_adapter/ad_porofluidmultiphase.H"
 #include "../drt_lib/drt_utils_parallel.H"
+#include "../drt_poromultiphase_scatra/poromultiphase_scatra_artery_coupling_defines.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -147,15 +148,240 @@ Teuchos::RCP<ADAPTER::PoroFluidMultiphase> POROFLUIDMULTIPHASE::UTILS::CreateAlg
 }
 
 /*--------------------------------------------------------------------------*
- | ghost artery on all procs.                              kremheller 06/18 |
+ | perform extended ghosting for artery dis                kremheller 03/19 |
  *--------------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::UTILS::GhostArteryDiscretizationOnAllProcs(
-    Teuchos::RCP<DRT::Discretization> artdis)
+std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryDiscretization(
+    Teuchos::RCP<DRT::Discretization> contdis, Teuchos::RCP<DRT::Discretization> artdis)
 {
   artdis->FillComplete();
-  DRT::UTILS::GhostDiscretizationOnAllProcs(artdis);
+  if (!contdis->Filled()) contdis->FillComplete();
 
-  return;
+  // create the fully overlapping search discretization
+  Teuchos::RCP<DRT::Discretization> artsearchdis = CreateSearchDiscretization(artdis);
+
+  // to be filled with additional elements to be ghosted
+  std::set<int> elecolset;
+  const Epetra_Map* elecolmap = artdis->ElementColMap();
+  for (int lid = 0; lid < elecolmap->NumMyElements(); ++lid)
+  {
+    int gid = elecolmap->GID(lid);
+    elecolset.insert(gid);
+  }
+
+  // to be filled with additional nodes to be ghosted
+  std::set<int> nodecolset;
+  const Epetra_Map* nodecolmap = artdis->NodeColMap();
+  for (int lid = 0; lid < nodecolmap->NumMyElements(); ++lid)
+  {
+    int gid = nodecolmap->GID(lid);
+    nodecolset.insert(gid);
+  }
+
+  // search with the fully overlapping discretization
+  std::map<int, std::set<int>> nearbyelepairs =
+      BruteForceSearch(contdis, artdis, artsearchdis, &elecolset, &nodecolset);
+
+  // extended ghosting for elements
+  std::vector<int> coleles(elecolset.begin(), elecolset.end());
+  Teuchos::RCP<const Epetra_Map> extendedelecolmap =
+      Teuchos::rcp(new Epetra_Map(-1, coleles.size(), &coleles[0], 0, contdis->Comm()));
+
+  artdis->ExportColumnElements(*extendedelecolmap);
+
+  // extended ghosting for nodes
+  std::vector<int> colnodes(nodecolset.begin(), nodecolset.end());
+  Teuchos::RCP<const Epetra_Map> extendednodecolmap =
+      Teuchos::rcp(new Epetra_Map(-1, colnodes.size(), &colnodes[0], 0, contdis->Comm()));
+
+  artdis->ExportColumnNodes(*extendednodecolmap);
+
+  // fill and inform user
+  artdis->FillComplete();
+  DRT::UTILS::PrintParallelDistribution(*artdis);
+
+  return nearbyelepairs;
+}
+
+/*--------------------------------------------------------------------------*
+ | create the fully overlapping search discretization      kremheller 03/19 |
+ *--------------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Discretization> POROFLUIDMULTIPHASE::UTILS::CreateSearchDiscretization(
+    Teuchos::RCP<DRT::Discretization> artdis)
+{
+  // we clone a search discretization of the artery discretization on which the search will be
+  // performed in a brute force way fully overlapping
+  Teuchos::RCP<DRT::UTILS::DiscretizationCreatorBase> discloner =
+      Teuchos::rcp(new DRT::UTILS::DiscretizationCreatorBase());
+  Teuchos::RCP<DRT::Discretization> artsearchdis =
+      discloner->CreateMatchingDiscretization(artdis, "artsearchdis", false, false, false, false);
+
+  // ghost on all procs.
+  DRT::UTILS::GhostDiscretizationOnAllProcs(artsearchdis);
+  artsearchdis->FillComplete(false, false, false);
+
+  return artsearchdis;
+}
+
+/*----------------------------------------------------------------------*
+ | brute force search for near elements                kremheller 05/18 |
+ *----------------------------------------------------------------------*/
+std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::BruteForceSearch(
+    Teuchos::RCP<DRT::Discretization> contdis, Teuchos::RCP<DRT::Discretization> artdis,
+    Teuchos::RCP<DRT::Discretization> artsearchdis, std::set<int>* elecolset,
+    std::set<int>* nodecolset)
+{
+  // user info and timer
+  if (contdis->Comm().MyPID() == 0)
+    std::cout << "Starting with brute force search for coupling ... ";
+  Epetra_Time timersearch(contdis->Comm());
+  // reset timer
+  timersearch.ResetStartTime();
+  // *********** time measurement ***********
+  double dtcpu = timersearch.WallTime();
+  // *********** time measurement ***********
+
+  // this set will be filled
+  std::map<int, std::set<int>> nearbyelepairs;
+
+  // compute the search radius
+  const double searchradius = ComputeSearchRadius(contdis, artsearchdis);
+
+  // scheme is elecolmap -- nodecolmap
+  for (int i = 0; i < artsearchdis->ElementColMap()->NumMyElements(); ++i)
+  {
+    const int artelegid = artsearchdis->ElementColMap()->GID(i);
+
+    DRT::Element* artele = artsearchdis->gElement(artelegid);
+
+    DRT::Node** artnodes = artele->Nodes();
+
+    // loop over all nodes of this element
+    for (int jnode = 0; jnode < artele->NumNode(); jnode++)
+    {
+      DRT::Node* artnode = artnodes[jnode];
+
+      static LINALG::Matrix<3, 1> artpos;
+      artpos(0) = artnode->X()[0];
+      artpos(1) = artnode->X()[1];
+      artpos(2) = artnode->X()[2];
+
+      // loop over all column nodes of 2D/3D discretization
+      for (int j = 0; j < contdis->NodeColMap()->NumMyElements(); ++j)
+      {
+        const int contgid = contdis->NodeColMap()->GID(j);
+        DRT::Node* contnode = contdis->gNode(contgid);
+
+        static LINALG::Matrix<3, 1> contpos;
+        contpos(0) = contnode->X()[0];
+        contpos(1) = contnode->X()[1];
+        contpos(2) = contnode->X()[2];
+
+        static LINALG::Matrix<3, 1> dist;
+        dist.Update(1.0, contpos, -1.0, artpos, 0.0);
+
+        if (dist.Norm2() < searchradius)
+        {
+          DRT::Element** contneighboureles = contnode->Elements();
+
+          for (int l = 0; l < contnode->NumElement(); l++)
+          {
+            DRT::Element* thiscontele = contneighboureles[l];
+            const int conteleid = thiscontele->Id();
+
+            nearbyelepairs[artelegid].insert(conteleid);
+            if (not artdis->HaveGlobalElement(artelegid))
+            {
+              elecolset->insert(artelegid);
+              const int* nodeids = artele->NodeIds();
+              for (int inode = 0; inode < artele->NumNode(); ++inode)
+                nodecolset->insert(nodeids[inode]);
+            }
+          }
+        }
+      }  // col-nodes 2D/3D
+    }    // col-nodes of artery
+  }      // col-eles of artery
+
+  // *********** time measurement ***********
+  double mydtsearch = timersearch.WallTime() - dtcpu;
+  double maxdtsearch = 0.0;
+  contdis->Comm().MaxAll(&mydtsearch, &maxdtsearch, 1);
+  // *********** time measurement ***********
+  if (contdis->Comm().MyPID() == 0) std::cout << "Completed in " << maxdtsearch << "s" << std::endl;
+
+  return nearbyelepairs;
+}
+
+/*----------------------------------------------------------------------*
+ | compute search radius                               kremheller 05/18 |
+ *----------------------------------------------------------------------*/
+double POROFLUIDMULTIPHASE::UTILS::ComputeSearchRadius(
+    Teuchos::RCP<DRT::Discretization> contdis, Teuchos::RCP<DRT::Discretization> artdis)
+{
+  double maxdist = 0.0;
+
+  // loop over all elements in row map
+  for (int i = 0; i < artdis->ElementRowMap()->NumMyElements(); i++)
+  {
+    // get pointer onto element
+    int gid = artdis->ElementRowMap()->GID(i);
+    DRT::Element* thisele = artdis->gElement(gid);
+
+    maxdist = std::max(maxdist, GetMaxNodalDistance(thisele, artdis));
+  }
+
+  // loop over all elements in row map
+  for (int i = 0; i < contdis->ElementRowMap()->NumMyElements(); i++)
+  {
+    // get pointer onto element
+    int gid = contdis->ElementRowMap()->GID(i);
+    DRT::Element* thisele = contdis->gElement(gid);
+
+    maxdist = std::max(maxdist, GetMaxNodalDistance(thisele, contdis));
+  }
+
+  double globalmaxdist = 0.0;
+  contdis->Comm().MaxAll(&maxdist, &globalmaxdist, 1);
+
+  // safety factor
+  return BRUTEFORCESAFETY / 2.0 * globalmaxdist;
+}
+
+/*----------------------------------------------------------------------*
+ | get maximum nodal distance                          kremheller 05/18 |
+ *----------------------------------------------------------------------*/
+double POROFLUIDMULTIPHASE::UTILS::GetMaxNodalDistance(
+    DRT::Element* ele, Teuchos::RCP<DRT::Discretization> dis)
+{
+  double maxdist = 0.0;
+
+  // get first node and its position
+  int node0_gid = ele->NodeIds()[0];
+  DRT::Node* node0 = dis->gNode(node0_gid);
+
+  static LINALG::Matrix<3, 1> pos0;
+  pos0(0) = node0->X()[0];
+  pos0(1) = node0->X()[1];
+  pos0(2) = node0->X()[2];
+
+  // loop over second node to numnode to compare distances with first node
+  for (int inode = 1; inode < ele->NumNode(); inode++)
+  {
+    int node1_gid = ele->NodeIds()[inode];
+    DRT::Node* node1 = dis->gNode(node1_gid);
+
+    static LINALG::Matrix<3, 1> pos1;
+    pos1(0) = node1->X()[0];
+    pos1(1) = node1->X()[1];
+    pos1(2) = node1->X()[2];
+
+    static LINALG::Matrix<3, 1> dist;
+    dist.Update(1.0, pos0, -1.0, pos1, 0.0);
+
+    maxdist = std::max(maxdist, dist.Norm2());
+  }
+
+  return maxdist;
 }
 
 /*----------------------------------------------------------------------*

@@ -287,6 +287,25 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::CheckInitialFields(
   return;
 }
 
+/*-------------------------------------------------------------------------*
+ | set element pairs that are close                       kremheller 03/19 |
+ *------------------------------------------------------------------------ */
+void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::SetNearbyElePairs(
+    const std::map<int, std::set<int>>* nearbyelepairs)
+{
+  arttoporofluidcoupling_->SetNearbyElePairs(nearbyelepairs);
+  return;
+}
+
+/*-------------------------------------------------------------------------*
+ | setup the strategy                                     kremheller 03/19 |
+ *------------------------------------------------------------------------ */
+void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::Setup()
+{
+  arttoporofluidcoupling_->Setup();
+  return;
+}
+
 /*----------------------------------------------------------------------*
  | apply mesh movement                                 kremheller 06/18 |
  *----------------------------------------------------------------------*/
