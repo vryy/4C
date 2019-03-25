@@ -355,30 +355,33 @@ double POROFLUIDMULTIPHASE::UTILS::GetMaxNodalDistance(
 {
   double maxdist = 0.0;
 
-  // get first node and its position
-  int node0_gid = ele->NodeIds()[0];
-  DRT::Node* node0 = dis->gNode(node0_gid);
-
-  static LINALG::Matrix<3, 1> pos0;
-  pos0(0) = node0->X()[0];
-  pos0(1) = node0->X()[1];
-  pos0(2) = node0->X()[2];
-
-  // loop over second node to numnode to compare distances with first node
-  for (int inode = 1; inode < ele->NumNode(); inode++)
+  for (int inode = 0; inode < ele->NumNode() - 1; inode++)
   {
-    int node1_gid = ele->NodeIds()[inode];
-    DRT::Node* node1 = dis->gNode(node1_gid);
+    // get first node and its position
+    int node0_gid = ele->NodeIds()[inode];
+    DRT::Node* node0 = dis->gNode(node0_gid);
 
-    static LINALG::Matrix<3, 1> pos1;
-    pos1(0) = node1->X()[0];
-    pos1(1) = node1->X()[1];
-    pos1(2) = node1->X()[2];
+    static LINALG::Matrix<3, 1> pos0;
+    pos0(0) = node0->X()[0];
+    pos0(1) = node0->X()[1];
+    pos0(2) = node0->X()[2];
 
-    static LINALG::Matrix<3, 1> dist;
-    dist.Update(1.0, pos0, -1.0, pos1, 0.0);
+    // loop over second node to numnode to compare distances with first node
+    for (int jnode = inode + 1; jnode < ele->NumNode(); jnode++)
+    {
+      int node1_gid = ele->NodeIds()[jnode];
+      DRT::Node* node1 = dis->gNode(node1_gid);
 
-    maxdist = std::max(maxdist, dist.Norm2());
+      static LINALG::Matrix<3, 1> pos1;
+      pos1(0) = node1->X()[0];
+      pos1(1) = node1->X()[1];
+      pos1(2) = node1->X()[2];
+
+      static LINALG::Matrix<3, 1> dist;
+      dist.Update(1.0, pos0, -1.0, pos1, 0.0);
+
+      maxdist = std::max(maxdist, dist.Norm2());
+    }
   }
 
   return maxdist;
