@@ -243,64 +243,40 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::BruteForceSearch(
   // this set will be filled
   std::map<int, std::set<int>> nearbyelepairs;
 
-  // compute the search radius
-  const double searchradius = ComputeSearchRadius(contdis, artsearchdis);
-
-  // scheme is elecolmap -- nodecolmap
-  for (int i = 0; i < artsearchdis->ElementColMap()->NumMyElements(); ++i)
+  // scheme is artery-dis: fully-overlapping elecolmap --> contdis: elecolmap
+  for (int iart = 0; iart < artsearchdis->ElementColMap()->NumMyElements(); ++iart)
   {
-    const int artelegid = artsearchdis->ElementColMap()->GID(i);
+    const int artelegid = artsearchdis->ElementColMap()->GID(iart);
 
     DRT::Element* artele = artsearchdis->gElement(artelegid);
 
-    DRT::Node** artnodes = artele->Nodes();
+    // AABB of artery
+    std::vector<double> aabb_artery = GetAABB(artele);
 
-    // loop over all nodes of this element
-    for (int jnode = 0; jnode < artele->NumNode(); jnode++)
+    for (int icont = 0; icont < contdis->ElementColMap()->NumMyElements(); ++icont)
     {
-      DRT::Node* artnode = artnodes[jnode];
+      const int contelegid = contdis->ElementColMap()->GID(icont);
+      DRT::Element* contele = contdis->gElement(contelegid);
 
-      static LINALG::Matrix<3, 1> artpos;
-      artpos(0) = artnode->X()[0];
-      artpos(1) = artnode->X()[1];
-      artpos(2) = artnode->X()[2];
+      // AABB of 2D/3D-discretization
+      std::vector<double> aabb_cont = GetAABB(contele);
 
-      // loop over all column nodes of 2D/3D discretization
-      for (int j = 0; j < contdis->NodeColMap()->NumMyElements(); ++j)
+      // check if bounding boxes intersect
+      if (!(aabb_artery[0] >= aabb_cont[3] || aabb_artery[3] <= aabb_cont[0] ||
+              aabb_artery[1] >= aabb_cont[4] || aabb_artery[4] <= aabb_cont[1] ||
+              aabb_artery[2] >= aabb_cont[5] || aabb_artery[5] <= aabb_cont[2]))
       {
-        const int contgid = contdis->NodeColMap()->GID(j);
-        DRT::Node* contnode = contdis->gNode(contgid);
-
-        static LINALG::Matrix<3, 1> contpos;
-        contpos(0) = contnode->X()[0];
-        contpos(1) = contnode->X()[1];
-        contpos(2) = contnode->X()[2];
-
-        static LINALG::Matrix<3, 1> dist;
-        dist.Update(1.0, contpos, -1.0, artpos, 0.0);
-
-        if (dist.Norm2() < searchradius)
+        nearbyelepairs[artelegid].insert(contelegid);
+        if (not artdis->HaveGlobalElement(artelegid))
         {
-          DRT::Element** contneighboureles = contnode->Elements();
-
-          for (int l = 0; l < contnode->NumElement(); l++)
-          {
-            DRT::Element* thiscontele = contneighboureles[l];
-            const int conteleid = thiscontele->Id();
-
-            nearbyelepairs[artelegid].insert(conteleid);
-            if (not artdis->HaveGlobalElement(artelegid))
-            {
-              elecolset->insert(artelegid);
-              const int* nodeids = artele->NodeIds();
-              for (int inode = 0; inode < artele->NumNode(); ++inode)
-                nodecolset->insert(nodeids[inode]);
-            }
-          }
+          elecolset->insert(artelegid);
+          const int* nodeids = artele->NodeIds();
+          for (int inode = 0; inode < artele->NumNode(); ++inode)
+            nodecolset->insert(nodeids[inode]);
         }
-      }  // col-nodes 2D/3D
-    }    // col-nodes of artery
-  }      // col-eles of artery
+      }
+    }
+  }
 
   // *********** time measurement ***********
   double mydtsearch = timersearch.WallTime() - dtcpu;
@@ -313,38 +289,65 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::BruteForceSearch(
 }
 
 /*----------------------------------------------------------------------*
- | compute search radius                               kremheller 05/18 |
+ | get axis-aligned bounding box of element            kremheller 03/19 |
  *----------------------------------------------------------------------*/
-double POROFLUIDMULTIPHASE::UTILS::ComputeSearchRadius(
-    Teuchos::RCP<DRT::Discretization> contdis, Teuchos::RCP<DRT::Discretization> artdis)
+std::vector<double> POROFLUIDMULTIPHASE::UTILS::GetAABB(DRT::Element* ele)
 {
-  double maxdist = 0.0;
+  // format is [xmin, ymin, zmin, xmax, ymax, zmax]
+  std::vector<double> aabb(6);
 
-  // loop over all elements in row map
-  for (int i = 0; i < artdis->ElementRowMap()->NumMyElements(); i++)
+  DRT::Node** nodes = ele->Nodes();
+
+  // initialize with first node
+  aabb[0] = nodes[0]->X()[0];
+  aabb[1] = nodes[0]->X()[1];
+  aabb[2] = nodes[0]->X()[2];
+  aabb[3] = nodes[0]->X()[0];
+  aabb[4] = nodes[0]->X()[1];
+  aabb[5] = nodes[0]->X()[2];
+
+  // loop over remaining nodes
+  for (int inode = 1; inode < ele->NumNode(); inode++)
   {
-    // get pointer onto element
-    int gid = artdis->ElementRowMap()->GID(i);
-    DRT::Element* thisele = artdis->gElement(gid);
+    DRT::Node* node = nodes[inode];
+    aabb[0] = std::min(aabb[0], node->X()[0]);
+    aabb[1] = std::min(aabb[1], node->X()[1]);
+    aabb[2] = std::min(aabb[2], node->X()[2]);
 
-    maxdist = std::max(maxdist, GetMaxNodalDistance(thisele, artdis));
+    aabb[3] = std::max(aabb[3], node->X()[0]);
+    aabb[4] = std::max(aabb[4], node->X()[1]);
+    aabb[5] = std::max(aabb[5], node->X()[2]);
   }
 
-  // loop over all elements in row map
-  for (int i = 0; i < contdis->ElementRowMap()->NumMyElements(); i++)
-  {
-    // get pointer onto element
-    int gid = contdis->ElementRowMap()->GID(i);
-    DRT::Element* thisele = contdis->gElement(gid);
+  // for safety: we increase the length of AABB by the factor BRUTEFORCESAFETY (in x-, y- and
+  // z-direction),
+  // i.e. we add  BRUTEFORCESAFETY/2.0*original length to the max values
+  // and subtract BRUTEFORCESAFETY/2.0*original length from the min values
+  aabb[0] = (aabb[0] + aabb[3]) / 2.0 - (aabb[3] - aabb[0]) * BRUTEFORCESAFETY / 2.0;
+  aabb[1] = (aabb[1] + aabb[4]) / 2.0 - (aabb[4] - aabb[1]) * BRUTEFORCESAFETY / 2.0;
+  aabb[2] = (aabb[2] + aabb[5]) / 2.0 - (aabb[5] - aabb[2]) * BRUTEFORCESAFETY / 2.0;
+  aabb[3] = (aabb[0] + aabb[3]) / 2.0 + (aabb[3] - aabb[0]) * BRUTEFORCESAFETY / 2.0;
+  aabb[4] = (aabb[1] + aabb[4]) / 2.0 + (aabb[4] - aabb[1]) * BRUTEFORCESAFETY / 2.0;
+  aabb[5] = (aabb[2] + aabb[5]) / 2.0 + (aabb[5] - aabb[2]) * BRUTEFORCESAFETY / 2.0;
 
-    maxdist = std::max(maxdist, GetMaxNodalDistance(thisele, contdis));
+  // take care of AABBs, that lie in surface orthogonal to one of the coordinate axes
+  if (aabb[3] - aabb[0] < BRUTEFORCEAABBMINSIZE)
+  {
+    aabb[3] += BRUTEFORCEAABBMINSIZE / 2.0;
+    aabb[0] -= BRUTEFORCEAABBMINSIZE / 2.0;
+  }
+  if (aabb[4] - aabb[1] < BRUTEFORCEAABBMINSIZE)
+  {
+    aabb[4] += BRUTEFORCEAABBMINSIZE / 2.0;
+    aabb[1] -= BRUTEFORCEAABBMINSIZE / 2.0;
+  }
+  if (aabb[5] - aabb[2] < BRUTEFORCEAABBMINSIZE)
+  {
+    aabb[5] += BRUTEFORCEAABBMINSIZE / 2.0;
+    aabb[2] -= BRUTEFORCEAABBMINSIZE / 2.0;
   }
 
-  double globalmaxdist = 0.0;
-  contdis->Comm().MaxAll(&maxdist, &globalmaxdist, 1);
-
-  // safety factor
-  return BRUTEFORCESAFETY / 2.0 * globalmaxdist;
+  return aabb;
 }
 
 /*----------------------------------------------------------------------*

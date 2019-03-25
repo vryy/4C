@@ -85,9 +85,12 @@ namespace POROFLUIDMULTIPHASE
     std::map<int, std::set<int>> ExtendedGhostingArteryDiscretization(
         Teuchos::RCP<DRT::Discretization> contdis, Teuchos::RCP<DRT::Discretization> artdis);
 
-    /// compute search radius for brute force search
-    double ComputeSearchRadius(
-        Teuchos::RCP<DRT::Discretization> contdis, Teuchos::RCP<DRT::Discretization> artdis);
+    /**
+     * get axis-aligned bounding box of element
+     * @param ele: compute AABB for this element
+     * @return AABB of element as 6x1 vector with format [xmin, ymin, zmin, xmax, ymax, zmax]
+     */
+    std::vector<double> GetAABB(DRT::Element* ele);
 
     /// maximum distance between two nodes of an element
     double GetMaxNodalDistance(DRT::Element* ele, Teuchos::RCP<DRT::Discretization> dis);
