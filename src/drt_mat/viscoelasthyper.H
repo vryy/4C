@@ -15,10 +15,7 @@ MAT 0   MAT_ViscoElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 \level 1
 
 <pre>
-\maintainer Lena Yoshihara
-            yoshihara@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15255
+\maintainer Fabian Braeu
 </pre>
 */
 

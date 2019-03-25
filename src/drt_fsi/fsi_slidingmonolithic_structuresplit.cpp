@@ -7,7 +7,7 @@ with condensed structure interface displacements
 
 \level 2
 
-\maintainer Andy Wirtz
+\maintainer Matthias Mayr
 */
 /*--------------------------------------------------------------------------*/
 

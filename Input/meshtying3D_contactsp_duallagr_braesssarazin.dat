@@ -1,7 +1,5 @@
 //
 // Maintainer: Alexander Popp
-// popp@lnm.mw.tum.de
-// 089 - 289-15238
 //
 ==================================================================
 General Data File BACI
@@ -15,9 +13,6 @@ General Data File BACI
 // - quasi-static problem
 // - MueLu saddlepoint solver with BS block smoothers
 //
-// Maintainer: Tobias Wiesner
-//                              wiesner@lnm.mw.tum.de
-// 089/289 15240
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      1120
 //NODES                         1650

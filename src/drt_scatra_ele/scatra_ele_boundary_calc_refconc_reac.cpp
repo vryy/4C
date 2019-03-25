@@ -8,10 +8,10 @@ concentrations and with advanced reaction terms
 \level 3
 
  <pre>
-   \maintainer Moritz Thon
-               thon@mhpc.mw.tum.de
+   \maintainer Johannes Kremheller
+               kremheller@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
-               089 - 289-10364
+               089-289-15262
  </pre>
  *----------------------------------------------------------------------*/
 

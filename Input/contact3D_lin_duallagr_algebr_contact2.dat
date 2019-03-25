@@ -1,8 +1,6 @@
 //
-// Maintainer: Tobias Wiesner
-// wiesner@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15240
+// Maintainer: Matthias Mayr
+//
 // simple two rigid-body contact example
 // use "algebraic permutation" for contact solver
 // with MueLu_contact2 preconditioner

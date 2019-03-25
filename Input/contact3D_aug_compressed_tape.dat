@@ -1,4 +1,4 @@
-// Maintainer: Michael Hiermeier
+// Maintainer: Matthias Mayr
 ==================================================================
                   General Data File BACI
 ==================================================================
@@ -49,7 +49,7 @@ TIMEINIT                        0
 MAXTIME                         1.0
 STC_SCALING                     no
 STC_LAYER                       1
-NLNSOL                          fullnewton // fullnewton, noxnln
+NLNSOL                          fullnewton
 MATERIALTANGENT                 analytical
 NEGLECTINERTIA                  No
 PREDICT                         TangDis
@@ -82,7 +82,7 @@ LINEAR_SOLVER                   1
 RESTART_WITH_CONTACT            No
 ADHESION                        None
 GP_SLIP_INCR                    No
-STRATEGY                        StdLagrange // StdLagrange, Combo
+STRATEGY                        StdLagrange
 SYSTEM                          saddlepoint
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  1
@@ -5988,14 +5988,5 @@ NODE      2873 COORD  4.0000000000000000e+01 -7.5000000000001066e-02  4.00000000
    2135 SOLIDSH8 HEX8  2828 2830 2831 2829 2860 2862 2863 2861    MAT 2 KINEM nonlinear EAS sosh8 ANS sosh8 THICKDIR auto FIBER1 1.0 0.0 0.0
    2136 SOLIDSH8 HEX8  2830 2832 2833 2831 2862 2864 2865 2863    MAT 2 KINEM nonlinear EAS sosh8 ANS sosh8 THICKDIR auto FIBER1 1.0 0.0 0.0
    2137 SOLIDH8 HEX8  2866 2867 2868 2869 2870 2871 2872 2873    MAT 3 KINEM nonlinear EAS none
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------LUBRICATION ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
-------------------------------------------------TRANSPORT2 ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------ACOUSTIC ELEMENTS
----------------------------------------------------CELL ELEMENTS
----------------------------------------------------CELLSCATRA ELEMENTS
 ---------------------------------------------------------------END
 // END

@@ -7,8 +7,8 @@
 
 \brief Base class for contact and meshtying managers (structural problems only)
        all other problem types use mortar adapters
-
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 #ifndef MORTAR_MANAGER_BASE_H
 #define MORTAR_MANAGER_BASE_H
 

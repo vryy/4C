@@ -1,4 +1,14 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_fluid_ale.H
 
+\brief Solve fluid problems on ALE mesh
+
+\level 2
+
+\maintainer Matthias Mayr
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef FSI_FLUID_ALE_H
 #define FSI_FLUID_ALE_H

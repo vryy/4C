@@ -3,14 +3,11 @@
 
 \brief Abstract base class to control all mortar coupling
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\maintainer Matthias Mayr
 
-*----------------------------------------------------------------------*/
+\level 2
+*/
+/*---------------------------------------------------------------------*/
 
 #include "Epetra_SerialComm.h"
 #include "mortar_manager_base.H"

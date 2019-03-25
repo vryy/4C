@@ -3,11 +3,11 @@
 
 \brief Calculates the fix point direction.
 
-\maintainer Andreas Rauch
+\maintainer Matthias Mayr
 
 \level 1
-
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 #include "fsi_nox_fixpoint.H"
 #include <NOX_GlobalData.H>

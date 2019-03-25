@@ -4,7 +4,7 @@
 
 \brief Solve FSI problems using NonlinearCG
 
-\maintainer Andreas Rauch
+\maintainer Matthias Mayr
 
 \level 1
 

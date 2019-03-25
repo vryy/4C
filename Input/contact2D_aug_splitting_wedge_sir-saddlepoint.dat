@@ -1,7 +1,5 @@
 //
-// Maintainer: Michael Hiermeier
-// hiermeier@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
+// Maintainer: Matthias Mayr
 //
 ==================================================================
                   General Data File BACI
@@ -58,8 +56,8 @@ TIMESTEP                        1.0
 NUMSTEP                         1
 TIMEINIT                        0
 MAXTIME                         1.0
-NLNSOL                          fullnewton // fullnewton, noxnln
-PREDICT                         TangDis // TangDis
+NLNSOL                          fullnewton
+PREDICT                         TangDis
 LINEAR_SOLVER                   1
 ----------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     std
@@ -128,7 +126,7 @@ Zero Initial Guess              = Yes
 Computing Scaling Manually      = No
 Output Solver Details           = Yes
 ---------------------------------------------STRUCT NOX/Line Search
-Method                          = Backtrack // Full Step
+Method                          = Backtrack
 -----------------------------------STRUCT NOX/Line Search/Full Step
 Full Step                       = 1
 -----------------------------------STRUCT NOX/Line Search/Backtrack
@@ -159,7 +157,6 @@ MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 101 DENS 0.001
 MAT 101 ELAST_CoupLogNeoHooke MODE YN C1 250.0  C2 0.25                    // C1 = E, C2 = nu
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 201 DENS 0.001
 MAT 201 ELAST_CoupLogNeoHooke MODE YN C1 2500.0  C2 0.25
------------------------------------------------CLONING MATERIAL MAP
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION  -6.7*t // 1*(1.5-y)
 -------------------------------------------------RESULT DESCRIPTION
@@ -2491,14 +2488,5 @@ NODE      1120 COORD  0.0000000000000000e+00  1.1000000000000000e+01  0.00000000
    1026 WALL QUAD4  1115 1116 1118 1117    MAT 2 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
    1027 WALL QUAD4  1091 1117 1119 1093    MAT 2 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
    1028 WALL QUAD4  1117 1118 1120 1119    MAT 2 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------LUBRICATION ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
-------------------------------------------------TRANSPORT2 ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------ACOUSTIC ELEMENTS
----------------------------------------------------CELL ELEMENTS
----------------------------------------------------CELLSCATRA ELEMENTS
 ---------------------------------------------------------------END
 // END
