@@ -153,6 +153,12 @@ Teuchos::RCP<ADAPTER::PoroFluidMultiphase> POROFLUIDMULTIPHASE::UTILS::CreateAlg
 std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryDiscretization(
     Teuchos::RCP<DRT::Discretization> contdis, Teuchos::RCP<DRT::Discretization> artdis)
 {
+  // user output
+  if (contdis->Comm().MyPID() == 0)
+    std::cout
+        << "\n<<<<<<<<<<<<<<< Starting extended ghosting of artery discretization >>>>>>>>>>>>>>>\n"
+        << std::endl;
+
   artdis->FillComplete();
   if (!contdis->Filled()) contdis->FillComplete();
 
@@ -199,6 +205,12 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryD
   artdis->FillComplete();
   DRT::UTILS::PrintParallelDistribution(*artdis);
 
+  // user output
+  if (contdis->Comm().MyPID() == 0)
+    std::cout
+        << "<<<<<<<<<<<<<<< Finished extended ghosting of artery discretization >>>>>>>>>>>>>>>\n"
+        << std::endl;
+
   return nearbyelepairs;
 }
 
@@ -232,7 +244,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::BruteForceSearch(
 {
   // user info and timer
   if (contdis->Comm().MyPID() == 0)
-    std::cout << "Starting with brute force search for coupling ... ";
+    std::cout << "Starting with brute force search for coupling ... " << std::endl;
   Epetra_Time timersearch(contdis->Comm());
   // reset timer
   timersearch.ResetStartTime();
