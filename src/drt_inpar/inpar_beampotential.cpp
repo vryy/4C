@@ -46,11 +46,13 @@ void INPAR::BEAMPOTENTIAL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLis
 
   setStringToIntegralParameter<int>("STRATEGY", "DoubleLengthSpecific_LargeSepApprox",
       "strategy to evaluate interaction potential: double/single length specific, "
-      "small/large separation approximation",
+      "small/large separation approximation, ...",
       tuple<std::string>("DoubleLengthSpecific_LargeSepApprox",
-          "DoubleLengthSpecific_SmallSepApprox", "SingleLengthSpecific_SmallSepApprox"),
+          "DoubleLengthSpecific_SmallSepApprox", "SingleLengthSpecific_SmallSepApprox",
+          "SingleLengthSpecific_SmallSepApprox_Simple"),
       tuple<int>(strategy_doublelengthspec_largesepapprox, strategy_doublelengthspec_smallsepapprox,
-          strategy_singlelengthspec_smallsepapprox),
+          strategy_singlelengthspec_smallsepapprox,
+          strategy_singlelengthspec_smallsepapprox_simple),
       &beampotential);
 
   DoubleParameter("CUTOFF_RADIUS", -1.0,

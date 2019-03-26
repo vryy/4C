@@ -89,18 +89,24 @@ void BEAMINTERACTION::BeamPotentialParams::Init()
   }
 
   /****************************************************************************/
+  strategy_ = DRT::INPUT::IntegralValue<INPAR::BEAMPOTENTIAL::BeamPotentialStrategy>(
+      beam_potential_params_list, "STRATEGY");
+
+  if (strategy_ == INPAR::BEAMPOTENTIAL::strategy_vague)
+    dserror("You must specify a strategy to be used to evaluate beam interaction potential!");
+
+  /****************************************************************************/
   potential_type_ = DRT::INPUT::IntegralValue<INPAR::BEAMPOTENTIAL::BeamPotentialType>(
       beam_potential_params_list, "BEAMPOTENTIAL_TYPE");
 
   if (potential_type_ == INPAR::BEAMPOTENTIAL::beampot_vague)
     dserror("You must specify the type of the specified beam interaction potential!");
 
-  /****************************************************************************/
-  strategy_ = DRT::INPUT::IntegralValue<INPAR::BEAMPOTENTIAL::BeamPotentialStrategy>(
-      beam_potential_params_list, "STRATEGY");
-
-  if (strategy_ == INPAR::BEAMPOTENTIAL::strategy_vague)
-    dserror("You must specify a strategy to be used to evaluate beam interaction potential!");
+  if (potential_type_ == INPAR::BEAMPOTENTIAL::beampot_surf and
+      strategy_ != INPAR::BEAMPOTENTIAL::strategy_doublelengthspec_largesepapprox)
+  {
+    dserror("Surface interaction is not implemented for this strategy yet!");
+  }
 
   /****************************************************************************/
   cutoff_radius_ = beam_potential_params_list.get<double>("CUTOFF_RADIUS");
@@ -116,7 +122,9 @@ void BEAMINTERACTION::BeamPotentialParams::Init()
   if ((regularization_type_ != INPAR::BEAMPOTENTIAL::regularization_none and
           strategy_ == INPAR::BEAMPOTENTIAL::strategy_doublelengthspec_largesepapprox) or
       (regularization_type_ == INPAR::BEAMPOTENTIAL::regularization_constant and
-          strategy_ == INPAR::BEAMPOTENTIAL::strategy_singlelengthspec_smallsepapprox))
+          strategy_ == INPAR::BEAMPOTENTIAL::strategy_singlelengthspec_smallsepapprox) or
+      (regularization_type_ != INPAR::BEAMPOTENTIAL::regularization_none and
+          strategy_ == INPAR::BEAMPOTENTIAL::strategy_singlelengthspec_smallsepapprox_simple))
   {
     dserror(
         "This kind of regularization of the force law is not implemented for this strategy yet!");

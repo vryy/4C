@@ -251,11 +251,11 @@ namespace BEAMINTERACTION
         LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
         LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22);
 
-    /** \brief Evaluate all quantities which are specific for the applied disk-cylinder potential
+    /** \brief Evaluate all quantities for the full disk-cylinder potential law
      *
      *  \author grill
      *  \date 03/19 */
-    bool EvaluateDiskCylinderPotential(T interaction_potential_GP,
+    bool EvaluateFullDiskCylinderPotential(T& interaction_potential_GP,
         LINALG::TMatrix<T, 3 * numnodes * numnodalvalues, 1>& force_pot_slave_GP,
         LINALG::TMatrix<T, 3 * numnodes * numnodalvalues, 1>& force_pot_master_GP,
         LINALG::TMatrix<T, 3, 1> const& r_slave, LINALG::TMatrix<T, 3, 1> const& r_xi_slave,
@@ -359,6 +359,15 @@ namespace BEAMINTERACTION
     void CalcFpotGausspointAutomaticDifferentiationIfRequired(
         LINALG::TMatrix<double, 3 * numnodes * numnodalvalues, 1>& force_pot1,
         LINALG::TMatrix<double, 3 * numnodes * numnodalvalues, 1>& force_pot2,
+        Sacado::Fad::DFad<double> const& interaction_potential,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3 * numnodes * numnodalvalues> const&
+            lin_xi_master_slaveDofs,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3 * numnodes * numnodalvalues> const&
+            lin_xi_master_masterDofs) const;
+
+    void CalcFpotGausspointAutomaticDifferentiationIfRequired(
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 3 * numnodes * numnodalvalues, 1>& force_pot1,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 3 * numnodes * numnodalvalues, 1>& force_pot2,
         Sacado::Fad::DFad<double> const& interaction_potential,
         LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3 * numnodes * numnodalvalues> const&
             lin_xi_master_slaveDofs,

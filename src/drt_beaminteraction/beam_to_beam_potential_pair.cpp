@@ -163,6 +163,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Eval
     }
 
     case INPAR::BEAMPOTENTIAL::strategy_singlelengthspec_smallsepapprox:
+    case INPAR::BEAMPOTENTIAL::strategy_singlelengthspec_smallsepapprox_simple:
     {
       EvaluateFpotandStiffpot_SingleLengthSpecific_SmallSepApprox(
           force_pot1, force_pot2, stiffmat11, stiffmat12, stiffmat21, stiffmat22);
@@ -1377,7 +1378,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       centerline_coords_GP2_[igp_total] = FADUTILS::CastToDouble<T, 3, 1>(r_master);
 
       // distance vector between unilateral closest points
-      dist_ul = FADUTILS::DiffVector(r_slave, r_master);
+      dist_ul.Update(1.0, r_slave, -1.0, r_master);
 
       if (FADUTILS::CastToDouble(FADUTILS::Norm(dist_ul)) == 0.0)
       {
@@ -1436,17 +1437,56 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
           dist_ul, r_xi_master, r_xixi_master);
 
 
+      // evaluate all quantities which depend on the the applied disk-cylinder potential law
 
-      if (not EvaluateDiskCylinderPotential(interaction_potential_GP, force_pot_slave_GP,
-              force_pot_master_GP, r_slave, r_xi_slave, g1_slave, r_master, r_xi_master,
-              r_xixi_master, g1_master, alpha, cos_alpha, dist_ul, xi_master_partial_r_slave,
-              xi_master_partial_r_master, xi_master_partial_r_xi_master, prefactor_vtk,
-              forces_pot_GP1_[igp_total], forces_pot_GP2_[igp_total], moments_pot_GP1_[igp_total],
-              moments_pot_GP2_[igp_total], rho1rho2_JacFac_GaussWeight, N_i_slave[igp],
-              N_i_xi_slave[igp], N_i_master, N_i_xi_master))
-        continue;
+      // 'full' disk-cylinder interaction potential
+      if (Params()->Strategy() == INPAR::BEAMPOTENTIAL::strategy_singlelengthspec_smallsepapprox)
+      {
+        if (not EvaluateFullDiskCylinderPotential(interaction_potential_GP, force_pot_slave_GP,
+                force_pot_master_GP, r_slave, r_xi_slave, g1_slave, r_master, r_xi_master,
+                r_xixi_master, g1_master, alpha, cos_alpha, dist_ul, xi_master_partial_r_slave,
+                xi_master_partial_r_master, xi_master_partial_r_xi_master, prefactor_vtk,
+                forces_pot_GP1_[igp_total], forces_pot_GP2_[igp_total], moments_pot_GP1_[igp_total],
+                moments_pot_GP2_[igp_total], rho1rho2_JacFac_GaussWeight, N_i_slave[igp],
+                N_i_xi_slave[igp], N_i_master, N_i_xi_master))
+          continue;
+      }
+      // reduced, simpler variant of the disk-cylinder interaction potential
+      else if (Params()->Strategy() ==
+               INPAR::BEAMPOTENTIAL::strategy_singlelengthspec_smallsepapprox_simple)
+      {
+        // gap of unilateral closest points
+        T gap_ul = FADUTILS::Norm(dist_ul) - radius1_ - radius2_;
+
+        //************************** DEBUG ******************************************
+        if (FADUTILS::CastToDouble(gap_ul) <= 0.0)
+        {
+          this->Print(std::cout);
+          dserror("unilateral gap |r1-r2|-radius1-radius2<=0! Fatal error.");
+        }
+        //*********************** END DEBUG *****************************************
+
+        // auxiliary quantity
+        T a = 0.5 / radius1_ + 0.5 * cos_alpha * cos_alpha / (gap_ul + radius2_);
+
+        //************************** DEBUG ******************************************
+        if (FADUTILS::CastToDouble(a) <= 0.0)
+        {
+          this->Print(std::cout);
+          dserror("auxiliary quantity a<=0! Fatal error.");
+        }
+        //*********************** END DEBUG *****************************************
+
+        // interaction potential
+        interaction_potential_GP = std::pow(4 * gap_ul, -m_ + 4.5) / FADUTILS::sqrt(a);
 
 
+        //************************** DEBUG ******************************************
+        CalcFpotGausspointAutomaticDifferentiationIfRequired(force_pot_slave_GP,
+            force_pot_master_GP, rho1rho2_JacFac_GaussWeight * interaction_potential_GP,
+            lin_xi_master_slaveDofs, lin_xi_master_masterDofs);
+        //*********************** END DEBUG *****************************************
+      }
 
       // apply constant prefactor
       force_pot_slave_GP.Scale(prefactor);
@@ -1634,7 +1674,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
-    T>::EvaluateDiskCylinderPotential(T interaction_potential_GP,
+    T>::EvaluateFullDiskCylinderPotential(T& interaction_potential_GP,
     LINALG::TMatrix<T, 3 * numnodes * numnodalvalues, 1>& force_pot_slave_GP,
     LINALG::TMatrix<T, 3 * numnodes * numnodalvalues, 1>& force_pot_master_GP,
     LINALG::TMatrix<T, 3, 1> const& r_slave, LINALG::TMatrix<T, 3, 1> const& r_xi_slave,
@@ -2505,6 +2545,31 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     force_pot2(idof) =
         interaction_potential.dx(dim + idof) +
         interaction_potential.dx(2 * dim) * FADUTILS::CastToDouble(lin_xi_master_masterDofs(idof));
+  }
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
+void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
+    CalcFpotGausspointAutomaticDifferentiationIfRequired(
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 3 * numnodes * numnodalvalues, 1>& force_pot1,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 3 * numnodes * numnodalvalues, 1>& force_pot2,
+        Sacado::Fad::DFad<double> const& interaction_potential,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3 * numnodes * numnodalvalues> const&
+            lin_xi_master_slaveDofs,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3 * numnodes * numnodalvalues> const&
+            lin_xi_master_masterDofs) const
+{
+  const unsigned int dim = 3 * numnodalvalues * numnodes;
+
+  for (unsigned int idof = 0; idof < dim; ++idof)
+  {
+    force_pot1(idof) = interaction_potential.dx(idof) +
+                       interaction_potential.dx(2 * dim) * lin_xi_master_slaveDofs(idof);
+
+    force_pot2(idof) = interaction_potential.dx(dim + idof) +
+                       interaction_potential.dx(2 * dim) * lin_xi_master_masterDofs(idof);
   }
 }
 

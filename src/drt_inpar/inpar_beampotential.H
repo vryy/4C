@@ -42,12 +42,13 @@ namespace INPAR
     /// (this enum represents the input file parameter STRATEGY)
     enum BeamPotentialStrategy
     {
-      strategy_doublelengthspec_largesepapprox,  ///< double length specific potential, large
-                                                 ///< separations
-      strategy_doublelengthspec_smallsepapprox,  ///< double length specific potential, small
-                                                 ///< separations
-      strategy_singlelengthspec_smallsepapprox,  ///< single length specific potential, small
-                                                 ///< separations
+      strategy_doublelengthspec_largesepapprox,         ///< double length specific potential, large
+                                                        ///< separations
+      strategy_doublelengthspec_smallsepapprox,         ///< double length specific potential, small
+                                                        ///< separations
+      strategy_singlelengthspec_smallsepapprox,         ///< single length specific potential, small
+                                                        ///< separations
+      strategy_singlelengthspec_smallsepapprox_simple,  ///< reduced variant of the previous one
       strategy_vague
     };
 
