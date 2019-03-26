@@ -84,6 +84,9 @@ namespace POROMULTIPHASESCATRA
     /// init the strategy
     void Init();
 
+    /// setup the strategy
+    void Setup();
+
     /// apply mesh movement (on artery elements)
     void ApplyMeshMovement();
 

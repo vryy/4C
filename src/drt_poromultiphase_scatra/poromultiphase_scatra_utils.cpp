@@ -137,8 +137,8 @@ POROMULTIPHASESCATRA::UTILS::CreateAndInitArteryCouplingStrategy(
 /*----------------------------------------------------------------------*
  | setup discretizations and dofsets                         vuong 08/16 |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAndFieldCoupling(const Epetra_Comm& comm,
-    const std::string& struct_disname, const std::string& fluid_disname,
+std::map<int, std::set<int>> POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAndFieldCoupling(
+    const Epetra_Comm& comm, const std::string& struct_disname, const std::string& fluid_disname,
     const std::string& scatra_disname, int& ndsporo_disp, int& ndsporo_vel,
     int& ndsporo_solidpressure, int& ndsporofluid_scatra, const bool artery_coupl)
 {
@@ -149,8 +149,9 @@ void POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAndFieldCoupling(const Epe
   // If artery coupling is present:
   // artery_scatra discretization is cloned from artery discretization
 
-  POROMULTIPHASE::UTILS::SetupDiscretizationsAndFieldCoupling(
-      comm, struct_disname, fluid_disname, ndsporo_disp, ndsporo_vel, ndsporo_solidpressure);
+  std::map<int, std::set<int>> nearbyelepairs =
+      POROMULTIPHASE::UTILS::SetupDiscretizationsAndFieldCoupling(
+          comm, struct_disname, fluid_disname, ndsporo_disp, ndsporo_vel, ndsporo_solidpressure);
 
   DRT::Problem* problem = DRT::Problem::Instance();
 
@@ -213,32 +214,9 @@ void POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAndFieldCoupling(const Epe
     if (artdis->AddDofSet(artscatradofset) != 2) dserror("unexpected dof sets in artery field");
 
     artscatradis->FillComplete(true, false, false);
-
-    // get coupling method
-    INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod arterycoupl =
-        DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
-            problem->ScalarTransportDynamicParams().sublist("ARTERY COUPLING"),
-            "ARTERY_COUPLING_METHOD");
-
-    switch (arterycoupl)
-    {
-      case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::gpts:
-      case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp:
-      {
-        // TODO: this is necessary to find all possible interactions.
-        //       presently, the artery discretization is much smaller than the
-        //       others, so it is not that much of a performance issue
-        //       is there a better way to do this?
-        DRT::UTILS::GhostDiscretizationOnAllProcs(artdis);
-        DRT::UTILS::GhostDiscretizationOnAllProcs(artscatradis);
-        break;
-      }
-      default:
-        break;
-    }
   }
 
-  return;
+  return nearbyelepairs;
 }
 
 /*----------------------------------------------------------------------*

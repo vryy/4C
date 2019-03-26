@@ -20,6 +20,7 @@
 #include "../linalg/linalg_serialdensevector.H"
 #include <Epetra_FEVector.h>
 
+#include "../drt_porofluidmultiphase/porofluidmultiphase_utils.H"
 #include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele_parameter.H"
 #include "../linalg/linalg_multiply.H"
 #include "poromultiphase_scatra_artery_coupling_pair.H"
@@ -37,6 +38,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::PoroMultiPhaseScaTr
           arterydis, contdis, couplingparams, condname, artcoupleddofname, contcoupleddofname),
       couplingparams_(couplingparams),
       porofluidmanagersset_(false),
+      issetup_(false),
       porofluidprob_(false),
       coupling_method_(
           DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
@@ -71,25 +73,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::Init()
 
   // fill the vectors
   FillFunctionAndScaleVectors();
-
-  // find possible pairs
-  BruteForceSearch();
-
-  // create the pairs
-  CreateCouplingPairs();
-
-  // pre-evaluate the pairs
-  PreEvaluateCouplingPairs();
-
-  // create the GID to segment vector
-  CreateGIDToSegmentVector();
-
-  // fill length of artery elements that is not influenced if the underlying
-  // 2D/3D mesh moves (basically protruding artery elements or segments)
-  FillUnaffectedArteryLength();
-
-  // print out summary of pairs
-  OutputSummary();
 
   // initialize phinp for continuous dis
   phinp_cont_ = Teuchos::rcp(new Epetra_Vector(*contdis_->DofRowMap(), true));
@@ -134,6 +117,32 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::Init()
 }
 
 /*----------------------------------------------------------------------*
+ | setup the strategy                                kremheller 03/19   |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::Setup()
+{
+  // create the pairs
+  CreateCouplingPairs();
+
+  // pre-evaluate the pairs
+  PreEvaluateCouplingPairs();
+
+  // create the GID to segment vector
+  CreateGIDToSegmentVector();
+
+  // fill length of artery elements that is not influenced if the underlying
+  // 2D/3D mesh moves (basically protruding artery elements or segments)
+  FillUnaffectedArteryLength();
+
+  // print out summary of pairs
+  OutputSummary();
+
+  issetup_ = true;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  | setup the linear system of equations                kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetupSystem(
@@ -143,6 +152,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetupSystem(
     Teuchos::RCP<const LINALG::MapExtractor> dbcmap_cont,
     Teuchos::RCP<const LINALG::MapExtractor> dbcmap_art)
 {
+  if (!issetup_) dserror("Setup() has not been called");
+
   if (!porofluidmanagersset_)
   {
     for (unsigned i = 0; i < coupl_elepairs_.size(); i++)
@@ -187,95 +198,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetupSystem(
     LINALG::PrintVectorInMatlabFormat(filename_vc, *rhs, true);
     dserror("exit");
   }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | brute force search for near elements                kremheller 05/18 |
- *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::BruteForceSearch()
-{
-  if (myrank_ == 0) std::cout << "Starting with brute force search for coupling ... ";
-  // reset timer
-  timersearch_.ResetStartTime();
-  // *********** time measurement ***********
-  double dtcpu = timersearch_.WallTime();
-  // *********** time measurement ***********
-
-
-
-  // compute the search radius
-  const double searchradius = ComputeSearchRadius();
-
-  // scheme is elecolmap -- nodecolmap
-  for (int i = 0; i < arterydis_->ElementColMap()->NumMyElements(); ++i)
-  {
-    const int artelegid = arterydis_->ElementColMap()->GID(i);
-    DRT::Element* artele = arterydis_->gElement(artelegid);
-
-    DRT::Node** artnodes = artele->Nodes();
-
-    // loop over all nodes of this element
-    for (int jnode = 0; jnode < artele->NumNode(); jnode++)
-    {
-      DRT::Node* artnode = artnodes[jnode];
-
-      static LINALG::Matrix<3, 1> artpos;
-      artpos(0) = artnode->X()[0];
-      artpos(1) = artnode->X()[1];
-      artpos(2) = artnode->X()[2];
-
-      // loop over all column nodes of 2D/3D discretization
-      for (int j = 0; j < contdis_->NodeColMap()->NumMyElements(); ++j)
-      {
-        const int contgid = contdis_->NodeColMap()->GID(j);
-        DRT::Node* contnode = contdis_->gNode(contgid);
-
-        static LINALG::Matrix<3, 1> contpos;
-        contpos(0) = contnode->X()[0];
-        contpos(1) = contnode->X()[1];
-        contpos(2) = contnode->X()[2];
-
-        static LINALG::Matrix<3, 1> dist;
-        dist.Update(1.0, contpos, -1.0, artpos, 0.0);
-
-        if (dist.Norm2() < searchradius)
-        {
-          DRT::Element** contneighboureles = contnode->Elements();
-
-          for (int l = 0; l < contnode->NumElement(); l++)
-          {
-            DRT::Element* thiscontele = contneighboureles[l];
-            const int conteleid = thiscontele->Id();
-
-            nearbyelepairs_[artelegid].insert(conteleid);
-          }
-        }
-      }  // col-nodes 2D/3D
-    }    // col-nodes of artery
-  }      // col-eles of artery
-
-  //  Debug output
-  //  std::map<int, std::set<int>>::iterator it;
-  //
-  //  for (it = nearbyelepairs_.begin(); it != nearbyelepairs_.end(); it++)
-  //  {
-  //    std::cout << "on proc " << myrank_ << " artery ele " << it->first  // string (key)
-  //              << ": ";
-  //    for (auto f : it->second)
-  //    {
-  //      std::cout << f << ", ";
-  //    }
-  //    std::cout << "\n";
-  //  }
-
-  // *********** time measurement ***********
-  double mydtsearch = timersearch_.WallTime() - dtcpu;
-  double maxdtsearch = 0.0;
-  Comm().MaxAll(&mydtsearch, &maxdtsearch, 1);
-  // *********** time measurement ***********
-  if (myrank_ == 0) std::cout << "Completed in " << maxdtsearch << "s" << std::endl;
 
   return;
 }
@@ -373,7 +295,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillUnaffected
       DRT::Element* artele = arterydis_->gElement(artelegid);
 
       // TODO: this will not work for higher order artery eles
-      const double initlength = GetMaxNodalDistance(artele, arterydis_);
+      const double initlength = POROFLUIDMULTIPHASE::UTILS::GetMaxNodalDistance(artele, arterydis_);
       const int numseg = (int)(gid_to_segment_[artelegid].size() / 2);
       gid_to_seglength_[artelegid].resize(numseg);
       for (int iseg = 0; iseg < numseg; iseg++)
@@ -410,7 +332,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillUnaffected
     DRT::Element* thisele = arterydis_->gElement(artelegid);
 
     // TODO: this will not work for higher order artery eles
-    const double initlength = GetMaxNodalDistance(thisele, arterydis_);
+    const double initlength = POROFLUIDMULTIPHASE::UTILS::GetMaxNodalDistance(thisele, arterydis_);
 
     std::vector<double> segmentboundaries = gid_to_segment_[artelegid];
     for (unsigned int iseg = 0; iseg < segmentboundaries.size() / 2; iseg++)
@@ -497,13 +419,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::CreateGIDToSeg
   // communicate it to all procs.
   std::vector<int> allproc(Comm().NumProc());
   for (int i = 0; i < Comm().NumProc(); ++i) allproc[i] = i;
-  for (int i = 0; i < arterydis_->ElementColMap()->NumMyElements(); ++i)
-  {
-    const int artelegid = arterydis_->ElementColMap()->GID(i);
-
-    LINALG::Gather<double>(gid_to_segment_[artelegid], gid_to_segment_[artelegid],
-        (int)allproc.size(), &allproc[0], Comm());
-  }
+  LINALG::Gather<double>(
+      gid_to_segment_, gid_to_segment_, (int)allproc.size(), &allproc[0], Comm());
 
   // sort and take care of special cases
   for (int i = 0; i < arterydis_->ElementColMap()->NumMyElements(); ++i)
@@ -930,77 +847,6 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::CreateNewArteryCoup
 }
 
 /*----------------------------------------------------------------------*
- | compute search radius                               kremheller 05/18 |
- *----------------------------------------------------------------------*/
-double POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::ComputeSearchRadius()
-{
-  double maxdist = 0.0;
-
-  // loop over all elements in row map
-  for (int i = 0; i < arterydis_->ElementRowMap()->NumMyElements(); i++)
-  {
-    // get pointer onto element
-    int gid = arterydis_->ElementRowMap()->GID(i);
-    DRT::Element* thisele = arterydis_->gElement(gid);
-
-    maxdist = std::max(maxdist, GetMaxNodalDistance(thisele, arterydis_));
-  }
-
-  // loop over all elements in row map
-  for (int i = 0; i < contdis_->ElementRowMap()->NumMyElements(); i++)
-  {
-    // get pointer onto element
-    int gid = contdis_->ElementRowMap()->GID(i);
-    DRT::Element* thisele = contdis_->gElement(gid);
-
-    maxdist = std::max(maxdist, GetMaxNodalDistance(thisele, contdis_));
-  }
-
-  double globalmaxdist = 0.0;
-  Comm().MaxAll(&maxdist, &globalmaxdist, 1);
-
-  // safety factor
-  return BRUTEFORCESAFETY / 2.0 * globalmaxdist;
-}
-
-/*----------------------------------------------------------------------*
- | get maximum nodal distance                          kremheller 05/18 |
- *----------------------------------------------------------------------*/
-double POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::GetMaxNodalDistance(
-    DRT::Element* ele, Teuchos::RCP<DRT::Discretization> dis)
-{
-  double maxdist = 0.0;
-
-  // get first node and its position
-  int node0_gid = ele->NodeIds()[0];
-  DRT::Node* node0 = dis->gNode(node0_gid);
-
-  static LINALG::Matrix<3, 1> pos0;
-  pos0(0) = node0->X()[0];
-  pos0(1) = node0->X()[1];
-  pos0(2) = node0->X()[2];
-
-  // loop over second node to numnode to compare distances with first node
-  for (int inode = 1; inode < ele->NumNode(); inode++)
-  {
-    int node1_gid = ele->NodeIds()[inode];
-    DRT::Node* node1 = dis->gNode(node1_gid);
-
-    static LINALG::Matrix<3, 1> pos1;
-    pos1(0) = node1->X()[0];
-    pos1(1) = node1->X()[1];
-    pos1(2) = node1->X()[2];
-
-    static LINALG::Matrix<3, 1> dist;
-    dist.Update(1.0, pos0, -1.0, pos1, 0.0);
-
-    maxdist = std::max(maxdist, dist.Norm2());
-  }
-
-  return maxdist;
-}
-
-/*----------------------------------------------------------------------*
  | setup a global vector                               kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetupVector(
@@ -1198,5 +1044,15 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillFunctionAn
       Teuchos::getNumericStringParameter(couplingparams_, "REACFUNCT_CONT"));
   while (funct_cont_stream >> word1) funct_vec_[1].push_back((int)(word1 - 1));
 
+  return;
+}
+
+/*-------------------------------------------------------------------------*
+ | set element pairs that are close                       kremheller 03/19 |
+ *------------------------------------------------------------------------ */
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetNearbyElePairs(
+    const std::map<int, std::set<int>>* nearbyelepairs)
+{
+  nearbyelepairs_ = *nearbyelepairs;
   return;
 }

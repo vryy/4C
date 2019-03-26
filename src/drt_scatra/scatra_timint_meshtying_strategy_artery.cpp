@@ -107,6 +107,8 @@ void SCATRA::MeshtyingStrategyArtery::SetupMeshtying()
           *arttoscatracoupling_->GlobalExtractor(), *arttoscatracoupling_->GlobalExtractor(), 81,
           false, true));
 
+  arttoscatracoupling_->Setup();
+
   return;
 }
 
@@ -263,6 +265,17 @@ void SCATRA::MeshtyingStrategyArtery::SetArteryTimeIntegrator(
 {
   arttimint_ = arttimint;
   if (arttimint_ == Teuchos::null) dserror("could not set artery time integrator");
+
+  return;
+}
+
+/*-------------------------------------------------------------------------*
+ | set element pairs that are close                       kremheller 03/19 |
+ *------------------------------------------------------------------------ */
+void SCATRA::MeshtyingStrategyArtery::SetNearbyElePairs(
+    const std::map<int, std::set<int>>* nearbyelepairs)
+{
+  arttoscatracoupling_->SetNearbyElePairs(nearbyelepairs);
 
   return;
 }

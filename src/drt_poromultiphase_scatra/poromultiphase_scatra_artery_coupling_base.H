@@ -73,6 +73,9 @@ namespace POROMULTIPHASESCATRA
     virtual void SetSolutionVectors(Teuchos::RCP<const Epetra_Vector> phinp_cont,
         Teuchos::RCP<const Epetra_Vector> phin_cont, Teuchos::RCP<const Epetra_Vector> phinp_art);
 
+    //! set the element pairs that are close as found by search algorithm
+    virtual void SetNearbyElePairs(const std::map<int, std::set<int>>* nearbyelepairs);
+
     /// setup global vector
     /// (o)    vec:      combined vector containing both artery and continuous field quantities
     /// (i)    vec_cont: vector containing quantities from continuous field
@@ -90,6 +93,9 @@ namespace POROMULTIPHASESCATRA
 
     /// init the strategy
     virtual void Init() = 0;
+
+    /// setup the strategy
+    virtual void Setup() = 0;
 
     /// apply mesh movement (on artery elements)
     virtual void ApplyMeshMovement() = 0;

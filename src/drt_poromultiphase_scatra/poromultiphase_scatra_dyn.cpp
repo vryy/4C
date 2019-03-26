@@ -69,9 +69,10 @@ void poromultiphasescatra_dyn(int restart)
   int ndsporofluid_scatra(-1);
 
   // Setup discretizations and coupling. Assign the dof sets and return the numbers
-  POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAndFieldCoupling(comm, struct_disname,
-      fluid_disname, scatra_disname, ndsporo_disp, ndsporo_vel, ndsporo_solidpressure,
-      ndsporofluid_scatra, artery_coupl);
+  std::map<int, std::set<int>> nearbyelepairs =
+      POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAndFieldCoupling(comm, struct_disname,
+          fluid_disname, scatra_disname, ndsporo_disp, ndsporo_vel, ndsporo_solidpressure,
+          ndsporofluid_scatra, artery_coupl);
 
   // -------------------------------------------------------------------
   // algorithm construction depending on
@@ -87,7 +88,7 @@ void poromultiphasescatra_dyn(int restart)
 
   algo->Init(poroscatraparams, poroscatraparams, poroparams, structparams, fluidparams,
       scatraparams, struct_disname, fluid_disname, scatra_disname, true, ndsporo_disp, ndsporo_vel,
-      ndsporo_solidpressure, ndsporofluid_scatra);
+      ndsporo_solidpressure, ndsporofluid_scatra, &nearbyelepairs);
 
   // read the restart information, set vectors and variables
   if (restart) algo->ReadRestart(restart);
