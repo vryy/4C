@@ -801,33 +801,51 @@ void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
 bool PARTICLEALGORITHM::ParticleAlgorithm::CheckParticleTransfer()
 {
   // get maximum particle interaction distance
-  double allprocinteractiondistance = 0.0;
+  double maxinteractiondistance = 0.0;
   if (particleinteraction_)
   {
     double interactiondistance = particleinteraction_->MaxInteractionDistance();
-    Comm().MaxAll(&interactiondistance, &allprocinteractiondistance, 1);
+    Comm().MaxAll(&interactiondistance, &maxinteractiondistance, 1);
   }
 
-  // get minimum relevant bin size
-  const double minbinsize = particleengine_->MinBinSize();
-
   // bin size safety check
-  if (allprocinteractiondistance > minbinsize)
+  if (maxinteractiondistance > particleengine_->MinBinSize())
     dserror("the particle interaction distance is larger than the minimal bin size (%f > %f)!",
-        allprocinteractiondistance, minbinsize);
+        maxinteractiondistance, particleengine_->MinBinSize());
 
-  // loop over all spatial directions
-  for (int dim = 0; dim < 3; ++dim)
+  // periodic length safety check
+  if (particleengine_->HavePBC())
   {
-    // check for periodic boundary condition in current spatial direction
-    if (particleengine_->HavePBC(dim))
+    // loop over all spatial directions
+    for (int dim = 0; dim < 3; ++dim)
     {
+      // check for periodic boundary condition in current spatial direction
+      if (not particleengine_->HavePBC(dim)) continue;
+
       // check periodic length in current spatial direction
-      if ((2.0 * allprocinteractiondistance) > particleengine_->PBCDelta(dim))
+      if ((2.0 * maxinteractiondistance) > particleengine_->PBCDelta(dim))
         dserror("particles are not allowed to interact directly and across the periodic boundary!");
     }
   }
 
+  // get max particle position increment since last transfer
+  double maxparticlepositionincrement = 0.0;
+  GetMaxParticlePositionIncrement(maxparticlepositionincrement);
+
+  // check if a particle transfer is needed based on a worst case scenario:
+  // two particles approach each other with maximum position increment in one spatial dimension
+  bool transferneeded = ((maxinteractiondistance + 2.0 * maxparticlepositionincrement) >
+                         particleengine_->MinBinSize());
+
+  return transferneeded;
+}
+
+/*---------------------------------------------------------------------------*
+ | get max particle position increment since last transfer    sfuchs 06/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::ParticleAlgorithm::GetMaxParticlePositionIncrement(
+    double& allprocmaxpositionincrement)
+{
   // maximum position increment since last particle transfer
   double maxpositionincrement = 0.0;
 
@@ -867,20 +885,12 @@ bool PARTICLEALGORITHM::ParticleAlgorithm::CheckParticleTransfer()
     }
   }
 
-  // get maximum position increment on all processors
-  double allprocmaxpositionincrement = 0.0;
-  Comm().MaxAll(&maxpositionincrement, &allprocmaxpositionincrement, 1);
-
-  // check if a particle transfer is needed: it is assumed that (in a worst case scenario)
-  // two particles approach each other with maximum position increment in one spatial dimension
-  bool transferneeded =
-      ((allprocinteractiondistance + 2.0 * allprocmaxpositionincrement) > minbinsize);
-
-  // safety check
-  if (transferneeded and maxpositionincrement > minbinsize)
+  // bin size safety check
+  if (maxpositionincrement > particleengine_->MinBinSize())
     dserror("a particle traveled more than one bin on this processor!");
 
-  return transferneeded;
+  // get maximum particle position increment on all processors
+  Comm().MaxAll(&maxpositionincrement, &allprocmaxpositionincrement, 1);
 }
 
 /*---------------------------------------------------------------------------*

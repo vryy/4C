@@ -138,6 +138,9 @@ namespace PARTICLEALGORITHM
     //! check particle transfer including bin size safety checks
     bool CheckParticleTransfer();
 
+    //! get max particle position increment since last transfer
+    void GetMaxParticlePositionIncrement(double& allprocmaxpositionincrement);
+
     //! check load balance
     bool CheckLoadBalancing();
 
