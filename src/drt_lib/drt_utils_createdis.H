@@ -57,13 +57,14 @@ namespace DRT
 
 
       /**
-       * generate identical clone of sourcedis (eles, nodes, dofs and conditions)
+       * generate identical clone of sourcedis (eles, nodes and conditions, dofs are only cloned
+       * with flag clonedofs = true)
        * @param sourcedis: discretization based on which clone will be generated
        * @param targetdisname: name of cloned discretization
        * @param clonedofs: should Dofs be cloned?
        * @param assigndegreesoffreedom: flag for call to fill complete on cloned dis
        * @param initelements: flag for call to fill complete on cloned dis
-       * @param doboundaryconditions:  flag for call to fill complete on cloned dis
+       * @param doboundaryconditions: flag for call to fill complete on cloned dis
        * @return the cloned discretization
        */
       Teuchos::RCP<DRT::Discretization> CreateMatchingDiscretization(

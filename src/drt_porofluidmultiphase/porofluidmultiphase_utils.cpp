@@ -22,7 +22,6 @@
 
 #include "../drt_adapter/ad_porofluidmultiphase.H"
 #include "../drt_lib/drt_utils_parallel.H"
-#include "../drt_poromultiphase_scatra/poromultiphase_scatra_artery_coupling_defines.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -305,6 +304,11 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::BruteForceSearch(
  *----------------------------------------------------------------------*/
 std::vector<double> POROFLUIDMULTIPHASE::UTILS::GetAABB(DRT::Element* ele)
 {
+  // safety factor for brute force search
+  const double bruteforcesafety = 1.1;
+  // minimum length of AABB (in one coordinate direction) for brute force search
+  const double bruteforceaabbminsize = 2.0e-10;
+
   // format is [xmin, ymin, zmin, xmax, ymax, zmax]
   std::vector<double> aabb(6);
 
@@ -331,32 +335,32 @@ std::vector<double> POROFLUIDMULTIPHASE::UTILS::GetAABB(DRT::Element* ele)
     aabb[5] = std::max(aabb[5], node->X()[2]);
   }
 
-  // for safety: we increase the length of AABB by the factor BRUTEFORCESAFETY (in x-, y- and
+  // for safety: we increase the length of AABB by the factor bruteforcesafety (in x-, y- and
   // z-direction),
-  // i.e. we add  BRUTEFORCESAFETY/2.0*original length to the max values
-  // and subtract BRUTEFORCESAFETY/2.0*original length from the min values
-  aabb[0] = (aabb[0] + aabb[3]) / 2.0 - (aabb[3] - aabb[0]) * BRUTEFORCESAFETY / 2.0;
-  aabb[1] = (aabb[1] + aabb[4]) / 2.0 - (aabb[4] - aabb[1]) * BRUTEFORCESAFETY / 2.0;
-  aabb[2] = (aabb[2] + aabb[5]) / 2.0 - (aabb[5] - aabb[2]) * BRUTEFORCESAFETY / 2.0;
-  aabb[3] = (aabb[0] + aabb[3]) / 2.0 + (aabb[3] - aabb[0]) * BRUTEFORCESAFETY / 2.0;
-  aabb[4] = (aabb[1] + aabb[4]) / 2.0 + (aabb[4] - aabb[1]) * BRUTEFORCESAFETY / 2.0;
-  aabb[5] = (aabb[2] + aabb[5]) / 2.0 + (aabb[5] - aabb[2]) * BRUTEFORCESAFETY / 2.0;
+  // i.e. we add  bruteforcesafety/2.0*original length to the max values
+  // and subtract bruteforcesafety/2.0*original length from the min values
+  aabb[0] = (aabb[0] + aabb[3]) / 2.0 - (aabb[3] - aabb[0]) * bruteforcesafety / 2.0;
+  aabb[1] = (aabb[1] + aabb[4]) / 2.0 - (aabb[4] - aabb[1]) * bruteforcesafety / 2.0;
+  aabb[2] = (aabb[2] + aabb[5]) / 2.0 - (aabb[5] - aabb[2]) * bruteforcesafety / 2.0;
+  aabb[3] = (aabb[0] + aabb[3]) / 2.0 + (aabb[3] - aabb[0]) * bruteforcesafety / 2.0;
+  aabb[4] = (aabb[1] + aabb[4]) / 2.0 + (aabb[4] - aabb[1]) * bruteforcesafety / 2.0;
+  aabb[5] = (aabb[2] + aabb[5]) / 2.0 + (aabb[5] - aabb[2]) * bruteforcesafety / 2.0;
 
   // take care of AABBs, that lie in surface orthogonal to one of the coordinate axes
-  if (aabb[3] - aabb[0] < BRUTEFORCEAABBMINSIZE)
+  if (aabb[3] - aabb[0] < bruteforceaabbminsize)
   {
-    aabb[3] += BRUTEFORCEAABBMINSIZE / 2.0;
-    aabb[0] -= BRUTEFORCEAABBMINSIZE / 2.0;
+    aabb[3] += bruteforceaabbminsize / 2.0;
+    aabb[0] -= bruteforceaabbminsize / 2.0;
   }
-  if (aabb[4] - aabb[1] < BRUTEFORCEAABBMINSIZE)
+  if (aabb[4] - aabb[1] < bruteforceaabbminsize)
   {
-    aabb[4] += BRUTEFORCEAABBMINSIZE / 2.0;
-    aabb[1] -= BRUTEFORCEAABBMINSIZE / 2.0;
+    aabb[4] += bruteforceaabbminsize / 2.0;
+    aabb[1] -= bruteforceaabbminsize / 2.0;
   }
-  if (aabb[5] - aabb[2] < BRUTEFORCEAABBMINSIZE)
+  if (aabb[5] - aabb[2] < bruteforceaabbminsize)
   {
-    aabb[5] += BRUTEFORCEAABBMINSIZE / 2.0;
-    aabb[2] -= BRUTEFORCEAABBMINSIZE / 2.0;
+    aabb[5] += bruteforceaabbminsize / 2.0;
+    aabb[2] -= bruteforceaabbminsize / 2.0;
   }
 
   return aabb;
