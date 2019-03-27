@@ -1380,7 +1380,9 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       // distance vector between unilateral closest points
       dist_ul.Update(1.0, r_slave, -1.0, r_master);
 
-      if (FADUTILS::CastToDouble(FADUTILS::Norm(dist_ul)) == 0.0)
+      T norm_dist_ul = FADUTILS::VectorNorm(dist_ul);
+
+      if (FADUTILS::CastToDouble(norm_dist_ul) == 0.0)
       {
         this->Print(std::cout);
         dserror("centerline separation |r1-r2|=0! Fatal error.");
@@ -1391,7 +1393,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       //*********************** END DEBUG *****************************************
 
       // check cutoff criterion: if specified, contributions are neglected at larger separation
-      if (cutoff_radius != -1.0 and FADUTILS::CastToDouble(FADUTILS::Norm(dist_ul)) > cutoff_radius)
+      if (cutoff_radius != -1.0 and FADUTILS::CastToDouble(norm_dist_ul) > cutoff_radius)
       {
         //************************** DEBUG ******************************************
         // std::cout << "\nINFO: Ignored GP (ele GIDs " << Element1()->Id() << "&" <<
@@ -1456,7 +1458,12 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
                INPAR::BEAMPOTENTIAL::strategy_singlelengthspec_smallsepapprox_simple)
       {
         // gap of unilateral closest points
-        T gap_ul = FADUTILS::Norm(dist_ul) - radius1_ - radius2_;
+        T gap_ul = norm_dist_ul - radius1_ - radius2_;
+
+        // unilateral normal vector
+        LINALG::TMatrix<T, 3, 1> normal_ul(true);
+
+        normal_ul.Update(1.0 / norm_dist_ul, dist_ul);
 
         //************************** DEBUG ******************************************
         if (FADUTILS::CastToDouble(gap_ul) <= 0.0)
@@ -1481,11 +1488,191 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         interaction_potential_GP = std::pow(4 * gap_ul, -m_ + 4.5) / FADUTILS::sqrt(a);
 
 
-        //************************** DEBUG ******************************************
-        CalcFpotGausspointAutomaticDifferentiationIfRequired(force_pot_slave_GP,
-            force_pot_master_GP, rho1rho2_JacFac_GaussWeight * interaction_potential_GP,
-            lin_xi_master_slaveDofs, lin_xi_master_masterDofs);
-        //*********************** END DEBUG *****************************************
+        // Todo: move the initialization of these variables out of the Gauss loop
+        // derivatives of the interaction potential w.r.t. gap_ul and cos(alpha)
+        T pot_ia_deriv_gap_ul = 0.0;
+        T pot_ia_deriv_cos_alpha = 0.0;
+
+        T pot_ia_partial_a = 0.0;
+
+        T a_deriv_gap_ul = 0.0;
+        T a_deriv_cos_alpha = 0.0;
+
+
+        // components from variation of bilateral gap
+        LINALG::TMatrix<T, 3, 1> gap_ul_partial_r_slave(true);
+        LINALG::TMatrix<T, 3, 1> gap_ul_partial_r_master(true);
+
+        // components from variation of cosine of enclosed angle
+        LINALG::TMatrix<T, 3, 1> cos_alpha_partial_r_xi_slave(true);
+        LINALG::TMatrix<T, 3, 1> cos_alpha_partial_r_xi_master(true);
+        T cos_alpha_partial_xi_master = 0.0;
+
+
+        // auxiliary variables
+        LINALG::TMatrix<T, 3, 3> v_mat_tmp(true);
+
+
+
+        pot_ia_partial_a = -0.5 / a * interaction_potential_GP;
+
+        a_deriv_gap_ul = -0.5 * cos_alpha * cos_alpha / ((gap_ul + radius2_) * (gap_ul + radius2_));
+
+        a_deriv_cos_alpha = cos_alpha / (gap_ul + radius2_);
+
+        // compute derivatives of the interaction potential w.r.t. gap_ul and cos(alpha)
+        pot_ia_deriv_gap_ul =
+            pot_ia_partial_a * a_deriv_gap_ul + (-m_ + 4.5) / gap_ul * interaction_potential_GP;
+
+        pot_ia_deriv_cos_alpha = pot_ia_partial_a * a_deriv_cos_alpha;
+
+
+
+        // compute components from variation of cosine of enclosed angle
+        T signum_tangentsscalarproduct = FADUTILS::Signum(r_xi_slave.Dot(r_xi_master));
+
+        v_mat_tmp.Clear();
+        for (unsigned int i = 0; i < 3; ++i)
+        {
+          v_mat_tmp(i, i) += 1.0;
+          for (unsigned int j = 0; j < 3; ++j) v_mat_tmp(i, j) -= g1_slave(i) * g1_slave(j);
+        }
+
+        cos_alpha_partial_r_xi_slave.Multiply(
+            signum_tangentsscalarproduct / FADUTILS::VectorNorm(r_xi_slave), v_mat_tmp, g1_master);
+
+        v_mat_tmp.Clear();
+        for (unsigned int i = 0; i < 3; ++i)
+        {
+          v_mat_tmp(i, i) += 1.0;
+          for (unsigned int j = 0; j < 3; ++j) v_mat_tmp(i, j) -= g1_master(i) * g1_master(j);
+        }
+
+        cos_alpha_partial_r_xi_master.Multiply(
+            signum_tangentsscalarproduct / FADUTILS::VectorNorm(r_xi_master), v_mat_tmp, g1_slave);
+
+        cos_alpha_partial_xi_master = r_xixi_master.Dot(cos_alpha_partial_r_xi_master);
+
+
+
+        // compute components from variation of cosine of the unilateral gap
+        gap_ul_partial_r_slave.Update(normal_ul);
+        gap_ul_partial_r_master.Update(-1.0, normal_ul);
+
+
+
+        // store for vtk visualization
+        forces_pot_GP1_[igp_total].Update(
+            prefactor_vtk * FADUTILS::CastToDouble(pot_ia_deriv_gap_ul),
+            FADUTILS::CastToDouble<T, 3, 1>(gap_ul_partial_r_slave), 1.0);
+
+        forces_pot_GP1_[igp_total].UpdateT(
+            prefactor_vtk *
+                FADUTILS::CastToDouble(pot_ia_deriv_cos_alpha * cos_alpha_partial_xi_master),
+            FADUTILS::CastToDouble<T, 1, 3>(xi_master_partial_r_slave), 1.0);
+
+
+        LINALG::TMatrix<double, 3, 1> moment_pot_tmp(true);
+
+        moment_pot_tmp.Update(FADUTILS::CastToDouble(pot_ia_deriv_cos_alpha),
+            FADUTILS::CastToDouble<T, 3, 1>(cos_alpha_partial_r_xi_slave));
+
+        /* note: relation between variation of tangent vector r_xi and variation of (transversal
+         * part of) rotation vector theta_perp describing cross-section orientation can be used to
+         *       identify (distributed) moments as follows: m_pot = 1/|r_xi| * ( m_pot_pseudo x g1 )
+         */
+        LINALG::TMatrix<double, 3, 3> spin_pseudo_moment_tmp(true);
+
+        LARGEROTATIONS::computespin(spin_pseudo_moment_tmp, moment_pot_tmp);
+
+        T norm_r_xi_slave = FADUTILS::VectorNorm(r_xi_slave);
+
+        moment_pot_tmp.Multiply(1.0 / FADUTILS::CastToDouble(norm_r_xi_slave),
+            spin_pseudo_moment_tmp, FADUTILS::CastToDouble<T, 3, 1>(g1_slave));
+
+        moments_pot_GP1_[igp_total].Update(prefactor_vtk, moment_pot_tmp, 1.0);
+
+
+        forces_pot_GP2_[igp_total].Update(
+            prefactor_vtk * FADUTILS::CastToDouble(pot_ia_deriv_gap_ul),
+            FADUTILS::CastToDouble<T, 3, 1>(gap_ul_partial_r_master), 1.0);
+
+        forces_pot_GP2_[igp_total].UpdateT(
+            prefactor_vtk *
+                FADUTILS::CastToDouble(pot_ia_deriv_cos_alpha * cos_alpha_partial_xi_master),
+            FADUTILS::CastToDouble<T, 1, 3>(xi_master_partial_r_master), 1.0);
+
+
+        moment_pot_tmp.Update(FADUTILS::CastToDouble(pot_ia_deriv_cos_alpha),
+            FADUTILS::CastToDouble<T, 3, 1>(cos_alpha_partial_r_xi_master));
+
+        moment_pot_tmp.UpdateT(
+            FADUTILS::CastToDouble(pot_ia_deriv_cos_alpha * cos_alpha_partial_xi_master),
+            FADUTILS::CastToDouble<T, 1, 3>(xi_master_partial_r_xi_master), 1.0);
+
+        LARGEROTATIONS::computespin(spin_pseudo_moment_tmp, moment_pot_tmp);
+
+        T norm_r_xi_master = FADUTILS::VectorNorm(r_xi_master);
+
+        moment_pot_tmp.Multiply(1.0 / FADUTILS::CastToDouble(norm_r_xi_master),
+            spin_pseudo_moment_tmp, FADUTILS::CastToDouble<T, 3, 1>(g1_master));
+
+        moments_pot_GP2_[igp_total].Update(prefactor_vtk, moment_pot_tmp, 1.0);
+
+
+
+        // now apply scalar integration factor
+        // (after computing and storing distributed force/moment for vtk output)
+        pot_ia_deriv_gap_ul *= rho1rho2_JacFac_GaussWeight;
+        pot_ia_deriv_cos_alpha *= rho1rho2_JacFac_GaussWeight;
+
+
+
+        //********************************************************************
+        // calculate fpot1: force/residual vector on slave element
+        //********************************************************************
+        force_pot_slave_GP.Clear();
+        // sum up the contributions of all nodes (in all dimensions)
+        for (unsigned int idofperdim = 0; idofperdim < (numnodes * numnodalvalues); ++idofperdim)
+        {
+          // loop over dimensions
+          for (unsigned int jdim = 0; jdim < 3; ++jdim)
+          {
+            force_pot_slave_GP(3 * idofperdim + jdim) +=
+                N_i_slave[igp](idofperdim) * pot_ia_deriv_gap_ul * gap_ul_partial_r_slave(jdim);
+
+            force_pot_slave_GP(3 * idofperdim + jdim) +=
+                N_i_slave[igp](idofperdim) * pot_ia_deriv_cos_alpha * cos_alpha_partial_xi_master *
+                xi_master_partial_r_slave(jdim);
+
+            force_pot_slave_GP(3 * idofperdim + jdim) += N_i_xi_slave[igp](idofperdim) *
+                                                         pot_ia_deriv_cos_alpha *
+                                                         cos_alpha_partial_r_xi_slave(jdim);
+          }
+        }
+
+        //********************************************************************
+        // calculate fpot2: force/residual vector on master element
+        //********************************************************************
+        force_pot_master_GP.Clear();
+        // sum up the contributions of all nodes (in all dimensions)
+        for (unsigned int idofperdim = 0; idofperdim < (numnodes * numnodalvalues); ++idofperdim)
+        {
+          // loop over dimensions
+          for (unsigned int jdim = 0; jdim < 3; ++jdim)
+          {
+            force_pot_master_GP(3 * idofperdim + jdim) +=
+                N_i_master(idofperdim) * pot_ia_deriv_gap_ul * gap_ul_partial_r_master(jdim);
+
+            force_pot_master_GP(3 * idofperdim + jdim) +=
+                N_i_master(idofperdim) * pot_ia_deriv_cos_alpha * cos_alpha_partial_xi_master *
+                xi_master_partial_r_master(jdim);
+
+            force_pot_master_GP(3 * idofperdim + jdim) += N_i_xi_master(idofperdim) *
+                                                          pot_ia_deriv_cos_alpha *
+                                                          cos_alpha_partial_r_xi_master(jdim);
+          }
+        }
       }
 
       // apply constant prefactor
