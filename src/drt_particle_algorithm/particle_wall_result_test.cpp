@@ -97,7 +97,7 @@ void PARTICLEALGORITHM::WallResultTest::TestNode(
     if (quantity == "posx" or quantity == "posy" or quantity == "posz")
     {
       // get wall displacements
-      Teuchos::RCP<const Epetra_Vector> disnp = particlewallinterface_->GetDisnp();
+      Teuchos::RCP<const Epetra_Vector> disp = particlewallinterface_->GetDisp();
 
       int idx = -1;
       if (quantity == "posx")
@@ -111,14 +111,14 @@ void PARTICLEALGORITHM::WallResultTest::TestNode(
       {
         actresult = actnode->X()[idx];
 
-        if (disnp != Teuchos::null)
+        if (disp != Teuchos::null)
         {
-          const Epetra_BlockMap& disnpmap = disnp->Map();
+          const Epetra_BlockMap& disnpmap = disp->Map();
           int lid = disnpmap.LID(walldiscretization_->Dof(0, actnode, idx));
           if (lid < 0)
             dserror("You tried to test %s on nonexistent dof %d on node %d", quantity.c_str(), idx,
                 actnode->Id());
-          actresult += (*disnp)[lid];
+          actresult += (*disp)[lid];
         }
       }
     }
@@ -126,8 +126,8 @@ void PARTICLEALGORITHM::WallResultTest::TestNode(
     else if (quantity == "dispx" or quantity == "dispy" or quantity == "dispz")
     {
       // get wall displacements
-      Teuchos::RCP<const Epetra_Vector> disnp = particlewallinterface_->GetDisnp();
-      if (disnp == Teuchos::null) return;
+      Teuchos::RCP<const Epetra_Vector> disp = particlewallinterface_->GetDisp();
+      if (disp == Teuchos::null) return;
 
       int idx = -1;
       if (quantity == "dispx")
@@ -139,12 +139,12 @@ void PARTICLEALGORITHM::WallResultTest::TestNode(
 
       if (idx >= 0)
       {
-        const Epetra_BlockMap& disnpmap = disnp->Map();
+        const Epetra_BlockMap& disnpmap = disp->Map();
         int lid = disnpmap.LID(walldiscretization_->Dof(0, actnode, idx));
         if (lid < 0)
           dserror("You tried to test %s on nonexistent dof %d on node %d", quantity.c_str(), idx,
               actnode->Id());
-        actresult = (*disnp)[lid];
+        actresult = (*disp)[lid];
       }
     }
     else

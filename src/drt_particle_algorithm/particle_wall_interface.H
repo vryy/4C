@@ -52,7 +52,7 @@ namespace PARTICLEALGORITHM
     virtual Teuchos::RCP<const DRT::Discretization> GetWallDiscretization() const = 0;
 
     //! get wall displacements
-    virtual Teuchos::RCP<const Epetra_Vector> GetDisnp() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> GetDisp() const = 0;
 
     //! get reference to potential wall neighbors
     virtual const PARTICLEENGINE::PotentialWallNeighbors& GetPotentialWallNeighbors() const = 0;

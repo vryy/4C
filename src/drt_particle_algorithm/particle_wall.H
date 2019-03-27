@@ -33,8 +33,6 @@
 #include <Epetra_Map.h>
 #include <Teuchos_ParameterList.hpp>
 
-#include "../linalg/linalg_utils.H"
-
 /*---------------------------------------------------------------------------*
  | forward declarations                                       sfuchs 10/2018 |
  *---------------------------------------------------------------------------*/
@@ -96,8 +94,14 @@ namespace PARTICLEALGORITHM
     virtual void UpdateBinRowAndColMap(
         const Teuchos::RCP<Epetra_Map> binrowmap, const Teuchos::RCP<Epetra_Map> bincolmap) final;
 
+    // get max wall position increment since last transfer
+    virtual void GetMaxWallPositionIncrement(double& allprocmaxpositionincrement) final;
+
     //! distribute wall elements and nodes
     virtual void DistributeWallElementsAndNodes() = 0;
+
+    //! transfer wall elements and nodes
+    virtual void TransferWallElementsAndNodes() = 0;
 
     //! relate bins to column wall elements
     virtual void RelateBinsToColWallEles() final;
@@ -113,7 +117,7 @@ namespace PARTICLEALGORITHM
     };
 
     //! get wall displacements
-    virtual Teuchos::RCP<const Epetra_Vector> GetDisnp() const override final { return disnp_; };
+    virtual Teuchos::RCP<const Epetra_Vector> GetDisp() const override final { return disp_col_; };
 
     //! get reference to potential wall neighbors
     virtual const PARTICLEENGINE::PotentialWallNeighbors& GetPotentialWallNeighbors()
@@ -170,8 +174,14 @@ namespace PARTICLEALGORITHM
     //! wall discretization
     Teuchos::RCP<DRT::Discretization> walldiscretization_;
 
-    //! wall displacements
-    Teuchos::RCP<Epetra_Vector> disnp_;
+    //! wall displacements (row map based)
+    Teuchos::RCP<Epetra_Vector> disp_row_;
+
+    //! wall displacements (column map based)
+    Teuchos::RCP<Epetra_Vector> disp_col_;
+
+    //! wall displacements (row map based) after last transfer
+    Teuchos::RCP<Epetra_Vector> disp_row_last_transfer_;
 
     //! wall discretization runtime vtu writer
     std::unique_ptr<DiscretizationRuntimeVtuWriter> wallvtuwriter_;
@@ -196,7 +206,19 @@ namespace PARTICLEALGORITHM
     //! distribute wall elements and nodes
     virtual void DistributeWallElementsAndNodes() override final;
 
+    //! transfer wall elements and nodes
+    virtual void TransferWallElementsAndNodes() override final;
+
    private:
+    //! extend wall element ghosting
+    virtual void ExtendWallElementGhosting(std::map<int, std::set<int>>& bintorowelemap);
+
+    //! update maps of state vectors
+    virtual void UpdateMapsOfStateVectors();
+
+    //! store displacements after last transfer
+    virtual void StoreDisplacementsAfterLastTransfer();
+
     //! setup wall discretization
     virtual void SetupWallDiscretization() const override;
   };
@@ -212,6 +234,9 @@ namespace PARTICLEALGORITHM
 
     //! distribute wall elements and nodes
     virtual void DistributeWallElementsAndNodes() override final;
+
+    //! transfer wall elements and nodes
+    virtual void TransferWallElementsAndNodes() override final;
 
    private:
     //! setup wall discretization

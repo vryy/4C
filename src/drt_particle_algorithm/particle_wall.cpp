@@ -136,35 +136,39 @@ void PARTICLEALGORITHM::WallHandlerBase::WriteWallRuntimeVtuOutput(
   wallvtuwriter_->ResetTimeAndTimeStep(time, step);
 
 
+  // node displacements
+  if (disp_col_ != Teuchos::null)
+    wallvtuwriter_->AppendDofBasedResultDataVector(disp_col_, 3, 0, "disp");
+
   // node owner
   Teuchos::RCP<Epetra_Vector> nodeowner =
-      LINALG::CreateVector(*walldiscretization_->NodeColMap(), true);
+      Teuchos::rcp(new Epetra_Vector(*walldiscretization_->NodeColMap(), true));
   for (int inode = 0; inode < walldiscretization_->NumMyColNodes(); ++inode)
   {
     const DRT::Node* node = walldiscretization_->lColNode(inode);
     (*nodeowner)[inode] = node->Owner();
   }
-  wallvtuwriter_->AppendNodeBasedResultDataVector(nodeowner, 1, "nodeowner");
+  wallvtuwriter_->AppendNodeBasedResultDataVector(nodeowner, 1, "owner");
 
   // element owner
   Teuchos::RCP<Epetra_Vector> eleowner =
-      LINALG::CreateVector(*walldiscretization_->ElementColMap(), true);
+      Teuchos::rcp(new Epetra_Vector(*walldiscretization_->ElementColMap(), true));
   for (int iele = 0; iele < walldiscretization_->NumMyColElements(); ++iele)
   {
     const DRT::Element* ele = walldiscretization_->lColElement(iele);
     (*eleowner)[iele] = ele->Owner();
   }
-  wallvtuwriter_->AppendElementBasedResultDataVector(eleowner, 1, "eleowner");
+  wallvtuwriter_->AppendElementBasedResultDataVector(eleowner, 1, "owner");
 
   // element id
   Teuchos::RCP<Epetra_Vector> eleid =
-      LINALG::CreateVector(*walldiscretization_->ElementColMap(), true);
+      Teuchos::rcp(new Epetra_Vector(*walldiscretization_->ElementColMap(), true));
   for (int iele = 0; iele < walldiscretization_->NumMyColElements(); ++iele)
   {
     const DRT::Element* ele = walldiscretization_->lColElement(iele);
     (*eleid)[iele] = ele->Id();
   }
-  wallvtuwriter_->AppendElementBasedResultDataVector(eleid, 1, "eleid");
+  wallvtuwriter_->AppendElementBasedResultDataVector(eleid, 1, "id");
 
 
   // finalize everything and write all required files to filesystem
@@ -183,15 +187,55 @@ void PARTICLEALGORITHM::WallHandlerBase::UpdateBinRowAndColMap(
 }
 
 /*---------------------------------------------------------------------------*
+ | get max wall position increment since last transfer        sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::WallHandlerBase::GetMaxWallPositionIncrement(
+    double& allprocmaxpositionincrement)
+{
+  if (disp_row_ != Teuchos::null)
+  {
+#ifdef DEBUG
+    // safety checks
+    if (disp_row_last_transfer_ == Teuchos::null)
+      dserror("vector of wall displacements after last transfer not set!");
+
+    if (not disp_row_->Map().SameAs(disp_row_last_transfer_->Map()))
+      dserror("maps are not equal as expected!");
+#endif
+
+    // maximum position increment since last particle transfer
+    double maxpositionincrement = 0.0;
+
+    // iterate over coordinate values of wall displacements
+    for (int i = 0; i < disp_row_->MyLength(); ++i)
+    {
+      // get position increment of wall node in current spatial dimension since last transfer
+      double absolutpositionincrement =
+          std::abs(disp_row_->operator[](i) - disp_row_last_transfer_->operator[](i));
+
+      // compare to current maximum
+      maxpositionincrement = std::max(maxpositionincrement, absolutpositionincrement);
+    }
+
+    // get maximum position increment on all processors
+    walldiscretization_->Comm().MaxAll(&maxpositionincrement, &allprocmaxpositionincrement, 1);
+  }
+}
+
+/*---------------------------------------------------------------------------*
  | relate bins to column wall elements                        sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::WallHandlerBase::RelateBinsToColWallEles()
 {
+  // valid flag denoting validity of map relating bins to column wall elements
+  if (validwallelements_) return;
+
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::WallHandlerBase::RelateBinsToColWallEles");
+
   // clear vector relating column wall elements to bins
   binstocolwalleles_.assign(walldiscretization_->NumMyColElements(), std::vector<int>(0));
 
-  // invalidate flags
-  validwallelements_ = false;
+  // invalidate flag denoting validity of wall neighbors map
   validwallneighbors_ = false;
 
   // iterate over column wall elements
@@ -202,7 +246,7 @@ void PARTICLEALGORITHM::WallHandlerBase::RelateBinsToColWallEles()
 
     // get corresponding bin ids for element
     std::vector<int> binids;
-    binstrategy_->DistributeElementToBinsUsingEleXAABB(walldiscretization_, ele, binids, disnp_);
+    binstrategy_->DistributeElementToBinsUsingEleXAABB(walldiscretization_, ele, binids, disp_col_);
 
     // relate ids of owned bins to column wall elements
     for (int gidofbin : binids)
@@ -377,7 +421,7 @@ void PARTICLEALGORITHM::WallHandlerBase::DetermineColWallEleNodalPos(
 
   // determine nodal displacements
   std::vector<double> nodal_disp(numnodes * 3, 0.0);
-  if (disnp_ != Teuchos::null)
+  if (disp_col_ != Teuchos::null)
   {
     std::vector<int> lm_wall;
     lm_wall.reserve(numnodes * 3);
@@ -385,7 +429,7 @@ void PARTICLEALGORITHM::WallHandlerBase::DetermineColWallEleNodalPos(
     std::vector<int> lmstride;
     ele->LocationVector(*walldiscretization_, lm_wall, lmowner, lmstride);
 
-    DRT::UTILS::ExtractMyValues(*disnp_, nodal_disp, lm_wall);
+    DRT::UTILS::ExtractMyValues(*disp_col_, nodal_disp, lm_wall);
   }
 
   // iterate over nodes of current column wall element
@@ -414,48 +458,110 @@ PARTICLEALGORITHM::WallHandlerDiscretCondition::WallHandlerDiscretCondition(
  *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::WallHandlerDiscretCondition::DistributeWallElementsAndNodes()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::WallHandlerBase::DistributeWallElesAndNodes");
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "PARTICLEALGORITHM::WallHandlerDiscretCondition::DistributeWallElementsAndNodes");
 
   // invalidate flags
   validwallelements_ = false;
   validwallneighbors_ = false;
 
-  // standard ghosting
+  // distribute wall elements to bins with standard ghosting
   Teuchos::RCP<Epetra_Map> stdelecolmap;
   Teuchos::RCP<Epetra_Map> stdnodecolmapdummy;
   binstrategy_->StandardDiscretizationGhosting(
-      walldiscretization_, binrowmap_, disnp_, stdelecolmap, stdnodecolmapdummy);
+      walldiscretization_, binrowmap_, disp_row_, stdelecolmap, stdnodecolmapdummy);
 
-  // extended ghosting
-  std::map<int, std::set<int>> bintorowelemap;
-  binstrategy_->DistributeRowElementsToBinsUsingEleXAABB(
-      walldiscretization_, bintorowelemap, disnp_);
-
-  std::map<int, std::set<int>> ext_bintoele_ghosting;
-  Teuchos::RCP<Epetra_Map> extendedelecolmap = binstrategy_->ExtendGhosting(
-      walldiscretization_->ElementColMap(), bintorowelemap, ext_bintoele_ghosting);
-
-  // export column elements
-  walldiscretization_->ExportColumnElements(*extendedelecolmap);
-
-  // create node column map
-  std::set<int> nodes;
-  for (int lid = 0; lid < extendedelecolmap->NumMyElements(); ++lid)
+  // export displacement vector
+  Teuchos::RCP<Epetra_Vector> disn_col = Teuchos::null;
+  if (disp_row_ != Teuchos::null)
   {
-    DRT::Element* ele = walldiscretization_->gElement(extendedelecolmap->GID(lid));
-    const int* nodeids = ele->NodeIds();
-    for (int inode = 0; inode < ele->NumNode(); ++inode) nodes.insert(nodeids[inode]);
+    disn_col = Teuchos::rcp(new Epetra_Vector(*walldiscretization_->DofColMap()));
+    LINALG::Export(*disp_row_, *disn_col);
   }
 
-  std::vector<int> colnodes(nodes.begin(), nodes.end());
-  Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::rcp(
-      new Epetra_Map(-1, (int)colnodes.size(), &colnodes[0], 0, walldiscretization_->Comm()));
+  // determine bin to row wall element distribution
+  std::map<int, std::set<int>> bintorowelemap;
+  binstrategy_->DistributeRowElementsToBinsUsingEleXAABB(
+      walldiscretization_, bintorowelemap, disn_col);
 
-  // export column nodes
-  walldiscretization_->ExportColumnNodes(*nodecolmap);
+  // extend wall element ghosting
+  ExtendWallElementGhosting(bintorowelemap);
 
-  // finalize wall discretization construction with extended ghosting
-  walldiscretization_->FillComplete();
+  // update maps of state vectors
+  UpdateMapsOfStateVectors();
+
+  // store displacements after last transfer
+  StoreDisplacementsAfterLastTransfer();
+}
+
+/*---------------------------------------------------------------------------*
+ | transfer wall elements and nodes                           sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::WallHandlerDiscretCondition::TransferWallElementsAndNodes()
+{
+  // transfer wall elements and nodes only if wall displacements are set
+  if (disp_col_ == Teuchos::null) return;
+
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "PARTICLEALGORITHM::WallHandlerDiscretCondition::TransferWallElementsAndNodes");
+
+  // invalidate flags
+  validwallelements_ = false;
+  validwallneighbors_ = false;
+
+  // transfer wall elements and nodes
+  std::map<int, std::set<int>> bintorowelemap;
+  binstrategy_->TransferNodesAndElements(walldiscretization_, disp_col_, bintorowelemap);
+
+  // extend wall element ghosting
+  ExtendWallElementGhosting(bintorowelemap);
+
+  // update maps of state vectors
+  UpdateMapsOfStateVectors();
+
+  // store displacements after last transfer
+  StoreDisplacementsAfterLastTransfer();
+}
+
+/*---------------------------------------------------------------------------*
+ | extend wall element ghosting                               sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::WallHandlerDiscretCondition::ExtendWallElementGhosting(
+    std::map<int, std::set<int>>& bintorowelemap)
+{
+  std::map<int, std::set<int>> extbintorowelemap;
+  Teuchos::RCP<Epetra_Map> extendedelecolmap =
+      binstrategy_->ExtendGhosting(bintorowelemap, extbintorowelemap, bincolmap_);
+
+  BINSTRATEGY::UTILS::ExtendDiscretizationGhosting(
+      walldiscretization_, extendedelecolmap, true, false, false);
+}
+
+/*---------------------------------------------------------------------------*
+ | update maps of state vectors                               sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::WallHandlerDiscretCondition::UpdateMapsOfStateVectors()
+{
+  if (disp_row_ != Teuchos::null)
+  {
+    // export row displacement vector
+    Teuchos::RCP<Epetra_Vector> temp = disp_row_;
+    disp_row_ = Teuchos::rcp(new Epetra_Vector(*walldiscretization_->DofRowMap(), true));
+    LINALG::Export(*temp, *disp_row_);
+
+    // update column displacement vector
+    disp_col_ = Teuchos::rcp(new Epetra_Vector(*walldiscretization_->DofColMap(), true));
+    LINALG::Export(*disp_row_, *disp_col_);
+  }
+}
+
+/*---------------------------------------------------------------------------*
+ | store displacements after last transfer                    sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::WallHandlerDiscretCondition::StoreDisplacementsAfterLastTransfer()
+{
+  if (disp_row_ != Teuchos::null)
+    disp_row_last_transfer_ = Teuchos::rcp(new Epetra_Vector(*disp_row_));
 }
 
 /*---------------------------------------------------------------------------*
@@ -534,6 +640,14 @@ PARTICLEALGORITHM::WallHandlerBoundingBox::WallHandlerBoundingBox(
 void PARTICLEALGORITHM::WallHandlerBoundingBox::DistributeWallElementsAndNodes()
 {
   // no need to distribute wall elements and nodes
+}
+
+/*---------------------------------------------------------------------------*
+ | transfer wall elements and nodes                           sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::WallHandlerBoundingBox::TransferWallElementsAndNodes()
+{
+  // no need to transfer wall elements and nodes
 }
 
 /*---------------------------------------------------------------------------*

@@ -734,6 +734,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
     // transfer particles to new bins and processors
     particleengine_->TransferParticles();
 
+    // transfer wall elements and nodes
+    if (particlewall_) particlewall_->TransferWallElementsAndNodes();
+
     // communicate interaction history
     if (particleinteraction_) particleinteraction_->CommunicateInteractionHistory();
 
@@ -759,9 +762,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
 
         // distribute wall elements and nodes
         particlewall_->DistributeWallElementsAndNodes();
-
-        // relate bins to column wall elements
-        particlewall_->RelateBinsToColWallEles();
       }
     }
 
@@ -770,6 +770,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
 
     // build particle to particle neighbors
     if (particleinteraction_) particleengine_->BuildParticleToParticleNeighbors();
+
+    // relate bins to column wall elements
+    if (particlewall_) particlewall_->RelateBinsToColWallEles();
 
     // build particle to wall neighbors
     if (particleinteraction_ and particlewall_)
@@ -832,12 +835,16 @@ bool PARTICLEALGORITHM::ParticleAlgorithm::CheckParticleTransfer()
   double maxparticlepositionincrement = 0.0;
   GetMaxParticlePositionIncrement(maxparticlepositionincrement);
 
+  // get max wall position increment since last transfer
+  double maxwallpositionincrement = 0.0;
+  if (particlewall_) particlewall_->GetMaxWallPositionIncrement(maxwallpositionincrement);
+
+  // get max overall position increment since last transfer
+  double maxpositionincrement = std::max(maxparticlepositionincrement, maxwallpositionincrement);
+
   // check if a particle transfer is needed based on a worst case scenario:
   // two particles approach each other with maximum position increment in one spatial dimension
-  bool transferneeded = ((maxinteractiondistance + 2.0 * maxparticlepositionincrement) >
-                         particleengine_->MinBinSize());
-
-  return transferneeded;
+  return ((maxinteractiondistance + 2.0 * maxpositionincrement) > particleengine_->MinBinSize());
 }
 
 /*---------------------------------------------------------------------------*
