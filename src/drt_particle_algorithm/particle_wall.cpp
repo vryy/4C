@@ -655,14 +655,17 @@ void PARTICLEALGORITHM::WallHandlerBoundingBox::TransferWallElementsAndNodes()
  *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::WallHandlerBoundingBox::SetupWallDiscretization() const
 {
-  // prepare vector of node and element ids
-  std::vector<int> nodeids(8);
-  std::vector<int> eleids;
-  eleids.reserve(6);
+  // init vector of node and element ids
+  std::vector<int> nodeids(0);
+  std::vector<int> eleids(0);
 
   // generate wall discretization from bounding box on first processor
   if (myrank_ == 0)
   {
+    // prepare vector of node and element ids
+    nodeids.reserve(8);
+    eleids.reserve(6);
+
     // get bounding box dimension
     LINALG::Matrix<3, 2> xaabb = binstrategy_->XAABB();
 
