@@ -104,6 +104,12 @@ namespace GEO
 
       const plain_side_set& CutSides() const { return cut_sides_; }
 
+      void Replace(Point *p, Point* p_new)
+      {
+        auto& replace_p = (p == p1_) ? p1_ : p2_;
+        replace_p = p_new;
+      }
+
      private:
       Point* p1_;
       Point* p2_;

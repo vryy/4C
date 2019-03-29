@@ -518,6 +518,9 @@ namespace GEO
 
       void RemovePoint(Point* p) { cut_points_.erase(p); };
 
+      std::set<std::set<Point*> > & GetParallelCutSurfaces() { return parallel_cut_surfaces_; }
+
+
      protected:
       bool AllOnNodes(const PointSet& points);
 
@@ -581,6 +584,16 @@ namespace GEO
        *  \author hiermeier \date 01/17 */
       unsigned UncutFacetNumberPerSide() const;
 
+      // Simplifies topological connection in a case, when side contains two parallel cut surfaces,
+      // which are self-intersecting. Should usually get triggered for mesh movements ~1e-15
+      void SimplifyMixedParallelCutSurface(Mesh& mesh, Element* element, Side& other,
+           std::set<Point*>& new_surface, std::vector<Point*>& cut_points_for_lines);
+
+      bool HasMixedParallelCutSurface( const std::set<Point*>& surface )
+      {
+        return (parallel_cut_surfaces_.size() > 0 && parallel_cut_surfaces_.find( surface ) == parallel_cut_surfaces_.end() );
+      }
+
      private:
       int sid_;
 
@@ -599,6 +612,10 @@ namespace GEO
       PointSet cut_points_;
 
       std::vector<Facet*> facets_;
+
+      /// in some extreme cases surface can be partially
+      /// parallel to the other side
+      std::set<std::set<Point*> > parallel_cut_surfaces_;
 
       /// all sides which are cutting this cutside
       plain_side_set cutting_sides_;
