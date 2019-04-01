@@ -1668,9 +1668,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
                 N_i_master(idofperdim) * pot_ia_deriv_cos_alpha * cos_alpha_partial_xi_master *
                 xi_master_partial_r_master(jdim);
 
-            force_pot_master_GP(3 * idofperdim + jdim) += N_i_xi_master(idofperdim) *
-                                                          pot_ia_deriv_cos_alpha *
-                                                          cos_alpha_partial_r_xi_master(jdim);
+            force_pot_master_GP(3 * idofperdim + jdim) +=
+                N_i_xi_master(idofperdim) * pot_ia_deriv_cos_alpha *
+                (cos_alpha_partial_r_xi_master(jdim) +
+                    cos_alpha_partial_xi_master * xi_master_partial_r_xi_master(jdim));
           }
         }
       }
