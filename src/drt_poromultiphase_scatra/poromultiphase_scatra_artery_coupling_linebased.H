@@ -163,6 +163,9 @@ namespace POROMULTIPHASESCATRA
     //! fill the vectors
     void FillFunctionAndScaleVectors();
 
+    //! set the right-hand side factor for time integration
+    void SetTimeFacRhs();
+
     //! print out the coupling method
     void PrintOutCouplingMethod() const;
 
@@ -177,6 +180,10 @@ namespace POROMULTIPHASESCATRA
 
     //! is it a pure fluid problem
     bool porofluidprob_;
+
+    //! right hand side factors
+    double timefacrhs_art_;
+    double timefacrhs_cont_;
 
     //! result of brute force search
     std::map<int, std::set<int>> nearbyelepairs_;
