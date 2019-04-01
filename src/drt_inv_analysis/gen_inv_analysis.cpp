@@ -4398,7 +4398,7 @@ steps 25 nnodes 5
     if (file == NULL) dserror("Could not open monitor file %s", monitorfilename.c_str());
 
     char buffer[150000];
-    fgets(buffer, 150000, file);
+    DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
     // read steps
     foundit = strstr(buffer, "steps");
     foundit += strlen("steps");
@@ -4413,7 +4413,7 @@ steps 25 nnodes 5
     dofs_.resize(nnodes_);
     for (int i = 0; i < nnodes_; ++i)
     {
-      fgets(buffer, 150000, file);
+      DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
       foundit = buffer;
       nodes_[i] = strtol(foundit, &foundit, 10);
       int ndofs = strtol(foundit, &foundit, 10);
@@ -4440,8 +4440,9 @@ steps 25 nnodes 5
 
       // read comment lines
       foundit = buffer;
-      fgets(buffer, 150000, file);
-      while (strstr(buffer, "#")) fgets(buffer, 150000, file);
+      DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
+      while (strstr(buffer, "#"))
+        DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
 
       // read in the values for each node in dirs directions
       int count = 0;
@@ -4450,7 +4451,7 @@ steps 25 nnodes 5
         // read the time step
         timesteps_[i] = strtod(foundit, &foundit);
         for (int j = 0; j < ndofs_; ++j) mcurve_[count++] = strtod(foundit, &foundit);
-        fgets(buffer, 150000, file);
+        DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
         foundit = buffer;
       }
       if (count != nmp_) dserror("Number of measured disps wrong on input");
@@ -4501,7 +4502,7 @@ with measurement downwards in vertical (y)-direction 2.000000e-02 4.000000e-02
     if (file == NULL) dserror("Could not open monitor file %s", monitorfilename.c_str());
 
     char buffer[150000];
-    fgets(buffer, 150000, file);
+    DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
     // read steps
     foundit = strstr(buffer, "steps");
     foundit += strlen("steps");
@@ -4518,7 +4519,7 @@ with measurement downwards in vertical (y)-direction 2.000000e-02 4.000000e-02
     dofs_.resize(nnodes_);
     for (int i = 0; i < nnodes_; ++i)
     {
-      fgets(buffer, 150000, file);
+      DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
       foundit = buffer;
       int ndofs = strtol(foundit, &foundit, 10);
       ndofs_ += ndofs;
@@ -4544,8 +4545,9 @@ with measurement downwards in vertical (y)-direction 2.000000e-02 4.000000e-02
 
       // read comment lines
       foundit = buffer;
-      fgets(buffer, 150000, file);
-      while (strstr(buffer, "#")) fgets(buffer, 150000, file);
+      DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
+      while (strstr(buffer, "#"))
+        DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
 
       // read in the values for each node in dirs directions
       int count = 0;
@@ -4554,7 +4556,7 @@ with measurement downwards in vertical (y)-direction 2.000000e-02 4.000000e-02
         // read the time step
         timesteps_[i] = strtod(foundit, &foundit);
         for (int j = 0; j < (2 * ndofs_); ++j) mcurve_[count++] = strtod(foundit, &foundit);
-        fgets(buffer, 150000, file);
+        DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
         foundit = buffer;
       }
       if (count != 2 * ndofs_ * nsteps_) dserror("Number of measured coords wrong on input");
