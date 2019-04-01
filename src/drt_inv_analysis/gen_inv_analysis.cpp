@@ -901,7 +901,7 @@ void STR::GenInvAnalysis::CalcNewParameters(
     double fac_norm = sqrt(nmp) * (max_zug - min_zug);
 
     //
-    // calculating Jacobi-Materix J(p)
+    // calculating Jacobi-Matrix J(p)
     // tensile test data
     for (int i = 0; i < nmp; i++)
       for (int j = 0; j < np_; j++)
@@ -963,7 +963,7 @@ void STR::GenInvAnalysis::CalcNewParameters(
     }
     else if (meas_type_ == point_based)
     {
-      // as the computed distanced already are a residuum we use these
+      // as the computed distances already are a residuum we use these
       for (int i = 0; i < nmp; i++) rcurve[i] = ccurve[i];
     }
     else
