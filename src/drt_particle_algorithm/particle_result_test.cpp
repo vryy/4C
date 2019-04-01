@@ -20,35 +20,31 @@
 #include "particle_result_test.H"
 
 #include "../drt_particle_engine/particle_engine_interface.H"
-#include "../drt_particle_engine/particle_enums.H"
 #include "../drt_particle_engine/particle_container_bundle.H"
 #include "../drt_particle_engine/particle_container.H"
 
 #include "../drt_lib/drt_linedefinition.H"
 
-#include "../drt_io/io_pstream.H"
-
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-PARTICLEALGORITHM::ResultTest::ResultTest(const Epetra_Comm& comm)
-    : DRT::ResultTest("PARTICLE"), comm_(comm)
+PARTICLEALGORITHM::ParticleResultTest::ParticleResultTest() : DRT::ResultTest("PARTICLE")
 {
   // empty constructor
 }
 
 /*---------------------------------------------------------------------------*
- | init result test                                           sfuchs 07/2018 |
+ | init particle result test                                  sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::ResultTest::Init()
+void PARTICLEALGORITHM::ParticleResultTest::Init()
 {
   // nothing to do
 }
 
 /*---------------------------------------------------------------------------*
- | setup result test                                          sfuchs 07/2018 |
+ | setup particle result test                                 sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::ResultTest::Setup(
+void PARTICLEALGORITHM::ParticleResultTest::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
 {
   // set interface to particle engine
@@ -58,7 +54,7 @@ void PARTICLEALGORITHM::ResultTest::Setup(
 /*---------------------------------------------------------------------------*
  | test special quantity                                      sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::ResultTest::TestSpecial(
+void PARTICLEALGORITHM::ParticleResultTest::TestSpecial(
     DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // extract global particle id
@@ -102,7 +98,7 @@ void PARTICLEALGORITHM::ResultTest::TestSpecial(
       // declare enum of particle state
       PARTICLEENGINE::StateEnum particleState;
 
-      // velocity
+      // position
       if (quantity == "posx" or quantity == "posy" or quantity == "posz")
       {
         // get enum of particle state

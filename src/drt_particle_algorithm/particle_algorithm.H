@@ -89,8 +89,8 @@ namespace PARTICLEALGORITHM
     //! output particle time step
     void Output() const;
 
-    //! create result test
-    std::shared_ptr<DRT::ResultTest> CreateResultTest();
+    //! create particle field specific result test objects
+    std::vector<std::shared_ptr<DRT::ResultTest>> CreateResultTests();
 
    private:
     //! init particle engine
@@ -137,6 +137,9 @@ namespace PARTICLEALGORITHM
 
     //! check particle transfer including bin size safety checks
     bool CheckParticleTransfer();
+
+    //! get max particle position increment since last transfer
+    void GetMaxParticlePositionIncrement(double& allprocmaxpositionincrement);
 
     //! check load balance
     bool CheckLoadBalancing();

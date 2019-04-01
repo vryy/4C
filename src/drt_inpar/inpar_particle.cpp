@@ -83,11 +83,12 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "TRANSFER_EVERY", "no", "transfer particles to new bins every time step", &particledyn);
 
   // considered particle phases with dynamic load balance weighting factor
-  StringParameter("PHASE_TO_DYNLOADBALFAC", "",
+  StringParameter("PHASE_TO_DYNLOADBALFAC", "none",
       "considered particle phases with dynamic load balance weighting factor", &particledyn);
 
   // relate particle phase to material id
-  StringParameter("PHASE_TO_MATERIAL_ID", "", "relate particle phase to material id", &particledyn);
+  StringParameter(
+      "PHASE_TO_MATERIAL_ID", "none", "relate particle phase to material id", &particledyn);
 
   // amplitude of noise added to initial position
   DoubleParameter("INITIAL_POSITION_AMPLITUDE", 0.0, "amplitude of noise added to initial position",
@@ -109,23 +110,23 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
           "control parameters for initial/boundary conditions in particle simulations\n");
 
   // initial temperature field of particle phase given by function
-  StringParameter("INITIAL_TEMP_FIELD", "",
+  StringParameter("INITIAL_TEMP_FIELD", "none",
       "initial temperature field of particle phase given by function", &particledynconditions);
 
   // initial velocity field of particle phase given by function
-  StringParameter("INITIAL_VELOCITY_FIELD", "",
+  StringParameter("INITIAL_VELOCITY_FIELD", "none",
       "initial velocity field of particle phase given by function", &particledynconditions);
 
   // initial acceleration field of particle phase given by function
-  StringParameter("INITIAL_ACCELERATION_FIELD", "",
+  StringParameter("INITIAL_ACCELERATION_FIELD", "none",
       "initial acceleration field of particle phase given by function", &particledynconditions);
 
   // dirichlet boundary condition of particle phase given by function
-  StringParameter("DIRICHLET_BOUNDARY_CONDITION", "",
+  StringParameter("DIRICHLET_BOUNDARY_CONDITION", "none",
       "dirichlet boundary condition of particle phase given by function", &particledynconditions);
 
   // temperature boundary condition of particle phase given by function
-  StringParameter("TEMPERATURE_BOUNDARY_CONDITION", "",
+  StringParameter("TEMPERATURE_BOUNDARY_CONDITION", "none",
       "temperature boundary condition of particle phase given by function", &particledynconditions);
 
   /*-------------------------------------------------------------------------*
@@ -259,7 +260,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       &particledynsph);
 
   // definition of phase change
-  StringParameter("PHASECHANGEDEFINITION", "", "phase change definition", &particledynsph);
+  StringParameter("PHASECHANGEDEFINITION", "none", "phase change definition", &particledynsph);
 
   /*-------------------------------------------------------------------------*
    | discrete element method (DEM) specific control parameters               |
