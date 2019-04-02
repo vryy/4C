@@ -122,7 +122,11 @@ Custom Git hooks must be configured on the file-system of the GitLab server. Onl
 ## Compliant file-maintainers in Baci
 Our Git-hooks check for compliant file-maintainers in source and input files and will reject commits with incompliant file-maintainters. A definition of the latter is given in the following:
 - A **file-maintainer** (not to be confused with **baci_maintainers**) is the person responsible for a specific source or input file in Baci
-- A file-maintainer is assigned in the header declaration of a file via a `\maintainer` tag followed by the name of the file-maintainer, which has to be compliant to names listed in `utilities/git_hooks/baci_developers.json`
+- A file-maintainer is assigned in the header declaration of a file via a:
+  - `\maintainer` tag in **source-files**, followed by the name of the file-maintainer
+  - `// Maintainer:` tag in **input-files**, followed by the name of the file-maintainer
+
+  which has to be compliant with names listed in `utilities/git_hooks/baci_developers.json`
 - All members of the Gitlab **baci_developers** group are compliant file-maintainers
 - We only allow for one compliant file-maintainer per file
 - An up-to-date `baci_developers.json` list can be created by the following steps:
