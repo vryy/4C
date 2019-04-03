@@ -1094,6 +1094,11 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   // get cutoff radius
   const double cutoff_radius = Params()->CutoffRadius();
 
+  // get regularization type and separation
+  const INPAR::BEAMPOTENTIAL::BeamPotentialRegularizationType regularization_type =
+      Params()->RegularizationType();
+
+  const double regularization_separation = Params()->RegularizationSeparation();
 
   /* parameter coordinate of the closest point on the master beam,
    * determined via point-to-curve projection */
@@ -1462,21 +1467,45 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         // gap of unilateral closest points
         T gap_ul = norm_dist_ul - radius1_ - radius2_;
 
+        // regularized gap of unilateral closest points
+        T gap_ul_regularized = gap_ul;
+
+
+        if (regularization_type != INPAR::BEAMPOTENTIAL::regularization_none and
+            gap_ul < regularization_separation)
+        {
+          gap_ul_regularized = regularization_separation;
+
+          //************************** DEBUG ******************************************
+          std::cout << "\ngap_ul: " << FADUTILS::CastToDouble(gap_ul) << ": regularization active!";
+          std::cout << "\ngap_ul_regularized: " << FADUTILS::CastToDouble(gap_ul_regularized);
+          // this->Print(std::cout);
+          // std::cout << "\nigp_total: " << igp_total;
+          //*********************** END DEBUG *****************************************
+        }
+        else if (regularization_type == INPAR::BEAMPOTENTIAL::regularization_none and
+                 gap_ul < 1e-14)
+        {
+          this->Print(std::cout);
+
+          std::cout << "\ngap_ul: " << FADUTILS::CastToDouble(gap_ul);
+          std::cout << "\nalpha: " << FADUTILS::CastToDouble(alpha * 180 / M_PI) << "°";
+
+          dserror(
+              "gap_ul=%f is negative or very close to zero! Fatal error. Use regularization to"
+              " handle this!",
+              FADUTILS::CastToDouble(gap_ul));
+        }
+
+
         // unilateral normal vector
         LINALG::TMatrix<T, 3, 1> normal_ul(true);
 
         normal_ul.Update(1.0 / norm_dist_ul, dist_ul);
 
-        //************************** DEBUG ******************************************
-        if (FADUTILS::CastToDouble(gap_ul) <= 0.0)
-        {
-          this->Print(std::cout);
-          dserror("unilateral gap |r1-r2|-radius1-radius2<=0! Fatal error.");
-        }
-        //*********************** END DEBUG *****************************************
 
         // auxiliary quantity
-        T a = 0.5 / radius1_ + 0.5 * cos_alpha * cos_alpha / (gap_ul + radius2_);
+        T a = 0.5 / radius1_ + 0.5 * cos_alpha * cos_alpha / (gap_ul_regularized + radius2_);
 
         //************************** DEBUG ******************************************
         if (FADUTILS::CastToDouble(a) <= 0.0)
@@ -1487,7 +1516,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         //*********************** END DEBUG *****************************************
 
         // interaction potential
-        interaction_potential_GP = std::pow(4 * gap_ul, -m_ + 4.5) / FADUTILS::sqrt(a);
+        interaction_potential_GP = std::pow(4 * gap_ul_regularized, -m_ + 4.5) / FADUTILS::sqrt(a);
 
 
         // Todo: move the initialization of these variables out of the Gauss loop
@@ -1495,7 +1524,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         T pot_ia_deriv_gap_ul = 0.0;
         T pot_ia_deriv_cos_alpha = 0.0;
 
+        T pot_ia_2ndderiv_gap_ul_atregsep = 0.0;
+
         T pot_ia_partial_a = 0.0;
+        T pot_ia_partial_gap_ul = 0.0;
 
         T a_deriv_gap_ul = 0.0;
         T a_deriv_cos_alpha = 0.0;
@@ -1518,15 +1550,123 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
         pot_ia_partial_a = -0.5 / a * interaction_potential_GP;
 
-        a_deriv_gap_ul = -0.5 * cos_alpha * cos_alpha / ((gap_ul + radius2_) * (gap_ul + radius2_));
+        a_deriv_gap_ul = -0.5 * cos_alpha * cos_alpha /
+                         ((gap_ul_regularized + radius2_) * (gap_ul_regularized + radius2_));
 
-        a_deriv_cos_alpha = cos_alpha / (gap_ul + radius2_);
+        a_deriv_cos_alpha = cos_alpha / (gap_ul_regularized + radius2_);
 
         // compute derivatives of the interaction potential w.r.t. gap_ul and cos(alpha)
-        pot_ia_deriv_gap_ul =
-            pot_ia_partial_a * a_deriv_gap_ul + (-m_ + 4.5) / gap_ul * interaction_potential_GP;
+        pot_ia_partial_gap_ul = (-m_ + 4.5) / gap_ul_regularized * interaction_potential_GP;
+
+        pot_ia_deriv_gap_ul = pot_ia_partial_a * a_deriv_gap_ul + pot_ia_partial_gap_ul;
 
         pot_ia_deriv_cos_alpha = pot_ia_partial_a * a_deriv_cos_alpha;
+
+
+        // Fixme: check and adapt this comment
+        /* now that we don't need the interaction potential at gap_ul=regularization_separation as
+         * an intermediate result anymore, we can add the additional (linear and quadratic)
+         * contributions in case of active regularization also to the interaction potential */
+        if (regularization_type != INPAR::BEAMPOTENTIAL::regularization_none and
+            gap_ul < regularization_separation)
+        {
+          //************************** DEBUG ******************************************
+          std::cout << "\ninteraction_potential_GP_atregsep: "
+                    << FADUTILS::CastToDouble(interaction_potential_GP);
+          std::cout << "\npot_ia_deriv_gap_ul_atregsep: "
+                    << FADUTILS::CastToDouble(pot_ia_deriv_gap_ul);
+          std::cout << "\npot_ia_deriv_cos_alpha_atregsep: "
+                    << FADUTILS::CastToDouble(pot_ia_deriv_cos_alpha);
+          // this->Print(std::cout);
+          // std::cout << "\nigp_total: " << igp_total;
+          //*********************** END DEBUG *****************************************
+
+          interaction_potential_GP += pot_ia_deriv_gap_ul * (gap_ul - regularization_separation);
+
+
+          T pot_ia_2ndpartial_a = -1.5 / a * pot_ia_partial_a;
+          T pot_ia_partial_a_deriv_cos_alpha = pot_ia_2ndpartial_a * a_deriv_cos_alpha;
+
+          T a_deriv_cos_alpha_deriv_gap_ul =
+              -1.0 / (gap_ul_regularized + radius2_) * a_deriv_cos_alpha;
+
+          T pot_ia_partial_a_partial_gap_ul = -0.5 / a * pot_ia_partial_gap_ul;
+
+          T pot_ia_partial_gap_ul_deriv_cos_alpha =
+              pot_ia_partial_a_partial_gap_ul * a_deriv_cos_alpha;
+
+          T pot_ia_deriv_gap_ul_deriv_cos_alpha =
+              pot_ia_partial_a_deriv_cos_alpha * a_deriv_gap_ul +
+              pot_ia_partial_a * a_deriv_cos_alpha_deriv_gap_ul +
+              pot_ia_partial_gap_ul_deriv_cos_alpha;
+
+          pot_ia_deriv_cos_alpha +=
+              pot_ia_deriv_gap_ul_deriv_cos_alpha * (gap_ul - regularization_separation);
+
+
+          if (regularization_type == INPAR::BEAMPOTENTIAL::regularization_linear)
+          {
+            T pot_ia_2ndpartial_gap_ul = (-m_ + 3.5) / gap_ul_regularized * pot_ia_partial_gap_ul;
+
+            T a_2ndderiv_gap_ul = -2.0 / (gap_ul_regularized + radius2_) * a_deriv_gap_ul;
+
+            pot_ia_2ndderiv_gap_ul_atregsep =
+                (pot_ia_2ndpartial_a * a_deriv_gap_ul + 2.0 * pot_ia_partial_a_partial_gap_ul) *
+                    a_deriv_gap_ul +
+                pot_ia_partial_a * a_2ndderiv_gap_ul + pot_ia_2ndpartial_gap_ul;
+
+            interaction_potential_GP += 0.5 * pot_ia_2ndderiv_gap_ul_atregsep *
+                                        (gap_ul - regularization_separation) *
+                                        (gap_ul - regularization_separation);
+
+            pot_ia_deriv_gap_ul +=
+                pot_ia_2ndderiv_gap_ul_atregsep * (gap_ul - regularization_separation);
+
+
+            T t4 = std::pow(cos_alpha, 0.2e1);
+            T t6 = 0.2e1 * gap_ul_regularized + 0.2e1 * radius2_;
+            T t7 = 0.1e1 / t6;
+            T t9 = 0.5e0 / radius1_ + t4 * t7;
+            T t10 = std::pow(t9, -0.35e1);
+            T t13 = -m_ + 0.45e1;
+            T t14 = std::pow(0.4e1 * gap_ul_regularized, t13);
+            T t15 = t4 * t4;
+            T t18 = t6 * t6;
+            T t19 = t18 * t18;
+            T t25 = std::pow(t9, -0.25e1);
+            T t27 = t4 * cos_alpha;
+            T t36 = t13 / gap_ul_regularized;
+            T t38 = 0.1e1 / t18 / t6;
+            T t43 = std::pow(t9, -0.15e1);
+            T t45 = t43 * t14;
+            T t56 = t13 * t13;
+            T t57 = gap_ul_regularized * gap_ul_regularized;
+            T t58 = 0.1e1 / t57;
+            T t60 = cos_alpha * t7;
+
+            T pot_ia_2ndderiv_gap_ul_deriv_cos_alpha_atregsep =
+                -0.15000e2 * t10 * t14 * t15 * cos_alpha / t19 / t6 +
+                0.2400e2 * t25 * t14 * t27 / t19 - 0.600e1 * t25 * t14 * t36 * t27 * t38 +
+                0.40e1 * t45 * t36 * cos_alpha / t18 - 0.80e1 * t43 * t14 * cos_alpha * t38 -
+                0.10e1 * t45 * t56 * t58 * t60 + 0.10e1 * t45 * t13 * t58 * t60;
+
+
+            pot_ia_deriv_cos_alpha += 0.5 * pot_ia_2ndderiv_gap_ul_deriv_cos_alpha_atregsep *
+                                      (gap_ul - regularization_separation) *
+                                      (gap_ul - regularization_separation);
+          }
+
+          //************************** DEBUG ******************************************
+          std::cout << "\ninteraction_potential_GP_regularized: "
+                    << FADUTILS::CastToDouble(interaction_potential_GP);
+          std::cout << "\npot_ia_deriv_gap_ul_regularized: "
+                    << FADUTILS::CastToDouble(pot_ia_deriv_gap_ul);
+          std::cout << "\npot_ia_deriv_cos_alpha_regularized: "
+                    << FADUTILS::CastToDouble(pot_ia_deriv_cos_alpha);
+          // this->Print(std::cout);
+          // std::cout << "\nigp_total: " << igp_total;
+          //*********************** END DEBUG *****************************************
+        }
 
 
 

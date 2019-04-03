@@ -122,9 +122,7 @@ void BEAMINTERACTION::BeamPotentialParams::Init()
   if ((regularization_type_ != INPAR::BEAMPOTENTIAL::regularization_none and
           strategy_ == INPAR::BEAMPOTENTIAL::strategy_doublelengthspec_largesepapprox) or
       (regularization_type_ == INPAR::BEAMPOTENTIAL::regularization_constant and
-          strategy_ == INPAR::BEAMPOTENTIAL::strategy_singlelengthspec_smallsepapprox) or
-      (regularization_type_ != INPAR::BEAMPOTENTIAL::regularization_none and
-          strategy_ == INPAR::BEAMPOTENTIAL::strategy_singlelengthspec_smallsepapprox_simple))
+          strategy_ == INPAR::BEAMPOTENTIAL::strategy_singlelengthspec_smallsepapprox))
   {
     dserror(
         "This kind of regularization of the force law is not implemented for this strategy yet!");
