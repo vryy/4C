@@ -2118,7 +2118,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       eta_b_ = intersections[1];
     }
     else
-      dserror("this should not happen");
+      dserror("Cannot create segment [etaA, etaB], unsupported case detected");
   }
 
   if (PROJOUTPUT)

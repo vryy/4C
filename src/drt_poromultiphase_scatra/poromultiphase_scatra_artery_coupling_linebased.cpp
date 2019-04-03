@@ -538,7 +538,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::EvaluateCoupli
     arterydis_->SetState("one_d_artery_phinp", phinp_art_);
   }
   else
-    dserror("should not happen");
+    dserror(
+        "Only porofluid and scatra-discretizations are supported for linebased-coupling so far");
 
   // evaluate all pairs
   for (unsigned i = 0; i < coupl_elepairs_.size(); i++)
@@ -706,7 +707,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SumDMIntoGloba
   Teuchos::RCP<Epetra_Vector> cont_contribution =
       Teuchos::rcp(new Epetra_Vector(*contdis_->DofRowMap()));
 
-  // Note: negative since rhs
+  // Note: all terms are negative since rhs
   // pp*D^T*kappa^{-1}*D*phi_np^art
   dtkd->Multiply(false, *phinp_art_, *art_contribution);
   rhs->Update(-pp_ * timefacrhs_art_, *globalex_->InsertVector(art_contribution, 1), 1.0);
@@ -1078,7 +1079,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetTimeFacRhs(
     timefacrhs_cont_ = eleparams->TimeFacRhs();
   }
   else
-    dserror("should not happen");
+    dserror(
+        "Only porofluid and scatra-discretizations are supported for linebased-coupling so far");
 
   return;
 }

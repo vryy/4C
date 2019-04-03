@@ -87,7 +87,12 @@ namespace POROMULTIPHASESCATRA
     virtual void ResetState(
         Teuchos::RCP<DRT::Discretization> contdis, Teuchos::RCP<DRT::Discretization> artdis) = 0;
 
-    //! setup
+    /**
+     * Setup the porofluid-managers and the materials for later evaluation
+     * @param disname: name of continuous discretization
+     * @param timefacrhs_art: right hand side factor for artery time integration
+     * @param timefacrhs_cont: right hand side factor for time integration of 2D/3D discretization
+     */
     virtual void SetupFluidManagersAndMaterials(
         const std::string disname, const double& timefacrhs_art, const double& timefacrhs_cont) = 0;
 
@@ -145,7 +150,12 @@ namespace POROMULTIPHASESCATRA
     void ResetState(
         Teuchos::RCP<DRT::Discretization> contdis, Teuchos::RCP<DRT::Discretization> artdis);
 
-    //! setup
+    /**
+     * Setup the porofluid-managers and the materials for later evaluation
+     * @param disname: name of continuous discretization
+     * @param timefacrhs_art: right hand side factor for artery time integration
+     * @param timefacrhs_cont: right hand side factor for time integration of 2D/3D discretization
+     */
     void SetupFluidManagersAndMaterials(
         const std::string disname, const double& timefacrhs_art, const double& timefacrhs_cont);
 
@@ -533,12 +543,15 @@ namespace POROMULTIPHASESCATRA
     //! segment id
     int segmentid_;
 
-    //! right hand side factors scaled with inverse density
+    //! right hand side factor for artery time integration scaled with inverse density
     double timefacrhs_art_dens_;
+    //! right hand side factor for time integration of 2D/3D discretization scaled with inverse
+    //! density of specific phase or species
     std::vector<double> timefacrhs_cont_dens_;
 
-    //! right hand side factors
+    //! right hand side factor for artery time integration
     double timefacrhs_art_;
+    //! right hand side factor for time integration of 2D/3D discretization
     double timefacrhs_cont_;
 
     //! vector where to assemble rhs-(function) coupling into

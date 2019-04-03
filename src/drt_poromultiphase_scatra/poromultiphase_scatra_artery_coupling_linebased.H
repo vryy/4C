@@ -181,8 +181,9 @@ namespace POROMULTIPHASESCATRA
     //! is it a pure fluid problem
     bool porofluidprob_;
 
-    //! right hand side factors
+    //! right hand side factor for artery time integration
     double timefacrhs_art_;
+    //! right hand side factor for time integration of 2D/3D discretization
     double timefacrhs_cont_;
 
     //! result of brute force search
