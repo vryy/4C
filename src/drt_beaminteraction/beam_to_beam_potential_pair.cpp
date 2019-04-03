@@ -1122,7 +1122,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
   // vectors for shape functions and their derivatives
   // Attention: these are individual shape function values, NOT shape function matrices
-  // values at all gauss points are stored in advance (more efficient due to double integral)
+  // values at all Gauss points are stored in advance (more efficient espec. for many segments)
   std::vector<LINALG::TMatrix<double, 1, numnodes * numnodalvalues>> N_i_slave(
       numgp_persegment);  // = N1_i
   std::vector<LINALG::TMatrix<double, 1, numnodes * numnodalvalues>> N_i_xi_slave(
@@ -1314,8 +1314,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       {
         // Fixme
         //      dserror("Point-to-curve projection ultimately failed!");
-        std::cout << "\n\nWARNING: Point-to-Curve Projection ultimately failed! "
-                     "Assuming invalid projection and continue with next GP..."
+        std::cout << "\nWARNING: Point-to-Curve Projection ultimately failed at "
+                     "xi_slave="
+                  << xi_GP << " of ele pair " << Element1()->Id() << " & " << Element2()->Id()
+                  << "\nFallback strategy: Assume invalid projection and skip this GP..."
                   << std::endl;
         continue;
       }
