@@ -86,6 +86,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Init(
   // init particle engine
   InitParticleEngine();
 
+  // init particle wall handler
+  InitParticleWall();
+
   // init particle time integration
   InitParticleTimeIntegration();
 
@@ -97,9 +100,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Init(
 
   // init viscous damping handler
   InitViscousDamping();
-
-  // init particle wall handler
-  InitParticleWall();
 
   // set initial particles to vector of particles to be distributed
   particlestodistribute_ = initialparticles;
@@ -125,6 +125,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Setup()
   // setup particle engine
   particleengine_->Setup(particlestatestotypes_);
 
+  // setup wall handler
+  if (particlewall_) particlewall_->Setup(particleengine_, particleengine_->GetBinningStrategy());
+
   // check particle types for modified states
   const bool havemodifiedstates = HaveModifiedStates();
 
@@ -139,9 +142,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Setup()
 
   // setup viscous damping handler
   if (viscousdamping_) viscousdamping_->Setup(particleengine_);
-
-  // setup wall handler
-  if (particlewall_) particlewall_->Setup(particleengine_, particleengine_->GetBinningStrategy());
 
   // setup initial particles
   SetupInitialParticles();
@@ -174,6 +174,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::ReadRestart(const int restartstep)
   // read restart of particle engine
   particleengine_->ReadRestart(reader, particlestodistribute_);
 
+  // read restart of wall handler
+  if (particlewall_) particlewall_->ReadRestart(restartstep);
+
   // read restart of particle time integration
   particletimint_->ReadRestart(reader);
 
@@ -185,9 +188,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::ReadRestart(const int restartstep)
 
   // read restart of viscous damping handler
   if (viscousdamping_) viscousdamping_->ReadRestart(reader);
-
-  // read restart of wall handler
-  if (particlewall_) particlewall_->ReadRestart(restartstep);
 
   // set time and step after restart
   SetTimeStep(restarttime, restartstep);
@@ -291,6 +291,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Output() const
     // write restart of particle engine
     particleengine_->WriteRestart(Step(), Time());
 
+    // write restart of wall handler
+    if (particlewall_) particlewall_->WriteRestart(Step(), Time());
+
     // write restart of particle time integration
     particletimint_->WriteRestart(Step(), Time());
 
@@ -302,9 +305,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Output() const
 
     // write restart of viscous damping handler
     if (viscousdamping_) viscousdamping_->WriteRestart(Step(), Time());
-
-    // write restart of wall handler
-    if (particlewall_) particlewall_->WriteRestart(Step(), Time());
 
     // short screen output
     if (myrank_ == 0)
@@ -359,6 +359,46 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleEngine()
   // create and init particle engine
   particleengine_ = std::make_shared<PARTICLEENGINE::ParticleEngine>(Comm(), params_);
   particleengine_->Init();
+}
+
+/*---------------------------------------------------------------------------*
+ | init particle wall handler                                 sfuchs 10/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleWall()
+{
+  // get type of particle wall source
+  INPAR::PARTICLE::ParticleWallSource particlewallsource =
+      DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleWallSource>(
+          params_, "PARTICLE_WALL_SOURCE");
+
+  // create particle wall handler
+  switch (particlewallsource)
+  {
+    case INPAR::PARTICLE::NoParticleWall:
+    {
+      particlewall_ = std::shared_ptr<PARTICLEALGORITHM::WallHandlerBase>(nullptr);
+      break;
+    }
+    case INPAR::PARTICLE::DiscretCondition:
+    {
+      particlewall_ =
+          std::make_shared<PARTICLEALGORITHM::WallHandlerDiscretCondition>(Comm(), params_);
+      break;
+    }
+    case INPAR::PARTICLE::BoundingBox:
+    {
+      particlewall_ = std::make_shared<PARTICLEALGORITHM::WallHandlerBoundingBox>(Comm(), params_);
+      break;
+    }
+    default:
+    {
+      dserror("unknown type of particle wall source!");
+      break;
+    }
+  }
+
+  // init particle wall handler
+  if (particlewall_) particlewall_->Init();
 }
 
 /*---------------------------------------------------------------------------*
@@ -487,46 +527,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitViscousDamping()
 
   // init viscous damping handler
   if (viscousdamping_) viscousdamping_->Init();
-}
-
-/*---------------------------------------------------------------------------*
- | init particle wall handler                                 sfuchs 10/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleWall()
-{
-  // get type of particle wall source
-  INPAR::PARTICLE::ParticleWallSource particlewallsource =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleWallSource>(
-          params_, "PARTICLE_WALL_SOURCE");
-
-  // create particle wall handler
-  switch (particlewallsource)
-  {
-    case INPAR::PARTICLE::NoParticleWall:
-    {
-      particlewall_ = std::shared_ptr<PARTICLEALGORITHM::WallHandlerBase>(nullptr);
-      break;
-    }
-    case INPAR::PARTICLE::DiscretCondition:
-    {
-      particlewall_ =
-          std::make_shared<PARTICLEALGORITHM::WallHandlerDiscretCondition>(Comm(), params_);
-      break;
-    }
-    case INPAR::PARTICLE::BoundingBox:
-    {
-      particlewall_ = std::make_shared<PARTICLEALGORITHM::WallHandlerBoundingBox>(Comm(), params_);
-      break;
-    }
-    default:
-    {
-      dserror("unknown type of particle wall source!");
-      break;
-    }
-  }
-
-  // init particle wall handler
-  if (particlewall_) particlewall_->Init();
 }
 
 /*---------------------------------------------------------------------------*

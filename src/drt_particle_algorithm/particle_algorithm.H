@@ -96,6 +96,9 @@ namespace PARTICLEALGORITHM
     //! init particle engine
     void InitParticleEngine();
 
+    //! init particle wall handler
+    void InitParticleWall();
+
     //! init particle time integration
     void InitParticleTimeIntegration();
 
@@ -107,9 +110,6 @@ namespace PARTICLEALGORITHM
 
     //! init viscous damping handler
     void InitViscousDamping();
-
-    //! init particle wall handler
-    void InitParticleWall();
 
     //! generate initial particles
     void GenerateInitialParticles();
@@ -165,6 +165,9 @@ namespace PARTICLEALGORITHM
     //! particle engine
     std::shared_ptr<PARTICLEENGINE::ParticleEngine> particleengine_;
 
+    //! particle wall handler
+    std::shared_ptr<PARTICLEALGORITHM::WallHandlerBase> particlewall_;
+
     //! particle time integration
     std::unique_ptr<PARTICLEALGORITHM::TimInt> particletimint_;
 
@@ -176,9 +179,6 @@ namespace PARTICLEALGORITHM
 
     //! particle viscous damping handler
     std::unique_ptr<PARTICLEALGORITHM::ViscousDampingHandler> viscousdamping_;
-
-    //! particle wall handler
-    std::shared_ptr<PARTICLEALGORITHM::WallHandlerBase> particlewall_;
 
     //! map of particle types and corresponding states
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>> particlestatestotypes_;
