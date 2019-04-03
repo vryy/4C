@@ -47,13 +47,17 @@ void PARTICLEINTERACTION::ParticleInteractionBase::Init()
  | setup particle interaction handler                         sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionBase::Setup(
-    const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
+    const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
+    const std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface)
 {
   // set interface to particle engine
   particleengineinterface_ = particleengineinterface;
 
   // set particle container bundle
   particlecontainerbundle_ = particleengineinterface_->GetParticleContainerBundle();
+
+  // set interface to particle wall hander
+  particlewallinterface_ = particlewallinterface;
 
   // setup particle material handler
   particlematerial_->Setup();

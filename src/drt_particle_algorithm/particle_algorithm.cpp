@@ -135,7 +135,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Setup()
   particletimint_->Setup(particleengine_, havemodifiedstates);
 
   // setup particle interaction handler
-  if (particleinteraction_) particleinteraction_->Setup(particleengine_);
+  if (particleinteraction_) particleinteraction_->Setup(particleengine_, particlewall_);
 
   // setup gravity handler
   if (particlegravity_) particlegravity_->Setup();

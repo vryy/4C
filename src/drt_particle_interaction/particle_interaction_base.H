@@ -44,6 +44,11 @@ namespace PARTICLEINTERACTION
   class MaterialHandler;
 }
 
+namespace PARTICLEALGORITHM
+{
+  class WallHandlerInterface;
+}
+
 namespace PARTICLEENGINE
 {
   class ParticleEngineInterface;
@@ -68,7 +73,8 @@ namespace PARTICLEINTERACTION
 
     //! setup particle interaction handler
     virtual void Setup(
-        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
+        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
+        const std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface);
 
     //! write restart of particle interaction handler
     virtual void WriteRestart(const int step, const double time) const;
@@ -127,6 +133,9 @@ namespace PARTICLEINTERACTION
 
     //! particle container bundle
     PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle_;
+
+    //! interface to particle wall handler
+    std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface_;
 
     //! particle material handler
     std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial_;
