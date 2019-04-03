@@ -928,14 +928,14 @@ void STR::GenInvAnalysis::CalcNewParameters(
     // tensile test data (displacements)
     for (int i = 0; i < nmp; i++)
     {
-      rcurve[i] = -mcurve[i] + ccurve[i];  //!!!!!!!!
+      rcurve[i] = -mcurve[i] + ccurve[i];  // sign of residual
       rcurve[i] /= fac_norm;               // normalize residuum
     }
     // add data (pressure) of pressure-volume-change experiment
     rcurve.Reshape(nmp + nmp_volexp_, 1);
     for (int i = 0; i < nmp_volexp_; i++)
     {
-      rcurve[i + nmp] = -volexp_deltap[i] + volexp_p_comp(i, np_);  //!!!!!!!!!
+      rcurve[i + nmp] = -volexp_deltap[i] + volexp_p_comp(i, np_);  // sign of residual
       rcurve[i + nmp] /= volexp_fac_norm;
     }
     // end of coupled inverse analysis
@@ -958,7 +958,7 @@ void STR::GenInvAnalysis::CalcNewParameters(
     {
       // calculating R
       // compute residual displacement (measured vs. computed)
-      for (int i = 0; i < nmp; i++) rcurve[i] = -mcurve[i] + ccurve[i];  //!!!!!!!!!
+      for (int i = 0; i < nmp; i++) rcurve[i] = -mcurve[i] + ccurve[i];  // sign of residual
       // multiple inverse analysis: both parts already normalized
     }
     else if (meas_type_ == point_based)
@@ -978,7 +978,7 @@ void STR::GenInvAnalysis::CalcNewParameters(
   for (int i = 0; i < np_; i++) sto(i, i) += mu_ * sto(i, i);
 
   // delta_p = (J.T*J+mu*diag(J.T*J))^{-1} * J.T*R
-  tmp.Multiply('T', 'N', -1.0, J, rcurve, 0.0);  //!!!!!!!!!!!!!!!!
+  tmp.Multiply('T', 'N', -1.0, J, rcurve, 0.0);  // sign of update rule
   Epetra_SerialDenseSolver solver;
   solver.SetMatrix(sto);
   solver.SetVectors(delta_p, tmp);
@@ -1218,7 +1218,7 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvectorFSI(bool outputtofile, 
 
   // i guess it was not meant to be, but it works. suggestions for improvement are welcome
   // without these lines multiple evaluation of this FSI method does produce an error,
-  // when you ask for binary output, which usually isnt of great interest for inverse analysis
+  // when you ask for binary output, which usually isn't of great interest for inverse analysis
   fluiddis->Writer()->OverwriteResultFile();
   aledis->Writer()->OverwriteResultFile();
 
@@ -1687,14 +1687,12 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::GetDistancePointsToInterfaceContou
   std::map<int, Teuchos::RCP<DRT::Element>>::iterator curr;
   DRT::Element::LocationArray la(discret_->NumDofSets());
   if (discret_->NumDofSets() != 1) dserror("method was developed for one dofset (structure) only!");
-  //  const int numifacenodes = interfacegeom[0]->NumNode();
-  //  std::cout<<"vorfor"<<std::endl;
-  int idofs = 0;
 
-  //  std::cout<<"mcurve:"<<mcurve_<<std::endl;
+  int idofs = 0;
 
   for (int i = 0; i < nnodes_; i++)
   {
+    // store point based input data in a matrix
     LINALG::Matrix<3, 2> line;
     line.PutScalar(0);
     for (unsigned int j = 0; j < dofs_[i].size(); j++)
@@ -1704,8 +1702,7 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::GetDistancePointsToInterfaceContou
     }
     idofs += dofs_[i].size();
 
-    //    std::cout<<"line element: "<<line<<std::endl;
-
+    // look for intersection of line with interface
     std::vector<std::vector<double>> xsifound(0);
 
     double distance = 0.;
@@ -1740,16 +1737,8 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::GetDistancePointsToInterfaceContou
           surf.PutScalar(0);
 
           std::vector<double> eledisp(4);
-          //      std::cout<<"la.size: "<<la.Size()<<std::endl; //Check your la for the following
-          //      line
-          //        std::cout<<disp<<std::endl;
-          //        for (int o =0; o<la[0].lm_.size();o++)
-          //        std::cout<<la[0].lm_[o]<<std::endl;
           DRT::UTILS::ExtractMyValues(disp, eledisp, la[0].lm_);
-          // have a glimpse into eledisp
-          //        for(unsigned l=0; l<eledisp.size();l++)
-          //          std::cout<<i<<": eledisp"<<l<<": "<<std::setprecision
-          //          (15)<<eledisp[l]<<std::endl;
+
           for (int i = 0; i < 2; i++)
           {
             const double* x = ifacenodes[i]->X();
@@ -1762,7 +1751,7 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::GetDistancePointsToInterfaceContou
 
           if (ci(surf, linee))
           {
-            //          std::cout<<"intersection converged"<<std::endl;
+            // intersection converged
             if (ci.SurfaceWithinLimits())
             {
               std::cout << "XSI: " << xsi << std::endl;
@@ -1771,6 +1760,7 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::GetDistancePointsToInterfaceContou
               {
                 myxsi[m] = xsi(m);
               }
+              // store all intersection points
               xsifound.push_back(myxsi);
             }
           }
@@ -1785,6 +1775,7 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::GetDistancePointsToInterfaceContou
       }
     }
     // decide which element is the desired one and compute distance
+    // this interferes with the structure of your monitor file
     double minxsi = 0;
     int lastxsi = xsifound[0].size() - 1;
     for (unsigned int j = 0; j < xsifound.size(); j++)
@@ -1797,14 +1788,8 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::GetDistancePointsToInterfaceContou
       {
         // xsifound is not the smallest xsi, do nothing
       }
-
-      //      for( unsigned int k=0; k<xsifound[j].size();k++)
-      //      {
-      //        std::cout<<"["<<j<<"]"<<"["<<k<<"]"<<" xsifound: "<<xsifound[j][k]<<std::endl;
-      //      }
     }
 
-    //    std::cout<<"minxsi: "<<minxsi<<std::endl;
     for (unsigned int j = 0; j < 3; j++)
     {
       distance += pow((minxsi + 1) / 2 * (line(j, 1) - line(j, 0)), 2);
@@ -1824,14 +1809,11 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::GetDistancePointsToInterfaceContou
       std::cout << "vec(" << j << "): " << line(j, 0) + (minxsi + 1) / 2 * (line(j, 1) - line(j, 0))
                 << std::endl;
     }
-
-    std::cout << "minxsi: " << minxsi << std::endl;
+    // build LM-residual vector from distances
     distance = sqrt(distance);
-    distance *= SIGN(minxsi + 1);
-    std::cout << "distance: " << distance << std::endl;
+    distance *= (minxsi + 1 > 0) ? 1 : ((minxsi + 1 < 0) ? -1 : 0);
     dvector[i] = distance;
   }
-  //  std::cout<<dvector<<std::endl;
   return dvector;
 }
 
