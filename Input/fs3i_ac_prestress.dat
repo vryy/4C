@@ -144,7 +144,6 @@ DIVERCONT                       stop
 ITERNORM                        L2
 LOADLIN                         yes
 LUMPMASS                        No
-MASSLIN                         Standard
 MINITER                         0
 MODIFIEDEXPLEULER               Yes
 NORMCOMBI_DISPPRES              And
