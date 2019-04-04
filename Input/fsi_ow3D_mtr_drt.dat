@@ -88,7 +88,7 @@ PARALLEL_REDIST                 No
 LM_SHAPEFCN                     Dual
 REDUNDANT_STORAGE               all
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-INT_STRATEGY                    Old
+INT_STRATEGY                    Standard
 LINEAR_SOLVER                   2
 NORM_DISP                       Mix
 NORM_RESF                       Mix

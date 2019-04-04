@@ -196,6 +196,7 @@ NDPARTICLE                      0
 //
 -------------------------------------------------STRUCTURAL DYNAMIC
 //
+INT_STRATEGY                   Standard
 // type of time integration control
 //     Statics
 //     GenAlpha
