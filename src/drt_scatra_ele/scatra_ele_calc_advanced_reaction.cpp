@@ -92,7 +92,7 @@ DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::ScaTraEleCalcAdvReac(
 {
   my::reamanager_ = Teuchos::rcp(new ScaTraEleReaManagerAdvReac(my::numscal_));
 
-  for (unsigned i = 0; i < my::nsd_; ++i) gpcoord_[i] = 0.0;
+  for (unsigned i = 0; i < numdim_gp_; ++i) gpcoord_[i] = 0.0;
 
   // safety check
   if (not my::scatrapara_->TauGP())
