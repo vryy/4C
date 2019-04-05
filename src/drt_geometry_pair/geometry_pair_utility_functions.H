@@ -57,7 +57,7 @@ namespace GEOMETRYPAIR
     // The current implementation only allows tangential vectors in the x-y plane.
     if (abs(tangent(2)) > CONSTANTS::pos_tol)
       dserror("The tangent vector can not have a component in z direction! The component is %f!",
-          tangent(2));
+          FADUTILS::CastToDouble(tangent(2)));
 
     // Create the director vectors in the cross section.
     // Director 2 is the one in the y-axis (reference configuration).
