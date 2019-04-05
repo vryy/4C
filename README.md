@@ -61,7 +61,8 @@ Our Wiki provides a [detailed setup guide for your local git configuration](http
 ### Set-up LRZ GitLab
 
 1. Register an account on [LRZ GitLab](www.gitlab.lrz.de).
-   **Important:** Choose a recognizable user name. It is recommended to set it to: first letter of first name followed by last name, all lowercase, e.g., Max Mustermann -> mmustermann.
+
+    **Important:** Choose a recognizable user name. It is recommended to set it to: first letter of first name followed by last name, all lowercase, e.g., Max Mustermann -> mmustermann.
 
     > **Note:** Your username is a unique namespace related to your user ID. Changing it can have unintended side effects. See [how redirects will behave](https://gitlab.lrz.de/help/user/project/index.md#redirects-when-changing-repository-paths) for details.
 
