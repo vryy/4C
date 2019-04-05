@@ -174,3 +174,14 @@ template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAI
     GEOMETRYPAIR::t_tet4, GEOMETRYPAIR::t_line3>;
 template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line3>;
+
+template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line4>;
+template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_hex20, GEOMETRYPAIR::t_line4>;
+template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_hex27, GEOMETRYPAIR::t_line4>;
+template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_tet4, GEOMETRYPAIR::t_line4>;
+template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line4>;
