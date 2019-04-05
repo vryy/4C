@@ -22,7 +22,6 @@ INT_STRATEGY                    Standard
 DYNAMICTYP                      OneStepTheta
 PREDICT                         ConstVel
 LINEAR_SOLVER                   1
-MAXITER                         3
 DIVERCONT                       continue
 ------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
@@ -52,7 +51,7 @@ OSEENFIELDFUNCNO                -1
 CONVFORM                        convective
 GRIDVEL                         OST
 NUMSTASTEPS                     0
-ITEMAX                          2
+ITEMAX                          10
 INITSTATITEMAX                  5
 ALPHA_M                         0.83333333333333
 ALPHA_F                         0.66666666666666
@@ -160,13 +159,13 @@ COMPONENT 0 FUNCTION (1-cos(2*t*pi/5))
 -------------------------------------------------------------FUNCT3
 -------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 68 QUANTITY dispx VALUE -2.87591472339901694e-04 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 68 QUANTITY dispy VALUE -1.00358589884362755e-03 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 68 QUANTITY dispz VALUE -3.83809218483588675e-08 TOLERANCE 1e-9
-FLUID DIS fluid NODE 145 QUANTITY velx VALUE -6.47373866813863224e-04 TOLERANCE 1e-9
-FLUID DIS fluid NODE 145 QUANTITY vely VALUE 4.93360664067464018e-03 TOLERANCE 1e-9
-FLUID DIS fluid NODE 145 QUANTITY velz VALUE 3.41023203072950326e-09 TOLERANCE 1e-9
-FLUID DIS fluid NODE 145 QUANTITY pressure VALUE -1.04781542540610187e-02 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 68 QUANTITY dispx VALUE -2.97030674264687697e-04 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 68 QUANTITY dispy VALUE -4.91579012131915932e-04 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 68 QUANTITY dispz VALUE -1.85598365407265563e-08 TOLERANCE 1e-9
+FLUID DIS fluid NODE 145 QUANTITY velx VALUE -7.14926452160737514e-04 TOLERANCE 1e-9
+FLUID DIS fluid NODE 145 QUANTITY vely VALUE 5.22982181842028722e-03 TOLERANCE 1e-9
+FLUID DIS fluid NODE 145 QUANTITY velz VALUE 3.85473682797438731e-08 TOLERANCE 1e-9
+FLUID DIS fluid NODE 145 QUANTITY pressure VALUE -8.90044509439544794e-03 TOLERANCE 1e-9
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 12
 NDLINE  31
