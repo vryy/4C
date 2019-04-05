@@ -22,6 +22,7 @@
 
 #include "../drt_porofluidmultiphase/porofluidmultiphase_utils.H"
 #include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele_parameter.H"
+#include "../drt_scatra_ele/scatra_ele_parameter_timint.H"
 #include "../linalg/linalg_multiply.H"
 #include "poromultiphase_scatra_artery_coupling_pair.H"
 #include "poromultiphase_scatra_artery_coupling_defines.H"
@@ -40,6 +41,8 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::PoroMultiPhaseScaTr
       porofluidmanagersset_(false),
       issetup_(false),
       porofluidprob_(false),
+      timefacrhs_art_(0.0),
+      timefacrhs_cont_(0.0),
       coupling_method_(
           DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
               couplingparams, "ARTERY_COUPLING_METHOD")),
@@ -156,8 +159,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetupSystem(
 
   if (!porofluidmanagersset_)
   {
+    // set the right-hand side time factors (we assume constant time step size here)
+    SetTimeFacRhs();
     for (unsigned i = 0; i < coupl_elepairs_.size(); i++)
-      coupl_elepairs_[i]->SetupFluidManagersAndMaterials(contdis_->Name());
+      coupl_elepairs_[i]->SetupFluidManagersAndMaterials(
+          contdis_->Name(), timefacrhs_art_, timefacrhs_cont_);
     porofluidmanagersset_ = true;
   }
 
@@ -532,7 +538,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::EvaluateCoupli
     arterydis_->SetState("one_d_artery_phinp", phinp_art_);
   }
   else
-    dserror("should not happen");
+    dserror(
+        "Only porofluid and scatra-discretizations are supported for linebased-coupling so far");
 
   // evaluate all pairs
   for (unsigned i = 0; i < coupl_elepairs_.size(); i++)
@@ -689,10 +696,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SumDMIntoGloba
       LINALG::MLMultiply(*M_, true, *km, false, false, false, true);
 
   // add matrices
-  sysmat_art->Add(*dtkd, false, pp_, 1.0);
-  sysmat->Matrix(1, 0).Add(*dtkm, false, -pp_, 1.0);
-  sysmat->Matrix(0, 1).Add(*dtkm, true, -pp_, 1.0);
-  sysmat_cont->Add(*mtkm, false, pp_, 1.0);
+  sysmat_art->Add(*dtkd, false, pp_ * timefacrhs_art_, 1.0);
+  sysmat->Matrix(1, 0).Add(*dtkm, false, -pp_ * timefacrhs_art_, 1.0);
+  sysmat->Matrix(0, 1).Add(*dtkm, true, -pp_ * timefacrhs_cont_, 1.0);
+  sysmat_cont->Add(*mtkm, false, pp_ * timefacrhs_cont_, 1.0);
 
   // add vector
   Teuchos::RCP<Epetra_Vector> art_contribution =
@@ -700,22 +707,22 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SumDMIntoGloba
   Teuchos::RCP<Epetra_Vector> cont_contribution =
       Teuchos::rcp(new Epetra_Vector(*contdis_->DofRowMap()));
 
-  // Note: negative since rhs
+  // Note: all terms are negative since rhs
   // pp*D^T*kappa^{-1}*D*phi_np^art
   dtkd->Multiply(false, *phinp_art_, *art_contribution);
-  rhs->Update(-pp_, *globalex_->InsertVector(art_contribution, 1), 1.0);
+  rhs->Update(-pp_ * timefacrhs_art_, *globalex_->InsertVector(art_contribution, 1), 1.0);
 
   // -pp*D^T*kappa^{-1}*M*phi_np^cont
   dtkm->Multiply(false, *phinp_cont_, *art_contribution);
-  rhs->Update(pp_, *globalex_->InsertVector(art_contribution, 1), 1.0);
+  rhs->Update(pp_ * timefacrhs_art_, *globalex_->InsertVector(art_contribution, 1), 1.0);
 
   // pp*M^T*kappa^{-1}*M*phi_np^cont
   mtkm->Multiply(false, *phinp_cont_, *cont_contribution);
-  rhs->Update(-pp_, *globalex_->InsertVector(cont_contribution, 0), 1.0);
+  rhs->Update(-pp_ * timefacrhs_cont_, *globalex_->InsertVector(cont_contribution, 0), 1.0);
 
   // -pp*M^T*kappa^{-1}*D*phi_np^art = -pp*(D^T*kappa^{-1}*M)^T*phi_np^art
   dtkm->Multiply(true, *phinp_art_, *cont_contribution);
-  rhs->Update(pp_, *globalex_->InsertVector(cont_contribution, 0), 1.0);
+  rhs->Update(pp_ * timefacrhs_cont_, *globalex_->InsertVector(cont_contribution, 0), 1.0);
 
   return;
 }
@@ -1043,6 +1050,37 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillFunctionAn
   std::istringstream funct_cont_stream(
       Teuchos::getNumericStringParameter(couplingparams_, "REACFUNCT_CONT"));
   while (funct_cont_stream >> word1) funct_vec_[1].push_back((int)(word1 - 1));
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | set factor for right hand side                      kremheller 03/19 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetTimeFacRhs()
+{
+  // set the right hand side factor
+  if (contdis_->Name() == "porofluid")
+  {
+    DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter* eleparams =
+        DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance("porofluid");
+    // artery
+    timefacrhs_art_ = 1.0;
+    // continuous
+    timefacrhs_cont_ = eleparams->TimeFacRhs();
+  }
+  else if (contdis_->Name() == "scatra")
+  {
+    DRT::ELEMENTS::ScaTraEleParameterTimInt* eleparams =
+        DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra");
+    // artery
+    timefacrhs_art_ = eleparams->TimeFacRhs();
+    // continuous
+    timefacrhs_cont_ = eleparams->TimeFacRhs();
+  }
+  else
+    dserror(
+        "Only porofluid and scatra-discretizations are supported for linebased-coupling so far");
 
   return;
 }
