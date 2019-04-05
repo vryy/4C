@@ -404,7 +404,8 @@ namespace DRT
             density_(0),
             solidpressure_(0.0),
             delta_(numscal, 0.0),
-            thermaldiffusivity_(numscal, 0.0),
+            heatcapacity_(0),
+            thermaldiffusivity_(0),
             heatcapacityeff_(0.0),
             min_val_of_phase_(numscal, 0.0),
             evaluate_scalar_(numscal, true),
@@ -516,8 +517,6 @@ namespace DRT
           pressure_[k] = phasemanager_->Pressure(k);
           // phase saturation
           saturation_[k] = phasemanager_->Saturation(k);
-          // phase density
-          density_[k] = phasemanager_->Density(k);
           // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
           multiconv_[k].MultiplyTN(derxy, multiconvelint_[k]);
 

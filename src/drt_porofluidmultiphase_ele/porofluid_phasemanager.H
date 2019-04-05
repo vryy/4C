@@ -189,15 +189,6 @@ namespace DRT
         //! get the density of solid phase
         virtual double SolidDensity() const = 0;
 
-        //! get the heat capacity of phase 'phasenum'
-        virtual double HeatCapacity(int phasenum) const = 0;
-
-        //! get the thermal diffusivity of phase 'phasenum'
-        virtual double ThermalDiffusivity(int phasenum) const = 0;
-
-        //! get the effective heat capacity
-        virtual double HeatCapacityEff() const = 0;
-
         //! get the current element the manager was set up with
         virtual const DRT::Element* Element() const = 0;
 
@@ -452,15 +443,6 @@ namespace DRT
 
         //! get the density of the solid phase
         double SolidDensity() const;
-
-        //! get heat capacity of phase 'phasenum'
-        double HeatCapacity(int phasenum) const;
-
-        //! get thermal diffusivity of phase 'phasenum'
-        double ThermalDiffusivity(int phasenum) const;
-
-        //! get the effctive heat capacity
-        double HeatCapacityEff() const;
 
         //! get the current element the manager was set up with
         virtual const DRT::Element* Element() const { return ele_; };
@@ -828,12 +810,6 @@ namespace DRT
         std::vector<double> volfracdensity_;
         //! solid density
         double soliddensity_;
-        //! heat capacities
-        std::vector<double> heatcapacity_;
-        //! thermaldiffusivity
-        std::vector<double> thermaldiffusivity_;
-        //! effective heat capacity
-        double heatcapacityeff_;
         //! solid pressure
         double solidpressure_;
         //! inverse bulk moduli of the fluid phases
@@ -1052,21 +1028,6 @@ namespace DRT
 
         //! get density of solid phase
         virtual double SolidDensity() const { return phasemanager_->SolidDensity(); };
-
-        //! get the heat capacity of phase 'phasenum'
-        virtual double HeatCapacity(int phasenum) const
-        {
-          return phasemanager_->HeatCapacity(phasenum);
-        };
-
-        //! get thermal diffusivity of phase 'phasenum'
-        virtual double ThermalDiffusivity(int phasenum) const
-        {
-          return phasemanager_->ThermalDiffusivity(phasenum);
-        };
-
-        //! get effective heat capacity
-        virtual double HeatCapacityEff() const { return phasemanager_->HeatCapacityEff(); };
 
         //! get the current element the manager was set up with
         virtual const DRT::Element* Element() const { return phasemanager_->Element(); };
