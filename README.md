@@ -105,7 +105,7 @@ Some further third party libraries (TPLs) are mandatory, e.g.
 - SuiteSparse (recommended version: 3.3.0)
 - SuperLUDist (mandatory version: 2.5 (due to Trilinos/Amesos))
 - Qhull (recommended version: 2012.1)
-- CLN
+- CLN (recommened version: 1.3.4)
 
 and some are optional, e.g.
 - FFTW
