@@ -1327,8 +1327,8 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConvODFluid(
         {
           // get pre-fac vector for this scalar
           static std::vector<double> prefaclinconvodfluid(totalnummultiphasedofpernode, 0.0);
-          VarManager()->GetPreFacLinConvODFluid(
-              k, ui, &prefaclinconvodfluid, gradphi, gradphiTdifftensor, my::funct_, my::derxy_);
+          VarManager()->GetPreFacLinConvODFluid(k, ui, &prefaclinconvodfluid, gradphi,
+              gradphiTdifftensor, my::funct_, my::derxy_, VarManager()->GetPhaseID(k));
 
           for (int idof = 0; idof < totalnummultiphasedofpernode; ++idof)
           {
@@ -1361,10 +1361,14 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConvODFluid(
         static LINALG::Matrix<1, my::nsd_> gradphiTdifftensor(true);
         gradphiTdifftensor.MultiplyTN(gradphi, difftensor);
 
+        // calculate density*heatcapacity
+        double densheatcapacity =
+            VarManager()->GetHeatCapacity(phase) * VarManager()->Density()[phase];
+
         for (unsigned vi = 0; vi < my::nen_; ++vi)
         {
           const int fvi = vi * my::numdofpernode_ + k;
-          const double v = rhsfac * my::funct_(vi) * (-1.0);
+          const double v = rhsfac * my::funct_(vi) * (-1.0) * densheatcapacity;
 
           for (unsigned ui = 0; ui < my::nen_; ++ui)
           {

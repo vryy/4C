@@ -1020,7 +1020,7 @@ namespace DRT
       void GetPreFacLinConvODFluid(const int k, const unsigned ui,
           std::vector<double>* prefaclinconvodfluid, const LINALG::Matrix<NSD, 1>& gradphi,
           const LINALG::Matrix<1, NSD>& gradphiTdifftensor, const LINALG::Matrix<NEN, 1>& funct,
-          const LINALG::Matrix<NSD, NEN>& derxy, const int phase = 0)
+          const LINALG::Matrix<NSD, NEN>& derxy, const int phase)
       {
         // reset to zero
         std::fill(prefaclinconvodfluid->begin(), prefaclinconvodfluid->end(), 0.0);
@@ -1029,108 +1029,46 @@ namespace DRT
         double laplawf(0.0);
         for (unsigned j = 0; j < NSD; j++) laplawf += derxy(j, ui) * gradphiTdifftensor(0, j);
 
-        switch (scalartophasemap_[k].species_type)
-        {
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
-          {
-            const int curphase = GetPhaseID(k);
-            const int numfluidphases = phasemanager_->NumFluidPhases();
+        const int numfluidphases = phasemanager_->NumFluidPhases();
+        const int numvolfrac = phasemanager_->NumVolFrac();
 
-            // derivative after fluid pressures
+        // fluid phase
+        if (phase >= 0 && phase < numfluidphases)
+        {
+          // derivative after fluid pressures
+          for (int idof = 0; idof < numfluidphases; ++idof)
+            (*prefaclinconvodfluid)[idof] += laplawf * phasemanager_->PressureDeriv(phase, idof);
+
+          // derivative after relative permeabilty
+          if (not phasemanager_->HasConstantRelPermeability(phase))
+          {
+            const LINALG::Matrix<NSD, 1> gradpres = PressureGradient(phase);
+            const double abspressgrad = AbsPressureGradient(phase);
+
+            static LINALG::Matrix<NSD, NSD> difftensor(true);
+            phasemanager_->PermeabilityTensor(phase, difftensor);
+            difftensor.Scale(phasemanager_->RelPermeabilityDeriv(phase) /
+                             phasemanager_->DynViscosity(phase, abspressgrad, 2));
+
+            static LINALG::Matrix<1, NSD> gradphiTdifftensor(true);
+            gradphiTdifftensor.MultiplyTN(gradphi, difftensor);
+
+            double laplawf(0.0);
+            for (unsigned j = 0; j < NSD; j++) laplawf += gradpres(j) * gradphiTdifftensor(0, j);
+
             for (int idof = 0; idof < numfluidphases; ++idof)
               (*prefaclinconvodfluid)[idof] +=
-                  laplawf * phasemanager_->PressureDeriv(curphase, idof);
-
-            // derivative after relative permeabilty
-            if (not phasemanager_->HasConstantRelPermeability(curphase))
-            {
-              const LINALG::Matrix<NSD, 1> gradpres = PressureGradient(curphase);
-              const double abspressgrad = AbsPressureGradient(curphase);
-
-              static LINALG::Matrix<NSD, NSD> difftensor(true);
-              phasemanager_->PermeabilityTensor(curphase, difftensor);
-              difftensor.Scale(phasemanager_->RelPermeabilityDeriv(curphase) /
-                               phasemanager_->DynViscosity(curphase, abspressgrad, 2));
-
-              static LINALG::Matrix<1, NSD> gradphiTdifftensor(true);
-              gradphiTdifftensor.MultiplyTN(gradphi, difftensor);
-
-              double laplawf(0.0);
-              for (unsigned j = 0; j < NSD; j++) laplawf += gradpres(j) * gradphiTdifftensor(0, j);
-
-              for (int idof = 0; idof < numfluidphases; ++idof)
-                (*prefaclinconvodfluid)[idof] +=
-                    laplawf * funct(ui) * phasemanager_->SaturationDeriv(curphase, idof);
-            }
-
-            break;
+                  laplawf * funct(ui) * phasemanager_->SaturationDeriv(phase, idof);
           }
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac:
-          {
-            const int curphase = GetPhaseID(k);
-            const int numvolfrac = phasemanager_->NumVolFrac();
-            // derivative after volume fraction pressures
-            (*prefaclinconvodfluid)[curphase + numvolfrac] += laplawf * 1.0;
-
-            break;
-          }
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid:
-          {
-            // do nothing, because no convective term in species in solid
-            break;
-          }
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_temperature:
-          {
-            const int numfluidphases = phasemanager_->NumFluidPhases();
-            const int numvolfrac = phasemanager_->NumVolFrac();
-
-            if (phase < numfluidphases)
-            {
-              // derivative after fluid pressures
-              for (int idof = 0; idof < numfluidphases; ++idof)
-                (*prefaclinconvodfluid)[idof] +=
-                    laplawf * phasemanager_->PressureDeriv(phase, idof) *
-                    phasemanager_->Density(phase) * GetHeatCapacity(phase);
-
-              // derivative after relative permeabilty
-              if (not phasemanager_->HasConstantRelPermeability(phase))
-              {
-                const LINALG::Matrix<NSD, 1> gradpres = PressureGradient(phase);
-                const double abspressgrad = AbsPressureGradient(phase);
-
-                static LINALG::Matrix<NSD, NSD> difftensor(true);
-                phasemanager_->PermeabilityTensor(phase, difftensor);
-                difftensor.Scale(phasemanager_->RelPermeabilityDeriv(phase) /
-                                 phasemanager_->DynViscosity(phase, abspressgrad, 2));
-
-                static LINALG::Matrix<1, NSD> gradphiTdifftensor(true);
-                gradphiTdifftensor.MultiplyTN(gradphi, difftensor);
-
-                double laplawf(0.0);
-                for (unsigned j = 0; j < NSD; j++)
-                  laplawf += gradpres(j) * gradphiTdifftensor(0, j);
-
-                for (int idof = 0; idof < numfluidphases; ++idof)
-                  (*prefaclinconvodfluid)[idof] += laplawf * funct(ui) *
-                                                   phasemanager_->SaturationDeriv(phase, idof) *
-                                                   GetHeatCapacity(phase);
-              }
-            }
-            else
-            {
-              (*prefaclinconvodfluid)[phase + numvolfrac] +=
-                  laplawf * phasemanager_->VolFracDensity(phase - numfluidphases) *
-                  GetHeatCapacity(phase);
-            }
-            break;
-          }
-          default:
-          {
-            dserror(
-                "unknown species type %i for species %i!", scalartophasemap_[k].species_type, k);
-            break;
-          }
-        }  // switch(species type)
+        }
+        // volfrac
+        else if (phase < numfluidphases + numvolfrac)
+        {
+          // derivative after volfrac-pressure
+          (*prefaclinconvodfluid)[phase + numvolfrac] += laplawf;
+        }
+        else
+          dserror("GetPreFacLinConvODFluid has been called with phase %i", phase);
 
         return;
       };
@@ -1352,67 +1290,33 @@ namespace DRT
       {
         refgradpres.Clear();
 
-        switch (scalartophasemap_[k].species_type)
+        const int numfluidphases = phasemanager_->NumFluidPhases();
+        const int numvolfrac = phasemanager_->NumVolFrac();
+
+        // fluid phase
+        if (phase >= 0 && phase < numfluidphases)
         {
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
-          {
-            const int numfluidphases = phasemanager_->NumFluidPhases();
+          const std::vector<LINALG::Matrix<NSD, 1>>& fluidgradphi =
+              *(variablemanager_->GradPhinp());
 
-            const std::vector<LINALG::Matrix<NSD, 1>>& fluidgradphi =
-                *(variablemanager_->GradPhinp());
+          // gradient of phi w.r.t. reference coordinates
+          std::vector<LINALG::Matrix<NSD, 1>> reffluidgradphi(
+              numfluidphases, LINALG::Matrix<NSD, 1>(true));
+          for (int idof = 0; idof < numfluidphases; ++idof)
+            reffluidgradphi[idof].Multiply(xjm, fluidgradphi[idof]);
 
-            // gradient of phi w.r.t. reference coordinates
-            std::vector<LINALG::Matrix<NSD, 1>> reffluidgradphi(
-                numfluidphases, LINALG::Matrix<NSD, 1>(true));
-            for (int idof = 0; idof < numfluidphases; ++idof)
-              reffluidgradphi[idof].Multiply(xjm, fluidgradphi[idof]);
-
-            // compute the pressure gradient from the phi gradients
-            for (int idof = 0; idof < numfluidphases; ++idof)
-              refgradpres.Update(
-                  phasemanager_->PressureDeriv(phase, idof), reffluidgradphi[idof], 1.0);
-
-            break;
-          }
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac:
-          {
-            refgradpres.Multiply(xjm, pressuregrad_[phase]);
-            break;
-          }
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid:
-          {
-            break;
-          }
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_temperature:
-          {
-            const int numfluidphases = phasemanager_->NumFluidPhases();
-            const int numvolfrac = phasemanager_->NumVolFrac();
-
-            const std::vector<LINALG::Matrix<NSD, 1>>& fluidgradphi =
-                *(variablemanager_->GradPhinp());
-
-            // gradient of phi w.r.t. reference coordinates
-            std::vector<LINALG::Matrix<NSD, 1>> reffluidgradphi(
-                numfluidphases, LINALG::Matrix<NSD, 1>(true));
-            for (int idof = 0; idof < numfluidphases; ++idof)
-            {
-              reffluidgradphi[idof].Multiply(xjm, fluidgradphi[idof]);
-              // compute the pressure gradient from the phi gradients
-              refgradpres.Update(
-                  phasemanager_->PressureDeriv(phase, idof), reffluidgradphi[idof], 1.0);
-            }
-
-            for (int idof = numfluidphases; idof < numfluidphases + numvolfrac; ++idof)
-              refgradpres.Multiply(xjm, pressuregrad_[phase]);
-
-            break;
-          }
-
-          default:
-            dserror(
-                "unknown species type %i for species %i!", scalartophasemap_[k].species_type, k);
-            break;
-        }  // switch(species type)
+          // compute the pressure gradient from the phi gradients
+          for (int idof = 0; idof < numfluidphases; ++idof)
+            refgradpres.Update(
+                phasemanager_->PressureDeriv(phase, idof), reffluidgradphi[idof], 1.0);
+        }
+        // volfrac
+        else if (phase < numfluidphases + numvolfrac)
+        {
+          refgradpres.Multiply(xjm, pressuregrad_[phase]);
+        }
+        else
+          dserror("GetRefGradPres has been called with phase %i", phase);
 
         return;
       }
