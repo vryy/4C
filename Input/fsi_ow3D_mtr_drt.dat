@@ -56,7 +56,7 @@ NUMSTEP                         4
 RESTARTEVRY                     1
 SECONDORDER                     No
 TIMESTEP                        0.05
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 --------------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 BASETOL                         0.001
 CONVTOL                         1.0E-06
@@ -90,26 +90,16 @@ REDUNDANT_STORAGE               all
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   2
-NORM_DISP                       Mix
-NORM_RESF                       Mix
-NORMCOMBI_RESFDISP              And
 DYNAMICTYP                      GenAlpha
-MAXITER                         50
-NLNSOL                          fullnewton
 PREDICT                         TangDis
-TOLCONSTR                       1e-07
-TOLDISP                         1e-07
-TOLRES                          1e-07
-UZAWAALGO                       direct
-UZAWAMAXITER                    50
-UZAWAPARAM                      1
-UZAWATOL                        1e-08
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 ALPHA_F                         0.5
 ALPHA_M                         0.5
 BETA                            0.25
 GAMMA                           0.5
 GENAVG                          TrLike
+--------------------------------------------STRUCT NOX/Status Test
+XML File                        = fsi_part_struct_solver.xml
 --------------------------------------------------------STRUCT NOX/Printing
 Error                           = No
 Warning                         = Yes
