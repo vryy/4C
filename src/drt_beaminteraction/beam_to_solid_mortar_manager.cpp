@@ -60,6 +60,12 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
       n_lambda_element_ = 1 * 3;
       break;
     }
+    case INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions::line4:
+    {
+      n_lambda_node_ = 1 * 3;
+      n_lambda_element_ = 2 * 3;
+      break;
+    }
     default:
       dserror("Mortar shape function not implemented!");
   }

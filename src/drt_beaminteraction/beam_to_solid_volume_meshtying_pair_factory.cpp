@@ -130,6 +130,35 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairFactory(
         }
         break;
       }
+      case INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions::line4:
+      {
+        switch (shape)
+        {
+          case DRT::Element::hex8:
+            return Teuchos::rcp(
+                new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+                    GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line4>());
+          case DRT::Element::hex20:
+            return Teuchos::rcp(
+                new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+                    GEOMETRYPAIR::t_hex20, GEOMETRYPAIR::t_line4>());
+          case DRT::Element::hex27:
+            return Teuchos::rcp(
+                new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+                    GEOMETRYPAIR::t_hex27, GEOMETRYPAIR::t_line4>());
+          case DRT::Element::tet4:
+            return Teuchos::rcp(
+                new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+                    GEOMETRYPAIR::t_tet4, GEOMETRYPAIR::t_line4>());
+          case DRT::Element::tet10:
+            return Teuchos::rcp(
+                new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+                    GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line4>());
+          default:
+            dserror("Wrong element type for solid element.");
+        }
+        break;
+      }
       default:
         dserror("Wrong mortar shape function.");
     }

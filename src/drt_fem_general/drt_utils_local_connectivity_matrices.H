@@ -350,6 +350,11 @@ namespace DRT
       static const int numNodePerElement = 3;
     };
     template <>
+    struct DisTypeToNumNodePerEle<DRT::Element::line4>
+    {
+      static const int numNodePerElement = 4;
+    };
+    template <>
     struct DisTypeToNumNodePerEle<DRT::Element::nurbs2>
     {
       static const int numNodePerElement = 2;
@@ -761,6 +766,11 @@ namespace DRT
     };
     template <>
     struct DisTypeToDim<DRT::Element::line3>
+    {
+      static const int dim = 1;
+    };
+    template <>
+    struct DisTypeToDim<DRT::Element::line4>
     {
       static const int dim = 1;
     };

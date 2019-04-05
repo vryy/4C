@@ -117,7 +117,9 @@ namespace INPAR
       //! Linear.
       line2,
       //! Quadratic.
-      line3
+      line3,
+      //! Cubic.
+      line4
     };
 
     //! Map type std::string to enum

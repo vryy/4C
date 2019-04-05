@@ -344,6 +344,7 @@ namespace GEOMETRYPAIR
   typedef ElementDiscretizationHermite<ElementDiscretizationBase<DRT::Element::line2, 2>> t_hermite;
   typedef ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::line2, 1>> t_line2;
   typedef ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::line3, 1>> t_line3;
+  typedef ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::line4, 1>> t_line4;
   typedef ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::hex8, 1>> t_hex8;
   typedef ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::hex20, 1>> t_hex20;
   typedef ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::hex27, 1>> t_hex27;

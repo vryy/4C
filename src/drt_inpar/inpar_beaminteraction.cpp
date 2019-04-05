@@ -171,10 +171,11 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
 
   setStringToIntegralParameter<BeamToSolidVolumeMortarShapefunctions>("MORTAR_SHAPE_FUNCTION",
       "none", "Shape function for the mortar Lagrange-multiplicators",
-      tuple<std::string>("none", "line2", "line3"),
+      tuple<std::string>("none", "line2", "line3", "line4"),
       tuple<BeamToSolidVolumeMortarShapefunctions>(BeamToSolidVolumeMortarShapefunctions::none,
           BeamToSolidVolumeMortarShapefunctions::line2,
-          BeamToSolidVolumeMortarShapefunctions::line3),
+          BeamToSolidVolumeMortarShapefunctions::line3,
+          BeamToSolidVolumeMortarShapefunctions::line4),
       &beam_to_solid_volume_mestying);
 
   DoubleParameter("PENALTY_PARAMETER", 0.0, "Penalty parameter for beam-to-solid volume meshtying",
