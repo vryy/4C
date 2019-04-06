@@ -132,8 +132,10 @@ namespace DRT
       };
 
      private:
+      //! number of spatial dimensions for Gauss point coordinates (always three)
+      static const unsigned int numdim_gp_ = 3;
       //! current Gauss-point coordinates
-      double gpcoord_[my::nsd_];
+      double gpcoord_[numdim_gp_];
 
     };  // end ScaTraEleCalcAdvReac
 
