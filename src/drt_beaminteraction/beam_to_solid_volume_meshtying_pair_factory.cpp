@@ -16,6 +16,7 @@
 #include "../drt_so3/so_base.H"
 #include "../drt_inpar/inpar_beaminteraction.H"
 #include "../drt_geometry_pair/geometry_pair_element_types.H"
+#include "beam_to_solid_volume_meshtying_pair_gauss_point_cross_section.H"
 
 
 /**
@@ -161,6 +162,35 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairFactory(
       }
       default:
         dserror("Wrong mortar shape function.");
+    }
+  }
+  if (contact_discretization ==
+      INPAR::BEAMINTERACTION::BeamToSolidVolumeContactDiscretization::gauss_point_cross_section)
+  {
+    switch (shape)
+    {
+      case DRT::Element::hex8:
+        return Teuchos::rcp(
+            new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<
+                GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>());
+      case DRT::Element::hex20:
+        return Teuchos::rcp(
+            new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<
+                GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex20>());
+      case DRT::Element::hex27:
+        return Teuchos::rcp(
+            new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<
+                GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex27>());
+      case DRT::Element::tet4:
+        return Teuchos::rcp(
+            new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<
+                GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet4>());
+      case DRT::Element::tet10:
+        return Teuchos::rcp(
+            new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<
+                GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10>());
+      default:
+        dserror("Wrong element type for solid element.");
     }
   }
 
