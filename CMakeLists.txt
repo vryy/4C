@@ -188,24 +188,6 @@ FOREACH(_file ${_check_files})
   INCLUDE(${_file})
 ENDFOREACH()
 
-# these are the fedora 8 with openmpi paths
-
-#if (NOT MPI_DIR)
-#  set (MPI_DIR "/usr")  # standard path for MPI in Fedora 8
-#endif (NOT MPI_DIR)
-
-#if (NOT INCLUDE_INSTALL_DIR)
-#  set ( INCLUDE_INSTALL_DIR "/lnm/lib/fc8/openmpi/include" )
-#endif (NOT INCLUDE_INSTALL_DIR)
-
-#if (NOT LIB_INSTALL_DIR)
-#  set ( LIB_INSTALL_DIR "/lnm/lib/fc8/openmpi/lib" )
-#endif (NOT LIB_INSTALL_DIR)
-
-#if (NOT Trilinos_DIR)
-#  set ( Trilinos_DIR "/lnm/lib/fc8/openmpi/trilinos" )
-#endif (NOT Trilinos_DIR)
-
 ###------------------------------------------------------------------ External Libraries
 
 find_package(BLAS REQUIRED)
