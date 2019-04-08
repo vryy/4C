@@ -385,6 +385,34 @@ namespace BEAMINTERACTION
       // this is a dummy since for type double, no automatic differentiation is available
     }
 
+    /** \brief evaluate analytic linearization (i.e. stiffness matrices) at current Gauss point
+     *
+     *  \author grill
+     *  \date 04/19 */
+    void EvaluateStiffpotAnalyticContributions_SingleLengthSpecific_SmallSepApprox_Simple(
+        LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N_i_slave,
+        LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N_i_xi_slave,
+        LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N_i_master,
+        LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N_i_xi_master,
+        LINALG::SerialDenseMatrix& stiffmat11, LINALG::SerialDenseMatrix& stiffmat12,
+        LINALG::SerialDenseMatrix& stiffmat21, LINALG::SerialDenseMatrix& stiffmat22) const;
+
+    /** \brief evaluate analytic linearization (i.e. stiffness matrices) at current Gauss point
+     *
+     *  \author grill
+     *  \date 04/19 */
+    void EvaluateStiffpotAnalyticContributions_SingleLengthSpecific_SmallSepApprox_Simple(
+        LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N_i_slave,
+        LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N_i_xi_slave,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, numnodes * numnodalvalues> const& N_i_master,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, numnodes * numnodalvalues> const&
+            N_i_xi_master,
+        LINALG::SerialDenseMatrix& stiffmat11, LINALG::SerialDenseMatrix& stiffmat12,
+        LINALG::SerialDenseMatrix& stiffmat21, LINALG::SerialDenseMatrix& stiffmat22) const
+    {
+      // this is a dummy since for type FAD, no analytic linearization is required
+    }
+
     /*!
     \brief Calculate shape function values for given parameter values
     Todo call more general utils method

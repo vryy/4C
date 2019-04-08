@@ -187,6 +187,43 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Eval
     for (unsigned int i = 0; i < dim2; ++i) (*forcevec2)(i) = FADUTILS::CastToDouble(force_pot2(i));
   }
 
+  //************************** DEBUG ******************************************
+  if (stiffmat11 != NULL and stiffmat12 != NULL and stiffmat21 != NULL and stiffmat22 != NULL)
+  {
+    std::cout << "\n\nDone with evaluation of";
+
+    this->Print(std::cout);
+
+    std::cout << "m_=" << m_ << ", k_=" << k_;
+
+
+
+    std::cout << "\nstiffmat11=";
+    if (stiffmat11->NormInf() > 0.0)
+      stiffmat11->Print(std::cout);
+    else
+      std::cout << "zeros(" << stiffmat11->M() << "," << stiffmat11->N() << ")";
+
+    std::cout << "\nstiffmat12=";
+    if (stiffmat12->NormInf() > 0.0)
+      stiffmat12->Print(std::cout);
+    else
+      std::cout << "zeros(" << stiffmat12->M() << "," << stiffmat12->N() << ")";
+
+    std::cout << "\nstiffmat21=";
+    if (stiffmat21->NormInf() > 0.0)
+      stiffmat21->Print(std::cout);
+    else
+      std::cout << "zeros(" << stiffmat21->M() << "," << stiffmat21->N() << ")";
+
+    std::cout << "\nstiffmat22=";
+    if (stiffmat22->NormInf() > 0.0)
+      stiffmat22->Print(std::cout);
+    else
+      std::cout << "zeros(" << stiffmat22->M() << "," << stiffmat22->N() << ")\n";
+  }
+  //*********************** END DEBUG *****************************************
+
   return true;
 }
 
@@ -1080,10 +1117,13 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         "e.g. van der Waals (m=6) or the repulsive part of Lennard-Jones (m=12)!",
         m_);
 
-  if (not Params()->UseFAD())
+  if (not Params()->UseFAD() and
+      Params()->Strategy() == INPAR::BEAMPOTENTIAL::strategy_singlelengthspec_smallsepapprox)
+  {
     dserror(
         "The strategy 'SingleLengthSpecific_SmallSepApprox' to evaluate the interaction "
         "potential requires automatic differentiation via FAD!");
+  }
 
   if (radius1_ != radius2_)
     dserror(
@@ -1828,6 +1868,11 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
       if (stiffmat11 != NULL and stiffmat12 != NULL and stiffmat21 != NULL and stiffmat22 != NULL)
       {
+        // evaluate contributions to linearization based on analytical expression
+        EvaluateStiffpotAnalyticContributions_SingleLengthSpecific_SmallSepApprox_Simple(
+            N_i_slave[igp], N_i_xi_slave[igp], N_i_master, N_i_xi_master, *stiffmat11, *stiffmat12,
+            *stiffmat21, *stiffmat22);
+
         AddStiffmatContributionsXiMasterAutomaticDifferentiationIfRequired(force_pot_slave_GP,
             force_pot_master_GP, lin_xi_master_slaveDofs, lin_xi_master_masterDofs, *stiffmat11,
             *stiffmat12, *stiffmat21, *stiffmat22);
@@ -1999,6 +2044,20 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   }
 }
 
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
+void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
+    EvaluateStiffpotAnalyticContributions_SingleLengthSpecific_SmallSepApprox_Simple(
+        LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N_i_slave,
+        LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N_i_xi_slave,
+        LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N_i_master,
+        LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N_i_xi_master,
+        LINALG::SerialDenseMatrix& stiffmat11, LINALG::SerialDenseMatrix& stiffmat12,
+        LINALG::SerialDenseMatrix& stiffmat21, LINALG::SerialDenseMatrix& stiffmat22) const
+{
+}
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/

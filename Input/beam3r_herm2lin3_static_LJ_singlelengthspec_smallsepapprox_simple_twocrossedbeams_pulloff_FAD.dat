@@ -44,9 +44,9 @@ RESULTSEVRY                     1000
 RESEVRYERGY                     1
 RESTARTEVRY                     100
 NLNSOL                          fullnewton
-DIVERCONT                       stop
+DIVERCONT                       adapt_step
 TIMESTEP                        5e-2
-NUMSTEP                         1
+NUMSTEP                         3
 MAXTIME                         1.0
 PREDICT                         ConstDis
 TOLDISP                         1.0E-12
@@ -70,9 +70,12 @@ POT_LAW_PREFACTOR               -1e-7 5e-25
 POT_LAW_EXPONENT                6.0 12.0
 BEAMPOTENTIAL_TYPE              Volume
 STRATEGY                        SingleLengthSpecific_SmallSepApprox_Simple
+//REGULARIZATION_TYPE             linear_extrapolation
+//REGULARIZATION_SEPARATION       1.0e-1
 NUM_INTEGRATION_SEGMENTS        10
 NUM_GAUSSPOINTS                 50
 CUTOFF_RADIUS                   1.0e-1
+AUTOMATIC_DIFFERENTIATION       yes
 ----------------------------------BEAM POTENTIAL/RUNTIME VTK OUTPUT
 VTK_OUTPUT_BEAM_POTENTIAL       yes
 OUTPUT_DATA_FORMAT              binary
