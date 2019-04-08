@@ -115,15 +115,15 @@ option (FS3I_INCACouplingTest "Nightly test for FS3I_INCA_coupling turned off" O
 #   additional features
 
 
-  find_package(HDF5 REQUIRED)
-  if (HDF5_FOUND)
-    include_directories(${HDF5_INCLUDE_DIRS})
-    link_directories(${HDF5_LIBRARY_DIRS})
-    set(LIBRARIES
-      ${LIBRARIES}
-      ${HDF5_LIBRARIES}
-      )
-  endif(HDF5_FOUND)
+find_package(HDF5 REQUIRED)
+if (HDF5_FOUND)
+  include_directories(${HDF5_INCLUDE_DIRS})
+  link_directories(${HDF5_LIBRARY_DIRS})
+  set(LIBRARIES
+    ${LIBRARIES}
+    ${HDF5_LIBRARIES}
+    )
+endif(HDF5_FOUND)
 
 find_package(MPI REQUIRED)
 
@@ -230,7 +230,7 @@ if (USE_NO_SYSTEM_PATHS)
   set(Boost_NO_SYSTEM_PATHS ON )
 endif(USE_NO_SYSTEM_PATHS)
 
-FIND_PACKAGE( Boost COMPONENTS graph program_options system filesystem REQUIRED)
+FIND_PACKAGE(Boost COMPONENTS graph program_options system filesystem REQUIRED)
 
 if (Boost_FOUND)
   message("Found Boost: ${Boost_INCLUDE_DIRS}")
