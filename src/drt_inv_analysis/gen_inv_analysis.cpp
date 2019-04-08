@@ -834,11 +834,9 @@ void STR::GenInvAnalysis::CalcNewParameters(
   // copy column with unperturbed values to extra vector
   for (int i = 0; i < nmp; i++) ccurve[i] = cmatrix(i, np_);
 
-  std::cout << ccurve << std::endl;
-  std::cout << "cmatrix: " << cmatrix << std::endl;
   // remove the extra column np_+1 with unperturbed values
   cmatrix.Reshape(nmp, np_);
-  std::cout << cmatrix << std::endl;
+
   // reuse the cmatrix array as J to save storage
   Epetra_SerialDenseMatrix& J = cmatrix;
 
@@ -1754,7 +1752,6 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::GetDistancePointsToInterfaceContou
             // intersection converged
             if (ci.SurfaceWithinLimits())
             {
-              std::cout << "XSI: " << xsi << std::endl;
               std::vector<double> myxsi(2);
               for (int m = 0; m < 2; m++)
               {
@@ -1793,22 +1790,8 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::GetDistancePointsToInterfaceContou
     for (unsigned int j = 0; j < 3; j++)
     {
       distance += pow((minxsi + 1) / 2 * (line(j, 1) - line(j, 0)), 2);
-      std::cout << "distance: " << distance << std::endl;
     }
 
-    for (unsigned int j = 0; j < 3; j++)
-    {
-      std::cout << "line(" << j << ",1): " << line(j, 1) << std::endl;
-    }
-    for (unsigned int j = 0; j < 3; j++)
-    {
-      std::cout << "line(" << j << ",0): " << line(j, 0) << std::endl;
-    }
-    for (unsigned int j = 0; j < 3; j++)
-    {
-      std::cout << "vec(" << j << "): " << line(j, 0) + (minxsi + 1) / 2 * (line(j, 1) - line(j, 0))
-                << std::endl;
-    }
     // build LM-residual vector from distances
     distance = sqrt(distance);
     distance *= (minxsi + 1 > 0) ? 1 : ((minxsi + 1 < 0) ? -1 : 0);
