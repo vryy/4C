@@ -369,6 +369,9 @@ void PARTICLEENGINE::ParticleEngine::RefreshParticles() const
 void PARTICLEENGINE::ParticleEngine::RefreshParticlesOfSpecificStatesAndTypes(
     const StatesOfTypesToRefresh& particlestatestotypes) const
 {
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "PARTICLEENGINE::ParticleEngine::RefreshParticlesOfSpecificStatesAndTypes");
+
   std::vector<std::vector<ParticleObjShrdPtr>> particlestosend(comm_.NumProc());
   std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>> particlestoinsert(typevectorsize_);
 
