@@ -235,7 +235,7 @@ FIND_PACKAGE(Boost COMPONENTS graph program_options system filesystem REQUIRED)
 if (Boost_FOUND)
   message("Found Boost: ${Boost_INCLUDE_DIRS}")
   message("Boost libraries: ${Boost_LIBRARIES}")
-  message("Boost libraries: ${Boost_LIBRARY_DIRS}")
+  message("Boost libraries directory: ${Boost_LIBRARY_DIRS}")
   include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
   link_directories(${Boost_LIBRARY_DIRS})
   set(LIBRARIES
