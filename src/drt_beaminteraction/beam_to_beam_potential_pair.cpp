@@ -1545,7 +1545,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
 
         // auxiliary quantity
-        T a = 0.5 / radius1_ + 0.5 * cos_alpha * cos_alpha / (gap_ul_regularized + radius2_);
+        T a = 0.5 / radius1_ + 0.5 * cos_alpha * cos_alpha / radius2_;
 
         //************************** DEBUG ******************************************
         if (FADUTILS::CastToDouble(a) <= 0.0)
@@ -1590,10 +1590,9 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
         pot_ia_partial_a = -0.5 / a * interaction_potential_GP;
 
-        a_deriv_gap_ul = -0.5 * cos_alpha * cos_alpha /
-                         ((gap_ul_regularized + radius2_) * (gap_ul_regularized + radius2_));
+        a_deriv_gap_ul = 0.0;
 
-        a_deriv_cos_alpha = cos_alpha / (gap_ul_regularized + radius2_);
+        a_deriv_cos_alpha = cos_alpha / radius2_;
 
         // compute derivatives of the interaction potential w.r.t. gap_ul and cos(alpha)
         pot_ia_partial_gap_ul = (-m_ + 4.5) / gap_ul_regularized * interaction_potential_GP;
@@ -1627,8 +1626,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
           T pot_ia_2ndpartial_a = -1.5 / a * pot_ia_partial_a;
           T pot_ia_partial_a_deriv_cos_alpha = pot_ia_2ndpartial_a * a_deriv_cos_alpha;
 
-          T a_deriv_cos_alpha_deriv_gap_ul =
-              -1.0 / (gap_ul_regularized + radius2_) * a_deriv_cos_alpha;
+          T a_deriv_cos_alpha_deriv_gap_ul = 0.0;
 
           T pot_ia_partial_a_partial_gap_ul = -0.5 / a * pot_ia_partial_gap_ul;
 
@@ -1648,7 +1646,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
           {
             T pot_ia_2ndpartial_gap_ul = (-m_ + 3.5) / gap_ul_regularized * pot_ia_partial_gap_ul;
 
-            T a_2ndderiv_gap_ul = -2.0 / (gap_ul_regularized + radius2_) * a_deriv_gap_ul;
+            T a_2ndderiv_gap_ul = 0.0;
 
             pot_ia_2ndderiv_gap_ul_atregsep =
                 (pot_ia_2ndpartial_a * a_deriv_gap_ul + 2.0 * pot_ia_partial_a_partial_gap_ul) *
@@ -1664,31 +1662,18 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
 
             T t4 = std::pow(cos_alpha, 0.2e1);
-            T t6 = 0.2e1 * gap_ul_regularized + 0.2e1 * radius2_;
-            T t7 = 0.1e1 / t6;
-            T t9 = 0.5e0 / radius1_ + t4 * t7;
-            T t10 = std::pow(t9, -0.35e1);
-            T t13 = -m_ + 0.45e1;
-            T t14 = std::pow(0.4e1 * gap_ul_regularized, t13);
-            T t15 = t4 * t4;
-            T t18 = t6 * t6;
-            T t19 = t18 * t18;
-            T t25 = std::pow(t9, -0.25e1);
-            T t27 = t4 * cos_alpha;
-            T t36 = t13 / gap_ul_regularized;
-            T t38 = 0.1e1 / t18 / t6;
-            T t43 = std::pow(t9, -0.15e1);
-            T t45 = t43 * t14;
-            T t56 = t13 * t13;
-            T t57 = gap_ul_regularized * gap_ul_regularized;
-            T t58 = 0.1e1 / t57;
-            T t60 = cos_alpha * t7;
+            T t5 = 0.1e1 / radius2_;
+            T t9 = std::pow(0.5e0 / radius1_ + t4 * t5 / 0.2e1, -0.15e1);
+            T t11 = -m_ + 0.45e1;
+            T t12 = std::pow(0.4e1 * gap_ul_regularized, t11);
+            T t14 = t9 * t12;
+            T t15 = t11 * t11;
+            T t16 = gap_ul_regularized * gap_ul_regularized;
+            T t17 = 0.1e1 / t16;
+            T t19 = cos_alpha * t5;
 
             T pot_ia_2ndderiv_gap_ul_deriv_cos_alpha_atregsep =
-                -0.15000e2 * t10 * t14 * t15 * cos_alpha / t19 / t6 +
-                0.2400e2 * t25 * t14 * t27 / t19 - 0.600e1 * t25 * t14 * t36 * t27 * t38 +
-                0.40e1 * t45 * t36 * cos_alpha / t18 - 0.80e1 * t43 * t14 * cos_alpha * t38 -
-                0.10e1 * t45 * t56 * t58 * t60 + 0.10e1 * t45 * t13 * t58 * t60;
+                -0.5e0 * t14 * t15 * t17 * t19 + 0.5e0 * t14 * t11 * t17 * t19;
 
 
             pot_ia_deriv_cos_alpha += 0.5 * pot_ia_2ndderiv_gap_ul_deriv_cos_alpha_atregsep *
