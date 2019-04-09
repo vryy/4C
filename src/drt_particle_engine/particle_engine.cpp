@@ -369,6 +369,9 @@ void PARTICLEENGINE::ParticleEngine::RefreshParticles() const
 void PARTICLEENGINE::ParticleEngine::RefreshParticlesOfSpecificStatesAndTypes(
     const StatesOfTypesToRefresh& particlestatestotypes) const
 {
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "PARTICLEENGINE::ParticleEngine::RefreshParticlesOfSpecificStatesAndTypes");
+
   std::vector<std::vector<ParticleObjShrdPtr>> particlestosend(comm_.NumProc());
   std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>> particlestoinsert(typevectorsize_);
 
@@ -545,7 +548,8 @@ void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
           DistanceBetweenParticles(currpos, neighborpos, dist);
 
           // distance between particles larger than minimum bin size
-          if (std::sqrt(dist[0] * dist[0] + dist[1] * dist[1] + dist[2] * dist[2]) > minbinsize_)
+          if (dist[0] * dist[0] + dist[1] * dist[1] + dist[2] * dist[2] >
+              (minbinsize_ * minbinsize_))
             continue;
 
           // append potential particle neighbor pair
