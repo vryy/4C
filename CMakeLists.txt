@@ -110,7 +110,6 @@ if (ENABLE_STACKTR)
   add_definitions("-DENABLE_STACKTR")
 endif (ENABLE_STACKTR)
 
-option (FS3I_INCACouplingTest "Nightly test for FS3I_INCA_coupling turned off" OFF)
 
 #   additional features
 
