@@ -229,11 +229,12 @@ if (USE_NO_SYSTEM_PATHS)
   set(Boost_NO_SYSTEM_PATHS ON )
 endif(USE_NO_SYSTEM_PATHS)
 
+#FIND_PACKAGE(Boost 1.58 EXACT COMPONENTS graph program_options system filesystem REQUIRED)
 FIND_PACKAGE(Boost COMPONENTS graph program_options system filesystem REQUIRED)
 
 if (Boost_FOUND)
   message("Found Boost: ${Boost_INCLUDE_DIRS}")
-  message("Boost libraries: ${Boost_LIBRARIES}")
+  message("Boost component libraries: ${Boost_LIBRARIES}")
   message("Boost libraries directory: ${Boost_LIBRARY_DIRS}")
   include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
   link_directories(${Boost_LIBRARY_DIRS})
