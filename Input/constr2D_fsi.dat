@@ -31,7 +31,7 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-INT_STRATEGY                    Standard
+INT_STRATEGY                    Old
 LINEAR_SOLVER                   2
 DYNAMICTYP                      GenAlpha
 RESULTSEVRY                     1

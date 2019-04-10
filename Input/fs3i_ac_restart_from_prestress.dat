@@ -119,7 +119,7 @@ EVALUATION_MAT                  integration_point //element_center
 EVALUATION_TAU                  integration_point //element_center
 SUGRVEL                         no
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-INT_STRATEGY                    Standard
+INT_STRATEGY                    Old
 NUMSTEP                         3000
 TIMESTEP                        0.001
 MAXTIME                         3
