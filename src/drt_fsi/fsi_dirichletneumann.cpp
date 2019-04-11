@@ -33,7 +33,6 @@ void FSI::DirichletNeumann::Setup()
 {
   /// call setup of base class
   FSI::Partitioned::Setup();
-  printf("Filename:%s\n", DRT::Problem::Instance()->OutputControlFile()->InputFileName().c_str());
 }
 
 /*----------------------------------------------------------------------*/
