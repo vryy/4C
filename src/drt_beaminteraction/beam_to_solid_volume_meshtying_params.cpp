@@ -10,6 +10,8 @@
 
 #include "beam_to_solid_volume_meshtying_params.H"
 
+#include "beam_to_solid_volume_meshtying_vtk_output_params.H"
+
 #include "../drt_lib/drt_globalproblem.H"
 
 
@@ -69,6 +71,14 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Init()
         beam_to_solid_contact_params_list.get<int>("INTEGRATION_POINTS_CIRCUMFENCE");
   }
 
+  // Setup the output parameter object.
+  {
+    output_params_ptr_ = Teuchos::rcp<BeamToSolidVolumeMeshtyingVtkOutputParams>(
+        new BeamToSolidVolumeMeshtyingVtkOutputParams());
+    output_params_ptr_->Init();
+    output_params_ptr_->Setup();
+  }
+
   isinit_ = true;
 }
 
@@ -84,3 +94,12 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Setup()
 
   issetup_ = true;
 }
+
+/**
+ *
+ */
+Teuchos::RCP<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams>
+BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::GetVtkOuputParamsPtr()
+{
+  return output_params_ptr_;
+};

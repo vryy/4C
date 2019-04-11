@@ -191,6 +191,33 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
       "used along the circumfencial direction, equally spaced integration points are used.",
       &beam_to_solid_volume_mestying);
 
+
+  // Create subsection for runtime vtk output.
+  Teuchos::ParameterList& beam_to_solid_volume_mestying_vtk =
+      beam_to_solid_volume_mestying.sublist("RUNTIME VTK OUTPUT", false, "");
+
+  // Whether to write vtp output at all for btsvmt.
+  setStringToIntegralParameter<int>("WRITE_OUTPUT", "No",
+      "Write beam to solid volume meshtying output.", yesnotuple, yesnovalue,
+      &beam_to_solid_volume_mestying_vtk);
+
+  setStringToIntegralParameter<int>("NODAL_FORCES", "No",
+      "Write the resulting nodal forces due to beam to solid interaction.", yesnotuple, yesnovalue,
+      &beam_to_solid_volume_mestying_vtk);
+
+  setStringToIntegralParameter<int>("MORTAR_LAMBDA_DISCRET", "No",
+      "Write the discrete Lagrange multipliers at the node of the Lagrange multiplier shape "
+      "functions.",
+      yesnotuple, yesnovalue, &beam_to_solid_volume_mestying_vtk);
+
+  setStringToIntegralParameter<int>("SEGMENTATION", "No", "Output segmentation points.", yesnotuple,
+      yesnovalue, &beam_to_solid_volume_mestying_vtk);
+
+  setStringToIntegralParameter<int>("INTEGRATION_POINTS", "No",
+      "Output used integration points. If the contact method has 'forces' at the integration "
+      "point, they will also be output.",
+      yesnotuple, yesnovalue, &beam_to_solid_volume_mestying_vtk);
+
   // ...
 }
 
