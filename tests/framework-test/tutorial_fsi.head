@@ -1465,6 +1465,7 @@ VERBOSITY                       0
 //
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 //
+INT_STRATEGY                    Standard
 // Switch on adaptive control of linear solver tolerance for nonlinear solution
 //                              Yes,No,yes,no,YES,NO
 ADAPTCONV                       No
