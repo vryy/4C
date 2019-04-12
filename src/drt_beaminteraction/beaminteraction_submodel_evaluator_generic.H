@@ -202,6 +202,7 @@ namespace BEAMINTERACTION
       //! Returns the (structural) discretization
       DRT::Discretization& Discret();
       Teuchos::RCP<DRT::Discretization>& DiscretPtr();
+      Teuchos::RCP<const DRT::Discretization> DiscretPtr() const;
       DRT::Discretization const& Discret() const;
 
       DRT::Discretization& BinDiscret();
