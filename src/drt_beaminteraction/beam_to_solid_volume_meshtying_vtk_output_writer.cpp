@@ -107,8 +107,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::WriteOutputRunt
 
   // Get the time step and time for the output file. If output is desired at every iteration, the
   // values are padded.
-  int i_step = beam_contact->GState().GetStepN();
-  double time = beam_contact->GState().GetTimeN();
+  int i_step = beam_contact->GState().GetStepNp();
+  double time = beam_contact->GState().GetTimeNp();
   if (output_params_ptr_->GetOutputEveryIteration()) i_step *= 10000;
 
   WriteOutputBeamToSolidVolumeMeshTying(beam_contact, i_step, time);
@@ -122,18 +122,15 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::WriteOutputRunt
 {
   CheckInitSetup();
 
-  // Get the time step and time for the output file. If output is desired at every iteration, the
-  // values are padded.
-  int i_step = beam_contact->GState().GetStepN();
-  double time = beam_contact->GState().GetTimeN();
   if (output_params_ptr_->GetOutputEveryIteration())
   {
-    i_step *= 10000;
-    i_step += i_iteration;
-    time += 1e-8 * i_iteration;
-  }
+    // Get the time step and time for the output file. If output is desired at every iteration, the
+    // values are padded.
+    int i_step = 10000 * beam_contact->GState().GetStepN() + i_iteration;
+    double time = beam_contact->GState().GetTimeN() + 1e-8 * i_iteration;
 
-  WriteOutputBeamToSolidVolumeMeshTying(beam_contact, i_step, time);
+    WriteOutputBeamToSolidVolumeMeshTying(beam_contact, i_step, time);
+  }
 }
 
 /**
