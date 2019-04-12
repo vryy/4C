@@ -35,6 +35,7 @@ namespace BEAMINTERACTION
 {
   class BeamContactParams;
   class BeamContactPair;
+  class BeamToSolidVolumeMeshtyingVtkOutputWriter;
 
   namespace SUBMODELEVALUATOR
   {
@@ -42,6 +43,15 @@ namespace BEAMINTERACTION
 
     class BeamContact : public Generic
     {
+      /**
+       * \brief Unlike the output for beam to beam contact, the output for beam to solid volume
+       * mesh tying is not directly implemented in beam contact sub model evaluator but in an own
+       * class, this keeps the implementation simpler and it is clear where the output related code
+       * is. The beam to solid volume writer need a lot of information from the beam contact sub
+       * model evaluator to create the output data, therefore we define it as a friend class here.
+       */
+      friend class BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter;
+
      public:
       //! constructor
       BeamContact();
@@ -224,6 +234,10 @@ namespace BEAMINTERACTION
 
       //! runtime vtp writer for visualization of contact forces
       Teuchos::RCP<RuntimeVtpWriter> vtp_writer_ptr_;
+
+      //! This object handles all beam to solid volume related visualization output.
+      Teuchos::RCP<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter>
+          beam_to_solid_volume_meshtying_vtk_writer_ptr_;
     };
 
   }  // namespace SUBMODELEVALUATOR

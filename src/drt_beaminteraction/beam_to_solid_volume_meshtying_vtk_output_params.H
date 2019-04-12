@@ -46,7 +46,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Return the output every iteration flag.
      */
-    bool GetOutputEveryIteration() { return output_every_iteration_; }
+    bool GetOutputEveryIteration() const { return output_every_iteration_; }
 
     /**
      * \brief If the output should be binary or ascii
@@ -64,15 +64,6 @@ namespace BEAMINTERACTION
     {
       CheckInitSetup();
       return output_interval_steps_;
-    };
-
-    /**
-     * \brief Return if output should be written for each iteration.
-     */
-    int OutputEveryIteration() const
-    {
-      CheckInitSetup();
-      return output_every_iteration_;
     };
 
     /**
