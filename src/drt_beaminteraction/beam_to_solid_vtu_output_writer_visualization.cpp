@@ -122,7 +122,7 @@ void BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::AddPointDataVecto
  *
  */
 void BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::
-    AddDiscretizationNodalReferencePosition(const Teuchos::RCP<DRT::Discretization>& discret)
+    AddDiscretizationNodalReferencePosition(const Teuchos::RCP<const DRT::Discretization>& discret)
 {
   // Check that the discretization is not already set, and that all data in the writer is empty.
   if (discret_ != Teuchos::null)
@@ -198,14 +198,17 @@ void BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::AddDiscretization
 void BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::Write(
     const unsigned int timestep_number, const double time)
 {
-  std::map<std::string, std::pair<std::vector<double>, unsigned int>>& point_data_map =
-      runtime_vtu_writer_->GetMutablePointDataMap();
-  for (auto const& x : point_data_map)
-  {
-    std::cout << "\n coordinates " << runtime_vtu_writer_->GetMutablePointCoordinateVector().size()
-              << " name: " << full_name_.c_str() << " key: " << x.first.c_str()
-              << " length: " << x.second.first.size() << " ndim " << x.second.second;
-  }
+  // Do some sanity checks on the data that will be written.
+  const unsigned int n_points = runtime_vtu_writer_->GetMutablePointCoordinateVector().size() / 3;
+  if (runtime_vtu_writer_->GetMutablePointCoordinateVector().size() % 3 != 0)
+    dserror("The size of the coordinate vector (%d) is not a multiple of 3!",
+        runtime_vtu_writer_->GetMutablePointCoordinateVector().size());
+  for (const auto& point_data : runtime_vtu_writer_->GetMutablePointDataMap())
+    if (point_data.second.first.size() / point_data.second.second != n_points ||
+        point_data.second.first.size() % point_data.second.second != 0)
+      dserror(
+          "The size of the point data vector (%d) '%s' does not match the number of points (%d).",
+          point_data.second.first.size(), point_data.first.c_str(), n_points);
 
   // Reset time and time step and geometry name in the writer object.
   runtime_vtu_writer_->SetupForNewTimeStepAndGeometry(time, timestep_number, full_name_);
@@ -214,5 +217,14 @@ void BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::Write(
   // Write a collection file summarizing all previously written files.
   runtime_vtu_writer_->WriteCollectionFileOfAllWrittenFiles(full_name_);
 
-  // TODO steinbrecher actually reset the data here.
+  // Reset the data.
+  discret_ = Teuchos::null;
+  node_gid_map_ = Teuchos::null;
+  runtime_vtu_writer_->GetMutablePointCoordinateVector().clear();
+  runtime_vtu_writer_->GetMutableCellTypeVector().clear();
+  runtime_vtu_writer_->GetMutableCellOffsetVector().clear();
+  for (auto& point_data : runtime_vtu_writer_->GetMutablePointDataMap())
+    point_data.second.first.clear();
+  for (auto& cell_data : runtime_vtu_writer_->GetMutableCellDataMap())
+    cell_data.second.first.clear();
 }

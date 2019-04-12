@@ -75,5 +75,4 @@ void BEAMINTERACTION::BeamToSolidVtuOutputWriterBase::Write(
     const unsigned int timestep_number, const double time)
 {
   for (auto& it : visualization_writers_) it.second->Write(timestep_number, time);
-  // TODO steinbrecher delete data here.
 }
