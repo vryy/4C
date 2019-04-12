@@ -89,7 +89,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::Setup(
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter("integration-points");
       visualization_writer->AddPointDataVector("displacement", 3);
-      visualization_writer->AddPointDataVector("force", 3);
+      // visualization_writer->AddPointDataVector("force", 3);
     }
 
     if (output_params_ptr_->GetSegmentationOutputFlag())

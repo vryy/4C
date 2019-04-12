@@ -14,6 +14,8 @@
 #include "beam3contact_defines.H"
 #include "beam3contact_utils.H"
 #include "../linalg/linalg_utils.H"
+#include "beam_to_solid_vtu_output_writer_base.H"
+#include "beam_to_solid_vtu_output_writer_visualization.H"
 
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
@@ -233,6 +235,102 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam,
         << line_to_volume_segments_[index_segment].GetNumberOfProjectionPoints();
     out << "\n";
   }
+}
+
+/**
+ *
+ */
+template <typename beam, typename solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVisualization(
+    Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
+    Teuchos::ParameterList visualization_params) const
+{
+  // Get visualization of base class.
+  BeamContactPair::GetPairVisualization(visualization_writer, visualization_params);
+
+
+  // If a writer exists for integration point data, add the integration point data.
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization =
+      visualization_writer->GetVisualizationWriter("integration-points");
+  if (visualization != Teuchos::null)
+  {
+    // Setup variables.
+    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> X;
+    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> u;
+    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> r;
+    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> r_solid;
+
+    // Get the visualization vectors.
+    std::vector<double>& point_coordinates = visualization->GetMutablePointCoordinateVector();
+    std::vector<double>& displacement = visualization->GetMutablePointDataVector("displacement");
+
+    // Loop over the segments on the beam.
+    for (const auto& segment : line_to_volume_segments_)
+    {
+      // Add the integration points.
+      for (const auto& projection_point : segment.GetProjectionPoints())
+      {
+        EvaluateBeamPosition(projection_point, X, true);
+        EvaluateBeamPosition(projection_point, r, false);
+        u = r;
+        u -= X;
+        for (unsigned int dim = 0; dim < 3; dim++)
+        {
+          point_coordinates.push_back(FADUTILS::CastToDouble(X(dim)));
+          displacement.push_back(FADUTILS::CastToDouble(u(dim)));
+        }
+      }
+    }
+  }
+
+
+  // If a writer exists for segmentation point data, add the segmentation point data.
+  visualization = visualization_writer->GetVisualizationWriter("segmentation");
+  if (visualization != Teuchos::null)
+  {
+    // Setup variables.
+    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> X;
+    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> u;
+    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> r;
+
+    // Get the visualization vectors.
+    std::vector<double>& point_coordinates = visualization->GetMutablePointCoordinateVector();
+    std::vector<double>& displacement = visualization->GetMutablePointDataVector("displacement");
+
+    // Loop over the segments on the beam.
+    for (const auto& segment : line_to_volume_segments_)
+    {
+      // Add the left and right boundary point of the segment.
+      for (const auto& segmentation_point : {segment.GetEtaA(), segment.GetEtaB()})
+      {
+        GEOMETRYPAIR::EvaluatePosition<beam>(segmentation_point, ele1posref_, X, Element1());
+        GEOMETRYPAIR::EvaluatePosition<beam>(segmentation_point, ele1pos_, r, Element1());
+        u = r;
+        u -= X;
+        for (unsigned int dim = 0; dim < 3; dim++)
+        {
+          point_coordinates.push_back(FADUTILS::CastToDouble(X(dim)));
+          displacement.push_back(FADUTILS::CastToDouble(u(dim)));
+        }
+      }
+    }
+  }
+}
+
+/**
+ *
+ */
+template <typename beam, typename solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::EvaluateBeamPosition(
+    const GEOMETRYPAIR::ProjectionPointLineToVolume<double>& integration_point,
+    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& r_beam, bool reference) const
+{
+  if (reference)
+    GEOMETRYPAIR::EvaluatePosition<beam>(
+        integration_point.GetEta(), this->ele1posref_, r_beam, this->Element1());
+  else
+    GEOMETRYPAIR::EvaluatePosition<beam>(
+        integration_point.GetEta(), this->ele1pos_, r_beam, this->Element1());
 }
 
 

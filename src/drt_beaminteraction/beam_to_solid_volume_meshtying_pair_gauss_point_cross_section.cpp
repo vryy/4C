@@ -212,6 +212,23 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
           solid>());
 }
 
+/**
+ *
+ */
+template <typename beam, typename solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
+    solid>::EvaluateBeamPosition(const GEOMETRYPAIR::ProjectionPointLineToVolume<double>&
+                                     integration_point,
+    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& r_beam, bool reference) const
+{
+  if (reference)
+    GEOMETRYPAIR::EvaluatePositionLineCrossSection<beam>(integration_point.GetEta(),
+        integration_point.GetEtaCrossSection(), this->ele1posref_, r_beam, this->Element1());
+  else
+    GEOMETRYPAIR::EvaluatePositionLineCrossSection<beam>(integration_point.GetEta(),
+        integration_point.GetEtaCrossSection(), this->ele1pos_, r_beam, this->Element1());
+}
+
 
 /**
  * Explicit template initialization of template class.

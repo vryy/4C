@@ -37,6 +37,10 @@ namespace BEAMINTERACTION
   class BeamToSolidVolumeMeshtyingPairGaussPointCrossSection
       : public BeamToSolidVolumeMeshtyingPairBase<beam, solid>
   {
+   private:
+    //! Type to be used for scalar AD variables. This can not be inherited from the base class.
+    typedef Sacado::ELRFad::SLFad<double, beam::n_dof_ + solid::n_dof_> TYPE_BTS_VMT_AD;
+
    public:
     /**
      * \brief Standard Constructor
@@ -78,9 +82,18 @@ namespace BEAMINTERACTION
         const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> geometry_evaluation_data_ptr)
         override;
 
-   private:
-    //! Type to be used for scalar AD variables. This can not be inherited from the base class.
-    typedef Sacado::ELRFad::SLFad<double, beam::n_dof_ + solid::n_dof_> TYPE_BTS_VMT_AD;
+   protected:
+    /**
+     * \brief Calculate the position on the beam, also taking into accout parameter coordinates on
+     * the cross section.
+     * @param integration_point (in) Integration where the position should be evaluated.
+     * @param r_beam (out) Position on the beam.
+     * @param reference (in) True -> the reference position is calculated, False -> the current
+     * position is calculated.
+     */
+    void EvaluateBeamPosition(
+        const GEOMETRYPAIR::ProjectionPointLineToVolume<double>& integration_point,
+        LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& r_beam, bool reference) const override;
   };
 }  // namespace BEAMINTERACTION
 
