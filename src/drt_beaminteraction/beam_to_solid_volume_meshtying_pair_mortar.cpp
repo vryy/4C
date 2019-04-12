@@ -149,6 +149,18 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>:
   return true;
 }
 
+/**
+ *
+ */
+template <typename beam, typename solid, typename mortar>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
+    mortar>::EvaluatePenaltyForce(const LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& r_beam,
+    const LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& r_solid,
+    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& force) const
+{
+  force.PutScalar(0.);
+}
+
 
 /**
  * Explicit template initialization of template class.

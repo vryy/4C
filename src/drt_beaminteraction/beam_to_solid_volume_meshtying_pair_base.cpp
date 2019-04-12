@@ -259,10 +259,12 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
     LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> u;
     LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> r;
     LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> r_solid;
+    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> force_integration_point;
 
     // Get the visualization vectors.
     std::vector<double>& point_coordinates = visualization->GetMutablePointCoordinateVector();
     std::vector<double>& displacement = visualization->GetMutablePointDataVector("displacement");
+    std::vector<double>& force = visualization->GetMutablePointDataVector("force");
 
     // Loop over the segments on the beam.
     for (const auto& segment : line_to_volume_segments_)
@@ -274,10 +276,13 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
         EvaluateBeamPosition(projection_point, r, false);
         u = r;
         u -= X;
+        GEOMETRYPAIR::EvaluatePosition<solid>(projection_point.GetXi(), ele2pos_, r_solid);
+        EvaluatePenaltyForce(r, r_solid, force_integration_point);
         for (unsigned int dim = 0; dim < 3; dim++)
         {
           point_coordinates.push_back(FADUTILS::CastToDouble(X(dim)));
           displacement.push_back(FADUTILS::CastToDouble(u(dim)));
+          force.push_back(FADUTILS::CastToDouble(force_integration_point(dim)));
         }
       }
     }
@@ -331,6 +336,22 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::EvaluateB
   else
     GEOMETRYPAIR::EvaluatePosition<beam>(
         integration_point.GetEta(), this->ele1pos_, r_beam, this->Element1());
+}
+
+/**
+ *
+ */
+template <typename beam, typename solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::EvaluatePenaltyForce(
+    const LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& r_beam,
+    const LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& r_solid,
+    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& force) const
+{
+  // TODO: call this function also in the Evaluate methods.
+  // The base implementation of the force is a simple linear penalty law.
+  force = r_solid;
+  force -= r_beam;
+  force.Scale(this->Params()->BeamToSolidVolumeMeshtyingParams()->GetPenaltyParameter());
 }
 
 

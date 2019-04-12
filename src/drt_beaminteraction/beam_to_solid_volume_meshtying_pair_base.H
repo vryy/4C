@@ -222,6 +222,17 @@ namespace BEAMINTERACTION
         const GEOMETRYPAIR::ProjectionPointLineToVolume<double>& integration_point,
         LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& r_beam, bool reference) const;
 
+    /**
+     * \brief This function evaluates the penalty force from a given beam position and a given solid
+     * position. This method is mainly used for visualization.
+     * @param r_beam (in) Position on the beam.
+     * @param r_solid (in) Position on the solid.
+     * @param force (out) Force acting on the beam (the negative force acts on the solid).
+     */
+    virtual void EvaluatePenaltyForce(const LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& r_beam,
+        const LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& r_solid,
+        LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& force) const;
+
    protected:
     //! Flag if the meshtying has been evaluated already.
     bool meshtying_is_evaluated_;
