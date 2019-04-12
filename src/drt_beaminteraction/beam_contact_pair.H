@@ -13,6 +13,7 @@
 #define BEAMCONTACTPAIR_H
 
 #include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
 
 #include "../linalg/linalg_fixedsizematrix.H"
 
@@ -38,7 +39,7 @@ namespace BEAMINTERACTION
 {
   // forward declaration ...
   class BeamContactParams;
-
+  class BeamToSolidVtuOutputWriterBase;
 
   /*!
    \brief
@@ -251,6 +252,21 @@ namespace BEAMINTERACTION
         LINALG::SerialDenseVector& local_kappa)
     {
       return false;
+    }
+
+    /**
+     * \brief Add the visualization of this pair to the beam to solid vtu output writer. This is
+     * currently only implemented for beam to solid pairs, if in the future we also want to use this
+     * function in other type of pairs, the name should be adapted accordingly.
+     * @param visualization_writer (out) Object that manages all visualization related data for beam
+     * to solid pairs.
+     * @param visualization_params (in) Parameter list with possible needed data to generate the
+     * visualization in the pairs.
+     */
+    virtual void GetPairVisualization(
+        Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
+        Teuchos::ParameterList visualization_params) const
+    {
     }
 
    protected:

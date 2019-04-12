@@ -11,6 +11,7 @@
 
 #include "beam_to_solid_volume_meshtying_vtk_output_writer.H"
 
+#include "beam_contact_pair.H"
 #include "beam_to_solid_volume_meshtying_vtk_output_params.H"
 #include "beam_to_solid_vtu_output_writer_base.H"
 #include "beam_to_solid_vtu_output_writer_visualization.H"
@@ -191,6 +192,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::
     visualization->AddDiscretizationNodalData("force_solid", force_solid);
   }
 
+  // Add the pair specific visualization by looping over the individual contact pairs.
+  for (const auto& pair : beam_contact->contact_elepairs_)
+    pair->GetPairVisualization(output_writer_base_ptr_, visualization_params);
 
   // Write the data to disc. The data will be cleared in this method.
   output_writer_base_ptr_->Write(i_step, time);
