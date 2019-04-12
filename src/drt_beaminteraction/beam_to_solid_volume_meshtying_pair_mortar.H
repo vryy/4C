@@ -77,6 +77,16 @@ namespace BEAMINTERACTION
      */
     inline bool IsAssemblyIndirect() const override { return true; };
 
+    /**
+     * \brief Add the visualization of this pair to the beam to solid vtu output writer. This will
+     * add mortar specific data to the output.
+     * @param visualization_writer (out) Object that manages all visualization related data for beam
+     * to solid pairs.
+     * @param visualization_params (in) Parameter list (not used in this class).
+     */
+    void GetPairVisualization(Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
+        Teuchos::ParameterList visualization_params) const override;
+
    protected:
     /**
      * \brief For the mortar pairs it does not make sense to calculate forces at the integration

@@ -16,8 +16,10 @@
 #include "beam_to_solid_vtu_output_writer_base.H"
 #include "beam_to_solid_vtu_output_writer_visualization.H"
 #include "beaminteraction_submodel_evaluator_beamcontact.H"
+#include "beam_to_solid_mortar_manager.H"
 #include "beaminteraction_calc_utils.H"
 #include "str_model_evaluator_beaminteraction_datastate.H"
+#include "beaminteraction_submodel_evaluator_beamcontact_assembly_manager_indirect.H"
 #include "../drt_structure_new/str_timint_basedataglobalstate.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
@@ -192,9 +194,44 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::
     visualization->AddDiscretizationNodalData("force_solid", force_solid);
   }
 
+
+  // Add the discrete Lagrange multiplicator values at the nodes of the Lagrange multiplicator
+  // shape function. To do this we need to calculate the global lambda vector. It will be added to
+  // the parameter list and each pair can get the values it needs and generate the visualization.
+  visualization = output_writer_base_ptr_->GetVisualizationWriter("mortar");
+  if (visualization != Teuchos::null)
+  {
+    // This output only works if there is an indirect assembly manager in the beam contact submodel
+    // evaluator.
+    Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect>
+        indirect_assembly_manager = Teuchos::null;
+    for (auto& assembly_manager : beam_contact->assembly_managers_)
+    {
+      indirect_assembly_manager = Teuchos::rcp_dynamic_cast<
+          BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect>(assembly_manager);
+      if (indirect_assembly_manager != Teuchos::null) break;
+    }
+
+    if (indirect_assembly_manager != Teuchos::null)
+    {
+      // Get the global vector with the Lagrange Multiplier values and add it to the parameter list
+      // that will be passed to the pairs.
+      Teuchos::RCP<Epetra_Vector> lambda =
+          indirect_assembly_manager->GetMortarManager()->GetGlobalLambdaCol(
+              beam_contact->GState().GetDisNp());
+      visualization_params.set<Teuchos::RCP<Epetra_Vector>>("lambda", lambda);
+
+      // The pairs will need the mortar manager to extract their Lambda DOFs.
+      visualization_params.set<Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager>>(
+          "mortar_manager", indirect_assembly_manager->GetMortarManager());
+    }
+  }
+
+
   // Add the pair specific visualization by looping over the individual contact pairs.
   for (const auto& pair : beam_contact->contact_elepairs_)
     pair->GetPairVisualization(output_writer_base_ptr_, visualization_params);
+
 
   // Write the data to disc. The data will be cleared in this method.
   output_writer_base_ptr_->Write(i_step, time);

@@ -11,6 +11,11 @@ functions for the traction.
 
 #include "beam_to_solid_volume_meshtying_pair_mortar.H"
 
+#include "beam_to_solid_vtu_output_writer_base.H"
+#include "beam_to_solid_vtu_output_writer_visualization.H"
+#include "beam_to_solid_mortar_manager.H"
+
+#include "../drt_lib/drt_utils.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
@@ -148,6 +153,81 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>:
   // If we get to this point, the pair has a mortar contribution.
   return true;
 }
+
+/**
+ *
+ */
+template <typename beam, typename solid, typename mortar>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
+    mortar>::GetPairVisualization(Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
+    Teuchos::ParameterList visualization_params) const
+{
+  // Get visualization of base method.
+  BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVisualization(
+      visualization_writer, visualization_params);
+
+
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization =
+      visualization_writer->GetVisualizationWriter("mortar");
+  if (visualization != Teuchos::null)
+  {
+    // Setup variables.
+    LINALG::TMatrix<double, mortar::n_dof_, 1> q_lambda;
+    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> X;
+    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> r;
+    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> u;
+    LINALG::TMatrix<double, 3, 1> lambda_discret;
+    LINALG::TMatrix<double, 3, 1> xi_mortar_node;
+
+    // Get the visualization vectors.
+    std::vector<double>& point_coordinates = visualization->GetMutablePointCoordinateVector();
+    std::vector<double>& displacement = visualization->GetMutablePointDataVector("displacement");
+    std::vector<double>& lambda_vis = visualization->GetMutablePointDataVector("lambda");
+
+    // Get the mortar manager and the global lambda vector, those objects will be used to get the
+    // discrete Lagrange multiplier values for this pair.
+    Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager> mortar_manager =
+        visualization_params.get<Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager>>(
+            "mortar_manager");
+    Teuchos::RCP<Epetra_Vector> lambda =
+        visualization_params.get<Teuchos::RCP<Epetra_Vector>>("lambda");
+
+    // Get the lambda GIDs of this pair.
+    Teuchos::RCP<const BeamContactPair> this_rcp = Teuchos::rcp(this, false);
+    std::vector<int> lambda_row;
+    std::vector<double> lambda_pair;
+    mortar_manager->LocationVector(this_rcp, lambda_row);
+    DRT::UTILS::ExtractMyValues(*lambda, lambda_pair, lambda_row);
+    for (unsigned int i_dof; i_dof < mortar::n_dof_; i_dof++) q_lambda(i_dof) = lambda_pair[i_dof];
+
+    // Add the discrete values of the Lagrange multipliers.
+
+    for (unsigned int i_node = 0; i_node < mortar::n_nodes_; i_node++)
+    {
+      // Get the local coordinate of this node.
+      xi_mortar_node = DRT::UTILS::getNodeCoordinates(i_node, mortar::discretization_);
+
+      // Get position and displacement of the mortar node.
+      GEOMETRYPAIR::EvaluatePosition<beam>(xi_mortar_node(0), this->ele1pos_, r, this->Element1());
+      GEOMETRYPAIR::EvaluatePosition<beam>(
+          xi_mortar_node(0), this->ele1posref_, X, this->Element1());
+      u = r;
+      u -= X;
+
+      // Get the discrete Lagrangian multiplier.
+      GEOMETRYPAIR::EvaluatePosition<mortar>(xi_mortar_node(0), q_lambda, lambda_discret);
+
+      // Add to output data.
+      for (unsigned int dim = 0; dim < 3; dim++)
+      {
+        point_coordinates.push_back(FADUTILS::CastToDouble(X(dim)));
+        displacement.push_back(FADUTILS::CastToDouble(u(dim)));
+        lambda_vis.push_back(FADUTILS::CastToDouble(lambda_discret(dim)));
+      }
+    }
+  }
+}
+
 
 /**
  *

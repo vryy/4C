@@ -67,6 +67,14 @@ namespace BEAMINTERACTION
           Teuchos::RCP<Epetra_FEVector> fe_sysvec, Teuchos::RCP<LINALG::SparseMatrix> fe_sysmat,
           Teuchos::RCP<const Epetra_Vector> disp) override;
 
+      /**
+       * \brief Return a const pointer to the mortar manager.
+       */
+      inline Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager> GetMortarManager() const
+      {
+        return mortar_manager_;
+      }
+
      private:
       //! Pointer to the mortar manager. This object stores the relevant mortar matrices.
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidMortarManager> mortar_manager_;
