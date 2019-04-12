@@ -48,9 +48,10 @@ namespace BEAMINTERACTION
      * \brief Constructor. The underlying RuntimeVtuWriter will be set up in this method.
      * @param writer_full_name (in) Full name of this visualization on disc.
      * @param vtk_params (in) Global VTK parameter pointer.
+     * @param restart_time (in) Initial time of the simulation.
      */
     BeamToSolidVtuOutputWriterVisualization(const std::string& writer_full_name,
-        Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> vtk_params);
+        Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> vtk_params, double restart_time);
 
     /**
      * \brief Destructor.
@@ -120,7 +121,7 @@ namespace BEAMINTERACTION
     Teuchos::RCP<RuntimeVtuWriter> runtime_vtu_writer_;
 
     //! Full name of this visualization.
-    const std::string full_name_;
+    const std::string writer_full_name_;
 
     //! Discretization based on which global dof data can be written.
     Teuchos::RCP<const DRT::Discretization> discret_;

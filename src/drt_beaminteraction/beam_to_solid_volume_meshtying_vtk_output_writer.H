@@ -64,10 +64,12 @@ namespace BEAMINTERACTION
      * \brief Setup the output writer base and the desired field data.
      * @param vtk_params (in) RCP to parameter container for global vtk options.
      * @param output_params_ptr (in) RCP to parameter container for beam to solid output.
+     * @param restart_time (in) This is needed in case the simulation is a restart.
      */
     void Setup(Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> vtk_params,
         Teuchos::RCP<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams>
-            output_params_ptr);
+            output_params_ptr,
+        double restart_time);
 
     /**
      * \brief Setup time step output creation, and call WriteOutputData.

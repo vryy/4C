@@ -218,6 +218,8 @@ void VtkWriterBase::Initialize(unsigned int myrank, unsigned int num_processors,
 
   SetAndCreateVtkWorkingDirectory(path_existing_working_directory, name_new_vtk_subdirectory);
 
+  std::cout << "\nrnk: " << myrank_ << " geometry_name " << geometry_name.c_str()
+            << " restart_name " << restart_name.c_str() << " restart time " << restart_time;
   CreateRestartedInitialCollectionFileMidSection(geometry_name, restart_name, restart_time);
 }
 
@@ -673,6 +675,7 @@ void VtkWriterBase::CreateRestartedInitialCollectionFileMidSection(
   restart_collection_file.open(restartcollectionfilename.c_str(), std::ios::out);
 
   // check if file was found
+  std::cout << "\nname of restart file " << restartcollectionfilename.c_str();
   if (not restart_collection_file) dserror(" restart collection file could not be found");
 
   // loop over lines of restarted collection file

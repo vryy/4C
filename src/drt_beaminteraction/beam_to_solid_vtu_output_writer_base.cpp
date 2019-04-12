@@ -22,11 +22,9 @@
  */
 BEAMINTERACTION::BeamToSolidVtuOutputWriterBase::BeamToSolidVtuOutputWriterBase(
     const std::string& base_output_name,
-    Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> vtk_params)
-    : vtk_params_(vtk_params)
+    Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> vtk_params, double restart_time)
+    : base_output_name_(base_output_name), vtk_params_(vtk_params), restart_time_(restart_time)
 {
-  base_output_name_ =
-      DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix() + "-" + base_output_name;
 }
 
 /**
@@ -44,11 +42,10 @@ BEAMINTERACTION::BeamToSolidVtuOutputWriterBase::AddVisualizationWriter(
   }
   else
   {
-    std::string writer_full_name = base_output_name_ + "-" + writer_name;
     Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> new_writer =
         Teuchos::rcp<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>(
             new BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization(
-                writer_full_name, vtk_params_));
+                base_output_name_ + "-" + writer_name, vtk_params_, restart_time_));
     visualization_writers_[writer_name] = new_writer;
     return new_writer;
   }

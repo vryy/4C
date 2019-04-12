@@ -143,7 +143,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
               new BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter);
       beam_to_solid_volume_meshtying_vtk_writer_ptr_->Init();
       beam_to_solid_volume_meshtying_vtk_writer_ptr_->Setup(GInOutput().GetRuntimeVtkOutputParams(),
-          beam_contact_params_ptr_->BeamToSolidVolumeMeshtyingParams()->GetVtkOuputParamsPtr());
+          beam_contact_params_ptr_->BeamToSolidVolumeMeshtyingParams()->GetVtkOuputParamsPtr(),
+          GState().GetTimeN());
     }
   }
 

@@ -26,9 +26,9 @@
  */
 BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::BeamToSolidVtuOutputWriterVisualization(
     const std::string& writer_full_name,
-    Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> vtk_params)
+    Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> vtk_params, double restart_time)
     : vtk_params_(vtk_params),
-      full_name_(writer_full_name),
+      writer_full_name_(writer_full_name),
       discret_(Teuchos::null),
       node_gid_map_(Teuchos::null)
 {
@@ -55,7 +55,7 @@ BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::BeamToSolidVtuOutputWr
 
   runtime_vtu_writer_->Initialize(my_rank, total_ranks, num_timesteps_in_simulation_upper_bound,
       output_directory_path, DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix(),
-      writer_full_name, DRT::Problem::Instance()->OutputControlFile()->RestartName(), 0.0,
+      writer_full_name_, DRT::Problem::Instance()->OutputControlFile()->RestartName(), restart_time,
       vtk_params_->WriteBinaryOutput());
 }
 
@@ -211,11 +211,13 @@ void BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::Write(
           point_data.second.first.size(), point_data.first.c_str(), n_points);
 
   // Reset time and time step and geometry name in the writer object.
-  runtime_vtu_writer_->SetupForNewTimeStepAndGeometry(time, timestep_number, full_name_);
+  runtime_vtu_writer_->SetupForNewTimeStepAndGeometry(time, timestep_number, writer_full_name_);
   // Finalize everything and write all required vtk files to filesystem.
   runtime_vtu_writer_->WriteFiles();
   // Write a collection file summarizing all previously written files.
-  runtime_vtu_writer_->WriteCollectionFileOfAllWrittenFiles(full_name_);
+  runtime_vtu_writer_->WriteCollectionFileOfAllWrittenFiles(
+      DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix() + "-" +
+      writer_full_name_);
 
   // Reset the data.
   discret_ = Teuchos::null;

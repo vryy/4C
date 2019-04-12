@@ -45,10 +45,13 @@ namespace BEAMINTERACTION
   {
    public:
     /**
-     * \brief Empty constructor.
+     * \brief Empty constructor, set the class variables.
+     * @param base_output_name (in) Base name for the created output files.
+     * @param vtk_params (in) RCP to the global vtk parameter list.
+     * @param restart_time (in) Time at creation of this object.
      */
     BeamToSolidVtuOutputWriterBase(const std::string& base_output_name,
-        Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> vtk_params);
+        Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> vtk_params, double restart_time);
 
     /**
      * \brief Destructor.
@@ -88,6 +91,9 @@ namespace BEAMINTERACTION
 
     //! Pointer to the global vtk input file options.
     Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> vtk_params_;
+
+    //! TODO steinbrecher
+    const double restart_time_;
   };
 
 }  // namespace BEAMINTERACTION

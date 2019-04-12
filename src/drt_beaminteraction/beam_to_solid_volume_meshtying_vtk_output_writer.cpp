@@ -54,7 +54,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::Init()
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::Setup(
     Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> vtk_params,
     Teuchos::RCP<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams>
-        output_params_ptr)
+        output_params_ptr,
+    double restart_time)
 {
   CheckInit();
 
@@ -63,7 +64,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::Setup(
 
   // Initialize the writer base object and add the desired visualizations.
   output_writer_base_ptr_ = Teuchos::rcp<BEAMINTERACTION::BeamToSolidVtuOutputWriterBase>(
-      new BEAMINTERACTION::BeamToSolidVtuOutputWriterBase("beam-to-solid-volume", vtk_params));
+      new BEAMINTERACTION::BeamToSolidVtuOutputWriterBase(
+          "beam-to-solid-volume", vtk_params, restart_time));
 
   // Depending on the selected input parameters, create the needed writers. All node / cell data
   // fields that should be output eventually have to be defined here. This helps to prevent issues
@@ -114,9 +116,10 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::WriteOutputRunt
   CheckInitSetup();
 
   // Get the time step and time for the output file. If output is desired at every iteration, the
-  // values are padded.
-  int i_step = beam_contact->GState().GetStepNp();
-  double time = beam_contact->GState().GetTimeNp();
+  // values are padded. The runtime output is written when the time step is already set to the next
+  // step.
+  int i_step = beam_contact->GState().GetStepN();
+  double time = beam_contact->GState().GetTimeN();
   if (output_params_ptr_->GetOutputEveryIteration()) i_step *= 10000;
 
   WriteOutputBeamToSolidVolumeMeshTying(beam_contact, i_step, time);
