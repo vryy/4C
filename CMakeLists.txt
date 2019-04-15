@@ -797,6 +797,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_lubrication.cpp
   src/drt_inpar/inpar_binningstrategy.cpp
   src/drt_inpar/inpar_mlmc.cpp
+  src/drt_inpar/inpar_mor.cpp
   src/drt_inpar/inpar_mortar.cpp
   src/drt_inpar/inpar_poroelast.cpp
   src/drt_inpar/inpar_plasticity.cpp
