@@ -946,7 +946,7 @@ baci_test(invana_cube_levenbergmarquardt_elasthyper 2 "")
 baci_test(invana_levenbergmarquardt_coupled_inverse_analysis 2 "")
 baci_test(invana_levenbergmarquardt_fsi 2 "")
 result_file(invana_levenbergmarquardt_fsi 1 result xxx_coupneohooke_Para.txt invana_levenbergmarquardt_fsi_coupneohooke_Para.txt)
-baci_test(invana_levenbergmarquardt_tri_fsi_contour 1 "")
+baci_test(invana_levenbergmarquardt_tri_fsi_contour 2 "")
 result_file(invana_levenbergmarquardt_tri_fsi_contour 1 result xxx_coupneohooke_Para.txt invana_levenbergmarquardt_tri_fsi_contour_coupneohooke_Para.txt)
 # Surface Current Evaluation needs Kokkos
 # Statistical stuff neeeds C++11

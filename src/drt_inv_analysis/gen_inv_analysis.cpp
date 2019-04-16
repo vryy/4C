@@ -1453,17 +1453,22 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvectorFSI(bool outputtofile, 
               case dof_based:
               {
                 Epetra_SerialDenseVector cvector_arg =
-                    GetCalculatedCurve(*(fsi->StructureField()->Dispnp()));
+                    GetCalculatedCurve(*fsi->StructureField()->Dispnp());
                 if (!myrank)
                   for (int j = 0; j < ndofs_; ++j) cvector[writestep * ndofs_ + j] = cvector_arg[j];
                 break;
               }
               case point_based:
               {
-                Epetra_SerialDenseVector dvector = GetDistancePointsToInterfaceContour(
-                    *(fsi->StructureField()->Dispnp()), writestep);
-                if (!myrank)
-                  for (int j = 0; j < nnodes_; ++j) cvector[writestep * nnodes_ + j] = dvector[j];
+                Epetra_SerialDenseVector dvector;
+                // get colmap for parallel execution
+                Teuchos::RCP<Epetra_Vector> dispnpcol =
+                    Teuchos::rcp(new Epetra_Vector(*discret_->DofColMap(), true));
+                LINALG::Export(*fsi->StructureField()->Dispnp(), *dispnpcol);
+
+                dvector = GetDistancePointsToInterfaceContour(*dispnpcol, writestep);
+
+                for (int j = 0; j < nnodes_; ++j) cvector[writestep * nnodes_ + j] = dvector[j];
                 break;
               }
               default:
@@ -1688,6 +1693,7 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::GetDistancePointsToInterfaceContou
 
   int idofs = 0;
 
+  // nnodes_ is the number of measurement points here
   for (int i = 0; i < nnodes_; i++)
   {
     // store point based input data in a matrix
@@ -1703,9 +1709,10 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::GetDistancePointsToInterfaceContou
     // look for intersection of line with interface
     std::vector<std::vector<double>> xsifound(0);
 
-    double distance = 0.;
     for (curr = interfacegeom.begin(); curr != interfacegeom.end(); ++curr)
     {
+      if (curr->second->Owner() != discret_->Comm().MyPID()) continue;
+
       curr->second->LocationVector(*discret_, la, false);
 
       DRT::Node** ifacenodes = curr->second->Nodes();
@@ -1747,6 +1754,11 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::GetDistancePointsToInterfaceContou
             surf(1, i) += eledisp[i * 2 + 1];
           }
 
+          std::vector<double> initxsifound(2);
+          initxsifound[0] = std::numeric_limits<double>::max();
+          initxsifound[1] = std::numeric_limits<double>::max();
+          xsifound.push_back(initxsifound);
+
           if (ci(surf, linee))
           {
             // intersection converged
@@ -1771,9 +1783,11 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::GetDistancePointsToInterfaceContou
           dserror("surface Element for contour condition not yet implemented for FSI");
       }
     }
+
     // decide which element is the desired one and compute distance
     // this interferes with the structure of your monitor file
-    double minxsi = 0;
+    // large dummy number, so that another proc will find a lower xsi
+    double minxsi = std::numeric_limits<double>::max();
     int lastxsi = xsifound[0].size() - 1;
     for (unsigned int j = 0; j < xsifound.size(); j++)
     {
@@ -1787,6 +1801,11 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::GetDistancePointsToInterfaceContou
       }
     }
 
+    // find minimal xsi over all processors
+    double lminxsi = minxsi;
+    discret_->Comm().MinAll(&lminxsi, &minxsi, 1);
+
+    double distance = 0.;
     for (unsigned int j = 0; j < 3; j++)
     {
       distance += pow((minxsi + 1) / 2 * (line(j, 1) - line(j, 0)), 2);
