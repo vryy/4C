@@ -147,8 +147,6 @@ STR::GenInvAnalysis::GenInvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
     }
     break;
     case INPAR::STR::meas_points:
-    DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
-      DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
     {
       meas_type_ = point_based;
     }
@@ -164,10 +162,6 @@ STR::GenInvAnalysis::GenInvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
   else if (meas_type_ == point_based)
     // open point based monitor file and read it
     ReadMonitorPointBased(myrank);
-      DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
-      while (strstr(buffer, "#"))
-        DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
-        DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
 
   // error: difference of the measured to the calculated curve
   error_ = 1.0E6;
@@ -1797,7 +1791,7 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::GetDistancePointsToInterfaceContou
         minxsi = xsifound[j][lastxsi];
       else
       {
-        // xsifound is not the smallest xsi, do nothing
+        // xsifound doesn't contain the smallest xsi, do nothing
       }
     }
 
