@@ -1,8 +1,5 @@
 //
-// Maintainer: Markus Gitterle
-// gitterle@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15251
+// Maintainer: Matthias Mayr
 //
 // necessary defines: D_SOLID3 BINIO
 //
@@ -38,7 +35,7 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
 RESULTSEVRY                     1
 RESTARTEVRY                     1
-NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          fullnewton
 TIMESTEP                        0.1
 NUMSTEP                         3
 MAXTIME                         0.3
@@ -76,9 +73,6 @@ SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    2.0
 PARALLEL_REDIST                 Dynamic
 LM_DUAL_CONSISTENT              none
----------------------------------------------------------------FLUID DYNAMIC
------------------------------------------------------------------ALE DYNAMIC
------------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
@@ -3279,9 +3273,5 @@ NODE 1489 COORD 6.99999988e-01 8.00000012e-01 5.00000000e-01
 687 SOLIDT10 TET10 1476 1457 1481 1455 1478 1482 1486 1487 1461 1488 MAT 1 KINEM nonlinear
 688 SOLIDT10 TET10 1455 1457 1481 1458 1461 1482 1488 1462 1464 1489 MAT 1 KINEM nonlinear
 689 SOLIDT10 TET10 1465 1458 1481 1457 1466 1489 1483 1468 1464 1482 MAT 1 KINEM nonlinear
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
 -------------------------------------------------------------------------END
 //                              END

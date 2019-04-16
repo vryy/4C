@@ -31,6 +31,9 @@ namespace GEOMETRYPAIR
 
     //! Jacobian is considered non invertible if it is smaller than this value.
     const double local_newton_det_tol = 1e-8;
+
+    //! Tolerance for positions to be equal.
+    const double pos_tol = 1e-10;
   }  // namespace CONSTANTS
 }  // namespace GEOMETRYPAIR
 

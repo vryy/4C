@@ -118,8 +118,8 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   // -------------------------------------------------------------------------
   Teuchos::RCP<DRT::UTILS::DiscretizationCreatorBase> discloner =
       Teuchos::rcp(new DRT::UTILS::DiscretizationCreatorBase());
-  ia_discret_ =
-      discloner->CreateMatchingDiscretization(discret_ptr_, "ia_structure", true, false, true);
+  ia_discret_ = discloner->CreateMatchingDiscretization(
+      discret_ptr_, "ia_structure", true, true, false, true);
   // create discretization writer
   ia_discret_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(ia_discret_)));
 
@@ -255,10 +255,11 @@ void STR::MODELEVALUATOR::BeamInteraction::SetSubModelTypes()
       DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
           DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SPHERE CONTACT"),
           "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none or
-      DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
+      Teuchos::getIntegralValue<INPAR::BEAMINTERACTION::BeamToSolidVolumeContactDiscretization>(
           DRT::Problem::Instance()->BeamInteractionParams().sublist(
               "BEAM TO SOLID VOLUME MESHTYING"),
-          "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none)
+          "CONTACT_DISCRETIZATION") !=
+          INPAR::BEAMINTERACTION::BeamToSolidVolumeContactDiscretization::none)
     submodeltypes_->insert(INPAR::BEAMINTERACTION::submodel_beamcontact);
 
   // ---------------------------------------------------------------------------

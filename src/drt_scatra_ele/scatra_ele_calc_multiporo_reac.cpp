@@ -181,6 +181,55 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
 
           break;
         }
+        case INPAR::MAT::m_scatra_multiporo_solid:
+        {
+          const Teuchos::RCP<const MAT::ScatraMatMultiPoroSolid>& poromat =
+              Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroSolid>(singlemat);
+
+          // set delta in the variablemanager
+          VarManager()->SetDelta(poromat->Delta(), k);
+
+          // dummy value -1000 for phaseID because species in solid do not have a phaseID
+          VarManager()->SetPhaseIDAndSpeciesType(
+              k, -1000, MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid);
+
+          break;
+        }
+        case INPAR::MAT::m_scatra_multiporo_temperature:
+        {
+          const Teuchos::RCP<const MAT::ScatraMatMultiPoroTemperature>& poromat =
+              Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroTemperature>(singlemat);
+
+          // assemble heat capacities of fluid phases, volfracs and solid phase
+          // cp order [ <fluid>  <volfrac>  <solid> ]
+          std::vector<double> cp;
+          std::vector<double> cp_fluid(poromat->CP_Fluid());
+          std::vector<double> cp_volfrac(poromat->CP_Volfrac());
+
+          cp.insert(cp.begin(), cp_fluid.begin(), cp_fluid.end());
+          cp.insert(cp.end(), cp_volfrac.begin(), cp_volfrac.end());
+          cp.insert(cp.end(), poromat->CP_Solid());
+
+          VarManager()->SetHeatCapacity(cp);
+
+          // assemble thermal diffusivities of fluid phases, volfracs and solid phase
+          // kappa order [ <fluid>  <volfrac>  <solid> ]
+          std::vector<double> kappa;
+          std::vector<double> kappa_fluid(poromat->KAPPA_Fluid());
+          std::vector<double> kappa_volfrac(poromat->KAPPA_Volfrac());
+
+          kappa.insert(kappa.begin(), kappa_fluid.begin(), kappa_fluid.end());
+          kappa.insert(kappa.end(), kappa_volfrac.begin(), kappa_volfrac.end());
+          kappa.insert(kappa.end(), poromat->KAPPA_Solid());
+
+          VarManager()->SetThermalDiffusivity(kappa);
+
+          // dummy value -1000 for phaseID because temperature does not have a phaseID
+          VarManager()->SetPhaseIDAndSpeciesType(
+              k, -1000, MAT::ScatraMatMultiPoro::SpeciesType::species_temperature);
+
+          break;
+        }
 
         default:
         {
@@ -251,6 +300,53 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
             0, poromat->PhaseID(), MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac);
         // set delta in the variablemanager
         VarManager()->SetDelta(poromat->Delta(), 0);
+
+        break;
+      }
+      case INPAR::MAT::m_scatra_multiporo_solid:
+      {
+        const Teuchos::RCP<const MAT::ScatraMatMultiPoroSolid>& poromat =
+            Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroSolid>(material);
+
+        // set delta in the variablemanager
+        VarManager()->SetDelta(poromat->Delta(), 0);
+
+        // dummy value -1000 for phaseID because species in solid do not have a phaseID
+        VarManager()->SetPhaseIDAndSpeciesType(
+            0, -1000, MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid);
+
+        break;
+      }
+      case INPAR::MAT::m_scatra_multiporo_temperature:
+      {
+        const Teuchos::RCP<const MAT::ScatraMatMultiPoroTemperature>& poromat =
+            Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroTemperature>(material);
+
+        // assemble heat capacities of fluid phases, volfracs and solid phase
+        std::vector<double> cp;
+        std::vector<double> cp_fluid(poromat->CP_Fluid());
+        std::vector<double> cp_volfrac(poromat->CP_Volfrac());
+
+        cp.insert(cp.begin(), cp_fluid.begin(), cp_fluid.end());
+        cp.insert(cp.end(), cp_volfrac.begin(), cp_volfrac.end());
+        cp.insert(cp.end(), poromat->CP_Solid());
+
+        VarManager()->SetHeatCapacity(cp);
+
+        // assemble thermal diffusivities of fluid phases, volfracs and solid phase
+        std::vector<double> kappa;
+        std::vector<double> kappa_fluid(poromat->KAPPA_Fluid());
+        std::vector<double> kappa_volfrac(poromat->KAPPA_Volfrac());
+
+        kappa.insert(kappa.begin(), kappa_fluid.begin(), kappa_fluid.end());
+        kappa.insert(kappa.end(), kappa_volfrac.begin(), kappa_volfrac.end());
+        kappa.insert(kappa.end(), poromat->KAPPA_Solid());
+
+        VarManager()->SetThermalDiffusivity(kappa);
+
+        // dummy value -1000 for phaseID because temperature does not have a phaseID
+        VarManager()->SetPhaseIDAndSpeciesType(
+            0, -1000, MAT::ScatraMatMultiPoro::SpeciesType::species_temperature);
 
         break;
       }
@@ -445,6 +541,18 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::Materials(
       break;
     }
 
+    case INPAR::MAT::m_scatra_multiporo_solid:
+    {
+      MatMultiPoroSolid(material, k, densn, densnp, densam, visc, iquad);
+      break;
+    }
+
+    case INPAR::MAT::m_scatra_multiporo_temperature:
+    {
+      MatMultiPoroTemperature(material, k, densn, densnp, densam, visc, iquad);
+      break;
+    }
+
     default:
     {
       dserror("Material type %i is not supported for multiphase flow through porous media!",
@@ -476,23 +584,24 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoroFluid(
   const Teuchos::RCP<const MAT::ScatraMatMultiPoroFluid>& actmat =
       Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroFluid>(material);
 
-  // read the porosity from the diffusion manager and scale it with the saturation and the density
-  double porosity = 0.0;
+  // volume fraction of fluid phase: volfrac_fluid = porosity * saturation_fluid
+  double volfrac_fluid = 0.0;
   // d_eff = d_0 * (porosity * saturation(k))^delta
   double d_eff = 0.0;
+
   if (VarManager()->EvaluateScalar(k))
   {
-    porosity = VarManager()->FluidPhaseManager()->Porosity() * VarManager()->Saturation(k);
+    volfrac_fluid = VarManager()->FluidPhaseManager()->Porosity() * VarManager()->Saturation(k);
     d_eff = std::pow(VarManager()->FluidPhaseManager()->Porosity() * VarManager()->Saturation(k),
         actmat->Delta());
   }
 
   {
-    // set diffusivity (scaled with porosity)
-    poro::SetDiffusivity(actmat, k, porosity * d_eff);
+    // set diffusivity (scaled with volfrac_fluid)
+    poro::SetDiffusivity(actmat, k, volfrac_fluid * d_eff);
 
-    // set densities (scaled with porosity)
-    poro::SetDensities(porosity, densn, densnp, densam);
+    // set densities (scaled with volfrac_fluid)
+    poro::SetDensities(volfrac_fluid, densn, densnp, densam);
   }
 
   return;
@@ -519,22 +628,142 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoroVolFrac(
   const Teuchos::RCP<const MAT::ScatraMatMultiPoroVolFrac>& actmat =
       Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroVolFrac>(material);
 
-  // read the porosity from the diffusion manager and scale it with the saturation and the density
-  double porosity = 0.0;
+  // volume fraction
+  double volfrac = 0.0;
   // d_eff = d_0 * (porosity * saturation(k))^delta
   double d_eff = 0.0;
+
   if (VarManager()->EvaluateScalar(k))
   {
-    porosity = VarManager()->VolFrac(k);
+    volfrac = VarManager()->VolFrac(k);
     d_eff = std::pow(VarManager()->VolFrac(k), actmat->Delta());
   }
 
   {
-    // set diffusivity (scaled with porosity)
-    poro::SetDiffusivity(actmat, k, porosity * d_eff);
+    // set diffusivity (scaled with volfrac)
+    poro::SetDiffusivity(actmat, k, volfrac * d_eff);
 
-    // set densities (scaled with porosity)
-    poro::SetDensities(porosity, densn, densnp, densam);
+    // set densities (scaled with volfrac)
+    poro::SetDensities(volfrac, densn, densnp, densam);
+  }
+
+  return;
+}  // ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoro
+
+/*----------------------------------------------------------------------*
+ | Species in solid                                        wirthl 12/18 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoroSolid(
+    const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
+    const int k,                                       //!< id of current scalar
+    double& densn,                                     //!< density at t_(n)
+    double& densnp,                                    //!< density at t_(n+1) or t_(n+alpha_F)
+    double& densam,                                    //!< density at t_(n+alpha_M)
+    double& visc,                                      //!< fluid viscosity
+    const int iquad                                    //!< id of current gauss point
+)
+{
+  if (iquad == -1)
+    dserror(
+        "no gauss point given for evaluation of MatMultiPoro material. "
+        "Check your input file.");
+
+  const Teuchos::RCP<const MAT::ScatraMatMultiPoroSolid>& actmat =
+      Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroSolid>(material);
+
+  // volume fraction of solid phase: volfrac_solid_phase = (1 - porosity - sumaddvolfrac)
+  double volfrac_solid_phase = 0.0;
+  // d_eff = d_0 * (porosity * saturation(k))^delta
+  double d_eff = 0.0;
+
+  if (VarManager()->EvaluateScalar(k))
+  {
+    volfrac_solid_phase = (1 - VarManager()->FluidPhaseManager()->Porosity() -
+                           VarManager()->FluidPhaseManager()->SumAddVolFrac());
+    d_eff = std::pow((1 - VarManager()->FluidPhaseManager()->Porosity() -
+                         VarManager()->FluidPhaseManager()->SumAddVolFrac()),
+        actmat->Delta());
+  }
+
+  {
+    // set diffusivity (scaled with volfrac_solid_phase)
+    poro::SetDiffusivity(actmat, k, volfrac_solid_phase * d_eff);
+
+    // set densities (scaled with volfrac_solid_phase)
+    poro::SetDensities(volfrac_solid_phase, densn, densnp, densam);
+  }
+
+  return;
+}  // ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoro
+
+/*----------------------------------------------------------------------*
+ | Species temperature                                     wirthl 12/18 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoroTemperature(
+    const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
+    const int k,                                       //!< id of current scalar
+    double& densn,                                     //!< density at t_(n)
+    double& densnp,                                    //!< density at t_(n+1) or t_(n+alpha_F)
+    double& densam,                                    //!< density at t_(n+alpha_M)
+    double& visc,                                      //!< fluid viscosity
+    const int iquad                                    //!< id of current gauss point
+)
+{
+  if (iquad == -1)
+    dserror(
+        "no gauss point given for evaluation of MatMultiPoro material. "
+        "Check your input file.");
+
+  const Teuchos::RCP<const MAT::ScatraMatMultiPoroTemperature>& actmat =
+      Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroTemperature>(material);
+
+  // read the heat capacity
+  double cp_eff = 0.0;
+  // kappa_eff = kappa_s*poro_s + kappa_fluids*poro*saturation_fluids + kappa_volfrac*poro_volfrac
+  double kappa_eff = 0.0;
+
+  if (VarManager()->EvaluateScalar(k))
+  {
+    const int numfluidphases = VarManager()->FluidPhaseManager()->NumFluidPhases();
+    const int numvolfracs = VarManager()->FluidPhaseManager()->NumVolFrac();
+
+    cp_eff = (1 - VarManager()->FluidPhaseManager()->Porosity() -
+                 VarManager()->FluidPhaseManager()->SumAddVolFrac()) *
+             VarManager()->FluidPhaseManager()->SolidDensity() * actmat->CP_Solid();
+
+    kappa_eff = (1 - VarManager()->FluidPhaseManager()->Porosity() -
+                    VarManager()->FluidPhaseManager()->SumAddVolFrac()) *
+                actmat->KAPPA_Solid();
+
+    for (int phase = 0; phase < numfluidphases; ++phase)
+    {
+      cp_eff += actmat->CP_Fluid(phase) * VarManager()->FluidPhaseManager()->Porosity() *
+                VarManager()->FluidPhaseManager()->Saturation(phase) *
+                VarManager()->FluidPhaseManager()->Density(phase);
+
+      kappa_eff += actmat->KAPPA_Fluid(phase) * VarManager()->FluidPhaseManager()->Porosity() *
+                   VarManager()->FluidPhaseManager()->Saturation(phase);
+    }
+
+    for (int phase = 0; phase < numvolfracs; ++phase)
+    {
+      cp_eff += actmat->CP_Volfrac(phase) * VarManager()->FluidPhaseManager()->VolFrac(phase) *
+                VarManager()->FluidPhaseManager()->VolFracDensity(phase);
+
+      kappa_eff += actmat->KAPPA_Volfrac(phase) * VarManager()->FluidPhaseManager()->VolFrac(phase);
+    }
+  }
+
+  {
+    VarManager()->SetEffectiveHeatCapacity(cp_eff);
+
+    // set diffusivity
+    poro::SetDiffusivity(actmat, k, kappa_eff);
+
+    // set densities
+    poro::SetDensities(cp_eff, densn, densnp, densam);
   }
 
   return;
@@ -745,7 +974,9 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConv(Epetra_Seri
     const LINALG::Matrix<my::nen_, 1>& sgconv)
 {
   // case of zero saturation/volfrac
-  if (VarManager()->EvaluateScalar(k))
+  // no convective term for species in solid
+  if (VarManager()->EvaluateScalar(k) &&
+      VarManager()->GetSpeciesType(k) != MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid)
   {
     // the only difference to the base class version is, that there is no scaling with the density
     pororeac::CalcMatConv(emat, k, timefacfac, 1.0, sgconv);
@@ -822,14 +1053,15 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcConvODMesh(
     const LINALG::Matrix<my::nsd_, 1>& gradphi, const LINALG::Matrix<my::nsd_, 1>& convelint)
 {
   // case of zero saturation/volfrac
-  if (VarManager()->EvaluateScalar(k))
+  // no convective term for species in solid
+  if (VarManager()->EvaluateScalar(k) &&
+      VarManager()->GetSpeciesType(k) != MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid)
   {
     static LINALG::Matrix<my::nsd_, my::nsd_> difftensor(true);
-    VarManager()->GetDiffTensorFluid(k, difftensor);
+    static LINALG::Matrix<my::nsd_, 1> refgradpres(true);
 
     // linearization of mesh motion
-    //------------------------------------------------dJ/dd = dJ/dF : dF/dd = J * F^-T . N_{\psi} =
-    // J * N_x
+    //--------------------------------------dJ/dd = dJ/dF : dF/dd = J * F^-T . N_{\psi} = J * N_x
     // J denotes the determinant of the Jacobian of the mapping between current and parameter space,
     // i.e. det(dx/ds) in our case: rhsfac = J * dt * theta --> d(rhsfac)/dd = rhsfac * N_x
     for (unsigned vi = 0; vi < my::nen_; ++vi)
@@ -847,123 +1079,64 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcConvODMesh(
       }
     }
 
-    //----------------------------------------------------------------
-    // standard Galerkin terms  -- "shapederivatives" pressure gradient
-    //----------------------------------------------------------------
-
-    // gradient of pressure w.r.t. reference coordinates
-    static LINALG::Matrix<my::nsd_, 1> refgradpres(true);
-    VarManager()->GetRefGradPres(k, my::xjm_, refgradpres);
-
-    if (my::nsd_ == 3)
+    if (VarManager()->GetSpeciesType(k) == MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid ||
+        VarManager()->GetSpeciesType(k) == MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac)
     {
-      const double xjm_0_0 = my::xjm_(0, 0);
-      const double xjm_0_1 = my::xjm_(0, 1);
-      const double xjm_0_2 = my::xjm_(0, 2);
-      const double xjm_1_0 = my::xjm_(1, 0);
-      const double xjm_1_1 = my::xjm_(1, 1);
-      const double xjm_1_2 = my::xjm_(1, 2);
-      const double xjm_2_0 = my::xjm_(2, 0);
-      const double xjm_2_1 = my::xjm_(2, 1);
-      const double xjm_2_2 = my::xjm_(2, 2);
+      VarManager()->GetDiffTensorFluid(k, difftensor, VarManager()->GetPhaseID(k));
+      VarManager()->GetRefGradPres(k, my::xjm_, refgradpres, VarManager()->GetPhaseID(k));
+      const double vrhs = rhsfac * 1.0 / J * difftensor(0, 0) * (-1.0);
 
-      {
-        const double refgradpres_0 = refgradpres(0);
-        const double refgradpres_1 = refgradpres(1);
-        const double refgradpres_2 = refgradpres(2);
+      // linearization of prassure gradient
+      // standard Galerkin terms  -- "shapederivatives" pressure gradient
+      ApplyShapeDerivsPressureGrad(emat, k, vrhs, gradphi, refgradpres);
 
-        const double gradphi_0 = gradphi(0);
-        const double gradphi_1 = gradphi(1);
-        const double gradphi_2 = gradphi(2);
-
-        // TODO: anisotropic difftensor and
-        //       non-constant viscosity (because of pressure gradient, probably not really
-        //       necessary)
-        const double vrhs = rhsfac * 1.0 / J * difftensor(0, 0) * (-1.0);
-
-        for (unsigned ui = 0; ui < my::nen_; ++ui)
-        {
-          const double v00 =
-              +gradphi_1 *
-                  (refgradpres_0 * (my::deriv_(2, ui) * xjm_1_2 - my::deriv_(1, ui) * xjm_2_2) +
-                      refgradpres_1 * (my::deriv_(0, ui) * xjm_2_2 - my::deriv_(2, ui) * xjm_0_2) +
-                      refgradpres_2 * (my::deriv_(1, ui) * xjm_0_2 - my::deriv_(0, ui) * xjm_1_2)) +
-              gradphi_2 *
-                  (refgradpres_0 * (my::deriv_(1, ui) * xjm_2_1 - my::deriv_(2, ui) * xjm_1_1) +
-                      refgradpres_1 * (my::deriv_(2, ui) * xjm_0_1 - my::deriv_(0, ui) * xjm_2_1) +
-                      refgradpres_2 * (my::deriv_(0, ui) * xjm_1_1 - my::deriv_(1, ui) * xjm_0_1));
-          const double v01 =
-              +gradphi_0 *
-                  (refgradpres_0 * (my::deriv_(1, ui) * xjm_2_2 - my::deriv_(2, ui) * xjm_1_2) +
-                      refgradpres_1 * (my::deriv_(2, ui) * xjm_0_2 - my::deriv_(0, ui) * xjm_2_2) +
-                      refgradpres_2 * (my::deriv_(0, ui) * xjm_1_2 - my::deriv_(1, ui) * xjm_0_2)) +
-              gradphi_2 *
-                  (refgradpres_0 * (my::deriv_(2, ui) * xjm_1_0 - my::deriv_(1, ui) * xjm_2_0) +
-                      refgradpres_1 * (my::deriv_(0, ui) * xjm_2_0 - my::deriv_(2, ui) * xjm_0_0) +
-                      refgradpres_2 * (my::deriv_(1, ui) * xjm_0_0 - my::deriv_(0, ui) * xjm_1_0));
-          const double v02 =
-              +gradphi_0 *
-                  (refgradpres_0 * (my::deriv_(2, ui) * xjm_1_1 - my::deriv_(1, ui) * xjm_2_1) +
-                      refgradpres_1 * (my::deriv_(0, ui) * xjm_2_1 - my::deriv_(2, ui) * xjm_0_1) +
-                      refgradpres_2 * (my::deriv_(1, ui) * xjm_0_1 - my::deriv_(0, ui) * xjm_1_1)) +
-              gradphi_1 *
-                  (refgradpres_0 * (my::deriv_(1, ui) * xjm_2_0 - my::deriv_(2, ui) * xjm_1_0) +
-                      refgradpres_1 * (my::deriv_(2, ui) * xjm_0_0 - my::deriv_(0, ui) * xjm_2_0) +
-                      refgradpres_2 * (my::deriv_(0, ui) * xjm_1_0 - my::deriv_(1, ui) * xjm_0_0));
-
-          for (unsigned vi = 0; vi < my::nen_; ++vi)
-          {
-            const int fvi = vi * my::numdofpernode_ + k;
-            const double v = vrhs * my::funct_(vi);
-
-            emat(fvi, ui * 3 + 0) += v * v00;
-            emat(fvi, ui * 3 + 1) += v * v01;
-            emat(fvi, ui * 3 + 2) += v * v02;
-          }
-        }
-      }
+      // linearization of gradphi
+      // standard Galerkin terms  -- "shapederivatives" gradphi
+      pororeac::ApplyShapeDerivsConv(emat, k, rhsfac, 1.0, J, gradphi, convelint);
     }
-    else if (my::nsd_ == 2)
+
+    else if (VarManager()->GetSpeciesType(k) ==
+             MAT::ScatraMatMultiPoro::SpeciesType::species_temperature)
     {
+      const int numfluidphases = VarManager()->FluidPhaseManager()->NumFluidPhases();
+      const int numvolfracs = VarManager()->FluidPhaseManager()->NumVolFrac();
+
+      for (int phase = 0; phase < numfluidphases; ++phase)
       {
-        const double refgradpres_0 = refgradpres(0);
-        const double refgradpres_1 = refgradpres(1);
+        VarManager()->GetDiffTensorFluid(k, difftensor, phase);
+        VarManager()->GetRefGradPres(k, my::xjm_, refgradpres, phase);
 
-        const double gradphi_0 = gradphi(0);
-        const double gradphi_1 = gradphi(1);
+        const double vrhs = rhsfac * 1.0 / J * difftensor(0, 0) * (-1.0) *
+                            VarManager()->FluidPhaseManager()->Density(phase) *
+                            VarManager()->GetHeatCapacity(phase);
 
-        // TODO: anisotropic difftensor and
-        //       non-constant viscosity (because of pressure gradient, probably not really
-        //       necessary)
-        const double vrhs = rhsfac * 1.0 / J * difftensor(0, 0) * (-1.0);
-
-        for (unsigned ui = 0; ui < my::nen_; ++ui)
-        {
-          const double v00 =
-              +gradphi_1 * (-refgradpres_0 * my::deriv_(1, ui) + refgradpres_1 * my::deriv_(0, ui));
-          const double v01 =
-              +gradphi_0 * (refgradpres_0 * my::deriv_(1, ui) - refgradpres_1 * my::deriv_(0, ui));
-
-          for (unsigned vi = 0; vi < my::nen_; ++vi)
-          {
-            const int fvi = vi * my::numdofpernode_ + k;
-            const double v = vrhs * my::funct_(vi);
-
-            emat(fvi, ui * 2 + 0) += v * v00;
-            emat(fvi, ui * 2 + 1) += v * v01;
-          }
-        }
+        // linearization of prassure gradient
+        // standard Galerkin terms  -- "shapederivatives" pressure gradient
+        ApplyShapeDerivsPressureGrad(emat, k, vrhs, gradphi, refgradpres);
       }
+
+      for (int phase = numfluidphases; phase < numfluidphases + numvolfracs; ++phase)
+      {
+        VarManager()->GetDiffTensorFluid(k, difftensor, phase);
+        VarManager()->GetRefGradPres(k, my::xjm_, refgradpres, phase);
+
+        const double vrhs =
+            rhsfac * 1.0 / J * difftensor(0, 0) * (-1.0) *
+            VarManager()->FluidPhaseManager()->VolFracDensity(phase - numfluidphases) *
+            VarManager()->GetHeatCapacity(phase);
+
+        // linearization of prassure gradient
+        // standard Galerkin terms  -- "shapederivatives" pressure gradient
+        ApplyShapeDerivsPressureGrad(emat, k, vrhs, gradphi, refgradpres);
+      }
+
+      // linearization of gradphi
+      // standard Galerkin terms  -- "shapederivatives" gradphi
+      pororeac::ApplyShapeDerivsConv(emat, k, rhsfac, 1.0, J, gradphi, convelint);
     }
     else
-      dserror("shapederivatives not implemented for 1D!");
-
-    //----------------------------------------------------------------
-    // standard Galerkin terms  -- "shapederivatives" gradphi
-    //----------------------------------------------------------------
-    pororeac::ApplyShapeDerivsConv(emat, k, rhsfac, 1.0, J, gradphi, convelint);
+      dserror("Species type no valid!");
   }
-
   return;
 }
 
@@ -1072,7 +1245,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcDiffODMesh(
     // get pre-factor for this scalar
     const double myfac = VarManager()->GetPreFactorForDiffMatrixODMesh(k, rhsfac, diffcoeff);
 
-    if (myfac > 1.0e-12)
+    if (fabs(myfac) > 1.0e-12)
     {
       for (unsigned vi = 0; vi < my::nen_; ++vi)
       {
@@ -1132,42 +1305,89 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConvODFluid(
   // case of zero saturation/volfrac
   if (VarManager()->EvaluateScalar(k))
   {
-    const int totalnummultiphasedofpernode = VarManager()->MultiphaseMat()->NumMat();
-
-    static LINALG::Matrix<my::nsd_, my::nsd_> difftensor(true);
-    VarManager()->GetDiffTensorFluid(k, difftensor);
-
-    // gradphi^T * difftensor
-    // TODO: not sure if this works for anisotropic fluid difftensor
-    static LINALG::Matrix<1, my::nsd_> gradphiTdifftensor(true);
-    gradphiTdifftensor.MultiplyTN(gradphi, difftensor);
-
-    for (unsigned vi = 0; vi < my::nen_; ++vi)
+    if (VarManager()->GetSpeciesType(k) == MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid ||
+        VarManager()->GetSpeciesType(k) == MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac)
     {
-      const int fvi = vi * my::numdofpernode_ + k;
-      const double v = rhsfac * my::funct_(vi) * (-1.0);
+      const int totalnummultiphasedofpernode = VarManager()->MultiphaseMat()->NumMat();
 
-      for (unsigned ui = 0; ui < my::nen_; ++ui)
+      static LINALG::Matrix<my::nsd_, my::nsd_> difftensor(true);
+      VarManager()->GetDiffTensorFluid(k, difftensor, VarManager()->GetPhaseID(k));
+
+      // gradphi^T * difftensor
+      // TODO: not sure if this works for anisotropic fluid difftensor
+      static LINALG::Matrix<1, my::nsd_> gradphiTdifftensor(true);
+      gradphiTdifftensor.MultiplyTN(gradphi, difftensor);
+
+      for (unsigned vi = 0; vi < my::nen_; ++vi)
       {
-        // get pre-fac vector for this scalar
-        static std::vector<double> prefaclinconvodfluid(totalnummultiphasedofpernode, 0.0);
-        VarManager()->GetPreFacLinConvODFluid(
-            k, ui, &prefaclinconvodfluid, gradphi, gradphiTdifftensor, my::funct_, my::derxy_);
+        const int fvi = vi * my::numdofpernode_ + k;
+        const double v = rhsfac * my::funct_(vi) * (-1.0);
 
-        for (int idof = 0; idof < totalnummultiphasedofpernode; ++idof)
+        for (unsigned ui = 0; ui < my::nen_; ++ui)
         {
-          const int fui = ui * totalnummultiphasedofpernode + idof;
-          emat(fvi, fui) += v * prefaclinconvodfluid[idof];
+          // get pre-fac vector for this scalar
+          static std::vector<double> prefaclinconvodfluid(totalnummultiphasedofpernode, 0.0);
+          VarManager()->GetPreFacLinConvODFluid(k, ui, &prefaclinconvodfluid, gradphi,
+              gradphiTdifftensor, my::funct_, my::derxy_, VarManager()->GetPhaseID(k));
+
+          for (int idof = 0; idof < totalnummultiphasedofpernode; ++idof)
+          {
+            const int fui = ui * totalnummultiphasedofpernode + idof;
+            emat(fvi, fui) += v * prefaclinconvodfluid[idof];
+          }
+        }
+      }
+
+      //----------------------------------------------------------------
+      // linearization of dynamic viscosity w.r.t. dof --> TODO
+      // however, I believe this is not necessary: FD-check does not fail
+      //----------------------------------------------------------------
+    }
+
+    else if (VarManager()->GetSpeciesType(k) ==
+             MAT::ScatraMatMultiPoro::SpeciesType::species_temperature)
+    {
+      const int numfluid = VarManager()->FluidPhaseManager()->NumFluidPhases();
+      const int numvolfracs = VarManager()->FluidPhaseManager()->NumVolFrac();
+
+      for (int phase = 0; phase < numfluid + numvolfracs; ++phase)
+      {
+        const int totalnummultiphasedofpernode = VarManager()->MultiphaseMat()->NumMat();
+
+        static LINALG::Matrix<my::nsd_, my::nsd_> difftensor(true);
+        VarManager()->GetDiffTensorFluid(k, difftensor, phase);
+
+        // gradphi^T * difftensor
+        static LINALG::Matrix<1, my::nsd_> gradphiTdifftensor(true);
+        gradphiTdifftensor.MultiplyTN(gradphi, difftensor);
+
+        // calculate density*heatcapacity
+        double densheatcapacity =
+            VarManager()->GetHeatCapacity(phase) * VarManager()->Density()[phase];
+
+        for (unsigned vi = 0; vi < my::nen_; ++vi)
+        {
+          const int fvi = vi * my::numdofpernode_ + k;
+          const double v = rhsfac * my::funct_(vi) * (-1.0) * densheatcapacity;
+
+          for (unsigned ui = 0; ui < my::nen_; ++ui)
+          {
+            // get pre-fac vector for this scalar
+            static std::vector<double> prefaclinconvodfluid(totalnummultiphasedofpernode, 0.0);
+
+            VarManager()->GetPreFacLinConvODFluid(k, ui, &prefaclinconvodfluid, gradphi,
+                gradphiTdifftensor, my::funct_, my::derxy_, phase);
+
+            for (int idof = 0; idof < totalnummultiphasedofpernode; ++idof)
+            {
+              const int fui = ui * totalnummultiphasedofpernode + idof;
+              emat(fvi, fui) += v * prefaclinconvodfluid[idof];
+            }
+          }
         }
       }
     }
-
-    //----------------------------------------------------------------
-    // linearization of dynamic viscosity w.r.t. dof --> TODO
-    // however, I believe this is not necessary: FD-check does not fail
-    //----------------------------------------------------------------
   }
-
   return;
 }
 
@@ -1419,6 +1639,111 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcDiffODFluid(
       }
     }
   }
+  return;
+}
+/*---------------------------------------------------------------------*
+ | standard Galerkin terms  -- "shapederivatives" pressure gradient    |
+ | gradient of pressure w.r.t. reference coordinates       vuong 08/14 |
+ | put it into its own function                           wirthl 12/18 |
+ *---------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ApplyShapeDerivsPressureGrad(
+    Epetra_SerialDenseMatrix& emat, const int k, const double vrhs,
+    const LINALG::Matrix<my::nsd_, 1>& gradphi, const LINALG::Matrix<my::nsd_, 1> refgradpres)
+{
+  if (my::nsd_ == 3)
+  {
+    const double xjm_0_0 = my::xjm_(0, 0);
+    const double xjm_0_1 = my::xjm_(0, 1);
+    const double xjm_0_2 = my::xjm_(0, 2);
+    const double xjm_1_0 = my::xjm_(1, 0);
+    const double xjm_1_1 = my::xjm_(1, 1);
+    const double xjm_1_2 = my::xjm_(1, 2);
+    const double xjm_2_0 = my::xjm_(2, 0);
+    const double xjm_2_1 = my::xjm_(2, 1);
+    const double xjm_2_2 = my::xjm_(2, 2);
+
+    {
+      const double refgradpres_0 = refgradpres(0);
+      const double refgradpres_1 = refgradpres(1);
+      const double refgradpres_2 = refgradpres(2);
+
+      const double gradphi_0 = gradphi(0);
+      const double gradphi_1 = gradphi(1);
+      const double gradphi_2 = gradphi(2);
+
+      for (unsigned ui = 0; ui < my::nen_; ++ui)
+      {
+        const double v00 =
+            +gradphi_1 *
+                (refgradpres_0 * (my::deriv_(2, ui) * xjm_1_2 - my::deriv_(1, ui) * xjm_2_2) +
+                    refgradpres_1 * (my::deriv_(0, ui) * xjm_2_2 - my::deriv_(2, ui) * xjm_0_2) +
+                    refgradpres_2 * (my::deriv_(1, ui) * xjm_0_2 - my::deriv_(0, ui) * xjm_1_2)) +
+            gradphi_2 *
+                (refgradpres_0 * (my::deriv_(1, ui) * xjm_2_1 - my::deriv_(2, ui) * xjm_1_1) +
+                    refgradpres_1 * (my::deriv_(2, ui) * xjm_0_1 - my::deriv_(0, ui) * xjm_2_1) +
+                    refgradpres_2 * (my::deriv_(0, ui) * xjm_1_1 - my::deriv_(1, ui) * xjm_0_1));
+        const double v01 =
+            +gradphi_0 *
+                (refgradpres_0 * (my::deriv_(1, ui) * xjm_2_2 - my::deriv_(2, ui) * xjm_1_2) +
+                    refgradpres_1 * (my::deriv_(2, ui) * xjm_0_2 - my::deriv_(0, ui) * xjm_2_2) +
+                    refgradpres_2 * (my::deriv_(0, ui) * xjm_1_2 - my::deriv_(1, ui) * xjm_0_2)) +
+            gradphi_2 *
+                (refgradpres_0 * (my::deriv_(2, ui) * xjm_1_0 - my::deriv_(1, ui) * xjm_2_0) +
+                    refgradpres_1 * (my::deriv_(0, ui) * xjm_2_0 - my::deriv_(2, ui) * xjm_0_0) +
+                    refgradpres_2 * (my::deriv_(1, ui) * xjm_0_0 - my::deriv_(0, ui) * xjm_1_0));
+        const double v02 =
+            +gradphi_0 *
+                (refgradpres_0 * (my::deriv_(2, ui) * xjm_1_1 - my::deriv_(1, ui) * xjm_2_1) +
+                    refgradpres_1 * (my::deriv_(0, ui) * xjm_2_1 - my::deriv_(2, ui) * xjm_0_1) +
+                    refgradpres_2 * (my::deriv_(1, ui) * xjm_0_1 - my::deriv_(0, ui) * xjm_1_1)) +
+            gradphi_1 *
+                (refgradpres_0 * (my::deriv_(1, ui) * xjm_2_0 - my::deriv_(2, ui) * xjm_1_0) +
+                    refgradpres_1 * (my::deriv_(2, ui) * xjm_0_0 - my::deriv_(0, ui) * xjm_2_0) +
+                    refgradpres_2 * (my::deriv_(0, ui) * xjm_1_0 - my::deriv_(1, ui) * xjm_0_0));
+
+        for (unsigned vi = 0; vi < my::nen_; ++vi)
+        {
+          const int fvi = vi * my::numdofpernode_ + k;
+          const double v = vrhs * my::funct_(vi);
+
+          emat(fvi, ui * 3 + 0) += v * v00;
+          emat(fvi, ui * 3 + 1) += v * v01;
+          emat(fvi, ui * 3 + 2) += v * v02;
+        }
+      }
+    }
+  }
+  else if (my::nsd_ == 2)
+  {
+    {
+      const double refgradpres_0 = refgradpres(0);
+      const double refgradpres_1 = refgradpres(1);
+
+      const double gradphi_0 = gradphi(0);
+      const double gradphi_1 = gradphi(1);
+
+      for (unsigned ui = 0; ui < my::nen_; ++ui)
+      {
+        const double v00 =
+            +gradphi_1 * (-refgradpres_0 * my::deriv_(1, ui) + refgradpres_1 * my::deriv_(0, ui));
+        const double v01 =
+            +gradphi_0 * (refgradpres_0 * my::deriv_(1, ui) - refgradpres_1 * my::deriv_(0, ui));
+
+        for (unsigned vi = 0; vi < my::nen_; ++vi)
+        {
+          const int fvi = vi * my::numdofpernode_ + k;
+          const double v = vrhs * my::funct_(vi);
+
+          emat(fvi, ui * 2 + 0) += v * v00;
+          emat(fvi, ui * 2 + 1) += v * v01;
+        }
+      }
+    }
+  }
+  else
+    dserror("shapederivatives not implemented for 1D!");
+
   return;
 }
 

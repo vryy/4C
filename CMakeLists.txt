@@ -495,6 +495,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/cavitationfluid.cpp
   src/drt_mat/cnst_1d_art.cpp
   src/drt_mat/compogden.cpp
+  src/drt_mat/consolidation.cpp
   src/drt_mat/constraintmixture.cpp
   src/drt_mat/crosslinkermat.cpp
   src/drt_mat/constraintmixture_history.cpp
@@ -518,6 +519,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/fluidporo_relpermeability_law.cpp
   src/drt_mat/fluidporo_viscosity_law.cpp
   src/drt_mat/fourieriso.cpp
+  src/drt_mat/fouriervar.cpp
   src/drt_mat/membrane_elasthyper.cpp
   src/drt_mat/membrane_active_strain.cpp
   src/drt_mat/growthremodel_elasthyper.cpp
@@ -902,7 +904,12 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
   src/drt_beaminteraction/beam_to_beam_contact_pair.cpp
   src/drt_beaminteraction/beam_to_beam_contact_params.cpp
   src/drt_beaminteraction/beam_to_beam_contact_variables.cpp
-  src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair.cpp
+  src/drt_beaminteraction/beam_to_solid_mortar_manager.cpp
+  src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_base.cpp
+  src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_gauss_point.cpp
+  src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_gauss_point_cross_section.cpp
+  src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_mortar.cpp
+  src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_factory.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_params.cpp
   src/drt_beaminteraction/beam_to_sphere_contact_pair.cpp
   src/drt_beaminteraction/beam_to_sphere_contact_params.cpp
@@ -923,6 +930,9 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
   src/drt_beaminteraction/beaminteraction_submodel_evaluator_factory.cpp
   src/drt_beaminteraction/beaminteraction_submodel_evaluator_generic.cpp
   src/drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact.cpp
+  src/drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact_assembly_manager.cpp
+  src/drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact_assembly_manager_direct.cpp
+  src/drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact_assembly_manager_indirect.cpp
   src/drt_beaminteraction/beaminteraction_submodel_evaluator_potential.cpp
   src/drt_beaminteraction/beaminteraction_calc_utils.cpp
   src/drt_beaminteraction/beaminteraction_data.cpp
@@ -1854,14 +1864,17 @@ set(OBJS_DRT_PARTICLE_ALGORITHM
   src/drt_particle_algorithm/particle_initial_field.cpp
   src/drt_particle_algorithm/particle_result_test.cpp
   src/drt_particle_algorithm/particle_wall.cpp
+  src/drt_particle_algorithm/particle_wall_result_test.cpp
   src/drt_particle_algorithm/particle_algorithm_utils.cpp
 )
 set(OBJS_DRT_PARTICLE_INTERACTION
   src/drt_particle_interaction/particle_interaction_base.cpp
   src/drt_particle_interaction/particle_interaction_dem.cpp
   src/drt_particle_interaction/particle_interaction_dem_neighbor_pairs.cpp
+  src/drt_particle_interaction/particle_interaction_dem_history_pairs.cpp
   src/drt_particle_interaction/particle_interaction_dem_contact.cpp
   src/drt_particle_interaction/particle_interaction_dem_contact_normal.cpp
+  src/drt_particle_interaction/particle_interaction_dem_contact_tangential.cpp
   src/drt_particle_interaction/particle_interaction_sph.cpp
   src/drt_particle_interaction/particle_interaction_sph_kernel.cpp
   src/drt_particle_interaction/particle_interaction_sph_equationofstate.cpp
@@ -2617,11 +2630,13 @@ set(OBJS_DRT_GEOMETRY_PAIR
 src/drt_geometry_pair/geometry_pair_factory.cpp
 src/drt_geometry_pair/geometry_pair.cpp
 src/drt_geometry_pair/geometry_pair_utility_classes.cpp
+src/drt_geometry_pair/geometry_pair_utility_functions.cpp
 src/drt_geometry_pair/geometry_pair_evaluation_data_global.cpp
 src/drt_geometry_pair/geometry_pair_evaluation_data_base.cpp
 src/drt_geometry_pair/geometry_pair_line_to_volume_evaluation_data.cpp
 src/drt_geometry_pair/geometry_pair_line_to_volume.cpp
 src/drt_geometry_pair/geometry_pair_line_to_volume_gauss_point_projection.cpp
+src/drt_geometry_pair/geometry_pair_line_to_volume_gauss_point_projection_cross_section.cpp
 src/drt_geometry_pair/geometry_pair_line_to_volume_segmentation.cpp
 )
 

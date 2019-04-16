@@ -213,6 +213,9 @@ namespace ADAPTER
     /// read restart information for given time step
     virtual void ReadRestart(const int step) = 0;
 
+    /// reset everything to beginning of time step, for adaptivity
+    virtual void ResetStep() = 0;
+
     //! store an RCP to the contact strategy constructed in the structural time integration
     virtual void SetNitscheContactStrategy(
         Teuchos::RCP<CONTACT::CoNitscheStrategyTsi> strategy) = 0;
@@ -226,12 +229,15 @@ namespace ADAPTER
     //! @name Solver calls
     //@{
 
-    //! non-linear solve
-    //!
-    //! Do the nonlinear solve, i.e. (multiple) corrector,
-    //! for the time step. All boundary conditions have
-    //! been set.
-    virtual void Solve() = 0;
+    /**
+     * @brief Non-linear solve
+     *
+     * Do the nonlinear solve, i.e. (multiple) corrector for the time step.
+     * All boundary conditions have been set.
+     *
+     * @return status of the solve, which can be used for adaptivity
+     */
+    virtual INPAR::THR::ConvergenceStatus Solve() = 0;
 
     /// get the linear solver object used for this field
     virtual Teuchos::RCP<LINALG::Solver> LinearSolver() = 0;

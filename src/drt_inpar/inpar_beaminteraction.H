@@ -83,6 +83,47 @@ namespace INPAR
       linkertype_integrin    ///< sphere to beam linker
     };
 
+    /**
+     * Constraint enforcement for beam to solid volume meshtying.
+     */
+    enum class BeamToSolidVolumeConstraintEnforcement
+    {
+      //! Default value.
+      none,
+      //! Penalty method.
+      penalty
+    };
+
+    /**
+     * Contact discretization for beam to solid volume meshtying.
+     */
+    enum class BeamToSolidVolumeContactDiscretization
+    {
+      //! Default value.
+      none,
+      //! Gauss point to segment approach.
+      gauss_point_to_segment,
+      //! Gauss point on cross section method.
+      gauss_point_cross_section,
+      //! Mortar type coupling.
+      mortar
+    };
+
+    /**
+     * Shape function for the mortar Lagrange-multiplicators
+     */
+    enum class BeamToSolidVolumeMortarShapefunctions
+    {
+      //! Default value.
+      none,
+      //! Linear.
+      line2,
+      //! Quadratic.
+      line3,
+      //! Cubic.
+      line4
+    };
+
     //! Map type std::string to enum
     inline enum JointType String2JointType(const std::string& name)
     {

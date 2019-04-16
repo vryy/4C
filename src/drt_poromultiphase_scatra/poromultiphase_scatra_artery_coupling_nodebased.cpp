@@ -119,6 +119,15 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::Init()
 }
 
 /*----------------------------------------------------------------------*
+ | setup the strategy                                kremheller 03/19   |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::Setup()
+{
+  // do nothing
+  return;
+}
+
+/*----------------------------------------------------------------------*
  | setup map extractor for artery mesh tying         kremheller 04/18   |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::SetupMapExtractor(

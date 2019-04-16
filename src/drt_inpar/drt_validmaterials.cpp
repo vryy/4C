@@ -387,6 +387,47 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
     AppendMaterialDefinition(matlist, m);
   }
+  /*----------------------------------------------------------------------*/
+  // scalar transport reaction material (species in solid)
+  {
+    Teuchos::RCP<MaterialDefinition> m =
+        Teuchos::rcp(new MaterialDefinition("MAT_scatra_multiporo_solid",
+            "advanced reaction material for multiphase "
+            "porous flow (species in solid)",
+            INPAR::MAT::m_scatra_multiporo_solid));
+
+    AddNamedReal(m, "DIFFUSIVITY", "kinematic diffusivity");
+    // no phaseID because only one solid phase
+    AddNamedReal(m, "REACOEFF", "reaction coefficient", 0.0, true);
+    AddNamedReal(m, "SCNUM", "schmidt number", 0.0, true);
+    AddNamedReal(m, "DENSIFICATION", "densification coefficient", 0.0, true);
+    AddNamedReal(m, "DELTA", "delta", 0.0, true);
+
+    AppendMaterialDefinition(matlist, m);
+  }
+  /*----------------------------------------------------------------------*/
+  // scalar transport reaction material (temperature)
+  {
+    Teuchos::RCP<MaterialDefinition> m =
+        Teuchos::rcp(new MaterialDefinition("MAT_scatra_multiporo_temperature",
+            "advanced reaction material for multiphase porous flow (temperature)",
+            INPAR::MAT::m_scatra_multiporo_temperature));
+
+    AddNamedInt(m, "NUMFLUIDPHASES", "number of fluid dofs");
+    AddNamedRealVector(m, "CP_FLUID", "heat capacity fluid phases", "NUMFLUIDPHASES");
+    AddNamedInt(m, "NUMVOLFRAC", "number of volfrac dofs");
+    AddNamedRealVector(m, "CP_VOLFRAC", "heat capacity volfrac", "NUMVOLFRAC");
+    AddNamedReal(m, "CP_SOLID", "heat capacity solid");
+    AddNamedRealVector(m, "KAPPA_FLUID", "thermal diffusivity fluid phases", "NUMFLUIDPHASES");
+    AddNamedRealVector(m, "KAPPA_VOLFRAC", "thermal diffusivity volfrac", "NUMVOLFRAC");
+    AddNamedReal(m, "KAPPA_SOLID", "heat capacity solid");
+    AddNamedReal(m, "DIFFUSIVITY", "kinematic diffusivity", 1.0, true);
+    AddNamedReal(m, "REACOEFF", "reaction coefficient", 0.0, true);
+    AddNamedReal(m, "SCNUM", "schmidt number", 0.0, true);
+    AddNamedReal(m, "DENSIFICATION", "densification coefficient", 0.0, true);
+
+    AppendMaterialDefinition(matlist, m);
+  }
 
   /*----------------------------------------------------------------------*/
   // scalar transport chemotaxis material
@@ -872,12 +913,15 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
     AddNamedInt(m, "YOUNGNUM", "number of Young's modulus in list");
     AddNamedRealVector(m, "YOUNG", "Young's modulus", "YOUNGNUM");
+    AddNamedIntVector(m, "YOUNGFUNCT", "functions for temp.dependet Young's modulus", "YOUNGNUM", 0,
+        true);  // optional
     AddNamedReal(m, "NUE", "Poisson's ratio");
     AddNamedReal(m, "DENS", "mass density");
     AddNamedReal(m, "THEXPANS", "coefficient of linear thermal expansion");
     AddNamedReal(m, "CAPA", "capacity");
     AddNamedReal(m, "CONDUCT", "conductivity");
     AddNamedReal(m, "INITTEMP", "initial temperature");
+    AddNamedInt(m, "CONSOLMAT", "consolidation material", -1, true);  // optional
 
     AppendMaterialDefinition(matlist, m);
   }
@@ -1117,13 +1161,13 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(m, "CABLUM", "abluminal stiffness parameter (2.62e3)");
 
     /*
-    AddNamedReal(m,"DENS","mass density");
-    AddNamedReal(m,"KAPPA","dilatation modulus");
-    AddNamedReal(m,"BETA","empiric constant");
-    AddNamedReal(m,"CLUM","luminal stiffness parameter");
-    AddNamedReal(m,"CMED","medial stiffness parameter");
-    AddNamedReal(m,"CABLUM","abluminal stiffness parameter");
-    */
+     AddNamedReal(m,"DENS","mass density");
+     AddNamedReal(m,"KAPPA","dilatation modulus");
+     AddNamedReal(m,"BETA","empiric constant");
+     AddNamedReal(m,"CLUM","luminal stiffness parameter");
+     AddNamedReal(m,"CMED","medial stiffness parameter");
+     AddNamedReal(m,"CABLUM","abluminal stiffness parameter");
+     */
 
     AppendMaterialDefinition(matlist, m);
   }
@@ -2061,6 +2105,39 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
     AddNamedReal(m, "CAPA", "volumetric heat capacity");
     AddNamedReal(m, "CONDUCT", "thermal conductivity");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  /*--------------------------------------------------------------------*/
+  // Fourier's law for multiple phases with variable conductivity and capacity
+  {
+    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("THERM_FourierVar",
+        "isotropic (linear) Fourier's law of heat conduction with T-dependent conductivity. Use t "
+        "in FUNCT for temperature!",
+        INPAR::MAT::m_th_fourier_var));
+
+    AddNamedIntVector(
+        m, "CAPAFUNCT", "functions for capacity, first for powder-melt, second for solid-melt", 3);
+    AddNamedIntVector(m, "CONDUCTFUNCT",
+        "functions for thermal conductivity, first for powder-melt, second for solid-melt", 3);
+    AddNamedInt(m, "CONSOLMAT", "reference to material handling consolidation");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+
+  /*----------------------------------------------------------------------*/
+  /*--------------------------------------------------------------------*/
+  // consolidation manager providing all common methods
+  {
+    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+        "MAT_Consolidation", "manager for consolidation tracking", INPAR::MAT::m_consolidation));
+    AddNamedReal(m, "SOLIDUS", "solidus temperature");
+    AddNamedReal(m, "LIQUIDUS", "liquidus temperature (set to liquidus for isothermal)");
+    AddNamedReal(m, "DELTA", "smoothing width around Ts and Tl", 0.0, true);
+    AddNamedReal(m, "LATENTHEAT", "latent heat of melting", 0.0, true);
 
     AppendMaterialDefinition(matlist, m);
   }

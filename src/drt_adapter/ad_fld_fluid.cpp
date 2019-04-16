@@ -4,12 +4,9 @@
 
 \brief Fluid field adapter
 
-<pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\level 1
+
+\maintainer Martin Kronbichler
 */
 /*----------------------------------------------------------------------*/
 #include "ad_fld_fluid.H"

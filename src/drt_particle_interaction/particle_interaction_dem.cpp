@@ -23,7 +23,10 @@
 #include "particle_interaction_utils.H"
 
 #include "particle_interaction_dem_neighbor_pairs.H"
+#include "particle_interaction_dem_history_pairs.H"
 #include "particle_interaction_dem_contact.H"
+
+#include "../drt_particle_algorithm/particle_wall_interface.H"
 
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_container.H"
@@ -60,6 +63,9 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::Init()
   // init neighbor pair handler
   InitNeighborPairHandler();
 
+  // init history pair handler
+  InitHistoryPairHandler();
+
   // init contact handler
   InitContactHandler();
 }
@@ -68,16 +74,20 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::Init()
  | setup particle interaction handler                         sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionDEM::Setup(
-    const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
+    const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
+    const std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface)
 {
   // call base class setup
-  ParticleInteractionBase::Setup(particleengineinterface);
+  ParticleInteractionBase::Setup(particleengineinterface, particlewallinterface);
 
   // setup neighbor pair handler
   neighborpairs_->Setup(particleengineinterface);
 
+  // setup history pair handler
+  historypairs_->Setup(particleengineinterface);
+
   // setup contact handler
-  contact_->Setup(particleengineinterface, particlematerial_, neighborpairs_);
+  contact_->Setup(particleengineinterface, particlematerial_, neighborpairs_, historypairs_);
 }
 
 /*---------------------------------------------------------------------------*
@@ -91,6 +101,9 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::WriteRestart(
 
   // write restart of neighbor pair handler
   neighborpairs_->WriteRestart(step, time);
+
+  // write restart of history pair handler
+  historypairs_->WriteRestart(step, time);
 
   // write restart of contact handler
   contact_->WriteRestart(step, time);
@@ -107,6 +120,9 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::ReadRestart(
 
   // read restart of neighbor pair handler
   neighborpairs_->ReadRestart(reader);
+
+  // read restart of history pair handler
+  historypairs_->ReadRestart(reader);
 
   // read restart of contact handler
   contact_->ReadRestart(reader);
@@ -127,6 +143,9 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::InsertParticleStatesOfParticle
     // insert states of regular phase particles
     particlestates.insert({PARTICLEENGINE::Force, PARTICLEENGINE::Mass, PARTICLEENGINE::Radius});
   }
+
+  // states for contact evaluation scheme
+  contact_->InsertParticleStatesOfParticleTypes(particlestatestotypes);
 }
 
 /*---------------------------------------------------------------------------*
@@ -173,8 +192,8 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateInteractions()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateInteractions");
 
-  // clear force state of particles
-  ClearForceState();
+  // clear force and moment states of particles
+  ClearForceAndMomentStates();
 
   // evaluate particle neighbor pairs
   neighborpairs_->EvaluateNeighborPairs();
@@ -182,11 +201,14 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateInteractions()
   // check critical time step
   contact_->CheckCriticalTimeStep();
 
-  // add contact contribution to force field
-  contact_->AddForceContribution();
+  // add contact contribution to force and moment field
+  contact_->AddForceAndMomentContribution();
 
-  // compute acceleration from force
+  // compute acceleration from force and moment
   ComputeAcceleration();
+
+  // update history pairs
+  historypairs_->UpdateHistoryPairs();
 }
 
 /*---------------------------------------------------------------------------*
@@ -195,6 +217,24 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateInteractions()
 double PARTICLEINTERACTION::ParticleInteractionDEM::MaxInteractionDistance() const
 {
   return (2.0 * MaxParticleRadius());
+}
+
+/*---------------------------------------------------------------------------*
+ | distribute interaction history                             sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::ParticleInteractionDEM::DistributeInteractionHistory() const
+{
+  // distribute history pairs
+  historypairs_->DistributeHistoryPairs();
+}
+
+/*---------------------------------------------------------------------------*
+ | communicate interaction history                            sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::ParticleInteractionDEM::CommunicateInteractionHistory() const
+{
+  // communicate history pairs
+  historypairs_->CommunicateHistoryPairs();
 }
 
 /*---------------------------------------------------------------------------*
@@ -222,6 +262,18 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::InitNeighborPairHandler()
 }
 
 /*---------------------------------------------------------------------------*
+ | init history pair handler                                  sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::ParticleInteractionDEM::InitHistoryPairHandler()
+{
+  // create history pair handler
+  historypairs_ = std::make_shared<PARTICLEINTERACTION::DEMHistoryPairs>(comm_);
+
+  // init history pair handler
+  historypairs_->Init();
+}
+
+/*---------------------------------------------------------------------------*
  | init contact handler                                       sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionDEM::InitContactHandler()
@@ -235,9 +287,9 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::InitContactHandler()
 }
 
 /*---------------------------------------------------------------------------*
- | clear force state of particles                             sfuchs 11/2018 |
+ | clear force and moment states of particles                 sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::ParticleInteractionDEM::ClearForceState() const
+void PARTICLEINTERACTION::ParticleInteractionDEM::ClearForceAndMomentStates() const
 {
   // iterate over particle types
   for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
@@ -248,11 +300,14 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::ClearForceState() const
 
     // clear force of all particles
     container->ClearState(PARTICLEENGINE::Force);
+
+    // clear moment of all particles
+    if (contact_->HaveTangentialContact()) container->ClearState({PARTICLEENGINE::Moment});
   }
 }
 
 /*---------------------------------------------------------------------------*
- | compute acceleration from force                            sfuchs 11/2018 |
+ | compute acceleration from force and moment                 sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionDEM::ComputeAcceleration() const
 {
@@ -274,13 +329,30 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::ComputeAcceleration() const
     // get particle state dimension
     const int statedim = container->GetParticleStateDim(PARTICLEENGINE::Acceleration);
 
-    // get pointer to particle state
-    const double* mass = container->GetPtrToParticleState(PARTICLEENGINE::Mass, 0);
-    const double* force = container->GetPtrToParticleState(PARTICLEENGINE::Force, 0);
-    double* acc = container->GetPtrToParticleState(PARTICLEENGINE::Acceleration, 0);
+    // declare pointer variables
+    const double *mass, *radius, *force, *moment;
+    double *acc, *angacc;
 
-    // iterate over owned particles of current type
+    // get pointer to particle states
+    mass = container->GetPtrToParticleState(PARTICLEENGINE::Mass, 0);
+    force = container->GetPtrToParticleState(PARTICLEENGINE::Force, 0);
+    acc = container->GetPtrToParticleState(PARTICLEENGINE::Acceleration, 0);
+
+    if (contact_->HaveTangentialContact())
+    {
+      radius = container->GetPtrToParticleState(PARTICLEENGINE::Radius, 0);
+      moment = container->GetPtrToParticleState(PARTICLEENGINE::Moment, 0);
+      angacc = container->GetPtrToParticleState(PARTICLEENGINE::AngularAcceleration, 0);
+    }
+
+    // compute acceleration
     for (int i = 0; i < particlestored; ++i)
       UTILS::vec_addscale(&acc[statedim * i], (1.0 / mass[i]), &force[statedim * i]);
+
+    // compute angular acceleration
+    if (contact_->HaveTangentialContact())
+      for (int i = 0; i < particlestored; ++i)
+        UTILS::vec_addscale(&angacc[statedim * i],
+            (5.0 / (2.0 * mass[i] * UTILS::pow<2>(radius[i]))), &moment[statedim * i]);
   }
 }

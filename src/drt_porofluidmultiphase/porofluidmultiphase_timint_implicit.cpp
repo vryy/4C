@@ -126,8 +126,8 @@ POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(Teuchos::RCP<DRT::Discretization> ac
 /*------------------------------------------------------------------------*
  | initialize time integration                                vuong 08/16 |
  *------------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::TimIntImpl::Init(
-    bool isale, int nds_disp, int nds_vel, int nds_solidpressure, int nds_scalar)
+void POROFLUIDMULTIPHASE::TimIntImpl::Init(bool isale, int nds_disp, int nds_vel,
+    int nds_solidpressure, int nds_scalar, const std::map<int, std::set<int>>* nearbyelepairs)
 {
   // set flags
   isale_ = isale;
@@ -260,6 +260,10 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Init(
         Teuchos::rcp(new POROFLUIDMULTIPHASE::MeshtyingStrategyStd(this, params_, poroparams_));
   // check if initial fields match
   strategy_->CheckInitialFields(phinp_);
+  // set the nearby ele pairs
+  strategy_->SetNearbyElePairs(nearbyelepairs);
+  // setup the strategy
+  strategy_->Setup();
 
   return;
 }  // TimIntImpl::Init()

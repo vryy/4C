@@ -37,7 +37,13 @@ Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToVolumeF
     case INPAR::GEOMETRYPAIR::LineToVolumeStrategy::segmentation:
       return Teuchos::rcp(new GeometryPairLineToVolumeSegmentation<scalar_type, line, volume>());
     default:
+    {
+      dserror(
+          "The given geometry pair strategy is not universally valid. You might want to create "
+          "your pair directly if you need certain features (for example cross section "
+          "projection)!");
       return Teuchos::null;
+    }
   }
 }
 

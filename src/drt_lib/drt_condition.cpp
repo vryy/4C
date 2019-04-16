@@ -436,6 +436,8 @@ void DRT::Condition::Print(std::ostream& os) const
     os << "Scalar transport biochemo externalization boundary condition for cell migration";
   else if (Type() == S2ICoupling)
     os << "Scatra-scatra interface coupling";
+  else if (Type() == SilverMueller)
+    os << "Silver-Mueller boundary for electromagnetics";
   else if (Type() == ElementTag)
     os << "Tagged elements";
   else if (Type() == NodeTag)

@@ -86,7 +86,8 @@ namespace BEAMINTERACTION
         LINALG::SerialDenseMatrix* stiffmat22) = 0;
 
     //! return appropriate internal implementation class (acts as a simple factory)
-    static Teuchos::RCP<BeamContactPair> Create(std::vector<DRT::Element const*> const& ele_ptrs);
+    static Teuchos::RCP<BeamContactPair> Create(std::vector<DRT::Element const*> const& ele_ptrs,
+        const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr);
 
     /*
     \brief Update state of translational nodal DoFs (absolute positions and tangents) of both
@@ -226,6 +227,31 @@ namespace BEAMINTERACTION
      *  \author grill
      *  \date 05/16 */
     virtual void PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const = 0;
+
+    /**
+     * \brief Per default it is assumed, that the contributions of a pair can be directly assembled
+     * into the global force and stiffness matrices.
+     */
+    inline virtual bool IsAssemblyDirect() const { return true; };
+
+    /**
+     * \brief Per default it is assumed, that the pair does not give any contributions to the system
+     * that have to be indirectly assembled (for example mortar like terms).
+     */
+    inline virtual bool IsAssemblyIndirect() const { return false; };
+
+    /**
+     * \brief Evaluate the mortar matrices $D$ and $M$ for this contact element pair.
+     * @param local_D (out) Local mortar matrix $D$.
+     * @param local_M (out) Local mortar matrix $M$.
+     * @param local_kappa (out) Local scaling vector.
+     * @return True if pair is in contact.
+     */
+    virtual bool EvaluateDM(LINALG::SerialDenseMatrix& local_D, LINALG::SerialDenseMatrix& local_M,
+        LINALG::SerialDenseVector& local_kappa)
+    {
+      return false;
+    }
 
    protected:
     //! Create the geometry pair for this contact pair. Per default no geometry pair is created.

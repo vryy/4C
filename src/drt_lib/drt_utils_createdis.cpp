@@ -131,7 +131,7 @@ void DRT::UTILS::DiscretizationCreatorBase::CopyConditions(const DRT::Discretiza
 Teuchos::RCP<DRT::Discretization>
 DRT::UTILS::DiscretizationCreatorBase::CreateMatchingDiscretization(
     const Teuchos::RCP<DRT::Discretization>& sourcedis, const std::string& targetdisname,
-    bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions) const
+    bool clonedofs, bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions) const
 {
   // initialize identical clone discretization
   Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(sourcedis->Comm().Clone());
@@ -173,7 +173,7 @@ DRT::UTILS::DiscretizationCreatorBase::CreateMatchingDiscretization(
   }
 
   // make auxiliary discretization have the same dofs as the coupling discretization
-  targetdis->ReplaceDofSet(Teuchos::rcp(new DRT::IndependentDofSet()), false);
+  if (clonedofs) targetdis->ReplaceDofSet(Teuchos::rcp(new DRT::IndependentDofSet()), false);
   targetdis->FillComplete(assigndegreesoffreedom, initelements, doboundaryconditions);
 
   // at the end, we do several checks to ensure that we really have generated
@@ -186,10 +186,13 @@ DRT::UTILS::DiscretizationCreatorBase::CreateMatchingDiscretization(
     dserror("ElementRowMaps of source and target discretization are different!");
   if (not sourcedis->ElementColMap()->SameAs(*(targetdis->ElementColMap())))
     dserror("ElementColMaps of source and target discretization are different!");
-  if (not sourcedis->DofRowMap()->SameAs(*(targetdis->DofRowMap())))
-    dserror("DofRowMaps of source and target discretization are different!");
-  if (not sourcedis->DofColMap()->SameAs(*(targetdis->DofColMap())))
-    dserror("DofColMaps of source and target discretization are different!");
+  if (clonedofs)
+  {
+    if (not sourcedis->DofRowMap()->SameAs(*(targetdis->DofRowMap())))
+      dserror("DofRowMaps of source and target discretization are different!");
+    if (not sourcedis->DofColMap()->SameAs(*(targetdis->DofColMap())))
+      dserror("DofColMaps of source and target discretization are different!");
+  }
 
   // return identical dis
   return targetdis;

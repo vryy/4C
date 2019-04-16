@@ -1,8 +1,6 @@
-// File: fsi_dc_mono_slfs_ost_ga.dat
-// Maintainer: Andy Wirtz
-//             wirtz@lnm.mw.tum.de
-//             http://www.lnm.mw.tum.de
-//             089-289-15270
+//
+// Maintainer: Matthias Mayr
+//
 -----------------------------------------------------------------------TITLE
 Monolithic Mortar Sliding FSI: 2D Driven cavity with flexible bottom
 FSI:                            iter_sliding_monolithicstructuresplit

@@ -34,6 +34,9 @@ void PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues(const Teuchos::Par
   std::istringstream typetovalstream(Teuchos::getNumericStringParameter(params, name));
   while (typetovalstream >> word) typetoval.push_back(word);
 
+  // default case
+  if (typetoval.size() == 1 and typetoval[0] == "none") return;
+
   // safety check
   if ((int)typetoval.size() % 2)
     dserror("input of '%s' (size = %d) relating particle type to value is odd!", name.c_str(),
@@ -71,6 +74,9 @@ void PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues(const Teuchos::Par
   }
 }
 
+/*---------------------------------------------------------------------------*
+ | template instantiations                                    sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
 template void PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues<int>(
     const Teuchos::ParameterList& params, const std::string& name,
     std::map<PARTICLEENGINE::TypeEnum, int>& typetovalmap);

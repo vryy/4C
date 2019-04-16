@@ -48,7 +48,8 @@ namespace POROMULTIPHASESCATRA
         const Teuchos::ParameterList& structparams, const Teuchos::ParameterList& fluidparams,
         const Teuchos::ParameterList& scatraparams, const std::string& struct_disname,
         const std::string& fluid_disname, const std::string& scatra_disname, bool isale,
-        int nds_disp, int nds_vel, int nds_solidpressure, int ndsporofluid_scatra);
+        int nds_disp, int nds_vel, int nds_solidpressure, int ndsporofluid_scatra,
+        const std::map<int, std::set<int>>* nearbyelepairs);
 
     /// setup
     virtual void SetupSystem();

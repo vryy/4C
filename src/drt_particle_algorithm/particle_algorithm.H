@@ -89,12 +89,15 @@ namespace PARTICLEALGORITHM
     //! output particle time step
     void Output() const;
 
-    //! create result test
-    std::shared_ptr<DRT::ResultTest> CreateResultTest();
+    //! create particle field specific result test objects
+    std::vector<std::shared_ptr<DRT::ResultTest>> CreateResultTests();
 
    private:
     //! init particle engine
     void InitParticleEngine();
+
+    //! init particle wall handler
+    void InitParticleWall();
 
     //! init particle time integration
     void InitParticleTimeIntegration();
@@ -107,9 +110,6 @@ namespace PARTICLEALGORITHM
 
     //! init viscous damping handler
     void InitViscousDamping();
-
-    //! init particle wall handler
-    void InitParticleWall();
 
     //! generate initial particles
     void GenerateInitialParticles();
@@ -138,6 +138,9 @@ namespace PARTICLEALGORITHM
     //! check particle transfer including bin size safety checks
     bool CheckParticleTransfer();
 
+    //! get max particle position increment since last transfer
+    void GetMaxParticlePositionIncrement(double& allprocmaxpositionincrement);
+
     //! check load balance
     bool CheckLoadBalancing();
 
@@ -162,6 +165,9 @@ namespace PARTICLEALGORITHM
     //! particle engine
     std::shared_ptr<PARTICLEENGINE::ParticleEngine> particleengine_;
 
+    //! particle wall handler
+    std::shared_ptr<PARTICLEALGORITHM::WallHandlerBase> particlewall_;
+
     //! particle time integration
     std::unique_ptr<PARTICLEALGORITHM::TimInt> particletimint_;
 
@@ -173,9 +179,6 @@ namespace PARTICLEALGORITHM
 
     //! particle viscous damping handler
     std::unique_ptr<PARTICLEALGORITHM::ViscousDampingHandler> viscousdamping_;
-
-    //! particle wall handler
-    std::shared_ptr<PARTICLEALGORITHM::WallHandlerBase> particlewall_;
 
     //! map of particle types and corresponding states
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>> particlestatestotypes_;

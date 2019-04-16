@@ -14,6 +14,8 @@
 #include "fsi_dirichletneumann.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "fsi_debugwriter.H"
+#include "../drt_lib/drt_globalproblem.H"  // todo remove as soon as possible, only needed for dserror
+#include "../drt_io/io_control.H"  // todo remove as soon as possible, only needed for dserror
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -37,6 +39,20 @@ void FSI::DirichletNeumann::Setup()
 /*----------------------------------------------------------------------*/
 void FSI::DirichletNeumann::FSIOp(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag)
 {
+  // Check if the test case uses the new Structural time integration or if it is one of our legacy
+  // test cases
+  if (DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StructuralDynamicParams(),
+          "INT_STRATEGY") == INPAR::STR::int_old &&
+      DRT::Problem::Instance()->OutputControlFile()->InputFileName().find("constr2D_fsi") ==
+          std::string::npos &&
+      DRT::Problem::Instance()->OutputControlFile()->InputFileName().find("fs3i_ac_prestress") ==
+          std::string::npos)
+  {
+    dserror(
+        "You are using the old structural time integration! Partitioned FSI is already migrated to "
+        "the new structural time integration! Please update your Input file with INT_STRATEGY "
+        "Standard!\n");
+  }
   if (kinematiccoupling_)  // coupling variable: interface displacements/velocity
   {
     const Teuchos::RCP<Epetra_Vector> icoupn = Teuchos::rcp(new Epetra_Vector(x));

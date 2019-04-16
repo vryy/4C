@@ -88,7 +88,8 @@ namespace POROFLUIDMULTIPHASE
     virtual ~TimIntImpl();
 
     //! initialize time integration
-    virtual void Init(bool isale, int nds_disp, int nds_vel, int nds_solidpressure, int nds_scalar);
+    virtual void Init(bool isale, int nds_disp, int nds_vel, int nds_solidpressure, int nds_scalar,
+        const std::map<int, std::set<int>>* nearbyelepairs);
 
     /*========================================================================*/
     //! @name general framework

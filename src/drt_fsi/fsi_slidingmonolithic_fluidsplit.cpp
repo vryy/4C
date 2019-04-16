@@ -7,7 +7,7 @@ with condensed fluid interface velocities
 
 \level 2
 
-\maintainer Andy Wirtz
+\maintainer Matthias Mayr
 */
 /*--------------------------------------------------------------------------*/
 

@@ -25,6 +25,18 @@
  *---------------------------------------------------------------------------*/
 #include "../drt_particle_engine/particle_typedefs.H"
 
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_RCPStdSharedPtrConversions.hpp>
+
+/*---------------------------------------------------------------------------*
+ | forward declarations                                       sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
+namespace DRT
+{
+  class Discretization;
+}
+
 /*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
@@ -35,6 +47,12 @@ namespace PARTICLEALGORITHM
    public:
     //! virtual destructor
     virtual ~WallHandlerInterface(){};
+
+    //! get wall discretization
+    virtual Teuchos::RCP<const DRT::Discretization> GetWallDiscretization() const = 0;
+
+    //! get wall displacements
+    virtual Teuchos::RCP<const Epetra_Vector> GetDisp() const = 0;
 
     //! get reference to potential wall neighbors
     virtual const PARTICLEENGINE::PotentialWallNeighbors& GetPotentialWallNeighbors() const = 0;

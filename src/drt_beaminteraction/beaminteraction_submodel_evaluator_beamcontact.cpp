@@ -42,22 +42,25 @@
 #include "../drt_rigidsphere/rigidsphere.H"
 
 #include <Teuchos_TimeMonitor.hpp>
-
+#include <Epetra_FEVector.h>
 #include <NOX_Solver_Generic.H>
 
 #include "beam_to_solid_volume_meshtying_params.H"
 #include "../drt_geometry_pair/geometry_pair_evaluation_data_global.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_volume_evaluation_data.H"
 #include "../drt_inpar/inpar_geometry_pair.H"
+#include "beaminteraction_submodel_evaluator_beamcontact_assembly_manager_direct.H"
+#include "beaminteraction_submodel_evaluator_beamcontact_assembly_manager_indirect.H"
+#include "str_model_evaluator_beaminteraction_datastate.H"
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::BeamContact()
     : beam_contact_params_ptr_(Teuchos::null),
-      beam_contact_evaluation_data_ptr_(Teuchos::null),
       geometry_evaluation_data_ptr_(Teuchos::null),
-      contact_elepairs_(Teuchos::null)
+      contact_elepairs_(Teuchos::null),
+      assembly_managers_(Teuchos::null)
 {
   // clear stl stuff
   nearby_elements_map_.clear();
@@ -108,10 +111,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
     beam_contact_params_ptr_->BuildBeamToSphereContactParams();
   }
 
-  if (DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
+  if (Teuchos::getIntegralValue<INPAR::BEAMINTERACTION::BeamToSolidVolumeContactDiscretization>(
           DRT::Problem::Instance()->BeamInteractionParams().sublist(
               "BEAM TO SOLID VOLUME MESHTYING"),
-          "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none)
+          "CONTACT_DISCRETIZATION") !=
+      INPAR::BEAMINTERACTION::BeamToSolidVolumeContactDiscretization::none)
   {
     contactelementtypes_.push_back(BINSTRATEGY::UTILS::Solid);
 
@@ -121,9 +125,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
 
     // Set the Gauss rule for the pair.
     geometry_evaluation_data_ptr_->LineToVolumeEvaluationData()->SetGaussRule(
-        beam_contact_params_ptr_->BeamToSolidVolumeMeshtyingParams()->GaussRule());
+        beam_contact_params_ptr_->BeamToSolidVolumeMeshtyingParams()->GetGaussRule());
+    geometry_evaluation_data_ptr_->LineToVolumeEvaluationData()
+        ->SetNumberOfIntegrationPointsCircumfence(
+            beam_contact_params_ptr_->BeamToSolidVolumeMeshtyingParams()
+                ->GetNumberOfIntegrationPointsCircumfence());
   }
-
 
   // set flag
   issetup_ = true;
@@ -191,55 +198,14 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForce()
 {
   CheckInitSetup();
 
-  // resulting discrete element force vectors of the two interacting elements
-  std::vector<LINALG::SerialDenseVector> eleforce(2);
-
-  // resulting discrete force vectors (centerline DOFs only!) of the two
-  // interacting elements
-  std::vector<LINALG::SerialDenseVector> eleforce_centerlineDOFs(2);
-
-  std::vector<std::vector<LINALG::SerialDenseMatrix>> dummystiff;
-
-  // element gids of interacting elements
-  std::vector<int> elegids(2);
-
-  // are non-zero force values returned which need assembly?
-  bool pair_is_active = false;
-
-
-  for (auto& elepairptr : contact_elepairs_)
+  // Loop over the assembly manager and assemble contributions into the global force vector.
+  for (auto& assembly_manager : assembly_managers_)
   {
-    // PreEvaluate the pair
-    elepairptr->PreEvaluate();
+    assembly_manager->EvaluateForceStiff(DiscretPtr(),
+        BeamInteractionDataStatePtr()->GetMutableForceNp(), Teuchos::null,
+        BeamInteractionDataStatePtr()->GetDisColNp());
   }
 
-
-  for (auto& elepairptr : contact_elepairs_)
-  {
-    // Evaluate the pair and check if there is active contact
-    pair_is_active = elepairptr->Evaluate(
-        &eleforce_centerlineDOFs[0], &eleforce_centerlineDOFs[1], NULL, NULL, NULL, NULL);
-
-    if (pair_is_active)
-    {
-      elegids[0] = elepairptr->Element1()->Id();
-      elegids[1] = elepairptr->Element2()->Id();
-
-      // assemble force vector affecting the centerline DoFs only
-      // into element force vector ('all DoFs' format, as usual)
-      BEAMINTERACTION::UTILS::AssembleCenterlineDofForceStiffIntoElementForceStiff(
-          Discret(), elegids, eleforce_centerlineDOFs, dummystiff, &eleforce, NULL);
-
-      // Fixme
-      eleforce[0].Scale(-1.0);
-      eleforce[1].Scale(-1.0);
-
-      // assemble the contributions into force vector class variable
-      // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
-      BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix(Discret(), elegids,
-          eleforce, dummystiff, BeamInteractionDataStatePtr()->GetMutableForceNp(), Teuchos::null);
-    }
-  }
   return true;
 }
 
@@ -249,52 +215,14 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateStiff()
 {
   CheckInitSetup();
 
-  // linearizations
-  std::vector<std::vector<LINALG::SerialDenseMatrix>> elestiff(
-      2, std::vector<LINALG::SerialDenseMatrix>(2));
-
-  // linearizations (centerline DOFs only!)
-  std::vector<std::vector<LINALG::SerialDenseMatrix>> elestiff_centerlineDOFs(
-      2, std::vector<LINALG::SerialDenseMatrix>(2));
-
-  std::vector<LINALG::SerialDenseVector> dummyforce;
-
-  // element gids of interacting elements
-  std::vector<int> elegids(2);
-
-  // are non-zero stiffness values returned which need assembly?
-  bool pair_is_active = false;
-
-
-  for (auto& elepairptr : contact_elepairs_)
+  // Loop over the assembly manager and assemble contributions into the global stiffness matrix.
+  for (auto& assembly_manager : assembly_managers_)
   {
-    // PreEvaluate the pair
-    elepairptr->PreEvaluate();
+    assembly_manager->EvaluateForceStiff(DiscretPtr(), Teuchos::null,
+        BeamInteractionDataStatePtr()->GetMutableStiff(),
+        BeamInteractionDataStatePtr()->GetDisColNp());
   }
 
-  for (auto& elepairptr : contact_elepairs_)
-  {
-    // Evaluate the pair and check if there is active contact
-    pair_is_active = elepairptr->Evaluate(NULL, NULL, &elestiff_centerlineDOFs[0][0],
-        &elestiff_centerlineDOFs[0][1], &elestiff_centerlineDOFs[1][0],
-        &elestiff_centerlineDOFs[1][1]);
-
-    if (pair_is_active)
-    {
-      elegids[0] = elepairptr->Element1()->Id();
-      elegids[1] = elepairptr->Element2()->Id();
-
-      // assemble stiffness matrix affecting the centerline DoFs only
-      // into element stiffness matrix ('all DoFs' format, as usual)
-      BEAMINTERACTION::UTILS::AssembleCenterlineDofForceStiffIntoElementForceStiff(
-          Discret(), elegids, dummyforce, elestiff_centerlineDOFs, NULL, &elestiff);
-
-      // assemble the contributions into force vector class variable
-      // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
-      BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix(Discret(), elegids,
-          dummyforce, elestiff, Teuchos::null, BeamInteractionDataStatePtr()->GetMutableStiff());
-    }
-  }
   return true;
 }
 
@@ -304,63 +232,13 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForceStiff()
 {
   CheckInitSetup();
 
-  // resulting discrete element force vectors of the two interacting elements
-  std::vector<LINALG::SerialDenseVector> eleforce(2);
-
-  // resulting discrete force vectors (centerline DOFs only!) of the two
-  // interacting elements
-  std::vector<LINALG::SerialDenseVector> eleforce_centerlineDOFs(2);
-
-  // linearizations
-  std::vector<std::vector<LINALG::SerialDenseMatrix>> elestiff(
-      2, std::vector<LINALG::SerialDenseMatrix>(2));
-
-  // linearizations (centerline DOFs only!)
-  std::vector<std::vector<LINALG::SerialDenseMatrix>> elestiff_centerlineDOFs(
-      2, std::vector<LINALG::SerialDenseMatrix>(2));
-
-  // element gids of interacting elements
-  std::vector<int> elegids(2);
-
-  // are non-zero stiffness values returned which need assembly?
-  bool pair_is_active = false;
-
-
-  for (auto& elepairptr : contact_elepairs_)
-  {
-    // PreEvaluate the pair
-    elepairptr->PreEvaluate();
-  }
-
-  for (auto& elepairptr : contact_elepairs_)
-  {
-    // Evaluate the pair and check if there is active contact
-    pair_is_active = elepairptr->Evaluate(&eleforce_centerlineDOFs[0], &eleforce_centerlineDOFs[1],
-        &elestiff_centerlineDOFs[0][0], &elestiff_centerlineDOFs[0][1],
-        &elestiff_centerlineDOFs[1][0], &elestiff_centerlineDOFs[1][1]);
-
-    if (pair_is_active)
-    {
-      elegids[0] = elepairptr->Element1()->Id();
-      elegids[1] = elepairptr->Element2()->Id();
-
-      // assemble force vector and stiffness matrix affecting the centerline DoFs only
-      // into element force vector and stiffness matrix ('all DoFs' format, as usual)
-      BEAMINTERACTION::UTILS::AssembleCenterlineDofForceStiffIntoElementForceStiff(Discret(),
-          elegids, eleforce_centerlineDOFs, elestiff_centerlineDOFs, &eleforce, &elestiff);
-
-
-      // Fixme
-      eleforce[0].Scale(-1.0);
-      eleforce[1].Scale(-1.0);
-
-      // assemble the contributions into force vector class variable
-      // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
-      BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix(Discret(), elegids,
-          eleforce, elestiff, BeamInteractionDataStatePtr()->GetMutableForceNp(),
-          BeamInteractionDataStatePtr()->GetMutableStiff());
-    }
-  }
+  // Loop over the assembly manager and assemble contributions into the global force vector and
+  // stiffness matrix.
+  for (auto& assembly_manager : assembly_managers_)
+    assembly_manager->EvaluateForceStiff(DiscretPtr(),
+        BeamInteractionDataStatePtr()->GetMutableForceNp(),
+        BeamInteractionDataStatePtr()->GetMutableStiff(),
+        BeamInteractionDataStatePtr()->GetDisColNp());
 
   PrintActiveBeamContactSet(IO::cout.os(IO::verbose));
 
@@ -892,6 +770,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
 {
   // Todo maybe keep existing pairs and reuse them ?
   contact_elepairs_.clear();
+  assembly_managers_.clear();
 
   // reset the geometry evaluation data
   geometry_evaluation_data_ptr_->ResetGeometryEvaluationDataGlobal();
@@ -918,7 +797,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
 
       // construct, init and setup contact pairs
       Teuchos::RCP<BEAMINTERACTION::BeamContactPair> newbeaminteractionpair =
-          BEAMINTERACTION::BeamContactPair::Create(ele_ptrs);
+          BEAMINTERACTION::BeamContactPair::Create(ele_ptrs, beam_contact_params_ptr_);
       newbeaminteractionpair->Init(
           beam_contact_params_ptr_, geometry_evaluation_data_ptr_, ele_ptrs);
       newbeaminteractionpair->Setup();
@@ -927,6 +806,37 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
       contact_elepairs_.push_back(newbeaminteractionpair);
     }
   }
+
+  // Sort the pairs into the evaluation type (direct or indirect). A pair can be in both types.
+  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> assembly_pairs_direct;
+  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> assembly_pairs_indirect;
+  for (auto& elepairptr : contact_elepairs_)
+  {
+    if (elepairptr->IsAssemblyDirect()) assembly_pairs_direct.push_back(elepairptr);
+    if (elepairptr->IsAssemblyIndirect()) assembly_pairs_indirect.push_back(elepairptr);
+  }
+
+  // Check if there are any processors that require a certain element assembly method.
+  // We need to do this as in some assembly methods MPI communications are needed and the
+  // simulation crashes if the assembly manager is not on all ranks.
+  int my_direct_pairs = assembly_pairs_direct.size();
+  int my_indirect_pairs = assembly_pairs_indirect.size();
+  int global_direct_pairs = 0;
+  int global_indirect_pairs = 0;
+  Discret().Comm().SumAll(&my_direct_pairs, &global_direct_pairs, 1);
+  Discret().Comm().SumAll(&my_indirect_pairs, &global_indirect_pairs, 1);
+
+  // Create the needed assembly manager.
+  if (global_direct_pairs > 0)
+    assembly_managers_.push_back(
+        Teuchos::rcp<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect>(
+            new BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect(
+                assembly_pairs_direct)));
+  if (global_indirect_pairs > 0)
+    assembly_managers_.push_back(
+        Teuchos::rcp<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect>(
+            new BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect(
+                assembly_pairs_indirect, DiscretPtr(), BeamContactParamsPtr())));
 
   IO::cout(IO::standard) << "PID " << std::setw(2) << std::right << GState().GetMyRank()
                          << " currently monitors " << std::setw(5) << std::right

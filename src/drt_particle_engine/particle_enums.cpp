@@ -49,7 +49,10 @@ int PARTICLEENGINE::EnumToStateDim(const enum PARTICLEENGINE::ParticleState& sta
     case PARTICLEENGINE::Position:
     case PARTICLEENGINE::Velocity:
     case PARTICLEENGINE::Acceleration:
+    case PARTICLEENGINE::AngularVelocity:
+    case PARTICLEENGINE::AngularAcceleration:
     case PARTICLEENGINE::Force:
+    case PARTICLEENGINE::Moment:
     case PARTICLEENGINE::LastTransferPosition:
     case PARTICLEENGINE::ReferencePosition:
     case PARTICLEENGINE::ModifiedVelocity:
@@ -111,8 +114,17 @@ std::string PARTICLEENGINE::EnumToStateName(const enum PARTICLEENGINE::ParticleS
     case PARTICLEENGINE::Acceleration:
       name = "acceleration";
       break;
+    case PARTICLEENGINE::AngularVelocity:
+      name = "angular velocity";
+      break;
+    case PARTICLEENGINE::AngularAcceleration:
+      name = "angular acceleration";
+      break;
     case PARTICLEENGINE::Force:
       name = "force";
+      break;
+    case PARTICLEENGINE::Moment:
+      name = "moment";
       break;
     case PARTICLEENGINE::LastTransferPosition:
       name = "position last transfer";

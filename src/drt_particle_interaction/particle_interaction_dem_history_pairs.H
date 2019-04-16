@@ -1,0 +1,143 @@
+/*---------------------------------------------------------------------------*/
+/*!
+\file particle_interaction_dem_history_pairs.H
+
+\brief history pair handler for discrete element method (DEM) interactions
+
+\level 3
+
+\maintainer  Sebastian Fuchs
+             fuchs@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289 -15262
+
+*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*
+ | definitions                                                sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
+#ifndef PARTICLE_INTERACTION_DEM_HISTORY_PAIRS_H
+#define PARTICLE_INTERACTION_DEM_HISTORY_PAIRS_H
+
+/*---------------------------------------------------------------------------*
+ | headers                                                    sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
+#include "../drt_particle_engine/particle_enums.H"
+#include "../drt_particle_engine/particle_typedefs.H"
+
+#include "particle_interaction_dem_history_pair_struct.H"
+
+#include <Epetra_Comm.h>
+#include <unordered_map>
+
+/*---------------------------------------------------------------------------*
+ | forward declarations                                       sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
+namespace IO
+{
+  class DiscretizationReader;
+}
+
+namespace PARTICLEENGINE
+{
+  class ParticleEngineInterface;
+}
+
+/*---------------------------------------------------------------------------*
+ | type definitions                                           sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
+namespace PARTICLEINTERACTION
+{
+  typedef std::pair<bool, PARTICLEINTERACTION::DEMHistoryPairTangential>
+      TouchedDEMHistoryPairTangential;
+  typedef std::unordered_map<int, std::unordered_map<int, TouchedDEMHistoryPairTangential>>
+      DEMHistoryPairTangentialData;
+}  // namespace PARTICLEINTERACTION
+
+/*---------------------------------------------------------------------------*
+ | class definitions                                          sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
+namespace PARTICLEINTERACTION
+{
+  class DEMHistoryPairs
+  {
+   public:
+    //! constructor
+    explicit DEMHistoryPairs(const Epetra_Comm& comm);
+
+    //! virtual destructor
+    ~DEMHistoryPairs(){};
+
+    //! init history pair handler
+    void Init();
+
+    //! setup history pair handler
+    void Setup(
+        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
+
+    //! write restart of history pair handler
+    void WriteRestart(const int step, const double time) const;
+
+    //! read restart of history pair handler
+    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
+
+    //! get reference to tangential history pair data
+    inline DEMHistoryPairTangentialData& GetRefToTangentialHistoryData()
+    {
+      return tangentialhistorydata_;
+    };
+
+    //! distribute history pairs
+    void DistributeHistoryPairs();
+
+    //! communicate history pairs
+    void CommunicateHistoryPairs();
+
+    //! update history pairs
+    void UpdateHistoryPairs();
+
+   private:
+    //! communicate specific history pairs
+    template <typename historypairtype>
+    void CommunicateSpecificHistoryPairs(const std::vector<std::vector<int>>& particletargets,
+        std::unordered_map<int, std::unordered_map<int, std::pair<bool, historypairtype>>>&
+            historydata);
+
+    //! erase untouched history pairs
+    template <typename historypairtype>
+    void EraseUntouchedHistoryPairs(
+        std::unordered_map<int, std::unordered_map<int, std::pair<bool, historypairtype>>>&
+            historydata);
+
+    //! pack all history pairs
+    template <typename historypairtype>
+    void PackAllHistoryPairs(std::vector<char>& buffer,
+        const std::unordered_map<int, std::unordered_map<int, std::pair<bool, historypairtype>>>&
+            historydata) const;
+
+    //! unpack history pairs
+    template <typename historypairtype>
+    void UnpackHistoryPairs(const std::vector<char>& buffer,
+        std::unordered_map<int, std::unordered_map<int, std::pair<bool, historypairtype>>>&
+            historydata);
+
+    //! add history pair to buffer
+    template <typename historypairtype>
+    void AddHistoryPairToBuffer(std::vector<char>& buffer, int globalid_i, int globalid_j,
+        const historypairtype& historypair) const;
+
+    //! communication
+    const Epetra_Comm& comm_;
+
+    //! tangential history pair data
+    DEMHistoryPairTangentialData tangentialhistorydata_;
+
+    //! interface to particle engine
+    std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface_;
+  };
+
+}  // namespace PARTICLEINTERACTION
+
+/*---------------------------------------------------------------------------*/
+#endif

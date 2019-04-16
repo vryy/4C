@@ -8,10 +8,10 @@
  <pre>
   \level 2
 
-   \maintainer Moritz Thon
-               thon@mhpc.mw.tum.de
+   \maintainer Johannes Kremheller
+               kremheller@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
-               089 - 289-10364
+               089-289-15262
  </pre>
  *----------------------------------------------------------------------*/
 
@@ -132,8 +132,10 @@ namespace DRT
       };
 
      private:
+      //! number of spatial dimensions for Gauss point coordinates (always three)
+      static const unsigned int numdim_gp_ = 3;
       //! current Gauss-point coordinates
-      double gpcoord_[my::nsd_];
+      double gpcoord_[numdim_gp_];
 
     };  // end ScaTraEleCalcAdvReac
 

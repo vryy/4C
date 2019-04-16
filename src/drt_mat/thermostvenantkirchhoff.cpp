@@ -18,6 +18,7 @@
  | headers                                                   dano 02/10 |
  *----------------------------------------------------------------------*/
 #include "thermostvenantkirchhoff.H"
+#include "consolidation.H"
 #include "matpar_bundle.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -29,21 +30,37 @@
  *----------------------------------------------------------------------*/
 MAT::PAR::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      youngs_(*(matdata->Get<std::vector<double>>("YOUNG"))),
+      youngsval_(*(matdata->Get<std::vector<double>>("YOUNG"))),
+      youngsfunct_(*(matdata->Get<std::vector<int>>("YOUNGFUNCT"))),
       poissonratio_(matdata->GetDouble("NUE")),
       density_(matdata->GetDouble("DENS")),
       thermexpans_(matdata->GetDouble("THEXPANS")),
       capa_(matdata->GetDouble("CAPA")),
       conduct_(matdata->GetDouble("CONDUCT")),
-      thetainit_(matdata->GetDouble("INITTEMP"))
+      thetainit_(matdata->GetDouble("INITTEMP")),
+      consolmat_(matdata->GetInt("CONSOLMAT"))
 {
   bool young_temp =
       (DRT::INPUT::IntegralValue<int>(
            DRT::Problem::Instance()->StructuralDynamicParams(), "YOUNG_IS_TEMP_DEPENDENT") == 1);
-  if ((youngs_.size() > 1) and (young_temp == false))
+  if ((youngsval_.size() > 1) and (young_temp == false))
     dserror(
         "in case of temperature-dependent Young's modulus you have to specifiy "
         "YOUNG_IS_TEMP_DEPENDENT in the input file");
+
+  // if all functions are zero, we use the old polynomial style
+  youngpoly_ = true;
+  for (unsigned int i = 0; i < youngsfunct_.size(); i++) youngpoly_ &= (youngsfunct_[i] <= 0);
+
+  // if not polynomial we want exactly two functions for consolidation process in SLM
+  // also consolidation material has to be referenced
+  if (!youngpoly_ && (youngsval_.size() != 3))
+    dserror(
+        "Currently exactly three functions or only zero functions are required for Young's "
+        "modulus.");
+
+  if (!youngpoly_ && consolmat_ < 0)
+    dserror("Functions for Young's only with consolidation material.");
 }
 
 
@@ -73,15 +90,24 @@ DRT::ParObject* MAT::ThermoStVenantKirchhoffType::Create(const std::vector<char>
 /*----------------------------------------------------------------------*
  |  constructor (public)                                     dano 02/10 |
  *----------------------------------------------------------------------*/
-MAT::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff() : params_(NULL) {}
+MAT::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff() : params_(NULL), consol_(Teuchos::null) {}
 
 
 /*----------------------------------------------------------------------*
  | constructor (public)                                      dano 02/10 |
  *----------------------------------------------------------------------*/
 MAT::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff(MAT::PAR::ThermoStVenantKirchhoff* params)
-    : params_(params)
+    : params_(params), consol_(Teuchos::null)
 {
+  // create the consolidation material if referenced in definition
+  if (params_->consolmat_ > 0)
+  {
+    const int consolmatid = params_->consolmat_;
+    Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(consolmatid);
+    if (mat == Teuchos::null)
+      dserror("Failed to allocate consolidation material, id=%d", consolmatid);
+    consol_ = Teuchos::rcp_dynamic_cast<MAT::Consolidation>(mat);
+  }
 }
 
 
@@ -101,6 +127,10 @@ void MAT::ThermoStVenantKirchhoff::Pack(DRT::PackBuffer& data) const
   int matid = -1;
   if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
+
+  // pack consolidation manager
+  if (consol_ != Teuchos::null) consol_->Pack(data);
+
 }  // Pack()
 
 
@@ -131,9 +161,46 @@ void MAT::ThermoStVenantKirchhoff::Unpack(const std::vector<char>& data)
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
+  // only do this if not in post-processing and if consolidation is used
+  if (params_ != NULL and (params_->consolmat_ > 0))
+  {
+    // unpack consolidation manager
+    // get the data for the consolidation manager
+    std::vector<char> consoldata;
+    ExtractfromPack(position, data, consoldata);
+    // construct it and unpack data
+    if (params_->consolmat_ > 0)
+    {
+      Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(params_->consolmat_);
+      consol_ = Teuchos::rcp_dynamic_cast<MAT::Consolidation>(mat);
+      consol_->Unpack(consoldata);
+    }
+    else
+    {
+      consol_ = Teuchos::null;
+    }
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+    if (position != data.size())
+      dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  }
 }  // Unpack()
+
+
+/*----------------------------------------------------------------------*
+ |  setup history-variables                                             |
+ *----------------------------------------------------------------------*/
+void MAT::ThermoStVenantKirchhoff::Setup(const int numgp, DRT::INPUT::LineDefinition* linedef)
+{
+  if (consol_ != Teuchos::null) consol_->Setup(numgp);
+}
+
+/*----------------------------------------------------------------------*
+ |  update history-variables                                             |
+ *----------------------------------------------------------------------*/
+void MAT::ThermoStVenantKirchhoff::Update()
+{
+  if (consol_ != Teuchos::null) consol_->Update();
+}
 
 
 /*----------------------------------------------------------------------*
@@ -160,7 +227,7 @@ void MAT::ThermoStVenantKirchhoff::StrainEnergy(
     const int eleGID                       ///< element GID
 )
 {
-  if (params_->youngs_.size() > 1)
+  if (params_->youngsval_.size() > 1)
     dserror("Calculation of strain energy only for constant Young's modulus");
   Teuchos::ParameterList p;
   p.set<int>("young_temp", 0);
@@ -188,11 +255,12 @@ void MAT::ThermoStVenantKirchhoff::SetupCmat(
   if (young_temp == true)
   {
     double tempnp = params.get<double>("scalartemp");
-    Emod = GetMatParameterAtTempnp(&(params_->youngs_), tempnp);
+    int iquad = params.get<int>("gp");
+    Emod = GetMatParameterAtTempnp(&(params_->youngsval_), tempnp, iquad);
   }
   // young's modulus is constant
   else
-    Emod = params_->youngs_[0];
+    Emod = params_->youngsval_[0];
 
   // Poisson's ratio (Querdehnzahl)
   const double nu = params_->poissonratio_;
@@ -261,7 +329,7 @@ void MAT::ThermoStVenantKirchhoff::SetupCmat(
 /*----------------------------------------------------------------------*
  | calculates stress-temperature modulus                     dano 04/10 |
  *----------------------------------------------------------------------*/
-double MAT::ThermoStVenantKirchhoff::STModulus(Teuchos::ParameterList& params) const
+double MAT::ThermoStVenantKirchhoff::STModulus(Teuchos::ParameterList& params)
 {
   double Emod = 0.0;
   // is young's modulus temperature-dependent, i.e. E(T)?
@@ -269,10 +337,11 @@ double MAT::ThermoStVenantKirchhoff::STModulus(Teuchos::ParameterList& params) c
   if (young_temp == true)
   {
     double tempnp = params.get<double>("scalartemp");
-    Emod = GetMatParameterAtTempnp(&(params_->youngs_), tempnp);
+    int iquad = params.get<int>("gp");
+    Emod = GetMatParameterAtTempnp(&(params_->youngsval_), tempnp, iquad);
   }
   else
-    Emod = params_->youngs_[0];
+    Emod = params_->youngsval_[0];
 
   // initialise the parameters for the lame constants
   const double pv = params_->poissonratio_;
@@ -369,29 +438,45 @@ void MAT::ThermoStVenantKirchhoff::Evaluate(
  *----------------------------------------------------------------------*/
 double MAT::ThermoStVenantKirchhoff::GetMatParameterAtTempnp(
     const std::vector<double>* paramvector,  // (i) given parameter is a vector
-    const double& tempnp                     // tmpr (i) current temperature
-    ) const
+    const double& tempnp,                    // tmpr (i) current temperature
+    const int gp                             // current integration point
+)
 {
+  double parambytempnp;
   // polynomial type
-
-  // initialise the temperature dependent material parameter
-  double parambytempnp = 0.0;
-  double tempnp_pow = 1.0;
-
-  // Param = a + b . T + c . T^2 + d . T^3 + ...
-  // with T: current temperature
-  for (unsigned i = 0; i < (*paramvector).size(); ++i)
+  if (params_->youngpoly_) parambytempnp = PolynomialFunction(paramvector, tempnp);
+  // general function handled by Consolidation material
+  else
   {
-    // calculate coefficient of variable T^i
-    parambytempnp += (*paramvector)[i] * tempnp_pow;
-    // for the higher polynom increase the exponent of the temperature
-    tempnp_pow *= tempnp;
+    parambytempnp = consol_->EvaluateTempDependentFunction(tempnp, gp, params_->youngsfunct_);
   }
 
   // return temperature-dependent material parameter
   return parambytempnp;
 
 }  // GetMatParameterAtTempnp()
+
+/*----------------------------------------------------------------------*
+ | return evaluated polynomial at given T                  proell 05/18 |
+ *----------------------------------------------------------------------*/
+double MAT::ThermoStVenantKirchhoff::PolynomialFunction(
+    const std::vector<double>* coeffs,  // coefficients, constant to highest degree
+    const double& tempnp)
+{
+  double tempnp_pow = 1.0;
+  double parambytempnp = 0;
+  // Param = a + b . T + c . T^2 + d . T^3 + ...
+  // with T: current temperature
+  for (unsigned i = 0; i < (*coeffs).size(); ++i)
+  {
+    // calculate coefficient of variable T^i
+    parambytempnp += (*coeffs)[i] * tempnp_pow;
+    // for the higher polynom increase the exponent of the temperature
+    tempnp_pow *= tempnp;
+  }
+  return parambytempnp;
+}
+
 
 
 /*----------------------------------------------------------------------*
@@ -400,34 +485,38 @@ double MAT::ThermoStVenantKirchhoff::GetMatParameterAtTempnp(
  *----------------------------------------------------------------------*/
 double MAT::ThermoStVenantKirchhoff::GetMatParameterAtTempnp_T(
     const std::vector<double>* paramvector,  // (i) given parameter is a vector
-    const double& tempnp                     // tmpr (i) current temperature
-    ) const
+    const double& tempnp,                    // tmpr (i) current temperature
+    const int gp)
 {
-  // polynomial type
-
-  // initialise the temperature dependent material parameter
   double parambytempnp = 0.0;
-  double tempnp_pow = 1.0;
-
-  // Param = a + b . T + c . T^2 + d . T^3 + ...
-  //       = a + b . N_T . T_{n+1} + c . (N_T . T_{n+1})^2 + d . (N_T . T_{n+1})^3 + ...
-  // with T: current scalar-valued temperature, T = N_T . T_{n+1}
-
-  // calculate derivative of E(T_{n+1}) w.r.t. T_{n+1}
-  // d(Param)/dT . Delta T = b . N_T + 2 . c . T . N_T + 3 . d . T^2 . N_T + ...
-  //                       = ( b + 2 . c . T + 3 . d . T^2 + ...) . N_T
-  //                       = parambytempnp . N_T
-
-  // the first, constant term has no influence for the derivative
-  // --> start with i=1(!): neglect first term of paramvector
-  for (unsigned i = 1; i < (*paramvector).size(); ++i)
+  // polynomial type
+  if (params_->youngpoly_)
   {
-    // calculate coefficient of variable T^i
-    parambytempnp += i * (*paramvector)[i] * tempnp_pow;
-    // for the higher polynom increase the exponent of the temperature
-    tempnp_pow *= tempnp;
-  }
+    double tempnp_pow = 1.0;
 
+    // Param = a + b . T + c . T^2 + d . T^3 + ...
+    //       = a + b . N_T . T_{n+1} + c . (N_T . T_{n+1})^2 + d . (N_T . T_{n+1})^3 + ...
+    // with T: current scalar-valued temperature, T = N_T . T_{n+1}
+
+    // calculate derivative of E(T_{n+1}) w.r.t. T_{n+1}
+    // d(Param)/dT . Delta T = b . N_T + 2 . c . T . N_T + 3 . d . T^2 . N_T + ...
+    //                       = ( b + 2 . c . T + 3 . d . T^2 + ...) . N_T
+    //                       = parambytempnp . N_T
+
+    // the first, constant term has no influence for the derivative
+    // --> start with i=1(!): neglect first term of paramvector
+    for (unsigned i = 1; i < (*paramvector).size(); ++i)
+    {
+      // calculate coefficient of variable T^i
+      parambytempnp += i * (*paramvector)[i] * tempnp_pow;
+      // for the higher polynom increase the exponent of the temperature
+      tempnp_pow *= tempnp;
+    }
+  }
+  else
+  {
+    parambytempnp = consol_->EvaluateTempDependentDerivative(tempnp, gp, params_->youngsfunct_);
+  }
   // return derivative of temperature-dependent material parameter w.r.t. T_{n+1}
   return parambytempnp;
 
@@ -438,7 +527,7 @@ double MAT::ThermoStVenantKirchhoff::GetMatParameterAtTempnp_T(
  | calculate linearisation of stress-temperature modulus     dano 04/10 |
  | w.r.t. T_{n+1} for k_dT, k_TT                                        |
  *----------------------------------------------------------------------*/
-double MAT::ThermoStVenantKirchhoff::GetSTModulus_T(Teuchos::ParameterList& params) const
+double MAT::ThermoStVenantKirchhoff::GetSTModulus_T(Teuchos::ParameterList& params)
 {
   // build the derivative of the stress-temperature modulus w.r.t. T_{n+1}
   // m = - (2 . mu + 3 . lambda) . varalpha_T
@@ -450,7 +539,8 @@ double MAT::ThermoStVenantKirchhoff::GetSTModulus_T(Teuchos::ParameterList& para
   if (young_temp == true)
   {
     const double tempnp = params.get<double>("scalartemp");
-    const double Ederiv = GetMatParameterAtTempnp_T(&(params_->youngs_), tempnp);
+    const int gp = params.get<int>("gp");
+    const double Ederiv = GetMatParameterAtTempnp_T(&(params_->youngsval_), tempnp, gp);
 
     // initialise the parameters for the lame constants
     const double pv = params_->poissonratio_;
@@ -543,7 +633,8 @@ void MAT::ThermoStVenantKirchhoff::GetCmatAtTempnp_T(
   if (young_temp == true)
   {
     const double tempnp = params.get<double>("scalartemp");
-    const double Ederiv = GetMatParameterAtTempnp_T(&(params_->youngs_), tempnp);
+    const int gp = params.get<int>("gp");
+    const double Ederiv = GetMatParameterAtTempnp_T(&(params_->youngsval_), tempnp, gp);
     // Poisson's ratio (Querdehnzahl)
     const double nu = params_->poissonratio_;
 
@@ -639,6 +730,5 @@ void MAT::ThermoStVenantKirchhoff::GetCthermoAtTempnp_T(
   // else zeros
 
 }  // GetCthermoAtTempnp_T()
-
 
 /*----------------------------------------------------------------------*/

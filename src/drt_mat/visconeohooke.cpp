@@ -11,10 +11,7 @@ MAT 1 MAT_VISCONEOHOOKE YOUNGS_SLOW 1.0 POISSON 0.499 DENS 0.1 YOUNGS_FAST 100.0
 \level 2
 
 <pre>
-\maintainer Lena Yoshihara
-            yoshihara@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15255
+\maintainer Fabian Braeu
 </pre>
 *----------------------------------------------------------------------*/
 

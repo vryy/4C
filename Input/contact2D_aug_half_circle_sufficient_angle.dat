@@ -1,4 +1,4 @@
-// Maintainer: Michael Hiermeier
+// Maintainer: Matthias Mayr
 ==================================================================
                   General Data File BACI
 ==================================================================
@@ -47,7 +47,7 @@ RESTARTEVRY                     0
 TIMESTEP                        1.0
 NUMSTEP                         1
 MAXTIME                         1.0
-NLNSOL                          fullnewton // noxnln
+NLNSOL                          fullnewton
 PREDICT                         TangDisConstFext
 LUMPMASS                        No
 LINEAR_SOLVER                   1
@@ -65,15 +65,15 @@ INTTYPE                         Elements
 NUMGP_PER_DIM                   3
 ---------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
-STRATEGY                        SteepestAscent // StdLagrange // Combo // SteepestAscent // Augmented
+STRATEGY                        SteepestAscent
 SYSTEM                          SaddlePoint
 FRICTION                        None
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  1.0
 SEMI_SMOOTH_CT                  1.0
 -----------------------------------------CONTACT DYNAMIC/AUGMENTED
-PRINT_LINEAR_CONSERVATION       No// Yes
-PRINT_ANGULAR_CONSERVATION      No// Yes
+PRINT_LINEAR_CONSERVATION       No
+PRINT_ANGULAR_CONSERVATION      No
 VARIATIONAL_APPROACH            incomplete
 --------------------------CONTACT DYNAMIC/AUGMENTED/STEEPESTASCENT
 PENALTY_UPDATE                  SufficientAngle
@@ -2060,10 +2060,5 @@ NODE 933    COORD  1.0000000000000000e+01  0.0000000000000000e+00  0.00000000000
    853 WALL QUAD4  931 914 913 930    MAT 3 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
    854 WALL QUAD4  932 915 914 931    MAT 3 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
    855 WALL QUAD4  933 916 915 932    MAT 3 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------ACOUSTIC ELEMENTS
 ---------------------------------------------------------------END
 // END

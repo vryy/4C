@@ -28,6 +28,7 @@
 #include "particle_wall.H"
 #include "particle_initial_field.H"
 #include "particle_result_test.H"
+#include "particle_wall_result_test.H"
 
 #include "../drt_particle_interaction/particle_interaction_base.H"
 #include "../drt_particle_interaction/particle_interaction_sph.H"
@@ -85,6 +86,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Init(
   // init particle engine
   InitParticleEngine();
 
+  // init particle wall handler
+  InitParticleWall();
+
   // init particle time integration
   InitParticleTimeIntegration();
 
@@ -96,9 +100,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Init(
 
   // init viscous damping handler
   InitViscousDamping();
-
-  // init particle wall handler
-  InitParticleWall();
 
   // set initial particles to vector of particles to be distributed
   particlestodistribute_ = initialparticles;
@@ -124,6 +125,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Setup()
   // setup particle engine
   particleengine_->Setup(particlestatestotypes_);
 
+  // setup wall handler
+  if (particlewall_) particlewall_->Setup(particleengine_, particleengine_->GetBinningStrategy());
+
   // check particle types for modified states
   const bool havemodifiedstates = HaveModifiedStates();
 
@@ -131,16 +135,13 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Setup()
   particletimint_->Setup(particleengine_, havemodifiedstates);
 
   // setup particle interaction handler
-  if (particleinteraction_) particleinteraction_->Setup(particleengine_);
+  if (particleinteraction_) particleinteraction_->Setup(particleengine_, particlewall_);
 
   // setup gravity handler
   if (particlegravity_) particlegravity_->Setup();
 
   // setup viscous damping handler
   if (viscousdamping_) viscousdamping_->Setup(particleengine_);
-
-  // setup wall handler
-  if (particlewall_) particlewall_->Setup(particleengine_, particleengine_->GetBinningStrategy());
 
   // setup initial particles
   SetupInitialParticles();
@@ -173,6 +174,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::ReadRestart(const int restartstep)
   // read restart of particle engine
   particleengine_->ReadRestart(reader, particlestodistribute_);
 
+  // read restart of wall handler
+  if (particlewall_) particlewall_->ReadRestart(restartstep);
+
   // read restart of particle time integration
   particletimint_->ReadRestart(reader);
 
@@ -184,9 +188,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::ReadRestart(const int restartstep)
 
   // read restart of viscous damping handler
   if (viscousdamping_) viscousdamping_->ReadRestart(reader);
-
-  // read restart of wall handler
-  if (particlewall_) particlewall_->ReadRestart(restartstep);
 
   // set time and step after restart
   SetTimeStep(restarttime, restartstep);
@@ -290,6 +291,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Output() const
     // write restart of particle engine
     particleengine_->WriteRestart(Step(), Time());
 
+    // write restart of wall handler
+    if (particlewall_) particlewall_->WriteRestart(Step(), Time());
+
     // write restart of particle time integration
     particletimint_->WriteRestart(Step(), Time());
 
@@ -302,9 +306,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Output() const
     // write restart of viscous damping handler
     if (viscousdamping_) viscousdamping_->WriteRestart(Step(), Time());
 
-    // write restart of wall handler
-    if (particlewall_) particlewall_->WriteRestart(Step(), Time());
-
     // short screen output
     if (myrank_ == 0)
       IO::cout(IO::verbose) << "====== restart of the particle simulation written in step "
@@ -313,19 +314,41 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Output() const
 }
 
 /*---------------------------------------------------------------------------*
- | create result test                                         sfuchs 07/2018 |
+ | create particle field specific result test objects         sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-std::shared_ptr<DRT::ResultTest> PARTICLEALGORITHM::ParticleAlgorithm::CreateResultTest()
+std::vector<std::shared_ptr<DRT::ResultTest>>
+PARTICLEALGORITHM::ParticleAlgorithm::CreateResultTests()
 {
-  // create and init particle result test
-  std::shared_ptr<PARTICLEALGORITHM::ResultTest> resulttest =
-      std::make_shared<PARTICLEALGORITHM::ResultTest>(Comm());
-  resulttest->Init();
+  std::vector<std::shared_ptr<DRT::ResultTest>> allresulttests(0);
 
-  // setup particle result test
-  resulttest->Setup(particleengine_);
+  // particle result test
+  {
+    // create and init particle result test
+    std::shared_ptr<PARTICLEALGORITHM::ParticleResultTest> particleresulttest =
+        std::make_shared<PARTICLEALGORITHM::ParticleResultTest>();
+    particleresulttest->Init();
 
-  return resulttest;
+    // setup particle result test
+    particleresulttest->Setup(particleengine_);
+
+    allresulttests.push_back(particleresulttest);
+  }
+
+  // wall result test
+  if (particlewall_)
+  {
+    // create and init wall result test
+    std::shared_ptr<PARTICLEALGORITHM::WallResultTest> wallresulttest =
+        std::make_shared<PARTICLEALGORITHM::WallResultTest>();
+    wallresulttest->Init();
+
+    // setup wall result test
+    wallresulttest->Setup(particlewall_);
+
+    allresulttests.push_back(wallresulttest);
+  }
+
+  return allresulttests;
 }
 
 /*---------------------------------------------------------------------------*
@@ -336,6 +359,46 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleEngine()
   // create and init particle engine
   particleengine_ = std::make_shared<PARTICLEENGINE::ParticleEngine>(Comm(), params_);
   particleengine_->Init();
+}
+
+/*---------------------------------------------------------------------------*
+ | init particle wall handler                                 sfuchs 10/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleWall()
+{
+  // get type of particle wall source
+  INPAR::PARTICLE::ParticleWallSource particlewallsource =
+      DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleWallSource>(
+          params_, "PARTICLE_WALL_SOURCE");
+
+  // create particle wall handler
+  switch (particlewallsource)
+  {
+    case INPAR::PARTICLE::NoParticleWall:
+    {
+      particlewall_ = std::shared_ptr<PARTICLEALGORITHM::WallHandlerBase>(nullptr);
+      break;
+    }
+    case INPAR::PARTICLE::DiscretCondition:
+    {
+      particlewall_ =
+          std::make_shared<PARTICLEALGORITHM::WallHandlerDiscretCondition>(Comm(), params_);
+      break;
+    }
+    case INPAR::PARTICLE::BoundingBox:
+    {
+      particlewall_ = std::make_shared<PARTICLEALGORITHM::WallHandlerBoundingBox>(Comm(), params_);
+      break;
+    }
+    default:
+    {
+      dserror("unknown type of particle wall source!");
+      break;
+    }
+  }
+
+  // init particle wall handler
+  if (particlewall_) particlewall_->Init();
 }
 
 /*---------------------------------------------------------------------------*
@@ -467,46 +530,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitViscousDamping()
 }
 
 /*---------------------------------------------------------------------------*
- | init particle wall handler                                 sfuchs 10/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleWall()
-{
-  // get type of particle wall source
-  INPAR::PARTICLE::ParticleWallSource particlewallsource =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleWallSource>(
-          params_, "PARTICLE_WALL_SOURCE");
-
-  // create particle wall handler
-  switch (particlewallsource)
-  {
-    case INPAR::PARTICLE::NoParticleWall:
-    {
-      particlewall_ = std::shared_ptr<PARTICLEALGORITHM::WallHandlerBase>(nullptr);
-      break;
-    }
-    case INPAR::PARTICLE::DiscretCondition:
-    {
-      particlewall_ =
-          std::make_shared<PARTICLEALGORITHM::WallHandlerDiscretCondition>(Comm(), params_);
-      break;
-    }
-    case INPAR::PARTICLE::BoundingBox:
-    {
-      particlewall_ = std::make_shared<PARTICLEALGORITHM::WallHandlerBoundingBox>(Comm(), params_);
-      break;
-    }
-    default:
-    {
-      dserror("unknown type of particle wall source!");
-      break;
-    }
-  }
-
-  // init particle wall handler
-  if (particlewall_) particlewall_->Init();
-}
-
-/*---------------------------------------------------------------------------*
  | generate initial particles                                 sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::GenerateInitialParticles()
@@ -589,6 +612,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialParticles()
 
   // build particle to particle neighbors
   if (particleinteraction_) particleengine_->BuildParticleToParticleNeighbors();
+
+  // distribute interaction history
+  if (particleinteraction_) particleinteraction_->DistributeInteractionHistory();
 
   // build global id to local index map
   particleengine_->BuildGlobalIDToLocalIndexMap();
@@ -708,6 +734,12 @@ void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
     // transfer particles to new bins and processors
     particleengine_->TransferParticles();
 
+    // transfer wall elements and nodes
+    if (particlewall_) particlewall_->TransferWallElementsAndNodes();
+
+    // communicate interaction history
+    if (particleinteraction_) particleinteraction_->CommunicateInteractionHistory();
+
     // check load balancing
     bool loadbalanceneeded = CheckLoadBalancing();
 
@@ -715,6 +747,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
     {
       // dynamic load balancing
       particleengine_->DynamicLoadBalancing();
+
+      // communicate interaction history
+      if (particleinteraction_) particleinteraction_->CommunicateInteractionHistory();
 
       // get number of particles on this processor
       numparticlesafterlastloadbalance_ = particleengine_->GetNumberOfParticles();
@@ -727,9 +762,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
 
         // distribute wall elements and nodes
         particlewall_->DistributeWallElementsAndNodes();
-
-        // relate bins to column wall elements
-        particlewall_->RelateBinsToColWallEles();
       }
     }
 
@@ -738,6 +770,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
 
     // build particle to particle neighbors
     if (particleinteraction_) particleengine_->BuildParticleToParticleNeighbors();
+
+    // relate bins to column wall elements
+    if (particlewall_) particlewall_->RelateBinsToColWallEles();
 
     // build particle to wall neighbors
     if (particleinteraction_ and particlewall_)
@@ -769,33 +804,55 @@ void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
 bool PARTICLEALGORITHM::ParticleAlgorithm::CheckParticleTransfer()
 {
   // get maximum particle interaction distance
-  double allprocinteractiondistance = 0.0;
+  double maxinteractiondistance = 0.0;
   if (particleinteraction_)
   {
     double interactiondistance = particleinteraction_->MaxInteractionDistance();
-    Comm().MaxAll(&interactiondistance, &allprocinteractiondistance, 1);
+    Comm().MaxAll(&interactiondistance, &maxinteractiondistance, 1);
   }
 
-  // get minimum relevant bin size
-  const double minbinsize = particleengine_->MinBinSize();
-
   // bin size safety check
-  if (allprocinteractiondistance > minbinsize)
+  if (maxinteractiondistance > particleengine_->MinBinSize())
     dserror("the particle interaction distance is larger than the minimal bin size (%f > %f)!",
-        allprocinteractiondistance, minbinsize);
+        maxinteractiondistance, particleengine_->MinBinSize());
 
-  // loop over all spatial directions
-  for (int dim = 0; dim < 3; ++dim)
+  // periodic length safety check
+  if (particleengine_->HavePBC())
   {
-    // check for periodic boundary condition in current spatial direction
-    if (particleengine_->HavePBC(dim))
+    // loop over all spatial directions
+    for (int dim = 0; dim < 3; ++dim)
     {
+      // check for periodic boundary condition in current spatial direction
+      if (not particleengine_->HavePBC(dim)) continue;
+
       // check periodic length in current spatial direction
-      if ((2.0 * allprocinteractiondistance) > particleengine_->PBCDelta(dim))
+      if ((2.0 * maxinteractiondistance) > particleengine_->PBCDelta(dim))
         dserror("particles are not allowed to interact directly and across the periodic boundary!");
     }
   }
 
+  // get max particle position increment since last transfer
+  double maxparticlepositionincrement = 0.0;
+  GetMaxParticlePositionIncrement(maxparticlepositionincrement);
+
+  // get max wall position increment since last transfer
+  double maxwallpositionincrement = 0.0;
+  if (particlewall_) particlewall_->GetMaxWallPositionIncrement(maxwallpositionincrement);
+
+  // get max overall position increment since last transfer
+  double maxpositionincrement = std::max(maxparticlepositionincrement, maxwallpositionincrement);
+
+  // check if a particle transfer is needed based on a worst case scenario:
+  // two particles approach each other with maximum position increment in one spatial dimension
+  return ((maxinteractiondistance + 2.0 * maxpositionincrement) > particleengine_->MinBinSize());
+}
+
+/*---------------------------------------------------------------------------*
+ | get max particle position increment since last transfer    sfuchs 06/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::ParticleAlgorithm::GetMaxParticlePositionIncrement(
+    double& allprocmaxpositionincrement)
+{
   // maximum position increment since last particle transfer
   double maxpositionincrement = 0.0;
 
@@ -835,20 +892,12 @@ bool PARTICLEALGORITHM::ParticleAlgorithm::CheckParticleTransfer()
     }
   }
 
-  // get maximum position increment on all processors
-  double allprocmaxpositionincrement = 0.0;
-  Comm().MaxAll(&maxpositionincrement, &allprocmaxpositionincrement, 1);
-
-  // check if a particle transfer is needed: it is assumed that (in a worst case scenario)
-  // two particles approach each other with maximum position increment in one spatial dimension
-  bool transferneeded =
-      ((allprocinteractiondistance + 2.0 * allprocmaxpositionincrement) > minbinsize);
-
-  // safety check
-  if (transferneeded and maxpositionincrement > minbinsize)
+  // bin size safety check
+  if (maxpositionincrement > particleengine_->MinBinSize())
     dserror("a particle traveled more than one bin on this processor!");
 
-  return transferneeded;
+  // get maximum particle position increment on all processors
+  Comm().MaxAll(&maxpositionincrement, &allprocmaxpositionincrement, 1);
 }
 
 /*---------------------------------------------------------------------------*

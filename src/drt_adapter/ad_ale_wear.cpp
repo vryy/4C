@@ -4,11 +4,9 @@
 
  \brief Wrapper for the ALE time integration
 
- <pre>
-       Maintainer: Philip Farah
-       farah@lnm.mw.tum.de
-       089 - 289-15257
- </pre>
+ \maintainer Matthias Mayr
+
+ \level 2
  */
 /*----------------------------------------------------------------------------*/
 

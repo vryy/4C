@@ -1,8 +1,5 @@
 //
-// Maintainer: Markus Gitterle
-// gitterle@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15251
+// Maintainer: Matthias Mayr
 //
 // necessary defines: D_SOLID3 BINIO
 //
@@ -38,7 +35,7 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
 RESULTSEVRY                     1
 RESTARTEVRY                     10
-NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          fullnewton
 TIMESTEP                        0.1
 NUMSTEP                         20
 MAXTIME                         8.0
@@ -724,8 +721,5 @@ NODE 250 COORD 1.70000005e+00 1.79999995e+00 1.00000000e+00
 99 SOLIDH8 HEX8 216 215 217 218 238 237 239 240 MAT 1 KINEM nonlinear EAS none
 100 SOLIDH8 HEX8 218 217 219 220 240 239 241 242 MAT 1 KINEM nonlinear EAS none
 101 SOLIDH8 HEX8 243 244 245 246 247 248 249 250 MAT 1 KINEM nonlinear EAS none
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------------------END
 //                              END

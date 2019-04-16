@@ -18,6 +18,7 @@
  *----------------------------------------------------------------------*/
 #include "thermo_element.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_mat/fouriervar.H"
 
 
 /*----------------------------------------------------------------------*
@@ -34,6 +35,14 @@ bool DRT::ELEMENTS::Thermo::ReadElement(
   SetDisType(DRT::StringToDistype(distype));
 
   if (Shape() == DRT::Element::nurbs27) SetNurbsElement() = true;
+
+  if (Material()->MaterialType() == INPAR::MAT::m_th_fourier_var)
+  {
+    if (Shape() != DRT::Element::hex8)
+      dserror("Setup call for FourierVar only implemented for hex8.");
+    Teuchos::RCP<MAT::FourierVar> mat = Teuchos::rcp_dynamic_cast<MAT::FourierVar>(Material());
+    mat->Setup(8);
+  }
 
   return true;
 }

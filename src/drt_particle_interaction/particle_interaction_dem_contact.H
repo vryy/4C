@@ -46,7 +46,9 @@ namespace PARTICLEINTERACTION
 {
   class MaterialHandler;
   class DEMNeighborPairs;
+  class DEMHistoryPairs;
   class DEMContactNormalBase;
+  class DEMContactTangentialBase;
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*
@@ -70,7 +72,8 @@ namespace PARTICLEINTERACTION
     virtual void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
-        const std::shared_ptr<PARTICLEINTERACTION::DEMNeighborPairs> neighborpairs);
+        const std::shared_ptr<PARTICLEINTERACTION::DEMNeighborPairs> neighborpairs,
+        const std::shared_ptr<PARTICLEINTERACTION::DEMHistoryPairs> historypairs);
 
     //! write restart of contact handler
     virtual void WriteRestart(const int step, const double time) const;
@@ -81,15 +84,26 @@ namespace PARTICLEINTERACTION
     //! set current step size
     virtual void SetCurrentStepSize(const double currentstepsize) final;
 
+    //! insert contact evaluation dependent states
+    virtual void InsertParticleStatesOfParticleTypes(
+        std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
+            particlestatestotypes) const;
+
+    //! have tangential contact
+    virtual bool HaveTangentialContact() const { return contacttangential_ ? true : false; };
+
     //! check critical time step (on this processor)
     virtual void CheckCriticalTimeStep() const;
 
-    //! add contact contribution to force field
-    virtual void AddForceContribution() const;
+    //! add contact contribution to force and moment field
+    virtual void AddForceAndMomentContribution();
 
    private:
     //! init normal contact handler
     virtual void InitNormalContactHandler();
+
+    //! init tangential contact handler
+    virtual void InitTangentialContactHandler();
 
     //! get maximum density of all materials
     virtual double GetMaxDensityOfAllMaterials() const final;
@@ -109,8 +123,14 @@ namespace PARTICLEINTERACTION
     //! neighbor pair handler
     std::shared_ptr<PARTICLEINTERACTION::DEMNeighborPairs> neighborpairs_;
 
+    //! history pair handler
+    std::shared_ptr<PARTICLEINTERACTION::DEMHistoryPairs> historypairs_;
+
     //! normal contact handler
     std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalBase> contactnormal_;
+
+    //! tangential contact handler
+    std::unique_ptr<PARTICLEINTERACTION::DEMContactTangentialBase> contacttangential_;
 
     //! time step size
     double dt_;

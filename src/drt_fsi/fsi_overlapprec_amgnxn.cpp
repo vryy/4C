@@ -4,11 +4,10 @@
 
 \brief Special version of block matrix that includes the AMGnxn preconditioner
 
-<pre>
-Maintainer: Francesc Verdugo
-            verduo@lnm.mw.tum.de
-            89 - 289-15262
-</pre>
+\maintainer Matthias Mayr
+
+\level 2
+
 */
 /*----------------------------------------------------------------------*/
 

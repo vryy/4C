@@ -52,7 +52,8 @@ namespace GEOMETRYPAIR
 namespace GEOMETRYPAIR
 {
   /**
-   * \brief Class that handles the geometrical interactions of a line and a volume.
+   * \brief Class that handles the geometrical interactions of a line (element 1) and a volume
+   * (element 2).
    * @param scalar_type Type that will be used for scalar values.
    * @param line Type of line element.
    * @param volume Type of volume element.
@@ -70,6 +71,15 @@ namespace GEOMETRYPAIR
      * \brief Destructor.
      */
     ~GeometryPairLineToVolume(){};
+
+    /**
+     * \brief Initialize the pair.
+     * @param evaluation_data_ptr Pointer to the evaluation data.
+     * @param element1 Pointer to the first element.
+     * @param element2 Pointer to the second element.
+     */
+    void Init(Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> evaluation_data_ptr,
+        const DRT::Element* element1, const DRT::Element* element2) override;
 
     /**
      * \brief Do stuff that can not be done in the Evaluate call. All pairs call PreEvaluate before
@@ -92,51 +102,20 @@ namespace GEOMETRYPAIR
         const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
         std::vector<LineSegment<scalar_type>>& segments) const {};
 
-    /**
-     * \brief Get the position along the first (line) element. This function is templated in case
-     * one wants to get the position with a different type than scalar_type.
-     * @param eta (in) Parameter coordinate on the line.
-     * @param q (in) Degrees of freedom for the line.
-     * @param r (out) Position on line.
-     */
-    template <typename scalar_type_get_pos>
-    void GetElement1Position(const scalar_type& eta,
-        const LINALG::TMatrix<scalar_type_get_pos, line::n_dof_, 1>& q,
-        LINALG::TMatrix<scalar_type_get_pos, 3, 1>& r) const;
-
-    /**
-     * \brief Get the derivative of the position w.r.t xi along the first (line) element.
-     * @param eta (in) Parameter coordinate on the line.
-     * @param q (in) Degrees of freedom for the line.
-     * @param dr (out) Derivative of the position on the line.
-     */
-    void GetElement1PositionDerivative(const scalar_type& eta,
-        const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q,
-        LINALG::TMatrix<scalar_type, 3, 1>& dr) const;
-
-    /**
-     * \brief Get the position in the second (volume) element. This function is templated in case
-     * one wants to get the position with a different type than scalar_type.
-     * @param xi (in) Parameter coordinates in the volume.
-     * @param q (in) Degrees of freedom for the volume.
-     * @param r (out) Position in the volume.
-     */
-    template <typename scalar_type_get_pos>
-    void GetElement2Position(const LINALG::TMatrix<scalar_type, 3, 1>& xi,
-        const LINALG::TMatrix<scalar_type_get_pos, volume::n_dof_, 1>& q,
-        LINALG::TMatrix<scalar_type_get_pos, 3, 1>& r) const;
-
-    /**
-     * \brief Get the derivative of the position w.r.t xi in the second (volume) element.
-     * @param xi (in) Parameter coordinates in the volume.
-     * @param q (in) Degrees of freedom for the volume.
-     * @param dr (out) Derivative of the position in the volume.
-     */
-    void GetElement2PositionDerivative(const LINALG::TMatrix<scalar_type, 3, 1>& xi,
-        const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q,
-        LINALG::TMatrix<scalar_type, 3, 3>& dr) const;
-
    protected:
+    /**
+     * \brief Project a point in space to the volume element.
+     * @param point (in) Point in space.
+     * @param q_volume (in) Degrees of freedom for the volume.
+     * @param xi (in/out) Parameter coordinates in the volume. The given values are the start values
+     * for the Newton iteration.
+     * @param projection_result (out) Flag for the result of the projection.
+     * @return
+     */
+    void ProjectPointToVolume(const LINALG::TMatrix<scalar_type, 3, 1>& point,
+        const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
+        LINALG::TMatrix<scalar_type, 3, 1>& xi, ProjectionResult& projection_result) const;
+
     /**
      * \brief Project a point on the line to the volume element.
      * @param q_line (in) Degrees of freedom for the line.

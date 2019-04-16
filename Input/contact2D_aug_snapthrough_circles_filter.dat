@@ -1,4 +1,4 @@
-// Maintainer: Michael Hiermeier
+// Maintainer: Matthias Mayr
 ==================================================================
                   General Data File BACI
 ==================================================================
@@ -1227,14 +1227,5 @@ NODE       483 COORD  1.5691819145568908e-01  2.3993834667466256e+01  0.00000000
    318 WALL QUAD4  478 480 483 481    MAT 2 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
    319 WALL QUAD4  482 481 274 276    MAT 2 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
    320 WALL QUAD4  481 483 275 274    MAT 2 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------LUBRICATION ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
-------------------------------------------------TRANSPORT2 ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------ACOUSTIC ELEMENTS
----------------------------------------------------CELL ELEMENTS
----------------------------------------------------CELLSCATRA ELEMENTS
 ---------------------------------------------------------------END
 // END

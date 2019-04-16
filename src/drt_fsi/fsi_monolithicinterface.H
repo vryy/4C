@@ -1,3 +1,15 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_monolithicinterface.H
+
+\brief Interfacing FSI problems with NOX
+
+\level 1
+
+\maintainer Matthias Mayr
+*/
+/*----------------------------------------------------------------------*/
+
 #ifndef FSI_MONOLITHICINTERFACE_H
 #define FSI_MONOLITHICINTERFACE_H
 

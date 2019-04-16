@@ -542,6 +542,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       tuple<int>(INPAR::THR::tempgrad_none, INPAR::THR::tempgrad_none, INPAR::THR::tempgrad_none,
           INPAR::THR::tempgrad_none, INPAR::THR::tempgrad_current, INPAR::THR::tempgrad_initial),
       &io);
+  setStringToIntegralParameter<int>("THERM_PHASE", "None", "output of phase",
+      tuple<std::string>("None", "No", "NO", "no", "Yes", "yes", "YES"),
+      tuple<int>(INPAR::THR::phase_none, INPAR::THR::phase_none, INPAR::THR::phase_none,
+          INPAR::THR::phase_none, INPAR::THR::phase_yes, INPAR::THR::phase_yes,
+          INPAR::THR::phase_yes),
+      &io);
 
   IntParameter("FILESTEPS", 1000, "Amount of timesteps written to a single result file", &io);
   IntParameter("STDOUTEVRY", 1, "Print to screen every n step", &io);

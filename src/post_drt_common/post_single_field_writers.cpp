@@ -596,6 +596,11 @@ void ThermoFilter::WriteAllResults(PostField* field)
   // write displacement field
   writer_->WriteResult("displacement", "displacement", nodebased, field->problem()->num_dim());
 
+  // special infomation for SLM
+  writer_->WriteResult("phase", "phase", dofbased, numdofpernode);
+  writer_->WriteResult("conductivity", "conductivity", dofbased, numdofpernode);
+  writer_->WriteResult("capacity", "capacity", dofbased, numdofpernode);
+
   // write element results (e.g. element owner)
   WriteElementResults(field);
 
@@ -681,6 +686,7 @@ void ElemagFilter::WriteAllResults(PostField* field)
   writer_->WriteResult("electric", "electric", nodebased, 3);
   writer_->WriteResult("magnetic", "magnetic", nodebased, 3);
   writer_->WriteResult("trace", "trace", nodebased, 3);
+  writer_->WriteResult("dft", "dft", nodebased, 3);
   writer_->WriteResult("conductivity", "conductivity", elementbased, 1);
   writer_->WriteResult("permittivity", "permittivity", elementbased, 1);
   writer_->WriteResult("permeability", "permeability", elementbased, 1);

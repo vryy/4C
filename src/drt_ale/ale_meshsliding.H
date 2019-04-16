@@ -4,12 +4,9 @@
 
 \brief Mesh sliding for ale problems
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15270
-</pre>
+\maintainer Matthias Mayr
+
+\level 3
 */
 /*--------------------------------------------------------------------------*/
 #ifndef SRC_DRT_ALE_ALE_MESHSLIDING_H_

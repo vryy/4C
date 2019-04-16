@@ -414,7 +414,7 @@ void DRT::UTILS::ComputeFluidDNullSpace(
 {
   const Epetra_Map* rowmap = dis.DofRowMap();
   const int lrows = rowmap->NumMyElements();
-  double* mode[6];
+  double* mode[10];
   for (int i = 0; i < dimns; ++i) mode[i] = &(ns[i * lrows]);
 
   for (int i = 0; i < dis.NumMyRowNodes(); ++i)
@@ -423,7 +423,7 @@ void DRT::UTILS::ComputeFluidDNullSpace(
     std::vector<int> dofs = dis.Dof(0, actnode);
     const unsigned int ndof = dofs.size();
 
-    if (numdf > 6) dserror("Cannot define more than 6 modes");
+    if (numdf > 10) dserror("Cannot define more than 10 modes");
     for (unsigned j = 0; j < ndof; ++j)
     {
       const int dof = dofs[j];

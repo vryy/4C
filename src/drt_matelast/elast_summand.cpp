@@ -8,10 +8,7 @@ Interface class for materials of (visco)elasthyper toolbox.
 \level 1
 
 <pre>
-\maintainer Lena Yoshihara
-            yoshihara@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15255
+\maintainer Fabian Braeu
 </pre>
 */
 /*----------------------------------------------------------------------*/

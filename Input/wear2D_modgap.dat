@@ -1,8 +1,5 @@
 //
-// Maintainer: Markus Gitterle
-// gitterle@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15251
+// Maintainer: Matthias Mayr
 //
 // necessary defines: BINIO
 //
@@ -41,13 +38,10 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
 RESULTSEVRY                     1
 RESTARTEVRY                     1
-NLNSOL                          fullnewton                    // fullnewton modnewton nlncg ptc
+NLNSOL                          fullnewton
 TIMESTEP                        0.2
 NUMSTEP                         13
 MAXTIME                         8
-DAMPING                         No
-M_DAMP                          0.5
-K_DAMP                          0.5
 PREDICT                         ConstDis
 TOLRES                          1.0E-8
 TOLDISP                         1.0E-8
@@ -90,91 +84,25 @@ ALE_TYPE                        solid
 RESULTSEVRY                     1
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          Amesos_KLU_nonsym             // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        0                             // output every so often, 0 no output
-AZSOLVE                         CG                            // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ML                            // none ML MLFLUID MLFLUID2 MLAPI LU ILU ILUT LU ICC Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
-AZREUSE                         0                             // how often to recompute some preconditioners
-AZDROP                          0.0                           // drop tolerance for ILUT
-IFPACKFILL                      1.0                           // fill-in for ILUT
-IFPACKGFILL                     0                             // graph fill for ILU
-AZTOL                           1.0E-8                        // tolerance in unscaled residual
-AZITER                          1000                          // max iterations
-AZSUB                           25                            // size of krylov space for gmres
-AZOMEGA                         1.0                           // damping factor for Jacobi/GaussSeidel type preconditioners
-AZGRAPH                         1                             // unused
-AZPOLY                          5                             // polynomial order for Neumann
-IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
-AZSCAL                          infnorm                       // none sym infnorm scaling of the system
-AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-ML_PRINT                        0                             // ML print-out level (0-10)
-ML_MAXCOARSESIZE                5000                          // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL                     5                             // ML max number of levels
-ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  1.33                          // damping factor for prolongator smoother (usually 0.0 or 1.33)
-ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 Chebychev                     // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  Chebychev                     // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               KLU                           // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES                     3 3 3 3 1                     // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     1.0                           // damping fine grid
-ML_DAMPMED                      1.0                           // damping med grids
-ML_DAMPCOARSE                   1.0                           // damping coarse grid
+SOLVER                          Amesos_KLU_nonsym
 --------------------------------------------------------------------SOLVER 2
 NAME                            Contact_Solver
-SOLVER                          Amesos_KLU_nonsym             // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        0                             // output every so often, 0 no output
-AZSOLVE                         CG                            // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ML                            // none ML MLFLUID MLFLUID2 MLAPI LU ILU ILUT LU ICC Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
-AZREUSE                         0                             // how often to recompute some preconditioners
-AZDROP                          0.0                           // drop tolerance for ILUT
-IFPACKFILL                      1.0                           // fill-in for ILUT
-IFPACKGFILL                     0                             // graph fill for ILU
-AZTOL                           1.0E-8                        // tolerance in unscaled residual
-AZITER                          1000                          // max iterations
-AZSUB                           25                            // size of krylov space for gmres
-AZOMEGA                         1.0                           // damping factor for Jacobi/GaussSeidel type preconditioners
-AZGRAPH                         1                             // unused
-AZPOLY                          5                             // polynomial order for Neumann
-IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
-AZSCAL                          infnorm                       // none sym infnorm scaling of the system
-AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-ML_PRINT                        0                             // ML print-out level (0-10)
-ML_MAXCOARSESIZE                5000                          // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL                     5                             // ML max number of levels
-ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  1.33                          // damping factor for prolongator smoother (usually 0.0 or 1.33)
-ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 Chebychev                     // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  Chebychev                     // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               KLU                           // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES                     3 3 3 3 1                     // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     1.0                           // damping fine grid
-ML_DAMPMED                      1.0                           // damping med grids
-ML_DAMPCOARSE                   1.0                           // damping coarse grid
+SOLVER                          Amesos_KLU_nonsym
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          8
 NDSURF                          2
 NDVOL                           0
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DPOINT                          0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           4
 E 5 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 E 6 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 E 7 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 E 8 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
 DLINE                           1
 E 4 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 2 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
 DSURF                           1
 E 1 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -10 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 -----------------------------------DESIGN LINE MORTAR CONTACT CONDITIONS 2D

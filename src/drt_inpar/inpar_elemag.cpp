@@ -91,4 +91,46 @@ void INPAR::ELEMAG::SetValidConditions(
     std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist)
 {
   using namespace DRT::INPUT;
+
+  std::vector<Teuchos::RCP<SeparatorConditionComponent>> abcintsepveccomponents;
+  std::vector<Teuchos::RCP<IntVectorConditionComponent>> abcintveccomponents;
+  std::vector<Teuchos::RCP<SeparatorConditionComponent>> abcrealsepveccomponents;
+  std::vector<Teuchos::RCP<RealVectorConditionComponent>> abcrealveccomponents;
+  std::vector<Teuchos::RCP<ConditionComponent>> abcbundcomponents;
+
+  abcintsepveccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
+  abcintveccomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("onoff", 1)));
+  abcintsepveccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("FUNCT")));
+  abcintveccomponents.push_back(
+      Teuchos::rcp(new IntVectorConditionComponent("funct", 1, false, true, false)));
+  abcrealsepveccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("VAL")));
+  abcrealveccomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val", 1)));
+
+  abcbundcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("NUMDOF")));
+  abcbundcomponents.push_back(Teuchos::rcp(new IntRealBundle("abcbound",
+      Teuchos::rcp(new IntConditionComponent("numdof")), abcintsepveccomponents,
+      abcintveccomponents, abcrealsepveccomponents, abcrealveccomponents)));
+
+  //*--------------------------------------------------------------------* /
+  // absorbing boundary condition for electromagnetic problems
+  // line
+  Teuchos::RCP<ConditionDefinition> silvermueller_line =
+      Teuchos::rcp(new ConditionDefinition("DESIGN LINE SILVER-MUELLER CONDITIONS",
+          "Silver-Mueller", "Absorbing-emitting line for electromagnetics",
+          DRT::Condition::SilverMueller, true, DRT::Condition::Line));
+
+  // surface
+  Teuchos::RCP<ConditionDefinition> silvermueller_surface =
+      Teuchos::rcp(new ConditionDefinition("DESIGN SURF SILVER-MUELLER CONDITIONS",
+          "Silver-Mueller", "Absorbing-emitting surface for electromagnetics",
+          DRT::Condition::SilverMueller, true, DRT::Condition::Surface));
+
+  for (unsigned i = 0; i < abcbundcomponents.size(); ++i)
+  {
+    silvermueller_line->AddComponent(abcbundcomponents[i]);
+    silvermueller_surface->AddComponent(abcbundcomponents[i]);
+  }
+
+  condlist.push_back(silvermueller_line);
+  condlist.push_back(silvermueller_surface);
 }
