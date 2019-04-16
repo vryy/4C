@@ -291,6 +291,266 @@ void BEAMINTERACTION::GEO::CalcPointToCurveProjectionParameterCoordMasterPartial
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
+void BEAMINTERACTION::GEO::CalcPointToCurveProjectionParameterCoordMasterPartial2ndDerivs(
+    LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_slave_partial_r_slave,
+    LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_slave_partial_r_master,
+    LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_slave_partial_r_xi_master,
+    LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_slave_partial_r_xixi_master,
+    LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_master_partial_r_slave,
+    LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_master_partial_r_master,
+    LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_master_partial_r_xi_master,
+    LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_master_partial_r_xixi_master,
+    LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_xi_master_partial_r_slave,
+    LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_xi_master_partial_r_master,
+    LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_xi_master_partial_r_xi_master,
+    LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_xi_master_partial_r_xixi_master,
+    LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_xixi_master_partial_r_slave,
+    LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_xixi_master_partial_r_master,
+    LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_xixi_master_partial_r_xi_master,
+    const LINALG::TMatrix<T, 1, 3>& xi_master_partial_r_slave,
+    const LINALG::TMatrix<T, 1, 3>& xi_master_partial_r_master,
+    const LINALG::TMatrix<T, 1, 3>& xi_master_partial_r_xi_master,
+    const LINALG::TMatrix<T, 3, 3>& delta_r_deriv_r_slave,
+    const LINALG::TMatrix<T, 3, 3>& delta_r_deriv_r_master,
+    const LINALG::TMatrix<T, 3, 3>& delta_r_deriv_r_xi_master,
+    const LINALG::TMatrix<T, 3, 1>& delta_r, const LINALG::TMatrix<T, 3, 1>& r_xi_master,
+    const LINALG::TMatrix<T, 3, 1>& r_xixi_master, const LINALG::TMatrix<T, 3, 1>& r_xixixi_master)
+{
+  /* partial derivative of the orthogonality condition with respect to parameter coordinate on
+   * master xi_master */
+  T orthogon_condition_partial_xi_master = 0.0;
+
+  CalcPTCProjectionOrthogonalityConditionPartialDerivParameterCoordMaster(
+      orthogon_condition_partial_xi_master, delta_r, r_xi_master, r_xixi_master);
+
+  T orthogon_condition_partial_xi_master_inverse = 1.0 / orthogon_condition_partial_xi_master;
+
+  // Note: 1) do derivs w.r.t. [r_master(xi_master_c)], [r_xi_master(xi_master_c)] and
+  //          [r_xixi_master(xi_master_c)],
+  // 2) add the contributions from xi_master_partial_(...) according to the chain rule,
+  // 3) add the terms including delta_r_deriv_(...) since these already
+  //    contain the contributions from xi_master_partial_(...) according to the chain rule
+  // 4) add the contributions from linearization of (variation of r_master) and linearization of
+  //    (variation of r_xi_master) according to the chain rule
+
+
+  LINALG::TMatrix<T, 3, 3> unit_matrix(true);
+  for (unsigned int i = 0; i < 3; ++i) unit_matrix(i, i) = 1.0;
+
+  LINALG::TMatrix<T, 3, 3> r_xi_master_tensorproduct_r_xi_master(true);
+  LINALG::TMatrix<T, 3, 3> r_xi_master_tensorproduct_r_xixi_master(true);
+  LINALG::TMatrix<T, 3, 3> r_xi_master_tensorproduct_delta_r(true);
+  LINALG::TMatrix<T, 3, 3> delta_r_tensorproduct_r_xixi_master(true);
+  LINALG::TMatrix<T, 3, 3> delta_r_tensorproduct_delta_r(true);
+
+  for (unsigned int irow = 0; irow < 3; ++irow)
+    for (unsigned int icol = 0; icol < 3; ++icol)
+    {
+      r_xi_master_tensorproduct_r_xi_master(irow, icol) = r_xi_master(irow) * r_xi_master(icol);
+      r_xi_master_tensorproduct_r_xixi_master(irow, icol) = r_xi_master(irow) * r_xixi_master(icol);
+      r_xi_master_tensorproduct_delta_r(irow, icol) = r_xi_master(irow) * delta_r(icol);
+      delta_r_tensorproduct_r_xixi_master(irow, icol) = delta_r(irow) * r_xixi_master(icol);
+      delta_r_tensorproduct_delta_r(irow, icol) = delta_r(irow) * delta_r(icol);
+    }
+
+  // 1)
+  xi_master_partial_r_slave_partial_r_xi_master.Update(
+      -2.0 * orthogon_condition_partial_xi_master_inverse *
+          orthogon_condition_partial_xi_master_inverse,
+      r_xi_master_tensorproduct_r_xi_master);
+
+  xi_master_partial_r_slave_partial_r_xi_master.Update(
+      -1.0 * orthogon_condition_partial_xi_master_inverse, unit_matrix, 1.0);
+
+  xi_master_partial_r_master_partial_r_xi_master.Update(
+      -1.0, xi_master_partial_r_slave_partial_r_xi_master);
+
+
+  xi_master_partial_r_slave_partial_r_xixi_master.Update(
+      orthogon_condition_partial_xi_master_inverse * orthogon_condition_partial_xi_master_inverse,
+      r_xi_master_tensorproduct_delta_r);
+
+  xi_master_partial_r_master_partial_r_xixi_master.Update(
+      -1.0, xi_master_partial_r_slave_partial_r_xixi_master);
+
+
+  xi_master_partial_r_xi_master_partial_r_xi_master.UpdateT(
+      -2.0 * orthogon_condition_partial_xi_master_inverse *
+          orthogon_condition_partial_xi_master_inverse,
+      r_xi_master_tensorproduct_delta_r);
+
+  xi_master_partial_r_xi_master_partial_r_xixi_master.Update(
+      orthogon_condition_partial_xi_master_inverse * orthogon_condition_partial_xi_master_inverse,
+      delta_r_tensorproduct_delta_r);
+
+
+  // 2)
+  LINALG::TMatrix<T, 3, 1> tmp_vec2;
+  tmp_vec2.Multiply(xi_master_partial_r_slave_partial_r_xi_master, r_xixi_master);
+
+  for (unsigned int irow = 0; irow < 3; ++irow)
+  {
+    for (unsigned int icol = 0; icol < 3; ++icol)
+    {
+      xi_master_partial_r_slave_partial_r_slave(irow, icol) +=
+          tmp_vec2(irow) * xi_master_partial_r_slave(icol);
+
+      xi_master_partial_r_slave_partial_r_master(irow, icol) +=
+          tmp_vec2(irow) * xi_master_partial_r_master(icol);
+
+      xi_master_partial_r_slave_partial_r_xi_master(irow, icol) +=
+          tmp_vec2(irow) * xi_master_partial_r_xi_master(icol);
+    }
+  }
+
+  tmp_vec2.Multiply(xi_master_partial_r_master_partial_r_xi_master, r_xixi_master);
+
+  for (unsigned int irow = 0; irow < 3; ++irow)
+  {
+    for (unsigned int icol = 0; icol < 3; ++icol)
+    {
+      xi_master_partial_r_master_partial_r_slave(irow, icol) +=
+          tmp_vec2(irow) * xi_master_partial_r_slave(icol);
+
+      xi_master_partial_r_master_partial_r_master(irow, icol) +=
+          tmp_vec2(irow) * xi_master_partial_r_master(icol);
+
+      xi_master_partial_r_master_partial_r_xi_master(irow, icol) +=
+          tmp_vec2(irow) * xi_master_partial_r_xi_master(icol);
+    }
+  }
+
+
+  tmp_vec2.Multiply(xi_master_partial_r_slave_partial_r_xixi_master, r_xixixi_master);
+
+  for (unsigned int irow = 0; irow < 3; ++irow)
+  {
+    for (unsigned int icol = 0; icol < 3; ++icol)
+    {
+      xi_master_partial_r_slave_partial_r_slave(irow, icol) +=
+          tmp_vec2(irow) * xi_master_partial_r_slave(icol);
+
+      xi_master_partial_r_slave_partial_r_master(irow, icol) +=
+          tmp_vec2(irow) * xi_master_partial_r_master(icol);
+
+      xi_master_partial_r_slave_partial_r_xi_master(irow, icol) +=
+          tmp_vec2(irow) * xi_master_partial_r_xi_master(icol);
+    }
+  }
+
+
+  tmp_vec2.Multiply(xi_master_partial_r_master_partial_r_xixi_master, r_xixixi_master);
+
+  for (unsigned int irow = 0; irow < 3; ++irow)
+  {
+    for (unsigned int icol = 0; icol < 3; ++icol)
+    {
+      xi_master_partial_r_master_partial_r_slave(irow, icol) +=
+          tmp_vec2(irow) * xi_master_partial_r_slave(icol);
+
+      xi_master_partial_r_master_partial_r_master(irow, icol) +=
+          tmp_vec2(irow) * xi_master_partial_r_master(icol);
+
+      xi_master_partial_r_master_partial_r_xi_master(irow, icol) +=
+          tmp_vec2(irow) * xi_master_partial_r_xi_master(icol);
+    }
+  }
+
+
+  // 3)
+  xi_master_partial_r_xi_master_partial_r_slave.Update(
+      -1.0 * orthogon_condition_partial_xi_master_inverse, delta_r_deriv_r_slave);
+
+  xi_master_partial_r_xi_master_partial_r_master.Update(
+      -1.0 * orthogon_condition_partial_xi_master_inverse, delta_r_deriv_r_master);
+
+  xi_master_partial_r_xi_master_partial_r_xi_master.Update(
+      -1.0 * orthogon_condition_partial_xi_master_inverse, delta_r_deriv_r_xi_master);
+
+
+  xi_master_partial_r_slave_partial_r_slave.Multiply(
+      orthogon_condition_partial_xi_master_inverse * orthogon_condition_partial_xi_master_inverse,
+      r_xi_master_tensorproduct_r_xixi_master, delta_r_deriv_r_slave, 1.0);
+
+  xi_master_partial_r_slave_partial_r_master.Multiply(
+      orthogon_condition_partial_xi_master_inverse * orthogon_condition_partial_xi_master_inverse,
+      r_xi_master_tensorproduct_r_xixi_master, delta_r_deriv_r_master, 1.0);
+
+  xi_master_partial_r_slave_partial_r_xi_master.Multiply(
+      orthogon_condition_partial_xi_master_inverse * orthogon_condition_partial_xi_master_inverse,
+      r_xi_master_tensorproduct_r_xixi_master, delta_r_deriv_r_xi_master, 1.0);
+
+
+  xi_master_partial_r_master_partial_r_slave.Multiply(
+      -1.0 * orthogon_condition_partial_xi_master_inverse *
+          orthogon_condition_partial_xi_master_inverse,
+      r_xi_master_tensorproduct_r_xixi_master, delta_r_deriv_r_slave, 1.0);
+
+  xi_master_partial_r_master_partial_r_master.Multiply(
+      -1.0 * orthogon_condition_partial_xi_master_inverse *
+          orthogon_condition_partial_xi_master_inverse,
+      r_xi_master_tensorproduct_r_xixi_master, delta_r_deriv_r_master, 1.0);
+
+  xi_master_partial_r_master_partial_r_xi_master.Multiply(
+      -1.0 * orthogon_condition_partial_xi_master_inverse *
+          orthogon_condition_partial_xi_master_inverse,
+      r_xi_master_tensorproduct_r_xixi_master, delta_r_deriv_r_xi_master, 1.0);
+
+
+  xi_master_partial_r_xi_master_partial_r_slave.Multiply(
+      orthogon_condition_partial_xi_master_inverse * orthogon_condition_partial_xi_master_inverse,
+      delta_r_tensorproduct_r_xixi_master, delta_r_deriv_r_slave, 1.0);
+
+  xi_master_partial_r_xi_master_partial_r_master.Multiply(
+      orthogon_condition_partial_xi_master_inverse * orthogon_condition_partial_xi_master_inverse,
+      delta_r_tensorproduct_r_xixi_master, delta_r_deriv_r_master, 1.0);
+
+  xi_master_partial_r_xi_master_partial_r_xi_master.Multiply(
+      orthogon_condition_partial_xi_master_inverse * orthogon_condition_partial_xi_master_inverse,
+      delta_r_tensorproduct_r_xixi_master, delta_r_deriv_r_xi_master, 1.0);
+
+
+  // 4)
+  for (unsigned int irow = 0; irow < 3; ++irow)
+  {
+    for (unsigned int icol = 0; icol < 3; ++icol)
+    {
+      xi_master_partial_r_xi_master_partial_r_slave(irow, icol) +=
+          orthogon_condition_partial_xi_master_inverse * r_xi_master(irow) *
+          xi_master_partial_r_slave(icol);
+
+      xi_master_partial_r_xi_master_partial_r_master(irow, icol) +=
+          orthogon_condition_partial_xi_master_inverse * r_xi_master(irow) *
+          xi_master_partial_r_master(icol);
+
+      xi_master_partial_r_xi_master_partial_r_xi_master(irow, icol) +=
+          orthogon_condition_partial_xi_master_inverse * r_xi_master(irow) *
+          xi_master_partial_r_xi_master(icol);
+    }
+  }
+
+  for (unsigned int irow = 0; irow < 3; ++irow)
+  {
+    for (unsigned int icol = 0; icol < 3; ++icol)
+    {
+      xi_master_partial_r_xixi_master_partial_r_slave(irow, icol) -=
+          orthogon_condition_partial_xi_master_inverse * delta_r(irow) *
+          xi_master_partial_r_slave(icol);
+
+      xi_master_partial_r_xixi_master_partial_r_master(irow, icol) -=
+          orthogon_condition_partial_xi_master_inverse * delta_r(irow) *
+          xi_master_partial_r_master(icol);
+
+      xi_master_partial_r_xixi_master_partial_r_xi_master(irow, icol) -=
+          orthogon_condition_partial_xi_master_inverse * delta_r(irow) *
+          xi_master_partial_r_xi_master(icol);
+    }
+  }
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+template <typename T>
 void BEAMINTERACTION::GEO::CalcPTCProjectionOrthogonalityConditionPartialDerivParameterCoordMaster(
     T& orthogon_condition_partial_xi_master, const LINALG::TMatrix<T, 3, 1>& delta_r,
     const LINALG::TMatrix<T, 3, 1>& r_xi_master, const LINALG::TMatrix<T, 3, 1>& r_xixi_master)
@@ -475,6 +735,45 @@ template void BEAMINTERACTION::GEO::CalcPointToCurveProjectionParameterCoordMast
     Sacado::Fad::DFad<double>>(LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3>&,
     LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3>&,
     LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3>&,
+    const LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1>&,
+    const LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1>&,
+    const LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1>&);
+
+template void
+BEAMINTERACTION::GEO::CalcPointToCurveProjectionParameterCoordMasterPartial2ndDerivs<double>(
+    LINALG::TMatrix<double, 3, 3>&, LINALG::TMatrix<double, 3, 3>&, LINALG::TMatrix<double, 3, 3>&,
+    LINALG::TMatrix<double, 3, 3>&, LINALG::TMatrix<double, 3, 3>&, LINALG::TMatrix<double, 3, 3>&,
+    LINALG::TMatrix<double, 3, 3>&, LINALG::TMatrix<double, 3, 3>&, LINALG::TMatrix<double, 3, 3>&,
+    LINALG::TMatrix<double, 3, 3>&, LINALG::TMatrix<double, 3, 3>&, LINALG::TMatrix<double, 3, 3>&,
+    LINALG::TMatrix<double, 3, 3>&, LINALG::TMatrix<double, 3, 3>&, LINALG::TMatrix<double, 3, 3>&,
+    const LINALG::TMatrix<double, 1, 3>&, const LINALG::TMatrix<double, 1, 3>&,
+    const LINALG::TMatrix<double, 1, 3>&, const LINALG::TMatrix<double, 3, 3>&,
+    const LINALG::TMatrix<double, 3, 3>&, const LINALG::TMatrix<double, 3, 3>&,
+    const LINALG::TMatrix<double, 3, 1>&, const LINALG::TMatrix<double, 3, 1>&,
+    const LINALG::TMatrix<double, 3, 1>&, const LINALG::TMatrix<double, 3, 1>&);
+template void BEAMINTERACTION::GEO::CalcPointToCurveProjectionParameterCoordMasterPartial2ndDerivs<
+    Sacado::Fad::DFad<double>>(LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 3>&,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 3>&,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 3>&,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 3>&,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 3>&,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 3>&,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 3>&,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 3>&,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 3>&,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 3>&,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 3>&,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 3>&,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 3>&,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 3>&,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 3>&,
+    const LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3>&,
+    const LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3>&,
+    const LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3>&,
+    const LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 3>&,
+    const LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 3>&,
+    const LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 3>&,
+    const LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1>&,
     const LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1>&,
     const LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1>&,
     const LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1>&);

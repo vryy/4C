@@ -44,7 +44,7 @@ RESULTSEVRY                     1000
 RESEVRYERGY                     1
 RESTARTEVRY                     100
 NLNSOL                          fullnewton
-DIVERCONT                       adapt_step
+DIVERCONT                       stop
 TIMESTEP                        5e-2
 NUMSTEP                         3
 MAXTIME                         1.0
@@ -70,8 +70,6 @@ POT_LAW_PREFACTOR               -1e-7 5e-25
 POT_LAW_EXPONENT                6.0 12.0
 BEAMPOTENTIAL_TYPE              Volume
 STRATEGY                        SingleLengthSpecific_SmallSepApprox_Simple
-//REGULARIZATION_TYPE             linear_extrapolation
-//REGULARIZATION_SEPARATION       1.0e-1
 NUM_INTEGRATION_SEGMENTS        10
 NUM_GAUSSPOINTS                 50
 CUTOFF_RADIUS                   1.0e-1
@@ -159,4 +157,7 @@ STRUCTURE DIS structure NODE  9 QUANTITY dispz VALUE  1.77681765956780764e-02 TO
 STRUCTURE DIS structure NODE 18 QUANTITY dispx VALUE  1.00274050612762042e-02 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 18 QUANTITY dispy VALUE  2.60652751759150219e-03 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 18 QUANTITY dispz VALUE -9.27453938504277930e-02 TOLERANCE 1e-10
+STRUCTURE SPECIAL QUANTITY num_iter_step_1 VALUE 7.0 TOLERANCE 1.0e-20
+STRUCTURE SPECIAL QUANTITY num_iter_step_2 VALUE 7.0 TOLERANCE 1.0e-20
+STRUCTURE SPECIAL QUANTITY num_iter_step_3 VALUE 8.0 TOLERANCE 1.0e-20
 ---------------------------------------------------------------END

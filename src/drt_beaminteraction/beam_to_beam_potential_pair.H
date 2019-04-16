@@ -259,9 +259,9 @@ namespace BEAMINTERACTION
         LINALG::TMatrix<T, 3 * numnodes * numnodalvalues, 1>& force_pot_slave_GP,
         LINALG::TMatrix<T, 3 * numnodes * numnodalvalues, 1>& force_pot_master_GP,
         LINALG::TMatrix<T, 3, 1> const& r_slave, LINALG::TMatrix<T, 3, 1> const& r_xi_slave,
-        LINALG::TMatrix<T, 3, 1> const& g1_slave, LINALG::TMatrix<T, 3, 1> const& r_master,
+        LINALG::TMatrix<T, 3, 1> const& t1_slave, LINALG::TMatrix<T, 3, 1> const& r_master,
         LINALG::TMatrix<T, 3, 1> const& r_xi_master, LINALG::TMatrix<T, 3, 1> const& r_xixi_master,
-        LINALG::TMatrix<T, 3, 1> const& g1_master, T alpha, T cos_alpha,
+        LINALG::TMatrix<T, 3, 1> const& t1_master, T alpha, T cos_alpha,
         LINALG::TMatrix<T, 3, 1> const& dist_ul,
         LINALG::TMatrix<T, 1, 3> const& xi_master_partial_r_slave,
         LINALG::TMatrix<T, 1, 3> const& xi_master_partial_r_master,
@@ -387,6 +387,8 @@ namespace BEAMINTERACTION
 
     /** \brief evaluate analytic linearization (i.e. stiffness matrices) at current Gauss point
      *
+     *  \param stiffmat11 d (Residuum_vec_1) / d (dof_vec_1)
+     *
      *  \author grill
      *  \date 04/19 */
     void EvaluateStiffpotAnalyticContributions_SingleLengthSpecific_SmallSepApprox_Simple(
@@ -394,6 +396,22 @@ namespace BEAMINTERACTION
         LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N_i_xi_slave,
         LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N_i_master,
         LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N_i_xi_master,
+        LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N_i_xixi_master,
+        double const& xi_master, LINALG::TMatrix<double, 3, 1> const& r_xi_slave,
+        LINALG::TMatrix<double, 3, 1> const& r_xi_master,
+        LINALG::TMatrix<double, 3, 1> const& r_xixi_master, double const& norm_dist_ul,
+        LINALG::TMatrix<double, 3, 1> const& normal_ul, double const& pot_ia_deriv_gap_ul,
+        double const& pot_ia_deriv_cos_alpha, double const& pot_ia_2ndderiv_gap_ul,
+        double const& pot_ia_deriv_gap_ul_deriv_cos_alpha, double const& pot_ia_2ndderiv_cos_alpha,
+        LINALG::TMatrix<double, 3, 1> const& gap_ul_deriv_r_slave,
+        LINALG::TMatrix<double, 3, 1> const& gap_ul_deriv_r_master,
+        LINALG::TMatrix<double, 3, 1> const& cos_alpha_deriv_r_slave,
+        LINALG::TMatrix<double, 3, 1> const& cos_alpha_deriv_r_master,
+        LINALG::TMatrix<double, 3, 1> const& cos_alpha_deriv_r_xi_slave,
+        LINALG::TMatrix<double, 3, 1> const& cos_alpha_deriv_r_xi_master,
+        LINALG::TMatrix<double, 1, 3> xi_master_partial_r_slave,
+        LINALG::TMatrix<double, 1, 3> xi_master_partial_r_master,
+        LINALG::TMatrix<double, 1, 3> xi_master_partial_r_xi_master,
         LINALG::SerialDenseMatrix& stiffmat11, LINALG::SerialDenseMatrix& stiffmat12,
         LINALG::SerialDenseMatrix& stiffmat21, LINALG::SerialDenseMatrix& stiffmat22) const;
 
@@ -407,6 +425,28 @@ namespace BEAMINTERACTION
         LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, numnodes * numnodalvalues> const& N_i_master,
         LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, numnodes * numnodalvalues> const&
             N_i_xi_master,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, numnodes * numnodalvalues> const&
+            N_i_xixi_master,
+        Sacado::Fad::DFad<double> const& xi_master,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1> const& r_xi_slave,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1> const& r_xi_master,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1> const& r_xixi_master,
+        Sacado::Fad::DFad<double> const& norm_dist_ul,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1> const& normal_ul,
+        Sacado::Fad::DFad<double> const& pot_ia_deriv_gap_ul,
+        Sacado::Fad::DFad<double> const& pot_ia_deriv_cos_alpha,
+        Sacado::Fad::DFad<double> const& pot_ia_2ndderiv_gap_ul,
+        Sacado::Fad::DFad<double> const& pot_ia_deriv_gap_ul_deriv_cos_alpha,
+        Sacado::Fad::DFad<double> const& pot_ia_2ndderiv_cos_alpha,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1> const& gap_ul_deriv_r_slave,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1> const& gap_ul_deriv_r_master,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1> const& cos_alpha_deriv_r_slave,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1> const& cos_alpha_deriv_r_master,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1> const& cos_alpha_deriv_r_xi_slave,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1> const& cos_alpha_deriv_r_xi_master,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3> xi_master_partial_r_slave,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3> xi_master_partial_r_master,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3> xi_master_partial_r_xi_master,
         LINALG::SerialDenseMatrix& stiffmat11, LINALG::SerialDenseMatrix& stiffmat12,
         LINALG::SerialDenseMatrix& stiffmat21, LINALG::SerialDenseMatrix& stiffmat22) const
     {
