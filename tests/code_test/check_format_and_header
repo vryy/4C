@@ -12,8 +12,8 @@
 # The files with non-compliant code format will also be written out in a file named "wrong_clang_format.txt"
 
 # Author:    Jonas Nitzler
-# Date:      04.09.2018
-# Version:   1.0
+# Date:      20.03.2019
+# Version:   1.1
 
 ## Delete old .txt files containing non-compliant files
 [ -e wrong_format.txt ] && rm wrong_format.txt
@@ -26,6 +26,7 @@ python2 ./tests/code_test/nightly_header-check.py | tee wrong_format.txt
 if [ -s wrong_format.txt ]
 then
   echo "Failed. Non-compliant file headers have been reported in wrong_format.txt."
+  cat wrong_format.txt
 else
   echo "Passed."
 fi
@@ -54,6 +55,7 @@ then
   then
     (printf "$uncompliant_files")>>wrong_clang_format.txt
     echo "Failed. Non-compliant files have been reported in wrong_clang_format.txt."
+    cat wrong_clang_format.txt
     exit 1
   fi
 fi
