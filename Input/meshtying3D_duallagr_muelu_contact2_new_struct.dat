@@ -29,6 +29,8 @@ OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Yes
 FILESTEPS                       1000
+-----------------------------------------------------------MESH PARTITIONING
+IMBALANCE_TOL                   1.03
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1

@@ -555,6 +555,10 @@ namespace DRT
     {
       return getParameterList()()->sublist("MOR");
     };
+    const Teuchos::ParameterList& MeshPartitioningParams() const
+    {
+      return getParameterList()->sublist("MESH PARTITIONING");
+    }
 
     const Teuchos::ParameterList& SolverParams(int solverNr) const;
     const Teuchos::ParameterList& RandomFieldParams(int randomfieldNr) const;

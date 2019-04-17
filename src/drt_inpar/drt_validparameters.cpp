@@ -451,6 +451,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 #endif
 
   /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& meshpartitioning = list->sublist("MESH PARTITIONING", false, "");
+
+  DoubleParameter("IMBALANCE_TOL", 1.1,
+      "Tolerance for relative imbalance of subdomain sizes for graph partitioning of unstructured "
+      "meshes read from input files.",
+      &meshpartitioning);
+
+  /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& io = list->sublist("IO", false, "");
 
   setStringToIntegralParameter<int>("OUTPUT_GMSH", "No", "", yesnotuple, yesnovalue, &io);
