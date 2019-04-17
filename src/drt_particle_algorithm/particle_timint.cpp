@@ -316,11 +316,26 @@ void PARTICLEALGORITHM::TimIntSemiImplicitEuler::PreInteractionRoutine()
     PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
+    // get particle states stored in container
+    const std::set<PARTICLEENGINE::StateEnum>& particlestates = container->GetStoredStates();
+
     // update velocity of all particles
     container->UpdateState(1.0, PARTICLEENGINE::Velocity, dt_, PARTICLEENGINE::Acceleration);
 
     // clear acceleration of all particles
     container->ClearState(PARTICLEENGINE::Acceleration);
+
+    // angular velocity and acceleration states
+    if (particlestates.count(PARTICLEENGINE::AngularVelocity) and
+        particlestates.count(PARTICLEENGINE::AngularAcceleration))
+    {
+      // update angular velocity of all particles
+      container->UpdateState(
+          1.0, PARTICLEENGINE::AngularVelocity, dt_, PARTICLEENGINE::AngularAcceleration);
+
+      // clear angular acceleration of all particles
+      container->ClearState(PARTICLEENGINE::AngularAcceleration);
+    }
 
     // update position of all particles
     container->UpdateState(1.0, PARTICLEENGINE::Position, dt_, PARTICLEENGINE::Velocity);
@@ -398,11 +413,26 @@ void PARTICLEALGORITHM::TimIntVelocityVerlet::PreInteractionRoutine()
     PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
+    // get particle states stored in container
+    const std::set<PARTICLEENGINE::StateEnum>& particlestates = container->GetStoredStates();
+
     // update velocity of all particles
     container->UpdateState(1.0, PARTICLEENGINE::Velocity, dthalf_, PARTICLEENGINE::Acceleration);
 
     // clear acceleration of all particles
     container->ClearState(PARTICLEENGINE::Acceleration);
+
+    // angular velocity and acceleration states
+    if (particlestates.count(PARTICLEENGINE::AngularVelocity) and
+        particlestates.count(PARTICLEENGINE::AngularAcceleration))
+    {
+      // update angular velocity of all particles
+      container->UpdateState(
+          1.0, PARTICLEENGINE::AngularVelocity, dthalf_, PARTICLEENGINE::AngularAcceleration);
+
+      // clear angular acceleration of all particles
+      container->ClearState(PARTICLEENGINE::AngularAcceleration);
+    }
 
     // modified velocity and acceleration states
     if (modifiedstates_)
@@ -456,8 +486,20 @@ void PARTICLEALGORITHM::TimIntVelocityVerlet::PostInteractionRoutine()
     PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
+    // get particle states stored in container
+    const std::set<PARTICLEENGINE::StateEnum>& particlestates = container->GetStoredStates();
+
     // update velocity of all particles
     container->UpdateState(1.0, PARTICLEENGINE::Velocity, dthalf_, PARTICLEENGINE::Acceleration);
+
+    // angular velocity and acceleration states
+    if (particlestates.count(PARTICLEENGINE::AngularVelocity) and
+        particlestates.count(PARTICLEENGINE::AngularAcceleration))
+    {
+      // update angular velocity of all particles
+      container->UpdateState(
+          1.0, PARTICLEENGINE::AngularVelocity, dthalf_, PARTICLEENGINE::AngularAcceleration);
+    }
   }
 
   // evaluate dirichlet boundary condition

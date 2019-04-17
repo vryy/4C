@@ -71,6 +71,7 @@ namespace INPAR
       m_cavitation,               ///< fluid with varying density
       m_cnst_art,                 ///< 1D_Artery constant material properties
       m_compogden,                ///< compressible Ogden material (with shell8)
+      m_consolidation,            ///< material providing a general interface for consolidation
       m_constraintmixture,        ///< growth and remodeling of arteries
       m_crosslinkermat,           ///< material for crosslinker in biopolymer networks
       m_elasthyper,               ///< collection of hyperelastic materials
@@ -184,15 +185,19 @@ namespace INPAR
       m_scatra,                    ///< scalar transport material
       m_scatra_multiporo_fluid,  ///< scalar transport material for multiphase porous flow (species
                                  ///< in fluid)
-      m_scatra_multiporo_volfrac,  ///< scalar transport material for multiphase porous flow
-                                   ///< (species in volume fraction)
-      m_scatra_aniso,              ///< anisotropic scalar transport material
-      m_scatra_multiscale,         ///< scalar transport material for multi-scale approach
-      m_scatra_reaction_poroECM,   ///< reaction definition and parameters for reaction model in
-                                   ///< porous ECM
-      m_scatra_reaction,           ///< reaction definition and parameters
-      m_scatra_bondreac,           ///< biochemical bond reactions in cell migration context
-      m_scatra_chemotaxis,         ///< chemotaxis definition parameters
+      m_scatra_multiporo_volfrac,      ///< scalar transport material for multiphase porous flow
+                                       ///< (species in volume fraction)
+      m_scatra_multiporo_solid,        ///< scalar transport material for multiphase porous flow
+                                       ///< (species in solid)
+      m_scatra_multiporo_temperature,  ///< scalar transport material for multiphase porous flow
+                                       ///< (temperature)
+      m_scatra_aniso,                  ///< anisotropic scalar transport material
+      m_scatra_multiscale,             ///< scalar transport material for multi-scale approach
+      m_scatra_reaction_poroECM,       ///< reaction definition and parameters for reaction model in
+                                       ///< porous ECM
+      m_scatra_reaction,               ///< reaction definition and parameters
+      m_scatra_bondreac,               ///< biochemical bond reactions in cell migration context
+      m_scatra_chemotaxis,             ///< chemotaxis definition parameters
       m_soret,   ///< material for heat transport due to Fourier-type thermal conduction and the
                  ///< Soret effect
       m_spring,  ///< elastic spring (translational or rotational)
@@ -205,6 +210,7 @@ namespace INPAR
       m_sutherland,          ///< material with temperature dependence according to Sutherland law
       m_tempdepwater,        ///< temperature-dependent water
       m_th_fourier_iso,      ///< isotropic (linear) Fourier's law of heat conduction
+      m_th_fourier_var,      ///< Fourier's law with variable conductivity
       m_thermoplhyperelast,  ///< Temperature-dependent hyperelasticity and von Mises plasticity
       m_thermopllinelast,    ///< Temperature-dependent Hooke elasticity and von Mises plasticity
       m_thermostvenant,      ///< St.Venant Kirchhoff material with temperature

@@ -33,9 +33,10 @@ namespace PARTICLEALGORITHM
 {
   namespace UTILS
   {
-    //! read parameters relating particle types to IDs
-    void ReadParamsTypesRelatedToIDs(const Teuchos::ParameterList& params, const std::string& name,
-        std::map<PARTICLEENGINE::TypeEnum, int>& typetoidmap);
+    //! read parameters relating particle types to values
+    template <typename valtype>
+    void ReadParamsTypesRelatedToValues(const Teuchos::ParameterList& params,
+        const std::string& name, std::map<PARTICLEENGINE::TypeEnum, valtype>& typetovalmap);
 
   }  // namespace UTILS
 

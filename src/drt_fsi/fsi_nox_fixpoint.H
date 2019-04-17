@@ -3,11 +3,11 @@
 
 \brief Calculates the fix point direction.
 
-\maintainer Andreas Rauch
+\maintainer Matthias Mayr
 
 \level 1
-
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 #ifndef FSI_NOX_FIXPOINT_H
 #define FSI_NOX_FIXPOINT_H

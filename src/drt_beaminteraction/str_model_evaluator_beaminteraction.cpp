@@ -118,8 +118,8 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   // -------------------------------------------------------------------------
   Teuchos::RCP<DRT::UTILS::DiscretizationCreatorBase> discloner =
       Teuchos::rcp(new DRT::UTILS::DiscretizationCreatorBase());
-  ia_discret_ =
-      discloner->CreateMatchingDiscretization(discret_ptr_, "ia_structure", true, false, true);
+  ia_discret_ = discloner->CreateMatchingDiscretization(
+      discret_ptr_, "ia_structure", true, true, false, true);
   // create discretization writer
   ia_discret_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(ia_discret_)));
 

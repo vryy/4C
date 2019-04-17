@@ -60,7 +60,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
     const Teuchos::ParameterList& fluidparams, const Teuchos::ParameterList& scatraparams,
     const std::string& struct_disname, const std::string& fluid_disname,
     const std::string& scatra_disname, bool isale, int nds_disp, int nds_vel, int nds_solidpressure,
-    int ndsporofluid_scatra)
+    int ndsporofluid_scatra, const std::map<int, std::set<int>>* nearbyelepairs)
 {
   // save the dofset number of the scatra on the fluid dis
   ndsporofluid_scatra_ = ndsporofluid_scatra;
@@ -125,7 +125,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
 
   // initialize
   poromulti_->Init(globaltimeparams, poroparams, structparams, fluidparams, struct_disname,
-      fluid_disname, isale, nds_disp, nds_vel, nds_solidpressure, ndsporofluid_scatra);
+      fluid_disname, isale, nds_disp, nds_vel, nds_solidpressure, ndsporofluid_scatra,
+      nearbyelepairs);
 
   // get the solver number used for ScalarTransport solver
   const int linsolvernumber = scatraparams.get<int>("LINEAR_SOLVER");
@@ -147,6 +148,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
     if (scatramsht_ == Teuchos::null) dserror("cast to Meshtying strategy failed!");
 
     scatramsht_->SetArteryTimeIntegrator(PoroField()->FluidField()->ArtNetTimInt());
+    scatramsht_->SetNearbyElePairs(nearbyelepairs);
   }
 
   // only now we must call Setup() on the scatra time integrator.
@@ -391,7 +393,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ApplyAdditionalDBCForVolFra
         {
           int matid = scatramat.MatID(idof);
           Teuchos::RCP<MAT::Material> singlemat = scatramat.MaterialById(matid);
-          if (singlemat->MaterialType() == INPAR::MAT::m_scatra_multiporo_fluid)
+          if (singlemat->MaterialType() == INPAR::MAT::m_scatra_multiporo_fluid ||
+              singlemat->MaterialType() == INPAR::MAT::m_scatra_multiporo_solid ||
+              singlemat->MaterialType() == INPAR::MAT::m_scatra_multiporo_temperature)
           {
             // do nothing
           }
@@ -413,7 +417,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ApplyAdditionalDBCForVolFra
             }
           }
           else
-            dserror("only MAT_scatra_multiporo_(fluid,volfrac) valid here");
+            dserror("only MAT_scatra_multiporo_(fluid,volfrac,solid,temperature) valid here");
         }
       }
     }

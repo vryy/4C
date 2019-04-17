@@ -4,12 +4,9 @@
 
 \brief Utility routines for ale mesh tying
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15270
-</pre>
+\maintainer Matthias Mayr
+
+\level 2
 */
 /*--------------------------------------------------------------------------*/
 #ifndef SRC_DRT_ALE_ALE_UTILS_H_

@@ -5,12 +5,9 @@
 \brief Solve FSI problem with sliding grids using a monolithic scheme
 with condensed structure interface displacements
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15270
-</pre>
+\maintainer Matthias Mayr
+
+\level 2
 */
 /*--------------------------------------------------------------------------*/
 #ifndef SRC_DRT_FSI_FSI_SLIDINGMONOLITHIC_STRUCTURESPLIT_H_

@@ -150,6 +150,24 @@ void PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::Init()
 }
 
 /*---------------------------------------------------------------------------*
+ | setup phase change handler                                 sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::Setup(
+    const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
+    const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
+    const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle)
+{
+  // call base class setup
+  SPHPhaseChangeBase::Setup(particleengineinterface, particlematerial, equationofstatebundle);
+
+  // safety check
+  for (const auto& typeEnum : {belowphase_, abovephase_})
+    if (not particlecontainerbundle_->GetParticleTypes().count(typeEnum))
+      dserror("no particle container for particle type '%s' found!",
+          PARTICLEENGINE::EnumToTypeName(typeEnum).c_str());
+}
+
+/*---------------------------------------------------------------------------*
  | evaluate phase change                                      sfuchs 02/2019 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::EvaluatePhaseChange() const

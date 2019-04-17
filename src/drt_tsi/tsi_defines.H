@@ -45,4 +45,10 @@
 /************************************************************************/
 //#define DEBUGMATERIAL          /* flag for material debug output */
 
+/************************************************************************/
+/* Debugging options for pseudo-SLM in TSI                              */
+/************************************************************************/
+//#define TSISLMFDCHECK         /* flag for enabling FDChecks*/
+//#define TSISLMFDCHECKDEBUG    /* prints element matrices in FDcheck to a file "FDCheck_capa.txt"*/
+
 #endif  // #ifndef TSI_DEFINES_H

@@ -1,8 +1,6 @@
 //
-// Maintainer: Tobias Wiesner
-// wiesner@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15240
+// Maintainer: Matthias Mayr
+//
 // simple two rigid-body contact example
 // use saddle point multigrid solver
 // needs Trilinos Q1/2014 or newer
@@ -58,7 +56,7 @@ NORMCOMBI_DISPLAGR   And
 LM_SHAPEFCN          Dual
 PARALLEL_REDIST      Static
 ----------------------------------------------------------SOLVER 1
-NAME                 Structure_Solver
+NAME                            Structure_Solver
 AZBDIAG                         0
 AZCONV                          AZ_r0
 AZDROP                          0
@@ -98,7 +96,7 @@ SOLVER                          Aztec_MSR
 STRATIMIKOS_XMLFILE             none
 VERBOSITY                       0
 ----------------------------------------------------------SOLVER 2
-NAME                 Contact_Solver
+NAME                            Contact_Solver
 AZBDIAG                         0
 AZCONV                          AZ_r0
 AZDROP                          0
@@ -138,8 +136,8 @@ SUB_SOLVER1                     3
 SUB_SOLVER2                     4
 SIMPLE_DAMPING                  1
 SOLVER                          Aztec_MSR
-PERMUTE_SYSTEM                  none //local
-NON_DIAGDOMINANCE_RATIO         1.0 //1.0
+PERMUTE_SYSTEM                  none
+NON_DIAGDOMINANCE_RATIO         1.0
 STRATIMIKOS_XMLFILE             none
 VERBOSITY                       0
 -----------------------------------------------------------SOLVER 3
@@ -166,10 +164,10 @@ ML_SMOTIMES                     3 3 3 3 3
 ML_COARSEN                      UC
 ML_SMOOTHERFINE                 SIMPLEC
 ML_SMOOTHERMED                  SIMPLEC
-ML_SMOOTHERCOARSE               Umfpack //SIMPLEC
+ML_SMOOTHERCOARSE               Umfpack
 -----------------------------------------------------------SOLVER 4
 NAME                            SchurCompSolver
-SOLVER                          Aztec_MSR //UMFPACK
+SOLVER                          Aztec_MSR
 PERMUTE_SYSTEM                  Local
 NON_DIAGDOMINANCE_RATIO         1.0
 AZSOLVE                         GMRES

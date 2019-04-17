@@ -24,7 +24,8 @@
 namespace DRT
 {
   class Discretization;
-}
+  class Element;
+}  // namespace DRT
 
 namespace ADAPTER
 {
@@ -74,14 +75,50 @@ namespace POROFLUIDMULTIPHASE
         Teuchos::RCP<IO::DiscretizationWriter> output  //!< output writer
     );
 
-    /// ghost the artery discretization on all procs.
-    void GhostArteryDiscretizationOnAllProcs(Teuchos::RCP<DRT::Discretization> artdis);
+    /**
+     * extend ghosting for artery discretization
+     * @param contdis [in]: discretization of 2D/3D domain
+     * @param artdis [in]: discretization of 1D domain
+     * @return set of nearby element pairs as seen from the artery discretization, each artery
+     * element with a vector of close 3D elements
+     */
+    std::map<int, std::set<int>> ExtendedGhostingArteryDiscretization(
+        Teuchos::RCP<DRT::Discretization> contdis, Teuchos::RCP<DRT::Discretization> artdis);
+
+    /**
+     * get axis-aligned bounding box of element
+     * @param ele: compute AABB for this element
+     * @return AABB of element as 6x1 vector with format [xmin, ymin, zmin, xmax, ymax, zmax]
+     */
+    std::vector<double> GetAABB(DRT::Element* ele);
+
+    /// maximum distance between two nodes of an element
+    double GetMaxNodalDistance(DRT::Element* ele, Teuchos::RCP<DRT::Discretization> dis);
+
+    /**
+     * perform brute force search
+     * @param contdis [in]: discretization of 2D/3D domain
+     * @param artdis [in]: discretization of 1D domain
+     * @param artsearchdis [in]: fully overlapping discretization of 1D domain on which search is
+     * performed
+     * @param elecolset [out]: additional elements that need to be ghosted are filled into this set
+     * @param nodecolset [out]: additional nodes that need to be ghosted are filled into this set
+     * @return set of nearby element pairs as seen from the artery discretization, each artery
+     * element with a vector of close 3D elements
+     */
+    std::map<int, std::set<int>> BruteForceSearch(Teuchos::RCP<DRT::Discretization> contdis,
+        Teuchos::RCP<DRT::Discretization> artdis, Teuchos::RCP<DRT::Discretization> artsearchdis,
+        std::set<int>* elecolset, std::set<int>* nodecolset);
 
     //! Determine norm of vector
     double CalculateVectorNorm(
         const enum INPAR::POROFLUIDMULTIPHASE::VectorNorm norm,  //!< norm to use
         const Teuchos::RCP<const Epetra_Vector> vect             //!< the vector of interest
     );
+
+    //! create (fully overlapping) search discretization
+    Teuchos::RCP<DRT::Discretization> CreateSearchDiscretization(
+        Teuchos::RCP<DRT::Discretization> artdis);
 
   }  // namespace UTILS
   // Print the logo

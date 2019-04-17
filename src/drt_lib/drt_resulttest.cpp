@@ -461,6 +461,22 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
       .AddNamedDouble("VALUE")
       .AddNamedDouble("TOLERANCE");
 
+  DRT::INPUT::LineDefinition particlewall_node;
+  particlewall_node.AddTag("PARTICLEWALL")
+      .AddNamedString("DIS")
+      .AddNamedInt("NODE")
+      .AddNamedString("QUANTITY")
+      .AddNamedDouble("VALUE")
+      .AddNamedDouble("TOLERANCE");
+
+  DRT::INPUT::LineDefinition particlewall_special;
+  particlewall_special.AddTag("PARTICLEWALL")
+      .AddNamedString("DIS")
+      .AddTag("SPECIAL")
+      .AddNamedString("QUANTITY")
+      .AddNamedDouble("VALUE")
+      .AddNamedDouble("TOLERANCE");
+
   DRT::INPUT::LineDefinition acou;
   acou.AddTag("ACOUSTIC")
       .AddNamedString("DIS")
@@ -525,6 +541,8 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
   lines->Add(particleold);
   lines->Add(particleold_special);
   lines->Add(particle);
+  lines->Add(particlewall_node);
+  lines->Add(particlewall_special);
   lines->Add(acou);
   lines->Add(invacou);
   lines->Add(elemag);

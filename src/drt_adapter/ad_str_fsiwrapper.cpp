@@ -5,23 +5,16 @@
 \brief Structural adapter for FSI problems containing the interface
        and methods dependent on the interface
 
-\maintainer Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
+\maintainer Matthias Mayr
 
 \level 1
 */
-
-
 
 #include "ad_str_fsiwrapper.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_structure/stru_aux.H"
-
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

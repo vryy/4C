@@ -314,6 +314,8 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
       mat->MaterialType() == INPAR::MAT::m_yoghurt or mat->MaterialType() == INPAR::MAT::m_soret or
       mat->MaterialType() == INPAR::MAT::m_scatra_multiporo_fluid or
       mat->MaterialType() == INPAR::MAT::m_scatra_multiporo_volfrac or
+      mat->MaterialType() == INPAR::MAT::m_scatra_multiporo_solid or
+      mat->MaterialType() == INPAR::MAT::m_scatra_multiporo_temperature or
       (mat->MaterialType() == INPAR::MAT::m_electrode and impltype_ == INPAR::SCATRA::impltype_std))
     numdofpernode_ = 1;  // we only have a single scalar
   else if (mat->MaterialType() == INPAR::MAT::m_electrode)
@@ -381,7 +383,11 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
           actmat->MaterialById(actmat->MatID(ii))->MaterialType() !=
               INPAR::MAT::m_scatra_multiporo_fluid and
           actmat->MaterialById(actmat->MatID(ii))->MaterialType() !=
-              INPAR::MAT::m_scatra_multiporo_volfrac)
+              INPAR::MAT::m_scatra_multiporo_volfrac and
+          actmat->MaterialById(actmat->MatID(ii))->MaterialType() !=
+              INPAR::MAT::m_scatra_multiporo_temperature and
+          actmat->MaterialById(actmat->MatID(ii))->MaterialType() !=
+              INPAR::MAT::m_scatra_multiporo_solid)
         dserror(
             "The material Mat_matlist_reaction only supports MAT_scatra and MAT_scatra_multiporo "
             "as valid main Material");

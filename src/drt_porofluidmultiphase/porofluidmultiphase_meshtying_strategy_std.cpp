@@ -121,6 +121,20 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::CheckInitialFields(
   return;
 }
 
+/*-------------------------------------------------------------------------*
+ | set element pairs that are close                       kremheller 03/19 |
+ *------------------------------------------------------------------------ */
+void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::SetNearbyElePairs(
+    const std::map<int, std::set<int>>* nearbyelepairs)
+{
+  return;
+}
+
+/*-------------------------------------------------------------------------*
+ | setup the strategy                                     kremheller 03/19 |
+ *------------------------------------------------------------------------ */
+void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::Setup() { return; }
+
 /*----------------------------------------------------------------------*
  | apply mesh movement                                 kremheller 06/18 |
  *----------------------------------------------------------------------*/

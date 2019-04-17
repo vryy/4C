@@ -57,8 +57,11 @@ namespace ADAPTER
         const int nds_disp,              ///< number of dofset associated with displacements
         const int nds_vel,               ///< number of dofset associated with fluid velocities
         const int nds_solidpressure,     ///< number of dofset associated with solid pressure
-        const int ndsporofluid_scatra    ///< number of dofset associated with scalar on fluid
+        const int ndsporofluid_scatra,   ///< number of dofset associated with scalar on fluid
                                          ///< discretization
+        const std::map<int, std::set<int>>*
+            nearbyelepairs  ///< possible interaction partners between porofluid and artery
+                            ///< discretization
         ) = 0;
 
     /// create result test for multiphase porous fluid field

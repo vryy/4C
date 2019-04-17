@@ -26,6 +26,8 @@
 #include "particle_object.H"
 #include "particle_runtime_vtp_writer.H"
 
+#include "../drt_particle_algorithm/particle_algorithm_utils.H"
+
 #include "../drt_binstrategy/binning_strategy.H"
 
 #include "../drt_inpar/inpar_particle.H"
@@ -99,6 +101,9 @@ void PARTICLEENGINE::ParticleEngine::Setup(
 
   // setup particle runtime vtp writer
   SetupParticleVtpWriter();
+
+  // setup particle type weights for dynamic load balancing
+  SetupTypeWeights();
 }
 
 /*---------------------------------------------------------------------------*
@@ -364,6 +369,9 @@ void PARTICLEENGINE::ParticleEngine::RefreshParticles() const
 void PARTICLEENGINE::ParticleEngine::RefreshParticlesOfSpecificStatesAndTypes(
     const StatesOfTypesToRefresh& particlestatestotypes) const
 {
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "PARTICLEENGINE::ParticleEngine::RefreshParticlesOfSpecificStatesAndTypes");
+
   std::vector<std::vector<ParticleObjShrdPtr>> particlestosend(comm_.NumProc());
   std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>> particlestoinsert(typevectorsize_);
 
@@ -540,7 +548,8 @@ void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
           DistanceBetweenParticles(currpos, neighborpos, dist);
 
           // distance between particles larger than minimum bin size
-          if (std::sqrt(dist[0] * dist[0] + dist[1] * dist[1] + dist[2] * dist[2]) > minbinsize_)
+          if (dist[0] * dist[0] + dist[1] * dist[1] + dist[2] * dist[2] >
+              (minbinsize_ * minbinsize_))
             continue;
 
           // append potential particle neighbor pair
@@ -658,6 +667,66 @@ PARTICLEENGINE::ParticleEngine::GetLocalIndexInSpecificContainer(int globalid) c
   if (globalidIt == globalidtolocalindex_.end()) return nullptr;
 
   return globalidIt->second;
+}
+
+/*---------------------------------------------------------------------------*
+ | get bin discretization writer                              sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
+const std::shared_ptr<IO::DiscretizationWriter>
+PARTICLEENGINE::ParticleEngine::GetBinDiscretizationWriter() const
+{
+  return Teuchos::get_shared_ptr(binstrategy_->BinDiscret()->Writer());
+}
+
+/*---------------------------------------------------------------------------*
+ | relate all particles to all processors                     sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEENGINE::ParticleEngine::RelateAllParticlesToAllProcs(
+    std::vector<int>& particlestoproc) const
+{
+  // global ids on this processor
+  std::set<int> thisprocglobalids;
+
+  // iterate over particle types
+  for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
+  {
+    // get container of owned particles of current particle type
+    ParticleContainer* container =
+        particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
+
+    // get number of particles stored in container
+    const int particlestored = container->ParticlesStored();
+
+    // no particles of current type and current status
+    if (particlestored <= 0) continue;
+
+    // get pointer to global id of particles
+    int* globalids = container->GetPtrToParticleGlobalID(0);
+
+    // insert global id of particles
+    thisprocglobalids.insert(globalids, globalids + particlestored);
+  }
+
+  // get maximum global id on this processor
+  int thisprocmaxglobalid = (thisprocglobalids.size() == 0) ? 0 : *thisprocglobalids.rbegin();
+
+  // get maximum global id on all processors
+  int allprocmaxglobalid(0);
+  comm_.MaxAll(&thisprocmaxglobalid, &allprocmaxglobalid, 1);
+
+  // resize to hold all particles
+  const int vecsize = allprocmaxglobalid + 1;
+  particlestoproc.resize(vecsize, -1);
+
+  // relate this processor id to its global ids
+  for (int globalid : thisprocglobalids) particlestoproc[globalid] = myrank_;
+
+  // mpi communicator
+  const Epetra_MpiComm* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm_);
+  if (!mpicomm) dserror("dynamic cast to Epetra_MpiComm failed!");
+
+  // communicate global ids between all processors
+  MPI_Allreduce(MPI_IN_PLACE, &particlestoproc[0], vecsize, MPI_INT, MPI_MAX, mpicomm->Comm());
 }
 
 /*---------------------------------------------------------------------------*
@@ -918,6 +987,9 @@ void PARTICLEENGINE::ParticleEngine::SetupDataStorage(
 
   // allocate memory to hold particle types
   directghostingtargets_.resize(typevectorsize_);
+
+  // allocate memory for particles being communicated to target processors
+  communicatedparticletargets_.assign(comm_.NumProc(), std::vector<int>(0));
 }
 
 /*---------------------------------------------------------------------------*
@@ -945,6 +1017,25 @@ void PARTICLEENGINE::ParticleEngine::SetupParticleVtpWriter() const
 
   // setup particle runtime vtp writer
   particlevtpwriter_->Setup(write_binary_output, write_ghosted_particles);
+}
+
+/*---------------------------------------------------------------------------*
+ | setup particle type weights for dynamic load balancing     sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEENGINE::ParticleEngine::SetupTypeWeights()
+{
+  // allocate memory to hold particle types
+  typeweights_.resize(typevectorsize_);
+
+  // init map relating particle types to dynamic load balance factor
+  std::map<PARTICLEENGINE::TypeEnum, double> typetodynloadbal;
+
+  // read parameters relating particle types to values
+  PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues(
+      params_, "PHASE_TO_DYNLOADBALFAC", typetodynloadbal);
+
+  // insert weight of particle type
+  for (auto& typeIt : typetodynloadbal) typeweights_[typeIt.first] = typeIt.second;
 }
 
 /*---------------------------------------------------------------------------*
@@ -1245,8 +1336,11 @@ void PARTICLEENGINE::ParticleEngine::CheckParticlesAtBoundaries(
 void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeDistributed(
     std::vector<ParticleObjShrdPtr>& particlestodistribute,
     std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend,
-    std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestokeep) const
+    std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestokeep)
 {
+  // clear particles being communicated to target processors
+  communicatedparticletargets_.assign(comm_.NumProc(), std::vector<int>(0));
+
   // number of particles to distribute
   int numparticles = particlestodistribute.size();
 
@@ -1322,7 +1416,14 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeDistributed(
           std::make_pair(ownerofparticle, particlestodistribute[i]));
     // particle is owned by another processor
     else
+    {
+      // append particle to be send
       particlestosend[ownerofparticle].push_back(particlestodistribute[i]);
+
+      // append global id of particle to be send
+      communicatedparticletargets_[ownerofparticle].emplace_back(
+          particlestodistribute[i]->ReturnParticleGlobalID());
+    }
   }
 
   // short screen output
@@ -1340,10 +1441,13 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeDistributed(
  *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeTransfered(
     std::vector<std::set<int>>& particlestoremove,
-    std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend) const
+    std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend)
 {
   // safety check
   if (not validownedparticles_) dserror("invalid relation of owned particles to bins!");
+
+  // clear particles being communicated to target processors
+  communicatedparticletargets_.assign(comm_.NumProc(), std::vector<int>(0));
 
   // iterate over this processors bins being touched by other processors
   for (int touchedbin : touchedbins_)
@@ -1399,6 +1503,9 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeTransfered(
 
       // store index of particle to be removed from containers after particle transfer
       (particlestoremove[typeEnum]).insert(ownedindex);
+
+      // append global id of particle to be send
+      communicatedparticletargets_[sendtoproc].emplace_back(globalid);
     }
   }
 }
@@ -2012,8 +2119,12 @@ void PARTICLEENGINE::ParticleEngine::DetermineBinWeights()
     // get global id of bin
     const int gidofbin = binrowmap_->GID(rowlidofbin);
 
-    // add number of particles in current bin to weights
-    (*binweights_)[0][rowlidofbin] += particlestobins_[bincolmap_->LID(gidofbin)].size();
+    // iterate over owned particles in current bin
+    for (auto& particleIt : particlestobins_[bincolmap_->LID(gidofbin)])
+    {
+      // add weight of particle of specific type
+      (*binweights_)[0][rowlidofbin] += typeweights_[particleIt.first];
+    }
   }
 }
 

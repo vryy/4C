@@ -29,6 +29,7 @@
 #include "drt_dserror.H"
 #include "drt_parser.H"
 #include "drt_functionvariables.H"
+#include "../drt_fem_general/drt_utils_polynomial.H"
 
 namespace MAT
 {
@@ -454,6 +455,68 @@ namespace DRT
 
       // Current acceleration (at t)
       LINALG::Matrix<3, 1> acc_B_;
+    };
+
+    /**
+     * @brief special implementation of a 1D polynomial function
+     *
+     * This class defines a generic polynomial that that takes on argument. The polynomial can be
+     * evaluated and the first derivative is also provided.
+     *
+     * This class does circumvent using automatic differentiation and may be used in
+     * performance-sensitive applications (e.g. operations on Gauss-point level).
+     * In particular, evaluating the derivative is faster for this function compared to
+     * a VariableExprFunction representing the same polynomial.
+     */
+    class FastPolynomialFunction : public Function
+    {
+     public:
+      /**
+       * ctor
+       *
+       * @param coefficients the coefficients of the monomials in ascending order
+       */
+      FastPolynomialFunction(std::vector<double>* coefficients);
+
+      /**
+       * @brief Evaluate the polynomial.
+       *
+       * This is the only supported evaluation call for this class
+       *
+       * @param argument point to evaluate
+       * @return value of the polynomial at `argument`
+       */
+      double Evaluate(const double argument) const;
+
+      /**
+       * Evaluate first derivative of polynomial.
+       *
+       * @param argument point to evaluate
+       * @return value of first derivative of polynomial at `argument`
+       */
+      double EvaluateDerivative(const double argument) const;
+
+      /*!
+      \brief evaluate function at given time and position
+
+      \param index (i) For vector-valued functions, index defines the
+                       function-component which should be evaluated
+                       For scalar functions, index is always set to 0
+      \param t     (i) The point in time in which the
+                       function will be evaluated
+      \param x     (i) The point in 3-dimensional space in which the
+                       function will be evaluated
+      \throws dserror
+      */
+      virtual double Evaluate(const int index, const double* x, double t)
+      {
+        dserror("FastPolynomialFunction does not support this call.");
+        return 0;
+      }
+
+     private:
+      //! internal polynomial representation
+      const DRT::UTILS::Polynomial* const mypoly_;
     };
 
   }  // namespace UTILS

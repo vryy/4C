@@ -6,12 +6,7 @@
 
 \level 1
 
-<pre>
 \maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 */
 /*----------------------------------------------------------------------*/
 
@@ -45,6 +40,7 @@
 #include "inpar_beampotential.H"
 #include "inpar_beaminteraction.H"
 #include "inpar_poromultiphase_scatra.H"
+#include "inpar_elemag.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -1178,6 +1174,8 @@ DRT::INPUT::ValidConditions()
   INPAR::LEVELSET::SetValidConditions(condlist);
 
   INPAR::ACOU::SetValidConditions(condlist);
+
+  INPAR::ELEMAG::SetValidConditions(condlist);
 
   INPAR::BEAMPOTENTIAL::SetValidConditions(condlist);
 

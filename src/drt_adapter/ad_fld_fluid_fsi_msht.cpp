@@ -4,12 +4,9 @@
 
 \brief Fluid field adapter for fsi with internal mesh tying or mesh sliding
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15270
-</pre>
+\maintainer Matthias Mayr
+
+\level 3
 */
 /*--------------------------------------------------------------------------*/
 

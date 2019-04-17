@@ -82,10 +82,30 @@ namespace GEOMETRYPAIR
     };
 
     /**
-     * \brief Get the Gauss rule to be used for Gauss point projection method.
+     * \brief Get the number of Gauss points.
      * @return Gauss rule
      */
     inline int GetNumberOfGaussPoints() const { return GetGaussPoints().nquad; };
+
+    /**
+     * \brief Sets the number of integration points along the circumfence of the line cross
+     * section.
+     */
+    inline void SetNumberOfIntegrationPointsCircumfence(
+        const unsigned int integration_points_circumfence)
+    {
+      integration_points_circumfence_ = integration_points_circumfence;
+    }
+
+    /**
+     * \brief Returns the number of integration points along the circumfence of the line cross
+     * section.
+     * @return number of integration points in cirumfencial direction.
+     */
+    inline unsigned int GetNumberOfIntegrationPointsCircumfence() const
+    {
+      return integration_points_circumfence_;
+    }
 
     /**
      * \brief Return a reference to the gauss point projection tracker.
@@ -111,6 +131,9 @@ namespace GEOMETRYPAIR
 
     //! Gauss rule for Gauss point projection method.
     DRT::UTILS::GaussRule1D gauss_rule_;
+
+    //! Number of integration points in the circumfencial direction of the line cross section.
+    unsigned int integration_points_circumfence_;
 
     //! Gauss point projection tracking vector.
     std::map<int, std::vector<bool>> gauss_point_projection_tracker_;

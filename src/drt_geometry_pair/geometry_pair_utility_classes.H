@@ -71,7 +71,9 @@ namespace GEOMETRYPAIR
         : eta_(eta),
           xi_(xi),
           projection_result_(ProjectionResult::none),
-          gauss_weight_(gauss_weight){};
+          gauss_weight_(gauss_weight),
+          eta_cross_section_(true),
+          is_cross_section_point_(false){};
 
     /**
      * \brief Constructor.
@@ -80,6 +82,11 @@ namespace GEOMETRYPAIR
      */
     ProjectionPointLineToVolume(scalar_type eta, LINALG::TMatrix<scalar_type, 3, 1> xi)
         : ProjectionPointLineToVolume(eta, xi, -1.){};
+
+    /**
+     * \brief Destructor.
+     */
+    virtual ~ProjectionPointLineToVolume(){};
 
     /**
      * \brief Set the parameter coordinate on the line.
@@ -105,6 +112,24 @@ namespace GEOMETRYPAIR
      * \brief Get the parameter coordinates in the volume as a reference.
      */
     inline LINALG::TMatrix<scalar_type, 3, 1>& GetXiMutable() { return xi_; };
+
+    /**
+     * \brief Set the parameter coordinates in the cross section.
+     */
+    inline void SetEtaCrossSection(LINALG::TMatrix<scalar_type, 2, 1> eta_cross_section)
+    {
+      eta_cross_section_ = eta_cross_section;
+      is_cross_section_point_ = true;
+    };
+
+    /**
+     * \brief Get the parameter coordinates in the cross section.
+     */
+    inline LINALG::TMatrix<scalar_type, 2, 1> GetEtaCrossSection() const
+    {
+      if (!is_cross_section_point_) dserror("The cross section coordinate has not been set!");
+      return eta_cross_section_;
+    };
 
     /**
      * Set the projection result for this projection point.
@@ -184,8 +209,13 @@ namespace GEOMETRYPAIR
 
     //! Gauss weight for this point.
     double gauss_weight_;
-  };
 
+    //! Parameter coordinates in the cross section.
+    LINALG::TMatrix<scalar_type, 2, 1> eta_cross_section_;
+
+    //! Flag if this is a point on a cross section.
+    bool is_cross_section_point_;
+  };
 
   /**
    * \brief Class to manage a segment on a line.

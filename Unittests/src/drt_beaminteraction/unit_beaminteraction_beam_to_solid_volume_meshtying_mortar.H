@@ -446,6 +446,251 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
   }
 
   /**
+   * \brief Test a non straight beam in a hex8 element, with line4 mortar shape functions.
+   */
+  void test_beam_to_solid_meshtying_mortar_hermite3_hex8_line4()
+  {
+    // Element types.
+    typedef GEOMETRYPAIR::t_hermite beam_type;
+    typedef GEOMETRYPAIR::t_hex8 solid_type;
+    typedef GEOMETRYPAIR::t_line4 lambda_type;
+
+    // Create the mesh tying mortar pair.
+    BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
+        contact_pair = BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
+            lambda_type>();
+
+    // Definition of variables for this test case.
+    LINALG::TMatrix<double, beam_type::n_dof_, 1> q_beam;
+    LINALG::TMatrix<double, 9, 1> q_beam_rot;
+    LINALG::TMatrix<double, solid_type::n_dof_, 1> q_solid;
+    LINALG::SerialDenseMatrix local_D;
+    LINALG::SerialDenseMatrix local_M;
+    LINALG::SerialDenseVector local_kappa;
+
+    // Matrices for the results.
+    LINALG::TMatrix<double, lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
+    LINALG::TMatrix<double, lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
+    LINALG::TMatrix<double, lambda_type::n_dof_, 1> result_local_kappa(true);
+
+    // Define the geometry of the two elements.
+    q_beam(0) = 0.15;
+    q_beam(1) = 0.2;
+    q_beam(2) = 0.3;
+    q_beam(3) = 0.5773502691896255;
+    q_beam(4) = 0.5773502691896258;
+    q_beam(5) = 0.577350269189626;
+    q_beam(6) = 0.65;
+    q_beam(7) = 0.1;
+    q_beam(8) = 0.1;
+    q_beam(9) = 0.8017837257372733;
+    q_beam(10) = -0.5345224838248488;
+    q_beam(11) = 0.2672612419124244;
+
+    q_beam_rot(0) = 1.674352746442651;
+    q_beam_rot(1) = 0.1425949677148126;
+    q_beam_rot(2) = 1.0831163124736984;
+    q_beam_rot(3) = 1.4331999091513161;
+    q_beam_rot(4) = -0.6560404572957742;
+    q_beam_rot(5) = -0.2491376152457331;
+    q_beam_rot(6) = 0.0;
+    q_beam_rot(7) = 0.0;
+    q_beam_rot(8) = 0.0;
+
+    // Positional DOFs of the solid.
+    q_solid(0) = -0.954193516126594;
+    q_solid(1) = -0.975482672114534;
+    q_solid(2) = -1.00311316662815;
+    q_solid(3) = 0.923762409575691;
+    q_solid(4) = -1.010615727466753;
+    q_solid(5) = -1.014160992102648;
+    q_solid(6) = 0.905563488894572;
+    q_solid(7) = 1.069973754602123;
+    q_solid(8) = -0.935488788632622;
+    q_solid(9) = -1.047838992508937;
+    q_solid(10) = 1.08888017769104;
+    q_solid(11) = -1.036911970151991;
+    q_solid(12) = -1.089167378981223;
+    q_solid(13) = -1.063820485514786;
+    q_solid(14) = 1.081000671652452;
+    q_solid(15) = 0.972887477248942;
+    q_solid(16) = -1.008995039455167;
+    q_solid(17) = 0.923459231565508;
+    q_solid(18) = 1.089192110164642;
+    q_solid(19) = 1.026798931538616;
+    q_solid(20) = 0.964761788314679;
+    q_solid(21) = -0.941489453299989;
+    q_solid(22) = 0.954327975326486;
+    q_solid(23) = 0.963168067937965;
+
+    // Results for D.
+    result_local_D(0, 0) = 0.05756355583405802;
+    result_local_D(0, 3) = 0.001955220263108095;
+    result_local_D(0, 6) = 0.005745348903101642;
+    result_local_D(0, 9) = -0.0002830518321958758;
+    result_local_D(1, 1) = 0.05756355583405802;
+    result_local_D(1, 4) = 0.001955220263108095;
+    result_local_D(1, 7) = 0.005745348903101642;
+    result_local_D(1, 10) = -0.0002830518321958758;
+    result_local_D(2, 2) = 0.05756355583405802;
+    result_local_D(2, 5) = 0.001955220263108095;
+    result_local_D(2, 8) = 0.005745348903101642;
+    result_local_D(2, 11) = -0.0002830518321958758;
+    result_local_D(3, 0) = 0.004620282991405782;
+    result_local_D(3, 3) = 0.0002830518321958757;
+    result_local_D(3, 6) = 0.06977827920983277;
+    result_local_D(3, 9) = -0.002638102150795207;
+    result_local_D(4, 1) = 0.004620282991405782;
+    result_local_D(4, 4) = 0.0002830518321958757;
+    result_local_D(4, 7) = 0.06977827920983277;
+    result_local_D(4, 10) = -0.002638102150795207;
+    result_local_D(5, 2) = 0.004620282991405782;
+    result_local_D(5, 5) = 0.0002830518321958757;
+    result_local_D(5, 8) = 0.06977827920983277;
+    result_local_D(5, 11) = -0.002638102150795207;
+    result_local_D(6, 0) = 0.1839793570166088;
+    result_local_D(6, 3) = 0.01881461423793542;
+    result_local_D(6, 6) = 0.02734242802628759;
+    result_local_D(6, 9) = -0.00813357387408627;
+    result_local_D(7, 1) = 0.1839793570166088;
+    result_local_D(7, 4) = 0.01881461423793542;
+    result_local_D(7, 7) = 0.02734242802628759;
+    result_local_D(7, 10) = -0.00813357387408627;
+    result_local_D(8, 2) = 0.1839793570166088;
+    result_local_D(8, 5) = 0.01881461423793542;
+    result_local_D(8, 8) = 0.02734242802628759;
+    result_local_D(8, 11) = -0.00813357387408627;
+    result_local_D(9, 0) = 0.04314751020500857;
+    result_local_D(9, 3) = 0.00999650276080791;
+    result_local_D(9, 6) = 0.2247971947249847;
+    result_local_D(9, 9) = -0.0225404720113787;
+    result_local_D(10, 1) = 0.04314751020500857;
+    result_local_D(10, 4) = 0.00999650276080791;
+    result_local_D(10, 7) = 0.2247971947249847;
+    result_local_D(10, 10) = -0.0225404720113787;
+    result_local_D(11, 2) = 0.04314751020500857;
+    result_local_D(11, 5) = 0.00999650276080791;
+    result_local_D(11, 8) = 0.2247971947249847;
+    result_local_D(11, 11) = -0.0225404720113787;
+
+    // Results for M.
+    result_local_M(0, 0) = 0.003346229311968168;
+    result_local_M(0, 3) = 0.005354343233335789;
+    result_local_M(0, 6) = 0.007966326587387424;
+    result_local_M(0, 9) = 0.00509144130802595;
+    result_local_M(0, 12) = 0.006517401996246052;
+    result_local_M(0, 15) = 0.00999150651667994;
+    result_local_M(0, 18) = 0.01506543504315179;
+    result_local_M(0, 21) = 0.00997622074036454;
+    result_local_M(1, 1) = 0.003346229311968168;
+    result_local_M(1, 4) = 0.005354343233335789;
+    result_local_M(1, 7) = 0.007966326587387424;
+    result_local_M(1, 10) = 0.00509144130802595;
+    result_local_M(1, 13) = 0.006517401996246052;
+    result_local_M(1, 16) = 0.00999150651667994;
+    result_local_M(1, 19) = 0.01506543504315179;
+    result_local_M(1, 22) = 0.00997622074036454;
+    result_local_M(2, 2) = 0.003346229311968168;
+    result_local_M(2, 5) = 0.005354343233335789;
+    result_local_M(2, 8) = 0.007966326587387424;
+    result_local_M(2, 11) = 0.00509144130802595;
+    result_local_M(2, 14) = 0.006517401996246052;
+    result_local_M(2, 17) = 0.00999150651667994;
+    result_local_M(2, 20) = 0.01506543504315179;
+    result_local_M(2, 23) = 0.00997622074036454;
+    result_local_M(3, 0) = 0.002807438074321535;
+    result_local_M(3, 3) = 0.01177387238958858;
+    result_local_M(3, 6) = 0.01466374873603761;
+    result_local_M(3, 9) = 0.003530875380735433;
+    result_local_M(3, 12) = 0.00363602895885236;
+    result_local_M(3, 15) = 0.01484622198499991;
+    result_local_M(3, 18) = 0.01852753798073785;
+    result_local_M(3, 21) = 0.004612838695965277;
+    result_local_M(4, 1) = 0.002807438074321535;
+    result_local_M(4, 4) = 0.01177387238958858;
+    result_local_M(4, 7) = 0.01466374873603761;
+    result_local_M(4, 10) = 0.003530875380735433;
+    result_local_M(4, 13) = 0.00363602895885236;
+    result_local_M(4, 16) = 0.01484622198499991;
+    result_local_M(4, 19) = 0.01852753798073785;
+    result_local_M(4, 22) = 0.004612838695965277;
+    result_local_M(5, 2) = 0.002807438074321535;
+    result_local_M(5, 5) = 0.01177387238958858;
+    result_local_M(5, 8) = 0.01466374873603761;
+    result_local_M(5, 11) = 0.003530875380735433;
+    result_local_M(5, 14) = 0.00363602895885236;
+    result_local_M(5, 17) = 0.01484622198499991;
+    result_local_M(5, 20) = 0.01852753798073785;
+    result_local_M(5, 23) = 0.004612838695965277;
+    result_local_M(6, 0) = 0.01041044331130863;
+    result_local_M(6, 3) = 0.01592577660857746;
+    result_local_M(6, 6) = 0.02732174084944276;
+    result_local_M(6, 9) = 0.01713028930475183;
+    result_local_M(6, 12) = 0.02024200480788401;
+    result_local_M(6, 15) = 0.0326580419402358;
+    result_local_M(6, 18) = 0.05462266130342334;
+    result_local_M(6, 21) = 0.0330108269172726;
+    result_local_M(7, 1) = 0.01041044331130863;
+    result_local_M(7, 4) = 0.01592577660857746;
+    result_local_M(7, 7) = 0.02732174084944276;
+    result_local_M(7, 10) = 0.01713028930475183;
+    result_local_M(7, 13) = 0.02024200480788401;
+    result_local_M(7, 16) = 0.0326580419402358;
+    result_local_M(7, 19) = 0.05462266130342334;
+    result_local_M(7, 22) = 0.0330108269172726;
+    result_local_M(8, 2) = 0.01041044331130863;
+    result_local_M(8, 5) = 0.01592577660857746;
+    result_local_M(8, 8) = 0.02732174084944276;
+    result_local_M(8, 11) = 0.01713028930475183;
+    result_local_M(8, 14) = 0.02024200480788401;
+    result_local_M(8, 17) = 0.0326580419402358;
+    result_local_M(8, 20) = 0.05462266130342334;
+    result_local_M(8, 23) = 0.0330108269172726;
+    result_local_M(9, 0) = 0.01113244699701287;
+    result_local_M(9, 3) = 0.03667418573650877;
+    result_local_M(9, 6) = 0.05113588764893526;
+    result_local_M(9, 9) = 0.01565092671515472;
+    result_local_M(9, 12) = 0.0147373942105501;
+    result_local_M(9, 15) = 0.04914676393919025;
+    result_local_M(9, 18) = 0.06874336536380476;
+    result_local_M(9, 21) = 0.02072373431883661;
+    result_local_M(10, 1) = 0.01113244699701287;
+    result_local_M(10, 4) = 0.03667418573650877;
+    result_local_M(10, 7) = 0.05113588764893526;
+    result_local_M(10, 10) = 0.01565092671515472;
+    result_local_M(10, 13) = 0.0147373942105501;
+    result_local_M(10, 16) = 0.04914676393919025;
+    result_local_M(10, 19) = 0.06874336536380476;
+    result_local_M(10, 22) = 0.02072373431883661;
+    result_local_M(11, 2) = 0.01113244699701287;
+    result_local_M(11, 5) = 0.03667418573650877;
+    result_local_M(11, 8) = 0.05113588764893526;
+    result_local_M(11, 11) = 0.01565092671515472;
+    result_local_M(11, 14) = 0.0147373942105501;
+    result_local_M(11, 17) = 0.04914676393919025;
+    result_local_M(11, 20) = 0.06874336536380476;
+    result_local_M(11, 23) = 0.02072373431883661;
+
+    // Results for Kappa.
+    result_local_kappa(0) = 0.06330890473715966;
+    result_local_kappa(1) = 0.06330890473715966;
+    result_local_kappa(2) = 0.06330890473715966;
+    result_local_kappa(3) = 0.07439856220123855;
+    result_local_kappa(4) = 0.07439856220123855;
+    result_local_kappa(5) = 0.07439856220123855;
+    result_local_kappa(6) = 0.2113217850428964;
+    result_local_kappa(7) = 0.2113217850428964;
+    result_local_kappa(8) = 0.2113217850428964;
+    result_local_kappa(9) = 0.2679447049299934;
+    result_local_kappa(10) = 0.2679447049299934;
+    result_local_kappa(11) = 0.2679447049299934;
+
+    // Perform the unit tests.
+    PerformMortarPairUnitTest(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
+        result_local_M, result_local_kappa);
+  }
+
+  /**
    * \brief Test a non straight beam in a hex20 element, with line2 mortar shape functions.
    */
   void test_beam_to_solid_meshtying_mortar_hermite3_hex20_line2()
@@ -1071,6 +1316,431 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
   }
 
   /**
+   * \brief Test a non straight beam in a hex20 element, with line4 mortar shape functions.
+   */
+  void test_beam_to_solid_meshtying_mortar_hermite3_hex20_line4()
+  {
+    // Element types.
+    typedef GEOMETRYPAIR::t_hermite beam_type;
+    typedef GEOMETRYPAIR::t_hex20 solid_type;
+    typedef GEOMETRYPAIR::t_line4 lambda_type;
+
+    // Create the mesh tying mortar pair.
+    BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
+        contact_pair = BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
+            lambda_type>();
+
+    // Definition of variables for this test case.
+    LINALG::TMatrix<double, beam_type::n_dof_, 1> q_beam;
+    LINALG::TMatrix<double, 9, 1> q_beam_rot;
+    LINALG::TMatrix<double, solid_type::n_dof_, 1> q_solid;
+    LINALG::SerialDenseMatrix local_D;
+    LINALG::SerialDenseMatrix local_M;
+    LINALG::SerialDenseVector local_kappa;
+
+    // Matrices for the results.
+    LINALG::TMatrix<double, lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
+    LINALG::TMatrix<double, lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
+    LINALG::TMatrix<double, lambda_type::n_dof_, 1> result_local_kappa(true);
+
+    // Define the geometry of the two elements.
+    q_beam(0) = 0.15;
+    q_beam(1) = 0.2;
+    q_beam(2) = 0.3;
+    q_beam(3) = 0.5773502691896255;
+    q_beam(4) = 0.5773502691896258;
+    q_beam(5) = 0.577350269189626;
+    q_beam(6) = 0.65;
+    q_beam(7) = 0.1;
+    q_beam(8) = 0.1;
+    q_beam(9) = 0.8017837257372733;
+    q_beam(10) = -0.5345224838248488;
+    q_beam(11) = 0.2672612419124244;
+
+    q_beam_rot(0) = 1.674352746442651;
+    q_beam_rot(1) = 0.1425949677148126;
+    q_beam_rot(2) = 1.0831163124736984;
+    q_beam_rot(3) = 1.4331999091513161;
+    q_beam_rot(4) = -0.6560404572957742;
+    q_beam_rot(5) = -0.2491376152457331;
+    q_beam_rot(6) = 0.0;
+    q_beam_rot(7) = 0.0;
+    q_beam_rot(8) = 0.0;
+
+    // Positional DOFs of the solid.
+    q_solid(0) = -0.954193516126594;
+    q_solid(1) = -0.975482672114534;
+    q_solid(2) = -1.00311316662815;
+    q_solid(3) = 0.923762409575691;
+    q_solid(4) = -1.010615727466753;
+    q_solid(5) = -1.014160992102648;
+    q_solid(6) = 0.905563488894572;
+    q_solid(7) = 1.069973754602123;
+    q_solid(8) = -0.935488788632622;
+    q_solid(9) = -1.047838992508937;
+    q_solid(10) = 1.08888017769104;
+    q_solid(11) = -1.036911970151991;
+    q_solid(12) = -1.089167378981223;
+    q_solid(13) = -1.063820485514786;
+    q_solid(14) = 1.081000671652452;
+    q_solid(15) = 0.972887477248942;
+    q_solid(16) = -1.008995039455167;
+    q_solid(17) = 0.923459231565508;
+    q_solid(18) = 1.089192110164642;
+    q_solid(19) = 1.026798931538616;
+    q_solid(20) = 0.964761788314679;
+    q_solid(21) = -0.941489453299989;
+    q_solid(22) = 0.954327975326486;
+    q_solid(23) = 0.963168067937965;
+    q_solid(24) = 0.0925155012591516;
+    q_solid(25) = -0.973383316878771;
+    q_solid(26) = -1.065800877068667;
+    q_solid(27) = 0.993751379524698;
+    q_solid(28) = -0.089078411148891;
+    q_solid(29) = -1.080589211553427;
+    q_solid(30) = 0.0823626211382376;
+    q_solid(31) = 1.033905181036807;
+    q_solid(32) = -0.952741283444911;
+    q_solid(33) = -1.024714325285187;
+    q_solid(34) = -0.0951797166281465;
+    q_solid(35) = -0.917694055170081;
+    q_solid(36) = -0.94955183268814;
+    q_solid(37) = -0.936209915275568;
+    q_solid(38) = -0.07531489653912402;
+    q_solid(39) = 0.977045420134747;
+    q_solid(40) = -0.915831507095275;
+    q_solid(41) = -0.03604489795829757;
+    q_solid(42) = 1.044996295051512;
+    q_solid(43) = 0.912268002554735;
+    q_solid(44) = 0.026884640088015;
+    q_solid(45) = -1.003774079332873;
+    q_solid(46) = 1.016364821141699;
+    q_solid(47) = -0.04547583423590318;
+    q_solid(48) = -0.07606458957105064;
+    q_solid(49) = -0.970767004162723;
+    q_solid(50) = 1.09197908262736;
+    q_solid(51) = 1.000582069178839;
+    q_solid(52) = 0.02495199075528687;
+    q_solid(53) = 0.942442567644017;
+    q_solid(54) = -0.0840408739597993;
+    q_solid(55) = 1.082175787959178;
+    q_solid(56) = 1.016887685734179;
+    q_solid(57) = -1.02950388437141;
+    q_solid(58) = -0.03189318909487643;
+    q_solid(59) = 0.962850907596607;
+
+    // Results for D.
+    result_local_D(0, 0) = 0.05756355583405802;
+    result_local_D(0, 3) = 0.001955220263108095;
+    result_local_D(0, 6) = 0.005745348903101642;
+    result_local_D(0, 9) = -0.0002830518321958758;
+    result_local_D(1, 1) = 0.05756355583405802;
+    result_local_D(1, 4) = 0.001955220263108095;
+    result_local_D(1, 7) = 0.005745348903101642;
+    result_local_D(1, 10) = -0.0002830518321958758;
+    result_local_D(2, 2) = 0.05756355583405802;
+    result_local_D(2, 5) = 0.001955220263108095;
+    result_local_D(2, 8) = 0.005745348903101642;
+    result_local_D(2, 11) = -0.0002830518321958758;
+    result_local_D(3, 0) = 0.004620282991405782;
+    result_local_D(3, 3) = 0.0002830518321958757;
+    result_local_D(3, 6) = 0.06977827920983277;
+    result_local_D(3, 9) = -0.002638102150795207;
+    result_local_D(4, 1) = 0.004620282991405782;
+    result_local_D(4, 4) = 0.0002830518321958757;
+    result_local_D(4, 7) = 0.06977827920983277;
+    result_local_D(4, 10) = -0.002638102150795207;
+    result_local_D(5, 2) = 0.004620282991405782;
+    result_local_D(5, 5) = 0.0002830518321958757;
+    result_local_D(5, 8) = 0.06977827920983277;
+    result_local_D(5, 11) = -0.002638102150795207;
+    result_local_D(6, 0) = 0.1839793570166088;
+    result_local_D(6, 3) = 0.01881461423793542;
+    result_local_D(6, 6) = 0.02734242802628759;
+    result_local_D(6, 9) = -0.00813357387408627;
+    result_local_D(7, 1) = 0.1839793570166088;
+    result_local_D(7, 4) = 0.01881461423793542;
+    result_local_D(7, 7) = 0.02734242802628759;
+    result_local_D(7, 10) = -0.00813357387408627;
+    result_local_D(8, 2) = 0.1839793570166088;
+    result_local_D(8, 5) = 0.01881461423793542;
+    result_local_D(8, 8) = 0.02734242802628759;
+    result_local_D(8, 11) = -0.00813357387408627;
+    result_local_D(9, 0) = 0.04314751020500857;
+    result_local_D(9, 3) = 0.00999650276080791;
+    result_local_D(9, 6) = 0.2247971947249847;
+    result_local_D(9, 9) = -0.0225404720113787;
+    result_local_D(10, 1) = 0.04314751020500857;
+    result_local_D(10, 4) = 0.00999650276080791;
+    result_local_D(10, 7) = 0.2247971947249847;
+    result_local_D(10, 10) = -0.0225404720113787;
+    result_local_D(11, 2) = 0.04314751020500857;
+    result_local_D(11, 5) = 0.00999650276080791;
+    result_local_D(11, 8) = 0.2247971947249847;
+    result_local_D(11, 11) = -0.0225404720113787;
+
+    // Results for M.
+    result_local_M(0, 0) = -0.00928183897191738;
+    result_local_M(0, 3) = -0.01203084322786457;
+    result_local_M(0, 6) = -0.01495153966074208;
+    result_local_M(0, 9) = -0.01195508304052108;
+    result_local_M(0, 12) = -0.01363179242985657;
+    result_local_M(0, 15) = -0.01666797468851883;
+    result_local_M(0, 18) = -0.0191569220943395;
+    result_local_M(0, 21) = -0.01659665530850902;
+    result_local_M(0, 24) = 0.00817950847800659;
+    result_local_M(0, 27) = 0.01277459886257019;
+    result_local_M(0, 30) = 0.012396756712724;
+    result_local_M(0, 33) = 0.0082557317872665;
+    result_local_M(0, 36) = 0.00897441588267774;
+    result_local_M(0, 39) = 0.01375025433927722;
+    result_local_M(0, 42) = 0.02072255253995805;
+    result_local_M(0, 45) = 0.0136619286755524;
+    result_local_M(0, 48) = 0.01556178557559656;
+    result_local_M(0, 51) = 0.02375569780721402;
+    result_local_M(0, 54) = 0.02370405588153632;
+    result_local_M(0, 57) = 0.01584426761704911;
+    result_local_M(1, 1) = -0.00928183897191738;
+    result_local_M(1, 4) = -0.01203084322786457;
+    result_local_M(1, 7) = -0.01495153966074208;
+    result_local_M(1, 10) = -0.01195508304052108;
+    result_local_M(1, 13) = -0.01363179242985657;
+    result_local_M(1, 16) = -0.01666797468851883;
+    result_local_M(1, 19) = -0.0191569220943395;
+    result_local_M(1, 22) = -0.01659665530850902;
+    result_local_M(1, 25) = 0.00817950847800659;
+    result_local_M(1, 28) = 0.01277459886257019;
+    result_local_M(1, 31) = 0.012396756712724;
+    result_local_M(1, 34) = 0.0082557317872665;
+    result_local_M(1, 37) = 0.00897441588267774;
+    result_local_M(1, 40) = 0.01375025433927722;
+    result_local_M(1, 43) = 0.02072255253995805;
+    result_local_M(1, 46) = 0.0136619286755524;
+    result_local_M(1, 49) = 0.01556178557559656;
+    result_local_M(1, 52) = 0.02375569780721402;
+    result_local_M(1, 55) = 0.02370405588153632;
+    result_local_M(1, 58) = 0.01584426761704911;
+    result_local_M(2, 2) = -0.00928183897191738;
+    result_local_M(2, 5) = -0.01203084322786457;
+    result_local_M(2, 8) = -0.01495153966074208;
+    result_local_M(2, 11) = -0.01195508304052108;
+    result_local_M(2, 14) = -0.01363179242985657;
+    result_local_M(2, 17) = -0.01666797468851883;
+    result_local_M(2, 20) = -0.0191569220943395;
+    result_local_M(2, 23) = -0.01659665530850902;
+    result_local_M(2, 26) = 0.00817950847800659;
+    result_local_M(2, 29) = 0.01277459886257019;
+    result_local_M(2, 32) = 0.012396756712724;
+    result_local_M(2, 35) = 0.0082557317872665;
+    result_local_M(2, 38) = 0.00897441588267774;
+    result_local_M(2, 41) = 0.01375025433927722;
+    result_local_M(2, 44) = 0.02072255253995805;
+    result_local_M(2, 47) = 0.0136619286755524;
+    result_local_M(2, 50) = 0.01556178557559656;
+    result_local_M(2, 53) = 0.02375569780721402;
+    result_local_M(2, 56) = 0.02370405588153632;
+    result_local_M(2, 59) = 0.01584426761704911;
+    result_local_M(3, 0) = -0.00848151931455688;
+    result_local_M(3, 3) = -0.01835395763693071;
+    result_local_M(3, 6) = -0.02049630853266761;
+    result_local_M(3, 9) = -0.0102918764667838;
+    result_local_M(3, 12) = -0.01006093470719201;
+    result_local_M(3, 15) = -0.02025758239787303;
+    result_local_M(3, 18) = -0.02180531825663805;
+    result_local_M(3, 21) = -0.0120371158855699;
+    result_local_M(3, 24) = 0.00927413153080459;
+    result_local_M(3, 27) = 0.02472958042973087;
+    result_local_M(3, 30) = 0.01259838590870111;
+    result_local_M(3, 33) = 0.00689106483863452;
+    result_local_M(3, 36) = 0.006775054743872253;
+    result_local_M(3, 39) = 0.02419648288182024;
+    result_local_M(3, 42) = 0.03278271691305059;
+    result_local_M(3, 45) = 0.00922944190248898;
+    result_local_M(3, 48) = 0.01212843468221148;
+    result_local_M(3, 51) = 0.03195987398342793;
+    result_local_M(3, 54) = 0.01651068005041408;
+    result_local_M(3, 57) = 0.00910732753429389;
+    result_local_M(4, 1) = -0.00848151931455688;
+    result_local_M(4, 4) = -0.01835395763693071;
+    result_local_M(4, 7) = -0.02049630853266761;
+    result_local_M(4, 10) = -0.0102918764667838;
+    result_local_M(4, 13) = -0.01006093470719201;
+    result_local_M(4, 16) = -0.02025758239787303;
+    result_local_M(4, 19) = -0.02180531825663805;
+    result_local_M(4, 22) = -0.0120371158855699;
+    result_local_M(4, 25) = 0.00927413153080459;
+    result_local_M(4, 28) = 0.02472958042973087;
+    result_local_M(4, 31) = 0.01259838590870111;
+    result_local_M(4, 34) = 0.00689106483863452;
+    result_local_M(4, 37) = 0.006775054743872253;
+    result_local_M(4, 40) = 0.02419648288182024;
+    result_local_M(4, 43) = 0.03278271691305059;
+    result_local_M(4, 46) = 0.00922944190248898;
+    result_local_M(4, 49) = 0.01212843468221148;
+    result_local_M(4, 52) = 0.03195987398342793;
+    result_local_M(4, 55) = 0.01651068005041408;
+    result_local_M(4, 58) = 0.00910732753429389;
+    result_local_M(5, 2) = -0.00848151931455688;
+    result_local_M(5, 5) = -0.01835395763693071;
+    result_local_M(5, 8) = -0.02049630853266761;
+    result_local_M(5, 11) = -0.0102918764667838;
+    result_local_M(5, 14) = -0.01006093470719201;
+    result_local_M(5, 17) = -0.02025758239787303;
+    result_local_M(5, 20) = -0.02180531825663805;
+    result_local_M(5, 23) = -0.0120371158855699;
+    result_local_M(5, 26) = 0.00927413153080459;
+    result_local_M(5, 29) = 0.02472958042973087;
+    result_local_M(5, 32) = 0.01259838590870111;
+    result_local_M(5, 35) = 0.00689106483863452;
+    result_local_M(5, 38) = 0.006775054743872253;
+    result_local_M(5, 41) = 0.02419648288182024;
+    result_local_M(5, 44) = 0.03278271691305059;
+    result_local_M(5, 47) = 0.00922944190248898;
+    result_local_M(5, 50) = 0.01212843468221148;
+    result_local_M(5, 53) = 0.03195987398342793;
+    result_local_M(5, 56) = 0.01651068005041408;
+    result_local_M(5, 59) = 0.00910732753429389;
+    result_local_M(6, 0) = -0.02943166416093614;
+    result_local_M(6, 3) = -0.03887963377042245;
+    result_local_M(6, 6) = -0.05131387989309534;
+    result_local_M(6, 9) = -0.04035775602777731;
+    result_local_M(6, 12) = -0.04379523225095406;
+    result_local_M(6, 15) = -0.05486871926234138;
+    result_local_M(6, 18) = -0.06457130716164883;
+    result_local_M(6, 21) = -0.05632447020741695;
+    result_local_M(6, 24) = 0.02592663857572348;
+    result_local_M(6, 27) = 0.04080102858235475;
+    result_local_M(6, 30) = 0.04348368504240999;
+    result_local_M(6, 33) = 0.02626976850691323;
+    result_local_M(6, 36) = 0.02766723155182676;
+    result_local_M(6, 39) = 0.04326604761564169;
+    result_local_M(6, 42) = 0.07359356412420257;
+    result_local_M(6, 45) = 0.04596696051571144;
+    result_local_M(6, 48) = 0.04999120312523665;
+    result_local_M(6, 51) = 0.0806917121520852;
+    result_local_M(6, 54) = 0.0830622038713038;
+    result_local_M(6, 57) = 0.05014440411407929;
+    result_local_M(7, 1) = -0.02943166416093614;
+    result_local_M(7, 4) = -0.03887963377042245;
+    result_local_M(7, 7) = -0.05131387989309534;
+    result_local_M(7, 10) = -0.04035775602777731;
+    result_local_M(7, 13) = -0.04379523225095406;
+    result_local_M(7, 16) = -0.05486871926234138;
+    result_local_M(7, 19) = -0.06457130716164883;
+    result_local_M(7, 22) = -0.05632447020741695;
+    result_local_M(7, 25) = 0.02592663857572348;
+    result_local_M(7, 28) = 0.04080102858235475;
+    result_local_M(7, 31) = 0.04348368504240999;
+    result_local_M(7, 34) = 0.02626976850691323;
+    result_local_M(7, 37) = 0.02766723155182676;
+    result_local_M(7, 40) = 0.04326604761564169;
+    result_local_M(7, 43) = 0.07359356412420257;
+    result_local_M(7, 46) = 0.04596696051571144;
+    result_local_M(7, 49) = 0.04999120312523665;
+    result_local_M(7, 52) = 0.0806917121520852;
+    result_local_M(7, 55) = 0.0830622038713038;
+    result_local_M(7, 58) = 0.05014440411407929;
+    result_local_M(8, 2) = -0.02943166416093614;
+    result_local_M(8, 5) = -0.03887963377042245;
+    result_local_M(8, 8) = -0.05131387989309534;
+    result_local_M(8, 11) = -0.04035775602777731;
+    result_local_M(8, 14) = -0.04379523225095406;
+    result_local_M(8, 17) = -0.05486871926234138;
+    result_local_M(8, 20) = -0.06457130716164883;
+    result_local_M(8, 23) = -0.05632447020741695;
+    result_local_M(8, 26) = 0.02592663857572348;
+    result_local_M(8, 29) = 0.04080102858235475;
+    result_local_M(8, 32) = 0.04348368504240999;
+    result_local_M(8, 35) = 0.02626976850691323;
+    result_local_M(8, 38) = 0.02766723155182676;
+    result_local_M(8, 41) = 0.04326604761564169;
+    result_local_M(8, 44) = 0.07359356412420257;
+    result_local_M(8, 47) = 0.04596696051571144;
+    result_local_M(8, 50) = 0.04999120312523665;
+    result_local_M(8, 53) = 0.0806917121520852;
+    result_local_M(8, 56) = 0.0830622038713038;
+    result_local_M(8, 59) = 0.05014440411407929;
+    result_local_M(9, 0) = -0.0328094036083561;
+    result_local_M(9, 3) = -0.06300369385458366;
+    result_local_M(9, 6) = -0.07457314729668925;
+    result_local_M(9, 9) = -0.0426103215332577;
+    result_local_M(9, 12) = -0.03963429014398028;
+    result_local_M(9, 15) = -0.07149185879704066;
+    result_local_M(9, 18) = -0.07995452060160515;
+    result_local_M(9, 21) = -0.05054327906086503;
+    result_local_M(9, 24) = 0.0344484538305041;
+    result_local_M(9, 27) = 0.0812965853167794;
+    result_local_M(9, 30) = 0.0522179913926498;
+    result_local_M(9, 33) = 0.02775170768261452;
+    result_local_M(9, 36) = 0.02645000544043174;
+    result_local_M(9, 39) = 0.0779752852233312;
+    result_local_M(9, 42) = 0.117567845359598;
+    result_local_M(9, 45) = 0.04023652548369903;
+    result_local_M(9, 48) = 0.04644765183282101;
+    result_local_M(9, 51) = 0.110301638580553;
+    result_local_M(9, 54) = 0.07064610803436924;
+    result_local_M(9, 57) = 0.03722542164902012;
+    result_local_M(10, 1) = -0.0328094036083561;
+    result_local_M(10, 4) = -0.06300369385458366;
+    result_local_M(10, 7) = -0.07457314729668925;
+    result_local_M(10, 10) = -0.0426103215332577;
+    result_local_M(10, 13) = -0.03963429014398028;
+    result_local_M(10, 16) = -0.07149185879704066;
+    result_local_M(10, 19) = -0.07995452060160515;
+    result_local_M(10, 22) = -0.05054327906086503;
+    result_local_M(10, 25) = 0.0344484538305041;
+    result_local_M(10, 28) = 0.0812965853167794;
+    result_local_M(10, 31) = 0.0522179913926498;
+    result_local_M(10, 34) = 0.02775170768261452;
+    result_local_M(10, 37) = 0.02645000544043174;
+    result_local_M(10, 40) = 0.0779752852233312;
+    result_local_M(10, 43) = 0.117567845359598;
+    result_local_M(10, 46) = 0.04023652548369903;
+    result_local_M(10, 49) = 0.04644765183282101;
+    result_local_M(10, 52) = 0.110301638580553;
+    result_local_M(10, 55) = 0.07064610803436924;
+    result_local_M(10, 58) = 0.03722542164902012;
+    result_local_M(11, 2) = -0.0328094036083561;
+    result_local_M(11, 5) = -0.06300369385458366;
+    result_local_M(11, 8) = -0.07457314729668925;
+    result_local_M(11, 11) = -0.0426103215332577;
+    result_local_M(11, 14) = -0.03963429014398028;
+    result_local_M(11, 17) = -0.07149185879704066;
+    result_local_M(11, 20) = -0.07995452060160515;
+    result_local_M(11, 23) = -0.05054327906086503;
+    result_local_M(11, 26) = 0.0344484538305041;
+    result_local_M(11, 29) = 0.0812965853167794;
+    result_local_M(11, 32) = 0.0522179913926498;
+    result_local_M(11, 35) = 0.02775170768261452;
+    result_local_M(11, 38) = 0.02645000544043174;
+    result_local_M(11, 41) = 0.0779752852233312;
+    result_local_M(11, 44) = 0.117567845359598;
+    result_local_M(11, 47) = 0.04023652548369903;
+    result_local_M(11, 50) = 0.04644765183282101;
+    result_local_M(11, 53) = 0.110301638580553;
+    result_local_M(11, 56) = 0.07064610803436924;
+    result_local_M(11, 59) = 0.03722542164902012;
+
+    // Results for Kappa.
+    result_local_kappa(0) = 0.06330890473715966;
+    result_local_kappa(1) = 0.06330890473715966;
+    result_local_kappa(2) = 0.06330890473715966;
+    result_local_kappa(3) = 0.07439856220123855;
+    result_local_kappa(4) = 0.07439856220123855;
+    result_local_kappa(5) = 0.07439856220123855;
+    result_local_kappa(6) = 0.2113217850428964;
+    result_local_kappa(7) = 0.2113217850428964;
+    result_local_kappa(8) = 0.2113217850428964;
+    result_local_kappa(9) = 0.2679447049299934;
+    result_local_kappa(10) = 0.2679447049299934;
+    result_local_kappa(11) = 0.2679447049299934;
+
+    // Perform the unit tests.
+    PerformMortarPairUnitTest(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
+        result_local_M, result_local_kappa);
+  }
+
+  /**
    * \brief Test a non straight beam in a hex27 element, with line2 mortar shape functions.
    */
   void test_beam_to_solid_meshtying_mortar_hermite3_hex27_line2()
@@ -1663,14 +2333,14 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
     result_local_M(2, 74) = -0.002966758232136449;
     result_local_M(2, 77) = 0.01472540422980197;
     result_local_M(2, 80) = 0.07603987599606401;
-    result_local_M(3, 0) = -7.379523801982765 * 1e-6;
+    result_local_M(3, 0) = -7.379523801982765e-6;
     result_local_M(3, 3) = 0.00003391202080693039;
     result_local_M(3, 6) = -0.00004045689486161603;
-    result_local_M(3, 9) = 8.26485355911692 * 1e-6;
-    result_local_M(3, 12) = 3.819832166746965 * 1e-6;
+    result_local_M(3, 9) = 8.26485355911692e-6;
+    result_local_M(3, 12) = 3.819832166746965e-6;
     result_local_M(3, 15) = -0.00003097943050042247;
     result_local_M(3, 18) = 0.00003597759301937998;
-    result_local_M(3, 21) = -3.283439620224666 * 1e-6;
+    result_local_M(3, 21) = -3.283439620224666e-6;
     result_local_M(3, 24) = -0.0000102935441562574;
     result_local_M(3, 27) = -0.000820894766308633;
     result_local_M(3, 30) = 0.00002357451448562373;
@@ -1690,14 +2360,14 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
     result_local_M(3, 72) = -0.01449089447649638;
     result_local_M(3, 75) = -0.0005018829281043281;
     result_local_M(3, 78) = 0.07679754850489791;
-    result_local_M(4, 1) = -7.379523801982765 * 1e-6;
+    result_local_M(4, 1) = -7.379523801982765e-6;
     result_local_M(4, 4) = 0.00003391202080693039;
     result_local_M(4, 7) = -0.00004045689486161603;
-    result_local_M(4, 10) = 8.26485355911692 * 1e-6;
-    result_local_M(4, 13) = 3.819832166746965 * 1e-6;
+    result_local_M(4, 10) = 8.26485355911692e-6;
+    result_local_M(4, 13) = 3.81983216674696e-6;
     result_local_M(4, 16) = -0.00003097943050042247;
     result_local_M(4, 19) = 0.00003597759301937998;
-    result_local_M(4, 22) = -3.283439620224666 * 1e-6;
+    result_local_M(4, 22) = -3.283439620224666e-6;
     result_local_M(4, 25) = -0.0000102935441562574;
     result_local_M(4, 28) = -0.000820894766308633;
     result_local_M(4, 31) = 0.00002357451448562373;
@@ -1717,14 +2387,14 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
     result_local_M(4, 73) = -0.01449089447649638;
     result_local_M(4, 76) = -0.0005018829281043281;
     result_local_M(4, 79) = 0.07679754850489791;
-    result_local_M(5, 2) = -7.379523801982765 * 1e-6;
+    result_local_M(5, 2) = -7.379523801982765e-6;
     result_local_M(5, 5) = 0.00003391202080693039;
     result_local_M(5, 8) = -0.00004045689486161603;
-    result_local_M(5, 11) = 8.26485355911692 * 1e-6;
-    result_local_M(5, 14) = 3.819832166746965 * 1e-6;
+    result_local_M(5, 11) = 8.26485355911692e-6;
+    result_local_M(5, 14) = 3.819832166746965e-6;
     result_local_M(5, 17) = -0.00003097943050042247;
     result_local_M(5, 20) = 0.00003597759301937998;
-    result_local_M(5, 23) = -3.283439620224666 * 1e-6;
+    result_local_M(5, 23) = -3.283439620224666e-6;
     result_local_M(5, 26) = -0.0000102935441562574;
     result_local_M(5, 29) = -0.000820894766308633;
     result_local_M(5, 32) = 0.00002357451448562373;
@@ -1836,6 +2506,536 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
     result_local_kappa(6) = 0.4260146577536798;
     result_local_kappa(7) = 0.4260146577536798;
     result_local_kappa(8) = 0.4260146577536798;
+
+    // Perform the unit tests.
+    PerformMortarPairUnitTest(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
+        result_local_M, result_local_kappa);
+  }
+
+  /**
+   * \brief Test a non straight beam in a hex27 element, with line4 mortar shape functions.
+   */
+  void test_beam_to_solid_meshtying_mortar_hermite3_hex27_line4()
+  {
+    // Element types.
+    typedef GEOMETRYPAIR::t_hermite beam_type;
+    typedef GEOMETRYPAIR::t_hex27 solid_type;
+    typedef GEOMETRYPAIR::t_line4 lambda_type;
+
+    // Create the mesh tying mortar pair.
+    BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
+        contact_pair = BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
+            lambda_type>();
+
+    // Definition of variables for this test case.
+    LINALG::TMatrix<double, beam_type::n_dof_, 1> q_beam;
+    LINALG::TMatrix<double, 9, 1> q_beam_rot;
+    LINALG::TMatrix<double, solid_type::n_dof_, 1> q_solid;
+    LINALG::SerialDenseMatrix local_D;
+    LINALG::SerialDenseMatrix local_M;
+    LINALG::SerialDenseVector local_kappa;
+
+    // Matrices for the results.
+    LINALG::TMatrix<double, lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
+    LINALG::TMatrix<double, lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
+    LINALG::TMatrix<double, lambda_type::n_dof_, 1> result_local_kappa(true);
+
+    // Define the geometry of the two elements.
+    q_beam(0) = 0.15;
+    q_beam(1) = 0.2;
+    q_beam(2) = 0.3;
+    q_beam(3) = 0.5773502691896255;
+    q_beam(4) = 0.5773502691896258;
+    q_beam(5) = 0.577350269189626;
+    q_beam(6) = 0.65;
+    q_beam(7) = 0.1;
+    q_beam(8) = 0.1;
+    q_beam(9) = 0.8017837257372733;
+    q_beam(10) = -0.5345224838248488;
+    q_beam(11) = 0.2672612419124244;
+
+    q_beam_rot(0) = 1.674352746442651;
+    q_beam_rot(1) = 0.1425949677148126;
+    q_beam_rot(2) = 1.0831163124736984;
+    q_beam_rot(3) = 1.4331999091513161;
+    q_beam_rot(4) = -0.6560404572957742;
+    q_beam_rot(5) = -0.2491376152457331;
+    q_beam_rot(6) = 0.0;
+    q_beam_rot(7) = 0.0;
+    q_beam_rot(8) = 0.0;
+
+    // Positional DOFs of the solid.
+    q_solid(0) = -0.954193516126594;
+    q_solid(1) = -0.975482672114534;
+    q_solid(2) = -1.00311316662815;
+    q_solid(3) = 0.923762409575691;
+    q_solid(4) = -1.010615727466753;
+    q_solid(5) = -1.014160992102648;
+    q_solid(6) = 0.905563488894572;
+    q_solid(7) = 1.069973754602123;
+    q_solid(8) = -0.935488788632622;
+    q_solid(9) = -1.047838992508937;
+    q_solid(10) = 1.08888017769104;
+    q_solid(11) = -1.036911970151991;
+    q_solid(12) = -1.089167378981223;
+    q_solid(13) = -1.063820485514786;
+    q_solid(14) = 1.081000671652452;
+    q_solid(15) = 0.972887477248942;
+    q_solid(16) = -1.008995039455167;
+    q_solid(17) = 0.923459231565508;
+    q_solid(18) = 1.089192110164642;
+    q_solid(19) = 1.026798931538616;
+    q_solid(20) = 0.964761788314679;
+    q_solid(21) = -0.941489453299989;
+    q_solid(22) = 0.954327975326486;
+    q_solid(23) = 0.963168067937965;
+    q_solid(24) = 0.0925155012591516;
+    q_solid(25) = -0.973383316878771;
+    q_solid(26) = -1.065800877068667;
+    q_solid(27) = 0.993751379524698;
+    q_solid(28) = -0.089078411148891;
+    q_solid(29) = -1.080589211553427;
+    q_solid(30) = 0.0823626211382376;
+    q_solid(31) = 1.033905181036807;
+    q_solid(32) = -0.952741283444911;
+    q_solid(33) = -1.024714325285187;
+    q_solid(34) = -0.0951797166281465;
+    q_solid(35) = -0.917694055170081;
+    q_solid(36) = -0.94955183268814;
+    q_solid(37) = -0.936209915275568;
+    q_solid(38) = -0.07531489653912402;
+    q_solid(39) = 0.977045420134747;
+    q_solid(40) = -0.915831507095275;
+    q_solid(41) = -0.03604489795829757;
+    q_solid(42) = 1.044996295051512;
+    q_solid(43) = 0.912268002554735;
+    q_solid(44) = 0.026884640088015;
+    q_solid(45) = -1.003774079332873;
+    q_solid(46) = 1.016364821141699;
+    q_solid(47) = -0.04547583423590318;
+    q_solid(48) = -0.07606458957105064;
+    q_solid(49) = -0.970767004162723;
+    q_solid(50) = 1.09197908262736;
+    q_solid(51) = 1.000582069178839;
+    q_solid(52) = 0.02495199075528687;
+    q_solid(53) = 0.942442567644017;
+    q_solid(54) = -0.0840408739597993;
+    q_solid(55) = 1.082175787959178;
+    q_solid(56) = 1.016887685734179;
+    q_solid(57) = -1.02950388437141;
+    q_solid(58) = -0.03189318909487643;
+    q_solid(59) = 0.962850907596607;
+    q_solid(60) = 0.06298633006639215;
+    q_solid(61) = -0.06929279965773389;
+    q_solid(62) = -0.963099037764495;
+    q_solid(63) = 0.005860067798445501;
+    q_solid(64) = -1.087116820781742;
+    q_solid(65) = 0.01143091251576034;
+    q_solid(66) = 0.990119207129434;
+    q_solid(67) = -0.07554386166147545;
+    q_solid(68) = 0.02213195187583161;
+    q_solid(69) = -0.0892155216099889;
+    q_solid(70) = 1.051578415322994;
+    q_solid(71) = 0.01644372121101889;
+    q_solid(72) = -1.084952712553014;
+    q_solid(73) = -0.06218066414480983;
+    q_solid(74) = 0.03589340707026345;
+    q_solid(75) = -0.01441522951114998;
+    q_solid(76) = 0.03853468741828525;
+    q_solid(77) = 0.974176595435944;
+    q_solid(78) = 0.07916144913106371;
+    q_solid(79) = 0.0891334591996562;
+    q_solid(80) = 0.0835795633628921;
+
+    // Results for D.
+    result_local_D(0, 0) = 0.05756355583405802;
+    result_local_D(0, 3) = 0.001955220263108095;
+    result_local_D(0, 6) = 0.005745348903101642;
+    result_local_D(0, 9) = -0.0002830518321958758;
+    result_local_D(1, 1) = 0.05756355583405802;
+    result_local_D(1, 4) = 0.001955220263108095;
+    result_local_D(1, 7) = 0.005745348903101642;
+    result_local_D(1, 10) = -0.0002830518321958758;
+    result_local_D(2, 2) = 0.05756355583405802;
+    result_local_D(2, 5) = 0.001955220263108095;
+    result_local_D(2, 8) = 0.005745348903101642;
+    result_local_D(2, 11) = -0.0002830518321958758;
+    result_local_D(3, 0) = 0.004620282991405782;
+    result_local_D(3, 3) = 0.0002830518321958757;
+    result_local_D(3, 6) = 0.06977827920983277;
+    result_local_D(3, 9) = -0.002638102150795207;
+    result_local_D(4, 1) = 0.004620282991405782;
+    result_local_D(4, 4) = 0.0002830518321958757;
+    result_local_D(4, 7) = 0.06977827920983277;
+    result_local_D(4, 10) = -0.002638102150795207;
+    result_local_D(5, 2) = 0.004620282991405782;
+    result_local_D(5, 5) = 0.0002830518321958757;
+    result_local_D(5, 8) = 0.06977827920983277;
+    result_local_D(5, 11) = -0.002638102150795207;
+    result_local_D(6, 0) = 0.1839793570166088;
+    result_local_D(6, 3) = 0.01881461423793542;
+    result_local_D(6, 6) = 0.02734242802628759;
+    result_local_D(6, 9) = -0.00813357387408627;
+    result_local_D(7, 1) = 0.1839793570166088;
+    result_local_D(7, 4) = 0.01881461423793542;
+    result_local_D(7, 7) = 0.02734242802628759;
+    result_local_D(7, 10) = -0.00813357387408627;
+    result_local_D(8, 2) = 0.1839793570166088;
+    result_local_D(8, 5) = 0.01881461423793542;
+    result_local_D(8, 8) = 0.02734242802628759;
+    result_local_D(8, 11) = -0.00813357387408627;
+    result_local_D(9, 0) = 0.04314751020500857;
+    result_local_D(9, 3) = 0.00999650276080791;
+    result_local_D(9, 6) = 0.2247971947249847;
+    result_local_D(9, 9) = -0.0225404720113787;
+    result_local_D(10, 1) = 0.04314751020500857;
+    result_local_D(10, 4) = 0.00999650276080791;
+    result_local_D(10, 7) = 0.2247971947249847;
+    result_local_D(10, 10) = -0.0225404720113787;
+    result_local_D(11, 2) = 0.04314751020500857;
+    result_local_D(11, 5) = 0.00999650276080791;
+    result_local_D(11, 8) = 0.2247971947249847;
+    result_local_D(11, 11) = -0.0225404720113787;
+
+    // Results for M.
+    result_local_M(0, 0) = -0.00001431329535864171;
+    result_local_M(0, 3) = 0.0000179413754998695;
+    result_local_M(0, 6) = -0.00002265073368330377;
+    result_local_M(0, 9) = 0.00001822781255367886;
+    result_local_M(0, 12) = 0.00002425427108570378;
+    result_local_M(0, 15) = -0.00003023068986189826;
+    result_local_M(0, 18) = 0.00003840920214125847;
+    result_local_M(0, 21) = -0.0000310009546953883;
+    result_local_M(0, 24) = 0.0002846465021201302;
+    result_local_M(0, 27) = -0.0003477609635750689;
+    result_local_M(0, 30) = -0.0003633966575873966;
+    result_local_M(0, 33) = 0.0002691352237516533;
+    result_local_M(0, 36) = 0.0001636299692264964;
+    result_local_M(0, 39) = -0.0002611458860558529;
+    result_local_M(0, 42) = 0.0003215000776352248;
+    result_local_M(0, 45) = -0.0002050028300008692;
+    result_local_M(0, 48) = -0.0004764843600916477;
+    result_local_M(0, 51) = 0.0005731310710650396;
+    result_local_M(0, 54) = 0.0006093616633066393;
+    result_local_M(0, 57) = -0.0004504231404486054;
+    result_local_M(0, 60) = -0.005315858196012471;
+    result_local_M(0, 63) = -0.002955192732375306;
+    result_local_M(0, 66) = 0.005576254385143274;
+    result_local_M(0, 69) = 0.003747954050650781;
+    result_local_M(0, 72) = -0.003273754777292538;
+    result_local_M(0, 75) = 0.00884779150367707;
+    result_local_M(0, 78) = 0.05656388284634183;
+    result_local_M(1, 1) = -0.00001431329535864171;
+    result_local_M(1, 4) = 0.0000179413754998695;
+    result_local_M(1, 7) = -0.00002265073368330377;
+    result_local_M(1, 10) = 0.00001822781255367886;
+    result_local_M(1, 13) = 0.00002425427108570378;
+    result_local_M(1, 16) = -0.00003023068986189826;
+    result_local_M(1, 19) = 0.00003840920214125847;
+    result_local_M(1, 22) = -0.0000310009546953883;
+    result_local_M(1, 25) = 0.0002846465021201302;
+    result_local_M(1, 28) = -0.0003477609635750689;
+    result_local_M(1, 31) = -0.0003633966575873966;
+    result_local_M(1, 34) = 0.0002691352237516533;
+    result_local_M(1, 37) = 0.0001636299692264964;
+    result_local_M(1, 40) = -0.0002611458860558529;
+    result_local_M(1, 43) = 0.0003215000776352248;
+    result_local_M(1, 46) = -0.0002050028300008692;
+    result_local_M(1, 49) = -0.0004764843600916477;
+    result_local_M(1, 52) = 0.0005731310710650396;
+    result_local_M(1, 55) = 0.0006093616633066393;
+    result_local_M(1, 58) = -0.0004504231404486054;
+    result_local_M(1, 61) = -0.005315858196012471;
+    result_local_M(1, 64) = -0.002955192732375306;
+    result_local_M(1, 67) = 0.005576254385143274;
+    result_local_M(1, 70) = 0.003747954050650781;
+    result_local_M(1, 73) = -0.003273754777292538;
+    result_local_M(1, 76) = 0.00884779150367707;
+    result_local_M(1, 79) = 0.05656388284634183;
+    result_local_M(2, 2) = -0.00001431329535864171;
+    result_local_M(2, 5) = 0.0000179413754998695;
+    result_local_M(2, 8) = -0.00002265073368330377;
+    result_local_M(2, 11) = 0.00001822781255367886;
+    result_local_M(2, 14) = 0.00002425427108570378;
+    result_local_M(2, 17) = -0.00003023068986189826;
+    result_local_M(2, 20) = 0.00003840920214125847;
+    result_local_M(2, 23) = -0.0000310009546953883;
+    result_local_M(2, 26) = 0.0002846465021201302;
+    result_local_M(2, 29) = -0.0003477609635750689;
+    result_local_M(2, 32) = -0.0003633966575873966;
+    result_local_M(2, 35) = 0.0002691352237516533;
+    result_local_M(2, 38) = 0.0001636299692264964;
+    result_local_M(2, 41) = -0.0002611458860558529;
+    result_local_M(2, 44) = 0.0003215000776352248;
+    result_local_M(2, 47) = -0.0002050028300008692;
+    result_local_M(2, 50) = -0.0004764843600916477;
+    result_local_M(2, 53) = 0.0005731310710650396;
+    result_local_M(2, 56) = 0.0006093616633066393;
+    result_local_M(2, 59) = -0.0004504231404486054;
+    result_local_M(2, 62) = -0.005315858196012471;
+    result_local_M(2, 65) = -0.002955192732375306;
+    result_local_M(2, 68) = 0.005576254385143274;
+    result_local_M(2, 71) = 0.003747954050650781;
+    result_local_M(2, 74) = -0.003273754777292538;
+    result_local_M(2, 77) = 0.00884779150367707;
+    result_local_M(2, 80) = 0.05656388284634183;
+    result_local_M(3, 0) = -5.206576670709177e-6;
+    result_local_M(3, 3) = 0.00001797085655835887;
+    result_local_M(3, 6) = -0.00002082442317817949;
+    result_local_M(3, 9) = 5.980750156367378e-6;
+    result_local_M(3, 12) = 5.885476498687035e-6;
+    result_local_M(3, 15) = -0.00001916482437376361;
+    result_local_M(3, 18) = 0.00002212238299830653;
+    result_local_M(3, 21) = -6.773023024256672e-6;
+    result_local_M(3, 24) = 0.0000423528210183861;
+    result_local_M(3, 27) = -0.0004881889172509752;
+    result_local_M(3, 30) = -0.00005035068719202513;
+    result_local_M(3, 33) = 0.0001426292373656352;
+    result_local_M(3, 36) = 0.0003433538700944985;
+    result_local_M(3, 39) = -0.001187927375869659;
+    result_local_M(3, 42) = 0.001406671690845665;
+    result_local_M(3, 45) = -0.0004058293940460092;
+    result_local_M(3, 48) = -0.0000571069401994497;
+    result_local_M(3, 51) = 0.000524224039252482;
+    result_local_M(3, 54) = 0.00006898939554451826;
+    result_local_M(3, 57) = -0.0001593917391594104;
+    result_local_M(3, 60) = -0.001039582426893005;
+    result_local_M(3, 63) = -0.002046324644017246;
+    result_local_M(3, 66) = 0.03059197135292516;
+    result_local_M(3, 69) = 0.00242657326587033;
+    result_local_M(3, 72) = -0.00882346275942203;
+    result_local_M(3, 75) = 0.001325440646278008;
+    result_local_M(3, 78) = 0.05178453014712886;
+    result_local_M(4, 1) = -5.206576670709177e-6;
+    result_local_M(4, 4) = 0.00001797085655835887;
+    result_local_M(4, 7) = -0.00002082442317817949;
+    result_local_M(4, 10) = 5.980750156367378e-6;
+    result_local_M(4, 13) = 5.885476498687035e-6;
+    result_local_M(4, 16) = -0.00001916482437376361;
+    result_local_M(4, 19) = 0.00002212238299830653;
+    result_local_M(4, 22) = -6.773023024256672e-6;
+    result_local_M(4, 25) = 0.0000423528210183861;
+    result_local_M(4, 28) = -0.0004881889172509752;
+    result_local_M(4, 31) = -0.00005035068719202513;
+    result_local_M(4, 34) = 0.0001426292373656352;
+    result_local_M(4, 37) = 0.0003433538700944985;
+    result_local_M(4, 40) = -0.001187927375869659;
+    result_local_M(4, 43) = 0.001406671690845665;
+    result_local_M(4, 46) = -0.0004058293940460092;
+    result_local_M(4, 49) = -0.0000571069401994497;
+    result_local_M(4, 52) = 0.000524224039252482;
+    result_local_M(4, 55) = 0.00006898939554451826;
+    result_local_M(4, 58) = -0.0001593917391594104;
+    result_local_M(4, 61) = -0.001039582426893005;
+    result_local_M(4, 64) = -0.002046324644017246;
+    result_local_M(4, 67) = 0.03059197135292516;
+    result_local_M(4, 70) = 0.00242657326587033;
+    result_local_M(4, 73) = -0.00882346275942203;
+    result_local_M(4, 76) = 0.001325440646278008;
+    result_local_M(4, 79) = 0.05178453014712886;
+    result_local_M(5, 2) = -5.206576670709177e-6;
+    result_local_M(5, 5) = 0.00001797085655835887;
+    result_local_M(5, 8) = -0.00002082442317817949;
+    result_local_M(5, 11) = 5.980750156367378e-6;
+    result_local_M(5, 14) = 5.885476498687035e-6;
+    result_local_M(5, 17) = -0.00001916482437376361;
+    result_local_M(5, 20) = 0.00002212238299830653;
+    result_local_M(5, 23) = -6.773023024256672e-6;
+    result_local_M(5, 26) = 0.0000423528210183861;
+    result_local_M(5, 29) = -0.0004881889172509752;
+    result_local_M(5, 32) = -0.00005035068719202513;
+    result_local_M(5, 35) = 0.0001426292373656352;
+    result_local_M(5, 38) = 0.0003433538700944985;
+    result_local_M(5, 41) = -0.001187927375869659;
+    result_local_M(5, 44) = 0.001406671690845665;
+    result_local_M(5, 47) = -0.0004058293940460092;
+    result_local_M(5, 50) = -0.0000571069401994497;
+    result_local_M(5, 53) = 0.000524224039252482;
+    result_local_M(5, 56) = 0.00006898939554451826;
+    result_local_M(5, 59) = -0.0001593917391594104;
+    result_local_M(5, 62) = -0.001039582426893005;
+    result_local_M(5, 65) = -0.002046324644017246;
+    result_local_M(5, 68) = 0.03059197135292516;
+    result_local_M(5, 71) = 0.00242657326587033;
+    result_local_M(5, 74) = -0.00882346275942203;
+    result_local_M(5, 77) = 0.001325440646278008;
+    result_local_M(5, 80) = 0.05178453014712886;
+    result_local_M(6, 0) = -0.0001067013973993049;
+    result_local_M(6, 3) = 0.0001680549219180473;
+    result_local_M(6, 6) = -0.000229697740925012;
+    result_local_M(6, 9) = 0.0001451500693990204;
+    result_local_M(6, 12) = 0.0001662306052090727;
+    result_local_M(6, 15) = -0.0002619108335800808;
+    result_local_M(6, 18) = 0.000357079770517235;
+    result_local_M(6, 21) = -0.0002257781284381965;
+    result_local_M(6, 24) = 0.001223046522452656;
+    result_local_M(6, 27) = -0.002478061355970081;
+    result_local_M(6, 30) = -0.001654392409708251;
+    result_local_M(6, 33) = 0.001607649277238728;
+    result_local_M(6, 36) = 0.00109203728607882;
+    result_local_M(6, 39) = -0.001501281408297968;
+    result_local_M(6, 42) = 0.002131599085602636;
+    result_local_M(6, 45) = -0.001510288482274733;
+    result_local_M(6, 48) = -0.001925774928731636;
+    result_local_M(6, 51) = 0.003908016632757044;
+    result_local_M(6, 54) = 0.002601702127098088;
+    result_local_M(6, 57) = -0.002521282038936078;
+    result_local_M(6, 60) = -0.01882635026352237;
+    result_local_M(6, 63) = -0.01297317371083248;
+    result_local_M(6, 66) = 0.01791619419736784;
+    result_local_M(6, 69) = 0.0177013135209172;
+    result_local_M(6, 72) = -0.01516031588028651;
+    result_local_M(6, 75) = 0.02978370563360237;
+    result_local_M(6, 78) = 0.1918950139716403;
+    result_local_M(7, 1) = -0.0001067013973993049;
+    result_local_M(7, 4) = 0.0001680549219180473;
+    result_local_M(7, 7) = -0.000229697740925012;
+    result_local_M(7, 10) = 0.0001451500693990204;
+    result_local_M(7, 13) = 0.0001662306052090727;
+    result_local_M(7, 16) = -0.0002619108335800808;
+    result_local_M(7, 19) = 0.000357079770517235;
+    result_local_M(7, 22) = -0.0002257781284381965;
+    result_local_M(7, 25) = 0.001223046522452656;
+    result_local_M(7, 28) = -0.002478061355970081;
+    result_local_M(7, 31) = -0.001654392409708251;
+    result_local_M(7, 34) = 0.001607649277238728;
+    result_local_M(7, 37) = 0.00109203728607882;
+    result_local_M(7, 40) = -0.001501281408297968;
+    result_local_M(7, 43) = 0.002131599085602636;
+    result_local_M(7, 46) = -0.001510288482274733;
+    result_local_M(7, 49) = -0.001925774928731636;
+    result_local_M(7, 52) = 0.003908016632757044;
+    result_local_M(7, 55) = 0.002601702127098088;
+    result_local_M(7, 58) = -0.002521282038936078;
+    result_local_M(7, 61) = -0.01882635026352237;
+    result_local_M(7, 64) = -0.01297317371083248;
+    result_local_M(7, 67) = 0.01791619419736784;
+    result_local_M(7, 70) = 0.0177013135209172;
+    result_local_M(7, 73) = -0.01516031588028651;
+    result_local_M(7, 76) = 0.02978370563360237;
+    result_local_M(7, 79) = 0.1918950139716403;
+    result_local_M(8, 2) = -0.0001067013973993049;
+    result_local_M(8, 5) = 0.0001680549219180473;
+    result_local_M(8, 8) = -0.000229697740925012;
+    result_local_M(8, 11) = 0.0001451500693990204;
+    result_local_M(8, 14) = 0.0001662306052090727;
+    result_local_M(8, 17) = -0.0002619108335800808;
+    result_local_M(8, 20) = 0.000357079770517235;
+    result_local_M(8, 23) = -0.0002257781284381965;
+    result_local_M(8, 26) = 0.001223046522452656;
+    result_local_M(8, 29) = -0.002478061355970081;
+    result_local_M(8, 32) = -0.001654392409708251;
+    result_local_M(8, 35) = 0.001607649277238728;
+    result_local_M(8, 38) = 0.00109203728607882;
+    result_local_M(8, 41) = -0.001501281408297968;
+    result_local_M(8, 44) = 0.002131599085602636;
+    result_local_M(8, 47) = -0.001510288482274733;
+    result_local_M(8, 50) = -0.001925774928731636;
+    result_local_M(8, 53) = 0.003908016632757044;
+    result_local_M(8, 56) = 0.002601702127098088;
+    result_local_M(8, 59) = -0.002521282038936078;
+    result_local_M(8, 62) = -0.01882635026352237;
+    result_local_M(8, 65) = -0.01297317371083248;
+    result_local_M(8, 68) = 0.01791619419736784;
+    result_local_M(8, 71) = 0.0177013135209172;
+    result_local_M(8, 74) = -0.01516031588028651;
+    result_local_M(8, 77) = 0.02978370563360237;
+    result_local_M(8, 80) = 0.1918950139716403;
+    result_local_M(9, 0) = -0.0000631289607903836;
+    result_local_M(9, 3) = 0.0001557627000775956;
+    result_local_M(9, 6) = -0.0002031949930379705;
+    result_local_M(9, 9) = 0.0000828535000118832;
+    result_local_M(9, 12) = 0.000073819903110806;
+    result_local_M(9, 15) = -0.0001841211443600053;
+    result_local_M(9, 18) = 0.0002408883303534481;
+    result_local_M(9, 21) = -0.0000971859389009542;
+    result_local_M(9, 24) = 0.0003746146179404325;
+    result_local_M(9, 27) = -0.002736206998744504;
+    result_local_M(9, 30) = -0.0004945327973047058;
+    result_local_M(9, 33) = 0.001083568841707192;
+    result_local_M(9, 36) = 0.00180032075441729;
+    result_local_M(9, 39) = -0.004641135271812979;
+    result_local_M(9, 42) = 0.005940744512354383;
+    result_local_M(9, 45) = -0.002320844285545488;
+    result_local_M(9, 48) = -0.000401981714335757;
+    result_local_M(9, 51) = 0.003201165563843469;
+    result_local_M(9, 54) = 0.0005333599316040758;
+    result_local_M(9, 57) = -0.001253983549458698;
+    result_local_M(9, 60) = -0.006311828672314378;
+    result_local_M(9, 63) = -0.01151749995561566;
+    result_local_M(9, 66) = 0.0876817455272555;
+    result_local_M(9, 69) = 0.01491011936865494;
+    result_local_M(9, 72) = -0.0330836006669778;
+    result_local_M(9, 75) = 0.006668896732080677;
+    result_local_M(9, 78) = 0.2085060895957809;
+    result_local_M(10, 1) = -0.0000631289607903836;
+    result_local_M(10, 4) = 0.0001557627000775956;
+    result_local_M(10, 7) = -0.0002031949930379705;
+    result_local_M(10, 10) = 0.0000828535000118832;
+    result_local_M(10, 13) = 0.000073819903110806;
+    result_local_M(10, 16) = -0.0001841211443600053;
+    result_local_M(10, 19) = 0.0002408883303534481;
+    result_local_M(10, 22) = -0.0000971859389009542;
+    result_local_M(10, 25) = 0.0003746146179404325;
+    result_local_M(10, 28) = -0.002736206998744504;
+    result_local_M(10, 31) = -0.0004945327973047058;
+    result_local_M(10, 34) = 0.001083568841707192;
+    result_local_M(10, 37) = 0.00180032075441729;
+    result_local_M(10, 40) = -0.004641135271812979;
+    result_local_M(10, 43) = 0.005940744512354383;
+    result_local_M(10, 46) = -0.002320844285545488;
+    result_local_M(10, 49) = -0.000401981714335757;
+    result_local_M(10, 52) = 0.003201165563843469;
+    result_local_M(10, 55) = 0.0005333599316040758;
+    result_local_M(10, 58) = -0.001253983549458698;
+    result_local_M(10, 61) = -0.006311828672314378;
+    result_local_M(10, 64) = -0.01151749995561566;
+    result_local_M(10, 67) = 0.0876817455272555;
+    result_local_M(10, 70) = 0.01491011936865494;
+    result_local_M(10, 73) = -0.0330836006669778;
+    result_local_M(10, 76) = 0.006668896732080677;
+    result_local_M(10, 79) = 0.2085060895957809;
+    result_local_M(11, 2) = -0.0000631289607903836;
+    result_local_M(11, 5) = 0.0001557627000775956;
+    result_local_M(11, 8) = -0.0002031949930379705;
+    result_local_M(11, 11) = 0.0000828535000118832;
+    result_local_M(11, 14) = 0.000073819903110806;
+    result_local_M(11, 17) = -0.0001841211443600053;
+    result_local_M(11, 20) = 0.0002408883303534481;
+    result_local_M(11, 23) = -0.0000971859389009542;
+    result_local_M(11, 26) = 0.0003746146179404325;
+    result_local_M(11, 29) = -0.002736206998744504;
+    result_local_M(11, 32) = -0.0004945327973047058;
+    result_local_M(11, 35) = 0.001083568841707192;
+    result_local_M(11, 38) = 0.00180032075441729;
+    result_local_M(11, 41) = -0.004641135271812979;
+    result_local_M(11, 44) = 0.005940744512354383;
+    result_local_M(11, 47) = -0.002320844285545488;
+    result_local_M(11, 50) = -0.000401981714335757;
+    result_local_M(11, 53) = 0.003201165563843469;
+    result_local_M(11, 56) = 0.0005333599316040758;
+    result_local_M(11, 59) = -0.001253983549458698;
+    result_local_M(11, 62) = -0.006311828672314378;
+    result_local_M(11, 65) = -0.01151749995561566;
+    result_local_M(11, 68) = 0.0876817455272555;
+    result_local_M(11, 71) = 0.01491011936865494;
+    result_local_M(11, 74) = -0.0330836006669778;
+    result_local_M(11, 77) = 0.006668896732080677;
+    result_local_M(11, 80) = 0.2085060895957809;
+
+    // Results for Kappa.
+    result_local_kappa(0) = 0.06330890473715966;
+    result_local_kappa(1) = 0.06330890473715966;
+    result_local_kappa(2) = 0.06330890473715966;
+    result_local_kappa(3) = 0.07439856220123855;
+    result_local_kappa(4) = 0.07439856220123855;
+    result_local_kappa(5) = 0.07439856220123855;
+    result_local_kappa(6) = 0.2113217850428964;
+    result_local_kappa(7) = 0.2113217850428964;
+    result_local_kappa(8) = 0.2113217850428964;
+    result_local_kappa(9) = 0.2679447049299934;
+    result_local_kappa(10) = 0.2679447049299934;
+    result_local_kappa(11) = 0.2679447049299934;
 
     // Perform the unit tests.
     PerformMortarPairUnitTest(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
@@ -2125,6 +3325,191 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
     result_local_kappa(6) = 0.4260146577536798;
     result_local_kappa(7) = 0.4260146577536798;
     result_local_kappa(8) = 0.4260146577536798;
+
+    // Perform the unit tests.
+    PerformMortarPairUnitTest(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
+        result_local_M, result_local_kappa);
+  }
+
+  /**
+   * \brief Test a non straight beam in a tet4 element, with line4 mortar shape functions.
+   */
+  void test_beam_to_solid_meshtying_mortar_hermite3_tet4_line4()
+  {
+    // Element types.
+    typedef GEOMETRYPAIR::t_hermite beam_type;
+    typedef GEOMETRYPAIR::t_tet4 solid_type;
+    typedef GEOMETRYPAIR::t_line4 lambda_type;
+
+    // Create the mesh tying mortar pair.
+    BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
+        contact_pair = BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
+            lambda_type>();
+
+    // Definition of variables for this test case.
+    LINALG::TMatrix<double, beam_type::n_dof_, 1> q_beam;
+    LINALG::TMatrix<double, 9, 1> q_beam_rot;
+    LINALG::TMatrix<double, solid_type::n_dof_, 1> q_solid;
+    LINALG::SerialDenseMatrix local_D;
+    LINALG::SerialDenseMatrix local_M;
+    LINALG::SerialDenseVector local_kappa;
+
+    // Matrices for the results.
+    LINALG::TMatrix<double, lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
+    LINALG::TMatrix<double, lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
+    LINALG::TMatrix<double, lambda_type::n_dof_, 1> result_local_kappa(true);
+
+    // Define the geometry of the two elements.
+    q_beam(0) = 0.15;
+    q_beam(1) = 0.2;
+    q_beam(2) = 0.3;
+    q_beam(3) = 0.5773502691896255;
+    q_beam(4) = 0.5773502691896258;
+    q_beam(5) = 0.577350269189626;
+    q_beam(6) = 0.65;
+    q_beam(7) = 0.1;
+    q_beam(8) = 0.1;
+    q_beam(9) = 0.8017837257372733;
+    q_beam(10) = -0.5345224838248488;
+    q_beam(11) = 0.2672612419124244;
+
+    q_beam_rot(0) = 1.674352746442651;
+    q_beam_rot(1) = 0.1425949677148126;
+    q_beam_rot(2) = 1.0831163124736984;
+    q_beam_rot(3) = 1.4331999091513161;
+    q_beam_rot(4) = -0.6560404572957742;
+    q_beam_rot(5) = -0.2491376152457331;
+    q_beam_rot(6) = 0.0;
+    q_beam_rot(7) = 0.0;
+    q_beam_rot(8) = 0.0;
+
+    // Positional DOFs of the solid.
+    q_solid(0) = 0.04580648387340619;
+    q_solid(1) = 0.02451732788546579;
+    q_solid(2) = -0.0031131666281497;
+    q_solid(3) = 0.923762409575691;
+    q_solid(4) = -0.0106157274667526;
+    q_solid(5) = -0.0141609921026476;
+    q_solid(6) = -0.0944365111054278;
+    q_solid(7) = 1.069973754602123;
+    q_solid(8) = 0.06451121136737775;
+    q_solid(9) = -0.04783899250893692;
+    q_solid(10) = 0.0888801776910401;
+    q_solid(11) = 0.963088029848009;
+
+    // Results for D.
+    result_local_D(0, 0) = 0.05756355583405802;
+    result_local_D(0, 3) = 0.001955220263108095;
+    result_local_D(0, 6) = 0.005745348903101642;
+    result_local_D(0, 9) = -0.0002830518321958758;
+    result_local_D(1, 1) = 0.05756355583405802;
+    result_local_D(1, 4) = 0.001955220263108095;
+    result_local_D(1, 7) = 0.005745348903101642;
+    result_local_D(1, 10) = -0.0002830518321958758;
+    result_local_D(2, 2) = 0.05756355583405802;
+    result_local_D(2, 5) = 0.001955220263108095;
+    result_local_D(2, 8) = 0.005745348903101642;
+    result_local_D(2, 11) = -0.0002830518321958758;
+    result_local_D(3, 0) = 0.004620282991405782;
+    result_local_D(3, 3) = 0.0002830518321958757;
+    result_local_D(3, 6) = 0.06977827920983277;
+    result_local_D(3, 9) = -0.002638102150795207;
+    result_local_D(4, 1) = 0.004620282991405782;
+    result_local_D(4, 4) = 0.0002830518321958757;
+    result_local_D(4, 7) = 0.06977827920983277;
+    result_local_D(4, 10) = -0.002638102150795207;
+    result_local_D(5, 2) = 0.004620282991405782;
+    result_local_D(5, 5) = 0.0002830518321958757;
+    result_local_D(5, 8) = 0.06977827920983277;
+    result_local_D(5, 11) = -0.002638102150795207;
+    result_local_D(6, 0) = 0.1839793570166088;
+    result_local_D(6, 3) = 0.01881461423793542;
+    result_local_D(6, 6) = 0.02734242802628759;
+    result_local_D(6, 9) = -0.00813357387408627;
+    result_local_D(7, 1) = 0.1839793570166088;
+    result_local_D(7, 4) = 0.01881461423793542;
+    result_local_D(7, 7) = 0.02734242802628759;
+    result_local_D(7, 10) = -0.00813357387408627;
+    result_local_D(8, 2) = 0.1839793570166088;
+    result_local_D(8, 5) = 0.01881461423793542;
+    result_local_D(8, 8) = 0.02734242802628759;
+    result_local_D(8, 11) = -0.00813357387408627;
+    result_local_D(9, 0) = 0.04314751020500857;
+    result_local_D(9, 3) = 0.00999650276080791;
+    result_local_D(9, 6) = 0.2247971947249847;
+    result_local_D(9, 9) = -0.0225404720113787;
+    result_local_D(10, 1) = 0.04314751020500857;
+    result_local_D(10, 4) = 0.00999650276080791;
+    result_local_D(10, 7) = 0.2247971947249847;
+    result_local_D(10, 10) = -0.0225404720113787;
+    result_local_D(11, 2) = 0.04314751020500857;
+    result_local_D(11, 5) = 0.00999650276080791;
+    result_local_D(11, 8) = 0.2247971947249847;
+    result_local_D(11, 11) = -0.0225404720113787;
+
+    // Results for M.
+    result_local_M(0, 0) = 0.0179113322450487;
+    result_local_M(0, 3) = 0.01556003555258317;
+    result_local_M(0, 6) = 0.0106426831473678;
+    result_local_M(0, 9) = 0.01919485379215998;
+    result_local_M(1, 1) = 0.0179113322450487;
+    result_local_M(1, 4) = 0.01556003555258317;
+    result_local_M(1, 7) = 0.0106426831473678;
+    result_local_M(1, 10) = 0.01919485379215998;
+    result_local_M(2, 2) = 0.0179113322450487;
+    result_local_M(2, 5) = 0.01556003555258317;
+    result_local_M(2, 8) = 0.0106426831473678;
+    result_local_M(2, 11) = 0.01919485379215998;
+    result_local_M(3, 0) = 0.00907903391846446;
+    result_local_M(3, 3) = 0.0485789656254118;
+    result_local_M(3, 6) = 0.00844020683090666;
+    result_local_M(3, 9) = 0.00830035582645563;
+    result_local_M(4, 1) = 0.00907903391846446;
+    result_local_M(4, 4) = 0.0485789656254118;
+    result_local_M(4, 7) = 0.00844020683090666;
+    result_local_M(4, 10) = 0.00830035582645563;
+    result_local_M(5, 2) = 0.00907903391846446;
+    result_local_M(5, 5) = 0.0485789656254118;
+    result_local_M(5, 8) = 0.00844020683090666;
+    result_local_M(5, 11) = 0.00830035582645563;
+    result_local_M(6, 0) = 0.03889922635041484;
+    result_local_M(6, 3) = 0.05999134284877538;
+    result_local_M(6, 6) = 0.04528676588350811;
+    result_local_M(6, 9) = 0.06714444996019806;
+    result_local_M(7, 1) = 0.03889922635041484;
+    result_local_M(7, 4) = 0.05999134284877538;
+    result_local_M(7, 7) = 0.04528676588350811;
+    result_local_M(7, 10) = 0.06714444996019806;
+    result_local_M(8, 2) = 0.03889922635041484;
+    result_local_M(8, 5) = 0.05999134284877538;
+    result_local_M(8, 8) = 0.04528676588350811;
+    result_local_M(8, 11) = 0.06714444996019806;
+    result_local_M(9, 0) = 0.03176345624352602;
+    result_local_M(9, 3) = 0.1566104054634665;
+    result_local_M(9, 6) = 0.04356424584977292;
+    result_local_M(9, 9) = 0.03600659737322787;
+    result_local_M(10, 1) = 0.03176345624352602;
+    result_local_M(10, 4) = 0.1566104054634665;
+    result_local_M(10, 7) = 0.04356424584977292;
+    result_local_M(10, 10) = 0.03600659737322787;
+    result_local_M(11, 2) = 0.03176345624352602;
+    result_local_M(11, 5) = 0.1566104054634665;
+    result_local_M(11, 8) = 0.04356424584977292;
+    result_local_M(11, 11) = 0.03600659737322787;
+
+    // Results for Kappa.
+    result_local_kappa(0) = 0.06330890473715966;
+    result_local_kappa(1) = 0.06330890473715966;
+    result_local_kappa(2) = 0.06330890473715966;
+    result_local_kappa(3) = 0.07439856220123855;
+    result_local_kappa(4) = 0.07439856220123855;
+    result_local_kappa(5) = 0.07439856220123855;
+    result_local_kappa(6) = 0.2113217850428964;
+    result_local_kappa(7) = 0.2113217850428964;
+    result_local_kappa(8) = 0.2113217850428964;
+    result_local_kappa(9) = 0.2679447049299934;
+    result_local_kappa(10) = 0.2679447049299934;
+    result_local_kappa(11) = 0.2679447049299934;
 
     // Perform the unit tests.
     PerformMortarPairUnitTest(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
@@ -2540,6 +3925,281 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
     result_local_kappa(6) = 0.4260146577536798;
     result_local_kappa(7) = 0.4260146577536798;
     result_local_kappa(8) = 0.4260146577536798;
+
+    // Perform the unit tests.
+    PerformMortarPairUnitTest(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,
+        result_local_M, result_local_kappa);
+  }
+
+  /**
+   * \brief Test a non straight beam in a tet10 element, with line4 mortar shape functions.
+   */
+  void test_beam_to_solid_meshtying_mortar_hermite3_tet10_line4()
+  {
+    // Element types.
+    typedef GEOMETRYPAIR::t_hermite beam_type;
+    typedef GEOMETRYPAIR::t_tet10 solid_type;
+    typedef GEOMETRYPAIR::t_line4 lambda_type;
+
+    // Create the mesh tying mortar pair.
+    BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>
+        contact_pair = BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type,
+            lambda_type>();
+
+    // Definition of variables for this test case.
+    LINALG::TMatrix<double, beam_type::n_dof_, 1> q_beam;
+    LINALG::TMatrix<double, 9, 1> q_beam_rot;
+    LINALG::TMatrix<double, solid_type::n_dof_, 1> q_solid;
+    LINALG::SerialDenseMatrix local_D;
+    LINALG::SerialDenseMatrix local_M;
+    LINALG::SerialDenseVector local_kappa;
+
+    // Matrices for the results.
+    LINALG::TMatrix<double, lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
+    LINALG::TMatrix<double, lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
+    LINALG::TMatrix<double, lambda_type::n_dof_, 1> result_local_kappa(true);
+
+    // Define the geometry of the two elements.
+    q_beam(0) = 0.15;
+    q_beam(1) = 0.2;
+    q_beam(2) = 0.3;
+    q_beam(3) = 0.5773502691896255;
+    q_beam(4) = 0.5773502691896258;
+    q_beam(5) = 0.577350269189626;
+    q_beam(6) = 0.65;
+    q_beam(7) = 0.1;
+    q_beam(8) = 0.1;
+    q_beam(9) = 0.8017837257372733;
+    q_beam(10) = -0.5345224838248488;
+    q_beam(11) = 0.2672612419124244;
+
+    q_beam_rot(0) = 1.674352746442651;
+    q_beam_rot(1) = 0.1425949677148126;
+    q_beam_rot(2) = 1.0831163124736984;
+    q_beam_rot(3) = 1.4331999091513161;
+    q_beam_rot(4) = -0.6560404572957742;
+    q_beam_rot(5) = -0.2491376152457331;
+    q_beam_rot(6) = 0.0;
+    q_beam_rot(7) = 0.0;
+    q_beam_rot(8) = 0.0;
+
+    // Positional DOFs of the solid.
+    q_solid(0) = 0.04580648387340619;
+    q_solid(1) = 0.02451732788546579;
+    q_solid(2) = -0.0031131666281497;
+    q_solid(3) = 0.923762409575691;
+    q_solid(4) = -0.0106157274667526;
+    q_solid(5) = -0.0141609921026476;
+    q_solid(6) = -0.0944365111054278;
+    q_solid(7) = 1.069973754602123;
+    q_solid(8) = 0.06451121136737775;
+    q_solid(9) = -0.04783899250893692;
+    q_solid(10) = 0.0888801776910401;
+    q_solid(11) = 0.963088029848009;
+    q_solid(12) = 0.4108326210187769;
+    q_solid(13) = -0.06382048551478623;
+    q_solid(14) = 0.0810006716524518;
+    q_solid(15) = 0.4728874772489418;
+    q_solid(16) = 0.4910049605448334;
+    q_solid(17) = -0.07654076843449248;
+    q_solid(18) = 0.0891921101646426;
+    q_solid(19) = 0.5267989315386162;
+    q_solid(20) = -0.03523821168532098;
+    q_solid(21) = 0.05851054670001138;
+    q_solid(22) = -0.04567202467351366;
+    q_solid(23) = 0.4631680679379652;
+    q_solid(24) = 0.5925155012591516;
+    q_solid(25) = 0.02661668312122867;
+    q_solid(26) = 0.4341991229313329;
+    q_solid(27) = -0.006248620475302225;
+    q_solid(28) = 0.4109215888511089;
+    q_solid(29) = 0.4194107884465731;
+
+    // Results for D.
+    result_local_D(0, 0) = 0.05756355583405802;
+    result_local_D(0, 3) = 0.001955220263108095;
+    result_local_D(0, 6) = 0.005745348903101642;
+    result_local_D(0, 9) = -0.0002830518321958758;
+    result_local_D(1, 1) = 0.05756355583405802;
+    result_local_D(1, 4) = 0.001955220263108095;
+    result_local_D(1, 7) = 0.005745348903101642;
+    result_local_D(1, 10) = -0.0002830518321958758;
+    result_local_D(2, 2) = 0.05756355583405802;
+    result_local_D(2, 5) = 0.001955220263108095;
+    result_local_D(2, 8) = 0.005745348903101642;
+    result_local_D(2, 11) = -0.0002830518321958758;
+    result_local_D(3, 0) = 0.004620282991405782;
+    result_local_D(3, 3) = 0.0002830518321958757;
+    result_local_D(3, 6) = 0.06977827920983277;
+    result_local_D(3, 9) = -0.002638102150795207;
+    result_local_D(4, 1) = 0.004620282991405782;
+    result_local_D(4, 4) = 0.0002830518321958757;
+    result_local_D(4, 7) = 0.06977827920983277;
+    result_local_D(4, 10) = -0.002638102150795207;
+    result_local_D(5, 2) = 0.004620282991405782;
+    result_local_D(5, 5) = 0.0002830518321958757;
+    result_local_D(5, 8) = 0.06977827920983277;
+    result_local_D(5, 11) = -0.002638102150795207;
+    result_local_D(6, 0) = 0.1839793570166088;
+    result_local_D(6, 3) = 0.01881461423793542;
+    result_local_D(6, 6) = 0.02734242802628759;
+    result_local_D(6, 9) = -0.00813357387408627;
+    result_local_D(7, 1) = 0.1839793570166088;
+    result_local_D(7, 4) = 0.01881461423793542;
+    result_local_D(7, 7) = 0.02734242802628759;
+    result_local_D(7, 10) = -0.00813357387408627;
+    result_local_D(8, 2) = 0.1839793570166088;
+    result_local_D(8, 5) = 0.01881461423793542;
+    result_local_D(8, 8) = 0.02734242802628759;
+    result_local_D(8, 11) = -0.00813357387408627;
+    result_local_D(9, 0) = 0.04314751020500857;
+    result_local_D(9, 3) = 0.00999650276080791;
+    result_local_D(9, 6) = 0.2247971947249847;
+    result_local_D(9, 9) = -0.0225404720113787;
+    result_local_D(10, 1) = 0.04314751020500857;
+    result_local_D(10, 4) = 0.00999650276080791;
+    result_local_D(10, 7) = 0.2247971947249847;
+    result_local_D(10, 10) = -0.0225404720113787;
+    result_local_D(11, 2) = 0.04314751020500857;
+    result_local_D(11, 5) = 0.00999650276080791;
+    result_local_D(11, 8) = 0.2247971947249847;
+    result_local_D(11, 11) = -0.0225404720113787;
+
+    // Results for M.
+    result_local_M(0, 0) = -0.007265864240329137;
+    result_local_M(0, 3) = -0.004372962221471238;
+    result_local_M(0, 6) = -0.007635186675347714;
+    result_local_M(0, 9) = -0.00535769732751274;
+    result_local_M(0, 12) = 0.00670419626700892;
+    result_local_M(0, 15) = 0.00966849019628169;
+    result_local_M(0, 18) = 0.01397432158241253;
+    result_local_M(0, 21) = 0.01873931014889322;
+    result_local_M(0, 24) = 0.01209072797200314;
+    result_local_M(0, 27) = 0.026763569035221;
+    result_local_M(1, 1) = -0.007265864240329137;
+    result_local_M(1, 4) = -0.004372962221471238;
+    result_local_M(1, 7) = -0.007635186675347714;
+    result_local_M(1, 10) = -0.00535769732751274;
+    result_local_M(1, 13) = 0.00670419626700892;
+    result_local_M(1, 16) = 0.00966849019628169;
+    result_local_M(1, 19) = 0.01397432158241253;
+    result_local_M(1, 22) = 0.01873931014889322;
+    result_local_M(1, 25) = 0.01209072797200314;
+    result_local_M(1, 28) = 0.026763569035221;
+    result_local_M(2, 2) = -0.007265864240329137;
+    result_local_M(2, 5) = -0.004372962221471238;
+    result_local_M(2, 8) = -0.007635186675347714;
+    result_local_M(2, 11) = -0.00535769732751274;
+    result_local_M(2, 14) = 0.00670419626700892;
+    result_local_M(2, 17) = 0.00966849019628169;
+    result_local_M(2, 20) = 0.01397432158241253;
+    result_local_M(2, 23) = 0.01873931014889322;
+    result_local_M(2, 26) = 0.01209072797200314;
+    result_local_M(2, 29) = 0.026763569035221;
+    result_local_M(3, 0) = -0.005833926922450891;
+    result_local_M(3, 3) = 0.00829205539434072;
+    result_local_M(3, 6) = -0.00816440955477965;
+    result_local_M(3, 9) = -0.007617820875386703;
+    result_local_M(3, 12) = 0.01614160143281385;
+    result_local_M(3, 15) = 0.02779673646574168;
+    result_local_M(3, 18) = 0.005182571465685431;
+    result_local_M(3, 21) = 0.005052481541477967;
+    result_local_M(3, 24) = 0.02546010217878683;
+    result_local_M(3, 27) = 0.00808917107500932;
+    result_local_M(4, 1) = -0.005833926922450891;
+    result_local_M(4, 4) = 0.00829205539434072;
+    result_local_M(4, 7) = -0.00816440955477965;
+    result_local_M(4, 10) = -0.007617820875386703;
+    result_local_M(4, 13) = 0.01614160143281385;
+    result_local_M(4, 16) = 0.02779673646574168;
+    result_local_M(4, 19) = 0.005182571465685431;
+    result_local_M(4, 22) = 0.005052481541477967;
+    result_local_M(4, 25) = 0.02546010217878683;
+    result_local_M(4, 28) = 0.00808917107500932;
+    result_local_M(5, 2) = -0.005833926922450891;
+    result_local_M(5, 5) = 0.00829205539434072;
+    result_local_M(5, 8) = -0.00816440955477965;
+    result_local_M(5, 11) = -0.007617820875386703;
+    result_local_M(5, 14) = 0.01614160143281385;
+    result_local_M(5, 17) = 0.02779673646574168;
+    result_local_M(5, 20) = 0.005182571465685431;
+    result_local_M(5, 23) = 0.005052481541477967;
+    result_local_M(5, 26) = 0.02546010217878683;
+    result_local_M(5, 29) = 0.00808917107500932;
+    result_local_M(6, 0) = -0.01579891253932227;
+    result_local_M(6, 3) = -0.03145085777845103;
+    result_local_M(6, 6) = -0.02544398962896501;
+    result_local_M(6, 9) = -0.01963452967110964;
+    result_local_M(6, 12) = 0.01230159291445312;
+    result_local_M(6, 15) = 0.05444029018333145;
+    result_local_M(6, 18) = 0.02650739983669832;
+    result_local_M(6, 21) = 0.03414855586061757;
+    result_local_M(6, 24) = 0.07028880877858722;
+    result_local_M(6, 27) = 0.1059634270870567;
+    result_local_M(7, 1) = -0.01579891253932227;
+    result_local_M(7, 4) = -0.03145085777845103;
+    result_local_M(7, 7) = -0.02544398962896501;
+    result_local_M(7, 10) = -0.01963452967110964;
+    result_local_M(7, 13) = 0.01230159291445312;
+    result_local_M(7, 16) = 0.05444029018333145;
+    result_local_M(7, 19) = 0.02650739983669832;
+    result_local_M(7, 22) = 0.03414855586061757;
+    result_local_M(7, 25) = 0.07028880877858722;
+    result_local_M(7, 28) = 0.1059634270870567;
+    result_local_M(8, 2) = -0.01579891253932227;
+    result_local_M(8, 5) = -0.03145085777845103;
+    result_local_M(8, 8) = -0.02544398962896501;
+    result_local_M(8, 11) = -0.01963452967110964;
+    result_local_M(8, 14) = 0.01230159291445312;
+    result_local_M(8, 17) = 0.05444029018333145;
+    result_local_M(8, 20) = 0.02650739983669832;
+    result_local_M(8, 23) = 0.03414855586061757;
+    result_local_M(8, 26) = 0.07028880877858722;
+    result_local_M(8, 29) = 0.1059634270870567;
+    result_local_M(9, 0) = -0.01925767044768784;
+    result_local_M(9, 3) = -0.004224971595705737;
+    result_local_M(9, 6) = -0.03254707837901769;
+    result_local_M(9, 9) = -0.03239458523881971;
+    result_local_M(9, 12) = 0.04813038368697454;
+    result_local_M(9, 15) = 0.1171392263012487;
+    result_local_M(9, 18) = 0.01982444578585588;
+    result_local_M(9, 21) = 0.01627625127430204;
+    result_local_M(9, 24) = 0.106104635625741;
+    result_local_M(9, 27) = 0.04889406791710205;
+    result_local_M(10, 1) = -0.01925767044768784;
+    result_local_M(10, 4) = -0.004224971595705737;
+    result_local_M(10, 7) = -0.03254707837901769;
+    result_local_M(10, 10) = -0.03239458523881971;
+    result_local_M(10, 13) = 0.04813038368697454;
+    result_local_M(10, 16) = 0.1171392263012487;
+    result_local_M(10, 19) = 0.01982444578585588;
+    result_local_M(10, 22) = 0.01627625127430204;
+    result_local_M(10, 25) = 0.106104635625741;
+    result_local_M(10, 28) = 0.04889406791710205;
+    result_local_M(11, 2) = -0.01925767044768784;
+    result_local_M(11, 5) = -0.004224971595705737;
+    result_local_M(11, 8) = -0.03254707837901769;
+    result_local_M(11, 11) = -0.03239458523881971;
+    result_local_M(11, 14) = 0.04813038368697454;
+    result_local_M(11, 17) = 0.1171392263012487;
+    result_local_M(11, 20) = 0.01982444578585588;
+    result_local_M(11, 23) = 0.01627625127430204;
+    result_local_M(11, 26) = 0.106104635625741;
+    result_local_M(11, 29) = 0.04889406791710205;
+
+    // Results for Kappa.
+    result_local_kappa(0) = 0.06330890473715966;
+    result_local_kappa(1) = 0.06330890473715966;
+    result_local_kappa(2) = 0.06330890473715966;
+    result_local_kappa(3) = 0.07439856220123855;
+    result_local_kappa(4) = 0.07439856220123855;
+    result_local_kappa(5) = 0.07439856220123855;
+    result_local_kappa(6) = 0.2113217850428964;
+    result_local_kappa(7) = 0.2113217850428964;
+    result_local_kappa(8) = 0.2113217850428964;
+    result_local_kappa(9) = 0.2679447049299934;
+    result_local_kappa(10) = 0.2679447049299934;
+    result_local_kappa(11) = 0.2679447049299934;
 
     // Perform the unit tests.
     PerformMortarPairUnitTest(contact_pair, q_beam, q_beam_rot, q_solid, result_local_D,

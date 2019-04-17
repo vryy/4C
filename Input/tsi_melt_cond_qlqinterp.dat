@@ -1,0 +1,315 @@
+// Maintainer: Sebastian Pröll
+==================================================================
+General Data File BACI
+==================================================================
+-----------------------------------------------------------------------TITLE
+- phase and temperature dependent conductivity
+- smoothed quadratic-linear-quadratic interpolation
+- sinusoidal temperature load
+----------------------------------------------------------------PROBLEM SIZE
+//ELEMENTS                      20
+//NODES                         84
+DIM                             3
+--------------------------------------------------------------DISCRETISATION
+NUMSTRUCDIS                     1
+NUMTHERMDIS                     1
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Thermo_Structure_Interaction
+RESTART                         0
+SHAPEFCT                        Polynomial
+--------------------------------------------------------------------------IO
+FILESTEPS                       1000
+OUTPUT_BIN                      Yes
+STRUCT_DISP                     Yes                           // Yes,No,yes,no,YES,NO
+STRUCT_STRAIN                   GL                            // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
+STRUCT_STRESS                   2PK                           // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
+STRUCT_COUPLING_STRESS          2PK                           // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
+THERM_HEATFLUX                  Current                       // None,No,NO,no,Current,Initial
+THERM_TEMPERATURE               Yes                           // Yes,No,yes,no,YES,NO
+THERM_TEMPGRAD                  Current                       // None,No,NO,no,Current,Initial
+THERM_PHASE                     yes
+----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
+ADAPTCONV                       No
+ADAPTCONV_BETTER                0.1
+DIVERCONT                       stop                          // Yes,No,yes,no,YES,NO: Go on with time integration even if Newton-Raphson iteration failed
+DYNAMICTYP                      OneStepTheta                  // Centr_Diff,Gen_EMM,Gen_Alfa,Static,Statics,GenAlpha,OneStepTheta,GEMM,AdamsBashforth2,EulerMaruyama,EulerImpStoch
+ITERNORM                        L2
+LINEAR_SOLVER                   3
+MAXITER                         50
+MINITER                         0
+NLNSOL                          fullnewton                    // vague,fullnewton,lsnewton,oppnewton,modnewton,nlncg,ptc,newtonlinuzawa,augmentedlagrange,NoxNewtonLineSearch,noxgeneral
+NORMCOMBI_RESFDISP              And
+NORM_DISP                       Abs
+NORM_RESF                       Rel                           // Abs,Mix
+PREDICT                         ConstDis                      // Vague,ConstDis,ConstDisVelAcc,TangDis,ConstDisPres,ConstDisVelAccPres
+RESULTSEVRY                     1
+RESEVRYERGY                     0
+RESTARTEVRY                     1
+TOLDISP                         1e-08
+TOLRES                          1e-06
+MAXTIME                         100
+NUMSTEP                         200
+TIMESTEP                        0.5
+YOUNG_IS_TEMP_DEPENDENT         yes
+---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+THETA                           0.5
+-------------------------------------------------------------THERMAL DYNAMIC
+ADAPTCONV                       No
+ADAPTCONV_BETTER                0.1
+DIVERCONT                       stop
+DYNAMICTYP                      OneStepTheta                  // Statics,OneStepTheta
+INITFUNCNO                      1
+INITIALFIELD                    field_by_function
+ITERNORM                        Rms                           // L2,L1,Inf
+LINEAR_SOLVER                   2
+MAXITER                         50
+MINITER                         0
+NLNSOL                          fullnewton                    // vague,fullnewton
+NORMCOMBI_RESFTEMP              And
+NORM_RESF                       Abs                           // Mix,Rel,Abs
+NORM_TEMP                       Abs
+PREDICT                         ConstTemp                     // Vague,ConstTemp,ConstTempRate,TangTemp
+RESULTSEVRY                     1
+RESTARTEVRY                     1
+TOLRES                          1e-05
+TOLTEMP                         1e-08
+MAXTIME                         100
+NUMSTEP                         200
+TIMESTEP                        0.5
+------------------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
+THETA                           0.5
+-----------------------------------------------------------------TSI DYNAMIC
+COUPALGO                        tsi_monolithic                // tsi_iterstagg,tsi_sequstagg,tsi_oneway,tsi_monolithic
+ITEMIN                          1
+ITEMAX                          30                            // 100
+NORM_INC                        Abs                           // Rel
+RESTARTEVRY                     1
+RESULTSEVRY                     1
+MAXTIME                         5
+NUMSTEP                         50
+TIMESTEP                        0.1
+------------------------------------------------------TSI DYNAMIC/MONOLITHIC
+CONVTOL                         1e-05
+TOLINC                          1e-08
+ITERNORM                        Rms                           // Rms,L2,Inf,L1_Scaled
+LINEAR_SOLVER                   1
+NORMCOMBI_RESFINC               Or                            // And,Or,{{Coupl_}And,Or}_Singl
+NORM_RESF                       Rel                           //Abs,Rel,Mix
+--------------------------------------------------------------------SOLVER 1
+AZBDIAG                         0
+AZCONV                          AZ_r0
+AZDROP                          0
+AZGRAPH                         0
+AZITER                          1000
+AZOMEGA                         0
+AZOUTPUT                        0
+AZPOLY                          3
+AZPREC                          BGS2x2                        // ILU
+AZREUSE                         0
+AZSCAL                          none
+AZSOLVE                         GMRES
+AZSUB                           50
+AZTOL                           1e-08
+BGS2X2_FLIPORDER                block0_block1_order
+DWINDTAU                        1.5
+IFPACKCOMBINE                   Add
+IFPACKFILL                      1
+IFPACKGFILL                     0
+IFPACKOVERLAP                   0
+ML_AGG_SIZE                     27
+ML_COARSEN                      UC
+ML_DAMPCOARSE                   1
+ML_DAMPFINE                     1
+ML_DAMPMED                      1
+ML_MAXCOARSESIZE                5000
+ML_MAXLEVEL                     5
+ML_PRINT                        0
+ML_PROLONG_SMO                  0
+ML_PROLONG_THRES                0
+ML_SMOOTHERCOARSE               Umfpack
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOTIMES                     1 1 1 1 1
+NAME                            TSI_MONOLITHIC_SOLVER
+SIMPLE_DAMPING                  1
+SOLVER                          Aztec_MSR
+--------------------------------------------------------------------SOLVER 2
+NAME                            THERMAL SOLVER
+SOLVER                          UMFPACK                       // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
+--------------------------------------------------------------------SOLVER 3
+NAME                            STRUCTURAL SOLVER
+SOLVER                          UMFPACK                       // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 3 YOUNG 1 1 1 YOUNGFUNCT 2 3 4 NUE 0.0 DENS 7850.0 THEXPANS 0 CAPA 3297000.0 CONDUCT 52.0 INITTEMP 300.0 CONSOLMAT 3
+MAT 2 THERM_FourierVar CAPAFUNCT 5 5 5 CONDUCTFUNCT 2 3 4 CONSOLMAT 3
+MAT 3 MAT_Consolidation SOLIDUS 60 LIQUIDUS 80 DELTA 5
+--------------------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION 10
+----------------------------------------------------------------------FUNCT2
+FASTPOLYNOMIAL NUMCOEFF 1 COEFF 10
+----------------------------------------------------------------------FUNCT3
+FASTPOLYNOMIAL NUMCOEFF 1 COEFF 100
+----------------------------------------------------------------------FUNCT4
+FASTPOLYNOMIAL NUMCOEFF 1 COEFF 50
+----------------------------------------------------------------------FUNCT5
+FASTPOLYNOMIAL                  NUMCOEFF 1 COEFF 100
+----------------------------------------------------------------------FUNCT6
+//                                                             // left thermo dirichlet
+COMPONENT                       0 FUNCTION 20*sin(7*t)+70
+----------------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 0 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 5 QUANTITY dispy VALUE 0 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 84 QUANTITY dispz VALUE 0 TOLERANCE 1e-12
+THERMAL DIS thermo NODE 1 QUANTITY temp VALUE 6.14363466100772371e+01 TOLERANCE 1e-12
+THERMAL DIS thermo NODE 5 QUANTITY temp VALUE  6.63964963066336367e+01 TOLERANCE 1e-12
+THERMAL DIS thermo NODE 9 QUANTITY temp VALUE  6.91726806109897012e+01 TOLERANCE 1e-12
+THERMAL DIS thermo NODE 30 QUANTITY temp VALUE  6.86191220245481901e+01 TOLERANCE 1e-12
+THERMAL DIS thermo NODE 60 QUANTITY temp VALUE  3.13902882451685876e+01 TOLERANCE 1e-12
+THERMAL DIS thermo NODE 70 QUANTITY temp VALUE  1.97885290862338188e+01 TOLERANCE 1e-12
+----------------------------------------------------------DESIGN DESCRIPTION
+NDPOINT                         0
+NDLINE                          0
+NDSURF                          3
+NDVOL                           0
+-----------------------------------------------DESIGN SURF DIRICH CONDITIONS
+DSURF                           1
+//                              right
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0 0 0 FUNCT 0 0 0
+----------------------------------------DESIGN SURF THERMO DIRICH CONDITIONS
+DSURF                           2
+//                              left
+E 1 - NUMDOF 1 ONOFF 1 VAL 1 FUNCT 6
+//                              right
+E 2 - NUMDOF 1 ONOFF 1 VAL 10 FUNCT 0
+---------------------------------------------------------DNODE-NODE TOPOLOGY
+---------------------------------------------------------DLINE-NODE TOPOLOGY
+---------------------------------------------------------DSURF-NODE TOPOLOGY
+NODE 1 DSURFACE 1
+NODE 2 DSURFACE 1
+NODE 3 DSURFACE 1
+NODE 4 DSURFACE 1
+NODE 81 DSURFACE 2
+NODE 82 DSURFACE 2
+NODE 83 DSURFACE 2
+NODE 84 DSURFACE 2
+----------------------------------------------------------DVOL-NODE TOPOLOGY
+-----------------------------------------------------------------NODE COORDS
+NODE 1 COORD -5.0000000000000000e+00 -5.0000000000000000e-01 5.0000000000000000e-01
+NODE 2 COORD -5.0000000000000000e+00 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 3 COORD -5.0000000000000000e+00 5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 4 COORD -5.0000000000000000e+00 5.0000000000000000e-01 5.0000000000000000e-01
+NODE 5 COORD -4.9000000000000004e+00 -5.0000000000000000e-01 5.0000000000000000e-01
+NODE 6 COORD -4.9000000000000004e+00 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 7 COORD -4.9000000000000004e+00 5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 8 COORD -4.9000000000000004e+00 5.0000000000000000e-01 5.0000000000000000e-01
+NODE 9 COORD -4.7999999999999998e+00 -5.0000000000000000e-01 5.0000000000000000e-01
+NODE 10 COORD -4.8000000000000007e+00 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 11 COORD -4.7999999999999998e+00 5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 12 COORD -4.8000000000000007e+00 5.0000000000000000e-01 5.0000000000000000e-01
+NODE 13 COORD -4.7000000000000002e+00 -5.0000000000000000e-01 5.0000000000000000e-01
+NODE 14 COORD -4.7000000000000011e+00 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 15 COORD -4.7000000000000002e+00 5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 16 COORD -4.7000000000000011e+00 5.0000000000000000e-01 5.0000000000000000e-01
+NODE 17 COORD -4.5999999999999996e+00 -5.0000000000000000e-01 5.0000000000000000e-01
+NODE 18 COORD -4.6000000000000014e+00 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 19 COORD -4.5999999999999996e+00 5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 20 COORD -4.6000000000000014e+00 5.0000000000000000e-01 5.0000000000000000e-01
+NODE 21 COORD -4.5000000000000000e+00 -5.0000000000000000e-01 5.0000000000000000e-01
+NODE 22 COORD -4.5000000000000000e+00 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 23 COORD -4.5000000000000000e+00 5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 24 COORD -4.5000000000000000e+00 5.0000000000000000e-01 5.0000000000000000e-01
+NODE 25 COORD -4.4000000000000004e+00 -5.0000000000000000e-01 5.0000000000000000e-01
+NODE 26 COORD -4.4000000000000004e+00 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 27 COORD -4.4000000000000004e+00 5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 28 COORD -4.4000000000000004e+00 5.0000000000000000e-01 5.0000000000000000e-01
+NODE 29 COORD -4.2999999999999998e+00 -5.0000000000000000e-01 5.0000000000000000e-01
+NODE 30 COORD -4.3000000000000007e+00 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 31 COORD -4.2999999999999998e+00 5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 32 COORD -4.3000000000000007e+00 5.0000000000000000e-01 5.0000000000000000e-01
+NODE 33 COORD -4.2000000000000002e+00 -5.0000000000000000e-01 5.0000000000000000e-01
+NODE 34 COORD -4.2000000000000011e+00 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 35 COORD -4.2000000000000002e+00 5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 36 COORD -4.2000000000000011e+00 5.0000000000000000e-01 5.0000000000000000e-01
+NODE 37 COORD -4.0999999999999996e+00 -5.0000000000000000e-01 5.0000000000000000e-01
+NODE 38 COORD -4.0999999999999996e+00 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 39 COORD -4.0999999999999996e+00 5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 40 COORD -4.0999999999999996e+00 5.0000000000000000e-01 5.0000000000000000e-01
+NODE 41 COORD -4.0000000000000000e+00 -5.0000000000000000e-01 5.0000000000000000e-01
+NODE 42 COORD -4.0000000000000000e+00 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 43 COORD -4.0000000000000000e+00 5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 44 COORD -4.0000000000000000e+00 5.0000000000000000e-01 5.0000000000000000e-01
+NODE 45 COORD -3.8999999999999999e+00 -5.0000000000000000e-01 5.0000000000000000e-01
+NODE 46 COORD -3.9000000000000004e+00 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 47 COORD -3.8999999999999999e+00 5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 48 COORD -3.9000000000000004e+00 5.0000000000000000e-01 5.0000000000000000e-01
+NODE 49 COORD -3.7999999999999998e+00 -5.0000000000000000e-01 5.0000000000000000e-01
+NODE 50 COORD -3.8000000000000007e+00 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 51 COORD -3.7999999999999998e+00 5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 52 COORD -3.8000000000000007e+00 5.0000000000000000e-01 5.0000000000000000e-01
+NODE 53 COORD -3.7000000000000002e+00 -5.0000000000000000e-01 5.0000000000000000e-01
+NODE 54 COORD -3.7000000000000011e+00 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 55 COORD -3.7000000000000002e+00 5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 56 COORD -3.7000000000000011e+00 5.0000000000000000e-01 5.0000000000000000e-01
+NODE 57 COORD -3.5999999999999996e+00 -5.0000000000000000e-01 5.0000000000000000e-01
+NODE 58 COORD -3.5999999999999996e+00 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 59 COORD -3.5999999999999996e+00 5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 60 COORD -3.5999999999999996e+00 5.0000000000000000e-01 5.0000000000000000e-01
+NODE 61 COORD -3.5000000000000000e+00 -5.0000000000000000e-01 5.0000000000000000e-01
+NODE 62 COORD -3.5000000000000000e+00 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 63 COORD -3.5000000000000000e+00 5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 64 COORD -3.5000000000000000e+00 5.0000000000000000e-01 5.0000000000000000e-01
+NODE 65 COORD -3.3999999999999999e+00 -5.0000000000000000e-01 5.0000000000000000e-01
+NODE 66 COORD -3.4000000000000004e+00 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 67 COORD -3.3999999999999999e+00 5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 68 COORD -3.4000000000000004e+00 5.0000000000000000e-01 5.0000000000000000e-01
+NODE 69 COORD -3.2999999999999998e+00 -5.0000000000000000e-01 5.0000000000000000e-01
+NODE 70 COORD -3.3000000000000007e+00 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 71 COORD -3.2999999999999998e+00 5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 72 COORD -3.3000000000000007e+00 5.0000000000000000e-01 5.0000000000000000e-01
+NODE 73 COORD -3.2000000000000002e+00 -5.0000000000000000e-01 5.0000000000000000e-01
+NODE 74 COORD -3.2000000000000011e+00 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 75 COORD -3.2000000000000002e+00 5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 76 COORD -3.2000000000000011e+00 5.0000000000000000e-01 5.0000000000000000e-01
+NODE 77 COORD -3.0999999999999996e+00 -5.0000000000000000e-01 5.0000000000000000e-01
+NODE 78 COORD -3.0999999999999996e+00 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 79 COORD -3.0999999999999996e+00 5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 80 COORD -3.0999999999999996e+00 5.0000000000000000e-01 5.0000000000000000e-01
+NODE 81 COORD -3.0000000000000000e+00 -5.0000000000000000e-01 5.0000000000000000e-01
+NODE 82 COORD -3.0000000000000000e+00 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 83 COORD -3.0000000000000000e+00 5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 84 COORD -3.0000000000000000e+00 5.0000000000000000e-01 5.0000000000000000e-01
+----------------------------------------------------------STRUCTURE ELEMENTS
+1 SOLIDH8THERMO HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear EAS none
+2 SOLIDH8THERMO HEX8 5 6 7 8 9 10 11 12 MAT 1 KINEM nonlinear EAS none
+3 SOLIDH8THERMO HEX8 9 10 11 12 13 14 15 16 MAT 1 KINEM nonlinear EAS none
+4 SOLIDH8THERMO HEX8 13 14 15 16 17 18 19 20 MAT 1 KINEM nonlinear EAS none
+5 SOLIDH8THERMO HEX8 17 18 19 20 21 22 23 24 MAT 1 KINEM nonlinear EAS none
+6 SOLIDH8THERMO HEX8 21 22 23 24 25 26 27 28 MAT 1 KINEM nonlinear EAS none
+7 SOLIDH8THERMO HEX8 25 26 27 28 29 30 31 32 MAT 1 KINEM nonlinear EAS none
+8 SOLIDH8THERMO HEX8 29 30 31 32 33 34 35 36 MAT 1 KINEM nonlinear EAS none
+9 SOLIDH8THERMO HEX8 33 34 35 36 37 38 39 40 MAT 1 KINEM nonlinear EAS none
+10 SOLIDH8THERMO HEX8 37 38 39 40 41 42 43 44 MAT 1 KINEM nonlinear EAS none
+11 SOLIDH8THERMO HEX8 41 42 43 44 45 46 47 48 MAT 1 KINEM nonlinear EAS none
+12 SOLIDH8THERMO HEX8 45 46 47 48 49 50 51 52 MAT 1 KINEM nonlinear EAS none
+13 SOLIDH8THERMO HEX8 49 50 51 52 53 54 55 56 MAT 1 KINEM nonlinear EAS none
+14 SOLIDH8THERMO HEX8 53 54 55 56 57 58 59 60 MAT 1 KINEM nonlinear EAS none
+15 SOLIDH8THERMO HEX8 57 58 59 60 61 62 63 64 MAT 1 KINEM nonlinear EAS none
+16 SOLIDH8THERMO HEX8 61 62 63 64 65 66 67 68 MAT 1 KINEM nonlinear EAS none
+17 SOLIDH8THERMO HEX8 65 66 67 68 69 70 71 72 MAT 1 KINEM nonlinear EAS none
+18 SOLIDH8THERMO HEX8 69 70 71 72 73 74 75 76 MAT 1 KINEM nonlinear EAS none
+19 SOLIDH8THERMO HEX8 73 74 75 76 77 78 79 80 MAT 1 KINEM nonlinear EAS none
+20 SOLIDH8THERMO HEX8 77 78 79 80 81 82 83 84 MAT 1 KINEM nonlinear EAS none
+--------------------------------------------------------------FLUID ELEMENTS
+----------------------------------------------------------------ALE ELEMENTS
+--------------------------------------------------------LUBRICATION ELEMENTS
+----------------------------------------------------------TRANSPORT ELEMENTS
+---------------------------------------------------------TRANSPORT2 ELEMENTS
+-------------------------------------------------------------THERMO ELEMENTS
+-----------------------------------------------------------ACOUSTIC ELEMENTS
+---------------------------------------------------------------CELL ELEMENTS
+---------------------------------------------------------CELLSCATRA ELEMENTS
+-------------------------------------------------------------------------END
+//                              END

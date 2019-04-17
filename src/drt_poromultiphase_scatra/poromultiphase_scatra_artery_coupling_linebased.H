@@ -86,22 +86,19 @@ namespace POROMULTIPHASESCATRA
     void SetSolutionVectors(Teuchos::RCP<const Epetra_Vector> phinp_cont,
         Teuchos::RCP<const Epetra_Vector> phin_cont, Teuchos::RCP<const Epetra_Vector> phinp_art);
 
+    //! set the element pairs that are close as found by search algorithm
+    void SetNearbyElePairs(const std::map<int, std::set<int>>* nearbyelepairs);
+
     /// init the strategy
     void Init();
+
+    /// setup the strategy
+    void Setup();
 
     /// apply mesh movement (on artery elements)
     void ApplyMeshMovement();
 
    private:
-    //! brute force search for interacting pairs
-    void BruteForceSearch();
-
-    //! compute search radius for brute force search
-    double ComputeSearchRadius();
-
-    //! get maximum nodal distance of an element
-    double GetMaxNodalDistance(DRT::Element* ele, Teuchos::RCP<DRT::Discretization> dis);
-
     //! create interaction pairs
     void CreateCouplingPairs();
 
@@ -166,6 +163,9 @@ namespace POROMULTIPHASESCATRA
     //! fill the vectors
     void FillFunctionAndScaleVectors();
 
+    //! set the right-hand side factor for time integration
+    void SetTimeFacRhs();
+
     //! print out the coupling method
     void PrintOutCouplingMethod() const;
 
@@ -175,8 +175,16 @@ namespace POROMULTIPHASESCATRA
     //! have the managers been set?
     bool porofluidmanagersset_;
 
+    //! has Setup() been called
+    bool issetup_;
+
     //! is it a pure fluid problem
     bool porofluidprob_;
+
+    //! right hand side factor for artery time integration
+    double timefacrhs_art_;
+    //! right hand side factor for time integration of 2D/3D discretization
+    double timefacrhs_cont_;
 
     //! result of brute force search
     std::map<int, std::set<int>> nearbyelepairs_;

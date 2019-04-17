@@ -46,8 +46,6 @@
                      */
 #define MESHMOVEMENTMAXITER 10 /* max number of steps for local Newton (mesh movement) */
 // default: 10
-#define BRUTEFORCESAFETY 1.4 /* safety factor for brute force search */
-// default: 1.4
 #define MAXNUMSEGPERELE 7 /* maximum number of segments per artery element */
 // default: 5
 #endif /* SRC_DRT_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_DEFINES_H_ */

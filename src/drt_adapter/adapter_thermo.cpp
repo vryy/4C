@@ -187,44 +187,31 @@ void ADAPTER::ThermoBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& prb
  *----------------------------------------------------------------------*/
 void ADAPTER::Thermo::Integrate()
 {
-  // loop ahead
   while (NotFinished())
   {
     // call the predictor
     PrepareTimeStep();
 
     // integrate time step
-    Solve();
+    INPAR::THR::ConvergenceStatus convStatus = Solve();
 
-    // update
-    Update();
-
-    // print step summary
-    PrintStep();
-
-    //    // older version talk to user
-    //    fprintf(stdout,
-    //            "Finalised: step %6d"
-    //            " | nstep %6d"
-    //            " | time %-14.8E"
-    //            " | dt %-14.8E\n",
-    //            step, stepend, time, timestepsize);
-    //    // print a beautiful line made exactly of 80 dashes
-    //    fprintf(stdout,
-    //            "--------------------------------------------------------------"
-    //            "------------------\n");
-    //    // do it, print now!
-    //    fflush(stdout);
-
-    // talk to disk
-    Output();
+    switch (convStatus)
+    {
+      case INPAR::THR::conv_success:
+        Update();
+        PrintStep();
+        Output();
+        break;
+      case INPAR::THR::conv_fail_repeat:
+        // do not update and output but try again
+        continue;
+      default:
+        // no other convergence status can be handled at this point, abort
+        dserror("Solver failed.");
+    }
   }
-
   // print monitoring of time consumption
   Teuchos::TimeMonitor::summarize();
-
-  // Jump you f***ers
-  return;
 }  // Integrate()
 
 

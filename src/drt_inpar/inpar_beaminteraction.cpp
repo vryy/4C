@@ -156,10 +156,11 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
 
   setStringToIntegralParameter<BeamToSolidVolumeContactDiscretization>("CONTACT_DISCRETIZATION",
       "none", "Type of employed contact discretization",
-      tuple<std::string>("none", "gauss_point_to_segment", "mortar"),
+      tuple<std::string>("none", "gauss_point_to_segment", "mortar", "gauss_point_cross_section"),
       tuple<BeamToSolidVolumeContactDiscretization>(BeamToSolidVolumeContactDiscretization::none,
           BeamToSolidVolumeContactDiscretization::gauss_point_to_segment,
-          BeamToSolidVolumeContactDiscretization::mortar),
+          BeamToSolidVolumeContactDiscretization::mortar,
+          BeamToSolidVolumeContactDiscretization::gauss_point_cross_section),
       &beam_to_solid_volume_mestying);
 
   setStringToIntegralParameter<BeamToSolidVolumeConstraintEnforcement>("CONSTRAINT_STRATEGY",
@@ -171,16 +172,23 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
 
   setStringToIntegralParameter<BeamToSolidVolumeMortarShapefunctions>("MORTAR_SHAPE_FUNCTION",
       "none", "Shape function for the mortar Lagrange-multiplicators",
-      tuple<std::string>("none", "line2", "line3"),
+      tuple<std::string>("none", "line2", "line3", "line4"),
       tuple<BeamToSolidVolumeMortarShapefunctions>(BeamToSolidVolumeMortarShapefunctions::none,
           BeamToSolidVolumeMortarShapefunctions::line2,
-          BeamToSolidVolumeMortarShapefunctions::line3),
+          BeamToSolidVolumeMortarShapefunctions::line3,
+          BeamToSolidVolumeMortarShapefunctions::line4),
       &beam_to_solid_volume_mestying);
 
   DoubleParameter("PENALTY_PARAMETER", 0.0, "Penalty parameter for beam-to-solid volume meshtying",
       &beam_to_solid_volume_mestying);
 
   IntParameter("GAUSS_POINTS", 6, "Number of Gauss Points for the integral evaluations",
+      &beam_to_solid_volume_mestying);
+
+  IntParameter("INTEGRATION_POINTS_CIRCUMFENCE", 6,
+      "Number of Integration points along the circumfencial direction of the beam. This is "
+      "parameter is only used in beam to cylinder meshtying. No gauss integration is "
+      "used along the circumfencial direction, equally spaced integration points are used.",
       &beam_to_solid_volume_mestying);
 
   // ...

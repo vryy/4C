@@ -30,7 +30,6 @@
 #include <Epetra_Comm.h>
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
 /*---------------------------------------------------------------------------*
@@ -51,8 +50,9 @@ namespace BINSTRATEGY
 
 namespace IO
 {
+  class DiscretizationWriter;
   class DiscretizationReader;
-}
+}  // namespace IO
 
 /*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 03/2018 |
@@ -143,8 +143,20 @@ namespace PARTICLEENGINE
     //! get reference to potential particle neighbors
     const PotentialParticleNeighbors& GetPotentialParticleNeighbors() const override;
 
+    //! get reference to particles being communicated to target processors
+    const std::vector<std::vector<int>>& GetCommunicatedParticleTargets() const override
+    {
+      return communicatedparticletargets_;
+    };
+
     //! get local index in specific particle container
     const LocalIndexTupleShrdPtr GetLocalIndexInSpecificContainer(int globalid) const override;
+
+    //! get bin discretization writer
+    const std::shared_ptr<IO::DiscretizationWriter> GetBinDiscretizationWriter() const override;
+
+    //! relate all particles to all processors
+    void RelateAllParticlesToAllProcs(std::vector<int>& particlestoproc) const override;
 
     //! return bin size
     const double* BinSize() const override;
@@ -203,6 +215,9 @@ namespace PARTICLEENGINE
     //! setup particle runtime vtp writer
     void SetupParticleVtpWriter() const;
 
+    //! setup particle type weights for dynamic load balancing
+    void SetupTypeWeights();
+
     //! determine bin distribution dependent maps/sets
     void DetermineBinDisDependentMapsAndSets();
 
@@ -218,11 +233,11 @@ namespace PARTICLEENGINE
     //! determine particles that need to be distributed
     void DetermineParticlesToBeDistributed(std::vector<ParticleObjShrdPtr>& particlestodistribute,
         std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend,
-        std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestokeep) const;
+        std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestokeep);
 
     //! determine particles that need to be transfered
     void DetermineParticlesToBeTransfered(std::vector<std::set<int>>& particlestoremove,
-        std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend) const;
+        std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend);
 
     //! determine particles that need to be ghosted
     void DetermineParticlesToBeGhosted(
@@ -306,6 +321,9 @@ namespace PARTICLEENGINE
     //! vector of bin weights
     Teuchos::RCP<Epetra_MultiVector> binweights_;
 
+    //! vector of particle type weights for dynamic load balancing
+    std::vector<double> typeweights_;
+
     //! particle container bundle
     ParticleContainerBundleShrdPtr particlecontainerbundle_;
 
@@ -317,6 +335,9 @@ namespace PARTICLEENGINE
 
     //! relate potential particle neighbors of all types and statuses
     PotentialParticleNeighbors potentialparticleneighbors_;
+
+    //! owned particles being communicated (transfered/distributed) to target processors
+    std::vector<std::vector<int>> communicatedparticletargets_;
 
     //! maps particle global ids to local index in specific particle container
     std::unordered_map<int, LocalIndexTupleShrdPtr> globalidtolocalindex_;

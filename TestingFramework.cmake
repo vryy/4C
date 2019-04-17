@@ -102,21 +102,23 @@ macro (baci_test_Nested_Par_CopyDat_prepost arg1 arg2 arg3 arg4 arg5 restart)
 endmacro (baci_test_Nested_Par_CopyDat_prepost)
 
 
-# FRAMEWORK TESTS
-macro (baci_framework_test arg nproc)
-  set (RUNCUBIT ${CUBIT_DIR}/cubit\ -batch\ -nographics\ -nojournal\ ${PROJECT_SOURCE_DIR}/tests/framework-test/${arg}.jou)
-  set (RUNPREEXODUS ./pre_exodus\ --exo=xxx_${arg}.e\ --bc=${PROJECT_SOURCE_DIR}/tests/framework-test/${arg}.bc\ --head=${PROJECT_SOURCE_DIR}/tests/framework-test/${arg}.head\ --dat=xxx.dat)
-  set (RUNBACI ${MPI_RUN}\ -np\ ${nproc}\ $<TARGET_FILE:${baciname}>\ xxx.dat\ xxx)
-  set (RUNPOSTFILTER ${MPI_RUN}\ -np\ ${nproc}\ ./post_drt_ensight\ --file=xxx)
-
-  add_test(NAME ${arg}-p${nproc}-fw
+# FRAMEWORK TESTS - testing the whole framework: from cubit via pre_exodus and baci to the post-filter
+macro (baci_framework_test testname nproc xmlfilename)
+  set (RUNCUBIT ${CUBIT_DIR}/cubit\ -batch\ -nographics\ -nojournal\ ${PROJECT_SOURCE_DIR}/tests/framework-test/${testname}.jou) # cubit is run to generate an exo file
+  set (RUNPREEXODUS ./pre_exodus\ --exo=xxx_${testname}.e\ --bc=${PROJECT_SOURCE_DIR}/tests/framework-test/${testname}.bc\ --head=${PROJECT_SOURCE_DIR}/tests/framework-test/${testname}.head\ --dat=xxx.dat) # pre_exodus is run to generate a Dat file
+  if (NOT ${xmlfilename} STREQUAL "")
+    file(COPY ${PROJECT_SOURCE_DIR}/Input/${xmlfilename} DESTINATION ./) # if a XML file name is given, it is copied from the baci input directory to the build directory
+  endif(NOT ${xmlfilename} STREQUAL "")
+  set (RUNBACI ${MPI_RUN}\ -np\ ${nproc}\ $<TARGET_FILE:${baciname}>\ xxx.dat\ xxx) # baci is run using the generated dat file
+  set (RUNPOSTFILTER ${MPI_RUN}\ -np\ ${nproc}\ ./post_drt_ensight\ --file=xxx) # post_drt_ensight is run for the resulting output
+  add_test(NAME ${testname}-p${nproc}-fw
   COMMAND sh -c "${RUNCUBIT} && ${RUNPREEXODUS} && ${RUNBACI} && ${RUNPOSTFILTER}")
 
 # note: for the clean-up job in the end, every generated intermediate file has to start with "xxx"
 
-  set_tests_properties ( ${arg}-p${nproc}-fw PROPERTIES TIMEOUT 1000 )
-  set_tests_properties ( ${arg}-p${nproc}-fw PROPERTIES FAIL_REGULAR_EXPRESSION "ERROR:; ERROR ;Error " )
-  set_tests_properties ( ${arg}-p${nproc}-fw PROPERTIES ENVIRONMENT "PATH=$ENV{PATH}" )
+  set_tests_properties ( ${testname}-p${nproc}-fw PROPERTIES TIMEOUT 1000 )
+  set_tests_properties ( ${testname}-p${nproc}-fw PROPERTIES FAIL_REGULAR_EXPRESSION "ERROR:; ERROR ;Error " )
+  set_tests_properties ( ${testname}-p${nproc}-fw PROPERTIES ENVIRONMENT "PATH=$ENV{PATH}" )
 
 endmacro (baci_framework_test)
 
@@ -263,6 +265,8 @@ baci_test(beam3eb_genalpha_BTB_contact_elstat_attraction_twocrossedbeams_FAD 2 "
 baci_test(beam3eb_genalpha_BTSPH_contact_elstat_attraction 2 80)
 baci_test(beam3eb_genalpha_lineload_dynamic 2 "")
 result_file(beam3eb_genalpha_lineload_dynamic 2 energy xxx_energy.csv beam3eb_genalpha_lineload_dynamic_energy.csv)
+baci_test(beam3eb_static_beam_to_solid_volume_meshtying_hex27_cross_section_projection_penalty_bending 2 "")
+baci_test(beam3eb_static_beam_to_solid_volume_meshtying_hex27_cross_section_projection_penalty_patch 2 "")
 baci_test(beam3eb_static_contact_beamtosolidcontact_solidcontact 2 "")
 baci_test(beam3eb_static_contact_penalty_newgap_twocrossedbeams 2 "")
 baci_test(beam3eb_static_contact_penalty_linpen_limitdispperiter_twobeamstwisting 2 "")
@@ -283,6 +287,7 @@ baci_test(beam3r_herm2lin3_static_beam_to_solid_volume_meshtying_beam_in_solid_c
 baci_test(beam3r_herm2lin3_static_beam_to_solid_volume_meshtying_beam_in_solid_column_with_boundary_segmentation 2 "")
 baci_test(beam3r_herm2lin3_static_beam_to_solid_volume_meshtying_mortar_penalty_line2 3 "")
 baci_test(beam3r_herm2lin3_static_beam_to_solid_volume_meshtying_mortar_penalty_line3 3 "")
+baci_test(beam3r_herm2lin3_static_beam_to_solid_volume_meshtying_mortar_penalty_line4 3 "")
 baci_test(beam3r_herm2lin3_static_contact_penalty_linpen_twobeamstwisting 2 "")
 baci_test(beam3r_herm2lin3_static_contact_penalty_linposquadpen_beamrotatingoverarc 2 "")
 baci_test(beam3r_herm2lin3_static_crosslinking_beam3rlin2_linkedcantilevers_endload 2 5)
@@ -694,6 +699,7 @@ baci_test(elemag_hex_cube 2 "" minimal)
 baci_test_restartonly(elemag_hex_cube_restart 2 5) #this one MUST be placed behind test case 'elemag_hex_cube'
 baci_test(elemag_tet_cube 2 "")
 baci_test_restartonly(elemag_tet_cube_restart 2 10) #this one MUST be placed behind test case 'elemag_tet_cube'
+baci_test(elemag_abc_sphere 2 "")
 baci_test(f2_channel20x20_drt_weak 2 "")
 baci_test(f2_channel20x20_drt_mixhyb 1 "")
 baci_test(f2_channel20x20_drt_mixhyb 2 8)
@@ -1056,6 +1062,8 @@ baci_test(particle_nointer_3d_pbc_x_gravity_velocityverlet_initrandomnoise 4 800
 baci_test(particle_nointer_3d_pbc_x_initvel_velocityverlet_viscdamp 4 800)
 baci_test(particle_nointer_3d_pbc_x_initvel_velocityverlet 4 800)
 baci_test(particle_nointer_3d_pbc_xyz_initvel_velocityverlet 4 800 minimal)
+baci_test(particle_nointer_3d_pbc_x_wallboundingbox 4 300)
+baci_test(particle_nointer_3d_nopbc_walldiscretcond_nonmoving 4 300)
 baci_test(particle_dem_1d_normalcontact_linspring_stiffauto 2 500)
 baci_test(particle_dem_1d_normalcontact_linspring_stiffset 2 500)
 baci_test(particle_dem_1d_normalcontact_linspringdamp_stiffset 2 500)
@@ -1063,6 +1071,8 @@ baci_test(particle_dem_1d_normalcontact_nonlinearhertz_stiffset 2 500)
 baci_test(particle_dem_1d_normalcontact_nonlinearkuwabarakono_stiffset 2 500)
 baci_test(particle_dem_1d_normalcontact_nonlinearleeherrmann_stiffset 2 500)
 baci_test(particle_dem_1d_normalcontact_nonlineartsuji_stiffset 2 500)
+baci_test(particle_dem_2d_tangentialcontact_linspringdamp 2 450)
+baci_test(particle_dem_2d_tangentialcontact_linspringdamp_dense 3 500)
 baci_test(particle_dem_3d_normalcontact_linspringdamp 2 2000)
 baci_test(particle_sph_1d_hydrostatic_freesurface_densityintegration_cubicspline_adami 2 2000)
 baci_test(particle_sph_1d_hydrostatic_freesurface_densityintegration_cubicspline_monaghan 2 2000)
@@ -1187,8 +1197,11 @@ baci_test(poromultielastscatra_2D_quad4_nodal_artery_coupling_part 2 8)
 baci_test(poromultielastscatra_2D_quad4_linebased_artery_coupling_mono 2 9)
 baci_test(poromultielastscatra_2D_quad4_linebased_artery_coupling_mono_MP 2 8)
 baci_test(poromultielastscatra_2D_quad4_linebased_artery_coupling_mono_GPTS 2 8)
+baci_test(poromultielastscatra_2D_quad4_haptotaxis 2 4)
+baci_test(poromultielastscatra_2D_quad4_hyperthermia 2 4)
 baci_test(poromultielastscatra_3D_hex8_linebased_artery_coupling_mono_GPTS 3 9)
 baci_test(poromultielastscatra_3D_hex8_linebased_artery_coupling_part_MP 3 4)
+baci_test(poromultielastscatra_3D_hex8_linebased_artery_coupling_mono_network 4 1)
 baci_test(porofluidmulti_2D_quad4_FD 1 "" minimal)
 baci_test(poro_2D_contact_closed_bound 2 "")
 baci_test(poro_2D_quad4_linporo 2 "")
@@ -1521,6 +1534,9 @@ baci_test(thermo3D_meshtying_nurbs 2 "" minimal)
 baci_test(thermoconvection_Tempn 2 "")
 baci_test(thermoconvection_Tempnp 2 "")
 baci_test(thermoconvection_tempnp_genalpha 1 "")
+baci_test(thermo_melt_appcapa_qlq 2 "")
+baci_test(thermo_melt_heatint_enthparams 2 "")
+baci_test(thermo_melt_appcapa_qlq_tadapt 2 "")
 baci_test(thickcant_hex 2 "")
 baci_test(thickcant_tet4 2 "")
 baci_test(topopt_1in2out_1step_adj 2 "")
@@ -1609,6 +1625,8 @@ baci_test(tsi_plastic_ssn_necking_eas 2 50)
 baci_test(tsi_plastic_ssn_necking_fbar 2 "")
 baci_test(tsi_plastic_ssn_necking_fbar_TQ 2 "")
 baci_test(tsi_meshtying_nurbs 2 "")
+baci_test(tsi_melt_cond_lininterp 2 "")
+baci_test(tsi_melt_cond_qlqinterp 2 "")
 baci_test(uq_art_aorta_2D_lognorm_field 1 "")
 baci_test(uq_art_aorta_3D_lognorm_field_FFT 1 "")
 # some uq test cases using Gaussian random numbers from Boost Random libraries
@@ -2004,9 +2022,9 @@ baci_test(activefiber_rectangle_cell_dirich_h8 2 "")
 
 
 # testing the whole framework: from cubit via pre_exodus and baci to the post-filter:
-baci_framework_test(tutorial_fluid 2)
-baci_framework_test(tutorial_fsi 2)
-baci_framework_test(tutorial_fsi_3d 2)
+baci_framework_test(tutorial_fluid 2 "")
+baci_framework_test(tutorial_fsi 2 "")
+baci_framework_test(tutorial_fsi_3d 2 fsi_part_struct_solver.xml)
 
 # cut test
 cut_test(2)

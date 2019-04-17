@@ -6,7 +6,7 @@
 
 \level 2
 
-\maintainer Andy Wirtz
+\maintainer Matthias Mayr
 */
 /*--------------------------------------------------------------------------*/
 #ifndef SRC_DRT_ALE_ALE_MESHTYING_H_

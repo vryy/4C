@@ -75,6 +75,7 @@ CUTTYPE               tessellation
 MESH_INIT             no
 KEEP_EXTENDEDGHOSTING yes
 ------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY          Standard
 DYNAMICTYP            GenAlpha
 LINEAR_SOLVER         1
 NLNSOL                fullnewton

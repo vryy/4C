@@ -30,6 +30,7 @@ MAXTIME                         2.5
 GRAVITY_ACCELERATION            0.0 0.0 0.0
 GRAVITY_RAMP_FUNCT              -1
 TRANSFER_EVERY                  no
+PHASE_TO_DYNLOADBALFAC          phase1 1.0 rigidphase 1.0 boundaryphase 1.0
 PHASE_TO_MATERIAL_ID            phase1 1 rigidphase 2 boundaryphase 3
 ----------------------------PARTICLE DYNAMIC/INITIAL AND BOUNDARY CONDITIONS
 TEMPERATURE_BOUNDARY_CONDITION  boundaryphase 1

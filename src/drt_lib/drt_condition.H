@@ -283,6 +283,7 @@ namespace DRT
       CellFocalAdhesion,
       ScatraHeteroReactionCondMaster,
       ScatraHeteroReactionCondSlave,
+      SilverMueller,
       ElementTag,
       NodeTag
     };

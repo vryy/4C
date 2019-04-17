@@ -7,10 +7,7 @@
 \level 1
 
 <pre>
-\maintainer Lena Wiechert
-            yoshihara@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15303
+\maintainer Fabian Braeu
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -75,6 +72,7 @@
 #include "plastic_VarConstUpdate.H"
 #include "cnst_1d_art.H"
 #include "fourieriso.H"
+#include "fouriervar.H"
 #include "soret.H"
 #include "membrane_elasthyper.H"
 #include "membrane_active_strain.H"
@@ -348,6 +346,22 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
         curmat->SetParameter(new MAT::PAR::ScatraMatMultiPoroVolFrac(curmat));
       MAT::PAR::ScatraMatMultiPoroVolFrac* params =
           static_cast<MAT::PAR::ScatraMatMultiPoroVolFrac*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_scatra_multiporo_solid:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::ScatraMatMultiPoroSolid(curmat));
+      MAT::PAR::ScatraMatMultiPoroSolid* params =
+          static_cast<MAT::PAR::ScatraMatMultiPoroSolid*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_scatra_multiporo_temperature:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::ScatraMatMultiPoroTemperature(curmat));
+      MAT::PAR::ScatraMatMultiPoroTemperature* params =
+          static_cast<MAT::PAR::ScatraMatMultiPoroTemperature*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_scatra_bondreac:
@@ -944,6 +958,18 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     {
       if (curmat->Parameter() == NULL) curmat->SetParameter(new MAT::PAR::FourierIso(curmat));
       MAT::PAR::FourierIso* params = static_cast<MAT::PAR::FourierIso*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_th_fourier_var:
+    {
+      if (curmat->Parameter() == NULL) curmat->SetParameter(new MAT::PAR::FourierVar(curmat));
+      MAT::PAR::FourierVar* params = static_cast<MAT::PAR::FourierVar*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_consolidation:
+    {
+      if (curmat->Parameter() == NULL) curmat->SetParameter(new MAT::PAR::Consolidation(curmat));
+      MAT::PAR::Consolidation* params = static_cast<MAT::PAR::Consolidation*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_soret:

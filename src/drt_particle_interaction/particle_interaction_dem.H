@@ -33,6 +33,7 @@
 namespace PARTICLEINTERACTION
 {
   class DEMNeighborPairs;
+  class DEMHistoryPairs;
   class DEMContact;
 }  // namespace PARTICLEINTERACTION
 
@@ -55,7 +56,8 @@ namespace PARTICLEINTERACTION
 
     //! setup particle interaction handler
     virtual void Setup(
-        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
+        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
+        const std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface);
 
     //! write restart of particle interaction handler
     virtual void WriteRestart(const int step, const double time) const;
@@ -77,6 +79,12 @@ namespace PARTICLEINTERACTION
     //! maximum interaction distance (on this processor)
     virtual double MaxInteractionDistance() const override;
 
+    //! distribute interaction history
+    virtual void DistributeInteractionHistory() const override;
+
+    //! communicate interaction history
+    virtual void CommunicateInteractionHistory() const override;
+
     //! set current step size
     virtual void SetCurrentStepSize(const double currentstepsize);
 
@@ -84,13 +92,16 @@ namespace PARTICLEINTERACTION
     //! init neighbor pair handler
     virtual void InitNeighborPairHandler();
 
+    //! init history pair handler
+    virtual void InitHistoryPairHandler();
+
     //! init contact handler
     virtual void InitContactHandler();
 
-    //! clear force state of particles
-    virtual void ClearForceState() const;
+    //! clear force and moment states of particles
+    virtual void ClearForceAndMomentStates() const;
 
-    //! compute acceleration from force
+    //! compute acceleration from force and moment
     virtual void ComputeAcceleration() const;
 
     //! discrete element method specific parameter list
@@ -98,6 +109,9 @@ namespace PARTICLEINTERACTION
 
     //! neighbor pair handler
     std::shared_ptr<PARTICLEINTERACTION::DEMNeighborPairs> neighborpairs_;
+
+    //! history pair handler
+    std::shared_ptr<PARTICLEINTERACTION::DEMHistoryPairs> historypairs_;
 
     //! contact handler
     std::unique_ptr<PARTICLEINTERACTION::DEMContact> contact_;
