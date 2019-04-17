@@ -133,5 +133,4 @@ Our Git-hooks check for compliant file-maintainers in source and input files and
     1. Create a personal access token for your Baci Gitlab repository as described in the [gitlab documentation](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html)
     1. Download the list of all members of the **baci_developers** group using the command
 `curl -H "Private-Token: <Token>" "https://gitlab.lrz.de/api/v4/groups/13552/members/all?per_page=100&page=1" > baci_developers.json`
-    1. If necessary, add compliant file-maintainers manually (e.g. future co-workers who do not have a Gitlab account, yet)
     1. Commit and merge the changes in `utilities/git_hooks/baci_developers.json`
