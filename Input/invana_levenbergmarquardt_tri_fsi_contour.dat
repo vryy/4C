@@ -21,25 +21,17 @@ NUMAIRWAYSDIS                   1
 PROBLEMTYP                      Inverse_Analysis//Fluid_Structure_Interaction, Inverse_Analysis
 RESTART                         0
 --------------------------------------------------------------------------IO
-STRUCT_STRESS                   Cauchy
-OUTPUT_BIN                      no//yes, no
+OUTPUT_BIN                      no
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      OneStepTheta//Statics,GenAlpha,OneStepTheta
+DYNAMICTYP                      OneStepTheta
 NLNSOL                          fullnewton
 PREDICT                         ConstDis
 TIMESTEP                        2.0
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          TrLike
-BETA                            0.5
-GAMMA                           1.0
-ALPHA_M                         0.1
-ALPHA_F                         0.1
----------------------------------------------------INVERSE ANALYSIS
+------------------------------------------------------------INVERSE ANALYSIS
 INV_ANALYSIS                    gen
-//SPECIAL_INV_ANALYSIS            none
 INV_ANA_TOL                     0.00001
 INV_ANA_MAX_RUN                 3
 INV_ALPHA                       0.0
@@ -54,47 +46,44 @@ FORWARD_PROBLEMTYP              Fluid_Structure_Interaction//Structure, Fluid_St
 MEASUREMENT_TYPE                points //points, dofs
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
-TIMEINTEGR                      One_Step_Theta//Stationary,One_Step_Theta
+TIMEINTEGR                      One_Step_Theta
 THETA                           1.0
-NONLINITER                      Newton // fixed_point_like
+NONLINITER                      Newton
 PHYSICAL_TYPE                   Incompressible //Stokes
 TIMESTEP                        2.0
 NONLINEARBC                     yes
 PREDICTOR                       steady_state//constant_acceleration
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
-//TDS                             quasistatic
-DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall //Hughes_Franca_Balestra_wo_dt//
+DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 CHARELELENGTH_PC                root_of_volume
 TRANSIENT                       no_transient
-SUPG                            yes  //no
+SUPG                            yes
 PSPG                            yes
-VSTAB                           no_vstab // vstab_gls
+VSTAB                           no_vstab
 GRAD_DIV                        yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   1
 ALE_TYPE                        solid //solid_linear
-UPDATEMATRIX                    yes // no
+UPDATEMATRIX                    yes
 TIMESTEP                        2.0
 -----------------------------------------------------------------FSI DYNAMIC
-MAXTIME                         8.0 //20 wieder zurück
+MAXTIME                         8.0
 TIMESTEP                        2.0
 NUMSTEP                         10
 RESULTSEVRY                     1
 RESTARTEVRY                     10
 COUPALGO                        iter_monolithicfluidsplit//iter_stagg_AITKEN_rel_param,iter_monolithicfluidsplit,iter_monolithicstructuresplit
-//PREDICTOR                       d(n)+dt*v(n)+0.5*dt^2*a(n)
-SECONDORDER                     no//yes,no
+SECONDORDER                     no
 VERBOSITY                       subproblem//full,low
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
-//ADAPTIVEDIST                    0.001
 BASETOL                         1.0e-12
 CONVTOL                         1.0e-12
 ITEMAX                          40
 LINEARBLOCKSOLVER               PreconditionedKrylov//PreconditionedKrylov,FSIAMG
-SHAPEDERIVATIVES                Yes//No
+SHAPEDERIVATIVES                Yes
 TOL_DIS_INC_INF                 1e-4
 TOL_DIS_INC_L2                  1e-4
 TOL_DIS_RES_INF                 1e-6
@@ -113,15 +102,13 @@ TOL_VEL_RES_INF                 1e-6
 TOL_VEL_RES_L2                  1e-6
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
-//-----------------------------------------------------UMFPACK SOLVER
-//VERBOSITY                       10
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.001 DENSITY 0.001
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 0.001
 MAT 3 ELAST_CoupNeoHooke YOUNG 1500 NUE 0.4
 MAT 4 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 1.0
 --------------------------------------------------------CLONING MATERIAL MAP
-SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2 // 2 wenn negative jacobian, 4 sonst
+SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 10*(y-1)*(1-cos(t*pi))
 ----------------------------------------------------------------------FUNCT2
@@ -137,10 +124,6 @@ DPOINT 2
 E 1 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // FSI_pr_fluid
 E 2 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
-// FSI_pl_bf
-//E 3 - NUMDOF 2 ONOFF 0 0 VAL 0.0 0.0 FUNCT 0 0
-// FSI_pr_bf
-//E 4 - NUMDOF 2 ONOFF 0 0 VAL 0.0 0.0 FUNCT 0 0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  6
 // inflow
@@ -398,13 +381,5 @@ NODE        70 COORD  1.1050828127543824e+00  5.5361898486398131e-01  0.00000000
    88 FLUID TRI3  24 23 25    MAT 1 NA ALE
    89 FLUID TRI3  8 16 3    MAT 1 NA ALE
    90 FLUID TRI3  15 7 3    MAT 1 NA ALE
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------LUBRICATION ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
-------------------------------------------------TRANSPORT2 ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------ACOUSTIC ELEMENTS
----------------------------------------------------CELL ELEMENTS
----------------------------------------------------CELLSCATRA ELEMENTS
 ---------------------------------------------------------------END
 // END

@@ -309,9 +309,9 @@ void STR::GenInvAnalysis::Integrate()
       std::cout << "#################################################################" << std::endl;
       std::cout << "########################### making Jacobian matrix ##############" << std::endl;
       std::cout << "#################################################################" << std::endl;
-      printf("Measured parameters nmp_ %d # parameters to fit np_ %d\n", nmp_, np_);
+      printf("Measured points nmp_= %d # parameters to fit np_= %d\n", nmp_, np_);
     }
-    std::cout << "p_: " << p_ << std::endl;
+
     // perturbation of material parameter (should be relative to the value that is perturbed)
     std::vector<double> perturb(np_, 0.0);
     double alpha = iap.get<double>("INV_ALPHA");

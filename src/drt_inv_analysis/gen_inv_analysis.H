@@ -145,7 +145,7 @@ namespace STR
 
     int problem_type_;  // Neumann or Dirichlet Problem
     int np_;            // number of fitted parameters (default 3, 4 with kappa)
-    int nmp_;           // total number of measured dofs
+    int nmp_;           // total number of measured dofs or points
 
     /// forward problem type given in dat-file FORWARD_PROBLEMTYP
     PROBLEM_TYP forward_prb_type_;
