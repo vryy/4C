@@ -871,6 +871,13 @@ namespace INPAR
   {
   }  // namespace MLMC
 
+  /*! \brief Input parameters for model order reduction
+   *
+   */
+  namespace MOR
+  {
+  }  // namespace MOR
+
   /*! \brief Input parameters for mortar coupling
    *
    */
@@ -1922,6 +1929,12 @@ namespace UQ
  */
 namespace UTILS
 {
+  /*! \brief Utilities for model order reduction
+   *
+   */
+  namespace MOR
+  {
+  }  // namespace MOR
 }  // namespace UTILS
 
 /*! \brief Algorithms for volumetric mortar coupling

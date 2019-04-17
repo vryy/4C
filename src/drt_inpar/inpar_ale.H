@@ -55,7 +55,7 @@ namespace INPAR
       meshsliding
     };
 
-    /// Defines all valid parameters for acou problem
+    /// Defines all valid parameters for ale problem
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /// Defines ale specific conditions

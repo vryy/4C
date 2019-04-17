@@ -18,6 +18,7 @@
 #include "drt_elementreader.H"
 #include "standardtypes_cpp.H"
 #include "drt_elementdefinition.H"
+#include "drt_globalproblem.H"
 #include "drt_utils_parmetis.H"
 #include "drt_utils_factory.H"
 #include "drt_utils_parallel.H"
@@ -376,6 +377,9 @@ namespace DRT
       numnodes = (int)nodes_.size();
       comm_->Broadcast(&numnodes, 1, 0);
 
+      const double imbalance_tol =
+          DRT::Problem::Instance()->MeshPartitioningParams().get<double>("IMBALANCE_TOL");
+
       // We want to be able to read empty fields. If we have such a beast
       // just skip the partitioning.
       if (numnodes)
@@ -385,8 +389,8 @@ namespace DRT
         rownodes_ = Teuchos::null;
         colnodes_ = Teuchos::null;
         nids.clear();
-        DRT::UTILS::PartUsingParMetis(
-            dis_, roweles_, rownodes_, colnodes_, comm_, !reader_.MyOutputFlag());
+        DRT::UTILS::PartUsingParMetis(dis_, roweles_, rownodes_, colnodes_, comm_,
+            !reader_.MyOutputFlag(), comm_->NumProc(), imbalance_tol);
 
 #else
         nids.clear();
