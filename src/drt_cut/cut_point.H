@@ -291,7 +291,7 @@ namespace GEO
       void RemoveConnectivityInfo();
 
       /// Carefully replace this points by another at the stage before/during creation of cut_lines
-      void Replace(Point *p);
+      void Replace(Point* p);
 
       void RemoveEdge(Edge* edge);
 
@@ -309,6 +309,7 @@ namespace GEO
       /// debug reasons crashing
       void DumpConnectivityInfo();
 
+      /// Get the Merged Points
       const std::vector<Point*> GetMergedPoints() { return merged_points_; };
 
 #if CUT_CREATION_INFO
@@ -404,7 +405,7 @@ namespace GEO
       // for easy lookup and insert
       std::set<std::pair<Side*, Edge*>> cut_pairs_;
 
-      // points that were merged here during replacement
+      /// points that were merged here during replacement
       std::vector<Point*> merged_points_;
 
 #if CUT_CREATION_INFO
@@ -675,7 +676,7 @@ namespace GEO
       p4->Intersection(sides);
     }
 
-    /// Find magnitude of distance between points
+    /// Find distance between points
     template <unsigned int probDim>
     double DistanceBetweenPoints(
         const LINALG::Matrix<probDim, 1>& coord_a, const LINALG::Matrix<probDim, 1>& coord_b)
@@ -685,8 +686,10 @@ namespace GEO
       return diff.Norm2();
     }
 
+    /// Find distance between points
     double DistanceBetweenPoints(Point* p1, Point* p2);
 
+    /// Find distance between points
     double DistanceBetweenPoints(Point* p1, const LINALG::Matrix<3, 1>& coord_b);
 
   }  // namespace CUT

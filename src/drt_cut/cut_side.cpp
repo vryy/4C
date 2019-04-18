@@ -618,8 +618,9 @@ bool GEO::CUT::Side::CreateParallelCutSurface(Mesh& mesh, Element* element, Side
   Edge* second_edge = *std::next(edges_cycle.begin());
 
   // establish proper beginning of the cycle
-  Point* tail = first_edge_start->NodalPoint(second_edge->Nodes())?
-    first_edge->EndNode()->point() : first_edge->BeginNode()->point();
+  Point* tail = first_edge_start->NodalPoint(second_edge->Nodes())
+                    ? first_edge->EndNode()->point()
+                    : first_edge->BeginNode()->point();
   for (std::list<Edge*>::iterator it = edges_cycle.begin(); it != edges_cycle.end(); ++it)
   {
     Edge* e = *it;
@@ -838,7 +839,7 @@ bool GEO::CUT::Side::CreateParallelCutSurface(Mesh& mesh, Element* element, Side
     if (HasMixedParallelCutSurface(new_surface) || other.HasMixedParallelCutSurface(new_surface))
     {
       SimplifyMixedParallelCutSurface(mesh, element, other, new_surface, cut_points_for_lines);
-  }
+    }
 
     this->parallel_cut_surfaces_.insert(new_surface);
     other.parallel_cut_surfaces_.insert(new_surface);
@@ -894,18 +895,16 @@ bool GEO::CUT::Side::CreateParallelCutSurface(Mesh& mesh, Element* element, Side
 }
 
 void GEO::CUT::Side::SimplifyMixedParallelCutSurface(Mesh& mesh, Element* element, Side& other,
-     std::set<Point*>& new_surface, std::vector<Point*>& cut_points_for_lines)
+    std::set<Point*>& new_surface, std::vector<Point*>& cut_points_for_lines)
 {
-  auto & existing_surfaces = HasMixedParallelCutSurface( new_surface ) ?
-    this->parallel_cut_surfaces_ : other.parallel_cut_surfaces_ ;
+  auto& existing_surfaces = HasMixedParallelCutSurface(new_surface) ? this->parallel_cut_surfaces_
+                                                                    : other.parallel_cut_surfaces_;
 
-  for (const std::set<Point*>& existing_surface: existing_surfaces)
+  for (const std::set<Point*>& existing_surface : existing_surfaces)
   {
-
     std::vector<Point*> common_points;
-    std::set_intersection(new_surface.begin(), new_surface.end(),
-        existing_surface.begin(), existing_surface.end(),
-        std::back_inserter(common_points));
+    std::set_intersection(new_surface.begin(), new_surface.end(), existing_surface.begin(),
+        existing_surface.end(), std::back_inserter(common_points));
 
     // one or zero common points should not cause problems
     if (common_points.size() > 1)
@@ -915,38 +914,41 @@ void GEO::CUT::Side::SimplifyMixedParallelCutSurface(Mesh& mesh, Element* elemen
       if (common_points.size() == 2)
       {
         // we probably don't want to merge already merged-into or nodal points
-        auto p_delete_it = std::find_if(common_points.begin(), common_points.end(), [](Point *p){
-            return  (p->CutNode() == NULL && p->GetMergedPoints().size() == 0);
-            });
+        auto p_delete_it = std::find_if(common_points.begin(), common_points.end(),
+            [](Point* p) { return (p->CutNode() == NULL && p->GetMergedPoints().size() == 0); });
 
-        if (p_delete_it == common_points.end())
-          dserror("Cannot decide which point to merge");
-        Point *p_delete = *p_delete_it;
+        if (p_delete_it == common_points.end()) dserror("Cannot decide which point to merge");
+        Point* p_delete = *p_delete_it;
         // pick up the next point in the list of common points
-        Point *p_keep = common_points[ (std::distance( common_points.begin(),  p_delete_it ) + 1) % common_points.size() ];
+        Point* p_keep = common_points[(std::distance(common_points.begin(), p_delete_it) + 1) %
+                                      common_points.size()];
 
-        if (GEO::CUT::DistanceBetweenPoints(p_delete, p_keep) > 10.0*MERGING_TOLERANCE )
-        {
+        if (GEO::CUT::DistanceBetweenPoints(p_delete, p_keep) > 10.0 * MERGING_TOLERANCE)
           dserror("Trying to merge points, that are too far");
-        }
 
-        std::cout << "WARNING: Perfoming simplification of the parallel surface geometry by merging point "
-          << p_delete->Id()  << " into " << p_keep->Id() << std::endl;
+        std::cout << "WARNING: Perfoming simplification of the parallel surface geometry by "
+                     "merging point "
+                  << p_delete->Id() << " into " << p_keep->Id() << std::endl;
 
         p_delete->Replace(p_keep);
 
-        cut_points_for_lines.erase( std::remove( cut_points_for_lines.begin(), cut_points_for_lines.end(), p_delete),
-            cut_points_for_lines.end() );
-        new_surface.erase( p_delete );
-        // NOTE: At this point we modify existing surfaces so we certainly don't want want to continue, since original
-        // surfaces do not exist anymore
+        cut_points_for_lines.erase(
+            std::remove(cut_points_for_lines.begin(), cut_points_for_lines.end(), p_delete),
+            cut_points_for_lines.end());
+        new_surface.erase(p_delete);
+        // NOTE: At this point we modify existing surfaces so we certainly don't want want to
+        // continue, since original surfaces do not exist anymore
         break;
       }
-      else {
-        // the surface is already created, we are just here for the second call (maybe on another side)
-        if ( std::set<Point*>(common_points.begin(), common_points.end()) != new_surface )
+      else
+      {
+        // the surface is already created, we are just here for the second call (maybe on another
+        // side)
+        if (std::set<Point*>(common_points.begin(), common_points.end()) != new_surface)
         {
-          dserror("There are more than 2 common points in the parallel cut surfaces. Dont know how to simplify!");
+          dserror(
+              "There are more than 2 common points in the parallel cut surfaces. Dont know how to "
+              "simplify!");
         }
       }
     }
