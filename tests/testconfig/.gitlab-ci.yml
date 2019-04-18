@@ -55,11 +55,6 @@ variables:
         - 'if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared"; fi'
         - ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -L minimal | tee ../buildtest_minimal.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\,"
     after_script:
-        # Write Selection of the output into the terminal and therefore to GITLAB
-        #- sed -n '/* Extra verbosity turned on/,/Test project /p' ../buildtest_minimal.log
-        # Output 200 lines for any failing test
-        #- grep -i -B 200 '\*\*\*Failed' ../buildtest_full.log
-        #- sed -n '/tests passed,/,//p' ../buildtest_minimal.log
         # Move the log file to the source folder, so it can be found by artifacts.
         - mv ../buildtest_minimal.log buildtest_minimal.log
     artifacts:
@@ -83,9 +78,10 @@ variables:
 .buildtest_full: &buildtest_full
     stage: buildtest
     script:
-        - "echo build type: CTEST_BUILD_TYPE_GITLAB=$CTEST_BUILD_TYPE_GITLAB"
-        - "echo full test: triggered by user with TEST_TAG=$TEST_TAG"
-        - "echo exclude string: CTEST_EXCLUDE_STRING=$CTEST_EXCLUDE_STRING"
+        # Specify which configuration is tested by this pipeline
+        - "echo Baci build type: $CTEST_BUILD_TYPE_GITLAB"
+        - "echo Tested examples with tag ('.' is all, '' is none): $TEST_TAG"
+        - "echo Excluded examples ('' none excluded): $CTEST_EXCLUDE_STRING"
         # Delete old build files.
         - rm -rf ../baci-build/
         # Clear eventual ccache cache.
@@ -97,6 +93,10 @@ variables:
         # Output 200 lines for any failing test
         - grep -B 200 '*Failed\|*Timeout' ../buildtest_full.log || true
         - sed -n '/tests passed,/,//p' ../buildtest_full.log
+        # Specify which configuration was tested by this pipeline
+        - "echo Baci build type: $CTEST_BUILD_TYPE_GITLAB"
+        - "echo Tested examples with tag ('.' is all, '' is none): $TEST_TAG"
+        - "echo Excluded examples ('' none excluded): $CTEST_EXCLUDE_STRING"
         # Move the log file to the source folder, so it can be found by artifacts.
         - mv ../buildtest_full.log buildtest_full.log
     artifacts:
@@ -120,8 +120,11 @@ variables:
 .buildtest_daily: &buildtest_daily
     stage: buildtest
     script:
-        - "echo full test: nightly test with TEST_TAG=$TEST_TAG"
-        - "echo exclude string: CTEST_EXCLUDE_STRING=$CTEST_EXCLUDE_STRING"
+        # Specify which configuration is tested by this pipeline
+        - "echo Nightly Test Release"
+        - "echo Baci build type: $CTEST_BUILD_TYPE_GITLAB"
+        - "echo Tested examples with tag ('.' is all, '' is none): $TEST_TAG"
+        - "echo Excluded examples ('' none excluded): $CTEST_EXCLUDE_STRING"
         # Delete old build files.
         - rm -rf ../baci-build/
         # Clear eventual ccache cache.
@@ -133,6 +136,10 @@ variables:
         # Output 200 lines for any failing test 
         - grep -B 200 '*Failed\|*Timeout' ../buildtest_daily.log || true
         - sed -n '/tests passed,/,//p' ../buildtest_daily.log
+        # Specify which configuration was tested by this pipeline
+        - "echo Baci build type: $CTEST_BUILD_TYPE_GITLAB"
+        - "echo Tested examples with tag ('.' is all, '' is none): $TEST_TAG"
+        - "echo Excluded examples ('' none excluded): $CTEST_EXCLUDE_STRING"
         # Move the log file to the source folder, so it can be found by artifacts.
         - mv ../buildtest_daily.log buildtest_daily.log
     artifacts:
@@ -151,8 +158,11 @@ variables:
 .buildtest_daily_debug: &buildtest_daily_debug
     stage: buildtest
     script:
-        - "echo full test: nightly test debug"
-        - "echo exclude string: CTEST_EXCLUDE_STRING=$CTEST_EXCLUDE_STRING"
+        # Specify which configuration is tested by this pipeline
+        - "echo Nightly Test Debug"
+        - "echo Baci build type: $CTEST_BUILD_TYPE_GITLAB"
+        - "echo Tested examples with tag ('.' is all, '' is none): $TEST_TAG"
+        - "echo Excluded examples ('' none excluded): $CTEST_EXCLUDE_STRING"
         # Delete old build files.
         - rm -rf ../baci-build/
         # Clear eventual ccache cache.
@@ -164,6 +174,10 @@ variables:
         # Output 200 lines for any failing test
         - grep -B 200 '*Failed\|*Timeout' ../buildtest_daily_debug.log || true
         - sed -n '/tests passed,/,//p' ../buildtest_daily_debug.log
+        # Specify which configuration was tested by this pipeline
+        - "echo Baci build type: $CTEST_BUILD_TYPE_GITLAB"
+        - "echo Tested examples with tag ('.' is all, '' is none): $TEST_TAG"
+        - "echo Excluded examples ('' none excluded): $CTEST_EXCLUDE_STRING"
         # Move the log file to the source folder, so it can be found by artifacts.
         - mv ../buildtest_daily_debug.log buildtest_daily_debug.log
     artifacts:
@@ -217,8 +231,6 @@ checkcode:
         - "echo code check"
         - cd ../baci
         - bash tests/code_test/check_format_and_header
-        # it would be nice to get the content of wrong_headers.txt and
-        # wrong_clang_format.txt uploaded to GitLab and/or CDash
     artifacts:
         name: "$CI_JOB_NAME-$CI_JOB_ID"
         paths:
@@ -226,12 +238,8 @@ checkcode:
             - wrong_headers.txt
         when: on_failure
         expire_in: 4 weeks
-    only:
-        - master
-        - web
     except:
         variables:
-            - $GITLAB_SCHEDULER_TYPE == "1"
             - $GITLAB_SCHEDULER_TYPE == "2"
     tags:
         - all
