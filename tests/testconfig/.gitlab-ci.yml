@@ -80,8 +80,8 @@ variables:
     script:
         # Specify which configuration is tested by this pipeline
         - "echo Baci build type: $CTEST_BUILD_TYPE_GITLAB"
-        - "echo Tested examples with tag (<.> is all, <> is none): $TEST_TAG"
-        - "echo Excluded examples (<> none excluded): $CTEST_EXCLUDE_STRING"
+        - "echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]"
+        - "echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]"
         # Delete old build files.
         - rm -rf ../baci-build/
         # Clear eventual ccache cache.
@@ -95,8 +95,8 @@ variables:
         - sed -n '/tests passed,/,//p' ../buildtest_full.log
         # Specify which configuration was tested by this pipeline
         - "echo Baci build type: $CTEST_BUILD_TYPE_GITLAB"
-        - "echo Tested examples with tag (<.> is all, <> is none): $TEST_TAG"
-        - "echo Excluded examples (<> none excluded): $CTEST_EXCLUDE_STRING"
+        - "echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]"
+        - "echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]"
         # Move the log file to the source folder, so it can be found by artifacts.
         - mv ../buildtest_full.log buildtest_full.log
     artifacts:
@@ -123,8 +123,8 @@ variables:
         # Specify which configuration is tested by this pipeline
         - "echo Nightly Test Release"
         - "echo Baci build type: $CTEST_BUILD_TYPE_GITLAB"
-        - "echo Tested examples with tag (<.> is all, <> is none): $TEST_TAG"
-        - "echo Excluded examples (<> none excluded): $CTEST_EXCLUDE_STRING"
+        - "echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]"
+        - "echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]"
         # Delete old build files.
         - rm -rf ../baci-build/
         # Clear eventual ccache cache.
@@ -138,8 +138,8 @@ variables:
         - sed -n '/tests passed,/,//p' ../buildtest_daily.log
         # Specify which configuration was tested by this pipeline
         - "echo Baci build type: $CTEST_BUILD_TYPE_GITLAB"
-        - "echo Tested examples with tag (<.> is all, <> is none): $TEST_TAG"
-        - "echo Excluded examples (<> none excluded): $CTEST_EXCLUDE_STRING"
+        - "echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]"
+        - "echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]"
         # Move the log file to the source folder, so it can be found by artifacts.
         - mv ../buildtest_daily.log buildtest_daily.log
     artifacts:
@@ -161,8 +161,8 @@ variables:
         # Specify which configuration is tested by this pipeline
         - "echo Nightly Test Debug"
         - "echo Baci build type: $CTEST_BUILD_TYPE_GITLAB"
-        - "echo Tested examples with tag (<.> is all, <> is none): $TEST_TAG"
-        - "echo Excluded examples (<> none excluded): $CTEST_EXCLUDE_STRING"
+        - "echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]"
+        - "echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]"
         # Delete old build files.
         - rm -rf ../baci-build/
         # Clear eventual ccache cache.
@@ -176,8 +176,8 @@ variables:
         - sed -n '/tests passed,/,//p' ../buildtest_daily_debug.log
         # Specify which configuration was tested by this pipeline
         - "echo Baci build type: $CTEST_BUILD_TYPE_GITLAB"
-        - "echo Tested examples with tag (<.> is all, <> is none): $TEST_TAG"
-        - "echo Excluded examples (<> none excluded): $CTEST_EXCLUDE_STRING"
+        - "echo Run tests matching expression: $TEST_TAG [{.} all tests, {} no test]"
+        - "echo Excluded tests: $CTEST_EXCLUDE_STRING [{} no test excluded]"
         # Move the log file to the source folder, so it can be found by artifacts.
         - mv ../buildtest_daily_debug.log buildtest_daily_debug.log
     artifacts:
