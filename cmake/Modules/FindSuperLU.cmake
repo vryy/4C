@@ -5,7 +5,7 @@ endif (SUPERLU_INCLUDES AND SUPERLU_LIBRARIES)
 find_package(BLAS)
 
 if(BLAS_FOUND)
-  
+
   find_path(SUPERLU_INCLUDES
     NAMES
     SuperLU_DIST_2.0/SRC/supermatrix.h
@@ -15,11 +15,11 @@ if(BLAS_FOUND)
   )
 
   find_library(SUPERLU_LIBRARIES superlu_dist PATHS $ENV{SUPERLUDIR} ${LIB_INSTALL_DIR})
-  
+
   if(SUPERLU_LIBRARIES)
     set(SUPERLU_LIBRARIES ${SUPERLU_LIBRARIES} ${BLAS_LIBRARIES})
   endif(SUPERLU_LIBRARIES)
-  
+
 endif(BLAS_FOUND)
 
 include(FindPackageHandleStandardArgs)

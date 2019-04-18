@@ -1,8 +1,8 @@
 #
 # Find the PARMETIS includes and libraries
 #
-# ParMETIS is an MPI-based parallel library that implements a variety of algorithms for 
-# partitioning unstructured graphs, meshes, and for computing fill-reducing orderings of 
+# ParMETIS is an MPI-based parallel library that implements a variety of algorithms for
+# partitioning unstructured graphs, meshes, and for computing fill-reducing orderings of
 # sparse matrices. It can be found at:
 #       http://www-users.cs.umn.edu/~karypis/metis/parmetis/index.html
 #
@@ -35,7 +35,7 @@ FIND_LIBRARY(METIS_LIBRARY metis
 
 #IF(PARMETIS_INCLUDE_DIR)
 #  IF(PARMETIS_LIBRARY)
-#    
+#
 #    SET( PARMETIS_FOUND "YES" )
 #  ENDIF(PARMETIS_LIBRARY)
 #ENDIF(PARMETIS_INCLUDE_DIR)
