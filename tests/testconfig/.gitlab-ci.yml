@@ -288,7 +288,7 @@ imcs-buildtest_daily_debug:
         CTEST_CONFIGURE_POSTFIX: ""
         CTEST_MAKE: "make full -j3"
         CTEST_BUILD_NAME_GITLAB: "imcs-workstation-baci-Q1-2015-DEBUG-GITLAB"
-        CTEST_BUILD_CONFIG_GITLAB: "imcs-workstation.config"
+        CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "0"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
