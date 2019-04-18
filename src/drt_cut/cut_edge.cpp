@@ -817,7 +817,7 @@ bool GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::ComputeCu
       {
         double* x_ptr = NULL;
 
-        x_ptr = inter_ptr->FinalPoint();
+        x_ptr = inter_ptr->FinalPointEdgeEdge();
 
         const double& pos = inter_ptr->LocalCoordinates()[0];
 

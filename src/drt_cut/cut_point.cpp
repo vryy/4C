@@ -847,6 +847,85 @@ void GEO::CUT::Point::RemoveConnectivityInfo()
   cut_elements_.clear();
 }
 
+void GEO::CUT::Point::Replace(Point* p)
+{
+  p->cut_pairs_.insert(cut_pairs_.begin(), cut_pairs_.end());
+  p->cut_sides_.insert(cut_sides_.begin(), cut_sides_.end());
+  p->cut_edges_.insert(cut_edges_.begin(), cut_edges_.end());
+  p->cut_elements_.insert(cut_elements_.begin(), cut_elements_.end());
+
+  for (Side* s : cut_sides_)
+  {
+    s->RemovePoint(this);
+    s->AddPoint(p);
+    std::set<std::set<Point*>>& parallel_cut_surfaces = s->GetParallelCutSurfaces();
+    std::set<std::set<Point*>> new_surfaces;
+    std::transform(parallel_cut_surfaces.begin(), parallel_cut_surfaces.end(),
+        std::inserter(new_surfaces, new_surfaces.begin()), [&](std::set<Point*> surface) {
+          surface.erase(this);
+          surface.insert(p);
+          return surface;
+        });
+    parallel_cut_surfaces.swap(new_surfaces);
+  }
+
+  LINALG::Matrix<3, 1> real_coord;
+  Coordinates(real_coord.A());
+  for (Edge* e : cut_edges_)
+  {
+    e->RemovePoint(this);
+    // preserve location on this edge with respect to other points
+    p->t(e, real_coord);
+    e->AddPoint(p);
+  }
+
+  cut_pairs_.clear();
+  cut_sides_.clear();
+  cut_edges_.clear();
+  cut_elements_.clear();
+
+  plain_line_set replaces;
+  for (plain_line_set::iterator it = lines_.begin(); it != lines_.end();)
+  {
+    Line* existing_line = *it;
+    Point* other = existing_line->OtherPoint(this);
+    Line* replace_line = other->CommonLine(p);
+    // no such line exist, modify current to include new endpoint
+    if (replace_line == NULL)
+    {
+      existing_line->Replace(this, p);
+      ++it;
+    }
+    // use already existed line as replacement
+    else
+    {
+      const plain_side_set& lines_sides = existing_line->CutSides();
+      for (auto& s : lines_sides)
+      {
+        auto& side_lines = const_cast<std::vector<Line*>&>(s->CutLines());
+        auto erase_it = std::find(side_lines.begin(), side_lines.end(), existing_line);
+        if (erase_it != side_lines.end())
+        {
+          side_lines.erase(erase_it);
+          if (std::find(side_lines.begin(), side_lines.end(), replace_line) == side_lines.end())
+            side_lines.push_back(replace_line);
+        }
+      }
+      replaces.insert(replace_line);
+#ifdef CUT_USE_SORTED_VECTOR
+      it = lines_.ierase(it);
+#else
+      it = lines_.erase(it);
+#endif
+    }
+  }
+
+  p->lines_.insert(lines_.begin(), lines_.end());
+  p->lines_.insert(replaces.begin(), replaces.end());
+  lines_.clear();
+  p->merged_points_.push_back(this);
+}
+
 void GEO::CUT::Point::Merge(Point* dest)
 {
 #if CUT_CREATION_INFO
@@ -999,14 +1078,6 @@ void GEO::CUT::FindCommonElements(const std::vector<Point*>& element, plain_elem
       break;
     }
   }
-}
-
-double GEO::CUT::DistanceBetweenPoints(
-    const LINALG::Matrix<3, 1>& coord_a, const LINALG::Matrix<3, 1>& coord_b)
-{
-  LINALG::Matrix<3, 1> diff;
-  diff.Update(1, coord_a, -1, coord_b);
-  return diff.Norm2();
 }
 
 double GEO::CUT::DistanceBetweenPoints(Point* p1, Point* p2)

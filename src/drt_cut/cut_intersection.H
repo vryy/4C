@@ -222,6 +222,9 @@ namespace GEO
 
       virtual double* FinalPoint(unsigned cp_id) = 0;
 
+      /// Get the coordinates of the computed point from Edge-Edge Intersection
+      virtual double* FinalPointEdgeEdge() = 0;
+
       /** Access the cut point local coordinates on the side element
        * ( also working for multiple cut points )
        *
@@ -455,6 +458,75 @@ namespace GEO
         if (NumCutPoints() < 2) return xsi_edge_;
 
         return multiple_xsi_edge_[cp_id];
+      }
+
+      /// We need choose the edge, based on which we compute the global coordinates in a smart
+      /// way -> If we choose so that the cut point will be close to endpoint, we essentially
+      /// extend its tolerance and it therefore would lead to problems in the cut
+      double* FinalPointEdgeEdge()
+      {
+        CheckInit();
+        if (dimedge != dimside) dserror("This method only works for edge-edge intersection!");
+
+        LINALG::Matrix<probdim, 1> x_edge_1;
+        x_edge_1 = 0;
+        LINALG::Matrix<numNodesEdge, 1> edge_funct_1;
+        DRT::UTILS::shape_function<edgetype>(xsi_edge_, edge_funct_1);
+        for (unsigned inode = 0; inode < numNodesEdge; ++inode)
+          for (unsigned isd = 0; isd < probdim; ++isd)
+            x_edge_1(isd) += xyze_lineElement_(isd, inode) * edge_funct_1(inode);
+
+        // first un-do the shifting
+        x_edge_1.Update(1.0, shift_, 1.0);
+        x_edge_1.Scale(scale_);
+
+        LINALG::Matrix<probdim, 1> x_edge_2;
+        x_edge_2 = 0;
+        LINALG::Matrix<numNodesSide, 1> edge_funct_2;
+        DRT::UTILS::shape_function<sidetype>(xsi_side_, edge_funct_2);
+        for (unsigned inode = 0; inode < numNodesSide; ++inode)
+          for (unsigned isd = 0; isd < probdim; ++isd)
+            x_edge_2(isd) += xyze_surfaceElement_(isd, inode) * edge_funct_2(inode);
+
+        x_edge_2.Update(1.0, shift_, 1.0);
+        x_edge_2.Scale(scale_);
+
+        bool will_be_merged[2];
+        will_be_merged[0] =
+            IsCloseToEndpoints(xyze_lineElement_, x_edge_1, SIDE_DETECTION_TOLERANCE) or
+            IsCloseToEndpoints(xyze_surfaceElement_, x_edge_1, SIDE_DETECTION_TOLERANCE);
+
+        will_be_merged[1] =
+            IsCloseToEndpoints(xyze_lineElement_, x_edge_2, SIDE_DETECTION_TOLERANCE) or
+            IsCloseToEndpoints(xyze_surfaceElement_, x_edge_2, SIDE_DETECTION_TOLERANCE);
+
+        if (will_be_merged[0] and will_be_merged[1])
+        {
+          // NOTE: If such case ever occur, one might consider to create intersection on the
+          // line between x_edge_2 and x_edge_1, in a way so that it will not be merged in any of
+          // the participating edge endpoint
+          dserror(
+              "Cannot decide which edge should serve as the basis for global coordinates in "
+              "edge-edge intersection");
+        }
+        else if (will_be_merged[0])
+        {
+          x_ = x_edge_2;
+        }
+        else if (will_be_merged[1])
+        {
+          x_ = x_edge_1;
+        }
+        else
+        {
+          // Both edges could serve as a good basis, we take the edge where the intersection point
+          // is further away from the end point.
+          if (std::abs(xsi_edge_(0, 0)) < std::abs(xsi_side_(0, 0)))
+            x_ = x_edge_1;
+          else
+            x_ = x_edge_2;
+        }
+        return x_.A();
       }
 
       /// get the final cut point global coordinates
@@ -1083,6 +1155,18 @@ namespace GEO
         if (quad4_touched_edges.size() > 4) dserror("this should not be possible");
       }
 
+      /// Detects in the point is close to an endpoint of the edge
+      template <unsigned int numNodes, unsigned int probDim>
+      bool IsCloseToEndpoints(const LINALG::Matrix<probDim, numNodes>& surf,
+          const LINALG::Matrix<probDim, 1>& p, double tol = TOPOLOGICAL_TOLERANCE)
+      {
+        for (unsigned int node_id = 0; node_id < numNodes; ++node_id)
+        {
+          const LINALG::Matrix<probDim, 1> edge_point(surf.A() + node_id * probDim, true);
+          if (GEO::CUT::DistanceBetweenPoints(edge_point, p) <= tol) return true;
+        }
+        return false;
+      }
 
       // Calculates if all nodal points of this quad4 belong to the same plane
       // (if any nodal point lie on the plane created by other 3).
