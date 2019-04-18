@@ -306,15 +306,15 @@ namespace MAT
     };
 
     /// Evaluate Cauchy
-    virtual void EvaluateCauchy(const LINALG::Matrix<3, 3>& b, const LINALG::Matrix<3, 1>& n,
-        const LINALG::Matrix<3, 1>& t, double& snt, LINALG::Matrix<6, 1>* dsntdb,
-        LINALG::Matrix<6, 6>* d2sntdb2, LINALG::Matrix<6, 3>* d2sntDbDn,
-        LINALG::Matrix<6, 3>* d2sntDbDt, LINALG::Matrix<3, 1>* dsntdn, LINALG::Matrix<3, 1>* dsntdt,
-        const int eleGID, const double* temp = NULL, double* dsntdT = NULL,
-        LINALG::Matrix<6, 1>* d2sntDbDT = NULL)
+    void EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd, const LINALG::Matrix<3, 1>& n,
+        const LINALG::Matrix<3, 1>& t, double& snt, LINALG::Matrix<3, 1>* dsntdn,
+        LINALG::Matrix<3, 1>* dsntdt, LINALG::Matrix<9, 1>* dsntdF, LINALG::Matrix<9, 9>* d2sntdF2,
+        LINALG::Matrix<9, 3>* d2sntDFDn, LINALG::Matrix<9, 3>* d2sntDFDt, const int eleGID,
+        const double* temp = NULL, double* dsntdT = NULL,
+        LINALG::Matrix<9, 1>* d2sntDFDT = NULL) override
     {
-      mat_->EvaluateCauchy(b, n, t, snt, dsntdb, d2sntdb2, d2sntDbDn, d2sntDbDt, dsntdn, dsntdt,
-          eleGID, temp, dsntdT, d2sntDbDT);
+      mat_->EvaluateCauchy(defgrd, n, t, snt, dsntdn, dsntdt, dsntdF, d2sntdF2, d2sntDFDn,
+          d2sntDFDt, eleGID, temp, dsntdT, d2sntDFDT);
     }
 
     //@}

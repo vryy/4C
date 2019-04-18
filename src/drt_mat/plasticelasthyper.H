@@ -492,15 +492,16 @@ namespace MAT
         const double dt, const LINALG::Matrix<6, 9>* d_cauchy_dFpi,
         LINALG::Matrix<6, 9>* d_cauchy_ddp);
 
-    virtual void EvaluateCauchyDerivs(const LINALG::Matrix<3, 1>& prinv, const int eleGID,
+    void EvaluateCauchyDerivs(const LINALG::Matrix<3, 1>& prinv, const int eleGID,
         LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII_ordered,
-        LINALG::Matrix<10, 1>& dddPIII, const double* temp = NULL);
+        LINALG::Matrix<10, 1>& dddPIII, const double* temp = NULL) override;
 
-    virtual void EvaluateCauchyTempDeriv(const LINALG::Matrix<3, 1>& prinv, const double ndt,
-        const double tbn, const double tibn, const LINALG::Matrix<6, 1>& dI1db,
-        const LINALG::Matrix<6, 1>& dI2db, const LINALG::Matrix<6, 1>& dI3db,
-        const LINALG::Matrix<6, 1>& nt_tn_v, const LINALG::Matrix<6, 1>& dtibndb,
-        const double* temp, double* dsntdT, LINALG::Matrix<6, 1>* d2sntDbDT);
+    void EvaluateCauchyTempDeriv(const LINALG::Matrix<3, 1>& prinv, const double ndt,
+        const double bdndt, const double ibdndt, const double* temp, double* dsntdT,
+        const LINALG::Matrix<9, 1>& iFTV, const LINALG::Matrix<9, 1>& DbdndtDFV,
+        const LINALG::Matrix<9, 1>& DibdndtDFV, const LINALG::Matrix<9, 1>& dI1dF,
+        const LINALG::Matrix<9, 1>& dI2dF, const LINALG::Matrix<9, 1>& dI3dF,
+        LINALG::Matrix<9, 1>* d2sntDFDT) override;
 
     virtual void AddThermalExpansionDerivs(const LINALG::Matrix<3, 1>& prinv,
         LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII, int eleGID, const double& temp);

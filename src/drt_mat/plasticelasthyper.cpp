@@ -1892,55 +1892,57 @@ void MAT::PlasticElastHyper::EvaluateCauchyDerivs(const LINALG::Matrix<3, 1>& pr
 }
 
 void MAT::PlasticElastHyper::EvaluateCauchyTempDeriv(const LINALG::Matrix<3, 1>& prinv,
-    const double ndt, const double tbn, const double tibn, const LINALG::Matrix<6, 1>& dI1db,
-    const LINALG::Matrix<6, 1>& dI2db, const LINALG::Matrix<6, 1>& dI3db,
-    const LINALG::Matrix<6, 1>& nt_tn_v, const LINALG::Matrix<6, 1>& dtibndb, const double* temp,
-    double* dsntdT, LINALG::Matrix<6, 1>* d2sntDbDT)
+    const double ndt, const double bdndt, const double ibdndt, const double* temp, double* dsntdT,
+    const LINALG::Matrix<9, 1>& iFTV, const LINALG::Matrix<9, 1>& DbdndtDFV,
+    const LINALG::Matrix<9, 1>& DibdndtDFV, const LINALG::Matrix<9, 1>& dI1dF,
+    const LINALG::Matrix<9, 1>& dI2dF, const LINALG::Matrix<9, 1>& dI3dF,
+    LINALG::Matrix<9, 1>* d2sntDFDT)
 {
-  d2sntDbDT->Clear();
-
   //  return ; // fixme
 
   const double sqI3 = sqrt(prinv(2));
-  double dPmodI = 0.;
-  double ddPmodII = 0.;
-  double dddPmodIII = 0.;
+  const double prefac = 2.0 / sqI3;
+  double dPmodI = 0.0;
+  double ddPmodII = 0.0;
+  double dddPmodIII = 0.0;
   for (unsigned int p = 0; p < potsum_.size(); ++p)
     potsum_[p]->AddCoupDerivVol(sqI3, &dPmodI, &ddPmodII, &dddPmodIII, NULL);
-
 
   // those are actually the temperature derivatives of the coefficients
   // then we plug them into the cauchy stress derivative and voilà
   // we keep many zero entries here for possible future extension to more
   // than just thermal expansion
-  LINALG::Matrix<3, 1> dPI;
-  LINALG::Matrix<6, 1> ddPII;
-  LINALG::Matrix<10, 1> dddPIII;
+  static LINALG::Matrix<3, 1> dPI(true);
+  static LINALG::Matrix<6, 1> ddPII(true);
+  dPI.Clear();
+  ddPII.Clear();
 
-  const double fac = -3. * Cte();
-  dPI(2) += fac * .5 / sqI3 * ddPmodII;
-  ddPII(2) += fac * (.25 / (sqI3 * sqI3) * dddPmodIII - .25 / (sqI3 * sqI3 * sqI3) * ddPmodII);
+  const double fac = -3.0 * Cte();
+  dPI(2) += fac * 0.5 / sqI3 * ddPmodII;
+  ddPII(2) += fac * (0.25 / (sqI3 * sqI3) * dddPmodIII - 0.25 / (sqI3 * sqI3 * sqI3) * ddPmodII);
 
-  *dsntdT = 2. / sqI3 * prinv(1) * dPI(1) * ndt + 2. * sqI3 * dPI(2) * ndt +
-            2. / sqI3 * dPI(0) * tbn - 2. * sqI3 * dPI(1) * tibn;
+  *dsntdT = prefac * (prinv(1) * dPI(1) * ndt + prinv(2) * dPI(2) * ndt + dPI(0) * bdndt -
+                         prinv(2) * dPI(1) * ibdndt);
 
-  d2sntDbDT->Update(2. / sqI3 *
-                        (prinv(1) * ddPII(3) * ndt + prinv(2) * ddPII(5) * ndt + ddPII(0) * tbn -
-                            prinv(2) * ddPII(3) * tibn),
-      dI1db, 1.);
-  d2sntDbDT->Update(2. / sqI3 *
-                        (dPI(1) * ndt + prinv(1) * ddPII(1) * ndt + prinv(2) * ddPII(4) * ndt +
-                            ddPII(3) * tbn - prinv(2) * ddPII(1) * tibn),
-      dI2db, 1.);
-  d2sntDbDT->Update(
-      (-2. * prinv(2) * prinv(2) * ddPII(4) * tibn + 2. * prinv(1) * prinv(2) * ddPII(4) * ndt +
-          2. * prinv(2) * prinv(2) * ddPII(2) * ndt - prinv(2) * dPI(1) * tibn +
-          2. * prinv(2) * ddPII(5) * tbn + prinv(2) * dPI(2) * ndt - prinv(1) * dPI(1) * ndt -
-          dPI(0) * tbn) /
-          (sqI3 * sqI3 * sqI3),
-      dI3db, 1.);
-  d2sntDbDT->Update(2. / sqI3 * dPI(0), nt_tn_v, 1.);
-  d2sntDbDT->Update(-2. * sqI3 * dPI(1), dtibndb, 1.);
+  if (d2sntDFDT)
+  {
+    d2sntDFDT->Update(-prefac * (prinv(1) * dPI(1) * ndt + prinv(2) * dPI(2) * ndt +
+                                    dPI(0) * bdndt - prinv(2) * dPI(1) * ibdndt),
+        iFTV, 0.0);  // d2sntDFDT is cleared here
+    d2sntDFDT->Update(prefac * dPI(0), DbdndtDFV, 1.0);
+    d2sntDFDT->Update(-prefac * prinv(2) * dPI(1), DibdndtDFV, 1.0);
+    d2sntDFDT->Update(prefac * (prinv(1) * ddPII(5) * ndt + prinv(2) * ddPII(4) * ndt +
+                                   ddPII(0) * bdndt - prinv(2) * ddPII(5) * ibdndt),
+        dI1dF, 1.0);
+    d2sntDFDT->Update(
+        prefac * (dPI(1) * ndt + prinv(1) * ddPII(1) * ndt + prinv(2) * ddPII(3) * ndt +
+                     ddPII(5) * bdndt - prinv(2) * ddPII(1) * ibdndt),
+        dI2dF, 1.0);
+    d2sntDFDT->Update(
+        prefac * (prinv(1) * ddPII(3) * ndt + dPI(2) * ndt + prinv(2) * ddPII(2) * ndt +
+                     ddPII(4) * bdndt - dPI(1) * ibdndt - prinv(2) * ddPII(3) * ibdndt),
+        dI3dF, 1.0);
+  }
 }
 
 

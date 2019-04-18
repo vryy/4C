@@ -2030,11 +2030,14 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiElast(const LINALG::Matrix<
 
   MAT::PlasticElastHyper* plmat = dynamic_cast<MAT::PlasticElastHyper*>(Material().get());
 
-  sigma_nt = 0.;
+  sigma_nt = 0.0;
 
-  LINALG::Matrix<nen_, nsd_> xrefe;  // reference coord. of element
-  LINALG::Matrix<nen_, nsd_> xcurr;  // current  coord. of element
-  LINALG::Matrix<nen_, 1> ele_temp;
+  static LINALG::Matrix<nen_, nsd_> xrefe(true);  // reference coord. of element
+  static LINALG::Matrix<nen_, nsd_> xcurr(true);  // current  coord. of element
+  static LINALG::Matrix<nen_, 1> ele_temp(true);
+  xrefe.Clear();
+  xcurr.Clear();
+  ele_temp.Clear();
   DRT::Node** nodes = Nodes();
 
   for (int i = 0; i < nen_; ++i)
@@ -2053,71 +2056,62 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiElast(const LINALG::Matrix<
   EvaluateShapeDeriv(xi);
 
   const double gp_temp = ele_temp.Dot(ShapeFunction());
-  double dsntdT_gp = 0.;
-  LINALG::Matrix<nsd_, 1> dT_dxi;
-  dT_dxi.Multiply(DerivShapeFunction(), ele_temp);
+  double dsntdT_gp = 0.0;
+  static LINALG::Matrix<nsd_, 1> dT_dxi(true);
+  dT_dxi.Multiply(1.0, DerivShapeFunction(), ele_temp, 0.0);
 
-  LINALG::Matrix<nsd_, nen_> N_XYZ;
-
-  LINALG::Matrix<nsd_, nsd_> invJ;
-  invJ.Multiply(DerivShapeFunction(), xrefe);
+  static LINALG::Matrix<nsd_, nen_> N_XYZ(true);
+  static LINALG::Matrix<nsd_, nsd_> invJ(true);
+  invJ.Multiply(1.0, DerivShapeFunction(), xrefe, 0.0);
   invJ.Invert();
-  N_XYZ.Multiply(invJ, DerivShapeFunction());
-  LINALG::Matrix<nsd_, nsd_> defgrd;
-  defgrd.MultiplyTT(xcurr, N_XYZ);
+  N_XYZ.Multiply(1.0, invJ, DerivShapeFunction(), 0.0);
+  static LINALG::Matrix<nsd_, nsd_> defgrd(true);
+  defgrd.MultiplyTT(1.0, xcurr, N_XYZ, 0.0);
 
-  LINALG::Matrix<nsd_, nsd_> b;
-  b.MultiplyNT(defgrd, defgrd);
-
-  LINALG::Matrix<nsd_, nen_> F_N_XYZ;
-  F_N_XYZ.Multiply(defgrd, N_XYZ);
-
-  LINALG::Matrix<MAT::NUM_STRESS_3D, numdofperelement_> bop;  // here: linearization of b=FF^T !!!
+  static LINALG::Matrix<9, numdofperelement_> dFdd(
+      true);  // linearization of F w.r.t. displacements
+  dFdd.Clear();
   if (dsntdd || d2sntDdDn || d2sntDdDt || d2sntDdDpxi || d2sntDdDT)
-
   {
     for (int i = 0; i < nen_; ++i)
     {
-      for (int x = 0; x < nsd_; ++x)
-        bop(x, nsd_ * i + x) += F_N_XYZ(x, i);  // defgrd(x,g)*N_XYZ(g,i);
-      {
-        bop(3, nsd_ * i + 0) += F_N_XYZ(1, i);  // defgrd(1,g)*N_XYZ(g,i);
-        bop(3, nsd_ * i + 1) += F_N_XYZ(0, i);  // defgrd(0,g)*N_XYZ(g,i);
-        bop(4, nsd_ * i + 2) += F_N_XYZ(1, i);  // defgrd(1,g)*N_XYZ(g,i);
-        bop(4, nsd_ * i + 1) += F_N_XYZ(2, i);  // defgrd(2,g)*N_XYZ(g,i);
-        bop(5, nsd_ * i + 0) += F_N_XYZ(2, i);  // defgrd(2,g)*N_XYZ(g,i);
-        bop(5, nsd_ * i + 2) += F_N_XYZ(0, i);  // defgrd(0,g)*N_XYZ(g,i);
-      }
+      dFdd(0, nsd_ * i + 0) = N_XYZ(0, i);
+      dFdd(1, nsd_ * i + 1) = N_XYZ(1, i);
+      dFdd(2, nsd_ * i + 2) = N_XYZ(2, i);
+      dFdd(3, nsd_ * i + 0) = N_XYZ(1, i);
+      dFdd(4, nsd_ * i + 1) = N_XYZ(2, i);
+      dFdd(5, nsd_ * i + 0) = N_XYZ(2, i);
+      dFdd(6, nsd_ * i + 1) = N_XYZ(0, i);
+      dFdd(7, nsd_ * i + 2) = N_XYZ(1, i);
+      dFdd(8, nsd_ * i + 2) = N_XYZ(0, i);
     }
-    bop.Scale(2.);
   }
 
-  LINALG::Matrix<6, 1> dsntdb;
-  LINALG::Matrix<6, 6> d2sntdb2;
-  LINALG::Matrix<6, nsd_> d2sntDbDn;
-  LINALG::Matrix<6, nsd_> d2sntDbDt;
-  LINALG::Matrix<6, 1> d2sntDbDT;
+  static LINALG::Matrix<9, 1> dsntdF(true);
+  static LINALG::Matrix<9, 9> d2sntdF2(true);
+  static LINALG::Matrix<9, nsd_> d2sntDFDn(true);
+  static LINALG::Matrix<9, nsd_> d2sntDFDt(true);
+  static LINALG::Matrix<9, 1> d2sntDFDT(true);
 
   if (plmat && temp)
-    plmat->EvaluateCauchy(b, n, t, sigma_nt, &dsntdb, &d2sntdb2, &d2sntDbDn, &d2sntDbDt, dsntdn,
-        dsntdt, 0, &gp_temp, &dsntdT_gp, &d2sntDbDT);
+    plmat->EvaluateCauchy(defgrd, n, t, sigma_nt, dsntdn, dsntdt, &dsntdF, &d2sntdF2, &d2sntDFDn,
+        &d2sntDFDt, 0, &gp_temp, &dsntdT_gp, &d2sntDFDT);
   else
     SolidMaterial()->EvaluateCauchy(
-        b, n, t, sigma_nt, &dsntdb, &d2sntdb2, &d2sntDbDn, &d2sntDbDt, dsntdn, dsntdt, 0);
-
+        defgrd, n, t, sigma_nt, dsntdn, dsntdt, &dsntdF, &d2sntdF2, &d2sntDFDn, &d2sntDFDt, 0);
 
   if (dsntdd)
   {
     dsntdd->Shape(numdofperelement_, 1);
     LINALG::Matrix<numdofperelement_, 1> dsntdd_m(dsntdd->A(), true);
-    dsntdd_m.MultiplyTN(bop, dsntdb);
+    dsntdd_m.MultiplyTN(1.0, dFdd, dsntdF, 0.0);
   }
 
   if (d2sntDdDT)
   {
     d2sntDdDT->Shape(numdofperelement_, nen_);
-    LINALG::Matrix<numdofperelement_, 1> tmp(true);
-    tmp.MultiplyTN(bop, d2sntDbDT);
+    static LINALG::Matrix<numdofperelement_, 1> tmp(true);
+    tmp.MultiplyTN(1.0, dFdd, d2sntDFDT, 0.0);
     LINALG::Matrix<numdofperelement_, nen_>(d2sntDdDT->A(), true).MultiplyNT(tmp, ShapeFunction());
   }
 
@@ -2125,295 +2119,110 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiElast(const LINALG::Matrix<
   {
     d2sntDdDn->Shape(numdofperelement_, nsd_);
     LINALG::Matrix<numdofperelement_, nsd_> d2sntDdDn_m(d2sntDdDn->A(), true);
-    d2sntDdDn_m.MultiplyTN(bop, d2sntDbDn);
+    d2sntDdDn_m.MultiplyTN(1.0, dFdd, d2sntDFDn, 0.0);
   }
 
   if (d2sntDdDt)
   {
     d2sntDdDt->Shape(numdofperelement_, nsd_);
     LINALG::Matrix<numdofperelement_, nsd_> d2sntDdDt_m(d2sntDdDt->A(), true);
-    d2sntDdDt_m.MultiplyTN(bop, d2sntDbDt);
+    d2sntDdDt_m.MultiplyTN(1.0, dFdd, d2sntDFDt, 0.0);
   }
 
   if (dsntdT)
   {
     dsntdT->Shape(nen_, 1);
-    LINALG::Matrix<nen_, 1>(dsntdT->A(), true).Update(dsntdT_gp, ShapeFunction(), 1.);
+    LINALG::Matrix<nen_, 1>(dsntdT->A(), true).Update(dsntdT_gp, ShapeFunction(), 1.0);
   }
 
   if (d2sntdd2)
   {
     d2sntdd2->Shape(numdofperelement_, numdofperelement_);
-    LINALG::Matrix<numdofperelement_, numdofperelement_> d2sntdd2_linalg(d2sntdd2->A(), true);
-    LINALG::Matrix<6, numdofperelement_> d2sntdb2Bop;
-    d2sntdb2Bop.Multiply(d2sntdb2, bop);
-    d2sntdd2_linalg.MultiplyTN(1., bop, d2sntdb2Bop, 1.);
-
-    LINALG::Matrix<nen_, nen_> NN;
-    NN.MultiplyTN(N_XYZ, N_XYZ);
-
-    for (int i = 0; i < nen_; ++i)
-    {
-      for (int k = 0; k < nen_; ++k)
-      // for (int g=0;g<3;++g)
-      {
-        for (int x = 0; x < nsd_; ++x)
-          d2sntdd2_linalg(nsd_ * i + x, nsd_ * k + x) +=
-              dsntdb(x) * 2. * NN(i, k);  // *N_XYZ(g,i)*N_XYZ(g,k);
-
-        d2sntdd2_linalg(nsd_ * i + 0, nsd_ * k + 1) +=
-            dsntdb(3) * 2. * NN(i, k);  // *N_XYZ(g,i)*N_XYZ(g,k);
-        d2sntdd2_linalg(nsd_ * i + 1, nsd_ * k + 0) +=
-            dsntdb(3) * 2. * NN(i, k);  // *N_XYZ(g,i)*N_XYZ(g,k);
-
-        d2sntdd2_linalg(nsd_ * i + 1, nsd_ * k + 2) +=
-            dsntdb(4) * 2. * NN(i, k);  // *N_XYZ(g,i)*N_XYZ(g,k);
-        d2sntdd2_linalg(nsd_ * i + 2, nsd_ * k + 1) +=
-            dsntdb(4) * 2. * NN(i, k);  // *N_XYZ(g,i)*N_XYZ(g,k);
-
-        d2sntdd2_linalg(nsd_ * i + 0, nsd_ * k + 2) +=
-            dsntdb(5) * 2. * NN(i, k);  // *N_XYZ(g,i)*N_XYZ(g,k);
-        d2sntdd2_linalg(nsd_ * i + 2, nsd_ * k + 0) +=
-            dsntdb(5) * 2. * NN(i, k);  // *N_XYZ(g,i)*N_XYZ(g,k);
-      }
-    }
+    LINALG::Matrix<numdofperelement_, numdofperelement_> d2sntdd2_m(d2sntdd2->A(), true);
+    static LINALG::Matrix<9, numdofperelement_> d2sntdF2dFdd(true);
+    d2sntdF2dFdd.Multiply(1.0, d2sntdF2, dFdd, 0.0);
+    d2sntdd2_m.MultiplyTN(1.0, dFdd, d2sntdF2dFdd, 0.0);
   }
 
 
   if (d2sntDdDpxi)
   {
     d2sntDdDpxi->Shape(numdofperelement_, nsd_);
+    LINALG::Matrix<numdofperelement_, nsd_> d2sntDdDxi_m(d2sntDdDpxi->A(), true);
 
-    LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2, nen_> deriv2;
+    const int VOIGT3X3NONSYM_[3][3] = {{0, 3, 5}, {6, 1, 4}, {8, 7, 2}};
+    static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2, nen_> deriv2(true);
+    deriv2.Clear();
     if (distype == DRT::Element::nurbs27)
       DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv_deriv2(
           SetShapeFunction(), SetDerivShapeFunction(), deriv2, xi, Knots(), Weights(), distype);
     else
       DRT::UTILS::shape_function_deriv2<distype>(xi, deriv2);
 
-    LINALG::Matrix<nen_, nsd_> xXF(xcurr);
-    xXF.MultiplyNT(-1., xrefe, defgrd, 1.);
+    static LINALG::Matrix<nen_, nsd_> xXF(true);
+    static LINALG::Matrix<nsd_, DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2> xXFsec(true);
+    xXF.Update(1.0, xcurr, 0.0);
+    xXF.MultiplyNT(-1.0, xrefe, defgrd, 1.0);
+    xXFsec.MultiplyTT(1.0, xXF, deriv2, 0.0);
 
-    LINALG::Matrix<nsd_, DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2> xXFsec;
-    xXFsec.MultiplyTT(1., xXF, deriv2, 0.);
-
-    LINALG::Matrix<nsd_, nsd_> jift;
-    jift.MultiplyTT(invJ, defgrd);
-
-    LINALG::Matrix<MAT::NUM_STRESS_3D, nsd_> dbdxi(true);
-
-    int VOIGT3X3SYM_[3][3] = {{0, 3, 5}, {3, 1, 4}, {5, 4, 2}};
-
-    for (int i = 0; i < nsd_; ++i)
-      for (int j = 0; j < nsd_; ++j)
+    static LINALG::Matrix<9, nsd_> dFdxi(true);
+    dFdxi.Clear();
+    for (int a = 0; a < nsd_; ++a)
+      for (int b = 0; b < nsd_; ++b)
       {
-        dbdxi(VOIGT3X3SYM_[i][j], 0) += xXFsec(i, 0) * jift(0, j) + xXFsec(i, 3) * jift(1, j) +
-                                        xXFsec(i, 4) * jift(2, j) + xXFsec(j, 0) * jift(0, i) +
-                                        xXFsec(j, 3) * jift(1, i) + xXFsec(j, 4) * jift(2, i);
-
-        dbdxi(VOIGT3X3SYM_[i][j], 1) += xXFsec(i, 3) * jift(0, j) + xXFsec(i, 1) * jift(1, j) +
-                                        xXFsec(i, 5) * jift(2, j) + xXFsec(j, 3) * jift(0, i) +
-                                        xXFsec(j, 1) * jift(1, i) + xXFsec(j, 5) * jift(2, i);
-
-        dbdxi(VOIGT3X3SYM_[i][j], 2) += xXFsec(i, 4) * jift(0, j) + xXFsec(i, 5) * jift(1, j) +
-                                        xXFsec(i, 2) * jift(2, j) + xXFsec(j, 4) * jift(0, i) +
-                                        xXFsec(j, 5) * jift(1, i) + xXFsec(j, 2) * jift(2, i);
+        dFdxi(VOIGT3X3NONSYM_[a][b], 0) +=
+            xXFsec(a, 0) * invJ(b, 0) + xXFsec(a, 3) * invJ(b, 1) + xXFsec(a, 4) * invJ(b, 2);
+        dFdxi(VOIGT3X3NONSYM_[a][b], 1) +=
+            xXFsec(a, 3) * invJ(b, 0) + xXFsec(a, 1) * invJ(b, 1) + xXFsec(a, 5) * invJ(b, 2);
+        dFdxi(VOIGT3X3NONSYM_[a][b], 2) +=
+            xXFsec(a, 4) * invJ(b, 0) + xXFsec(a, 5) * invJ(b, 1) + xXFsec(a, 2) * invJ(b, 2);
       }
 
-    dsntdpxi->MultiplyTN(dbdxi, dsntdb);
-    if (temp) dsntdpxi->Update(dsntdT_gp, dT_dxi, 1.);
+    dsntdpxi->MultiplyTN(1.0, dFdxi, dsntdF, 0.0);
+    if (temp) dsntdpxi->Update(dsntdT_gp, dT_dxi, 1.0);
 
-    LINALG::Matrix<numdofperelement_, nsd_> d2sntDdDpxi_m(d2sntDdDpxi->A(), true);
-    d2sntDdDpxi_m.Clear();
+    static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2, nsd_> Xsec(true);
+    static LINALG::Matrix<nen_, 6> N_XYZ_Xsec(true);
+    Xsec.Multiply(1.0, deriv2, xrefe, 0.0);
+    N_XYZ_Xsec.MultiplyTT(1.0, N_XYZ, Xsec, 0.0);
 
-    LINALG::Matrix<6, numdofperelement_> d2sntdb2Bop;
-    d2sntdb2Bop.Multiply(d2sntdb2, bop);
-    d2sntDdDpxi_m.MultiplyTN(d2sntdb2Bop, dbdxi);
+    static LINALG::Matrix<9, numdofperelement_> d2sntdF2dFdd(true);
+    d2sntdF2dFdd.Multiply(1.0, d2sntdF2, dFdd, 0.0);
+    d2sntDdDxi_m.MultiplyTN(1.0, d2sntdF2dFdd, dFdxi, 0.0);
 
     if (temp)
     {
-      LINALG::Matrix<6, 3> tmp;
-      tmp.MultiplyNT(d2sntDbDT, dT_dxi);
-      LINALG::Matrix<numdofperelement_, nsd_>(d2sntDdDpxi->A(), true).MultiplyTN(1., bop, tmp, 1.);
+      static LINALG::Matrix<9, nsd_> tmp(true);
+      tmp.MultiplyNT(1.0, d2sntDFDT, dT_dxi, 0.0);
+      d2sntDdDxi_m.MultiplyTN(1.0, dFdd, tmp, 1.0);
     }
 
-    LINALG::Matrix<nsd_, nen_> invJ_N_XYZ;
-    invJ_N_XYZ.MultiplyTN(invJ, N_XYZ);
-    LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2, nsd_> Xsec;
-    Xsec.Multiply(deriv2, xrefe);
-    LINALG::Matrix<nen_, 6> N_XYZ_Xsec;
-    N_XYZ_Xsec.MultiplyTT(N_XYZ, Xsec);
-    for (int i = 0; i < nen_; ++i)
-    {
-      int x = 0;
-      for (x = 0; x < nsd_; ++x)
-      {
-        d2sntDdDpxi_m(nsd_ * i + x, 0) +=
-            dsntdb(x) * 2. *
-            (invJ_N_XYZ(0, i) * xXFsec(x, 0) + invJ_N_XYZ(1, i) * xXFsec(x, 3) +
-                invJ_N_XYZ(2, i) * xXFsec(x, 4) + jift(0, x) * deriv2(0, i) +
-                jift(1, x) * deriv2(3, i) + jift(2, x) * deriv2(4, i) -
-                jift(0, x) * N_XYZ_Xsec(i, 0) - jift(1, x) * N_XYZ_Xsec(i, 3) -
-                jift(2, x) * N_XYZ_Xsec(i, 4));
+    static LINALG::Matrix<9, nsd_ * numdofperelement_> d2Fdxidd(true);
+    d2Fdxidd.Clear();
+    for (int m = 0; m < nsd_; ++m)
+      for (int n = 0; n < nsd_; ++n)
+        for (int k = 0; k < nen_; ++k)
+        {
+          d2Fdxidd(VOIGT3X3NONSYM_[m][n], numdofpernode_ * (numdofpernode_ * k + m) + 0) +=
+              deriv2(0, k) * invJ(n, 0) + deriv2(3, k) * invJ(n, 1) + deriv2(4, k) * invJ(n, 2) -
+              N_XYZ_Xsec(k, 0) * invJ(n, 0) - N_XYZ_Xsec(k, 3) * invJ(n, 1) -
+              N_XYZ_Xsec(k, 4) * invJ(n, 2);
 
-        d2sntDdDpxi_m(nsd_ * i + x, 1) +=
-            dsntdb(x) * 2. *
-            (invJ_N_XYZ(0, i) * xXFsec(x, 3) + invJ_N_XYZ(1, i) * xXFsec(x, 1) +
-                invJ_N_XYZ(2, i) * xXFsec(x, 5) + jift(0, x) * deriv2(3, i) +
-                jift(1, x) * deriv2(1, i) + jift(2, x) * deriv2(5, i) -
-                jift(0, x) * N_XYZ_Xsec(i, 3) - jift(1, x) * N_XYZ_Xsec(i, 1) -
-                jift(2, x) * N_XYZ_Xsec(i, 5));
+          d2Fdxidd(VOIGT3X3NONSYM_[m][n], numdofpernode_ * (numdofpernode_ * k + m) + 1) +=
+              deriv2(3, k) * invJ(n, 0) + deriv2(1, k) * invJ(n, 1) + deriv2(5, k) * invJ(n, 2) -
+              N_XYZ_Xsec(k, 3) * invJ(n, 0) - N_XYZ_Xsec(k, 1) * invJ(n, 1) -
+              N_XYZ_Xsec(k, 5) * invJ(n, 2);
 
-        d2sntDdDpxi_m(nsd_ * i + x, 2) +=
-            dsntdb(x) * 2. *
-            (invJ_N_XYZ(0, i) * xXFsec(x, 4) + invJ_N_XYZ(1, i) * xXFsec(x, 5) +
-                invJ_N_XYZ(2, i) * xXFsec(x, 2) + jift(0, x) * deriv2(4, i) +
-                jift(1, x) * deriv2(5, i) + jift(2, x) * deriv2(2, i) -
-                jift(0, x) * N_XYZ_Xsec(i, 4) - jift(1, x) * N_XYZ_Xsec(i, 5) -
-                jift(2, x) * N_XYZ_Xsec(i, 2));
-      }
+          d2Fdxidd(VOIGT3X3NONSYM_[m][n], numdofpernode_ * (numdofpernode_ * k + m) + 2) +=
+              deriv2(4, k) * invJ(n, 0) + deriv2(5, k) * invJ(n, 1) + deriv2(2, k) * invJ(n, 2) -
+              N_XYZ_Xsec(k, 4) * invJ(n, 0) - N_XYZ_Xsec(k, 5) * invJ(n, 1) -
+              N_XYZ_Xsec(k, 2) * invJ(n, 2);
 
-      x = 1;
-      int y = 0;
-      d2sntDdDpxi_m(nsd_ * i + y, 0) +=
-          dsntdb(3) * 2. *
-          (invJ_N_XYZ(0, i) * xXFsec(x, 0) + invJ_N_XYZ(1, i) * xXFsec(x, 3) +
-              invJ_N_XYZ(2, i) * xXFsec(x, 4) + jift(0, x) * deriv2(0, i) +
-              jift(1, x) * deriv2(3, i) + jift(2, x) * deriv2(4, i) -
-              jift(0, x) * N_XYZ_Xsec(i, 0) - jift(1, x) * N_XYZ_Xsec(i, 3) -
-              jift(2, x) * N_XYZ_Xsec(i, 4));
-      d2sntDdDpxi_m(nsd_ * i + y, 1) +=
-          dsntdb(3) * 2. *
-          (invJ_N_XYZ(0, i) * xXFsec(x, 3) + invJ_N_XYZ(1, i) * xXFsec(x, 1) +
-              invJ_N_XYZ(2, i) * xXFsec(x, 5) + jift(0, x) * deriv2(3, i) +
-              jift(1, x) * deriv2(1, i) + jift(2, x) * deriv2(5, i) -
-              jift(0, x) * N_XYZ_Xsec(i, 3) - jift(1, x) * N_XYZ_Xsec(i, 1) -
-              jift(2, x) * N_XYZ_Xsec(i, 5));
-      d2sntDdDpxi_m(nsd_ * i + y, 2) +=
-          dsntdb(3) * 2. *
-          (invJ_N_XYZ(0, i) * xXFsec(x, 4) + invJ_N_XYZ(1, i) * xXFsec(x, 5) +
-              invJ_N_XYZ(2, i) * xXFsec(x, 2) + jift(0, x) * deriv2(4, i) +
-              jift(1, x) * deriv2(5, i) + jift(2, x) * deriv2(2, i) -
-              jift(0, x) * N_XYZ_Xsec(i, 4) - jift(1, x) * N_XYZ_Xsec(i, 5) -
-              jift(2, x) * N_XYZ_Xsec(i, 2));
-      x = 0;
-      y = 1;
-      d2sntDdDpxi_m(nsd_ * i + y, 0) +=
-          dsntdb(3) * 2. *
-          (invJ_N_XYZ(0, i) * xXFsec(x, 0) + invJ_N_XYZ(1, i) * xXFsec(x, 3) +
-              invJ_N_XYZ(2, i) * xXFsec(x, 4) + jift(0, x) * deriv2(0, i) +
-              jift(1, x) * deriv2(3, i) + jift(2, x) * deriv2(4, i) -
-              jift(0, x) * N_XYZ_Xsec(i, 0) - jift(1, x) * N_XYZ_Xsec(i, 3) -
-              jift(2, x) * N_XYZ_Xsec(i, 4));
-      d2sntDdDpxi_m(nsd_ * i + y, 1) +=
-          dsntdb(3) * 2. *
-          (invJ_N_XYZ(0, i) * xXFsec(x, 3) + invJ_N_XYZ(1, i) * xXFsec(x, 1) +
-              invJ_N_XYZ(2, i) * xXFsec(x, 5) + jift(0, x) * deriv2(3, i) +
-              jift(1, x) * deriv2(1, i) + jift(2, x) * deriv2(5, i) -
-              jift(0, x) * N_XYZ_Xsec(i, 3) - jift(1, x) * N_XYZ_Xsec(i, 1) -
-              jift(2, x) * N_XYZ_Xsec(i, 5));
-      d2sntDdDpxi_m(nsd_ * i + y, 2) +=
-          dsntdb(3) * 2. *
-          (invJ_N_XYZ(0, i) * xXFsec(x, 4) + invJ_N_XYZ(1, i) * xXFsec(x, 5) +
-              invJ_N_XYZ(2, i) * xXFsec(x, 2) + jift(0, x) * deriv2(4, i) +
-              jift(1, x) * deriv2(5, i) + jift(2, x) * deriv2(2, i) -
-              jift(0, x) * N_XYZ_Xsec(i, 4) - jift(1, x) * N_XYZ_Xsec(i, 5) -
-              jift(2, x) * N_XYZ_Xsec(i, 2));
-
-      x = 1;
-      y = 2;
-      d2sntDdDpxi_m(nsd_ * i + y, 0) +=
-          dsntdb(4) * 2. *
-          (invJ_N_XYZ(0, i) * xXFsec(x, 0) + invJ_N_XYZ(1, i) * xXFsec(x, 3) +
-              invJ_N_XYZ(2, i) * xXFsec(x, 4) + jift(0, x) * deriv2(0, i) +
-              jift(1, x) * deriv2(3, i) + jift(2, x) * deriv2(4, i) -
-              jift(0, x) * N_XYZ_Xsec(i, 0) - jift(1, x) * N_XYZ_Xsec(i, 3) -
-              jift(2, x) * N_XYZ_Xsec(i, 4));
-      d2sntDdDpxi_m(nsd_ * i + y, 1) +=
-          dsntdb(4) * 2. *
-          (invJ_N_XYZ(0, i) * xXFsec(x, 3) + invJ_N_XYZ(1, i) * xXFsec(x, 1) +
-              invJ_N_XYZ(2, i) * xXFsec(x, 5) + jift(0, x) * deriv2(3, i) +
-              jift(1, x) * deriv2(1, i) + jift(2, x) * deriv2(5, i) -
-              jift(0, x) * N_XYZ_Xsec(i, 3) - jift(1, x) * N_XYZ_Xsec(i, 1) -
-              jift(2, x) * N_XYZ_Xsec(i, 5));
-      d2sntDdDpxi_m(nsd_ * i + y, 2) +=
-          dsntdb(4) * 2. *
-          (invJ_N_XYZ(0, i) * xXFsec(x, 4) + invJ_N_XYZ(1, i) * xXFsec(x, 5) +
-              invJ_N_XYZ(2, i) * xXFsec(x, 2) + jift(0, x) * deriv2(4, i) +
-              jift(1, x) * deriv2(5, i) + jift(2, x) * deriv2(2, i) -
-              jift(0, x) * N_XYZ_Xsec(i, 4) - jift(1, x) * N_XYZ_Xsec(i, 5) -
-              jift(2, x) * N_XYZ_Xsec(i, 2));
-      x = 2;
-      y = 1;
-      d2sntDdDpxi_m(nsd_ * i + y, 0) +=
-          dsntdb(4) * 2. *
-          (invJ_N_XYZ(0, i) * xXFsec(x, 0) + invJ_N_XYZ(1, i) * xXFsec(x, 3) +
-              invJ_N_XYZ(2, i) * xXFsec(x, 4) + jift(0, x) * deriv2(0, i) +
-              jift(1, x) * deriv2(3, i) + jift(2, x) * deriv2(4, i) -
-              jift(0, x) * N_XYZ_Xsec(i, 0) - jift(1, x) * N_XYZ_Xsec(i, 3) -
-              jift(2, x) * N_XYZ_Xsec(i, 4));
-      d2sntDdDpxi_m(nsd_ * i + y, 1) +=
-          dsntdb(4) * 2. *
-          (invJ_N_XYZ(0, i) * xXFsec(x, 3) + invJ_N_XYZ(1, i) * xXFsec(x, 1) +
-              invJ_N_XYZ(2, i) * xXFsec(x, 5) + jift(0, x) * deriv2(3, i) +
-              jift(1, x) * deriv2(1, i) + jift(2, x) * deriv2(5, i) -
-              jift(0, x) * N_XYZ_Xsec(i, 3) - jift(1, x) * N_XYZ_Xsec(i, 1) -
-              jift(2, x) * N_XYZ_Xsec(i, 5));
-      d2sntDdDpxi_m(nsd_ * i + y, 2) +=
-          dsntdb(4) * 2. *
-          (invJ_N_XYZ(0, i) * xXFsec(x, 4) + invJ_N_XYZ(1, i) * xXFsec(x, 5) +
-              invJ_N_XYZ(2, i) * xXFsec(x, 2) + jift(0, x) * deriv2(4, i) +
-              jift(1, x) * deriv2(5, i) + jift(2, x) * deriv2(2, i) -
-              jift(0, x) * N_XYZ_Xsec(i, 4) - jift(1, x) * N_XYZ_Xsec(i, 5) -
-              jift(2, x) * N_XYZ_Xsec(i, 2));
-
-      x = 0;
-      y = 2;
-      d2sntDdDpxi_m(nsd_ * i + y, 0) +=
-          dsntdb(5) * 2. *
-          (invJ_N_XYZ(0, i) * xXFsec(x, 0) + invJ_N_XYZ(1, i) * xXFsec(x, 3) +
-              invJ_N_XYZ(2, i) * xXFsec(x, 4) + jift(0, x) * deriv2(0, i) +
-              jift(1, x) * deriv2(3, i) + jift(2, x) * deriv2(4, i) -
-              jift(0, x) * N_XYZ_Xsec(i, 0) - jift(1, x) * N_XYZ_Xsec(i, 3) -
-              jift(2, x) * N_XYZ_Xsec(i, 4));
-      d2sntDdDpxi_m(nsd_ * i + y, 1) +=
-          dsntdb(5) * 2. *
-          (invJ_N_XYZ(0, i) * xXFsec(x, 3) + invJ_N_XYZ(1, i) * xXFsec(x, 1) +
-              invJ_N_XYZ(2, i) * xXFsec(x, 5) + jift(0, x) * deriv2(3, i) +
-              jift(1, x) * deriv2(1, i) + jift(2, x) * deriv2(5, i) -
-              jift(0, x) * N_XYZ_Xsec(i, 3) - jift(1, x) * N_XYZ_Xsec(i, 1) -
-              jift(2, x) * N_XYZ_Xsec(i, 5));
-      d2sntDdDpxi_m(nsd_ * i + y, 2) +=
-          dsntdb(5) * 2. *
-          (invJ_N_XYZ(0, i) * xXFsec(x, 4) + invJ_N_XYZ(1, i) * xXFsec(x, 5) +
-              invJ_N_XYZ(2, i) * xXFsec(x, 2) + jift(0, x) * deriv2(4, i) +
-              jift(1, x) * deriv2(5, i) + jift(2, x) * deriv2(2, i) -
-              jift(0, x) * N_XYZ_Xsec(i, 4) - jift(1, x) * N_XYZ_Xsec(i, 5) -
-              jift(2, x) * N_XYZ_Xsec(i, 2));
-      x = 2;
-      y = 0;
-      d2sntDdDpxi_m(nsd_ * i + y, 0) +=
-          dsntdb(5) * 2. *
-          (invJ_N_XYZ(0, i) * xXFsec(x, 0) + invJ_N_XYZ(1, i) * xXFsec(x, 3) +
-              invJ_N_XYZ(2, i) * xXFsec(x, 4) + jift(0, x) * deriv2(0, i) +
-              jift(1, x) * deriv2(3, i) + jift(2, x) * deriv2(4, i) -
-              jift(0, x) * N_XYZ_Xsec(i, 0) - jift(1, x) * N_XYZ_Xsec(i, 3) -
-              jift(2, x) * N_XYZ_Xsec(i, 4));
-      d2sntDdDpxi_m(nsd_ * i + y, 1) +=
-          dsntdb(5) * 2. *
-          (invJ_N_XYZ(0, i) * xXFsec(x, 3) + invJ_N_XYZ(1, i) * xXFsec(x, 1) +
-              invJ_N_XYZ(2, i) * xXFsec(x, 5) + jift(0, x) * deriv2(3, i) +
-              jift(1, x) * deriv2(1, i) + jift(2, x) * deriv2(5, i) -
-              jift(0, x) * N_XYZ_Xsec(i, 3) - jift(1, x) * N_XYZ_Xsec(i, 1) -
-              jift(2, x) * N_XYZ_Xsec(i, 5));
-      d2sntDdDpxi_m(nsd_ * i + y, 2) +=
-          dsntdb(5) * 2. *
-          (invJ_N_XYZ(0, i) * xXFsec(x, 4) + invJ_N_XYZ(1, i) * xXFsec(x, 5) +
-              invJ_N_XYZ(2, i) * xXFsec(x, 2) + jift(0, x) * deriv2(4, i) +
-              jift(1, x) * deriv2(5, i) + jift(2, x) * deriv2(2, i) -
-              jift(0, x) * N_XYZ_Xsec(i, 4) - jift(1, x) * N_XYZ_Xsec(i, 5) -
-              jift(2, x) * N_XYZ_Xsec(i, 2));
-    }
+          for (int l = 0; l < nsd_; ++l)
+            d2sntDdDxi_m(k * 3 + m, l) +=
+                dsntdF(VOIGT3X3NONSYM_[m][n], 0) *
+                d2Fdxidd(VOIGT3X3NONSYM_[m][n], numdofpernode_ * (numdofpernode_ * k + m) + l);
+        }
   }
   InvalidEleData();
   InvalidGpData();

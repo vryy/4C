@@ -338,6 +338,16 @@ namespace MAT
       LINALG::TMatrix<T, 3, 3> const& A, LINALG::TMatrix<T, 3, 3> const& B, T const fac);
 
   /// in index notation this does:
+  /// out_{IJKL} += fac*( A_{IK} * B_{JL} + A_{JK} * B_{IL} )
+  /// Note that the result is symmetric within the first two indices
+  /// The first two indices are stored in strain-like Voigt notation.
+  /// The 2nd index pair has no symmetries and is therefore stored as 9-vector
+  /// Be aware that this is NOT symmetric w.r.t. A and B !!!
+  template <typename T>
+  void AddRightNonSymmetricHolzapfelProductStrainLike(LINALG::TMatrix<T, 6, 9>& out,
+      LINALG::TMatrix<T, 3, 3> const& A, LINALG::TMatrix<T, 3, 3> const& B, T const fac);
+
+  /// in index notation this does:
   /// out_{IJKL} += fac*( A_{IK} * B_{JL} + A_{IL} * B_{JK} )
   /// Note that the result is symmetric within the second two indices
   /// Thus the second two indices are stored in stress-like Voigt notation.

@@ -246,12 +246,12 @@ namespace MAT
     /// evaluate Cauchy stress with given left Cauchy--Green tensor
     /// if requested, additional linearizations are computed
     /// potential thermal dependency handled if temperature is given
-    virtual void EvaluateCauchy(const LINALG::Matrix<3, 3>& b, const LINALG::Matrix<3, 1>& n,
-        const LINALG::Matrix<3, 1>& t, double& snt, LINALG::Matrix<6, 1>* dsntdb,
-        LINALG::Matrix<6, 6>* d2sntdb2, LINALG::Matrix<6, 3>* d2sntDbDn,
-        LINALG::Matrix<6, 3>* d2sntDbDt, LINALG::Matrix<3, 1>* dsntdn, LINALG::Matrix<3, 1>* dsntdt,
-        const int eleGID, const double* temp = NULL, double* dsntdT = NULL,
-        LINALG::Matrix<6, 1>* d2sntDbDT = NULL);
+    void EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd, const LINALG::Matrix<3, 1>& n,
+        const LINALG::Matrix<3, 1>& t, double& snt, LINALG::Matrix<3, 1>* dsntdn,
+        LINALG::Matrix<3, 1>* dsntdt, LINALG::Matrix<9, 1>* dsntdF, LINALG::Matrix<9, 9>* d2sntdF2,
+        LINALG::Matrix<9, 3>* d2sntDFDn, LINALG::Matrix<9, 3>* d2sntDFDt, const int eleGID,
+        const double* temp = NULL, double* dsntdT = NULL,
+        LINALG::Matrix<9, 1>* d2sntDFDT = NULL) override;
 
     /// calculate derivatives of SEF for calculation of Cauchy stress
     /// can be overloaded if temperature is given
@@ -262,10 +262,11 @@ namespace MAT
     /// calculate derivatives of Cauchy stress w.r.t. temperature
     /// to be overloaded
     virtual void EvaluateCauchyTempDeriv(const LINALG::Matrix<3, 1>& prinv, const double ndt,
-        const double tbn, const double tibn, const LINALG::Matrix<6, 1>& dI1db,
-        const LINALG::Matrix<6, 1>& dI2db, const LINALG::Matrix<6, 1>& dI3db,
-        const LINALG::Matrix<6, 1>& nt_tn_v, const LINALG::Matrix<6, 1>& dtibndb,
-        const double* temp, double* dsntdT, LINALG::Matrix<6, 1>* d2sntDbDT)
+        const double bdndt, const double ibdndt, const double* temp, double* dsntdT,
+        const LINALG::Matrix<9, 1>& iFTV, const LINALG::Matrix<9, 1>& DbdndtDFV,
+        const LINALG::Matrix<9, 1>& DibdndtDFV, const LINALG::Matrix<9, 1>& dI1dF,
+        const LINALG::Matrix<9, 1>& dI2dF, const LINALG::Matrix<9, 1>& dI3dF,
+        LINALG::Matrix<9, 1>* d2sntDFDT)
     {
     }
 
@@ -448,7 +449,7 @@ namespace MAT
         const LINALG::Matrix<6, 1>& icg, const LINALG::Matrix<3, 1>& prinv, const int eleGID);
 
     /// calculate principal invariants
-    virtual void InvariantsPrincipal(LINALG::Matrix<3, 1>& prinv,  ///< principal invariants
+    void InvariantsPrincipal(LINALG::Matrix<3, 1>& prinv,  ///< principal invariants
         const LINALG::Matrix<6, 1>&
             rcg  ///< symmetric Cartesian 2-tensor in strain-like 6-Voigt notation
     );

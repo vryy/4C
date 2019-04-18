@@ -340,14 +340,14 @@ namespace DRT
 
       \note At the moment this method is only used for the nitsche contact formulation
       */
-      virtual void GetCauchyAtXi(const LINALG::Matrix<3, 1>& xi, const std::vector<double>& disp,
+      void GetCauchyAtXi(const LINALG::Matrix<3, 1>& xi, const std::vector<double>& disp,
           const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& t, double& sigma_nt,
           Epetra_SerialDenseMatrix* dsntdd, Epetra_SerialDenseMatrix* d2sntdd2,
           Epetra_SerialDenseMatrix* d2sntDdDn, Epetra_SerialDenseMatrix* d2sntDdDt,
           Epetra_SerialDenseMatrix* d2sntDdDpxi, LINALG::Matrix<3, 1>* dsntdn,
           LINALG::Matrix<3, 1>* dsntdt, LINALG::Matrix<3, 1>* dsntdpxi,
           const std::vector<double>* temp = NULL, Epetra_SerialDenseMatrix* dsntdT = NULL,
-          Epetra_SerialDenseMatrix* d2sntDdDT = NULL);
+          Epetra_SerialDenseMatrix* d2sntDdDT = NULL) override;
       //@}
 
      protected:
