@@ -1039,16 +1039,12 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::Setup(
       }
       else if (singlemat->MaterialType() == INPAR::MAT::m_scatra_multiporo_solid)
       {
-        const Teuchos::RCP<const MAT::ScatraMatMultiPoroSolid>& poromat =
-            Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroSolid>(singlemat);
         // dummy value because species in solid do not have a phaseID
         scalartophasemap_[k].phaseID = -1000;
         scalartophasemap_[k].species_type = MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid;
       }
       else if (singlemat->MaterialType() == INPAR::MAT::m_scatra_multiporo_temperature)
       {
-        const Teuchos::RCP<const MAT::ScatraMatMultiPoroTemperature>& poromat =
-            Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroTemperature>(singlemat);
         // dummy value because temperature does not have a phaseID
         scalartophasemap_[k].phaseID = -1000;
         scalartophasemap_[k].species_type =
@@ -1074,16 +1070,12 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::Setup(
   }
   else if (scatramat->MaterialType() == INPAR::MAT::m_scatra_multiporo_solid)
   {
-    const Teuchos::RCP<const MAT::ScatraMatMultiPoroSolid>& poromat =
-        Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroSolid>(scatramat);
     // dummy value because species in solid do not have a phaseID
     scalartophasemap_[0].phaseID = -1000;
     scalartophasemap_[0].species_type = MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid;
   }
   else if (scatramat->MaterialType() == INPAR::MAT::m_scatra_multiporo_temperature)
   {
-    const Teuchos::RCP<const MAT::ScatraMatMultiPoroTemperature>& poromat =
-        Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroTemperature>(scatramat);
     // dummy value because temperature does not have a phaseID
     scalartophasemap_[0].phaseID = -1000;
     scalartophasemap_[0].species_type = MAT::ScatraMatMultiPoro::SpeciesType::species_temperature;
