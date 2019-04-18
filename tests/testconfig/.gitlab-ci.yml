@@ -238,6 +238,9 @@ checkcode:
             - wrong_headers.txt
         when: on_failure
         expire_in: 4 weeks
+    only:
+        - master
+        - web
     except:
         variables:
             - $GITLAB_SCHEDULER_TYPE == "2"
