@@ -82,6 +82,19 @@ namespace BEAMINTERACTION
     bool GetMortarLambdaDiscretOutputFlag() const { return mortar_lambda_discret_; }
 
     /**
+     * \brief Return the mortar lambda continuous flag.
+     */
+    bool GetMortarLambdaContinuousOutputFlag() const { return mortar_lambda_continuous_; }
+
+    /**
+     * \brief Return the number of segments for continuous mortar output.
+     */
+    unsigned int GetMortarLambdaContinuousSegments() const
+    {
+      return mortar_lambda_continuous_segments_;
+    }
+
+    /**
      * \brief Return the nodal forces flag.
      */
     bool GetSegmentationOutputFlag() const { return segmentation_; }
@@ -127,11 +140,19 @@ namespace BEAMINTERACTION
     //! Flag whether or not to write output.
     bool output_flag_;
 
-    //! Flag whether or not to resulting nodal forces.
+    //! Flag whether or not to output resulting nodal forces.
     bool nodal_forces_;
 
-    //! Flag whether or not to resulting discrete Lagrange multiplier values for mortart pairs.
+    //! Flag whether or not to output resulting discrete Lagrange multiplier values for mortar
+    //! pairs.
     bool mortar_lambda_discret_;
+
+    //! Flag whether or not to output resulting continuous Lagrange multiplier function for mortar
+    //! pairs.
+    bool mortar_lambda_continuous_;
+
+    //! Number of segments to use for the continuous mortar output.
+    unsigned int mortar_lambda_continuous_segments_;
 
     //! Flag whether or not to write segmentation data.
     bool segmentation_;

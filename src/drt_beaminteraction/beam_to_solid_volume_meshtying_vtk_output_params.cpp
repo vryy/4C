@@ -27,6 +27,8 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams::
       output_flag_(false),
       nodal_forces_(false),
       mortar_lambda_discret_(false),
+      mortar_lambda_continuous_(false),
+      mortar_lambda_continuous_segments_(0),
       segmentation_(false),
       integration_points_(false)
 {
@@ -74,6 +76,12 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams::Setup()
 
   mortar_lambda_discret_ = (bool)DRT::INPUT::IntegralValue<int>(
       beam_to_solid_volume_meshtying_vtk_paramslist, "MORTAR_LAMBDA_DISCRET");
+
+  mortar_lambda_continuous_ = (bool)DRT::INPUT::IntegralValue<int>(
+      beam_to_solid_volume_meshtying_vtk_paramslist, "MORTAR_LAMBDA_CONTINUOUS");
+
+  mortar_lambda_continuous_segments_ =
+      beam_to_solid_volume_meshtying_vtk_paramslist.get<int>("MORTAR_LAMBDA_CONTINUOUS_SEGMENTS");
 
   segmentation_ = (bool)DRT::INPUT::IntegralValue<int>(
       beam_to_solid_volume_meshtying_vtk_paramslist, "SEGMENTATION");
