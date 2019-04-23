@@ -13,6 +13,7 @@ functions for the traction.
 
 #include "beam_to_solid_vtu_output_writer_base.H"
 #include "beam_to_solid_vtu_output_writer_visualization.H"
+#include "beam_to_solid_volume_meshtying_vtk_output_params.H"
 #include "beam_to_solid_mortar_manager.H"
 
 #include "../drt_lib/drt_utils.H"
@@ -167,9 +168,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
       visualization_writer, visualization_params);
 
 
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization =
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_discret =
       visualization_writer->GetVisualizationWriter("mortar");
-  if (visualization != Teuchos::null)
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_continuous =
+      visualization_writer->GetVisualizationWriter("mortar-continuous");
+  if (visualization_discret != Teuchos::null || visualization_continuous != Teuchos::null)
   {
     // Setup variables.
     LINALG::TMatrix<double, mortar::n_dof_, 1> q_lambda;
@@ -178,11 +181,6 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
     LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> u;
     LINALG::TMatrix<double, 3, 1> lambda_discret;
     LINALG::TMatrix<double, 3, 1> xi_mortar_node;
-
-    // Get the visualization vectors.
-    std::vector<double>& point_coordinates = visualization->GetMutablePointCoordinateVector();
-    std::vector<double>& displacement = visualization->GetMutablePointDataVector("displacement");
-    std::vector<double>& lambda_vis = visualization->GetMutablePointDataVector("lambda");
 
     // Get the mortar manager and the global lambda vector, those objects will be used to get the
     // discrete Lagrange multiplier values for this pair.
@@ -201,28 +199,87 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
     for (unsigned int i_dof; i_dof < mortar::n_dof_; i_dof++) q_lambda(i_dof) = lambda_pair[i_dof];
 
     // Add the discrete values of the Lagrange multipliers.
-
-    for (unsigned int i_node = 0; i_node < mortar::n_nodes_; i_node++)
+    if (visualization_discret != Teuchos::null)
     {
-      // Get the local coordinate of this node.
-      xi_mortar_node = DRT::UTILS::getNodeCoordinates(i_node, mortar::discretization_);
+      // Get the visualization vectors.
+      std::vector<double>& point_coordinates =
+          visualization_discret->GetMutablePointCoordinateVector();
+      std::vector<double>& displacement =
+          visualization_discret->GetMutablePointDataVector("displacement");
+      std::vector<double>& lambda_vis = visualization_discret->GetMutablePointDataVector("lambda");
 
-      // Get position and displacement of the mortar node.
-      GEOMETRYPAIR::EvaluatePosition<beam>(xi_mortar_node(0), this->ele1pos_, r, this->Element1());
-      GEOMETRYPAIR::EvaluatePosition<beam>(
-          xi_mortar_node(0), this->ele1posref_, X, this->Element1());
-      u = r;
-      u -= X;
-
-      // Get the discrete Lagrangian multiplier.
-      GEOMETRYPAIR::EvaluatePosition<mortar>(xi_mortar_node(0), q_lambda, lambda_discret);
-
-      // Add to output data.
-      for (unsigned int dim = 0; dim < 3; dim++)
+      for (unsigned int i_node = 0; i_node < mortar::n_nodes_; i_node++)
       {
-        point_coordinates.push_back(FADUTILS::CastToDouble(X(dim)));
-        displacement.push_back(FADUTILS::CastToDouble(u(dim)));
-        lambda_vis.push_back(FADUTILS::CastToDouble(lambda_discret(dim)));
+        // Get the local coordinate of this node.
+        xi_mortar_node = DRT::UTILS::getNodeCoordinates(i_node, mortar::discretization_);
+
+        // Get position and displacement of the mortar node.
+        GEOMETRYPAIR::EvaluatePosition<beam>(
+            xi_mortar_node(0), this->ele1pos_, r, this->Element1());
+        GEOMETRYPAIR::EvaluatePosition<beam>(
+            xi_mortar_node(0), this->ele1posref_, X, this->Element1());
+        u = r;
+        u -= X;
+
+        // Get the discrete Lagrangian multiplier.
+        GEOMETRYPAIR::EvaluatePosition<mortar>(xi_mortar_node(0), q_lambda, lambda_discret);
+
+        // Add to output data.
+        for (unsigned int dim = 0; dim < 3; dim++)
+        {
+          point_coordinates.push_back(FADUTILS::CastToDouble(X(dim)));
+          displacement.push_back(FADUTILS::CastToDouble(u(dim)));
+          lambda_vis.push_back(FADUTILS::CastToDouble(lambda_discret(dim)));
+        }
+      }
+    }
+
+
+    // Add the continuous values for the Lagrange multipliers.
+    if (visualization_continuous != Teuchos::null)
+    {
+      const unsigned int mortar_segments =
+          visualization_params
+              .get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVtkOutputParams>>(
+                  "output_params_ptr")
+              ->GetMortarLambdaContinuousSegments();
+      double xi;
+      std::vector<double>& point_coordinates =
+          visualization_continuous->GetMutablePointCoordinateVector(
+              (mortar_segments + 1) * 3 * this->line_to_volume_segments_.size());
+      std::vector<double>& displacement = visualization_continuous->GetMutablePointDataVector(
+          "displacement", (mortar_segments + 1) * 3 * this->line_to_volume_segments_.size());
+      std::vector<double>& lambda_vis = visualization_continuous->GetMutablePointDataVector(
+          "lambda", (mortar_segments + 1) * 3 * this->line_to_volume_segments_.size());
+      std::vector<uint8_t>& cell_type = visualization_continuous->GetMutableCellTypeVector();
+      std::vector<int32_t>& cell_offset = visualization_continuous->GetMutableCellOffsetVector();
+
+      for (const auto& segment : this->line_to_volume_segments_)
+      {
+        for (unsigned int i_curve_segment = 0; i_curve_segment <= mortar_segments;
+             i_curve_segment++)
+        {
+          // Get the position, displacement and lambda value at the current point.
+          xi = segment.GetEtaA() +
+               i_curve_segment * (segment.GetEtaB() - segment.GetEtaA()) / (double)mortar_segments;
+          GEOMETRYPAIR::EvaluatePosition<beam>(xi, this->ele1pos_, r, this->Element1());
+          GEOMETRYPAIR::EvaluatePosition<beam>(xi, this->ele1posref_, X, this->Element1());
+          u = r;
+          u -= X;
+          GEOMETRYPAIR::EvaluatePosition<mortar>(xi, q_lambda, lambda_discret);
+
+          // Add to output data.
+          for (unsigned int dim = 0; dim < 3; dim++)
+          {
+            point_coordinates.push_back(FADUTILS::CastToDouble(X(dim)));
+            displacement.push_back(FADUTILS::CastToDouble(u(dim)));
+            lambda_vis.push_back(FADUTILS::CastToDouble(lambda_discret(dim)));
+          }
+        }
+
+        // Add the cell for this segment (poly line).
+        cell_type.push_back(4);
+        cell_offset.push_back(point_coordinates.size() / 3);
       }
     }
   }

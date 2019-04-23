@@ -88,6 +88,14 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::Setup(
       visualization_writer->AddPointDataVector("lambda", 3);
     }
 
+    if (output_params_ptr_->GetMortarLambdaContinuousOutputFlag())
+    {
+      Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
+          output_writer_base_ptr_->AddVisualizationWriter("mortar-continuous");
+      visualization_writer->AddPointDataVector("displacement", 3);
+      visualization_writer->AddPointDataVector("lambda", 3);
+    }
+
     if (output_params_ptr_->GetIntegrationPointsOutputFlag())
     {
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
@@ -154,6 +162,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::
 {
   // Parameter list that will be passed to all contact pairs when they create their visualization.
   Teuchos::ParameterList visualization_params;
+  visualization_params.set<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVtkOutputParams>>(
+      "output_params_ptr", output_params_ptr_);
 
 
   // Add the nodal forces resulting from beam contact. The forces are split up into beam and solid
@@ -202,7 +212,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::
   // shape function. To do this we need to calculate the global lambda vector. It will be added to
   // the parameter list and each pair can get the values it needs and generate the visualization.
   visualization = output_writer_base_ptr_->GetVisualizationWriter("mortar");
-  if (visualization != Teuchos::null)
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_continuous =
+      output_writer_base_ptr_->GetVisualizationWriter("mortar-continuous");
+  if (visualization != Teuchos::null || visualization_continuous != Teuchos::null)
   {
     // This output only works if there is an indirect assembly manager in the beam contact submodel
     // evaluator.
