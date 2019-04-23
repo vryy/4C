@@ -208,7 +208,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::
     // evaluator.
     Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect>
         indirect_assembly_manager = Teuchos::null;
-    for (auto& assembly_manager : beam_contact->assembly_managers_)
+    for (auto& assembly_manager : beam_contact->GetAssemblyManagers())
     {
       indirect_assembly_manager = Teuchos::rcp_dynamic_cast<
           BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect>(assembly_manager);
@@ -232,7 +232,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::
 
 
   // Add the pair specific visualization by looping over the individual contact pairs.
-  for (const auto& pair : beam_contact->contact_elepairs_)
+  for (const auto& pair : beam_contact->GetContactPairs())
     pair->GetPairVisualization(output_writer_base_ptr_, visualization_params);
 
 
