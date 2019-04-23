@@ -3191,19 +3191,37 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculatePhaseChangeIncrement(
   else
     dserror("Latent heat as source term only with MAT::FourierVar");
 
-  const double Tm = mat->Consolidation()->MeltingTemperature();
-  const double rhoC = mat->HeatIntegrationCapacity();
+  LINALG::Matrix<nen_, 1> Tlast;
+  mat->Consolidation()->LastMushyTemperature(Tlast);
+  const MAT::PAR::Consolidation* par =
+      static_cast<const MAT::PAR::Consolidation*>(mat->Consolidation()->Parameter());
+  const double Ts = par->solidustemp_;
+  const double Tl = par->liquidustemp_;
+  const double rhoC = 1 / ((Tl - Ts) / par->latentheat_ + 1 / mat->HeatIntegrationCapacity());
 
   for (int idof = 0; idof < nen_ * numdofpernode_; idof++)
   {
-    if (abs(Tm - etempn_(idof)) > melttol) (*esourceinc)(idof) = rhoC * (Tm - etempn_(idof));
+    if ((etemp_(idof) < Ts and etempn_(idof) < Ts) or (etemp_(idof) > Tl and etempn_(idof) > Tl))
+    {
+      (*esourceinc)(idof) = 0;
+    }
+    else
+    {
+      (*esourceinc)(idof) = rhoC * (Tlast(idof) - etempn_(idof));
+    }
   }
 
   // call material to limit source term based on history
   mat->Consolidation()->LimitLatentHeatSourceTerm(*esourceinc, *etempmod);
   esourceinc->Scale(1.0 / stepsize);
 
+  std::cout << "ele: " << ele->Id() << std::endl;
+  etemp_.Print(std::cout);
+  etempn_.Print(std::cout);
+  esourceinc->Print(std::cout);
+
   // remove assembly on nodal temperature by dividing out number of elements
+  // source term is ready for assembly due to lumped factor being only from current element
   DRT::Node** nodes = ele->Nodes();
   for (int inode = 0; inode < nen_; inode++)
   {

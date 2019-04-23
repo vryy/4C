@@ -100,7 +100,7 @@ SIMPLE_DAMPING                  1
 SOLVER                          Aztec_MSR
 ----------------------------------------------------------MATERIALS
 MAT 1 THERM_FourierVar CAPAFUNCT 3 2 3  CONDUCTFUNCT 5 4 5 CONSOLMAT 2
-MAT 2 MAT_Consolidation SOLIDUS 20 LIQUIDUS 20 LATENTHEAT 338e6
+MAT 2 MAT_Consolidation SOLIDUS 17 LIQUIDUS 23 LATENTHEAT 338e6
 -----------------------------------------------CLONING MATERIAL MAP
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 10

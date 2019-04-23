@@ -188,12 +188,6 @@ namespace MAT
                 k1 / (2 * delta);
           a2_ = k2 / (2 * delta) -
                 (2 * y1 - 2 * y2 + delta * (k1 + k2)) / (4 * delta * (delta + x1 - x2));
-          //        sx1_ = x1 - (2*delta*k1*(delta + x1 - x2))/(2*y1 - 2*y2 - delta*k1 + delta*k2 -
-          //        2*k1*x1 + 2*k1*x2); sx2_ = x2 + (2*delta*k2*(delta + x1 - x2))/(2*y1 - 2*y2 +
-          //        delta*k1 - delta*k2 - 2*k2*x1 + 2*k2*x2); sy1_ = y1 - (delta*k1*k1*(delta + x1 -
-          //        x2))/(2*y1 - 2*y2 - delta*k1 + delta*k2 - 2*k1*x1 + 2*k1*x2); sy2_ = y2 +
-          //        (delta*k2*k2*(delta + x1 - x2))/(2*y1 - 2*y2 + delta*k1 - delta*k2 - 2*k2*x1 +
-          //        2*k2*x2);
           a3_ = (y1 - y2 + (delta * (k1 + k2)) / 2) / (delta + x1 - x2);
           b3_ = y1 + (delta * k1) / 2 -
                 ((delta + 2 * x1) * (2 * y1 - 2 * y2 + delta * k1 + delta * k2)) /
@@ -388,6 +382,7 @@ namespace MAT
     template <unsigned int nen>
     void SetFunct(const LINALG::Matrix<nen, 1>& shapefunct)
     {
+      // used latent heat: total - remaining
       enth_ = params_->latentheat_;
       for (unsigned i = 0; i < nen; i++) enth_ += shapefunct(i) * lhremnp_->at(i);
     }
@@ -497,7 +492,25 @@ namespace MAT
         // finally scale by lumped factor
         nodalsourceinc(i) *= nodallump_->at(i);
         // perform nodal reset if there is a source term
-        if (abs(nodalsourceinc(i)) > 1e-8) nodaltemp(i) = MeltingTemperature();
+        if (abs(nodalsourceinc(i)) > 0)
+          nodaltemp(i) = params_->solidustemp_ +
+                         (params_->latentheat_ - abs(lhremnp_->at(i))) / params_->latentheat_ *
+                             (params_->liquidustemp_ - params_->solidustemp_);
+      }
+      for (std::vector<double>::const_iterator i = lhremnp_->begin(); i != lhremnp_->end(); ++i)
+        std::cout << *i << ' ';
+    }
+
+    template <unsigned int nen>
+    void LastMushyTemperature(
+        LINALG::Matrix<nen, 1>& nodaltemp  // nodal temperature, (return) reset if source term
+    )
+    {
+      for (unsigned i = 0; i < nen; i++)
+      {
+        nodaltemp(i) = params_->solidustemp_ + (params_->latentheat_ - abs(lhremnp_->at(i))) /
+                                                   params_->latentheat_ *
+                                                   (params_->liquidustemp_ - params_->solidustemp_);
       }
     }
 
@@ -569,20 +582,12 @@ namespace MAT
         }
         else
         {
-          if (HasSmoothing())
-          {
-            const double rc = cfracnode_->at(i);
-            nodalvalue(i) = GetCurrentInterpolant(rc, functions)->valueAt(nodaltemp(i));
-          }
-          else
-          {
-            EvaluateFractions(nodaltemp(i), cfracnode_->at(i));
-            const double powderVal = FunctionValue(nodaltemp(i), functions[0]);
-            const double meltVal = FunctionValue(nodaltemp(i), functions[1]);
-            const double solidVal = FunctionValue(nodaltemp(i), functions[2]);
-            nodalvalue(i) =
-                powderVal * frac_->at(0) + meltVal * frac_->at(1) + solidVal * frac_->at(2);
-          }
+          EvaluateFractions(nodaltemp(i), cfracnode_->at(i));
+          const double powderVal = FunctionValue(nodaltemp(i), functions[0]);
+          const double meltVal = FunctionValue(nodaltemp(i), functions[1]);
+          const double solidVal = FunctionValue(nodaltemp(i), functions[2]);
+          nodalvalue(i) =
+              powderVal * frac_->at(0) + meltVal * frac_->at(1) + solidVal * frac_->at(2);
         }
       }
     }
@@ -609,14 +614,6 @@ namespace MAT
     /// helper evaluating the definition of cfrac, alsos ets fractional temperature
     double CFracNext(const double temperature, const double oldcfrac);
 
-    /// evaluate between Ts and Tl using a smoothed interpolation
-    double EvaluateSmoothTransition(
-        const double temperature, const int gp, const std::vector<int> functions);
-
-    /// evaluate derivative between Ts and Tl of smoothed interpolation
-    double EvaluateSmoothDerivative(
-        const double temperature, const int gp, const std::vector<int> functions);
-
     //! evaluate relative temperature between T1 and T1 and store
     void EvaluateTFrac(const double temperature);
 
@@ -635,20 +632,6 @@ namespace MAT
     //! \return a if 0 <= a <= 1, 0 if a < 0, 1 if a > 1
     inline double limiter(const double a) const { return std::min(std::max(a, 0.0), 1.0); }
 
-    /// select the interpolant based on the current consolidated fraction
-    /// prerequisite: EvaluateCFracnpAtGp() called
-    InterpolantPtr GetCurrentInterpolant(const double rc, const std::vector<int> functions);
-
-    /// return the (cached) interpolant smoothly connecting all-powder with all-melt
-    InterpolantPtr GetOrCreateBaseInterpolant(const std::vector<int> functions);
-
-    /// create the interpolant smoothly connecting all-powder with all-melt
-    InterpolantPtr CreateBaseInterpolant(const std::vector<int>& functions);
-
-    /// Check if interpolation is linear or smoothed.
-    ///
-    /// \todo this switching should be done with polymorphism and different evaluation strategies
-    bool HasSmoothing() { return (params_->delta_ > 1e-12); }
 
     /// my material parameters
     MAT::PAR::Consolidation* params_;
@@ -676,11 +659,6 @@ namespace MAT
     /// avoids passing around vectors all the time
     std::vector<double>* frac_;
     std::vector<double>* frac_T_;
-
-    /// initial interpolation curve from powder to melt, not dependent on GP
-    /// since we might call this class with different functions, we cache all calculated
-    /// interpolants
-    InterpolantCache baseInterpolantCache;
 
     /// interpolates from 0 to 1 between [Ts-delta/2, Tl+delta/2]
     InterpolantPtr fractionInterpolant;

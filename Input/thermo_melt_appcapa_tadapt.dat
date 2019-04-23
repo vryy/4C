@@ -4,11 +4,11 @@ General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
 pseudo 1D melting of artificial material
-  distributed heat source
-  melt region growing from left to right
-  latent heat considered with apparent capacity method
-  smoothed parameter interpolation based on temperature
-  time step halving if Newton unconverged
+distributed heat source
+melt region growing from left to right
+latent heat considered with apparent capacity method
+linear parameter interpolation based on temperature
+time step halving if Newton unconverged
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      10
 //NODES                         44
@@ -97,7 +97,7 @@ SIMPLE_DAMPING                  1
 SOLVER                          UMFPACK                       //Aztec_MSR
 -------------------------------------------------------------------MATERIALS
 MAT 1 THERM_FourierVar CAPAFUNCT 2 3 2 CONDUCTFUNCT 5 4 5 CONSOLMAT 2
-MAT 2 MAT_Consolidation SOLIDUS 17 LIQUIDUS 23 DELTA 1 LATENTHEAT 338e6
+MAT 2 MAT_Consolidation SOLIDUS 17 LIQUIDUS 23 LATENTHEAT 338e6
 --------------------------------------------------------CLONING MATERIAL MAP
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 10
@@ -113,10 +113,10 @@ FASTPOLYNOMIAL                  NUMCOEFF 1 COEFF 0.556
 ----------------------------------------------------------------------FUNCT6
 COMPONENT                       0 FUNCTION 20000*(0.5-x)
 ----------------------------------------------------------RESULT DESCRIPTION
-THERMAL DIS thermo NODE 1 QUANTITY temp VALUE  2.00267307034122581e+02 TOLERANCE 1e-12
-THERMAL DIS thermo NODE 10 QUANTITY temp VALUE  1.66182689608389893e+02 TOLERANCE 1e-12
-THERMAL DIS thermo NODE 20 QUANTITY temp VALUE  9.71987527863744702e+01 TOLERANCE 1e-12
-THERMAL DIS thermo NODE 44 QUANTITY temp VALUE  1.70441395060766645e+01 TOLERANCE 1e-12
+THERMAL DIS thermo NODE 1 QUANTITY temp VALUE  2.01564647295339455e+02 TOLERANCE 1e-12
+THERMAL DIS thermo NODE 10 QUANTITY temp VALUE  1.67112430685078181e+02 TOLERANCE 1e-12
+THERMAL DIS thermo NODE 20 QUANTITY temp VALUE  9.85892342857636095e+01 TOLERANCE 1e-12
+THERMAL DIS thermo NODE 44 QUANTITY temp VALUE  1.74249694390460306e+01 TOLERANCE 1e-12
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0

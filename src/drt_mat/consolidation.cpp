@@ -220,20 +220,9 @@ void MAT::Consolidation::SetupFunctionEvaluateVariables()
 
   if (params_->enthalpydep_)
   {
-    // TODO only linear for now!
     Ts_mod_ = 0;
     Tl_mod_ = params_->latentheat_;
     fractionInterpolant = Teuchos::rcp(new LinearInterpolant(Ts_mod_, Tl_mod_, 0, 1));
-    return;
-  }
-
-  // mushy
-  if (HasSmoothing())
-  {
-    Ts_mod_ = params_->solidustemp_ - params_->delta_ / 2;
-    Tl_mod_ = params_->liquidustemp_ + params_->delta_ / 2;
-    fractionInterpolant =
-        Teuchos::rcp(new QuadLinQuadInterpolant(Ts_mod_, Tl_mod_, 0, 1, 0, 0, params_->delta_));
   }
   else
   {
@@ -241,6 +230,7 @@ void MAT::Consolidation::SetupFunctionEvaluateVariables()
     Tl_mod_ = params_->liquidustemp_;
     fractionInterpolant = Teuchos::rcp(new LinearInterpolant(Ts_mod_, Tl_mod_, 0, 1));
   }
+
   // create apparent capacity interpolants
   // TODO unnecessary to have these in each material instance, they are always the same
   const double Tmid = (Ts_mod_ + Tl_mod_) / 2;
@@ -293,28 +283,13 @@ double MAT::Consolidation::EvaluateTempDependentFunction(
   }
   else
   {
-    if (HasSmoothing())
-    {
-      // inside [Ts,Tl] we compute a smoothed, quadratic-linear-quadratic approximation to the
-      // linear interpolation
-      EvaluateCFracnpAtGp(temperature, gp);  // also evaluates Tfrac, must be called here
-      const double val = EvaluateSmoothTransition(temperature, gp, functions);
-      //      EvaluateFractions(temperature, cfracnp_->at(gp));
-      //      const double val_lin = ScalarProduct(frac_, values_);
-      //      if (abs(val-val_lin) > 1)
-      //        std::cout << "funct: smooth: " << val << " lin: " << val_lin << std::endl;
-      return val;
-    }
-    else
-    {
-      // quasi-linear interpolation
-      EvaluateCFracnpAtGp(temperature, gp);  // also evaluates Tfrac
-      EvaluateFractions(temperature, cfracnp_->at(gp));
-      const double powderVal = FunctionValue(temperature, functions[0]);
-      const double meltVal = FunctionValue(temperature, functions[1]);
-      const double solidVal = FunctionValue(temperature, functions[2]);
-      return powderVal * frac_->at(0) + meltVal * frac_->at(1) + solidVal * frac_->at(2);
-    }
+    // quasi-linear interpolation
+    EvaluateCFracnpAtGp(temperature, gp);  // also evaluates Tfrac
+    EvaluateFractions(temperature, cfracnp_->at(gp));
+    const double powderVal = FunctionValue(temperature, functions[0]);
+    const double meltVal = FunctionValue(temperature, functions[1]);
+    const double solidVal = FunctionValue(temperature, functions[2]);
+    return powderVal * frac_->at(0) + meltVal * frac_->at(1) + solidVal * frac_->at(2);
   }
 }
 
@@ -346,178 +321,20 @@ double MAT::Consolidation::EvaluateTempDependentDerivative(
   }
   else
   {
-    if (HasSmoothing())
-    {
-      // inside [Ts,Tl] we compute a smoothed, cubic approximation to the linear interpolation
-      EvaluateCFracnpAtGp(temperature, gp);
-      const double val = EvaluateSmoothDerivative(temperature, gp, functions);
-      return val;
-    }
-    else
-    {
-      // evaluate according to the product rule
-      // TODO warning not validated that this still works, derivs are probably wrong!
-      EvaluateCFracnpAtGp(temperature, gp);
-      EvaluateFractions(temperature, cfracnp_->at(gp));
-      EvaluateFractionDerivatives(temperature, cfracnp_->at(gp), cfracn_->at(gp));
-      const double powderDeriv = FunctionDerivative(temperature, functions[0]);
-      const double meltDeriv = FunctionDerivative(temperature, functions[1]);
-      const double solidDeriv = FunctionDerivative(temperature, functions[2]);
-      const double powderVal = FunctionValue(temperature, functions[0]);
-      const double meltVal = FunctionValue(temperature, functions[1]);
-      const double solidVal = FunctionValue(temperature, functions[2]);
-      return powderDeriv * frac_->at(0) + meltDeriv * frac_->at(1) + solidDeriv * frac_->at(2) +
-             powderVal * frac_T_->at(0) + meltVal * frac_T_->at(1) + solidVal * frac_T_->at(2);
-    }
+    // evaluate according to the product rule
+    // TODO warning not validated that this still works, derivs are probably wrong!
+    EvaluateCFracnpAtGp(temperature, gp);
+    EvaluateFractions(temperature, cfracnp_->at(gp));
+    EvaluateFractionDerivatives(temperature, cfracnp_->at(gp), cfracn_->at(gp));
+    const double powderDeriv = FunctionDerivative(temperature, functions[0]);
+    const double meltDeriv = FunctionDerivative(temperature, functions[1]);
+    const double solidDeriv = FunctionDerivative(temperature, functions[2]);
+    const double powderVal = FunctionValue(temperature, functions[0]);
+    const double meltVal = FunctionValue(temperature, functions[1]);
+    const double solidVal = FunctionValue(temperature, functions[2]);
+    return powderDeriv * frac_->at(0) + meltDeriv * frac_->at(1) + solidDeriv * frac_->at(2) +
+           powderVal * frac_T_->at(0) + meltVal * frac_T_->at(1) + solidVal * frac_T_->at(2);
   }
-}
-
-
-/*-----------------------------------------------------------------------*/
-/*-----------------------------------------------------------------------*/
-double MAT::Consolidation::EvaluateSmoothTransition(
-    const double temperature, const int gp, const std::vector<int> functions)
-{
-  const double rc = cfracnp_->at(gp);
-  return GetCurrentInterpolant(rc, functions)->valueAt(temperature);
-}
-
-/*-----------------------------------------------------------------------*/
-/*-----------------------------------------------------------------------*/
-double MAT::Consolidation::EvaluateSmoothDerivative(
-    const double temperature, const int gp, const std::vector<int> functions)
-{
-  const double rc = cfracnp_->at(gp);
-  return GetCurrentInterpolant(rc, functions)->derivativeAt(temperature);
-}
-
-/*-----------------------------------------------------------------------*/
-/*-----------------------------------------------------------------------*/
-MAT::Consolidation::InterpolantPtr MAT::Consolidation::GetCurrentInterpolant(
-    const double rc, const std::vector<int> functions)
-{
-  InterpolantPtr baseInterpolant = GetOrCreateBaseInterpolant(functions);
-
-  if (Tfrac_ < rc)
-  {  // left of Tmax
-    // fraction is a function of T -> inverse of curve gives Tmax
-    // TODO inversion is prone to round-off errors -> Tmax might be equal to T here!
-    const double Tmax = fractionInterpolant->inverseAt(rc);
-    const double powderDeriv = FunctionDerivative(Ts_mod_, functions[0]);
-    const double solidDeriv = FunctionDerivative(Ts_mod_, functions[2]);
-    const double valleft =
-        rc * FunctionValue(Ts_mod_, functions[2]) + (1 - rc) * FunctionValue(Ts_mod_, functions[0]);
-    const double derivleft = rc * solidDeriv + (1 - rc) * powderDeriv;
-    const double valmid = baseInterpolant->valueAt(Tmax);
-    const double derivmid = baseInterpolant->derivativeAt(Tmax);
-
-    // compute a safe delta for very close values
-    double delta = params_->delta_;
-    // q1,q2 and q3 should not overlap->give linear half of width
-    double delta_max = (Tmax - Ts_mod_) / 4;
-    double safety = 0.5;
-    // ensure monotonicity
-    if (abs(derivmid + derivleft) > 1e-6)
-      delta_max = std::min(delta_max, safety * 2 * (valmid - valleft) / (derivmid + derivleft));
-    delta = std::min(delta_max, delta);
-
-    bool linearCurve = false;
-    // TODO not really necessary here, only service for debugging, is checked in QuadLinQuad anyway
-    //    if (delta <= 0){
-    //      std::cout << "Ts_mod: " << Ts_mod_ << " Tmax: " << Tmax << " valleft: " << valleft << "
-    //      valmid: "
-    //          << valmid << " derivleft: " << derivleft << " derivmid: " << derivmid << " delta: "
-    //          << delta << std::endl;
-    //      std::cout <<"Monotonicity cannot be ensured -> using linear curve instead"<<std::endl;
-    //      linearCurve = true;
-    //    }
-
-    // const double a3 = (valleft - valmid + (delta*(derivleft + derivmid))/2)/(delta + Ts_mod_ -
-    // Tmax);
-    const double tol = 1e-8;  // assume linearity if relative slope difference below this value
-
-    InterpolantPtr leftInterpolant;
-    if (linearCurve or abs(Ts_mod_ - Tmax) < tol)
-    {
-      //      std::cout << "functs: "<<functions[0]<<"Ts_mod ~= Tmax -> using linear interpolation"
-      //      << std::endl;
-      leftInterpolant = Teuchos::rcp(new LinearInterpolant(Ts_mod_, Tmax, valleft, valmid));
-    }
-    else
-    {
-      try
-      {
-        leftInterpolant = Teuchos::rcp(
-            new QuadLinQuadInterpolant(Ts_mod_, Tmax, valleft, valmid, derivleft, derivmid, delta));
-      }
-      catch (...)
-      {
-        std::cout << "Failed to interpolate:" << std::endl;
-        std::cout << "Ts_mod: " << Ts_mod_ << " Tmax: " << Tmax << "valleft: " << valleft
-                  << " valmid: " << valmid << " derivleft: " << derivleft
-                  << "derivmid: " << derivmid << " delta: " << delta << std::endl;
-        dserror("Could not create QuadLinQuadInterpolant");
-      }
-    }
-    // TODO cache the left interpolants somehow
-    return leftInterpolant;
-  }
-  else
-  {  // on Tmax: use base Interpolant
-    return baseInterpolant;
-  }
-}
-
-/*-----------------------------------------------------------------------*/
-/*-----------------------------------------------------------------------*/
-MAT::Consolidation::InterpolantPtr MAT::Consolidation::CreateBaseInterpolant(
-    const std::vector<int>& functions)
-{
-  // left is all powder initially
-  const double valleft = FunctionValue(Ts_mod_, functions[0]);
-  const double derivleft = FunctionDerivative(Ts_mod_, functions[0]);
-  // right is all melt
-  const double valright = FunctionValue(Tl_mod_, functions[1]);
-  const double derivright = FunctionDerivative(Tl_mod_, functions[1]);
-
-  // compute a safe delta for very close values
-  double delta = params_->delta_;
-  // q1,q2 and q3 should not overlap->give linear half of width
-  double delta_max = (Tl_mod_ - Ts_mod_) * 0.25;
-  double safety = 0.5;
-  // ensure monotonicity
-  //    std::cout << functions[0] <<" k1+k2=" << derivmid+derivleft << std::endl;
-  if (abs(derivright + derivleft) > 1e-6)
-    delta_max = std::min(delta_max, safety * 2 * (valright - valleft) / (derivright + derivleft));
-  delta = std::min(delta_max, delta);
-
-  if (delta < params_->delta_) std::cout << "base delta changed to" << delta << std::endl;
-
-  // TODO missing check for equal slopes
-  InterpolantPtr baseInterpolant = Teuchos::rcp(new QuadLinQuadInterpolant(
-      Ts_mod_, Tl_mod_, valleft, valright, derivleft, derivright, delta));
-  return baseInterpolant;
-}
-
-
-/*-----------------------------------------------------------------------*/
-/*-----------------------------------------------------------------------*/
-MAT::Consolidation::InterpolantPtr MAT::Consolidation::GetOrCreateBaseInterpolant(
-    const std::vector<int> functions)
-{
-  InterpolantPtr baseInterpolant;
-
-  auto it = baseInterpolantCache.find(functions);
-  if (it != baseInterpolantCache.end())
-  {
-    baseInterpolant = it->second;
-  }
-  else
-  {
-    baseInterpolant = CreateBaseInterpolant(functions);
-    baseInterpolantCache[functions] = baseInterpolant;
-  }
-  return baseInterpolant;
 }
 
 
