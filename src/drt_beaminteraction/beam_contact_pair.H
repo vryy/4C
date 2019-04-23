@@ -255,9 +255,11 @@ namespace BEAMINTERACTION
     }
 
     /**
-     * \brief Add the visualization of this pair to the beam to solid vtu output writer. This is
-     * currently only implemented for beam to solid pairs, if in the future we also want to use this
-     * function in other type of pairs, the name should be adapted accordingly.
+     * \brief Add the visualization of this pair to the beam to solid vtu output writer.
+     *
+     * This is currently only implemented for beam to solid pairs, if in the future we also want to
+     * use this function in other type of pairs, the name should be adapted accordingly.
+     *
      * @param visualization_writer (out) Object that manages all visualization related data for beam
      * to solid pairs.
      * @param visualization_params (in) Parameter list with possible needed data to generate the
@@ -265,7 +267,7 @@ namespace BEAMINTERACTION
      */
     virtual void GetPairVisualization(
         Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
-        Teuchos::ParameterList visualization_params) const
+        const Teuchos::ParameterList& visualization_params) const
     {
     }
 

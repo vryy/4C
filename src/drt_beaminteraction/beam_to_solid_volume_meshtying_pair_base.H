@@ -180,15 +180,18 @@ namespace BEAMINTERACTION
     }
 
     /**
-     * \brief Add the visualization of this pair to the beam to solid vtu output writer. This base
-     * class creates output of (if selected in the input file) the segmentation, the integration
-     * points - and if implemented in the derived classes - the forces at the integration points.
+     * \brief Add the visualization of this pair to the beam to solid vtu output writer.
+     *
+     * This base class creates output of (if selected in the input file) the segmentation, the
+     * integration points - and if implemented in the derived classes - the forces at the
+     * integration points.
+     *
      * @param visualization_writer (out) Object that manages all visualization related data for beam
      * to solid pairs.
      * @param visualization_params (in) Parameter list (not used in this class).
      */
     void GetPairVisualization(Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
-        Teuchos::ParameterList visualization_params) const override;
+        const Teuchos::ParameterList& visualization_params) const override;
 
    protected:
     /**
@@ -210,9 +213,11 @@ namespace BEAMINTERACTION
     };
 
     /**
-     * \brief This function evaluates the position at an integration point for the pairs. This is
-     * needed because the cross section pairs have 3 parameter coordinates on the beam and the other
-     * pairs have 1. This method is mainly used for visualization.
+     * \brief This function evaluates the position at an integration point for the pairs.
+     *
+     * This is needed because the cross section pairs have 3 parameter coordinates on the beam and
+     * the other pairs have 1. This method is mainly used for visualization.
+     *
      * @param integration_point (in) Integration where the position should be evaluated.
      * @param r_beam (out) Position on the beam.
      * @param reference (in) True -> the reference position is calculated, False -> the current
@@ -224,7 +229,10 @@ namespace BEAMINTERACTION
 
     /**
      * \brief This function evaluates the penalty force from a given beam position and a given solid
-     * position. This method is mainly used for visualization.
+     * position.
+     *
+     * This method is mainly used for visualization.
+     *
      * @param r_beam (in) Position on the beam.
      * @param r_solid (in) Position on the solid.
      * @param force (out) Force acting on the beam (the negative force acts on the solid).

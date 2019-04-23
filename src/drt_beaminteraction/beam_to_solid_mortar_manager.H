@@ -206,16 +206,16 @@ namespace BEAMINTERACTION
     //! Pointer to the beam contact parameters.
     Teuchos::RCP<const BEAMINTERACTION::BeamContactParams> beam_contact_parameters_ptr_;
 
-    //! Rowmap of the additional Lagrange multiplier DOFs.
+    //! Row map of the additional Lagrange multiplier DOFs.
     Teuchos::RCP<Epetra_Map> lambda_dof_rowmap_;
 
-    //! Colmap of the additional Lagrange multiplier DOFs.
+    //! Column map of the additional Lagrange multiplier DOFs.
     Teuchos::RCP<Epetra_Map> lambda_dof_colmap_;
 
-    //! Rowmap of the beam DOFs.
+    //! Row map of the beam DOFs.
     Teuchos::RCP<Epetra_Map> beam_dof_rowmap_;
 
-    //! Rowmap of the solid DOFs.
+    //! Row map of the solid DOFs.
     Teuchos::RCP<Epetra_Map> solid_dof_rowmap_;
 
     //! Multivector that connects the global node IDs with the Lagrange multiplier DOF IDs.

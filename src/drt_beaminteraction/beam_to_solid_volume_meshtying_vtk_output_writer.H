@@ -95,6 +95,9 @@ namespace BEAMINTERACTION
      * \brief Gather all output data after for beam to solid volume mesh tying and write the files
      * to disc.
      * @param beam_contact (in) Pointer to the beam contact sub model evaluator.
+     * @param i_step (in) Number of this visualization step (does not have to be continuous, e.g. in
+     * iteration visualization).
+     * @param time (in) Scalar time value for this visualization step.
      */
     void WriteOutputBeamToSolidVolumeMeshTying(
         const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact, int i_step,

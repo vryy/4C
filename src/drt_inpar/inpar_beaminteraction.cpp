@@ -198,31 +198,32 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
 
   // Whether to write vtp output at all for btsvmt.
   setStringToIntegralParameter<int>("WRITE_OUTPUT", "No",
-      "Write beam to solid volume meshtying output.", yesnotuple, yesnovalue,
+      "Enable / disable beam-to-solid volume mesh tying output.", yesnotuple, yesnovalue,
       &beam_to_solid_volume_mestying_vtk);
 
   setStringToIntegralParameter<int>("NODAL_FORCES", "No",
-      "Write the resulting nodal forces due to beam to solid interaction.", yesnotuple, yesnovalue,
-      &beam_to_solid_volume_mestying_vtk);
+      "Enable / disable output of the resulting nodal forces due to beam to solid interaction.",
+      yesnotuple, yesnovalue, &beam_to_solid_volume_mestying_vtk);
 
   setStringToIntegralParameter<int>("MORTAR_LAMBDA_DISCRET", "No",
-      "Write the discrete Lagrange multipliers at the node of the Lagrange multiplier shape "
-      "functions.",
+      "Enable / disable output of the discrete Lagrange multipliers at the node of the Lagrange "
+      "multiplier shape functions.",
       yesnotuple, yesnovalue, &beam_to_solid_volume_mestying_vtk);
 
   setStringToIntegralParameter<int>("MORTAR_LAMBDA_CONTINUOUS", "No",
-      "Output the continuous Lagrange multipliers function along the beam.", yesnotuple, yesnovalue,
-      &beam_to_solid_volume_mestying_vtk);
+      "Enable / disable output of the continuous Lagrange multipliers function along the beam.",
+      yesnotuple, yesnovalue, &beam_to_solid_volume_mestying_vtk);
 
   DRT::INPUT::IntParameter("MORTAR_LAMBDA_CONTINUOUS_SEGMENTS", 5,
       "Number of segments for continuous mortar output", &beam_to_solid_volume_mestying_vtk);
 
-  setStringToIntegralParameter<int>("SEGMENTATION", "No", "Output segmentation points.", yesnotuple,
-      yesnovalue, &beam_to_solid_volume_mestying_vtk);
+  setStringToIntegralParameter<int>("SEGMENTATION", "No",
+      "Enable / disable output of segmentation points.", yesnotuple, yesnovalue,
+      &beam_to_solid_volume_mestying_vtk);
 
   setStringToIntegralParameter<int>("INTEGRATION_POINTS", "No",
-      "Output used integration points. If the contact method has 'forces' at the integration "
-      "point, they will also be output.",
+      "Enable / disable output of used integration points. If the contact method has 'forces' at "
+      "the integration point, they will also be output.",
       yesnotuple, yesnovalue, &beam_to_solid_volume_mestying_vtk);
 
   // ...

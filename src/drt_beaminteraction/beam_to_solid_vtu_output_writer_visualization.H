@@ -38,7 +38,9 @@ class Epetra_MultiVector;
 namespace BEAMINTERACTION
 {
   /**
-   * \brief This object represents the data that will be written to a single collection of output
+   * \brief Object to write visualization for beam-to-solid interactions.
+   *
+   * This object represents the data that will be written to a single collection of output
    * files to disc, i.e. one file that will be opened with ParaView. The data that can be stored, is
    * point geometry, cell connected to the points, point data and cell data.
    */
@@ -90,17 +92,21 @@ namespace BEAMINTERACTION
     void AddPointDataVector(std::string data_name, unsigned int n_dim, int reserve = -1);
 
     /**
-     * \brief Add all nodes of a discretization to the output. Only the row nodes will be added on
-     * this rank. If this is called a map from the global node DOFs on this rank will be created and
-     * stored in the object.
+     * \brief Add all nodes of a discretization to the output.
+     *
+     * Only the row nodes will be added on this rank. If this is called a map from the global node
+     * DOFs on this rank will be created and stored in the object.
+     *
      * @param discret (in) Pointer to the discretization.
      */
     void AddDiscretizationNodalReferencePosition(
         const Teuchos::RCP<const DRT::Discretization>& discret);
 
     /**
-     * \brief Add global DOF based data to the writer. The data will automatically be extracted, and
-     * added on the correct rank.
+     * \brief Add global DOF based data to the writer.
+     *
+     * The data will automatically be extracted, and added on the correct rank.
+     *
      * @param data_name (in) name of the added data.
      * @param vector (in) Global state vector. The size of this vector has to be 3 * n_nodes.
      */
