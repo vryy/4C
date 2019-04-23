@@ -35,6 +35,7 @@ namespace BEAMINTERACTION
 {
   class BeamContactParams;
   class BeamContactPair;
+  class BeamToSolidVolumeMeshtyingVtkOutputWriter;
 
   namespace SUBMODELEVALUATOR
   {
@@ -130,6 +131,25 @@ namespace BEAMINTERACTION
       //! derived
       virtual void GetHalfInteractionDistance(double& half_interaction_distance);
 
+      /**
+       * \brief Return the assembly managers in this submodel evaluator.
+       */
+      inline const std::vector<
+          Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager>>&
+      GetAssemblyManagers() const
+      {
+        return assembly_managers_;
+      }
+
+      /**
+       * \brief Return the geometry pairs in this submodel evaluator.
+       */
+      inline const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& GetContactPairs()
+          const
+      {
+        return contact_elepairs_;
+      }
+
       //! @}
 
      protected:
@@ -224,6 +244,10 @@ namespace BEAMINTERACTION
 
       //! runtime vtp writer for visualization of contact forces
       Teuchos::RCP<RuntimeVtpWriter> vtp_writer_ptr_;
+
+      //! This object handles all beam to solid volume related visualization output.
+      Teuchos::RCP<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter>
+          beam_to_solid_volume_meshtying_vtk_writer_ptr_;
     };
 
   }  // namespace SUBMODELEVALUATOR

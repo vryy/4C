@@ -101,6 +101,15 @@ class RuntimeVtuWriter
    *  \date 03/17 */
   std::vector<int32_t>& GetMutableCellOffsetVector();
 
+  /**
+   * \brief Return a mutable reference to the point data map.
+   */
+  std::map<std::string, std::pair<std::vector<double>, unsigned int>>& GetMutablePointDataMap();
+
+  /**
+   * \brief Return a mutable reference to the cell data map.
+   */
+  std::map<std::string, std::pair<std::vector<double>, unsigned int>>& GetMutableCellDataMap();
 
   /** \brief append visualization data vector with n components per point
    *

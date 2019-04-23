@@ -46,6 +46,8 @@
 #include <NOX_Solver_Generic.H>
 
 #include "beam_to_solid_volume_meshtying_params.H"
+#include "beam_to_solid_volume_meshtying_vtk_output_params.H"
+#include "beam_to_solid_volume_meshtying_vtk_output_writer.H"
 #include "../drt_geometry_pair/geometry_pair_evaluation_data_global.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_volume_evaluation_data.H"
 #include "../drt_inpar/inpar_geometry_pair.H"
@@ -130,6 +132,20 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
         ->SetNumberOfIntegrationPointsCircumfence(
             beam_contact_params_ptr_->BeamToSolidVolumeMeshtyingParams()
                 ->GetNumberOfIntegrationPointsCircumfence());
+
+    // Build the beam to solid volume meshtying output writer if desired.
+    if (beam_contact_params_ptr_->BeamToSolidVolumeMeshtyingParams()
+            ->GetVtkOuputParamsPtr()
+            ->GetOutputFlag())
+    {
+      beam_to_solid_volume_meshtying_vtk_writer_ptr_ =
+          Teuchos::rcp<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter>(
+              new BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter);
+      beam_to_solid_volume_meshtying_vtk_writer_ptr_->Init();
+      beam_to_solid_volume_meshtying_vtk_writer_ptr_->Setup(GInOutput().GetRuntimeVtkOutputParams(),
+          beam_contact_params_ptr_->BeamToSolidVolumeMeshtyingParams()->GetVtkOuputParamsPtr(),
+          GState().GetTimeN());
+    }
   }
 
   // set flag
@@ -278,6 +294,8 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::PreUpdateStepElement(bool 
               BeamContactParams().BeamContactRuntimeVtkOutputParams()->OutputIntervalInSteps() ==
           0)
     WriteTimeStepOutputRuntimeVtpBeamContact();
+  if (beam_to_solid_volume_meshtying_vtk_writer_ptr_ != Teuchos::null)
+    beam_to_solid_volume_meshtying_vtk_writer_ptr_->WriteOutputRuntime(this);
 
   // not repartition of binning discretization necessary
   return false;
@@ -560,6 +578,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::RunPostIterate(
   if (vtp_writer_ptr_ != Teuchos::null and
       BeamContactParams().BeamContactRuntimeVtkOutputParams()->OutputEveryIteration())
     WriteIterationOutputRuntimeVtpBeamContact(solver.getNumIterations());
+  if (beam_to_solid_volume_meshtying_vtk_writer_ptr_ != Teuchos::null)
+    beam_to_solid_volume_meshtying_vtk_writer_ptr_->WriteOutputRuntimeIteration(
+        this, solver.getNumIterations());
 }
 
 /*----------------------------------------------------------------------*

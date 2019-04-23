@@ -121,7 +121,7 @@ namespace BEAMINTERACTION
      * @param lambda_row (out) Standard vector with the global IDs of the Lagrange multipliers for
      * this pair.
      */
-    void LocationVector(const Teuchos::RCP<BEAMINTERACTION::BeamContactPair>& contact_pair,
+    void LocationVector(const Teuchos::RCP<const BEAMINTERACTION::BeamContactPair>& contact_pair,
         std::vector<int>& lambda_row) const;
 
     /**
@@ -139,6 +139,21 @@ namespace BEAMINTERACTION
      */
     void AddGlobalForceStiffnessPenaltyContributions(Teuchos::RCP<const Epetra_Vector> disp,
         Teuchos::RCP<LINALG::SparseMatrix> stiff, Teuchos::RCP<Epetra_FEVector> force) const;
+
+    /**
+     * \brief Get the global vector of Lagrange multipliers.
+     * @param disp (in) Global displacement vector.
+     * @return Global vector of Lagrange multipliers.
+     */
+    Teuchos::RCP<Epetra_Vector> GetGlobalLambda(Teuchos::RCP<const Epetra_Vector> disp) const;
+
+    /**
+     * \brief Get the global vector of Lagrange multipliers, with the maps being the colum maps of
+     * the Lagrange GID. on the ranks where they are used.
+     * @param disp (in) Global displacement vector.
+     * @return Global vector of Lagrange multipliers.
+     */
+    Teuchos::RCP<Epetra_Vector> GetGlobalLambdaCol(Teuchos::RCP<const Epetra_Vector> disp) const;
 
    protected:
     /**
@@ -191,13 +206,16 @@ namespace BEAMINTERACTION
     //! Pointer to the beam contact parameters.
     Teuchos::RCP<const BEAMINTERACTION::BeamContactParams> beam_contact_parameters_ptr_;
 
-    //! Rowmap of the additional Lagrange multiplier DOFs.
+    //! Row map of the additional Lagrange multiplier DOFs.
     Teuchos::RCP<Epetra_Map> lambda_dof_rowmap_;
 
-    //! Rowmap of the beam DOFs.
+    //! Column map of the additional Lagrange multiplier DOFs.
+    Teuchos::RCP<Epetra_Map> lambda_dof_colmap_;
+
+    //! Row map of the beam DOFs.
     Teuchos::RCP<Epetra_Map> beam_dof_rowmap_;
 
-    //! Rowmap of the solid DOFs.
+    //! Row map of the solid DOFs.
     Teuchos::RCP<Epetra_Map> solid_dof_rowmap_;
 
     //! Multivector that connects the global node IDs with the Lagrange multiplier DOF IDs.
