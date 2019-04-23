@@ -11,7 +11,6 @@
 
 #include "beam_to_solid_vtu_output_writer_visualization.H"
 
-#include "../drt_io/runtime_vtu_writer.H"
 #include "../drt_structure_new/str_timint_basedataio_runtime_vtk_output.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
@@ -27,7 +26,8 @@
 BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::BeamToSolidVtuOutputWriterVisualization(
     const std::string& writer_full_name,
     Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> vtk_params, double restart_time)
-    : vtk_params_(vtk_params),
+    : RuntimeVtuWriter(),
+      vtk_params_(vtk_params),
       writer_full_name_(writer_full_name),
       discret_(Teuchos::null),
       node_gid_map_(Teuchos::null)
@@ -36,7 +36,6 @@ BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::BeamToSolidVtuOutputWr
   int total_ranks;
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
   MPI_Comm_size(MPI_COMM_WORLD, &total_ranks);
-  runtime_vtu_writer_ = Teuchos::rcp(new RuntimeVtuWriter());
 
   // Todo: we need a better upper bound for total number of time steps here
   // however, this 'only' affects the number of leading zeros in the vtk file names
@@ -53,9 +52,9 @@ BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::BeamToSolidVtuOutputWr
     pos++;
   const std::string output_directory_path(outputfilename.substr(0ul, pos));
 
-  runtime_vtu_writer_->Initialize(my_rank, total_ranks, num_timesteps_in_simulation_upper_bound,
-      output_directory_path, DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix(),
-      writer_full_name_, DRT::Problem::Instance()->OutputControlFile()->RestartName(), restart_time,
+  Initialize(my_rank, total_ranks, num_timesteps_in_simulation_upper_bound, output_directory_path,
+      DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix(), writer_full_name_,
+      DRT::Problem::Instance()->OutputControlFile()->RestartName(), restart_time,
       vtk_params_->WriteBinaryOutput());
 }
 
@@ -66,7 +65,7 @@ std::vector<double>&
 BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::GetMutablePointCoordinateVector(
     int additional_reserve)
 {
-  std::vector<double>& return_value = runtime_vtu_writer_->GetMutablePointCoordinateVector();
+  std::vector<double>& return_value = RuntimeVtuWriter::GetMutablePointCoordinateVector();
   if (additional_reserve > 0) return_value.reserve(return_value.size() + additional_reserve);
   return return_value;
 }
@@ -80,7 +79,7 @@ BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::GetMutablePointDataVec
 {
   // Check if the point data vector already exists.
   std::map<std::string, std::pair<std::vector<double>, unsigned int>>& point_data_map =
-      runtime_vtu_writer_->GetMutablePointDataMap();
+      GetMutablePointDataMap();
   const auto& it = point_data_map.find(data_name);
   if (it != point_data_map.end())
   {
@@ -103,7 +102,7 @@ void BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::AddPointDataVecto
 {
   // Check if the point data vector already exists.
   std::map<std::string, std::pair<std::vector<double>, unsigned int>>& point_data_map =
-      runtime_vtu_writer_->GetMutablePointDataMap();
+      GetMutablePointDataMap();
   const auto& it = point_data_map.find(data_name);
   if (it != point_data_map.end())
     dserror(
@@ -129,16 +128,14 @@ void BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::
     dserror(
         "When calling AddDiscretizationNodalReferencePosition, the discretization can not be "
         "already set. Did you forget to reset the writer?");
-  if (runtime_vtu_writer_->GetMutablePointCoordinateVector().size() != 0)
+  if (GetMutablePointCoordinateVector().size() != 0)
     dserror("Point coordinate vector is not empty!");
-  for (const auto& point_data : runtime_vtu_writer_->GetMutablePointDataMap())
+  for (const auto& point_data : GetMutablePointDataMap())
     if (point_data.second.first.size() != 0)
       dserror("Point data for '%s' is not empty!", point_data.first.c_str());
-  if (runtime_vtu_writer_->GetMutableCellTypeVector().size() != 0)
-    dserror("Cell type vector is not empty!");
-  if (runtime_vtu_writer_->GetMutableCellOffsetVector().size() != 0)
-    dserror("Cell offset vector is not empty!");
-  for (const auto& cell_data : runtime_vtu_writer_->GetMutableCellDataMap())
+  if (GetMutableCellTypeVector().size() != 0) dserror("Cell type vector is not empty!");
+  if (GetMutableCellOffsetVector().size() != 0) dserror("Cell offset vector is not empty!");
+  for (const auto& cell_data : GetMutableCellDataMap())
     if (cell_data.second.first.size() != 0)
       dserror("Cell data for '%s' is not empty!", cell_data.first.c_str());
 
@@ -199,11 +196,11 @@ void BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::Write(
     const unsigned int timestep_number, const double time)
 {
   // Do some sanity checks on the data that will be written.
-  const unsigned int n_points = runtime_vtu_writer_->GetMutablePointCoordinateVector().size() / 3;
-  if (runtime_vtu_writer_->GetMutablePointCoordinateVector().size() % 3 != 0)
+  const unsigned int n_points = GetMutablePointCoordinateVector().size() / 3;
+  if (GetMutablePointCoordinateVector().size() % 3 != 0)
     dserror("The size of the coordinate vector (%d) is not a multiple of 3!",
-        runtime_vtu_writer_->GetMutablePointCoordinateVector().size());
-  for (const auto& point_data : runtime_vtu_writer_->GetMutablePointDataMap())
+        GetMutablePointCoordinateVector().size());
+  for (const auto& point_data : GetMutablePointDataMap())
     if (point_data.second.first.size() / point_data.second.second != n_points ||
         point_data.second.first.size() % point_data.second.second != 0)
       dserror(
@@ -211,22 +208,20 @@ void BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::Write(
           point_data.second.first.size(), point_data.first.c_str(), n_points);
 
   // Reset time and time step and geometry name in the writer object.
-  runtime_vtu_writer_->SetupForNewTimeStepAndGeometry(time, timestep_number, writer_full_name_);
+  SetupForNewTimeStepAndGeometry(time, timestep_number, writer_full_name_);
   // Finalize everything and write all required vtk files to filesystem.
-  runtime_vtu_writer_->WriteFiles();
+  WriteFiles();
   // Write a collection file summarizing all previously written files.
-  runtime_vtu_writer_->WriteCollectionFileOfAllWrittenFiles(
+  WriteCollectionFileOfAllWrittenFiles(
       DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix() + "-" +
       writer_full_name_);
 
   // Reset the data.
   discret_ = Teuchos::null;
   node_gid_map_ = Teuchos::null;
-  runtime_vtu_writer_->GetMutablePointCoordinateVector().clear();
-  runtime_vtu_writer_->GetMutableCellTypeVector().clear();
-  runtime_vtu_writer_->GetMutableCellOffsetVector().clear();
-  for (auto& point_data : runtime_vtu_writer_->GetMutablePointDataMap())
-    point_data.second.first.clear();
-  for (auto& cell_data : runtime_vtu_writer_->GetMutableCellDataMap())
-    cell_data.second.first.clear();
+  GetMutablePointCoordinateVector().clear();
+  GetMutableCellTypeVector().clear();
+  GetMutableCellOffsetVector().clear();
+  for (auto& point_data : GetMutablePointDataMap()) point_data.second.first.clear();
+  for (auto& cell_data : GetMutableCellDataMap()) cell_data.second.first.clear();
 }

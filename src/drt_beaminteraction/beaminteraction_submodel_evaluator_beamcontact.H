@@ -144,7 +144,8 @@ namespace BEAMINTERACTION
       /**
        * \brief Return the geometry pairs in this submodel evaluator.
        */
-      inline const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& GetContactPairs() const
+      inline const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& GetContactPairs()
+          const
       {
         return contact_elepairs_;
       }

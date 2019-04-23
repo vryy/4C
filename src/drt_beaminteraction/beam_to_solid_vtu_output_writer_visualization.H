@@ -14,11 +14,12 @@
 #define BEAM_TO_SOLID_VTU_OUTPUT_WRITER_VISUALIZATION_H
 
 
+#include "../drt_io/runtime_vtu_writer.H"
+
 #include <Teuchos_RCP.hpp>
 
 
 // Forward declarations.
-class RuntimeVtuWriter;
 namespace STR
 {
   namespace TIMINT
@@ -41,7 +42,7 @@ namespace BEAMINTERACTION
    * files to disc, i.e. one file that will be opened with ParaView. The data that can be stored, is
    * point geometry, cell connected to the points, point data and cell data.
    */
-  class BeamToSolidVtuOutputWriterVisualization
+  class BeamToSolidVtuOutputWriterVisualization : public RuntimeVtuWriter
   {
    public:
     /**
@@ -116,9 +117,6 @@ namespace BEAMINTERACTION
    private:
     //! Global parameters of vtk output.
     Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> vtk_params_;
-
-    //! Output writer.
-    Teuchos::RCP<RuntimeVtuWriter> runtime_vtu_writer_;
 
     //! Full name of this visualization.
     const std::string writer_full_name_;
