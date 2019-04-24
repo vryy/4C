@@ -19,7 +19,7 @@ FIND_LIBRARY(Blitz_LIBRARY
 
 MARK_AS_ADVANCED(Blitz_INCLUDE_DIR Blitz_LIBRARY)
 
-# handle the QUIETLY and REQUIRED arguments and set Blitz_FOUND to TRUE if 
+# handle the QUIETLY and REQUIRED arguments and set Blitz_FOUND to TRUE if
 # all listed variables are TRUE
 INCLUDE(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(Blitz  DEFAULT_MSG  Blitz_LIBRARY  Blitz_INCLUDE_DIR)

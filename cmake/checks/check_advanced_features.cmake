@@ -1,4 +1,4 @@
-# check for advanced features that give rise to extra preprocessor flags 
+# check for advanced features that give rise to extra preprocessor flags
 
 CHECK_CXX_SOURCE_RUNS(
   "
