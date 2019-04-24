@@ -1080,7 +1080,7 @@ namespace GEO
          *
          * \f[
          * \underline{\underline{J}} \Delta \underline{\xi} = - (\underline{x}_{p} -
-         * \underline{x(\underline{\xi})},\\ \intertext{where} \underline{\underline{J}} =
+         * \underline{x(\underline{\xi})},\\ \text{ where } \underline{\underline{J}} =
          * \begin{pmatrix}
          * \frac{\partial x(\underline{\xi})}{\partial \xi} & \frac{\partial
          * x(\underline{\xi})}{\partial \eta} & \frac{\partial x(\underline{\xi})}{\partial \zeta}
