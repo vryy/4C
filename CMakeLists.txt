@@ -351,7 +351,10 @@ if (deal.II_FOUND)
   MESSAGE("End of deal.II details\n")
   add_definitions("-DHAVE_DEAL_II")   # HAVE_DEAL_II preprocessor flag for BACI
 else()
-  message("-- DEAL.II package not found")
+  message("WW *************************************************************")
+  message("WW Warning: DEAL.II not found. No DEAL.II support in BACI.")
+  message("WW Warning: You cannot run simulations that need DEAL.II.")
+  message("WW *************************************************************")
 endif()
 
 # FFTW for Jonas Biehler
