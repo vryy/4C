@@ -18,7 +18,6 @@
 
 #include "../drt_mat/scatra_mat_multiporo.H"
 #include "../drt_mat/fluidporo_multiphase.H"
-#include "../drt_mat/scatra_mat_multiporo.H"
 #include "../drt_mat/fluidporo_singlephase.H"
 #include "../drt_mat/structporo.H"
 #include "../drt_mat/fluidporo_multiphase_reactions.H"
@@ -212,7 +211,6 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::PhaseManagerCore(
       saturation_(numfluidphases, 0.0),
       density_(numfluidphases, 0.0),
       soliddensity_(0.0),
-      heatcapacityeff_(0.0),
       solidpressure_(0.0),
       invbulkmodulifluid_(numfluidphases, 0.0),
       invbulkmodulussolid_(0.0),
@@ -238,7 +236,6 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::PhaseManagerCore(const PhaseM
       saturation_(old.saturation_),
       density_(old.density_),
       soliddensity_(old.soliddensity_),
-      heatcapacityeff_(old.heatcapacityeff_),
       solidpressure_(old.solidpressure_),
       invbulkmodulifluid_(old.invbulkmodulifluid_),
       invbulkmodulussolid_(old.invbulkmodulussolid_),
@@ -605,37 +602,6 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::SolidDensity() const
   CheckIsEvaluated();
 
   return soliddensity_;
-}
-
-/*---------------------------------------------------------------------------*
- * get heat capacity of phase 'phasenum'                        wirthl 12/18 |
- *---------------------------------------------------------------------------*/
-
-double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::HeatCapacity(int phasenum) const
-{
-  CheckIsEvaluated();
-
-  return heatcapacity_[phasenum];
-}
-
-/*---------------------------------------------------------------------------*
- * get thermal diffusivity of phase 'phasenum'                  wirthl 12/18 |
- *---------------------------------------------------------------------------*/
-double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::ThermalDiffusivity(int phasenum) const
-{
-  CheckIsEvaluated();
-
-  return thermaldiffusivity_[phasenum];
-}
-
-/*---------------------------------------------------------------------------*
- * get effective heat capacity                                  wirthl 12/18 |
- *---------------------------------------------------------------------------*/
-double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::HeatCapacityEff() const
-{
-  CheckIsEvaluated();
-
-  return heatcapacityeff_;
 }
 
 /*----------------------------------------------------------------------*
@@ -1073,16 +1039,12 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::Setup(
       }
       else if (singlemat->MaterialType() == INPAR::MAT::m_scatra_multiporo_solid)
       {
-        const Teuchos::RCP<const MAT::ScatraMatMultiPoroSolid>& poromat =
-            Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroSolid>(singlemat);
         // dummy value because species in solid do not have a phaseID
         scalartophasemap_[k].phaseID = -1000;
         scalartophasemap_[k].species_type = MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid;
       }
       else if (singlemat->MaterialType() == INPAR::MAT::m_scatra_multiporo_temperature)
       {
-        const Teuchos::RCP<const MAT::ScatraMatMultiPoroTemperature>& poromat =
-            Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroTemperature>(singlemat);
         // dummy value because temperature does not have a phaseID
         scalartophasemap_[k].phaseID = -1000;
         scalartophasemap_[k].species_type =
@@ -1108,16 +1070,12 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::Setup(
   }
   else if (scatramat->MaterialType() == INPAR::MAT::m_scatra_multiporo_solid)
   {
-    const Teuchos::RCP<const MAT::ScatraMatMultiPoroSolid>& poromat =
-        Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroSolid>(scatramat);
     // dummy value because species in solid do not have a phaseID
     scalartophasemap_[0].phaseID = -1000;
     scalartophasemap_[0].species_type = MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid;
   }
   else if (scatramat->MaterialType() == INPAR::MAT::m_scatra_multiporo_temperature)
   {
-    const Teuchos::RCP<const MAT::ScatraMatMultiPoroTemperature>& poromat =
-        Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroTemperature>(scatramat);
     // dummy value because temperature does not have a phaseID
     scalartophasemap_[0].phaseID = -1000;
     scalartophasemap_[0].species_type = MAT::ScatraMatMultiPoro::SpeciesType::species_temperature;

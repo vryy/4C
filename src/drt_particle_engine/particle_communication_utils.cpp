@@ -113,6 +113,7 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
   }
 
   // ---- send data to already waiting processors ----
+  std::vector<MPI_Request> sendrequest(numsendtoprocs);
   counter = 0;
   while (counter != numsendtoprocs)
   {
@@ -130,13 +131,16 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
       // reference to send buffer
       std::vector<char>& sbuffer = sdata[torank];
 
-      // perform blocking send operation
-      MPI_Send((void*)(&(sbuffer[0])), static_cast<int>(sbuffer.size()), MPI_CHAR, torank, 1234,
-          mpicomm->Comm());
+      // perform non-blocking send operation
+      MPI_Isend((void*)(&(sbuffer[0])), static_cast<int>(sbuffer.size()), MPI_CHAR, torank, 1234,
+          mpicomm->Comm(), &sendrequest[index]);
 
       ++counter;
     }
   }
+
+  // ---- wait for completion of send operations ----
+  MPI_Waitall(numsendtoprocs, &sendrequest[0], MPI_STATUSES_IGNORE);
 
   // clear send buffer after successful communication
   sdata.clear();

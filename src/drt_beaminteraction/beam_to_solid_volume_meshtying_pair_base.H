@@ -45,6 +45,10 @@ namespace BEAMINTERACTION
   template <typename beam, typename solid>
   class BeamToSolidVolumeMeshtyingPairBase : public BeamContactPair
   {
+   protected:
+    //! Type to be used for scalar AD variables. This can not be inherited from the base class.
+    typedef Sacado::ELRFad::SLFad<double, beam::n_dof_ + solid::n_dof_> TYPE_BTS_VMT_AD;
+
    public:
     /**
      * \brief Standard Constructor
@@ -175,6 +179,20 @@ namespace BEAMINTERACTION
       return 0.0;
     }
 
+    /**
+     * \brief Add the visualization of this pair to the beam to solid vtu output writer.
+     *
+     * This base class creates output of (if selected in the input file) the segmentation, the
+     * integration points - and if implemented in the derived classes - the forces at the
+     * integration points.
+     *
+     * @param visualization_writer (out) Object that manages all visualization related data for beam
+     * to solid pairs.
+     * @param visualization_params (in) Parameter list (not used in this class).
+     */
+    void GetPairVisualization(Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
+        const Teuchos::ParameterList& visualization_params) const override;
+
    protected:
     /**
      * \brief Create the geometry pair for this contact pair.
@@ -194,9 +212,34 @@ namespace BEAMINTERACTION
           geometry_pair_, true);
     };
 
-   private:
-    //! Type to be used for scalar AD variables.
-    typedef Sacado::ELRFad::SLFad<double, beam::n_dof_ + solid::n_dof_> TYPE_BTS_VMT_AD;
+    /**
+     * \brief This function evaluates the position at an integration point for the pairs.
+     *
+     * This is needed because the cross section pairs have 3 parameter coordinates on the beam and
+     * the other pairs have 1. This method is mainly used for visualization.
+     *
+     * @param integration_point (in) Integration where the position should be evaluated.
+     * @param r_beam (out) Position on the beam.
+     * @param reference (in) True -> the reference position is calculated, False -> the current
+     * position is calculated.
+     */
+    virtual void EvaluateBeamPosition(
+        const GEOMETRYPAIR::ProjectionPointLineToVolume<double>& integration_point,
+        LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& r_beam, bool reference) const;
+
+    /**
+     * \brief This function evaluates the penalty force from a given beam position and a given solid
+     * position.
+     *
+     * This method is mainly used for visualization.
+     *
+     * @param r_beam (in) Position on the beam.
+     * @param r_solid (in) Position on the solid.
+     * @param force (out) Force acting on the beam (the negative force acts on the solid).
+     */
+    virtual void EvaluatePenaltyForce(const LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& r_beam,
+        const LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& r_solid,
+        LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& force) const;
 
    protected:
     //! Flag if the meshtying has been evaluated already.

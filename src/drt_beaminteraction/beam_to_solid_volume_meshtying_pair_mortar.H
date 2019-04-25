@@ -41,6 +41,10 @@ namespace BEAMINTERACTION
     //! Define the unit test class as friend so it can set up a valid pair state for the test cases.
     friend BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite;
 
+   private:
+    //! Type to be used for scalar AD variables. This can not be inherited from the base class.
+    typedef Sacado::ELRFad::SLFad<double, beam::n_dof_ + solid::n_dof_> TYPE_BTS_VMT_AD;
+
    public:
     /**
      * \brief Standard Constructor
@@ -73,9 +77,27 @@ namespace BEAMINTERACTION
      */
     inline bool IsAssemblyIndirect() const override { return true; };
 
-   private:
-    //! Type to be used for scalar AD variables. This can not be inherited from the base class.
-    typedef Sacado::ELRFad::SLFad<double, beam::n_dof_ + solid::n_dof_> TYPE_BTS_VMT_AD;
+    /**
+     * \brief Add the visualization of this pair to the beam to solid vtu output writer. This will
+     * add mortar specific data to the output.
+     * @param visualization_writer (out) Object that manages all visualization related data for beam
+     * to solid pairs.
+     * @param visualization_params (in) Parameter list (not used in this class).
+     */
+    void GetPairVisualization(Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
+        const Teuchos::ParameterList& visualization_params) const override;
+
+   protected:
+    /**
+     * \brief For the mortar pairs it does not make sense to calculate forces at the integration
+     * points.
+     * @param r_beam (in) Position on the beam.
+     * @param r_solid (in) Position on the solid.
+     * @param force (out) Return 0 by default.
+     */
+    void EvaluatePenaltyForce(const LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& r_beam,
+        const LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& r_solid,
+        LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& force) const override;
   };
 }  // namespace BEAMINTERACTION
 

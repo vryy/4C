@@ -16,7 +16,7 @@ VERBOSITY                             Standard
 -----------------------------------------------------------IO/RUNTIME VTK OUTPUT
 OUTPUT_DATA_FORMAT                    binary
 INTERVAL_STEPS                        1
-EVERY_ITERATION                       No
+EVERY_ITERATION                       Yes
 -----------------------------------------------------IO/RUNTIME VTK OUTPUT/BEAMS
 OUTPUT_BEAMS                          Yes
 DISPLACEMENT                          Yes
@@ -57,6 +57,14 @@ CONTACT_DISCRETIZATION                mortar
 MORTAR_SHAPE_FUNCTION                 line2
 CONSTRAINT_STRATEGY                   penalty
 PENALTY_PARAMETER                     10
+--------------BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING/RUNTIME VTK OUTPUT
+WRITE_OUTPUT                          yes
+NODAL_FORCES                          yes
+MORTAR_LAMBDA_DISCRET                 yes
+MORTAR_LAMBDA_CONTINUOUS              yes
+MORTAR_LAMBDA_CONTINUOUS_SEGMENTS     5
+SEGMENTATION                          yes
+INTEGRATION_POINTS                    yes
 ----------------------------------------------------GEOMETRY PAIR/LINE TO VOLUME
 STRATEGY                              segmentation
 SEARCH_POINTS                         2

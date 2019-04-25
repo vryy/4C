@@ -1,4 +1,7 @@
 # HEADER
+import json
+import os
+import sys
 
 class Header(object):
   def __init__(self, filetext):
@@ -7,6 +10,7 @@ class Header(object):
     self.file       = ""
     self.brief      = ""
     self.maintainer = ""
+    self.compliant_maintainer = ""
     self.level      = -1
     # parse the file header for the required tags
     blk = Header._extract_first_doxy_block(filetext)
@@ -37,7 +41,7 @@ class Header(object):
       for line in blk:
         if "\\maintainer " in line:
           maint = line.split("\\maintainer ",1)[1].strip()
-          if len(maint) >= 5 and " " in maint:
+          if len(maint) >= 1:
             self.maintainer = maint
           break
       # check for level tag
@@ -49,6 +53,20 @@ class Header(object):
           except ValueError:
             pass
           break
+      # check for compliant developers as maintainers
+    with open(os.path.join(sys.path[0],'baci_developers.json'),'r') as f:
+          developers = json.load(f)
+    #maintainer_list = self.maintainer.split(",")
+    #maintainer_list = [item.strip() for item in maintainer_list]
+    maintainer_clean = [self.maintainer.strip()]
+    if self.maintainer:
+      flag = False
+      compliant_names = [item['name'] for item in developers]
+      flag = set(maintainer_clean).issubset(compliant_names)
+      if (flag): self.compliant_maintainer = maintainer_clean
+    else:
+      self.compliant_maintainer='dummy_string'
+
 
   def has_header(self):
     return self.header
@@ -64,6 +82,9 @@ class Header(object):
 
   def get_maintainer(self):
     return self.maintainer
+
+  def get_compliant_maintainer(self):
+   return self.compliant_maintainer
 
   def get_level(self):
     return self.level

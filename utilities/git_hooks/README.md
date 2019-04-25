@@ -118,3 +118,19 @@ Standard Git hooks are located in project `hook` directory and GitLab automatica
 1. Write the code to make the Git hook function as expected. Hooks can be in any language. Ensure the 'shebang' at the top properly reflects the language type. For example, if the script is in Ruby the shebang will probably be `#!/usr/bin/env ruby`
 
 Custom Git hooks must be configured on the file-system of the GitLab server. Only GitLab server administrators will be able to complete these tasks.
+
+## Compliant file-maintainers in Baci
+Our Git-hooks check for compliant file-maintainers in source and input files and will reject commits with incompliant file-maintainters. A definition of the latter is given in the following:
+- A **file-maintainer** (not to be confused with **baci_maintainers**) is the person responsible for a specific source or input file in Baci
+- A file-maintainer is assigned in the header declaration of a file via a:
+  - `\maintainer` tag in **source-files**, followed by the name of the file-maintainer
+  - `// Maintainer:` tag in **input-files**, followed by the name of the file-maintainer
+
+  which has to be compliant with names listed in `utilities/git_hooks/baci_developers.json`
+- All members of the Gitlab **baci_developers** group are compliant file-maintainers
+- We only allow for one compliant file-maintainer per file
+- An up-to-date `baci_developers.json` list can be created by the following steps:
+    1. Create a personal access token for your Baci Gitlab repository as described in the [gitlab documentation](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html)
+    1. Download the list of all members of the **baci_developers** group using the command
+`curl -H "Private-Token: <Token>" "https://gitlab.lrz.de/api/v4/groups/13552/members/all?per_page=100&page=1" > baci_developers.json`
+    1. Commit and merge the changes in `utilities/git_hooks/baci_developers.json`

@@ -262,6 +262,8 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--BEAM INTERACTION/BEAM TO BEAM CONTACT", *list);
   reader.ReadGidSection("--BEAM INTERACTION/BEAM TO SPHERE CONTACT", *list);
   reader.ReadGidSection("--BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING", *list);
+  reader.ReadGidSection(
+      "--BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING/RUNTIME VTK OUTPUT", *list);
   reader.ReadGidSection("--BEAM INTERACTION/CROSSLINKING", *list);
   reader.ReadGidSection("--GEOMETRY PAIR", *list);
   reader.ReadGidSection("--GEOMETRY PAIR/LINE TO VOLUME", *list);
@@ -382,6 +384,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--TUTORIAL DYNAMIC/FIXED POINT SCHEME", *list);
   reader.ReadGidSection("--CARDIAC MONODOMAIN CONTROL", *list);
   reader.ReadGidSection("--MOR", *list);
+  reader.ReadGidSection("--MESH PARTITIONING", *list);
 
   reader.ReadSection("--STRUCT NOX", *list);
   reader.ReadSection("--STRUCT NOX/Direction", *list);

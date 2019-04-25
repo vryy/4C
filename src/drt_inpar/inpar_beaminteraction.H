@@ -4,7 +4,7 @@
 
 \brief input parameter for beaminteraction
 
-\maintainer Jonas Eichinger, Maximilian Grill
+\maintainer Maximilian Grill
 
 \level 2
 
@@ -103,6 +103,8 @@ namespace INPAR
       none,
       //! Gauss point to segment approach.
       gauss_point_to_segment,
+      //! Gauss point on cross section method.
+      gauss_point_cross_section,
       //! Mortar type coupling.
       mortar
     };
@@ -117,7 +119,9 @@ namespace INPAR
       //! Linear.
       line2,
       //! Quadratic.
-      line3
+      line3,
+      //! Cubic.
+      line4
     };
 
     //! Map type std::string to enum

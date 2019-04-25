@@ -37,6 +37,7 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
       discret_(discret),
       beam_contact_parameters_ptr_(params),
       lambda_dof_rowmap_(Teuchos::null),
+      lambda_dof_colmap_(Teuchos::null),
       beam_dof_rowmap_(Teuchos::null),
       solid_dof_rowmap_(Teuchos::null),
       node_gid_to_lambda_gid_(Teuchos::null),
@@ -58,6 +59,12 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
     {
       n_lambda_node_ = 1 * 3;
       n_lambda_element_ = 1 * 3;
+      break;
+    }
+    case INPAR::BEAMINTERACTION::BeamToSolidVolumeMortarShapefunctions::line4:
+    {
+      n_lambda_node_ = 1 * 3;
+      n_lambda_element_ = 2 * 3;
       break;
     }
     default:
@@ -265,6 +272,8 @@ void BEAMINTERACTION::BeamToSolidMortarManager::SetLocalMaps(
     LINALG::Export(*element_gid_to_lambda_gid_, *element_gid_to_lambda_gid_copy);
 
   // Fill in the local maps.
+  std::vector<int> lambda_gid_for_col_map;
+  lambda_gid_for_col_map.clear();
   node_gid_to_lambda_gid_map_.clear();
   element_gid_to_lambda_gid_map_.clear();
   if (node_gid_to_lambda_gid_ != Teuchos::null)
@@ -275,6 +284,8 @@ void BEAMINTERACTION::BeamToSolidMortarManager::SetLocalMaps(
       for (unsigned int i_temp = 0; i_temp < n_lambda_node_; i_temp++)
         temp_node[i_temp] = (int)((*(*node_gid_to_lambda_gid_copy)(i_temp))[i_node]);
       node_gid_to_lambda_gid_map_[node_gid_needed_rowmap->GID(i_node)] = temp_node;
+      lambda_gid_for_col_map.insert(
+          std::end(lambda_gid_for_col_map), std::begin(temp_node), std::end(temp_node));
     }
   }
   if (element_gid_to_lambda_gid_ != Teuchos::null)
@@ -285,8 +296,14 @@ void BEAMINTERACTION::BeamToSolidMortarManager::SetLocalMaps(
       for (unsigned int i_temp = 0; i_temp < n_lambda_element_; i_temp++)
         temp_elements[i_temp] = (int)((*(*element_gid_to_lambda_gid_copy)(i_temp))[i_element]);
       element_gid_to_lambda_gid_map_[element_gid_needed_rowmap->GID(i_element)] = temp_elements;
+      lambda_gid_for_col_map.insert(
+          std::end(lambda_gid_for_col_map), std::begin(temp_elements), std::end(temp_elements));
     }
   }
+
+  // Create the global lambda col map.
+  lambda_dof_colmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(
+      -1, lambda_gid_for_col_map.size(), &lambda_gid_for_col_map[0], 0, discret_->Comm()));
 
   // Set flags for local maps.
   is_local_maps_build_ = true;
@@ -296,7 +313,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::SetLocalMaps(
  *
  */
 void BEAMINTERACTION::BeamToSolidMortarManager::LocationVector(
-    const Teuchos::RCP<BEAMINTERACTION::BeamContactPair>& contact_pair,
+    const Teuchos::RCP<const BEAMINTERACTION::BeamContactPair>& contact_pair,
     std::vector<int>& lambda_row) const
 {
   CheckSetup();
@@ -528,4 +545,65 @@ void BEAMINTERACTION::BeamToSolidMortarManager::AddGlobalForceStiffnessPenaltyCo
     linalg_error = force->Update(-1.0 * rhs_factor * penalty_parameter, *global_temp, 1.0);
     if (linalg_error != 0) dserror("Error in Update");
   }
+}
+
+/**
+ *
+ */
+Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::GetGlobalLambda(
+    Teuchos::RCP<const Epetra_Vector> disp) const
+{
+  CheckSetup();
+  CheckGlobalMaps();
+
+  // Get penalty parameter.
+  const double penalty_parameter =
+      beam_contact_parameters_ptr_->BeamToSolidVolumeMeshtyingParams()->GetPenaltyParameter();
+
+  // Get the displacements of the beam and the solid.
+  Teuchos::RCP<Epetra_Vector> beam_disp = Teuchos::rcp(new Epetra_Vector(*beam_dof_rowmap_));
+  Teuchos::RCP<Epetra_Vector> solid_disp = Teuchos::rcp(new Epetra_Vector(*solid_dof_rowmap_));
+  LINALG::Export(*disp, *beam_disp);
+  LINALG::Export(*disp, *solid_disp);
+
+  // Set up lambda vector;
+  Teuchos::RCP<Epetra_Vector> lambda = Teuchos::rcp(new Epetra_Vector(*lambda_dof_rowmap_));
+
+  // Create a temporary vector and calculate lambda.
+  Teuchos::RCP<Epetra_Vector> lambda_temp_1 = Teuchos::rcp(new Epetra_Vector(*lambda_dof_rowmap_));
+  Teuchos::RCP<Epetra_Vector> lambda_temp_2 = Teuchos::rcp(new Epetra_Vector(*lambda_dof_rowmap_));
+  int linalg_error = global_D_->Multiply(false, *beam_disp, *lambda_temp_2);
+  if (linalg_error != 0) dserror("Error in Multiply!");
+  linalg_error = lambda_temp_1->Update(1.0, *lambda_temp_2, 0.0);
+  if (linalg_error != 0) dserror("Error in Update!");
+  linalg_error = global_M_->Multiply(false, *solid_disp, *lambda_temp_2);
+  if (linalg_error != 0) dserror("Error in Multiply!");
+  linalg_error = lambda_temp_1->Update(-1.0, *lambda_temp_2, 1.0);
+  if (linalg_error != 0) dserror("Error in Multiply!");
+  linalg_error = lambda_temp_1->Scale(penalty_parameter);
+  if (linalg_error != 0) dserror("Error in Scale!");
+
+  // Scale Lambda with kappa^-1.
+  Teuchos::RCP<Epetra_Vector> global_kappa_inv =
+      Teuchos::rcp(new Epetra_Vector(*lambda_dof_rowmap_));
+  linalg_error = global_kappa_inv->Reciprocal(*global_kappa_);
+  if (linalg_error != 0) dserror("Error in Reciprocal!");
+  Teuchos::RCP<LINALG::SparseMatrix> kappa_inv_mat =
+      Teuchos::rcp(new LINALG::SparseMatrix(*global_kappa_inv));
+  kappa_inv_mat->Complete();
+  linalg_error = kappa_inv_mat->Multiply(false, *lambda_temp_1, *lambda);
+  if (linalg_error != 0) dserror("Error in Multiply!");
+
+  return lambda;
+}
+
+/**
+ *
+ */
+Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::GetGlobalLambdaCol(
+    Teuchos::RCP<const Epetra_Vector> disp) const
+{
+  Teuchos::RCP<Epetra_Vector> lambda_col = Teuchos::rcp(new Epetra_Vector(*lambda_dof_colmap_));
+  LINALG::Export(*GetGlobalLambda(disp), *lambda_col);
+  return lambda_col;
 }

@@ -111,6 +111,14 @@ void INPAR::INVANA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
     setStringToIntegralParameter<int>("FORWARD_PROBLEMTYP", "Structure",
         "defines which forward problem type is used for inverse analysis", name, label, &iap);
+
+    // Type of measurement written in monitor file
+    setStringToIntegralParameter<int>("MEASUREMENT_TYPE", "dofs",
+        "Type of measurement written in monitor file",
+        tuple<std::string>("dofs", "dof_based", "points", "point_based"),
+        tuple<int>(INPAR::STR::meas_dofs, INPAR::STR::meas_dofs, INPAR::STR::meas_points,
+            INPAR::STR::meas_points),
+        &iap);
   }
 
   /*----------------------------------------------------------------------*/

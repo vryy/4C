@@ -24,7 +24,7 @@ VERBOSITY                       Standard
 ----------------------------------------------------------IO/RUNTIME VTK OUTPUT
 OUTPUT_DATA_FORMAT              binary
 INTERVAL_STEPS                  1
-EVERY_ITERATION                 No
+EVERY_ITERATION                 Yes
 ----------------------------------------------------------IO/RUNTIME VTK OUTPUT/STRUCTURE
 OUTPUT_STRUCTURE                Yes
 DISPLACEMENT                    Yes
@@ -61,6 +61,12 @@ REPARTITIONSTRATEGY             Everydt
 CONTACT_DISCRETIZATION          gauss_point_to_segment
 CONSTRAINT_STRATEGY             penalty
 PENALTY_PARAMETER               1.0e+10
+--------------BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING/RUNTIME VTK OUTPUT
+WRITE_OUTPUT                          yes
+NODAL_FORCES                          yes
+MORTAR_LAMBDA_DISCRET                 yes
+SEGMENTATION                          yes
+INTEGRATION_POINTS                    yes
 ----------------------------------------------------------------BEAM CONTACT
 MODELEVALUATOR                  Standard
 ----------------------------------------------------------------GEOMETRY PAIR/LINE TO VOLUME

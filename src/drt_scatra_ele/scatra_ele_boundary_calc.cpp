@@ -1452,6 +1452,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcRobinBoundary(DRT::FaceE
   // get on/off flags
   const std::vector<int>* onoff = cond->Get<std::vector<int>>("onoff");
 
+  // safety check
+  if ((int)(onoff->size()) != numscal_)
+    dserror(
+        "Mismatch in size for Robin boundary conditions, onoff has length %i, but you have %i "
+        "scalars",
+        onoff->size(), numscal_);
+
   // extract prefactor and reference value from condition
   const double prefac = cond->GetDouble("prefactor");
   const double refval = cond->GetDouble("refvalue");

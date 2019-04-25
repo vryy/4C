@@ -104,6 +104,13 @@ namespace GEO
 
       const plain_side_set& CutSides() const { return cut_sides_; }
 
+      /// Replace point p by point p_new in the line
+      void Replace(Point* p, Point* p_new)
+      {
+        auto& replace_p = (p == p1_) ? p1_ : p2_;
+        replace_p = p_new;
+      }
+
      private:
       Point* p1_;
       Point* p2_;

@@ -96,6 +96,22 @@ std::vector<int32_t>& RuntimeVtuWriter::GetMutableCellOffsetVector() { return ce
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
+std::map<std::string, std::pair<std::vector<double>, unsigned int>>&
+RuntimeVtuWriter::GetMutablePointDataMap()
+{
+  return point_data_vectors_;
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+std::map<std::string, std::pair<std::vector<double>, unsigned int>>&
+RuntimeVtuWriter::GetMutableCellDataMap()
+{
+  return cell_data_vectors_;
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
 void RuntimeVtuWriter::WriteFiles()
 {
   vtu_writer_->InitializeVtkFileStreamsForNewGeometryAndOrTimeStep();

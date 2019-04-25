@@ -82,6 +82,7 @@ Maintainer: Martin Kronbichler
 #include "inpar_cardiovascular0d.H"
 #include "inpar_contact_xcontact.H"
 #include "inpar_plasticity.H"
+#include "inpar_mor.H"
 #include "inpar_IO_monitor_structure_dbc.H"
 #include "inpar_IO_runtime_vtk_output.H"
 #include "inpar_IO_runtime_vtk_output_structure.H"
@@ -450,6 +451,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 #endif
 
   /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& meshpartitioning = list->sublist("MESH PARTITIONING", false, "");
+
+  DoubleParameter("IMBALANCE_TOL", 1.1,
+      "Tolerance for relative imbalance of subdomain sizes for graph partitioning of unstructured "
+      "meshes read from input files.",
+      &meshpartitioning);
+
+  /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& io = list->sublist("IO", false, "");
 
   setStringToIntegralParameter<int>("OUTPUT_GMSH", "No", "", yesnotuple, yesnovalue, &io);
@@ -604,11 +613,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
 
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& mor = list->sublist("MOR", false, "");
-
-  StringParameter("POD_MATRIX", "none", "filename of file containing projection matrix", &mor);
-
-  /*----------------------------------------------------------------------*/
   /* Finally call the problem-specific SetValidParameter functions        */
   /*----------------------------------------------------------------------*/
 
@@ -677,6 +681,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   INPAR::PARTICLEOLD::SetValidParameters(list);
   INPAR::CAVITATION::SetValidParameters(list);
+
+  INPAR::MOR::SetValidParameters(list);
 
   INPAR::ACOU::SetValidParameters(list);
   INPAR::ELEMAG::SetValidParameters(list);

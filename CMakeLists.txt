@@ -794,6 +794,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_lubrication.cpp
   src/drt_inpar/inpar_binningstrategy.cpp
   src/drt_inpar/inpar_mlmc.cpp
+  src/drt_inpar/inpar_mor.cpp
   src/drt_inpar/inpar_mortar.cpp
   src/drt_inpar/inpar_poroelast.cpp
   src/drt_inpar/inpar_plasticity.cpp
@@ -904,9 +905,14 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
   src/drt_beaminteraction/beam_to_solid_mortar_manager.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_base.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_gauss_point.cpp
+  src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_gauss_point_cross_section.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_mortar.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_factory.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_params.cpp
+  src/drt_beaminteraction/beam_to_solid_volume_meshtying_vtk_output_params.cpp
+  src/drt_beaminteraction/beam_to_solid_volume_meshtying_vtk_output_writer.cpp
+  src/drt_beaminteraction/beam_to_solid_vtu_output_writer_base.cpp
+  src/drt_beaminteraction/beam_to_solid_vtu_output_writer_visualization.cpp
   src/drt_beaminteraction/beam_to_sphere_contact_pair.cpp
   src/drt_beaminteraction/beam_to_sphere_contact_params.cpp
   src/drt_beaminteraction/beam_potential_params.cpp
@@ -2626,11 +2632,13 @@ set(OBJS_DRT_GEOMETRY_PAIR
 src/drt_geometry_pair/geometry_pair_factory.cpp
 src/drt_geometry_pair/geometry_pair.cpp
 src/drt_geometry_pair/geometry_pair_utility_classes.cpp
+src/drt_geometry_pair/geometry_pair_utility_functions.cpp
 src/drt_geometry_pair/geometry_pair_evaluation_data_global.cpp
 src/drt_geometry_pair/geometry_pair_evaluation_data_base.cpp
 src/drt_geometry_pair/geometry_pair_line_to_volume_evaluation_data.cpp
 src/drt_geometry_pair/geometry_pair_line_to_volume.cpp
 src/drt_geometry_pair/geometry_pair_line_to_volume_gauss_point_projection.cpp
+src/drt_geometry_pair/geometry_pair_line_to_volume_gauss_point_projection_cross_section.cpp
 src/drt_geometry_pair/geometry_pair_line_to_volume_segmentation.cpp
 )
 
