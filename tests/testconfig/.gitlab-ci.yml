@@ -199,10 +199,23 @@ variables:
         - "echo Doxygen"
         # Output to log because it is too much for the gitlab console.
         - "ctest -S $CI_PROJECT_DIR/tests/testconfig/test_doxygen.cmake -VV > ../doxygen.log"
+        # Throw error if there are Latex errors in doxygen comments. Latex errors can be uniquely identified by a line starting with "! ".
+        - if grep -qE '^! ' ../doxygen.log; then echo "Found at least one LaTeX error during doxygen build."; exit 1; else echo "Doxygen builds without LaTeX errors."; fi
+        # Copy final doxygen files to pre-defined location
         - "cp -r $CI_PROJECT_DIR/../baci-build/doc/html $DOXYGEN_PATH"
     after_script:
         # Write Selection of the output into the terminal and therefore to GITLAB
         - sed -n '/* Extra verbosity turned on/,/Test project /p' ../doxygen.log
+        # Write information about possible Latex errors to terminal
+        - if grep -qE '^! ' ../doxygen.log; then echo "Found at least one LaTeX error during doxygen build."; else echo "Doxygen builds without LaTeX errors."; fi
+        # Move the log file to the source folder, so it can be found by artifacts.
+        - mv ../doxygen.log doxygen.log
+    artifacts:
+        name: "$CI_JOB_NAME-$CI_JOB_ID"
+        paths:
+            - doxygen.log
+        when: on_failure
+        expire_in: 4 weeks
     only:
         variables:
             # Only build doxygen during nightly tests.
