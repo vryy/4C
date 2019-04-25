@@ -88,4 +88,7 @@ void INPAR::LUBRICATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
       "PENALTY_CAVITATION", 0., "penalty parameter for regularized cavitation", &lubricationdyn);
 
   DoubleParameter("GAP_OFFSET", 0., "Additional offset to the fluid gap", &lubricationdyn);
+
+  DoubleParameter(
+      "ROUGHNESS_STD_DEVIATION", 0., "standard deviation of surface roughness", &lubricationdyn);
 }

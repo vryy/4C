@@ -151,13 +151,17 @@ namespace EHL
     /// this is invariant w.r.t. rigid body rotations
     void SetAverageVelocityField();
 
+    /// set relative tangential interface velocity (ie structural velocities
+    /// this is invariant w.r.t. rigid body rotations
+    void SetRelativeVelocityField();
+
     /// set film height of the lubrication field
     void SetHeightField();
 
-    // set Time derivative of height (squeeze term)
+    /// set Time derivative of height (squeeze term)
     void SetHeightDot();
 
-    // Create DBC map for unprojectable nodes
+    /// Create DBC map for unprojectable nodes
     void SetupUnprojectableDBC();
   };
 }  // namespace EHL

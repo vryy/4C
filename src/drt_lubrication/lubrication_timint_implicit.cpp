@@ -282,6 +282,7 @@ void LUBRICATION::TimIntImpl::TimeLoop()
     // -------------------------------------------------------------------
     SetHeightField(1, Teuchos::null);
     SetHeightDotField(1, Teuchos::null);
+    SetRelativeVelocityField(1, Teuchos::null);
     SetAverageVelocityField(1, Teuchos::null);
 
     // -------------------------------------------------------------------
@@ -770,6 +771,17 @@ void LUBRICATION::TimIntImpl::SetHeightDotField(
   discret_->SetState(nds, "heightdot", heightdot);
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ | Set nodal value of Relative Velocity at time n+1        Faraji 02/19 |
+ *----------------------------------------------------------------------*/
+void LUBRICATION::TimIntImpl::SetRelativeVelocityField(
+    const int nds, Teuchos::RCP<const Epetra_Vector> rel_vel)
+{
+  if (nds >= discret_->NumDofSets()) dserror("Too few dofsets on lubrication discretization!");
+  if (rel_vel == Teuchos::null) dserror("no velocity provided.");
+  discret_->SetState(nds, "rel_tang_vel", rel_vel);
 }
 
 /*----------------------------------------------------------------------*

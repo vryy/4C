@@ -113,6 +113,9 @@ namespace LUBRICATION
     //! set the time derivative of the height (film thickness) by OST
     void SetHeightDotField(const int nds, Teuchos::RCP<const Epetra_Vector> heightdot);
 
+    //! set relative tangential interface velocity for Reynolds equation
+    void SetRelativeVelocityField(const int nds, Teuchos::RCP<const Epetra_Vector> rel_vel);
+
     //! set average tangential interface velocity for Reynolds equation
     void SetAverageVelocityField(const int nds, Teuchos::RCP<const Epetra_Vector> av_vel);
 
