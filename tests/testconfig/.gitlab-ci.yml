@@ -478,12 +478,11 @@ lnm-doxygen-web:
         CTEST_MAKE: "make documentation"
         CTEST_BUILD_NAME_GITLAB: "Doxygen-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "centos74_Q12015.config"
-        CTEST_DROP_SITE_CDASH_GITLAB: "1"
+        CTEST_DROP_SITE_CDASH_GITLAB: "0"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
-        - lnm-nightly-doxygen
-
+        - lnm-release-user-full
 
 lnm-doxygen:
     << : *doxygen
