@@ -224,13 +224,35 @@ void PARTICLEALGORITHM::TimInt::InitTemperatureBoundaryCondition()
  *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::TimInt::AddInitialRandomNoiseToPosition()
 {
-  // get amplitude of noise added to initial position
-  const double positionamplitude = params_.get<double>("INITIAL_POSITION_AMPLITUDE");
+  // init vector of initial position amplitude for each spatial direction
+  std::vector<double> amplitude;
+  double value;
+  std::istringstream amplitudestream(
+      Teuchos::getNumericStringParameter(params_, "INITIAL_POSITION_AMPLITUDE"));
 
-  if (not(positionamplitude > 0.0)) return;
+  while (amplitudestream >> value) amplitude.push_back(value);
 
   // safety check
-  if (positionamplitude > particleengineinterface_->MinBinSize())
+  if ((int)amplitude.size() != 3)
+    dserror("dimension (dim = %d) of initial position amplitude vector is wrong!",
+        (int)amplitude.size());
+
+  // safety check
+  for (int i = 0; i < (int)amplitude.size(); ++i)
+    if (amplitude[i] < 0.0)
+      dserror("no negative initial position amplitude allowed (set a positive or zero value)!");
+
+  // get magnitude of initial position amplitude
+  double temp = 0.0;
+  for (int i = 0; i < (int)amplitude.size(); ++i) temp += amplitude[i] * amplitude[i];
+  const double amplitude_norm = std::sqrt(temp);
+
+  // no initial position amplitude defined
+  if (not(amplitude_norm > 0.0)) return;
+
+  // safety check
+  const double max_amplitude = *std::max_element(amplitude.begin(), amplitude.end());
+  if (max_amplitude > particleengineinterface_->MinBinSize())
     dserror("amplitude of noise added to initial position larger than minimum relevant bin size!");
 
   // get particle container bundle
@@ -266,7 +288,7 @@ void PARTICLEALGORITHM::TimInt::AddInitialRandomNoiseToPosition()
         const double randomvalue = DRT::Problem::Instance()->Random()->Uni();
 
         // update position of particle
-        pos[statedim * i + dim] += randomvalue * positionamplitude;
+        pos[statedim * i + dim] += randomvalue * amplitude[dim];
       }
     }
   }
