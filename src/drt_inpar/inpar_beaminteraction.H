@@ -4,7 +4,7 @@
 
 \brief input parameter for beaminteraction
 
-\maintainer Jonas Eichinger, Maximilian Grill
+\maintainer Maximilian Grill
 
 \level 2
 

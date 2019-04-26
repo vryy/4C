@@ -4,7 +4,7 @@
 
 \brief class for submodel beam contact
 
-\maintainer Jonas Eichinger, Maximilian Grill
+\maintainer Maximilian Grill
 
 \level 3
 

@@ -6,14 +6,9 @@
 
 \level 3
 
-<pre>
 \maintainer Christoph Ager
-            ager@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15236
-</pre>
-
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 #include <stack>
 
@@ -24,7 +19,7 @@
 
 extern "C"
 {
-#include <qhull/qhull_a.h>
+#include <qhull_a.h>
 }
 
 namespace GEO

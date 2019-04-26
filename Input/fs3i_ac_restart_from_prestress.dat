@@ -1,7 +1,6 @@
 //
-// Maintainer: Moritz Thon
-// thon@mhp.mw.tum.de
-// 089/289-10364
+// Maintainer: Matthias Mayr
+//
 // Testing: AC_FSI framework with multiple scalars, FLUID/TRANSPORT NEUMANN BC,
 //          AC_FSI subcycling, fs3i_SequStagg scheme
 //

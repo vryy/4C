@@ -110,20 +110,19 @@ if (ENABLE_STACKTR)
   add_definitions("-DENABLE_STACKTR")
 endif (ENABLE_STACKTR)
 
-option (FS3I_INCACouplingTest "Nightly test for FS3I_INCA_coupling turned off" OFF)
 
 #   additional features
 
 
-  find_package(HDF5 REQUIRED)
-  if (HDF5_FOUND)
-    include_directories(${HDF5_INCLUDE_DIRS})
-    link_directories(${HDF5_LIBRARY_DIRS})
-    set(LIBRARIES
-      ${LIBRARIES}
-      ${HDF5_LIBRARIES}
-      )
-  endif(HDF5_FOUND)
+find_package(HDF5 REQUIRED)
+if (HDF5_FOUND)
+  include_directories(${HDF5_INCLUDE_DIRS})
+  link_directories(${HDF5_LIBRARY_DIRS})
+  set(LIBRARIES
+    ${LIBRARIES}
+    ${HDF5_LIBRARIES}
+    )
+endif(HDF5_FOUND)
 
 find_package(MPI REQUIRED)
 
@@ -188,24 +187,6 @@ FOREACH(_file ${_check_files})
   INCLUDE(${_file})
 ENDFOREACH()
 
-# these are the fedora 8 with openmpi paths
-
-#if (NOT MPI_DIR)
-#  set (MPI_DIR "/usr")  # standard path for MPI in Fedora 8
-#endif (NOT MPI_DIR)
-
-#if (NOT INCLUDE_INSTALL_DIR)
-#  set ( INCLUDE_INSTALL_DIR "/lnm/lib/fc8/openmpi/include" )
-#endif (NOT INCLUDE_INSTALL_DIR)
-
-#if (NOT LIB_INSTALL_DIR)
-#  set ( LIB_INSTALL_DIR "/lnm/lib/fc8/openmpi/lib" )
-#endif (NOT LIB_INSTALL_DIR)
-
-#if (NOT Trilinos_DIR)
-#  set ( Trilinos_DIR "/lnm/lib/fc8/openmpi/trilinos" )
-#endif (NOT Trilinos_DIR)
-
 ###------------------------------------------------------------------ External Libraries
 
 find_package(BLAS REQUIRED)
@@ -248,12 +229,12 @@ if (USE_NO_SYSTEM_PATHS)
   set(Boost_NO_SYSTEM_PATHS ON )
 endif(USE_NO_SYSTEM_PATHS)
 
-FIND_PACKAGE( Boost COMPONENTS graph program_options system filesystem REQUIRED)
+FIND_PACKAGE(Boost COMPONENTS graph program_options system filesystem REQUIRED)
 
 if (Boost_FOUND)
   message("Found Boost: ${Boost_INCLUDE_DIRS}")
-  message("Boost libraries: ${Boost_LIBRARIES}")
-  message("Boost libraries: ${Boost_LIBRARY_DIRS}")
+  message("Boost component libraries: ${Boost_LIBRARIES}")
+  message("Boost libraries directory: ${Boost_LIBRARY_DIRS}")
   include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
   link_directories(${Boost_LIBRARY_DIRS})
   set(LIBRARIES
@@ -369,7 +350,10 @@ if (deal.II_FOUND)
   MESSAGE("End of deal.II details\n")
   add_definitions("-DHAVE_DEAL_II")   # HAVE_DEAL_II preprocessor flag for BACI
 else()
-  message("-- DEAL.II package not found")
+  message("WW *************************************************************")
+  message("WW Warning: DEAL.II not found. No DEAL.II support in BACI.")
+  message("WW Warning: You cannot run simulations that need DEAL.II.")
+  message("WW *************************************************************")
 endif()
 
 # FFTW for Jonas Biehler
@@ -418,6 +402,18 @@ endif()
 #are precompiled and this flag has no influence
 REMOVE_DUPLICATES(LIBRARIES)
 list(REMOVE_ITEM LIBRARIES debug optimized general)
+
+if (HAVE_ASCII_FILE_COMPARISON_TESTS)
+  message("-- Test comparing restults to ASCII files: enabled")
+else()
+  message("-- Test comparing restults to ASCII files: disabled")
+endif()
+
+if (HAVE_ENSIGHT_POSTPROCESSING_TESTS)
+  message("-- Post-processing test for ensight filter: enabled")
+else()
+  message("-- Post-processing test for ensight filter: disabled")
+endif()
 
 ###------------------------------------------------------------------ List of files
 set(OBJS_DRT_ALE_LIB
