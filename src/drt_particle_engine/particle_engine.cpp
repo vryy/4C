@@ -619,8 +619,22 @@ void PARTICLEENGINE::ParticleEngine::BuildGlobalIDToLocalIndexMap()
  *---------------------------------------------------------------------------*/
 bool PARTICLEENGINE::ParticleEngine::HaveValidParticleConnectivity() const
 {
-  int localcheck = ((validownedparticles_ and validghostedparticles_ and validparticleneighbors_ and
+  int localcheck = ((validownedparticles_ and validghostedparticles_ and
                      validglobalidtolocalindex_ and validdirectghosting_));
+
+  // check among all processors
+  int globalcheck = 0;
+  comm_.MinAll(&localcheck, &globalcheck, 1);
+
+  return globalcheck;
+}
+
+/*---------------------------------------------------------------------------*
+ | check for valid particle neighbors                         sfuchs 04/2019 |
+ *---------------------------------------------------------------------------*/
+bool PARTICLEENGINE::ParticleEngine::HaveValidParticleNeighbors() const
+{
+  int localcheck = validparticleneighbors_;
 
   // check among all processors
   int globalcheck = 0;
