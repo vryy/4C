@@ -88,7 +88,7 @@ void PARTICLEINTERACTION::DEMContact::Setup(
   // set history pair handler
   historypairs_ = historypairs;
 
-  //! get maximum density of all materials
+  // get maximum density of all materials
   const double maxdensity = GetMaxDensityOfAllMaterials();
 
   // setup normal contact handler
