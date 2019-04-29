@@ -5,7 +5,7 @@
 
  \level 3
  <pre>
- \maintainer Sebastian Pröll
+ \maintainer Sebastian Proell
  </pre>
  */
 
@@ -50,8 +50,6 @@ namespace MAT
       //@{
       const double solidustemp_;
       const double liquidustemp_;
-      /// smoothing width, if 0 no smoothing but linear interpolation
-      const double delta_;
       const double latentheat_;
       //@}
 
@@ -208,7 +206,7 @@ namespace MAT
         }
       }
 
-      // evaluate interpolator at given coordinate
+      /// evaluate interpolator at given coordinate
       double valueAt(double x)
       {
         double val = -1;
@@ -233,7 +231,7 @@ namespace MAT
         //        dserror("x=%f: y=%f out of range [%f,%f]",x,val,y1_,y2_);
       }
 
-      // evaluate derivative of interpolator at given coordinate
+      /// evaluate derivative of interpolator at given coordinate
       double derivativeAt(double x)
       {
         if ((x >= x1_ + delta_) && (x <= x2_ - delta_))
@@ -253,7 +251,7 @@ namespace MAT
         return -1;
       }
 
-      // inverse of interpolation, only works reliably for k1=k2=0
+      /// experimental inverse of interpolation, only works reliably for k1=k2=0
       double inverseAt(double y)
       {
         const double yc1 = a3_ * (x1_ + delta_) + b3_;
@@ -387,7 +385,9 @@ namespace MAT
       for (unsigned i = 0; i < nen; i++) enth_ += shapefunct(i) * lhremnp_->at(i);
     }
 
-    // new wrapper until refactored
+    //! \brief evaluate function based on temperature OR enthalpy
+    //!
+    //! \note new wrapper until refactored
     double EvaluateFunction(const double temperature,  ///< temperature at GP
         const int gp,  ///< current GP to select internal phase information
         const std::vector<int>
@@ -414,6 +414,7 @@ namespace MAT
     {
       if (params_->enthalpydep_)
       {
+        // TODO add linearization
         // for now just skip derivative evaluation, not clear how temp dependency should be done
         // with enthalpy
         return 0;
@@ -432,6 +433,7 @@ namespace MAT
     {
       if (params_->heatint_)
         // currently apparent capacity not allowed in this scenario
+        // latent heat already handled by heat integration
         return 0;
       if (temperature <= Ts_mod_ or temperature >= Tl_mod_)
         return 0;
@@ -497,10 +499,9 @@ namespace MAT
                          (params_->latentheat_ - abs(lhremnp_->at(i))) / params_->latentheat_ *
                              (params_->liquidustemp_ - params_->solidustemp_);
       }
-      for (std::vector<double>::const_iterator i = lhremnp_->begin(); i != lhremnp_->end(); ++i)
-        std::cout << *i << ' ';
     }
 
+    //! compute temperature in the mushy phase change zone based on latent heat
     template <unsigned int nen>
     void LastMushyTemperature(
         LINALG::Matrix<nen, 1>& nodaltemp  // nodal temperature, (return) reset if source term
@@ -518,7 +519,6 @@ namespace MAT
     template <unsigned int nen>
     void SetTotalLatentHeatAvailable(LINALG::Matrix<nen, 1>& nodalfactor)
     {
-      // nodalfactor.Scale(params_->latentheat_);
       for (unsigned i = 0; i < nen; i++)
       {
         nodallump_->at(i) = nodalfactor(i);
@@ -527,7 +527,7 @@ namespace MAT
       }
     }
 
-    //! reset memory of
+    //! reset memory of latent heat
     void ResetLatentHeatLastStep() { *lhremnp_ = *lhrem_; }
 
     /// service function for postprocessing, evaluate "phase"
@@ -565,13 +565,8 @@ namespace MAT
       {
         // update the nodal history
         cfracnode_->at(i) = CFracNext(nodaltemp(i), cfracnode_->at(i));
-        // fixme should be checked only once and called polymorphically?
-        if (functions[0] == functions[1] && functions[0] == functions[2])
-        {
-          // this call currently ensures that volumetric heat capacity can have a peak in the middle
-          nodalvalue(i) = FunctionValue(nodaltemp(i), functions[0]);
-        }
-        else if (nodaltemp(i) > Tl_mod_ || nodaltemp(i) < Ts_mod_)
+
+        if (nodaltemp(i) > Tl_mod_ || nodaltemp(i) < Ts_mod_)
         {
           EvaluateFractions(nodaltemp(i), cfracnode_->at(i));
           const double powderVal = FunctionValue(nodaltemp(i), functions[0]);
@@ -605,6 +600,7 @@ namespace MAT
     void EvaluateFractionDerivatives(
         const double temperature, const double cfrac, const double cfracn);
 
+    /// internal evaluation of fraction at current Gauss point
     void EvaluateCFracnpAtGp(const double temperature, const int gp);
 
     /// evaluate derivative of consolidated fraction with respect to temperature, for linearization
@@ -652,7 +648,7 @@ namespace MAT
 
     /// temperature fraction between Ts_mod and Tl_mod
     double Tfrac_;
-    /// modified solidus and liquidus temperatures
+    /// possibly modified solidus and liquidus temperatures
     double Ts_mod_, Tl_mod_;
 
     /// (non-history) variables for fractions, functions and their derivatives
@@ -674,7 +670,5 @@ namespace MAT
   };  // Consolidation
 
 }  // namespace MAT
-   // namespace MAT
-   // namespace MAT
 /*----------------------------------------------------------------------*/
 #endif  // CONSOLIDATION_H_

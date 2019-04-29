@@ -3201,24 +3201,25 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculatePhaseChangeIncrement(
 
   for (int idof = 0; idof < nen_ * numdofpernode_; idof++)
   {
-    if ((etemp_(idof) < Ts and etempn_(idof) < Ts) or (etemp_(idof) > Tl and etempn_(idof) > Tl))
+    // TODO different behaviors are intransparent
+    // calculate increment
+    (*esourceinc)(idof) = rhoC * (Tlast(idof) - etempn_(idof));
+    // within tolerance: no increment added
+    if (melttol > 1e-12 && abs(etempn_(idof) - Tlast(idof)) < melttol)
     {
       (*esourceinc)(idof) = 0;
     }
-    else
+    // no tolerance: use RB condition
+    else if (melttol < 1e-12)
     {
-      (*esourceinc)(idof) = rhoC * (Tlast(idof) - etempn_(idof));
+      if ((etemp_(idof) < Ts and etempn_(idof) < Ts) or (etemp_(idof) > Tl and etempn_(idof) > Tl))
+        (*esourceinc)(idof) = 0;
     }
   }
 
   // call material to limit source term based on history
   mat->Consolidation()->LimitLatentHeatSourceTerm(*esourceinc, *etempmod);
   esourceinc->Scale(1.0 / stepsize);
-
-  std::cout << "ele: " << ele->Id() << std::endl;
-  etemp_.Print(std::cout);
-  etempn_.Print(std::cout);
-  esourceinc->Print(std::cout);
 
   // remove assembly on nodal temperature by dividing out number of elements
   // source term is ready for assembly due to lumped factor being only from current element

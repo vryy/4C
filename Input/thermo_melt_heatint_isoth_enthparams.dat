@@ -1,4 +1,4 @@
-// Maintainer: Sebastian Pröll
+// Maintainer: Sebastian Proell
 ==================================================================
                   General Data File BACI
 ==================================================================
@@ -57,7 +57,7 @@ NUMSTEP                         90
 TIMESTEP                        200
 HEATINTEGRATION                 yes
 LUMPCAPA                        yes
-TOLMELT                         0
+TOLMELT                         1e-2
 ---------------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
 THETA                           1
 --------------------------------------------------------------------SOLVER 2

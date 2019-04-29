@@ -2136,7 +2136,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
         "MAT_Consolidation", "manager for consolidation tracking", INPAR::MAT::m_consolidation));
     AddNamedReal(m, "SOLIDUS", "solidus temperature");
     AddNamedReal(m, "LIQUIDUS", "liquidus temperature (set to liquidus for isothermal)");
-    AddNamedReal(m, "DELTA", "smoothing width around Ts and Tl", 0.0, true);
     AddNamedReal(m, "LATENTHEAT", "latent heat of melting", 0.0, true);
 
     AppendMaterialDefinition(matlist, m);

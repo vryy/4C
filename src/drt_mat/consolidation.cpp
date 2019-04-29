@@ -5,7 +5,7 @@
 
 \level 3
 <pre>
-\maintainer Sebastian Pröll
+\maintainer Sebastian Proell
 </pre>
  */
 
@@ -30,7 +30,6 @@ MAT::PAR::Consolidation::Consolidation(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
       solidustemp_(matdata->GetDouble("SOLIDUS")),
       liquidustemp_(matdata->GetDouble("LIQUIDUS")),
-      delta_(matdata->GetDouble("DELTA")),
       latentheat_(matdata->GetDouble("LATENTHEAT"))
 {
   const Teuchos::ParameterList& tdynparams = DRT::Problem::Instance()->ThermalDynamicParams();
@@ -47,9 +46,6 @@ MAT::PAR::Consolidation::Consolidation(Teuchos::RCP<MAT::PAR::Material> matdata)
   }
   else
     enthalpydep_ = false;
-  if (delta_ < 0) dserror("Delta must be zero or positive.");
-  if (delta_ > 0 && liquidustemp_ - solidustemp_ < 3 * delta_)
-    dserror("Delta must be smaller than 1/3*(Tl-Ts).");
 }
 
 Teuchos::RCP<MAT::Material> MAT::PAR::Consolidation::CreateMaterial()
@@ -264,12 +260,6 @@ double MAT::Consolidation::EvaluateTempDependentFunction(
 )
 {
   EvaluateCFracnpAtGp(temperature, gp);
-  // fixme should be checked only once and called polymorphically?
-  if (functions[0] == functions[1] && functions[0] == functions[2])
-  {
-    // this call currently ensures that volumetric heat capacity can have a peak in the middle
-    return FunctionValue(temperature, functions[0]);
-  }
 
   if (temperature > Tl_mod_)
   {
@@ -300,14 +290,7 @@ double MAT::Consolidation::EvaluateTempDependentFunction(
 double MAT::Consolidation::EvaluateTempDependentDerivative(
     const double temperature, const int gp, const std::vector<int> functions)
 {
-  //  FunctionDerivatives(temperature, functions);
   EvaluateCFracnpAtGp(temperature, gp);
-
-  if (functions[0] == functions[1] && functions[0] == functions[2])
-  {
-    // this call currently ensures that volumetric heat capacity can have a peak in the middle
-    return FunctionDerivative(temperature, functions[0]);
-  }
 
   if (temperature > Tl_mod_)
   {
@@ -322,7 +305,6 @@ double MAT::Consolidation::EvaluateTempDependentDerivative(
   else
   {
     // evaluate according to the product rule
-    // TODO warning not validated that this still works, derivs are probably wrong!
     EvaluateCFracnpAtGp(temperature, gp);
     EvaluateFractions(temperature, cfracnp_->at(gp));
     EvaluateFractionDerivatives(temperature, cfracnp_->at(gp), cfracn_->at(gp));
@@ -391,11 +373,6 @@ double MAT::Consolidation::CFracNext(const double temperature, const double oldc
  *-----------------------------------------------------------------------*/
 void MAT::Consolidation::EvaluateTFrac(const double temperature)
 {
-  //  if (temperature <= Ts_mod_)
-  //    Tfrac_ = 0;
-  //  else if (temperature >= Tl_mod_)
-  //    Tfrac_ = 1;
-  //  else
   Tfrac_ = fractionInterpolant->valueAt(temperature);
 }
 
