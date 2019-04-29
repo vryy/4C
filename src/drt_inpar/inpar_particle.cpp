@@ -90,9 +90,9 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   StringParameter(
       "PHASE_TO_MATERIAL_ID", "none", "relate particle phase to material id", &particledyn);
 
-  // amplitude of noise added to initial position
-  DoubleParameter("INITIAL_POSITION_AMPLITUDE", 0.0, "amplitude of noise added to initial position",
-      &particledyn);
+  // amplitude of noise added to initial position for each spatial direction
+  setNumericStringParameter("INITIAL_POSITION_AMPLITUDE", "0.0 0.0 0.0",
+      "amplitude of noise added to initial position for each spatial direction", &particledyn);
 
   // type of particle wall source
   setStringToIntegralParameter<int>("PARTICLE_WALL_SOURCE", "NoParticleWall",

@@ -119,6 +119,9 @@ namespace PARTICLEENGINE
     //! check for valid particle connectivity
     bool HaveValidParticleConnectivity() const;
 
+    //! check for valid particle neighbors
+    bool HaveValidParticleNeighbors() const;
+
     //! get binning strategy
     const std::shared_ptr<BINSTRATEGY::BinningStrategy> GetBinningStrategy() const
     {

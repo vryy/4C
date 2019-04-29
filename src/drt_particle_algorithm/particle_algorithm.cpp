@@ -728,8 +728,13 @@ void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
   // check for valid particle connectivity
   bool invalidparticleconnectivity = (not particleengine_->HaveValidParticleConnectivity());
 
-  if (transferevery_ or transferneeded or invalidparticleconnectivity or writeresultsthisstep_ or
-      writerestartthisstep_)
+  // check for valid particle neighbors
+  bool invalidparticleneighbors = false;
+  if (particleinteraction_)
+    invalidparticleneighbors = (not particleengine_->HaveValidParticleNeighbors());
+
+  if (transferevery_ or transferneeded or writeresultsthisstep_ or writerestartthisstep_ or
+      invalidparticleconnectivity or invalidparticleneighbors)
   {
     // transfer particles to new bins and processors
     particleengine_->TransferParticles();
@@ -785,8 +790,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
     if (myrank_ == 0)
     {
       if (loadbalanceneeded or writerestartthisstep_)
-        IO::cout(IO::verbose) << "dynamic load balancing and particle transfer in step " << Step()
-                              << IO::endl;
+        IO::cout(IO::verbose) << "dynamic load balancing in step " << Step() << IO::endl;
       else
         IO::cout(IO::verbose) << "particle transfer in step " << Step() << IO::endl;
     }
