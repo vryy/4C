@@ -71,13 +71,14 @@ namespace CONTACT
     //! @name Accessors
     //!@{
 
-    //! return parallel unbalance factors (time) for current time step \f$t_{n+1}\f$
-    std::vector<double>& UnbalanceTimeFactors() { return tunbalance_; };
-    const std::vector<double>& UnbalanceTimeFactors() const { return tunbalance_; };
+    //! Return parallel unbalance factors (evaluation time) for current time step \f$t_{n+1}\f$
+    std::vector<double>& UnbalanceTimeFactors() { return unbalanceEvaluationTime_; };
+    const std::vector<double>& UnbalanceTimeFactors() const { return unbalanceEvaluationTime_; };
 
-    //! return parallel unbalance factors (elements) for current time step \f$t_{n+1}\f$
-    std::vector<int>& UnbalanceElementFactors() { return eunbalance_; };
-    const std::vector<int>& UnbalanceElementFactors() const { return eunbalance_; };
+    //! Return parallel unbalance factors (number of slave elements) for current time step
+    //! \f$t_{n+1}\f$
+    std::vector<int>& UnbalanceElementFactors() { return unbalanceNumSlaveElements_; };
+    const std::vector<int>& UnbalanceElementFactors() const { return unbalanceNumSlaveElements_; };
 
     //! return global Lagrange mult. dof row map (of all interfaces)
     Teuchos::RCP<Epetra_Map>& GLmDofRowMapPtr() { return glmdofrowmap_; };
@@ -509,11 +510,11 @@ namespace CONTACT
     //! @name Parallel redistribution
     //!@{
 
-    //! parallel unbalance factors (time) for current time step \f$t_{n+1}\f$
-    std::vector<double> tunbalance_;
+    //! Parallel unbalance factors (evaluation time) for current time step \f$t_{n+1}\f$
+    std::vector<double> unbalanceEvaluationTime_;
 
-    //! parallel unbalance factors (elements) for current time step \f$t_{n+1}\f$
-    std::vector<int> eunbalance_;
+    //! Parallel unbalance factors (num. of slave elements) for current time step \f$t_{n+1}\f$
+    std::vector<int> unbalanceNumSlaveElements_;
 
     //! global LM dof row map (before parallel redistribution)
     Teuchos::RCP<Epetra_Map> pglmdofrowmap_;
@@ -1884,11 +1885,11 @@ namespace CONTACT
     //! @name Parallel redistribution
     //!@{
 
-    //! Parallel unbalance factors (time) for current time step \f$t_{n+1}\f$
-    std::vector<double>& tunbalance_;
+    //! Parallel unbalance factors (evaluation time) for current time step \f$t_{n+1}\f$
+    std::vector<double>& unbalanceEvaluationTime_;
 
-    //! Parallel unbalance factors (elements) for current time step \f$t_{n+1}\f$
-    std::vector<int>& eunbalance_;
+    //! Parallel unbalance factors (num. of slave elements) for current time step \f$t_{n+1}\f$
+    std::vector<int>& unbalanceNumSlaveElements_;
 
     //! Global Lagrange multiplier dof row map before parallel redistribution
     Teuchos::RCP<Epetra_Map>& pglmdofrowmap_;

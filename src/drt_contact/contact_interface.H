@@ -622,8 +622,18 @@ namespace CONTACT
     /*!
     \brief Collect data concerning load balance and parallel distribution
 
+    Check all slave elements and count
+    - possibly active elements in the column map
+    - possibly active elements in the row map
+
+    \param[out] numColElements Number of column elements that are potentially in contact
+    \param[out] numRowElements Number of row elements that are potentially in contact
+
+    \note We are only interested in slave elements here, since they have to do (almost) all the work
+    during evaluation. Master elements don't require any computations and, hence, can be neglected
+    here.
     */
-    void CollectDistributionData(int& loadele, int& crowele);
+    void CollectDistributionData(int& numColElements, int& numRowElements);
 
     /*!
     \brief Create binary search tree

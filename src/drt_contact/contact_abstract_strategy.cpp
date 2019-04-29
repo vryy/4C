@@ -60,8 +60,8 @@ CONTACT::AbstractStratDataContainer::AbstractStratDataContainer()
       gsdofVertex_(Teuchos::null),
       gsdofEdge_(Teuchos::null),
       gsdofSurf_(Teuchos::null),
-      tunbalance_(0),
-      eunbalance_(0),
+      unbalanceEvaluationTime_(0),
+      unbalanceNumSlaveElements_(0),
       pglmdofrowmap_(Teuchos::null),
       pgsdofrowmap_(Teuchos::null),
       pgmdofrowmap_(Teuchos::null),
@@ -138,8 +138,8 @@ CONTACT::CoAbstractStrategy::CoAbstractStrategy(
       gsdofVertex_(data_ptr->GSDofVertexRowMapPtr()),
       gsdofEdge_(data_ptr->GSDofEdgeRowMapPtr()),
       gsdofSurf_(data_ptr->GSDofSurfRowMapPtr()),
-      tunbalance_(data_ptr->UnbalanceTimeFactors()),
-      eunbalance_(data_ptr->UnbalanceElementFactors()),
+      unbalanceEvaluationTime_(data_ptr->UnbalanceTimeFactors()),
+      unbalanceNumSlaveElements_(data_ptr->UnbalanceElementFactors()),
       pglmdofrowmap_(data_ptr->PGLmDofRowMapPtr()),
       pgsdofrowmap_(data_ptr->PGSlDofRowMapPtr()),
       pgmdofrowmap_(data_ptr->PGMaDofRowMapPtr()),
@@ -209,8 +209,8 @@ CONTACT::CoAbstractStrategy::CoAbstractStrategy(
     regularized_ = true;
 
   // intialize storage fields for parallel redistribution
-  tunbalance_.clear();
-  eunbalance_.clear();
+  unbalanceEvaluationTime_.clear();
+  unbalanceNumSlaveElements_.clear();
 
   // build the NOX::NLN::CONSTRAINT::Interface::Required object
   noxinterface_ptr_ = Teuchos::rcp(new CONTACT::NoxInterface());
@@ -251,7 +251,7 @@ bool CONTACT::CoAbstractStrategy::RedistributeContact(Teuchos::RCP<const Epetra_
   if (WhichParRedist() == INPAR::MORTAR::parredist_static)
   {
     // this is the first time step (t=0) or restart
-    if ((int)tunbalance_.size() == 0 && (int)eunbalance_.size() == 0)
+    if ((int)unbalanceEvaluationTime_.size() == 0 && (int)unbalanceNumSlaveElements_.size() == 0)
     {
       // do redistribution
       doredist = true;
@@ -262,14 +262,16 @@ bool CONTACT::CoAbstractStrategy::RedistributeContact(Teuchos::RCP<const Epetra_
           // end up here.
     {
       // compute average balance factors of last time step
-      for (int k = 0; k < (int)tunbalance_.size(); ++k) taverage += tunbalance_[k];
-      taverage /= (int)tunbalance_.size();
-      for (int k = 0; k < (int)eunbalance_.size(); ++k) eaverage += eunbalance_[k];
-      eaverage /= (int)eunbalance_.size();
+      for (int k = 0; k < (int)unbalanceEvaluationTime_.size(); ++k)
+        taverage += unbalanceEvaluationTime_[k];
+      taverage /= (int)unbalanceEvaluationTime_.size();
+      for (int k = 0; k < (int)unbalanceNumSlaveElements_.size(); ++k)
+        eaverage += unbalanceNumSlaveElements_[k];
+      eaverage /= (int)unbalanceNumSlaveElements_.size();
 
       // delete balance factors of last time step
-      tunbalance_.resize(0);
-      eunbalance_.resize(0);
+      unbalanceEvaluationTime_.resize(0);
+      unbalanceNumSlaveElements_.resize(0);
 
       // no redistribution
       doredist = false;
@@ -282,7 +284,7 @@ bool CONTACT::CoAbstractStrategy::RedistributeContact(Teuchos::RCP<const Epetra_
   else if (WhichParRedist() == INPAR::MORTAR::parredist_dynamic)
   {
     // this is the first time step (t=0) or restart
-    if ((int)tunbalance_.size() == 0 && (int)eunbalance_.size() == 0)
+    if ((int)unbalanceEvaluationTime_.size() == 0 && (int)unbalanceNumSlaveElements_.size() == 0)
     {
       // do redistribution
       doredist = true;
@@ -292,14 +294,16 @@ bool CONTACT::CoAbstractStrategy::RedistributeContact(Teuchos::RCP<const Epetra_
     else
     {
       // compute average balance factors of last time step
-      for (int k = 0; k < (int)tunbalance_.size(); ++k) taverage += tunbalance_[k];
-      taverage /= (int)tunbalance_.size();
-      for (int k = 0; k < (int)eunbalance_.size(); ++k) eaverage += eunbalance_[k];
-      eaverage /= (int)eunbalance_.size();
+      for (int k = 0; k < (int)unbalanceEvaluationTime_.size(); ++k)
+        taverage += unbalanceEvaluationTime_[k];
+      taverage /= (int)unbalanceEvaluationTime_.size();
+      for (int k = 0; k < (int)unbalanceNumSlaveElements_.size(); ++k)
+        eaverage += unbalanceNumSlaveElements_[k];
+      eaverage /= (int)unbalanceNumSlaveElements_.size();
 
       // delete balance factors of last time step
-      tunbalance_.resize(0);
-      eunbalance_.resize(0);
+      unbalanceEvaluationTime_.resize(0);
+      unbalanceNumSlaveElements_.resize(0);
 
       /* decide on redistribution
        * -> (we allow a maximum value of the balance measure in the
@@ -1316,8 +1320,9 @@ void CONTACT::CoAbstractStrategy::UpdateParallelDistributionStatus(const double&
   // numcrowele[0]
   //     << "\t MIN: " << minall << "\t MAX: " << maxall
   //     << "\t tmin: " << t_end_for_minall << "\t tmax: " << t_end_for_maxall
-  //     << "\t TUNBALANCE: " << tunbalance_[(int)tunbalance_.size()-1]
-  //     << "\t EUNBALANCE: " << eunbalance_[(int)eunbalance_.size()-1] << std::endl;
+  //     << "\t TUNBALANCE: " << unbalanceEvaluationTime_[(int)unbalanceEvaluationTime_.size()-1]
+  //     << "\t EUNBALANCE: " <<
+  //     unbalanceNumSlaveElements_[(int)unbalanceNumSlaveElements_.size()-1] << std::endl;
 
   return;
 }
@@ -1503,8 +1508,8 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(Teuchos::RCP<const Epet
 
   // reset unbalance factors for redistribution
   // (since the interface has been evaluated once above)
-  tunbalance_.resize(0);
-  eunbalance_.resize(0);
+  unbalanceEvaluationTime_.resize(0);
+  unbalanceNumSlaveElements_.resize(0);
 
   return;
 }
@@ -2165,8 +2170,8 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
 
   // reset unbalance factors for redistribution
   // (during restart the interface has been evaluated once)
-  tunbalance_.resize(0);
-  eunbalance_.resize(0);
+  unbalanceEvaluationTime_.resize(0);
+  unbalanceNumSlaveElements_.resize(0);
 
   return;
 }
