@@ -6,12 +6,7 @@
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #ifndef SSI_STR_MODEL_EVALUATOR_MONOLITHIC_H_
@@ -40,13 +35,16 @@ namespace STR
       );
 
       //! destructor
-      virtual ~MonolithicSSI() { return; };
+      virtual ~MonolithicSSI() = default;
 
       //! assemble right-hand side vector
-      bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const { return true; };
+      bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const override
+      {
+        return true;
+      };
 
       //! assemble Jacobian
-      bool AssembleJacobian(LINALG::SparseOperator& jac, const double& timefac_np) const
+      bool AssembleJacobian(LINALG::SparseOperator& jac, const double& timefac_np) const override
       {
         return true;
       };
@@ -61,26 +59,26 @@ namespace STR
       void DetermineOptionalQuantity() override { return; };
 
       //! evaluate current right-hand side vector
-      bool EvaluateForce() { return true; };
+      bool EvaluateForce() override { return true; };
 
       //! evaluate current right-hand-side vector and tangential stiffness matrix
-      bool EvaluateForceStiff() { return true; };
+      bool EvaluateForceStiff() override { return true; };
 
       //! evaluate current tangential stiffness matrix
-      bool EvaluateStiff() { return true; };
+      bool EvaluateStiff() override { return true; };
 
       //! return dofrowmap
-      Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const;
+      Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const override;
 
       //! return solution
-      Teuchos::RCP<const Epetra_Vector> GetCurrentSolutionPtr() const
+      Teuchos::RCP<const Epetra_Vector> GetCurrentSolutionPtr() const override
       {
         dserror("Not implemented!");
         return Teuchos::null;
       };
 
       //! return previous solution
-      Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const
+      Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const override
       {
         dserror("Not implemented!");
         return Teuchos::null;
@@ -89,8 +87,11 @@ namespace STR
       //! output state
       void OutputStepState(IO::DiscretizationWriter& iowriter) const;
 
+      //! pre-evaluate
+      void PreEvaluate() override { return; };
+
       //! post-evaluate
-      void PostEvaluate() { return; };
+      void PostEvaluate() override { return; };
 
       //! post-output
       void PostOutput() { return; };
@@ -99,27 +100,27 @@ namespace STR
       void Predict(const INPAR::STR::PredEnum& pred_type) { return; };
 
       //! read model-specific restart
-      void ReadRestart(IO::DiscretizationReader& ioreader) { return; };
+      void ReadRestart(IO::DiscretizationReader& ioreader) override { return; };
 
       //! recover condensed solution variables
       void RunPostComputeX(
-          const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
+          const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override
       {
         return;
       };
 
       //! reset model-specific variables (without Jacobian)
-      void Reset(const Epetra_Vector& x) { return; };
+      void Reset(const Epetra_Vector& x) override { return; };
 
       //! reset state
       void ResetStepState() { return; };
 
       //! post-iterate
-      void RunPostIterate(const NOX::Solver::Generic& solver) { return; };
+      void RunPostIterate(const NOX::Solver::Generic& solver) override { return; };
 
       //! pre-compute
-      void RunPreComputeX(
-          const Epetra_Vector& xold, Epetra_Vector& dir_mutable, const NOX::NLN::Group& curr_grp)
+      void RunPreComputeX(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
+          const NOX::NLN::Group& curr_grp) override
       {
         return;
       };
@@ -131,16 +132,17 @@ namespace STR
       const Epetra_MultiVector& Stresses() const { return *stresses_; };
 
       //! return type of model evaluator
-      INPAR::STR::ModelType Type() const { return INPAR::STR::model_monolithic_coupling; };
+      INPAR::STR::ModelType Type() const override { return INPAR::STR::model_monolithic_coupling; };
 
       //! update element
-      void UpdateStepElement() { return; };
+      void UpdateStepElement() override { return; };
 
       //! update state
-      void UpdateStepState(const double& timefac_n) { return; };
+      void UpdateStepState(const double& timefac_n) override { return; };
 
       //! write model-specific restart
-      void WriteRestart(IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const;
+      void WriteRestart(
+          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
      private:
       //! nodal stresses

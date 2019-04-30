@@ -75,6 +75,9 @@ namespace STR
       virtual bool EvaluateForceStiff() { return true; };
 
       //! derived
+      void PreEvaluate() override { return; };
+
+      //! derived
       virtual void PostEvaluate(){/* currently unused */};
 
       //! derived

@@ -17,12 +17,13 @@
 #include "str_model_evaluator_generic.H"
 #include "../drt_lib/drt_utils_matrix_vector_enums.H"
 
-// forward declarations...
+// forward declarations
 namespace CONTACT
 {
   class Manager;
   class MtAbstractStrategy;
 }  // namespace CONTACT
+
 namespace MORTAR
 {
   class StrategyBase;
@@ -34,6 +35,9 @@ namespace STR
   {
     class MeshtyingData;
 
+    /*! \brief Model evaluator for meshtying problems
+     *
+     */
     class Meshtying : public Generic
     {
      public:
@@ -41,9 +45,17 @@ namespace STR
       Meshtying();
 
       //! destructor
-      virtual ~Meshtying(){};
+      virtual ~Meshtying() = default;
 
-      //! init class variables [derived]
+      /*! \brief Initialize class variables [derived]
+       *
+       * @param eval_data_ptr
+       * @param gstate_ptr
+       * @param gio_ptr
+       * @param int_ptr
+       * @param timint_ptr
+       * @param dof_offset
+       */
       virtual void Init(const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
           const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
           const Teuchos::RCP<STR::TIMINT::BaseDataIO>& gio_ptr,
@@ -51,103 +63,106 @@ namespace STR
           const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr, const int& dof_offset);
 
       //! setup class variables [derived]
-      virtual void Setup();
+      void Setup() override;
 
       //! @name Functions which are derived from the base generic class
-      //! @{
-      //! [derived]
-      INPAR::STR::ModelType Type() const { return INPAR::STR::model_meshtying; }
+      //!@{
 
-      //    //! [derived]
-      //    virtual bool EvaluateForce();
-      //
-      //    //! [derived]
-      //    virtual bool EvaluateStiff();
-      //
-      //    //! [derived]
-      //    virtual bool EvaluateForceStiff();
-      //
-      //    //! [derived]
-      //    void PreEvaluate() override;
-      //
-      //    //! [derived]
-      //    virtual void PostEvaluate();
+      //! [derived]
+      INPAR::STR::ModelType Type() const override { return INPAR::STR::model_meshtying; }
 
       //! [derived]
       void RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) override;
 
       //! [derived]
-      virtual bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const;
+      bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const override;
 
       //! Assemble the jacobian at \f$t_{n+1}\f$
-      virtual bool AssembleJacobian(LINALG::SparseOperator& jac, const double& timefac_np) const;
+      bool AssembleJacobian(LINALG::SparseOperator& jac, const double& timefac_np) const override;
 
       //! [derived]
-      virtual void WriteRestart(
-          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const;
+      void WriteRestart(
+          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       //! [derived]
-      virtual void ReadRestart(IO::DiscretizationReader& ioreader);
+      void ReadRestart(IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
-      virtual void Predict(const INPAR::STR::PredEnum& pred_type) { return; };
+      void Predict(const INPAR::STR::PredEnum& pred_type) override { return; };
 
       //! [derived]
-      virtual void RunPostComputeX(
-          const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew);
+      void RunPostComputeX(
+          const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override;
 
       //! [derived]
-      virtual void RunPreComputeX(
-          const Epetra_Vector& xold, Epetra_Vector& dir_mutable, const NOX::NLN::Group& curr_grp){};
+      void RunPreComputeX(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
+          const NOX::NLN::Group& curr_grp) override
+      {
+        return;
+      };
 
       //! [derived]
-      virtual void RunPostIterate(const NOX::Solver::Generic& solver){};
+      void RunPostIterate(const NOX::Solver::Generic& solver) override { return; };
 
       //! [derived]
-      virtual void RunPostApplyJacobianInverse(const Epetra_Vector& rhs, Epetra_Vector& result,
-          const Epetra_Vector& xold, const NOX::NLN::Group& grp);
+      void RunPostApplyJacobianInverse(const Epetra_Vector& rhs, Epetra_Vector& result,
+          const Epetra_Vector& xold, const NOX::NLN::Group& grp) override;
 
       //! [derived]
-      virtual void RunPreApplyJacobianInverse(const Epetra_Vector& rhs, Epetra_Vector& result,
-          const Epetra_Vector& xold, const NOX::NLN::Group& grp);
+      void RunPreApplyJacobianInverse(const Epetra_Vector& rhs, Epetra_Vector& result,
+          const Epetra_Vector& xold, const NOX::NLN::Group& grp) override;
 
       //! [derived]
-      virtual void UpdateStepState(const double& timefac_n){};
+      void UpdateStepState(const double& timefac_n) override { return; };
 
       //! [derived]
-      virtual void UpdateStepElement(){};
+      void UpdateStepElement() override { return; };
 
       //! [derived]
-      virtual void DetermineStressStrain(){};
+      void DetermineStressStrain() override { return; };
 
       //! [derived]
-      virtual void DetermineEnergy(){};
+      void DetermineEnergy() override { return; };
 
       //! [derived]
-      virtual void DetermineOptionalQuantity() override{};
+      void DetermineOptionalQuantity() override { return; };
 
       //! [derived]
-      virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const {};
+      void OutputStepState(IO::DiscretizationWriter& iowriter) const override { return; };
 
       //! [derived]
-      virtual void ResetStepState(){};
+      void ResetStepState() override { return; };
 
       //! [derived]
-      virtual Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const;
+      Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const override;
 
       //! [derived]
-      virtual Teuchos::RCP<const Epetra_Vector> GetCurrentSolutionPtr() const;
+      Teuchos::RCP<const Epetra_Vector> GetCurrentSolutionPtr() const override;
 
       //! [derived]
-      virtual Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const;
+      Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const override;
 
       //! [derived]
-      virtual void PostOutput(){};
+      void PostOutput() override { return; };
+
+      /*! \brief Reset model specific variables (without jacobian) [derived]
+       *
+       * Nothing to do in case of meshtying.
+       *
+       * \param[in] x Current full state vector
+       */
+      void Reset(const Epetra_Vector& x) override { return; };
+
+      //! \brief Perform actions just before the Evaluate() call [derived]
+      void PreEvaluate() override { return; };
+
+      //! \brief Perform actions right after the Evaluate() call [derived]
+      void PostEvaluate() override { return; };
 
       //! @}
 
-      /// @name call-back routines
-      /// @{
+      //! @name Call-back routines
+      //!@{
 
       Teuchos::RCP<const LINALG::SparseMatrix> GetJacobianBlock(
           const DRT::UTILS::MatBlockType bt) const;
@@ -170,24 +185,25 @@ namespace STR
 
       void EvaluateWeightedGapGradientError();
 
-      inline const DRT::DiscretizationInterface& StrDiscret() const { return Discret(); }
+      //! [derived]
+      bool EvaluateForce() override;
 
       //! [derived]
-      virtual bool EvaluateForce();
+      bool EvaluateStiff() override;
 
       //! [derived]
-      virtual bool EvaluateStiff();
+      bool EvaluateForceStiff() override;
 
-      //! [derived]
-      virtual bool EvaluateForceStiff();
-
-      //! mesh relocation for conservation of angular momentum
+      /*! Apply mesh relocation for conservation of angular momentum
+       *
+       * @param Xslavemod
+       */
       void ApplyMeshInitialization(Teuchos::RCP<Epetra_Vector> Xslavemod);
 
-      /// @}
+      //!@}
 
       //! @name Accessors
-      //! @{
+      //!@{
 
       //! Returns a pointer to the underlying meshtying strategy object
       const Teuchos::RCP<CONTACT::MtAbstractStrategy>& StrategyPtr();
@@ -196,22 +212,16 @@ namespace STR
       CONTACT::MtAbstractStrategy& Strategy();
       const CONTACT::MtAbstractStrategy& Strategy() const;
 
-      //! @}
-
-      // things we don't need
-      virtual void Reset(const Epetra_Vector& x) { return; };
-      virtual void PostEvaluate(){};
+      //!@}
 
      protected:
-      STR::MODELEVALUATOR::MeshtyingData& EvalMeshtying();
-      const STR::MODELEVALUATOR::MeshtyingData& EvalMeshtying() const;
-
      private:
       //! meshtying strategy
       Teuchos::RCP<CONTACT::MtAbstractStrategy> strategy_ptr_;
-      //! mesh relocation of conservation of angular momentum
+
+      //! Mesh relocation for conservation of angular momentum
       Teuchos::RCP<Epetra_Vector> mesh_relocation_;
-    };  // class Meshtying
+    };  // namespace MODELEVALUATOR
 
   }  // namespace MODELEVALUATOR
 }  // namespace STR

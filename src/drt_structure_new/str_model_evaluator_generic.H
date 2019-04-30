@@ -4,13 +4,11 @@
 
 \brief Generic class for all model evaluators.
 
-\maintainer Michael Hiermeier
+\maintainer Matthias Mayr
 
 \level 3
-
 */
 /*-----------------------------------------------------------*/
-
 
 #ifndef STR_MODEL_EVALUATOR_GENERIC_H_
 #define STR_MODEL_EVALUATOR_GENERIC_H_
@@ -181,7 +179,7 @@ namespace STR
        *
        * \author hiermeier \date 03/17
        */
-      virtual void PreEvaluate() { return; };
+      virtual void PreEvaluate() = 0;
 
       /*! \brief Perform actions right after the Evaluate() call
        *

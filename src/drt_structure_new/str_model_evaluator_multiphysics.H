@@ -4,12 +4,9 @@
 
 \brief Base class for modelevaluators in partitioned algorithms.
 
-\maintainer Andreas Rauch
-
-\date Nov 28, 2016
+\maintainer Matthias Mayr
 
 \level 3
-
 */
 /*-----------------------------------------------------------*/
 
@@ -78,7 +75,7 @@ namespace STR
       Multiphysics();
 
       //! destructor
-      virtual ~Multiphysics(){};
+      virtual ~Multiphysics() = default;
 
       //! initialize the class variables
       virtual void Init(const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
@@ -88,7 +85,7 @@ namespace STR
           const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr, const int& dof_offset);
 
       //! setup class variables
-      virtual void Setup();
+      void Setup() override;
 
       //! set the active model type wrapped in this class.
       //! only active model type is evaluated.
@@ -112,92 +109,99 @@ namespace STR
       virtual void Reset(const Epetra_Vector& x);
 
       //! [derived]
-      virtual bool EvaluateForce();
+      bool EvaluateForce() override;
 
       //! [derived]
-      virtual bool EvaluateStiff();
+      bool EvaluateStiff() override;
 
       //! [derived] not needed in partitioned scheme
-      virtual bool EvaluateForceStiff();
+      bool EvaluateForceStiff() override;
 
       //! derived
-      virtual void PostEvaluate() { return; };
+      void PreEvaluate() override { return; };
 
       //! derived
-      virtual bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const;
+      void PostEvaluate() override { return; };
+
+      //! derived
+      bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const override;
 
       //! Assemble the jacobian at \f$t_{n+1}\f$ not needed in partitioned scheme
-      virtual bool AssembleJacobian(LINALG::SparseOperator& jac, const double& timefac_np) const;
+      bool AssembleJacobian(LINALG::SparseOperator& jac, const double& timefac_np) const override;
 
       //! [derived]
-      virtual void WriteRestart(
-          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+      void WriteRestart(
+          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override
       {
         return;
       };
 
       //! [derived]
-      virtual void ReadRestart(IO::DiscretizationReader& ioreader) { return; };
+      void ReadRestart(IO::DiscretizationReader& ioreader) override { return; };
 
       //! [derived]
       virtual void Predict(const INPAR::STR::PredEnum& pred_type) { return; };
 
       //! derived
-      virtual void RunPreComputeX(
-          const Epetra_Vector& xold, Epetra_Vector& dir_mutable, const NOX::NLN::Group& curr_grp)
+      void RunPreComputeX(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
+          const NOX::NLN::Group& curr_grp) override
       {
         return;
       };
 
       //! recover condensed Lagrange multipliers
-      virtual void RunPostComputeX(
-          const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
+      void RunPostComputeX(
+          const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override
       {
         return;
       };
 
       //! derived
-      virtual void RunPostIterate(const NOX::Solver::Generic& solver) { return; };
+      void RunPostIterate(const NOX::Solver::Generic& solver) override { return; };
 
       //! [derived]
-      virtual void UpdateStepState(const double& timefac_n);
+      void UpdateStepState(const double& timefac_n) override;
 
       //! [derived]
-      virtual void UpdateStepElement() { return; };
+      void UpdateStepElement() override { return; };
 
       //! [derived]
-      virtual void DetermineStressStrain() { return; };
+      void DetermineStressStrain() override { return; };
 
       //! [derived]
-      virtual void DetermineEnergy() { return; };
+      void DetermineEnergy() override { return; };
 
       //! [derived]
-      virtual void DetermineOptionalQuantity() override { return; };
+      void DetermineOptionalQuantity() override { return; };
 
       //! [derived]
-      virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const { return; };
+      void OutputStepState(IO::DiscretizationWriter& iowriter) const override { return; };
 
       //! derived
-      virtual void ResetStepState() { return; };
+      void ResetStepState() override { return; };
 
       //! [derived]
-      virtual void PostOutput() { return; };
+      void PostOutput() override { return; };
 
       //! @name Accessors to model specific things
       //! @{
+
       //! Returns a pointer to the model specific dof row map
-      virtual Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const { return Teuchos::null; };
+      Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const override
+      {
+        return Teuchos::null;
+      };
 
       //! Returns a pointer to the current model solution vector (usually the Lagrange multiplier
       //! vector)
-      virtual Teuchos::RCP<const Epetra_Vector> GetCurrentSolutionPtr() const
+      Teuchos::RCP<const Epetra_Vector> GetCurrentSolutionPtr() const override
       {
         return Teuchos::null;
       };
 
       //! Returns a pointer to the model solution vector of the last time step (usually the Lagrange
       //! multiplier vector)
-      virtual Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const
+      Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const override
       {
         return Teuchos::null;
       };

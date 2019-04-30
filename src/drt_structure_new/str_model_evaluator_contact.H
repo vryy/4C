@@ -4,9 +4,7 @@
 
 \brief Evaluation and assembly of all contact terms
 
-\maintainer Michael Hiermeier
-
-\date Feb 3, 2016
+\maintainer Matthias Mayr
 
 \level 3
 
@@ -19,12 +17,13 @@
 #include "str_model_evaluator_generic.H"
 #include "../drt_lib/drt_utils_matrix_vector_enums.H"
 
-// forward declarations...
+// forward declarations
 namespace CONTACT
 {
   class Manager;
   class CoAbstractStrategy;
 }  // namespace CONTACT
+
 namespace MORTAR
 {
   class StrategyBase;
@@ -43,33 +42,33 @@ namespace STR
       Contact();
 
       //! destructor
-      virtual ~Contact(){};
+      virtual ~Contact() = default;
 
       //! setup class variables [derived]
-      virtual void Setup();
+      void Setup() override;
 
       //! @name Functions which are derived from the base generic class
       //! @{
       //! [derived]
-      INPAR::STR::ModelType Type() const { return INPAR::STR::model_contact; }
+      INPAR::STR::ModelType Type() const override { return INPAR::STR::model_contact; }
 
       //! reset class variables (without jacobian) [derived]
-      virtual void Reset(const Epetra_Vector& x);
+      void Reset(const Epetra_Vector& x) override;
 
       //! [derived]
-      virtual bool EvaluateForce();
+      bool EvaluateForce() override;
 
       //! [derived]
-      virtual bool EvaluateStiff();
+      bool EvaluateStiff() override;
 
       //! [derived]
-      virtual bool EvaluateForceStiff();
+      bool EvaluateForceStiff() override;
 
       //! [derived]
       void PreEvaluate() override;
 
       //! [derived]
-      virtual void PostEvaluate();
+      void PostEvaluate() override;
 
       //! [derived]
       void RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) override;
