@@ -22,6 +22,7 @@
 #include "../drt_mortar/mortar_utils.H"
 
 #include "../drt_inpar/inpar_contact.H"
+#include "../drt_inpar/inpar_parameterlist_utils.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_colors.H"
@@ -786,130 +787,127 @@ Teuchos::RCP<Epetra_Map> CONTACT::CoAbstractStrategy::CreateDeterministicLMDofRo
  | global evaluation method called from time integrator      popp 06/09 |
  *----------------------------------------------------------------------*/
 void CONTACT::CoAbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
-    Teuchos::RCP<LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step,
-    const int iter, bool predictor)
+    Teuchos::RCP<LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int timeStep,
+    const int nonlinearIteration, bool predictor)
 {
   // update step and iteration counters
-  step_ = step;
-  iter_ = iter;
+  step_ = timeStep;
+  iter_ = nonlinearIteration;
 
-  /******************************************/
-  /*     VERSION WITH TIME MEASUREMENT      */
-  /******************************************/
-#ifdef CONTACTTIME
+  // Create timing reports?
+  bool doAccurateTimeMeasurements =
+      DRT::INPUT::IntegralValue<bool>(Data().SContact(), "TIMING_DETAILS");
 
-  // mortar initialization and evaluation
-  Comm().Barrier();
-  const double t_start1 = Teuchos::Time::wallTime();
-  SetState(MORTAR::state_new_displacement, *dis);
-  Comm().Barrier();
-  const double t_end1 = Teuchos::Time::wallTime() - t_start1;
-
-
-  Comm().Barrier();
-  const double t_start2 = Teuchos::Time::wallTime();
-  //---------------------------------------------------------------
-  // For selfcontact the master/slave sets are updated within the -
-  // contact search, see SelfBinaryTree.                          -
-  // Therefore, we have to initialize the mortar matrices after   -
-  // interface evaluations.                                       -
-  //---------------------------------------------------------------
-  if (IsSelfContact())
+  if (doAccurateTimeMeasurements)
   {
-    InitEvalInterface();  // evaluate mortar terms (integrate...)
-    InitMortar();         // initialize mortar matrices and vectors
-    AssembleMortar();     // assemble mortar terms into global matrices
+    // mortar initialization and evaluation
+    Comm().Barrier();
+    const double t_start1 = Teuchos::Time::wallTime();
+    SetState(MORTAR::state_new_displacement, *dis);
+    Comm().Barrier();
+    const double t_end1 = Teuchos::Time::wallTime() - t_start1;
+
+
+    Comm().Barrier();
+    const double t_start2 = Teuchos::Time::wallTime();
+    //---------------------------------------------------------------
+    // For selfcontact the master/slave sets are updated within the -
+    // contact search, see SelfBinaryTree.                          -
+    // Therefore, we have to initialize the mortar matrices after   -
+    // interface evaluations.                                       -
+    //---------------------------------------------------------------
+    if (IsSelfContact())
+    {
+      InitEvalInterface();  // evaluate mortar terms (integrate...)
+      InitMortar();         // initialize mortar matrices and vectors
+      AssembleMortar();     // assemble mortar terms into global matrices
+    }
+    else
+    {
+      InitMortar();         // initialize mortar matrices and vectors
+      InitEvalInterface();  // evaluate mortar terms (integrate...)
+      AssembleMortar();     // assemble mortar terms into global matrices
+    }
+    Comm().Barrier();
+    const double t_end2 = Teuchos::Time::wallTime() - t_start2;
+
+    // evaluate relative movement for friction
+    Comm().Barrier();
+    const double t_start3 = Teuchos::Time::wallTime();
+    if (predictor)
+      EvaluateRelMovPredict();
+    else
+      EvaluateRelMov();
+
+    // update active set
+    if (!predictor) UpdateActiveSetSemiSmooth();
+
+    Comm().Barrier();
+    const double t_end3 = Teuchos::Time::wallTime() - t_start3;
+
+    // apply contact forces and stiffness
+    Comm().Barrier();
+    const double t_start4 = Teuchos::Time::wallTime();
+    Initialize();          // init lin-matrices
+    Evaluate(kt, f, dis);  // assemble lin. matrices, condensation ...
+    EvalConstrRHS();       // evaluate the constraint rhs (saddle-point system only)
+
+    Comm().Barrier();
+    const double t_end4 = Teuchos::Time::wallTime() - t_start4;
+
+    // only for debugging:
+    InterfaceForces();
+
+    if (Comm().MyPID() == 0)
+    {
+      std::cout << "    -->setstate :\t" << t_end1 << " seconds\n";
+      std::cout << "    -->interface eval. :\t" << t_end2 << " seconds\n";
+      std::cout << "    -->update active set :\t" << t_end3 << " seconds\n";
+      std::cout << "    -->modify global system :\t" << t_end4 << " seconds\n";
+    }
   }
   else
   {
-    InitMortar();         // initialize mortar matrices and vectors
-    InitEvalInterface();  // evaluate mortar terms (integrate...)
-    AssembleMortar();     // assemble mortar terms into global matrices
-  }
-  Comm().Barrier();
-  const double t_end2 = Teuchos::Time::wallTime() - t_start2;
+    // mortar initialization and evaluation
+    SetState(MORTAR::state_new_displacement, *dis);
 
-  // evaluate relative movement for friction
-  Comm().Barrier();
-  const double t_start3 = Teuchos::Time::wallTime();
-  if (predictor)
-    EvaluateRelMovPredict();
-  else
-    EvaluateRelMov();
+    //---------------------------------------------------------------
+    // For selfcontact the master/slave sets are updated within the -
+    // contact search, see SelfBinaryTree.                          -
+    // Therefore, we have to initialize the mortar matrices after   -
+    // interface evaluations.                                       -
+    //---------------------------------------------------------------
+    if (IsSelfContact())
+    {
+      InitEvalInterface();  // evaluate mortar terms (integrate...)
+      InitMortar();         // initialize mortar matrices and vectors
+      AssembleMortar();     // assemble mortar terms into global matrices
+    }
+    else
+    {
+      InitMortar();         // initialize mortar matrices and vectors
+      InitEvalInterface();  // evaluate mortar terms (integrate...)
+      AssembleMortar();     // assemble mortar terms into global matrices
+    }
 
-  // update active set
-  if (!predictor) UpdateActiveSetSemiSmooth();
+    // evaluate relative movement for friction
+    if (predictor)
+      EvaluateRelMovPredict();
+    else
+      EvaluateRelMov();
 
-  Comm().Barrier();
-  const double t_end3 = Teuchos::Time::wallTime() - t_start3;
+    // update active set
+    if (!predictor) UpdateActiveSetSemiSmooth();
 
-  // apply contact forces and stiffness
-  Comm().Barrier();
-  const double t_start4 = Teuchos::Time::wallTime();
-  Initialize();          // init lin-matrices
-  Evaluate(kt, f, dis);  // assemble lin. matrices, condensation ...
-  EvalConstrRHS();       // evaluate the constraint rhs (saddle-point system only)
+    // apply contact forces and stiffness
+    Initialize();          // init lin-matrices
+    Evaluate(kt, f, dis);  // assemble lin. matrices, condensation ...
+    EvalConstrRHS();       // evaluate the constraint rhs (saddle-point system only)
 
-  Comm().Barrier();
-  const double t_end4 = Teuchos::Time::wallTime() - t_start4;
-
-  // only for debugging:
-  InterfaceForces();
-
-  if (Comm().MyPID() == 0)
-  {
-    std::cout << "    -->setstate :\t" << t_end1 << " seconds\n";
-    std::cout << "    -->interface eval. :\t" << t_end2 << " seconds\n";
-    std::cout << "    -->update active set :\t" << t_end3 << " seconds\n";
-    std::cout << "    -->modify global system :\t" << t_end4 << " seconds\n";
+    // only for debugging:
+    InterfaceForces();
   }
 
-#else
-
-  /******************************************/
-  /*   VERSION WITHOUT TIME MEASUREMENT     */
-  /******************************************/
-
-  // mortar initialization and evaluation
-  SetState(MORTAR::state_new_displacement, *dis);
-
-  //---------------------------------------------------------------
-  // For selfcontact the master/slave sets are updated within the -
-  // contact search, see SelfBinaryTree.                          -
-  // Therefore, we have to initialize the mortar matrices after   -
-  // interface evaluations.                                       -
-  //---------------------------------------------------------------
-  if (IsSelfContact())
-  {
-    InitEvalInterface();  // evaluate mortar terms (integrate...)
-    InitMortar();         // initialize mortar matrices and vectors
-    AssembleMortar();     // assemble mortar terms into global matrices
-  }
-  else
-  {
-    InitMortar();         // initialize mortar matrices and vectors
-    InitEvalInterface();  // evaluate mortar terms (integrate...)
-    AssembleMortar();     // assemble mortar terms into global matrices
-  }
-
-  // evaluate relative movement for friction
-  if (predictor)
-    EvaluateRelMovPredict();
-  else
-    EvaluateRelMov();
-
-  // update active set
-  if (!predictor) UpdateActiveSetSemiSmooth();
-
-  // apply contact forces and stiffness
-  Initialize();          // init lin-matrices
-  Evaluate(kt, f, dis);  // assemble lin. matrices, condensation ...
-  EvalConstrRHS();       // evaluate the constraint rhs (saddle-point system only)
-
-  // only for debugging:
-  InterfaceForces();
-
-#endif  // #ifdef CONTACTTIME
   return;
 }
 
