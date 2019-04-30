@@ -55,6 +55,7 @@
 #include "../drt_matelast/visco_isoratedep.H"
 #include "../drt_matelast/visco_genmax.H"
 #include "../drt_matelast/visco_fract.H"
+#include "../drt_mat/stvenantkirchhoff.H"
 
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 
@@ -2084,6 +2085,20 @@ void STR::GenInvAnalysis::ReadInParameters()
           }
         }
         break;
+        case INPAR::MAT::m_stvenant:
+        {
+          if (mymatset.size() == 0 or mymatset.find(actmat->Id()) != mymatset.end())
+          {
+            MAT::PAR::StVenantKirchhoff* params =
+                dynamic_cast<MAT::PAR::StVenantKirchhoff*>(actmat->Parameter());
+            if (!params) dserror("Cannot cast material parameters");
+            const int j = p_.Length();
+            p_.Resize(j + 2);
+            p_(j) = params->youngs_;
+            p_(j + 1) = params->poissonratio_;
+          }
+        }
+        break;
         case INPAR::MAT::m_constraintmixture:
         {
           materialhashistory_ = true;
@@ -2171,6 +2186,18 @@ void STR::GenInvAnalysis::ReadInParameters()
                   p_.Resize(j + 2);
                   p_[j] = params2->youngs_;
                   p_[j + 1] = params2->nue_;
+                  break;
+                }
+                case INPAR::MAT::mes_coupSVK:
+                {
+                  filename_ = filename_ + "_coupneohooke";
+                  const MAT::ELASTIC::PAR::CoupSVK* params2 =
+                      dynamic_cast<const MAT::ELASTIC::PAR::CoupSVK*>(actelastmat->Parameter());
+                  int j = p_.Length();
+                  p_.Resize(j + 2);
+                  p_[j] = params2->lambda_ / (2 * params2->mue_ + 2 * params2->lambda_);
+                  p_[j + 1] = params2->mue_ * (3 * params2->lambda_ + 2 * params2->mue_) /
+                              (params2->lambda_ + params2->mue_);
                   break;
                 }
                 case INPAR::MAT::mes_coupblatzko:
@@ -2912,6 +2939,23 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
         }
       }
       break;
+      case INPAR::MAT::m_stvenant:
+      {
+        if (mymatset.size() == 0 or mymatset.find(actmat->Id()) != mymatset.end())
+        {
+          MAT::PAR::StVenantKirchhoff* params =
+              dynamic_cast<MAT::PAR::StVenantKirchhoff*>(actmat->Parameter());
+          if (!params) dserror("Cannot cast material parameters");
+          // This is a tiny little bit brutal!!!
+          const_cast<double&>(params->youngs_) = p_cur[j];
+          const_cast<double&>(params->poissonratio_) = p_cur[j + 1];
+          if (lmyrank == 0)
+            printf("MAT::PAR::StVenantKirchhoff %20.15e %20.15e\n", params->youngs_,
+                params->poissonratio_);
+          j += 2;
+        }
+      }
+      break;
       case INPAR::MAT::m_elasthyper:
       {
         MAT::PAR::ElastHyper* params = dynamic_cast<MAT::PAR::ElastHyper*>(actmat->Parameter());
@@ -2952,6 +2996,16 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
                     dynamic_cast<MAT::ELASTIC::PAR::CoupNeoHooke*>(actelastmat->Parameter());
                 params2->SetC(abs(p_cur(j)) / (4 * (1 + abs(p_cur(j + 1)))));
                 params2->SetBeta(abs(p_cur(j + 1)) / (1 - 2 * abs(p_cur(j + 1))));
+                j = j + 2;
+                break;
+              }
+              case INPAR::MAT::mes_coupSVK:
+              {
+                MAT::ELASTIC::PAR::CoupSVK* params2 =
+                    dynamic_cast<MAT::ELASTIC::PAR::CoupSVK*>(actelastmat->Parameter());
+                params2->SetLambda(
+                    (p_cur(j) * p_cur(j + 1)) / ((1 + p_cur(j + 1)) * (1 - 2 * p_cur(j + 1))));
+                params2->SetMue((p_cur(j)) / (2 * (1 + p_cur(j + 1))));
                 j = j + 2;
                 break;
               }
