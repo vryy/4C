@@ -200,7 +200,7 @@ namespace MORTAR
     \param noderowmap (in): noderowmap of underlying problem
     \param elementrowmap (in): elementrowmap of underlying problem
     \param params (in): List of meshtying/contact parameters
-    \param dim (in): Global problem dimension
+    \param spatialDim (in): Global problem dimension
     \param comm (in): A communicator object
     \param alphaf (in): Midpoint for Gen-alpha time integration
     \param maxdof (in): Highest dof number in global problem
@@ -208,11 +208,11 @@ namespace MORTAR
     */
     StrategyBase(const Teuchos::RCP<MORTAR::StratDataContainer>& data_ptr,
         const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
-        const Teuchos::ParameterList& params, int dim, const Teuchos::RCP<const Epetra_Comm>& comm,
-        double alphaf, int maxdof);
+        const Teuchos::ParameterList& params, const int spatialDim,
+        const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof);
 
     //! Destructor
-    virtual ~StrategyBase(){};
+    virtual ~StrategyBase() = default;
 
     //! @name Access methods
     //! @{

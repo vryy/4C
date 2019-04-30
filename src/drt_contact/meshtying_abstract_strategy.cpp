@@ -33,11 +33,11 @@
  *----------------------------------------------------------------------*/
 CONTACT::MtAbstractStrategy::MtAbstractStrategy(const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface, int dim,
-    const Teuchos::RCP<const Epetra_Comm>& comm, double alphaf,
-    int maxdof)
+    std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface, const int spatialDim,
+    const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf,
+    const int maxdof)
     : MORTAR::StrategyBase(Teuchos::rcp(new MORTAR::StratDataContainer()),  // no shared data!
-          DofRowMap, NodeRowMap, params, dim, comm, alphaf, maxdof),
+          DofRowMap, NodeRowMap, params, spatialDim, comm, alphaf, maxdof),
       interface_(interface),
       dualquadslavetrafo_(false)
 {

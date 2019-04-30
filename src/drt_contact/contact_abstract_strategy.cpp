@@ -115,9 +115,10 @@ CONTACT::AbstractStratDataContainer::AbstractStratDataContainer()
  *----------------------------------------------------------------------*/
 CONTACT::CoAbstractStrategy::CoAbstractStrategy(
     const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr, const Epetra_Map* DofRowMap,
-    const Epetra_Map* NodeRowMap, const Teuchos::ParameterList& params, int dim,
-    const Teuchos::RCP<const Epetra_Comm>& comm, double alphaf, int maxdof)
-    : MORTAR::StrategyBase(data_ptr, DofRowMap, NodeRowMap, params, dim, comm, alphaf, maxdof),
+    const Epetra_Map* NodeRowMap, const Teuchos::ParameterList& params, const int spatialDim,
+    const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
+    : MORTAR::StrategyBase(
+          data_ptr, DofRowMap, NodeRowMap, params, spatialDim, comm, alphaf, maxdof),
       glmdofrowmap_(data_ptr->GLmDofRowMapPtr()),
       gsnoderowmap_(data_ptr->GSlNodeRowMapPtr()),
       gmnoderowmap_(data_ptr->GMaNodeRowMapPtr()),

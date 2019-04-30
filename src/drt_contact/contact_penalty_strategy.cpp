@@ -36,10 +36,10 @@
  *----------------------------------------------------------------------*/
 CONTACT::CoPenaltyStrategy::CoPenaltyStrategy(const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
-    const Teuchos::RCP<const Epetra_Comm>& comm, double alphaf, int maxdof)
+    std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, const int spatialDim,
+    const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
     : CoAbstractStrategy(Teuchos::rcp(new CONTACT::AbstractStratDataContainer()), DofRowMap,
-          NodeRowMap, params, dim, comm, alphaf, maxdof),
+          NodeRowMap, params, spatialDim, comm, alphaf, maxdof),
       interface_(interface),
       constrnorm_(0.0),
       constrnormtan_(0.0),
@@ -54,9 +54,9 @@ CONTACT::CoPenaltyStrategy::CoPenaltyStrategy(const Epetra_Map* DofRowMap,
 CONTACT::CoPenaltyStrategy::CoPenaltyStrategy(
     const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr, const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
-    const Teuchos::RCP<const Epetra_Comm>& comm, double alphaf, int maxdof)
-    : CoAbstractStrategy(data_ptr, DofRowMap, NodeRowMap, params, dim, comm, alphaf, maxdof),
+    std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, const int spatialDim,
+    const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
+    : CoAbstractStrategy(data_ptr, DofRowMap, NodeRowMap, params, spatialDim, comm, alphaf, maxdof),
       interface_(interface),
       constrnorm_(0.0),
       constrnormtan_(0.0),

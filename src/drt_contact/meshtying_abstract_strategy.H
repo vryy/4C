@@ -68,16 +68,25 @@ namespace CONTACT
     Creates the strategy object and initializes all global variables, including
     all necessary Epetra_Maps and global vector and matrix quantities.
 
+    \param[in] DofRowMap Dof row map of underlying problem
+    \param[in] NodeRowMap Node row map of underlying problem
+    \param[in] params List of contact/parameters
+    \param[in] interface All contact interface objects
+    \param[in] spatialDim Spatial dimension of the problem
+    \param[in] comm Communicator
+    \param[in] alphaf Mid-point for Generalized-alpha time integration
+    \param[in] maxdof Highest DOF number in global problem
     */
     MtAbstractStrategy(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
         Teuchos::ParameterList params, std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface,
-        int dim, const Teuchos::RCP<const Epetra_Comm>& comm, double alphaf, int maxdof);
+        const int spatialDim, const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf,
+        const int maxdof);
 
     /*!
     \brief Destructor
 
     */
-    virtual ~MtAbstractStrategy(){};
+    virtual ~MtAbstractStrategy() = default;
 
     //! @name Access methods
 

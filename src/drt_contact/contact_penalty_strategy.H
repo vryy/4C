@@ -36,22 +36,46 @@ namespace CONTACT
   class CoPenaltyStrategy : public CoAbstractStrategy
   {
    public:
-    //! Standard constructor
+    /*!
+    \brief Standard constructor
+
+    \param[in] DofRowMap Dof row map of underlying problem
+    \param[in] NodeRowMap Node row map of underlying problem
+    \param[in] params List of contact/parameters
+    \param[in] interface All contact interface objects
+    \param[in] spatialDim Spatial dimension of the problem
+    \param[in] comm Communicator
+    \param[in] alphaf Mid-point for Generalized-alpha time integration
+    \param[in] maxdof Highest DOF number in global problem
+    */
     CoPenaltyStrategy(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
         Teuchos::ParameterList params, std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface,
-        int dim, const Teuchos::RCP<const Epetra_Comm>& comm, double alphaf, int maxdof);
+        const int spatialDim, const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf,
+        const int maxdof);
 
-    //! Shared data constructor
+    /*!
+    \brief Shared data constructor
+
+    \param[in] stratData Data container object
+    \param[in] DofRowMap Dof row map of underlying problem
+    \param[in] NodeRowMap Node row map of underlying problem
+    \param[in] params List of contact/parameters
+    \param[in] interface All contact interface objects
+    \param[in] spatialDim Spatial dimension of the problem
+    \param[in] comm Communicator
+    \param[in] alphaf Mid-point for Generalized-alpha time integration
+    \param[in] maxdof Highest DOF number in global problem
+    */
     CoPenaltyStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-        std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
-        const Teuchos::RCP<const Epetra_Comm>& comm, double alphaf, int maxdof);
+        std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, const int spatialDim,
+        const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof);
 
     /*!
     \brief Destructor
 
     */
-    virtual ~CoPenaltyStrategy(){};
+    virtual ~CoPenaltyStrategy() = default;
 
     //! @name Access methods
 

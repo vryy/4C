@@ -700,15 +700,29 @@ namespace CONTACT
   class CoAbstractStrategy : public MORTAR::StrategyBase
   {
    public:
-    /*! \brief Standard constructor
-     *
-     *  This constructor uses the given DataContainer to store and share all its
-     *  member variables. The declared member variables are just references to
-     *  the container content! */
+    /*!
+    \brief Standard constructor
+
+    This constructor uses the given DataContainer to store and share all its
+    member variables. The declared member variables are just references to
+    the container content!
+
+    Creates the strategy base object and initializes all global variables.
+
+
+    \param[in] stratData Data container object
+    \param[in] DofRowMap Dof row map of underlying problem
+    \param[in] NodeRowMap Node row map of underlying problem
+    \param[in] params List of contact/parameters
+    \param[in] spatialDim Spatial dimension of the problem
+    \param[in] comm Communicator
+    \param[in] alphaf Mid-point for Generalized-alpha time integration
+    \param[in] maxdof Highest DOF number in global problem
+    */
     CoAbstractStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& stratData,
         const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
-        const Teuchos::ParameterList& params, int dim, const Teuchos::RCP<const Epetra_Comm>& comm,
-        double alphaf, int maxdof);
+        const Teuchos::ParameterList& params, const int spatialDim,
+        const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, int const maxdof);
 
     /*! \brief Setup this strategy object (maps, vectors, etc.)
 
@@ -723,7 +737,7 @@ namespace CONTACT
     virtual void Setup(bool redistributed, bool init);
 
     //! Destructor
-    virtual ~CoAbstractStrategy(){};
+    virtual ~CoAbstractStrategy() = default;
 
     //! return the current solution type
     virtual INPAR::CONTACT::SolvingStrategy Type() const { return stype_; }
@@ -1192,10 +1206,23 @@ namespace CONTACT
     //! @name Evaluation methods
     //! @{
 
-    //! Global evaluation method called from time integrator
+    /*!
+    \brief Global evaluation method called from time integrator
+
+    This routine handles the evaluation of all contact terms. This is time consuming. To assess
+    timing, detailed time measurements can be performed. This requires synchronization among all MPI
+    ranks. By default, detailed time measurements are turned off.
+
+    @param dis Current displacement state
+    @param[in/out] kt Global Jacobian matrix
+    @param[in/out] f Global residual vector
+    @param[in] timeStep Current time step
+    @param[in] nonlinearIteration Currnet nonlinear iteration step
+    @param[in] predictor Is this called during the predictor?
+    */
     void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step,
-        const int iter, bool predictor = false);
+        Teuchos::RCP<LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
+        const int timeStep, const int nonlinearIteration, bool predictor = false);
 
     /*! \brief Reset the internal state variables
      *
@@ -2094,13 +2121,12 @@ namespace CONTACT
     INPAR::CONTACT::ConstraintDirection& constr_direction_;
 
    private:
-    /*! \brief Copy constructor
-     *
-     * \note We don't want to provide a copy constructor, so we make it protected.
-     *
-     * @param old Instance of this class to be copied
-     */
-    CoAbstractStrategy(const CoAbstractStrategy& old);
+    /*!
+    \brief Copy constructor
+
+    @param old Instance of this class to be copied
+    */
+    CoAbstractStrategy(const CoAbstractStrategy& old) = delete;
 
     //! pointer to the data container object
     Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr_;

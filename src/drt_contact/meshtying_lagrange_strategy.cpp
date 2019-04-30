@@ -28,9 +28,9 @@
  *----------------------------------------------------------------------*/
 CONTACT::MtLagrangeStrategy::MtLagrangeStrategy(const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface, int dim,
-    const Teuchos::RCP<const Epetra_Comm>& comm, double alphaf, int maxdof)
-    : MtAbstractStrategy(DofRowMap, NodeRowMap, params, interface, dim, comm, alphaf, maxdof)
+    std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface, const int spatialDim,
+    const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
+    : MtAbstractStrategy(DofRowMap, NodeRowMap, params, interface, spatialDim, comm, alphaf, maxdof)
 {
   // empty constructor body
   return;

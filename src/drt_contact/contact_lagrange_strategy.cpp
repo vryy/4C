@@ -36,9 +36,9 @@
 CONTACT::CoLagrangeStrategy::CoLagrangeStrategy(
     const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr, const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
-    Teuchos::RCP<const Epetra_Comm> comm, double alphaf, int maxdof)
-    : CoAbstractStrategy(data_ptr, DofRowMap, NodeRowMap, params, dim, comm, alphaf, maxdof),
+    std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, const int spatialDim,
+    Teuchos::RCP<const Epetra_Comm> comm, const double alphaf, const int maxdof)
+    : CoAbstractStrategy(data_ptr, DofRowMap, NodeRowMap, params, spatialDim, comm, alphaf, maxdof),
       interface_(interface),
       evalForceCalled_(false),
       activesetssconv_(false),
