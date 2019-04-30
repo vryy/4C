@@ -779,8 +779,8 @@ namespace CONTACT
     //@}
 
     // don't want = operator and cctor
-    CoIntegrator operator=(const CoIntegrator& old);
-    CoIntegrator(const CoIntegrator& old);
+    CoIntegrator operator=(const CoIntegrator& old) = delete;
+    CoIntegrator(const CoIntegrator& old) = delete;
 
     //! containing contact input parameters
     Teuchos::ParameterList& imortar_;

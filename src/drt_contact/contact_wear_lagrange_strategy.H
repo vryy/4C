@@ -322,8 +322,8 @@ namespace WEAR
 
    private:
     // don't want = operator and cctor
-    WearLagrangeStrategy operator=(const WearLagrangeStrategy& old);
-    WearLagrangeStrategy(const WearLagrangeStrategy& old);
+    WearLagrangeStrategy operator=(const WearLagrangeStrategy& old) = delete;
+    WearLagrangeStrategy(const WearLagrangeStrategy& old) = delete;
 
     std::vector<Teuchos::RCP<WEAR::WearInterface>> interface_;
 

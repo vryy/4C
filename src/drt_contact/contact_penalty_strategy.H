@@ -317,8 +317,8 @@ namespace CONTACT
     }
 
     // don't want = operator and cctor
-    CoPenaltyStrategy operator=(const CoPenaltyStrategy& old);
-    CoPenaltyStrategy(const CoPenaltyStrategy& old);
+    CoPenaltyStrategy operator=(const CoPenaltyStrategy& old) = delete;
+    CoPenaltyStrategy(const CoPenaltyStrategy& old) = delete;
 
     std::vector<Teuchos::RCP<CoInterface>> interface_;  // contact interfaces
     Teuchos::RCP<LINALG::SparseMatrix> linzmatrix_;     // global matrix LinZ with derivatives of LM

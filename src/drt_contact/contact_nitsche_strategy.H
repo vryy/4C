@@ -219,8 +219,8 @@ namespace CONTACT
         const enum DRT::UTILS::MatBlockType& bt);
 
     // don't want = operator and cctor
-    CoNitscheStrategy operator=(const CoNitscheStrategy& old);
-    CoNitscheStrategy(const CoNitscheStrategy& old);
+    CoNitscheStrategy operator=(const CoNitscheStrategy& old) = delete;
+    CoNitscheStrategy(const CoNitscheStrategy& old) = delete;
 
     std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface_;
 

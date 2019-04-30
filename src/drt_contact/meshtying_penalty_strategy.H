@@ -218,8 +218,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    MtPenaltyStrategy operator=(const MtPenaltyStrategy& old);
-    MtPenaltyStrategy(const MtPenaltyStrategy& old);
+    MtPenaltyStrategy operator=(const MtPenaltyStrategy& old) = delete;
+    MtPenaltyStrategy(const MtPenaltyStrategy& old) = delete;
 
     //! L2-norm of normal contact constraints
     double constrnorm_;

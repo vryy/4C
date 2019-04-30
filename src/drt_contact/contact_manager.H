@@ -159,8 +159,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoManager operator=(const CoManager& old);
-    CoManager(const CoManager& old);
+    CoManager operator=(const CoManager& old) = delete;
+    CoManager(const CoManager& old) = delete;
 
     //! the underlying problem discretization
     DRT::Discretization& discret_;

@@ -611,7 +611,7 @@ namespace CONTACT
 
    protected:
     // don't want cctor (= operator impossible anyway for abstract class)
-    MtAbstractStrategy(const MtAbstractStrategy& old);
+    MtAbstractStrategy(const MtAbstractStrategy& old) = delete;
 
     std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface_;  // meshtying interfaces
 

@@ -88,8 +88,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoCoupling2d operator=(const CoCoupling2d& old);
-    CoCoupling2d(const CoCoupling2d& old);
+    CoCoupling2d operator=(const CoCoupling2d& old) = delete;
+    CoCoupling2d(const CoCoupling2d& old) = delete;
 
     // new variables as compared to base class
     INPAR::CONTACT::SolvingStrategy stype_;
@@ -163,8 +163,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoCoupling2dManager operator=(const CoCoupling2dManager& old);
-    CoCoupling2dManager(const CoCoupling2dManager& old);
+    CoCoupling2dManager operator=(const CoCoupling2dManager& old) = delete;
+    CoCoupling2dManager(const CoCoupling2dManager& old) = delete;
 
     INPAR::CONTACT::SolvingStrategy stype_;  // solving strategy
 

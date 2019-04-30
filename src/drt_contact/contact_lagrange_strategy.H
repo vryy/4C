@@ -510,8 +510,8 @@ namespace CONTACT
         Teuchos::RCP<Epetra_Vector>& feff, bool add_time_integration = true);
 
     // don't want = operator and cctor
-    CoLagrangeStrategy operator=(const CoLagrangeStrategy& old);
-    CoLagrangeStrategy(const CoLagrangeStrategy& old);
+    CoLagrangeStrategy operator=(const CoLagrangeStrategy& old) = delete;
+    CoLagrangeStrategy(const CoLagrangeStrategy& old) = delete;
 
     // Store Coupling Matrices in case of Poro Lagrange Strategy ... here just ignore!
     virtual void SaveCouplingMatrices(Teuchos::RCP<LINALG::SparseMatrix> dhat,

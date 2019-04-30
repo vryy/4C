@@ -177,8 +177,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoTSILagrangeStrategy operator=(const CoTSILagrangeStrategy& old);
-    CoTSILagrangeStrategy(const CoTSILagrangeStrategy& old);
+    CoTSILagrangeStrategy operator=(const CoTSILagrangeStrategy& old) = delete;
+    CoTSILagrangeStrategy(const CoTSILagrangeStrategy& old) = delete;
 
     // time integration
     double tsi_alpha_;

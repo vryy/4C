@@ -110,8 +110,8 @@ namespace CONTACT
     bool ReadAndCheckInput(Teuchos::ParameterList& cparams);
 
     // don't want = operator and cctor
-    SmoothingManager operator=(const SmoothingManager& old);
-    SmoothingManager(const SmoothingManager& old);
+    SmoothingManager operator=(const SmoothingManager& old) = delete;
+    SmoothingManager(const SmoothingManager& old) = delete;
 
     //! Underlying problem discretization
     DRT::Discretization& discret_;

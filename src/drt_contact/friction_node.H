@@ -174,8 +174,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    FriNodeDataContainer operator=(const FriNodeDataContainer& old);
-    FriNodeDataContainer(const FriNodeDataContainer& old);
+    FriNodeDataContainer operator=(const FriNodeDataContainer& old) = delete;
+    FriNodeDataContainer(const FriNodeDataContainer& old) = delete;
 
     //! Jump per time step
     double jump_[3];
@@ -327,8 +327,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    FriNodeWearDataContainer operator=(const FriNodeWearDataContainer& old);
-    FriNodeWearDataContainer(const FriNodeWearDataContainer& old);
+    FriNodeWearDataContainer operator=(const FriNodeWearDataContainer& old) = delete;
+    FriNodeWearDataContainer(const FriNodeWearDataContainer& old) = delete;
 
     //! @name Wear related quantities
     //!@{

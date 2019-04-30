@@ -118,8 +118,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    MonoCoupledLagrangeStrategy operator=(const MonoCoupledLagrangeStrategy& old);
-    MonoCoupledLagrangeStrategy(const MonoCoupledLagrangeStrategy& old);
+    MonoCoupledLagrangeStrategy operator=(const MonoCoupledLagrangeStrategy& old) = delete;
+    MonoCoupledLagrangeStrategy(const MonoCoupledLagrangeStrategy& old) = delete;
 
     void SaveCouplingMatrices(Teuchos::RCP<LINALG::SparseMatrix> dhat,
         Teuchos::RCP<LINALG::SparseMatrix> mhataam, Teuchos::RCP<LINALG::SparseMatrix> invda);

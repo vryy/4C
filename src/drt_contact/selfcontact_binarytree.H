@@ -214,8 +214,8 @@ namespace CONTACT
 
    private:
     // don't want = operator and cctor
-    SelfBinaryTreeNode operator=(const SelfBinaryTreeNode& old);
-    SelfBinaryTreeNode(const SelfBinaryTreeNode& old);
+    SelfBinaryTreeNode operator=(const SelfBinaryTreeNode& old) = delete;
+    SelfBinaryTreeNode(const SelfBinaryTreeNode& old) = delete;
 
     //! type of SelfBinaryTreeNode
     SelfBinaryTreeNodeType type_;
@@ -472,8 +472,8 @@ namespace CONTACT
     }
 
     // don't want = operator and cctor
-    SelfDualEdge operator=(const SelfDualEdge& old);
-    SelfDualEdge(const SelfDualEdge& old);
+    SelfDualEdge operator=(const SelfDualEdge& old) = delete;
+    SelfDualEdge(const SelfDualEdge& old) = delete;
 
     //! first node of dual edge
     Teuchos::RCP<SelfBinaryTreeNode> node1_;
@@ -825,8 +825,8 @@ namespace CONTACT
     //@}
 
     // don't want = operator and cctor
-    SelfBinaryTree operator=(const SelfBinaryTree& old);
-    SelfBinaryTree(const SelfBinaryTree& old);
+    SelfBinaryTree operator=(const SelfBinaryTree& old) = delete;
+    SelfBinaryTree(const SelfBinaryTree& old) = delete;
 
     //! Local interface communicator
     const Epetra_Comm* lcomm_;

@@ -1491,8 +1491,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoInterface operator=(const CoInterface& old);
-    CoInterface(const CoInterface& old);
+    CoInterface operator=(const CoInterface& old) = delete;
+    CoInterface(const CoInterface& old) = delete;
 
     /** @name References to the interface data container content
      *
