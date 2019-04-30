@@ -157,24 +157,9 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticles(
     sumj_vel_j_Wij_[type_i].assign(particlestored, std::vector<double>(3, 0.0));
   }
 
-  // get reference to index of neighbor pairs for each type
-  const SPHIndexOfNeighborPairs& indexofneighborpairs =
-      neighborpairs_->GetRefToIndexOfNeighborPairs();
-
-  // determine relevant neighbor pair indices
+  // get relevant neighbor pair indices for particle types
   std::vector<int> relindices;
-
-  // iterate over boundary particle types
-  for (const auto& type_i : boundarytypes_)
-    relindices.insert(
-        relindices.end(), indexofneighborpairs[type_i].begin(), indexofneighborpairs[type_i].end());
-
-  // sort and erase duplicate indices of relevant neighbor pairs
-  if (boundarytypes_.size() > 1)
-  {
-    std::sort(relindices.begin(), relindices.end());
-    relindices.erase(std::unique(relindices.begin(), relindices.end()), relindices.end());
-  }
+  neighborpairs_->GetRelevantNeighborPairIndices(boundarytypes_, relindices);
 
   // iterate over relevant neighbor pairs
   for (const int neighborpairindex : relindices)

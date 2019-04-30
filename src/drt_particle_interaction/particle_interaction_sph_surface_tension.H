@@ -153,9 +153,6 @@ namespace PARTICLEINTERACTION
     //! compute colorfield gradient
     virtual void ComputeColorfieldGradient() const;
 
-    //! determine relevant wall neighbor pair indices
-    virtual void DetermineRelevantWallNeighborPairIndices(std::vector<int>& relwallindices) const;
-
     //! compute unit wall normal
     virtual void ComputeUnitWallNormal(std::vector<int>& relwallindices) const;
 

@@ -100,6 +100,10 @@ namespace PARTICLEINTERACTION
     //! evaluate neighbor pairs
     void EvaluateNeighborPairs();
 
+    //! get relevant neighbor pair indices for particle types
+    void GetRelevantNeighborPairIndices(
+        const std::set<PARTICLEENGINE::TypeEnum>& reltypes, std::vector<int>& relindices) const;
+
    private:
     //! neighbor pair data with evaluated quantities
     SPHNeighborPairData neighborpairdata_;

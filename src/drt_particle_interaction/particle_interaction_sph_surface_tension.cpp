@@ -259,15 +259,15 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::AddAcceleratio
 
   if (haveboundaryorrigidparticles_)
   {
-    // determine relevant wall neighbor pair indices
-    std::vector<int> relwallindices;
-    DetermineRelevantWallNeighborPairIndices(relwallindices);
+    // get relevant neighbor pair indices for particle types
+    std::vector<int> relindices;
+    neighborpairs_->GetRelevantNeighborPairIndices(boundarytypes_, relindices);
 
     // compute unit wall normal
-    ComputeUnitWallNormal(relwallindices);
+    ComputeUnitWallNormal(relindices);
 
     // compute wall distance
-    ComputeWallDistance(relwallindices);
+    ComputeWallDistance(relindices);
 
     // refresh colorfield gradient and wall distance
     particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(cfgwalldisttorefresh_);
@@ -378,30 +378,6 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeColorfi
     if (status_j == PARTICLEENGINE::Owned)
       UTILS::vec_addscale(colorfieldgrad_j,
           -fac * UTILS::pow<2>(dens_j[0]) / mass_j[0] * neighborpair.dWdrji_, neighborpair.e_ij_);
-  }
-}
-
-/*---------------------------------------------------------------------------*
- | determine relevant wall neighbor pair indices              sfuchs 01/2019 |
- *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
-    DetermineRelevantWallNeighborPairIndices(std::vector<int>& relwallindices) const
-{
-  // get reference to index of neighbor pairs for each type
-  const SPHIndexOfNeighborPairs& indexofneighborpairs =
-      neighborpairs_->GetRefToIndexOfNeighborPairs();
-
-  // iterate over particle types to consider
-  for (const auto& type_i : boundarytypes_)
-    relwallindices.insert(relwallindices.end(), indexofneighborpairs[type_i].begin(),
-        indexofneighborpairs[type_i].end());
-
-  // sort and erase duplicate indices of relevant neighbor pairs
-  if (boundarytypes_.size() > 1)
-  {
-    std::sort(relwallindices.begin(), relwallindices.end());
-    relwallindices.erase(
-        std::unique(relwallindices.begin(), relwallindices.end()), relwallindices.end());
   }
 }
 

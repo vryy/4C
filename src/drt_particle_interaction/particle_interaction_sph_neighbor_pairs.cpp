@@ -206,3 +206,22 @@ void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateNeighborPairs()
     }
   }
 }
+
+/*---------------------------------------------------------------------------*
+ | get relevant neighbor pair indices for particle types      sfuchs 04/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::SPHNeighborPairs::GetRelevantNeighborPairIndices(
+    const std::set<PARTICLEENGINE::TypeEnum>& reltypes, std::vector<int>& relindices) const
+{
+  // iterate over particle types to consider
+  for (const auto& type_i : reltypes)
+    relindices.insert(relindices.end(), indexofneighborpairs_[type_i].begin(),
+        indexofneighborpairs_[type_i].end());
+
+  // sort and erase duplicate indices of relevant neighbor pairs
+  if (reltypes.size() > 1)
+  {
+    std::sort(relindices.begin(), relindices.end());
+    relindices.erase(std::unique(relindices.begin(), relindices.end()), relindices.end());
+  }
+}
