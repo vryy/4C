@@ -488,7 +488,7 @@ void CONTACT::MtAbstractStrategy::RestrictMeshtyingZone()
 }
 
 /*----------------------------------------------------------------------*
- |  mesh intialization for rotational invariance              popp 12/09|
+ |  mesh initialization for rotational invariance              popp 12/09|
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::MeshInitialization(Teuchos::RCP<Epetra_Vector> Xslavemod)
 {
@@ -593,7 +593,7 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(Teuchos::RCP<Epetra_Vector>
   //**********************************************************************
   // (2) re-evaluate constraints in reference configuration
   //**********************************************************************
-  // intialize
+  // initialize
   g_ = LINALG::CreateVector(*gsdofrowmap_, true);
 
   // compute g-vector at global level

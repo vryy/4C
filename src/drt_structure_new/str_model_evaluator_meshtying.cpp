@@ -120,7 +120,7 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
 
   if (!GState().GetRestartStep())
   {
-    Teuchos::RCP<Epetra_Vector> Xslavemod =
+    Teuchos::RCP<const Epetra_Vector> Xslavemod =
         dynamic_cast<MORTAR::StrategyBase&>(*strategy_ptr_).MeshInitialization();
     if (Xslavemod != Teuchos::null)
     {
@@ -404,7 +404,8 @@ bool STR::MODELEVALUATOR::Meshtying::EvaluateStiff()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Meshtying::ApplyMeshInitialization(Teuchos::RCP<Epetra_Vector> Xslavemod)
+void STR::MODELEVALUATOR::Meshtying::ApplyMeshInitialization(
+    Teuchos::RCP<const Epetra_Vector> Xslavemod)
 {
   // check modified positions vector
   if (Xslavemod == Teuchos::null) return;

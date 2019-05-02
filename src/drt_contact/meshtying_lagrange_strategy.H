@@ -63,13 +63,19 @@ namespace CONTACT
     void MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis) override;
 
     /*!
-    \brief Mesh intialization for rotational invariance
+    \brief Mesh initialization for rotational invariance
 
-    Only do this ONCE for meshtying upon initialization!
-    (only implemented for DUAL shape functions)
+    Compute necessary modifications to the reference configuration of interface nodes, such that the
+    weighted gap in the modified reference configuration is zero.
 
+    \note Only do this \em once for meshtying upon initialization!
+
+    \warning This is only implemented for mortar coupling. No implementation for node-to-segment
+    approach.
+
+    \return Vector with modified nodal positions
     */
-    Teuchos::RCP<Epetra_Vector> MeshInitialization();
+    Teuchos::RCP<const Epetra_Vector> MeshInitialization() override;
 
     /*!
     \brief Evaluate meshtying

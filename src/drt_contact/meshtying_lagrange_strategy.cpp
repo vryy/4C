@@ -222,9 +222,9 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const Teuchos::RCP<const Epetra
 /*----------------------------------------------------------------------*
  |  mesh initialization for rotational invariance             popp 12/09|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> CONTACT::MtLagrangeStrategy::MeshInitialization()
+Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::MeshInitialization()
 {
-  // get out of here is NTS algorithm is activated
+  // get out of here if NTS algorithm is activated
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(Params(), "ALGORITHM") ==
       INPAR::MORTAR::algorithm_nts)
     return Teuchos::null;

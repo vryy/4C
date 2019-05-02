@@ -127,9 +127,9 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const Teuchos::RCP<const Epetra_
 }
 
 /*----------------------------------------------------------------------*
- |  mesh intialization for rotational invariance              popp 12/09|
+ |  mesh initialization for rotational invariance              popp 12/09|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> CONTACT::MtPenaltyStrategy::MeshInitialization()
+Teuchos::RCP<const Epetra_Vector> CONTACT::MtPenaltyStrategy::MeshInitialization()
 {
   // get out of here is NTS algorithm is activated
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(Params(), "ALGORITHM") ==

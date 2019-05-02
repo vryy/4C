@@ -552,7 +552,7 @@ namespace CONTACT
     void AssembleCoords(const std::string& sidename, bool ref, Teuchos::RCP<Epetra_Vector> vec);
 
     /*!
-    \brief Do mesh intialization for rotational invariance
+    \brief Do mesh initialization for rotational invariance
 
     Only do this ONCE for meshtying upon initialization!
     This method relocates the slave nodes such that the meshtying constraint
@@ -562,7 +562,7 @@ namespace CONTACT
     which is specific to the applied solving strategy (dual Lagrange or Penalty).
     In the dual LM, matrix D is diagonal, thus its inversion is trivial and no
     linear system needs to be solved. In the penalty case, matrix D is not diagonal
-    and we apply a default LINALG::Solver to solve for the modified slave poitions.
+    and we apply a default LINALG::Solver to solve for the modified slave positions.
     Thus, this linear system solve is done in the derived method FIRST and then
     we refer back to this base class function.
 

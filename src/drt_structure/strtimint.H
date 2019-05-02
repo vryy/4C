@@ -939,9 +939,17 @@ namespace STR
     //! create manager object + initialize all relevant stuff if so
     void PrepareContactMeshtying(const Teuchos::ParameterList& sdynparams);
 
-    //! Apply results of mesh initialization (mortar meshtying) to the
-    //! underlying problem discretization
-    void ApplyMeshInitialization(Teuchos::RCP<Epetra_Vector> Xslavemod);
+    /*!
+    \brief Apply results of mesh initialization to the underlying problem discretization
+
+    \note This is only necessary in case of a mortar method.
+
+    \warning This routine modifies the reference coordinates of slave nodes at the meshtying
+    interface.
+
+    @param[in] Xslavemod Vector with modified nodal positions
+    */
+    void ApplyMeshInitialization(Teuchos::RCP<const Epetra_Vector> Xslavemod);
 
 
     void AssembleEdgeBasedMatandRHS(Teuchos::ParameterList& params,

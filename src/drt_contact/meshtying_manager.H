@@ -71,7 +71,7 @@ namespace CONTACT
     \brief Get discretization
 
     */
-    DRT::Discretization& Discret() const { return discret_; };
+    const DRT::Discretization& Discret() const { return discret_; };
 
     //!@}
 
