@@ -100,34 +100,6 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const Teuchos::RCP<const Epetra
     if (lagmultquad == INPAR::MORTAR::lagmult_lin)
     {
       // do nothing
-
-      /*
-       // FOR DEBUGGING ONLY
-       Teuchos::RCP<LINALG::SparseMatrix> it_ss,it_sm,it_ms,it_mm;
-       LINALG::SplitMatrix2x2(invtrafo_,gsdofrowmap_,gmdofrowmap_,gsdofrowmap_,gmdofrowmap_,it_ss,it_sm,it_ms,it_mm);
-       Teuchos::RCP<Epetra_Vector> checkg = LINALG::CreateVector(*gsdofrowmap_, true);
-       Teuchos::RCP<Epetra_Vector> xs = LINALG::CreateVector(*gsdofrowmap_,true);
-       Teuchos::RCP<Epetra_Vector> xm = LINALG::CreateVector(*gmdofrowmap_,true);
-       AssembleCoords("slave",true,xs);
-       AssembleCoords("master",true,xm);
-       Teuchos::RCP<LINALG::SparseMatrix> lhs = Teuchos::rcp(new
-       LINALG::SparseMatrix(*gsdofrowmap_,100,false,true)); Teuchos::RCP<LINALG::SparseMatrix>
-       direct = LINALG::MLMultiply(*dmatrix_,false,*it_ss,false,false,false,true);
-       Teuchos::RCP<LINALG::SparseMatrix> mixed =
-       LINALG::MLMultiply(*mmatrix_,false,*it_ms,false,false,false,true);
-       lhs->Add(*direct,false,1.0,1.0);
-       lhs->Add(*mixed,false,-1.0,1.0);
-       lhs->Complete();
-       Teuchos::RCP<Epetra_Vector> slave = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-       lhs->Multiply(false,*xs,*slave);
-       Teuchos::RCP<Epetra_Vector> master = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-       mmatrix_->Multiply(false,*xm,*master);
-       checkg->Update(1.0,*slave,1.0);
-       checkg->Update(-1.0,*master,1.0);
-       double infnorm = 0.0;
-       checkg->NormInf(&infnorm);
-       if (Comm().MyPID()==0) std::cout << "\nINFNORM OF G: " << infnorm << std::endl;
-       */
     }
     else
     {
@@ -142,28 +114,6 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const Teuchos::RCP<const Epetra
       invd_ = temp2;
       mhatmatrix_ = temp3;
     }
-  }
-  else
-  {
-    // do nothing
-
-    /*
-     //FOR DEBUGGING ONLY
-     Teuchos::RCP<Epetra_Vector> checkg = LINALG::CreateVector(*gsdofrowmap_, true);
-     Teuchos::RCP<Epetra_Vector> xs = LINALG::CreateVector(*gsdofrowmap_,true);
-     Teuchos::RCP<Epetra_Vector> xm = LINALG::CreateVector(*gmdofrowmap_,true);
-     AssembleCoords("slave",true,xs);
-     AssembleCoords("master",true,xm);
-     Teuchos::RCP<Epetra_Vector> slave = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-     dmatrix_->Multiply(false,*xs,*slave);
-     Teuchos::RCP<Epetra_Vector> master = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-     mmatrix_->Multiply(false,*xm,*master);
-     checkg->Update(1.0,*slave,1.0);
-     checkg->Update(-1.0,*master,1.0);
-     double infnorm = 0.0;
-     checkg->NormInf(&infnorm);
-     if (Comm().MyPID()==0) std::cout << "\nINFNORM OF G: " << infnorm << std::endl;
-     */
   }
 
   //----------------------------------------------------------------------
