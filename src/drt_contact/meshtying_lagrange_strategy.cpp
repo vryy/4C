@@ -10,6 +10,7 @@
 *-----------------------------------------------------------------------*/
 
 #include <Teuchos_Time.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 #include "Epetra_SerialComm.h"
 #include "meshtying_lagrange_strategy.H"
 #include "meshtying_defines.H"
@@ -41,6 +42,8 @@ CONTACT::MtLagrangeStrategy::MtLagrangeStrategy(const Epetra_Map* DofRowMap,
  *----------------------------------------------------------------------*/
 void CONTACT::MtLagrangeStrategy::MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("CONTACT::MtLagrangeStrategy::MortarCoupling");
+
   // print message
   if (Comm().MyPID() == 0)
   {
@@ -174,6 +177,8 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const Teuchos::RCP<const Epetra
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::MeshInitialization()
 {
+  TEUCHOS_FUNC_TIME_MONITOR("CONTACT::MtLagrangeStrategy::MeshInitialization");
+
   // get out of here if NTS algorithm is activated
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(Params(), "ALGORITHM") ==
       INPAR::MORTAR::algorithm_nts)

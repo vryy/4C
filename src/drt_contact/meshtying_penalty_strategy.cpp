@@ -5,18 +5,16 @@
 
 \level 1
 
-<pre>
 \maintainer Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
-
-*-----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #include <Teuchos_Time.hpp>
+#include <Teuchos_TimeMonitor.hpp>
+
 #include "meshtying_penalty_strategy.H"
 #include "meshtying_defines.H"
+
 #include "../drt_mortar/mortar_interface.H"
 #include "../drt_mortar/mortar_node.H"
 #include "../drt_mortar/mortar_defines.H"
@@ -46,6 +44,8 @@ CONTACT::MtPenaltyStrategy::MtPenaltyStrategy(const Epetra_Map* DofRowMap,
  *----------------------------------------------------------------------*/
 void CONTACT::MtPenaltyStrategy::MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("CONTACT::MtPenaltyStrategy::MortarCoupling");
+
   // print message
   if (Comm().MyPID() == 0)
   {
@@ -131,6 +131,8 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const Teuchos::RCP<const Epetra_
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> CONTACT::MtPenaltyStrategy::MeshInitialization()
 {
+  TEUCHOS_FUNC_TIME_MONITOR("CONTACT::MtPenaltyStrategy::MeshInitialization");
+
   // get out of here is NTS algorithm is activated
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(Params(), "ALGORITHM") ==
       INPAR::MORTAR::algorithm_nts)
