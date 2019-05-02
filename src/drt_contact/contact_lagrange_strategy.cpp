@@ -12,6 +12,9 @@
 /*---------------------------------------------------------------------*/
 
 #include "Epetra_SerialComm.h"
+
+#include <Teuchos_TimeMonitor.hpp>
+
 #include "contact_lagrange_strategy.H"
 #include "contact_interface.H"
 #include "contact_integrator.H"
@@ -4371,6 +4374,8 @@ void CONTACT::CoLagrangeStrategy::ResetLagrangeMultipliers(
  *----------------------------------------------------------------------*/
 void CONTACT::CoLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("CONTACT::CoLagrangeStrategy::Recover");
+
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;

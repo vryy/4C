@@ -840,6 +840,8 @@ void CONTACT::MtLagrangeStrategy::UpdateDisplacementsAndLMincrements(
  *----------------------------------------------------------------------*/
 void CONTACT::MtLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("CONTACT::MtLagrangeStrategy::Recover");
+
   // system type, shape function type and type of LM interpolation for quadratic elements
   INPAR::CONTACT::SystemType systype =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(), "SYSTEM");
