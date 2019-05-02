@@ -130,7 +130,7 @@ namespace CONTACT
     bool ActiveSetConverged() { return true; }
     int ActiveSetSteps() { return 0; }
     void ResetActiveSet() {}
-    void Recover(Teuchos::RCP<Epetra_Vector> disi) {}
+    void Recover(Teuchos::RCP<Epetra_Vector> disi) override { return; };
     void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
         Teuchos::RCP<LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,

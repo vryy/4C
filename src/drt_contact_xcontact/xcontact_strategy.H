@@ -6,9 +6,8 @@
 
 \level 3
 
-\maintainer Michael Hiermeier
+\maintainer Matthias Mayr
 
-\date Aug 18, 2016
 */
 /*---------------------------------------------------------------------------*/
 
@@ -488,7 +487,7 @@ namespace XCONTACT
     {
       dserror("Deprecated function call!");
     }
-    virtual void Recover(Teuchos::RCP<Epetra_Vector> disi)
+    void Recover(Teuchos::RCP<Epetra_Vector> disi) override
     {
       dserror("Deprecated function call! Replaced by RunPostComputeX().");
     }

@@ -137,7 +137,7 @@ namespace CONTACT
     the setup of the global problem!
 
     */
-    void Recover(Teuchos::RCP<Epetra_Vector> disi);
+    void Recover(Teuchos::RCP<Epetra_Vector> disi) override;
 
     //@}
 

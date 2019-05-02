@@ -71,12 +71,12 @@ namespace WEAR
     \brief Recovery method
 
     We only recover the Lagrange multipliers here, which had been
-    statically condensated during the setup of the global problem!
+    statically condensed during the setup of the global problem!
     Optionally satisfaction or violation of the contact boundary
     conditions can be checked, too.
 
     */
-    void Recover(Teuchos::RCP<Epetra_Vector> disi);
+    void Recover(Teuchos::RCP<Epetra_Vector> disi) override;
 
     /*!
     \brief Redistribute all contact interfaces in parallel

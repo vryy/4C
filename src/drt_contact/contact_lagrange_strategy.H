@@ -330,7 +330,7 @@ namespace CONTACT
     conditions can be checked, too.
 
     */
-    void Recover(Teuchos::RCP<Epetra_Vector> disi);
+    void Recover(Teuchos::RCP<Epetra_Vector> disi) override;
 
     /*! \brief Reset the internal stored Lagrange multipliers
      *

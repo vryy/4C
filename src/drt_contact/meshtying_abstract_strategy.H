@@ -391,7 +391,7 @@ namespace CONTACT
     virtual void InitializeUzawa(
         Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) = 0;
     virtual double InitialPenalty() = 0;
-    virtual void Recover(Teuchos::RCP<Epetra_Vector> disi) = 0;
+    void Recover(Teuchos::RCP<Epetra_Vector> disi) override = 0;
     virtual void ResetPenalty() = 0;
     virtual void ModifyPenalty() = 0;
     void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,

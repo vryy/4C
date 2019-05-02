@@ -70,7 +70,7 @@ namespace CONTACT
 
     // Overload CONTACT::CoLagrangeStrategy::Recover as this is called in the structure --> no
     // enought information available for monolithically coupled algorithms!
-    virtual void Recover(Teuchos::RCP<Epetra_Vector> disi)
+    void Recover(Teuchos::RCP<Epetra_Vector> disi) override
     {
       if (has_to_recover_ && 0)
         dserror(
