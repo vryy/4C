@@ -8,6 +8,7 @@ temperature fixed left and right
 melt front traveling left to right
 latent heat considered with heat integration
 parameter interpolation of phases based on temperature
+based on Comini (1974)
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      100
 //NODES                         404
