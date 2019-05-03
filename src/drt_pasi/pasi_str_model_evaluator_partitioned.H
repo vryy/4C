@@ -48,7 +48,7 @@ namespace STR
       virtual ~PartitionedPASI(){};
 
       //! setup class variables [derived]
-      virtual void Setup();
+      void Setup() override;
 
       //! get pointer to force vector at time level n+1 (full structural map)
       //! interface part is inserted in ADAPTER::PASIStructureWrapper
@@ -59,98 +59,100 @@ namespace STR
 
       //! @name Functions which are derived from the base generic class
       //! @{
+
       //! [derived]
-      INPAR::STR::ModelType Type() const { return INPAR::STR::model_partitioned_coupling; }
+      INPAR::STR::ModelType Type() const override { return INPAR::STR::model_partitioned_coupling; }
 
       //! reset class variables (without jacobian) [derived]
-      virtual void Reset(const Epetra_Vector& x) { return; };
+      void Reset(const Epetra_Vector& x) override { return; };
 
       //! [derived]
-      virtual bool EvaluateForce() { return true; };
+      bool EvaluateForce() override { return true; };
 
       //! [derived]
-      virtual bool EvaluateStiff() { return true; };
+      bool EvaluateStiff() override { return true; };
 
       //! [derived] not needed in partitioned scheme
-      virtual bool EvaluateForceStiff() { return true; };
+      bool EvaluateForceStiff() override { return true; };
 
-      //! derived
+      //! [derived]
       void PreEvaluate() override { return; };
 
-      //! derived
-      virtual void PostEvaluate(){/* currently unused */};
+      //! [derived]
+      void PostEvaluate() override { return; };
 
-      //! derived
-      virtual bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const;
+      //! [derived]
+      bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const override;
 
       //! Assemble the jacobian at \f$t_{n+1}\f$ not needed in partitioned scheme
-      virtual bool AssembleJacobian(LINALG::SparseOperator& jac, const double& timefac_np) const
+      bool AssembleJacobian(LINALG::SparseOperator& jac, const double& timefac_np) const override
       {
         return true;
       };
 
       //! [derived]
-      virtual void WriteRestart(
-          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+      void WriteRestart(
+          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override
       {
         return;
       };
 
       //! [derived]
-      virtual void ReadRestart(IO::DiscretizationReader& ioreader) { return; };
+      void ReadRestart(IO::DiscretizationReader& ioreader) override { return; };
 
-      //! derived
-      virtual void RunPreComputeX(
-          const Epetra_Vector& xold, Epetra_Vector& dir_mutable, const NOX::NLN::Group& curr_grp)
+      //! [derived]
+      void RunPreComputeX(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
+          const NOX::NLN::Group& curr_grp) override
       {
         return;
       };
 
       //! recover condensed Lagrange multipliers
-      virtual void RunPostComputeX(
-          const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
+      void RunPostComputeX(
+          const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override
       {
         return;
       };
 
-      //! derived
-      virtual void RunPostIterate(const NOX::Solver::Generic& solver) { return; };
+      //! [derived]
+      void RunPostIterate(const NOX::Solver::Generic& solver) override { return; };
 
       //! [derived]
-      virtual void UpdateStepState(const double& timefac_n);
+      void UpdateStepState(const double& timefac_n) override;
 
       //! [derived]
-      virtual void UpdateStepElement() { return; };
+      void UpdateStepElement() override { return; };
 
       //! [derived]
-      virtual void DetermineStressStrain() { return; };
+      void DetermineStressStrain() override { return; };
 
       //! [derived]
-      virtual void DetermineEnergy() { return; };
+      void DetermineEnergy() override { return; };
 
       //! [derived]
-      virtual void DetermineOptionalQuantity() override { return; };
+      void DetermineOptionalQuantity() override { return; };
 
       //! [derived]
-      virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const { return; };
+      void OutputStepState(IO::DiscretizationWriter& iowriter) const override { return; };
 
       //! [derived]
-      virtual void Predict(const INPAR::STR::PredEnum& pred_type) { return; };
-
-      //! derived
-      virtual void ResetStepState() { return; };
+      void Predict(const INPAR::STR::PredEnum& pred_type) override { return; };
 
       //! [derived]
-      virtual void PostOutput() { return; };
+      void ResetStepState() override { return; };
 
       //! [derived]
-      virtual Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const;
+      void PostOutput() override { return; };
 
       //! [derived]
-      virtual Teuchos::RCP<const Epetra_Vector> GetCurrentSolutionPtr() const;
+      Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const override;
 
       //! [derived]
-      virtual Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const;
+      Teuchos::RCP<const Epetra_Vector> GetCurrentSolutionPtr() const override;
+
+      //! [derived]
+      Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const override;
+
       //! @}
 
      private:
