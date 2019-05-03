@@ -50,10 +50,10 @@ namespace STR
       };
 
       //! calculate energy
-      void DetermineEnergy() { return; };
+      void DetermineEnergy() override { return; };
 
       // calculate stresses and strains
-      void DetermineStressStrain();
+      void DetermineStressStrain() override;
 
       // calculate an optional quantity
       void DetermineOptionalQuantity() override { return; };
@@ -85,7 +85,7 @@ namespace STR
       };
 
       //! output state
-      void OutputStepState(IO::DiscretizationWriter& iowriter) const;
+      void OutputStepState(IO::DiscretizationWriter& iowriter) const override;
 
       //! pre-evaluate
       void PreEvaluate() override { return; };
@@ -94,10 +94,10 @@ namespace STR
       void PostEvaluate() override { return; };
 
       //! post-output
-      void PostOutput() { return; };
+      void PostOutput() override { return; };
 
       //! predict solution
-      void Predict(const INPAR::STR::PredEnum& pred_type) { return; };
+      void Predict(const INPAR::STR::PredEnum& pred_type) override { return; };
 
       //! read model-specific restart
       void ReadRestart(IO::DiscretizationReader& ioreader) override { return; };
@@ -113,7 +113,7 @@ namespace STR
       void Reset(const Epetra_Vector& x) override { return; };
 
       //! reset state
-      void ResetStepState() { return; };
+      void ResetStepState() override { return; };
 
       //! post-iterate
       void RunPostIterate(const NOX::Solver::Generic& solver) override { return; };
@@ -126,7 +126,7 @@ namespace STR
       };
 
       //! set up model evaluator
-      void Setup();
+      void Setup() override;
 
       //! return nodal stresses
       const Epetra_MultiVector& Stresses() const { return *stresses_; };

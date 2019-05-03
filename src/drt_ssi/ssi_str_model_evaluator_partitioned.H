@@ -42,7 +42,7 @@ namespace STR
       virtual ~PartitionedSSI() = default;
 
       //! setup class variables [derived]
-      virtual void Setup();
+      void Setup() override;
 
       //! @name Functions which are derived from the base generic class
       //! @{
@@ -66,7 +66,7 @@ namespace STR
       void PreEvaluate() override { return; };
 
       //! derived
-      void PostEvaluate() { return; };
+      void PostEvaluate() override { return; };
 
       //! derived
       bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const override;
@@ -85,14 +85,14 @@ namespace STR
       void ReadRestart(IO::DiscretizationReader& ioreader) override { return; };
 
       //! [derived]
-      virtual void Predict(const INPAR::STR::PredEnum& pred_type) { return; };
+      void Predict(const INPAR::STR::PredEnum& pred_type) override { return; };
 
       //! derived
-      virtual void RunPreComputeX(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
+      void RunPreComputeX(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
           const NOX::NLN::Group& curr_grp) override;
 
       //! recover condensed Lagrange multipliers
-      virtual void RunPostComputeX(
+      void RunPostComputeX(
           const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override
       {
         return;
@@ -108,19 +108,19 @@ namespace STR
       void UpdateStepElement() override { return; };
 
       //! [derived]
-      virtual void DetermineStressStrain() { return; };
+      void DetermineStressStrain() override { return; };
 
       //! [derived]
-      virtual void DetermineEnergy() { return; };
+      void DetermineEnergy() override { return; };
 
       //! [derived]
-      virtual void DetermineOptionalQuantity() override { return; };
+      void DetermineOptionalQuantity() override { return; };
 
       //! [derived]
-      virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const { return; };
+      void OutputStepState(IO::DiscretizationWriter& iowriter) const override { return; };
 
       //! derived
-      virtual void ResetStepState() { return; };
+      void ResetStepState() override { return; };
 
       //! [derived]
       void PostOutput() override { return; };
