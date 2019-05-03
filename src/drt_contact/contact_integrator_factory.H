@@ -6,9 +6,7 @@
 
 \level 2
 
-\maintainer Michael Hiermeier
-
-\date 04/2016
+\maintainer Matthias Mayr
 
 */
 /*---------------------------------------------------------------------*/

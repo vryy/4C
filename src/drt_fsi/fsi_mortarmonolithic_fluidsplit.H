@@ -6,6 +6,8 @@
 
 \brief Solve FSI problem with non-matching grids using a monolithic scheme
 with condensed fluid interface velocities
+
+\level 2
 */
 
 /*----------------------------------------------------------------------------*/

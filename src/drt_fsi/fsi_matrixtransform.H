@@ -1,14 +1,13 @@
 /*!----------------------------------------------------------------------
 \file fsi_matrixtransform.H
 
-<pre>
-Maintainer: Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+\brief Utilities for matrix transformations in FSI
 
-*----------------------------------------------------------------------*/
+\maintainer Martin Kronbichler
+
+\level 1
+*/
+/*---------------------------------------------------------------------*/
 
 #ifndef FSI_MATRIXTRANSFORM_H
 #define FSI_MATRIXTRANSFORM_H

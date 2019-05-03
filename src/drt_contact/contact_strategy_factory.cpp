@@ -4,9 +4,7 @@
 
 \brief Factory to create the desired contact strategy.
 
-\maintainer Michael Hiermeier
-
-\date Feb 4, 2016
+\maintainer Matthias Mayr
 
 \level 3
 
