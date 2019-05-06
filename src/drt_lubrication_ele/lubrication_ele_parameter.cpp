@@ -10,12 +10,10 @@ of the global time integrator, and then never touched again throughout the simul
 parameter class needs to coexist with the general parameter class holding all general static
 parameters required for Lubrication element evaluation.
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15270
-</pre>
+\level 3
+
+\maintainer Mostafa Faraji
+
 */
 /*--------------------------------------------------------------------------*/
 
@@ -78,7 +76,7 @@ void DRT::ELEMENTS::LubricationEleParameter::Done()
 DRT::ELEMENTS::LubricationEleParameter::LubricationEleParameter(
     const std::string& disname  //!< name of discretization
     )
-    : time_(-1.0)
+    : time_(-1.0), modified_reynolds_(true), roughness_deviation_(0.0)
 {
   return;
 }
@@ -101,4 +99,10 @@ void DRT::ELEMENTS::LubricationEleParameter::SetGeneralParameters(
     Teuchos::ParameterList& parameters  //!< parameter list
 )
 {
+  modified_reynolds_ = parameters.get<bool>("ismodifiedrey");
+  // normtypeinc_ = DRT::INPUT::IntegralValue<INPAR::EHL::ConvNorm>(ehldynmono_, "NORM_INC");
+  //  modified_reynolds_ = DRT::INPUT::IntegralValue<int>(
+  //      DRT::Problem::Instance()->ElastoHydroDynamicParams(), "MODIFIED_REYNOLDS_EQU");
+  roughness_deviation_ = parameters.get<double>("roughnessdeviation");
+  //      DRT::Problem::Instance()->LubricationDynamicParams().get<double>("ROUGHNESS_STD_DEVIATION");
 }

@@ -91,4 +91,16 @@ void INPAR::LUBRICATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
 
   DoubleParameter(
       "ROUGHNESS_STD_DEVIATION", 0., "standard deviation of surface roughness", &lubricationdyn);
+
+  // use modified reynolds equ.
+  BoolParameter("MODIFIED_REYNOLDS_EQU", "No",
+      "the lubrication problem will use the modified reynolds equ. in order to consider surface"
+      " roughness",
+      &lubricationdyn);
+  //  setStringToIntegralParameter<int>("MODIFIED_REYNOLDS_EQU", "No",
+  //      "the lubrication problem will use the modified reynolds equ. in order to consider surface"
+  //      "roughness",
+  //      tuple<std::string>("No", "Yes"), &lubricationdyn);  // check plz ->boolparameter??
+  // tuple<std::string>("No", "error_by_function"), tuple<int>(calcerror_no, calcerror_byfunction),
+  //      &lubricationdyn);
 }

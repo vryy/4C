@@ -143,11 +143,10 @@ void INPAR::EHL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "set unprojectable nodes to zero pressure via Dirichlet condition", yesnotuple, yesnovalue,
       &ehldyn);
 
-  // use modified reynolds equ.
-  setStringToIntegralParameter<int>("MODIFIED_REYNOLDS_EQU", "No",
-      "the lubrication problem will use the modified reynolds equ. in order to consider surface "
-      "roughness",
-      yesnotuple, yesnovalue, &ehldyn);
+  //  // use modified reynolds equ.
+  //  setStringToIntegralParameter<int>("MODIFIED_REYNOLDS_EQU", "No",
+  //      "the lubrication problem will use the modified reynolds equ. in order to consider surface
+  //      " "roughness", yesnotuple, yesnovalue, &ehldyn);
 }
 
 

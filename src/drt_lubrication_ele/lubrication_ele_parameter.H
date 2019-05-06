@@ -10,14 +10,13 @@ of the global time integrator, and then never touched again throughout the simul
 parameter class needs to coexist with the general parameter class holding all general static
 parameters required for Lubrication element evaluation.
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15270
-</pre>
+\level 3
+
+\maintainer Mostafa Faraji
+
 */
 /*--------------------------------------------------------------------------*/
+
 #ifndef SRC_DRT_LUBRICATION_ELE_LUBRICATION_ELE_PARAMETER_H_
 #define SRC_DRT_LUBRICATION_ELE_LUBRICATION_ELE_PARAMETER_H_
 
@@ -53,6 +52,8 @@ namespace DRT
       );
 
       double Time() const { return time_; };
+      bool ModifiedReynolds() const { return modified_reynolds_; };
+      double RoughnessDeviation() const { return roughness_deviation_; };
 
      private:
       //! private constructor for singletons
@@ -60,6 +61,8 @@ namespace DRT
       );
 
       double time_;
+      bool modified_reynolds_;
+      double roughness_deviation_;
 
     };  // class LubricationEleParameter
   }     // namespace ELEMENTS

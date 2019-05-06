@@ -197,11 +197,11 @@ namespace DRT
 
       //! evaluate pressure and shear flow factors
       virtual void CalcPFlowFacAtIntPoint(LINALG::Matrix<nsd_, 1>& pflowfac,
-          LINALG::Matrix<nsd_, 1>& pflowfacderiv, const double heightint);
+          LINALG::Matrix<nsd_, 1>& pflowfacderiv, const double& heightint);
 
       //! evaluate pressure and shear flow factors
       virtual void CalcSFlowFacAtIntPoint(
-          double& sflowfac, double& sflowfacderiv, const double heightint);
+          double& sflowfac, double& sflowfacderiv, const double& heightint);
 
       /*========================================================================*/
       //! @name routines for additional element evaluations (called from EvaluateAction)
@@ -257,90 +257,102 @@ namespace DRT
       //! @name methods for evaluation of individual terms
       /*========================================================================*/
 
-      //! calculate linearization of the Laplacian (weak form)
-      void GetLaplacianWeakForm(double& val,  //!< value of linearization of weak laplacian
-          const int vi,                       //!< node index for the weighting function
-          const int ui                        //!< node index for the shape function
-      )
-      {
-        val = 0.0;
-        for (int j = 0; j < nsd_; j++)
-        {
-          val += derxy_(j, vi) * derxy_(j, ui);
-        }
-        return;
-      };
+      //      //! calculate linearization of the Laplacian (weak form)
+      //      void GetLaplacianWeakForm(double& val,  //!< value of linearization of weak laplacian
+      //          const int vi,                       //!< node index for the weighting function
+      //          const int ui                        //!< node index for the shape function
+      //      )
+      //      {
+      //        val = 0.0;
+      //        for (int j = 0; j < nsd_; j++)
+      //        {
+      //          val += derxy_(j, vi) * derxy_(j, ui);
+      //        }
+      //        return;
+      //      };
+
+      //      //! calculate linearization of the Laplacian (weak form)
+      //      void GetLaplacianWeakForm(double& val,  //!< value of linearization of weak laplacian
+      //          const int vi,                       //!< node index for the weighting function
+      //          const int ui,                       //!< node index for the shape function
+      //          const LINALG::Matrix<nsd_, 1>& pflowfac)
+      //      {
+      //        val = 0.0;
+      //        for (int j = 0; j < nsd_; j++)
+      //        {
+      //          val += derxy_(j, vi) * derxy_(j, ui) * pflowfac(j);
+      //        }
+      //
+      //        return;
+      //      };
+      //
+      //      //! calculate the Laplacian (weak form)
+      //      void GetLaplacianWeakFormRHS(double& val,    //!< value of weak laplacian
+      //          const LINALG::Matrix<nsd_, 1>& gradpre,  //!< pressure gradient at gauss point
+      //          const int vi                             //!< node index for the weighting
+      //          function
+      //      )
+      //      {
+      //        val = 0.0;
+      //        for (int j = 0; j < nsd_; j++)
+      //        {
+      //          val += derxy_(j, vi) * gradpre(j);
+      //        }
+      //        return;
+      //      };
+      //
+      //      //! calculate the Laplacian (weak form)
+      //      void GetLaplacianWeakFormRHS(double& val,    //!< value of weak laplacian
+      //          const LINALG::Matrix<nsd_, 1>& gradpre,  //!< pressure gradient at gauss point
+      //          const int vi,                            //!< node index for the weighting
+      //          function const LINALG::Matrix<nsd_, 1>& pflowfac)
+      //      {
+      //        val = 0.0;
+      //        for (int j = 0; j < nsd_; j++)
+      //        {
+      //          val += derxy_(j, vi) * gradpre(j) * pflowfac(j);
+      //        }
+      //        return;
+      //      };
 
       //! calculate linearization of the Laplacian (weak form)
-      void GetLaplacianWeakForm(double& val,  //!< value of linearization of weak laplacian
-          const int vi,                       //!< node index for the weighting function
-          const int ui,                       //!< node index for the shape function
-          const LINALG::Matrix<nsd_, 1>& pflowfac)
-      {
-        val = 0.0;
-        for (int j = 0; j < nsd_; j++)
-        {
-          val += derxy_(j, vi) * derxy_(j, ui) * pflowfac(j);
-        }
-
-        return;
-      };
-
+      virtual void GetLaplacianWeakForm(double& val, const int vi, const int ui);
+      //! calculate linearization of the Laplacian (weak form)
+      virtual void GetLaplacianWeakForm(
+          double& val, const int vi, const int ui, const LINALG::Matrix<nsd_, 1>& pflowfac);
       //! calculate the Laplacian (weak form)
-      void GetLaplacianWeakFormRHS(double& val,    //!< value of weak laplacian
-          const LINALG::Matrix<nsd_, 1>& gradpre,  //!< pressure gradient at gauss point
-          const int vi                             //!< node index for the weighting function
-      )
-      {
-        val = 0.0;
-        for (int j = 0; j < nsd_; j++)
-        {
-          val += derxy_(j, vi) * gradpre(j);
-        }
-        return;
-      };
-
+      virtual void GetLaplacianWeakFormRHS(
+          double& val, const LINALG::Matrix<nsd_, 1>& gradpre, const int vi);
       //! calculate the Laplacian (weak form)
-      void GetLaplacianWeakFormRHS(double& val,    //!< value of weak laplacian
-          const LINALG::Matrix<nsd_, 1>& gradpre,  //!< pressure gradient at gauss point
-          const int vi,                            //!< node index for the weighting function
-          const LINALG::Matrix<nsd_, 1>& pflowfac)
-      {
-        val = 0.0;
-        for (int j = 0; j < nsd_; j++)
-        {
-          val += derxy_(j, vi) * gradpre(j) * pflowfac(j);
-        }
-        return;
-      };
-
+      virtual void GetLaplacianWeakFormRHS(double& val, const LINALG::Matrix<nsd_, 1>& gradpre,
+          const int vi, const LINALG::Matrix<nsd_, 1>& pflowfac);
       //! calculation of Poiseuille contribution to element matrix
       virtual void CalcMatPsl(Epetra_SerialDenseMatrix& emat, const double timefacfac,
-          const double viscosity, const double height);
+          const double viscosity, const double& height);
 
       //! calculation of Poiseuille contribution to element matrix in modified Rey. Equ.
       virtual void CalcMatPsl(Epetra_SerialDenseMatrix& emat, const double timefacfac,
-          const double viscosity, const double height, const LINALG::Matrix<nsd_, 1>& pflowfac);
+          const double viscosity, const double& height, const LINALG::Matrix<nsd_, 1>& pflowfac);
 
       //! calculation of Poiseuille contribution to RHS matrix
       virtual void CalcRhsPsl(Epetra_SerialDenseVector& erhs, const double rhsfac,
-          const double viscosity, const double height);
+          const double viscosity, const double& height);
 
       //! calculation of Poiseuille contribution to RHS matrix in modified Rey. Equ.
       virtual void CalcRhsPsl(Epetra_SerialDenseVector& erhs, const double rhsfac,
-          const double viscosity, const double height, const LINALG::Matrix<nsd_, 1>& pflowfac);
+          const double viscosity, const double& height, const LINALG::Matrix<nsd_, 1>& pflowfac);
 
       //! calculation of Wedge contribution to RHS matrix
       virtual void CalcRhsWdg(Epetra_SerialDenseVector& erhs, const double rhsfac,
-          const double height, const LINALG::Matrix<nsd_, 1> velocity);
+          const double& height, const LINALG::Matrix<nsd_, 1> velocity);
 
       //! calculation of Squeeze contribution to RHS matrix
       virtual void CalcRhsSqz(
-          Epetra_SerialDenseVector& erhs, const double rhsfac, const double heightdot);
+          Epetra_SerialDenseVector& erhs, const double rhsfac, const double& heightdot);
 
       //! calculation of Shear contribution to RHS matrix
       virtual void CalcRhsShear(Epetra_SerialDenseVector& erhs, const double rhsfac,
-          const LINALG::Matrix<nsd_, 1> velocity, const double sflowfac);
+          const LINALG::Matrix<nsd_, 1> velocity, const double& sflowfac);
 
       /*========================================================================*/
       //! @name parameter lists
@@ -413,8 +425,15 @@ namespace DRT
       //! time step
       double Dt_;
       //! parameters regarding the implementation of the modified Reynolds Equ.
-      bool modified_reynolds_;
-      double roughness_deviation_;
+      // bool modified_reynolds_;
+      // double roughness_deviation_;
+
+      double heightint_;
+      double heightdotint_;
+      LINALG::Matrix<nsd_, 1> pflowfac_;  // Pressure flow factor, initialized to zero
+      LINALG::Matrix<nsd_, 1> pflowfacderiv_;
+      double sflowfac_;
+      double sflowfacderiv_;
     };
 
     /// LubricationEleInternalVariableManager implementation
@@ -428,11 +447,7 @@ namespace DRT
     class LubricationEleInternalVariableManager
     {
      public:
-      LubricationEleInternalVariableManager()
-          : prenp_(0.0),
-            //            sflowfactor_(0.0),
-            //            sflowfactorderiv_(0.0),
-            gradpre_(true)
+      LubricationEleInternalVariableManager() : prenp_(0.0), gradpre_(true)
       //            pflowfactor_(true),
       //            pflowfactorderiv_(true)
       {

@@ -383,6 +383,10 @@ namespace LUBRICATION
     //! incremental or linear full solving? rename -> is_incremental_
     bool incremental_;
 
+    //! flag for Modified Reynolds Equation
+    bool modified_reynolds_;
+
+
     /*--- query and output ---------------------------------------------------*/
 
     //! flag for printing out mean values of pressures
@@ -486,7 +490,11 @@ namespace LUBRICATION
     //! write restart data every uprestart_ steps ? writesolutioneveryrestart_
     int uprestart_;
 
+    //! Surface roughness standard deviation used in Modified Reynolds Equation
+    double roughness_deviation_;
+
     /*========================================================================*/
+
 
   };  // class TimIntImpl
 }  // namespace LUBRICATION

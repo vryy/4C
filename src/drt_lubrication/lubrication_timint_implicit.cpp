@@ -48,6 +48,9 @@ LUBRICATION::TimIntImpl::TimIntImpl(Teuchos::RCP<DRT::Discretization> actdis,
       errfile_(extraparams->get<FILE*>("err file")),
       isale_(extraparams->get<bool>("isale")),
       incremental_(true),
+      modified_reynolds_(
+          DRT::INPUT::IntegralValue<int>(*params, "MODIFIED_REYNOLDS_EQU")),  // check plz
+      // modified_reynolds_(params->get<bool>("MODIFIED_REYNOLDS_EQU")),  // check plz
       outmean_(DRT::INPUT::IntegralValue<int>(*params, "OUTMEAN")),
       outputgmsh_(DRT::INPUT::IntegralValue<int>(*params, "OUTPUT_GMSH")),
       output_state_matlab_(DRT::INPUT::IntegralValue<int>(*params, "MATLAB_STATE_OUTPUT")),
@@ -75,7 +78,9 @@ LUBRICATION::TimIntImpl::TimIntImpl(Teuchos::RCP<DRT::Discretization> actdis,
       prei_(Teuchos::null),
       // Initialization of
       upres_(params->get<int>("RESULTSEVRY")),
-      uprestart_(params->get<int>("RESTARTEVRY"))
+      uprestart_(params->get<int>("RESTARTEVRY")),
+
+      roughness_deviation_(params->get<double>("ROUGHNESS_STD_DEVIATION"))
 {
   // DO NOT DEFINE ANY STATE VECTORS HERE (i.e., vectors based on row or column maps)
   // this is important since we have problems which require an extended ghosting
@@ -177,6 +182,10 @@ void LUBRICATION::TimIntImpl::SetElementGeneralParameters() const
   eleparams.set<int>("action", LUBRICATION::set_general_lubrication_parameter);
 
   eleparams.set<bool>("isale", isale_);
+
+  eleparams.set<bool>("ismodifiedrey", modified_reynolds_);
+
+  eleparams.set("roughnessdeviation", roughness_deviation_);
 
   // call standard loop over elements
   discret_->Evaluate(
