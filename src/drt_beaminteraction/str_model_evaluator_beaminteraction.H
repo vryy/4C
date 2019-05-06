@@ -4,7 +4,7 @@
 
 \brief Evaluation of all beam interaction terms
 
-\maintainer Jonas Eichinger, Maximilian Grill
+\maintainer Maximilian Grill
 
 \level 3
 */
@@ -107,6 +107,9 @@ namespace STR
 
       //! derived
       virtual bool EvaluateForceStiff();
+
+      //! derived
+      void PreEvaluate() override { return; };
 
       //! derived
       virtual void PostEvaluate(){/* currently unused */};
