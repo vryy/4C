@@ -57,7 +57,7 @@ NUMSTEP                         90
 TIMESTEP                        200
 HEATINTEGRATION                 yes
 LUMPCAPA                        yes
-TOLMELT                         1e-2
+TOLMELT                         1e-5
 ------------------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
 THETA                           1
 --------------------------------------------------------------------SOLVER 2
@@ -119,9 +119,9 @@ FASTPOLYNOMIAL NUMCOEFF 1 COEFF 2.22
 FASTPOLYNOMIAL                  NUMCOEFF 1 COEFF 0.556
 ----------------------------------------------------------RESULT DESCRIPTION
 THERMAL DIS thermo NODE 1 QUANTITY temp VALUE 40 TOLERANCE 1e-12
-THERMAL DIS thermo NODE 10 QUANTITY temp VALUE  3.31215330287543779e+01 TOLERANCE 1e-12
-THERMAL DIS thermo NODE 20 QUANTITY temp VALUE  2.62909248359820111e+01 TOLERANCE 1e-12
-THERMAL DIS thermo NODE 50 QUANTITY temp VALUE  1.19774437839574492e+01 TOLERANCE 1e-12
+THERMAL DIS thermo NODE 10 QUANTITY temp VALUE  3.31205263640016909e+01 TOLERANCE 1e-12
+THERMAL DIS thermo NODE 20 QUANTITY temp VALUE  2.62890734816770575e+01 TOLERANCE 1e-12
+THERMAL DIS thermo NODE 50 QUANTITY temp VALUE  1.19783661770485157e+01 TOLERANCE 1e-12
 THERMAL DIS thermo NODE 400 QUANTITY temp VALUE 10 TOLERANCE 1e-12
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0

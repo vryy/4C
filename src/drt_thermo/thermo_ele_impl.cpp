@@ -3199,19 +3199,20 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculatePhaseChangeIncrement(
   const double Ts = par->solidustemp_;
   const double Tl = par->liquidustemp_;
   const double rhoC = 1 / ((Tl - Ts) / par->latentheat_ + 1 / mat->HeatIntegrationCapacity());
-
+  // normalization factor for melt tolerance
+  const double tolFactor = par->latentheat_ / rhoC;
   for (int idof = 0; idof < nen_ * numdofpernode_; idof++)
   {
-    // TODO different behaviors are intransparent
+    // TODO different behaviors are intransparent to user
     // calculate increment
     (*esourceinc)(idof) = rhoC * (Tlast(idof) - etempn_(idof));
     // within tolerance: no increment added
-    if (melttol > 1e-12 && abs(etempn_(idof) - Tlast(idof)) < melttol)
+    if (melttol > 0 && abs(etempn_(idof) - Tlast(idof)) < melttol * tolFactor)
     {
       (*esourceinc)(idof) = 0;
     }
-    // no tolerance: use RB condition
-    else if (melttol < 1e-12)
+    // no tolerance given: use RB condition
+    else if (melttol == 0)
     {
       if ((etemp_(idof) < Ts and etempn_(idof) < Ts) or (etemp_(idof) > Tl and etempn_(idof) > Tl))
         (*esourceinc)(idof) = 0;
