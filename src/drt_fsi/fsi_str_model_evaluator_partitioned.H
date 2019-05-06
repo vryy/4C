@@ -33,7 +33,7 @@ namespace STR
       PartitionedFSI();
 
       //! destructor
-      virtual ~PartitionedFSI(){};
+      virtual ~PartitionedFSI() = default;
 
       //! get pointer to force vector at time level n+1 (full structural map).
       //! interface part is inserted in ADAPTER::FSIStructureWrapper.
@@ -47,23 +47,27 @@ namespace STR
 
       //! @name Functions which are derived from the base generic class
       //! @{
+
       //! [derived]
-      INPAR::STR::ModelType Type() const { return INPAR::STR::model_partitioned_coupling; }
+      INPAR::STR::ModelType Type() const override { return INPAR::STR::model_partitioned_coupling; }
 
       //! reset class variables (without jacobian) [derived]
       virtual void Reset(const Epetra_Vector& x) { return; };
 
       //! [derived]
-      virtual bool EvaluateForce() { return true; };
+      bool EvaluateForce() override { return true; };
 
       //! [derived]
-      virtual bool EvaluateStiff() { return true; };
+      bool EvaluateStiff() override { return true; };
 
       //! [derived] not needed in partitioned scheme
-      virtual bool EvaluateForceStiff() { return true; };
+      bool EvaluateForceStiff() override { return true; };
 
       //! derived
-      virtual void PostEvaluate(){/* currently unused */};
+      void PreEvaluate() override { return; };
+
+      //! derived
+      void PostEvaluate() override { return; };
 
       //! derived
       virtual bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const;
@@ -82,33 +86,33 @@ namespace STR
       };
 
       //! [derived]
-      virtual void ReadRestart(IO::DiscretizationReader& ioreader) { return; };
+      void ReadRestart(IO::DiscretizationReader& ioreader) override { return; };
 
       //! [derived]
-      virtual void Predict(const INPAR::STR::PredEnum& pred_type) { return; };
+      void Predict(const INPAR::STR::PredEnum& pred_type) { return; };
 
       //! derived
-      virtual void RunPreComputeX(
-          const Epetra_Vector& xold, Epetra_Vector& dir_mutable, const NOX::NLN::Group& curr_grp)
+      void RunPreComputeX(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
+          const NOX::NLN::Group& curr_grp) override
       {
         return;
       };
 
       //! recover condensed Lagrange multipliers
       virtual void RunPostComputeX(
-          const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
+          const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override
       {
         return;
       };
 
       //! derived
-      virtual void RunPostIterate(const NOX::Solver::Generic& solver) { return; };
+      void RunPostIterate(const NOX::Solver::Generic& solver) override { return; };
 
       //! [derived]
-      virtual void UpdateStepState(const double& timefac_n);
+      void UpdateStepState(const double& timefac_n) override;
 
       //! [derived]
-      virtual void UpdateStepElement() { return; };
+      void UpdateStepElement() override { return; };
 
       //! [derived]
       virtual void DetermineStressStrain() { return; };
@@ -123,19 +127,20 @@ namespace STR
       virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const { return; };
 
       //! derived
-      virtual void ResetStepState() { return; };
+      void ResetStepState() override { return; };
 
       //! [derived]
-      virtual void PostOutput() { return; };
+      void PostOutput() override { return; };
 
       //! [derived]
-      virtual Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const;
+      Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const override;
 
       //! [derived]
-      virtual Teuchos::RCP<const Epetra_Vector> GetCurrentSolutionPtr() const;
+      Teuchos::RCP<const Epetra_Vector> GetCurrentSolutionPtr() const override;
 
       //! [derived]
-      virtual Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const;
+      Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const override;
+
       //! @}
 
       /*! \brief linear structure solve with just a interface load
