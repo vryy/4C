@@ -122,14 +122,14 @@ def check_cpp_files_for_header(look_cmd, allerrors):
   if len(cpp_files_wo_maint) > 0:
     if len(allerrors) > 0:
       allerrors.append("")
-    allerrors.append("The following files are missing a \\maintainer tag:")
+    allerrors.append("The following files have an incorrect or are missing a \\maintainer tag:")
     allerrors += cpp_files_wo_maint
 # check for correct start of header
-  cpp_files_wrong_start = [ff for ff,hdr in headers.items() if len(hdr.get_start())>0]
+  cpp_files_wrong_start = [ff for ff,hdr in headers.items() if len(hdr.get_start())<1]
   if len(cpp_files_wrong_start) > 0:
     if len(allerrors) > 0:
       allerrors.append("")
-    allerrors.append("The following files do not start with /*! as an appropriate header marker:")
+    allerrors.append("The following files do not start with '/*!' or '/**' as an appropriate header marker:")
     allerrors += cpp_files_wrong_start
 # \level tag
   cpp_files_wo_lvl = [ff for ff,hdr in headers.items() if not (0 <= hdr.get_level() <= 3)]

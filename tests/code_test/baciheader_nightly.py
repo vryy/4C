@@ -18,7 +18,7 @@ class Header(object):
       self.header = True
    # check for correct header start
       for line in blk:
-        if (("/*" in line or "/!*" in line)  and ("*/" not in line) and ( "/*!" not in line)):
+        if (("/*!" in line or "/**" in line)  and ("*/" not in line)):
           start = line
           if len(start) >= 1:
             self.start=start
@@ -110,7 +110,7 @@ class Header(object):
     blk = []
     marker = False
     for line in cont:
-      if (not marker) and ("/*!" in line or "/**" in line or "/*" in line or "/!*" in line) and ("*/" not in line):
+      if (not marker) and ("/*!" in line or "/**" in line or "/*" in line or "/!*") and ("*/" not in line):
         marker = True
       if marker:
         blk.append(line)
