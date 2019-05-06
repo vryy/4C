@@ -140,7 +140,7 @@ void PARTICLEENGINE::ParticleContainer::AddParticle(
     {
 #ifdef DEBUG
       if (static_cast<int>(particle[stateEnum].size()) != statedim_[stateEnum])
-        dserror("Cannot add particle: dimensions of state '%s' do not match!",
+        dserror("can not add particle: dimensions of state '%s' do not match!",
             PARTICLEENGINE::EnumToStateName(stateEnum).c_str());
 #endif
 
@@ -185,7 +185,7 @@ void PARTICLEENGINE::ParticleContainer::ReplaceParticle(
     {
 #ifdef DEBUG
       if (static_cast<int>(particle[stateEnum].size()) != statedim_[stateEnum])
-        dserror("Cannot add particle: dimensions of state '%s' do not match!",
+        dserror("can not replace particle: dimensions of state '%s' do not match!",
             PARTICLEENGINE::EnumToStateName(stateEnum).c_str());
 #endif
 

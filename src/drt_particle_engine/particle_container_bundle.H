@@ -58,6 +58,12 @@ namespace PARTICLEENGINE
     //! get specific particle container
     inline ParticleContainer* GetSpecificContainer(TypeEnum typeEnum, StatusEnum statusEnum) const
     {
+#ifdef DEBUG
+      if (not storedtypes_.count(typeEnum))
+        dserror("container for particle type '%s' is not stored!",
+            PARTICLEENGINE::EnumToTypeName(typeEnum).c_str());
+#endif
+
       return (containers_[typeEnum])[statusEnum].get();
     };
 
@@ -65,6 +71,12 @@ namespace PARTICLEENGINE
     inline void ScaleStateSpecificContainer(
         double fac, StateEnum stateEnum, TypeEnum typeEnum) const
     {
+#ifdef DEBUG
+      if (not storedtypes_.count(typeEnum))
+        dserror("container for particle type '%s' is not stored!",
+            PARTICLEENGINE::EnumToTypeName(typeEnum).c_str());
+#endif
+
       ((containers_[typeEnum])[PARTICLEENGINE::Owned])->ScaleState(fac, stateEnum);
     };
 
@@ -72,6 +84,12 @@ namespace PARTICLEENGINE
     inline void UpdateStateSpecificContainer(double facA, StateEnum stateEnumA, double facB,
         StateEnum stateEnumB, TypeEnum typeEnum) const
     {
+#ifdef DEBUG
+      if (not storedtypes_.count(typeEnum))
+        dserror("container for particle type '%s' is not stored!",
+            PARTICLEENGINE::EnumToTypeName(typeEnum).c_str());
+#endif
+
       ((containers_[typeEnum])[PARTICLEENGINE::Owned])
           ->UpdateState(facA, stateEnumA, facB, stateEnumB);
     };
@@ -80,12 +98,24 @@ namespace PARTICLEENGINE
     inline void SetStateSpecificContainer(
         std::vector<double> val, StateEnum stateEnum, TypeEnum typeEnum) const
     {
+#ifdef DEBUG
+      if (not storedtypes_.count(typeEnum))
+        dserror("container for particle type '%s' is not stored!",
+            PARTICLEENGINE::EnumToTypeName(typeEnum).c_str());
+#endif
+
       ((containers_[typeEnum])[PARTICLEENGINE::Owned])->SetState(val, stateEnum);
     };
 
     //! clear state of owned particles in specific container
     inline void ClearStateSpecificContainer(StateEnum stateEnum, TypeEnum typeEnum) const
     {
+#ifdef DEBUG
+      if (not storedtypes_.count(typeEnum))
+        dserror("container for particle type '%s' is not stored!",
+            PARTICLEENGINE::EnumToTypeName(typeEnum).c_str());
+#endif
+
       ((containers_[typeEnum])[PARTICLEENGINE::Owned])->ClearState(stateEnum);
     };
 
