@@ -1386,8 +1386,8 @@ namespace MORTAR
 
    protected:
     // don't want = operator and cctor
-    MortarInterface operator=(const MortarInterface& old);
-    MortarInterface(const MortarInterface& old);
+    MortarInterface operator=(const MortarInterface& old) = delete;
+    MortarInterface(const MortarInterface& old) = delete;
 
     /** @name References to the interface data container content
      *
