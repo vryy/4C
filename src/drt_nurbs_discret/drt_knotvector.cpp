@@ -1,21 +1,13 @@
-/*!----------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief knot vectors for nurbs problems (isogeometric analysis)
-
-       the class is containing the data structures + some
-       service functions (do we have interpolation, is it an
-       open knot vector or periodic, access methods etc)
-
-       ParObject is implemented to be able to write the knotvector
-       to disc for io
 
 \level 1
 
 \maintainer Martin Kronbichler
-
-
-*----------------------------------------------------------------------*/
-
+*/
+/*---------------------------------------------------------------------*/
 
 #include "drt_knotvector.H"
 
@@ -50,7 +42,7 @@ DRT::NURBS::Knotvector::Knotvector()
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 05/08|
  *----------------------------------------------------------------------*/
-DRT::NURBS::Knotvector::Knotvector(int dim, int npatches)
+DRT::NURBS::Knotvector::Knotvector(const int dim, const int npatches)
     : ParObject(),
       dim_(dim),
       npatches_(npatches),
@@ -65,49 +57,26 @@ DRT::NURBS::Knotvector::Knotvector(int dim, int npatches)
   // check if there are any patches
   if (npatches_ < 0)
   {
-    dserror("we need at least one patch\n");
+    dserror("A knot vector needs at least one patch.");
   }
 
   // resize degrees
 
-  // loop patches, resize to dimension
+  // loop over all patches and resize to dimension
   for (int rr = 0; rr < npatches_; ++rr)
   {
     (degree_[rr]).resize(dim_);
-  }
-
-  // resize n_x_m_x_l,
-
-  // loop patches, resize to dimension
-  for (int rr = 0; rr < npatches_; ++rr)
-  {
     (n_x_m_x_l_[rr]).resize(dim_);
     (nele_x_mele_x_lele_[rr]).resize(dim_);
-  }
-
-  // initialise interpolation on all patches
-  for (int rr = 0; rr < npatches_; ++rr)
-  {
     (interpolation_[rr]).resize(dim_);
-    for (int mm = 0; mm < dim_; ++mm)
-    {
-      (interpolation_[rr])[mm] = knotvector_is_not_defined;
-    }
-  }
-
-  // provide knot vectors for all patches and dimensions
-  for (int rr = 0; rr < npatches_; ++rr)
-  {
     (knot_values_[rr]).resize(dim_);
+
+    // initialize interpolation type
+    for (int mm = 0; mm < dim_; ++mm) (interpolation_[rr])[mm] = knotvector_is_not_defined;
   }
 
   return;
 }  // DRT::NURBS::Knotvector::Knotvector (standard)
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            gammi 05/08|
- *----------------------------------------------------------------------*/
-DRT::NURBS::Knotvector::~Knotvector() { return; }  // DRT::NURBS::Knotvector::~Knotvector
 
 /*----------------------------------------------------------------------*
  |  copy ctor (public)                                       gammi 05/08|
@@ -613,13 +582,13 @@ void DRT::NURBS::Knotvector::FinishKnots(const int smallest_gid_in_dis)
   // check if there are any patches
   if (npatches_ < 0)
   {
-    dserror("we need at least  patch\n");
+    dserror("There are no patches. We need at least one patch.");
   }
 
   // check degrees
   if ((int)degree_.size() != npatches_)
   {
-    dserror("each patch needs its own degree information\n");
+    dserror("Each patch needs its own degree information.");
   }
   else
   {
@@ -1100,3 +1069,23 @@ int DRT::NURBS::Knotvector::ConvertEleKnotIdsToGid(
 
   return (gid);
 }  // DRT::NURBS::Knotvector::ConvertEleKnotIdsToGid
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::NURBS::Knotvector::Print(std::ostream& os) const
+{
+  os << "\nPrinting a Knotvector: " << std::endl;
+  for (int patch = 0; patch < npatches_; ++patch)
+  {
+    os << "patch " << patch << ":\n";
+    for (int direction = 0; direction < dim_; ++direction)
+    {
+      os << "  direction " << direction << ": ";
+      for (std::size_t i = 0; i < knot_values_[patch][direction]->size(); ++i)
+        os << (*(knot_values_[patch][direction]))[i] << ", ";
+      os << "\n";
+    }
+    os << std::endl;
+  }
+}
