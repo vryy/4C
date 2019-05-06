@@ -515,15 +515,36 @@ namespace MAT
       }
     }
 
-    //! save the nodally lumped factors and reset the latent heat
+    //! determine latent heat amount consistent with temperature
+    //!
+    //! \note fails if Ts=Tl=T0 (which is irrelevant)
+    double TemperatureToLatentHeat(const double temperature) const
+    {
+      if (temperature < params_->solidustemp_) return -params_->latentheat_;
+      if (temperature > params_->liquidustemp_) return 0;
+      // linear interpolation between Ts and Tl
+      return (1 - (temperature - params_->solidustemp_) /
+                      (params_->liquidustemp_ - params_->solidustemp_)) *
+             (-params_->latentheat_);
+    }
+
+    //! \brief setup heat integration variables
+    //!
+    //! Reset latent heat to a value consistent with initial temperature. If below solidus latent
+    //! heat is negative, above liquidus latent heat is zero and interpolated in between.
+    //!
+    //! @param nodalfactor nodally lumped "mass" without density
+    //! @param inittemp temperature at nodes at time of reset (usually simulation start)
     template <unsigned int nen>
-    void SetTotalLatentHeatAvailable(LINALG::Matrix<nen, 1>& nodalfactor)
+    void SetTotalLatentHeatAvailable(
+        const LINALG::Matrix<nen, 1>& nodalfactor, const LINALG::Matrix<nen, 1>& inittemp)
     {
       for (unsigned i = 0; i < nen; i++)
       {
         nodallump_->at(i) = nodalfactor(i);
-        lhrem_->at(i) = -params_->latentheat_;
-        lhremnp_->at(i) = -params_->latentheat_;
+        const double lh = TemperatureToLatentHeat(inittemp(i));
+        lhrem_->at(i) = lh;
+        lhremnp_->at(i) = lh;
       }
     }
 

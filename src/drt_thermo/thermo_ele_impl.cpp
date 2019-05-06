@@ -217,11 +217,6 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
 
   const THR::Action action = DRT::INPUT::get<THR::Action>(params, "action");
 
-  if (action == THR::calc_thermo_totallatentheat)
-  {
-    CalculateTotalLatentHeat(ele, params);
-    return 0;
-  }
 
   // check length
   if (la[0].Size() != nen_ * numdofpernode_) dserror("Location vector length does not match!");
@@ -236,6 +231,12 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     // build the element temperature
     LINALG::Matrix<nen_ * numdofpernode_, 1> etempn(&(mytempnp[0]), true);  // view only!
     etempn_.Update(etempn);                                                 // copy
+  }
+
+  if (action == THR::calc_thermo_totallatentheat)
+  {
+    CalculateTotalLatentHeat(ele, params);
+    return 0;
   }
 
   if (discretization.HasState(0, "last temperature"))
@@ -3160,7 +3161,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateTotalLatentHeat(
   if (ele->Material()->MaterialType() == INPAR::MAT::m_th_fourier_var)
   {
     Teuchos::RCP<MAT::FourierVar> mat = Teuchos::rcp_dynamic_cast<MAT::FourierVar>(ele->Material());
-    mat->Consolidation()->SetTotalLatentHeatAvailable(nodalfactor);
+    mat->Consolidation()->SetTotalLatentHeatAvailable(nodalfactor, etempn_);
   }
   else
     dserror("Latent heat as source term only with MAT::FourierVar");

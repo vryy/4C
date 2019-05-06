@@ -5,7 +5,7 @@ General Data File BACI
 -----------------------------------------------------------------------TITLE
 - phase and temperature dependent conductivity
 - sinusoidal temperature load
-- quadratic-linear-quadratic interpolation of material parameters
+- linear interpolation of material parameters
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      20
 //NODES                         84
