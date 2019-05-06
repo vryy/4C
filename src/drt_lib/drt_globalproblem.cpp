@@ -1064,7 +1064,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   Teuchos::RCP<DRT::Discretization> pboxdis = Teuchos::null;
 
   // decide which kind of spatial representation is required
-  std::string distype = SpatialApproximation();
+  const std::string distype = SpatialApproximation();
 
   // the basic node reader. now add desired element readers to it!
   DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
