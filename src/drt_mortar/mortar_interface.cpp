@@ -148,12 +148,13 @@ MORTAR::MortarInterface::MortarInterface(const Teuchos::RCP<MORTAR::IDataContain
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<MORTAR::MortarInterface> MORTAR::MortarInterface::Create(const int id,
-    const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& imortar,
+    const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& imortar,
     INPAR::MORTAR::RedundantStorage redundant)
 {
   Teuchos::RCP<MORTAR::IDataContainer> idata_ptr = Teuchos::rcp(new MORTAR::IDataContainer());
 
-  return Teuchos::rcp(new MORTAR::MortarInterface(idata_ptr, id, comm, dim, imortar, redundant));
+  return Teuchos::rcp(
+      new MORTAR::MortarInterface(idata_ptr, id, comm, spatialDim, imortar, redundant));
 }
 
 /*----------------------------------------------------------------------*
@@ -219,20 +220,24 @@ MORTAR::MortarInterface::MortarInterface(const Teuchos::RCP<IDataContainer>& ida
   searchuseauxpos_ = DRT::INPUT::IntegralValue<int>(imortar, "SEARCH_USE_AUX_POS");
   nurbs_ = imortar.get<bool>("NURBS");
 
-  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(Comm().Clone());
-  if (Dim() != 2 && Dim() != 3) dserror("ERROR: Mortar problem must be 2D or 3D");
+  if (Dim() != 2 && Dim() != 3) dserror("Mortar problem must be 2D or 3D.");
+
   procmap_.clear();
 
   // build interface disretization
-  if (!nurbs_)
   {
-    // standard case
-    idiscret_ = Teuchos::rcp(new DRT::Discretization((std::string) "mortar interface", com));
-  }
-  else
-  {
-    idiscret_ =
-        Teuchos::rcp(new DRT::NURBS::NurbsDiscretization((std::string) "mortar interface", com));
+    Teuchos::RCP<Epetra_Comm> clonedComm = Teuchos::rcp(Comm().Clone());
+    if (!nurbs_)
+    {
+      // standard case
+      idiscret_ =
+          Teuchos::rcp(new DRT::Discretization((std::string) "mortar interface", clonedComm));
+    }
+    else
+    {
+      idiscret_ = Teuchos::rcp(
+          new DRT::NURBS::NurbsDiscretization((std::string) "mortar interface", clonedComm));
+    }
   }
 
   // overwrite shape function type

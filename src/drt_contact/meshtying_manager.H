@@ -126,15 +126,23 @@ namespace CONTACT
     */
     void PostprocessQuantities(IO::DiscretizationWriter& output) final;
 
-    //!@}
+    /*!
+    \brief Write time step restart data/results of meshtying interfaces to output
+
+    \param[in] outParams Parameter list with output configuration and auxiliary output data
+    \param[in] writeRestart Flag to control writing of restart data
+    \param[in] writeState Flag to control writing of regular result data
+    */
+    void OutputStep(Teuchos::RCP<Teuchos::ParameterList> outParams, const bool writeRestart,
+        const bool writeState);
+
+    //@}
 
 
-   private:
-    //! don't want = operator
-    MtManager operator=(const MtManager& old);
-
-    //! don't want copy constructor
-    MtManager(const MtManager& old);
+   protected:
+    // don't want = operator and cctor
+    MtManager operator=(const MtManager& old) = delete;
+    MtManager(const MtManager& old) = delete;
 
     //! Underlying problem discretization
     DRT::Discretization& discret_;

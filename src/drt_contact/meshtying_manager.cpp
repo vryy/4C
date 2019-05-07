@@ -41,8 +41,8 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf)
   comm_ = Teuchos::rcp(Discret().Comm().Clone());
 
   // create some local variables (later to be stored in strategy)
-  int dim = DRT::Problem::Instance()->NDim();
-  if (dim != 2 && dim != 3) dserror("ERROR: Meshtying problem must be 2D or 3D");
+  const int spatialDim = DRT::Problem::Instance()->NDim();
+  if (spatialDim != 2 && spatialDim != 3) dserror("Meshtying problem must be 2D or 3D.");
 
   std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interfaces;
   Teuchos::ParameterList mtparams;
@@ -86,7 +86,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf)
   // maximum dof number in discretization
   // later we want to create NEW Lagrange multiplier degrees of
   // freedom, which of course must not overlap with displacement dofs
-  int maxdof = Discret().DofRowMap()->MaxAllGID();
+  const int maxdof = Discret().DofRowMap()->MaxAllGID();
 
   for (int i = 0; i < (int)contactconditions.size(); ++i)
   {
@@ -204,7 +204,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf)
     //    if (redundant != INPAR::MORTAR::redundant_master)
     //      dserror("ERROR: MtManager: Meshtying requires redundant master storage");
     interfaces.push_back(
-        MORTAR::MortarInterface::Create(groupid1, Comm(), dim, mtparams, redundant));
+        MORTAR::MortarInterface::Create(groupid1, Comm(), spatialDim, mtparams, redundant));
 
     // get it again
     Teuchos::RCP<MORTAR::MortarInterface> interface = interfaces[(int)interfaces.size() - 1];
@@ -310,7 +310,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf)
         // get knotvector, normal factor and zero-size information for nurbs
         if (nurbs)
         {
-          MORTAR::UTILS::PrepareNURBSElement(discret, ele, mtele, dim);
+          MORTAR::UTILS::PrepareNURBSElement(discret, ele, mtele, spatialDim);
         }
 
         interface->AddMortarElement(mtele);
@@ -345,17 +345,17 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf)
         problemtype != prb_fps3i)
     {
       strategy_ = Teuchos::rcp(new MtLagrangeStrategy(Discret().DofRowMap(), Discret().NodeRowMap(),
-          mtparams, interfaces, dim, comm_, alphaf, maxdof));
+          mtparams, interfaces, spatialDim, comm_, alphaf, maxdof));
     }
     else
     {
       strategy_ = Teuchos::rcp(new PoroMtLagrangeStrategy(Discret().DofRowMap(),
-          Discret().NodeRowMap(), mtparams, interfaces, dim, comm_, alphaf, maxdof));
+          Discret().NodeRowMap(), mtparams, interfaces, spatialDim, comm_, alphaf, maxdof));
     }
   }
   else if (stype == INPAR::CONTACT::solution_penalty or stype == INPAR::CONTACT::solution_uzawa)
     strategy_ = Teuchos::rcp(new MtPenaltyStrategy(Discret().DofRowMap(), Discret().NodeRowMap(),
-        mtparams, interfaces, dim, comm_, alphaf, maxdof));
+        mtparams, interfaces, spatialDim, comm_, alphaf, maxdof));
   else
     dserror("ERROR: Unrecognized strategy");
 
@@ -393,7 +393,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
 
   // read Problem Type and Problem Dimension from DRT::Problem
   const PROBLEM_TYP problemtype = DRT::Problem::Instance()->ProblemType();
-  int dim = DRT::Problem::Instance()->NDim();
+  const int spatialDim = DRT::Problem::Instance()->NDim();
   std::string distype = DRT::Problem::Instance()->SpatialApproximation();
 
   // get mortar information
@@ -506,7 +506,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
     // *********************************************************************
     // not (yet) implemented combinations
     // *********************************************************************
-    if (DRT::INPUT::IntegralValue<int>(mortar, "CROSSPOINTS") == true && dim == 3)
+    if (DRT::INPUT::IntegralValue<int>(mortar, "CROSSPOINTS") == true && spatialDim == 3)
       dserror("ERROR: Crosspoints / edge node modification not yet implemented for 3D");
 
   if (DRT::INPUT::IntegralValue<int>(mortar, "CROSSPOINTS") == true &&
@@ -638,7 +638,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
     dserror("POROCONTACT: Just lagrange multiplier should be condensed for poro meshtying!");
 
   if ((problemtype == prb_poroelast || problemtype == prb_fpsi || problemtype == prb_fpsi_xfem) &&
-      (dim != 3) && (dim != 2))
+      (spatialDim != 3) && (spatialDim != 2))
   {
     const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
     if (DRT::INPUT::IntegralValue<int>(porodyn, "CONTACTNOPEN"))

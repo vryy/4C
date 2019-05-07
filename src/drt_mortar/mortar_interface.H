@@ -452,15 +452,15 @@ namespace MORTAR
      *  This method creates first a new interface data object and subsequently
      *  a new interface object.
      *
-     *  \param id        (in) : unique interface ID
-     *  \param comm      (in) : communicator object
-     *  \param dim       (in) : problem dimension
-     *  \param imortar   (in) : global contact/mesh-tying parameter-list
+     *  \param id (in) : unique interface ID
+     *  \param comm (in) : communicator object
+     *  \param spatialDim (in) : spatial dimension of the problem
+     *  \param imortar (in) : global contact/mesh-tying parameter-list
      *  \param redundant (in) : type of redundancy in interface storage
      *
      *  \author hiermeier \date 03/17 */
     static Teuchos::RCP<MortarInterface> Create(const int id, const Epetra_Comm& comm,
-        const int dim, const Teuchos::ParameterList& imortar,
+        const int spatialDim, const Teuchos::ParameterList& imortar,
         INPAR::MORTAR::RedundantStorage redundant);
 
     /*!
@@ -995,9 +995,10 @@ namespace MORTAR
     /*!
     \brief Set current deformation state
 
+    \param[in] Enum to encode type of state
+    \param[in] Vector with state data
     */
     void SetState(const enum StateType& statetype, const Epetra_Vector& vec);
-
 
     /*!
     \brief Create integration cells for interface
