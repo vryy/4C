@@ -2188,18 +2188,6 @@ void STR::GenInvAnalysis::ReadInParameters()
                   p_[j + 1] = params2->nue_;
                   break;
                 }
-                case INPAR::MAT::mes_coupSVK:
-                {
-                  filename_ = filename_ + "_coupneohooke";
-                  const MAT::ELASTIC::PAR::CoupSVK* params2 =
-                      dynamic_cast<const MAT::ELASTIC::PAR::CoupSVK*>(actelastmat->Parameter());
-                  int j = p_.Length();
-                  p_.Resize(j + 2);
-                  p_[j] = params2->lambda_ / (2 * params2->mue_ + 2 * params2->lambda_);
-                  p_[j + 1] = params2->mue_ * (3 * params2->lambda_ + 2 * params2->mue_) /
-                              (params2->lambda_ + params2->mue_);
-                  break;
-                }
                 case INPAR::MAT::mes_coupblatzko:
                 {
                   filename_ = filename_ + "_coupblatzko";
@@ -2224,16 +2212,28 @@ void STR::GenInvAnalysis::ReadInParameters()
                   break;
                 }
                 case INPAR::MAT::mes_coupSVK:
-                {
-                  filename_ = filename_ + "_coupsaintvenantkirchhoff";
+                {  // Formulation with lambda and mue
+                  /*
+                filename_ = filename_ + "_coupsaintvenantkirchhoff";
+                const MAT::ELASTIC::PAR::CoupSVK* params2 =
+                    dynamic_cast<const MAT::ELASTIC::PAR::CoupSVK*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j + 2);
+                p_[j] = params2->lambda_;
+                p_[j + 1] = params2->mue_;*/
+
+                  // Formulation with youngs and nue
+                  filename_ = filename_ + "_coupSVK";
                   const MAT::ELASTIC::PAR::CoupSVK* params2 =
                       dynamic_cast<const MAT::ELASTIC::PAR::CoupSVK*>(actelastmat->Parameter());
                   int j = p_.Length();
                   p_.Resize(j + 2);
-                  p_[j] = params2->lambda_;
-                  p_[j + 1] = params2->mue_;
+                  p_[j] = params2->mue_ * (3 * params2->lambda_ + 2 * params2->mue_) /
+                          (params2->lambda_ + params2->mue_);
+                  p_[j + 1] = params2->lambda_ / (2 * params2->mue_ + 2 * params2->lambda_);
                   break;
                 }
+
                 case INPAR::MAT::mes_isoneohooke:
                 {
                   filename_ = filename_ + "_isoneohooke";
@@ -2999,16 +2999,6 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
                 j = j + 2;
                 break;
               }
-              case INPAR::MAT::mes_coupSVK:
-              {
-                MAT::ELASTIC::PAR::CoupSVK* params2 =
-                    dynamic_cast<MAT::ELASTIC::PAR::CoupSVK*>(actelastmat->Parameter());
-                params2->SetLambda(
-                    (p_cur(j) * p_cur(j + 1)) / ((1 + p_cur(j + 1)) * (1 - 2 * p_cur(j + 1))));
-                params2->SetMue((p_cur(j)) / (2 * (1 + p_cur(j + 1))));
-                j = j + 2;
-                break;
-              }
               case INPAR::MAT::mes_coupblatzko:
               {
                 MAT::ELASTIC::PAR::CoupBlatzKo* params2 =
@@ -3028,12 +3018,22 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
                 break;
               }
               case INPAR::MAT::mes_coupSVK:
-              {
+              {  // formulation with lambda and mue
+                /*
+                  MAT::ELASTIC::PAR::CoupSVK* params2 =
+                      dynamic_cast<MAT::ELASTIC::PAR::CoupSVK*>(actelastmat->Parameter());
+                  params2->SetLambda(abs(p_cur(j)));
+                  params2->SetMue(abs(p_cur(j + 1)));
+                  j = j + 2;
+                  */
+                // Formulation with youngs and nue
                 MAT::ELASTIC::PAR::CoupSVK* params2 =
                     dynamic_cast<MAT::ELASTIC::PAR::CoupSVK*>(actelastmat->Parameter());
-                params2->SetLambda(abs(p_cur(j)));
-                params2->SetMue(abs(p_cur(j + 1)));
+                params2->SetLambda(
+                    (p_cur(j) * p_cur(j + 1)) / ((1 + p_cur(j + 1)) * (1 - 2 * p_cur(j + 1))));
+                params2->SetMue((p_cur(j)) / (2 * (1 + p_cur(j + 1))));
                 j = j + 2;
+
                 break;
               }
               case INPAR::MAT::mes_isoneohooke:
