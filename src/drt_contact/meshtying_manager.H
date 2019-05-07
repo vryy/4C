@@ -66,13 +66,7 @@ namespace CONTACT
     //! @name Access methods
     //!@{
 
-    /*!
-    \brief Get discretization
-
-    */
-    const DRT::Discretization& Discret() const { return discret_; };
-
-    //!@}
+    //! @}
 
     //! @name Evaluation methods
     //!@{
@@ -85,10 +79,11 @@ namespace CONTACT
     type Teuchos::ParameterList. Invalid parameter combinations are
     sorted out and throw a dserror.
 
-    \param[in/out] mtparams ParemterList with mortar parameters from input file
+    \param mtparams Meshtying parameter list
+    \param[in] discret Underlying problem discretization
 
     */
-    bool ReadAndCheckInput(Teuchos::ParameterList& mtparams);
+    bool ReadAndCheckInput(Teuchos::ParameterList& mtparams, const DRT::Discretization& discret);
 
     /*!
     \brief Write restart information for meshtying
@@ -143,9 +138,6 @@ namespace CONTACT
     // don't want = operator and cctor
     MtManager operator=(const MtManager& old) = delete;
     MtManager(const MtManager& old) = delete;
-
-    //! Underlying problem discretization
-    DRT::Discretization& discret_;
 
   };  // class MtManager
 }  // namespace CONTACT
