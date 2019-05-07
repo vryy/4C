@@ -27,8 +27,6 @@
 
 #include "../drt_particle_engine/particle_typedefs.H"
 
-#include "../linalg/linalg_fixedsizematrix.H"
-
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Teuchos_ParameterList.hpp>
@@ -119,9 +117,16 @@ namespace PARTICLEALGORITHM
     //! get wall displacements
     virtual Teuchos::RCP<const Epetra_Vector> GetDisp() const override final { return disp_col_; };
 
+    //! get wall velocities
+    virtual Teuchos::RCP<const Epetra_Vector> GetVel() const override final { return vel_col_; };
+
     //! get reference to potential wall neighbors
     virtual const PARTICLEENGINE::PotentialWallNeighbors& GetPotentialWallNeighbors()
         const override final;
+
+    //! determine nodal positions of column wall element
+    virtual void DetermineColWallEleNodalPos(DRT::Element* ele,
+        std::map<int, LINALG::Matrix<3, 1>>& colelenodalpos) const override final;
 
    private:
     //! init wall discretization
@@ -135,10 +140,6 @@ namespace PARTICLEALGORITHM
 
     //! setup wall discretization runtime vtu writer
     virtual void SetupWallVtuWriter() final;
-
-    //! determine nodal positions of column wall element
-    virtual void DetermineColWallEleNodalPos(
-        DRT::Element* ele, std::map<int, LINALG::Matrix<3, 1>>& colelenodalpos) final;
 
     //! setup time of runtime vtu writer
     double setuptime_;
@@ -182,6 +183,9 @@ namespace PARTICLEALGORITHM
 
     //! wall displacements (row map based) after last transfer
     Teuchos::RCP<Epetra_Vector> disp_row_last_transfer_;
+
+    //! wall velocities (column map based)
+    Teuchos::RCP<Epetra_Vector> vel_col_;
 
     //! wall discretization runtime vtu writer
     std::unique_ptr<DiscretizationRuntimeVtuWriter> wallvtuwriter_;
