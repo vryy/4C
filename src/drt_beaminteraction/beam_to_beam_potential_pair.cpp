@@ -190,46 +190,46 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Eval
   //************************** DEBUG ******************************************
   if (stiffmat11 != NULL and stiffmat12 != NULL and stiffmat21 != NULL and stiffmat22 != NULL)
   {
-    //    std::cout << "\n\nDone with evaluation of";
-    //
-    //    this->Print(std::cout);
-    //
-    //    std::cout << "m_=" << m_ << ", k_=" << k_;
-    //
-    //    // hard-set values below double precision to zero to ease comparison
-    //    for (unsigned int i = 0; i < dim1; ++i)
-    //      for (unsigned int j = 0; j < dim1; ++j)
-    //      {
-    //        if (std::abs((*stiffmat11)(i, j)) < 1e-15) (*stiffmat11)(i, j) = 0.0;
-    //        if (std::abs((*stiffmat12)(i, j)) < 1e-15) (*stiffmat12)(i, j) = 0.0;
-    //        if (std::abs((*stiffmat21)(i, j)) < 1e-15) (*stiffmat21)(i, j) = 0.0;
-    //        if (std::abs((*stiffmat22)(i, j)) < 1e-15) (*stiffmat22)(i, j) = 0.0;
-    //      }
-    //
-    //
-    //    std::cout << "\nstiffmat11=";
-    //    if (stiffmat11->NormInf() > 0.0)
-    //      stiffmat11->Print(std::cout);
-    //    else
-    //      std::cout << "zeros(" << stiffmat11->M() << "," << stiffmat11->N() << ")";
-    //
-    //    std::cout << "\nstiffmat12=";
-    //    if (stiffmat12->NormInf() > 0.0)
-    //      stiffmat12->Print(std::cout);
-    //    else
-    //      std::cout << "zeros(" << stiffmat12->M() << "," << stiffmat12->N() << ")";
-    //
-    //    std::cout << "\nstiffmat21=";
-    //    if (stiffmat21->NormInf() > 0.0)
-    //      stiffmat21->Print(std::cout);
-    //    else
-    //      std::cout << "zeros(" << stiffmat21->M() << "," << stiffmat21->N() << ")";
-    //
-    //    std::cout << "\nstiffmat22=";
-    //    if (stiffmat22->NormInf() > 0.0)
-    //      stiffmat22->Print(std::cout);
-    //    else
-    //      std::cout << "zeros(" << stiffmat22->M() << "," << stiffmat22->N() << ")\n";
+    std::cout << "\n\nDone with evaluation of";
+
+    this->Print(std::cout);
+
+    std::cout << "m_=" << m_ << ", k_=" << k_;
+
+    // hard-set values below double precision to zero to ease comparison
+    for (unsigned int i = 0; i < dim1; ++i)
+      for (unsigned int j = 0; j < dim1; ++j)
+      {
+        if (std::abs((*stiffmat11)(i, j)) < 1e-15) (*stiffmat11)(i, j) = 0.0;
+        if (std::abs((*stiffmat12)(i, j)) < 1e-15) (*stiffmat12)(i, j) = 0.0;
+        if (std::abs((*stiffmat21)(i, j)) < 1e-15) (*stiffmat21)(i, j) = 0.0;
+        if (std::abs((*stiffmat22)(i, j)) < 1e-15) (*stiffmat22)(i, j) = 0.0;
+      }
+
+
+    std::cout << "\nstiffmat11=";
+    if (stiffmat11->NormInf() > 0.0)
+      stiffmat11->Print(std::cout);
+    else
+      std::cout << "zeros(" << stiffmat11->M() << "," << stiffmat11->N() << ")";
+
+    std::cout << "\nstiffmat12=";
+    if (stiffmat12->NormInf() > 0.0)
+      stiffmat12->Print(std::cout);
+    else
+      std::cout << "zeros(" << stiffmat12->M() << "," << stiffmat12->N() << ")";
+
+    std::cout << "\nstiffmat21=";
+    if (stiffmat21->NormInf() > 0.0)
+      stiffmat21->Print(std::cout);
+    else
+      std::cout << "zeros(" << stiffmat21->M() << "," << stiffmat21->N() << ")";
+
+    std::cout << "\nstiffmat22=";
+    if (stiffmat22->NormInf() > 0.0)
+      stiffmat22->Print(std::cout);
+    else
+      std::cout << "zeros(" << stiffmat22->M() << "," << stiffmat22->N() << ")\n";
 
     //    static unsigned int num_evaluations = 0;
     //    if (++num_evaluations >= 3 * 16) dserror("stop here!");
@@ -1902,9 +1902,13 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         //          cos_alpha_deriv_r_xi_master(idim) = cos_alpha_deriv_r_xi_master_double(idim);
 
 
-        // Todo: in which terms do these contributions enter the stiffness matrices ???
-        // do we handle this correctly in the FAD case (where dependencies on the master parameter
-        // coordinate are added 'manually' via the chain rule) ???
+
+        // the following reflects the dependency of N_i_master and N_i_xi_master on the primary
+        // Dofs, because both depend on xi_master
+        // if we do the cast here, immediately before using it for the discrete variation of
+        // cos_alpha, but AFTER using it for interpolation of other quantities, it only eliminates
+        // the contributions from the linearization of the (variation of cos_alpha) ??!??
+
         //        LINALG::TMatrix<double, 1, numnodes * numnodalvalues> N_i_master_double(true);
         //        N_i_master_double.Update(FADUTILS::CastToDouble(N_i_master));
         //        for (unsigned int idim = 0; idim < numnodes * numnodalvalues; ++idim)

@@ -316,6 +316,8 @@ void BEAMINTERACTION::GEO::CalcPointToCurveProjectionParameterCoordMasterPartial
     const LINALG::TMatrix<T, 3, 1>& delta_r, const LINALG::TMatrix<T, 3, 1>& r_xi_master,
     const LINALG::TMatrix<T, 3, 1>& r_xixi_master, const LINALG::TMatrix<T, 3, 1>& r_xixixi_master)
 {
+  //  Fixme: the (out) variables should be called (...)_partial_(...)_deriv_(...) !
+
   /* partial derivative of the orthogonality condition with respect to parameter coordinate on
    * master xi_master */
   T orthogon_condition_partial_xi_master = 0.0;
@@ -325,7 +327,7 @@ void BEAMINTERACTION::GEO::CalcPointToCurveProjectionParameterCoordMasterPartial
 
   T orthogon_condition_partial_xi_master_inverse = 1.0 / orthogon_condition_partial_xi_master;
 
-  // Note: 1) do derivs w.r.t. [r_master(xi_master_c)], [r_xi_master(xi_master_c)] and
+  // Note: 1) do (partial) derivs w.r.t. [r_master(xi_master_c)], [r_xi_master(xi_master_c)] and
   //          [r_xixi_master(xi_master_c)],
   // 2) add the contributions from xi_master_partial_(...) according to the chain rule,
   // 3) add the terms including delta_r_deriv_(...) since these already
@@ -385,6 +387,8 @@ void BEAMINTERACTION::GEO::CalcPointToCurveProjectionParameterCoordMasterPartial
 
 
   // 2)
+  // add contributions from linearization of master parameter coordinate xi_master
+  // to [.]_deriv_r_xi_master expressions (according to chain rule)
   LINALG::TMatrix<T, 3, 1> tmp_vec2;
   tmp_vec2.Multiply(xi_master_partial_r_slave_partial_r_xi_master, r_xixi_master);
 
@@ -420,7 +424,26 @@ void BEAMINTERACTION::GEO::CalcPointToCurveProjectionParameterCoordMasterPartial
     }
   }
 
+  tmp_vec2.Multiply(xi_master_partial_r_xi_master_partial_r_xi_master, r_xixi_master);
 
+  for (unsigned int irow = 0; irow < 3; ++irow)
+  {
+    for (unsigned int icol = 0; icol < 3; ++icol)
+    {
+      xi_master_partial_r_xi_master_partial_r_slave(irow, icol) +=
+          tmp_vec2(irow) * xi_master_partial_r_slave(icol);
+
+      xi_master_partial_r_xi_master_partial_r_master(irow, icol) +=
+          tmp_vec2(irow) * xi_master_partial_r_master(icol);
+
+      xi_master_partial_r_xi_master_partial_r_xi_master(irow, icol) +=
+          tmp_vec2(irow) * xi_master_partial_r_xi_master(icol);
+    }
+  }
+
+
+  // add contributions from linearization of master parameter coordinate xi_master
+  // to [.]_deriv_r_xixi_master expressions (according to chain rule)
   tmp_vec2.Multiply(xi_master_partial_r_slave_partial_r_xixi_master, r_xixixi_master);
 
   for (unsigned int irow = 0; irow < 3; ++irow)
@@ -437,7 +460,6 @@ void BEAMINTERACTION::GEO::CalcPointToCurveProjectionParameterCoordMasterPartial
           tmp_vec2(irow) * xi_master_partial_r_xi_master(icol);
     }
   }
-
 
   tmp_vec2.Multiply(xi_master_partial_r_master_partial_r_xixi_master, r_xixixi_master);
 
@@ -456,16 +478,33 @@ void BEAMINTERACTION::GEO::CalcPointToCurveProjectionParameterCoordMasterPartial
     }
   }
 
+  tmp_vec2.Multiply(xi_master_partial_r_xi_master_partial_r_xixi_master, r_xixixi_master);
+
+  for (unsigned int irow = 0; irow < 3; ++irow)
+  {
+    for (unsigned int icol = 0; icol < 3; ++icol)
+    {
+      xi_master_partial_r_xi_master_partial_r_slave(irow, icol) +=
+          tmp_vec2(irow) * xi_master_partial_r_slave(icol);
+
+      xi_master_partial_r_xi_master_partial_r_master(irow, icol) +=
+          tmp_vec2(irow) * xi_master_partial_r_master(icol);
+
+      xi_master_partial_r_xi_master_partial_r_xi_master(irow, icol) +=
+          tmp_vec2(irow) * xi_master_partial_r_xi_master(icol);
+    }
+  }
+
 
   // 3)
   xi_master_partial_r_xi_master_partial_r_slave.Update(
-      -1.0 * orthogon_condition_partial_xi_master_inverse, delta_r_deriv_r_slave);
+      -1.0 * orthogon_condition_partial_xi_master_inverse, delta_r_deriv_r_slave, 1.0);
 
   xi_master_partial_r_xi_master_partial_r_master.Update(
-      -1.0 * orthogon_condition_partial_xi_master_inverse, delta_r_deriv_r_master);
+      -1.0 * orthogon_condition_partial_xi_master_inverse, delta_r_deriv_r_master, 1.0);
 
   xi_master_partial_r_xi_master_partial_r_xi_master.Update(
-      -1.0 * orthogon_condition_partial_xi_master_inverse, delta_r_deriv_r_xi_master);
+      -1.0 * orthogon_condition_partial_xi_master_inverse, delta_r_deriv_r_xi_master, 1.0);
 
 
   xi_master_partial_r_slave_partial_r_slave.Multiply(
