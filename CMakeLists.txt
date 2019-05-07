@@ -1241,7 +1241,6 @@ set(OBJS_DRT_FSI
   src/drt_fsi/fsi_dirichletneumann_volcoupl.cpp
   src/drt_fsi/fsi_dyn.cpp
   src/drt_fsi/fsi_fluid_ale.cpp
-  src/drt_fsi/fsi_lagrangeprec.cpp
   src/drt_fsi/fsi_lungmonolithic.cpp
   src/drt_fsi/fsi_lungmonolithic_fluidsplit.cpp
   src/drt_fsi/fsi_lungmonolithic_structuresplit.cpp
