@@ -415,8 +415,8 @@ double STR::TIMINT::GetTimIntFactor()
     }
     default:
     {
-      dserror("Time integration factor not been set for time integration scheme '%s'",
-          INPAR::STR::DynamicTypeString(dyntype));
+      dserror("Time integration factor has not been set for time integration scheme '%s'",
+          INPAR::STR::DynamicTypeString(dyntype).c_str());
       break;
     }
   }
