@@ -1,11 +1,11 @@
-// Maintainer: Sebastian Pröll
+// Maintainer: Sebastian Proell
 ==================================================================
 General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
 - phase and temperature dependent conductivity
 - sinusoidal temperature load
-- quadratic-linear-quadratic interpolation of material parameters
+- linear interpolation of material parameters
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      20
 //NODES                         84
@@ -143,7 +143,7 @@ SOLVER                          UMFPACK                       // Amesos_KLU_sym,
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 3 YOUNG 1 1 1 YOUNGFUNCT 2 3 4 NUE 0.0 DENS 7850.0 THEXPANS 0 CAPA 3297000.0 CONDUCT 52.0 INITTEMP 300.0 CONSOLMAT 3
 MAT 2 THERM_FourierVar CAPAFUNCT 5 5 5 CONDUCTFUNCT 2 3 4 CONSOLMAT 3
-MAT 3 MAT_Consolidation SOLIDUS 60 LIQUIDUS 80 DELTA 0
+MAT 3 MAT_Consolidation SOLIDUS 60 LIQUIDUS 80
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1

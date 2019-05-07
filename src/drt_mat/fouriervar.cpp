@@ -27,7 +27,7 @@
  *----------------------------------------------------------------------*/
 MAT::PAR::FourierVar::FourierVar(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      // be careful: capa_ := rho * C_V, e.g contains the density
+      // be careful: capa_ := rho * C_V
       capafunct_(*(matdata->Get<std::vector<int>>("CAPAFUNCT"))),
       conductfunct_(*(matdata->Get<std::vector<int>>("CONDUCTFUNCT"))),
       consolmat_(matdata->GetInt("CONSOLMAT"))
@@ -158,10 +158,6 @@ void MAT::FourierVar::Setup(const int numgp) { consol_->Setup(numgp); }
  *----------------------------------------------------------------------*/
 double MAT::FourierVar::Conductivity(const double temperature, const int gp)
 {
-  //  params.set("scalartemp",temperature);
-  //  params.set("gp",gp);
-  //  params.set("functions",&(params_->conductfunct_));
-  //  return consol_->EvaluateFunction(params);
   return consol_->EvaluateFunction(temperature, gp, params_->conductfunct_);
 }
 
@@ -171,10 +167,6 @@ double MAT::FourierVar::Conductivity(const double temperature, const int gp)
  *----------------------------------------------------------------------*/
 double MAT::FourierVar::Conductivity_T(const double temperature, const int gp)
 {
-  //  params.set("scalartemp",temperature);
-  //  params.set("gp",gp);
-  //  params.set("functions",&(params_->conductfunct_));
-  //  return consol_->EvaluateDerivative(params);
   return consol_->EvaluateDerivative(temperature, gp, params_->conductfunct_);
 }
 
@@ -184,10 +176,6 @@ double MAT::FourierVar::Conductivity_T(const double temperature, const int gp)
  *----------------------------------------------------------------------*/
 double MAT::FourierVar::Capacity(const double temperature, const int gp)
 {
-  //  params.set("scalartemp",temperature);
-  //  params.set("gp",gp);
-  //  params.set("functions",&(params_->capafunct_));
-  //  return consol_->EvaluateFunction(params) + consol_->ApparentCapacityPeak(temperature);
   return consol_->EvaluateFunction(temperature, gp, params_->capafunct_) +
          consol_->ApparentCapacityPeak(temperature);
 }
@@ -198,10 +186,6 @@ double MAT::FourierVar::Capacity(const double temperature, const int gp)
  *----------------------------------------------------------------------*/
 double MAT::FourierVar::Capacity_T(const double temperature, const int gp)
 {
-  //  params.set("scalartemp",temperature);
-  //  params.set("gp",gp);
-  //  params.set("functions",&(params_->capafunct_));
-  //  return consol_->EvaluateDerivative(params) + consol_->ApparentCapacityDerivative(temperature);
   return consol_->EvaluateDerivative(temperature, gp, params_->capafunct_) +
          consol_->ApparentCapacityDerivative(temperature);
 }

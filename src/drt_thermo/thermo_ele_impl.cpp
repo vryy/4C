@@ -217,11 +217,6 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
 
   const THR::Action action = DRT::INPUT::get<THR::Action>(params, "action");
 
-  if (action == THR::calc_thermo_totallatentheat)
-  {
-    CalculateTotalLatentHeat(ele, params);
-    return 0;
-  }
 
   // check length
   if (la[0].Size() != nen_ * numdofpernode_) dserror("Location vector length does not match!");
@@ -236,6 +231,12 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     // build the element temperature
     LINALG::Matrix<nen_ * numdofpernode_, 1> etempn(&(mytempnp[0]), true);  // view only!
     etempn_.Update(etempn);                                                 // copy
+  }
+
+  if (action == THR::calc_thermo_totallatentheat)
+  {
+    CalculateTotalLatentHeat(ele, params);
+    return 0;
   }
 
   if (discretization.HasState(0, "last temperature"))
@@ -3160,7 +3161,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateTotalLatentHeat(
   if (ele->Material()->MaterialType() == INPAR::MAT::m_th_fourier_var)
   {
     Teuchos::RCP<MAT::FourierVar> mat = Teuchos::rcp_dynamic_cast<MAT::FourierVar>(ele->Material());
-    mat->Consolidation()->SetTotalLatentHeatAvailable(nodalfactor);
+    mat->Consolidation()->SetTotalLatentHeatAvailable(nodalfactor, etempn_);
   }
   else
     dserror("Latent heat as source term only with MAT::FourierVar");
@@ -3191,12 +3192,31 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculatePhaseChangeIncrement(
   else
     dserror("Latent heat as source term only with MAT::FourierVar");
 
-  const double Tm = mat->Consolidation()->MeltingTemperature();
-  const double rhoC = mat->HeatIntegrationCapacity();
-
+  LINALG::Matrix<nen_, 1> Tlast;
+  mat->Consolidation()->LastMushyTemperature(Tlast);
+  const MAT::PAR::Consolidation* par =
+      static_cast<const MAT::PAR::Consolidation*>(mat->Consolidation()->Parameter());
+  const double Ts = par->solidustemp_;
+  const double Tl = par->liquidustemp_;
+  const double rhoC = 1 / ((Tl - Ts) / par->latentheat_ + 1 / mat->HeatIntegrationCapacity());
+  // normalization factor for melt tolerance
+  const double tolFactor = par->latentheat_ / rhoC;
   for (int idof = 0; idof < nen_ * numdofpernode_; idof++)
   {
-    if (abs(Tm - etempn_(idof)) > melttol) (*esourceinc)(idof) = rhoC * (Tm - etempn_(idof));
+    // TODO different behaviors are intransparent to user
+    // calculate increment
+    (*esourceinc)(idof) = rhoC * (Tlast(idof) - etempn_(idof));
+    // within tolerance: no increment added
+    if (melttol > 0 && abs(etempn_(idof) - Tlast(idof)) < melttol * tolFactor)
+    {
+      (*esourceinc)(idof) = 0;
+    }
+    // no tolerance given: use RB condition
+    else if (melttol == 0)
+    {
+      if ((etemp_(idof) < Ts and etempn_(idof) < Ts) or (etemp_(idof) > Tl and etempn_(idof) > Tl))
+        (*esourceinc)(idof) = 0;
+    }
   }
 
   // call material to limit source term based on history
@@ -3204,6 +3224,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculatePhaseChangeIncrement(
   esourceinc->Scale(1.0 / stepsize);
 
   // remove assembly on nodal temperature by dividing out number of elements
+  // source term is ready for assembly due to lumped factor being only from current element
   DRT::Node** nodes = ele->Nodes();
   for (int inode = 0; inode < nen_; inode++)
   {
