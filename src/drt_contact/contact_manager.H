@@ -4,7 +4,7 @@
 
 \brief BACI implementation of main class to control all contact
 
-\level 2
+\level 1
 
 \maintainer Matthias Mayr
 
@@ -61,19 +61,21 @@ namespace CONTACT
     \brief Destructor
 
     */
-    virtual ~CoManager(){};
+    virtual ~CoManager() = default;
 
     //! @name Access methods
+    //! @{
 
     /*!
     \brief Get discretization
 
     */
-    DRT::Discretization& Discret() const { return discret_; };
+    const DRT::Discretization& Discret() const { return discret_; };
 
-    //@}
+    //! @}
 
     //! @name Evaluation methods
+    //! @{
 
     /*!
     \brief Write restart information for contact
@@ -85,7 +87,7 @@ namespace CONTACT
     \param output (in): IO::Discretization writer for restart
 
     */
-    void WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart = false);
+    void WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart = false) final;
 
     /*!
     \brief Read restart information for contact
@@ -102,7 +104,7 @@ namespace CONTACT
 
     */
     void ReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<Epetra_Vector> zero);
+        Teuchos::RCP<Epetra_Vector> zero) final;
 
     /*!
     \brief Write interface quantities for postprocessing
@@ -110,7 +112,7 @@ namespace CONTACT
     \param output (in): IO::Discretization writer for restart
 
     */
-    void PostprocessQuantities(IO::DiscretizationWriter& output);
+    void PostprocessQuantities(IO::DiscretizationWriter& output) final;
 
     /*!
     \brief Reconnect Contact Element -- Parent Element Pointers
@@ -141,7 +143,7 @@ namespace CONTACT
     void FindPoroInterfaceTypes(bool& poromaster, bool& poroslave, bool& structmaster,
         bool& structslave, int& slavetype, int& mastertype);
 
-    //@}
+    //! @}
 
    private:
     /*!
@@ -157,10 +159,11 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoManager operator=(const CoManager& old);
-    CoManager(const CoManager& old);
+    CoManager operator=(const CoManager& old) = delete;
+    CoManager(const CoManager& old) = delete;
 
-    DRT::Discretization& discret_;  // the underlying problem discretization
+    //! the underlying problem discretization
+    DRT::Discretization& discret_;
 
   };  // class CoManager
 }  // namespace CONTACT

@@ -194,11 +194,17 @@ namespace STR
       //! [derived]
       bool EvaluateForceStiff() override;
 
-      /*! Apply mesh relocation for conservation of angular momentum
-       *
-       * @param Xslavemod
-       */
-      void ApplyMeshInitialization(Teuchos::RCP<Epetra_Vector> Xslavemod);
+      /*!
+      \brief Apply results of mesh initialization to the underlying problem discretization
+
+      \note This is only necessary in case of a mortar method.
+
+      \warning This routine modifies the reference coordinates of slave nodes at the meshtying
+      interface.
+
+      @param[in] Xslavemod Vector with modified nodal positions
+      */
+      void ApplyMeshInitialization(Teuchos::RCP<const Epetra_Vector> Xslavemod);
 
       //!@}
 

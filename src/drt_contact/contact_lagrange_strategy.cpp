@@ -12,6 +12,9 @@
 /*---------------------------------------------------------------------*/
 
 #include "Epetra_SerialComm.h"
+
+#include <Teuchos_TimeMonitor.hpp>
+
 #include "contact_lagrange_strategy.H"
 #include "contact_interface.H"
 #include "contact_integrator.H"
@@ -36,9 +39,9 @@
 CONTACT::CoLagrangeStrategy::CoLagrangeStrategy(
     const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr, const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
-    Teuchos::RCP<const Epetra_Comm> comm, double alphaf, int maxdof)
-    : CoAbstractStrategy(data_ptr, DofRowMap, NodeRowMap, params, dim, comm, alphaf, maxdof),
+    std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, const int spatialDim,
+    Teuchos::RCP<const Epetra_Comm> comm, const double alphaf, const int maxdof)
+    : CoAbstractStrategy(data_ptr, DofRowMap, NodeRowMap, params, spatialDim, comm, alphaf, maxdof),
       interface_(interface),
       evalForceCalled_(false),
       activesetssconv_(false),
@@ -4371,6 +4374,8 @@ void CONTACT::CoLagrangeStrategy::ResetLagrangeMultipliers(
  *----------------------------------------------------------------------*/
 void CONTACT::CoLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("CONTACT::CoLagrangeStrategy::Recover");
+
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;

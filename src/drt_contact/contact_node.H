@@ -309,8 +309,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoNodeDataContainer operator=(const CoNodeDataContainer& old);
-    CoNodeDataContainer(const CoNodeDataContainer& old);
+    CoNodeDataContainer operator=(const CoNodeDataContainer& old) = delete;
+    CoNodeDataContainer(const CoNodeDataContainer& old) = delete;
 
     double txi_[3];      //< nodal tangent t_xi for contact methods at newton step n
     double teta_[3];     //< nodal tangent t_eta for contact methods at newton step n
@@ -761,8 +761,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoNodePoroDataContainer operator=(const CoNodePoroDataContainer& old);
-    CoNodePoroDataContainer(const CoNodePoroDataContainer& old);
+    CoNodePoroDataContainer operator=(const CoNodePoroDataContainer& old) = delete;
+    CoNodePoroDataContainer(const CoNodePoroDataContainer& old) = delete;
 
 
     double ncouprow_;  // nodal entry of n-coupling vector
@@ -866,8 +866,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoNodeTSIDataContainer operator=(const CoNodeTSIDataContainer& old);
-    CoNodeTSIDataContainer(const CoNodeTSIDataContainer& old);
+    CoNodeTSIDataContainer operator=(const CoNodeTSIDataContainer& old) = delete;
+    CoNodeTSIDataContainer(const CoNodeTSIDataContainer& old) = delete;
 
     double temp_;
     double t_ref_;
@@ -938,8 +938,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoNodeEhlDataContainer operator=(const CoNodeEhlDataContainer& old);
-    CoNodeEhlDataContainer(const CoNodeEhlDataContainer& old);
+    CoNodeEhlDataContainer operator=(const CoNodeEhlDataContainer& old) = delete;
+    CoNodeEhlDataContainer(const CoNodeEhlDataContainer& old) = delete;
 
     // actual data
     LINALG::Matrix<3, 1> weighted_relTangVel_;

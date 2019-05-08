@@ -1320,7 +1320,7 @@ void CONTACT::CoInterface::SplitIntoFarAndCloseSets(std::vector<int>& closeele,
 /*----------------------------------------------------------------------*
  | collect distribution data (public)                         popp 10/10|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::CollectDistributionData(int& loadele, int& crowele)
+void CONTACT::CoInterface::CollectDistributionData(int& numColElements, int& numRowElements)
 {
   // loop over proc's column slave elements of the interface
   for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
@@ -1328,18 +1328,18 @@ void CONTACT::CoInterface::CollectDistributionData(int& loadele, int& crowele)
     int gid1 = selecolmap_->GID(i);
     DRT::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) dserror("ERROR: Cannot find slave element with gid %", gid1);
-    CoElement* selement = dynamic_cast<CoElement*>(ele1);
+    CoElement* slaveElement = dynamic_cast<CoElement*>(ele1);
 
     // bool indicating coupling partners
-    bool add = (selement->MoData().NumSearchElements() > 0);
+    bool add = (slaveElement->MoData().NumSearchElements() > 0);
 
-    // check if this element has any coupling partners and add
-    // element ID to input variable loadele if so
-    if (add) loadele += 1;
+    // Check if this element has any coupling partners.
+    // Increment element counter if so.
+    if (add) ++numColElements;
 
-    // check if - in addition - the active proc owns this element
-    // and add element ID to input variable rowele if so
-    if (add && selement->Owner() == Comm().MyPID()) crowele += 1;
+    // check if - in addition - the active proc owns this element.
+    // Increment input variable rowele if so.
+    if (add && slaveElement->Owner() == Comm().MyPID()) ++numRowElements;
   }
 
   return;

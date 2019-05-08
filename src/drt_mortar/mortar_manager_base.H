@@ -76,7 +76,7 @@ namespace MORTAR
     \brief Destructor
 
     */
-    virtual ~ManagerBase(){};
+    virtual ~ManagerBase() = default;
 
     //! @name Access methods
 
@@ -98,25 +98,29 @@ namespace MORTAR
     //@}
 
     //! @name Purely virtual functions
+    //! @{
 
-    // All these functions are defined in one or more specific derived classes,
-    // such as CONTACT::CManager or CONTACT::MtManager. As the base class
-    // MORTAR::ManagerBase is always called from the control routine (time
-    // integrator), these functions need to be defined purely virtual here.
-
+    //! Write interface quantities for postprocessing
     virtual void PostprocessQuantities(IO::DiscretizationWriter& output) = 0;
+
+    //! Read restart data from disk
     virtual void ReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<Epetra_Vector> zero) = 0;
+
+    //! Write restart data to disk
     virtual void WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart = false) = 0;
 
-    //@}
+    //! @}
 
    protected:
     // don't want cctor (= operator impossible anyway for abstract class)
-    ManagerBase(const ManagerBase& old);
+    ManagerBase(const ManagerBase& old) = delete;
 
-    Teuchos::RCP<Epetra_Comm> comm_;               // communicator
-    Teuchos::RCP<MORTAR::StrategyBase> strategy_;  // strategy object
+    //! Communicator
+    Teuchos::RCP<Epetra_Comm> comm_;
+
+    //! Strategy object
+    Teuchos::RCP<MORTAR::StrategyBase> strategy_;
 
   };  // class ManagerBase
 }  // namespace MORTAR

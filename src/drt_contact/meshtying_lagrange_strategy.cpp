@@ -5,13 +5,12 @@
 
 \level 1
 
-<pre>
 \maintainer Matthias Mayr
-</pre>
 
 *-----------------------------------------------------------------------*/
 
 #include <Teuchos_Time.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 #include "Epetra_SerialComm.h"
 #include "meshtying_lagrange_strategy.H"
 #include "meshtying_defines.H"
@@ -30,9 +29,9 @@
  *----------------------------------------------------------------------*/
 CONTACT::MtLagrangeStrategy::MtLagrangeStrategy(const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface, int dim,
-    const Teuchos::RCP<const Epetra_Comm>& comm, double alphaf, int maxdof)
-    : MtAbstractStrategy(DofRowMap, NodeRowMap, params, interface, dim, comm, alphaf, maxdof)
+    std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface, const int spatialDim,
+    const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
+    : MtAbstractStrategy(DofRowMap, NodeRowMap, params, interface, spatialDim, comm, alphaf, maxdof)
 {
   // empty constructor body
   return;
@@ -43,6 +42,8 @@ CONTACT::MtLagrangeStrategy::MtLagrangeStrategy(const Epetra_Map* DofRowMap,
  *----------------------------------------------------------------------*/
 void CONTACT::MtLagrangeStrategy::MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("CONTACT::MtLagrangeStrategy::MortarCoupling");
+
   // print message
   if (Comm().MyPID() == 0)
   {
@@ -57,9 +58,9 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const Teuchos::RCP<const Epetra
   // refer call to parent class
   MtAbstractStrategy::MortarCoupling(dis);
 
-  /**********************************************************************/
-  /* Multiply Mortar matrices: m^ = inv(d) * m                          */
-  /**********************************************************************/
+  //----------------------------------------------------------------------
+  // Multiply Mortar matrices: m^ = inv(d) * m
+  //----------------------------------------------------------------------
   invd_ = Teuchos::rcp(new LINALG::SparseMatrix(*dmatrix_));
   Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(*gsdofrowmap_, true);
   int err = 0;
@@ -102,34 +103,6 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const Teuchos::RCP<const Epetra
     if (lagmultquad == INPAR::MORTAR::lagmult_lin)
     {
       // do nothing
-
-      /*
-       // FOR DEBUGGING ONLY
-       Teuchos::RCP<LINALG::SparseMatrix> it_ss,it_sm,it_ms,it_mm;
-       LINALG::SplitMatrix2x2(invtrafo_,gsdofrowmap_,gmdofrowmap_,gsdofrowmap_,gmdofrowmap_,it_ss,it_sm,it_ms,it_mm);
-       Teuchos::RCP<Epetra_Vector> checkg = LINALG::CreateVector(*gsdofrowmap_, true);
-       Teuchos::RCP<Epetra_Vector> xs = LINALG::CreateVector(*gsdofrowmap_,true);
-       Teuchos::RCP<Epetra_Vector> xm = LINALG::CreateVector(*gmdofrowmap_,true);
-       AssembleCoords("slave",true,xs);
-       AssembleCoords("master",true,xm);
-       Teuchos::RCP<LINALG::SparseMatrix> lhs = Teuchos::rcp(new
-       LINALG::SparseMatrix(*gsdofrowmap_,100,false,true)); Teuchos::RCP<LINALG::SparseMatrix>
-       direct = LINALG::MLMultiply(*dmatrix_,false,*it_ss,false,false,false,true);
-       Teuchos::RCP<LINALG::SparseMatrix> mixed =
-       LINALG::MLMultiply(*mmatrix_,false,*it_ms,false,false,false,true);
-       lhs->Add(*direct,false,1.0,1.0);
-       lhs->Add(*mixed,false,-1.0,1.0);
-       lhs->Complete();
-       Teuchos::RCP<Epetra_Vector> slave = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-       lhs->Multiply(false,*xs,*slave);
-       Teuchos::RCP<Epetra_Vector> master = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-       mmatrix_->Multiply(false,*xm,*master);
-       checkg->Update(1.0,*slave,1.0);
-       checkg->Update(-1.0,*master,1.0);
-       double infnorm = 0.0;
-       checkg->NormInf(&infnorm);
-       if (Comm().MyPID()==0) std::cout << "\nINFNORM OF G: " << infnorm << std::endl;
-       */
     }
     else
     {
@@ -145,37 +118,15 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const Teuchos::RCP<const Epetra
       mhatmatrix_ = temp3;
     }
   }
-  else
-  {
-    // do nothing
 
-    /*
-     //FOR DEBUGGING ONLY
-     Teuchos::RCP<Epetra_Vector> checkg = LINALG::CreateVector(*gsdofrowmap_, true);
-     Teuchos::RCP<Epetra_Vector> xs = LINALG::CreateVector(*gsdofrowmap_,true);
-     Teuchos::RCP<Epetra_Vector> xm = LINALG::CreateVector(*gmdofrowmap_,true);
-     AssembleCoords("slave",true,xs);
-     AssembleCoords("master",true,xm);
-     Teuchos::RCP<Epetra_Vector> slave = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-     dmatrix_->Multiply(false,*xs,*slave);
-     Teuchos::RCP<Epetra_Vector> master = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-     mmatrix_->Multiply(false,*xm,*master);
-     checkg->Update(1.0,*slave,1.0);
-     checkg->Update(-1.0,*master,1.0);
-     double infnorm = 0.0;
-     checkg->NormInf(&infnorm);
-     if (Comm().MyPID()==0) std::cout << "\nINFNORM OF G: " << infnorm << std::endl;
-     */
-  }
-
-  /**********************************************************************/
-  /* Build constraint matrix (containing D and M)                       */
-  /**********************************************************************/
+  //----------------------------------------------------------------------
+  // Build constraint matrix (containing D and M)
+  //----------------------------------------------------------------------
   // case 1: saddle point system
   //    -> constraint matrix with rowmap=Problemmap, colmap=LMmap
   // case 2: condensed system
   //    -> no explicit constraint matrix needed
-  /**********************************************************************/
+  //----------------------------------------------------------------------
   bool setup = true;
   INPAR::CONTACT::SystemType systype =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(), "SYSTEM");
@@ -224,9 +175,11 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const Teuchos::RCP<const Epetra
 /*----------------------------------------------------------------------*
  |  mesh initialization for rotational invariance             popp 12/09|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> CONTACT::MtLagrangeStrategy::MeshInitialization()
+Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::MeshInitialization()
 {
-  // get out of here is NTS algorithm is activated
+  TEUCHOS_FUNC_TIME_MONITOR("CONTACT::MtLagrangeStrategy::MeshInitialization");
+
+  // get out of here if NTS algorithm is activated
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(Params(), "ALGORITHM") ==
       INPAR::MORTAR::algorithm_nts)
     return Teuchos::null;
@@ -757,6 +710,8 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(Teuchos::RCP<LINALG::SparseO
   return;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void CONTACT::MtLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
     Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
     Teuchos::RCP<LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
@@ -858,6 +813,8 @@ void CONTACT::MtLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::Sp
   return;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void CONTACT::MtLagrangeStrategy::UpdateDisplacementsAndLMincrements(
     Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol)
 {
@@ -883,6 +840,8 @@ void CONTACT::MtLagrangeStrategy::UpdateDisplacementsAndLMincrements(
  *----------------------------------------------------------------------*/
 void CONTACT::MtLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("CONTACT::MtLagrangeStrategy::Recover");
+
   // system type, shape function type and type of LM interpolation for quadratic elements
   INPAR::CONTACT::SystemType systype =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(), "SYSTEM");
@@ -1000,6 +959,8 @@ void CONTACT::MtLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
   return;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 bool CONTACT::MtLagrangeStrategy::EvaluateForce(const Teuchos::RCP<const Epetra_Vector> dis)
 {
   if (f_.is_null()) f_ = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
@@ -1020,9 +981,12 @@ bool CONTACT::MtLagrangeStrategy::EvaluateForce(const Teuchos::RCP<const Epetra_
     LINALG::Export(*fm, *fmexp);
     f_->Update(-1.0, *fmexp, 1.0);
   }
+
   return true;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 bool CONTACT::MtLagrangeStrategy::EvaluateStiff(const Teuchos::RCP<const Epetra_Vector> dis)
 {
   if (!dm_matrix_.is_null() && !dm_matrix_t_.is_null() && !lm_diag_matrix_.is_null()) return true;
@@ -1070,13 +1034,18 @@ bool CONTACT::MtLagrangeStrategy::EvaluateStiff(const Teuchos::RCP<const Epetra_
   return true;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 bool CONTACT::MtLagrangeStrategy::EvaluateForceStiff(const Teuchos::RCP<const Epetra_Vector> dis)
 {
-  EvaluateForce(dis);
-  EvaluateStiff(dis);
-  return true;
+  bool successForce = EvaluateForce(dis);
+  bool successStiff = EvaluateStiff(dis);
+
+  return (successForce && successStiff);
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::GetRhsBlockPtr(
     const enum DRT::UTILS::VecBlockType& bt) const
 {
@@ -1102,7 +1071,8 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::GetRhsBlockPtr(
   return vec_ptr;
 }
 
-
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix> CONTACT::MtLagrangeStrategy::GetMatrixBlockPtr(
     const enum DRT::UTILS::MatBlockType& bt) const
 {
@@ -1131,17 +1101,21 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::MtLagrangeStrategy::GetMatrixBlockPt
   return mat_ptr;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void CONTACT::MtLagrangeStrategy::RunPreApplyJacobianInverse(
     Teuchos::RCP<LINALG::SparseMatrix> kteff, Epetra_Vector& rhs)
 {
   INPAR::CONTACT::SystemType systype =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(), "SYSTEM");
-  INPAR::MORTAR::LagMultQuad lagmultquad =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
+
   if (systype == INPAR::CONTACT::system_condensed)
   {
     Teuchos::RCP<LINALG::SparseMatrix> k = Teuchos::rcp(new LINALG::SparseMatrix(*kteff));
     Teuchos::RCP<Epetra_Vector> r = Teuchos::rcpFromRef<Epetra_Vector>(rhs);
+
+    INPAR::MORTAR::LagMultQuad lagmultquad =
+        DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
 
     if (Dualquadslavetrafo() && lagmultquad == INPAR::MORTAR::lagmult_lin)
     {
@@ -1156,8 +1130,12 @@ void CONTACT::MtLagrangeStrategy::RunPreApplyJacobianInverse(
 
     MORTAR::UTILS::MortarRhsCondensation(r, mhatmatrix_);
   }
+
+  return;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void CONTACT::MtLagrangeStrategy::RunPostApplyJacobianInverse(Epetra_Vector& result)
 {
   INPAR::CONTACT::SystemType systype =
@@ -1191,6 +1169,8 @@ void CONTACT::MtLagrangeStrategy::RunPostComputeX(
   return;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void CONTACT::MtLagrangeStrategy::RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) const
 {
   INPAR::CONTACT::SystemType systype =

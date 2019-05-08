@@ -607,7 +607,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
 
     // (2) perform mesh initialization for rotational invariance (interface)
     // and return the modified slave node positions in vector Xslavemod
-    Teuchos::RCP<Epetra_Vector> Xslavemod =
+    Teuchos::RCP<const Epetra_Vector> Xslavemod =
         cmtbridge_->MtManager()->GetStrategy().MeshInitialization();
 
     // (3) apply result of mesh initialization to underlying problem discretization
@@ -1009,8 +1009,8 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
 
 
 /*----------------------------------------------------------------------*/
-/* Apply results of mesh initialization (mortar meshtying) to problem discretization */
-void STR::TimInt::ApplyMeshInitialization(Teuchos::RCP<Epetra_Vector> Xslavemod)
+/*----------------------------------------------------------------------*/
+void STR::TimInt::ApplyMeshInitialization(Teuchos::RCP<const Epetra_Vector> Xslavemod)
 {
   // check modified positions vector
   if (Xslavemod == Teuchos::null) return;

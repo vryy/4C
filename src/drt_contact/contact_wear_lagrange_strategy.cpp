@@ -4518,7 +4518,7 @@ bool WEAR::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<const Epetra_V
   if (WhichParRedist() == INPAR::MORTAR::parredist_static)
   {
     // this is the first time step (t=0) or restart
-    if ((int)tunbalance_.size() == 0 && (int)eunbalance_.size() == 0)
+    if ((int)unbalanceEvaluationTime_.size() == 0 && (int)unbalanceNumSlaveElements_.size() == 0)
     {
       // do redistribution
       doredist = true;
@@ -4528,14 +4528,16 @@ bool WEAR::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<const Epetra_V
     else
     {
       // compute average balance factors of last time step
-      for (int k = 0; k < (int)tunbalance_.size(); ++k) taverage += tunbalance_[k];
-      taverage /= (int)tunbalance_.size();
-      for (int k = 0; k < (int)eunbalance_.size(); ++k) eaverage += eunbalance_[k];
-      eaverage /= (int)eunbalance_.size();
+      for (int k = 0; k < (int)unbalanceEvaluationTime_.size(); ++k)
+        taverage += unbalanceEvaluationTime_[k];
+      taverage /= (int)unbalanceEvaluationTime_.size();
+      for (int k = 0; k < (int)unbalanceNumSlaveElements_.size(); ++k)
+        eaverage += unbalanceNumSlaveElements_[k];
+      eaverage /= (int)unbalanceNumSlaveElements_.size();
 
       // delete balance factors of last time step
-      tunbalance_.resize(0);
-      eunbalance_.resize(0);
+      unbalanceEvaluationTime_.resize(0);
+      unbalanceNumSlaveElements_.resize(0);
 
       // no redistribution
       doredist = false;
@@ -4548,7 +4550,7 @@ bool WEAR::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<const Epetra_V
   else if (WhichParRedist() == INPAR::MORTAR::parredist_dynamic)
   {
     // this is the first time step (t=0) or restart
-    if ((int)tunbalance_.size() == 0 && (int)eunbalance_.size() == 0)
+    if ((int)unbalanceEvaluationTime_.size() == 0 && (int)unbalanceNumSlaveElements_.size() == 0)
     {
       // do redistribution
       doredist = true;
@@ -4558,14 +4560,16 @@ bool WEAR::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<const Epetra_V
     else
     {
       // compute average balance factors of last time step
-      for (int k = 0; k < (int)tunbalance_.size(); ++k) taverage += tunbalance_[k];
-      taverage /= (int)tunbalance_.size();
-      for (int k = 0; k < (int)eunbalance_.size(); ++k) eaverage += eunbalance_[k];
-      eaverage /= (int)eunbalance_.size();
+      for (int k = 0; k < (int)unbalanceEvaluationTime_.size(); ++k)
+        taverage += unbalanceEvaluationTime_[k];
+      taverage /= (int)unbalanceEvaluationTime_.size();
+      for (int k = 0; k < (int)unbalanceNumSlaveElements_.size(); ++k)
+        eaverage += unbalanceNumSlaveElements_[k];
+      eaverage /= (int)unbalanceNumSlaveElements_.size();
 
       // delete balance factors of last time step
-      tunbalance_.resize(0);
-      eunbalance_.resize(0);
+      unbalanceEvaluationTime_.resize(0);
+      unbalanceNumSlaveElements_.resize(0);
 
       // decide on redistribution
       // -> (we allow a maximum value of the balance measure in the
@@ -4832,8 +4836,8 @@ void WEAR::WearLagrangeStrategy::DoReadRestart(
 
   // reset unbalance factors for redistribution
   // (during restart the interface has been evaluated once)
-  tunbalance_.resize(0);
-  eunbalance_.resize(0);
+  unbalanceEvaluationTime_.resize(0);
+  unbalanceNumSlaveElements_.resize(0);
 
   return;
 }

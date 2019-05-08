@@ -45,7 +45,8 @@ MORTAR::StratDataContainer::StratDataContainer()
  *----------------------------------------------------------------------*/
 MORTAR::StrategyBase::StrategyBase(const Teuchos::RCP<MORTAR::StratDataContainer>& data_ptr,
     const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, const Teuchos::ParameterList& params,
-    int dim, const Teuchos::RCP<const Epetra_Comm>& comm, double alphaf, int maxdof)
+    const int spatialDim, const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf,
+    const int maxdof)
     : probdofs_(data_ptr->ProbDofsPtr()),
       probnodes_(data_ptr->ProbNodesPtr()),
       comm_(data_ptr->CommPtr()),
@@ -62,7 +63,7 @@ MORTAR::StrategyBase::StrategyBase(const Teuchos::RCP<MORTAR::StratDataContainer
   Data().ProbNodesPtr() = Teuchos::rcp(new Epetra_Map(*(NodeRowMap)));
   Data().CommPtr() = comm;
   Data().SContact() = params;
-  Data().Dim() = dim;
+  Data().Dim() = spatialDim;
   Data().AlphaF() = alphaf;
   Data().MaxDof() = maxdof;
   Data().SysType() = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(scontact_, "SYSTEM");

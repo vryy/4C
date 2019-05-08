@@ -78,13 +78,15 @@ THR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
   fmelt_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
   if (heatint_)
   {
-    // evaluate the element-wise available latent heat, non-assembled quantity
+    // trigger evaluation and storage of element-wise available latent heat on element level
     discret_->ClearState();
     Teuchos::ParameterList params;
     params.set<double>("total time", 0);
     params.set<int>("action", calc_thermo_totallatentheat);
     params.set<double>("delta time", (*dt_)[0]);
-    discret_->Evaluate(params);
+    discret_->SetState(0, "temperature", tempn_);
+    // this call is required for correct evaluation of location array
+    discret_->Evaluate(params, Teuchos::null, Teuchos::null);
   }
 
 

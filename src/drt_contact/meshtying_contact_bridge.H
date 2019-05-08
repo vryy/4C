@@ -174,7 +174,7 @@ namespace CONTACT
 
    protected:
     // don't want cctor (= operator impossible anyway for abstract class)
-    MeshtyingContactBridge(const MeshtyingContactBridge& old);
+    MeshtyingContactBridge(const MeshtyingContactBridge& old) = delete;
 
     // internal variables:
 

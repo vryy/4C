@@ -80,10 +80,6 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::Evaluate(Teuchos::ParameterList
   // set the pointer to the parameter list in element
   so3_ele::SetParamsInterfacePtr(params);
 
-  static const bool young_temp =
-      DRT::INPUT::IntegralValue<int>(
-          Problem::Instance()->StructuralDynamicParams(), "YOUNG_IS_TEMP_DEPENDENT") == 1;
-  params.set<int>("young_temp", young_temp);
 
   // what actions are available
   // (action == "calc_struct_stifftemp")
@@ -101,6 +97,14 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::Evaluate(Teuchos::ParameterList
     act = So3_Thermo::calc_struct_stifftemp;
   else if (action == "calc_struct_stress")
     act = So3_Thermo::calc_struct_stress;
+
+  if (not(action == "postprocess_stress"))
+  {
+    static const bool young_temp =
+        DRT::INPUT::IntegralValue<int>(
+            Problem::Instance()->StructuralDynamicParams(), "YOUNG_IS_TEMP_DEPENDENT") == 1;
+    params.set<int>("young_temp", young_temp);
+  }
 
   // what should the element do
   switch (act)

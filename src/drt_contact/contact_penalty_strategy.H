@@ -36,22 +36,46 @@ namespace CONTACT
   class CoPenaltyStrategy : public CoAbstractStrategy
   {
    public:
-    //! Standard constructor
+    /*!
+    \brief Standard constructor
+
+    \param[in] DofRowMap Dof row map of underlying problem
+    \param[in] NodeRowMap Node row map of underlying problem
+    \param[in] params List of contact/parameters
+    \param[in] interface All contact interface objects
+    \param[in] spatialDim Spatial dimension of the problem
+    \param[in] comm Communicator
+    \param[in] alphaf Mid-point for Generalized-alpha time integration
+    \param[in] maxdof Highest DOF number in global problem
+    */
     CoPenaltyStrategy(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
         Teuchos::ParameterList params, std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface,
-        int dim, const Teuchos::RCP<const Epetra_Comm>& comm, double alphaf, int maxdof);
+        const int spatialDim, const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf,
+        const int maxdof);
 
-    //! Shared data constructor
+    /*!
+    \brief Shared data constructor
+
+    \param[in] stratData Data container object
+    \param[in] DofRowMap Dof row map of underlying problem
+    \param[in] NodeRowMap Node row map of underlying problem
+    \param[in] params List of contact/parameters
+    \param[in] interface All contact interface objects
+    \param[in] spatialDim Spatial dimension of the problem
+    \param[in] comm Communicator
+    \param[in] alphaf Mid-point for Generalized-alpha time integration
+    \param[in] maxdof Highest DOF number in global problem
+    */
     CoPenaltyStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-        std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
-        const Teuchos::RCP<const Epetra_Comm>& comm, double alphaf, int maxdof);
+        std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, const int spatialDim,
+        const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof);
 
     /*!
     \brief Destructor
 
     */
-    virtual ~CoPenaltyStrategy(){};
+    virtual ~CoPenaltyStrategy() = default;
 
     //! @name Access methods
 
@@ -252,7 +276,7 @@ namespace CONTACT
     bool ActiveSetConverged() { return true; }
     int ActiveSetSteps() { return 0; }
     void ResetActiveSet() {}
-    void Recover(Teuchos::RCP<Epetra_Vector> disi) {}
+    void Recover(Teuchos::RCP<Epetra_Vector> disi) override { return; };
     void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
         Teuchos::RCP<LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
@@ -317,8 +341,8 @@ namespace CONTACT
     }
 
     // don't want = operator and cctor
-    CoPenaltyStrategy operator=(const CoPenaltyStrategy& old);
-    CoPenaltyStrategy(const CoPenaltyStrategy& old);
+    CoPenaltyStrategy operator=(const CoPenaltyStrategy& old) = delete;
+    CoPenaltyStrategy(const CoPenaltyStrategy& old) = delete;
 
     std::vector<Teuchos::RCP<CoInterface>> interface_;  // contact interfaces
     Teuchos::RCP<LINALG::SparseMatrix> linzmatrix_;     // global matrix LinZ with derivatives of LM

@@ -354,8 +354,8 @@ namespace CONTACT
 
    private:
     //! don't want = operator and cctor
-    LineToSurfaceCoupling3d operator=(const LineToSurfaceCoupling3d& old);
-    LineToSurfaceCoupling3d(const LineToSurfaceCoupling3d& old);
+    LineToSurfaceCoupling3d operator=(const LineToSurfaceCoupling3d& old) = delete;
+    LineToSurfaceCoupling3d(const LineToSurfaceCoupling3d& old) = delete;
 
     DRT::Discretization& idiscret_;  //< discretization of the contact interface
     int dim_;                        //< problem dimension (here: 3D)
@@ -492,8 +492,8 @@ namespace CONTACT
 
    private:
     // don't want = operator and cctor
-    LineToLineCouplingPoint3d operator=(const LineToLineCouplingPoint3d& old);
-    LineToLineCouplingPoint3d(const LineToLineCouplingPoint3d& old);
+    LineToLineCouplingPoint3d operator=(const LineToLineCouplingPoint3d& old) = delete;
+    LineToLineCouplingPoint3d(const LineToLineCouplingPoint3d& old) = delete;
 
     DRT::Discretization& idiscret_;               //< discretization of the contact interface
     int dim_;                                     //< problem dimension (here: 3D)

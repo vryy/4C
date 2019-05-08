@@ -1,14 +1,13 @@
-// Maintainer: Sebastian Pröll
+// Maintainer: Sebastian Proell
 ==================================================================
 General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
 pseudo 1D melting of artificial material
-  distributed heat source
-  melt region growing from left to right
-  latent heat considered with apparent capacity method
-  smoothed parameter interpolation based on temperature
-  time step halving if Newton unconverged
+- distributed heat source
+- melt region growing from left to right
+- latent heat considered with apparent capacity method
+- smoothed parameter interpolation based on temperature
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      10
 //NODES                         44
@@ -34,13 +33,13 @@ THERM_PHASE                     yes
 -------------------------------------------------------------THERMAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-DIVERCONT                       halve_step
+DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta                  // Statics,OneStepTheta
 INITFUNCNO                      1
 INITIALFIELD                    field_by_function
 ITERNORM                        Rms                           // L2,L1,Inf
 LINEAR_SOLVER                   2
-MAXITER                         10
+MAXITER                         500
 MINITER                         0
 NLNSOL                          fullnewton                    // vague,fullnewton
 NORMCOMBI_RESFTEMP              And
@@ -53,8 +52,8 @@ RESEVRYERGY                     1                             // write out therm
 TOLRES                          1e-06
 TOLTEMP                         1e-06
 MAXTIME                         4e4
-NUMSTEP                         100
-TIMESTEP                        400
+NUMSTEP                         400
+TIMESTEP                        100
 ------------------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
 THETA                           1
 --------------------------------------------------------------------SOLVER 2
@@ -97,7 +96,7 @@ SIMPLE_DAMPING                  1
 SOLVER                          UMFPACK                       //Aztec_MSR
 -------------------------------------------------------------------MATERIALS
 MAT 1 THERM_FourierVar CAPAFUNCT 2 3 2 CONDUCTFUNCT 5 4 5 CONSOLMAT 2
-MAT 2 MAT_Consolidation SOLIDUS 17 LIQUIDUS 23 DELTA 1 LATENTHEAT 338e6
+MAT 2 MAT_Consolidation SOLIDUS 17 LIQUIDUS 23 LATENTHEAT 338e6
 --------------------------------------------------------CLONING MATERIAL MAP
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 10
@@ -113,10 +112,10 @@ FASTPOLYNOMIAL                  NUMCOEFF 1 COEFF 0.556
 ----------------------------------------------------------------------FUNCT6
 COMPONENT                       0 FUNCTION 20000*(0.5-x)
 ----------------------------------------------------------RESULT DESCRIPTION
-THERMAL DIS thermo NODE 1 QUANTITY temp VALUE  2.00267307034122581e+02 TOLERANCE 1e-12
-THERMAL DIS thermo NODE 10 QUANTITY temp VALUE  1.66182689608389893e+02 TOLERANCE 1e-12
-THERMAL DIS thermo NODE 20 QUANTITY temp VALUE  9.71987527863744702e+01 TOLERANCE 1e-12
-THERMAL DIS thermo NODE 44 QUANTITY temp VALUE  1.70441395060766645e+01 TOLERANCE 1e-12
+THERMAL DIS thermo NODE 1 QUANTITY temp VALUE  1.99462527522490802e+02 TOLERANCE 1e-11
+THERMAL DIS thermo NODE 10 QUANTITY temp VALUE  1.64757707973574298e+02 TOLERANCE 1e-12
+THERMAL DIS thermo NODE 20 QUANTITY temp VALUE  9.37702625481640979e+01 TOLERANCE 1e-12
+THERMAL DIS thermo NODE 44 QUANTITY temp VALUE  1.74214531451486216e+01 TOLERANCE 1e-12
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0

@@ -122,8 +122,8 @@ namespace CONTACT
     //@}
 
     // don't want = operator and cctor
-    UnbiasedSelfBinaryTree operator=(const SelfBinaryTree& old);
-    UnbiasedSelfBinaryTree(const SelfBinaryTree& old);
+    UnbiasedSelfBinaryTree operator=(const SelfBinaryTree& old) = delete;
+    UnbiasedSelfBinaryTree(const SelfBinaryTree& old) = delete;
 
     //! use two half pass approach
     const bool Two_half_pass_;

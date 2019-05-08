@@ -386,12 +386,16 @@ namespace STR
     //! \author lw  \date 12/07
     bool Converged();
 
-    //! Solve dynamic equilibrium
-    //!
-    //! Do the nonlinear solve, i.e. (multiple) corrector,
-    //! for the time step. All boundary conditions have
-    //! been set.
-    INPAR::STR::ConvergenceStatus Solve();
+    /*!
+    \brief Solve nonlinear dynamic equilibrium
+
+    Do the nonlinear solve, i.e. (multiple) corrector,
+    for the time step. All boundary conditions have
+    been set.
+
+    \return Enum to indicate convergence status or failure
+    */
+    INPAR::STR::ConvergenceStatus Solve() final;
 
     //! Do full Newton-Raphson iteration
     //!

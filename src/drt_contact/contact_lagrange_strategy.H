@@ -27,17 +27,31 @@ namespace CONTACT
   class CoLagrangeStrategy : public CoAbstractStrategy
   {
    public:
-    //! Shared data constructor
+    /*!
+    \brief Shared data constructor
+
+    Creates the strategy base object and initializes all global variables.
+
+    \param[in] data_ptr Data container object
+    \param[in] DofRowMap Dof row map of underlying problem
+    \param[in] NodeRowMap Node row map of underlying problem
+    \param[in] params List of contact/parameters
+    \param[in] interface All contact interface objects
+    \param[in] spatialDim Spatial dimension of the problem
+    \param[in] comm Communicator
+    \param[in] alphaf Mid-point for Generalized-alpha time integration
+    \param[in] maxdof Highest DOF number in global problem
+    */
     CoLagrangeStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-        std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
-        Teuchos::RCP<const Epetra_Comm> comm, double alphaf, int maxdof);
+        std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, const int spatialDim,
+        Teuchos::RCP<const Epetra_Comm> comm, const double alphaf, const int maxdof);
 
     /*!
     \brief Destructor
 
     */
-    virtual ~CoLagrangeStrategy(){};
+    virtual ~CoLagrangeStrategy() = default;
 
     //! @name Access methods
 
@@ -316,7 +330,7 @@ namespace CONTACT
     conditions can be checked, too.
 
     */
-    void Recover(Teuchos::RCP<Epetra_Vector> disi);
+    void Recover(Teuchos::RCP<Epetra_Vector> disi) override;
 
     /*! \brief Reset the internal stored Lagrange multipliers
      *
@@ -510,8 +524,8 @@ namespace CONTACT
         Teuchos::RCP<Epetra_Vector>& feff, bool add_time_integration = true);
 
     // don't want = operator and cctor
-    CoLagrangeStrategy operator=(const CoLagrangeStrategy& old);
-    CoLagrangeStrategy(const CoLagrangeStrategy& old);
+    CoLagrangeStrategy operator=(const CoLagrangeStrategy& old) = delete;
+    CoLagrangeStrategy(const CoLagrangeStrategy& old) = delete;
 
     // Store Coupling Matrices in case of Poro Lagrange Strategy ... here just ignore!
     virtual void SaveCouplingMatrices(Teuchos::RCP<LINALG::SparseMatrix> dhat,

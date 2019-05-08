@@ -1,15 +1,14 @@
 /*!----------------------------------------------------------------------
 \file meshtying_poro_lagrange_strategy.cpp
 
+\brief Meshtying of porpus media using Lagrange multipliers
+
 // Masterthesis of h.Willmann under supervision of Anh-Tu Vuong and Christoph Ager
 // Originates from contact_poro_lagrange_strategy
 
-<pre>
-Maintainer: Christoph Ager
-            ager@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15249
-</pre>
+\maintainer Christoph Ager
+
+\level 3
 
 *----------------------------------------------------------------------*/
 
@@ -135,7 +134,7 @@ void CONTACT::PoroMtLagrangeStrategy::EvaluateMeshtyingPoroOffDiag(
         Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_, 100));
     cmmod->Add(*cm, false, 1.0, 1.0);
     Teuchos::RCP<LINALG::SparseMatrix> cmadd =
-        LINALG::MLMultiply(*mhatmatrix_, true, *cs, false, false, false, true);
+        LINALG::MLMultiply(*GetMHat(), true, *cs, false, false, false, true);
     cmmod->Add(*cmadd, false, 1.0, 1.0);
     cmmod->Complete(cm->DomainMap(), cm->RowMap());
 
@@ -180,7 +179,7 @@ void CONTACT::PoroMtLagrangeStrategy::RecoverCouplingMatrixPartofLMP(
   cs_->Multiply(false, *veli, *mod);
   zfluid->Update(-1.0, *mod, 1.0);
   Teuchos::RCP<Epetra_Vector> zcopy = Teuchos::rcp(new Epetra_Vector(*zfluid));
-  invd_->Multiply(true, *zcopy, *zfluid);
+  GetDInverse()->Multiply(true, *zcopy, *zfluid);
   zfluid->Scale(1 / (1 - alphaf_));
 
   z_->Update(1.0, *zfluid, 1.0);  // Add FluidCoupling Contribution to LM!

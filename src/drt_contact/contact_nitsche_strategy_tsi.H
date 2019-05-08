@@ -97,8 +97,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoNitscheStrategyTsi operator=(const CoNitscheStrategyTsi& old);
-    CoNitscheStrategyTsi(const CoNitscheStrategyTsi& old);
+    CoNitscheStrategyTsi operator=(const CoNitscheStrategyTsi& old) = delete;
+    CoNitscheStrategyTsi(const CoNitscheStrategyTsi& old) = delete;
 
     // create an appropriate vector for the RHS
     virtual Teuchos::RCP<Epetra_FEVector> SetupRhsBlockVec(
