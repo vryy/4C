@@ -127,12 +127,12 @@ namespace STR
        */
       virtual INPAR::STR::ModelType Type() const = 0;
 
-      /*! \brief reset model specific variables (without jacobian)
+      /*! \brief Reset model specific variables (without jacobian)
        *
        *  This function is always called before the actual Evaluate() routine is going to start.
        *  You can use it to reset model specific stuff at the beginning of a new evaluation round.
        *
-       *  \param x   (in) : current full state vector
+       *  \param[in] x current full state vector
        *
        *  \date 07/2016
        *  \author hiermeier */
@@ -344,6 +344,8 @@ namespace STR
        *  only calculated once per load/time step. You can not do the calculations during the
        *  OutputStepState() routine, because of the const status of the named function!
        *
+       *  \sa OutputStepState
+       *
        *  \author hiermeier*/
       virtual void DetermineStressStrain() = 0;
 
@@ -353,6 +355,8 @@ namespace STR
        *  missing quantities, which were not evaluated during the standard evaluate call and are
        *  only calculated once per load/time step. You can not do the calculations during the
        *  OutputStepState() routine, because of the const status of the named function!
+       *
+       *  \sa OutputStepState
        *
        *  \author hiermeier*/
       virtual void DetermineEnergy() = 0;
@@ -364,10 +368,15 @@ namespace STR
        *  only calculated once per load/time step. You can not do the calculations during the
        *  OutputStepState() routine, because of the const status of the named function!
        *
+       *  \sa OutputStepState
+       *
        *  \author hiermeier*/
       virtual void DetermineOptionalQuantity() = 0;
 
-      //! output routine for model evaluator
+      /*! \brief Output routine for model evaluator
+       *
+       * @param iowriter Discretization writer that actually writes binary output to the disk
+       */
       virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const = 0;
 
       //! runtime output routine for model evaluator

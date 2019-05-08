@@ -1,12 +1,11 @@
 /*!----------------------------------------------------------------------
 \file meshtying_manager.H
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\level 1
+
+\maintainer Matthias Mayr
+
+\brief BACI implementation of main class to control all meshtying
 
 *-----------------------------------------------------------------------*/
 #ifndef MESHTYING_MANAGER_H
@@ -33,6 +32,9 @@ namespace CONTACT
   class MtManager : public MORTAR::ManagerBase
   {
    public:
+    //! @name Construction/Destruction
+    //!@{
+
     /*!
     \brief Standard Constructor
 
@@ -58,19 +60,23 @@ namespace CONTACT
     \brief Destructor
 
     */
-    virtual ~MtManager(){};
+    virtual ~MtManager() = default;
+
+    //!@}
 
     //! @name Access methods
+    //!@{
 
     /*!
     \brief Get discretization
 
     */
-    DRT::Discretization& Discret() const { return discret_; };
+    const DRT::Discretization& Discret() const { return discret_; };
 
-    //@}
+    //!@}
 
     //! @name Evaluation methods
+    //!@{
 
     /*!
     \brief Read and check input parameters
@@ -79,6 +85,8 @@ namespace CONTACT
     DRT::Problem::Instance() and stored into a local variable of
     type Teuchos::ParameterList. Invalid parameter combinations are
     sorted out and throw a dserror.
+
+    \param[in/out] mtparams ParemterList with mortar parameters from input file
 
     */
     bool ReadAndCheckInput(Teuchos::ParameterList& mtparams);
@@ -89,10 +97,11 @@ namespace CONTACT
     The additionally necessary restart information in the meshtying
     case are the current Lagrange multiplier values.
 
-    \param output (in): IO::Discretization writer for restart
+    \param[in] output IO::Discretization writer for restart
+    \param forcedrestart
 
     */
-    void WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart = false);
+    void WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart = false) final;
 
     /*!
     \brief Read restart information for contact
@@ -108,7 +117,7 @@ namespace CONTACT
 
     */
     void ReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<Epetra_Vector> zero);
+        Teuchos::RCP<Epetra_Vector> zero) final;
 
     /*!
     \brief Write interface tractions for postprocessing
@@ -116,17 +125,20 @@ namespace CONTACT
     \param output (in): IO::Discretization writer for restart
 
     */
-    void PostprocessQuantities(IO::DiscretizationWriter& output);
+    void PostprocessQuantities(IO::DiscretizationWriter& output) final;
 
-    //@}
+    //!@}
 
 
-   protected:
-    // don't want = operator and cctor
+   private:
+    //! don't want = operator
     MtManager operator=(const MtManager& old);
+
+    //! don't want copy constructor
     MtManager(const MtManager& old);
 
-    DRT::Discretization& discret_;  // the underlying problem discretization
+    //! Underlying problem discretization
+    DRT::Discretization& discret_;
 
   };  // class MtManager
 }  // namespace CONTACT

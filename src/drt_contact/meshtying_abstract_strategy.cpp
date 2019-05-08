@@ -33,11 +33,11 @@
  *----------------------------------------------------------------------*/
 CONTACT::MtAbstractStrategy::MtAbstractStrategy(const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface, int dim,
-    const Teuchos::RCP<const Epetra_Comm>& comm, double alphaf,
-    int maxdof)
+    std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface, const int spatialDim,
+    const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf,
+    const int maxdof)
     : MORTAR::StrategyBase(Teuchos::rcp(new MORTAR::StratDataContainer()),  // no shared data!
-          DofRowMap, NodeRowMap, params, dim, comm, alphaf, maxdof),
+          DofRowMap, NodeRowMap, params, spatialDim, comm, alphaf, maxdof),
       interface_(interface),
       dualquadslavetrafo_(false)
 {
@@ -488,7 +488,7 @@ void CONTACT::MtAbstractStrategy::RestrictMeshtyingZone()
 }
 
 /*----------------------------------------------------------------------*
- |  mesh intialization for rotational invariance              popp 12/09|
+ |  mesh initialization for rotational invariance              popp 12/09|
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::MeshInitialization(Teuchos::RCP<Epetra_Vector> Xslavemod)
 {
@@ -593,7 +593,7 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(Teuchos::RCP<Epetra_Vector>
   //**********************************************************************
   // (2) re-evaluate constraints in reference configuration
   //**********************************************************************
-  // intialize
+  // initialize
   g_ = LINALG::CreateVector(*gsdofrowmap_, true);
 
   // compute g-vector at global level
@@ -623,7 +623,7 @@ void CONTACT::MtAbstractStrategy::Evaluate(Teuchos::RCP<LINALG::SparseOperator>&
 }
 
 /*----------------------------------------------------------------------*
- |  Store Lagrange mulitpliers into MortarNode                popp 06/08|
+ |  Store Lagrange multipliers into MortarNode                popp 06/08|
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type)
 {

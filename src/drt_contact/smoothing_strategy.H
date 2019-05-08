@@ -188,7 +188,7 @@ namespace CONTACT
     conditions can be checked, too.
 
     */
-    void Recover(Teuchos::RCP<Epetra_Vector> disi);
+    void Recover(Teuchos::RCP<Epetra_Vector> disi) override;
 
     /*!
     \brief Update active set and check for convergence
@@ -314,8 +314,8 @@ namespace CONTACT
 
    private:
     // don't want = operator and cctor
-    SmoothingStrategy operator=(const SmoothingStrategy& old);
-    SmoothingStrategy(const SmoothingStrategy& old);
+    SmoothingStrategy operator=(const SmoothingStrategy& old) = delete;
+    SmoothingStrategy(const SmoothingStrategy& old) = delete;
 
     // Store Coupling Matrices in case of Poro Lagrange Strategy ... here just ignore!
     virtual void SaveCouplingMatrices(Teuchos::RCP<LINALG::SparseMatrix> dhat,

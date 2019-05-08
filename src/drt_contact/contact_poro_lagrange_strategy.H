@@ -191,8 +191,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    PoroLagrangeStrategy operator=(const PoroLagrangeStrategy& old);
-    PoroLagrangeStrategy(const PoroLagrangeStrategy& old);
+    PoroLagrangeStrategy operator=(const PoroLagrangeStrategy& old) = delete;
+    PoroLagrangeStrategy(const PoroLagrangeStrategy& old) = delete;
 
     // flag activation poro contact no penetration condition
     // h.Willmann the name is misleading as the bool is also used for other cases to access some

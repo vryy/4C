@@ -4,15 +4,11 @@
 
 \brief Evaluation and assembly of all contact terms
 
-\maintainer Michael Hiermeier
-
-\date Feb 3, 2016
+\maintainer Matthias Mayr
 
 \level 3
-
 */
 /*---------------------------------------------------------------------*/
-
 
 #include "str_model_evaluator_contact.H"
 #include "str_model_evaluator_data.H"
@@ -43,7 +39,8 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-STR::MODELEVALUATOR::Contact::Contact() : strategy_ptr_(Teuchos::null)
+STR::MODELEVALUATOR::Contact::Contact()
+    : eval_contact_ptr_(Teuchos::null), strategy_ptr_(Teuchos::null)
 {
   // empty
 }

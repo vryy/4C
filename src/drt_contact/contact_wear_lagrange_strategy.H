@@ -71,12 +71,12 @@ namespace WEAR
     \brief Recovery method
 
     We only recover the Lagrange multipliers here, which had been
-    statically condensated during the setup of the global problem!
+    statically condensed during the setup of the global problem!
     Optionally satisfaction or violation of the contact boundary
     conditions can be checked, too.
 
     */
-    void Recover(Teuchos::RCP<Epetra_Vector> disi);
+    void Recover(Teuchos::RCP<Epetra_Vector> disi) override;
 
     /*!
     \brief Redistribute all contact interfaces in parallel
@@ -86,7 +86,7 @@ namespace WEAR
 
     \return TRUE if a redistribution took place. Return FALSE otherwise.
     */
-    bool RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis) override;
+    bool RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis) final;
 
     /*!
     \brief Build 2x2 saddle point system
@@ -322,8 +322,8 @@ namespace WEAR
 
    private:
     // don't want = operator and cctor
-    WearLagrangeStrategy operator=(const WearLagrangeStrategy& old);
-    WearLagrangeStrategy(const WearLagrangeStrategy& old);
+    WearLagrangeStrategy operator=(const WearLagrangeStrategy& old) = delete;
+    WearLagrangeStrategy(const WearLagrangeStrategy& old) = delete;
 
     std::vector<Teuchos::RCP<WEAR::WearInterface>> interface_;
 

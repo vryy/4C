@@ -622,8 +622,18 @@ namespace CONTACT
     /*!
     \brief Collect data concerning load balance and parallel distribution
 
+    Check all slave elements and count
+    - possibly active elements in the column map
+    - possibly active elements in the row map
+
+    \param[out] numColElements Number of column elements that are potentially in contact
+    \param[out] numRowElements Number of row elements that are potentially in contact
+
+    \note We are only interested in slave elements here, since they have to do (almost) all the work
+    during evaluation. Master elements don't require any computations and, hence, can be neglected
+    here.
     */
-    void CollectDistributionData(int& loadele, int& crowele);
+    void CollectDistributionData(int& numColElements, int& numRowElements);
 
     /*!
     \brief Create binary search tree
@@ -677,12 +687,11 @@ namespace CONTACT
     /*!
     \brief Integrate Mortar matrix M and gap g on slave/master overlaps
 
-    Derived verision!
+    Derived version!
 
     */
-    virtual bool MortarCoupling(MORTAR::MortarElement* sele,
-        std::vector<MORTAR::MortarElement*> mele,
-        const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+    bool MortarCoupling(MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele,
+        const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) override;
 
     /*!
     \brief evaluate coupling terms for nts coupling + lin
@@ -1482,8 +1491,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoInterface operator=(const CoInterface& old);
-    CoInterface(const CoInterface& old);
+    CoInterface operator=(const CoInterface& old) = delete;
+    CoInterface(const CoInterface& old) = delete;
 
     /** @name References to the interface data container content
      *

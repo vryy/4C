@@ -11,36 +11,35 @@
 */
 /*---------------------------------------------------------------------*/
 
+#include "contact_abstract_strategy.H"
+#include "contact_utils.H"
+#include "meshtying_abstract_strategy.H"
+#include "meshtying_lagrange_strategy.H"
+#include "meshtying_penalty_strategy.H"
 #include "meshtying_strategy_factory.H"
-
-#include "../drt_mortar/mortar_element.H"
-#include "../drt_mortar/mortar_node.H"
-
-#include "../drt_structure_new/str_timint_basedataglobalstate.H"
-#include "../drt_structure_xstructure/xstr_multi_discretization_wrapper.H"
 
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/inpar_contact.H"
 
+#include "../drt_io/io.H"
+#include "../drt_io/io_pstream.H"
+
+#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
+
+#include "../drt_mortar/mortar_element.H"
+#include "../drt_mortar/mortar_node.H"
+#include "../drt_mortar/mortar_utils.H"
+
+#include "../drt_structure_new/str_timint_basedataglobalstate.H"
+#include "../drt_structure_new/str_utils.H"
+
+#include "../drt_structure_xstructure/xstr_multi_discretization_wrapper.H"
 
 #include "../linalg/linalg_utils.H"
 
-#include "../drt_io/io_pstream.H"
-#include "../drt_io/io.H"
-
 #include <Teuchos_ParameterList.hpp>
-
-#include "contact_utils.H"
-#include "../drt_mortar/mortar_utils.H"
-
-#include "contact_abstract_strategy.H"
-#include "meshtying_abstract_strategy.H"
-#include "meshtying_lagrange_strategy.H"
-#include "meshtying_penalty_strategy.H"
-
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -48,12 +47,15 @@ void MORTAR::STRATEGY::FactoryMT::Setup()
 {
   CheckInit();
   MORTAR::STRATEGY::Factory::Setup();
-  issetup_ = true;
+
+  SetIsSetup();
+
+  return;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& mtparams) const
+void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& params) const
 {
   // read parameter lists from DRT::Problem
   const Teuchos::ParameterList& mortar = DRT::Problem::Instance()->MortarCouplingParams();
@@ -235,9 +237,9 @@ void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& mtpa
               << std::endl;
 
   // get parameter lists
-  mtparams.setParameters(mortar);
-  mtparams.setParameters(meshtying);
-  mtparams.setParameters(wearlist);
+  params.setParameters(mortar);
+  params.setParameters(meshtying);
+  params.setParameters(wearlist);
 
   // *********************************************************************
   // predefined params for meshtying and contact
@@ -245,38 +247,38 @@ void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& mtpa
   if (meshtyingandcontact and !DRT::INPUT::IntegralValue<int>(meshtying, "DISCR_SMOOTHING"))
   {
     // set options for mortar coupling
-    mtparams.set<std::string>("SEARCH_ALGORITHM", "Binarytree");
-    mtparams.set<double>("SEARCH_PARAM", 0.3);
-    mtparams.set<std::string>("SEARCH_USE_AUX_POS", "no");
-    mtparams.set<std::string>("PARALLEL_REDIST", "static");
-    mtparams.set<std::string>("LM_SHAPEFCN", "dual");
-    mtparams.set<std::string>("REDUNDANT_STORAGE", "Master");
-    mtparams.set<std::string>("SYSTEM", "condensed");
-    mtparams.set<bool>("NURBS", false);
-    mtparams.set<int>("NUMGP_PER_DIM", -1);
-    mtparams.set<std::string>("STRATEGY", "LagrangianMultipliers");
-    mtparams.set<std::string>("INTTYPE", "segments");
+    params.set<std::string>("SEARCH_ALGORITHM", "Binarytree");
+    params.set<double>("SEARCH_PARAM", 0.3);
+    params.set<std::string>("SEARCH_USE_AUX_POS", "no");
+    params.set<std::string>("PARALLEL_REDIST", "static");
+    params.set<std::string>("LM_SHAPEFCN", "dual");
+    params.set<std::string>("REDUNDANT_STORAGE", "Master");
+    params.set<std::string>("SYSTEM", "condensed");
+    params.set<bool>("NURBS", false);
+    params.set<int>("NUMGP_PER_DIM", -1);
+    params.set<std::string>("STRATEGY", "LagrangianMultipliers");
+    params.set<std::string>("INTTYPE", "segments");
   }
   else if (meshtyingandcontact and DRT::INPUT::IntegralValue<int>(meshtying, "DISCR_SMOOTHING"))
   {
     // set options for mortar coupling
-    mtparams.set<std::string>("SEARCH_ALGORITHM", "Binarytree");
-    mtparams.set<double>("SEARCH_PARAM", 0.3);
-    mtparams.set<std::string>("SEARCH_USE_AUX_POS", "no");
-    mtparams.set<std::string>("PARALLEL_REDIST", "static");
-    mtparams.set<std::string>("LM_SHAPEFCN", "dual");
-    mtparams.set<std::string>("REDUNDANT_STORAGE", "Master");
-    mtparams.set<std::string>("SYSTEM", "condensed");
-    mtparams.set<bool>("NURBS", false);
+    params.set<std::string>("SEARCH_ALGORITHM", "Binarytree");
+    params.set<double>("SEARCH_PARAM", 0.3);
+    params.set<std::string>("SEARCH_USE_AUX_POS", "no");
+    params.set<std::string>("PARALLEL_REDIST", "static");
+    params.set<std::string>("LM_SHAPEFCN", "dual");
+    params.set<std::string>("REDUNDANT_STORAGE", "Master");
+    params.set<std::string>("SYSTEM", "condensed");
+    params.set<bool>("NURBS", false);
   }
   // *********************************************************************
   // smooth interfaces
   // *********************************************************************
   // NURBS PROBLEM?
   if (distype == "Nurbs")
-    mtparams.set<bool>("NURBS", true);
+    params.set<bool>("NURBS", true);
   else
-    mtparams.set<bool>("NURBS", false);
+    params.set<bool>("NURBS", false);
 
   // *********************************************************************
   // poroelastic meshtying
@@ -314,10 +316,10 @@ void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& mtpa
       dserror("POROCONTACT: PoroMeshtying with no penetration just tested for 3d (and 2d)!");
   }
 
-  mtparams.setName("CONTACT DYNAMIC / MORTAR COUPLING");
+  params.setName("CONTACT DYNAMIC / MORTAR COUPLING");
 
   // no parallel redistribution in the serial case
-  if (Comm().NumProc() == 1) mtparams.set<std::string>("PARALLEL_REDIST", "None");
+  if (Comm().NumProc() == 1) params.set<std::string>("PARALLEL_REDIST", "None");
 
   return;
 }
@@ -596,21 +598,21 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CONTACT::MtAbstractStrategy> MORTAR::STRATEGY::FactoryMT::BuildStrategy(
-    const Teuchos::ParameterList& cparams, const bool& poroslave, const bool& poromaster,
+    const Teuchos::ParameterList& params, const bool& poroslave, const bool& poromaster,
     const int& dof_offset, std::vector<Teuchos::RCP<MORTAR::MortarInterface>>& interfaces) const
 {
   const INPAR::CONTACT::SolvingStrategy stype =
-      DRT::INPUT::IntegralValue<enum INPAR::CONTACT::SolvingStrategy>(cparams, "STRATEGY");
+      DRT::INPUT::IntegralValue<enum INPAR::CONTACT::SolvingStrategy>(params, "STRATEGY");
   Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr = Teuchos::null;
 
-  return BuildStrategy(stype, cparams, poroslave, poromaster, dof_offset, interfaces,
+  return BuildStrategy(stype, params, poroslave, poromaster, dof_offset, interfaces,
       Discret().DofRowMap(), Discret().NodeRowMap(), Dim(), CommPtr(), data_ptr);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CONTACT::MtAbstractStrategy> MORTAR::STRATEGY::FactoryMT::BuildStrategy(
-    const INPAR::CONTACT::SolvingStrategy stype, const Teuchos::ParameterList& mtparams,
+    const INPAR::CONTACT::SolvingStrategy stype, const Teuchos::ParameterList& params,
     const bool& poroslave, const bool& poromaster, const int& dof_offset,
     std::vector<Teuchos::RCP<MORTAR::MortarInterface>>& interfaces, const Epetra_Map* dof_row_map,
     const Epetra_Map* node_row_map, const int dim, const Teuchos::RCP<const Epetra_Comm>& comm_ptr,
@@ -627,26 +629,16 @@ Teuchos::RCP<CONTACT::MtAbstractStrategy> MORTAR::STRATEGY::FactoryMT::BuildStra
     fflush(stdout);
   }
 
-  double alphaf = 0.0;
-  const Teuchos::ParameterList& sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
-  if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
-      INPAR::STR::dyna_genalpha)
-    alphaf = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");
-  if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
-      INPAR::STR::dyna_gemm)
-    alphaf = sdynparams.sublist("GEMM").get<double>("ALPHA_F");
-  if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
-      INPAR::STR::dyna_onesteptheta)
-    alphaf = 1.0 - sdynparams.sublist("ONESTEPTHETA").get<double>("THETA");
+  const double alphaf = STR::TIMINT::GetTimIntFactor();
 
   if (stype == INPAR::CONTACT::solution_lagmult)
   {
     strategy_ptr = Teuchos::rcp(new CONTACT::MtLagrangeStrategy(
-        dof_row_map, node_row_map, mtparams, interfaces, dim, comm_ptr, alphaf, dof_offset));
+        dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, alphaf, dof_offset));
   }
   else if (stype == INPAR::CONTACT::solution_penalty or stype == INPAR::CONTACT::solution_uzawa)
     strategy_ptr = Teuchos::rcp(new CONTACT::MtPenaltyStrategy(
-        dof_row_map, node_row_map, mtparams, interfaces, dim, comm_ptr, alphaf, dof_offset));
+        dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, alphaf, dof_offset));
   else
     dserror("ERROR: Unrecognized strategy");
 

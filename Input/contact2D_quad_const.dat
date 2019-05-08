@@ -67,6 +67,7 @@ STRATEGY                        Lagrange
 FRICTION                        None
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  1.0
+TIMING_DETAILS                  Yes
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     Dual
 LM_QUAD                         const

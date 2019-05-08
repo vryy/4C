@@ -5,18 +5,16 @@
 
 \level 1
 
-<pre>
 \maintainer Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
-
-*-----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #include <Teuchos_Time.hpp>
+#include <Teuchos_TimeMonitor.hpp>
+
 #include "meshtying_penalty_strategy.H"
 #include "meshtying_defines.H"
+
 #include "../drt_mortar/mortar_interface.H"
 #include "../drt_mortar/mortar_node.H"
 #include "../drt_mortar/mortar_defines.H"
@@ -32,9 +30,9 @@
  *----------------------------------------------------------------------*/
 CONTACT::MtPenaltyStrategy::MtPenaltyStrategy(const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface, int dim,
-    const Teuchos::RCP<const Epetra_Comm>& comm, double alphaf, int maxdof)
-    : MtAbstractStrategy(DofRowMap, NodeRowMap, params, interface, dim, comm, alphaf, maxdof)
+    std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface, const int spatialDim,
+    const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
+    : MtAbstractStrategy(DofRowMap, NodeRowMap, params, interface, spatialDim, comm, alphaf, maxdof)
 {
   // initialize constraint norm and initial penalty
   constrnorm_ = 0.0;
@@ -46,6 +44,8 @@ CONTACT::MtPenaltyStrategy::MtPenaltyStrategy(const Epetra_Map* DofRowMap,
  *----------------------------------------------------------------------*/
 void CONTACT::MtPenaltyStrategy::MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("CONTACT::MtPenaltyStrategy::MortarCoupling");
+
   // print message
   if (Comm().MyPID() == 0)
   {
@@ -127,10 +127,12 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const Teuchos::RCP<const Epetra_
 }
 
 /*----------------------------------------------------------------------*
- |  mesh intialization for rotational invariance              popp 12/09|
+ |  mesh initialization for rotational invariance              popp 12/09|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> CONTACT::MtPenaltyStrategy::MeshInitialization()
+Teuchos::RCP<const Epetra_Vector> CONTACT::MtPenaltyStrategy::MeshInitialization()
 {
+  TEUCHOS_FUNC_TIME_MONITOR("CONTACT::MtPenaltyStrategy::MeshInitialization");
+
   // get out of here is NTS algorithm is activated
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(Params(), "ALGORITHM") ==
       INPAR::MORTAR::algorithm_nts)
@@ -414,6 +416,7 @@ bool CONTACT::MtPenaltyStrategy::EvaluateForce(const Teuchos::RCP<const Epetra_V
 {
   if (force_.is_null()) force_ = Teuchos::rcp(new Epetra_Vector(*gdisprowmap_));
   if (stiff_->Multiply(false, *dis, *force_)) dserror("multiply failed");
+
   return true;
 }
 
@@ -428,9 +431,10 @@ bool CONTACT::MtPenaltyStrategy::EvaluateStiff(const Teuchos::RCP<const Epetra_V
  *----------------------------------------------------------------------------*/
 bool CONTACT::MtPenaltyStrategy::EvaluateForceStiff(const Teuchos::RCP<const Epetra_Vector> dis)
 {
-  EvaluateForce(dis);
-  EvaluateStiff(dis);
-  return true;
+  bool successForce = EvaluateForce(dis);
+  bool successStiff = EvaluateStiff(dis);
+
+  return (successForce && successStiff);
 }
 
 /*----------------------------------------------------------------------------*

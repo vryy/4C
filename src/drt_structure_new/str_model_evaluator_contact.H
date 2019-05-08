@@ -48,7 +48,8 @@ namespace STR
       void Setup() override;
 
       //! @name Functions which are derived from the base generic class
-      //! @{
+      //!@{
+
       //! [derived]
       INPAR::STR::ModelType Type() const override { return INPAR::STR::model_contact; }
 
@@ -155,8 +156,8 @@ namespace STR
 
       //! @}
 
-      /// @name call-back routines
-      /// @{
+      //! @name Call-back routines
+      //!@{
 
       Teuchos::RCP<const LINALG::SparseMatrix> GetJacobianBlock(
           const DRT::UTILS::MatBlockType bt) const;
@@ -176,12 +177,10 @@ namespace STR
 
       void EvaluateWeightedGapGradientError();
 
-      inline const DRT::DiscretizationInterface& StrDiscret() const { return Discret(); }
-
-      /// @}
+      //!@}
 
       //! @name Accessors
-      //! @{
+      //!@{
 
       //! Returns a pointer to the underlying contact strategy object
       const Teuchos::RCP<CONTACT::CoAbstractStrategy>& StrategyPtr();
@@ -190,7 +189,8 @@ namespace STR
       CONTACT::CoAbstractStrategy& Strategy();
       const CONTACT::CoAbstractStrategy& Strategy() const;
 
-      //! @}
+      //!@}
+
      protected:
       STR::MODELEVALUATOR::ContactData& EvalContact();
       const STR::MODELEVALUATOR::ContactData& EvalContact() const;
@@ -206,12 +206,12 @@ namespace STR
 
       void ExtendLagrangeMultiplierDomain(Teuchos::RCP<Epetra_Vector>& lm_vec) const;
 
-     private:
       //! contact evaluation data container
       Teuchos::RCP<STR::MODELEVALUATOR::ContactData> eval_contact_ptr_;
 
       //! contact strategy
       Teuchos::RCP<CONTACT::CoAbstractStrategy> strategy_ptr_;
+
     };  // class Contact
 
   }  // namespace MODELEVALUATOR

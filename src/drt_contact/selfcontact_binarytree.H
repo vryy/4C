@@ -214,8 +214,8 @@ namespace CONTACT
 
    private:
     // don't want = operator and cctor
-    SelfBinaryTreeNode operator=(const SelfBinaryTreeNode& old);
-    SelfBinaryTreeNode(const SelfBinaryTreeNode& old);
+    SelfBinaryTreeNode operator=(const SelfBinaryTreeNode& old) = delete;
+    SelfBinaryTreeNode(const SelfBinaryTreeNode& old) = delete;
 
     //! type of SelfBinaryTreeNode
     SelfBinaryTreeNodeType type_;
@@ -472,8 +472,8 @@ namespace CONTACT
     }
 
     // don't want = operator and cctor
-    SelfDualEdge operator=(const SelfDualEdge& old);
-    SelfDualEdge(const SelfDualEdge& old);
+    SelfDualEdge operator=(const SelfDualEdge& old) = delete;
+    SelfDualEdge(const SelfDualEdge& old) = delete;
 
     //! first node of dual edge
     Teuchos::RCP<SelfBinaryTreeNode> node1_;
@@ -825,29 +825,45 @@ namespace CONTACT
     //@}
 
     // don't want = operator and cctor
-    SelfBinaryTree operator=(const SelfBinaryTree& old);
-    SelfBinaryTree(const SelfBinaryTree& old);
+    SelfBinaryTree operator=(const SelfBinaryTree& old) = delete;
+    SelfBinaryTree(const SelfBinaryTree& old) = delete;
 
-    const Epetra_Comm* lcomm_;               // local interface communicator
-    Teuchos::RCP<Epetra_Map> elements_;      // all contact elements on surface (full map)
-    const Teuchos::ParameterList& iparams_;  // interface specific parameter list
+    //! Local interface communicator
+    const Epetra_Comm* lcomm_;
 
-    int nvectors_;                            // defining number of sample vectors
-    Epetra_SerialDenseMatrix samplevectors_;  // defining sample vectors
+    //! All contact elements on surface (full map)
+    Teuchos::RCP<Epetra_Map> elements_;
 
-    // root treenodes
+    //! Interface-specific parameter list
+    const Teuchos::ParameterList& iparams_;
+
+    /*!
+    \brief Defining number of sample vectors
+
+    \todo What are sample vectors?
+    */
+    int nvectors_;
+
+    /*!
+    \brief Defining sample vectors
+
+    \todo What are sample vectors?
+    */
+    Epetra_SerialDenseMatrix samplevectors_;
+
+    //! root treenodes
     std::vector<Teuchos::RCP<SelfBinaryTreeNode>> roots_;
 
-    // storage of all treenodes, sorted by layers
+    //! storage of all treenodes, sorted by layers
     std::vector<std::vector<Teuchos::RCP<SelfBinaryTreeNode>>> treenodes_;
 
-    // storage of all treenodes, sorted by layers
+    //! storage of all treenodes, sorted by layers
     std::map<int, std::vector<int>> contactpairs_;
 
-    // map of adjacent elements, sorted by global id (only needed in 3D)
+    //! map of adjacent elements, sorted by global id (only needed in 3D)
     std::map<int, std::vector<Teuchos::RCP<SelfBinaryTreeNode>>> adjacencymatrix_;
 
-    // map of all leaf nodes, sorted by global id
+    //! map of all leaf nodes, sorted by global id
     std::map<int, Teuchos::RCP<SelfBinaryTreeNode>> leafsmap_;
 
   };  // class SelfBinaryTree

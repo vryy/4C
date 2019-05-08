@@ -130,7 +130,7 @@ namespace CONTACT
     bool ActiveSetConverged() { return true; }
     int ActiveSetSteps() { return 0; }
     void ResetActiveSet() {}
-    void Recover(Teuchos::RCP<Epetra_Vector> disi) {}
+    void Recover(Teuchos::RCP<Epetra_Vector> disi) override { return; };
     void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
         Teuchos::RCP<LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
@@ -219,8 +219,8 @@ namespace CONTACT
         const enum DRT::UTILS::MatBlockType& bt);
 
     // don't want = operator and cctor
-    CoNitscheStrategy operator=(const CoNitscheStrategy& old);
-    CoNitscheStrategy(const CoNitscheStrategy& old);
+    CoNitscheStrategy operator=(const CoNitscheStrategy& old) = delete;
+    CoNitscheStrategy(const CoNitscheStrategy& old) = delete;
 
     std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface_;
 

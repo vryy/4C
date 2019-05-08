@@ -175,6 +175,9 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
       "If chosen the nodal normal field is created as averaged CPP normal field.", yesnotuple,
       yesnovalue, &scontact);
 
+  BoolParameter(
+      "TIMING_DETAILS", "No", "Enable and print detailed contact timings to screen.", &scontact);
+
   // --------------------------------------------------------------------------
   // sub-list "Augmented"
   Teuchos::ParameterList& augcontact = scontact.sublist("AUGMENTED");

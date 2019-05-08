@@ -53,8 +53,8 @@ namespace DRT
    *  discretization or a discretization wrapper can be handed in. See for
    *  example the use in the structural time integration.
    *
-   *  Please note, that you can add additional pure virtual functions if you
-   *  need them. But do not add any concrete function implementations and do not
+   *  \note You can add additional pure virtual functions if you need them.
+   *  But do not add any concrete function implementations and do not
    *  add a cpp-file! This class is constructed as a pure virtual interface and
    *  should stay a pure virtual interface! All concrete implementations can be
    *  found in the derived classes.
