@@ -4,12 +4,8 @@
 \brief Volume-coupled FSI (base class)
 
 \level 3
-<pre>
-\maintainer Lena Yoshihara
-            yoshihara@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15303
-</pre>
+
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 #include "fsi_lungmonolithic.H"
