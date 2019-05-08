@@ -7,7 +7,7 @@ sparse matrices and parallel distributed vectors
 
 \level 3
 
-\maintainer Michael Hiermeier
+\maintainer Matthias Mayr
 \date Jun 14, 2017
 
 */

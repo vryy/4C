@@ -8,7 +8,7 @@
 
 \level 2
 
-\maintainer Michael Hiermeier
+\maintainer Matthias Mayr
 
 \date Apr 28, 2014
 

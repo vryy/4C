@@ -7,7 +7,7 @@
 
 \level 3
 
-\maintainer Michael Hiermeier
+\maintainer Matthias Mayr
 
 \date Apr 7, 2014
 

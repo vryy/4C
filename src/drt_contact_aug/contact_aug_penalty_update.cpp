@@ -7,7 +7,7 @@ parameter cn
 
 \level 3
 
-\maintainer Michael Hiermeier
+\maintainer Matthias Mayr
 \date Jul 28, 2017
 
 */

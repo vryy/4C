@@ -2,7 +2,7 @@
 /*!
 \file contact_aug_parallel_distribution_controller.cpp
 
-\maintainer Michael Hiermeier
+\maintainer Matthias Mayr
 
 \date May 25, 2018
 

@@ -4,7 +4,7 @@
 
 \brief Identify the correct active set.
 
-\maintainer Michael Hiermeier
+\maintainer Matthias Mayr
 
 \date Mar 14, 2018
 
