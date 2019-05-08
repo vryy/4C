@@ -3,7 +3,7 @@
 
 \brief class for evaluation of equations on the structural surface
 
-\maintainer Michael Gee
+\maintainer Christoph Meier
 
 \level 1
 *----------------------------------------------------------------------*/
@@ -2748,10 +2748,10 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       if (phinp == Teuchos::null) dserror("Cannot get phinp vector of structure");
       // get phin state
       Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState(1, "phin");
-      if (phinp == Teuchos::null) dserror("Cannot get phin vector of structure");
+      if (phin == Teuchos::null) dserror("Cannot get phin vector of structure");
       // get phinp state
       Teuchos::RCP<const Epetra_Vector> rates = discretization.GetState(1, "rates");
-      if (phinp == Teuchos::null) dserror("Cannot get rates vector of structure");
+      if (rates == Teuchos::null) dserror("Cannot get rates vector of structure");
 
 
       //////////////////////////////////////////////////////////////
