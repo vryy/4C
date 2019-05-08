@@ -5,13 +5,9 @@
 
 --> THIS FUNCTIONALITY IS JUST USED IN COMBUST AND WILL LEAVE BACI SOON
 
-<pre>
 \level 3
-\maintainer  Christoph Ager
-             ager@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15249
-</pre>
+
+\maintainer Martin Kronbichler
 *----------------------------------------------------------------------*/
 
 
