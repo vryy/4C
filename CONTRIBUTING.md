@@ -110,6 +110,8 @@ then use `git rebase -i` to reorganize your commits before sharing.
 
 ##### Commit Messages
 
+Use the commit message to explain the context and reasons for your changes, i.e. the **What?** and **Why?**, rather than providing details on how you changed the code. Use comments in the source code or in the Doxygen documentation to explain *how* the code works.
+
 Commit messages must be detailed and directly include all necessary information. Including references to issues and merge requests is considered good practice, but does not replace a detailed and self-contained commit message.
 
 To differentiate from the documentation in GitLab: Commit messages are for the developers of the affected code parts, whereas issue and merge requests descriptions are meant for reviewers.
