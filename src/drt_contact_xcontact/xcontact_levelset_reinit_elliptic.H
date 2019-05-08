@@ -3,7 +3,7 @@
 
 \brief xcontact level-set elliptical reinitialization algorithm
 
-\maintainer Michael Hiermeier
+\maintainer Matthias Mayr
 
 \date Dec 1, 2016
 

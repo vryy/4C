@@ -4,7 +4,7 @@
 
 \brief debug output methods for the xcontact cutwizard
 
-\maintainer Michael Hiermeier
+\maintainer Matthias Mayr
 
 \date Jan 18, 2017
 

@@ -4,7 +4,7 @@
 
 \brief Model evaluator for the eXtended contact formulation
 
-\maintainer Michael Hiermeier
+\maintainer Matthias Mayr
 
 \date Jul 6, 2016
 

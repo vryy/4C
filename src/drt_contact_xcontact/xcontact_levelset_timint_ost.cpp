@@ -4,7 +4,7 @@
 
 \brief xcontact level-set one step theta algorithm
 
-\maintainer Michael Hiermeier
+\maintainer Matthias Mayr
 
 \date Nov 25, 2016
 

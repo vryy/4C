@@ -5,7 +5,7 @@
 \brief compute the intersection of the zero level-set iso-contour on the
   SCATRA surface discretization and evaluate important quantities
 
-\maintainer Michael Hiermeier
+\maintainer Matthias Mayr
 
 \date Nov 23, 2016
 

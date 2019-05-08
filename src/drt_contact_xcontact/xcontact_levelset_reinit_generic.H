@@ -4,7 +4,7 @@
 
 \brief xcontact level-set generic reinitialization algorithm
 
-\maintainer Michael Hiermeier
+\maintainer Matthias Mayr
 
 \date Dec 1, 2016
 

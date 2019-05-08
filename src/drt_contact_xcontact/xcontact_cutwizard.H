@@ -4,7 +4,7 @@
 \brief Cutwizard of the xcontact algorithm ( level-set cut of the structural
        XFEM discretization )
 
-\maintainer Michael Hiermeier
+\maintainer Matthias Mayr
 
 \date Jan 11, 2017
 

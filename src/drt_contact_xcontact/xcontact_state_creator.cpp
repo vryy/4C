@@ -4,7 +4,7 @@
 
 \brief State creator for the xcontact simulation
 
-\maintainer Michael Hiermeier
+\maintainer Matthias Mayr
 
 \date Jan 19, 2017
 

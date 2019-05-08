@@ -4,7 +4,7 @@
 
 \brief wrapper of the discretizations involved in a xcontact simulation
 
-\maintainer Michael Hiermeier
+\maintainer Matthias Mayr
 
 \date Nov 10, 2016
 

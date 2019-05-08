@@ -4,7 +4,7 @@
 
 \brief contains mainly debugging methods for the xcontact contact classes
 
-\maintainer Michael Hiermeier
+\maintainer Matthias Mayr
 
 \date Jul 08, 2016
 

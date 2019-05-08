@@ -4,7 +4,7 @@
 
 \brief level-set algorithm for the extended contact formulation
 
-\maintainer Michael Hiermeier
+\maintainer Matthias Mayr
 
 \date Nov 22, 2016
 

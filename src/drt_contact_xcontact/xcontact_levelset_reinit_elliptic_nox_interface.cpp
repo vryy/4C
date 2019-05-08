@@ -5,7 +5,7 @@
 \brief NOX interface implementation for the xcontact level-set elliptical
        reinitialization algorithm
 
-\maintainer Michael Hiermeier
+\maintainer Matthias Mayr
 
 \date Dec 5, 2016
 
