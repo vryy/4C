@@ -7,8 +7,8 @@
 \level 1
 
 \maintainer Christoph Schmidt
-
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 #include "base_binarytree.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_discret.H"

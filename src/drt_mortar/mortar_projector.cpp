@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*-----------------------------------------------------------------------*/
+/*!
 \file mortar_projector.cpp
 
 \brief A class to perform projections of nodes onto opposing MortarElements
@@ -6,8 +7,8 @@
 \level 1
 
 \maintainer Matthias Mayr
-
-*-----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------------------*/
 
 #include "mortar_projector.H"
 #include "mortar_interface.H"

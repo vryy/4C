@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*-----------------------------------------------------------------------*/
+/*!
 \file mortar_element_integrator.cpp
 
 \level 2
@@ -6,8 +7,8 @@
 \maintainer Matthias Mayr
 
 \brief A class to perform Gaussian integration on a mortar element
-
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 #include "mortar_element.H"
 #include "../drt_fem_general/drt_utils_integration.H"

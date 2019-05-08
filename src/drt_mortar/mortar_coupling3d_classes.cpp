@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*-----------------------------------------------------------------------*/
+/*!
 \file mortar_coupling3d_classes.cpp
 
 \brief A class for mortar coupling of ONE slave element and ONE master
@@ -7,8 +8,8 @@
 \level 1
 
 \maintainer Matthias Mayr
-
-*----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------------------*/
 
 #include "mortar_coupling3d.H"
 #include "mortar_coupling3d_classes.H"

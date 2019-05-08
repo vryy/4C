@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*-----------------------------------------------------------------------*/
+/*!
 \file mortar_integrator.cpp
 
 \brief A class to perform integrations of Mortar matrices on the overlap
@@ -7,8 +8,8 @@ of two MortarElements in 1D and 2D
 \level 1
 
 \maintainer Matthias Mayr
-
-*-----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #include "mortar_integrator.H"
 #include "mortar_node.H"
