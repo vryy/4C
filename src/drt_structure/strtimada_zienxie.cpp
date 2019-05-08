@@ -4,12 +4,9 @@
 
 \brief ZienkiewiczXie time step indicator for time adaptivity
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\level 1
+
+\maintainer Alexander Popp
 */
 
 /*----------------------------------------------------------------------*/

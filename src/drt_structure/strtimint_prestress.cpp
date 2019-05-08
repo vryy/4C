@@ -5,14 +5,9 @@
 
 \level 2
 
-<pre>
-\maintainer Sebastian Kehl
-            kehl@mhpc.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15249
-</pre>
-
-*----------------------------------------------------------------------*/
+\maintainer Fabian Braeu
+*/
+/*----------------------------------------------------------------------* /
 
 /* headers */
 #include "strtimint_prestress.H"

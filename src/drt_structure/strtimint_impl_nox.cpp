@@ -2,12 +2,11 @@
 /*!
 \file strtimint_impl_nox.cpp
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\brief Interface of solid time integration to NOX solver package
+
+\maintainer Alexander Popp
+
+\level 3
 */
 
 /*----------------------------------------------------------------------------*/
