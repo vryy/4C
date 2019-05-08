@@ -2,13 +2,9 @@
 /**
 \file xfem_state_creator.H
 
-\brief Merge the mutual functionality of the XFLUID and XCONTACT state
-  creators.
+\brief Merge the mutual functionality of the XCONTACT state creators.
 
-
-\maintainer Michael Hiermeier
-
-\date Jun 27, 2016
+\maintainer Matthias Mayr
 
 \level 3
 

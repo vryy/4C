@@ -5,9 +5,7 @@
 \brief MultiFieldMapExtractor class to handle different discretizations
        with joint interfaces
 
-\maintainer Michael Hiermeier
-
-\date Sep 21, 2016
+\maintainer Matthias Mayr
 
 \level 3
 
