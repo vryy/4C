@@ -4,9 +4,7 @@
 
 \brief Model evaluator for Structure-ALE problems.
 
-\maintainer Andreas Rauch
-
-\date Dec 05, 2016
+\maintainer Matthias Mayr
 
 \level 3
 
