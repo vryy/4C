@@ -81,7 +81,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::Setup(
   ParticleInteractionBase::Setup(particleengineinterface, particlewallinterface);
 
   // setup neighbor pair handler
-  neighborpairs_->Setup(particleengineinterface);
+  neighborpairs_->Setup(particleengineinterface, particlewallinterface);
 
   // setup history pair handler
   historypairs_->Setup(particleengineinterface);
@@ -195,8 +195,8 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateInteractions()
   // clear force and moment states of particles
   ClearForceAndMomentStates();
 
-  // evaluate particle pairs
-  neighborpairs_->EvaluateParticlePairs();
+  // evaluate neighbor pairs
+  neighborpairs_->EvaluateNeighborPairs();
 
   // check critical time step
   contact_->CheckCriticalTimeStep();
