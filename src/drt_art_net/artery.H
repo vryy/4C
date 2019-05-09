@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
-\file artery.H
+\brief One-dimensional artery element
 
-\maintainer Lena Yoshihara
+\maintainer Johannes Kremheller
 
 \level 3
 

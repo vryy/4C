@@ -1,11 +1,10 @@
 /*!----------------------------------------------------------------------
-\file art_write_gnuplot.H
 \brief Method to print the arteries in a way that could be displayed by
 \gnuplot
 
 \level 3
 
-\maintainer Lena Yoshihara
+\maintainer Johannes Kremheller
 
 *----------------------------------------------------------------------*/
 

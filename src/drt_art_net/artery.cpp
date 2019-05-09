@@ -1,11 +1,10 @@
 
 /*!----------------------------------------------------------------------
-\file artery.cpp
-\brief
+\brief One-dimensional artery element
 
 \level 3
 
-\maintainer Lena Yoshihara
+\maintainer Johannes Kremheller
 
 *----------------------------------------------------------------------*/
 

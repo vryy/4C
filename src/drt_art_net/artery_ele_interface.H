@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file artery_ele_interface.H
 
  \brief generic interface for implementations of the artery element
         evaluation routines
@@ -8,8 +7,6 @@
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_ART_NET_ARTERY_ELE_INTERFACE_H_

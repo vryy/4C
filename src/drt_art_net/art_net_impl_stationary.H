@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file art_net_impl_stationary.H
 \brief Control routine for arterial network stationary formulation.
 
 \maintainer Johannes Kremheller

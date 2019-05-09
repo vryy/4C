@@ -1,8 +1,7 @@
 /*!----------------------------------------------------------------------
-\file art_terminal_bc.cpp
 \brief evaluation of 1d-artery inlet bc
 
-\maintainer Lena Yoshihara
+\maintainer Johannes Kremheller
 
 \level 3
 

@@ -1,12 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file artery_resulttest.cpp
 
 \brief testing of artnet calculation results
 
 \level 3
 
-\maintainer Lena Yoshihara
+\maintainer Johannes Kremheller
 */
 /*----------------------------------------------------------------------*/
 

@@ -1,14 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file art_net_utils.cpp
 
  \brief helper functions/classes for artery problems
 
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 #include "art_net_utils.H"

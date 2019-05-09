@@ -1,6 +1,5 @@
 
 /*!----------------------------------------------------------------------
-\file artnetexplicitintegration.H
 \brief Associated with control routine for artery solvers,
 
      including instationary solvers based on
@@ -9,7 +8,7 @@
 
 \level 2
 
-\maintainer Lena Yoshihara
+\maintainer Johannes Kremheller
 
 
 

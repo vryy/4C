@@ -1,10 +1,9 @@
 /*!----------------------------------------------------------------------
-\file artery_input.cpp
-\brief
+\brief input for the artery element
 
 \level 3
 
-\maintainer Lena Yoshihara
+\maintainer Johannes Kremheller
 
 *----------------------------------------------------------------------*/
 

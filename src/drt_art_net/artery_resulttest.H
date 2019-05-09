@@ -1,10 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file artery_resulttest.H
 
 \brief testing of artery calculation results
 
-\maintainer Lena Yoshihara
+\maintainer Johannes Kremheller
 
 \level 3
 */
