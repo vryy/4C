@@ -1,15 +1,10 @@
 /*----------------------------------------------------------------------------*/
 /**
-\file xcontact_levelset_reinit_generic.cpp
-
 \brief xcontact level-set generic reinitialization algorithm
 
 \maintainer Matthias Mayr
 
-\date Dec 1, 2016
-
 \level 3
-
 */
 /*----------------------------------------------------------------------------*/
 

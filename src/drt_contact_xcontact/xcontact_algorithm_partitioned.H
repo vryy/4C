@@ -1,16 +1,11 @@
 /*----------------------------------------------------------------------------*/
 /**
-\file xcontact_algorithm_partitioned.H
-
 \brief partitioned algorithm for the inequality level-set approach for contact
        problems a.k.a. xcontact or extended contact
 
 \maintainer Matthias Mayr
 
-\date Jun 15, 2016
-
 \level 3
-
 */
 /*----------------------------------------------------------------------------*/
 

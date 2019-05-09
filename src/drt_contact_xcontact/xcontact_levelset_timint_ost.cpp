@@ -1,15 +1,10 @@
 /*----------------------------------------------------------------------------*/
 /**
-\file xcontact_levelset_timint_ost.cpp
-
 \brief xcontact level-set one step theta algorithm
 
 \maintainer Matthias Mayr
 
-\date Nov 25, 2016
-
 \level 3
-
 */
 /*----------------------------------------------------------------------------*/
 

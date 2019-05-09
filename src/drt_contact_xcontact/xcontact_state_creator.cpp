@@ -1,15 +1,10 @@
 /*----------------------------------------------------------------------------*/
 /**
-\file xcontact_state_creator.cpp
-
 \brief State creator for the xcontact simulation
 
 \maintainer Matthias Mayr
 
-\date Jan 19, 2017
-
 \level 3
-
 */
 /*----------------------------------------------------------------------------*/
 

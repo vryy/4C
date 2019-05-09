@@ -1,7 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file xcontact_strategy.H
-
 \brief Extended contact solving strategy with Level-Set and X-FEM
 
 \level 3
