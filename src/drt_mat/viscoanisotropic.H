@@ -1,6 +1,4 @@
 /*!----------------------------------------------------------------------
-\file viscoanisotropic.H
-
 \brief
 Anisotropic viscohyperelastic material
 The input line should read

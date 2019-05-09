@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file scatra_mat_var_chemdiffusion.H
-
  \brief scatra material for chemical diffusion under a variational framework
 
    \level 3
 
-   \maintainer  Jorge De Anda Salazar
-                DeAnda@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
+ \maintainer  Martin Kronbichler
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_MAT_SCATRA_MAT_VAR_CHEMDIFFUSION_H_

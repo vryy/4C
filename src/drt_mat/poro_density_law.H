@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file poro_density_law.H
-
  \brief calculation classes for evaluation of constitutive relation for (mircroscopic) density in
  porous media
 
    \level 3
 
-   \maintainer  Lena Yoshihara
-                yoshihara@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
+   \maintainer  Martin Kronbichler
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_MAT_PORO_DENSITY_LAW_H_

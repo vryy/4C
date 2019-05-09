@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file electromagnetic.cpp
 \brief Contains conductivity, permittivity and permeability of the medium for isotropic
        electromagetic field evolution.
        MAT 1 MAT_Electromagnetic CONDUCTIVITY 0.0 PERMITTIVITY 1.732 PERMEABILITY 1.732
@@ -9,8 +8,6 @@
 \level 2
 
 \maintainer Luca Berardocco
-            berardocco@lnm.mw.tum.de
-            089 - 289-15244
 
 </pre>
 */

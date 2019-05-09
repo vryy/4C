@@ -1,6 +1,4 @@
 /*!----------------------------------------------------------------------
-\file activefiber.H
-
 \brief active fiber material for cell contractibility
 
 \level 3
@@ -23,12 +21,8 @@ SIGMAX 3.9E-03 EPSNULL 2.8E-04
   | !!! ATTENTION !!! Many major mistakes in literature that were corrected here !!!!  |
   |____________________________________________________________________________________|
 
-<pre>
-\maintainer Andreas Rauch
-            rauch@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15240
-</pre>
+\maintainer Christoph Schmidt
+
 *----------------------------------------------------------------------*/
 
 #ifndef ACTIVEFIBER_H_

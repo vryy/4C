@@ -1,7 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file consolidation.cpp
- \brief managing common consolidation methods
+\brief managing common consolidation methods
 
 \level 3
 <pre>

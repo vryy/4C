@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file particle_mat.H
-
 \brief material properties of particles
 
 \level 2
 
 \maintainer  Christoph Meier
-             meier@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
 
 *-----------------------------------------------------------------------*/
 #ifndef PARTICLE_MAT_H

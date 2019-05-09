@@ -1,11 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file modpowerlaw.cpp
+\brief
+Nonlinear viscosity according to a modified power law
 
 \maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
 
 \level 3
 */

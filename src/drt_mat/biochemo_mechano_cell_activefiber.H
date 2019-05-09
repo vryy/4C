@@ -1,11 +1,9 @@
 /*!----------------------------------------------------------------------
-\file biochemo_mechano_cell_activefiber.H
-
 \brief Implementation of Biochemo-Mechano Coupled Stress Fiber Formation and Dissociation.
 
 \level 3
 
-\maintainer Andreas Rauch
+\maintainer Christoph Schmidt
 
 *----------------------------------------------------------------------*/
 

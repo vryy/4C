@@ -1,15 +1,11 @@
 /*!----------------------------------------------------------------------
-\file scatra_chemotaxis_mat.H
-
  \brief
-
 This file contains the base material for chemotactic scalars.
 
+\level 3
+
 <pre>
-Maintainer: Moritz Thon
-            thon@mhpc.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-10364
+\maintainer Christoph Schmidt
 </pre>
 *----------------------------------------------------------------------*/
 

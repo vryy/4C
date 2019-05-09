@@ -1,12 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file scatra_bondreac_mat.H
-
  \brief bond material
 
 \level 3
 
- \maintainer  Andreas Rauch
+\maintainer Christoph Schmidt
 
  *----------------------------------------------------------------------*/
 

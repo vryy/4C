@@ -1,12 +1,8 @@
 /*-----------------------------------------------------------*/
 /*!
-\file crosslinkermat.cpp
-
 \brief A class for a crosslinker material
 
 \maintainer Jonas Eichinger
-
-\date Oct, 2016
 
 \level 3
 

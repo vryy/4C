@@ -1,11 +1,9 @@
 /*!----------------------------------------------------------------------
-\file biochemo_mechano_cell_passivefiber.cpp
-
 \brief Implementation of Biochemo-Mechano Coupled passive, viscoelastic material model for the cell.
 
 \level 3
 
-\maintainer Andreas Rauch
+\maintainer Christoph Schmidt
 
 *----------------------------------------------------------------------*/
 

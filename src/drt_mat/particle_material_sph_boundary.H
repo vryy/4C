@@ -1,15 +1,10 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_material_sph_boundary.H
-
 \brief particle material for SPH boundary
 
 \level 3
 
 \maintainer  Sebastian Fuchs
-             fuchs@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15262
 
 */
 /*---------------------------------------------------------------------------*/

@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file aaaneohooke.H
 \brief
 This file contains the routines required for aneurysmatic artery wall following
 Raghavan and Vorp [2000]
@@ -16,12 +15,9 @@ the input line should read
   MAT 1 MAT_Struct_AAANeoHooke_Stopro YOUNG 1.044E7 BETA 188.1E5 NUE 0.3 DENS 1.0 SIGMA 0.25
 CORRLENGTH 5.0
 
-<pre>
-Maintainer: Jonas Biehler
-            biehler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15276
-</pre>
+\level 3
+
+\maintainer Christoph Schmidt
 
 *----------------------------------------------------------------------*/
 #ifndef AAANEOHOOKE_STOPRO_H_

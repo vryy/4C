@@ -1,15 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file micromaterial_evaluate.cpp
-
 \brief class for handling of micro-macro transitions
 
-<pre>
-Maintainer: Lena Wiechert
-            yoshihara@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15303
-</pre>
+\level 3
+
+\maintainer Martin Kronbichler
 */
 /*----------------------------------------------------------------------*/
 

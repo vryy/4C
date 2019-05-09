@@ -1,6 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file stvenantkirchhoff.H
+\brief
+St. Venant-Kirchhoff material
 
 \level 2
 

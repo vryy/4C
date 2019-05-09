@@ -1,12 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file structporo_reaction.H
-
  \brief wrapper for structure material of porous media including reactive reference porosity
 
-   \maintainer Andreas Rauch
-               rauch@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
+\maintainer Christoph Schmidt
 
 \level 3
  *----------------------------------------------------------------------*/

@@ -1,5 +1,5 @@
 /*!-----------------------------------------------------------------------
-\file matpar_material.H
+\brief A condition of any kind
 
 \level 1
 

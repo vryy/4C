@@ -1,12 +1,9 @@
 /*!----------------------------------------------------------------------
-\file scatra.H
+\brief scalar transport material
 
-<pre>
-Maintainer: Volker Gravemeier
-            vgravem@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15245
-</pre>
+\level 1
+
+\maintainer Volker Gravemeier
 *----------------------------------------------------------------------*/
 #ifndef SCATRA_MAT_H
 #define SCATRA_MAT_H

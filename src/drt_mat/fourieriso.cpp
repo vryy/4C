@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fourieriso.cpp
 \brief heat condution according to fourier's law
 
 

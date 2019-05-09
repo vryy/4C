@@ -1,10 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file cnst_1d_art.cpp
-
-\maintainer Lena Yoshihara
+\brief
+Former file of Lena Yoshihara
 
 \level 3
+
+\maintainer Martin Kronbichler
 */
 /*----------------------------------------------------------------------*/
 

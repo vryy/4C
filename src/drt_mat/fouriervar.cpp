@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fouriervar.cpp
 \brief heat conduction according to fourier's law with variable conductivity and capacity
 
 \level 2

@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file material_service.H
-
 \brief Various service routines related to materials
 
 \level 1

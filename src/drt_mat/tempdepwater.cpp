@@ -1,17 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file tempdepwater.cpp
+\brief temperature-dependent water according to "VDI Waermeatlas"
 
-\brief material for temperature-dependent water according to "VDI Waermeatlas"
+\level 2
 
-\level 3
-
-<pre>
 \maintainer Volker Gravemeier
-            vgravem@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15245
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

@@ -1,13 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file yoghurt.H
+\brief yoghurt-type fluid
 
-<pre>
-Maintainer: Volker Gravemeier
-            vgravem@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15245
-</pre>
+\level 2
+
+\maintainer Volker Gravemeier
 */
 /*----------------------------------------------------------------------*/
 #ifndef YOGHURT_H

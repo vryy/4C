@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elasthyper.cpp
-
 \brief
 This file contains the hyperelastic toolbox. It allows summing up several summands
 of several types (isotropic or anisotropic, splitted or not) to build a hyperelastic

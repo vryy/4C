@@ -1,6 +1,4 @@
 /*!-----------------------------------------------------------------------
-\file matpar_material.cpp
-
 \brief A condition of any kind
 
 \level 1

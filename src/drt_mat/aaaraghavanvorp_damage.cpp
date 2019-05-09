@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file aaaraghavanvorp_damage.cpp
 \brief
 This file contains the routines required for aneurysmatic artery wall
 damaging following Simo approach explained in Holzapfel (p298).
@@ -13,11 +12,9 @@ the input line should read
 MAT 3 MAT_Raghavan_Damage BULK 0.120755 ALPHA 0.068632  BETA 5.799445 EQSTRMIN 0.206141 EQSTRMAX
 0.6444974  A 2.4816557 B  0.478626783 DENS 0.001
 
-<pre>
-Maintainer: Giacomo Marini
+\level 3
 
-date: 26/05/2009
-</pre>
+\maintainer Christoph Schmidt
 
 *----------------------------------------------------------------------*/
 

@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file activefiber.cpp
 \brief
 
  This file contains routines for a local material law that contains active
@@ -24,12 +23,11 @@ SIGMAX 3.9E+03 EPSNULL 2.8E-04
 
 
 
-<pre>
-Maintainer: Andreas Rauch
-            rauch@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15240
-</pre>
+\level 3
+
+\maintainer Christoph Schmidt
+
+
 *----------------------------------------------------------------------*/
 
 #include "activefiber.H"

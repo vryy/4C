@@ -1,13 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ferech_pv.H
+\brief scalar transport material with simplified chemical kinetics
 
-<pre>
-Maintainer: Volker Gravemeier
-            vgravem@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15245
-</pre>
+\level 2
+
+\maintainer Volker Gravemeier
 */
 /*----------------------------------------------------------------------*/
 #ifndef FERECH_PV_H

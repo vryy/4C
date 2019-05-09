@@ -1,10 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file maxwell_0d_acinus_Exponential.cpp
+\brief
+Former file of Lena Yoshihara
+
+\maintainer Martin Kronbichler
 
 \level 3
-
-\maintainer Lena Yoshihara
 */
 /*----------------------------------------------------------------------*/
 

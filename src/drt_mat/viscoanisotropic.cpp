@@ -1,6 +1,4 @@
 /*!----------------------------------------------------------------------
-\file viscoanisotropic.cpp
-
 \brief
 Anisotropic viscohyperelastic material
 The input line should read

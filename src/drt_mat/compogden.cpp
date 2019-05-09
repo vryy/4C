@@ -1,13 +1,11 @@
 /*!----------------------------------------------------------------------
-\file compogden.cpp
+\brief
+Former file of Lena Yoshihara
 
 \level 3
 
-<pre>
-\maintainer Lena Yoshihara
-            yoshihara@lnm.mw.tum.de
-            089/289 15255
-</pre>
+\maintainer Martin Kronbichler
+
 \param  Epetra_SerialDenseVector* glstrain      (i) Green-Lagrange strains
 \param  Epetra_SerialDenseVector* stress        (o) ele stress vector
 \param  Epetra_SerialDenseMatrix* cmat          (o) constitutive matrix

@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid_murnaghantait.cpp
-
 \brief Weakly compressible fluid according to Murnaghan-Tait
 
 <pre>
 \level 1
 
 \maintainer Andrea La Spina
-            http://www.lnm.mw.tum.de
-            089 - 289-15265
 </pre>
 */
 /*----------------------------------------------------------------------*/

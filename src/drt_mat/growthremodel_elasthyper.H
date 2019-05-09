@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file growthremodel_elasthyper.H
-
 \brief This file is used to manage the homogenized constraint mixture during growth and remodeling
 
 \level 3

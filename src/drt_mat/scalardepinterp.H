@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scalardepinterp.H
 \brief
 This file contains a framework, which allows for the linear interpolation between two different
 strain energy functions, where the interpolation ratio come from 'outside'. For now this is supposed
@@ -11,9 +10,7 @@ parameters or totally different strain energy function).
 \level 2
 
 
-\maintainer Moritz Thon
-            thon@mhpc.mw.tum.de
-            089 - 289-10364
+\maintainer Christoph Schmidt
 
 */
 
