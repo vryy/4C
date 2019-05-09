@@ -4,7 +4,7 @@
 
 \level 1
 <pre>
-\maintainer Sebastian Pröll
+\maintainer Sebastian Proell
 </pre>
 */
 
