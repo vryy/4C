@@ -809,6 +809,13 @@ namespace INPAR
   {
   }  // namespace INVANA
 
+  /*! \brief Input parameters for global I/O control
+   *
+   */
+  namespace IO
+  {
+  }
+
   /*! \brief Input parameters for
    *
    */
