@@ -1,7 +1,5 @@
-/*!----------------------------------------------------------------------
-
-\file stru_dyn_nln_drt.H
-
+/*---------------------------------------------------------------------*/
+/*!
 \brief Control routine for structural dynamics (outsourced to adapter layer)
 
 \maintainer Alexander Popp

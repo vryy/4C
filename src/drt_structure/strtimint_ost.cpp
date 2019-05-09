@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file strtimint_ost.cpp
 \brief Structural time integration with one-step-theta
 \level 1
 \maintainer Alexander Popp

@@ -1,17 +1,10 @@
 /*======================================================================*/
 /*!
-\file strtimada_joint.H
-
 \brief Indicator based on general STR::TimInt object
 
 \level 1
 
-<pre>
 \maintainer Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
 */
 
 /*----------------------------------------------------------------------*/

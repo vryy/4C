@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file strtimint_statics.H
 \brief Statics analysis
 \level 1
 \maintainer Alexander Popp

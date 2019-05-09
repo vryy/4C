@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file stru_resulttest.cpp
-
 \brief Testing of structure calculation results
 
 \maintainer Alexander Popp

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file strtimint_noxlinsys.cpp
 \brief Use #NOX as non-linear solution technique for implicit
        structureal time integration
 

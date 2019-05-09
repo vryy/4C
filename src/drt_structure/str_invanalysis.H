@@ -1,16 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file str_invanalysis.H
 \brief Inverse analysis for structures
 
 \level 1
 
-<pre>
 \maintainer Harald Willmann
-            willmann@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15255
-</pre>
 */
 
 /*----------------------------------------------------------------------*/

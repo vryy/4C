@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file strtimint_impl_nox.cpp
-
 \brief Interface of solid time integration to NOX solver package
 
 \maintainer Alexander Popp

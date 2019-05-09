@@ -1,6 +1,4 @@
 /*!----------------------------------------------------------------------
-\file strtimint_prestress.cpp
-
 \brief Static Prestress analysis
 
 \level 2

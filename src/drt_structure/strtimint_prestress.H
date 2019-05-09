@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file strtimint_prestress.H
 \brief Static Prestress  analysis
 \level 2
 

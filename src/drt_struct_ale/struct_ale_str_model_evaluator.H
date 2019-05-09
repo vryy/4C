@@ -1,13 +1,10 @@
 /*-----------------------------------------------------------*/
 /*!
-\file struct_ale_str_model_evaluator.H
-
 \brief Model evaluator for Structure-ALE problems.
 
 \maintainer Matthias Mayr
 
 \level 3
-
 */
 /*-----------------------------------------------------------*/
 

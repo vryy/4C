@@ -1,16 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file strtimint_genalpha.cpp
-
 \brief Structural time integration with generalised-alpha
 
 \level 1
 
 \maintainer Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-
 */
 
 /*----------------------------------------------------------------------*/

@@ -1,6 +1,5 @@
 /*======================================================================*/
 /*!
-\file strtimada_zienxie.H
 \brief Zienkiewicz-Xie time step indicator for time adaptivity
 \level 1
 
