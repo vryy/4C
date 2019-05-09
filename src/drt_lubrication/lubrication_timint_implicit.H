@@ -386,6 +386,9 @@ namespace LUBRICATION
     //! flag for Modified Reynolds Equation
     bool modified_reynolds_;
 
+    //! flag for adding squeeze term to Reynolds Equ.
+    bool addsqz_;
+
 
     /*--- query and output ---------------------------------------------------*/
 

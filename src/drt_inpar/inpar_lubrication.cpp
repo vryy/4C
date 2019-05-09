@@ -97,10 +97,8 @@ void INPAR::LUBRICATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
       "the lubrication problem will use the modified reynolds equ. in order to consider surface"
       " roughness",
       &lubricationdyn);
-  //  setStringToIntegralParameter<int>("MODIFIED_REYNOLDS_EQU", "No",
-  //      "the lubrication problem will use the modified reynolds equ. in order to consider surface"
-  //      "roughness",
-  //      tuple<std::string>("No", "Yes"), &lubricationdyn);  // check plz ->boolparameter??
-  // tuple<std::string>("No", "error_by_function"), tuple<int>(calcerror_no, calcerror_byfunction),
-  //      &lubricationdyn);
+
+  // Flag for considering the Squeeze term in Reynolds Equation
+  BoolParameter("ADD_SQUEEZE_TERM", "No",
+      "the squeeze term will also be considered in the Reynolds Equation", &lubricationdyn);
 }

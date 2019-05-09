@@ -53,6 +53,7 @@ namespace DRT
 
       double Time() const { return time_; };
       bool ModifiedReynolds() const { return modified_reynolds_; };
+      bool AddSqz() const { return addsqz_; };
       double RoughnessDeviation() const { return roughness_deviation_; };
 
      private:
@@ -62,6 +63,7 @@ namespace DRT
 
       double time_;
       bool modified_reynolds_;
+      bool addsqz_;
       double roughness_deviation_;
 
     };  // class LubricationEleParameter

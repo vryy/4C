@@ -76,7 +76,7 @@ void DRT::ELEMENTS::LubricationEleParameter::Done()
 DRT::ELEMENTS::LubricationEleParameter::LubricationEleParameter(
     const std::string& disname  //!< name of discretization
     )
-    : time_(-1.0), modified_reynolds_(true), roughness_deviation_(0.0)
+    : time_(-1.0), modified_reynolds_(true), addsqz_(true), roughness_deviation_(0.0)
 {
   return;
 }
@@ -100,9 +100,6 @@ void DRT::ELEMENTS::LubricationEleParameter::SetGeneralParameters(
 )
 {
   modified_reynolds_ = parameters.get<bool>("ismodifiedrey");
-  // normtypeinc_ = DRT::INPUT::IntegralValue<INPAR::EHL::ConvNorm>(ehldynmono_, "NORM_INC");
-  //  modified_reynolds_ = DRT::INPUT::IntegralValue<int>(
-  //      DRT::Problem::Instance()->ElastoHydroDynamicParams(), "MODIFIED_REYNOLDS_EQU");
+  addsqz_ = parameters.get<bool>("addsqz");
   roughness_deviation_ = parameters.get<double>("roughnessdeviation");
-  //      DRT::Problem::Instance()->LubricationDynamicParams().get<double>("ROUGHNESS_STD_DEVIATION");
 }
