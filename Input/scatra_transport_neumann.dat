@@ -1,8 +1,5 @@
 //
 // Maintainer: Johannes Kremheller
-// kremheller@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289 - 15262
 //
 // scalar dependent growth of a quadratic block
 // Testing: (transport) neumann condition with more than 6 dofs and varying curves
