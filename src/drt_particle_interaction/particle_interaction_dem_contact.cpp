@@ -213,19 +213,19 @@ void PARTICLEINTERACTION::DEMContact::AddForceAndMomentContribution()
   DEMHistoryPairTangentialData& tangentialhistorydata =
       historypairs_->GetRefToTangentialHistoryData();
 
-  // iterate over neighbor pairs
-  for (const auto& neighborpair : neighborpairs_->GetRefToNeighborPairData())
+  // iterate over particle pairs
+  for (const auto& particlepair : neighborpairs_->GetRefToParticlePairData())
   {
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
     PARTICLEENGINE::StatusEnum status_i;
     int particle_i;
-    std::tie(type_i, status_i, particle_i) = neighborpair.tuple_i_;
+    std::tie(type_i, status_i, particle_i) = particlepair.tuple_i_;
 
     PARTICLEENGINE::TypeEnum type_j;
     PARTICLEENGINE::StatusEnum status_j;
     int particle_j;
-    std::tie(type_j, status_j, particle_j) = neighborpair.tuple_j_;
+    std::tie(type_j, status_j, particle_j) = particlepair.tuple_j_;
 
     // get corresponding particle containers
     PARTICLEENGINE::ParticleContainer* container_i =
@@ -267,8 +267,8 @@ void PARTICLEINTERACTION::DEMContact::AddForceAndMomentContribution()
     double r_ci[3], r_cj[3];
     if (contacttangential_)
     {
-      UTILS::vec_setscale(r_ci, (rad_i[0] + 0.5 * neighborpair.gap_), neighborpair.e_ji_);
-      UTILS::vec_setscale(r_cj, -(rad_j[0] + 0.5 * neighborpair.gap_), neighborpair.e_ji_);
+      UTILS::vec_setscale(r_ci, (rad_i[0] + 0.5 * particlepair.gap_), particlepair.e_ji_);
+      UTILS::vec_setscale(r_cj, -(rad_j[0] + 0.5 * particlepair.gap_), particlepair.e_ji_);
     }
 
     // relative velocity in contact point c between particle i and j
@@ -282,17 +282,17 @@ void PARTICLEINTERACTION::DEMContact::AddForceAndMomentContribution()
     }
 
     // magnitude of relative velocity in normal direction
-    const double vel_rel_normal = UTILS::vec_dot(vel_rel, neighborpair.e_ji_);
+    const double vel_rel_normal = UTILS::vec_dot(vel_rel, particlepair.e_ji_);
 
     // calculate normal contact force
     double normalcontactforce(0.0);
     contactnormal_->NormalContactForce(
-        neighborpair.gap_, rad_i, rad_j, vel_rel_normal, neighborpair.m_eff_, normalcontactforce);
+        particlepair.gap_, rad_i, rad_j, vel_rel_normal, particlepair.m_eff_, normalcontactforce);
 
     // add normal contact force contribution
-    UTILS::vec_addscale(force_i, normalcontactforce, neighborpair.e_ji_);
+    UTILS::vec_addscale(force_i, normalcontactforce, particlepair.e_ji_);
     if (status_j == PARTICLEENGINE::Owned)
-      UTILS::vec_addscale(force_j, -normalcontactforce, neighborpair.e_ji_);
+      UTILS::vec_addscale(force_j, -normalcontactforce, particlepair.e_ji_);
 
     // calculation of tangential contact force
     if (contacttangential_)
@@ -310,12 +310,12 @@ void PARTICLEINTERACTION::DEMContact::AddForceAndMomentContribution()
       // relative velocity in tangential direction
       double vel_rel_tangential[3];
       UTILS::vec_set(vel_rel_tangential, vel_rel);
-      UTILS::vec_addscale(vel_rel_tangential, -vel_rel_normal, neighborpair.e_ji_);
+      UTILS::vec_addscale(vel_rel_tangential, -vel_rel_normal, particlepair.e_ji_);
 
       // calculate tangential contact force
       double tangentialcontactforce[3];
       contacttangential_->TangentialContactForce(tangentialhistory_ij.gap_t_,
-          tangentialhistory_ij.stick_, neighborpair.e_ji_, vel_rel_tangential, neighborpair.m_eff_,
+          tangentialhistory_ij.stick_, particlepair.e_ji_, vel_rel_tangential, particlepair.m_eff_,
           normalcontactforce, tangentialcontactforce);
 
       // copy history from interaction pair ij to ji

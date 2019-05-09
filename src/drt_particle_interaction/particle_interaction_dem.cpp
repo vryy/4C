@@ -195,8 +195,8 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateInteractions()
   // clear force and moment states of particles
   ClearForceAndMomentStates();
 
-  // evaluate particle neighbor pairs
-  neighborpairs_->EvaluateNeighborPairs();
+  // evaluate particle pairs
+  neighborpairs_->EvaluateParticlePairs();
 
   // check critical time step
   contact_->CheckCriticalTimeStep();

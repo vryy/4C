@@ -47,7 +47,7 @@ namespace PARTICLEENGINE
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  typedef std::vector<PARTICLEINTERACTION::DEMNeighborPair> DEMNeighborPairData;
+  typedef std::vector<PARTICLEINTERACTION::DEMParticlePair> DEMParticlePairData;
 }
 
 /*---------------------------------------------------------------------------*
@@ -77,18 +77,18 @@ namespace PARTICLEINTERACTION
     //! read restart of neighbor pair handler
     void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
-    //! get reference to neighbor pair data
-    inline const DEMNeighborPairData& GetRefToNeighborPairData() const
+    //! get reference to particle pair data
+    inline const DEMParticlePairData& GetRefToParticlePairData() const
     {
-      return neighborpairdata_;
+      return particlepairdata_;
     };
 
-    //! evaluate neighbor pairs
-    void EvaluateNeighborPairs();
+    //! evaluate particle pairs
+    void EvaluateParticlePairs();
 
    private:
-    //! neighbor pair data with evaluated quantities
-    DEMNeighborPairData neighborpairdata_;
+    //! particle pair data with evaluated quantities
+    DEMParticlePairData particlepairdata_;
 
     //! interface to particle engine
     std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface_;

@@ -26,7 +26,7 @@
 namespace PARTICLEINTERACTION
 {
   //! struct to store quantities of interacting particles
-  struct DEMNeighborPair
+  struct DEMParticlePair
   {
     //! local index tuple of particles i and j
     PARTICLEENGINE::LocalIndexTuple tuple_i_;

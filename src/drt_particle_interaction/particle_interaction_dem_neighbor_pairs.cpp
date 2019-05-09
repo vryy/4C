@@ -73,14 +73,14 @@ void PARTICLEINTERACTION::DEMNeighborPairs::ReadRestart(
 }
 
 /*---------------------------------------------------------------------------*
- | evaluate neighbor pairs                                    sfuchs 11/2018 |
+ | evaluate particle pairs                                    sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateNeighborPairs()
+void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticlePairs()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::DEMNeighborPairs::EvaluateNeighborPairs");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticlePairs");
 
-  // clear neighbor pair data
-  neighborpairdata_.clear();
+  // clear particle pair data
+  particlepairdata_.clear();
 
   // iterate over potential particle neighbors
   for (const auto& potentialneighbors : particleengineinterface_->GetPotentialParticleNeighbors())
@@ -131,24 +131,24 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateNeighborPairs()
     // neighboring particles within interaction distance
     if (gap < 0.0)
     {
-      // initialize neighbor pair
-      neighborpairdata_.push_back(DEMNeighborPair());
+      // initialize particle pair
+      particlepairdata_.push_back(DEMParticlePair());
 
-      // get reference to current neighbor pair
-      DEMNeighborPair& neighborpair = neighborpairdata_.back();
+      // get reference to current particle pair
+      DEMParticlePair& particlepair = particlepairdata_.back();
 
       // set local index tuple of particles i and j
-      neighborpair.tuple_i_ = potentialneighbors.first;
-      neighborpair.tuple_j_ = potentialneighbors.second;
+      particlepair.tuple_i_ = potentialneighbors.first;
+      particlepair.tuple_j_ = potentialneighbors.second;
 
       // set gap between particles
-      neighborpair.gap_ = gap;
+      particlepair.gap_ = gap;
 
       // versor from particle i to j
-      UTILS::vec_setscale(neighborpair.e_ji_, (1.0 / absdist), r_ji);
+      UTILS::vec_setscale(particlepair.e_ji_, (1.0 / absdist), r_ji);
 
       // set effective mass of particles i and j
-      neighborpair.m_eff_ = mass_i[0] * mass_j[0] / (mass_i[0] + mass_j[0]);
+      particlepair.m_eff_ = mass_i[0] * mass_j[0] / (mass_i[0] + mass_j[0]);
     }
   }
 }
