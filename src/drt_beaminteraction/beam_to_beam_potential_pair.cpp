@@ -188,54 +188,54 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Eval
   }
 
   //************************** DEBUG ******************************************
-  if (stiffmat11 != NULL and stiffmat12 != NULL and stiffmat21 != NULL and stiffmat22 != NULL)
-  {
-    std::cout << "\n\nDone with evaluation of";
+  //  if (stiffmat11 != NULL and stiffmat12 != NULL and stiffmat21 != NULL and stiffmat22 != NULL)
+  //  {
+  //    std::cout << "\n\nDone with evaluation of";
+  //
+  //    this->Print(std::cout);
+  //
+  //    std::cout << "m_=" << m_ << ", k_=" << k_;
+  //
+  //    // hard-set values below double precision to zero to ease comparison
+  //    for (unsigned int i = 0; i < dim1; ++i)
+  //      for (unsigned int j = 0; j < dim1; ++j)
+  //      {
+  //        if (std::abs((*stiffmat11)(i, j)) < 1e-15) (*stiffmat11)(i, j) = 0.0;
+  //        if (std::abs((*stiffmat12)(i, j)) < 1e-15) (*stiffmat12)(i, j) = 0.0;
+  //        if (std::abs((*stiffmat21)(i, j)) < 1e-15) (*stiffmat21)(i, j) = 0.0;
+  //        if (std::abs((*stiffmat22)(i, j)) < 1e-15) (*stiffmat22)(i, j) = 0.0;
+  //      }
+  //
+  //
+  //    std::cout << "\nstiffmat11=";
+  //    if (stiffmat11->NormInf() > 0.0)
+  //      stiffmat11->Print(std::cout);
+  //    else
+  //      std::cout << "zeros(" << stiffmat11->M() << "," << stiffmat11->N() << ")";
+  //
+  //    std::cout << "\nstiffmat12=";
+  //    if (stiffmat12->NormInf() > 0.0)
+  //      stiffmat12->Print(std::cout);
+  //    else
+  //      std::cout << "zeros(" << stiffmat12->M() << "," << stiffmat12->N() << ")";
+  //
+  //    std::cout << "\nstiffmat21=";
+  //    if (stiffmat21->NormInf() > 0.0)
+  //      stiffmat21->Print(std::cout);
+  //    else
+  //      std::cout << "zeros(" << stiffmat21->M() << "," << stiffmat21->N() << ")";
+  //
+  //    std::cout << "\nstiffmat22=";
+  //    if (stiffmat22->NormInf() > 0.0)
+  //      stiffmat22->Print(std::cout);
+  //    else
+  //      std::cout << "zeros(" << stiffmat22->M() << "," << stiffmat22->N() << ")\n";
 
-    this->Print(std::cout);
+  //    static unsigned int num_evaluations = 0;
+  //    if (++num_evaluations >= 3 * 16) dserror("stop here!");
 
-    std::cout << "m_=" << m_ << ", k_=" << k_;
-
-    // hard-set values below double precision to zero to ease comparison
-    for (unsigned int i = 0; i < dim1; ++i)
-      for (unsigned int j = 0; j < dim1; ++j)
-      {
-        if (std::abs((*stiffmat11)(i, j)) < 1e-15) (*stiffmat11)(i, j) = 0.0;
-        if (std::abs((*stiffmat12)(i, j)) < 1e-15) (*stiffmat12)(i, j) = 0.0;
-        if (std::abs((*stiffmat21)(i, j)) < 1e-15) (*stiffmat21)(i, j) = 0.0;
-        if (std::abs((*stiffmat22)(i, j)) < 1e-15) (*stiffmat22)(i, j) = 0.0;
-      }
-
-
-    std::cout << "\nstiffmat11=";
-    if (stiffmat11->NormInf() > 0.0)
-      stiffmat11->Print(std::cout);
-    else
-      std::cout << "zeros(" << stiffmat11->M() << "," << stiffmat11->N() << ")";
-
-    std::cout << "\nstiffmat12=";
-    if (stiffmat12->NormInf() > 0.0)
-      stiffmat12->Print(std::cout);
-    else
-      std::cout << "zeros(" << stiffmat12->M() << "," << stiffmat12->N() << ")";
-
-    std::cout << "\nstiffmat21=";
-    if (stiffmat21->NormInf() > 0.0)
-      stiffmat21->Print(std::cout);
-    else
-      std::cout << "zeros(" << stiffmat21->M() << "," << stiffmat21->N() << ")";
-
-    std::cout << "\nstiffmat22=";
-    if (stiffmat22->NormInf() > 0.0)
-      stiffmat22->Print(std::cout);
-    else
-      std::cout << "zeros(" << stiffmat22->M() << "," << stiffmat22->N() << ")\n";
-
-    //    static unsigned int num_evaluations = 0;
-    //    if (++num_evaluations >= 3 * 16) dserror("stop here!");
-
-    //    if (Element1()->Id() == 1 and Element2()->Id() == 5) dserror("stop here!");
-  }
+  //    if (Element1()->Id() == 1 and Element2()->Id() == 5) dserror("stop here!");
+  //  }
   //*********************** END DEBUG *****************************************
 
   return true;
@@ -1551,8 +1551,9 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
           gap_ul_regularized = regularization_separation;
 
           //************************** DEBUG ******************************************
-          std::cout << "\ngap_ul: " << FADUTILS::CastToDouble(gap_ul) << ": regularization active!";
-          std::cout << "\ngap_ul_regularized: " << FADUTILS::CastToDouble(gap_ul_regularized);
+          //          std::cout << "\ngap_ul: " << FADUTILS::CastToDouble(gap_ul) << ":
+          //          regularization active!"; std::cout << "\ngap_ul_regularized: " <<
+          //          FADUTILS::CastToDouble(gap_ul_regularized);
           // this->Print(std::cout);
           // std::cout << "\nigp_total: " << igp_total;
           //*********************** END DEBUG *****************************************
@@ -1642,6 +1643,14 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
             (-m_ + 4.5) * (-m_ + 3.5) / (gap_ul_regularized * gap_ul_regularized) *
             pot_ia_deriv_cos_alpha;
 
+        T pot_ia_deriv_gap_ul_2ndderiv_cos_alpha_at_regsep =
+            (-m_ + 4.5) / gap_ul_regularized * pot_ia_2ndderiv_cos_alpha;
+
+        // fourth derivative
+        T pot_ia_2ndderiv_gap_ul_2ndderiv_cos_alpha_at_regsep =
+            (-m_ + 4.5) * (-m_ + 3.5) / (gap_ul_regularized * gap_ul_regularized) *
+            pot_ia_2ndderiv_cos_alpha;
+
         /* now that we don't need the interaction potential at gap_ul=regularization_separation as
          * an intermediate result anymore, we can add the additional (linear and quadratic)
          * contributions in case of active regularization to the interaction potential */
@@ -1649,12 +1658,12 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
             gap_ul < regularization_separation)
         {
           //************************** DEBUG ******************************************
-          std::cout << "\ninteraction_potential_GP_atregsep: "
-                    << FADUTILS::CastToDouble(interaction_potential_GP);
-          std::cout << "\npot_ia_deriv_gap_ul_atregsep: "
-                    << FADUTILS::CastToDouble(pot_ia_deriv_gap_ul);
-          std::cout << "\npot_ia_deriv_cos_alpha_atregsep: "
-                    << FADUTILS::CastToDouble(pot_ia_deriv_cos_alpha);
+          //          std::cout << "\ninteraction_potential_GP_atregsep: "
+          //                    << FADUTILS::CastToDouble(interaction_potential_GP);
+          //          std::cout << "\npot_ia_deriv_gap_ul_atregsep: "
+          //                    << FADUTILS::CastToDouble(pot_ia_deriv_gap_ul);
+          //          std::cout << "\npot_ia_deriv_cos_alpha_atregsep: "
+          //                    << FADUTILS::CastToDouble(pot_ia_deriv_cos_alpha);
           // this->Print(std::cout);
           // std::cout << "\nigp_total: " << igp_total;
           //*********************** END DEBUG *****************************************
@@ -1679,17 +1688,38 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
           }
 
           //************************** DEBUG ******************************************
-          std::cout << "\ninteraction_potential_GP_regularized: "
-                    << FADUTILS::CastToDouble(interaction_potential_GP);
-          std::cout << "\npot_ia_deriv_gap_ul_regularized: "
-                    << FADUTILS::CastToDouble(pot_ia_deriv_gap_ul);
-          std::cout << "\npot_ia_deriv_cos_alpha_regularized: "
-                    << FADUTILS::CastToDouble(pot_ia_deriv_cos_alpha);
+          //          std::cout << "\ninteraction_potential_GP_regularized: "
+          //                    << FADUTILS::CastToDouble(interaction_potential_GP);
+          //          std::cout << "\npot_ia_deriv_gap_ul_regularized: "
+          //                    << FADUTILS::CastToDouble(pot_ia_deriv_gap_ul);
+          //          std::cout << "\npot_ia_deriv_cos_alpha_regularized: "
+          //                    << FADUTILS::CastToDouble(pot_ia_deriv_cos_alpha);
           // this->Print(std::cout);
           // std::cout << "\nigp_total: " << igp_total;
           //*********************** END DEBUG *****************************************
         }
 
+        /* adapt also the second derivatives (required for analytic linearization) in
+         * case of active regularization*/
+        if (regularization_type != INPAR::BEAMPOTENTIAL::regularization_none and
+            gap_ul < regularization_separation)
+        {
+          if (regularization_type == INPAR::BEAMPOTENTIAL::regularization_constant)
+            pot_ia_2ndderiv_gap_ul = 0.0;
+
+          pot_ia_2ndderiv_cos_alpha += pot_ia_deriv_gap_ul_2ndderiv_cos_alpha_at_regsep *
+                                       (gap_ul - regularization_separation);
+
+          if (regularization_type == INPAR::BEAMPOTENTIAL::regularization_linear)
+          {
+            pot_ia_deriv_gap_ul_deriv_cos_alpha += pot_ia_2ndderiv_gap_ul_deriv_cos_alpha_atregsep *
+                                                   (gap_ul - regularization_separation);
+
+            pot_ia_2ndderiv_cos_alpha += 0.5 * pot_ia_2ndderiv_gap_ul_2ndderiv_cos_alpha_at_regsep *
+                                         (gap_ul - regularization_separation) *
+                                         (gap_ul - regularization_separation);
+          }
+        }
 
 
         // compute components from variation of cosine of enclosed angle
