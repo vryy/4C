@@ -43,8 +43,6 @@ void FSI::DirichletNeumann::FSIOp(const Epetra_Vector& x, Epetra_Vector& F, cons
   // test cases
   if (DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StructuralDynamicParams(),
           "INT_STRATEGY") == INPAR::STR::int_old &&
-      DRT::Problem::Instance()->OutputControlFile()->InputFileName().find("constr2D_fsi") ==
-          std::string::npos &&
       DRT::Problem::Instance()->OutputControlFile()->InputFileName().find("fs3i_ac_prestress") ==
           std::string::npos)
   {
