@@ -972,6 +972,13 @@ namespace INPAR
   {
   }  // namespace POROMULTIPHASESCATRA
 
+  /*! \brief Input parameters for global problem type
+   *
+   */
+  namespace POBLEMTYPE
+  {
+  }
+
   /*! \brief Input parameters for reduced airways simulations
    *
    */

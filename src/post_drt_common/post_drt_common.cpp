@@ -159,7 +159,7 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP, int argc, char** ar
 
   const char* type = map_read_string(&control_table_, "problem_type");
   const std::string probtype(type);
-  problemtype_ = DRT::StringToProblemType(probtype);
+  problemtype_ = INPAR::PROBLEMTYPE::StringToProblemType(probtype);
 
   spatial_approx_ = map_read_string(&control_table_, "spatial_approximation");
 

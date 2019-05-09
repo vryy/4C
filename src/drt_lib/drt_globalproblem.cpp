@@ -139,7 +139,7 @@ PROBLEM_TYP DRT::Problem::ProblemType() const { return probtype_; }
 /*----------------------------------------------------------------------*/
 std::string DRT::Problem::ProblemName() const
 {
-  std::map<std::string, PROBLEM_TYP> map = DRT::StringToProblemTypeMap();
+  std::map<std::string, PROBLEM_TYP> map = INPAR::PROBLEMTYPE::StringToProblemTypeMap();
   std::map<std::string, PROBLEM_TYP>::const_iterator i;
 
   for (i = map.begin(); i != map.end(); ++i)
@@ -211,6 +211,28 @@ std::string DRT::Problem::SpatialApproximation() const
   return basis_fct_type;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+INPAR::PROBLEMTYPE::ShapeFunctionType DRT::Problem::SpatialApproximationType() const
+{
+  const std::string spatialApproximationName = SpatialApproximation();
+
+  INPAR::PROBLEMTYPE::ShapeFunctionType shapeFunctType =
+      INPAR::PROBLEMTYPE::shapefunction_undefined;
+
+  if (spatialApproximationName == "Polynomial")
+    shapeFunctType = INPAR::PROBLEMTYPE::shapefunction_polynomial;
+  else if (spatialApproximationName == "Nurbs")
+    shapeFunctType = INPAR::PROBLEMTYPE::shapefunction_nurbs;
+  else if (spatialApproximationName == "Meshfree")
+    shapeFunctType = INPAR::PROBLEMTYPE::shapefunction_meshfree;
+  else if (spatialApproximationName == "HDG")
+    shapeFunctType = INPAR::PROBLEMTYPE::shapefunction_hdg;
+  else
+    dserror("Unknown shape function '%s'", spatialApproximationName.c_str());
+
+  return shapeFunctType;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

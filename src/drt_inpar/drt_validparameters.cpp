@@ -408,41 +408,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("MATERIALS", 0, "number of materials", &size);
   IntParameter("NUMDF", 3, "maximum number of degrees of freedom", &size);
 
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& type = list->sublist("PROBLEM TYP", false, "");
-
-  {
-    Teuchos::Array<std::string> name;
-    Teuchos::Array<int> label;
-
-    // fill the arrays
-    {
-      std::map<std::string, PROBLEM_TYP> map = DRT::StringToProblemTypeMap();
-      std::map<std::string, PROBLEM_TYP>::const_iterator i;
-      for (i = map.begin(); i != map.end(); ++i)
-      {
-        name.push_back(i->first);
-        label.push_back(i->second);
-      }
-    }
-
-    setStringToIntegralParameter<int>(
-        "PROBLEMTYP", "Fluid_Structure_Interaction", "", name, label, &type);
-  }
-
-  IntParameter("RESTART", 0, "", &type);
-  DoubleParameter("RESTARTTIME", -1.0, "Used defined restart time", &type);
-  setStringToIntegralParameter<int>("SHAPEFCT", "Polynomial",
-      "Defines the function spaces for the spatial approximation",
-      tuple<std::string>("Polynomial", "Nurbs", "Meshfree", "HDG"), tuple<int>(1, 0, 2, 3), &type);
-  IntParameter("RANDSEED", -1, "Set the random seed. If < 0 use current time.", &type);
-
-#if 0  // currently not in use
-//  BoolParameter("BANDWITHOPT","No","Do bandwith optimization of dof numbering",&type);
-  setStringToIntegralParameter<int>("BANDWIDTHOPT","No",
-                                    "Do bandwith optimization of dof numbering",
-                                    yesnotuple,yesnovalue,&type);
-#endif
+  INPAR::PROBLEMTYPE::SetValidParameters(list);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& meshpartitioning = list->sublist("MESH PARTITIONING", false, "");

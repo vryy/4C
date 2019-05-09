@@ -25,6 +25,8 @@
 #include "drt_resulttest.H"
 #include "drt_utils.H"
 
+#include "../drt_inpar/inpar_problemtype.H"
+
 namespace IO
 {
   class OutputControl;
@@ -237,7 +239,10 @@ namespace DRT
     //! Return string name of the basis function type (polynomial/nurbs)
     std::string SpatialApproximation() const;
 
-    //@}
+    //! Return type of the basis function encoded as enum
+    INPAR::PROBLEMTYPE::ShapeFunctionType SpatialApproximationType() const;
+
+    //! @}
 
     /// @name Control file
 
