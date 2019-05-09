@@ -1,12 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ssi_str_model_evaluator_monolithic.H
-
 \brief structural model evaluator for monolithic scalar-structure interaction
 
 \level 2
 
 \maintainer Christoph Schmidt
+
 */
 /*----------------------------------------------------------------------*/
 #ifndef SSI_STR_MODEL_EVALUATOR_MONOLITHIC_H_

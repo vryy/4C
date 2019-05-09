@@ -1,17 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ssi_clonestrategy.H
-
 \brief strategy for cloning scatra discretization from structure discretization
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089-289-15251
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 #ifndef SSI_CLONESTRATEGY_H

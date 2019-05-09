@@ -1,13 +1,9 @@
 /*!------------------------------------------------------------------------------------------------*
- \file ssi_partitioned_2wc.cpp
-
  \brief two way coupled partitioned scalar structure interaction
 
  \level 2
 
- \maintainer Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
+ \maintainer Christoph Schmidt
 
  *------------------------------------------------------------------------------------------------*/
 

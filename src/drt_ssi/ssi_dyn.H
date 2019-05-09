@@ -1,13 +1,9 @@
 /*!------------------------------------------------------------------------------------------------*
- \file ssi_dyn.H
-
  \brief control routine for scalar structure interaction
 
  \level 1
 
-  \maintainer Andreas Rauch
-              rauch@lnm.mw.tum.de
-              http://www.lnm.mw.tum.de
+ \maintainer Christoph Schmidt
 
  *------------------------------------------------------------------------------------------------*/
 
