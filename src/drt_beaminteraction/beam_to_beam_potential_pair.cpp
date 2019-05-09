@@ -1599,15 +1599,11 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         T pot_ia_deriv_cos_alpha = 0.0;
 
         T pot_ia_2ndderiv_gap_ul = 0.0;
-
-        T pot_ia_partial_a = 0.0;
-        T pot_ia_partial_gap_ul = 0.0;
-
-        T a_deriv_gap_ul = 0.0;
-        T a_deriv_cos_alpha = 0.0;
+        T pot_ia_2ndderiv_cos_alpha = 0.0;
+        T pot_ia_deriv_gap_ul_deriv_cos_alpha = 0.0;
 
 
-        // components from variation of bilateral gap
+        // components from variation of unilateral gap
         LINALG::TMatrix<T, 3, 1> gap_ul_deriv_r_slave(true);
         LINALG::TMatrix<T, 3, 1> gap_ul_deriv_r_master(true);
 
@@ -1622,62 +1618,33 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         LINALG::TMatrix<T, 3, 1> cos_alpha_deriv_r_xi_master(true);
 
 
-        // auxiliary variables
-        LINALG::TMatrix<T, 3, 3> v_mat_tmp(true);
-
-
-
-        pot_ia_partial_a = -0.5 / a * interaction_potential_GP;
-
-        a_deriv_gap_ul = 0.0;
-
-        a_deriv_cos_alpha = cos_alpha / radius2_;
-
         // compute derivatives of the interaction potential w.r.t. gap_ul and cos(alpha)
-        pot_ia_partial_gap_ul = (-m_ + 4.5) / gap_ul_regularized * interaction_potential_GP;
+        pot_ia_deriv_gap_ul = (-m_ + 4.5) / gap_ul_regularized * interaction_potential_GP;
 
-        pot_ia_deriv_gap_ul = pot_ia_partial_a * a_deriv_gap_ul + pot_ia_partial_gap_ul;
-
-        pot_ia_deriv_cos_alpha = pot_ia_partial_a * a_deriv_cos_alpha;
+        T a_deriv_cos_alpha = cos_alpha / radius2_;
+        pot_ia_deriv_cos_alpha = -0.5 / a * interaction_potential_GP * a_deriv_cos_alpha;
 
 
         // Todo: strictly speaking, the following second derivatives of the interaction potential
         // are only required in case of active regularization OR for analytic linearization
 
-        T pot_ia_2ndpartial_a = -1.5 / a * pot_ia_partial_a;
-        T pot_ia_partial_a_deriv_cos_alpha = pot_ia_2ndpartial_a * a_deriv_cos_alpha;
+        pot_ia_deriv_gap_ul_deriv_cos_alpha =
+            (-m_ + 4.5) / gap_ul_regularized * pot_ia_deriv_cos_alpha;
 
-        T a_deriv_cos_alpha_deriv_gap_ul = 0.0;
+        pot_ia_2ndderiv_gap_ul = (-m_ + 3.5) / gap_ul_regularized * pot_ia_deriv_gap_ul;
 
-        T pot_ia_partial_a_partial_gap_ul = -0.5 / a * pot_ia_partial_gap_ul;
-
-        T pot_ia_partial_gap_ul_deriv_cos_alpha =
-            pot_ia_partial_a_partial_gap_ul * a_deriv_cos_alpha;
-
-        T pot_ia_deriv_gap_ul_deriv_cos_alpha = pot_ia_partial_a_deriv_cos_alpha * a_deriv_gap_ul +
-                                                pot_ia_partial_a * a_deriv_cos_alpha_deriv_gap_ul +
-                                                pot_ia_partial_gap_ul_deriv_cos_alpha;
-
-
-        T pot_ia_2ndpartial_gap_ul = (-m_ + 3.5) / gap_ul_regularized * pot_ia_partial_gap_ul;
-
-        T a_2ndderiv_gap_ul = 0.0;
-
-        pot_ia_2ndderiv_gap_ul =
-            (pot_ia_2ndpartial_a * a_deriv_gap_ul + 2.0 * pot_ia_partial_a_partial_gap_ul) *
-                a_deriv_gap_ul +
-            pot_ia_partial_a * a_2ndderiv_gap_ul + pot_ia_2ndpartial_gap_ul;
-
-
-        T pot_ia_2ndderiv_cos_alpha =
+        pot_ia_2ndderiv_cos_alpha =
             -0.5 / (a * radius2_) * interaction_potential_GP +
-            0.75 * cos_alpha * cos_alpha / (a * a * radius2_ * radius2_) * interaction_potential_GP;
+            0.75 * a_deriv_cos_alpha * a_deriv_cos_alpha / (a * a) * interaction_potential_GP;
 
+        // third derivatives
+        T pot_ia_2ndderiv_gap_ul_deriv_cos_alpha_atregsep =
+            (-m_ + 4.5) * (-m_ + 3.5) / (gap_ul_regularized * gap_ul_regularized) *
+            pot_ia_deriv_cos_alpha;
 
-        // Fixme: check and adapt this comment
         /* now that we don't need the interaction potential at gap_ul=regularization_separation as
          * an intermediate result anymore, we can add the additional (linear and quadratic)
-         * contributions in case of active regularization also to the interaction potential */
+         * contributions in case of active regularization to the interaction potential */
         if (regularization_type != INPAR::BEAMPOTENTIAL::regularization_none and
             gap_ul < regularization_separation)
         {
@@ -1694,7 +1661,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
           interaction_potential_GP += pot_ia_deriv_gap_ul * (gap_ul - regularization_separation);
 
-
           pot_ia_deriv_cos_alpha +=
               pot_ia_deriv_gap_ul_deriv_cos_alpha * (gap_ul - regularization_separation);
 
@@ -1706,22 +1672,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
                                         (gap_ul - regularization_separation);
 
             pot_ia_deriv_gap_ul += pot_ia_2ndderiv_gap_ul * (gap_ul - regularization_separation);
-
-
-            T t4 = std::pow(cos_alpha, 0.2e1);
-            T t5 = 0.1e1 / radius2_;
-            T t9 = std::pow(0.5e0 / radius1_ + t4 * t5 / 0.2e1, -0.15e1);
-            T t11 = -m_ + 0.45e1;
-            T t12 = std::pow(0.4e1 * gap_ul_regularized, t11);
-            T t14 = t9 * t12;
-            T t15 = t11 * t11;
-            T t16 = gap_ul_regularized * gap_ul_regularized;
-            T t17 = 0.1e1 / t16;
-            T t19 = cos_alpha * t5;
-
-            T pot_ia_2ndderiv_gap_ul_deriv_cos_alpha_atregsep =
-                -0.5e0 * t14 * t15 * t17 * t19 + 0.5e0 * t14 * t11 * t17 * t19;
-
 
             pot_ia_deriv_cos_alpha += 0.5 * pot_ia_2ndderiv_gap_ul_deriv_cos_alpha_atregsep *
                                       (gap_ul - regularization_separation) *
@@ -1744,8 +1694,9 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
         // compute components from variation of cosine of enclosed angle
         T signum_tangentsscalarproduct = FADUTILS::Signum(r_xi_slave.Dot(r_xi_master));
+        // auxiliary variables
+        LINALG::TMatrix<T, 3, 3> v_mat_tmp(true);
 
-        v_mat_tmp.Clear();
         for (unsigned int i = 0; i < 3; ++i)
         {
           v_mat_tmp(i, i) += 1.0;
@@ -1777,7 +1728,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
             cos_alpha_partial_xi_master, xi_master_partial_r_xi_master, 1.0);
 
 
-        // compute components from variation of cosine of the unilateral gap
+        // compute components from variation of the unilateral gap
         gap_ul_deriv_r_slave.Update(normal_ul);
         gap_ul_deriv_r_master.Update(-1.0, normal_ul);
 
