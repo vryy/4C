@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file porofluidmultiphase_timint_ost.H
-
  \brief One-step-theta time integration scheme for porous multiphase flow
 
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_TIMINT_OST_H_

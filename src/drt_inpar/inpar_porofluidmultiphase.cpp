@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file inpar_porofluidmultiphase.cpp
-
  \brief input parameters for porous multiphase fluid problem
 
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 

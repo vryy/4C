@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file porofluidmultiphase_ele_boundary_evaluate.cpp
-
  \brief evaluation methods of the porofluidmultiphase boundary element
 
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 #include "porofluidmultiphase_ele.H"

@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file poromultiphase_dyn.cpp
-
  \brief entry point (global control routine) for poroelasticity multiphase flow
 
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 

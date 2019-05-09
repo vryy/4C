@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file fluidporo_multiphase_singlereaction.cpp
-
  \brief a fluid material for porous multiphase flow defining one reaction (mass sources and sinks)
 
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 #include "fluidporo_multiphase_singlereaction.H"

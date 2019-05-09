@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file fluidporo_singlephase.H
-
  \brief single phase material for multiphase porous flow
 
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de251
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_MAT_FLUIDPORO_SINGLEPHASE_H_

@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file fluidporo_multiphase.H
-
  \brief porous fluid multiphase material. Contains and defines the single phases.
 
         The input line should read (for example: 4 fluid phases, 2 volume fractions)
@@ -14,8 +12,6 @@
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_MAT_FLUIDPORO_MULTIPHASE_H_

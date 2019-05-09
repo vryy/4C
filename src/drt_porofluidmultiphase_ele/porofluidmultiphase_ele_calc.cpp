@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file porofluidmultiphase_ele_calc.cpp
-
  \brief implementation of the evaluation routines of the porofluidmultiphase element
 
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 #include "porofluidmultiphase_ele_calc.H"

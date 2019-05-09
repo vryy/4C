@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file ad_porofluidmultiphase.H
-
  \brief adapter for multiphase porous flow
 
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_ADAPTER_AD_POROFLUIDMULTIPHASE_H_

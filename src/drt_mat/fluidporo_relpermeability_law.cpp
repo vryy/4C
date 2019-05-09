@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file fluidporo_relpermeability_law.cpp
-
  \brief calculation classes for evaluation of constitutive relation for
         relative permeability for multiphase porous flow
 
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 

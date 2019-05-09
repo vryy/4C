@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file porofluidmultiphase_ele_boundary_factory.H
-
  \brief  factory class providing the implementations of the porous fluid multiphase
          boundary element
 
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_POROFLUIDMULTIPHASE_ELE_POROFLUIDMULTIPHASE_ELE_BOUNDARY_FACTORY_H_

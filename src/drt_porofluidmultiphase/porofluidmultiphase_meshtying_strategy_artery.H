@@ -1,15 +1,9 @@
 /*!----------------------------------------------------------------------
-\file porofluidmultiphase_meshtying_strategy_artery.H
-
 \brief routines for coupling with artery network
 
 \level 3
 
 \maintainer Johannes Kremheller
-            kremheller@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-
-
 *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_MESHTYING_STRATEGY_ARTERY_H_

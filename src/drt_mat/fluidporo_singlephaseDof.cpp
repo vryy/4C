@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file fluidporo_singlephaseDof.cpp
-
  \brief a material defining the degree of freedom of a single phase of
         a multiphase porous fluid
 
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 #include "fluidporo_singlephaseDof.H"

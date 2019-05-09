@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file porofluidmultiphase_resulttest.H
-
  \brief result test for multiphase porous fluid
 
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_RESULTTEST_H_

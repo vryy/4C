@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file fluidporo_multiphase.cpp
-
  \brief material for multiphase porous fluid
 
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 

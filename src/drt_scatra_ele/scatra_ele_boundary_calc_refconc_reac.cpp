@@ -1,18 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_ele_boundary_calc_refconc_reac.cpp
-
 \brief main file containing routines for calculation of scatra element formulated in reference
 concentrations and with advanced reaction terms
 
 \level 3
 
- <pre>
    \maintainer Johannes Kremheller
-               kremheller@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089-289-15262
- </pre>
  *----------------------------------------------------------------------*/
 
 #include "scatra_ele_boundary_calc_refconc_reac.H"

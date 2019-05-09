@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file scatra_ele_calc_multiporo_reac.cpp
-
  \brief evaluation class containing routines for calculation of scalar transport
         within multiphase porous medium
 
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 

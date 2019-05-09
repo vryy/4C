@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file fluidporo_singlephaselaw.cpp
-
  \brief a material defining pressure-saturation relationship
         for a single phase within a multiphase porous fluid
 
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 

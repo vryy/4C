@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file fluidporo_singlephaseDof.H
-
  \brief material defining the degree of freedom of phase within a multiphase porous fluid.
 
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_MAT_FLUIDPORO_SINGLEPHASEDOF_H_

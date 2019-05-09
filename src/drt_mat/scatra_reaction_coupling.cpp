@@ -1,15 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file scatra_reaction_coupling.cpp
-
  \brief helper class encapsulating the reaction terms and its derivatives
 
    \level 3
 
 \maintainer Johannes Kremheller
-            kremheller@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15262
  *----------------------------------------------------------------------*/
 
 #include "scatra_reaction_coupling.H"

@@ -1,6 +1,4 @@
 /*!----------------------------------------------------------------------
-\file matlist_reactions.cpp
-
 \brief This file contains the material for reactive scalars. It derives from MAT_matlist
 and adds everything to supervise all the MAT_scatra_raction materials. The reactions
 itself are defined inside the MAT_scatra_raction materials. So MAT_matlist_reactions
@@ -8,12 +6,7 @@ is just a "control instance".
 
 \level 2
 
-<pre>
 \maintainer Johannes Kremheller
-            kremheller@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15262
-</pre>
 *----------------------------------------------------------------------*/
 
 

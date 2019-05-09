@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file ad_poromultiphase.H
-
  \brief
 
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_ADAPTER_AD_POROMULTIPHASE_H_

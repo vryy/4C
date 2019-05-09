@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file poromultiphase_scatra_partitioned_twoway.H
-
  \brief two-way coupled partitioned algorithm for scalar transport within multiphase porous medium
 
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_PARTITIONED_TWOWAY_H_

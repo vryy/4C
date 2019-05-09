@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file poromultiphase_scatra_artery_coupling_linebased.H
-
  \brief base algorithm for line-based (non-conforming) coupling between
         poromultiphase_scatra-framework and flow in artery networks
         including scalar transport
@@ -9,8 +7,6 @@
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_LINEBASED_H_

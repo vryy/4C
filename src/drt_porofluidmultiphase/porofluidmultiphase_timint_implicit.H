@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file porofluidmultiphase_timint_implicit.H
-
  \brief base class for implicit time integration schemes for
         multiphas porous fluid problems
 
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_TIMINT_IMPLICIT_H_
