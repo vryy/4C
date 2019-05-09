@@ -36,6 +36,11 @@ namespace IO
   class DiscretizationReader;
 }
 
+namespace PARTICLEALGORITHM
+{
+  class WallHandlerInterface;
+}
+
 namespace PARTICLEENGINE
 {
   class ParticleEngineInterface;
@@ -71,6 +76,7 @@ namespace PARTICLEINTERACTION
     //! setup contact handler
     virtual void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
+        const std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface,
         const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
         const std::shared_ptr<PARTICLEINTERACTION::DEMNeighborPairs> neighborpairs,
         const std::shared_ptr<PARTICLEINTERACTION::DEMHistoryPairs> historypairs);
@@ -108,6 +114,12 @@ namespace PARTICLEINTERACTION
     //! get maximum density of all materials
     virtual double GetMaxDensityOfAllMaterials() const final;
 
+    //! evaluate particle contact contribution
+    virtual void EvaluateParticleContact();
+
+    //! evaluate particle-wall contact contribution
+    virtual void EvaluateParticleWallContact();
+
     //! discrete element method specific parameter list
     const Teuchos::ParameterList& params_dem_;
 
@@ -116,6 +128,9 @@ namespace PARTICLEINTERACTION
 
     //! particle container bundle
     PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle_;
+
+    //! interface to particle wall handler
+    std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface_;
 
     //! particle material handler
     std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial_;

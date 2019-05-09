@@ -87,7 +87,8 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::Setup(
   historypairs_->Setup(particleengineinterface);
 
   // setup contact handler
-  contact_->Setup(particleengineinterface, particlematerial_, neighborpairs_, historypairs_);
+  contact_->Setup(particleengineinterface, particlewallinterface, particlematerial_, neighborpairs_,
+      historypairs_);
 }
 
 /*---------------------------------------------------------------------------*
