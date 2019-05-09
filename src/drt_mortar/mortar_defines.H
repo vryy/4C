@@ -1,7 +1,5 @@
 /*-----------------------------------------------------------------------*/
 /*!
-\file mortar_defines.H
-
 \brief A set of preprocessor defines for mortar methods
 
 \level 1

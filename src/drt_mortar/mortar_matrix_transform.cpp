@@ -1,14 +1,11 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file mortar_matrix_transform.cpp
-
 \brief matrix transformation tools: Switch between different parallel
 distributions
 
 \level 3
 
 \maintainer Matthias Mayr
-
 */
 /*----------------------------------------------------------------------------*/
 

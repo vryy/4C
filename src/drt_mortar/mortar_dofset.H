@@ -1,7 +1,5 @@
 /*-----------------------------------------------------------------------*/
 /*!
-\file mortar_dofset.H
-
 \brief A set of degrees of freedom special for mortar coupling
 
 \level 1

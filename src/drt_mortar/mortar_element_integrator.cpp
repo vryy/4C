@@ -1,7 +1,5 @@
 /*-----------------------------------------------------------------------*/
 /*!
-\file mortar_element_integrator.cpp
-
 \level 2
 
 \maintainer Matthias Mayr

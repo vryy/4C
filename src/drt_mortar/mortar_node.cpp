@@ -1,7 +1,5 @@
 /*-----------------------------------------------------------------------*/
 /*!
-\file mortar_node.cpp
-
 \brief A class for a mortar coupling node
 
 \level 2

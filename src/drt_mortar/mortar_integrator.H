@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------------------*/
 /*!
-\file mortar_integrator.H
 \brief integrate mortar terms
 \level 1
 \maintainer Alexander Popp

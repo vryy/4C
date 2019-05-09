@@ -1,7 +1,5 @@
 /*-----------------------------------------------------------------------*/
 /*!
-\file mortar_calc_utils.H
-
 \brief utils for mortar buisiness
 
 \level 1

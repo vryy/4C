@@ -1,7 +1,5 @@
 /*-----------------------------------------------------------------------*/
 /*!
-\file mortar_manager_base.H
-
 \maintainer Matthias Mayr
 
 \level 2

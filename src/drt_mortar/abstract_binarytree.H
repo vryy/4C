@@ -1,7 +1,5 @@
 /*-----------------------------------------------------------------------*/
 /*!
-\file abstract_binarytree.H
-
 \brief An abstract interface for binary trees
 
 \level 1

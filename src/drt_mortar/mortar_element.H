@@ -1,13 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file mortar_element.H
-
 \brief A mortar coupling element
 
 \level 2
 
 \maintainer Matthias Mayr
-
 */
 /*----------------------------------------------------------------------*/
 #ifndef MORTAR_ELEMENT_H

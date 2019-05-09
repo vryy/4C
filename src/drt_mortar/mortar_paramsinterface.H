@@ -1,13 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file mortar_paramsinterface.H
-
 \brief Mortar parameter interface.
 
 \level 2
 
 \maintainer Matthias Mayr
-
 */
 /*-----------------------------------------------------------------------*/
 

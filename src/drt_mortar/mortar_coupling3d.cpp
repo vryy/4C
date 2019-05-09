@@ -1,7 +1,5 @@
 /*-----------------------------------------------------------------------*/
 /*!
-\file mortar_coupling3d.cpp
-
 \brief Classes for mortar coupling in 3D.
 
 \level 2

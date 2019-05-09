@@ -1,13 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file mortar_strategy_base.H
-
 \brief Generic class for all mortar solution strategies
 
 \level 2
 
 \maintainer Matthias Mayr
-
 */
 /*----------------------------------------------------------------------*/
 #ifndef MORTAR_STRATEGY_BASE_H

@@ -1,7 +1,5 @@
 /*-----------------------------------------------------------------------*/
 /*!
-\file mortar_utils.H
-
 \brief A set of utility functions for mortar methods
 
 \level 1

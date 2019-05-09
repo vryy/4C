@@ -1,7 +1,5 @@
 /*-----------------------------------------------------------------------*/
 /*!
-\file mortar_manager_base.cpp
-
 \brief Abstract base class to control all mortar coupling
 
 \maintainer Matthias Mayr

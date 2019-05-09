@@ -1,7 +1,5 @@
 /*-----------------------------------------------------------------------*/
 /*!
-\file mortar_projector.H
-
 \brief header for projector functions
 
 \level 1

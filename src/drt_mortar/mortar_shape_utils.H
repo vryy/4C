@@ -1,7 +1,5 @@
 /*-----------------------------------------------------------------------*/
 /*!
-\file mortar_shape_utils.H
-
 \brief file for mortar shape utils --> shape calculations
 
 \level 1

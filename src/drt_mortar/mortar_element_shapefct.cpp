@@ -1,7 +1,5 @@
 /*-----------------------------------------------------------------------*/
 /*!
-\file mortar_element_shapefct.cpp
-
 \brief Shape function repository for mortar coupling element
 
 \level 1
