@@ -1,14 +1,9 @@
 /*!----------------------------------------------------------------------
-\file inpar_pasi.H
-
 \brief Input parameters for particle structure interaction problems
 
 \level 3
 
 \maintainer  Sebastian Fuchs
-             fuchs@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15262
 
 *----------------------------------------------------------------------*/
 #ifndef INPAR_PASI_H

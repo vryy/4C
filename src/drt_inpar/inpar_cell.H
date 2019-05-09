@@ -1,13 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_cell.H
-
 \brief input parameters and conditions for cell migration
 
 \maintainer Andreas Rauch
-            rauch@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289 -15240
 
 \level 2
 */

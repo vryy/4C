@@ -1,15 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_invanalysis.cpp
-
 \brief Input parameters for inverse analysis
 
-<pre>
 \level 2
 \maintainer Harald Willmann
-            willmann@lnm.mw.tum.de
-            089-289-15255
-</pre>
+
 */
 
 /*----------------------------------------------------------------------*/

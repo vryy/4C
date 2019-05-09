@@ -1,16 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_immersed.cpp
-
 \brief Input parameters for immersed
 
 \level 1
 
-<pre>
 \maintainer Andreas Rauch
-            rauch@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
+
 */
 
 /*----------------------------------------------------------------------*/

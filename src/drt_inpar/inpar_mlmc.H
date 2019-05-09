@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_mlmc.H
-
 \brief Input parameters for multi-level monte carlo
 
 \level 2

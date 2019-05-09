@@ -1,8 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_solver_nonlin.cpp
-
-
 \brief Input parameters for nonlinear solvers
 
 \maintainer Michael Hiermeier

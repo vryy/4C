@@ -1,14 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_fs3i.cpp
-
 \brief Input parameters for fs3i
 
 \level 2
 
-\maintainer Thon Moritz
-            thon@mhpc.mw.tum.de
-            089 - 289-10364
+\maintainer Christoph Schmidt
+
 */
 
 /*----------------------------------------------------------------------*/

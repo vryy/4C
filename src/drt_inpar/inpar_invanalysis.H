@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_invanalysis.H
-
 \brief Input parameters for inverse analysis
 
 \level 2
 
-<pre>
 \maintainer Harald Willmann
-            willmann@lnm.mw.tum.de
-</pre>
+
 */
 
 /*----------------------------------------------------------------------*/

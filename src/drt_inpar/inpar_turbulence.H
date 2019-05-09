@@ -1,17 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_turbulence.H
-
 \brief Input parameters for turbulence
 
 \level 2
 
-<pre>
 \maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+
 */
 
 /*----------------------------------------------------------------------*/

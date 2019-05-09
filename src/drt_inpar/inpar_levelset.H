@@ -1,16 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_levelset.H
-
 \brief Input parameters for level-set problems
 
 \level 2
 
-<pre>
 \maintainer Christoph Ager
-            ager@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 #ifndef INPAR_LEVELSET_H

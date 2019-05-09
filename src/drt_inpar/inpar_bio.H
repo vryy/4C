@@ -1,12 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_bio.H
-
 \brief Input parameters for biomedical simulations
 
 \level 3
 
-\maintainer Lena Yoshihara
+\maintainer Johannes Kremheller
 
 */
 /*----------------------------------------------------------------------*/

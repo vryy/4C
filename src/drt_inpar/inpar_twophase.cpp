@@ -1,16 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_twophase.cpp
-
 \brief Input parameters for twophaseflow
 
 \level 2
 
-<pre>
 \maintainer Christoph Ager
-            ager@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
+
 */
 
 /*----------------------------------------------------------------------*/

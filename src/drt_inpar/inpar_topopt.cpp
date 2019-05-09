@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_topopt.cpp
+\level 3
 
 \brief Input parameters for topopt
 
-<pre>
-Maintainer: Martin Winklmaier
-            winklmaier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15241
-</pre>
+\maintainer Martin Winklmaier
+
 */
 
 /*----------------------------------------------------------------------*/

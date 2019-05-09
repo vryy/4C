@@ -1,10 +1,8 @@
 /*-----------------------------------------------------------*/
 /*!
-\file inpar_browniandyn.H
-
 \brief input parameter for Brownian dynamics simulation
 
-\maintainer Jonas Eichinger, Maximilian Grill
+\maintainer Jonas Eichinger
 
 \level 2
 

@@ -1,12 +1,8 @@
 /*-----------------------------------------------------------*/
 /*!
-\file inpar_contact_xcontact.cpp
-
 \brief Input parameters for the eXtended contact approach
 
-\maintainer Michael Hiermeier
-
-\date Jul 14, 2016
+\maintainer Matthias Mayr
 
 \level 3
 
