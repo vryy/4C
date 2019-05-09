@@ -1,7 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_nitsche_integrator.cpp
-
 \brief A class to perform integrations of nitsche related terms
 
 \level 3

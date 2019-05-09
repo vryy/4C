@@ -1,13 +1,12 @@
-/*!----------------------------------------------------------------------
-\file selfcontact_binarytree_unbiased.H
-
+/*-----------------------------------------------------------------------*/
+/*!
 \brief Search tree for unbiased self-contact problems
 
 \level 2
 
 \maintainer Christoph Schmidt
-
-*-----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------------------*/
 #ifndef SELFCONTACT_BINARYTREE_UNBIASED_H
 #define SELFCONTACT_BINARYTREE_UNBIASED_H
 

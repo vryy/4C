@@ -1,7 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file meshtying_contact_bridge.cpp
-
 \brief Deprecated wrapper for the mesh-tying and contact managers.
 
 \level 2

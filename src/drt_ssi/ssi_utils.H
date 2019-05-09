@@ -1,14 +1,10 @@
 /*!------------------------------------------------------------------------------------------------*
- \file ssi_utils.H
-
  \brief Utility methods for SSI
 
-\level 1
+ \level 1
 
-\maintainer Julia Hoermann
-            hoermann@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15264
+ \maintainer Christoph Schmidt
+
  *------------------------------------------------------------------------------------------------*/
 
 #ifndef SSI_UTILS_H_

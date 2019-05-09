@@ -1,16 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file nox_nln_contact_linearsystem.H
-
 \brief Derived class which manages the special requirements to the linear
        solver for contact problems.
 
 \level 3
 
 \maintainer Matthias Mayr
-
-\date Jul 14, 2015
-
 */
 /*----------------------------------------------------------------------*/
 #ifndef NOX_NLN_CONTACT_LINEARSYSTEM_H_

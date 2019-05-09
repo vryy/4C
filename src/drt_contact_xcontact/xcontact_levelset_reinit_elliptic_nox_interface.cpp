@@ -1,16 +1,11 @@
 /*----------------------------------------------------------------------------*/
 /**
-\file xcontact_levelset_reinit_elliptic_nox_interface.cpp
-
 \brief NOX interface implementation for the xcontact level-set elliptical
        reinitialization algorithm
 
 \maintainer Matthias Mayr
 
-\date Dec 5, 2016
-
 \level 3
-
 */
 /*----------------------------------------------------------------------------*/
 

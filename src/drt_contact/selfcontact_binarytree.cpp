@@ -1,19 +1,13 @@
-/*!----------------------------------------------------------------------
-\file selfcontact_binarytree.cpp
-
+/*-----------------------------------------------------------------------*/
+/*!
 \brief A class for performing self contact search in 2D / 3D based
        on binary search trees and dual graphs
 
 \maintainer Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
 
 \level 1
-
-</pre>
-
-*-----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------------------*/
 
 #include "selfcontact_binarytree.H"
 #include "contact_node.H"

@@ -1,16 +1,11 @@
 /*----------------------------------------------------------------------------*/
 /**
-\file xcontact_algorithm_base.H
-
 \brief base class of the inequality level-set approach algorithm for contact
        problems a.k.a. xcontact or extended contact
 
 \maintainer Matthias Mayr
 
-\date Jun 15, 2016
-
 \level 3
-
 */
 /*----------------------------------------------------------------------------*/
 

@@ -1,14 +1,10 @@
 /*-----------------------------------------------------------*/
 /*!
-\file ssi_str_model_evaluator_partitioned.cpp
-
 \brief Model evaluator for structure part of partitioned ssi.
 
-\maintainer Andreas Rauch
-
-\date Nov 11, 2016
-
 \level 3
+
+\maintainer Christoph Schmidt
 
 */
 /*-----------------------------------------------------------*/

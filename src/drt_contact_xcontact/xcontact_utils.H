@@ -1,14 +1,10 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file xcontact_utils.H
-
 \brief utility and support functions for the xcontact
 
 \level 3
 
 \maintainer Matthias Mayr
-
-\date Aug 24, 2016
 */
 /*---------------------------------------------------------------------------*/
 

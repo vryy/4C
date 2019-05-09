@@ -1,15 +1,10 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_integrator_utils.H
-
 \brief Utility methods for the contact integration.
 
 \level 2
 
 \maintainer Matthias Mayr
-
-\date Mar 8, 2017
-
 */
 /*---------------------------------------------------------------------*/
 

@@ -1,17 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ssi_resulttest.H
-
 \brief result testing functionality for scalar-structure interaction problems
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 #ifndef SSI_RESULTTEST_H

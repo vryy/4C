@@ -1,17 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ssi_clonestrategy.cpp
-
 \brief mesh clone strategy for scatra-structure-interaction problems
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 

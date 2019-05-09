@@ -1,7 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_strategy_factory.H
-
 \brief Factory to create the desired contact strategy.
 
 \maintainer Matthias Mayr

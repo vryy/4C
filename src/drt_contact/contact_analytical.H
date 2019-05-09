@@ -1,13 +1,12 @@
-/*!----------------------------------------------------------------------
-\file contact_analytical.H
-
+/*-----------------------------------------------------------------------*/
+/*!
 \brief A set of analytical solutions for convergence analysis of contact/meshtying methods
 
 \level 2
 
 \maintainer Alexander Popp
-
-*-----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------------------*/
 #ifndef CONTACT_ANALYTICAL_H
 #define CONTACT_ANALYTICAL_H
 

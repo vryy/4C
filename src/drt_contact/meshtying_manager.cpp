@@ -1,6 +1,4 @@
 /*!----------------------------------------------------------------------
-\file meshtying_manager.cpp
-
 \level 1
 
 \maintainer Matthias Mayr

@@ -1,7 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_line_coupling.H
-
 \brief A class to perform line clipping for line to surface contact +
        call for numerical integration
 

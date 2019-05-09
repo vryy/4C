@@ -1,13 +1,12 @@
-/*!----------------------------------------------------------------------
-\file meshtying_lagrange_strategy.cpp
-
+/*-----------------------------------------------------------------------*/
+/*!
 \brief strategy handling mesh tying problems with Lagrange multipliers
 
 \level 1
 
 \maintainer Matthias Mayr
-
-*-----------------------------------------------------------------------*/
+*/
+*-----------------------------------------------------------------------* /
 
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
@@ -24,13 +23,13 @@
 #include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_solver.H"  // mesh initialization :-(
 #include "../linalg/linalg_utils.H"
-/*----------------------------------------------------------------------*
- | ctor (public)                                              popp 05/09|
- *----------------------------------------------------------------------*/
-CONTACT::MtLagrangeStrategy::MtLagrangeStrategy(const Epetra_Map* DofRowMap,
-    const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface, const int spatialDim,
-    const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
+    /*----------------------------------------------------------------------*
+     | ctor (public)                                              popp 05/09|
+     *----------------------------------------------------------------------*/
+    CONTACT::MtLagrangeStrategy::MtLagrangeStrategy(const Epetra_Map* DofRowMap,
+        const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
+        std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface, const int spatialDim,
+        const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
     : MtAbstractStrategy(DofRowMap, NodeRowMap, params, interface, spatialDim, comm, alphaf, maxdof)
 {
   // empty constructor body

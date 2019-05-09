@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file contact_aug_interface_assembly.cpp
-
 \brief (augmented) contact assembly: assemble locally stored quantities into
 sparse matrices and parallel distributed vectors
 
 \level 3
 
 \maintainer Matthias Mayr
-\date Jun 14, 2017
-
 */
 /*----------------------------------------------------------------------------*/
 

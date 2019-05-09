@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file contact_wear_interface.H
-
 \brief Wear interface implementation.
 
 \level 2

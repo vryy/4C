@@ -1,7 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_integrator.cpp
-
 \brief A class to perform integrations of Mortar matrices on the overlap
        of two MortarElements in 1D and 2D (derived version for contact)
 

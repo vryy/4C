@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file contact_node.cpp
-
 \brief A class for a contact node
 
 \level 2

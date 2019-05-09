@@ -1,16 +1,11 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_aug_combo_strategy_switching.cpp
-
 \brief This file contains the implementation of the switching strategy
        for the AUG::ComboStrategy.
 
 \level 3
 
 \maintainer Matthias Mayr
-
-\date Mar 24, 2017
-
 */
 /*---------------------------------------------------------------------*/
 

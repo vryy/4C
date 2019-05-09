@@ -1,15 +1,10 @@
 /*----------------------------------------------------------------------------*/
 /**
-\file xcontact_debug_utils.H
-
 \brief contains mainly debugging methods for the xcontact contact classes
 
 \maintainer Matthias Mayr
 
-\date Jul 08, 2016
-
 \level 3
-
 */
 /*----------------------------------------------------------------------------*/
 

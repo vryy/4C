@@ -1,15 +1,10 @@
 /*----------------------------------------------------------------------------*/
 /**
-\file str_model_evaluator_xcontact.cpp
-
 \brief Model evaluator for the eXtended contact formulation
 
 \maintainer Matthias Mayr
 
-\date Jul 6, 2016
-
 \level 3
-
 */
 /*----------------------------------------------------------------------------*/
 

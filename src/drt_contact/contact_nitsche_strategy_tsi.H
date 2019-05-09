@@ -1,7 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_nitsche_strategy_tsi.H
-
 \brief Nitsche contact solving strategy
 
 \level 3

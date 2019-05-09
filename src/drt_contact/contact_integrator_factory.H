@@ -1,7 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_integrator_factory.H
-
 \brief Factory to create the desired integrator object.
 
 \level 2

@@ -1,7 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_poro_lagrange_strategy.cpp
-
 \brief Contact Strategy handling the porous no penetraction condition on the active contact
 interface
 

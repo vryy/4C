@@ -1,16 +1,15 @@
-/*!----------------------------------------------------------------------
-\file meshtying_poro_lagrange_strategy.H
-
+/*-----------------------------------------------------------------------*/
+/*!
 // Masterthesis of h.Willmann under supervision of Anh-Tu Vuong and Christoph Ager
 // Originates from contact_poro_lagrange_strategy
 
-<pre>
-Maintainer: Christoph Ager
-            ager@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15249
-</pre>
-*----------------------------------------------------------------------*/
+\brief Meshtying of porous media using Lagrange multipliers
+
+\maintainer Christoph Ager
+
+\level 3
+*/
+/*-----------------------------------------------------------------------*/
 #ifndef MESHTYING_PORO_LAGRANGE_STRATEGY_H
 #define MESHTYING_PORO_LAGRANGE_STRATEGY_H
 

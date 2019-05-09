@@ -1,7 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file smoothing_strategy.H
-
 \brief Add meaningful comment.
 
 \level 3

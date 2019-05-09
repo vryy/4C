@@ -1,14 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file selfcontact_binarytree_unbiased.cpp
-
 \brief Search tree for unbiased self-contact problems
 
 \level 2
 
 \maintainer Christoph Schmidt
-
-*----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------------------*/
 
 #include "selfcontact_binarytree_unbiased.H"
 

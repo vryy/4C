@@ -1,12 +1,8 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file contact_aug_active_set.H
-
 \brief Identify the correct active set.
 
 \maintainer Matthias Mayr
-
-\date Mar 14, 2018
 
 \level 2
 */

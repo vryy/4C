@@ -1,12 +1,11 @@
 /*-----------------------------------------------------------*/
 /*!
-\file ssi_str_model_evaluator_partitioned.H
-
 \brief Model evaluator for structure part of partitioned ssi.
+
+\level 3
 
 \maintainer Christoph Schmidt
 
-\level 3
 */
 /*-----------------------------------------------------------*/
 

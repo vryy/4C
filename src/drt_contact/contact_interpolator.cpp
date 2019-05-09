@@ -1,6 +1,4 @@
 /*!----------------------------------------------------------------------
-\file contact_interpolator.cpp
-
 \brief file for mortar and contact interpolator. This is required for NTS
        algorithms
 

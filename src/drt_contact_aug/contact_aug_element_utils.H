@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file contact_aug_element_utils.H
-
 \brief Utility function for the element evaluation
 
 \level 2
 
 \maintainer Matthias Mayr
-\date Oct 13, 2017
-
 */
 /*----------------------------------------------------------------------------*/
 

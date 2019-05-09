@@ -1,14 +1,10 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file xcontact_interface.cpp
-
 \brief Interface class for the eXtended contact evaluation
 
 \level 3
 
 \maintainer Matthias Mayr
-
-\date Aug 17, 2016
 */
 /*---------------------------------------------------------------------------*/
 

@@ -1,7 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file smoothing_manager.H
-
 \brief Manager for the smoothing contact approach.
 
 \level 3

@@ -1,16 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file contact_aug_lagrange_strategy.H
-
 \brief Lagrange contact solving strategy with standard Lagrangian
        multipliers based on the augmented Lagrange formulation.
 
 \level 3
 
 \maintainer Matthias Mayr
-
-\date Mar 28, 2017
-
 */
 /*----------------------------------------------------------------------*/
 

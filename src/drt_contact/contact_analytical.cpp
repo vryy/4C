@@ -1,16 +1,12 @@
-/*!----------------------------------------------------------------------
-\file contact_analytical.cpp
-
+/*-----------------------------------------------------------------------*/
+/*!
 \brief A set of analytical solutions for convergence analysis of contact / meshtying methods
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\level 2
 
-*-----------------------------------------------------------------------*/
+\maintainer Alexander Popp
+*/
+/*-----------------------------------------------------------------------*/
 
 #include <math.h>
 #include "contact_analytical.H"
