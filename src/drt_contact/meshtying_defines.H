@@ -5,7 +5,7 @@
 \maintainer Alexander Popp
 
 \level 1
-/*
+*/
 /*-----------------------------------------------------------------------*/
 #ifndef MESHTYING_DEFINES_H
 #define MESHTYING_DEFINES_H
