@@ -4,14 +4,13 @@
 
 \brief control routine for elastohydrodynamic lubrication (lubrication structure interaction)
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15270
-</pre>
+\level 2
+
+\maintainer Mostafa Faraji
+
 */
 /*--------------------------------------------------------------------------*/
+
 #ifndef SRC_DRT_EHL_EHL_DYN_H_
 #define SRC_DRT_EHL_EHL_DYN_H_
 
