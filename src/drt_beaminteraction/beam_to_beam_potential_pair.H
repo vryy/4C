@@ -409,9 +409,9 @@ namespace BEAMINTERACTION
         LINALG::TMatrix<double, 3, 1> const& cos_alpha_deriv_r_master,
         LINALG::TMatrix<double, 3, 1> const& cos_alpha_deriv_r_xi_slave,
         LINALG::TMatrix<double, 3, 1> const& cos_alpha_deriv_r_xi_master,
-        LINALG::TMatrix<double, 1, 3> xi_master_partial_r_slave,
-        LINALG::TMatrix<double, 1, 3> xi_master_partial_r_master,
-        LINALG::TMatrix<double, 1, 3> xi_master_partial_r_xi_master,
+        LINALG::TMatrix<double, 1, 3> const& xi_master_partial_r_slave,
+        LINALG::TMatrix<double, 1, 3> const& xi_master_partial_r_master,
+        LINALG::TMatrix<double, 1, 3> const& xi_master_partial_r_xi_master,
         LINALG::SerialDenseMatrix& stiffmat11, LINALG::SerialDenseMatrix& stiffmat12,
         LINALG::SerialDenseMatrix& stiffmat21, LINALG::SerialDenseMatrix& stiffmat22) const;
 
@@ -444,9 +444,9 @@ namespace BEAMINTERACTION
         LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1> const& cos_alpha_deriv_r_master,
         LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1> const& cos_alpha_deriv_r_xi_slave,
         LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1> const& cos_alpha_deriv_r_xi_master,
-        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3> xi_master_partial_r_slave,
-        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3> xi_master_partial_r_master,
-        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3> xi_master_partial_r_xi_master,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3> const& xi_master_partial_r_slave,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3> const& xi_master_partial_r_master,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3> const& xi_master_partial_r_xi_master,
         LINALG::SerialDenseMatrix& stiffmat11, LINALG::SerialDenseMatrix& stiffmat12,
         LINALG::SerialDenseMatrix& stiffmat21, LINALG::SerialDenseMatrix& stiffmat22) const
     {
