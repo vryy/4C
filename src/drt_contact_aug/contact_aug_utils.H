@@ -1,15 +1,10 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_aug_utils.H
-
 \brief Global utility file for the augmented contact formulation
 
 \level 3
 
 \maintainer Matthias Mayr
-
-\date Mar 23, 2017
-
 */
 /*---------------------------------------------------------------------*/
 

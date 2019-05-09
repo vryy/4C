@@ -1,15 +1,10 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_augmented_interface_tools.cpp
-
 \brief Tools for the augmented contact interface evaluation.
 
 \level 2
 
 \maintainer Matthias Mayr
-
-\date Apr 11, 2014
-
 */
 /*---------------------------------------------------------------------*/
 #include "contact_augmented_interface.H"

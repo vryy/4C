@@ -1,13 +1,10 @@
 /*----------------------------------------------------------------------------*/
 /**
-  \file contact_aug_lagrange_multiplier_function.cpp
-
   \brief Lagrange multiplier function: solve a least squares problem to compute
   the Lagrange multiplier value dependent on the current displacement state
 
   \level 3
   \maintainer Matthias Mayr
-  \date Apr 3, 2017
 */
 /*----------------------------------------------------------------------------*/
 

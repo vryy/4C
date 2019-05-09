@@ -1,16 +1,11 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_aug_potential.H
-
 \brief Class for the evaluation of the contact potential and its
        linearization.
 
 \level 2
 
 \maintainer Matthias Mayr
-
-\date Mar 14, 2017
-
 */
 /*---------------------------------------------------------------------*/
 

@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file contact_aug_integrator_policy.H
-
 \brief (augmented) contact integration policies
 
 \level 3
 
 \maintainer Matthias Mayr
-\date May 30, 2017
-
 */
 /*----------------------------------------------------------------------------*/
 

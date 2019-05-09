@@ -1,15 +1,10 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_augmented_integrator_list.H
-
 \brief List of template combinations for the augmented contact integrator.
 
 \level 2
 
 \maintainer Matthias Mayr
-
-\date Mar 8, 2017
-
 */
 /*---------------------------------------------------------------------*/
 

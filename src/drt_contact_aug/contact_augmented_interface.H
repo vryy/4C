@@ -1,15 +1,10 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_augmented_interface.H
-
 \brief Augmented contact interface.
 
 \level 2
 
 \maintainer Matthias Mayr
-
-\date Apr 16, 2014
-
 */
 /*---------------------------------------------------------------------*/
 #ifndef CONTACT_AUGMENTED_INTERFACE_H_

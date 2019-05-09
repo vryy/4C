@@ -1,16 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file contact_aug_lagrange_interface.cpp
-
 \brief Interface class for the Lagrange solving strategy of the augmented
        framework.
 
 \level 3
 
 \maintainer Matthias Mayr
-
-\date Mar 28, 2017
-
 */
 /*----------------------------------------------------------------------*/
 

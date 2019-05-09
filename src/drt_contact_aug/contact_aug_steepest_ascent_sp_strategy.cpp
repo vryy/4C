@@ -1,13 +1,10 @@
 /*-----------------------------------------------------------*/
 /*!
-\file contact_aug_steepest_ascent_sp_strategy.cpp
+\brief Some special solution strategy
 
 \maintainer Matthias Mayr
 
-\date Aug 24, 2018
-
 \level 3
-
 */
 /*-----------------------------------------------------------*/
 

@@ -1,16 +1,11 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_aug_combo_strategy.H
-
 \brief This strategy allows the combination of an arbitrary number of
        augmented contact solving strategies.
 
 \level 3
 
 \maintainer Matthias Mayr
-
-\date Mar 20, 2017
-
 */
 /*---------------------------------------------------------------------*/
 

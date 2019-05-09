@@ -1,13 +1,10 @@
 /*-----------------------------------------------------------*/
 /*!
-\file contact_aug_parallel_distribution_controller.cpp
+\brief Parallel redistribution for CONTACT::AUG
 
 \maintainer Matthias Mayr
 
-\date May 25, 2018
-
 \level 3
-
 */
 /*-----------------------------------------------------------*/
 
