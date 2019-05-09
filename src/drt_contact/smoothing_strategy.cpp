@@ -1,7 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file smoothing_strategy.cpp
-
 \brief strategy for interface smoothing
 
 \level 3

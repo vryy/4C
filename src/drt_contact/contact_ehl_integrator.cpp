@@ -1,7 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_ehl_integrator.cpp
-
 \brief A class to perform integrations of ehl related terms
 
 \level 3

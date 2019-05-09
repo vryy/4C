@@ -1,13 +1,12 @@
-/*!----------------------------------------------------------------------
-\file contact_tsi_interface.H
+/*-----------------------------------------------------------------------*/
+/*!
+\brief Contact interface capable of TSI
 
-<pre>
- \maintainer Matthias Mayr
-</pre>
+\maintainer Matthias Mayr
 
- \level 3
-
-*----------------------------------------------------------------------*/
+\level 3
+*/
+/*-----------------------------------------------------------------------*/
 #ifndef CONTACT_TSI_INTERFACE_H_
 #define CONTACT_TSI_INTERFACE_H_
 

@@ -1,6 +1,5 @@
+/*-----------------------------------------------------------------------*/
 /*!
-\file contact_utils.H
-
 \brief Contains a summary of contact utility functions
 
 \maintainer Matthias Mayr

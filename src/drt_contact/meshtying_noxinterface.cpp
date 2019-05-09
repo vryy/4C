@@ -1,7 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file meshtying_noxinterface.cpp
-
 \brief Concrete implementation of all the %NOX::NLN::CONSTRAINT::Interface::Required
        (pure) virtual routines.
 

@@ -1,7 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_tsi_lagrange_strategy.H
-
 \brief a derived strategy handling the Lagrange multiplier based TSI contact
 
 \level 3

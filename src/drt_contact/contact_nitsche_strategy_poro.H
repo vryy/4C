@@ -1,7 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_nitsche_strategy_poro.H
-
 \brief Nitsche poro contact solving strategy
 
 \level 3

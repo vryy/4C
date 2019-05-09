@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file contact_manager.H
-
 \brief BACI implementation of main class to control all contact
 
 \level 1

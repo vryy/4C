@@ -1,7 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_penalty_strategy.H
-
 \brief Penalty contact solving strategy: The contact constrains are enforced
        by a penalty formulation.
 

@@ -1,7 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_abstract_strategy.H
-
 \brief Main abstract class for contact solution strategies
 
 \level 2

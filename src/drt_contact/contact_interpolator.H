@@ -1,6 +1,4 @@
 /*!----------------------------------------------------------------------
-\file contact_interpolator.H
-
 \maintainer Alexander Popp
 
 \level 2

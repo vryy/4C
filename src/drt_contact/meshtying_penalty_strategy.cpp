@@ -1,6 +1,4 @@
 /*!----------------------------------------------------------------------
-\file meshtying_penalty_strategy.cpp
-
 \brief strategy handling mesh tying problems with penalty formulation
 
 \level 1

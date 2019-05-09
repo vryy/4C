@@ -1,6 +1,4 @@
 /*!----------------------------------------------------------------------
-\file contact_defines.H
-
 \brief A set of preprocessor defines for contact methods
 
 \level 2
