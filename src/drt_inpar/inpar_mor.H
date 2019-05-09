@@ -14,15 +14,6 @@
 
 #include "inpar_parameterlist_utils.H"
 
-// forward declaration
-namespace DRT
-{
-  namespace INPUT
-  {
-    class ConditionDefinition;
-  }
-}  // namespace DRT
-
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
