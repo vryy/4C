@@ -1,16 +1,10 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file every_iteration_writer.cpp
+\brief Write output for each Newton step during one load step in an extra output file.
 
-\brief Write output for each Newton step during one load step in
-       an extra output file.
-
-\maintainer Michael Hiermeier
-
-\date Aug 10, 2017
+\maintainer Martin Kronbichler
 
 \level 3
-
 */
 /*----------------------------------------------------------------------------*/
 

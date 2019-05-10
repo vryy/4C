@@ -1,16 +1,12 @@
-/*!----------------------------------------------------------------------
-\file spring3.cpp
+/*-----------------------------------------------------------*/
+/*!
 \brief three dimensional spring element
 
-\level 2
+\maintainer Christoph Meier
 
-\maintainer Dhrubajyoti Mukherjee
-            mukherjee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15270
-
-
-*----------------------------------------------------------------------*/
+\level 3
+*/
+/*-----------------------------------------------------------*/
 
 #include "spring3.H"
 #include "../drt_beam3/beam3eb.H"

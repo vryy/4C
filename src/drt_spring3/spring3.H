@@ -1,17 +1,13 @@
 /*-----------------------------------------------------------*/
 /*!
- \file spring3.H
+\brief three dimensional spring element
 
-\brief pseudo transient solution method
-
-\maintainer Dhrubajyoti Mukherjee
+\maintainer Christoph Meier
 
 \level 3
-
 */
 /*-----------------------------------------------------------*/
-// administrative line in order to make a difference between BACI and Ccarat files
-// header file only included if not yet included!
+
 #ifndef SPRING3_H
 #define SPRING3_H
 

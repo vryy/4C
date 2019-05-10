@@ -1,15 +1,12 @@
-/*!----------------------------------------------------------------------
-\file spring3_input.cpp
+/*-----------------------------------------------------------*/
+/*!
 \brief three dimensional spring element
 
-<pre>
-Maintainer: Dhrubajyoti Mukherjee
-            mukherjee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15270
-</pre>
+\maintainer Christoph Meier
 
-*----------------------------------------------------------------------*/
+\level 3
+*/
+/*-----------------------------------------------------------*/
 
 #include "spring3.H"
 #include "../drt_lib/drt_linedefinition.H"

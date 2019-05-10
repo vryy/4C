@@ -1,14 +1,12 @@
-/*!-----------------------------------------------------------------------------------------------------------
- \file spring3_evaluate.cpp
+/*-----------------------------------------------------------*/
+/*!
+\brief three dimensional spring element
 
- \brief three dimensional spring element (can be connected to beam3eb elements)
-
-\maintainer Dhrubajyoti Mukherjee
+\maintainer Christoph Meier
 
 \level 3
-
-
- *-----------------------------------------------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------*/
 
 #include "spring3.H"
 #include "../drt_beam3/beam3eb.H"
