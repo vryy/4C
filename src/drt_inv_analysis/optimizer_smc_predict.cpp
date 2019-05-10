@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file optimizer_smc_predict.cpp
- * \brief Prediction based on sequential monte carlo particles
- *
-<pre>
+\brief Prediction based on sequential monte carlo particles
+
 \level 3
+
 \maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

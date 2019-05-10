@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file initial_guess.cpp
- * \brief Initial guess for optimization problems
- *
-<pre>
+\brief Initial guess for optimization problems
+
 \level 3
+
 \maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

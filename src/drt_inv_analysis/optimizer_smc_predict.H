@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file optimizer_smc_predict.H
- * \brief Prediction based on sequential monte carlo particles
- *
-<pre>
+\brief Prediction based on Sequential Monte Carlo particles
+
 \level 3
+
 \maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
-</pre>
 */
 /*----------------------------------------------------------------------*/
 
@@ -25,7 +21,7 @@ namespace INVANA
   class ParticleData;
 
   /*! \class PredictionSMC
-   * \brief Prediction based on Sequential monte carlo particles
+   * \brief Prediction based on Sequential Monte Carlo particles
    *
    * This class provides prediction in a statictical sense based
    * on particles. These MUST therefore be already provided. Since

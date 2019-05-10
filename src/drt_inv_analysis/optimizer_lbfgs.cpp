@@ -1,16 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-
-\file optimizer_lbfgs.cpp
-
 \brief LBFGS optimization algorithm
 
-<pre>
 \level 3
+
 \maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

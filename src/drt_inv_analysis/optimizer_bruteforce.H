@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file optimizer_bruteforce.H
- * \brief Brute force sampling of the parameter space
- *
-<pre>
+\brief Brute force sampling of the parameter space
+
 \level 3
+
 \maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

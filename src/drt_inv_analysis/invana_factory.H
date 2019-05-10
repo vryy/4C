@@ -1,15 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file invana_factory.H
-
 \brief Factory for the inverse analysis
 
-<pre>
 \level 3
+
 \maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #ifndef INVANA_FACTORY_H

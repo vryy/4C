@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file chol_factor_base.H
- * \brief Common cholesky factor base class
- *
-<pre>
+\brief Common cholesky factor base class
+
 \level 3
+
 \maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

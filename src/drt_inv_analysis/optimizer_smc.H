@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file optimizer_smc.H
- * \brief Sequential monte carlo
- *
-<pre>
+\brief Sequential Monte Carlo
+
 \level 3
+
 \maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
-</pre>
 */
 /*----------------------------------------------------------------------*/
 
@@ -34,7 +30,7 @@ namespace INVANA
   class LogLikeMixture;
 
   /*! \class OptimizerSMC
-   * \brief Sequential monte carlo sampling algorithm
+   * \brief Sequential Monte Carlo sampling algorithm
    *
    * Implementation of Algorithm 3.1.1 (with Remark 1) from
    * "Sequential Monte Carlo samplers", del Moral et al., 2006
@@ -82,7 +78,7 @@ namespace INVANA
     virtual void Setup();
     //@}
 
-    //! perform the sequential monte carlo procedure
+    //! perform the Sequential Monte Carlo procedure
     virtual void Integrate();
 
     /*! \brief find a step size

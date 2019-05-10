@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file timint_adjoint.cpp
 \brief Time integration for a hyperelastic quasi static adjoint problem
 
-<pre>
 \level 3
+
 \maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
-</pre>
 !*/
 #include "timint_adjoint.H"
 

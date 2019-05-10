@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file regularization_tikhonov.H
 \brief Tikhonov type regularization
 
-<pre>
 \level 3
+
 \maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
-</pre>
 */
 
 /*----------------------------------------------------------------------*/

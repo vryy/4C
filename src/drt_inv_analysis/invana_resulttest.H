@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file invana_resulttest.H
+\brief testing of inverse analysis results
 
-\brief tesing of inverse analysis results
-<pre>
 \level 3
+
 \maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
-</pre>
 
 */
 

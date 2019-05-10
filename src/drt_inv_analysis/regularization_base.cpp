@@ -1,15 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file regularization_base.cpp
-
 \brief Base class for regularization of optimization problems
 
-<pre>
 \level 3
+
 \maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
-</pre>
 */
 
 /*----------------------------------------------------------------------*/

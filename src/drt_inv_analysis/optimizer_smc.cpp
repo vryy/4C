@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file optimizer_smc.cpp
- * \brief Sequential monte carlo
- *
-<pre>
+\brief Sequential Monte Carlo
+
 \level 3
+
 \maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

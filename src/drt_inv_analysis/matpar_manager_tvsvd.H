@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file matpar_manager_tvsvd.H
 \brief Creating reduced basis from TV approximation
 
-<pre>
 \level 3
+
 \maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
-</pre>
 */
 
 

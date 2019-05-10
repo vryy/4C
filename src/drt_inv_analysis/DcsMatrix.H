@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file DcsMatrix.H
- * \brief Dense column storage matrix
- *
-<pre>
+\brief Dense column storage matrix
+
 \level 3
+
 \maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

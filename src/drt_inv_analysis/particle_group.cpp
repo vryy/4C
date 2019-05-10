@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file particle_group.cpp
- * \brief Collection of particles for the smc algorithm
- *
-<pre>
+\brief Collection of particles for the Sequential Monte Carlo algorithm
+
 \level 3
+
 \maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

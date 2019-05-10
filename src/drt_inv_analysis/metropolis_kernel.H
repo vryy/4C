@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file metropolis_kernel.H
- * \brief Run a metropolis hastings kernel
- *
-<pre>
+\brief Run a metropolis hastings kernel
+
 \level 3
+
 \maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

@@ -1,15 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file regularization_totalvariation.cpp
-
 \brief Total variation type regularization
 
-<pre>
 \level 3
+
 \maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
-</pre>
 
 !*/
 

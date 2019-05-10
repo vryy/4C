@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file particle_comm.H
- * \brief Communication management for particle data
- *
-<pre>
+\brief Communication management for particle data
+
 \level 3
+
 \maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

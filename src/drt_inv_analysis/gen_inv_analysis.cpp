@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file gen_inv_analysis.cpp
-
 \brief gen inv analysis
 
 \level 2

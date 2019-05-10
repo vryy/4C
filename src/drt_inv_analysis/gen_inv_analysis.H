@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file gen_inv_analysis.H
-
 \brief gen inv analysis
 
 \level 2
 
 \maintainer Harald Willmann
-            willmann@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
 */
 /*----------------------------------------------------------------------*/
 #ifndef GEN_INV_ANALYSIS_H
