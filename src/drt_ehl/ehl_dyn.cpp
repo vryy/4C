@@ -30,7 +30,7 @@ void printehllogo()
             << std::endl;
   std::cout << "---------------------------------------------------------------------------------"
             << std::endl;
-  std::cout << "-----------------        Welcome to the problem type EHL        -----------------"
+  std::cout << "-----------  Welcome to the Elasto-Hydrodynamic Lubrication problem  ------------"
             << std::endl;
   std::cout << "---------------------------------------------------------------------------------"
             << std::endl;
@@ -71,8 +71,7 @@ void ehl_dyn()
   Teuchos::ParameterList& lubricationdyn =
       const_cast<Teuchos::ParameterList&>(problem->LubricationDynamicParams());
   // do we want to use Modified Reynolds Equation?
-  bool modifiedreynolds =
-      (DRT::INPUT::IntegralValue<int>(lubricationdyn, "MODIFIED_REYNOLDS_EQU"));  // check plz
+  bool modifiedreynolds = (DRT::INPUT::IntegralValue<int>(lubricationdyn, "MODIFIED_REYNOLDS_EQU"));
 
   // print problem specific logo
   if (!problem->GetDis("structure")->Comm().MyPID())

@@ -52,8 +52,12 @@ namespace DRT
       );
 
       double Time() const { return time_; };
+
+      /// return function for the modified reynolds equation flag
       bool ModifiedReynolds() const { return modified_reynolds_; };
+      /// return function for the Add squeeze term in reynolds equ. flag
       bool AddSqz() const { return addsqz_; };
+      /// return function for surface roughness value in modified reynolds equ.
       double RoughnessDeviation() const { return roughness_deviation_; };
 
      private:
@@ -62,8 +66,11 @@ namespace DRT
       );
 
       double time_;
+      /// modified reynolds equation flag
       bool modified_reynolds_;
+      /// Add squeeze term in reynolds equ. flag
       bool addsqz_;
+      /// surface roughness STD value in modified reynolds equ.
       double roughness_deviation_;
 
     };  // class LubricationEleParameter

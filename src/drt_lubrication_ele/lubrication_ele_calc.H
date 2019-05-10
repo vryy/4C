@@ -134,6 +134,7 @@ namespace DRT
 
       //! number of space dimensions
       static const int nsd_ = probdim;
+
       //! space dimension of Lubrication element (only for flat domains nsd_ele_ = nsd_)
       static const int nsd_ele_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
@@ -195,11 +196,11 @@ namespace DRT
       //! set internal variables
       virtual void SetInternalVariablesForMatAndRHS();
 
-      //! evaluate pressure and shear flow factors
+      //! evaluate pressure and shear flow factors for modified reynolds equation
       virtual void CalcPFlowFacAtIntPoint(LINALG::Matrix<nsd_, 1>& pflowfac,
           LINALG::Matrix<nsd_, 1>& pflowfacderiv, const double heightint);
 
-      //! evaluate pressure and shear flow factors
+      //! evaluate pressure and shear flow factors for modified reynolds equation
       virtual void CalcSFlowFacAtIntPoint(
           double& sflowfac, double& sflowfacderiv, const double heightint);
 
@@ -257,67 +258,9 @@ namespace DRT
       //! @name methods for evaluation of individual terms
       /*========================================================================*/
 
-      //      //! calculate linearization of the Laplacian (weak form)
-      //      void GetLaplacianWeakForm(double& val,  //!< value of linearization of weak laplacian
-      //          const int vi,                       //!< node index for the weighting function
-      //          const int ui                        //!< node index for the shape function
-      //      )
-      //      {
-      //        val = 0.0;
-      //        for (int j = 0; j < nsd_; j++)
-      //        {
-      //          val += derxy_(j, vi) * derxy_(j, ui);
-      //        }
-      //        return;
-      //      };
-
-      //      //! calculate linearization of the Laplacian (weak form)
-      //      void GetLaplacianWeakForm(double& val,  //!< value of linearization of weak laplacian
-      //          const int vi,                       //!< node index for the weighting function
-      //          const int ui,                       //!< node index for the shape function
-      //          const LINALG::Matrix<nsd_, 1>& pflowfac)
-      //      {
-      //        val = 0.0;
-      //        for (int j = 0; j < nsd_; j++)
-      //        {
-      //          val += derxy_(j, vi) * derxy_(j, ui) * pflowfac(j);
-      //        }
-      //
-      //        return;
-      //      };
-      //
-      //! calculate the Laplacian (weak form)
-      //      void GetLaplacianWeakFormRHS(double& val,    //!< value of weak laplacian
-      //          const LINALG::Matrix<nsd_, 1>& gradpre,  //!< pressure gradient at gauss point
-      //          const int vi                             //!< node index for the weighting
-      //          function
-      //      )
-      //      {
-      //        val = 0.0;
-      //        for (int j = 0; j < nsd_; j++)
-      //        {
-      //          val += derxy_(j, vi) * gradpre(j);
-      //        }
-      //        return;
-      //      };
-      //
-      //      //! calculate the Laplacian (weak form)
-      //      void GetLaplacianWeakFormRHS(double& val,    //!< value of weak laplacian
-      //          const LINALG::Matrix<nsd_, 1>& gradpre,  //!< pressure gradient at gauss point
-      //          const int vi,                            //!< node index for the weighting
-      //          function const LINALG::Matrix<nsd_, 1>& pflowfac)
-      //      {
-      //        val = 0.0;
-      //        for (int j = 0; j < nsd_; j++)
-      //        {
-      //          val += derxy_(j, vi) * gradpre(j) * pflowfac(j);
-      //        }
-      //        return;
-      //      };
-
-      //! calculate linearization of the Laplacian (weak form)
+      //! calculate linearization of the Laplacian (weak form) for element integration
       virtual void GetLaplacianWeakForm(double& val, const int vi, const int ui);
-      //! calculate linearization of the Laplacian (weak form)
+      //! calculate linearization of the Laplacian (weak form) for element integration
       virtual void GetLaplacianWeakForm(
           double& val, const int vi, const int ui, const LINALG::Matrix<nsd_, 1> pflowfac);
       //! calculate the Laplacian (weak form)
@@ -425,12 +368,16 @@ namespace DRT
       //! time step
       double Dt_;
 
+      /// Pressure flow factor, initialized to zero
+      LINALG::Matrix<nsd_, 1> pflowfac_;
 
-      // double heightint_;
-      // double heightdotint_;
-      LINALG::Matrix<nsd_, 1> pflowfac_;  // Pressure flow factor, initialized to zero
+      /// Pressure flow factor derivative, initialized to zero
       LINALG::Matrix<nsd_, 1> pflowfacderiv_;
+
+      /// shear flow factor
       double sflowfac_;
+
+      /// shear flow factor derivative
       double sflowfacderiv_;
     };
 
@@ -445,12 +392,7 @@ namespace DRT
     class LubricationEleInternalVariableManager
     {
      public:
-      LubricationEleInternalVariableManager() : prenp_(0.0), gradpre_(true)
-      //            pflowfactor_(true),
-      //            pflowfactorderiv_(true)
-      {
-        return;
-      }
+      LubricationEleInternalVariableManager() : prenp_(0.0), gradpre_(true) { return; }
 
       virtual ~LubricationEleInternalVariableManager(){};
 
