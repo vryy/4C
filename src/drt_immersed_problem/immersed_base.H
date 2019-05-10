@@ -1,14 +1,10 @@
 /*!----------------------------------------------------------------------
-\file immersed_base.H
 
 \brief base class for all immersed algorithms
 
 \level 2
 
-\maintainer  Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15240
+\maintainer Jonas Eichinger
 
 *----------------------------------------------------------------------*/
 #ifndef IMMERSED_BASE_H

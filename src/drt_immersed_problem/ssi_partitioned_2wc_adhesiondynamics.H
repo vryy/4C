@@ -1,15 +1,10 @@
 /*!----------------------------------------------------------------------
-\file ssi_partitioned_2wc_adhesiondynamics.H
 
 \brief specialization of ssi2wc, including adhesion dynamics
 
 \level 2
 
-\maintainer  Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15240
-
+\maintainer Jonas Eichinger
  *----------------------------------------------------------------------*/
 
 

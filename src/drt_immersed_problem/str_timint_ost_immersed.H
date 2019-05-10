@@ -1,11 +1,12 @@
-/*----------------------------------------------------------------------*/
-/*!
-\file str_timint_ost_immersed.H
+/*!----------------------------------------------------------------------
+
 \brief Structural time integration with one-step-theta for cell migration
+
 \level 1
-\maintainer Andreas Rauch
-*/
-/*----------------------------------------------------------------------*/
+
+\maintainer Jonas Eichinger
+
+*----------------------------------------------------------------------*/
 #ifndef STRTIMINT_OST_IMMERSED_H
 #define STRTIMINT_OST_IMMERSED_H
 

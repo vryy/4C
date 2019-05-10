@@ -1,15 +1,11 @@
 /*!----------------------------------------------------------------------
-\file immersed_partitioned_fsi_dirichletneumann_membrane.cpp
 
 \brief partitioned immersed fsi algorithm for dirichlet-neumann coupling with membrane finite
 elements
 
 \level 3
 
-\maintainer  Sebastian Fuchs
-             fuchs@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15262
+\maintainer Sebastian Fuchs
 
 *----------------------------------------------------------------------*/
 #include "immersed_partitioned_fsi_dirichletneumann_membrane.H"

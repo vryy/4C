@@ -1,14 +1,11 @@
 /*!----------------------------------------------------------------------
-\file immersed_partitioned_fsi.cpp
 
 \brief partitioned immersed fsi algorithm
 
-<pre>
-Maintainers: Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15240
-</pre>
+\level 2
+
+\maintainer Jonas Eichinger
+
 *----------------------------------------------------------------------*/
 #include "immersed_partitioned_fsi.H"
 #include "immersed_partitioned.H"

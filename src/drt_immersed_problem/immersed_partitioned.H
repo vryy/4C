@@ -1,16 +1,10 @@
 /*!----------------------------------------------------------------------
-\file immersed_partitioned.H
 
 \brief base class for all partitioned immersed algorithms
 
 \level 2
 
-<pre>
-\maintainer  Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15240
-</pre>
+\maintainer Jonas Eichinger
 *----------------------------------------------------------------------*/
 #ifndef IMMERSED_PARTITIONED_H
 #define IMMERSED_PARTITIONED_H

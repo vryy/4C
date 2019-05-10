@@ -1,11 +1,10 @@
 /*!----------------------------------------------------------------------
-\file immersed_problem_dyn.H
 
-\brief global algorithm control file for all immersed algorithms.
-
-\maintainer  Andreas Rauch
+\brief global algorithm control class for all immersed and cell migration algorithms
 
 \level 2
+
+\maintainer Jonas Eichinger
 
 *----------------------------------------------------------------------*/
 #ifndef IMMERSED_PROBLEM_DYN_H

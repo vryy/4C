@@ -1,14 +1,10 @@
 /*!----------------------------------------------------------------------
-\file ssi_partitioned_2wc_biochemomechano.cpp
 
 \brief specialization of ssi2wc for biochemo-mechano coupled active cell material
 
 \level 3
 
-\maintainer  Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15240
+\maintainer Jonas Eichinger
 
 *----------------------------------------------------------------------*/
 #include "ssi_partitioned_2wc_biochemomechano.H"

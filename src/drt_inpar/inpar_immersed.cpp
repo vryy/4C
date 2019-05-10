@@ -4,7 +4,7 @@
 
 \level 1
 
-\maintainer Andreas Rauch
+\maintainer Jonas Eichinger
 
 */
 

@@ -2,7 +2,7 @@
 /*!
 \brief input parameters and conditions for cell migration
 
-\maintainer Andreas Rauch
+\maintainer Jonas Eichinger
 
 \level 2
 */

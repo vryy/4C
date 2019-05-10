@@ -1,14 +1,10 @@
 /*!----------------------------------------------------------------------
-\file immersed_field_exchange_manager.cpp
 
 \brief manage access to and provide data globally in immersed problems
 
-\maintainer  Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15240
-
 \level 3
+
+\maintainer Jonas Eichinger
 
 *----------------------------------------------------------------------*/
 #include "immersed_field_exchange_manager.H"

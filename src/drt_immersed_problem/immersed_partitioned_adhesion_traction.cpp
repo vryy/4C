@@ -1,11 +1,10 @@
 /*!----------------------------------------------------------------------
-\file immersed_partitioned_adhesion_traction.cpp
 
 \brief partitioned immersed cell-ecm interaction via adhesion traction
 
 \level 2
 
-\maintainer  Andreas Rauch
+\maintainer Jonas Eichinger
 
 *----------------------------------------------------------------------*/
 #include "immersed_partitioned_adhesion_traction.H"
