@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\brief Metropolis Hastings monte carlo
+\brief Metropolis Hastings Monte Carlo
 
 \level 3
 

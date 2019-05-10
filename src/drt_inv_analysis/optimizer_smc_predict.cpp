@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\brief Prediction based on sequential monte carlo particles
+\brief Prediction based on Sequential Monte Carlo particles
 
 \level 3
 

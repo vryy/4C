@@ -1,6 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 \brief Creating patches from inputfile
+
 \level 3
 
 \maintainer Sebastian Brandstaeter

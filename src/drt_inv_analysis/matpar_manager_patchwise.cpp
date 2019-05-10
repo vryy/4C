@@ -1,6 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 \brief Creating patches from an elementwise layout
+
 \level 3
 
 \maintainer Sebastian Brandstaeter

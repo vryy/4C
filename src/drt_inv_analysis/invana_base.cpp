@@ -2,7 +2,6 @@
 /*!
 \brief Base class for the inverse analysis
 
-
 \level 3
 
 \maintainer Sebastian Brandstaeter

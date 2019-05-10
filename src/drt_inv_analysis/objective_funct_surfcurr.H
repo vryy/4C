@@ -2,6 +2,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 \brief Surface current based objective function
+
 \level 3
 
 \maintainer Sebastian Brandstaeter

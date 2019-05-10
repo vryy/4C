@@ -1,6 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 \brief Creating reduced basis from TV approximation
+
 \level 3
 
 \maintainer Sebastian Brandstaeter
