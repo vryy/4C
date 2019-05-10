@@ -1,15 +1,13 @@
-
-/*----------------------------------------------------------------------*/
-/*!
+/*!----------------------------------------------------------------------
 
 \brief Internal implementation of LinExp artery element
 
-\maintainer Johannes Kremheller
-
 \level 3
 
-*/
-/*----------------------------------------------------------------------*/
+\maintainer Johannes Kremheller
+
+*----------------------------------------------------------------------*/
+
 
 #ifndef ARTERY_LIN_EXP_H
 #define ARTERY_LIN_EXP_H
