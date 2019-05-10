@@ -28,10 +28,12 @@ namespace DRT
 {
   class Discretization;
 }
+
 namespace LINALG
 {
   class SparseMatrix;
 }  // namespace LINALG
+
 namespace STR
 {
   namespace MODELEVALUATOR
@@ -64,6 +66,9 @@ namespace STR
 
       //! derived
       virtual bool EvaluateForceStiff();
+
+      //! derived
+      void PreEvaluate() override { return; };
 
       //! derived
       virtual void PostEvaluate(){/* currently unused */};

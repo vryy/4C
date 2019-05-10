@@ -106,6 +106,19 @@ namespace GEO
        */
       bool HasTwoContinuousConcavePts(std::vector<int> ptConcavity);
 
+      //! Restores last ear that was deleted during triangulation
+      void RestoreLastEar(int ear_head_index, std::vector<int> &ptConcavity);
+
+      //! Goes clockwise from the the only no on-line point on the triangle and generates thin
+      //! triangles
+      void SplitTriangleWithPointsOnLine(unsigned int head_start);
+
+      //! Find second best ear, from the ones we discarded during the first check on the first round
+      //! of earclipping
+      unsigned int FindSecondBestEar(
+          std::vector<std::pair<std::vector<Point *>, unsigned int>> &ears,
+          const std::vector<int> &reflex);
+
       //! Corner points of the facet
       std::vector<Point *> ptlist_;
 

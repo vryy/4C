@@ -6,8 +6,8 @@
 
    \level 3
 
-   \maintainer  Lena Yoshihara
-                yoshihara@lnm.mw.tum.de
+   \maintainer  Johannes Kremheller
+                kremheller@lnm.mw.tum.de
                 http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
@@ -35,7 +35,6 @@ namespace Teuchos
   class ParameterList;
 }
 
-// Algorithm adapter classes for use in multi-field problems
 namespace ADAPTER
 {
   /// basic multiphase porous flow adapter
@@ -49,12 +48,15 @@ namespace ADAPTER
     virtual ~PoroFluidMultiphaseWrapper(){};
 
     /// initialization
-    void Init(const bool isale,        ///< ALE flag
-        const int nds_disp,            ///< number of dofset associated with displacements
-        const int nds_vel,             ///< number of dofset associated with fluid velocities
-        const int nds_solidpressure,   ///< number of dofset associated with solid pressure
-        const int ndsporofluid_scatra  ///< number of dofset associated with scalar on fluid
-                                       ///< discretization
+    void Init(const bool isale,         ///< ALE flag
+        const int nds_disp,             ///< number of dofset associated with displacements
+        const int nds_vel,              ///< number of dofset associated with fluid velocities
+        const int nds_solidpressure,    ///< number of dofset associated with solid pressure
+        const int ndsporofluid_scatra,  ///< number of dofset associated with scalar on fluid
+                                        ///< discretization
+        const std::map<int, std::set<int>>*
+            nearbyelepairs  ///< possible interaction partners between porofluid and artery
+                            ///< discretization
     );
 
     /// create result test for multiphase porous fluid field
@@ -93,6 +95,9 @@ namespace ADAPTER
     //! return primary field at time n+1
     Teuchos::RCP<const Epetra_Vector> Phinp() const;
 
+    //! return primary field at time n
+    Teuchos::RCP<const Epetra_Vector> Phin() const;
+
     //! return solid pressure field at time n+1
     Teuchos::RCP<const Epetra_Vector> SolidPressure() const;
 
@@ -102,8 +107,8 @@ namespace ADAPTER
     //! return saturation field at time n+1
     Teuchos::RCP<const Epetra_Vector> Saturation() const;
 
-    //! return saturation field at time n+1
-    Teuchos::RCP<const Epetra_Vector> ValidVolFracPressDofs() const;
+    //! return valid volume fraction species dof vector
+    Teuchos::RCP<const Epetra_Vector> ValidVolFracSpecDofs() const;
 
     //! return phase flux field at time n+1
     Teuchos::RCP<const Epetra_MultiVector> Flux() const;

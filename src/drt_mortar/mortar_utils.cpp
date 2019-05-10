@@ -868,8 +868,8 @@ void MORTAR::UTILS::PrepareNURBSNode(DRT::Node* node, Teuchos::RCP<MORTAR::Morta
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void MORTAR::UTILS::MortarMatrixCondensation(Teuchos::RCP<LINALG::SparseMatrix>& k,
-    const Teuchos::RCP<LINALG::SparseMatrix>& p_row,
-    const Teuchos::RCP<LINALG::SparseMatrix>& p_col)
+    const Teuchos::RCP<const LINALG::SparseMatrix>& p_row,
+    const Teuchos::RCP<const LINALG::SparseMatrix>& p_col)
 {
   // prepare maps
   Teuchos::RCP<Epetra_Map> gsrow =
@@ -886,30 +886,36 @@ void MORTAR::UTILS::MortarMatrixCondensation(Teuchos::RCP<LINALG::SparseMatrix>&
   Teuchos::RCP<Epetra_Map> gsmcol = LINALG::MergeMap(gscol, gmcol, false);
   Teuchos::RCP<Epetra_Map> gncol = LINALG::SplitMap(k->DomainMap(), *gsmcol);
 
-  /**********************************************************************/
+  /*--------------------------------------------------------------------*/
   /* Split kteff into 3x3 block matrix                                  */
-  /**********************************************************************/
+  /*--------------------------------------------------------------------*/
   // we want to split k into 3 groups s,m,n = 9 blocks
-  Teuchos::RCP<LINALG::SparseMatrix> kss, ksm, ksn, kms, kmm, kmn, kns, knm, knn;
+  Teuchos::RCP<LINALG::SparseMatrix> kss = Teuchos::null;
+  Teuchos::RCP<LINALG::SparseMatrix> ksm = Teuchos::null;
+  Teuchos::RCP<LINALG::SparseMatrix> ksn = Teuchos::null;
+  Teuchos::RCP<LINALG::SparseMatrix> kms = Teuchos::null;
+  Teuchos::RCP<LINALG::SparseMatrix> kmm = Teuchos::null;
+  Teuchos::RCP<LINALG::SparseMatrix> kmn = Teuchos::null;
+  Teuchos::RCP<LINALG::SparseMatrix> kns = Teuchos::null;
+  Teuchos::RCP<LINALG::SparseMatrix> knm = Teuchos::null;
+  Teuchos::RCP<LINALG::SparseMatrix> knn = Teuchos::null;
 
   // temporarily we need the blocks ksmsm, ksmn, knsm
   // (FIXME: because a direct SplitMatrix3x3 is still missing!)
-  Teuchos::RCP<LINALG::SparseMatrix> ksmsm, ksmn, knsm;
+  Teuchos::RCP<LINALG::SparseMatrix> ksmsm = Teuchos::null;
+  Teuchos::RCP<LINALG::SparseMatrix> ksmn = Teuchos::null;
+  Teuchos::RCP<LINALG::SparseMatrix> knsm = Teuchos::null;
 
   // some temporary Teuchos::RCPs
   Teuchos::RCP<Epetra_Map> tempmap;
-  Teuchos::RCP<LINALG::SparseMatrix> tempmtx1;
-  Teuchos::RCP<LINALG::SparseMatrix> tempmtx2;
-  Teuchos::RCP<LINALG::SparseMatrix> tempmtx3;
+  Teuchos::RCP<LINALG::SparseMatrix> tempmtx1 = Teuchos::null;
+  Teuchos::RCP<LINALG::SparseMatrix> tempmtx2 = Teuchos::null;
 
   // split
   LINALG::SplitMatrix2x2(k, gsmrow, gnrow, gsmcol, gncol, ksmsm, ksmn, knsm, knn);
   LINALG::SplitMatrix2x2(ksmsm, gsrow, gmrow, gscol, gmcol, kss, ksm, kms, kmm);
   LINALG::SplitMatrix2x2(ksmn, gsrow, gmrow, gncol, tempmap, ksn, tempmtx1, kmn, tempmtx2);
   LINALG::SplitMatrix2x2(knsm, gnrow, tempmap, gscol, gmcol, kns, knm, tempmtx1, tempmtx2);
-
-  if (kms->NormOne() > 1.e-12) dserror("stop");
-  if (ksm->NormOne() > 1.e-12) dserror("stop");
 
   Teuchos::RCP<LINALG::SparseMatrix> kteffnew =
       Teuchos::rcp(new LINALG::SparseMatrix(k->RowMap(), 81, true, false, k->GetMatrixtype()));
@@ -921,6 +927,8 @@ void MORTAR::UTILS::MortarMatrixCondensation(Teuchos::RCP<LINALG::SparseMatrix>&
   kteffnew->Add(*kmm, false, 1.0, 1.0);
   kteffnew->Add(*LINALG::Multiply(*kns, false, *p_col, false, true, false, true), false, 1., 1.);
   kteffnew->Add(*LINALG::Multiply(*p_row, true, *ksn, false, true, false, true), false, 1., 1.);
+  kteffnew->Add(*LINALG::Multiply(*kms, false, *p_col, false, true, false, true), false, 1., 1.);
+  kteffnew->Add(*LINALG::Multiply(*p_row, true, *ksm, false, true, false, true), false, 1., 1.);
   kteffnew->Add(*LINALG::Multiply(*p_row, true,
                     *LINALG::Multiply(*kss, false, *p_col, false, true, false, true), false, true,
                     false, true),

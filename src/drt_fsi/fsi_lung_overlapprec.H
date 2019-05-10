@@ -2,13 +2,8 @@
 /*!
 \file fsi_lung_overlapprec.H
 \brief BGS preconditioner for volume-coupled FSI
-
-<pre>
-Maintainer: Lena Yoshihara
-            yoshihara@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15303
-</pre>
+\level 2
+\maintainer Lena Yoshihara
 */
 /*----------------------------------------------------------------------*/
 
@@ -23,7 +18,7 @@ Maintainer: Lena Yoshihara
 // and use the fluid solver to solve for it
 //#define BLOCKMATRIXMERGE
 
-/// forward declarations
+// forward declarations
 namespace LINALG
 {
   class Solver;

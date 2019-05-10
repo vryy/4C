@@ -6,8 +6,8 @@
 
    \level 3
 
-   \maintainer  Lena Yoshihara
-                yoshihara@lnm.mw.tum.de
+   \maintainer  Johannes Kremheller
+                kremheller@lnm.mw.tum.de
                 http://www.lnm.mw.tum.de
 
  *----------------------------------------------------------------------*/
@@ -42,11 +42,14 @@ void ADAPTER::PoroFluidMultiphaseWrapper::Init(const bool isale,  ///< ALE flag
     const int nds_vel,            ///< number of dofset associated with fluid velocities
     const int nds_solidpressure,  ///< number of dofset associated with solid pressure
     const int
-        ndsporofluid_scatra  ///< number of dofset associated with scalar on fluid discretization
+        ndsporofluid_scatra,  ///< number of dofset associated with scalar on fluid discretization
+    const std::map<int, std::set<int>>* nearbyelepairs  ///< possible interaction partners between
+                                                        ///< porofluid and artery discretization
 )
 {
   // initialize algorithm for specific time-integration scheme
-  porofluid_->Init(isale, nds_disp, nds_vel, nds_solidpressure, ndsporofluid_scatra);
+  porofluid_->Init(
+      isale, nds_disp, nds_vel, nds_solidpressure, ndsporofluid_scatra, nearbyelepairs);
 
   return;
 }
@@ -136,6 +139,13 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::PoroFluidMultiphaseWrapper::Phinp() c
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::PoroFluidMultiphaseWrapper::Phin() const
+{
+  return porofluid_->Phin();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::PoroFluidMultiphaseWrapper::SolidPressure() const
 {
   return porofluid_->SolidPressure();
@@ -157,9 +167,9 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::PoroFluidMultiphaseWrapper::Saturatio
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::PoroFluidMultiphaseWrapper::ValidVolFracPressDofs() const
+Teuchos::RCP<const Epetra_Vector> ADAPTER::PoroFluidMultiphaseWrapper::ValidVolFracSpecDofs() const
 {
-  return porofluid_->ValidVolFracPressDofs();
+  return porofluid_->ValidVolFracSpecDofs();
 }
 
 /*----------------------------------------------------------------------*/

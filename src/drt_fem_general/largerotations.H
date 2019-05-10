@@ -19,13 +19,6 @@
 /************************************************************************/
 /* Large rotations functions                                            */
 /************************************************************************/
-/*!
-\brief LARGEROTATIONS: namespace for operations with finite rotations according
-to Crisfield 2003, Non-linear Finite Element Analysis of Solids and Structures,
-Volume 2, Chapter 16 and according to  Jelenic 1999, Geometrically exact 3D beam
-theory: implementation of a strain-invariant finite element for statics and dynamics
-(Computational Methods in Applied Mechanics and Engineering 171, p. 141 - 171)
-*/
 namespace LARGEROTATIONS
 {
   //! computing spin matrix S from rotation angle vector theta, Crisfield, Vol. 2, equation (16.8)

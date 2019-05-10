@@ -56,17 +56,6 @@ namespace LINALG
   class KrylovProjector;
 }  // namespace LINALG
 
-
-/*!
-\brief  This class manages local transformations(rotation) of velocity fields
-
-        o used for rotationally symmetric boundary conditions
-        o used for rotationally symmetric boundary conditions
-
-\author ehrl
-
- */
-
 namespace FLD
 {
   namespace UTILS

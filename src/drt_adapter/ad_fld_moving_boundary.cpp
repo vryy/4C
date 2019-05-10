@@ -4,7 +4,7 @@
 
 \brief to be set by the maintainer
 
-\maintainer Andreas Rauch
+\maintainer  Christoph Ager
 
 \level 2
 */

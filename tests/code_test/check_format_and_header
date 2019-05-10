@@ -7,25 +7,26 @@
 # This is a bash script meant for code checks concerning clang-format style and header compliance.
 
 # The test will fail if code is found that is not compliant with the BACI clang format style.
-# In this preliminary version uncompliant headers will not lead to a test failure but the affected files will be written out in a text file called "wrong_headers.txt"
+# In this preliminary version uncompliant headers will not lead to a test failure but the affected files will be written out in a text file called "wrong_format.txt"
 # This ensures that the work with BACI is not interrupted and gives time to work on non-compliant headers, in parallel.
 # The files with non-compliant code format will also be written out in a file named "wrong_clang_format.txt"
 
 # Author:    Jonas Nitzler
-# Date:      04.09.2018
-# Version:   1.0
+# Date:      20.03.2019
+# Version:   1.1
 
 ## Delete old .txt files containing non-compliant files
-[ -e wrong_headers.txt ] && rm wrong_headers.txt
+[ -e wrong_format.txt ] && rm wrong_format.txt
 [ -e wrong_clang_format.txt ] && rm wrong_clang_format.txt
 
 ### Header check ################################################
 echo "Start test for correct file headers ..."
-python ./tests/code_test/nightly_header-check.py | tee wrong_headers.txt
+python2 ./tests/code_test/nightly_header-check.py | tee wrong_format.txt
 
-if [ -s wrong_headers.txt ]
+if [ -s wrong_format.txt ]
 then
-  echo "Failed. Non-compliant file headers have been reported in wrong_headers.txt."
+  echo "Failed. Non-compliant file headers have been reported in wrong_format.txt."
+  cat wrong_format.txt
 else
   echo "Passed."
 fi
@@ -54,6 +55,7 @@ then
   then
     (printf "$uncompliant_files")>>wrong_clang_format.txt
     echo "Failed. Non-compliant files have been reported in wrong_clang_format.txt."
+    cat wrong_clang_format.txt
     exit 1
   fi
 fi

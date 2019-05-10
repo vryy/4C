@@ -73,6 +73,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_ParameterList.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -510,9 +511,11 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
       DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
           DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SPHERE CONTACT"),
           "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none or
-      DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
-          DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID CONTACT"),
-          "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none or
+      Teuchos::getIntegralValue<INPAR::BEAMINTERACTION::BeamToSolidVolumeContactDiscretization>(
+          DRT::Problem::Instance()->BeamInteractionParams().sublist(
+              "BEAM TO SOLID VOLUME MESHTYING"),
+          "CONTACT_DISCRETIZATION") !=
+          INPAR::BEAMINTERACTION::BeamToSolidVolumeContactDiscretization::none or
       beampotconditions.size() > 0)
     modeltypes.insert(INPAR::STR::model_beaminteraction);
 

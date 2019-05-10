@@ -6,8 +6,8 @@
 
    \level 3
 
-   \maintainer  Lena Yoshihara
-                yoshihara@lnm.mw.tum.de
+   \maintainer  Johannes Kremheller
+                kremheller@lnm.mw.tum.de
                 http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
@@ -15,6 +15,7 @@
 #include "scatra_timint_poromulti.H"
 
 #include "../drt_io/io.H"
+#include "../drt_poromultiphase_scatra/poromultiphase_scatra_utils.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                             vuong  08/16 |
@@ -108,7 +109,8 @@ void SCATRA::ScaTraTimIntPoroMulti::SetL2FluxOfMultiFluid(
  | set solution fields on given dof sets              kremheller  07/17 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntPoroMulti::SetSolutionFieldOfMultiFluid(
-    Teuchos::RCP<const Epetra_Vector> phinp_fluid, const int nds_phi_fluid)
+    Teuchos::RCP<const Epetra_Vector> phinp_fluid, Teuchos::RCP<const Epetra_Vector> phin_fluid,
+    const int nds_phi_fluid)
 {
   if (nds_phi_fluid >= discret_->NumDofSets()) dserror("Too few dofsets on scatra discretization!");
 
@@ -121,6 +123,7 @@ void SCATRA::ScaTraTimIntPoroMulti::SetSolutionFieldOfMultiFluid(
   nds_pres_ = nds_phi_fluid;
   // provide scatra discretization with fluid primary variable field
   discret_->SetState(nds_pres_, "phinp_fluid", phinp_fluid);
+  discret_->SetState(nds_pres_, "phin_fluid", phin_fluid);
 }
 
 /*----------------------------------------------------------------------*
@@ -193,6 +196,86 @@ void SCATRA::ScaTraTimIntPoroMulti::OutputState()
 
   return;
 }  // ScaTraTimIntImpl::OutputState
+
+/*----------------------------------------------------------------------*
+ | problem specific output                             kremheller 10/18 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntPoroMulti::OutputProblemSpecific()
+{
+  // oxygen partial pressure (if desired)
+  OutputOxygenPartialPressure();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | output of oxygen partial pressure                   kremheller 10/18 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntPoroMulti::OutputOxygenPartialPressure()
+{
+  // extract conditions for oxygen partial pressure
+  std::vector<DRT::Condition*> conditions;
+  discret_->GetCondition("PoroMultiphaseScatraOxyPartPressCalcCond", conditions);
+
+  // perform all following operations only if there is at least one condition for oxygen partial
+  // pressure
+  if (conditions.size() > 0)
+  {
+    const Teuchos::RCP<Epetra_Vector> oxypartpress =
+        Teuchos::rcp(new Epetra_Vector(*discret_->NodeRowMap(), true));
+
+    // this condition is supposed to be for output of oxygen partial pressure over whole domain
+    // it does not make sense to have more than one condition
+    if (conditions.size() != 1)
+      dserror("Should have only one PoroMultiphaseScatraOxyPartPressCalcCond per discretization");
+
+    // extract nodal cloud from condition
+    const std::vector<int>* nodegids = conditions[0]->Nodes();
+
+    // output
+    double Pb = 0.0;
+
+    // read input from condition
+    const int oxyscalar = conditions[0]->GetInt("SCALARID") - 1;
+    const double CaO2_max = conditions[0]->GetDouble("CaO2_max");
+    const double Pb50 = conditions[0]->GetDouble("Pb50");
+    const double n = conditions[0]->GetDouble("n");
+    const double alpha_eff = conditions[0]->GetDouble("alpha_bl_eff");
+    const double rho_oxy = conditions[0]->GetDouble("rho_oxy");
+    const double rho_bl = conditions[0]->GetDouble("rho_bl");
+
+    // loop over all nodes
+    for (unsigned inode = 0; inode < nodegids->size(); ++inode)
+    {
+      // extract global ID of current node
+      const int nodegid((*nodegids)[inode]);
+      // process only nodes stored by current processor
+      if (discret_->HaveGlobalNode(nodegid))
+      {
+        // extract current node
+        const DRT::Node* const node = discret_->gNode(nodegid);
+
+        // process only nodes owned by current processor
+        if (node->Owner() == discret_->Comm().MyPID())
+        {
+          // get dof
+          int myoxydof = discret_->Dof(0, node, oxyscalar);
+          const int lidoxydof = discret_->DofRowMap()->LID(myoxydof);
+          if (lidoxydof < 0) dserror("Couldn't extract local ID of oxygen dof!");
+          // compute CaO2
+          const double CaO2 = (*phinp_)[lidoxydof] * rho_bl / rho_oxy;
+          // compute Pb
+          POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<double>(
+              Pb, CaO2, CaO2_max, Pb50, n, alpha_eff);
+          // replace value
+          oxypartpress->ReplaceGlobalValue(node->Id(), 0, Pb);
+        }
+      }
+    }
+    output_->WriteVector("oxypartpress", oxypartpress, IO::nodevector);
+  }
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                    vuong  08/16 |

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/**
+/*!
  * \file nox_nln_params_utils.H
  *
  * \brief Utility methods to handle and parse (input) parameter lists
@@ -27,7 +27,7 @@ namespace NOX
       /** This function is a wrapper for the Teuchos method. The main difference
        *  is that the parameter-list contains already the input parameter and,
        *  therefore, it is necessary to store a copy before the validator can
-       *  be set-up. Subsequently, the input parameter is tested and if validate,
+       *  be set-up. Subsequently, the input parameter is tested and if valid,
        *  the corresponding integral value will be returned.
        *
        *  \author hiermeier \date 02/18 */

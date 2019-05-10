@@ -9,10 +9,7 @@ set all general porofluid parameter once for all elements.
 
 \level 2
 
-\maintainer  Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15240
+\maintainer  Christoph Ager
 */
 /*----------------------------------------------------------------------*/
 #include "fluid_ele_parameter_poro.H"

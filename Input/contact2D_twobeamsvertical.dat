@@ -1,12 +1,8 @@
 //
-// Maintainer: Markus Gitterle
-// gitterle@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15251
+// Maintainer: Matthias Mayr
 //
 // necessary defines: BINIO
 //
-
 ==================================================================
 General Data File CCARAT
 ==================================================================
@@ -44,14 +40,11 @@ DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESEVRYERGY                     1
 RESTARTEVRY                     1
-NLNSOL                          fullnewton                    // fullnewton lsnewton modnewton nlncg ptc
+NLNSOL                          fullnewton
 TIMESTEP                        0.1
 NUMSTEP                         30
 MAXTIME                         3.0
-DAMPING                         No
-M_DAMP                          0.5
-K_DAMP                          0.5
-PREDICT                         ConstDis                      // ConstDisVelAcc ConstDis
+PREDICT                         ConstDis
 TOLRES                          1.0E-8
 TOLDISP                         1.0E-8
 NORM_RESF                       Abs
@@ -63,6 +56,7 @@ MAXITER                         50
 UZAWAPARAM                      1.0
 UZAWAMAXITER                    20
 UZAWAALGO                       direct
+INT_STRATEGY                    Standard
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 STRATEGY                        Lagrange
@@ -77,189 +71,25 @@ SEARCH_PARAM                    0.3
 PARALLEL_REDIST                 Dynamic
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          Amesos_KLU_nonsym             // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        0                             // output every so often, 0 no output
-AZSOLVE                         CG                            // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ML                            // none ML MLFLUID MLFLUID2 MLAPI LU ILU ILUT LU ICC Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
-AZREUSE                         0                             // how often to recompute some preconditioners
-AZDROP                          0.0                           // drop tolerance for ILUT
-IFPACKFILL                      1.0                           // fill-in for ILUT
-IFPACKGFILL                     0                             // graph fill for ILU
-AZTOL                           1.0E-8                        // tolerance in unscaled residual
-AZITER                          1000                          // max iterations
-AZSUB                           25                            // size of krylov space for gmres
-AZOMEGA                         1.0                           // damping factor for Jacobi/GaussSeidel type preconditioners
-AZGRAPH                         1                             // unused
-AZPOLY                          5                             // polynomial order for Neumann
-IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
-AZSCAL                          infnorm                       // none sym infnorm scaling of the system
-AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-ML_PRINT                        0                             // ML print-out level (0-10)
-ML_MAXCOARSESIZE                5000                          // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL                     5                             // ML max number of levels
-ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  1.33                          // damping factor for prolongator smoother (usually 0.0 or 1.33)
-ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 Chebychev                     // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  Chebychev                     // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               KLU                           // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES                     3 3 3 3 1                     // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     1.0                           // damping fine grid
-ML_DAMPMED                      1.0                           // damping med grids
-ML_DAMPCOARSE                   1.0                           // damping coarse grid
+SOLVER                          Amesos_KLU_nonsym
 --------------------------------------------------------------------SOLVER 2
 NAME                            Contact_Solver
-SOLVER                          Amesos_KLU_nonsym             // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        0                             // output every so often, 0 no output
-AZSOLVE                         CG                            // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ML                            // none ML MLFLUID MLFLUID2 MLAPI LU ILU ILUT LU ICC Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
-AZREUSE                         0                             // how often to recompute some preconditioners
-AZDROP                          0.0                           // drop tolerance for ILUT
-IFPACKFILL                      1.0                           // fill-in for ILUT
-IFPACKGFILL                     0                             // graph fill for ILU
-AZTOL                           1.0E-8                        // tolerance in unscaled residual
-AZITER                          1000                          // max iterations
-AZSUB                           25                            // size of krylov space for gmres
-AZOMEGA                         1.0                           // damping factor for Jacobi/GaussSeidel type preconditioners
-AZGRAPH                         1                             // unused
-AZPOLY                          5                             // polynomial order for Neumann
-IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
-AZSCAL                          infnorm                       // none sym infnorm scaling of the system
-AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-ML_PRINT                        0                             // ML print-out level (0-10)
-ML_MAXCOARSESIZE                5000                          // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL                     5                             // ML max number of levels
-ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  1.33                          // damping factor for prolongator smoother (usually 0.0 or 1.33)
-ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 Chebychev                     // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  Chebychev                     // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               KLU                           // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES                     3 3 3 3 1                     // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     1.0                           // damping fine grid
-ML_DAMPMED                      1.0                           // damping med grids
-ML_DAMPCOARSE                   1.0                           // damping coarse grid
+SOLVER                          Amesos_KLU_nonsym
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         12
 NDLINE                          8
 NDSURF                          2
 NDVOL                           0
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
-DPOINT                          0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DLINE                           4
 E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 -1.0 FUNCT 0 1
 E 2 - NUMDOF 2 ONOFF 1 1 VAL 0.0 -1.0 FUNCT 0 1
 E 7 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 E 8 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
------------------------------------------------DESIGN SURF DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
-DSURF                           0
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
-DVOL                            0
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC NSURF
-DPOINT                          0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
-DLINE                           0
-----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
-DSURF                           0
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC
-DVOL                            0
-------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
-DPOINT                          0
--------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
-DLINE                           0
--------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
-DSURF                           0
-------------------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
-DPOINT                          0
--------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
-DLINE                           0
--------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
-DSURF                           0
------------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
-// DOBJECT FSI_ID FIELD MESH FLAG
-DLINE                           0
------------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
-// DOBJECT FSI_ID FIELD MESH
-DSURF                           0
------------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
-//                              DOBJECT
-DLINE                           0
------------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
-//                              DOBJECT
-DSURF                           0
----------------------------------------------------------------FORCE SENSORS
-DPOINT                          0
 -----------------------------------DESIGN LINE MORTAR CONTACT CONDITIONS 2D
 DLINE                           2
 E 4 - 1 Slave Inactive FrCoeffOrBound 0.9
 E 6 - 1 Master Inactive FrCoeffOrBound 0.9
------------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
-DSURF                           0
--------------------------------------------DESIGN SURFACE AREA CONSTRAINT 3D
-DSURF                           0
-----------------------------------------------DESIGN LINE AREA CONSTRAINT 2D
-DLINE                           0
---------------------------------------------DESIGN SURFACE VOLUME MONITOR 3D
-DSURF                           0
-----------------------------------------------DESIGN SURFACE AREA MONITOR 3D
-DSURF                           0
--------------------------------------------------DESIGN LINE AREA MONITOR 2D
-DLINE                           0
-------------------------------------DESIGN FLUID STRESS CALC LINE CONDITIONS
-//                              DOBJECT
-DLINE                           0
-------------------------------------DESIGN FLUID STRESS CALC SURF CONDITIONS
-//                              DOBJECT
-DSURF                           0
--------------------------------------------------DESIGN FLUID LINE LIFT&DRAG
-// DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER
-DLINE                           0
--------------------------------------------------DESIGN FLUID SURF LIFT&DRAG
-// DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER Z_CENTER ALE_LINE
-DSURF                           0
----------------------------------------DESIGN LINE WEAK DIRICHLET CONDITIONS
-// DOBJECT DEFGAMMA DEFPENALTYPAR LINEARISATION VAL(3) CURVE(3) FUNCT(3)
-DLINE                           0
-------------------------------------DESIGN SURFACE WEAK DIRICHLET CONDITIONS
-// DOBJECT DEFGAMMA DEFPENALTYPAR LINEARISATION VAL(3) CURVE(3) FUNCT(3)
-DSURF                           0
------------------------------DESIGN SURFACE CONSERVATIVE OUTFLOW CONSISTENCY
-DSURF                           0
-----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
-// DOBJECT Id - NORMAL_X NORMAL_Y NORMAL_Z TANGENT_X TANGENT_Y TANGENT_Z
-DPOINT                          0
------------------------------------------------DESIGN LINE LOCSYS CONDITIONS
-// DOBJECT Id - NORMAL_X NORMAL_Y NORMAL_Z TANGENT_X TANGENT_Y TANGENT_Z
-DLINE                           0
------------------------------------------------DESIGN SURF LOCSYS CONDITIONS
-// DOBJECT Id - NORMAL_X NORMAL_Y NORMAL_Z TANGENT_X TANGENT_Y TANGENT_Z
-DSURF                           0
-------------------------------------------------DESIGN VOL LOCSYS CONDITIONS
-// DOBJECT Id - NORMAL_X NORMAL_Y NORMAL_Z TANGENT_X TANGENT_Y TANGENT_Z
-DVOL                            0
-------------------------------------DESIGN LINE PERIODIC BOUNDARY CONDITIONS
-// DOBJECT PBC_ID ORIENTATION
-DLINE                           0
-------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
-// DOBJECT PBC_ID ORIENTATION
-DSURF                           0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 301 DNODE 1
 NODE 261 DNODE 2
@@ -1302,21 +1132,11 @@ NODE 306 COORD 7.000000000000000e+00 7.000000000000000e+00 0.000000000000000e+00
 198 WALL QUAD4 234 207 206 232 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_stress GP 2 2
 199 WALL QUAD4 235 209 207 234 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_stress GP 2 2
 200 WALL QUAD4 236 210 209 235 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_stress GP 2 2
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------------MATERIALS
-//                              MAT_Struct_StVenantKirchhoff
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 689.56 NUE 0.3 DENS 0.0 THEXPANS 0.0
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION t*10/3
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 165 QUANTITY dispx VALUE -1.9966653107648034e-02 TOLERANCE 1e-6
-
 -------------------------------------------------------------------------END
 //                              END

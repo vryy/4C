@@ -3,7 +3,7 @@
 
 \brief class computing step length for AITKEN relaxation
 
-\maintainer Andreas Rauch
+\maintainer Matthias Mayr
 
 \level 1
 

@@ -3,11 +3,11 @@
 
 \brief Calculates vector extrapolation via epsilon algorithm.
 
-\maintainer Andreas Rauch
+\maintainer Matthias Mayr
 
 \level 1
-
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 #include "fsi_nox_epsilon.H"
 

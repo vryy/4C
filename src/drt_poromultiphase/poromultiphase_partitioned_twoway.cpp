@@ -7,8 +7,8 @@
 
    \level 3
 
-   \maintainer  Lena Yoshihara
-                yoshihara@lnm.mw.tum.de
+   \maintainer  Johannes Kremheller
+                kremheller@lnm.mw.tum.de
                 http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
@@ -50,12 +50,13 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::Init(
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& algoparams,
     const Teuchos::ParameterList& structparams, const Teuchos::ParameterList& fluidparams,
     const std::string& struct_disname, const std::string& fluid_disname, bool isale, int nds_disp,
-    int nds_vel, int nds_solidpressure, int ndsporofluid_scatra)
+    int nds_vel, int nds_solidpressure, int ndsporofluid_scatra,
+    const std::map<int, std::set<int>>* nearbyelepairs)
 {
   // call base class
   POROMULTIPHASE::PoroMultiPhasePartitioned::Init(globaltimeparams, algoparams, structparams,
       fluidparams, struct_disname, fluid_disname, isale, nds_disp, nds_vel, nds_solidpressure,
-      ndsporofluid_scatra);
+      ndsporofluid_scatra, nearbyelepairs);
 
   // initialize increment vectors
   phiincnp_ = LINALG::CreateVector(*FluidField()->DofRowMap(0), true);

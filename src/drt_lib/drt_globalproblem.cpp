@@ -261,8 +261,12 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--BEAM INTERACTION/SPHERE BEAM LINK", *list);
   reader.ReadGidSection("--BEAM INTERACTION/BEAM TO BEAM CONTACT", *list);
   reader.ReadGidSection("--BEAM INTERACTION/BEAM TO SPHERE CONTACT", *list);
-  reader.ReadGidSection("--BEAM INTERACTION/BEAM TO SOLID CONTACT", *list);
+  reader.ReadGidSection("--BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING", *list);
+  reader.ReadGidSection(
+      "--BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING/RUNTIME VTK OUTPUT", *list);
   reader.ReadGidSection("--BEAM INTERACTION/CROSSLINKING", *list);
+  reader.ReadGidSection("--GEOMETRY PAIR", *list);
+  reader.ReadGidSection("--GEOMETRY PAIR/LINE TO VOLUME", *list);
   reader.ReadGidSection("--THERMAL DYNAMIC", *list);
   reader.ReadGidSection("--THERMAL DYNAMIC/GENALPHA", *list);
   reader.ReadGidSection("--THERMAL DYNAMIC/ONESTEPTHETA", *list);
@@ -341,6 +345,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--COUPLED REDUCED-D AIRWAYS AND TISSUE DYNAMIC", *list);
   reader.ReadGidSection("--SEARCH TREE", *list);
   reader.ReadGidSection("--XFEM GENERAL", *list);
+  reader.ReadGidSection("--CUT GENERAL", *list);
   reader.ReadGidSection("--XFLUID DYNAMIC", *list);
   reader.ReadGidSection("--XFLUID DYNAMIC/GENERAL", *list);
   reader.ReadGidSection("--XFLUID DYNAMIC/STABILIZATION", *list);
@@ -356,6 +361,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--PARTICLE DYNAMIC", *list);
   reader.ReadGidSection("--PARTICLE DYNAMIC/INITIAL AND BOUNDARY CONDITIONS", *list);
   reader.ReadGidSection("--PARTICLE DYNAMIC/SPH", *list);
+  reader.ReadGidSection("--PARTICLE DYNAMIC/DEM", *list);
   reader.ReadGidSection("--PARTICLE DYNAMIC OLD", *list);
   reader.ReadGidSection("--PASI DYNAMIC", *list);
   reader.ReadGidSection("--PASI DYNAMIC/PARTITIONED", *list);
@@ -378,10 +384,12 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--TUTORIAL DYNAMIC/FIXED POINT SCHEME", *list);
   reader.ReadGidSection("--CARDIAC MONODOMAIN CONTROL", *list);
   reader.ReadGidSection("--MOR", *list);
+  reader.ReadGidSection("--MESH PARTITIONING", *list);
 
   reader.ReadSection("--STRUCT NOX", *list);
   reader.ReadSection("--STRUCT NOX/Direction", *list);
   reader.ReadSection("--STRUCT NOX/Direction/Newton", *list);
+  reader.ReadSection("--STRUCT NOX/Direction/Newton/Modified", *list);
   reader.ReadSection("--STRUCT NOX/Direction/Newton/Linear Solver", *list);
   reader.ReadSection("--STRUCT NOX/Direction/Steepest Descent", *list);
   reader.ReadSection("--STRUCT NOX/Line Search", *list);
@@ -2126,7 +2134,17 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     }
     case prb_particle:
     {
-      // nothing to do
+      // create empty discretizations
+      structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
+
+      // create discretization writer - in constructor set into and owned by corresponding discret
+      structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
+
+      AddDis("structure", structdis);
+
+      nodereader.AddElementReader(
+          Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+
       break;
     }
     case prb_particle_old:

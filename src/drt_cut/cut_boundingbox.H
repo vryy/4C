@@ -41,6 +41,7 @@ namespace GEO
       /// @{
 
       static BoundingBox* Create();
+      static BoundingBox* Create(Node& node);
       static BoundingBox* Create(Edge& edge);
       static BoundingBox* Create(Side& side);
       static BoundingBox* Create(VolumeCell& volcell);
@@ -51,6 +52,9 @@ namespace GEO
      protected:
       /// empty constructor
       BoundingBox() : empty_(true){};
+
+      /// Initialize the BoundingBox by using information of a node
+      void Init(Node& node);
 
       /// Initialize the BoundingBox by using information of an edge
       void Init(Edge& edge);

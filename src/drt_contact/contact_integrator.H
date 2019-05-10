@@ -27,10 +27,7 @@ namespace MORTAR
 {
   class ParamsInterface;
 }
-/*!
- \brief CONTACT: namespace of the BACI contact and meshtying algorithms
 
- */
 namespace CONTACT
 {
   // forward declaration
@@ -782,41 +779,65 @@ namespace CONTACT
     //@}
 
     // don't want = operator and cctor
-    CoIntegrator operator=(const CoIntegrator& old);
-    CoIntegrator(const CoIntegrator& old);
+    CoIntegrator operator=(const CoIntegrator& old) = delete;
+    CoIntegrator(const CoIntegrator& old) = delete;
 
-    Teuchos::ParameterList& imortar_;  //< containing contact input parameters
-    const Epetra_Comm& Comm_;          //< communicator
+    //! containing contact input parameters
+    Teuchos::ParameterList& imortar_;
+    //! communicator
+    const Epetra_Comm& Comm_;
 
-    int ngp_;                          //< number of Gauss points
-    Epetra_SerialDenseMatrix coords_;  //< Gauss point coordinates
-    std::vector<double> weights_;      //< Gauss point weights
-    int dim_;                          //< dimension of problem (2D or 3D)
+    //! number of Gauss points
+    int ngp_;
+    //! Gauss point coordinates
+    Epetra_SerialDenseMatrix coords_;
+    //! Gauss point weights
+    std::vector<double> weights_;
+    //! dimension of problem (2D or 3D)
+    int dim_;
 
     // inputs from parameter list
-    INPAR::MORTAR::ShapeFcn shapefcn_;        //< lm shape function type
-    INPAR::MORTAR::LagMultQuad lagmultquad_;  //< type of lm interpolation for quadr. FE
-    bool gpslip_;                             //< gp-wise evaluated slip increment
-    INPAR::MORTAR::AlgorithmType algo_;       //< contact algorithm
-    INPAR::CONTACT::SolvingStrategy stype_;   //< solution stratety
-    bool cppnormal_;                          //< flag for closest point normal -> change in linsize
+    //! lm shape function type
+    INPAR::MORTAR::ShapeFcn shapefcn_;
+    //! type of lm interpolation for quadr. FE
+    INPAR::MORTAR::LagMultQuad lagmultquad_;
+    //! gp-wise evaluated slip increment
+    bool gpslip_;
+    //! contact algorithm
+    INPAR::MORTAR::AlgorithmType algo_;
+    //! solution stratety
+    INPAR::CONTACT::SolvingStrategy stype_;
+    //! flag for closest point normal -> change in linsize
+    bool cppnormal_;
 
     // wear inputs from parameter list
-    INPAR::WEAR::WearLaw wearlaw_;         //< type of wear law
-    bool wearimpl_;                        //< flag for implicit wear algorithm
-    INPAR::WEAR::WearSide wearside_;       //< definition of wear surface
-    INPAR::WEAR::WearType weartype_;       //< definition of contact wear algorithm
-    INPAR::WEAR::WearShape wearshapefcn_;  //< type of wear shape function
-    bool sswear_;                          //< flag for steady state wear
-    double wearcoeff_;                     //< wear coefficient
-    double wearcoeffm_;                    //< wear coefficient master
-    double ssslip_;                        //< fixed slip for steady state wear
+    //! type of wear law
+    INPAR::WEAR::WearLaw wearlaw_;
+    //! flag for implicit wear algorithm
+    bool wearimpl_;
+    //! definition of wear surface
+    INPAR::WEAR::WearSide wearside_;
+    //! definition of contact wear algorithm
+    INPAR::WEAR::WearType weartype_;
+    //! type of wear shape function
+    INPAR::WEAR::WearShape wearshapefcn_;
+    //! flag for steady state wear
+    bool sswear_;
+    //! wear coefficient
+    double wearcoeff_;
+    //! wear coefficient master
+    double wearcoeffm_;
+    //! fixed slip for steady state wear
+    double ssslip_;
 
-    bool nonsmooth_;  //< flag for nonsmooth contact
+    //! flag for non-smooth contact
+    bool nonsmooth_;
+    //! flag is true if (self) contact surface is non-smooth
+    const bool nonsmoothselfcontactsurface_;
+
    private:
-    /// integration type from the parameter-list
+    //! integration type from the parameter-list
     INPAR::MORTAR::IntType integrationtype_;
-
   };  // class CoIntegrator
 }  // namespace CONTACT
 

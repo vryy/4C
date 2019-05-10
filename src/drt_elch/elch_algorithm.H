@@ -7,8 +7,8 @@
 \level 2
 
 <pre>
-\maintainer Rui Fang
-            fang@lnm.mw.tum.de
+\maintainer Christoph Schmidt
+            schmidt@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089 - 289-15251
 </pre>
@@ -21,10 +21,6 @@
 
 #include "../drt_scatra/scatra_algorithm.H"
 
-/*!
-\brief ELCH: namespace of the electrochemistry module in BACI
-
-*/
 namespace ELCH
 {
   /// ELCH algorithm base

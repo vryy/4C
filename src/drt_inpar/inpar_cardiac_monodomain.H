@@ -31,7 +31,6 @@ namespace DRT
 
 namespace INPAR
 {
-  /// Input parameters for cardiac monodomain
   namespace EP
   {
     /// possible types of evaluation of reaction term

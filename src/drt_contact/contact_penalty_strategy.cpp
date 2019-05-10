@@ -27,6 +27,8 @@
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_Operator.h>
 #include "../drt_lib/drt_utils.H"
+#include "contact_paramsinterface.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 
 /*----------------------------------------------------------------------*
@@ -34,10 +36,10 @@
  *----------------------------------------------------------------------*/
 CONTACT::CoPenaltyStrategy::CoPenaltyStrategy(const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
-    Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof)
+    std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, const int spatialDim,
+    const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
     : CoAbstractStrategy(Teuchos::rcp(new CONTACT::AbstractStratDataContainer()), DofRowMap,
-          NodeRowMap, params, dim, comm, alphaf, maxdof),
+          NodeRowMap, params, spatialDim, comm, alphaf, maxdof),
       interface_(interface),
       constrnorm_(0.0),
       constrnormtan_(0.0),
@@ -52,9 +54,9 @@ CONTACT::CoPenaltyStrategy::CoPenaltyStrategy(const Epetra_Map* DofRowMap,
 CONTACT::CoPenaltyStrategy::CoPenaltyStrategy(
     const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr, const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
-    Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof)
-    : CoAbstractStrategy(data_ptr, DofRowMap, NodeRowMap, params, dim, comm, alphaf, maxdof),
+    std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, const int spatialDim,
+    const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
+    : CoAbstractStrategy(data_ptr, DofRowMap, NodeRowMap, params, spatialDim, comm, alphaf, maxdof),
       interface_(interface),
       constrnorm_(0.0),
       constrnormtan_(0.0),
@@ -700,4 +702,407 @@ void CONTACT::CoPenaltyStrategy::UpdateUzawaAugmentedLagrange()
   StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoPenaltyStrategy::EvalForce(CONTACT::ParamsInterface& cparams)
+{
+  //---------------------------------------------------------------
+  // For selfcontact the master/slave sets are updated within the -
+  // contact search, see SelfBinaryTree.                          -
+  // Therefore, we have to initialize the mortar matrices after   -
+  // interface evaluations.                                       -
+  //---------------------------------------------------------------
+  if (IsSelfContact())
+  {
+    InitEvalInterface();  // evaluate mortar terms (integrate...)
+    InitMortar();         // initialize mortar matrices and vectors
+    AssembleMortar();     // assemble mortar terms into global matrices
+  }
+  else
+  {
+    InitMortar();         // initialize mortar matrices and vectors
+    InitEvalInterface();  // evaluate mortar terms (integrate...)
+    AssembleMortar();     // assemble mortar terms into global matrices
+  }
+
+  // evaluate relative movement for friction
+  if (cparams.IsPredictor())
+    EvaluateRelMovPredict();
+  else
+    EvaluateRelMov();
+
+  // update active set
+  UpdateActiveSetSemiSmooth();
+
+  // apply contact forces and stiffness
+  Initialize();  // init lin-matrices
+
+  // assemble force and stiffness
+  Assemble();
+
+  // bye bye
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoPenaltyStrategy::Assemble()
+{
+  fc_ = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+  kc_ = Teuchos::rcp(new LINALG::SparseMatrix(*ProblemDofs(), 100, true, true));
+
+  // in the beginning of this function, the regularized contact forces
+  // in normal and tangential direction are evaluated from geometric
+  // measures (gap and relative tangential velocity). Here, also active and
+  // slip nodes are detected. Then, the insertion of the according stiffness
+  // blocks takes place.
+
+  bool isincontact = false;
+  bool activesetchange = false;
+
+  for (int i = 0; i < (int)interface_.size(); ++i)
+  {
+    bool localisincontact = false;
+    bool localactivesetchange = false;
+
+    // evaluate lagrange multipliers (regularized forces) in normal direction
+    // and nodal derivz matrix values, store them in nodes
+    interface_[i]->AssembleRegNormalForces(localisincontact, localactivesetchange);
+
+    // evaluate lagrange multipliers (regularized forces) in tangential direction
+    INPAR::CONTACT::SolvingStrategy soltype =
+        DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(), "STRATEGY");
+
+    if (friction_ and soltype == INPAR::CONTACT::solution_penalty)
+      interface_[i]->AssembleRegTangentForcesPenalty();
+
+    if (friction_ and soltype == INPAR::CONTACT::solution_uzawa)
+      interface_[i]->AssembleRegTangentForcesUzawa();
+
+    isincontact = isincontact || localisincontact;
+    activesetchange = activesetchange || localactivesetchange;
+  }
+
+  // broadcast contact status & active set change
+  int globalcontact, globalchange = 0;
+  int localcontact = isincontact;
+  int localchange = activesetchange;
+
+  Comm().SumAll(&localcontact, &globalcontact, 1);
+  Comm().SumAll(&localchange, &globalchange, 1);
+
+  if (globalcontact >= 1)
+  {
+    isincontact_ = true;
+    wasincontact_ = true;
+  }
+  else
+    isincontact_ = false;
+
+  if ((Comm().MyPID() == 0) && (globalchange >= 1))
+    std::cout << "ACTIVE CONTACT SET HAS CHANGED..." << std::endl;
+
+  // (re)setup active global Epetra_Maps
+  // the map of global active nodes is needed for the penalty case, too.
+  // this is due to the fact that we want to monitor the constraint norm
+  // of the active nodes
+  gactivenodes_ = Teuchos::null;
+  gslipnodes_ = Teuchos::null;
+  gactivedofs_ = Teuchos::null;
+
+  // update active sets of all interfaces
+  // (these maps are NOT allowed to be overlapping !!!)
+  for (int i = 0; i < (int)interface_.size(); ++i)
+  {
+    interface_[i]->BuildActiveSet();
+    gactivenodes_ = LINALG::MergeMap(gactivenodes_, interface_[i]->ActiveNodes(), false);
+    gactivedofs_ = LINALG::MergeMap(gactivedofs_, interface_[i]->ActiveDofs(), false);
+    gslipnodes_ = LINALG::MergeMap(gslipnodes_, interface_[i]->SlipNodes(), false);
+  }
+
+  // check if contact contributions are present,
+  // if not we can skip this routine to speed things up
+  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
+
+  // assemble contact quantities on all interfaces
+  for (int i = 0; i < (int)interface_.size(); ++i)
+  {
+    // assemble global lagrangian multiplier vector
+    interface_[i]->AssembleLM(*z_);
+    // assemble global derivatives of lagrangian multipliers
+    interface_[i]->AssembleLinZ(*linzmatrix_);
+    // assemble global derivatives of mortar D and M matrices
+    interface_[i]->AssembleLinDM(*lindmatrix_, *linmmatrix_);
+  }
+
+  // FillComplete() global matrices LinD, LinM, LinZ
+  lindmatrix_->Complete(*gsmdofrowmap_, *gsdofrowmap_);
+  linmmatrix_->Complete(*gsmdofrowmap_, *gmdofrowmap_);
+  linzmatrix_->Complete(*gsmdofrowmap_, *gsdofrowmap_);
+
+  //----------------------------------------------------------------------
+  // CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
+  //----------------------------------------------------------------------
+  // Concretely, we apply the following transformations:
+  // LinD      ---->   T^(-T) * LinD
+  // D         ---->   D * T^(-1)
+  //----------------------------------------------------------------------
+  if (Dualquadslavetrafo())
+  {
+    // modify lindmatrix_ and dmatrix_
+    Teuchos::RCP<LINALG::SparseMatrix> temp1 =
+        LINALG::MLMultiply(*invtrafo_, true, *lindmatrix_, false, false, false, true);
+    Teuchos::RCP<LINALG::SparseMatrix> temp2 =
+        LINALG::MLMultiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
+    lindmatrix_ = temp1;
+    dmatrix_ = temp2;
+  }
+
+  // **********************************************************************
+  // Build Contact Stiffness #1
+  // **********************************************************************
+  // involving contributions of derivatives of D and M:
+  //  Kc,1 = delta[ 0 -M(transpose) D] * LM
+
+  // transform if necessary
+  if (ParRedist())
+  {
+    lindmatrix_ = MORTAR::MatrixRowTransform(lindmatrix_, pgsdofrowmap_);
+    linmmatrix_ = MORTAR::MatrixRowTransform(linmmatrix_, pgmdofrowmap_);
+  }
+
+  // add to kteff
+  kc_->Add(*lindmatrix_, false, 1.0, 1.0);
+  kc_->Add(*linmmatrix_, false, 1.0, 1.0);
+
+  // **********************************************************************
+  // Build Contact Stiffness #2
+  // **********************************************************************
+  // involving contributions of derivatives of lagrange multipliers:
+  //  Kc,2= [ 0 -M(transpose) D] * deltaLM
+
+  // multiply Mortar matrices D and M with LinZ
+  Teuchos::RCP<LINALG::SparseMatrix> dtilde =
+      LINALG::MLMultiply(*dmatrix_, true, *linzmatrix_, false, false, false, true);
+  Teuchos::RCP<LINALG::SparseMatrix> mtilde =
+      LINALG::MLMultiply(*mmatrix_, true, *linzmatrix_, false, false, false, true);
+
+  // transform if necessary
+  if (ParRedist())
+  {
+    dtilde = MORTAR::MatrixRowTransform(dtilde, pgsdofrowmap_);
+    mtilde = MORTAR::MatrixRowTransform(mtilde, pgmdofrowmap_);
+  }
+
+  // add to kteff
+  kc_->Add(*dtilde, false, 1.0, 1.0);
+  kc_->Add(*mtilde, false, -(1.0), 1.0);
+
+  // **********************************************************************
+  // Build RHS
+  // **********************************************************************
+  // feff += -alphaf * fc,n - (1-alphaf) * fc,n+1,k
+  {
+    Teuchos::RCP<Epetra_Vector> fcmd = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+    dmatrix_->Multiply(true, *z_, *fcmd);
+    Teuchos::RCP<Epetra_Vector> fcmdtemp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    LINALG::Export(*fcmd, *fcmdtemp);
+    fc_->Update(-(1.), *fcmdtemp, 1.0);
+  }
+
+  {
+    Teuchos::RCP<Epetra_Vector> fcmm = LINALG::CreateVector(*gmdofrowmap_, true);
+    mmatrix_->Multiply(true, *z_, *fcmm);
+    Teuchos::RCP<Epetra_Vector> fcmmtemp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    LINALG::Export(*fcmm, *fcmmtemp);
+    fc_->Update(1, *fcmmtemp, 1.0);
+  }
+
+  fc_->Scale(-1.);
+  kc_->Complete();
+
+
+  return;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> CONTACT::CoPenaltyStrategy::GetRhsBlockPtr(
+    const enum DRT::UTILS::VecBlockType& bt) const
+{
+  // if there are no active contact contributions
+  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return Teuchos::null;
+
+  Teuchos::RCP<const Epetra_Vector> vec_ptr = Teuchos::null;
+  switch (bt)
+  {
+    case DRT::UTILS::block_displ:
+    {
+      vec_ptr = fc_;
+      break;
+    }
+    case DRT::UTILS::block_constraint:
+      return Teuchos::null;
+      break;
+    default:
+    {
+      dserror("Unknown STR::VecBlockType!");
+      break;
+    }
+  }
+
+  return vec_ptr;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoPenaltyStrategy::EvalForceStiff(CONTACT::ParamsInterface& cparams)
+{
+  // call the evaluate force routine if not done before
+  if (!evalForceCalled_) EvalForce(cparams);
+
+  // bye bye
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | set force evaluation flag before evaluation step          farah 08/16|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoPenaltyStrategy::PreEvaluate(CONTACT::ParamsInterface& cparams)
+{
+  const enum MORTAR::ActionType& act = cparams.GetActionType();
+
+  switch (act)
+  {
+      // -------------------------------------------------------------------
+      // reset force evaluation flag for predictor step
+      // -------------------------------------------------------------------
+    case MORTAR::eval_force_stiff:
+    {
+      if (cparams.IsPredictor()) evalForceCalled_ = false;
+      break;
+    }
+    // -------------------------------------------------------------------
+    // default
+    // -------------------------------------------------------------------
+    default:
+    {
+      // do nothing
+      break;
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | set force evaluation flag after evaluation                farah 08/16|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoPenaltyStrategy::PostEvaluate(CONTACT::ParamsInterface& cparams)
+{
+  const enum MORTAR::ActionType& act = cparams.GetActionType();
+
+  switch (act)
+  {
+    // -------------------------------------------------------------------
+    // set flag to false after force stiff evaluation
+    // -------------------------------------------------------------------
+    case MORTAR::eval_force_stiff:
+    {
+      evalForceCalled_ = false;
+      break;
+    }
+    // -------------------------------------------------------------------
+    // set flag for force evaluation to true
+    // -------------------------------------------------------------------
+    case MORTAR::eval_force:
+    {
+      evalForceCalled_ = true;
+      break;
+    }
+    // -------------------------------------------------------------------
+    // default
+    // -------------------------------------------------------------------
+    default:
+    {
+      // do nothing
+      break;
+    }
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoPenaltyStrategy::GetMatrixBlockPtr(
+    const enum DRT::UTILS::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
+{
+  // if there are no active contact contributions
+  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return Teuchos::null;
+
+  Teuchos::RCP<LINALG::SparseMatrix> mat_ptr = Teuchos::null;
+  switch (bt)
+  {
+    case DRT::UTILS::block_displ_displ:
+    {
+      mat_ptr = kc_;
+      break;
+    }
+    default:
+    {
+      dserror("Unknown STR::MatBlockType!");
+      break;
+    }
+  }
+
+  return mat_ptr;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> CONTACT::CoPenaltyStrategy::GetLagrMultN(const bool& redist) const
+{
+  if (DRT::Problem::Instance()->StructuralDynamicParams().get<std::string>("INT_STRATEGY") == "Old")
+    return CONTACT::CoAbstractStrategy::GetLagrMultN(redist);
+  else
+    return Teuchos::null;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> CONTACT::CoPenaltyStrategy::GetLagrMultNp(
+    const bool& redist) const
+{
+  if (DRT::Problem::Instance()->StructuralDynamicParams().get<std::string>("INT_STRATEGY") == "Old")
+    return CONTACT::CoAbstractStrategy::GetLagrMultNp(redist);
+  else
+    return Teuchos::null;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> CONTACT::CoPenaltyStrategy::LagrMultOld()
+{
+  if (DRT::Problem::Instance()->StructuralDynamicParams().get<std::string>("INT_STRATEGY") == "Old")
+    return CONTACT::CoAbstractStrategy::LagrMultOld();
+  else
+    return Teuchos::null;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> CONTACT::CoPenaltyStrategy::LMDoFRowMapPtr(const bool& redist) const
+{
+  if (DRT::Problem::Instance()->StructuralDynamicParams().get<std::string>("INT_STRATEGY") == "Old")
+    return CONTACT::CoAbstractStrategy::LMDoFRowMapPtr(redist);
+  else
+    return Teuchos::null;
 }

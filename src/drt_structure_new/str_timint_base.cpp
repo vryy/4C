@@ -260,6 +260,7 @@ void STR::TIMINT::Base::Update()
 {
   CheckInitSetup();
   int_ptr_->PreUpdate();
+  int_ptr_->UpdateStructuralEnergy();
   int_ptr_->UpdateStepState();
   UpdateStepTime();
   SetNumberOfNonlinearIterations();
@@ -434,6 +435,15 @@ void STR::TIMINT::Base::PrepareOutput()
   {
     int_ptr_->DetermineStressStrain();
     int_ptr_->DetermineOptionalQuantity();
+
+    if (dataio_->IsWriteCurrentEleVolume())
+    {
+      Teuchos::RCP<Epetra_Vector> elevolumes = Teuchos::null;
+      Teuchos::RCP<const Epetra_Vector> disnp = dataglobalstate_->GetDisNp();
+
+      int_ptr_->DetermineElementVolumes(*disnp, elevolumes);
+      int_ptr_->EvalData().SetElementVolumeData(elevolumes);
+    }
   }
 
   // --- energy calculation ---------------------------------------------------
@@ -488,8 +498,7 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
         dataglobalstate_->GetStepN() == DRT::Problem::Instance()->Restart())
       return;
     // if state already exists, add restart information
-    if (dataio_->GetWriteResultsEveryNStep() and
-        (dataglobalstate_->GetStepN() % dataio_->GetWriteResultsEveryNStep() == 0))
+    if (dataio_->WriteResultsForThisStep(dataglobalstate_->GetStepN()))
     {
       AddRestartToOutputState();
       return;
@@ -512,8 +521,7 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
   }
 
   // output results (not necessary if restart in same step)
-  if (dataio_->IsWriteState() and dataio_->GetWriteResultsEveryNStep() and
-      (dataglobalstate_->GetStepN() % dataio_->GetWriteResultsEveryNStep() == 0) and
+  if (dataio_->IsWriteState() and dataio_->WriteResultsForThisStep(dataglobalstate_->GetStepN()) and
       (not datawritten))
   {
     NewIOStep(datawritten);
@@ -534,16 +542,23 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
   }
 
   // output stress, strain and optional quantity
-  if (dataio_->GetWriteResultsEveryNStep() and
+  if (dataio_->WriteResultsForThisStep(dataglobalstate_->GetStepN()) and
       ((dataio_->GetStressOutputType() != INPAR::STR::stress_none) or
           (dataio_->GetCouplingStressOutputType() != INPAR::STR::stress_none) or
           (dataio_->GetStrainOutputType() != INPAR::STR::strain_none) or
-          (dataio_->GetPlasticStrainOutputType() != INPAR::STR::strain_none)) and
-      (dataglobalstate_->GetStepN() % dataio_->GetWriteResultsEveryNStep() == 0))
+          (dataio_->GetPlasticStrainOutputType() != INPAR::STR::strain_none)))
   {
     NewIOStep(datawritten);
     OutputStressStrain();
     OutputOptionalQuantity();
+  }
+
+  if (dataio_->WriteResultsForThisStep(dataglobalstate_->GetStepN()) and
+      dataio_->IsWriteCurrentEleVolume())
+  {
+    NewIOStep(datawritten);
+    IO::DiscretizationWriter& iowriter = *(dataio_->GetMutableOutputPtr());
+    OutputElementVolume(iowriter);
   }
 
   // output energy
@@ -566,8 +581,7 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
   //    dserror("OutputMicro() is not yet implemented!"); // OutputMicro();
 
   // write patient specific output
-  if (dataio_->GetWriteResultsEveryNStep() and
-      (dataglobalstate_->GetStepN() % dataio_->GetWriteResultsEveryNStep() == 0))
+  if (dataio_->WriteResultsForThisStep(dataglobalstate_->GetStepN()))
   {
     // ToDo OutputPatspec()
     // ToDo OutputCell()
@@ -605,6 +619,16 @@ void STR::TIMINT::Base::OutputState()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::TIMINT::Base::OutputDebugState(IO::DiscretizationWriter& iowriter, bool write_owner) const
+{
+  OutputState(iowriter, write_owner);
+
+  // write element volumes as additional debugging information, if activated
+  if (dataio_->IsWriteCurrentEleVolume()) OutputElementVolume(iowriter);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::OutputState(IO::DiscretizationWriter& iowriter, bool write_owner) const
 {
   // owner of elements is just written once because it does not change during
@@ -621,6 +645,20 @@ void STR::TIMINT::Base::RuntimeOutputState()
 {
   CheckInitSetup();
   int_ptr_->RuntimeOutputStepState();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Base::OutputElementVolume(IO::DiscretizationWriter& iowriter) const
+{
+  CheckInitSetup();
+
+  STR::MODELEVALUATOR::Data& evaldata = int_ptr_->EvalData();
+
+  iowriter.WriteVector("current_ele_volumes",
+      Teuchos::rcpFromRef(evaldata.CurrentElementVolumeData()), IO::elementvector);
+
+  evaldata.SetElementVolumeData(Teuchos::null);
 }
 
 /*----------------------------------------------------------------------------*

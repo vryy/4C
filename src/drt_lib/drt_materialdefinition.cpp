@@ -341,10 +341,8 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorMaterialComponent::Read(
     DRT::INPUT::MaterialDefinition* def, Teuchos::RCP<std::stringstream> condline,
     Teuchos::RCP<MAT::PAR::Material> material)
 {
-  if (lengthname_ != "*UNDEFINED*")
-    length_ = material->GetInt(lengthname_);
-  else
-    dserror("Trouble to get length of integer vector material component.");
+  if (lengthname_ != "*UNDEFINED*") length_ = material->GetInt(lengthname_);
+  if (length_ == -1) dserror("Trouble to get length of integer vector material component.");
 
   // initialize integer parameter vector to be read
   std::vector<int> integers(length_, defaultvalue_);

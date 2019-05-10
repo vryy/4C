@@ -24,6 +24,8 @@
  *---------------------------------------------------------------------------*/
 int PARTICLEENGINE::EnumToStateDim(const enum PARTICLEENGINE::ParticleState& stateEnum)
 {
+  // attention: this method should be used only for the initialization of the particle container
+
   int dim = 0;
 
   switch (stateEnum)
@@ -35,10 +37,11 @@ int PARTICLEENGINE::EnumToStateDim(const enum PARTICLEENGINE::ParticleState& sta
     case PARTICLEENGINE::DensitySum:
     case PARTICLEENGINE::DensityDot:
     case PARTICLEENGINE::Pressure:
+    case PARTICLEENGINE::Temperature:
+    case PARTICLEENGINE::TemperatureDot:
     case PARTICLEENGINE::BoundaryPressure:
     case PARTICLEENGINE::Colorfield:
     case PARTICLEENGINE::WallDistance:
-    case PARTICLEENGINE::Curvature:
       dim = 1;
       break;
 
@@ -46,6 +49,11 @@ int PARTICLEENGINE::EnumToStateDim(const enum PARTICLEENGINE::ParticleState& sta
     case PARTICLEENGINE::Position:
     case PARTICLEENGINE::Velocity:
     case PARTICLEENGINE::Acceleration:
+    case PARTICLEENGINE::AngularVelocity:
+    case PARTICLEENGINE::AngularAcceleration:
+    case PARTICLEENGINE::Force:
+    case PARTICLEENGINE::Moment:
+    case PARTICLEENGINE::LastTransferPosition:
     case PARTICLEENGINE::ReferencePosition:
     case PARTICLEENGINE::ModifiedVelocity:
     case PARTICLEENGINE::ModifiedAcceleration:
@@ -53,6 +61,7 @@ int PARTICLEENGINE::EnumToStateDim(const enum PARTICLEENGINE::ParticleState& sta
     case PARTICLEENGINE::ColorfieldGradient:
     case PARTICLEENGINE::InterfaceNormal:
     case PARTICLEENGINE::UnitWallNormal:
+    case PARTICLEENGINE::TemperatureGradient:
       dim = 3;
       break;
 
@@ -90,6 +99,12 @@ std::string PARTICLEENGINE::EnumToStateName(const enum PARTICLEENGINE::ParticleS
     case PARTICLEENGINE::Pressure:
       name = "pressure";
       break;
+    case PARTICLEENGINE::Temperature:
+      name = "temperature";
+      break;
+    case PARTICLEENGINE::TemperatureDot:
+      name = "temperaturedot";
+      break;
     case PARTICLEENGINE::Position:
       name = "position";
       break;
@@ -98,6 +113,21 @@ std::string PARTICLEENGINE::EnumToStateName(const enum PARTICLEENGINE::ParticleS
       break;
     case PARTICLEENGINE::Acceleration:
       name = "acceleration";
+      break;
+    case PARTICLEENGINE::AngularVelocity:
+      name = "angular velocity";
+      break;
+    case PARTICLEENGINE::AngularAcceleration:
+      name = "angular acceleration";
+      break;
+    case PARTICLEENGINE::Force:
+      name = "force";
+      break;
+    case PARTICLEENGINE::Moment:
+      name = "moment";
+      break;
+    case PARTICLEENGINE::LastTransferPosition:
+      name = "position last transfer";
       break;
     case PARTICLEENGINE::ReferencePosition:
       name = "reference position";
@@ -118,7 +148,7 @@ std::string PARTICLEENGINE::EnumToStateName(const enum PARTICLEENGINE::ParticleS
       name = "colorfield";
       break;
     case PARTICLEENGINE::ColorfieldGradient:
-      name = "colorfiel gradient";
+      name = "colorfield gradient";
       break;
     case PARTICLEENGINE::InterfaceNormal:
       name = "interface normal";
@@ -129,14 +159,37 @@ std::string PARTICLEENGINE::EnumToStateName(const enum PARTICLEENGINE::ParticleS
     case PARTICLEENGINE::WallDistance:
       name = "wall distance";
       break;
-    case PARTICLEENGINE::Curvature:
-      name = "curvature";
+    case PARTICLEENGINE::TemperatureGradient:
+      name = "temperaturegradient";
       break;
     default:
       dserror("particle state enum unknown!");
   }
 
   return name;
+}
+
+/*---------------------------------------------------------------------------*
+ | get enum of particle states                                sfuchs 02/2019 |
+ *---------------------------------------------------------------------------*/
+enum PARTICLEENGINE::ParticleState PARTICLEENGINE::EnumFromStateName(const std::string& stateName)
+{
+  // attention: this method is expensive (comparison of strings)
+  //            and should be used only for initialization or result testing
+  // note:      only relevant particle states are listed below (e.g., needed for input)
+
+  enum PARTICLEENGINE::ParticleState state;
+
+  if (stateName == "density")
+    state = PARTICLEENGINE::Density;
+  else if (stateName == "pressure")
+    state = PARTICLEENGINE::Pressure;
+  else if (stateName == "temperature")
+    state = PARTICLEENGINE::Temperature;
+  else
+    dserror("particle state '%s' unknown!", stateName.c_str());
+
+  return state;
 }
 
 /*---------------------------------------------------------------------------*
@@ -156,6 +209,9 @@ std::string PARTICLEENGINE::EnumToTypeName(const enum PARTICLEENGINE::ParticleTy
       break;
     case PARTICLEENGINE::BoundaryPhase:
       name = "boundaryphase";
+      break;
+    case PARTICLEENGINE::RigidPhase:
+      name = "rigidphase";
       break;
     default:
       dserror("particle type enum unknown!");
@@ -180,6 +236,8 @@ enum PARTICLEENGINE::ParticleType PARTICLEENGINE::EnumFromTypeName(const std::st
     type = PARTICLEENGINE::Phase2;
   else if (typeName == "boundaryphase")
     type = PARTICLEENGINE::BoundaryPhase;
+  else if (typeName == "rigidphase")
+    type = PARTICLEENGINE::RigidPhase;
   else
     dserror("particle type '%s' unknown!", typeName.c_str());
 

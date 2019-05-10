@@ -3,7 +3,7 @@
 
  \brief wrapper for structure material of porous media
 
-\maintainer Ager Christoph
+\maintainer Christoph Ager
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289 15249
@@ -160,7 +160,8 @@ inline INPAR::MAT::MaterialType MAT::StructPoro::PoroLawType() const
 double MAT::StructPoro::InvBulkmodulus() const { return params_->porolaw_->InvBulkmodulus(); }
 
 /*----------------------------------------------------------------------*
-                                                              vuong 06/11|
+ |                                                           vuong 06/11|
+ | Density with respect to the poro domain in reference configuration   |
 *----------------------------------------------------------------------*/
 double MAT::StructPoro::Density() const
 {
@@ -169,6 +170,13 @@ double MAT::StructPoro::Density() const
   else
     return ((1.0 - params_->initporosity_) * mat_->Density());
 }
+
+/*----------------------------------------------------------------------*
+ |                                                           vuong 06/11|
+ | Density of the solid phase as part of the poro domain in reference   |
+ | configuration                                                        |
+*----------------------------------------------------------------------*/
+double MAT::StructPoro::DensitySolidPhase() const { return mat_->Density(); }
 
 /*----------------------------------------------------------------------*
                                                               vuong 06/11|

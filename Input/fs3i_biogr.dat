@@ -371,7 +371,6 @@ ML_DAMPCOARSE                   1.0                           // damping coarse 
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-CONTROLTYPE                     load
 DAMPING                         No
 DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta

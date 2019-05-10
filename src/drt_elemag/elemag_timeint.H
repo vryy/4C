@@ -7,9 +7,9 @@
 <pre>
 \level 3
 
-\maintainer Volker Gravemeier
-            gravemeier@lnm.mw.tum.de
-            089 - 289-15245
+\maintainer Luca Berardocco
+            berardocco@lnm.mw.tum.de
+            089 - 289-15244
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -28,6 +28,7 @@
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
 #include <Epetra_CrsGraph.h>
+#include "../linalg/linalg_utils.H"
 
 #include "../drt_inpar/inpar_elemag.H"
 
@@ -57,58 +58,160 @@ namespace IO
  *----------------------------------------------------------------------*/
 namespace ELEMAG
 {
+  /*!
+  \brief Base class functions for time integration of electromagnetics
+
+  This has to be the base class that is inherited by all the specific time integration rules but for
+  now it includes all the time integration. This will be fixed in the following iteration of the
+  code itself.
+
+  \author Berardocco
+  */
   class ElemagTimeInt
   {
    public:
-    // constructor
+    /// Constructor.
     ElemagTimeInt(const Teuchos::RCP<DRT::DiscretizationHDG>& actdis,
         const Teuchos::RCP<LINALG::Solver>& solver,
         const Teuchos::RCP<Teuchos::ParameterList>& params,
         const Teuchos::RCP<IO::DiscretizationWriter>& output);
 
-    /// virtual destructor
+    /// Virtual destructor.
     virtual ~ElemagTimeInt();
 
-    /// initialization routine
+    /// Initialization routine.
     void Init();
 
-    /// print information to screen
-    void PrintInformationToScreen();
+    /*!
+    \brief Prints information about the discretization and time integration to screen.
+    */
+    virtual void PrintInformationToScreen();
 
-    /// time integration
-    // virtual void Integrate();
-    void Integrate();
+    /*!
+    \brief print the name of the scheme as std::string.
+    */
+    virtual std::string Name() { return "General time integration class. No scheme implemented."; }
 
-    /// set initial field by given function
-    // virtual void SetInitialField(int startfuncno);
-    void SetInitialField(int startfuncno);
+    /*!
+    \brief Print system matrix.
+    */
+    virtual void PrintSysmat_() { std::cout << sysmat_ << std::endl; };
 
-    /// call elements to calculate system matrix
-    // virtual void AssembleMatAndRHS();
-    void AssembleMatAndRHS();
+    /*!
+    \brief Iterates in time untill either the max number of steps or the final time has been
+    reached.
+    */
+    virtual void Integrate();
+    // void Integrate();
 
-    /// apply Dirichlet boudnary conditions to system
+    /*!
+    \brief Set initial field by given function or null function.
+    */
+    virtual void SetInitialField(const INPAR::ELEMAG::InitialField init, int startfuncno);
+
+    /*!
+    \brief Compare the numerical solution to the analytical one.
+    */
+    Teuchos::RCP<Epetra_SerialDenseVector> ComputeError();
+
+    /*!
+    \brief ProjectfieldTest is used for debugging purposes.
+
+    This function projects a defined function to the interior fields and can be used to check if the
+    global solver works. It is the dual of ProjectFieldTestTrace.
+    */
+    virtual void ProjectFieldTest(int startfuncno);
+
+    /*!
+    \brief ProjectfieldTestTrace is used for debugging purposes.
+
+    This function projects a defined function to the global trace and can be used to check if the
+    local solver works. It is the dual of ProjectFieldTest.
+    */
+    virtual void ProjectFieldTestTrace(int startfuncno);
+
+    /*!
+    \brief Call elements to calculate system matrix and RHS.
+    */
+    virtual void AssembleMatAndRHS();
+    // void AssembleMatAndRHS();
+
+    /*!
+    \brief Updates the local solution and updates the RHS wioth the new values.
+
+    Once the solution of the global system has been carried on it is necessary to solve for the
+    local problems and update the residual.
+    */
+    virtual void UpdateInteriorVariablesAndAssembleRHS();
+    // void UpdateInteriorVariablesAndAssembleRHS();
+
+    /*!
+    \brief Apply Dirichlet boudnary conditions to system.
+    */
     void ApplyDirichletToSystem();
 
-    /// solve the system for trace and interior variables
-    // virtual void Solve();
-    void Solve();
+    /*!
+    \brief Compute Silver-Mueller boundary conditions.
 
-    /// output to screen
-    void OutputToScreen();
+    The functions ask the elements to compute the element matrices and vectors and assembles.
 
-    /// output routine
-    // virtual void Output();
-    void Output();
+    \param[in]  resonly Boolean indicating if it is only necessary to recompute the RHS (true) or if
+    it necessary to compute the matrices AND the RHS (false).
+    */
+    void ComputeSilverMueller(bool resonly);
 
-    /// write restart
-    // virtual void WriteRestart();
+    /*!
+    \brief Solve the system for trace and interior variables.
+    */
+    virtual void Solve();
+    // void Solve();
 
-    /// read restart information for given time step
-    // virtual void ReadRestart(int step);
+    /*!
+    \brief Output to screen.
+    */
+    virtual void OutputToScreen();
+    // void OutputToScreen();
 
-    /// increment time and step value
-    void IncrementTimeAndStep()
+    /*!
+    \brief Output routine
+
+    This routine outputs the computed global and local solutions to the output ".dat" file.
+    */
+    virtual void Output();
+    // void Output();
+
+    /*!
+    \brief Write restart.
+
+    This function allow the restart of a simulation from the result of the current
+    simulation. It is needed to write the restart values that will be read by the #ReadRestart
+    function.
+    */
+    virtual void WriteRestart();
+    // void WriteRestart();
+
+    /*!
+    \brief Read restart.
+
+    This function allow the restart of a simulation from the result of a previous
+    simulation. It is needed to read the restart values that are written by the #WriteRestart
+    function.
+    */
+    virtual void ReadRestart(int step);
+    // void ReadRestart(int step);
+
+    /*!
+    \brief print the system matrix
+
+    This function still ha to be implemented.
+    This function is supposed to work as a matlab or numpy spy().
+    */
+    void SpySysmat(std::ostream& out);
+
+    /*!
+    \brief increment time and step value
+    */
+    virtual void IncrementTimeAndStep()
     {
       step_ += 1;
       time_ += dtp_;
@@ -119,8 +222,15 @@ namespace ELEMAG
     int UpRes() { return upres_; }
     double TimeStep() { return dtp_; }
 
-    /// create result test
-    // virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
+    /*!
+    \brief returns pointer to the discretization
+    */
+    Teuchos::RCP<DRT::Discretization> Discretization();
+
+    /*!
+    \brief create result test
+    */
+    virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
    protected:
     /// discretization, solver, parameter list and output
@@ -150,7 +260,9 @@ namespace ELEMAG
     double dtsolve_;  /// solver time
 
     bool calcerr_;  /// flag for error calculation
+    int errfunct_;  /// Function number for error calculation
 
+    int sourcefuncno_;  /// Source function number
 
     /// system matrix
     Teuchos::RCP<LINALG::SparseOperator> sysmat_;
@@ -163,6 +275,23 @@ namespace ELEMAG
 
     /// vector of zeros to be used for enforcing zero Dirichlet boundary conditions
     Teuchos::RCP<Epetra_Vector> zeros_;
+
+
+    //  The fomulation relies on the variables:
+    //  o   E (electri field)
+    //  o   H (magnetic field field)
+    //  o   \Lambda (hybrid varible)
+
+    /// Trace vector to be solved at every iteration
+    Teuchos::RCP<Epetra_Vector> trace_;
+
+    /// Output vectors
+    Teuchos::RCP<Epetra_MultiVector> electric;
+    Teuchos::RCP<Epetra_MultiVector> magnetic;
+    Teuchos::RCP<Epetra_MultiVector> trace;
+    Teuchos::RCP<Epetra_Vector> conductivity;
+    Teuchos::RCP<Epetra_Vector> permittivity;
+    Teuchos::RCP<Epetra_Vector> permeability;
   };
 
 }  // namespace ELEMAG

@@ -8,7 +8,7 @@ use StepIncrements, therefore set NOXCorrection == true!!!
 \level 2
 
 <pre>
-\maintainer Ager Christoph
+\maintainer Christoph Ager
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289 15249

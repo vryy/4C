@@ -1,3 +1,11 @@
+/*!----------------------------------------------------------------------
+\brief Test for the CUT Library
+\file cut_test_sudhakar_selfcut.cpp
+
+\level 1
+
+\maintainer Christoph Ager
+*----------------------------------------------------------------------*/
 
 #include <iostream>
 #include <map>
@@ -18,6 +26,7 @@
 void test_sud_sc1()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;

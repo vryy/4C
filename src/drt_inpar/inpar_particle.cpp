@@ -45,8 +45,9 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
 
   // type of particle interaction
   setStringToIntegralParameter<int>("INTERACTION", "None", "type of particle interaction",
-      tuple<std::string>("None", "SPH"),
-      tuple<int>(INPAR::PARTICLE::interaction_none, INPAR::PARTICLE::interaction_sph),
+      tuple<std::string>("None", "SPH", "DEM"),
+      tuple<int>(INPAR::PARTICLE::interaction_none, INPAR::PARTICLE::interaction_sph,
+          INPAR::PARTICLE::interaction_dem),
       &particledyn);
 
   // output type
@@ -73,12 +74,33 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "GRAVITY_ACCELERATION", "0.0 0.0 0.0", "acceleration due to gravity", &particledyn);
   IntParameter("GRAVITY_RAMP_FUNCT", -1, "number of function governing gravity ramp", &particledyn);
 
+  // viscous damping factor
+  DoubleParameter("VISCOUS_DAMPING", -1.0,
+      "apply viscous damping force to determine static equilibrium solutions", &particledyn);
+
   // transfer particles to new bins every time step
   BoolParameter(
       "TRANSFER_EVERY", "no", "transfer particles to new bins every time step", &particledyn);
 
+  // considered particle phases with dynamic load balance weighting factor
+  StringParameter("PHASE_TO_DYNLOADBALFAC", "none",
+      "considered particle phases with dynamic load balance weighting factor", &particledyn);
+
   // relate particle phase to material id
-  StringParameter("PHASE_TO_MATERIAL_ID", "", "relate particle phase to material id", &particledyn);
+  StringParameter(
+      "PHASE_TO_MATERIAL_ID", "none", "relate particle phase to material id", &particledyn);
+
+  // amplitude of noise added to initial position for each spatial direction
+  setNumericStringParameter("INITIAL_POSITION_AMPLITUDE", "0.0 0.0 0.0",
+      "amplitude of noise added to initial position for each spatial direction", &particledyn);
+
+  // type of particle wall source
+  setStringToIntegralParameter<int>("PARTICLE_WALL_SOURCE", "NoParticleWall",
+      "type of particle wall source",
+      tuple<std::string>("NoParticleWall", "DiscretCondition", "BoundingBox"),
+      tuple<int>(INPAR::PARTICLE::NoParticleWall, INPAR::PARTICLE::DiscretCondition,
+          INPAR::PARTICLE::BoundingBox),
+      &particledyn);
 
   /*-------------------------------------------------------------------------*
    | control parameters for initial/boundary conditions                      |
@@ -87,17 +109,25 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       particledyn.sublist("INITIAL AND BOUNDARY CONDITIONS", false,
           "control parameters for initial/boundary conditions in particle simulations\n");
 
+  // initial temperature field of particle phase given by function
+  StringParameter("INITIAL_TEMP_FIELD", "none",
+      "initial temperature field of particle phase given by function", &particledynconditions);
+
   // initial velocity field of particle phase given by function
-  StringParameter("INITIAL_VELOCITY_FIELD", "",
+  StringParameter("INITIAL_VELOCITY_FIELD", "none",
       "initial velocity field of particle phase given by function", &particledynconditions);
 
   // initial acceleration field of particle phase given by function
-  StringParameter("INITIAL_ACCELERATION_FIELD", "",
+  StringParameter("INITIAL_ACCELERATION_FIELD", "none",
       "initial acceleration field of particle phase given by function", &particledynconditions);
 
   // dirichlet boundary condition of particle phase given by function
-  StringParameter("DIRICHLET_BOUNDARY_CONDITION", "",
+  StringParameter("DIRICHLET_BOUNDARY_CONDITION", "none",
       "dirichlet boundary condition of particle phase given by function", &particledynconditions);
+
+  // temperature boundary condition of particle phase given by function
+  StringParameter("TEMPERATURE_BOUNDARY_CONDITION", "none",
+      "temperature boundary condition of particle phase given by function", &particledynconditions);
 
   /*-------------------------------------------------------------------------*
    | smoothed particle hydrodynamics (SPH) specific control parameters       |
@@ -183,10 +213,26 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "formulation",
       &particledynsph);
 
-  DoubleParameter("VISCOUS_DAMPING", -1.0,
-      "apply artificial viscous damping force to particles in order to determine static "
-      "equilibrium solutions",
+  //! type of temperature evaluation scheme
+  setStringToIntegralParameter<int>("TEMPERATUREEVALUATION", "NoTemperatureEvaluation",
+      "type of temperature evaluation scheme",
+      tuple<std::string>("NoTemperatureEvaluation", "TemperatureIntegration"),
+      tuple<int>(INPAR::PARTICLE::NoTemperatureEvaluation, INPAR::PARTICLE::TemperatureIntegration),
       &particledynsph);
+
+  BoolParameter("TEMPERATUREGRADIENT", "no", "evaluate temperature gradient", &particledynsph);
+
+  //! type of heat source
+  setStringToIntegralParameter<int>("HEATSOURCETYPE", "NoHeatSource", "type of heat source",
+      tuple<std::string>("NoHeatSource", "VolumeHeatSource", "SurfaceHeatSource"),
+      tuple<int>(INPAR::PARTICLE::NoHeatSource, INPAR::PARTICLE::VolumeHeatSource,
+          INPAR::PARTICLE::SurfaceHeatSource),
+      &particledynsph);
+
+  IntParameter("HEATSOURCE_FUNCT", -1, "number of function governing heat source", &particledynsph);
+
+  setNumericStringParameter(
+      "HEATSOURCE_DIRECTION", "0.0 0.0 0.0", "direction of surface heat source", &particledynsph);
 
   // type of surface tension formulation
   setStringToIntegralParameter<int>("SURFACETENSIONFORMULATION", "NoSurfaceTension",
@@ -203,4 +249,60 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   DoubleParameter("STATICCONTACTANGLE", 0.0,
       "static contact angle in degree in continuum surface force formulation with wetting effects",
       &particledynsph);
+  DoubleParameter("SURFACETENSIONDERIVFAC", -1.0,
+      "derivative of surface tension coefficient (linear) in continuum surface force formulation",
+      &particledynsph);
+
+  // type of phase change
+  setStringToIntegralParameter<int>("PHASECHANGETYPE", "NoPhaseChange", "type of phase change",
+      tuple<std::string>("NoPhaseChange", "TwoWayScalarPhaseChange"),
+      tuple<int>(INPAR::PARTICLE::NoPhaseChange, INPAR::PARTICLE::TwoWayScalarPhaseChange),
+      &particledynsph);
+
+  // definition of phase change
+  StringParameter("PHASECHANGEDEFINITION", "none", "phase change definition", &particledynsph);
+
+  /*-------------------------------------------------------------------------*
+   | discrete element method (DEM) specific control parameters               |
+   *-------------------------------------------------------------------------*/
+  Teuchos::ParameterList& particledyndem = particledyn.sublist(
+      "DEM", false, "control parameters for discrete element method (DEM) simulations\n");
+
+  // type of normal contact law
+  setStringToIntegralParameter<int>("NORMALCONTACTLAW", "NormalLinearSpring",
+      "normal contact law for particles",
+      tuple<std::string>("NormalLinearSpring", "NormalLinearSpringDamp", "NormalHertz",
+          "NormalLeeHerrmann", "NormalKuwabaraKono", "NormalTsuji"),
+      tuple<int>(INPAR::PARTICLE::NormalLinSpring, INPAR::PARTICLE::NormalLinSpringDamp,
+          INPAR::PARTICLE::NormalHertz, INPAR::PARTICLE::NormalLeeHerrmann,
+          INPAR::PARTICLE::NormalKuwabaraKono, INPAR::PARTICLE::NormalTsuji),
+      &particledyndem);
+
+  // type of tangential contact law
+  setStringToIntegralParameter<int>("TANGENTIALCONTACTLAW", "NoTangentialContact",
+      "tangential contact law for particles",
+      tuple<std::string>("NoTangentialContact", "TangentialLinSpringDamp"),
+      tuple<int>(INPAR::PARTICLE::NoTangentialContact, INPAR::PARTICLE::TangentialLinSpringDamp),
+      &particledyndem);
+
+  DoubleParameter("MAX_RADIUS", -1.0, "maximum expected particle radius", &particledyndem);
+  DoubleParameter("MAX_VELOCITY", -1.0, "maximum expected particle velocity", &particledyndem);
+
+  DoubleParameter("REL_PENETRATION", -1.0,
+      "maximum allowed relative penetration (particle-particle)", &particledyndem);
+  DoubleParameter(
+      "NORMAL_STIFF", -1.0, "normal contact stiffness (particle-particle)", &particledyndem);
+  DoubleParameter(
+      "NORMAL_DAMP", -1.0, "normal contact damping parameter (particle-particle)", &particledyndem);
+  DoubleParameter(
+      "COEFF_RESTITUTION", -1.0, "coefficient of restitution (particle-particle)", &particledyndem);
+  DoubleParameter("DAMP_REG_FAC", -1.0,
+      "linearly regularized damping normal force in the interval |g| < (DAMP_REG_FAC * r_min)",
+      &particledyndem);
+  BoolParameter("TENSION_CUTOFF", "no", "switch on/off tension cutoff", &particledyndem);
+
+  DoubleParameter("POISSON_RATIO", -1.0, "poisson ratio", &particledyndem);
+
+  DoubleParameter("FRICT_COEFF_TANG", -1.0,
+      "dynamic friction coefficient for tangential contact (particle-particle)", &particledyndem);
 }

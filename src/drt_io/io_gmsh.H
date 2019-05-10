@@ -30,8 +30,6 @@ documentation.
 
 namespace IO
 {
-  //! routines to transform results (elements, nodes, integrationcells, whole discretizations...) to
-  //! Gmsh output
   namespace GMSH
   {
     //! for each DRT::Element::DiscretizationType find the appropriate Gmsh file type

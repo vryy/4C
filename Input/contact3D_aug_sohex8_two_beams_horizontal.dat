@@ -1,7 +1,5 @@
 //
-// Maintainer: Michael Hiermeier
-// hiermeier@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
+// Maintainer: Matthias Mayr
 //
 // 3-D augmented contact framework
 // element based integration
@@ -1681,9 +1679,5 @@ NODE 885  COORD  -2.4000000000000000e+01  1.7000000000000000e+01  -1.00000000000
    348 SOLIDH8 HEX8  869 872 873 870 875 878 879 876    MAT 1 KINEM nonlinear EAS none
    349 SOLIDH8 HEX8  874 875 876 877 880 881 882 883    MAT 1 KINEM nonlinear EAS none
    350 SOLIDH8 HEX8  875 878 879 876 881 884 885 882    MAT 1 KINEM nonlinear EAS none
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------THERMO ELEMENTS
 ---------------------------------------------------------------END
 // END

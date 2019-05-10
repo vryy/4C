@@ -4,9 +4,7 @@
 
 \brief Evaluation and assembly of all contact terms
 
-\maintainer Michael Hiermeier
-
-\date Feb 3, 2016
+\maintainer Matthias Mayr
 
 \level 3
 
@@ -19,12 +17,13 @@
 #include "str_model_evaluator_generic.H"
 #include "../drt_lib/drt_utils_matrix_vector_enums.H"
 
-// forward declarations...
+// forward declarations
 namespace CONTACT
 {
   class Manager;
   class CoAbstractStrategy;
 }  // namespace CONTACT
+
 namespace MORTAR
 {
   class StrategyBase;
@@ -43,33 +42,34 @@ namespace STR
       Contact();
 
       //! destructor
-      virtual ~Contact(){};
+      virtual ~Contact() = default;
 
       //! setup class variables [derived]
-      virtual void Setup();
+      void Setup() override;
 
       //! @name Functions which are derived from the base generic class
-      //! @{
+      //!@{
+
       //! [derived]
-      INPAR::STR::ModelType Type() const { return INPAR::STR::model_contact; }
+      INPAR::STR::ModelType Type() const override { return INPAR::STR::model_contact; }
 
       //! reset class variables (without jacobian) [derived]
-      virtual void Reset(const Epetra_Vector& x);
+      void Reset(const Epetra_Vector& x) override;
 
       //! [derived]
-      virtual bool EvaluateForce();
+      bool EvaluateForce() override;
 
       //! [derived]
-      virtual bool EvaluateStiff();
+      bool EvaluateStiff() override;
 
       //! [derived]
-      virtual bool EvaluateForceStiff();
+      bool EvaluateForceStiff() override;
 
       //! [derived]
       void PreEvaluate() override;
 
       //! [derived]
-      virtual void PostEvaluate();
+      void PostEvaluate() override;
 
       //! [derived]
       void RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) override;
@@ -104,8 +104,15 @@ namespace STR
       //! [derived]
       virtual void RunPostIterate(const NOX::Solver::Generic& solver);
 
+      /// [derived]
+      void RunPreSolve(const NOX::Solver::Generic& solver) override;
+
       //! [derived]
       virtual void RunPostApplyJacobianInverse(const Epetra_Vector& rhs, Epetra_Vector& result,
+          const Epetra_Vector& xold, const NOX::NLN::Group& grp);
+
+      //! [derived]
+      virtual void RunPreApplyJacobianInverse(const Epetra_Vector& rhs, Epetra_Vector& result,
           const Epetra_Vector& xold, const NOX::NLN::Group& grp);
 
       //! [derived]
@@ -149,8 +156,8 @@ namespace STR
 
       //! @}
 
-      /// @name call-back routines
-      /// @{
+      //! @name Call-back routines
+      //!@{
 
       Teuchos::RCP<const LINALG::SparseMatrix> GetJacobianBlock(
           const DRT::UTILS::MatBlockType bt) const;
@@ -170,12 +177,10 @@ namespace STR
 
       void EvaluateWeightedGapGradientError();
 
-      inline const DRT::DiscretizationInterface& StrDiscret() const { return Discret(); }
-
-      /// @}
+      //!@}
 
       //! @name Accessors
-      //! @{
+      //!@{
 
       //! Returns a pointer to the underlying contact strategy object
       const Teuchos::RCP<CONTACT::CoAbstractStrategy>& StrategyPtr();
@@ -184,7 +189,8 @@ namespace STR
       CONTACT::CoAbstractStrategy& Strategy();
       const CONTACT::CoAbstractStrategy& Strategy() const;
 
-      //! @}
+      //!@}
+
      protected:
       STR::MODELEVALUATOR::ContactData& EvalContact();
       const STR::MODELEVALUATOR::ContactData& EvalContact() const;
@@ -194,16 +200,18 @@ namespace STR
      private:
       void PostSetup(Teuchos::ParameterList& cparams);
 
+      void SetTimeIntegrationInfo(CONTACT::CoAbstractStrategy& strategy) const;
+
       void PostUpdateStepState();
 
       void ExtendLagrangeMultiplierDomain(Teuchos::RCP<Epetra_Vector>& lm_vec) const;
 
-     private:
       //! contact evaluation data container
       Teuchos::RCP<STR::MODELEVALUATOR::ContactData> eval_contact_ptr_;
 
       //! contact strategy
       Teuchos::RCP<CONTACT::CoAbstractStrategy> strategy_ptr_;
+
     };  // class Contact
 
   }  // namespace MODELEVALUATOR

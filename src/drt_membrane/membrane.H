@@ -4,7 +4,7 @@
 \level 3
 
 <pre>
-\maintainer Fabian Bräu
+\maintainer Fabian Braeu
             braeu@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
@@ -131,7 +131,7 @@ namespace DRT
       */
       virtual int NumSurface() const { return 1; }
 
-      /*!numgpt_
+      /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
 
       */
@@ -454,8 +454,10 @@ namespace DRT
       //! membrane stress/strain state
       DimensionalReduction planetype_;
 
+     protected:
       DRT::UTILS::IntegrationPoints2D intpoints_;
 
+     private:
       // internal calculation methods
 
       // don't want = operator

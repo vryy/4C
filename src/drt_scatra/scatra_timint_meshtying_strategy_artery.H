@@ -102,6 +102,9 @@ namespace SCATRA
     //! set the artery time integrator
     void SetArteryTimeIntegrator(Teuchos::RCP<ADAPTER::ArtNet> arttimint);
 
+    //! set the element pairs that are close as found by search algorithm
+    void SetNearbyElePairs(const std::map<int, std::set<int>>* nearbyelepairs);
+
     //! prepare a time step
     void PrepareTimeStep() const;
 
@@ -109,7 +112,7 @@ namespace SCATRA
     void SetArteryPressure() const;
 
     //! apply mesh movement
-    void ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> disp);
+    void ApplyMeshMovement();
 
     //! block systemmatrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> CombinedSystemMatrix()

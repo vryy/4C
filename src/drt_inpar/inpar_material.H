@@ -19,7 +19,6 @@
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// General input parameters for materials
   namespace MAT
   {
     /// type of material
@@ -72,12 +71,14 @@ namespace INPAR
       m_cavitation,               ///< fluid with varying density
       m_cnst_art,                 ///< 1D_Artery constant material properties
       m_compogden,                ///< compressible Ogden material (with shell8)
+      m_consolidation,            ///< material providing a general interface for consolidation
       m_constraintmixture,        ///< growth and remodeling of arteries
       m_crosslinkermat,           ///< material for crosslinker in biopolymer networks
       m_elasthyper,               ///< collection of hyperelastic materials
       m_elchmat,                  ///< material for porous separators
       m_elchphase,                ///< material for porous phase inside porous separator
       m_electrode,                ///< electrode material
+      m_electromagneticmat,       ///< electromagnetic material
       m_elpldamage,               ///< elasto-plastic material with von Mises plasticity and damage
       m_ferech_pv,  ///< material with simplified chemical kinetics due to Ferziger and Echekki
                     ///< (1993) with a modification by Poinsot and Veynante (2005) (progress
@@ -131,6 +132,7 @@ namespace INPAR
       m_sc_dep_interp,  ///< integration point based and scalar dependent interpolation between to
                         ///< materials
       m_membrane_elasthyper,       ///< collection of hyperelastic materials for membranes
+      m_membrane_activestrain,     ///< active strain membrane material for gastric electromechanics
       m_growthremodel_elasthyper,  ///< growth and remodeling
       m_herschelbulkley,           ///< fluid with nonlinear viscosity according to Herschel-Bulkley
       m_ion,                       ///< properties of an ion species in an electrolyte solution
@@ -158,8 +160,9 @@ namespace INPAR
       m_opti_dens,               ///< density field for topology optimization
       m_particlemat,             ///< particle material
       m_particlemat_ellipsoids,  ///< particle material for ellipsoidal particles
-      m_particle_base,           ///< particle material base
-      m_particle_sph,            ///< particle material for SPH
+      m_particle_sph_fluid,      ///< particle material for SPH fluid
+      m_particle_sph_boundary,   ///< particle material for SPH boundary
+      m_particle_dem,            ///< particle material for DEM
       m_permeable_fluid,         ///< permeable fluid
       m_plelasthyper,      ///< general hyperelastic material for finite strain von-Mises plasticity
                            ///< using a semi-smooth Newton strategy (only in combination with such
@@ -182,15 +185,19 @@ namespace INPAR
       m_scatra,                    ///< scalar transport material
       m_scatra_multiporo_fluid,  ///< scalar transport material for multiphase porous flow (species
                                  ///< in fluid)
-      m_scatra_multiporo_volfrac,  ///< scalar transport material for multiphase porous flow
-                                   ///< (species in volume fraction)
-      m_scatra_aniso,              ///< anisotropic scalar transport material
-      m_scatra_multiscale,         ///< scalar transport material for multi-scale approach
-      m_scatra_reaction_poroECM,   ///< reaction definition and parameters for reaction model in
-                                   ///< porous ECM
-      m_scatra_reaction,           ///< reaction definition and parameters
-      m_scatra_bondreac,           ///< biochemical bond reactions in cell migration context
-      m_scatra_chemotaxis,         ///< chemotaxis definition parameters
+      m_scatra_multiporo_volfrac,      ///< scalar transport material for multiphase porous flow
+                                       ///< (species in volume fraction)
+      m_scatra_multiporo_solid,        ///< scalar transport material for multiphase porous flow
+                                       ///< (species in solid)
+      m_scatra_multiporo_temperature,  ///< scalar transport material for multiphase porous flow
+                                       ///< (temperature)
+      m_scatra_aniso,                  ///< anisotropic scalar transport material
+      m_scatra_multiscale,             ///< scalar transport material for multi-scale approach
+      m_scatra_reaction_poroECM,       ///< reaction definition and parameters for reaction model in
+                                       ///< porous ECM
+      m_scatra_reaction,               ///< reaction definition and parameters
+      m_scatra_bondreac,               ///< biochemical bond reactions in cell migration context
+      m_scatra_chemotaxis,             ///< chemotaxis definition parameters
       m_soret,   ///< material for heat transport due to Fourier-type thermal conduction and the
                  ///< Soret effect
       m_spring,  ///< elastic spring (translational or rotational)
@@ -203,6 +210,7 @@ namespace INPAR
       m_sutherland,          ///< material with temperature dependence according to Sutherland law
       m_tempdepwater,        ///< temperature-dependent water
       m_th_fourier_iso,      ///< isotropic (linear) Fourier's law of heat conduction
+      m_th_fourier_var,      ///< Fourier's law with variable conductivity
       m_thermoplhyperelast,  ///< Temperature-dependent hyperelasticity and von Mises plasticity
       m_thermopllinelast,    ///< Temperature-dependent Hooke elasticity and von Mises plasticity
       m_thermostvenant,      ///< St.Venant Kirchhoff material with temperature

@@ -1,5 +1,5 @@
 //
-// Maintainer: Alexander Popp
+// Maintainer: Ivo Steinbrecher
 //
 ==================================================================
                   General Data File BACI
@@ -24,7 +24,7 @@ VERBOSITY                       Standard
 ----------------------------------------------------------IO/RUNTIME VTK OUTPUT
 OUTPUT_DATA_FORMAT              binary
 INTERVAL_STEPS                  1
-EVERY_ITERATION                 No
+EVERY_ITERATION                 Yes
 ----------------------------------------------------------IO/RUNTIME VTK OUTPUT/STRUCTURE
 OUTPUT_STRUCTURE                Yes
 DISPLACEMENT                    Yes
@@ -57,11 +57,20 @@ NAME                            Structure_Solver
 SOLVER                          UMFPACK
 ----------------------------------------------------------------BEAM INTERACTION
 REPARTITIONSTRATEGY             Everydt
-----------------------------------------------------------------BEAM INTERACTION/BEAM TO SOLID CONTACT
-STRATEGY                        Penalty
-BEAMS_BTSVOLMTPENALTYPARAM      1.0e+10
+----------------------------------------------------------------BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING
+CONTACT_DISCRETIZATION          gauss_point_to_segment
+CONSTRAINT_STRATEGY             penalty
+PENALTY_PARAMETER               1.0e+10
+--------------BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING/RUNTIME VTK OUTPUT
+WRITE_OUTPUT                          yes
+NODAL_FORCES                          yes
+MORTAR_LAMBDA_DISCRET                 yes
+SEGMENTATION                          yes
+INTEGRATION_POINTS                    yes
 ----------------------------------------------------------------BEAM CONTACT
 MODELEVALUATOR                  Standard
+----------------------------------------------------------------GEOMETRY PAIR/LINE TO VOLUME
+STRATEGY                        gauss_point_projection
 --------------------------------------------------------------------BINNING STRATEGY
 CUTOFF_RADIUS                   2
 BOUNDINGBOX                     -2 -2 -2 2 2 2

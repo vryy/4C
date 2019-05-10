@@ -54,6 +54,9 @@ void PARTICLEALGORITHM::InputGenerator::GenerateParticles(
    * note: think about reserving (not resizing!) the vector particlesgenerated in advance if you
    * have a rough estimate of the total number of particles being generated
    *
+   * note: take care of setting a global id (that is unique and not used by particles potentially
+   * read in from the input file)
+   *
    * add a generated particle to the vector particlesgenerated using the function
    * AddGeneratedParticle()
    */
@@ -63,22 +66,21 @@ void PARTICLEALGORITHM::InputGenerator::GenerateParticles(
  | add generated particle                                     sfuchs 09/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::InputGenerator::AddGeneratedParticle(const std::vector<double>& position,
-    const PARTICLEENGINE::TypeEnum particletype,
+    const PARTICLEENGINE::TypeEnum particletype, int globalid,
     std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& particlesgenerated) const
 {
   // safety check
   if (position.size() != 3)
     dserror("particle can not be generated since position vector needs three entries!");
 
-  // fill position into particle states map
-  std::map<PARTICLEENGINE::StateEnum, std::vector<double>> particlestates;
-  particlestates.insert(std::make_pair(PARTICLEENGINE::Position, position));
+  // allocate memory to hold particle states
+  PARTICLEENGINE::ParticleStates particlestates;
+  particlestates.assign((PARTICLEENGINE::Position + 1), std::vector<double>(0));
 
-  // create and init new particle object
-  PARTICLEENGINE::ParticleObjShrdPtr particleobject =
-      std::make_shared<PARTICLEENGINE::ParticleObject>();
-  particleobject->Init(particletype, particlestates);
+  // set position state
+  particlestates[PARTICLEENGINE::Position] = position;
 
-  // append generated particle
-  particlesgenerated.push_back(particleobject);
+  // construct and store generated particle object
+  particlesgenerated.emplace_back(
+      std::make_shared<PARTICLEENGINE::ParticleObject>(particletype, globalid, particlestates));
 }

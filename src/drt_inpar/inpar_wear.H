@@ -17,7 +17,6 @@
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// Input parameters for structural wear
   namespace WEAR
   {
     /// Type of contact wear law

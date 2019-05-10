@@ -8,10 +8,10 @@
  <pre>
  \level 2
 
-   \maintainer Moritz Thon
-               thon@mhpc.mw.tum.de
+   \maintainer Johannes Kremheller
+               kremheller@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
-               089 - 289-10364
+               089-289-15262
  </pre>
  *----------------------------------------------------------------------*/
 
@@ -92,7 +92,7 @@ DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::ScaTraEleCalcAdvReac(
 {
   my::reamanager_ = Teuchos::rcp(new ScaTraEleReaManagerAdvReac(my::numscal_));
 
-  for (unsigned i = 0; i < my::nsd_; ++i) gpcoord_[i] = 0.0;
+  for (unsigned i = 0; i < numdim_gp_; ++i) gpcoord_[i] = 0.0;
 
   // safety check
   if (not my::scatrapara_->TauGP())

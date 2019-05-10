@@ -6,10 +6,7 @@
 \level 2
 
 <pre>
-\maintainer Marc Hirschvogel
-            hirschvogel@mhpc.mw.tum.de
-            http://www.mhpc.mw.tum.de
-            089 - 289-10363
+\maintainer Amadeus Gebauer
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -26,6 +23,7 @@
 #include "../drt_inpar/inpar_cardiovascular0d.H"
 #include "../drt_inpar/inpar_structure.H"
 
+// forward declarations
 namespace IO
 {
   class DiscretizationReader;

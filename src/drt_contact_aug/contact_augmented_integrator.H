@@ -309,6 +309,10 @@ namespace CONTACT
           const LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, double wgt, double jac,
           const Deriv1stMap& derivjac) const;
 
+      /// fill unified gauss point normal
+      void GP_Normal(MORTAR::MortarElement& sele, const LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
+          double* gpn) const;
+
       /** \brief pure element based variant
        *
        *  Note that it is crucial that we unify the gauss point normal once more
@@ -457,7 +461,7 @@ namespace CONTACT
      protected:
       typedef Integrator<probdim, slavetype, mastertype, IntPolicy>::Evaluator base_type;
       typedef typename base_type::parent_type parent_type;
-      typedef IntPolicy my;  // base_type::my my;
+      typedef IntPolicy my;  // typename base_type::my my;
      private:
       typedef typename parent_type::EvaluatorDeriv1stOnly class_type;
 
@@ -510,7 +514,7 @@ namespace CONTACT
       typedef Integrator<probdim, slavetype, mastertype, IntPolicy>::EvaluatorDeriv1stOnly
           base_type;
       typedef typename base_type::parent_type parent_type;
-      typedef IntPolicy my;  // base_type::my my;
+      typedef IntPolicy my;  // typename base_type::my my;
      private:
       typedef typename parent_type::EvaluatorFull class_type;
 

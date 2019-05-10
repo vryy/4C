@@ -33,8 +33,12 @@ namespace THR
     calc_thermo_coupltang,
     calc_thermo_fintcond,
     calc_thermo_fext,
-    calc_thermo_error
-  };  // enum Action
+    calc_thermo_error,
+    calc_thermo_phase,           ///< for SLM: store GP based phase information
+    calc_thermo_condcapa,        ///< output conductivity and capacity
+    calc_thermo_phasechangeinc,  ///< calculate phase change increment for heat integration
+    calc_thermo_totallatentheat  ///< total latent heat available at nodes for heat integration
+  };                             // enum Action
 
   /*--------------------------------------------------------------------------
    | enum that provides all possible thermo actions on a boundary

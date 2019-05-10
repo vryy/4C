@@ -33,9 +33,6 @@ namespace DRT
   class ResultTest;
 }
 
-/*==========================================================================*/
-//! Algorithm and time integration classes for artery network problems
-/*==========================================================================*/
 namespace ART
 {
   /*!

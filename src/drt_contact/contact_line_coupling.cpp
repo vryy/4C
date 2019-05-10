@@ -383,7 +383,8 @@ void CONTACT::LineToSurfaceCoupling3d::ConsistDualShape()
   // invert bi-ortho matrix me
   //  LINALG::SerialDenseMatrix meinv = LINALG::InvertAndMultiplyByCholesky(me,de,ae);
 
-  LINALG::NonSymmetricInverse(me, 4);
+  LINALG::TMatrix<double, 4, 4> me_tmatrix(me, true);
+  LINALG::Inverse4x4(me_tmatrix);
   LINALG::SerialDenseMatrix meinv = me;
 
   // build linearization of ae and store in derivdual

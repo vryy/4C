@@ -17,7 +17,6 @@
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_wear.H"
 
-//! CONTACT: namespace of the BACI contact and meshtying algorithms
 namespace CONTACT
 {
   // forward declarations
@@ -170,8 +169,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoCoupling3d operator=(const CoCoupling3d& old);
-    CoCoupling3d(const CoCoupling3d& old);
+    CoCoupling3d operator=(const CoCoupling3d& old) = delete;
+    CoCoupling3d(const CoCoupling3d& old) = delete;
 
 
     // new variables as compared to base class
@@ -250,8 +249,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoCoupling3dQuad operator=(const CoCoupling3dQuad& old);
-    CoCoupling3dQuad(const CoCoupling3dQuad& old);
+    CoCoupling3dQuad operator=(const CoCoupling3dQuad& old) = delete;
+    CoCoupling3dQuad(const CoCoupling3dQuad& old) = delete;
 
     MORTAR::IntElement& sintele_;  // slave sub-integration element
     MORTAR::IntElement& mintele_;  // slave sub-integration element
@@ -396,8 +395,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoCoupling3dManager operator=(const CoCoupling3dManager& old);
-    CoCoupling3dManager(const CoCoupling3dManager& old);
+    CoCoupling3dManager operator=(const CoCoupling3dManager& old) = delete;
+    CoCoupling3dManager(const CoCoupling3dManager& old) = delete;
 
     DRT::Discretization& idiscret_;             // discretization of the contact interface
     int dim_;                                   // problem dimension (here: 3D)
@@ -488,8 +487,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoCoupling3dQuadManager operator=(const CoCoupling3dQuadManager& old);
-    CoCoupling3dQuadManager(const CoCoupling3dQuadManager& old);
+    CoCoupling3dQuadManager operator=(const CoCoupling3dQuadManager& old) = delete;
+    CoCoupling3dQuadManager(const CoCoupling3dQuadManager& old) = delete;
 
     // new variables as compared to the base class:
     int smintpairs_;  // proc local number of slave/master integration pairs

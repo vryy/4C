@@ -296,6 +296,8 @@ void DRT::Condition::Print(std::ostream& os) const
     os << "Artery prescribed boundary condition";
   else if (Type() == ArtPorofluidCouplingCond)
     os << "Artery-Porofluid coupling condition";
+  else if (Type() == PoroMultiphaseScatraOxyPartPressCalcCond)
+    os << "PoroMultiphaseScatra Oxygen Partial Pressure Calculation condition";
   else if (Type() == ArtScatraCouplingCond)
     os << "Artery-Scatra coupling condition";
   else if (Type() == ArtRfCond)
@@ -434,6 +436,8 @@ void DRT::Condition::Print(std::ostream& os) const
     os << "Scalar transport biochemo externalization boundary condition for cell migration";
   else if (Type() == S2ICoupling)
     os << "Scatra-scatra interface coupling";
+  else if (Type() == SilverMueller)
+    os << "Silver-Mueller boundary for electromagnetics";
   else if (Type() == ElementTag)
     os << "Tagged elements";
   else if (Type() == NodeTag)

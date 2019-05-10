@@ -49,17 +49,20 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleMatrix(MORTAR::Mo
     std::vector<int>& dofs, Teuchos::RCP<LINALG::SparseMatrix> kc)
 {
   const int nen = DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement;
-  // const int nsd = DRT::UTILS::DisTypeToDim<parent_distype>::dim;
 
   if (kc != Teuchos::null)
     for (typename std::unordered_map<int, LINALG::Matrix<nen * num_dof_per_node, 1>>::const_iterator
              p = k.begin();
          p != k.end(); ++p)
       for (int n = 0; n < nen; ++n)
+      {
+        if (LINALG::Matrix<num_dof_per_node, 1>(&(p->second.A()[n * num_dof_per_node]), true)
+                .NormInf() < 1e-16)
+          continue;
         for (int d = 0; d < num_dof_per_node; ++d)
-          if (fabs(p->second(n * num_dof_per_node + d)) > 1e-16)
-            kc->FEAssemble(
-                p->second(n * num_dof_per_node + d), dofs.at(n * num_dof_per_node + d), p->first);
+          kc->FEAssemble(
+              p->second(n * num_dof_per_node + d), dofs.at(n * num_dof_per_node + d), p->first);
+      }
 }
 
 

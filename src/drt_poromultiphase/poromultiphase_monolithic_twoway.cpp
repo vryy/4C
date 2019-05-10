@@ -77,12 +77,13 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Init(
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& algoparams,
     const Teuchos::ParameterList& structparams, const Teuchos::ParameterList& fluidparams,
     const std::string& struct_disname, const std::string& fluid_disname, bool isale, int nds_disp,
-    int nds_vel, int nds_solidpressure, int ndsporofluid_scatra)
+    int nds_vel, int nds_solidpressure, int ndsporofluid_scatra,
+    const std::map<int, std::set<int>>* nearbyelepairs)
 {
   // call base class
   POROMULTIPHASE::PoroMultiPhaseMonolithic::Init(globaltimeparams, algoparams, structparams,
       fluidparams, struct_disname, fluid_disname, isale, nds_disp, nds_vel, nds_solidpressure,
-      ndsporofluid_scatra);
+      ndsporofluid_scatra, nearbyelepairs);
 
   // inform user that structure field will not be solved but displacements will just be set to zero
   if (not solve_structure_) PrintStructureDisabledInfo();

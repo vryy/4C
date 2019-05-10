@@ -386,12 +386,16 @@ namespace STR
     //! \author lw  \date 12/07
     bool Converged();
 
-    //! Solve dynamic equilibrium
-    //!
-    //! Do the nonlinear solve, i.e. (multiple) corrector,
-    //! for the time step. All boundary conditions have
-    //! been set.
-    INPAR::STR::ConvergenceStatus Solve();
+    /*!
+    \brief Solve nonlinear dynamic equilibrium
+
+    Do the nonlinear solve, i.e. (multiple) corrector,
+    for the time step. All boundary conditions have
+    been set.
+
+    \return Enum to indicate convergence status or failure
+    */
+    INPAR::STR::ConvergenceStatus Solve() final;
 
     //! Do full Newton-Raphson iteration
     //!
@@ -490,14 +494,36 @@ namespace STR
     //! \author popp (originally) \date 03/10
     int CmtNonlinearSolve();
 
-    //! Call linear solver for contact / meshtying
-    //!
-    //! The point is that of course we usually just want to perform a
-    //! standard solver call, except for the standard Lagrange strategy
-    //! where we explicitly have to set up the saddle point system blocks
-    //! and then solve this extended system.
-    //!
-    //! \author popp (originally) \date 03/10
+    /*! \brief Call linear solver for contact / meshtying
+     *
+     * We hold two distinct solver objects, #solver_ and #contactsolver_. Which one will be applied,
+     * depends on the actual problem and the current status.
+     *
+     * <h3>Contact problems in saddle-point formulation</h3>
+     * If no contact is active and contact hasn't been active neither in the last iteration nor the
+     * last time step, we treat this as a pure structural problem and, thus, just apply the
+     * structural solver #solver_.
+     *
+     * However, in case of contact, we use the #contactsolver_ to enable contact-specific solution
+     * strategies suitable for the saddle-point problem.
+     *
+     * <h3>Problems without Lagrange multipliers or with Lagrange multipliers in condensed
+     * formulation</h3>
+     * For meshtying, we just apply the #contactsolver_.
+     *
+     * \todo Why do we use the #contactsolver_ instead of the #solver_? #solver_ should be
+     * sufficient here since we don't need any meshtying-specific solution techniques in a condensed
+     * formulation.
+     *
+     * For contact problems, where no contact is active and contact hasn't been active neither in
+     * the last iteration nor the last time step, we use the regular structure solver #solver_. We
+     * use the actual #contactsolver_ if contact is active.
+     *
+     * <h3>Problems with meshtying and contact</h3>
+     * In this case, the meshtying contribution is always treated with dual Lagrange multipliers and
+     * meshtying contributions will be condensed. Hence, the solver choice only depends on the
+     * contact status. For details, see the section about solvers for contact problems.
+     */
     void CmtLinearSolve();
 
     int CmtWindkConstrNonlinearSolve();

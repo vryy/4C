@@ -4,7 +4,7 @@
 
 \brief Evaluation and assembly of all spring dashpot terms
 
-\maintainer Martin Pfaller
+\maintainer Amadeus Gebauer
 
 \date Feb 29, 2016
 

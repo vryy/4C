@@ -6,7 +6,7 @@ managers
 \level 2
 
 <pre>
-\maintainer Ager Christoph
+\maintainer Christoph Ager
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289 15249
@@ -20,6 +20,7 @@ managers
 #ifndef COUPLING_MANAGER_H
 #define COUPLING_MANAGER_H
 
+// forward declarations
 namespace LINALG
 {
   class BlockSparseMatrixBase;

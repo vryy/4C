@@ -4,14 +4,12 @@
 \brief student's c++/baci nonlinear truss tutorial
 
 \maintainer  Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15240
 
+\level 3
 *----------------------------------------------------------------------*/
 
-/// All header files should have #define guards to prevent multiple inclusion.
-/// The format of the symbol name should be <PROJECT>_<PATH>_<FILE>_H_.
+// All header files should have #define guards to prevent multiple inclusion.
+// The format of the symbol name should be <PROJECT>_<PATH>_<FILE>_H_.
 #ifndef TUTORIAL_NONLINEAR_TRUSS_H
 #define TUTORIAL_NONLINEAR_TRUSS_H
 
@@ -26,14 +24,14 @@
 
 namespace TUTORIAL
 {
-  /// FORWARD DECLARATION
-  /// Here we declare the class 'TutorialElement'.
-  /// This is needed because input arguments of this type
-  /// are declared in this .H-file. We could also include
-  /// the tutorial_ele.H-file but it should be avoided
-  /// to include headers in headers. This increases
-  /// dependencies in the code and slows down compilation
-  /// and linking.
+  // FORWARD DECLARATION
+  // Here we declare the class 'TutorialElement'.
+  // This is needed because input arguments of this type
+  // are declared in this .H-file. We could also include
+  // the tutorial_ele.H-file but it should be avoided
+  // to include headers in headers. This increases
+  // dependencies in the code and slows down compilation
+  // and linking.
   namespace ELEMENTS
   {
     class TutorialElement;

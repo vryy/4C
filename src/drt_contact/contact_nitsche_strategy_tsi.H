@@ -87,18 +87,18 @@ namespace CONTACT
         const enum DRT::UTILS::MatBlockType& bt,
         const CONTACT::ParamsInterface* cparams = NULL) const;
 
-    virtual void RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis)
+    bool RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis) override
     {
-      if (fix_redistribution_) return;
-      CONTACT::CoAbstractStrategy::RedistributeContact(dis);
+      if (fix_redistribution_) return false;
+      return CONTACT::CoAbstractStrategy::RedistributeContact(dis);
     }
 
     void EnableRedistribution() { fix_redistribution_ = false; }
 
    protected:
     // don't want = operator and cctor
-    CoNitscheStrategyTsi operator=(const CoNitscheStrategyTsi& old);
-    CoNitscheStrategyTsi(const CoNitscheStrategyTsi& old);
+    CoNitscheStrategyTsi operator=(const CoNitscheStrategyTsi& old) = delete;
+    CoNitscheStrategyTsi(const CoNitscheStrategyTsi& old) = delete;
 
     // create an appropriate vector for the RHS
     virtual Teuchos::RCP<Epetra_FEVector> SetupRhsBlockVec(

@@ -1,5 +1,5 @@
 //
-// Maintainer: Ager Christoph
+// Maintainer: Christoph Ager
 // ager@lnm.mw.tum.de
 // http://www.lnm.mw.tum.de
 // 089 - 289-15249
@@ -35,8 +35,6 @@ FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-CONTROLNODE                     -1 -1 -1
-CONTROLTYPE                     load
 DAMPING                         No
 DYNAMICTYP                      GenAlpha
 ITERNORM                        L2
@@ -243,7 +241,7 @@ GMSH_SOL_OUT                    yes
 GMSH_EOS_OUT                    No
 GMSH_DISCRET_OUT                yes
 GMSH_CUT_OUT                    yes
-VOLUME_GAUSS_POINTS_BY          Tessellation                  //Tessellation //DirectDivergence
+VOLUME_GAUSS_POINTS_BY          DirectDivergence
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION

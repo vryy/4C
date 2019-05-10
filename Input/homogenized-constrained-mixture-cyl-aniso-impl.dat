@@ -1,5 +1,5 @@
 //
-// Maintainer: Fabian Bräu
+// Maintainer: Fabian Braeu
 // braeu@lnm.mw.tum.de
 //
 -----------------------------------------------------------------------TITLE
@@ -30,8 +30,6 @@ NLNSOL                          fullnewton
 LSMAXITER                       30
 ALPHA_LS                        0.5
 SIGMA_LS                        0.0001
-CONTROLTYPE                     arc1
-CONTROLNODE -1 -1 -1
 LOADLIN                         yes
 PREDICT                         ConstVel
 MODIFIEDEXPLEULER               Yes

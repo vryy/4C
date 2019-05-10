@@ -6,7 +6,7 @@
 
 \level 1
 
-\maintainer Rui Fang
+\maintainer Anh-Tu Vuong
 
 */
 /*----------------------------------------------------------------------*/
@@ -38,7 +38,6 @@ namespace LINALG
   class Solver;
 }
 
-/// Algorithm adapter classes for use in multi-field problems
 namespace ADAPTER
 {
   /// general scalar transport field interface for multiphysics problems

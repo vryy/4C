@@ -87,8 +87,6 @@ SUGRVEL                         no
 LINEAR_SOLVER                   1
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-CONTROLNODE                     -1 -1 -1
-CONTROLTYPE                     load
 DAMPING                         No
 DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta //Statics

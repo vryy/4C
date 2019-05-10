@@ -605,11 +605,11 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::Calc_v
 
   LARGEROTATIONS::computespin(vI, phiIJ);
   // Fixme @grill: think about introducing a tolerance here to avoid singularity
-  if (FADUTILS::VectorNorm<3>(phiIJ) == 0.0)
+  if (FADUTILS::VectorNorm(phiIJ) == 0.0)
     vI.Scale(0.25);
   else  // Fixme @grill: why do we cast to double here?
-    vI.Scale(std::tan(FADUTILS::CastToDouble(FADUTILS::VectorNorm<3>(phiIJ)) / 4.0) /
-             FADUTILS::VectorNorm<3>(phiIJ));
+    vI.Scale(std::tan(FADUTILS::CastToDouble(FADUTILS::VectorNorm(phiIJ)) / 4.0) /
+             FADUTILS::VectorNorm(phiIJ));
 
   for (unsigned int i = 0; i < 3; i++) vI(i, i) += 1.0;
 
@@ -627,11 +627,11 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::Calc_v
 
   LARGEROTATIONS::computespin(vJ, phiIJ);
   // Fixme @grill: think about introducing a tolerance here to avoid singularity
-  if (FADUTILS::VectorNorm<3>(phiIJ) == 0.0)
+  if (FADUTILS::VectorNorm(phiIJ) == 0.0)
     vJ.Scale(-0.25);
   else  // Fixme why do we cast to double here?
-    vJ.Scale(-1.0 * std::tan(FADUTILS::CastToDouble(FADUTILS::VectorNorm<3>(phiIJ)) / 4.0) /
-             FADUTILS::VectorNorm<3>(phiIJ));
+    vJ.Scale(-1.0 * std::tan(FADUTILS::CastToDouble(FADUTILS::VectorNorm(phiIJ)) / 4.0) /
+             FADUTILS::VectorNorm(phiIJ));
 
   for (unsigned int i = 0; i < 3; i++) vJ(i, i) += 1.0;
 

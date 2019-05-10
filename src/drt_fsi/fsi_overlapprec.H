@@ -22,7 +22,7 @@
 // and use the fluid solver to solve for it
 //#define BLOCKMATRIXMERGE
 
-/// forward declarations
+// forward declarations
 namespace ADAPTER
 {
   class AleFsiWrapper;

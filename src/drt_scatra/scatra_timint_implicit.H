@@ -17,10 +17,10 @@
 
 \level 1
 
-\maintainer Rui Fang
-            fang@lnm.mw.tum.de
+\maintainer Anh-Tu Vuong
+            vuong@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
-            089 - 289-15251
+            089 - 289-15237
 
 *----------------------------------------------------------------------*/
 
@@ -84,9 +84,6 @@ namespace FLD
   class Vreman;
 }  // namespace FLD
 
-/*==========================================================================*/
-//! Algorithm and time integration classes for scalar transport problems
-/*==========================================================================*/
 namespace SCATRA
 {
   class HomIsoTurbScalarForcing;

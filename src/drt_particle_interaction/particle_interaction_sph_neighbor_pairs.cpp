@@ -21,10 +21,14 @@
 
 #include "particle_interaction_sph_kernel.H"
 
+#include "particle_interaction_utils.H"
+
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_container.H"
 
 #include "../drt_lib/drt_dserror.H"
+
+#include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 08/2018 |
@@ -52,8 +56,17 @@ void PARTICLEINTERACTION::SPHNeighborPairs::Setup(
   // set interface to particle engine
   particleengineinterface_ = particleengineinterface;
 
+  // set particle container bundle
+  particlecontainerbundle_ = particleengineinterface_->GetParticleContainerBundle();
+
   // set kernel handler
   kernel_ = kernel;
+
+  // determine size of vectors indexed by particle types
+  const int typevectorsize = *(--particlecontainerbundle_->GetParticleTypes().end()) + 1;
+
+  // allocate memory to hold index of neighbor pairs for each type
+  indexofneighborpairs_.resize(typevectorsize);
 }
 
 /*---------------------------------------------------------------------------*
@@ -78,116 +91,137 @@ void PARTICLEINTERACTION::SPHNeighborPairs::ReadRestart(
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateNeighborPairs()
 {
-  // clear map
-  neighborpairsmap_.clear();
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHNeighborPairs::EvaluateNeighborPairs");
 
-  // get reference to particle neighbors map
-  const PARTICLEENGINE::ParticleNeighborsMap& particleneighborsmap =
-      particleengineinterface_->GetParticleNeighborsMap();
+  // clear neighbor pair data
+  neighborpairdata_.clear();
 
-  // get particle container bundle
-  PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
-      particleengineinterface_->GetParticleContainerBundle();
+  // clear index of neighbor pairs for each type
+  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+    indexofneighborpairs_[type_i].clear();
 
-  // iterate over particle types
-  for (auto& typeIt : particleneighborsmap)
+  // index of neighbor pairs
+  int neighborpairindex = 0;
+
+  // iterate over potential particle neighbors
+  for (auto& potentialneighbors : particleengineinterface_->GetPotentialParticleNeighbors())
   {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum type_i = typeIt.first;
+    // access values of local index tuples of particle i and j
+    PARTICLEENGINE::TypeEnum type_i;
+    PARTICLEENGINE::StatusEnum status_i;
+    int particle_i;
+    std::tie(type_i, status_i, particle_i) = potentialneighbors.first;
 
-    // get reference to sub-map
-    auto& currentTypeMap = neighborpairsmap_[type_i];
+    PARTICLEENGINE::TypeEnum type_j;
+    PARTICLEENGINE::StatusEnum status_j;
+    int particle_j;
+    std::tie(type_j, status_j, particle_j) = potentialneighbors.second;
 
-    // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container_i =
-        particlecontainerbundle->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+    if (type_i == PARTICLEENGINE::BoundaryPhase and type_j == PARTICLEENGINE::BoundaryPhase)
+      continue;
 
-    // particles of current type with neighbors
-    const std::map<int, PARTICLEENGINE::TypeStatusIndexMap>& currparticles = typeIt.second;
+    // get corresponding particle containers
+    PARTICLEENGINE::ParticleContainer* container_i =
+        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
 
-    // iterate over particles of current type
-    for (auto& particleIt : currparticles)
+    PARTICLEENGINE::ParticleContainer* container_j =
+        particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
+
+    // declare pointer variables for particle i and j
+    const double *pos_i, *rad_i;
+    const double *pos_j, *rad_j;
+
+    // get pointer to particle states
+    pos_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
+    rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
+
+    pos_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Position, particle_j);
+    rad_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_j);
+
+    // vector from particle i to j
+    double r_ji[3];
+
+    // distance between particles considering periodic boundaries
+    particleengineinterface_->DistanceBetweenParticles(pos_i, pos_j, r_ji);
+
+    // absolute distance between particles
+    const double absdist = UTILS::vec_norm2(r_ji);
+
+    if (absdist < rad_i[0] or (absdist < rad_j[0] and status_j == PARTICLEENGINE::Owned))
     {
-      // get local index of particle i
-      const int particle_i = particleIt.first;
+      // initialize neighbor pair
+      neighborpairdata_.push_back(SPHNeighborPair());
 
-      // get reference to sub-map
-      auto& currentTypeCurrentParticleMap = currentTypeMap[particle_i];
+      // get reference to current neighbor pair
+      SPHNeighborPair& neighborpair = neighborpairdata_[neighborpairindex];
 
-      // declare pointer variables for particle i
-      const double *pos_i, *rad_i;
+      // store index of neighbor pairs for each type (owned and ghosted status)
+      indexofneighborpairs_[type_i].push_back(neighborpairindex);
+      if (type_i != type_j) indexofneighborpairs_[type_j].push_back(neighborpairindex);
 
-      // get pointer to particle states
-      pos_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
-      rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
+      // increase index
+      ++neighborpairindex;
 
-      // iterate over particle types of neighboring particles
-      for (auto& neighborTypeIt : particleIt.second)
+      // set local index tuple of particles i and j
+      neighborpair.tuple_i_ = potentialneighbors.first;
+      neighborpair.tuple_j_ = potentialneighbors.second;
+
+      // set absolute distance between particles
+      neighborpair.absdist_ = absdist;
+
+      // versor from particle j to i
+      UTILS::vec_setscale(neighborpair.e_ij_, -1.0 / absdist, r_ji);
+
+      // particle j within support radius of particle i
+      if (absdist < rad_i[0])
       {
-        // get type of neighboring particles
-        PARTICLEENGINE::TypeEnum type_j = neighborTypeIt.first;
+        // evaluate kernel
+        neighborpair.Wij_ = kernel_->W(absdist, rad_i[0]);
 
-        // no evaluation for neighboring boundary particles
-        if (type_i == PARTICLEENGINE::BoundaryPhase and type_j == PARTICLEENGINE::BoundaryPhase)
-          continue;
+        // evaluate first derivative of kernel
+        neighborpair.dWdrij_ = kernel_->dWdrij(absdist, rad_i[0]);
+      }
 
-        // get reference to sub-map
-        auto& neighborTypeMap = currentTypeCurrentParticleMap[type_j];
-
-        // iterate over particle status of neighboring particles
-        for (auto& neighborStatusIt : neighborTypeIt.second)
+      // particle i within support radius of owned particle j
+      if (absdist < rad_j[0] and status_j == PARTICLEENGINE::Owned)
+      {
+        // equal support radius for particle i and j
+        if (rad_i[0] == rad_j[0])
         {
-          // get status of neighboring particles of current type
-          PARTICLEENGINE::StatusEnum status_j = neighborStatusIt.first;
+          // evaluate kernel
+          neighborpair.Wji_ = neighborpair.Wij_;
 
-          // get reference to sub-map
-          std::map<int, PARTICLEINTERACTION::ParticlePairSPH>& neighborTypeStatusMap =
-              neighborTypeMap[status_j];
+          // evaluate first derivative of kernel
+          neighborpair.dWdrji_ = neighborpair.dWdrij_;
+        }
+        else
+        {
+          // evaluate kernel
+          neighborpair.Wji_ = kernel_->W(absdist, rad_j[0]);
 
-          // get container of neighboring particles of current particle type and state
-          PARTICLEENGINE::ParticleContainerShrdPtr container_j =
-              particlecontainerbundle->GetSpecificContainer(type_j, status_j);
-
-          // get neighbors of current type and status
-          const std::set<int>& currtypecurrstatusneighbors = neighborStatusIt.second;
-
-          // iterate over neighboring particles of current type and status
-          for (const int particle_j : currtypecurrstatusneighbors)
-          {
-            // get pointer to particle position
-            const double* pos_j =
-                container_j->GetPtrToParticleState(PARTICLEENGINE::Position, particle_j);
-
-            // vector from particle i to j
-            double r_ji[3];
-
-            // distance between particles considering periodic boundaries
-            particleengineinterface_->DistanceBetweenParticles(pos_i, pos_j, r_ji);
-
-            // absolute distance between particles
-            const double absdist =
-                std::sqrt(r_ji[0] * r_ji[0] + r_ji[1] * r_ji[1] + r_ji[2] * r_ji[2]);
-
-            // neighboring particle out of support radius
-            if (not(absdist < rad_i[0])) continue;
-
-            // get reference to current particle pair
-            ParticlePairSPH& particlepair = neighborTypeStatusMap[particle_j];
-
-            // set absolute distance between particles
-            particlepair.absdist_ = absdist;
-
-            // versor from particle j to i
-            for (int i = 0; i < 3; ++i) particlepair.e_ij_[i] = -r_ji[i] / absdist;
-
-            // evaluate kernel
-            particlepair.Wij_ = kernel_->W(absdist, rad_i[0]);
-
-            // evaluate first derivative of kernel
-            particlepair.dWdrij_ = kernel_->dWdrij(absdist, rad_i[0]);
-          }
+          // evaluate first derivative of kernel
+          neighborpair.dWdrji_ = kernel_->dWdrij(absdist, rad_j[0]);
         }
       }
     }
+  }
+}
+
+/*---------------------------------------------------------------------------*
+ | get relevant neighbor pair indices for particle types      sfuchs 04/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::SPHNeighborPairs::GetRelevantNeighborPairIndices(
+    const std::set<PARTICLEENGINE::TypeEnum>& reltypes, std::vector<int>& relindices) const
+{
+  // iterate over particle types to consider
+  for (const auto& type_i : reltypes)
+    relindices.insert(relindices.end(), indexofneighborpairs_[type_i].begin(),
+        indexofneighborpairs_[type_i].end());
+
+  // sort and erase duplicate indices of relevant neighbor pairs
+  if (reltypes.size() > 1)
+  {
+    std::sort(relindices.begin(), relindices.end());
+    relindices.erase(std::unique(relindices.begin(), relindices.end()), relindices.end());
   }
 }

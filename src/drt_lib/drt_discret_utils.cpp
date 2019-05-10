@@ -23,7 +23,7 @@
 void DRT::Discretization::ComputeNullSpaceIfNecessary(
     Teuchos::ParameterList& solveparams, bool recompute)
 {
-  // see whether we have an aztec list
+  // see whether we have a list for an iterative solver
   if ((!solveparams.isSublist("Aztec Parameters") && !solveparams.isSublist("Belos Parameters") &&
           !solveparams.isSublist("Stratimikos Parameters")) ||
       solveparams.isSublist("IFPACK Parameters"))
@@ -81,11 +81,11 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   }
   else
   {
-    dserror("no Aztec and no Belos list");
+    dserror("No suitable parameter list for iterative solver available.");
   }
 
-  // adapt ML settings (if ML preconditioner is used)
-  // see whether we have a sublist indicating usage of Trilinos::ML
+  // adapt multigrid settings (if a multigrid preconditioner is used)
+  // see whether we have a sublist indicating usage of Trilinos::ML or Trilinos::MueLu
   if (!solveparams.isSublist("ML Parameters") && !solveparams.isSublist("MueLu Parameters") &&
       !solveparams.isSublist("MueLu (Contact) Parameters") &&
       !solveparams.isSublist("MueLu (Contact2) Parameters") &&
@@ -123,7 +123,9 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
 
   // check whether all procs have at least one row element. ML cannot handle this!
   if (!NumMyRowElements())
-    dserror("Proc does not have any elements. ML is not working in this case, use ILU,...");
+    dserror(
+        "Proc does not have any elements. ML is not working in this case, use ILU,... MueLu might "
+        "work as well.");
 
   // see whether we have previously computed the nullspace
   // and recomputation is enforced
@@ -216,7 +218,7 @@ void DRT::Discretization::ComputeNullSpace(
   if (sumdimns != dimns * numproc) dserror("dimns not consistent among procs");
 
   // check if dimns is possible
-  if (dimns > 6) dserror("Nullspace size only upto 6 supported");
+  if (dimns > 10) dserror("Nullspace size only upto 10 supported");
 
   // compute nullspace for simple case: vector of ones
   if (dimns == 1 && numdf == 1)

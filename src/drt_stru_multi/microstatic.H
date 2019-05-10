@@ -1,13 +1,11 @@
 /*!----------------------------------------------------------------------
 \file microstatic.H
 
-<pre>
-Maintainer: Lena Yoshihara
-            yoshihara@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15303
-</pre>
+\brief ??
 
+\level 2
+
+\maintainer Lena Yoshihara
 *----------------------------------------------------------------------*/
 
 #ifndef STRU_MICRO_STAT_H
@@ -46,12 +44,6 @@ namespace IO
   class DiscretizationWriter;
 }
 
-
-/*!
-\brief Namespace for structural multi-scale related algorithms
-
-\author yoshihara (yoshihara@lnm.mw.tum.de)
-*/
 namespace STRUMULTI
 {
   /*!

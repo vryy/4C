@@ -23,8 +23,6 @@
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 08/2018 |
  *---------------------------------------------------------------------------*/
-#include "particle_interaction_typedefs.H"
-
 #include "../drt_particle_engine/particle_enums.H"
 #include "../drt_particle_engine/particle_typedefs.H"
 
@@ -78,7 +76,7 @@ namespace PARTICLEINTERACTION
     virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
     //! init boundary particles
-    virtual void InitBoundaryParticles(std::vector<double>& gravity) const = 0;
+    virtual void InitBoundaryParticles(std::vector<double>& gravity) = 0;
 
    protected:
     //! smoothed particle hydrodynamics specific parameter list
@@ -92,6 +90,9 @@ namespace PARTICLEINTERACTION
 
     //! neighbor pair handler
     std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs_;
+
+    //! set of boundary particle types
+    std::set<PARTICLEENGINE::TypeEnum> boundarytypes_;
   };
 
   class SPHBoundaryParticleAdami : public SPHBoundaryParticleBase
@@ -103,12 +104,23 @@ namespace PARTICLEINTERACTION
     //! virtual destructor
     virtual ~SPHBoundaryParticleAdami(){};
 
-    //! init boundary particles
-    virtual void InitBoundaryParticles(std::vector<double>& gravity) const override;
+    //! setup boundary particle handler
+    virtual void Setup(
+        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
+        const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
 
-   protected:
-    //! refresh modified states of ghosted boundary particles
-    virtual void RefreshModifiedStatesOfBoundaryParticles() const;
+    //! init boundary particles
+    virtual void InitBoundaryParticles(std::vector<double>& gravity) override;
+
+   private:
+    //! modified states of ghosted boundary particles to refresh
+    PARTICLEENGINE::StatesOfTypesToRefresh boundarystatestorefresh_;
+
+    //! contributions of neighboring particles
+    std::vector<std::vector<double>> sumj_Wij_;
+    std::vector<std::vector<double>> sumj_press_j_Wij_;
+    std::vector<std::vector<std::vector<double>>> sumj_dens_j_r_ij_Wij_;
+    std::vector<std::vector<std::vector<double>>> sumj_vel_j_Wij_;
   };
 
 }  // namespace PARTICLEINTERACTION

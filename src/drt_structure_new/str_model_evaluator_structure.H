@@ -4,26 +4,24 @@
 
 \brief Evaluation and assembly of all structure terms
 
-\maintainer Michael Hiermeier
-
-\date Aug 11, 2015
+\maintainer Matthias Mayr
 
 \level 3
-
 */
 /*-----------------------------------------------------------*/
-
 
 #ifndef STR_MODEL_EVALUATOR_STRUCTURE_H_
 #define STR_MODEL_EVALUATOR_STRUCTURE_H_
 
-#include "str_model_evaluator_generic.H"   // base class
-#include "../drt_inpar/inpar_structure.H"  // enumerators
-#include <Teuchos_RCP.hpp>
+#include "str_model_evaluator_generic.H"  // base class
 
 #include "str_elements_paramsinterface.H"  // interface to the element evaluation
 
-// forward declarations ...
+#include "../drt_inpar/inpar_structure.H"  // enumerators
+
+#include <Teuchos_RCP.hpp>
+
+// forward declarations
 class DiscretizationRuntimeVtuWriter;
 class BeamDiscretizationRuntimeVtuWriter;
 
@@ -31,6 +29,7 @@ namespace LINALG
 {
   class SparseMatrix;
 }  // namespace LINALG
+
 namespace STR
 {
   namespace MODELEVALUATOR
@@ -42,30 +41,33 @@ namespace STR
       Structure();
 
       //! destructor
-      virtual ~Structure(){};
+      virtual ~Structure() = default;
 
-      virtual void Setup();
+      void Setup() override;
 
       //! @name Derived public STR::MODELEVALUATOR::Generic methods
       //! @{
 
       //! derived
-      INPAR::STR::ModelType Type() const { return INPAR::STR::model_structure; }
+      INPAR::STR::ModelType Type() const override { return INPAR::STR::model_structure; }
 
       //! derived
-      virtual void Reset(const Epetra_Vector& x);
+      void Reset(const Epetra_Vector& x) override;
 
       //! derived
-      virtual bool EvaluateForce();
+      bool EvaluateForce() override;
 
       //! derived
-      virtual bool EvaluateStiff();
+      bool EvaluateStiff() override;
 
       //! derived
-      virtual bool EvaluateForceStiff();
+      bool EvaluateForceStiff() override;
 
       //! derived
-      virtual void PostEvaluate(){/* currently unused */};
+      void PreEvaluate() override { return; };
+
+      //! derived
+      void PostEvaluate() override { return; };
 
       /*! \brief Initialize viscous and inertial matrices
        *
@@ -77,70 +79,88 @@ namespace STR
       bool InitializeInertiaAndDamping();
 
       //! derived
-      virtual bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const;
+      bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const override;
 
       //! derived
-      virtual bool AssembleJacobian(LINALG::SparseOperator& jac, const double& timefac_np) const;
+      bool AssembleJacobian(LINALG::SparseOperator& jac, const double& timefac_np) const override;
 
       //! derived
-      virtual void WriteRestart(
-          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const;
+      void WriteRestart(
+          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       //! derived
-      virtual void ReadRestart(IO::DiscretizationReader& ioreader);
+      void ReadRestart(IO::DiscretizationReader& ioreader) override;
 
       //! derived
-      virtual void RunPreComputeX(
-          const Epetra_Vector& xold, Epetra_Vector& dir_mutable, const NOX::NLN::Group& curr_grp)
+      void RunPreComputeX(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
+          const NOX::NLN::Group& curr_grp) override
       {
         return;
       };
 
       //! derived
-      virtual void RunPostComputeX(
-          const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew);
+      void RunPostComputeX(
+          const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override;
 
       //! derived
-      virtual void RunPostIterate(const NOX::Solver::Generic& solver);
+      void RunPostIterate(const NOX::Solver::Generic& solver) override;
 
       //! derived
-      virtual void Predict(const INPAR::STR::PredEnum& pred_type);
+      void Predict(const INPAR::STR::PredEnum& pred_type) override;
 
       //! derived
-      virtual void UpdateStepState(const double& timefac_n);
+      void UpdateStepState(const double& timefac_n) override;
 
       //! derived
-      virtual void UpdateStepElement();
+      void UpdateStepElement() override;
 
       //! derived
-      void DetermineStressStrain();
+      void DetermineStressStrain() override;
 
       //! derived
-      void DetermineEnergy();
+      void DetermineEnergy() override;
+
+      /*! \brief Fill energy map in EvalData
+       *
+       *  \param disnp (in): Current displacement vector
+       *  \param velnp (in): Current velocity vector
+       *  \param global (in): If true, sum and share the result over all procs and
+       *                      save the global result. */
+      void DetermineEnergy(
+          const Epetra_Vector& disnp, const Epetra_Vector* velnp, const bool global);
+
+      /*! \brief determine the strain energy
+       *
+       *  \param disnp (in): Current displacement vector
+       *  \param global (in): If true, sum the result over all procs and
+       *                      save the global result. */
+      void DetermineStrainEnergy(const Epetra_Vector& disnp, const bool global);
 
       //! derived
       void DetermineOptionalQuantity() override;
 
-      //! derived
-      virtual void ResetStepState();
+      bool DetermineElementVolumes(const Epetra_Vector& x, Teuchos::RCP<Epetra_Vector>& ele_vols);
 
       //! derived
-      virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const;
+      void ResetStepState() override;
+
+      //! derived
+      void OutputStepState(IO::DiscretizationWriter& iowriter) const override;
 
       //! derived
       virtual void RuntimeOutputStepState() const;
 
       //! derived
-      virtual Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const;
+      Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const override;
 
       //! derived
-      virtual Teuchos::RCP<const Epetra_Vector> GetCurrentSolutionPtr() const;
+      Teuchos::RCP<const Epetra_Vector> GetCurrentSolutionPtr() const override;
 
       //! derived
-      virtual Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const;
+      Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const override;
 
       //! [derived]
-      virtual void PostOutput();
+      void PostOutput() override;
 
       //! [derived]
       virtual void EvaluateJacobianContributionsFromElementLevelForPTC();
@@ -399,6 +419,7 @@ namespace STR
      private:
       //! @name Accessors to the data container content
       //! @{
+
       //! global internal force at \f$t_{n+1}\f$
       Epetra_Vector& FintNp();
 
@@ -447,15 +468,20 @@ namespace STR
       //! structural damping matrix
       const LINALG::SparseOperator& Damp() const;
 
+      //! @}
+
      private:
       //! structural element evaluation time
       double* dt_ele_ptr_;
 
       //! mass linearization type
       enum INPAR::STR::MassLin masslin_type_;
+
       //! @}
 
-      //! @name class only variables @{
+      //! @name class only variables
+      //! @{
+
       //! structural stiffness matrix
       LINALG::SparseMatrix* stiff_ptr_;
 
@@ -472,6 +498,7 @@ namespace STR
 
       //! beam discretization runtime vtu writer
       Teuchos::RCP<BeamDiscretizationRuntimeVtuWriter> beam_vtu_writer_ptr_;
+
       //! @}
     };
 

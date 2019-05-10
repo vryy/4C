@@ -13,6 +13,7 @@
 #define BEAMCONTACTPAIR_H
 
 #include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
 
 #include "../linalg/linalg_fixedsizematrix.H"
 
@@ -27,13 +28,18 @@ namespace DRT
 {
   class Element;
 }
+namespace GEOMETRYPAIR
+{
+  class GeometryPair;
+  class GeometryEvaluationDataGlobal;
+}  // namespace GEOMETRYPAIR
+
 
 namespace BEAMINTERACTION
 {
   // forward declaration ...
   class BeamContactParams;
-  class BeamContactEvaluationData;
-
+  class BeamToSolidVtuOutputWriterBase;
 
   /*!
    \brief
@@ -55,8 +61,8 @@ namespace BEAMINTERACTION
     virtual ~BeamContactPair() {}
 
     //! Initialization
-    void Init(const Teuchos::RCP<BEAMINTERACTION::BeamContactEvaluationData> evaluation_data_ptr,
-        const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
+    virtual void Init(const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
+        const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> geometry_evaluation_data_ptr,
         std::vector<DRT::Element const*> elements);
 
     //! Setup
@@ -81,7 +87,8 @@ namespace BEAMINTERACTION
         LINALG::SerialDenseMatrix* stiffmat22) = 0;
 
     //! return appropriate internal implementation class (acts as a simple factory)
-    static Teuchos::RCP<BeamContactPair> Create(std::vector<DRT::Element const*> const& ele_ptrs);
+    static Teuchos::RCP<BeamContactPair> Create(std::vector<DRT::Element const*> const& ele_ptrs,
+        const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr);
 
     /*
     \brief Update state of translational nodal DoFs (absolute positions and tangents) of both
@@ -96,11 +103,6 @@ namespace BEAMINTERACTION
 
     inline Teuchos::RCP<BEAMINTERACTION::BeamContactParams> Params() const { return params_; }
 
-    inline Teuchos::RCP<BEAMINTERACTION::BeamContactEvaluationData> EvaluationData() const
-    {
-      return evaluationData_;
-    }
-
     /*!
     \brief Get first element
     */
@@ -110,6 +112,16 @@ namespace BEAMINTERACTION
     \brief Get second element
     */
     inline const DRT::Element* Element2() const { return element2_; };
+
+    /*!
+    \brief Get the geometry pair object. Throw error if it does not exist.
+    */
+    inline Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GeometryPair() const
+    {
+      if (geometry_pair_ == Teuchos::null)
+        dserror("The geometry pair is requested, but it is a null pointer!");
+      return geometry_pair_;
+    }
 
     //  /*!
     //  \brief Get number of contact points on this element pair
@@ -217,7 +229,53 @@ namespace BEAMINTERACTION
      *  \date 05/16 */
     virtual void PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const = 0;
 
+    /**
+     * \brief Per default it is assumed, that the contributions of a pair can be directly assembled
+     * into the global force and stiffness matrices.
+     */
+    inline virtual bool IsAssemblyDirect() const { return true; };
+
+    /**
+     * \brief Per default it is assumed, that the pair does not give any contributions to the system
+     * that have to be indirectly assembled (for example mortar like terms).
+     */
+    inline virtual bool IsAssemblyIndirect() const { return false; };
+
+    /**
+     * \brief Evaluate the mortar matrices $D$ and $M$ for this contact element pair.
+     * @param local_D (out) Local mortar matrix $D$.
+     * @param local_M (out) Local mortar matrix $M$.
+     * @param local_kappa (out) Local scaling vector.
+     * @return True if pair is in contact.
+     */
+    virtual bool EvaluateDM(LINALG::SerialDenseMatrix& local_D, LINALG::SerialDenseMatrix& local_M,
+        LINALG::SerialDenseVector& local_kappa)
+    {
+      return false;
+    }
+
+    /**
+     * \brief Add the visualization of this pair to the beam to solid vtu output writer.
+     *
+     * This is currently only implemented for beam to solid pairs, if in the future we also want to
+     * use this function in other type of pairs, the name should be adapted accordingly.
+     *
+     * @param visualization_writer (out) Object that manages all visualization related data for beam
+     * to solid pairs.
+     * @param visualization_params (in) Parameter list with possible needed data to generate the
+     * visualization in the pairs.
+     */
+    virtual void GetPairVisualization(
+        Teuchos::RCP<BeamToSolidVtuOutputWriterBase> visualization_writer,
+        const Teuchos::ParameterList& visualization_params) const
+    {
+    }
+
    protected:
+    //! Create the geometry pair for this contact pair. Per default no geometry pair is created.
+    virtual void CreateGeometryPair(const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal>
+            geometry_evaluation_data_ptr){};
+
     //! returns init state
     inline const bool& IsInit() const { return isinit_; };
 
@@ -239,12 +297,12 @@ namespace BEAMINTERACTION
     //! indicates if the Setup() function has been called
     bool issetup_;
 
+    //! pointer to the geometry pair
+    Teuchos::RCP<GEOMETRYPAIR::GeometryPair> geometry_pair_;
+
    private:
     //! beam contact parameter data container
     Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_;
-
-    //! beam contact evaluation data container
-    Teuchos::RCP<BEAMINTERACTION::BeamContactEvaluationData> evaluationData_;
 
     //! first element of interacting pair
     const DRT::Element* element1_;

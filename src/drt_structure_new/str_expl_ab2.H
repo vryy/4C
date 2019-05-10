@@ -2,9 +2,9 @@
 /*!
 \file str_expl_ab2.H
 
-\maintainer Michael Hiermeier
+\brief Adams-Bashforth-2 time integration for solid dynamics
 
-\date Aug 13, 2015
+\maintainer Michael Hiermeier
 
 \level 3
 
@@ -20,6 +20,9 @@ namespace STR
 {
   namespace EXPLICIT
   {
+    /*! \brief Adams-Bashforth-2 time integration for solid dynamics
+     *
+     */
     class AdamsBashforth2 : public Generic
     {
      public:
@@ -49,7 +52,6 @@ namespace STR
     };
   }  // namespace EXPLICIT
 }  // namespace STR
-
 
 
 #endif /* STR_EXPL_AB2_H_ */

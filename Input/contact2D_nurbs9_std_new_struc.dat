@@ -28,11 +28,9 @@ RESTART                         0
 INT_STRATEGY                    Standard
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-CONTROLNODE                     -1 -1 -1
-CONTROLTYPE                     load
 DAMPING                         Material
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta //OneStepTheta Statics
+DYNAMICTYP                      OneStepTheta
 ITERNORM                        L2
 K_DAMP                          0.5
 LOADLIN                         no
@@ -40,7 +38,7 @@ MAXITER                         500
 MAXTIME                         1
 MINITER                         0
 M_DAMP                          0.5
-NLNSOL                          fullnewton //fullnewton newtonlinuzawa
+NLNSOL                          fullnewton
 NORMCOMBI_DISPPRES              And
 NORMCOMBI_RESFDISP              And
 NORMCOMBI_RESFINCO              And

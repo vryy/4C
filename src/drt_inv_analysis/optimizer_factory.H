@@ -3,11 +3,12 @@
  \file optimizer_factory.H
  \brief factory for optimization algorithms
 
+<pre>
 \level 3
-
-\maintainer Sebastian Kehl
-             kehl@mhpc.mw.tum.de
-             089 - 289-10361
+\maintainer Sebastian Brandstaeter
+            brandstaeter@lnm.mw.tum.de
+            089 - 289-15276
+</pre>
 */
 /*----------------------------------------------------------------------*/
 #ifndef OPTIMIZER_FACTORY_H

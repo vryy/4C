@@ -1,4 +1,14 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_constr_overlapprec.H
 
+\level 1
+
+\maintainer Matthias Mayr
+
+\brief Preconditioner for FSI problems with additional constraints
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef FSI_CONSTR_OVERLAPPREC_H
 #define FSI_CONSTR_OVERLAPPREC_H

@@ -2,11 +2,11 @@
 /*!
 \file so_hex8.H
 
-\brief ToDo Add meaningful comment.
+\brief Solid Hex8 element
 
 \level 1
 
-\maintainer Michael Gee
+\maintainer Christoph Meier
 
 */
 /*----------------------------------------------------------------------*/
@@ -25,6 +25,14 @@
 #include "so_base.H"
 
 #include "../drt_lib/drt_discret.H"
+
+namespace STR
+{
+  namespace ELEMENTS
+  {
+    enum EvalErrorFlag : int;
+  }  // namespace ELEMENTS
+}  // namespace STR
 
 // Several parameters which are fixed for Solid Hex8
 const int NUMNOD_SOH8 = 8;   ///< number of nodes
@@ -520,11 +528,19 @@ namespace DRT
        *  \author hiermeier \date 12/17 */
       const double* soh8_get_coordinate_of_gausspoints(const unsigned dim) const;
 
+      /** \brief Evaluate the determinant of the current jacobian at each element
+       *  corner and return the smallest value */
+      double soh8_get_min_det_jac_at_corners(
+          const LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr) const;
+
+      void soh8_error_handling(const double& det_curr, Teuchos::ParameterList& params,
+          const int line_id, const STR::ELEMENTS::EvalErrorFlag flag);
+
       //! init the inverse of the jacobian and its determinant in the material configuration
       virtual void InitJacobianMapping();
 
       //! init the inverse of the jacobian and its determinant in the material configuration
-      virtual void InitJacobianMapping(std::vector<double>& dispmat);
+      virtual int InitJacobianMapping(std::vector<double>& dispmat);
 
       //! Calculate nonlinear stiffness and mass matrix
       virtual void nlnstiffmass(std::vector<int>& lm,  ///< location matrix

@@ -5,10 +5,10 @@
 
 \level 1
 
-\maintainer Rui Fang
-            fang@lnm.mw.tum.de
+\maintainer Anh-Tu Vuong
+            vuong@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
-            089 - 289-15251
+            089 - 289-15237
 */
 /*----------------------------------------------------------------------*/
 
@@ -841,7 +841,7 @@ void SCATRA::ScaTraTimIntImpl::OutputDomainOrBoundaryIntegrals(const std::string
     // print header
     if (conditions.size() > 0 and myrank_ == 0)
     {
-      std::cout << label + " integrals:" << std::endl;
+      std::cout << std::endl << label + " integrals:" << std::endl;
       std::cout << "+----+-------------------------+" << std::endl;
       std::cout << "| ID | value of integral       |" << std::endl;
     }
@@ -864,13 +864,13 @@ void SCATRA::ScaTraTimIntImpl::OutputDomainOrBoundaryIntegrals(const std::string
       if (myrank_ == 0)
       {
         // print results to screen
-        std::cout << "| " << std::setw(2) << condid << " |         " << std::setw(6)
-                  << std::setprecision(3) << std::fixed << (*integralvalue)(0) << "          |"
+        std::cout << "| " << std::setw(2) << condid << " |        " << std::setw(6)
+                  << std::scientific << std::setprecision(3) << (*integralvalue)(0) << "        |"
                   << std::endl;
 
         // set file name
         const std::string filename(
-            problem_->OutputControlFile()->FileName() + "." + label + "_integrals.txt");
+            problem_->OutputControlFile()->FileName() + "." + label + "_integrals.csv");
 
         // open file in appropriate mode and write header at beginning
         std::ofstream file;
@@ -883,8 +883,8 @@ void SCATRA::ScaTraTimIntImpl::OutputDomainOrBoundaryIntegrals(const std::string
           file.open(filename.c_str(), std::fstream::app);
 
         // write value of current domain or boundary integral to file
-        file << Step() << "," << Time() << "," << condid << ',' << std::setprecision(16)
-             << std::fixed << (*integralvalue)(0) << std::endl;
+        file << Step() << "," << Time() << "," << condid << ',' << std::scientific
+             << std::setprecision(6) << (*integralvalue)(0) << std::endl;
 
         // close file
         file.close();
@@ -892,7 +892,8 @@ void SCATRA::ScaTraTimIntImpl::OutputDomainOrBoundaryIntegrals(const std::string
     }    // loop over all conditions
 
     // print finish line to screen
-    if (myrank_ == 0) std::cout << "+----+-------------------------+" << std::endl << std::endl;
+    if (conditions.size() and myrank_ == 0)
+      std::cout << "+----+-------------------------+" << std::endl;
   }  // check whether output is applicable
 
   return;

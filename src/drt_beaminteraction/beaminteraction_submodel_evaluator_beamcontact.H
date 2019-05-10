@@ -4,7 +4,7 @@
 
 \brief class for submodel beam contact
 
-\maintainer Jonas Eichinger, Maximilian Grill
+\maintainer Maximilian Grill
 
 \level 3
 
@@ -21,6 +21,11 @@
 
 // forward declaration ...
 class RuntimeVtpWriter;
+namespace GEOMETRYPAIR
+{
+  class GeometryEvaluationDataGlobal;
+}
+
 
 namespace DRT
 {
@@ -28,12 +33,14 @@ namespace DRT
 }
 namespace BEAMINTERACTION
 {
-  class BeamContactEvaluationData;
   class BeamContactParams;
   class BeamContactPair;
+  class BeamToSolidVolumeMeshtyingVtkOutputWriter;
 
   namespace SUBMODELEVALUATOR
   {
+    class BeamContactAssemblyManager;
+
     class BeamContact : public Generic
     {
      public:
@@ -124,6 +131,25 @@ namespace BEAMINTERACTION
       //! derived
       virtual void GetHalfInteractionDistance(double& half_interaction_distance);
 
+      /**
+       * \brief Return the assembly managers in this submodel evaluator.
+       */
+      inline const std::vector<
+          Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager>>&
+      GetAssemblyManagers() const
+      {
+        return assembly_managers_;
+      }
+
+      /**
+       * \brief Return the geometry pairs in this submodel evaluator.
+       */
+      inline const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& GetContactPairs()
+          const
+      {
+        return contact_elepairs_;
+      }
+
       //! @}
 
      protected:
@@ -200,8 +226,8 @@ namespace BEAMINTERACTION
       //! data container holding all beam contact related parameters
       Teuchos::RCP<BEAMINTERACTION::BeamContactParams> beam_contact_params_ptr_;
 
-      //! data container holding all beam contact related evaluation data
-      Teuchos::RCP<BEAMINTERACTION::BeamContactEvaluationData> beam_contact_evaluation_data_ptr_;
+      //! data container holding all geometry related evaluation data
+      Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> geometry_evaluation_data_ptr_;
 
       //! element types considered for beam to ? contact
       std::vector<BINSTRATEGY::UTILS::BinContentType> contactelementtypes_;
@@ -209,11 +235,19 @@ namespace BEAMINTERACTION
       //! interacting pairs of beam elements that might exert forces on each other
       std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> contact_elepairs_;
 
+      //! Objects to evaluate system contributions for stiffness and force terms.
+      std::vector<Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager>>
+          assembly_managers_;
+
       //! mapping beam ele (elegid) to set of spatially proximal eles (pointer to elements)
       std::map<int, std::set<DRT::Element*>> nearby_elements_map_;
 
       //! runtime vtp writer for visualization of contact forces
       Teuchos::RCP<RuntimeVtpWriter> vtp_writer_ptr_;
+
+      //! This object handles all beam to solid volume related visualization output.
+      Teuchos::RCP<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter>
+          beam_to_solid_volume_meshtying_vtk_writer_ptr_;
     };
 
   }  // namespace SUBMODELEVALUATOR

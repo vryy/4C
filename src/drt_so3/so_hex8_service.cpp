@@ -1,11 +1,11 @@
 /*!----------------------------------------------------------------------
 \file so_hex8_service.cpp
 
-\brief ToDo Add meaningful comment.
+\brief Service routines for Solid Hex8 element
 
 \level 1
 
-\maintainer Michael Gee
+\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 #include "so_hex8.H"

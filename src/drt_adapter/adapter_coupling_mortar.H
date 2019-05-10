@@ -7,7 +7,7 @@
 \level 2
 
 <pre>
-\maintainer Rui Fang
+\maintainer Anh-Tu Vuong
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -371,7 +371,7 @@ namespace ADAPTER
     /// Master side mortar matrix \f$M\f$
     Teuchos::RCP<LINALG::SparseMatrix> M_;
 
-    /// Mortar projection operator \f$P=\D^{-1}M\f$
+    /// Mortar projection operator \f$P=D^{-1}M\f$
     Teuchos::RCP<LINALG::SparseMatrix> P_;
   };
 }  // namespace ADAPTER

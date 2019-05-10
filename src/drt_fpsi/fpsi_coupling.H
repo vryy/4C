@@ -5,12 +5,9 @@
 \brief \brief FPSI Coupling Object: Holds all objects on the Fluid-Poro-Interface and evaluates the
 Fluid-Poro-Coupling Matrixes!
 
-<pre>
-Maintainer: Ager Christoph & Andreas Rauch
-            ager@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289 15249
-</pre>
+\maintainer Christoph Ager
+
+\level 3
 */
 /*----------------------------------------------------------------------*/
 
@@ -19,35 +16,33 @@ Maintainer: Ager Christoph & Andreas Rauch
 
 // ALE includes
 #include "../drt_ale/ale_utils_mapextractor.H"
-//
+
 // ADAPTER includes
 #include "../drt_adapter/adapter_coupling.H"
-//
+
 // LINALG includes
 #include "../linalg/linalg_utils.H"
 
 // FLUID includes
 #include "../drt_fluid/fluid_utils_mapextractor.H"
-//
-///*----------------------------------------------------------------------*
-// | forward declarations                                                  |
-// *----------------------------------------------------------------------*/
+
+// forward declarations
 namespace LINALG
 {
   class SparseMatrix;
 }
-//
+
 namespace POROELAST
 {
   class Monolithic;
 }
-//
+
 namespace ADAPTER
 {
   class Fluid;
   class AleFpsiWrapper;
 }  // namespace ADAPTER
-//
+
 namespace FSI
 {
   namespace UTILS

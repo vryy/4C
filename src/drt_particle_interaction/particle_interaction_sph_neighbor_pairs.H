@@ -23,12 +23,10 @@
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 08/2018 |
  *---------------------------------------------------------------------------*/
-#include "particle_interaction_typedefs.H"
-
 #include "../drt_particle_engine/particle_enums.H"
 #include "../drt_particle_engine/particle_typedefs.H"
 
-#include "particle_interaction_particle_pair.H"
+#include "particle_interaction_sph_neighbor_pair_struct.H"
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                       sfuchs 08/2018 |
@@ -41,12 +39,23 @@ namespace IO
 namespace PARTICLEENGINE
 {
   class ParticleEngineInterface;
-}
+  class ParticleContainerBundle;
+}  // namespace PARTICLEENGINE
 
 namespace PARTICLEINTERACTION
 {
   class SPHKernelBase;
 }
+
+/*---------------------------------------------------------------------------*
+ | type definitions                                           sfuchs 01/2019 |
+ *---------------------------------------------------------------------------*/
+namespace PARTICLEINTERACTION
+{
+  typedef std::vector<PARTICLEINTERACTION::SPHNeighborPair> SPHNeighborPairData;
+
+  typedef std::vector<std::vector<int>> SPHIndexOfNeighborPairs;
+}  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 08/2018 |
@@ -60,34 +69,53 @@ namespace PARTICLEINTERACTION
     explicit SPHNeighborPairs();
 
     //! virtual destructor
-    virtual ~SPHNeighborPairs(){};
+    ~SPHNeighborPairs(){};
 
     //! init neighbor pair handler
-    virtual void Init();
+    void Init();
 
     //! setup neighbor pair handler
-    virtual void Setup(
+    void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel);
 
     //! write restart of neighbor pair handler
-    virtual void WriteRestart(const int step, const double time) const;
+    void WriteRestart(const int step, const double time) const;
 
     //! read restart of neighbor pair handler
-    virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
+    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
-    //! get reference to map holding neighbor pairs
-    const SPHNeighborPairsMap& GetRefToNeighborPairsMap() const { return neighborpairsmap_; };
+    //! get reference to neighbor pair data
+    inline const SPHNeighborPairData& GetRefToNeighborPairData() const
+    {
+      return neighborpairdata_;
+    };
+
+    //! get reference to index of neighbor pairs for each type
+    inline const SPHIndexOfNeighborPairs& GetRefToIndexOfNeighborPairs() const
+    {
+      return indexofneighborpairs_;
+    };
 
     //! evaluate neighbor pairs
-    virtual void EvaluateNeighborPairs();
+    void EvaluateNeighborPairs();
+
+    //! get relevant neighbor pair indices for particle types
+    void GetRelevantNeighborPairIndices(
+        const std::set<PARTICLEENGINE::TypeEnum>& reltypes, std::vector<int>& relindices) const;
 
    private:
-    //! map of neighbor pairs with evaluated absolute distance, versor and kernel
-    PARTICLEINTERACTION::SPHNeighborPairsMap neighborpairsmap_;
+    //! neighbor pair data with evaluated quantities
+    SPHNeighborPairData neighborpairdata_;
+
+    //! index of neighbor pairs for each type
+    SPHIndexOfNeighborPairs indexofneighborpairs_;
 
     //! interface to particle engine
     std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface_;
+
+    //! particle container bundle
+    PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle_;
 
     //! kernel handler
     std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel_;

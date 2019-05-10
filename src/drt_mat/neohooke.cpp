@@ -9,9 +9,7 @@
 \level 3
 
 <pre>
-\maintainer Lena Yoshihara
-            yoshihara@lnm.mw.tum.de
-            089/289 15255
+\maintainer Fabian Braeu
 </pre>
 \param  Epetra_SerialDenseVector* glstrain      (i) Green-Lagrange strains
 \param  Epetra_SerialDenseVector* stress        (o) ele stress vector

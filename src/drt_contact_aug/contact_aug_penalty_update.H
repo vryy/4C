@@ -18,8 +18,10 @@ parameter cn
 
 #include <Teuchos_RCP.hpp>
 
+// forward declarations
 class Epetra_Vector;
 class Epetra_Map;
+
 namespace INPAR
 {
   namespace STR
@@ -31,14 +33,17 @@ namespace INPAR
     enum class PenaltyUpdate : char;
   }  // namespace CONTACT
 }  // namespace INPAR
+
 namespace LINALG
 {
   class SparseMatrix;
 }  // namespace LINALG
+
 namespace Teuchos
 {
   class ParameterList;
 }  // namespace Teuchos
+
 namespace CONTACT
 {
   class ParamsInterface;
@@ -48,30 +53,74 @@ namespace CONTACT
     class DataContainer;
 
     /*--------------------------------------------------------------------------*/
+    /** \brief Base class for all strategies concerning the cn parameter correction
+     *
+     *  These routines have a huge impact on the performance of the SteepestAscent
+     *  contact strategies.
+     *
+     *  \author hiermeier */
     class PenaltyUpdate
     {
      protected:
       // internal forward declaration
       struct State;
 
+      /// current status of the cN value
+      enum class Status
+      {
+        unevaluated,  ///< the update is unevaluated
+        unchanged,    ///< cn stays unchanged
+        increased,    ///< cn has been increased
+        decreased     ///< cn has been decreased
+      };
+
+      /// convert to string
+      inline std::string Status2String(enum Status status) const
+      {
+        switch (status)
+        {
+          case Status::unevaluated:
+            return "Status::unevaluated";
+          case Status::unchanged:
+            return "Status::unchanged";
+          case Status::increased:
+            return "Status::increased";
+          case Status::decreased:
+            return "Status::decreased";
+          default:
+            return "Status::UNKNOWN";
+        }
+      }
+
      public:
+      /// create a new penalty update object
       static PenaltyUpdate* Create(const Teuchos::ParameterList& sa_params);
+
+      /** create a new penalty update object and use the data of another
+       *  penalty update object to set it up. */
       static PenaltyUpdate* Create(
           const INPAR::CONTACT::PenaltyUpdate update_type, const PenaltyUpdate* pu_src = NULL);
 
      public:
+      /// default constructor
       PenaltyUpdate() : state_(*this){/*empty*/};
 
+      /// use default copy constructor
       PenaltyUpdate(const PenaltyUpdate& pu) = default;
 
+      /// destructor
       virtual ~PenaltyUpdate(){};
 
+      /// return the type enum
       virtual INPAR::CONTACT::PenaltyUpdate Type() const = 0;
 
+      /// initialize the penalty update object
       void Init(Strategy* const strategy, DataContainer* const data);
 
+      /// update the contact regularization parameter (increase)
       void Update(const CONTACT::ParamsInterface& cparams);
 
+      /// update the state in this object
       virtual void SetState(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
           const Epetra_Vector& dir);
 
@@ -81,31 +130,54 @@ namespace CONTACT
        * (interpolation strategy on the pages 132 and 133). -- hiermeier 03/17 */
       virtual double ScaleDirection(Epetra_Vector& dir) { return 1.0; };
 
+      /// perform a possible decrease of the regularization parameter
+      void Decrease(const CONTACT::ParamsInterface& cparams);
+
+      /// print the update
       void PrintUpdate(std::ostream& os) const;
 
+      /// print info about the stored state
       void PrintInfo(std::ostream& os) const;
 
      protected:
+      /// access the structural stiffness matrix
       Teuchos::RCP<const LINALG::SparseMatrix> GetStructuralStiffnessMatrix(
           const CONTACT::ParamsInterface& cparams) const;
 
+      /// access the right hand side vector of the entire problem
       Teuchos::RCP<const Epetra_Vector> GetProblemRhs(const CONTACT::ParamsInterface& cparams,
           const std::vector<INPAR::STR::ModelType>* without_these_models) const;
 
+      /// do stuff before the update
       virtual void PreUpdate(){/* empty */};
 
-      virtual void Execute(const CONTACT::ParamsInterface& cparams) = 0;
+      /// execute the update/increase
+      virtual Status Execute(const CONTACT::ParamsInterface& cparams) = 0;
 
+      /// do stuff after the update
       virtual void PostUpdate();
 
+      /// execute the decrease
+      virtual Status ExecuteDecrease(const CONTACT::ParamsInterface& cparams);
+
+      /// do stuff after a possible decrease
+      virtual void PostDecrease();
+
+      /// reset class members
+      void Reset();
+
+      /// Throw if Init() has not been called
       void ThrowIfNotInitialized() const;
 
+      /// access the surrounding strategy
       AUG::Strategy& Strategy() { return *strategy_ptr_; };
       const AUG::Strategy& Strategy() const { return *strategy_ptr_; };
+
+      /// access the data container of the surrounding strategy
       DataContainer& Data() { return *data_ptr_; };
       const DataContainer& Data() const { return *data_ptr_; };
 
-      /** \brief Evaluate the directional derivative of the consistently computed
+      /** Evaluate the directional derivative of the consistently computed
        *  gradient of the weighted gap w.r.t. to the current displ. solution
        *  increment
        *
@@ -116,7 +188,7 @@ namespace CONTACT
        */
       Teuchos::RCP<const Epetra_Vector> Get_DGapN(const Epetra_Vector& dincr_slma) const;
 
-      /** \brief Evaluate the directional derivative of the potentially
+      /** Evaluate the directional derivative of the potentially
        *  inconsistently computed gradient of the weighted gap w.r.t. to the
        *  current displ. solution increment
        *
@@ -128,15 +200,22 @@ namespace CONTACT
       Teuchos::RCP<const Epetra_Vector> Get_inconsistent_DGapN(
           const Epetra_Vector& dincr_slma) const;
 
+      /// access the state container
       const State& GetState() const { return state_; }
+
+      /// access the ratio variable (cn_new / cn_old)
       double& Ratio() { return ratio_; };
       double Ratio() const { return ratio_; };
 
      protected:
+      /*----------------------------------------------------------------------*/
+      /// internal state container
       struct State
       {
+        /// constructor
         State(PenaltyUpdate& pu) : pu_(pu){/* empty */};
 
+        /// copy constructor
         State(const State& state)
             : full_direction_(Teuchos::rcp(state.full_direction_.get(), false)),
               xold_(Teuchos::rcp(state.xold_.get(), false)),
@@ -147,47 +226,81 @@ namespace CONTACT
               gn_dgn_(state.gn_dgn_),
               pu_(state.pu_){/* empty */};
 
+        /// set state
         void Set(const Epetra_Vector& xold, const Epetra_Vector& dir,
             const CONTACT::AUG::DataContainer& data);
 
+        /// get direction
         const Epetra_Vector& GetDirection() const;
 
+        /// access previously accepted state
         const Epetra_Vector& GetPreviouslyAcceptedState() const;
 
+        /// access weighted gap vector
         const Epetra_Vector& GetWGap() const;
 
+        /// access tributary area vector (active nodes)
         const Epetra_Vector& GetActiveTributaryArea() const;
 
+        /// access tributary area vector (inactive nodes)
         const Epetra_Vector& GetInactiveTributaryArea() const;
 
+        /// reset the state variables
         void Reset();
 
+        /// print the state
         void Print(std::ostream& os) const;
 
+        /// current full direction vector
         Teuchos::RCP<const Epetra_Vector> full_direction_ = Teuchos::null;
+
+        /// old state vector
         Teuchos::RCP<const Epetra_Vector> xold_ = Teuchos::null;
+
+        /// weighted gap vector
         Teuchos::RCP<const Epetra_Vector> wgap_ = Teuchos::null;
+
+        /// tributary area vector (active nodes)
         Teuchos::RCP<const Epetra_Vector> tributary_area_active_ = Teuchos::null;
+
+        /// tributary area vector (inactive nodes)
         Teuchos::RCP<const Epetra_Vector> tributary_area_inactive_ = Teuchos::null;
 
+        /// squared l2-norm of the active weighted gap
         double gn_gn_ = 0.0;
+
+        /// scalar product of the weighted gap and its directional derivative
         double gn_dgn_ = 0.0;
 
+        /// call-back
         PenaltyUpdate& pu_;
       };
 
      private:
+      /// has Init() been called?
       bool isinit_ = false;
+
+      /// call-back to the surrounding strategy
       AUG::Strategy* strategy_ptr_ = NULL;
+
+      /// container of the surrounding strategy
       DataContainer* data_ptr_ = NULL;
 
+      /// internal state object (see container description)
       State state_;
 
+      /// status of this updating strategy
+      Status status_ = Status::unevaluated;
+
+      /// l2-norm of the current direction
       double dir_norm2_ = 0.0;
+
+      /// ratio of new and old cn value
       double ratio_ = 0.0;
     };
 
     /*--------------------------------------------------------------------------*/
+    /// empty correction strategy
     class PenaltyUpdate_Empty : public PenaltyUpdate
     {
      public:
@@ -197,60 +310,21 @@ namespace CONTACT
 
       PenaltyUpdate_Empty(const PenaltyUpdate_Empty& pu) = delete;
 
-      virtual ~PenaltyUpdate_Empty(){};
+      ~PenaltyUpdate_Empty() override{};
 
-      virtual INPAR::CONTACT::PenaltyUpdate Type() const;
+      INPAR::CONTACT::PenaltyUpdate Type() const override;
 
      protected:
-      virtual void Execute(const CONTACT::ParamsInterface& cparams){/* empty */};
+      Status Execute(const CONTACT::ParamsInterface& cparams) override
+      {
+        return Status::unchanged;
+      };
     };
 
     /*--------------------------------------------------------------------------*/
-    class PenaltyUpdate_LagrMultiplierGapRatio : public PenaltyUpdate
-    {
-     public:
-      PenaltyUpdate_LagrMultiplierGapRatio() = default;
-
-      explicit PenaltyUpdate_LagrMultiplierGapRatio(const PenaltyUpdate& pu)
-          : PenaltyUpdate(pu){/* empty */};
-
-      PenaltyUpdate_LagrMultiplierGapRatio(const PenaltyUpdate_LagrMultiplierGapRatio& pu) = delete;
-
-      virtual ~PenaltyUpdate_LagrMultiplierGapRatio(){};
-
-      virtual INPAR::CONTACT::PenaltyUpdate Type() const;
-
-     protected:
-      virtual void Execute(const CONTACT::ParamsInterface& cparams);
-
-     private:
-      void Print2Screen(const double constr_violation, const double old_constr_violation,
-          const double cn_max, const double cn_new) const;
-    };
-
-    /*--------------------------------------------------------------------------*/
-    class PenaltyUpdate_Complementarity : public PenaltyUpdate
-    {
-     public:
-      PenaltyUpdate_Complementarity() = default;
-
-      explicit PenaltyUpdate_Complementarity(const PenaltyUpdate& pu)
-          : PenaltyUpdate(pu){/* empty */};
-
-      virtual ~PenaltyUpdate_Complementarity(){};
-
-      virtual INPAR::CONTACT::PenaltyUpdate Type() const;
-
-     protected:
-      virtual void Execute(const CONTACT::ParamsInterface& cparams);
-
-      virtual double ScaleDirection(Epetra_Vector& dir);
-
-      virtual void SetState(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
-          const Epetra_Vector& dir);
-    };
-
-    /*--------------------------------------------------------------------------*/
+    /** \brief sufficient linear reduction correction strategy
+     *
+     *  \author hiermeier */
     class PenaltyUpdate_SufficientLinReduction : public PenaltyUpdate
     {
      public:
@@ -261,21 +335,30 @@ namespace CONTACT
 
       PenaltyUpdate_SufficientLinReduction(const PenaltyUpdate_SufficientLinReduction& pu) = delete;
 
-      virtual ~PenaltyUpdate_SufficientLinReduction(){};
+      ~PenaltyUpdate_SufficientLinReduction() override{};
 
-      virtual INPAR::CONTACT::PenaltyUpdate Type() const;
+      INPAR::CONTACT::PenaltyUpdate Type() const override;
 
      protected:
-      virtual void Execute(const CONTACT::ParamsInterface& cparams);
+      Status Execute(const CONTACT::ParamsInterface& cparams) override;
 
-      virtual void SetState(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
-          const Epetra_Vector& dir);
+      Status ExecuteDecrease(const CONTACT::ParamsInterface& cparams) override;
+
+      void SetState(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
+          const Epetra_Vector& dir) override;
 
      private:
-      double GammaTheta() const;
+      /// return the \f$\beta^{c_{\mathrm{N}}}_{\Theta}\f$ parameter set by the user
+      double BetaTheta() const;
+
+      /// return the \f$\beta^{c_{\mathrm{N}}}_{\Theta\mathrm{crit}}\f$ parameter set by the user
+      double BetaThetaDecrease() const;
     };
 
     /*--------------------------------------------------------------------------*/
+    /** \brief sufficient angle correction strategy
+     *
+     *  \author hiermeier */
     class PenaltyUpdate_SufficientAngle : public PenaltyUpdate
     {
      public:
@@ -286,18 +369,19 @@ namespace CONTACT
 
       PenaltyUpdate_SufficientAngle(const PenaltyUpdate_SufficientAngle& pu) = delete;
 
-      virtual ~PenaltyUpdate_SufficientAngle(){};
+      ~PenaltyUpdate_SufficientAngle() override{};
 
-      virtual INPAR::CONTACT::PenaltyUpdate Type() const;
+      INPAR::CONTACT::PenaltyUpdate Type() const override;
 
      protected:
-      virtual void Execute(const CONTACT::ParamsInterface& cparams);
+      Status Execute(const CONTACT::ParamsInterface& cparams) override;
 
-      virtual void SetState(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
-          const Epetra_Vector& dir);
+      void SetState(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
+          const Epetra_Vector& dir) override;
 
      private:
-      double GammaAngle() const;
+      /// return the \f$\beta^{c_{\mathrm{N}}}_{\varphi}\f$ parameter set by the user
+      double BetaAngle() const;
     };
 
   }  // namespace AUG

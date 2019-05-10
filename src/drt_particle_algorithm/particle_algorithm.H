@@ -34,7 +34,8 @@ namespace PARTICLEALGORITHM
 {
   class TimInt;
   class GravityHandler;
-  class ResultTest;
+  class ViscousDampingHandler;
+  class WallHandlerBase;
 }  // namespace PARTICLEALGORITHM
 
 namespace PARTICLEINTERACTION
@@ -88,12 +89,15 @@ namespace PARTICLEALGORITHM
     //! output particle time step
     void Output() const;
 
-    //! create result test
-    std::shared_ptr<DRT::ResultTest> CreateResultTest();
+    //! create particle field specific result test objects
+    std::vector<std::shared_ptr<DRT::ResultTest>> CreateResultTests();
 
    private:
     //! init particle engine
     void InitParticleEngine();
+
+    //! init particle wall handler
+    void InitParticleWall();
 
     //! init particle time integration
     void InitParticleTimeIntegration();
@@ -103,6 +107,9 @@ namespace PARTICLEALGORITHM
 
     //! init particle gravity handler
     void InitParticleGravity();
+
+    //! init viscous damping handler
+    void InitViscousDamping();
 
     //! generate initial particles
     void GenerateInitialParticles();
@@ -116,6 +123,9 @@ namespace PARTICLEALGORITHM
     //! setup initial particles
     void SetupInitialParticles();
 
+    //! setup initial wall distribution
+    void SetupInitalWallDistribution();
+
     //! setup initial states
     void SetupInitialStates();
 
@@ -128,8 +138,8 @@ namespace PARTICLEALGORITHM
     //! check particle transfer including bin size safety checks
     bool CheckParticleTransfer();
 
-    //! store particle positions after transfer of particles
-    void StorePositionsAfterParticleTransfer();
+    //! get max particle position increment since last transfer
+    void GetMaxParticlePositionIncrement(double& allprocmaxpositionincrement);
 
     //! check load balance
     bool CheckLoadBalancing();
@@ -155,6 +165,9 @@ namespace PARTICLEALGORITHM
     //! particle engine
     std::shared_ptr<PARTICLEENGINE::ParticleEngine> particleengine_;
 
+    //! particle wall handler
+    std::shared_ptr<PARTICLEALGORITHM::WallHandlerBase> particlewall_;
+
     //! particle time integration
     std::unique_ptr<PARTICLEALGORITHM::TimInt> particletimint_;
 
@@ -164,14 +177,14 @@ namespace PARTICLEALGORITHM
     //! particle gravity handler
     std::unique_ptr<PARTICLEALGORITHM::GravityHandler> particlegravity_;
 
+    //! particle viscous damping handler
+    std::unique_ptr<PARTICLEALGORITHM::ViscousDampingHandler> viscousdamping_;
+
     //! map of particle types and corresponding states
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>> particlestatestotypes_;
 
     //! vector of initial or generated particles to distribute
     std::vector<PARTICLEENGINE::ParticleObjShrdPtr> particlestodistribute_;
-
-    //! particle positions of all types after last transfer of particles
-    std::map<PARTICLEENGINE::TypeEnum, std::vector<double>> positionsafterlasttransfer_;
 
     //! number of particles on this processor after last load balance
     int numparticlesafterlastloadbalance_;

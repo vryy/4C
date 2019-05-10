@@ -9,10 +9,10 @@ Pack, Unpack, NumDofPerNode etc.
 <pre>
 \level 1
 
-\maintainer Rui Fang
-            fang@lnm.mw.tum.de
+\maintainer Anh-Tu Vuong
+            vuong@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
-            089 - 289-15251
+            089 - 289-15237
 </pre>
 */
 #ifndef DRT_SCATRA_ELEMENT_H

@@ -1,4 +1,4 @@
-// Maintainer: Michael Hiermeier
+// Maintainer: Matthias Mayr
 ==================================================================
                   General Data File BACI
 ==================================================================
@@ -55,9 +55,8 @@ TIMEINIT                        0
 MAXTIME                         1.0
 STC_SCALING                     no
 STC_LAYER                       1
-NLNSOL                          fullnewton // noxnln, fullnewton
-MATERIALTANGENT                 analytical // finitedifferences, analytical
-CONTROLNODE                     -1 -1 -1
+NLNSOL                          fullnewton
+MATERIALTANGENT                 analytical
 LOADLIN                         No
 MASSLIN                         No
 NEGLECTINERTIA                  No
@@ -79,20 +78,17 @@ NUMGP_PER_DIM                   4
 TRIANGULATION                   Delaunay
 ----------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
-STRATEGY                        StdLagrange // Combo
+STRATEGY                        StdLagrange
 SYSTEM                          SaddlePoint
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  100
 SEMI_SMOOTH_CT                  100
 CPP_NORMALS                     No
 ------------------------------------------CONTACT DYNAMIC/AUGMENTED
-PRINT_LINEAR_CONSERVATION       No // Yes
-PRINT_ANGULAR_CONSERVATION      No // Yes
-VARIATIONAL_APPROACH            complete // complete, incomplete
+PRINT_LINEAR_CONSERVATION       No
+PRINT_ANGULAR_CONSERVATION      No
+VARIATIONAL_APPROACH            complete
 ASSEMBLE_STRATEGY               node_based
----------------------------CONTACT DYNAMIC/AUGMENTED/STEEPESTASCENT
-CN_UPPER_BOUND                  1.79769e+308
-PENALTY_UPDATE                  Complementarity
 ------------------------------------CONTACT DYNAMIC/AUGMENTED/COMBO
 STRATEGY_0                      SteepestAscent
 STRATEGY_1                      StdLagrange
@@ -423,14 +419,5 @@ NODE       125 COORD  5.0000000000000000e+00  0.0000000000000000e+00  0.00000000
    99 WALL QUAD4  108 109 120 119    MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
    100 WALL QUAD4  109 110 121 120    MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
    101 WALL QUAD4  122 123 124 125    MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------LUBRICATION ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
-------------------------------------------------TRANSPORT2 ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------ACOUSTIC ELEMENTS
----------------------------------------------------CELL ELEMENTS
----------------------------------------------------CELLSCATRA ELEMENTS
 ---------------------------------------------------------------END
 // END

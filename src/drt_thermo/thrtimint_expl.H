@@ -66,7 +66,11 @@ namespace THR
 
     //! Solve dynamic equilibrium
     //! This is a general wrapper around the specific techniques.
-    virtual void Solve() { IntegrateStep(); }
+    virtual INPAR::THR::ConvergenceStatus Solve()
+    {
+      IntegrateStep();
+      return INPAR::THR::conv_success;
+    }
 
     //! build linear system tangent matrix, rhs/force residual
     //! Monolithic TSI accesses the linearised thermo problem

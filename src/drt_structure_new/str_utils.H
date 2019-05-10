@@ -4,9 +4,7 @@
 
 \brief Utility methods for the structural time integration.
 
-\maintainer Michael Hiermeier
-
-\date Dec 2, 2015
+\maintainer Matthias Mayr
 
 \level 3
 
@@ -28,12 +26,14 @@ namespace LINALG
 {
   class Solver;
 }  // namespace LINALG
+
 namespace NOX
 {
   namespace Epetra
   {
     class Scaling;
   }
+
   namespace NLN
   {
     namespace CONSTRAINT
@@ -55,6 +55,7 @@ namespace STR
     class BaseDataSDyn;
     class BaseDataGlobalState;
   }  // namespace TIMINT
+
   namespace NLN
   {
     //! Convert the structural vector types to a corresponding nox norm type
@@ -138,6 +139,10 @@ namespace STR
     enum NOX::NLN::OptimizationProblemType OptimizationType(
         const std::vector<enum NOX::NLN::SolutionType>& soltypes);
 
+    /// convert structure condition number type to a nox condition number type
+    NOX::NLN::LinSystem::ConditionNumber Convert2NoxConditionNumberType(
+        const INPAR::STR::ConditionNumber stype);
+
     //! Set the constraint interfaces
     void CreateConstraintInterfaces(
         std::map<enum NOX::NLN::SolutionType,
@@ -154,6 +159,21 @@ namespace STR
     void CreateScaling(Teuchos::RCP<NOX::Epetra::Scaling>& iscale,
         STR::TIMINT::BaseDataSDyn DataSDyn, STR::TIMINT::BaseDataGlobalState GState);
   }  // namespace NLN
+
+  namespace TIMINT
+  {
+    /*! \brief Get time integration weight for contribution from previous time step
+     *
+     * The weight of the previous time step in linear interpoliation between \f$t_n\f$
+     * and \f$t_{n+1}\f$ depends on the time integration scheme.
+     * We select the time integration factor based on the user's choice of time intergation
+     * scheme.
+     *
+     * @return Time integration factor
+     */
+    double GetTimIntFactor();
+
+  }  // namespace TIMINT
 }  // namespace STR
 
 

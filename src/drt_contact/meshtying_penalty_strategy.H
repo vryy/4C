@@ -34,16 +34,25 @@ namespace CONTACT
     /*!
     \brief Standard Constructor
 
+    \param[in] DofRowMap Dof row map of underlying problem
+    \param[in] NodeRowMap Node row map of underlying problem
+    \param[in] params List of contact/parameters
+    \param[in] interface All contact interface objects
+    \param[in] spatialDim Spatial dimension of the problem
+    \param[in] comm Communicator
+    \param[in] alphaf Mid-point for Generalized-alpha time integration
+    \param[in] maxdof Highest DOF number in global problem
     */
     MtPenaltyStrategy(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
         Teuchos::ParameterList params, std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface,
-        int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
+        const int spatialDim, const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf,
+        const int maxdof);
 
     /*!
     \brief Destructor
 
     */
-    virtual ~MtPenaltyStrategy(){};
+    virtual ~MtPenaltyStrategy() = default;
 
     //! @name Access methods
 
@@ -69,15 +78,22 @@ namespace CONTACT
     Only do this ONCE for meshtying upon initialization!
 
     */
-    void MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis);
+    void MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis) override;
 
     /*!
-    \brief Mesh intialization for rotational invariance
+    \brief Mesh initialization for rotational invariance
 
-    Only do this ONCE for meshtying upon initialization!
+    Compute necessary modifications to the reference configuration of interface nodes, such that the
+    weighted gap in the modified reference configuration is zero.
 
+    \note Only do this \em once for meshtying upon initialization!
+
+    \warning This is only implemented for mortar coupling. No implementation for node-to-segment
+    approach.
+
+    \return Vector with modified nodal positions
     */
-    Teuchos::RCP<Epetra_Vector> MeshInitialization();
+    Teuchos::RCP<const Epetra_Vector> MeshInitialization() override;
 
     /*!
     \brief Evaluate meshtying
@@ -146,6 +162,10 @@ namespace CONTACT
     */
     void UpdateUzawaAugmentedLagrange();
 
+    /*!
+    \brief Tell that this is a penalty strategy
+    */
+    bool IsPenalty() const override { return true; };
     //@}
 
     //! @name Empty functions (Lagrange meshtying)
@@ -153,19 +173,22 @@ namespace CONTACT
     // All these functions only have functionality in Lagrange meshtying simulations,
     // thus they are defined empty here in the case of Penalty meshtying.
 
-    void Recover(Teuchos::RCP<Epetra_Vector> disi) {}
+    void Recover(Teuchos::RCP<Epetra_Vector> disi) override { return; };
     void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
-        Teuchos::RCP<LINALG::MapExtractor> dbcmaps, int numiter,
-        Teuchos::RCP<Epetra_Operator>& blockMat, Teuchos::RCP<Epetra_Vector>& blocksol,
-        Teuchos::RCP<Epetra_Vector>& blockrhs)
+        Teuchos::RCP<LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
+        Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override
     {
-      std::cout << "WARNING: no saddlepoint solver in penalty meshtying strategy" << std::endl;
+      dserror(
+          "A penalty approach does not have Lagrange multiplier DOFs. So, saddle point system "
+          "makes no sense here.");
     };
     void UpdateDisplacementsAndLMincrements(
-        Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol)
+        Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override
     {
-      std::cout << "WARNING: no saddlepoint solver in penalty meshtying strategy" << std::endl;
+      dserror(
+          "A penalty approach does not have Lagrange multiplier DOFs. So, saddle point system "
+          "makes no sense here.");
     };
     void EvalConstrRHS()
     {
@@ -173,18 +196,74 @@ namespace CONTACT
     }
     //@}
 
+    //! @name New time integration
+
+    /*! \brief Evaluate residual
+     *
+     * @param[in] dis Current displacement field
+     * @return Boolean flag indicating successfull evaluation
+     */
+    bool EvaluateForce(const Teuchos::RCP<const Epetra_Vector> dis) override;
+
+    /*! \brief Evaluate stiffness term
+     *
+     * \note We assume that the stiffness matrix has already been evaluated,
+     * so we do nothing in here.
+     *
+     * @param[in] dis Current displacement field
+     * @return Boolean flag indicating successfull evaluation
+     */
+    bool EvaluateStiff(const Teuchos::RCP<const Epetra_Vector> dis) override;
+
+    /*! \brief Evaluate residual and stiffness matrix
+     *
+     * @param[in] dis Current displacement field
+     * @return Boolean flag indicating successfull evaluation
+     */
+    bool EvaluateForceStiff(const Teuchos::RCP<const Epetra_Vector> dis) override;
+
+    //! Return the desired right-hand-side block pointer (read-only) [derived]
+    Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
+        const enum DRT::UTILS::VecBlockType& bt) const override;
+
+    //! Return the desired matrix block pointer (read-only) [derived]
+    Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
+        const enum DRT::UTILS::MatBlockType& bt) const override;
+
+    //@}
+
    protected:
     // don't want = operator and cctor
-    MtPenaltyStrategy operator=(const MtPenaltyStrategy& old);
-    MtPenaltyStrategy(const MtPenaltyStrategy& old);
+    MtPenaltyStrategy operator=(const MtPenaltyStrategy& old) = delete;
+    MtPenaltyStrategy(const MtPenaltyStrategy& old) = delete;
 
-    double constrnorm_;      // L2-norm of normal contact constraints
-    double initialpenalty_;  // initial penalty parameter
+    //! L2-norm of normal contact constraints
+    double constrnorm_;
 
-    Teuchos::RCP<LINALG::SparseMatrix> mtm_;  // mortar matrix product: M(^T)*M
-    Teuchos::RCP<LINALG::SparseMatrix> mtd_;  // mortar matrix product: M(^T)*D
-    Teuchos::RCP<LINALG::SparseMatrix> dtm_;  // mortar matrix product: D(^T)*M
-    Teuchos::RCP<LINALG::SparseMatrix> dtd_;  // mortar matrix product: D(^T)*D
+    //! Initial penalty parameter
+    double initialpenalty_;
+
+    //! Mortar matrix product \f$M^T M\f$
+    Teuchos::RCP<LINALG::SparseMatrix> mtm_;
+
+    //! Mortar matrix product \f$M^T D\f$
+    Teuchos::RCP<LINALG::SparseMatrix> mtd_;
+
+    //! Mortar matrix product \f$D^T M\f$
+    Teuchos::RCP<LINALG::SparseMatrix> dtm_;
+
+    //! Mortar matrix product \f$D^T D\f$
+    Teuchos::RCP<LINALG::SparseMatrix> dtd_;
+
+
+    //! Global stiffness matrix
+    Teuchos::RCP<LINALG::SparseMatrix> stiff_;
+
+    /*! \brief Global residual vector
+     *
+     * \todo Is this the residual or the right-hand side vector?
+     */
+    Teuchos::RCP<Epetra_Vector> force_;
 
 
   };  // class MtPenaltyStrategy

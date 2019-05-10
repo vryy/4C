@@ -111,11 +111,17 @@ namespace POROFLUIDMULTIPHASE
     virtual Teuchos::RCP<const Epetra_Vector> CombinedIncrement(
         Teuchos::RCP<const Epetra_Vector> inc) const = 0;
 
-    // check if initial fields on coupled DOFs are equal
+    //! check if initial fields on coupled DOFs are equal (only for node-based coupling)
     virtual void CheckInitialFields(Teuchos::RCP<const Epetra_Vector> vec_cont) const = 0;
 
+    //! set the element pairs that are close as found by search algorithm
+    virtual void SetNearbyElePairs(const std::map<int, std::set<int>>* nearbyelepairs) = 0;
+
+    //! setup the strategy
+    virtual void Setup() = 0;
+
     //! apply the mesh movement
-    virtual void ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> disp) const = 0;
+    virtual void ApplyMeshMovement() const = 0;
 
    protected:
     //! porofluid multi time integrator

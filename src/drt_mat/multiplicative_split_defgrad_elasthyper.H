@@ -174,73 +174,75 @@ namespace MAT
     /// update
     void Update() final;
 
-    /// calculate coefficients gamma and delta from partial derivatives w.r.t. invariants.
-    /// The coefficients \f$\gamma_i\f$ and \f$\delta_j\f$ are based on the the
-    /// strain energy function \f$\Psi(I_{\bold{C}},II_{\bold{C}},III_{\bold{C}})\f$
-    /// in which the principal invariants of the right Cauchy-Green tensor \f$\bold{C}\f$
-    /// are the arguments, cf. Holzapfel [1].
-    /// Here, the formulation is slightly adapted since only the elastic strains \f$\bold{C}_e\f$
-    /// cause stresses, thus the invariants are also only composed of the elastic strains
-    /// \f$\bold{C}_e\f$ The strain energy function is thus named \f$\Psi_e\f$
-    ///
-    ///\f[
-    ///  I_{\bold{C}_e} = {C_e}_{AA},
-    ///  \quad
-    ///  II_{\bold{C}_e} = 1/2 \left( \mathrm{trace}^2(\bold{C}_e) - \mathrm{trace}({\bold{C}_e}^2)
-    ///  \right), \quad III_{\bold{C_e}} = \det(\bold{C}_e)
-    ///\f]
-    ///
-    ///\f[
-    /// \gamma_1 = 2 \left( \frac{\partial \Psi_e}{\partial I_{\bold{C}_e}}
-    ///          + I_{\bold{C}_e}\frac{\partial \Psi_e}{\partial II_{\bold{C}_e}} \right);
-    ///\f]
-    ///\f[
-    /// \gamma_2 = -2 \frac{\partial \Psi_e}{\partial II_{\bold{C}_e}};
-    ///\f]
-    ///\f[
-    /// \gamma_3 = 2 III_{\bold{C}_e} \frac{\partial \Psi_e}{\partial III_{\bold{C}_e}};
-    ///\f]
-    ///
-    /// material constitutive tensor coefficients
-    /// cf. Holzapfel [1], p. 261
-    /// But formulation is slightly adapted as above since only the elastic strains \f$\bold{C}_e\f$
-    /// cause stresses, thus the invariants are also only composed of the elastic strains
-    /// \f$\bold{C}_e\f$
-    ///\f[
-    /// \delta_1 = 4 \left( \frac{\partial^2 \Psi_e}{\partial I_{\bold{C}_e}^2}
-    ///          + 2 I_{\bold{C}_e} \frac{\partial^2 \Psi_e}{\partial I_{\bold{C}_e} \partial
-    ///          II_{\bold{C}_e}}
-    ///          + \frac{\partial \Psi_e}{\partial II_{\bold{C}_e}}
-    ///          + I_{\bold{C}_e}^2 \frac{\partial^2 \Psi_e}{\partial II_{\bold{C}_e}^2} \right)
-    ///\f]
-    ///\f[
-    /// \delta_2 = -4 \left( \frac{\partial^2 \Psi_e}{\partial I_{\bold{C}_e} \partial
-    /// II_{\bold{C}_e}}
-    ///          + I_{\bold{C}_e}\frac{\partial^2 \Psi_e}{\partial II_{\bold{C}_e}^2} \right)
-    ///\f]
-    ///\f[
-    /// \delta_3 = 4 \left( III_{\bold{C}_e} \frac{\partial^2 \Psi_e}{\partial I_{\bold{C}_e}
-    /// \partial III_{\bold{C}_e}}
-    ///          + I_{\bold{C}_e} III_{\bold{C}_e} \frac{\partial^2 \Psi_e}{\partial II_{\bold{C}_e}
-    ///          \partial III_{\bold{C}_e}} \right)
-    ///\f]
-    ///\f[
-    /// \delta_4 = 4 \frac{\partial^2 \Psi_e}{\partial II_{\bold{C}_e}^2}
-    ///\f]
-    ///\f[
-    /// \delta_5 = -4 III_{\bold{C}_e}\frac{\partial^2 \Psi_e}{\partial II_{\bold{C}_e} \partial
-    /// III_{\bold{C}_e}}
-    ///\f]
-    ///\f[
-    /// \delta_6 = 4 \left( III_{\bold{C}_e} \frac{\partial \Psi_e}{\partial III_{\bold{C}_e}}
-    ///          + III_{\bold{C}_e}^2 \frac{\partial^2 \Psi_e}{\partial III_{\bold{C}_e}^2} \right)
-    ///\f]
-    ///\f[
-    /// \delta_7 = -4 III_{\bold{C}_e} \frac{\partial \Psi_e}{\partial III_{\bold{C}_e}}
-    ///\f]
-    ///\f[
-    /// \delta_8 = -4 \frac{\partial \Psi_e}{\partial II_{\bold{C}_e}}
-    ///\f]
+    /*! \brief Calculate coefficients gamma and delta from partial derivatives w.r.t. invariants.
+     *
+     *  The coefficients \f$\gamma_i\f$ and \f$\delta_j\f$ are based on the the
+     *  strain energy function \f$\Psi(I_{\bold{C}},II_{\bold{C}},III_{\bold{C}})\f$
+     *  in which the principal invariants of the right Cauchy-Green tensor \f$\bold{C}\f$
+     *  are the arguments, cf. Holzapfel [1].
+     *  Here, the formulation is slightly adapted since only the elastic strains \f$\bold{C}_e\f$
+     *  cause stresses, thus the invariants are also only composed of the elastic strains
+     *  \f$\bold{C}_e\f$ The strain energy function is thus named \f$\Psi_e\f$
+     *
+     * \f[
+     *   I_{\bold{C}_e} = {C_e}_{AA},
+     *   \quad
+     *   II_{\bold{C}_e} = 1/2 \left( \mathrm{trace}^2(\bold{C}_e) - \mathrm{trace}({\bold{C}_e}^2)
+     *   \right), \quad III_{\bold{C_e}} = \det(\bold{C}_e)
+     * \f]
+     *
+     * \f[
+     *  \gamma_1 = 2 \left( \frac{\partial \Psi_e}{\partial I_{\bold{C}_e}}
+     *           + I_{\bold{C}_e}\frac{\partial \Psi_e}{\partial II_{\bold{C}_e}} \right);
+     * \f]
+     * \f[
+     *  \gamma_2 = -2 \frac{\partial \Psi_e}{\partial II_{\bold{C}_e}};
+     * \f]
+     * \f[
+     *  \gamma_3 = 2 III_{\bold{C}_e} \frac{\partial \Psi_e}{\partial III_{\bold{C}_e}};
+     * \f]
+     *
+     *  material constitutive tensor coefficients
+     *  cf. Holzapfel [1], p. 261
+     *  But formulation is slightly adapted as above since only the elastic strains \f$\bold{C}_e\f$
+     *  cause stresses, thus the invariants are also only composed of the elastic strains
+     *  \f$\bold{C}_e\f$
+     * \f[
+     *  \delta_1 = 4 \left( \frac{\partial^2 \Psi_e}{\partial I_{\bold{C}_e}^2}
+     *           + 2 I_{\bold{C}_e} \frac{\partial^2 \Psi_e}{\partial I_{\bold{C}_e} \partial
+     *           II_{\bold{C}_e}}
+     *           + \frac{\partial \Psi_e}{\partial II_{\bold{C}_e}}
+     *           + I_{\bold{C}_e}^2 \frac{\partial^2 \Psi_e}{\partial II_{\bold{C}_e}^2} \right)
+     * \f]
+     * \f[
+     *  \delta_2 = -4 \left( \frac{\partial^2 \Psi_e}{\partial I_{\bold{C}_e} \partial
+     *  II_{\bold{C}_e}}
+     *           + I_{\bold{C}_e}\frac{\partial^2 \Psi_e}{\partial II_{\bold{C}_e}^2} \right)
+     * \f]
+     * \f[
+     *  \delta_3 = 4 \left( III_{\bold{C}_e} \frac{\partial^2 \Psi_e}{\partial I_{\bold{C}_e}
+     *  \partial III_{\bold{C}_e}}
+     *           + I_{\bold{C}_e} III_{\bold{C}_e} \frac{\partial^2 \Psi_e}{\partial II_{\bold{C}_e}
+     *           \partial III_{\bold{C}_e}} \right)
+     * \f]
+     * \f[
+     *  \delta_4 = 4 \frac{\partial^2 \Psi_e}{\partial II_{\bold{C}_e}^2}
+     * \f]
+     * \f[
+     *  \delta_5 = -4 III_{\bold{C}_e}\frac{\partial^2 \Psi_e}{\partial II_{\bold{C}_e} \partial
+     *  III_{\bold{C}_e}}
+     * \f]
+     * \f[
+     *  \delta_6 = 4 \left( III_{\bold{C}_e} \frac{\partial \Psi_e}{\partial III_{\bold{C}_e}}
+     *           + III_{\bold{C}_e}^2 \frac{\partial^2 \Psi_e}{\partial III_{\bold{C}_e}^2} \right)
+     * \f]
+     * \f[
+     *  \delta_7 = -4 III_{\bold{C}_e} \frac{\partial \Psi_e}{\partial III_{\bold{C}_e}}
+     * \f]
+     * \f[
+     *  \delta_8 = -4 \frac{\partial \Psi_e}{\partial II_{\bold{C}_e}}
+     * \f]
+     */
     void CalculateGammaDelta(
         const LINALG::Matrix<3, 1>&
             prinv,  ///< principal invariants of the elastic right Cauchy-Green tensor
@@ -259,9 +261,13 @@ namespace MAT
         LINALG::Matrix<6, 1>& dstressdx);     ///< Derivative of 2nd Piola Kirchhoff stress w.r.t.
                                               ///< primary variable of different field
 
-    /// Evaluate additional terms of the elasticity tensor (cmatadd = \frac{\partial
-    /// \bold{S}}{\partial \bold{F}_{in}^{-1}}:\frac{\partial \bold{F}_{in}^{-1}}{\partial
-    /// \bold{C}})
+    /*! \brief Evaluate additional terms of the elasticity tensor
+     *
+     * \f[
+     *   cmatadd = \frac{\partial\bold{S}}{\partial \bold{F}_{in}^{-1}}
+     *             :\frac{\partial\bold{F}_{in}^{-1}}{\partial \bold{C}})
+     * \f]
+     */
     void EvaluateAdditionalCmat(
         const LINALG::Matrix<3, 3>* const defgrad,  ///< Deformation gradient
         const std::vector<LINALG::Matrix<3, 3>>&
@@ -297,40 +303,49 @@ namespace MAT
                      ///< 3x3 matrices
         LINALG::Matrix<3, 3>& iFinM) const;  ///< Inverse inelastic deformation gradient
 
-    /// Evaluates stress and cmat (cmat = 2 \frac{\partial \bold{S}}{\partial \bold{C}})
-    ///
-    /// cf. Holzapfel [1], p. 216 (6.32) and p. 248
-    /// The formulation in Holzapfel is slightly changed as only the elastic strains cause stresses
-    /// with \bold{C}_{in} = \bold{F}_{in}^T \bold{F}_{in}, \bold{F}_{in}: inelastic deformation
-    /// gradient
-    ///\f[
-    ///  \bold{S} = 2 \bold{F}_{in}^{-1} \frac{\partial \Psi_e}{\partial \bold{C}_e}
-    ///  \bold{F}_{in}^{-T}
-    ///\f]
-    ///\f[
-    ///  \bold{S} = \gamma_1 \ \bold{C}_{in}^{-1} + \gamma_2 \ \bold{C}_{in}^{-1} . \bold{C} .
-    ///  \bold{C}_{in}^{-1}} + \gamma_3 \ \bold{C}^{-1}
-    ///\f]
-    /// gamma_i as defined above for CalculateGammaDelta()
-    ///
-    ///\f[
-    ///  \mathbb{C} = \delta_1 \left( \bold{C}_{in}^{-1} \otimes \bold{C}_{in}^{-1} \right)
-    ///             + \delta_2 \left( \bold{C}_{in}^{-1} \otimes \bold{C}_{in}^{-1} \bold{C}
-    ///             \bold{C}_{in}^{-1}  + \bold{C}_{in}^{-1} \bold{C} \bold{C}_{in}^{-1} \otimes
-    ///             \bold{C}_{in}^{-1} \right)
-    ///             + \delta_3 \left( \bold{C}_{in}^{-1} \otimes \bold{C}^{-1} + \bold{C}^{-1}
-    ///             \otimes \bold{C}_{in}^{-1} \right)
-    ///             + \delta_4 \left( \bold{C}_{in}^{-1} \bold{C} \bold{C}_{in}^{-1} \otimes
-    ///             \bold{C}_{in}^{-1} \bold{C} \bold{C}_{in}^{-1} \right)
-    ///             + \delta_5 \left( \bold{C}_{in}^{-1} \bold{C} \bold{C}_{in}^{-1} \otimes
-    ///             \bold{C}^{-1} + \bold{C}^{-1} \otimes \bold{C}_{in}^{-1} \bold{C}
-    ///             \bold{C}_{in}^{-1} \right)
-    ///             + \delta_6 \left( \bold{C}^{-1} \otimes \bold{C}^{-1} \right)
-    ///             + \delta_7 \left( \bold{C}^{-1} \odot \bold{C}^{-1} \right)
-    ///             + \delta_8 \left( \bold{C}_{in}^{-1} \odot \bold{C}_{in}^{-1} \right)
-    ///\f]
-    /// \odot is defined as follows: - (A^{-1} \odot A^{-1})_{abcd} = 1/2 (A^{-1}_{ac} A^{-1}_{bd} +
-    /// A^{-1}_{ad} A^{-1}_{bc}); for A_{ab} = A_{ba}, meaning a symmetric 2-tensor A
+    /*! \brief Evaluates stress and cmat
+     *
+     * \f[
+     *   cmat = 2 \frac{\partial \bold{S}}{\partial \bold{C}})
+     * \f]
+     *
+     *  cf. Holzapfel [1], p. 216 (6.32) and p. 248
+     *  The formulation in Holzapfel is slightly changed as only the elastic strains cause stresses
+     *  with \f$\bold{C}_{in} = \bold{F}_{in}^T \bold{F}_{in}\f$
+     *  and \f$\bold{F}_{in}\f$ detoting the inelastic deformation gradient
+     * \f[
+     *   \bold{S} = 2 \bold{F}_{in}^{-1} \frac{\partial \Psi_e}{\partial \bold{C}_e}
+     *   \bold{F}_{in}^{-T}
+     * \f]
+     * \f[
+     *   \bold{S} = \gamma_1 \ \bold{C}_{in}^{-1} + \gamma_2 \ \bold{C}_{in}^{-1} . \bold{C} .
+     *   \bold{C}_{in}^{-1} + \gamma_3 \ \bold{C}^{-1}
+     * \f]
+     * with \f$\gamma_i\f$ as defined above for CalculateGammaDelta()
+     *
+     * \f[
+     *   \mathbb{C} = \delta_1 \left( \bold{C}_{in}^{-1} \otimes \bold{C}_{in}^{-1} \right)
+     *              + \delta_2 \left( \bold{C}_{in}^{-1} \otimes \bold{C}_{in}^{-1} \bold{C}
+     *              \bold{C}_{in}^{-1}  + \bold{C}_{in}^{-1} \bold{C} \bold{C}_{in}^{-1} \otimes
+     *              \bold{C}_{in}^{-1} \right)
+     *              + \delta_3 \left( \bold{C}_{in}^{-1} \otimes \bold{C}^{-1} + \bold{C}^{-1}
+     *              \otimes \bold{C}_{in}^{-1} \right)
+     *              + \delta_4 \left( \bold{C}_{in}^{-1} \bold{C} \bold{C}_{in}^{-1} \otimes
+     *              \bold{C}_{in}^{-1} \bold{C} \bold{C}_{in}^{-1} \right)
+     *              + \delta_5 \left( \bold{C}_{in}^{-1} \bold{C} \bold{C}_{in}^{-1} \otimes
+     *              \bold{C}^{-1} + \bold{C}^{-1} \otimes \bold{C}_{in}^{-1} \bold{C}
+     *              \bold{C}_{in}^{-1} \right)
+     *              + \delta_6 \left( \bold{C}^{-1} \otimes \bold{C}^{-1} \right)
+     *              + \delta_7 \left( \bold{C}^{-1} \odot \bold{C}^{-1} \right)
+     *              + \delta_8 \left( \bold{C}_{in}^{-1} \odot \bold{C}_{in}^{-1} \right)
+     * \f]
+     *
+     * \f$\odot\f$ is defined as follows:
+     * \f[
+     *   - (A^{-1} \odot A^{-1})_{abcd} = 1/2 (A^{-1}_{ac} A^{-1}_{bd} +
+     *   A^{-1}_{ad} A^{-1}_{bc}); \text{ for } A_{ab} = A_{ba}
+     * \f] meaning a symmetric 2-tensor \f$A\f$
+     */
     void EvaluateStressCmatIso(
         const LINALG::Matrix<6, 1>& iCV,         ///< Inverse right Cauchy-Green tensor
         const LINALG::Matrix<6, 1>& iCinV,       ///< Inverse inelastic right Cauchy-Green tensor

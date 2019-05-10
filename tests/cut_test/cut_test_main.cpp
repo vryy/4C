@@ -1,15 +1,11 @@
-/*---------------------------------------------------------------------------*/
-/*!
+/*!----------------------------------------------------------------------
+\brief Central fiel for the tests of the CUT Library, here all tests are called.
 \file cut_test_main.cpp
-
-\brief cut test main
 
 \level 1
 
 \maintainer Christoph Ager
-
-*/
-/*---------------------------------------------------------------------------*/
+*----------------------------------------------------------------------*/
 
 #include "../../src/drt_cut/cut_mesh.H"
 #include "../../src/drt_cut/cut_element.H"
@@ -27,14 +23,33 @@
 
 #include <mpi.h>
 
-/* Some of the alex test cases are failing because the InternalFacet routine
- * generates facets which are owned by the underlying side but were not found
- * by the OwnedFacet routine. This is currently not supported in a consistent
- * manner. Someone has to debug these cases and find a capable solution.
- *
- * The problem has been communicated to the BACI committee and the involved
- * XFEM team.                                             hiermeier 02/17 */
-//#define failing_alex
+
+void test_bacigenerated_238343();
+void test_bacigenerated_369096();
+void test_bacigenerated_79216();
+void test_bacigenerated_197489();
+void test_bacigenerated_238425();
+
+void test_bacigenerated_622320();
+void test_bacigenerated_622829();
+void test_bacigenerated_627558();
+
+void test_bacigenerated_7022();
+void test_bacigenerated_227469();
+void test_bacigenerated_463638();
+void test_bacigenerated_43244();
+void test_bacigenerated_41534();
+void test_bacigenerated_6923();
+void test_bacigenerated_7019();
+void test_bacigenerated_6920();
+void test_bacigenerated_6890();
+void test_bacigenerated_1890();
+void test_bacigenerated_1858();
+void test_bacigenerated_1860();
+void test_bacigenerated_2010();
+void test_bacigenerated_1901();
+void test_bacigenerated_1970();
+void test_bacigenerated_1910();
 
 void test_hex8_simple();
 void test_tet4_simple();
@@ -176,7 +191,7 @@ void test_tet10_quad9_moved();
 void test_tet4_quad4_double();
 void test_tet4_tri3_double();
 void test_benedikt1();
-// void test_christoph_1();
+void test_christoph_1();
 
 void test_ls_hex8_florian1();
 void test_ls_hex8_florian2();
@@ -225,13 +240,6 @@ void test_quad4_surface_mesh_cut();
 void test_hex8_quad4_double_cut();
 
 void test_unit_intersection_touch();
-
-void test_facets_corner_points();
-
-void test_colored_graph();
-void test_colored_graph2();
-void test_graph();
-void test_graph2();
 
 void test_geometry();
 
@@ -389,6 +397,46 @@ int main(int argc, char** argv)
 
   std::map<std::string, testfunct> functable;
 
+  // these tests were generated from the real computation
+  // all of then expreience the same problem:
+  // "Could not find reference plane with all gausspoints inside!" in
+  // src/drt_cut/direct_divergence_refplane.cpp
+  functable["cluster_comp_fail1"] = test_bacigenerated_622829;
+  // functable["cluster_comp_fail2"] = test_bacigenerated_627558;
+  functable["cluster_comp_fail3"] = test_bacigenerated_622320;
+
+  functable["touching_hole"] = test_bacigenerated_79216;
+
+  // tests to test small edge cases in triangulation
+  // they fail, but due to other problems, not related to triangulation
+  functable["narrow_triangulation"] = test_bacigenerated_369096;
+  functable["split_facet"] = test_bacigenerated_238343;
+
+  // tests that failed, due to the problem with spliting surface with holes
+  // in the colored
+  functable["split_colored_graph_1"] = test_bacigenerated_197489;
+  functable["split_colored_graph_2"] = test_bacigenerated_238425;
+
+  // all the tests below were generated from testing of a rotating and slowly moving (with very
+  // small displacement) tori in the rectangular mesh in which they failed on the previous version
+  // of the cut. Now they must run fine
+  functable["touching_failed"] = test_bacigenerated_7022;
+  functable["failing_cut_kernel"] = test_bacigenerated_463638;
+  functable["tolerance_mismatch"] = test_bacigenerated_6923;
+  functable["failing_topology"] = test_bacigenerated_1890;
+  functable["find_node_position"] = test_bacigenerated_1858;
+  functable["failing_tolerance"] = test_bacigenerated_2010;
+  functable["failing_cln_facetgraph"] = test_bacigenerated_1901;
+  functable["failing_cln_doublearc1910"] = test_bacigenerated_1910;
+  functable["failing_cln_doublearc1970"] = test_bacigenerated_1970;
+  functable["failing_tori1"] = test_bacigenerated_41534;
+  functable["failing_tori2"] = test_bacigenerated_43244;
+  functable["failing_tori3"] = test_bacigenerated_7019;
+  functable["failing_tori4"] = test_bacigenerated_6920;
+  functable["failing_tori5"] = test_bacigenerated_6890;
+  functable["failing_tori6"] = test_bacigenerated_1860;
+  functable["failing_tori7"] = test_bacigenerated_227469;
+
   functable["hex8_simple"] = test_hex8_simple;
   functable["tet4_simple"] = test_tet4_simple;
   functable["pyramid5_simple"] = test_pyramid5_simple;
@@ -405,7 +453,6 @@ int main(int argc, char** argv)
   functable["hex8_tet4_touch2"] = test_hex8_tet4_touch2;
   functable["hex8_mesh"] = test_hex8_mesh;
   functable["hex8_double"] = test_hex8_double;
-  functable["hex8_multiple"] = test_hex8_multiple;
   functable["hex8_bad1"] = test_hex8_bad1;
   functable["hex8_bad2"] = test_hex8_bad2;
   functable["hex8_bad3"] = test_hex8_bad3;
@@ -530,33 +577,23 @@ int main(int argc, char** argv)
   functable["alex41"] = test_alex41;
   functable["alex42"] = test_alex42;
   functable["alex43"] = test_alex43;
-#ifdef failing_alex
   functable["alex44"] = test_alex44;
   functable["alex45"] = test_alex45;
   functable["alex46"] = test_alex46;
-#endif
   functable["alex47"] = test_alex47;
   functable["alex48"] = test_alex48;
   functable["alex49"] = test_alex49;
-#ifdef failing_alex
   functable["alex50"] = test_alex50;
-#endif
   functable["alex51"] = test_alex51;
   functable["alex52"] = test_alex52;
   functable["alex53"] = test_alex53;
-#ifdef failing_alex
   functable["alex54"] = test_alex54;
-#endif
   functable["alex55"] = test_alex55;
-#ifdef failing_alex
   functable["alex56"] = test_alex56;
   functable["alex57"] = test_alex57;
   functable["alex58"] = test_alex58;
-#endif
   functable["alex59"] = test_alex59;
-#ifdef failing_alex
   functable["alex60"] = test_alex60;
-#endif
   functable["alex61"] = test_alex61;
   functable["alex62"] = test_alex62;
   functable["hex8_quad4_axel1"] = test_hex8_quad4_axel1;
@@ -644,13 +681,6 @@ int main(int argc, char** argv)
   functable["hex8_quad4_double_cut"] = test_hex8_quad4_double_cut;
 
   functable["unit_intersection_touch"] = test_unit_intersection_touch;
-
-  functable["facets_corner_points"] = test_facets_corner_points;
-
-  functable["colored_graph"] = test_colored_graph;
-  functable["colored_graph2"] = test_colored_graph2;
-  functable["graph"] = test_graph;
-  functable["graph2"] = test_graph2;
 
   functable["geometry"] = test_geometry;
 

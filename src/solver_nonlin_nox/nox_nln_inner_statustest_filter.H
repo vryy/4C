@@ -61,11 +61,77 @@ namespace NOX
         /// status types of the filter acceptability test
         enum class FilterStatusType : char
         {
-          passed_point_by_point,
-          rejected,
-          unevaluated
+          passed_point_by_point,  ///< passed the filter acceptance test
+          rejected,               ///< rejected by the filter
+          unevaluated             ///< unevaluated
         };
 
+        /*--------------------------------------------------------------------*/
+        /** \brief container for all filter input variables
+         *
+         *  \author hiermeier */
+        struct FilterParams
+        {
+          /** \brief Armijo status test.
+           *
+           *  Necessary for the L-type/f-type check or if no active constraints
+           *  are left, thus the problem degenerates to an unconstrained problem. */
+          Teuchos::RCP<Generic> armijo_ = Teuchos::null;
+
+          /// set of the used infeasibility measures
+          std::vector<Teuchos::RCP<NOX::MeritFunction::Generic>> infeasibility_vec_;
+
+          /// weight for the objective function value
+          double weight_objective_func_ = 0.0;
+
+          /// weight for the infeasibility function values
+          double weight_infeasibility_func_ = 0.0;
+
+          /// exponent needed for the L-/f-type switching condition
+          double sf_ = 0.0;
+
+          /// exponent needed for the L-/f-type switching condition
+          double st_ = 0.0;
+
+          /** This factor is used to address possible errors in the minimal step
+           *  length estimation. These estimates are based on models and might be
+           *  too large and, thus, this parameter can be used as an additional
+           *  reduction factor. */
+          double gamma_alpha_ = 0.0;
+
+          /** \brief True if Second Order Correction shall be used
+           *
+           *  It is highly recommended to active it. */
+          bool use_soc_ = false;
+
+          /// second order correction strategy
+          NOX::NLN::CorrectionType soc_type_ = NOX::NLN::CorrectionType::vague;
+
+          /** If a good iterate is in N consecutive Newton iterates blocked by
+           *  the filter set, while it would have been accepted by the remaining
+           *  tests and, furthermore, it shows a sufficient reduction wrt the
+           *  constraint violation, then the filter is reinitialized. The number
+           *  N is specified by this parameter. */
+          unsigned consecutive_blocking_iterates_ = 0;
+
+          /** If during one Newton iterate a good iterate is in N consecutive line
+           *  search steps blocked by the filter set, while it would have been
+           *  accepted by the remaining tests and, furthermore, it shows a sufficient
+           *  reduction wrt the constraint violation, then the filter is reinitialized.
+           *  The number N is specified by this parameter. */
+          unsigned consecutive_blocking_ls_steps_ = 0;
+
+          /// after each reinitialization the max theta value is reduced by this factor
+          double max_theta_blocking_red_ = 0.0;
+
+          /// initial scaling for the max theta values
+          double init_max_theta_blocking_scaling_ = 0.0;
+        };
+
+        /*--------------------------------------------------------------------*/
+        /** \brief Filter inner status test
+         *
+         *  \author hiermeier */
         class Filter : public Generic
         {
           class Point;
@@ -90,16 +156,10 @@ namespace NOX
            * manager object
            *
            *  \author hiermeier \date 04/17 */
-          Filter(const Teuchos::RCP<Generic>& armijo, const plain_merit_func_set& infeasibility_vec,
-              const double weight_objective_func, const double weight_infeasibility_func,
-              const double sf, const double st, const double gamma_alpha, const bool use_soc,
-              const NOX::NLN::CorrectionType soc_type, const NOX::Utils& utils);
+          Filter(const FilterParams& fparams, const NOX::Utils& utils);
 
           /// destructor
           virtual ~Filter(){};
-
-          void InitPoints(const Interface::Required& interface, const NOX::Solver::Generic& solver,
-              const NOX::Abstract::Group& grp);
 
           /** \brief %Test the inner stopping criterion
            *
@@ -117,27 +177,49 @@ namespace NOX
           virtual std::ostream& Print(std::ostream& stream, int indent = 0) const;
 
          private:
+          /// initialize the (filter) points
+          void InitPoints(const Interface::Required& interface, const NOX::Solver::Generic& solver,
+              const NOX::Abstract::Group& grp);
+
+          /// evaluate and set new trial point
+          void SetTrialPoint(
+              const NOX::MeritFunction::Generic& merit_func, const NOX::Abstract::Group& grp);
+
           /// reset the internal state at the beginning of a new Newton iteration
           void Reset();
 
           enum NOX::NLN::INNER::StatusTest::FilterStatusType AcceptabilityCheck(
               const Point& trial_fp);
 
+          /** \brief Perform a pre-selection to avoid the unnecessary point-by-point
+           *  comparison in obvious cases
+           *
+           * \author hiermeier */
           unsigned Prefiltering(const Point& trial_fp);
 
+          /** identify all points in the current filter set which are not
+           * dominated by the new trial point */
           void IdentifyNonDominatedFilterPoints(
-              const Point& trial_fp, const unsigned prefiltering_index);
+              const Point& trial_fp, const unsigned non_dominated_index);
 
+          /// set-up all model terms
           void SetupModelTerms(const NOX::Abstract::Vector& dir, const NOX::Abstract::Group& grp,
               const Interface::Required& interface);
 
+          /// execute the sufficient reduction check
           enum NOX::NLN::INNER::StatusTest::StatusType SufficientReductionCheck(
               const Point& trial_fp) const;
 
-          bool IsAdmissibleStep(const NOX::Solver::Generic& solver, const double& step) const;
+          /// Is the step still larger than the minimal step length estimate?
+          NOX::NLN::INNER::StatusTest::StatusType IsAdmissibleStep(
+              const NOX::Solver::Generic& solver, const double& step) const;
 
+          /// access the active set status
           enum NOX::StatusTest::StatusType GetActiveSetStatus(
               const NOX::Solver::Generic& solver) const;
+
+          /// get the specified constraint tolerance
+          double GetConstraintTolerance(const NOX::Solver::Generic& solver) const;
 
           /** \brief Augment the current filter
            *
@@ -208,20 +290,20 @@ namespace NOX
             }
           }
 
+          /// executed in the end of the check status test
           StatusType PostCheckStatus(const NOX::NLN::LineSearch::Generic& linesearch,
               const NOX::Solver::Generic& solver, const NOX::Abstract::Group& grp,
               NOX::StatusTest::CheckType checkType);
 
+          /// actual test
           void ExecuteCheckStatus(const NOX::NLN::LineSearch::Generic& linesearch,
               const NOX::Solver::Generic& solver, const NOX::Abstract::Group& grp,
               NOX::StatusTest::CheckType checkType);
 
+          /// recover from a back up state if the SOC fails
           void RecoverFromBackup(NOX::Abstract::Group& grp) const;
 
-          StatusType SufficientLinearInfeasibilityReduction(
-              const NOX::NLN::LineSearch::Generic& linesearch, const NOX::Solver::Generic& solver,
-              const NOX::Abstract::Group& grp, NOX::StatusTest::CheckType checkType);
-
+          /// throw an error if all strategies fail and the step is too short
           void ThrowIfStepTooShort(const NOX::NLN::LineSearch::Generic& linesearch,
               const NOX::Solver::Generic& solver) const;
 
@@ -249,6 +331,7 @@ namespace NOX
              *  \author hiermeier \date 12/17 */
             void create(const NOX::Abstract::Group& grp, const NOX::Abstract::Vector& dir);
 
+            /// recover from the back-up
             void recover(NOX::Abstract::Group& grp) const;
 
            private:
@@ -300,7 +383,10 @@ namespace NOX
             };
 
            protected:
+            /// call back to the filter
             Filter& filter_;
+
+            /// user defined SOC tye
             const NOX::NLN::CorrectionType user_type_;
           };
 
@@ -314,30 +400,114 @@ namespace NOX
             SecondOrderCorrection() = delete;
             virtual ~SecondOrderCorrection(){};
 
+            /// compute the SOC step
             virtual StatusType execute(const NOX::NLN::LineSearch::Generic& linesearch,
                 const NOX::Solver::Generic& solver, const NOX::Abstract::Group& grp,
                 NOX::StatusTest::CheckType checkType);
 
            private:
+            /// compute the SOC system
             void computeSystem(NOX::NLN::Group& grp, const NOX::Solver::Generic& solver) const;
 
+            /// solve the SOC system
             void solve(const NOX::NLN::LineSearch::Generic& linesearch,
                 const NOX::Solver::Generic& solver, NOX::Abstract::Group& grp) const;
 
+            /// postprocess the SOC step
             void postprocess(const NOX::NLN::LineSearch::Generic& linesearch,
                 const NOX::Solver::Generic& solver, NOX::Abstract::Group& grp,
                 NOX::StatusTest::CheckType checkType);
 
+            /// Which SOC system shall be used?
             CorrectionType whichType(const NOX::Solver::Generic& solver) const;
 
+            /// Use an automatic type choice (recommended).
             CorrectionType automaticTypeChoice(const NOX::Solver::Generic& solver) const;
 
+            /// print infos about the SOC step
             void print(std::ostream& os) const;
 
            private:
+            /// currently chosen SOC type
             CorrectionType curr_type_ = CorrectionType::vague;
+
+            /// execution time for the SOC step
             double time_exe_ = 0.0;
+
+            /// needed time for the recovery
             double time_recover_ = 0.0;
+
+            /// Are we currently in a SOC step? Avoids recursive calls.
+            bool issoc_ = false;
+
+            /// What is the result of the SOC step?
+            StatusType soc_status_ = status_unevaluated;
+          };
+
+          /*------------------------------------------------------------------------*/
+          /** \brief Helps to detect a blocking filter set due to old historic information
+           *
+           * \author hiermeier */
+          class Blocking
+          {
+           public:
+            /// simple create method
+            static Teuchos::RCP<Blocking> create(Filter& filter, const FilterParams& fparams)
+            {
+              return Teuchos::rcp(new Blocking(filter, fparams));
+            }
+
+            /// constructor
+            Blocking(Filter& filter, const FilterParams& fparams)
+                : consecutive_iter_(fparams.consecutive_blocking_iterates_),
+                  consecutive_ls_steps_(fparams.consecutive_blocking_ls_steps_),
+                  max_theta_red_(fparams.max_theta_blocking_red_),
+                  init_max_theta_scaling_(fparams.init_max_theta_blocking_scaling_),
+                  filter_(filter){};
+
+            /// destructor
+            ~Blocking() = default;
+
+            /* \brief check if the current filter set blocks good iterates
+             *
+             * If the filter rejected the trial point but the inner test would accept it
+             * we have an indicator for a blocking filter set. This can happen due to old
+             * historic information which is not reliable for the current neighborhood. */
+            void Check(const NOX::NLN::LineSearch::Generic& linesearch,
+                const NOX::Solver::Generic& solver, const NOX::Abstract::Group& grp,
+                const Point& rejected_fp);
+
+            /** add the current iterate to the blocking set if the sufficient
+             *  reduction criterion with respect to the user-specified max theta
+             *  value is fulfilled. */
+            void AddFilterIterate(const int newton_iter, const Point& rejected_fp);
+
+            /// initialize a reinitialization of the filter
+            void ReinitializeFilter();
+
+            /** print some information about the blocking scenario and a possible
+             *  reinitialization */
+            void PrintInfo(std::ostream& os) const;
+
+            // vector containing consecutive blocking filter iteration numbers
+            std::vector<std::pair<unsigned, unsigned>> filter_iterates_;
+
+            /// number of consecutive allowed blocking Newton iterates
+            const unsigned consecutive_iter_;
+
+            /// number of consecutive allowed blocking line search steps
+            const unsigned consecutive_ls_steps_;
+
+            /** max theta reduction value applied in case of an reinitialization
+             *  and used for the additional sufficient reducition check */
+            const double max_theta_red_;
+
+            /// initial max theta scaling
+            const double init_max_theta_scaling_;
+
+           private:
+            /// filter call-back
+            Filter& filter_;
           };
 
           /*------------------------------------------------------------------------*/
@@ -391,7 +561,7 @@ namespace NOX
             /// (re)set all global point member variables
             static void resetStaticMembers(const unsigned num_obj_coords,
                 const unsigned num_theta_coords, const double weight_objective_func,
-                const double weight_infeasibility_func);
+                const double weight_infeasibility_func, const double init_max_theta_scale);
 
             /** (re)set global point member variables at the beginning of each new
              *  Newton iteration */
@@ -400,20 +570,30 @@ namespace NOX
             /// (re)set the global margin safety factors
             static void setMarginSafetyFactors();
 
+            static void reinitFilter(plain_point_set& filter,
+                const Infeasibility& infeasibility_func, const double& downscale_fac);
+
            private:
+            static void clearFilterPointRegister();
+
             /** \brief Add a new filter point to the register
              *
              *  Before we add a new filter point all unused filter points in the
              *  register are removed. */
             static void addFilterPointToRegister(const Teuchos::RCP<Point>& fp_ptr);
 
-            /* scale the coordinate with the given %id as soon as the corresponding
+            /** scale the coordinate with the given %id as soon as the corresponding
              * scaling changes its state from invalid to valid */
             static void scaleCoordinateOfAllRegisteredFilterPoints(const int id);
+
+            static void setInitialScaledMaxThetaValue(const int id, const double& val);
+
+            static void scaleMaxThetaValues(const double& fac);
 
             /// constructor
             Point()
                 : is_filter_point_(false),
+                  is_feasible_(false),
                   norm_(-1.0),
                   max_theta_id_(0),
                   coords_(num_coords_, true),
@@ -424,6 +604,7 @@ namespace NOX
             /// copy constructor
             Point(const Point& point)
                 : is_filter_point_(point.is_filter_point_),
+                  is_feasible_(point.is_feasible_),
                   norm_(point.norm_),
                   max_theta_id_(point.max_theta_id_),
                   coords_(point.coords_),
@@ -440,6 +621,13 @@ namespace NOX
 
             /// set margin values for each filter coordinate
             void setMargin();
+
+            // return true if the current point is feasible with respect to one
+            // infeasibility measure
+            bool IsFeasible(const double tol) const;
+
+            //
+            bool IsSufficientlyReducedComparedToMaxTheta(const double& red_fac) const;
 
             /** \brief access the point coordinate %index
              *
@@ -469,12 +657,12 @@ namespace NOX
             /// print the current point
             std::ostream& print(
                 std::ostream& stream, int par_indent_length, const NOX::Utils* u) const;
-            std::ostream& print(
+            inline std::ostream& print(
                 std::ostream& stream, int par_indent_length, const NOX::Utils& u) const
             {
               return print(stream, par_indent_length, &u);
             };
-            std::ostream& print(std::ostream& stream, const NOX::Utils& u) const
+            inline std::ostream& print(std::ostream& stream, const NOX::Utils& u) const
             {
               return print(stream, 0, u);
             };
@@ -482,6 +670,9 @@ namespace NOX
 
             /// the point is a filter point
             bool is_filter_point_;
+
+            /// the point is feasible
+            mutable bool is_feasible_;
 
             /// norm of the filter point
             double norm_;
@@ -507,6 +698,9 @@ namespace NOX
             /// global scaling factor of the infeasibility function margin
             static double gamma_theta_;
 
+            /// global max theta scale (defined via the blocking class)
+            static double global_init_max_theta_scale_;
+
             static std::vector<bool> isvalid_scaling_;
 
             /// global scaling of each coordinate
@@ -514,6 +708,9 @@ namespace NOX
 
             /// global weights for the filter point scaling
             static LINALG::SerialDenseVector weights_;
+
+            /// global maximal infeasibility values
+            static LINALG::SerialDenseVector global_scaled_max_thetas_;
 
            private:
             /// this vector contains all registered filter points
@@ -542,6 +739,10 @@ namespace NOX
           BackupState backup_;
 
           Teuchos::RCP<SOCBase> soc_;
+
+          /// blocking object. Helps to detect a blocking filter due to historic information
+          Teuchos::RCP<Blocking> blocking_ptr_;
+          Blocking& blocking_;
 
           /// safety factor for the minimal step length check
           const double gamma_alpha_;
@@ -579,6 +780,10 @@ namespace NOX
            *  If this variable is TRUE, the inner armijo test will be checked. */
           bool is_ftype_step_;
 
+          // theta_min value used to skip the f-type condition in pre-asymptotic phase
+          double theta_min_ftype_;
+
+          /// internal status of the filter method
           enum FilterStatusType filter_status_;
 
           /// nox output management object

@@ -23,10 +23,7 @@ namespace LINALG
 {
   class SerialDenseVector;
 }
-/*!
- \brief CONTACT: namespace of the BACI contact and meshtying algorithms
 
- */
 namespace CONTACT
 {
   class CoIntegratorNitschePoro : public CoIntegratorNitsche

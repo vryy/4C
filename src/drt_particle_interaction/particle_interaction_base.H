@@ -23,8 +23,6 @@
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
-#include "particle_interaction_typedefs.H"
-
 #include "../drt_particle_engine/particle_enums.H"
 #include "../drt_particle_engine/particle_typedefs.H"
 
@@ -39,6 +37,16 @@
 namespace IO
 {
   class DiscretizationReader;
+}
+
+namespace PARTICLEINTERACTION
+{
+  class MaterialHandler;
+}
+
+namespace PARTICLEALGORITHM
+{
+  class WallHandlerInterface;
 }
 
 namespace PARTICLEENGINE
@@ -65,7 +73,8 @@ namespace PARTICLEINTERACTION
 
     //! setup particle interaction handler
     virtual void Setup(
-        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
+        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
+        const std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface);
 
     //! write restart of particle interaction handler
     virtual void WriteRestart(const int step, const double time) const;
@@ -87,6 +96,12 @@ namespace PARTICLEINTERACTION
     //! maximum interaction distance (on this processor)
     virtual double MaxInteractionDistance() const = 0;
 
+    //! distribute interaction history
+    virtual void DistributeInteractionHistory() const = 0;
+
+    //! communicate interaction history
+    virtual void CommunicateInteractionHistory() const = 0;
+
     //! set current time
     virtual void SetCurrentTime(const double currenttime);
 
@@ -95,6 +110,10 @@ namespace PARTICLEINTERACTION
 
     //! set gravity
     virtual void SetGravity(std::vector<double>& gravity) final;
+
+   private:
+    //! init particle material handler
+    virtual void InitParticleMaterialHandler();
 
    protected:
     //! maximum particle radius (on this processor)
@@ -114,6 +133,12 @@ namespace PARTICLEINTERACTION
 
     //! particle container bundle
     PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle_;
+
+    //! interface to particle wall handler
+    std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface_;
+
+    //! particle material handler
+    std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial_;
 
     //! current time
     double time_;

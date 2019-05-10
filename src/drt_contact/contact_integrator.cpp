@@ -56,6 +56,8 @@ CONTACT::CoIntegrator::CoIntegrator(Teuchos::ParameterList& params,
       wearcoeffm_(-1.0),
       ssslip_(imortar_.get<double>("SSSLIP")),
       nonsmooth_(false),
+      nonsmoothselfcontactsurface_(
+          DRT::INPUT::IntegralValue<int>(imortar_, "NONSMOOTH_CONTACT_SURFACE")),
       integrationtype_(DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(imortar_, "INTTYPE"))
 {
   // init gp
@@ -322,6 +324,11 @@ void CONTACT::CoIntegrator::InitializeGP(DRT::Element::DiscretizationType eletyp
             case 32:
             {
               mygaussrule = DRT::UTILS::intrule_line_32point;
+              break;
+            }
+            case 50:
+            {
+              mygaussrule = DRT::UTILS::intrule_line_50point;
               break;
             }
             default:
@@ -1469,7 +1476,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(MORTAR::MortarElement& sele,
   // check input data
   for (int test = 0; test < (int)meles.size(); ++test)
   {
-    if ((!sele.IsSlave()) || (meles[test]->IsSlave()))
+    if (((!sele.IsSlave()) || (meles[test]->IsSlave())) and (!imortar_.get<bool>("Two_half_pass")))
       dserror("ERROR: IntegrateDerivEle3D called on a wrong type of MortarElement pair!");
   }
 
@@ -1723,7 +1730,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& 
   DRT::Element::DiscretizationType mdt = mele.Shape();
 
   // check input data
-  if ((!sele.IsSlave()) || (mele.IsSlave()))
+  if (((!sele.IsSlave()) || (mele.IsSlave())) and (!imortar_.get<bool>("Two_half_pass")))
     dserror("ERROR: IntegrateDerivCell3DAuxPlane called on a wrong type of MortarElement pair!");
   if (cell == Teuchos::null)
     dserror("ERROR: IntegrateDerivCell3DAuxPlane called without integration cell");
@@ -1919,8 +1926,15 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& 
     //**********************************************************************
     // evaluate at GP and lin char. quantities
     //**********************************************************************
-    IntegrateGP_3D(sele, mele, sval, lmval, mval, sderiv, mderiv, lmderiv, dualmap, wgt, jac,
-        jacintcellmap, gpn, dnmap_unit, gap[0], dgapgp, sxi, mxi, dsxigp, dmxigp);
+    if (!nonsmoothselfcontactsurface_)
+      IntegrateGP_3D(sele, mele, sval, lmval, mval, sderiv, mderiv, lmderiv, dualmap, wgt, jac,
+          jacintcellmap, gpn, dnmap_unit, gap[0], dgapgp, sxi, mxi, dsxigp, dmxigp);
+    // for non-smooth (self) contact surfaces we do not use the smoothed normal, but instead we use
+    // the normal that is already used for the projection
+    else
+      IntegrateGP_3D(sele, mele, sval, lmval, mval, sderiv, mderiv, lmderiv, dualmap, wgt, jac,
+          jacintcellmap, cell->Auxn(), cell->GetDerivAuxn(), gap[0], dgapgp, sxi, mxi, dsxigp,
+          dmxigp);
 
   }  // end gp loop
   //**********************************************************************
@@ -2708,9 +2722,11 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
 
   // get slave element nodes themselves for normal evaluation
   DRT::Node** mynodes = lsele.Nodes();
-  if (!mynodes) dserror("ERROR: IntegrateDerivCell3DAuxPlaneLTS: Null pointer!");
+  if (!mynodes)
+    dserror("ERROR: IntegrateDerivCell3DAuxPlaneLTS: Cannot access slave ndoes. Null pointer!");
   DRT::Node** mnodes = mele.Nodes();
-  if (!mnodes) dserror("ERROR: IntegrateDerivCell3DAuxPlaneLTS: Null pointer!");
+  if (!mnodes)
+    dserror("ERROR: IntegrateDerivCell3DAuxPlaneLTS: Cannot access master nodes. Null pointer!");
 
   // create empty vectors for shape fct. evaluation
   LINALG::SerialDenseVector sval(nrowL);
@@ -2766,13 +2782,13 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
     double globgp[3] = {0.0, 0.0, 0.0};
     cell->LocalToGlobal(eta, globgp, 0);
 
-    // para coordinate on surface slave ele
+    // coordinate in parameter space on surface slave ele
     double sxi[2] = {0.0, 0.0};
 
-    // para coordinate on surface master ele
+    // coordinate in parameter space on surface master ele
     double mxi[2] = {0.0, 0.0};
 
-    // para coordinate on line (edge) slave ele
+    // coordinate in parameter space on line (edge) slave ele
     double lxi[2] = {0.0, 0.0};
 
     // project Gauss point onto slave/master surface element
@@ -3729,7 +3745,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(MORTAR::MortarEleme
   DRT::Element::DiscretizationType pmdt = mele.Shape();
 
   // check input data
-  if ((!sele.IsSlave()) || (mele.IsSlave()))
+  if (((!sele.IsSlave()) || (mele.IsSlave())) and (!imortar_.get<bool>("Two_half_pass")))
     dserror(
         "ERROR: IntegrateDerivCell3DAuxPlaneQuad called on a wrong type of MortarElement pair!");
   if (cell == Teuchos::null)

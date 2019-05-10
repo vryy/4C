@@ -1,16 +1,13 @@
 /*!----------------------------------------------------------------------
 \file solver_krylovsolver.cpp
-\brief Declaration
 
-<pre>
-\brief Declaration
+\brief Implementation of Baci's interface to Krylov solvers
+
 \level 0
-\maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*----------------------------------------------------------------------*/
+\maintainer Martin Kronbichler
+*/
+/*---------------------------------------------------------------------*/
 
 #ifdef HAVE_MueLu
 #include <MueLu_ConfigDefs.hpp>
@@ -83,7 +80,8 @@ LINALG::SOLVER::KrylovSolver::KrylovSolver(
     : comm_(comm),
       params_(params),
       outfile_(outfile),
-      ncall_(0)
+      ncall_(0),
+      activeDofMap_(Teuchos::null)
 #ifdef HAVE_MueLu
       ,
       bAllowPermutation_(false),
@@ -106,7 +104,7 @@ LINALG::SOLVER::KrylovSolver::~KrylovSolver()
   A_ = Teuchos::null;
   x_ = Teuchos::null;
   b_ = Teuchos::null;
-  nActiveDofs_ = 0;
+  activeDofMap_ = Teuchos::null;
 #ifdef HAVE_MueLu
   data_ = Teuchos::null;
 #endif
@@ -121,10 +119,7 @@ int LINALG::SOLVER::KrylovSolver::ApplyInverse(const Epetra_MultiVector& X, Epet
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-bool LINALG::SOLVER::KrylovSolver::AllowReusePreconditioner(
-    int reuse,  // reuse flag from Aztec/Belos parameter list (AZREUSE)
-    bool reset  // reset flag (user given from outside)
-)
+bool LINALG::SOLVER::KrylovSolver::AllowReusePreconditioner(const int reuse, const bool reset)
 {
   bool bAllowReuse = true;  // default: allow reuse of preconditioner
 
@@ -141,42 +136,16 @@ bool LINALG::SOLVER::KrylovSolver::AllowReusePreconditioner(
     linSysParams = &reflinSysParams;
   }
 
-  if (linSysParams != NULL)
-  {
-    // check, whether active set has changed in structural contact problems
-    // if the active set has changed we have to rebuild the preconditioner
-    if (linSysParams->isSublist("Linear System properties"))
-    {
-      Teuchos::ParameterList& linSystemProps = linSysParams->sublist("Linear System properties");
-
-      if (linSystemProps.isParameter("contact activeDofMap"))
-      {
-        Teuchos::RCP<Epetra_Map> epActiveDofMap = Teuchos::null;
-        epActiveDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map>>("contact activeDofMap");
-
-        if (epActiveDofMap->NumMyElements() != nActiveDofs_)
-        {
-          nActiveDofs_ = epActiveDofMap->NumMyElements();  // store last number of active DOFs
-          bAllowReuse = false;  // active set has changed -> force preconditioner to be rebuilt
-        }
-        else
-        {
-          // active set has not changed. preconditioner may be reused
-          // check other criteria
-          nActiveDofs_ = epActiveDofMap->NumMyElements();  // store last number of active DOFs
-        }
-      }
-    }
-  }
+  CheckReuseStatusOfActiveSet(bAllowReuse, linSysParams);
 
   // true, if preconditioner must not reused but is to re-created!
-  bool create = reset or not Ncall() or not reuse or (Ncall() % reuse) == 0;
+  const bool create = reset or not Ncall() or not reuse or (Ncall() % reuse) == 0;
   if (create) bAllowReuse = false;  // we have to create a new preconditioner
 
   // here, each processor has its own local decision made
   // bAllowReuse = true -> preconditioner can be reused
   // bAllowReuse = false -> preconditioner has to be recomputed
-  // If one or more prorcessors decide that the preconditioner has to be recomputed
+  // If one or more processors decide that the preconditioner has to be recomputed
   // all of the processors have to recompute it
 
   // synchronize results of all processors
@@ -196,8 +165,55 @@ bool LINALG::SOLVER::KrylovSolver::AllowReusePreconditioner(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
+void LINALG::SOLVER::KrylovSolver::CheckReuseStatusOfActiveSet(
+    bool& bAllowReuse, const Teuchos::ParameterList* linSysParams)
+{
+  if (linSysParams != NULL)
+  {
+    if (linSysParams->isSublist("Linear System properties"))
+    {
+      const Teuchos::ParameterList& linSystemProps =
+          linSysParams->sublist("Linear System properties");
+
+      if (linSystemProps.isParameter("contact activeDofMap"))
+      {
+        Teuchos::RCP<Epetra_Map> epActiveDofMap = Teuchos::null;
+        epActiveDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map>>("contact activeDofMap");
+
+        // Do we have history information available?
+        if (activeDofMap_.is_null())
+        {
+          /* No history available.
+           * This is the first application of the preconditioner. We cannot reuse it.
+           */
+          bAllowReuse = false;
+        }
+        else
+        {
+          /* History is available. We actually have to check for a change in the active set
+           * by comparing the current map of active DOFs with the stored map of active DOFs
+           * from the previous application of the preconditioner.
+           */
+          if (not epActiveDofMap->PointSameAs(*activeDofMap_))
+          {
+            // Map of active nodes has changed -> force preconditioner to be rebuilt
+            bAllowReuse = false;
+          }
+        }
+
+        // Store current map of active slave DOFs for comparison in next preconditioner application
+        activeDofMap_ = epActiveDofMap;
+      }
+    }
+  }
+
+  return;
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
 void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& azlist,
-    bool isCrsMatrix, Teuchos::RCP<LINALG::KrylovProjector> projector)
+    const bool isCrsMatrix, Teuchos::RCP<LINALG::KrylovProjector> projector)
 {
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::Solver:  1.1)   CreatePreconditioner");
 

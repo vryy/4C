@@ -70,6 +70,7 @@ namespace NOX
         virtual double GetModelValue(const Epetra_Vector& x, const Epetra_Vector& F,
             const enum MeritFunction::MeritFctName merit_func_type) const = 0;
 
+        //! return model terms of a linear model (optional)
         virtual double GetLinearizedModelTerms(const NOX::Abstract::Group* group,
             const Epetra_Vector& dir, const enum NOX::NLN::MeritFunction::MeritFctName mf_type,
             const enum NOX::NLN::MeritFunction::LinOrder linorder,
@@ -82,21 +83,39 @@ namespace NOX
         //! calculate characteristic/reference norms for forces
         virtual double CalcRefNormForce() = 0;
 
+        //! access the lumped mass matrix
         virtual Teuchos::RCP<const Epetra_Vector> GetLumpedMassMatrixPtr() const
         {
           dserror("The evaluation of the lumped mass matrix is not implemented!");
           return Teuchos::null;
         }
 
+        //! create a backup state (optional)
         virtual void CreateBackupState(const Epetra_Vector& dir)
         {
           dserror("There is no meaningful implementation for this method!");
         }
 
+        //! recover from a backup state (optional)
         virtual void RecoverFromBackupState()
         {
           dserror("There is no meaningful implementation for this method!");
         }
+
+        //! compute element volumes (optional)
+        virtual bool computeElementVolumes(
+            const Epetra_Vector& x, Teuchos::RCP<Epetra_Vector>& ele_vols) const
+        {
+          dserror("There is no meaningful implementation for this method!");
+          exit(EXIT_FAILURE);
+        }
+
+        //! access dofs of specific elements (optional)
+        virtual void getDofsFromElements(
+            const std::vector<int>& my_ele_gids, std::set<int>& my_ele_dofs) const
+        {
+          dserror("There is no meaningful implementation for this method!");
+        };
       };
     }  // namespace Interface
   }    // namespace NLN

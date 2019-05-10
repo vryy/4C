@@ -6,11 +6,7 @@
 
 \level 3
 
-<pre>
-\maintainer Andreas Rauch
-            rauch@lnm.mw.tum.de
-
-</pre>
+\maintainer  Christoph Ager
 */
 
 /*----------------------------------------------------------------------*/

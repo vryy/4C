@@ -24,6 +24,7 @@ namespace LINALG
   class SerialDenseVector;
   class SerialDenseMatrix;
 }  // namespace LINALG
+
 namespace DRT
 {
   class Condition;

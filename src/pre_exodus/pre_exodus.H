@@ -19,9 +19,6 @@ or the well-known .dat file is created.
 #ifndef PRE_EXODUS_H_
 #define PRE_EXODUS_H_
 
-
-
-//! \namespace EXODUS namespace of the ExodusII-to-BACI preprocessing tool
 namespace EXODUS
 {
   // forward declaration

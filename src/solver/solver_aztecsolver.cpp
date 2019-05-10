@@ -1,16 +1,13 @@
 /*!----------------------------------------------------------------------
 \file solver_aztecsolver.cpp
-\brief Declaration
 
-<pre>
-\brief Declaration
+\brief Implementation to AztecOO solver package
+
 \level 0
-\maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*----------------------------------------------------------------------*/
+\maintainer Martin Kronbichler
+*/
+/*---------------------------------------------------------------------*/
 
 #ifdef HAVE_MueLu
 
@@ -74,8 +71,8 @@ LINALG::SOLVER::AztecSolver::~AztecSolver()
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 void LINALG::SOLVER::AztecSolver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
-    Teuchos::RCP<Epetra_MultiVector> x, Teuchos::RCP<Epetra_MultiVector> b, bool refactor,
-    bool reset, Teuchos::RCP<LINALG::KrylovProjector> projector)
+    Teuchos::RCP<Epetra_MultiVector> x, Teuchos::RCP<Epetra_MultiVector> b, const bool refactor,
+    const bool reset, Teuchos::RCP<LINALG::KrylovProjector> projector)
 {
   if (!Params().isSublist("Aztec Parameters")) dserror("Do not have aztec parameter list");
   Teuchos::ParameterList& azlist = Params().sublist("Aztec Parameters");
@@ -97,7 +94,7 @@ void LINALG::SOLVER::AztecSolver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
   // after this call, the solver can access the preconditioner object using the
   // Preconditioner() function.
   int reuse = azlist.get("reuse", 0);
-  bool create = AllowReusePreconditioner(reuse, reset) == false;
+  const bool create = AllowReusePreconditioner(reuse, reset) == false;
   if (create)
   {
     ncall_ = 0;
@@ -305,7 +302,7 @@ int LINALG::SOLVER::AztecSolver::Solve()
   // if you want to get some information on eigenvalues of the Hessenberg matrix/the
   // estimated condition number of the preconditioned system, uncomment the following
   // line and set AZOUTPUT>0 in your .dat-file
-  // aztec.SetAztecOption(AZ_solver,AZ_gmres_condnum);
+  //  aztec.SetAztecOption(AZ_solver, AZ_gmres_condnum);
 
   //------------------------------- just do it----------------------------------------
   aztec.Iterate(iter, tol);
@@ -347,7 +344,7 @@ int LINALG::SOLVER::AztecSolver::Solve()
     }
     else if (status[AZ_why] == AZ_loss)
     {
-      if (comm_.MyPID() == 0) printf("Numerical loss of precision occured in AztecOO\n");
+      if (comm_.MyPID() == 0) printf("Numerical loss of precision occurred in AztecOO\n");
     }
     else if (status[AZ_why] == AZ_maxits)
     {

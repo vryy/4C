@@ -3,14 +3,11 @@
 
 \brief A set of degrees of freedom special for mortar coupling
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\level 1
 
-*----------------------------------------------------------------------*/
+\maintainer Alexander Popp
+*/
+/*---------------------------------------------------------------------*/
 #ifndef MORTAR_DOFSET_H
 #define MORTAR_DOFSET_H
 
@@ -23,10 +20,6 @@ namespace DRT
   class Discretization;
 }
 
-/*!
-\brief MORTAR: namespace of the BACI mortar coupling algorithms
-
-*/
 namespace MORTAR
 {
   /*!

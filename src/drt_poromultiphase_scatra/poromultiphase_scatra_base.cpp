@@ -6,8 +6,8 @@
 
    \level 3
 
-   \maintainer  Lena Yoshihara
-                yoshihara@lnm.mw.tum.de
+   \maintainer  Johannes Kremheller
+                kremheller@lnm.mw.tum.de
                 http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
@@ -28,6 +28,9 @@
 #include "../drt_adapter/ad_porofluidmultiphase_wrapper.H"
 
 #include "../drt_scatra/scatra_timint_meshtying_strategy_artery.H"
+#include "../drt_scatra_ele/scatra_ele.H"
+#include "../drt_mat/fluidporo_multiphase.H"
+#include "../drt_mat/scatra_mat_multiporo.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                              vuong 08/16  |
@@ -41,6 +44,8 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::PoroMultiPhaseScaTraBase(
       ndsporofluid_scatra_(-1),
       timertimestep_(comm),
       dttimestep_(0.0),
+      divcontype_(DRT::INPUT::IntegralValue<INPAR::POROMULTIPHASESCATRA::DivContAct>(
+          globaltimeparams, "DIVERCONT")),
       artery_coupl_(DRT::INPUT::IntegralValue<int>(globaltimeparams, "ARTERY_COUPLING"))
 {
 }
@@ -55,7 +60,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
     const Teuchos::ParameterList& fluidparams, const Teuchos::ParameterList& scatraparams,
     const std::string& struct_disname, const std::string& fluid_disname,
     const std::string& scatra_disname, bool isale, int nds_disp, int nds_vel, int nds_solidpressure,
-    int ndsporofluid_scatra)
+    int ndsporofluid_scatra, const std::map<int, std::set<int>>* nearbyelepairs)
 {
   // save the dofset number of the scatra on the fluid dis
   ndsporofluid_scatra_ = ndsporofluid_scatra;
@@ -120,7 +125,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
 
   // initialize
   poromulti_->Init(globaltimeparams, poroparams, structparams, fluidparams, struct_disname,
-      fluid_disname, isale, nds_disp, nds_vel, nds_solidpressure, ndsporofluid_scatra);
+      fluid_disname, isale, nds_disp, nds_vel, nds_solidpressure, ndsporofluid_scatra,
+      nearbyelepairs);
 
   // get the solver number used for ScalarTransport solver
   const int linsolvernumber = scatraparams.get<int>("LINEAR_SOLVER");
@@ -142,6 +148,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
     if (scatramsht_ == Teuchos::null) dserror("cast to Meshtying strategy failed!");
 
     scatramsht_->SetArteryTimeIntegrator(PoroField()->FluidField()->ArtNetTimInt());
+    scatramsht_->SetNearbyElePairs(nearbyelepairs);
   }
 
   // only now we must call Setup() on the scatra time integrator.
@@ -156,6 +163,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
     // this check can only be performed after calling setup
     scatramsht_->CheckInitialFields();
   }
+
+  std::vector<int> mydirichdofs(0);
+  add_dirichmaps_volfrac_spec_ = Teuchos::rcp(new Epetra_Map(
+      -1, 0, &(mydirichdofs[0]), 0, ScatraAlgo()->ScaTraField()->Discretization()->Comm()));
 
   // done.
   return;
@@ -228,6 +239,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::PrepareTimeStep(bool printh
 
   poromulti_->PrepareTimeStep();
   SetPoroSolution();
+  ApplyAdditionalDBCForVolFracSpecies();
 
   return;
 }
@@ -299,7 +311,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetPoroSolution()
   poroscatra->ApplyMeshMovement(poromulti_->StructDispnp(), 1);
 
   // set the fluid solution
-  poroscatra->SetSolutionFieldOfMultiFluid(poromulti_->RelaxedFluidPhinp(), 2);
+  poroscatra->SetSolutionFieldOfMultiFluid(
+      poromulti_->RelaxedFluidPhinp(), poromulti_->FluidField()->Phin(), 2);
 
   // additionally, set nodal flux if L2-projection is desired
   if (fluxreconmethod_ == INPAR::POROFLUIDMULTIPHASE::FluxReconstructionMethod::gradreco_l2)
@@ -308,8 +321,117 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetPoroSolution()
   if (artery_coupl_)
   {
     scatramsht_->SetArteryPressure();
-    scatramsht_->ApplyMeshMovement(poromulti_->StructDispnp());
+    scatramsht_->ApplyMeshMovement();
   }
+}
+
+/*----------------------------------------------------------------------*
+ |                                                     kremheller 06/18 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ApplyAdditionalDBCForVolFracSpecies()
+{
+  // remove the old one
+  ScatraAlgo()->ScaTraField()->RemoveDirichCond(add_dirichmaps_volfrac_spec_);
+
+  std::vector<int> mydirichdofs(0);
+
+  // get map and validdof-vector
+  const Epetra_Map* elecolmap = ScatraAlgo()->ScaTraField()->Discretization()->ElementColMap();
+  Teuchos::RCP<const Epetra_Vector> valid_volfracspec_dofs =
+      PoroField()->FluidField()->ValidVolFracSpecDofs();
+
+  // we identify the volume fraction species dofs which do not have a physical meaning and set a
+  // DBC on them
+  for (int iele = 0; iele < elecolmap->NumMyElements(); ++iele)
+  {
+    // dynamic_cast necessary because virtual inheritance needs runtime information
+    DRT::ELEMENTS::Transport* myele = dynamic_cast<DRT::ELEMENTS::Transport*>(
+        ScatraAlgo()->ScaTraField()->Discretization()->gElement(elecolmap->GID(iele)));
+
+    const MAT::Material& material2 = *(myele->Material(2));
+
+    // check the material
+    if (material2.MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
+        material2.MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
+      dserror("only poro multiphase and poro multiphase reactions material valid");
+
+    // cast fluid material
+    const MAT::FluidPoroMultiPhase& multiphasemat =
+        static_cast<const MAT::FluidPoroMultiPhase&>(material2);
+
+    const int numfluidphases = multiphasemat.NumFluidPhases();
+    const int numvolfrac = multiphasemat.NumVolFrac();
+    const int numfluidmat = multiphasemat.NumMat();
+
+    // this is only necessary if we have volume fractions present
+    // TODO: this works only if we have the same number of phases in every element
+    if (numfluidmat == numfluidphases) return;
+
+    const MAT::Material& material = *(myele->Material());
+
+    // cast scatra material
+    const MAT::MatList& scatramat = static_cast<const MAT::MatList&>(material);
+
+    if (not(scatramat.MaterialType() == INPAR::MAT::m_matlist or
+            scatramat.MaterialType() == INPAR::MAT::m_matlist_reactions))
+      dserror("wrong type of ScaTra-Material");
+
+    const int numscatramat = scatramat.NumMat();
+
+    DRT::Node** nodes = myele->Nodes();
+
+    for (int inode = 0; inode < (myele->NumNode()); inode++)
+    {
+      if (nodes[inode]->Owner() == ScatraAlgo()->ScaTraField()->Discretization()->Comm().MyPID())
+      {
+        std::vector<int> scatradofs =
+            ScatraAlgo()->ScaTraField()->Discretization()->Dof(0, nodes[inode]);
+        std::vector<int> fluiddofs =
+            PoroField()->FluidField()->Discretization()->Dof(0, nodes[inode]);
+
+        for (int idof = 0; idof < numscatramat; ++idof)
+        {
+          int matid = scatramat.MatID(idof);
+          Teuchos::RCP<MAT::Material> singlemat = scatramat.MaterialById(matid);
+          if (singlemat->MaterialType() == INPAR::MAT::m_scatra_multiporo_fluid ||
+              singlemat->MaterialType() == INPAR::MAT::m_scatra_multiporo_solid ||
+              singlemat->MaterialType() == INPAR::MAT::m_scatra_multiporo_temperature)
+          {
+            // do nothing
+          }
+          else if (singlemat->MaterialType() == INPAR::MAT::m_scatra_multiporo_volfrac)
+          {
+            const Teuchos::RCP<const MAT::ScatraMatMultiPoroVolFrac>& scatravolfracmat =
+                Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroVolFrac>(singlemat);
+
+            const int scalartophaseid = scatravolfracmat->PhaseID();
+            // if not already in original dirich map     &&   if it is not a valid volume fraction
+            // species dof identified with < 1
+            if (ScatraAlgo()->ScaTraField()->DirichMaps()->CondMap()->LID(scatradofs[idof]) == -1 &&
+                (int)(*valid_volfracspec_dofs)
+                        [PoroField()->FluidField()->Discretization()->DofRowMap()->LID(
+                            fluiddofs[scalartophaseid + numvolfrac])] < 1)
+            {
+              mydirichdofs.push_back(scatradofs[idof]);
+              ScatraAlgo()->ScaTraField()->Phinp()->ReplaceGlobalValue(scatradofs[idof], 0, 0.0);
+            }
+          }
+          else
+            dserror("only MAT_scatra_multiporo_(fluid,volfrac,solid,temperature) valid here");
+        }
+      }
+    }
+  }
+
+  // build map
+  int nummydirichvals = mydirichdofs.size();
+  add_dirichmaps_volfrac_spec_ = Teuchos::rcp(new Epetra_Map(-1, nummydirichvals,
+      &(mydirichdofs[0]), 0, ScatraAlgo()->ScaTraField()->Discretization()->Comm()));
+
+  // add the condition
+  ScatraAlgo()->ScaTraField()->AddDirichCond(add_dirichmaps_volfrac_spec_);
+
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -331,4 +453,39 @@ Teuchos::RCP<const Epetra_Map> POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::S
     const
 {
   return scatra_->ScaTraField()->DofRowMap();
+}
+
+/*------------------------------------------------------------------------*
+ | handle divergence of nonlinear solver                kremheller 10/18  |
+ *------------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::HandleDivergence() const
+{
+  switch (divcontype_)
+  {
+    case INPAR::POROMULTIPHASESCATRA::divcont_continue:
+    {
+      // warn if itemax is reached without convergence, but proceed to
+      // next timestep...
+      if (Comm().MyPID() == 0)
+      {
+        std::cout << "+---------------------------------------------------------------+"
+                  << std::endl;
+        std::cout << "|            >>>>>> continuing to next time step!               |"
+                  << std::endl;
+        std::cout << "+---------------------------------------------------------------+"
+                  << std::endl
+                  << std::endl;
+      }
+      break;
+    }
+    case INPAR::POROMULTIPHASESCATRA::divcont_stop:
+    {
+      dserror("POROMULTIPHASESCATRA nonlinear solver not converged in ITEMAX steps!");
+      break;
+    }
+    default:
+      dserror("unknown divercont action!");
+      break;
+  }
+  return;
 }

@@ -1,3 +1,15 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_constrmonolithic_structuresplit.cpp
+
+\brief Solve FSI problem with constraints
+
+\level 2
+
+\maintainer Matthias Mayr
+*/
+/*----------------------------------------------------------------------*/
+
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "fsi_constrmonolithic_structuresplit.H"

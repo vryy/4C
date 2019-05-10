@@ -6,8 +6,8 @@
 
    \level 3
 
-   \maintainer  Lena Yoshihara
-                yoshihara@lnm.mw.tum.de
+   \maintainer  Johannes Kremheller
+                kremheller@lnm.mw.tum.de
                 http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
@@ -54,8 +54,9 @@ void poromultiphase_dyn(int restart)
   int nds_solidpressure(-1);
 
   // Setup discretizations and coupling. Assign the dof sets and return the numbers
-  POROMULTIPHASE::UTILS::SetupDiscretizationsAndFieldCoupling(
-      comm, struct_disname, fluid_disname, nds_disp, nds_vel, nds_solidpressure);
+  std::map<int, std::set<int>> nearbyelepairs =
+      POROMULTIPHASE::UTILS::SetupDiscretizationsAndFieldCoupling(
+          comm, struct_disname, fluid_disname, nds_disp, nds_vel, nds_solidpressure);
 
   // Parameter reading
   const Teuchos::ParameterList& poroparams = problem->PoroMultiPhaseDynamicParams();
@@ -78,8 +79,8 @@ void poromultiphase_dyn(int restart)
   // initialize
   algo->Init(poroparams, poroparams, structdyn, fluiddyn, struct_disname, fluid_disname, true,
       nds_disp, nds_vel, nds_solidpressure,
-      -1  // no scalar field
-  );
+      -1,  // no scalar field
+      &nearbyelepairs);
 
   // read the restart information, set vectors and variables
   if (restart) algo->ReadRestart(restart);

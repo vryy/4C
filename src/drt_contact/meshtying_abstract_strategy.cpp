@@ -14,6 +14,7 @@
 #include "Epetra_SerialComm.h"
 
 #include "meshtying_abstract_strategy.H"
+#include "meshtying_noxinterface.H"
 #include "meshtying_defines.H"
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_interface.H"
@@ -32,11 +33,11 @@
  *----------------------------------------------------------------------*/
 CONTACT::MtAbstractStrategy::MtAbstractStrategy(const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface, int dim,
-    Teuchos::RCP<Epetra_Comm> comm, double alphaf,
-    int maxdof)
+    std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface, const int spatialDim,
+    const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf,
+    const int maxdof)
     : MORTAR::StrategyBase(Teuchos::rcp(new MORTAR::StratDataContainer()),  // no shared data!
-          DofRowMap, NodeRowMap, params, dim, comm, alphaf, maxdof),
+          DofRowMap, NodeRowMap, params, spatialDim, comm, alphaf, maxdof),
       interface_(interface),
       dualquadslavetrafo_(false)
 {
@@ -53,6 +54,9 @@ CONTACT::MtAbstractStrategy::MtAbstractStrategy(const Epetra_Map* DofRowMap,
     pgmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*gmdofrowmap_));
     pgsmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*gsmdofrowmap_));
   }
+
+  // build the NOX::NLN::CONSTRAINT::Interface::Required object
+  noxinterface_ptr_ = Teuchos::rcp(new CONTACT::MtNoxInterface());
 
   return;
 }
@@ -329,7 +333,7 @@ void CONTACT::MtAbstractStrategy::SetState(
 /*----------------------------------------------------------------------*
  |  do mortar coupling in reference configuration             popp 12/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis)
+void CONTACT::MtAbstractStrategy::MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis)
 {
   //********************************************************************
   // initialize and evaluate interfaces
@@ -484,7 +488,7 @@ void CONTACT::MtAbstractStrategy::RestrictMeshtyingZone()
 }
 
 /*----------------------------------------------------------------------*
- |  mesh intialization for rotational invariance              popp 12/09|
+ |  mesh initialization for rotational invariance              popp 12/09|
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::MeshInitialization(Teuchos::RCP<Epetra_Vector> Xslavemod)
 {
@@ -589,7 +593,7 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(Teuchos::RCP<Epetra_Vector>
   //**********************************************************************
   // (2) re-evaluate constraints in reference configuration
   //**********************************************************************
-  // intialize
+  // initialize
   g_ = LINALG::CreateVector(*gsdofrowmap_, true);
 
   // compute g-vector at global level
@@ -619,7 +623,7 @@ void CONTACT::MtAbstractStrategy::Evaluate(Teuchos::RCP<LINALG::SparseOperator>&
 }
 
 /*----------------------------------------------------------------------*
- |  Store Lagrange mulitpliers into MortarNode                popp 06/08|
+ |  Store Lagrange multipliers into MortarNode                popp 06/08|
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type)
 {
@@ -1315,11 +1319,10 @@ void CONTACT::MtAbstractStrategy::AssembleCoords(
 }
 
 /*----------------------------------------------------------------------*
- | collect maps for preconditioner (AMG)                   wiesner 01/12|
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::CollectMapsForPreconditioner(
     Teuchos::RCP<Epetra_Map>& MasterDofMap, Teuchos::RCP<Epetra_Map>& SlaveDofMap,
-    Teuchos::RCP<Epetra_Map>& InnerDofMap, Teuchos::RCP<Epetra_Map>& ActiveDofMap)
+    Teuchos::RCP<Epetra_Map>& InnerDofMap, Teuchos::RCP<Epetra_Map>& ActiveDofMap) const
 {
   InnerDofMap = gndofrowmap_;  // global internal dof row map
 
@@ -1339,6 +1342,8 @@ void CONTACT::MtAbstractStrategy::CollectMapsForPreconditioner(
     MasterDofMap = pgmdofrowmap_;
   else
     MasterDofMap = gmdofrowmap_;
+
+  return;
 }
 
 /*----------------------------------------------------------------------*

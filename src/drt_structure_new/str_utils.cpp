@@ -4,37 +4,61 @@
 
 \brief Utility methods for the structural time integration.
 
-\maintainer Michael Hiermeier
-
-\date Dec 2, 2015
+\maintainer Matthias Mayr
 
 \level 3
 
 */
 /*-----------------------------------------------------------*/
 
-
-#include "str_utils.H"
 #include "str_integrator.H"
 #include "str_model_evaluator_contact.H"
+#include "str_model_evaluator_meshtying.H"
 #include "str_model_evaluator_lagpenconstraint.H"
-#include "../drt_contact/contact_abstract_strategy.H"
-#include "../drt_contact/contact_noxinterface.H"
+#include "str_nln_linearsystem_scaling.H"
+#include "str_utils.H"
+
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/lagpenconstraint_noxinterface.H"
 
-#include "../drt_structure_new/str_timint_basedatasdyn.H"
+#include "../drt_contact/contact_abstract_strategy.H"
+#include "../drt_contact/contact_noxinterface.H"
+#include "../drt_contact/meshtying_abstract_strategy.H"
+#include "../drt_contact/meshtying_noxinterface.H"
+
 #include "../drt_inpar/inpar_structure.H"
 
-#include "../solver_nonlin_nox/nox_nln_constraint_interface_required.H"
-#include "../solver_nonlin_nox/nox_nln_constraint_interface_preconditioner.H"
-#include "../solver_nonlin_nox/nox_nln_aux.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_globalproblem.H"
+
+#include "../drt_structure_new/str_timint_basedatasdyn.H"
+
+#include "../solver_nonlin_nox/nox_nln_aux.H"
+#include "../solver_nonlin_nox/nox_nln_constraint_interface_preconditioner.H"
+#include "../solver_nonlin_nox/nox_nln_constraint_interface_required.H"
 
 #include "../linalg/linalg_utils.H"
 
 #include <Epetra_Vector.h>
-#include "str_nln_linearsystem_scaling.H"
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+NOX::NLN::LinSystem::ConditionNumber STR::NLN::Convert2NoxConditionNumberType(
+    const INPAR::STR::ConditionNumber stype)
+{
+  switch (stype)
+  {
+    case INPAR::STR::ConditionNumber::max_min_ev_ratio:
+      return NOX::NLN::LinSystem::ConditionNumber::max_min_ev_ratio;
+    case INPAR::STR::ConditionNumber::one_norm:
+      return NOX::NLN::LinSystem::ConditionNumber::one_norm;
+    case INPAR::STR::ConditionNumber::inf_norm:
+      return NOX::NLN::LinSystem::ConditionNumber::inf_norm;
+    default:
+      dserror("No known conversion.");
+      exit(EXIT_FAILURE);
+  }
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -274,6 +298,14 @@ void STR::NLN::CreateConstraintInterfaces(NOX::NLN::CONSTRAINT::ReqInterfaceMap&
         iconstr[NOX::NLN::sol_contact] = contact_model.StrategyPtr()->NoxInterfacePtr();
         break;
       }
+      case NOX::NLN::sol_meshtying:
+      {
+        STR::MODELEVALUATOR::Generic& model = integrator.Evaluator(INPAR::STR::model_meshtying);
+        STR::MODELEVALUATOR::Meshtying& mt_model =
+            dynamic_cast<STR::MODELEVALUATOR::Meshtying&>(model);
+        iconstr[NOX::NLN::sol_meshtying] = mt_model.StrategyPtr()->NoxInterfacePtr();
+        break;
+      }
       case NOX::NLN::sol_lag_pen_constraint:
       {
         STR::MODELEVALUATOR::Generic& model =
@@ -314,6 +346,14 @@ void STR::NLN::CreateConstraintPreconditioner(NOX::NLN::CONSTRAINT::PrecInterfac
         iconstr_prec[NOX::NLN::sol_contact] = contact_model.StrategyPtr();
         break;
       }
+      case NOX::NLN::sol_meshtying:
+      {
+        STR::MODELEVALUATOR::Generic& model = integrator.Evaluator(INPAR::STR::model_meshtying);
+        STR::MODELEVALUATOR::Meshtying& mt_model =
+            dynamic_cast<STR::MODELEVALUATOR::Meshtying&>(model);
+        iconstr_prec[NOX::NLN::sol_meshtying] = mt_model.StrategyPtr();
+        break;
+      }
       case NOX::NLN::sol_lag_pen_constraint:
       {
         STR::MODELEVALUATOR::Generic& model =
@@ -339,4 +379,47 @@ void STR::NLN::CreateScaling(Teuchos::RCP<NOX::Epetra::Scaling>& iscale,
 {
   if (DataSDyn.GetSTCAlgoType() != INPAR::STR::stc_none)
     iscale = Teuchos::rcp(new STR::NLN::LinSystem::StcScaling(DataSDyn, GState));
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double STR::TIMINT::GetTimIntFactor()
+{
+  const Teuchos::ParameterList& sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
+  const INPAR::STR::DynamicType dyntype =
+      DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP");
+
+  double timintfactor = 0.0;
+
+  switch (dyntype)
+  {
+    case INPAR::STR::dyna_statics:
+    {
+      timintfactor = 0.0;
+      break;
+    }
+    case INPAR::STR::dyna_genalpha:
+    {
+      timintfactor = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");
+      break;
+    }
+    case INPAR::STR::dyna_gemm:
+    {
+      timintfactor = sdynparams.sublist("GEMM").get<double>("ALPHA_F");
+      break;
+    }
+    case INPAR::STR::dyna_onesteptheta:
+    {
+      timintfactor = 1.0 - sdynparams.sublist("ONESTEPTHETA").get<double>("THETA");
+      break;
+    }
+    default:
+    {
+      dserror("Time integration factor has not been set for time integration scheme '%s'",
+          INPAR::STR::DynamicTypeString(dyntype).c_str());
+      break;
+    }
+  }
+
+  return timintfactor;
 }

@@ -2,9 +2,9 @@
 /*!
 \file str_predict_factory.H
 
-\maintainer Michael Hiermeier
+\brief Factory class to build predictor objects
 
-\date Aug 31, 2015
+\maintainer Michael Hiermeier
 
 \level 3
 
@@ -40,9 +40,12 @@ namespace STR
           const enum INPAR::STR::PredEnum& predType) const;
     };
 
-    /*! Non-member function, which relates to the STR::PREDICT::Factory class
-     *  Please call this method from outside! */
+    /*! \brief Non-member function, which relates to the STR::PREDICT::Factory class
+     *
+     * \note Call this method from outside!
+     */
     Teuchos::RCP<STR::PREDICT::Generic> BuildPredictor(const enum INPAR::STR::PredEnum& predType);
+
   }  // namespace PREDICT
 }  // namespace STR
 

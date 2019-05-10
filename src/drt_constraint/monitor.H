@@ -2,14 +2,7 @@
 \file monitor.H
 \brief Basic constraint class, dealing with constraints living on boundaries
 \level 2
-<pre>
-
 \maintainer Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
-
 *----------------------------------------------------------------------*/
 
 #ifndef MONITOR_H
@@ -25,12 +18,11 @@ namespace DRT
   class Condition;
   class Discretization;
 }  // namespace DRT
+
 namespace LINALG
 {
   class SparseOperator;
 }
-
-
 
 namespace UTILS
 {

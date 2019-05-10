@@ -40,7 +40,7 @@ namespace IO
 namespace PARTICLEINTERACTION
 {
   class SPHEquationOfStateBase;
-  class SPHMaterialHandler;
+  class MaterialHandler;
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*
@@ -55,31 +55,37 @@ namespace PARTICLEINTERACTION
     explicit SPHEquationOfStateBundle(const Teuchos::ParameterList& params);
 
     //! virtual destructor
-    virtual ~SPHEquationOfStateBundle(){};
+    ~SPHEquationOfStateBundle(){};
 
     //! init equation of state bundle
-    virtual void Init(std::shared_ptr<PARTICLEINTERACTION::SPHMaterialHandler> particlematerial);
+    void Init(const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial);
 
     //! setup equation of state bundle
-    virtual void Setup();
+    void Setup();
 
     //! write restart of equation of state bundle
-    virtual void WriteRestart(const int step, const double time) const;
+    void WriteRestart(const int step, const double time) const;
 
     //! read restart of equation of state bundle
-    virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
+    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
-    //! get specific equation of state
-    virtual std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBase> GetSpecificEquationOfState(
-        PARTICLEENGINE::TypeEnum particleType) const;
+    //! return pointer to specific equation of state
+    inline const PARTICLEINTERACTION::SPHEquationOfStateBase* GetPtrToSpecificEquationOfState(
+        PARTICLEENGINE::TypeEnum typeEnum) const
+    {
+      return phasetypetoequationofstate_[typeEnum].get();
+    };
 
-   protected:
+   private:
     //! smoothed particle hydrodynamics specific parameter list
     const Teuchos::ParameterList& params_sph_;
 
     //! equation of state handler for all particle types
-    std::map<PARTICLEENGINE::TypeEnum, std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBase>>
+    std::vector<std::unique_ptr<PARTICLEINTERACTION::SPHEquationOfStateBase>>
         phasetypetoequationofstate_;
+
+    //! set of particle types of stored equation of state handlers
+    std::set<PARTICLEENGINE::TypeEnum> storedtypes_;
   };
 
 }  // namespace PARTICLEINTERACTION

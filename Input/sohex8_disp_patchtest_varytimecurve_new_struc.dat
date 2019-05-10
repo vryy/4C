@@ -25,9 +25,6 @@ NUMTHERMDIS                     0
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   No
-FLUID_SOL                       Yes
-FLUID_STRESS                    No
-FLUID_VIS                       No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard // Old
 LINEAR_SOLVER                   1
@@ -36,7 +33,7 @@ RESULTSEVRY                     1
 RESTARTEVRY                     20
 NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
 TIMESTEP                        1.0
-NUMSTEP                         2
+NUMSTEP                         100
 MAXTIME                         100.0
 DAMPING                         No
 M_DAMP                          0.00001
@@ -46,7 +43,7 @@ TOLDISP                         1.0E-7
 NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              Or
-MAXITER                         10
+MAXITER                         1
 DIVERCONT                       continue
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
@@ -54,71 +51,24 @@ SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 10.0 THEXPANS 0.0
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 3.17490129838995772e-01 TOLERANCE 1e-08
-STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE -5.44652529298803641e-03 TOLERANCE 1e-08
-STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE -3.88687918041329041e-03 TOLERANCE 1e-08
+STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 3.52549196155110467e+00 TOLERANCE 1e-08
+STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE -8.31427514725287670e-02 TOLERANCE 1e-08
+STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE -8.31427514725307654e-02 TOLERANCE 1e-08
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         16
 NDLINE                          32
 NDSURF                          24
 NDVOL                           7
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNCT FUNCT FUNCT FUNCT FUNCT FUNCT
 DPOINT                          1
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNCT FUNCT FUNCT FUNCT FUNCT FUNCT
-DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNCT FUNCT FUNCT FUNCT FUNCT FUNCT
 DSURF                           1
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNCT FUNCT FUNCT FUNCT FUNCT FUNCT
-DVOL                            0
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL NSURF
-DPOINT                          0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE NSURF
-DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE NSURF
 DSURF                           1
 E 8 - NUMDOF 3 ONOFF 1 0 0 VAL 1.0 0.0 0.0 FUNCT 0 0 0 Live Mid
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
-DVOL                            0
------------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
-// DOBJECT FSI_ID FIELD MESH FLAG
-DLINE                           0
------------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
-// DOBJECT FSI_ID FIELD MESH
-DSURF                           0
------------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
-//                              DOBJECT
-DLINE                           0
------------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
-//                              DOBJECT
-DSURF                           0
--------------------------------------------------DESIGN FLUID LINE LIFT&DRAG
-// DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER
-DLINE                           0
--------------------------------------------------DESIGN FLUID SURF LIFT&DRAG
-// DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER Z_CENTER ALE_LINE
-DSURF                           0
-----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
-// DOBJECT Id
-DPOINT                          0
------------------------------------------------DESIGN LINE LOCSYS CONDITIONS
-// DOBJECT Id
-DLINE                           0
------------------------------------------------DESIGN SURF LOCSYS CONDITIONS
-// DOBJECT Id
-DSURF                           0
-------------------------------------------------DESIGN VOL LOCSYS CONDITIONS
-// DOBJECT Id
-DVOL                            0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 16 DNODE 1
 NODE 13 DNODE 2
@@ -357,17 +307,17 @@ NODE 3 DVOLUME 7
 NODE 2 DVOLUME 7
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 4.000000000000000e+00 4.000000000000000e+00 4.000000000000000e+00
-NODE 2 COORD 2.300000000000000e+00 2.400000000000000e+00 2.100000000000000e+00
-NODE 3 COORD 1.700000000000000e+00 2.600000000000000e+00 2.200000000000000e+00
-NODE 4 COORD 2.200000000000000e+00 2.300000000000000e+00 1.900000000000000e+00
-NODE 5 COORD 2.200000000000000e+00 1.600000000000000e+00 2.300000000000000e+00
-NODE 6 COORD 1.500000000000000e+00 2.300000000000000e+00 1.500000000000000e+00
-NODE 7 COORD 1.500000000000000e+00 1.500000000000000e+00 2.200000000000000e+00
+NODE 2 COORD 2.400000000000000e+00 2.400000000000000e+00 2.400000000000000e+00
+NODE 3 COORD 1.600000000000000e+00 2.400000000000000e+00 2.400000000000000e+00
+NODE 4 COORD 2.400000000000000e+00 2.400000000000000e+00 1.600000000000000e+00
+NODE 5 COORD 2.400000000000000e+00 1.600000000000000e+00 2.400000000000000e+00
+NODE 6 COORD 1.600000000000000e+00 2.400000000000000e+00 1.600000000000000e+00
+NODE 7 COORD 1.600000000000000e+00 1.600000000000000e+00 2.400000000000000e+00
 NODE 8 COORD 4.000000000000000e+00 4.000000000000000e+00 0.000000000000000e+00
 NODE 9 COORD 4.000000000000000e+00 0.000000000000000e+00 4.000000000000000e+00
 NODE 10 COORD 0.000000000000000e+00 4.000000000000000e+00 4.000000000000000e+00
-NODE 11 COORD 2.300000000000000e+00 1.300000000000000e+00 1.500000000000000e+00
-NODE 12 COORD 1.300000000000000e+00 1.400000000000000e+00 1.200000000000000e+00
+NODE 11 COORD 2.400000000000000e+00 1.600000000000000e+00 1.600000000000000e+00
+NODE 12 COORD 1.600000000000000e+00 1.600000000000000e+00 1.600000000000000e+00
 NODE 13 COORD 4.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
 NODE 14 COORD 0.000000000000000e+00 4.000000000000000e+00 0.000000000000000e+00
 NODE 15 COORD 0.000000000000000e+00 0.000000000000000e+00 4.000000000000000e+00

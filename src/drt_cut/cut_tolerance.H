@@ -76,7 +76,7 @@
 // We may get volumecells with all facets on a plane
 // in such case directdivergence may produce negative volume, because it works only for closed
 // geometries if volume of cell is less than this, we do not generate gauss rules
-#define REF_VOL_DIRDIV 1e-26
+#define REF_VOL_DIRDIV 1e-6
 
 #define SELF_CUT_POS_TOL 1e-10
 
@@ -95,10 +95,86 @@
 #define DIRECTDIV_GAUSSRULE 7  // 7 for test cases
 
 // Construct the integration rules directly on the local coordinate system of the element
-#define LOCAL
+//#define LOCAL
 
 // utilized quadrature compression (for Details see paper by Sudhakar et al.)
 //#define QUADCOMP
 
+// if we want to use cln outside of cut kernel (e.g. for calculation of local position of point on
+// edge or arc length in the pointgraph). Should be ajusted for memory containter in order to be
+// usable
+//#define CLN_CALC_OUTSIDE_KERNEL
+
+
+// limiting error, until which precision will be increased
+#define CLN_LIMIT_ERROR 1e-20
+
+// limiting error after which double will be switched to cln
+#define DOUBLE_LIMIT_ERROR (4 * 1e-15)
+
+// whether we run on double + (soemtimes) cln or double + (always) cln
+#define DOUBLE_PLUS_CLN_COMPUTE true
+
+// global tolerance for detecting sides near the point in the cut_kernel
+#define SIDE_DETECTION_TOLERANCE 1e-14
+
+// global tolerance for detecting sides near the point in the cut_kernel
+#define INSIDE_OUTSIDE_TOLERANCE 0.0
+
+// new general mergin tolerance
+#define MERGING_TOLERANCE 1e-14
+
+// tolerance for merging non-topologically connected points
+#define NON_TOPOLOGICAL_TOLERANCE 1e-14
+
+// tolerance for mergin topologically connected points
+#define TOPOLOGICAL_TOLERANCE 1e-14
+
+// tolerance for detection if the edges are close enough to each other
+#define EDGE_EDGE_TOLERANCE 1e-14
+
+// minimum vaue to set up, when error of double calculation is equal 0.0
+#define MINIMUM_DOUBLE_ERROR 1e-16
+
+// scale of the tolerance, during initial loading of the mesh
+#define NODAL_POINT_TOLERANCE_SCALE 5.0
+
+// scale of the tolerance, during creation of points in the selcut
+#define NODAL_POINT_TOLERANCE_SELFCUT_SCALE 2.5
+
+// for direct_divergence.cpp volume of bounding box of facets with x-normal zero
+#define MINIMUM_VOLUME_BB_FACETS 1e-13
+
+// maximum area of the boundary cell, that might be negative due to numerical precision
+#define AREA_BC_TOL 1e-12
+
+// allowed error if volume tests
+#define VOLUME_ERROR_TOL 1e-2
+
+// distance with with to shift local position of the end points on the edge if it is equal to the
+// othe cut_point local position
+#define END_NODE_SHIFT_DISTANCE 1e-15
+
+// cln memory manager
+
+// #define CUSTOM_MEMORY_ALLOCATOR
+
+#define DEBUG_MEMORY_ALLOCATION false
+
+// define flags for effective cut development
+
+// version for development, settign this to true will set all the needed constants also
+#define CUT_DEVELOP false
+
+#if CUT_DEVELOP
+// all the basicl, useful cut output output, that is needed for development
+#define EXTENDED_CUT_DEBUG_OUTPUT true
+// whether to record information about how this point was created, its topology infromation,etc
+#define CUT_CREATION_INFO true
+#else
+#define EXTENDED_CUT_DEBUG_OUTPUT false
+#define CUT_CREATION_INFO false
+
+#endif
 
 #endif

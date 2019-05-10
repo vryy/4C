@@ -3,11 +3,11 @@
 
 \brief Calculates the fix point direction.
 
-\maintainer Andreas Rauch
+\maintainer Matthias Mayr
 
 \level 1
-
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 #ifndef FSI_NOX_FIXPOINT_H
 #define FSI_NOX_FIXPOINT_H
@@ -18,15 +18,11 @@
 #include <Teuchos_RCP.hpp>
 #include <NOX_Direction_UserDefinedFactory.H>
 
-
-/// NOX: the nonlinear object solver from trilinos with local extensions
 namespace NOX
 {
-  /// NOX::FSI: local extensions to NOX, some of them special to FSI
   namespace FSI
   {
-    //! %Calculates the fix point direction.
-    /*!
+    /*! \brief Calculates the fix point direction.
 
       Calculates the direction
       \f[

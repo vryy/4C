@@ -89,7 +89,6 @@ SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 3
 SOLVER                          UMFPACK                       // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-CONTROLTYPE                     load
 DAMPING                         Material
 DYNAMICTYP                      OneStepTheta
 PREDICT                         ConstDis

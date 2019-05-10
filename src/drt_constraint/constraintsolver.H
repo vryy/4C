@@ -2,14 +2,7 @@
 \file constraintsolver.H
 \brief Class containing Uzawa algorithm to solve linear system.
 \level 2
-<pre>
-
 \maintainer Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
-
 *----------------------------------------------------------------------*/
 
 #ifndef CONSTRAINTSOLVER_H
@@ -23,13 +16,12 @@
 
 #include "../drt_inpar/inpar_structure.H"
 
-
-
 // forward declarations
 namespace DRT
 {
   class Discretization;
 }
+
 namespace LINALG
 {
   class MapExtractor;

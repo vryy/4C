@@ -8,7 +8,7 @@ between the xfluid class and the cut-library
 \level 2
 
 <pre>
-\maintainer  Ager Christoph
+\maintainer  Christoph Ager
              ager@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15249
@@ -257,7 +257,7 @@ namespace XFEM
     }
 
     //! reset all evaluated trace estimates, next time the are required will be calculated again!
-    void ResetEvaluatedTraceEstimates() { ele_to_max_eigenvalue_->clear(); }
+    void ResetEvaluatedTraceEstimates();
 
     //! get the estimation of the penalty scaling in Nitsche's method from the trace inequality for
     //! a specific face element via solving a local eigenvalue problem
@@ -289,6 +289,12 @@ namespace XFEM
 
     //! bool to indicate if volume coupling is initialized
     bool init_volcoupling_;
+
+    //! when should the local eigenvalue problem be updated
+    INPAR::XFEM::TraceEstimate_eigenvalue_update traceEstimate_eigenvalue_update_;
+
+    //! last reset of local eigenvalue problem
+    int reset_step_;
   };
 
   /*!
@@ -379,8 +385,9 @@ namespace XFEM
 
     //! Updates configurationmap for specific Gausspoint
     virtual void UpdateConfigurationMap_GP(double& kappa_m,  //< fluid sided weighting
-        double& visc_m,                                      //< fluid sided weighting
+        double& visc_m,                                      //< master sided dynamic viscosity
         double& visc_s,                                      //< slave sided dynamic viscosity
+        double& density_m,                                   //< master sided density
         double& visc_stab_tang,         //< viscous tangential NIT Penalty scaling
         double& full_stab,              //< full NIT Penalty scaling
         const LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
@@ -389,7 +396,9 @@ namespace XFEM
         DRT::Element* bele,             //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-        LINALG::Matrix<3, 1>& rst_slave  //< local coord of gp on slave boundary element
+        LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+        LINALG::Matrix<3, 1>& normal,     //< normal at gp
+        LINALG::Matrix<3, 1>& vel_m       //< master velocity at gp
     );
   };
 
@@ -411,7 +420,8 @@ namespace XFEM
         const int step,         ///< time step
         bool marked_geometry = false  ///< is this a marked geometry mesh boundary
         )
-        : MeshCouplingBC(bg_dis, cond_name, cond_dis, coupling_id, time, step, marked_geometry)
+        : MeshCouplingBC(bg_dis, cond_name, cond_dis, coupling_id, time, step, marked_geometry),
+          inflow_stab_(false)
     {
     }
 
@@ -431,6 +441,35 @@ namespace XFEM
         LINALG::Matrix<3, 1>& itraction, const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond);
 
     virtual void PrepareSolve();
+
+   protected:
+    //! Do condition specific setup
+    virtual void DoConditionSpecificSetup();
+
+    //! Initializes configurationmap
+    virtual void SetupConfigurationMap();
+
+    //! Updates configurationmap for specific Gausspoint
+    virtual void UpdateConfigurationMap_GP(double& kappa_m,  //< fluid sided weighting
+        double& visc_m,                                      //< master sided dynamic viscosity
+        double& visc_s,                                      //< slave sided dynamic viscosity
+        double& density_m,                                   //< master sided density
+        double& visc_stab_tang,         //< viscous tangential NIT Penalty scaling
+        double& full_stab,              //< full NIT Penalty scaling
+        const LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
+        const DRT::Condition* cond,     //< Condition
+        DRT::Element* ele,              //< Element
+        DRT::Element* bele,             //< Boundary Element
+        double* funct,  //< local shape function for Gauss Point (from fluid element)
+        double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
+        LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+        LINALG::Matrix<3, 1>& normal,     //< normal at gp
+        LINALG::Matrix<3, 1>& vel_m       //< master velocity at gp
+    );
+
+   private:
+    //! Flag for inflow stabilization
+    bool inflow_stab_;
   };
 
 
@@ -495,8 +534,9 @@ namespace XFEM
 
     //! Updates configurationmap for specific Gausspoint
     virtual void UpdateConfigurationMap_GP(double& kappa_m,  //< fluid sided weighting
-        double& visc_m,                                      //< fluid sided weighting
+        double& visc_m,                                      //< master sided dynamic viscosity
         double& visc_s,                                      //< slave sided dynamic viscosity
+        double& density_m,                                   //< master sided density
         double& visc_stab_tang,         //< viscous tangential NIT Penalty scaling
         double& full_stab,              //< full NIT Penalty scaling
         const LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
@@ -505,7 +545,9 @@ namespace XFEM
         DRT::Element* bele,             //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-        LINALG::Matrix<3, 1>& rst_slave  //< local coord of gp on slave boundary element
+        LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+        LINALG::Matrix<3, 1>& normal,     //< normal at gp
+        LINALG::Matrix<3, 1>& vel_m       //< master velocity at gp
     );
 
    protected:
@@ -610,8 +652,9 @@ namespace XFEM
 
     //! Updates configurationmap for specific Gausspoint
     virtual void UpdateConfigurationMap_GP(double& kappa_m,  //< fluid sided weighting
-        double& visc_m,                                      //< fluid sided weighting
+        double& visc_m,                                      //< master sided dynamic viscosity
         double& visc_s,                                      //< slave sided dynamic viscosity
+        double& density_m,                                   //< master sided density
         double& visc_stab_tang,         //< viscous tangential NIT Penalty scaling
         double& full_stab,              //< full NIT Penalty scaling
         const LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
@@ -620,7 +663,9 @@ namespace XFEM
         DRT::Element* bele,             //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-        LINALG::Matrix<3, 1>& rst_slave  //< local coord of gp on slave boundary element
+        LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+        LINALG::Matrix<3, 1>& normal,     //< normal at gp
+        LINALG::Matrix<3, 1>& vel_m       //< master velocity at gp
     );
 
     //------------------------------- vectors -----------------------------
@@ -713,8 +758,9 @@ namespace XFEM
 
     //! Updates configurationmap for specific Gausspoint
     virtual void UpdateConfigurationMap_GP(double& kappa_m,  //< fluid sided weighting
-        double& visc_m,                                      //< fluid sided weighting
+        double& visc_m,                                      //< master sided dynamic viscosity
         double& visc_s,                                      //< slave sided dynamic viscosity
+        double& density_m,                                   //< master sided density
         double& visc_stab_tang,         //< viscous tangential NIT Penalty scaling
         double& full_stab,              //< full NIT Penalty scaling
         const LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
@@ -723,7 +769,9 @@ namespace XFEM
         DRT::Element* bele,             //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-        LINALG::Matrix<3, 1>& rst_slave  //< local coord of gp on slave boundary element
+        LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+        LINALG::Matrix<3, 1>& normal,     //< normal at gp
+        LINALG::Matrix<3, 1>& vel_m       //< master velocity at gp
     );
 
    private:

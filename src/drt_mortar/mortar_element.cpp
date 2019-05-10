@@ -80,8 +80,6 @@ void MORTAR::MortarEleDataContainer::Pack(DRT::PackBuffer& data) const
 {
   // add area_
   DRT::ParObject::AddtoPack(data, area_);
-  // add searchelements_
-  DRT::ParObject::AddtoPack(data, &searchelements_, (int)searchelements_.size());
 
   return;
 }
@@ -95,8 +93,6 @@ void MORTAR::MortarEleDataContainer::Unpack(
 {
   // area_
   DRT::ParObject::ExtractfromPack(position, data, area_);
-  // searchelements_
-  DRT::ParObject::ExtractfromPack(position, data, &searchelements_, (int)searchelements_.size());
 
   dualshapecoeff_ = Teuchos::null;
   derivdualshapecoeff_ = Teuchos::null;
@@ -1646,7 +1642,10 @@ void MORTAR::MortarElement::NodeLinearization(
  *----------------------------------------------------------------------*/
 void MORTAR::MortarElement::EstimateNitscheTraceMaxEigenvalueCombined()
 {
-  if (Dim() != 3) dserror("not implemented for this spatial dimension");
+  if (Dim() != 3)
+    dserror(
+        "Contact using Nitsche's method is only supported for 3D problems."
+        "We do not intend to support 2D problems.");
 
   Teuchos::RCP<DRT::Element> surf_ele = ParentElement()->Surfaces()[FaceParentNumber()];
   DRT::ELEMENTS::StructuralSurface* surf =

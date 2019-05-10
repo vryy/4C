@@ -27,8 +27,6 @@
 
 #include "../drt_lib/drt_resulttest.H"
 
-#include <Epetra_Comm.h>
-
 /*---------------------------------------------------------------------------*
  | forward declarations                                       sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
@@ -42,29 +40,26 @@ namespace PARTICLEENGINE
  *---------------------------------------------------------------------------*/
 namespace PARTICLEALGORITHM
 {
-  class ResultTest : public DRT::ResultTest
+  class ParticleResultTest : public DRT::ResultTest
   {
    public:
     //! constructor
-    explicit ResultTest(const Epetra_Comm& comm);
+    explicit ParticleResultTest();
 
     //! virtual destructor
-    virtual ~ResultTest(){};
+    virtual ~ParticleResultTest(){};
 
-    //! init result test
+    //! init particle result test
     virtual void Init();
 
-    //! setup result test
+    //! setup particle result test
     virtual void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
 
     //! test special quantity
-    void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+    virtual void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
-   protected:
-    //! communication
-    const Epetra_Comm& comm_;
-
+   private:
     //! interface to particle engine
     std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface_;
   };

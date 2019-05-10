@@ -34,6 +34,7 @@
 #include "../drt_contact/contact_node.H"
 #include "../drt_io/io.H"
 
+// forward declarations
 namespace LINALG
 {
   class SparseMatrix;

@@ -19,6 +19,8 @@
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_base.H"
 
+#include "particle_interaction_material_handler.H"
+
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_container.H"
 
@@ -37,20 +39,28 @@ PARTICLEINTERACTION::ParticleInteractionBase::ParticleInteractionBase(
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionBase::Init()
 {
-  // nothing to do
+  // init particle material handler
+  InitParticleMaterialHandler();
 }
 
 /*---------------------------------------------------------------------------*
  | setup particle interaction handler                         sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionBase::Setup(
-    const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
+    const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
+    const std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface)
 {
   // set interface to particle engine
   particleengineinterface_ = particleengineinterface;
 
   // set particle container bundle
   particlecontainerbundle_ = particleengineinterface_->GetParticleContainerBundle();
+
+  // set interface to particle wall hander
+  particlewallinterface_ = particlewallinterface;
+
+  // setup particle material handler
+  particlematerial_->Setup();
 
   // init vector
   gravity_.resize(3, 0.0);
@@ -62,7 +72,8 @@ void PARTICLEINTERACTION::ParticleInteractionBase::Setup(
 void PARTICLEINTERACTION::ParticleInteractionBase::WriteRestart(
     const int step, const double time) const
 {
-  // nothing to do
+  // write restart of particle material handler
+  particlematerial_->WriteRestart(step, time);
 }
 
 /*---------------------------------------------------------------------------*
@@ -71,7 +82,8 @@ void PARTICLEINTERACTION::ParticleInteractionBase::WriteRestart(
 void PARTICLEINTERACTION::ParticleInteractionBase::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
-  // nothing to do
+  // read restart of particle material handler
+  particlematerial_->ReadRestart(reader);
 }
 
 /*---------------------------------------------------------------------------*
@@ -99,6 +111,18 @@ void PARTICLEINTERACTION::ParticleInteractionBase::SetGravity(std::vector<double
 }
 
 /*---------------------------------------------------------------------------*
+ | init particle material handler                             sfuchs 07/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::ParticleInteractionBase::InitParticleMaterialHandler()
+{
+  // create particle material handler
+  particlematerial_ = std::make_shared<PARTICLEINTERACTION::MaterialHandler>(params_);
+
+  // init particle material handler
+  particlematerial_->Init();
+}
+
+/*---------------------------------------------------------------------------*
  | maximum particle radius (on this processor)                sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::ParticleInteractionBase::MaxParticleRadius() const
@@ -107,27 +131,17 @@ double PARTICLEINTERACTION::ParticleInteractionBase::MaxParticleRadius() const
   double maxrad = 0.0;
 
   // iterate over particle types
-  for (auto& typeIt : particlecontainerbundle_->GetRefToAllContainersMap())
+  for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
     // get container of owned particles of current particle type
-    auto statusIt = (typeIt.second).find(PARTICLEENGINE::Owned);
-    if (statusIt == (typeIt.second).end())
-      dserror("particle status '%s' not found!",
-          PARTICLEENGINE::EnumToStatusName(PARTICLEENGINE::Owned).c_str());
-    PARTICLEENGINE::ParticleContainerShrdPtr container = statusIt->second;
+    PARTICLEENGINE::ParticleContainer* container =
+        particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
-    // get number of particles stored in container
-    int particlestored = container->ParticlesStored();
+    // get maximum stored value of state
+    double currmaxrad = container->GetMaxValueOfState(PARTICLEENGINE::Radius);
 
-    // no owned particles of current particle type
-    if (particlestored <= 0) continue;
-
-    // get pointer to particle radius
-    double* rad = container->GetPtrToParticleState(PARTICLEENGINE::Radius, 0);
-
-    // iterate over owned particles of current type
-    for (int i = 0; i < particlestored; ++i)
-      if (rad[i] > maxrad) maxrad = rad[i];
+    // compare to current maximum
+    maxrad = std::max(maxrad, currmaxrad);
   }
 
   return maxrad;

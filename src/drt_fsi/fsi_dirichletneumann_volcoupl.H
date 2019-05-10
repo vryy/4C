@@ -2,15 +2,12 @@
 /*!
 \file fsi_dirichletneumann_volcoupl.H
 
-\brief ...
+\brief Solve FSI problems using a Dirichlet-Neumann partitioned approach
+       with volume coupling
 
 \level 3
 
-<pre>
-\maintainer  Philip Farah
-             farah@lnm.mw.tum.de
-             089 - 289-10362
-</pre>
+\maintainer  Anh-Tu Vuong
 */
 /*----------------------------------------------------------------------*/
 
@@ -19,8 +16,7 @@
 #ifndef FSI_DIRICHLETNEUMANN_VOLCOUPL_H
 #define FSI_DIRICHLETNEUMANN_VOLCOUPL_H
 
-//#include "fsi_partitioned.H"
-#include "fsi_dirichletneumann.H"
+#include "fsi_dirichletneumann_disp.H"
 #include "../drt_adapter/adapter_coupling_volmortar.H"
 
 namespace GEO
@@ -32,32 +28,42 @@ namespace FSI
 {
   class InterfaceCorrector;
 
-  /// Dirichlet Neumann VolCoupled system
-  /*!
-     documentation
-
-    \author u.kue
-    \date 06/07
-   */
-  class DirichletNeumannVolCoupl : public DirichletNeumann
+  /// Dirichlet-Neumann VolCoupled system
+  class DirichletNeumannVolCoupl : public DirichletNeumannDisp
   {
-   public:
-    // constructor
+    friend class DirichletNeumannFactory;
+
+   protected:
+    /**
+     *  \brief constructor
+     *
+     * You will have to use the FSI::DirichletNeumannFactory to create an instance of this class
+     */
     explicit DirichletNeumannVolCoupl(const Epetra_Comm& comm);
 
+   public:
     /// setup this object
     virtual void Setup();
 
    protected:
-    // setup
+    /// setup
     void SetupCouplingStructAle(const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm);
 
-    // setup
+    /// setup
     void SetupInterfaceCorrector(const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm);
 
-    /// interface fluid operator
+    /** \brief interface fluid operator
+     *
+     * Solve the fluid field problem.  Since the fluid field is the Dirichlet partition, the
+     * interface displacement is prescribed as a Dirichlet boundary condition.
+     *
+     * \param[in] idisp interface displacement
+     * \param[in] fillFlag Type of evaluation in computeF() (cf. NOX documentation for details)
+     *
+     * \returns interface force
+     */
     virtual Teuchos::RCP<Epetra_Vector> FluidOp(
-        Teuchos::RCP<Epetra_Vector> idisp, const FillType fillFlag);
+        Teuchos::RCP<Epetra_Vector> idisp, const FillType fillFlag) final;
 
 
     void ExtractPreviousInterfaceSolution();
@@ -74,10 +80,6 @@ namespace FSI
     /// ale to structure
     Teuchos::RCP<Epetra_Vector> AleToStructure(Teuchos::RCP<const Epetra_Vector> iv) const;
 
-   private:
-    //! we couple based on displacements
-    bool displacementcoupling_;
-
     /// coupling of structure and ale at the interface
     Teuchos::RCP<ADAPTER::MortarVolCoupl> coupsa_;
 
@@ -90,10 +92,10 @@ namespace FSI
   class InterfaceCorrector
   {
    public:
-    // constructor
+    /// constructor
     InterfaceCorrector() : idisp_(Teuchos::null){};
 
-    // destructor
+    /// destructor
     virtual ~InterfaceCorrector(){};
 
     virtual void Setup(Teuchos::RCP<ADAPTER::FluidAle> fluidale);
@@ -118,10 +120,10 @@ namespace FSI
   class VolCorrector
   {
    public:
-    // constructor
+    /// constructor
     VolCorrector() : dim_(-1){};
 
-    // destructor
+    /// destructor
     virtual ~VolCorrector(){};
 
     virtual void Setup(const int dim, Teuchos::RCP<ADAPTER::FluidAle> fluidale);
@@ -148,9 +150,14 @@ namespace FSI
 
     std::vector<int> Search(DRT::Element& ele, std::map<int, LINALG::Matrix<9, 2>>& currentKDOPs);
 
+    //! Spatial dimension of the problem
     int dim_;
+
+    //! Searchtree for mortar evaluations
     Teuchos::RCP<GEO::SearchTree> searchTree_;
-    LINALG::Matrix<9, 3> dopnormals_;  /// dop normals for seach algorithm
+
+    //! Dop normals for search algorithm
+    LINALG::Matrix<9, 3> dopnormals_;
 
     std::map<int, std::vector<int>> fluidaleelemap_;
 

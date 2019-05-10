@@ -19,6 +19,7 @@
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_inpar/inpar_bio.H"
+#include "../drt_lib/drt_utils_nullspace.H"
 
 // forward declarations
 struct _MATERIAL;
@@ -49,11 +50,15 @@ namespace DRT
       virtual void NodalBlockInformation(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
       {
+        numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
+        dimns = numdf;
+        nv = numdf;
       }
 
       virtual void ComputeNullSpace(
           DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
       {
+        DRT::UTILS::ComputeFluidDNullSpace(dis, ns, x0, numdf, dimns);
       }
 
       virtual void SetupElementDefinition(
@@ -152,6 +157,11 @@ namespace DRT
       virtual void Unpack(const std::vector<char>& data);
 
       /*!
+       \brief Get vector of Teuchos::RCPs to the lines of this element
+       */
+      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
+
+      /*!
       \brief Destructor
 
       */
@@ -232,31 +242,30 @@ namespace DRT
       /*!
       \brief Evaluate an element
 
-      Evaluate artery element stiffness, mass, internal forces etc
+      An element derived from this class uses the Evaluate method to receive commands
+      and parameters from some control routine in params and evaluates element matrices and
+      vectors accoring to the command in params.
 
-      \param params (in/out): ParameterList for communication between control routine
-                              and elements
-      \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
-                              the controling method does not epxect the element to fill
-                              this matrix.
-      \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
-                              the controling method does not epxect the element to fill
-                              this matrix.
-      \param elevec1 (out)  : vector to be filled by element. If NULL on input,
-                              the controlling method does not epxect the element
-                              to fill this vector
-      \param elevec2 (out)  : vector to be filled by element. If NULL on input,
-                              the controlling method does not epxect the element
-                              to fill this vector
-      \param elevec3 (out)  : vector to be filled by element. If NULL on input,
-                              the controlling method does not epxect the element
-                              to fill this vector
+      \param params (in/out)    : ParameterList for communication between control routine
+                                  and elements
+      \param discretization (in): A reference to the underlying discretization
+      \param la (in)            : location data for all dofsets of the discretization
+      \param elemat1 (out)      : matrix to be filled by element depending on commands
+                                  given in params
+      \param elemat2 (out)      : matrix to be filled by element depending on commands
+                                  given in params
+      \param elevec1 (out)      : vector to be filled by element depending on commands
+                                  given in params
+      \param elevec2 (out)      : vector to be filled by element depending on commands
+                                  given in params
+      \param elevec3 (out)      : vector to be filled by element depending on commands
+                                  given in params
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
+      virtual int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          LocationArray& la, Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
+          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
+          Epetra_SerialDenseVector& elevec3);
 
       int ScatraEvaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,

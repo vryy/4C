@@ -9,7 +9,6 @@
 \maintainer Harald Willmann
             willmann@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15255
 */
 /*----------------------------------------------------------------------*/
 #ifndef GEN_INV_ANALYSIS_H
@@ -131,7 +130,7 @@ namespace STR
   class GenInvAnalysis
   {
    private:
-    /// my structure discretisation to work at
+    /// my structure discretization to work at
     Teuchos::RCP<DRT::Discretization> discret_;
 
     /// linear algebraic solver
@@ -140,15 +139,17 @@ namespace STR
     /// context for output and restart
     Teuchos::RCP<IO::DiscretizationWriter> output_;
 
-    ///  number of measurment points the
+    ///  number of measurement points the
     double tstep_;  // timestep
 
-    int problem_type_;  // Neumann or Dirichlet Problem
-    int np_;            // number of fitted parameters (default 3, 4 with kappa)
-    int nmp_;           // total number of measured dofs
+    int problem_type_;  /// Neumann or Dirichlet Problem
+    int np_;            /// number of fitted parameters (default 3, 4 with kappa)
+    int nmp_;           /// total number of measured dofs or points
 
-    //  forward problem type given in dat-file FORWARD_PROBLEMTYP
+    /// forward problem type given in dat-file FORWARD_PROBLEMTYP
     PROBLEM_TYP forward_prb_type_;
+    /// number of dimensions of forward problem
+    int ndim_;
 
     /// variables of multiple inverse analysis
     bool spec_inv_ana_mult_;                // define if multiple inverse analysis is used
@@ -163,15 +164,15 @@ namespace STR
     bool spec_inv_ana_coup_;  // define if coupled inverse analysis is used
     int nmp_volexp_;          // data points of pressure-volume-change experiment
 
-    Epetra_SerialDenseVector mcurve_;  // measured displacement of the experiments (target value)
-    std::vector<double> timesteps_;    // time values where displacements are measured
+    Epetra_SerialDenseVector mcurve_;  /// measured displacement of the experiments (target value)
+    std::vector<double> timesteps_;    /// time values where displacements are measured
 
     double mu_;
     double mu_o_;
 
     double error_;
     double error_o_;
-    // Gradient based error measure
+    /// Gradient based error measure
     double error_grad_;
     double error_grad_o_;
 
@@ -181,11 +182,11 @@ namespace STR
     int nodescentdirection_;  // stores if inverse analysis does not longer
     // converge (due to no descent direction) to stop the inverse analysis
 
-    // Update Stratgy for mu
+    /// Update Strategy for mu
     enum INV_REG_UPDATE_STRATEGY
     {
-      grad_based,
-      res_based
+      grad_based,  /// gradient based update of reg parameter
+      res_based    /// residual based update of reg parameter
     };
     INV_REG_UPDATE_STRATEGY reg_update_;
 
@@ -204,9 +205,9 @@ namespace STR
     // stores position of parameter alpha in p_ of material viscofract
     int viscofract_alpha_position_;
 
-    Epetra_SerialDenseVector p_;        // parameter vector
-    Epetra_SerialDenseVector p_o_;      // parameters of the last step
-    Epetra_SerialDenseVector p_print_;  // output parameters
+    Epetra_SerialDenseVector p_;        /// parameter vector
+    Epetra_SerialDenseVector p_o_;      /// parameters of the last step
+    Epetra_SerialDenseVector p_print_;  /// output parameters
 
     /// @name Storage
     //@{
@@ -221,12 +222,12 @@ namespace STR
 
     std::vector<std::set<int>> matset_;
 
-    // observed nodes, dofs, timesteps
-    int nnodes_;                          // number of nodes observed
-    int ndofs_;                           // total number of dofs monitored
-    int nsteps_;                          // number of time steps observed
-    std::vector<int> nodes_;              // list of node gids observed
-    std::vector<std::vector<int>> dofs_;  // list of dofs on each node that are monitored
+    /// number of observed nodes, dofs, timesteps
+    int nnodes_;                          /// number of nodes or points observed
+    int ndofs_;                           /// total number of dofs monitored
+    int nsteps_;                          /// number of time steps observed
+    std::vector<int> nodes_;              /// list of node gids observed
+    std::vector<std::vector<int>> dofs_;  /// list of dofs on each node that are monitored
 
     // patch stuff
     bool patches_;
@@ -235,6 +236,7 @@ namespace STR
     std::set<int> matset_patches_;
     Teuchos::RCP<LINALG::SparseMatrix> smoother_;
     int smoothingsteps_;
+
     enum DEFINE_PATCHES
     {
       material,
@@ -242,8 +244,17 @@ namespace STR
     };
     DEFINE_PATCHES which_patches_;
 
-    // check whether we have to reset history parameters with this bool
+    /// check whether we have to reset history parameters with this bool
     bool materialhashistory_;
+
+    /// Strategy for evaluating distance from experiment to simulation
+    enum MEASUREMENT_TYPE
+    {
+      dof_based,  /// distance measured based on individual node displacements
+      point_based /*!< distance measured at specific points in prescribed directions, representing
+                     the interface shape in experiment*/
+    };
+    MEASUREMENT_TYPE meas_type_;
 
    public:
     /// standard constructor
@@ -255,11 +266,23 @@ namespace STR
     /// Read in routine for the material parameters
     void ReadInParameters();
 
+    /// Read in routine for the dof based monitor file (default format)
+    // constructor sequence moved into own method
+    void ReadMonitorDofBased(int myrank);
+
+
+    /// Read in routine for the point based monitor file
+    void ReadMonitorPointBased(int myrank);
+
     /// Set material parameters
     void SetParameters(Epetra_SerialDenseVector p_cur);
 
     /// get current state of calculated curve
     Epetra_SerialDenseVector GetCalculatedCurve(const Epetra_Vector& disp);
+
+    /// get Distance of target points to respective interface at matching time
+    Epetra_SerialDenseVector GetDistancePointsToInterfaceContour(
+        const Epetra_Vector& disp, int writestep);
 
     /// coarse fitting of parameters
     void PrecondParameters();
@@ -278,7 +301,7 @@ namespace STR
     Epetra_SerialDenseVector CalcCvector(
         bool outputtofile, Teuchos::RCP<COMM_UTILS::NestedParGroup> group);
 
-    /// acual inverse analysis loop
+    /// actual inverse analysis loop
     void Integrate();
 
     /// additional calculations for integrate of multiple inverse analysis

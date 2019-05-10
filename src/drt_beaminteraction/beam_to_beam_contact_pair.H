@@ -40,6 +40,7 @@ namespace LINALG
   class SerialDenseVector;
   class SerialDenseMatrix;
 }  // namespace LINALG
+
 namespace BEAMINTERACTION
 {
   template <unsigned int numnodes, unsigned int numnodalvalues>

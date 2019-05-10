@@ -19,6 +19,7 @@
 #include "../drt_mortar/mortar_manager_base.H"  // TODO forward declaration!!!
 #include "../drt_lib/drt_dserror.H"
 
+// forward declarations
 namespace DRT
 {
   class Discretization;
@@ -173,7 +174,7 @@ namespace CONTACT
 
    protected:
     // don't want cctor (= operator impossible anyway for abstract class)
-    MeshtyingContactBridge(const MeshtyingContactBridge& old);
+    MeshtyingContactBridge(const MeshtyingContactBridge& old) = delete;
 
     // internal variables:
 

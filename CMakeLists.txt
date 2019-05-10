@@ -26,6 +26,15 @@ include_directories("${PROJECT_BINARY_DIR}/src/headers")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
 
+# get current Baci revision from git
+include(GetGitRevision)
+get_git_revision_information()
+
+# configure revision file to pass git revision information to the source code
+configure_file(
+  "${PROJECT_SOURCE_DIR}/src/headers/revision.H.in"
+  "${PROJECT_BINARY_DIR}/src/headers/revision.H")
+
 # include all external (cmake) macros that we use
 INCLUDE(CheckCXXSourceRuns)
 INCLUDE(CheckCXXSourceCompiles)
@@ -38,33 +47,6 @@ MACRO(REMOVE_DUPLICATES _list)
     LIST(REVERSE ${_list})
   ENDIF()
 ENDMACRO()
-
-# test for svn executable
-FIND_PROGRAM(Subversion_SVN_EXECUTABLE svn
-  DOC "subversion command line client")
-MARK_AS_ADVANCED(Subversion_SVN_EXECUTABLE)
-
-IF(Subversion_SVN_EXECUTABLE)
-
-  # test if project source directory is a subversion directory
-  # this test seems to be missing in the subversion package
-  EXECUTE_PROCESS(COMMAND ${Subversion_SVN_EXECUTABLE} info ${PROJECT_SOURCE_DIR}
-    OUTPUT_VARIABLE DUMMY_WC_INFO
-    ERROR_VARIABLE Subversion_svn_info_error
-    RESULT_VARIABLE Subversion_svn_info_result
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-  IF(${Subversion_svn_info_result} EQUAL 0)
-
-    # get the package that does the real work
-    FIND_PACKAGE(Subversion QUIET)
-    IF(Subversion_FOUND)
-      Subversion_WC_INFO(${CMAKE_HOME_DIRECTORY} baci)
-      add_definitions("-DCHANGEDREVISION=${baci_WC_REVISION}")
-      #add_definitions("-DCHANGEDDATE=${baci_WC_LAST_CHANGED_DATE}")
-    ENDIF(Subversion_FOUND)
-  ENDIF(${Subversion_svn_info_result} EQUAL 0)
-ENDIF(Subversion_SVN_EXECUTABLE)
 
 #
 ### Build in default values
@@ -128,20 +110,19 @@ if (ENABLE_STACKTR)
   add_definitions("-DENABLE_STACKTR")
 endif (ENABLE_STACKTR)
 
-option (FS3I_INCACouplingTest "Nightly test for FS3I_INCA_coupling turned off" OFF)
 
 #   additional features
 
 
-  find_package(HDF5 REQUIRED)
-  if (HDF5_FOUND)
-    include_directories(${HDF5_INCLUDE_DIRS})
-    link_directories(${HDF5_LIBRARY_DIRS})
-    set(LIBRARIES
-      ${LIBRARIES}
-      ${HDF5_LIBRARIES}
-      )
-  endif(HDF5_FOUND)
+find_package(HDF5 REQUIRED)
+if (HDF5_FOUND)
+  include_directories(${HDF5_INCLUDE_DIRS})
+  link_directories(${HDF5_LIBRARY_DIRS})
+  set(LIBRARIES
+    ${LIBRARIES}
+    ${HDF5_LIBRARIES}
+    )
+endif(HDF5_FOUND)
 
 find_package(MPI REQUIRED)
 
@@ -206,24 +187,6 @@ FOREACH(_file ${_check_files})
   INCLUDE(${_file})
 ENDFOREACH()
 
-# these are the fedora 8 with openmpi paths
-
-#if (NOT MPI_DIR)
-#  set (MPI_DIR "/usr")  # standard path for MPI in Fedora 8
-#endif (NOT MPI_DIR)
-
-#if (NOT INCLUDE_INSTALL_DIR)
-#  set ( INCLUDE_INSTALL_DIR "/lnm/lib/fc8/openmpi/include" )
-#endif (NOT INCLUDE_INSTALL_DIR)
-
-#if (NOT LIB_INSTALL_DIR)
-#  set ( LIB_INSTALL_DIR "/lnm/lib/fc8/openmpi/lib" )
-#endif (NOT LIB_INSTALL_DIR)
-
-#if (NOT Trilinos_DIR)
-#  set ( Trilinos_DIR "/lnm/lib/fc8/openmpi/trilinos" )
-#endif (NOT Trilinos_DIR)
-
 ###------------------------------------------------------------------ External Libraries
 
 find_package(BLAS REQUIRED)
@@ -254,16 +217,6 @@ IF(Git_EXECUTABLE)
   #MESSAGE(${Trilinos_GIT_VERSION})
   string (REGEX REPLACE "fatal.*$" "" Trilinos_GIT_VERSION "${Trilinos_GIT_VERSION}")
   ADD_DEFINITIONS( -DTrilinos_SHA1="${Trilinos_GIT_VERSION}")
-
-  EXEC_PROGRAM(${Git_EXECUTABLE} ${PROJECT_SOURCE_DIR} ARGS "rev-parse HEAD" OUTPUT_VARIABLE Baci_GIT_VERSION )
-  string (REGEX REPLACE "fatal.*$" "" Baci_GIT_VERSION "${Baci_GIT_VERSION}")
-  IF ("${Baci_GIT_VERSION}" STREQUAL "")
-    ADD_DEFINITIONS( -DBaci_SHA1="Think about using git")
-  ELSE()
-    ADD_DEFINITIONS( -DBaci_SHA1="${Baci_GIT_VERSION}")
-  ENDIF()
-
-#  ADD_DEFINITIONS( -DBaci_SHA1="${Baci_GIT_VERSION}")
 ENDIF(Git_EXECUTABLE)
 
 set(BOOST_LIBRARYDIR,${BOOST_LIBRARYDIR})
@@ -276,12 +229,12 @@ if (USE_NO_SYSTEM_PATHS)
   set(Boost_NO_SYSTEM_PATHS ON )
 endif(USE_NO_SYSTEM_PATHS)
 
-FIND_PACKAGE( Boost COMPONENTS graph program_options system filesystem REQUIRED)
+FIND_PACKAGE(Boost COMPONENTS graph program_options system filesystem REQUIRED)
 
 if (Boost_FOUND)
   message("Found Boost: ${Boost_INCLUDE_DIRS}")
-  message("Boost libraries: ${Boost_LIBRARIES}")
-  message("Boost libraries: ${Boost_LIBRARY_DIRS}")
+  message("Boost component libraries: ${Boost_LIBRARIES}")
+  message("Boost libraries directory: ${Boost_LIBRARY_DIRS}")
   include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
   link_directories(${Boost_LIBRARY_DIRS})
   set(LIBRARIES
@@ -397,7 +350,10 @@ if (deal.II_FOUND)
   MESSAGE("End of deal.II details\n")
   add_definitions("-DHAVE_DEAL_II")   # HAVE_DEAL_II preprocessor flag for BACI
 else()
-  message("-- DEAL.II package not found")
+  message("WW *************************************************************")
+  message("WW Warning: DEAL.II not found. No DEAL.II support in BACI.")
+  message("WW Warning: You cannot run simulations that need DEAL.II.")
+  message("WW *************************************************************")
 endif()
 
 # FFTW for Jonas Biehler
@@ -434,11 +390,30 @@ if (AMDLIBM_FOUND)
   MESSAGE("II Found AMD libM: ${AMDLIBM_INCLUDES}")
 endif()
 
+
+find_package(CLN)
+if (CLN_FOUND)
+  include_directories(SYSTEM ${CLN_INCLUDE_DIRS})
+  set(LIBRARIES ${CLN_LIBRARIES} ${LIBRARIES}  )
+  MESSAGE("-- Found CLN: ${CLN_INCLUDE_DIRS}, ${CLN_LIBRARIES}")
+endif()
 #explicitly remove all duplicate libraries, keeping the rightmost library
 #additionally remove the keywords debug;optimized;general since the libraries
 #are precompiled and this flag has no influence
 REMOVE_DUPLICATES(LIBRARIES)
 list(REMOVE_ITEM LIBRARIES debug optimized general)
+
+if (HAVE_ASCII_FILE_COMPARISON_TESTS)
+  message("-- Test comparing restults to ASCII files: enabled")
+else()
+  message("-- Test comparing restults to ASCII files: disabled")
+endif()
+
+if (HAVE_ENSIGHT_POSTPROCESSING_TESTS)
+  message("-- Post-processing test for ensight filter: enabled")
+else()
+  message("-- Post-processing test for ensight filter: disabled")
+endif()
 
 ###------------------------------------------------------------------ List of files
 set(OBJS_DRT_ALE_LIB
@@ -516,6 +491,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/cavitationfluid.cpp
   src/drt_mat/cnst_1d_art.cpp
   src/drt_mat/compogden.cpp
+  src/drt_mat/consolidation.cpp
   src/drt_mat/constraintmixture.cpp
   src/drt_mat/crosslinkermat.cpp
   src/drt_mat/constraintmixture_history.cpp
@@ -525,6 +501,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/elchphase.cpp
   src/drt_mat/elchsinglemat.cpp
   src/drt_mat/electrode.cpp
+  src/drt_mat/electromagnetic.cpp
   src/drt_mat/ferech_pv.cpp
   src/drt_mat/fluid_linear_density_viscosity.cpp 
   src/drt_mat/fluid_murnaghantait.cpp
@@ -538,7 +515,9 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/fluidporo_relpermeability_law.cpp
   src/drt_mat/fluidporo_viscosity_law.cpp
   src/drt_mat/fourieriso.cpp
+  src/drt_mat/fouriervar.cpp
   src/drt_mat/membrane_elasthyper.cpp
+  src/drt_mat/membrane_active_strain.cpp
   src/drt_mat/growthremodel_elasthyper.cpp
   src/drt_mat/growth.cpp
   src/drt_mat/growth_law.cpp
@@ -664,7 +643,10 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/particle_mat.cpp
   src/drt_mat/particle_mat_ellipsoids.cpp
   src/drt_mat/particle_material_base.cpp
-  src/drt_mat/particle_material_sph.cpp
+  src/drt_mat/particle_material_thermo.cpp
+  src/drt_mat/particle_material_sph_fluid.cpp
+  src/drt_mat/particle_material_sph_boundary.cpp
+  src/drt_mat/particle_material_dem.cpp
   src/drt_mat/acoustic.cpp
   src/drt_mat/acoustic_sol.cpp
   src/drt_mat/activefiber.cpp
@@ -782,6 +764,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_beaminteraction.cpp
   src/drt_inpar/inpar_beampotential.cpp
   src/drt_inpar/inpar_browniandyn.cpp
+  src/drt_inpar/inpar_geometry_pair.cpp
   src/drt_inpar/inpar_bio.cpp
   src/drt_inpar/inpar_cardiac_monodomain.cpp
   src/drt_inpar/inpar_particle.cpp
@@ -790,6 +773,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_pasi.cpp
   src/drt_inpar/inpar_cell.cpp
   src/drt_inpar/inpar_contact.cpp
+  src/drt_inpar/inpar_cut.cpp
   src/drt_inpar/inpar_ehl.cpp
   src/drt_inpar/inpar_elemag.cpp
   src/drt_inpar/inpar_elch.cpp
@@ -809,6 +793,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_lubrication.cpp
   src/drt_inpar/inpar_binningstrategy.cpp
   src/drt_inpar/inpar_mlmc.cpp
+  src/drt_inpar/inpar_mor.cpp
   src/drt_inpar/inpar_mortar.cpp
   src/drt_inpar/inpar_poroelast.cpp
   src/drt_inpar/inpar_plasticity.cpp
@@ -910,16 +895,23 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
   src/drt_beaminteraction/periodic_boundingbox.cpp
   src/drt_beaminteraction/beam3contact_utils.cpp
   src/drt_beaminteraction/beam3contact_tangentsmoothing.cpp
-  src/drt_beaminteraction/beam_contact_evaluation_data.cpp
   src/drt_beaminteraction/beam_contact_params.cpp
   src/drt_beaminteraction/beam_contact_runtime_vtk_output_params.cpp
   src/drt_beaminteraction/beam_contact_pair.cpp
   src/drt_beaminteraction/beam_to_beam_contact_pair.cpp
   src/drt_beaminteraction/beam_to_beam_contact_params.cpp
   src/drt_beaminteraction/beam_to_beam_contact_variables.cpp
-  src/drt_beaminteraction/beam_to_solid_volume_meshtying_evaluation_data.cpp
-  src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair.cpp
+  src/drt_beaminteraction/beam_to_solid_mortar_manager.cpp
+  src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_base.cpp
+  src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_gauss_point.cpp
+  src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_gauss_point_cross_section.cpp
+  src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_mortar.cpp
+  src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_factory.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_params.cpp
+  src/drt_beaminteraction/beam_to_solid_volume_meshtying_vtk_output_params.cpp
+  src/drt_beaminteraction/beam_to_solid_volume_meshtying_vtk_output_writer.cpp
+  src/drt_beaminteraction/beam_to_solid_vtu_output_writer_base.cpp
+  src/drt_beaminteraction/beam_to_solid_vtu_output_writer_visualization.cpp
   src/drt_beaminteraction/beam_to_sphere_contact_pair.cpp
   src/drt_beaminteraction/beam_to_sphere_contact_params.cpp
   src/drt_beaminteraction/beam_potential_params.cpp
@@ -939,6 +931,9 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
   src/drt_beaminteraction/beaminteraction_submodel_evaluator_factory.cpp
   src/drt_beaminteraction/beaminteraction_submodel_evaluator_generic.cpp
   src/drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact.cpp
+  src/drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact_assembly_manager.cpp
+  src/drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact_assembly_manager_direct.cpp
+  src/drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact_assembly_manager_indirect.cpp
   src/drt_beaminteraction/beaminteraction_submodel_evaluator_potential.cpp
   src/drt_beaminteraction/beaminteraction_calc_utils.cpp
   src/drt_beaminteraction/beaminteraction_data.cpp
@@ -977,6 +972,7 @@ set(OBJS_SOH8_LIB
   src/drt_so3/so_hex8_input.cpp
   src/drt_so3/so_hex8_multiscale.cpp
   src/drt_so3/so_hex8_service.cpp
+  src/drt_so3/so_hex8_determinant_analysis.cpp
   src/drt_so3/so_hex8p1j1.cpp
   src/drt_so3/so_hex8p1j1_evaluate.cpp
   src/drt_so3/so_hex8p1j1_input.cpp
@@ -1226,6 +1222,9 @@ set(OBJS_DRT_MEMBRANE_LIB
   src/drt_membrane/membrane_input.cpp
   src/drt_membrane/membrane_line.cpp
   src/drt_membrane/membrane_line_evaluate.cpp
+  src/drt_membrane/membrane_scatra_eletypes.cpp
+  src/drt_membrane/membrane_scatra.cpp
+  src/drt_membrane/membrane_scatra_evaluate.cpp
 )
 set(OBJS_DRT_FSI
   src/drt_fsi/fsi_str_model_evaluator_partitioned.cpp
@@ -1235,12 +1234,13 @@ set(OBJS_DRT_FSI
   src/drt_fsi/fsi_constrmonolithic_fluidsplit.cpp
   src/drt_fsi/fsi_constrmonolithic_structuresplit.cpp
   src/drt_fsi/fsi_debugwriter.cpp
+  src/drt_fsi/fsi_dirichletneumann_factory.cpp
   src/drt_fsi/fsi_dirichletneumann.cpp
+  src/drt_fsi/fsi_dirichletneumann_disp.cpp
   src/drt_fsi/fsi_dirichletneumannslideale.cpp
   src/drt_fsi/fsi_dirichletneumann_volcoupl.cpp
   src/drt_fsi/fsi_dyn.cpp
   src/drt_fsi/fsi_fluid_ale.cpp
-  src/drt_fsi/fsi_lagrangeprec.cpp
   src/drt_fsi/fsi_lungmonolithic.cpp
   src/drt_fsi/fsi_lungmonolithic_fluidsplit.cpp
   src/drt_fsi/fsi_lungmonolithic_structuresplit.cpp
@@ -1714,6 +1714,7 @@ set(OBJS_DRT_TO3_LIB
   src/drt_torsion3/torsion3_input.cpp
 )
 set(OBJS_DRT_MORTAR
+  src/drt_mortar/base_binarytree.cpp
   src/drt_mortar/mortar_binarytree.cpp
   src/drt_mortar/mortar_coupling2d.cpp
   src/drt_mortar/mortar_coupling3d.cpp
@@ -1789,6 +1790,7 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/str_model_evaluator_lagpenconstraint.cpp
   src/drt_structure_new/str_model_evaluator_springdashpot.cpp
   src/drt_structure_new/str_model_evaluator_contact.cpp
+  src/drt_structure_new/str_model_evaluator_meshtying.cpp
   src/drt_contact_xcontact/str_model_evaluator_xcontact.cpp
   src/drt_struct_ale/struct_ale_str_model_evaluator.cpp
   src/drt_structure_new/str_model_evaluator_multiphysics.cpp
@@ -1856,13 +1858,23 @@ set(OBJS_DRT_PARTICLE_ALGORITHM
   src/drt_particle_algorithm/particle_timint.cpp
   src/drt_particle_algorithm/particle_input_generator.cpp
   src/drt_particle_algorithm/particle_gravity.cpp
+  src/drt_particle_algorithm/particle_viscous_damping.cpp
   src/drt_particle_algorithm/particle_dirichlet_bc.cpp
+  src/drt_particle_algorithm/particle_temperature_bc.cpp
   src/drt_particle_algorithm/particle_initial_field.cpp
   src/drt_particle_algorithm/particle_result_test.cpp
+  src/drt_particle_algorithm/particle_wall.cpp
+  src/drt_particle_algorithm/particle_wall_result_test.cpp
   src/drt_particle_algorithm/particle_algorithm_utils.cpp
 )
 set(OBJS_DRT_PARTICLE_INTERACTION
   src/drt_particle_interaction/particle_interaction_base.cpp
+  src/drt_particle_interaction/particle_interaction_dem.cpp
+  src/drt_particle_interaction/particle_interaction_dem_neighbor_pairs.cpp
+  src/drt_particle_interaction/particle_interaction_dem_history_pairs.cpp
+  src/drt_particle_interaction/particle_interaction_dem_contact.cpp
+  src/drt_particle_interaction/particle_interaction_dem_contact_normal.cpp
+  src/drt_particle_interaction/particle_interaction_dem_contact_tangential.cpp
   src/drt_particle_interaction/particle_interaction_sph.cpp
   src/drt_particle_interaction/particle_interaction_sph_kernel.cpp
   src/drt_particle_interaction/particle_interaction_sph_equationofstate.cpp
@@ -1871,11 +1883,14 @@ set(OBJS_DRT_PARTICLE_INTERACTION
   src/drt_particle_interaction/particle_interaction_sph_density.cpp
   src/drt_particle_interaction/particle_interaction_sph_density_correction.cpp
   src/drt_particle_interaction/particle_interaction_sph_pressure.cpp
+  src/drt_particle_interaction/particle_interaction_sph_temperature.cpp
   src/drt_particle_interaction/particle_interaction_sph_momentum.cpp
   src/drt_particle_interaction/particle_interaction_sph_momentum_formulation.cpp
   src/drt_particle_interaction/particle_interaction_sph_artificialviscosity.cpp
   src/drt_particle_interaction/particle_interaction_sph_surface_tension.cpp
   src/drt_particle_interaction/particle_interaction_sph_boundary_particle.cpp
+  src/drt_particle_interaction/particle_interaction_sph_heatsource.cpp
+  src/drt_particle_interaction/particle_interaction_sph_phase_change.cpp
   src/drt_particle_interaction/particle_interaction_material_handler.cpp
 )
 set(OBJS_DRT_PARTICLE_ENGINE
@@ -1919,6 +1934,15 @@ set(OBJS_DRT_ACOU_LIB
 set(OBJS_DRT_ELEMAG
   src/drt_elemag/elemag_dyn.cpp
   src/drt_elemag/elemag_timeint.cpp
+  src/drt_elemag/elemag_resulttest.cpp
+)
+set(OBJS_DRT_ELEMAG_LIB
+  src/drt_elemag/elemag_ele_boundary_calc.cpp
+  src/drt_elemag/elemag_ele_calc.cpp
+  src/drt_elemag/elemag_ele_evaluate.cpp
+  src/drt_elemag/elemag_ele_factory.cpp
+  src/drt_elemag/elemag_ele_intfaces_calc.cpp
+  src/drt_elemag/elemag_ele.cpp
 )
 set(OBJS_LINALG
   src/linalg/linalg_ana.cpp
@@ -1979,6 +2003,7 @@ set(OBJS_SOLVER
   src/solver/solver_amgnxn_hierarchies.cpp
   src/solver/solver_amgnxn_smoothers.cpp
   src/solver/solver_amgnxn_objects.cpp
+  src/solver/solver_aztecoo_conditionnumber.cpp
 )
 
 set(OBJS_SOLVER_NONLIN
@@ -2012,6 +2037,7 @@ set(OBJS_SOLVER_NONLIN
 
 set(OBJS_SOLVER_NONLIN_NOX
   src/solver_nonlin_nox/nox_nln_aux.cpp
+  src/solver_nonlin_nox/nox_nln_floating_point_exception.cpp
   src/solver_nonlin_nox/nox_nln_globaldata.cpp
   src/solver_nonlin_nox/nox_nln_problem.cpp
   src/solver_nonlin_nox/nox_nln_linearsystem.cpp
@@ -2032,6 +2058,8 @@ set(OBJS_SOLVER_NONLIN_NOX
   src/solver_nonlin_nox/nox_nln_meritfunction_lagrangian.cpp
   src/solver_nonlin_nox/nox_nln_meritfunction_infeasibility.cpp
   src/solver_nonlin_nox/nox_nln_direction_newton.cpp
+  src/solver_nonlin_nox/nox_nln_direction_modified_newton.cpp
+  src/solver_nonlin_nox/nox_nln_direction_defaultsteptest.cpp
   src/solver_nonlin_nox/nox_nln_statustest_factory.cpp
   src/solver_nonlin_nox/nox_nln_statustest_combo.cpp
   src/solver_nonlin_nox/nox_nln_statustest_normf.cpp
@@ -2043,8 +2071,11 @@ set(OBJS_SOLVER_NONLIN_NOX
   src/solver_nonlin_nox/nox_nln_inner_statustest_armijo.cpp
   src/solver_nonlin_nox/nox_nln_inner_statustest_filter.cpp
   src/solver_nonlin_nox/nox_nln_inner_statustest_upperbound.cpp
+  src/solver_nonlin_nox/nox_nln_inner_statustest_combo.cpp
+  src/solver_nonlin_nox/nox_nln_inner_statustest_volume_change.cpp
   src/drt_structure_new/nox_nln_str_linearsystem.cpp
   src/drt_contact_aug/nox_nln_contact_linearsystem.cpp
+  src/drt_contact/nox_nln_meshtying_linearsystem.cpp
   src/drt_cardiovascular0d/nox_nln_cardiovascular0d_linearsystem.cpp
   src/drt_constraint/nox_nln_lagpenconstraint_linearsystem.cpp
   src/drt_scatra/nox_nln_scatra_linearsystem.cpp
@@ -2268,19 +2299,22 @@ set(OBJS_DRT_CONTACT
   src/drt_contact/contact_nitsche_strategy.cpp
   src/drt_contact/contact_nitsche_strategy_tsi.cpp
   src/drt_contact/contact_nitsche_strategy_poro.cpp
+  src/drt_contact/contact_utils.cpp
   src/drt_contact/contact_wear_interface.cpp
   src/drt_contact/contact_wear_interface_tools.cpp
   src/drt_contact/contact_wear_lagrange_strategy.cpp
+  src/drt_contact/meshtying_strategy_factory.cpp
   src/drt_contact/meshtying_abstract_strategy.cpp
+  src/drt_contact/meshtying_noxinterface.cpp
   src/drt_contact/meshtying_contact_bridge.cpp
   src/drt_contact/meshtying_lagrange_strategy.cpp
   src/drt_contact/meshtying_poro_lagrange_strategy.cpp
   src/drt_contact/meshtying_manager.cpp
   src/drt_contact/meshtying_penalty_strategy.cpp
   src/drt_contact/selfcontact_binarytree.cpp
+  src/drt_contact/selfcontact_binarytree_unbiased.cpp
   src/drt_contact/smoothing_strategy.cpp
   src/drt_contact/smoothing_manager.cpp
-  src/drt_contact/contact_utils.cpp
 )
 set(OBJS_DRT_CONTACT_AUG
   src/drt_contact_aug/contact_augmented_strategy.cpp
@@ -2293,10 +2327,10 @@ set(OBJS_DRT_CONTACT_AUG
   src/drt_contact_aug/contact_aug_projector.cpp
   src/drt_contact_aug/contact_aug_lagrange_strategy.cpp
   src/drt_contact_aug/contact_aug_lagrange_interface.cpp
+  src/drt_contact_aug/contact_aug_steepest_ascent_sp_strategy.cpp
   src/drt_contact_aug/contact_aug_steepest_ascent_strategy.cpp
   src/drt_contact_aug/contact_aug_steepest_ascent_interface.cpp
   src/drt_contact_aug/contact_aug_penalty_update.cpp
-  src/drt_contact_aug/contact_aug_adaptive_cn.cpp
   src/drt_contact_aug/contact_aug_combo_strategy.cpp
   src/drt_contact_aug/contact_aug_combo_strategy_switching.cpp
   src/drt_contact_aug/contact_aug_potential.cpp
@@ -2307,11 +2341,13 @@ set(OBJS_DRT_CONTACT_AUG
   src/drt_contact_aug/contact_aug_lagrange_multiplier_function.cpp
   src/drt_contact_aug/contact_aug_interface_assembly.cpp
   src/drt_contact_aug/contact_aug_timemonitor.cpp
+  src/drt_contact_aug/contact_aug_parallel_distribution_controller.cpp
   src/drt_contact_xcontact/xcontact_strategy.cpp
   src/drt_contact_xcontact/xcontact_interface.cpp
   src/drt_contact_xcontact/xcontact_integrator.cpp
 )
 set(OBJS_DRT_CUT
+  src/drt_cut/cut_options.cpp
   src/drt_cut/base_vol.cpp
   src/drt_cut/cut_boundarycell.cpp
   src/drt_cut/cut_boundingbox.cpp
@@ -2360,12 +2396,11 @@ set(OBJS_DRT_CUT
   src/drt_cut/cut_cutwizard.cpp
   src/drt_cut/cut_pointgraph_simple.cpp
   src/drt_cut/cut_facetgraph_simple.cpp
+  src/drt_cut/cut_clnwrapper.cpp
+  src/drt_cut/cut_memory_manager.cpp
 )
 set(OBJS_CUT_TEST
   tests/cut_test/cut_test_double.cpp
-  tests/cut_test/cut_test_facets.cpp
-  tests/cut_test/cut_test_graph.cpp
-  tests/cut_test/cut_test_generator.cpp
   tests/cut_test/cut_test_geometry.cpp
   tests/cut_test/cut_test_intersection.cpp
   tests/cut_test/cut_test_levelset.cpp
@@ -2412,9 +2447,37 @@ set(OBJS_CUT_TEST
   tests/cut_test/cut_test_volume.cpp
   tests/cut_test/drt_dserror.cpp
   tests/cut_test/drt_singletondestruction.cpp
+  tests/cut_test/cut_test_intersection.cpp
+  tests/cut_test/drt_singletondestruction.cpp
+  tests/cut_test/cut_test_bacigenerated_1890.cpp
+  tests/cut_test/cut_test_bacigenerated_6890.cpp
+  tests/cut_test/cut_test_bacigenerated_1858.cpp 
+  tests/cut_test/cut_test_bacigenerated_1970.cpp
+  tests/cut_test/cut_test_bacigenerated_1910.cpp
+  tests/cut_test/cut_test_bacigenerated_2010.cpp
+  tests/cut_test/cut_test_bacigenerated_1860.cpp
+  tests/cut_test/cut_test_facet_failed_cln.cpp
+  tests/cut_test/cut_test_bacigenerated_6920.cpp 
+  tests/cut_test/cut_test_bacigenerated_7019.cpp 
+  tests/cut_test/cut_test_bacigenerated_6923.cpp
+  tests/cut_test/cut_test_bacigenerated_41534.cpp 
+  tests/cut_test/cut_test_bacigenerated_43244.cpp 
+  tests/cut_test/cut_test_bacigenerated_463638.cpp 
+  tests/cut_test/cut_test_bacigenerated_622320.cpp 
+  tests/cut_test/cut_test_bacigenerated_227469.cpp
+  tests/cut_test/cut_test_bacigenerated_622829.cpp
+  tests/cut_test/cut_test_bacigenerated_627558.cpp
+  tests/cut_test/cut_test_bacigenerated_7022.cpp 
+  tests/cut_test/cut_test_bacigenerated_238425.cpp
+  tests/cut_test/cut_test_bacigenerated_197489.cpp
+  tests/cut_test/cut_test_bacigenerated_79216.cpp
+  tests/cut_test/cut_test_bacigenerated_369096.cpp
+  tests/cut_test/cut_test_bacigenerated_238343.cpp
   src/drt_fem_general/drt_utils_gausspoints.cpp
   src/drt_fem_general/drt_utils_fem_shapefunctions.cpp
   src/drt_fem_general/drt_utils_integration.cpp
+  src/drt_cut/cut_clnwrapper.cpp
+  src/drt_cut/cut_memory_manager.cpp 
 )
 set(OBJS_GRAPH_TEST
   tests/graph_test/graph_test_main.cpp
@@ -2563,6 +2626,20 @@ set(OBJS_DRT_FIBER_LIB
 src/drt_fiber/drt_fiber_node.cpp
 )
 
+set(OBJS_DRT_GEOMETRY_PAIR
+src/drt_geometry_pair/geometry_pair_factory.cpp
+src/drt_geometry_pair/geometry_pair.cpp
+src/drt_geometry_pair/geometry_pair_utility_classes.cpp
+src/drt_geometry_pair/geometry_pair_utility_functions.cpp
+src/drt_geometry_pair/geometry_pair_evaluation_data_global.cpp
+src/drt_geometry_pair/geometry_pair_evaluation_data_base.cpp
+src/drt_geometry_pair/geometry_pair_line_to_volume_evaluation_data.cpp
+src/drt_geometry_pair/geometry_pair_line_to_volume.cpp
+src/drt_geometry_pair/geometry_pair_line_to_volume_gauss_point_projection.cpp
+src/drt_geometry_pair/geometry_pair_line_to_volume_gauss_point_projection_cross_section.cpp
+src/drt_geometry_pair/geometry_pair_line_to_volume_segmentation.cpp
+)
+
 ###------------------------------------------------------------------ Element flags
 
 #   all possible elements
@@ -2645,6 +2722,7 @@ add_library(ele_thermo ${OBJS_DRT_THERMO_LIB})
 add_library(ele_to3 ${OBJS_DRT_TO3_LIB})
 add_library(ele_w1 ${OBJS_DRT_W1_LIB})
 add_library(ele_acou ${OBJS_DRT_ACOU_LIB})
+add_library(ele_elemag ${OBJS_DRT_ELEMAG_LIB})
 
 set(ELEMENT_LIBRARIES
   ele_ale
@@ -2667,6 +2745,7 @@ set(ELEMENT_LIBRARIES
   ele_to3
   ele_w1
   ele_acou
+  ele_elemag
   )
 
 # algorithm libraries that depend on adapters
@@ -2817,6 +2896,7 @@ add_library(drt_lib_statinv_ana ${OBJS_STATINV_ANALYSIS_LIB})
 add_library(drt_lib_immersed ${OBJS_DRT_IMMERSED_LIB})
 add_library(drt_lib_xfem_manag ${OBJS_DRT_XFEM_MANAG_LIB})
 add_library(drt_lib_fiber ${OBJS_DRT_FIBER_LIB})
+add_library(drt_lib_geometry_pair ${OBJS_DRT_GEOMETRY_PAIR})
 add_library(alg_mor ${OBJS_DRT_MOR})
 
 
@@ -2842,6 +2922,7 @@ set(SUPPORT_LIBRARIES
   drt_lib_statinv_ana
   drt_lib_immersed
   drt_lib_fiber
+  drt_lib_geometry_pair
   )
 
 # separate library as it does not play well with testing

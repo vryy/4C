@@ -43,7 +43,7 @@ WEAR::WearLagrangeStrategy::WearLagrangeStrategy(
     const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr, const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
     std::vector<Teuchos::RCP<CONTACT::CoInterface>> interfaces, int dim,
-    Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof)
+    Teuchos::RCP<const Epetra_Comm> comm, double alphaf, int maxdof)
     : CoLagrangeStrategy(
           data_ptr, DofRowMap, NodeRowMap, params, interfaces, dim, comm, alphaf, maxdof),
       weightedwear_(false),
@@ -3113,9 +3113,8 @@ void WEAR::WearLagrangeStrategy::PrepareSaddlePointSystem(
  *----------------------------------------------------------------------*/
 void WEAR::WearLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
     Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps, int numiter,
-    Teuchos::RCP<Epetra_Operator>& blockMat, Teuchos::RCP<Epetra_Vector>& blocksol,
-    Teuchos::RCP<Epetra_Vector>& blockrhs)
+    Teuchos::RCP<LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
+    Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs)
 {
   // create old style dirichtoggle vector (supposed to go away)
   // the use of a toggle vector is more flexible here. It allows to apply dirichlet
@@ -3918,7 +3917,7 @@ void WEAR::WearLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::Spa
  | Update internal member variables after saddle point solve wiesner 11/14|
  *------------------------------------------------------------------------*/
 void WEAR::WearLagrangeStrategy::UpdateDisplacementsAndLMincrements(
-    Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol)
+    Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol)
 {
   //**********************************************************************
   // extract results for displacement and LM increments
@@ -4495,11 +4494,11 @@ void WEAR::WearLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
 /*----------------------------------------------------------------------*
  | parallel redistribution                                   popp 09/10 |
  *----------------------------------------------------------------------*/
-void WEAR::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis)
+bool WEAR::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis)
 {
   // get out of here if parallel redistribution is switched off
   // or if this is a single processor (serial) job
-  if (!ParRedist() || Comm().NumProc() == 1) return;
+  if (!ParRedist() || Comm().NumProc() == 1) return false;
 
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
@@ -4519,7 +4518,7 @@ void WEAR::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<const Epetra_V
   if (WhichParRedist() == INPAR::MORTAR::parredist_static)
   {
     // this is the first time step (t=0) or restart
-    if ((int)tunbalance_.size() == 0 && (int)eunbalance_.size() == 0)
+    if ((int)unbalanceEvaluationTime_.size() == 0 && (int)unbalanceNumSlaveElements_.size() == 0)
     {
       // do redistribution
       doredist = true;
@@ -4529,14 +4528,16 @@ void WEAR::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<const Epetra_V
     else
     {
       // compute average balance factors of last time step
-      for (int k = 0; k < (int)tunbalance_.size(); ++k) taverage += tunbalance_[k];
-      taverage /= (int)tunbalance_.size();
-      for (int k = 0; k < (int)eunbalance_.size(); ++k) eaverage += eunbalance_[k];
-      eaverage /= (int)eunbalance_.size();
+      for (int k = 0; k < (int)unbalanceEvaluationTime_.size(); ++k)
+        taverage += unbalanceEvaluationTime_[k];
+      taverage /= (int)unbalanceEvaluationTime_.size();
+      for (int k = 0; k < (int)unbalanceNumSlaveElements_.size(); ++k)
+        eaverage += unbalanceNumSlaveElements_[k];
+      eaverage /= (int)unbalanceNumSlaveElements_.size();
 
       // delete balance factors of last time step
-      tunbalance_.resize(0);
-      eunbalance_.resize(0);
+      unbalanceEvaluationTime_.resize(0);
+      unbalanceNumSlaveElements_.resize(0);
 
       // no redistribution
       doredist = false;
@@ -4549,7 +4550,7 @@ void WEAR::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<const Epetra_V
   else if (WhichParRedist() == INPAR::MORTAR::parredist_dynamic)
   {
     // this is the first time step (t=0) or restart
-    if ((int)tunbalance_.size() == 0 && (int)eunbalance_.size() == 0)
+    if ((int)unbalanceEvaluationTime_.size() == 0 && (int)unbalanceNumSlaveElements_.size() == 0)
     {
       // do redistribution
       doredist = true;
@@ -4559,14 +4560,16 @@ void WEAR::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<const Epetra_V
     else
     {
       // compute average balance factors of last time step
-      for (int k = 0; k < (int)tunbalance_.size(); ++k) taverage += tunbalance_[k];
-      taverage /= (int)tunbalance_.size();
-      for (int k = 0; k < (int)eunbalance_.size(); ++k) eaverage += eunbalance_[k];
-      eaverage /= (int)eunbalance_.size();
+      for (int k = 0; k < (int)unbalanceEvaluationTime_.size(); ++k)
+        taverage += unbalanceEvaluationTime_[k];
+      taverage /= (int)unbalanceEvaluationTime_.size();
+      for (int k = 0; k < (int)unbalanceNumSlaveElements_.size(); ++k)
+        eaverage += unbalanceNumSlaveElements_[k];
+      eaverage /= (int)unbalanceNumSlaveElements_.size();
 
       // delete balance factors of last time step
-      tunbalance_.resize(0);
-      eunbalance_.resize(0);
+      unbalanceEvaluationTime_.resize(0);
+      unbalanceNumSlaveElements_.resize(0);
 
       // decide on redistribution
       // -> (we allow a maximum value of the balance measure in the
@@ -4596,7 +4599,7 @@ void WEAR::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<const Epetra_V
   }
 
   // get out of here if simulation is still in balance
-  if (!doredist) return;
+  if (!doredist) return false;
 
   // time measurement
   Comm().Barrier();
@@ -4652,7 +4655,7 @@ void WEAR::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<const Epetra_V
   if (Comm().MyPID() == 0)
     std::cout << "\nTime for parallel redistribution.........." << t_end << " secs\n" << std::endl;
 
-  return;
+  return doredist;
 }
 
 /*----------------------------------------------------------------------*
@@ -4833,8 +4836,8 @@ void WEAR::WearLagrangeStrategy::DoReadRestart(
 
   // reset unbalance factors for redistribution
   // (during restart the interface has been evaluated once)
-  tunbalance_.resize(0);
-  eunbalance_.resize(0);
+  unbalanceEvaluationTime_.resize(0);
+  unbalanceNumSlaveElements_.resize(0);
 
   return;
 }
@@ -4842,10 +4845,10 @@ void WEAR::WearLagrangeStrategy::DoReadRestart(
 /*----------------------------------------------------------------------*
  |  Update active set and check for convergence (public)     farah 02/16|
  *----------------------------------------------------------------------*/
-void WEAR::WearLagrangeStrategy::UpdateActiveSetSemiSmooth()
+void WEAR::WearLagrangeStrategy::UpdateActiveSetSemiSmooth(const bool firstStepPredictor)
 {
   // call base routine
-  CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth();
+  CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth(firstStepPredictor);
 
   // for both-sided wear
   gminvolvednodes_ = Teuchos::null;

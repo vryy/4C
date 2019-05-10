@@ -38,7 +38,8 @@ namespace IO
 namespace PARTICLEALGORITHM
 {
   class DirichletBoundaryConditionHandler;
-}
+  class TemperatureBoundaryConditionHandler;
+}  // namespace PARTICLEALGORITHM
 
 namespace PARTICLEENGINE
 {
@@ -90,10 +91,17 @@ namespace PARTICLEALGORITHM
     //! time integration scheme specific post-interaction routine
     virtual void PostInteractionRoutine() = 0;
 
-   protected:
+   private:
     //! init dirichlet boundary condition handler
     void InitDirichletBoundaryCondition();
 
+    //! init temperature boundary condition handler
+    void InitTemperatureBoundaryCondition();
+
+    //! add initial random noise to particle position
+    void AddInitialRandomNoiseToPosition();
+
+   protected:
     //! particle simulation parameter list
     const Teuchos::ParameterList& params_;
 
@@ -103,6 +111,10 @@ namespace PARTICLEALGORITHM
     //! dirichlet boundary condition handler
     std::unique_ptr<PARTICLEALGORITHM::DirichletBoundaryConditionHandler>
         dirichletboundarycondition_;
+
+    //! temperature boundary condition handler
+    std::unique_ptr<PARTICLEALGORITHM::TemperatureBoundaryConditionHandler>
+        temperatureboundarycondition_;
 
     //! set of particle types to integrate in time
     std::set<PARTICLEENGINE::TypeEnum> typestointegrate_;
@@ -139,9 +151,6 @@ namespace PARTICLEALGORITHM
     virtual void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const bool modifiedstates);
-
-    //! time integration scheme specific initialization routine
-    virtual void SetInitialStates();
 
     //! time integration scheme specific pre-interaction routine
     virtual void PreInteractionRoutine() override;

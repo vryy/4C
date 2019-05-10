@@ -19,6 +19,8 @@
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_sph_momentum_formulation.H"
 
+#include "particle_interaction_utils.H"
+
 #include "../drt_lib/drt_dserror.H"
 
 #include <cmath>
@@ -79,23 +81,24 @@ PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::SPHMomentumFormulationMonag
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::SpecificCoefficient(const double* dens_i,
     const double* dens_j, const double* mass_i, const double* mass_j, const double& dWdrij,
-    double& specificcoefficient_ij) const
+    const double& dWdrji, double& speccoeff_ij, double& speccoeff_ji) const
 {
-  specificcoefficient_ij = (dWdrij * mass_j[0]);
+  speccoeff_ij = (dWdrij * mass_j[0]);
+  speccoeff_ji = (dWdrji * mass_i[0]);
 }
 
 /*---------------------------------------------------------------------------*
  | evaluate pressure gradient                                 sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::PressureGradient(const double* dens_i,
-    const double* dens_j, const double* press_i, const double* press_j,
-    const double& specificcoefficient_ij, const double* e_ij, double* acc_i) const
+    const double* dens_j, const double* press_i, const double* press_j, const double& speccoeff_ij,
+    const double& speccoeff_ji, const double* e_ij, double* acc_i, double* acc_j) const
 {
-  const double pressuregradient =
-      -specificcoefficient_ij *
-      (press_i[0] / std::pow(dens_i[0], 2) + press_j[0] / std::pow(dens_j[0], 2));
+  const double fac =
+      (press_i[0] / UTILS::pow<2>(dens_i[0]) + press_j[0] / UTILS::pow<2>(dens_j[0]));
 
-  for (int i = 0; i < 3; ++i) acc_i[i] += pressuregradient * e_ij[i];
+  if (acc_i) UTILS::vec_addscale(acc_i, -speccoeff_ij * fac, e_ij);
+  if (acc_j) UTILS::vec_addscale(acc_j, speccoeff_ji * fac, e_ij);
 }
 
 /*---------------------------------------------------------------------------*
@@ -104,63 +107,69 @@ void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::PressureGradient(const
 void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::ShearForces(const double* dens_i,
     const double* dens_j, const double* vel_i, const double* vel_j, const double& kernelfac,
     const double& visc_i, const double& visc_j, const double& bulk_visc_i,
-    const double& bulk_visc_j, const double& abs_rij, const double& specificcoefficient_ij,
-    const double* e_ij, double* acc_i) const
+    const double& bulk_visc_j, const double& abs_rij, const double& speccoeff_ij,
+    const double& speccoeff_ji, const double* e_ij, double* acc_i, double* acc_j) const
 {
-  double viscosity = 0.0;
-  if (visc_i > 0.0 and visc_j > 0.0) viscosity = (2.0 * visc_i * visc_j / (visc_i + visc_j));
+  double scaled_viscosity = 0.0;
+  if (visc_i > 0.0 and visc_j > 0.0)
+    scaled_viscosity = (2.0 * visc_i * visc_j / (3.0 * (visc_i + visc_j)));
 
-  double bulkviscosity = 0.0;
+  double bulk_viscosity = 0.0;
   if (bulk_visc_i > 0.0 and bulk_visc_j > 0.0)
-    bulkviscosity = (2.0 * bulk_visc_i * bulk_visc_j / (bulk_visc_i + bulk_visc_j));
+    bulk_viscosity = (2.0 * bulk_visc_i * bulk_visc_j / (bulk_visc_i + bulk_visc_j));
 
-  const double convectioncoefficient = kernelfac * (bulkviscosity + viscosity / 3.0);
-  const double diffusioncoefficient = 5.0 * viscosity / 3.0 - bulkviscosity;
+  const double convection_coeff = kernelfac * (bulk_viscosity + scaled_viscosity);
+  const double diffusion_coeff = 5.0 * scaled_viscosity - bulk_viscosity;
 
   // safety check
-  if (diffusioncoefficient < 0.0) dserror("diffusion coefficient is negative!");
+  if (diffusion_coeff < 0.0) dserror("diffusion coefficient is negative!");
+
+  double vel_ij[3];
+  UTILS::vec_set(vel_ij, vel_i);
+  UTILS::vec_sub(vel_ij, vel_j);
 
   const double inv_densi_densj_absdist = 1.0 / (dens_i[0] * dens_j[0] * abs_rij);
-  const double e_ij_vrel_ij = ((vel_i[0] - vel_j[0]) * e_ij[0] + (vel_i[1] - vel_j[1]) * e_ij[1] +
-                               (vel_i[2] - vel_j[2]) * e_ij[2]);
 
-  for (int i = 0; i < 3; ++i)
-  {
-    // diffusion
-    acc_i[i] += specificcoefficient_ij * diffusioncoefficient * inv_densi_densj_absdist *
-                (vel_i[i] - vel_j[i]);
+  // diffusion
+  const double fac_diff = diffusion_coeff * inv_densi_densj_absdist;
+  if (acc_i) UTILS::vec_addscale(acc_i, speccoeff_ij * fac_diff, vel_ij);
+  if (acc_j) UTILS::vec_addscale(acc_j, -speccoeff_ji * fac_diff, vel_ij);
 
-    // convection
-    acc_i[i] += specificcoefficient_ij * convectioncoefficient * e_ij_vrel_ij *
-                inv_densi_densj_absdist * e_ij[i];
-  }
+  // convection
+  const double fac_conv = convection_coeff * UTILS::vec_dot(vel_ij, e_ij) * inv_densi_densj_absdist;
+  if (acc_i) UTILS::vec_addscale(acc_i, speccoeff_ij * fac_conv, e_ij);
+  if (acc_j) UTILS::vec_addscale(acc_j, -speccoeff_ji * fac_conv, e_ij);
 }
 
 /*---------------------------------------------------------------------------*
  | evaluate background pressure (standard formulation)        sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::StandardBackgroundPressure(
-    const double* dens_i, const double* dens_j, const double& backgroundpressure,
-    const double& specificcoefficient_ij, const double* e_ij, double* acc_i) const
+    const double* dens_i, const double* dens_j, const double& bg_press_i, const double& bg_press_j,
+    const double& speccoeff_ij, const double& speccoeff_ji, const double* e_ij, double* mod_acc_i,
+    double* mod_acc_j) const
 {
-  const double fac = -specificcoefficient_ij * backgroundpressure *
-                     (1.0 / std::pow(dens_i[0], 2) + 1.0 / std::pow(dens_j[0], 2));
+  const double fac = (1.0 / UTILS::pow<2>(dens_i[0]) + 1.0 / UTILS::pow<2>(dens_j[0]));
 
-  for (int i = 0; i < 3; ++i) acc_i[i] += fac * e_ij[i];
+  if (mod_acc_i) UTILS::vec_addscale(mod_acc_i, -speccoeff_ij * bg_press_i * fac, e_ij);
+  if (mod_acc_j) UTILS::vec_addscale(mod_acc_j, speccoeff_ji * bg_press_j * fac, e_ij);
 }
 
 /*---------------------------------------------------------------------------*
  | evaluate background pressure (generalized formulation)     sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::GeneralizedBackgroundPressure(
-    const double* dens_i, const double* mass_i, const double* mass_j,
-    const double& backgroundpressure_tilde, const double& dWdrij_tilde, const double* e_ij,
-    double* acc_i) const
+    const double* dens_i, const double* dens_j, const double* mass_i, const double* mass_j,
+    const double& mod_bg_press_i, const double& mod_bg_press_j, const double& mod_dWdrij,
+    const double& mod_dWdrji, const double* e_ij, double* mod_acc_i, double* mod_acc_j) const
 {
-  const double fac =
-      -backgroundpressure_tilde * (mass_j[0] / std::pow(dens_i[0], 2)) * dWdrij_tilde;
+  if (mod_acc_i)
+    UTILS::vec_addscale(
+        mod_acc_i, -mod_bg_press_i * (mass_j[0] / UTILS::pow<2>(dens_i[0])) * mod_dWdrij, e_ij);
 
-  for (int i = 0; i < 3; ++i) acc_i[i] += fac * e_ij[i];
+  if (mod_acc_j)
+    UTILS::vec_addscale(
+        mod_acc_j, mod_bg_press_j * (mass_i[0] / UTILS::pow<2>(dens_j[0])) * mod_dWdrji, e_ij);
 }
 
 /*---------------------------------------------------------------------------*
@@ -168,33 +177,29 @@ void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::GeneralizedBackgroundP
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::ModifiedVelocityContribution(
     const double* dens_i, const double* dens_j, const double* vel_i, const double* vel_j,
-    const double* mod_vel_i, const double* mod_vel_j, const double& specificcoefficient_ij,
-    const double* e_ij, double* acc_i) const
+    const double* mod_vel_i, const double* mod_vel_j, const double& speccoeff_ij,
+    const double& speccoeff_ji, const double* e_ij, double* acc_i, double* acc_j) const
 {
-  double A_i[3][3];
-  double A_j[3][3];
+  double A_ij_e_ij[3] = {0.0};
 
-  for (int i = 0; i < 3; ++i)
-    for (int j = 0; j < 3; ++j)
-    {
-      A_i[i][j] = dens_i[0] * vel_i[i] * (mod_vel_i[j] - vel_i[j]);
-
-      if (vel_j and mod_vel_j) A_j[i][j] = dens_j[0] * vel_j[i] * (mod_vel_j[j] - vel_j[j]);
-    }
-
-  double A_ij_e_ij[3];
-  for (int i = 0; i < 3; ++i)
+  if (mod_vel_i)
   {
-    A_ij_e_ij[i] = (1.0 / std::pow(dens_i[0], 2)) *
-                   (A_i[i][0] * e_ij[0] + A_i[i][1] * e_ij[1] + A_i[i][2] * e_ij[2]);
-
-    if (vel_j and mod_vel_j)
-      A_ij_e_ij[i] += (1.0 / std::pow(dens_j[0], 2)) *
-                      (A_j[i][0] * e_ij[0] + A_j[i][1] * e_ij[1] + A_j[i][2] * e_ij[2]);
+    double modvel_ii[3];
+    UTILS::vec_set(modvel_ii, mod_vel_i);
+    UTILS::vec_sub(modvel_ii, vel_i);
+    UTILS::vec_addscale(A_ij_e_ij, (UTILS::vec_dot(modvel_ii, e_ij) / dens_i[0]), vel_i);
   }
 
+  if (mod_vel_j)
+  {
+    double modvel_jj[3];
+    UTILS::vec_set(modvel_jj, mod_vel_j);
+    UTILS::vec_sub(modvel_jj, vel_j);
+    UTILS::vec_addscale(A_ij_e_ij, (UTILS::vec_dot(modvel_jj, e_ij) / dens_j[0]), vel_j);
+  }
 
-  for (int i = 0; i < 3; ++i) acc_i[i] += specificcoefficient_ij * A_ij_e_ij[i];
+  if (acc_i) UTILS::vec_addscale(acc_i, speccoeff_ij, A_ij_e_ij);
+  if (acc_j) UTILS::vec_addscale(acc_j, -speccoeff_ji, A_ij_e_ij);
 }
 
 /*---------------------------------------------------------------------------*
@@ -211,25 +216,25 @@ PARTICLEINTERACTION::SPHMomentumFormulationAdami::SPHMomentumFormulationAdami()
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentumFormulationAdami::SpecificCoefficient(const double* dens_i,
     const double* dens_j, const double* mass_i, const double* mass_j, const double& dWdrij,
-    double& specificcoefficient_ij) const
+    const double& dWdrji, double& speccoeff_ij, double& speccoeff_ji) const
 {
-  specificcoefficient_ij =
-      (std::pow((mass_i[0] / dens_i[0]), 2) + std::pow((mass_j[0] / dens_j[0]), 2)) *
-      (dWdrij / mass_i[0]);
+  const double fac = (UTILS::pow<2>(mass_i[0] / dens_i[0]) + UTILS::pow<2>(mass_j[0] / dens_j[0]));
+
+  speccoeff_ij = fac * (dWdrij / mass_i[0]);
+  speccoeff_ji = fac * (dWdrji / mass_j[0]);
 }
 
 /*---------------------------------------------------------------------------*
  | evaluate pressure gradient                                 sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentumFormulationAdami::PressureGradient(const double* dens_i,
-    const double* dens_j, const double* press_i, const double* press_j,
-    const double& specificcoefficient_ij, const double* e_ij, double* acc_i) const
+    const double* dens_j, const double* press_i, const double* press_j, const double& speccoeff_ij,
+    const double& speccoeff_ji, const double* e_ij, double* acc_i, double* acc_j) const
 {
-  const double pressuregradient = -specificcoefficient_ij *
-                                  (dens_i[0] * press_j[0] + dens_j[0] * press_i[0]) /
-                                  (dens_i[0] + dens_j[0]);
+  const double fac = (dens_i[0] * press_j[0] + dens_j[0] * press_i[0]) / (dens_i[0] + dens_j[0]);
 
-  for (int i = 0; i < 3; ++i) acc_i[i] += pressuregradient * e_ij[i];
+  if (acc_i) UTILS::vec_addscale(acc_i, -speccoeff_ij * fac, e_ij);
+  if (acc_j) UTILS::vec_addscale(acc_j, speccoeff_ji * fac, e_ij);
 }
 
 /*---------------------------------------------------------------------------*
@@ -238,8 +243,8 @@ void PARTICLEINTERACTION::SPHMomentumFormulationAdami::PressureGradient(const do
 void PARTICLEINTERACTION::SPHMomentumFormulationAdami::ShearForces(const double* dens_i,
     const double* dens_j, const double* vel_i, const double* vel_j, const double& kernelfac,
     const double& visc_i, const double& visc_j, const double& bulk_visc_i,
-    const double& bulk_visc_j, const double& abs_rij, const double& specificcoefficient_ij,
-    const double* e_ij, double* acc_i) const
+    const double& bulk_visc_j, const double& abs_rij, const double& speccoeff_ij,
+    const double& speccoeff_ji, const double* e_ij, double* acc_i, double* acc_j) const
 {
   double viscosity = 0.0;
   if (visc_i > 0.0 and visc_j > 0.0)
@@ -247,33 +252,43 @@ void PARTICLEINTERACTION::SPHMomentumFormulationAdami::ShearForces(const double*
   else
     return;
 
-  const double laminarviscosity = specificcoefficient_ij * viscosity / abs_rij;
+  double vel_ij[3];
+  UTILS::vec_set(vel_ij, vel_i);
+  UTILS::vec_sub(vel_ij, vel_j);
 
-  for (int i = 0; i < 3; ++i) acc_i[i] += laminarviscosity * (vel_i[i] - vel_j[i]);
+  const double fac = viscosity / abs_rij;
+
+  if (acc_i) UTILS::vec_addscale(acc_i, speccoeff_ij * fac, vel_ij);
+  if (acc_j) UTILS::vec_addscale(acc_j, -speccoeff_ji * fac, vel_ij);
 }
 
 /*---------------------------------------------------------------------------*
  | evaluate background pressure (standard formulation)        sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentumFormulationAdami::StandardBackgroundPressure(
-    const double* dens_i, const double* dens_j, const double& backgroundpressure,
-    const double& specificcoefficient_ij, const double* e_ij, double* acc_i) const
+    const double* dens_i, const double* dens_j, const double& bg_press_i, const double& bg_press_j,
+    const double& speccoeff_ij, const double& speccoeff_ji, const double* e_ij, double* mod_acc_i,
+    double* mod_acc_j) const
 {
-  for (int i = 0; i < 3; ++i) acc_i[i] -= specificcoefficient_ij * backgroundpressure * e_ij[i];
+  if (mod_acc_i) UTILS::vec_addscale(mod_acc_i, -speccoeff_ij * bg_press_i, e_ij);
+  if (mod_acc_j) UTILS::vec_addscale(mod_acc_j, speccoeff_ji * bg_press_j, e_ij);
 }
 
 /*---------------------------------------------------------------------------*
  | evaluate background pressure (generalized formulation)     sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentumFormulationAdami::GeneralizedBackgroundPressure(
-    const double* dens_i, const double* mass_i, const double* mass_j,
-    const double& backgroundpressure_tilde, const double& dWdrij_tilde, const double* e_ij,
-    double* acc_i) const
+    const double* dens_i, const double* dens_j, const double* mass_i, const double* mass_j,
+    const double& mod_bg_press_i, const double& mod_bg_press_j, const double& mod_dWdrij,
+    const double& mod_dWdrji, const double* e_ij, double* mod_acc_i, double* mod_acc_j) const
 {
-  const double fac =
-      -(backgroundpressure_tilde / mass_i[0]) * std::pow((mass_i[0] / dens_i[0]), 2) * dWdrij_tilde;
+  if (mod_acc_i)
+    UTILS::vec_addscale(
+        mod_acc_i, -(mod_bg_press_i * mass_i[0] * mod_dWdrij) / UTILS::pow<2>(dens_i[0]), e_ij);
 
-  for (int i = 0; i < 3; ++i) acc_i[i] += fac * e_ij[i];
+  if (mod_acc_j)
+    UTILS::vec_addscale(
+        mod_acc_j, (mod_bg_press_j * mass_j[0] * mod_dWdrji) / UTILS::pow<2>(dens_j[0]), e_ij);
 }
 
 /*---------------------------------------------------------------------------*
@@ -281,28 +296,27 @@ void PARTICLEINTERACTION::SPHMomentumFormulationAdami::GeneralizedBackgroundPres
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentumFormulationAdami::ModifiedVelocityContribution(
     const double* dens_i, const double* dens_j, const double* vel_i, const double* vel_j,
-    const double* mod_vel_i, const double* mod_vel_j, const double& specificcoefficient_ij,
-    const double* e_ij, double* acc_i) const
+    const double* mod_vel_i, const double* mod_vel_j, const double& speccoeff_ij,
+    const double& speccoeff_ji, const double* e_ij, double* acc_i, double* acc_j) const
 {
-  double A_i[3][3];
-  double A_j[3][3];
+  double A_ij_e_ij[3] = {0.0};
 
-  for (int i = 0; i < 3; ++i)
-    for (int j = 0; j < 3; ++j)
-    {
-      A_i[i][j] = dens_i[0] * vel_i[i] * (mod_vel_i[j] - vel_i[j]);
-
-      if (vel_j and mod_vel_j) A_j[i][j] = dens_j[0] * vel_j[i] * (mod_vel_j[j] - vel_j[j]);
-    }
-
-  double A_ij_e_ij[3];
-  for (int i = 0; i < 3; ++i)
+  if (mod_vel_i)
   {
-    A_ij_e_ij[i] = 0.5 * (A_i[i][0] * e_ij[0] + A_i[i][1] * e_ij[1] + A_i[i][2] * e_ij[2]);
-
-    if (vel_j and mod_vel_j)
-      A_ij_e_ij[i] += 0.5 * (A_j[i][0] * e_ij[0] + A_j[i][1] * e_ij[1] + A_j[i][2] * e_ij[2]);
+    double modvel_ii[3];
+    UTILS::vec_set(modvel_ii, mod_vel_i);
+    UTILS::vec_sub(modvel_ii, vel_i);
+    UTILS::vec_addscale(A_ij_e_ij, 0.5 * dens_i[0] * UTILS::vec_dot(modvel_ii, e_ij), vel_i);
   }
 
-  for (int i = 0; i < 3; ++i) acc_i[i] += specificcoefficient_ij * A_ij_e_ij[i];
+  if (mod_vel_j)
+  {
+    double modvel_jj[3];
+    UTILS::vec_set(modvel_jj, mod_vel_j);
+    UTILS::vec_sub(modvel_jj, vel_j);
+    UTILS::vec_addscale(A_ij_e_ij, 0.5 * dens_j[0] * UTILS::vec_dot(modvel_jj, e_ij), vel_j);
+  }
+
+  if (acc_i) UTILS::vec_addscale(acc_i, speccoeff_ij, A_ij_e_ij);
+  if (acc_j) UTILS::vec_addscale(acc_j, -speccoeff_ji, A_ij_e_ij);
 }

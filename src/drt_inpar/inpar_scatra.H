@@ -6,9 +6,10 @@
 
    \level 1
 
-   \maintainer  Rui Fang
-                fang@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
+   \maintainer  Anh-Tu Vuong
+                vuong@lnm.mw.tum.de
+                http://www.lnm.mw.tum.de/
+                089-289-15237
 */
 
 /*----------------------------------------------------------------------*/
@@ -29,7 +30,6 @@ namespace DRT
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// Input parameters for SCATRA
   namespace SCATRA
   {
     /// time integration schemes for scalar transport problems

@@ -12,10 +12,10 @@ using modern software design and is parallelized with MPI for distributed memory
 ## Contents
 
 1. [Getting Up and Running with BACI](#getting-up-and-running-with-baci)
-   1. [Set-up Git](#set-up-git)
-   1. [Set-up LRZ GitLab](#set-up-lrz-gitlab)
+   1. [Set-up LRZ GitLab account](#set-up-lrz-gitlab-account)
+   1. [Configure Git](#configure-git)
    1. [Clone the Repository](#clone-the-repository)
-   1. [Set Up the Environment](#set-up-the-environment)
+   1. [Set-Up the Environment](#set-up-the-environment)
    1. [Configure and Build](#configure-and-build)
    1. [Updating BACI](#updating-baci)
 1. [Where to Ask Questions](#where-to-ask-questions)
@@ -24,44 +24,11 @@ using modern software design and is parallelized with MPI for distributed memory
 
 ## Getting Up and Running with BACI
 
-### Set-up Git
+### Set-up LRZ GitLab account
 
-A Git version >= 2.9 is required. <!-- We need at least this version to be able to configure the path to the git-hooks as outlined below. --> 
-Consult the official [Git documentation](www.git-scm.org) to obtain a more recent Git installation if necessary.
+1. Register an account on [LRZ GitLab](www.gitlab.lrz.de).
 
-1. Set your username to your full name, i.e., first name followed by last name,
-and your email address to your institute email address with the following commands:
-
-    ```bash
-    git config --global user.name "<Firstname> <Lastname>"
-    git config --global user.email <instituteEmailAddress>
-    ```
-
-1. Set a default text editor that will be used whenever you need to write a message in Git. To set `kwrite` as your default text editor, type: 
-
-    ```bash
-    git config --global core.editor kwrite
-    ```
-
-    > **Note:** Another popular choice is `vim`.
-
-1. Set path to our common set of `git-hooks`. After [cloning the repository](#clone-the-repository) into the directory `<someBaseDir>/<sourceDir>`, run
-
-    ```bash
-    cd <someBaseDir>/<sourceDir>
-    git config core.hooksPath ./utilities/git_hooks/
-    ```
-    
-    > **Note:** Before actually executing these command, first [setup your LRZ GitLab account](#set-up-lrz-gitlab) and [clone the repository](#clone-the-repository).
-
-Our Wiki provides a [detailed setup guide for your local git configuration](https://gitlab.lrz.de/baci/baci/wikis/Set-up-Git).
-
-[↑ Contents](#contents)
-
-### Set-up LRZ GitLab
-
-1. Register an account on [LRZ GitLab](www.gitlab.lrz.de).  
-   **Important:** Choose a recognizable user name. It is recommended to set it to: first letter of first name followed by last name, all lowercase, e.g., Max Mustermann -> mmustermann.
+    **Important:** Choose a recognizable user name. It is recommended to set it to: first letter of first name followed by last name, all lowercase, e.g., Max Mustermann -> mmustermann.
 
     > **Note:** Your username is a unique namespace related to your user ID. Changing it can have unintended side effects. See [how redirects will behave](https://gitlab.lrz.de/help/user/project/index.md#redirects-when-changing-repository-paths) for details.
 
@@ -95,15 +62,50 @@ Your directory tree should look like the following:
 
 [↑ Contents](#contents)
 
-### Set Up the Environment
+### Configure Git
+
+A Git version >= 2.9 is required. <!-- We need at least this version to be able to configure the path to the git-hooks as outlined below. -->
+Consult the official [Git documentation](www.git-scm.org) to obtain a more recent Git installation if necessary.
+
+1. Set your username to your full name, i.e., first name followed by last name,
+and your email address to your institute email address with the following commands:
+
+    ```bash
+    git config --global user.name "<Firstname> <Lastname>"
+    git config --global user.email <instituteEmailAddress>
+    ```
+
+1. Set a default text editor that will be used whenever you need to write a message in Git. To set `kwrite` as your default text editor, type:
+
+    ```bash
+    git config --global core.editor kwrite
+    ```
+
+    > **Note:** Another popular choice is `vim`.
+
+1. Set path to our common set of `git-hooks`. After [cloning the repository](#clone-the-repository) into the directory `<someBaseDir>/<sourceDir>`, run
+
+    ```bash
+    cd <someBaseDir>/<sourceDir>
+    git config core.hooksPath ./utilities/git_hooks/
+    ```
+
+    > **Note:** Before actually executing these command, first [setup your LRZ GitLab account](#set-up-lrz-gitlab) and [clone the repository](#clone-the-repository).
+
+Our Wiki provides a [detailed setup guide for your local git configuration](https://gitlab.lrz.de/baci/baci/wikis/Set-up-Git).
+
+[↑ Contents](#contents)
+
+### Set-up the Environment
 
 BACI heavily relies on the [Trilinos project](www.trilinos.org).
 
 Some further third party libraries (TPLs) are mandatory, e.g.
-- Parmetis
-- SuiteSparse
-- SuperLUDist
-- Qhull
+- Parmetis (recommended verions: 3.1.1)
+- SuiteSparse (recommended version: 3.3.0)
+- SuperLUDist (mandatory version: 2.5 (due to Trilinos/Amesos))
+- Qhull (recommended version: 2012.1)
+- CLN (recommened version: 1.3.4)
 
 and some are optional, e.g.
 - FFTW
@@ -145,7 +147,7 @@ Configuration files for a bunch of supported system environments are located in 
 #### Build
 
 ```bash
-make -j <numProcs> |& tee make$(date +%y%m%d%H%M%N).log
+make -j <numProcs> full |& tee make$(date +%y%m%d%H%M%N).log
 ```
 
 where `<numProcs>` is the number of processors you want to use.

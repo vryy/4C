@@ -3,12 +3,9 @@
 
 \brief provides a class with search tree with various search requests
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15270
-</pre>
+\level 3
+
+\maintainer Andy Wirtz
 
 *----------------------------------------------------------------------*/
 #ifndef SEARCHTREE_H
@@ -18,6 +15,7 @@ Maintainer: Andy Wirtz
 #include "searchtree_nearestobject.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 
+// forward declarations
 namespace DRT
 {
   class Discretization;

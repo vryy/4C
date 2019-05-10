@@ -18,6 +18,7 @@
 #include "contact_defines.H"
 #include <Epetra_Operator.h>
 
+// forward declarations
 namespace LINALG
 {
   class SparseMatrix;
@@ -117,9 +118,12 @@ namespace CONTACT
         Teuchos::RCP<Epetra_Vector>& combined_RHS, Teuchos::RCP<ADAPTER::Coupling> coupST,
         Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> temp);
 
-    // Overload CONTACT::CoLagrangeStrategy::Recover as this is called in the structure --> no
-    // enought information available for monolithically coupled algorithms!
-    virtual void Recover(Teuchos::RCP<Epetra_Vector> disi){};
+    /*!
+    \brief Overload CONTACT::CoLagrangeStrategy::Recover as this is called in the structure
+
+    --> not enough information available for monolithically coupled algorithms!
+    */
+    void Recover(Teuchos::RCP<Epetra_Vector> disi) override { return; };
 
     virtual void RecoverCoupled(Teuchos::RCP<Epetra_Vector> sinc,  /// displacement  increment
         Teuchos::RCP<Epetra_Vector> tinc,                          /// thermal  increment
@@ -176,8 +180,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoTSILagrangeStrategy operator=(const CoTSILagrangeStrategy& old);
-    CoTSILagrangeStrategy(const CoTSILagrangeStrategy& old);
+    CoTSILagrangeStrategy operator=(const CoTSILagrangeStrategy& old) = delete;
+    CoTSILagrangeStrategy(const CoTSILagrangeStrategy& old) = delete;
 
     // time integration
     double tsi_alpha_;

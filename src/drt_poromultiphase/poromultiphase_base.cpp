@@ -6,8 +6,8 @@
 
    \level 3
 
-   \maintainer  Lena Yoshihara
-                yoshihara@lnm.mw.tum.de
+   \maintainer  Johannes Kremheller
+                kremheller@lnm.mw.tum.de
                 http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
@@ -52,7 +52,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(const Teuchos::ParameterList& glob
     const Teuchos::ParameterList& algoparams, const Teuchos::ParameterList& structparams,
     const Teuchos::ParameterList& fluidparams, const std::string& struct_disname,
     const std::string& fluid_disname, bool isale, int nds_disp, int nds_vel, int nds_solidpressure,
-    int ndsporofluid_scatra)
+    int ndsporofluid_scatra, const std::map<int, std::set<int>>* nearbyelepairs)
 {
   // access the global problem
   DRT::Problem* problem = DRT::Problem::Instance();
@@ -110,7 +110,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(const Teuchos::ParameterList& glob
   // wrap it
   fluid_ = Teuchos::rcp(new ADAPTER::PoroFluidMultiphaseWrapper(porofluid));
   // initialize it
-  fluid_->Init(isale, nds_disp, nds_vel, nds_solidpressure, ndsporofluid_scatra);
+  fluid_->Init(isale, nds_disp, nds_vel, nds_solidpressure, ndsporofluid_scatra, nearbyelepairs);
 
   // done.
   return;

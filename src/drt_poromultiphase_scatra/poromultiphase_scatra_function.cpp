@@ -13,6 +13,8 @@
  *----------------------------------------------------------------------*/
 
 #include "poromultiphase_scatra_function.H"
+#include "poromultiphase_scatra_utils.H"
+#include "../headers/FAD_utils.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -899,6 +901,392 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro::Evaluate
   }
   else
     dserror("Something went wrong in derivative evaluation of TUMOR_GROWTH_LAW_HEAVISIDE_NECRO");
+
+  return deriv;
+}
+
+// transvascular exchange of oxygen from neovasculature into interstitial fluid
+// +-------------------------------------------------------------------------------------------+
+// | OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT                                                    |
+// | S/V*gamma*rho*(P_nv-P_if)*heaviside(P_nv-P_if)*VF1                                        |
+// | with partial pressures of oxygen in neovasculature P_nv and in IF P_if                    |
+// +-------------------------------------------------------------------------------------------+
+POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont::OxygenTransvascularExchangeLawCont(
+    std::vector<std::pair<std::string, double>> funct_params)
+    : PoroMultiPhaseScaTraFunction()
+{
+  // Check size
+  if (funct_params.size() != 9)
+    dserror(
+        "Wrong size of funct_params for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT, it should have "
+        "exactly\n"
+        "9 funct_params (in this order) n, Pb50, CaO2_max, alpha_bl_eff, gamma*rho*S/V, rho_oxy, "
+        "rho_IF, rho_bl, alpha_IF");
+
+  // Check correct naming and order of funct_params
+  if (funct_params[0].first != "n")
+    dserror("First parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT has to be n");
+
+  if (funct_params[1].first != "Pb50")
+    dserror("Second parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT has to be Pb50");
+
+  if (funct_params[2].first != "CaO2_max")
+    dserror("Third parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT has to be CaO2_max");
+
+  if (funct_params[3].first != "alpha_bl_eff")
+    dserror("Fourth parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT has to be alpha_bl_eff");
+
+  if (funct_params[4].first != "gamma*rho*S/V")
+    dserror("Fifth parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT has to be gamma*rho*S/V");
+
+  if (funct_params[5].first != "rho_oxy")
+    dserror("Sixth parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT has to be rho_oxy");
+
+  if (funct_params[6].first != "rho_IF")
+    dserror("Sixth parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT has to be rho_IF");
+
+  if (funct_params[7].first != "rho_bl")
+    dserror("Sixth parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT has to be rho_bl");
+
+  if (funct_params[8].first != "alpha_IF")
+    dserror("Sixth parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT has to be alpha_IF");
+
+  // save funct_params in class variable
+  myfunct_params_.resize(9);
+  myfunct_params_[0] = funct_params[0].second;
+  myfunct_params_[1] = funct_params[1].second;
+  myfunct_params_[2] = funct_params[2].second;
+  myfunct_params_[3] = funct_params[3].second;
+  myfunct_params_[4] = funct_params[4].second;
+  myfunct_params_[5] = funct_params[5].second;
+  myfunct_params_[6] = funct_params[6].second;
+  myfunct_params_[7] = funct_params[7].second;
+  myfunct_params_[8] = funct_params[8].second;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont::CheckOrder(
+    const std::vector<std::pair<std::string, double>>& variables,
+    const std::vector<std::pair<std::string, double>>& constants)
+{
+  // safety check for correct ordering of variables and constants
+  // they should have been added in exactly the same way in scatra_ele_calc_multiporo_reaction, but
+  // order might be different if we do not use exactly three fluid phases
+  if (constants[7].first != "VF1")
+    dserror("wrong order in variable vector, porosity not at position 7");
+  if (variables[0].first != "phi1")
+    dserror("wrong order in variable vector, phi1 (oxygen mass fraction) not at position 1");
+  if (variables[1].first != "phi2")
+    dserror("wrong order in variable vector, phi2 (necrotic mass fraction) not at position 2");
+  if (variables[2].first != "phi3")
+    dserror("wrong order in variable vector, phi3 (necrotic mass fraction) not at position 3");
+  if (variables[3].first != "phi4")
+    dserror("wrong order in variable vector, phi4 (necrotic mass fraction) not at position 4");
+
+  // order is correct
+  order_checked_ = true;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont::Evaluate(const int index,
+    const std::vector<std::pair<std::string, double>>& variables,
+    const std::vector<std::pair<std::string, double>>& constants)
+{
+  // Check order (only once since it does not change)
+  if (not order_checked_) CheckOrder(variables, constants);
+
+  // read function params
+  const double n = myfunct_params_[0];
+  const double Pb50 = myfunct_params_[1];
+  const double CaO2_max = myfunct_params_[2];
+  const double alpha_bl_eff = myfunct_params_[3];
+  const double gammarhoSV = myfunct_params_[4];
+  const double rho_oxy = myfunct_params_[5];
+  const double rho_if = myfunct_params_[6];
+  const double rho_bl = myfunct_params_[7];
+  const double alpha_IF = myfunct_params_[8];
+
+  const double fac_if = rho_oxy / rho_if * alpha_IF;
+
+  // read variables and constants (order is crucial)
+  double VF1 = constants[7].second;
+  double oxy_mass_frac_if = variables[0].second;
+  double oxy_mass_frac_nv = variables[3].second;
+
+  double Pb = 0.0;
+  double CaO2 = oxy_mass_frac_nv * rho_bl / rho_oxy;
+  // safety check --> should not be larger than CaO2_max, which already correponds to partial
+  // pressures of ~250Pa
+  CaO2 = std::max(0.0, std::min(CaO2, 1.0 * CaO2_max));
+  POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<double>(
+      Pb, CaO2, CaO2_max, Pb50, n, alpha_bl_eff);
+
+  // evaluate function
+  const double heaviside_oxy((Pb - oxy_mass_frac_if / fac_if) > 0. ? 1. : 0.);
+  const double functval = gammarhoSV * heaviside_oxy * (Pb - oxy_mass_frac_if / fac_if) * VF1;
+
+  return functval;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::vector<double> POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont::EvaluateDerivative(
+    int index, const std::vector<std::pair<std::string, double>>& variables,
+    const std::vector<std::pair<std::string, double>>& constants)
+{
+  // create derivative vector (should have size of variables)
+  std::vector<double> deriv(variables.size(), 0.0);
+
+  // read function params
+  const double n = myfunct_params_[0];
+  const double Pb50 = myfunct_params_[1];
+  const double CaO2_max = myfunct_params_[2];
+  const double alpha_bl_eff = myfunct_params_[3];
+  const double gammarhoSV = myfunct_params_[4];
+  const double rho_oxy = myfunct_params_[5];
+  const double rho_if = myfunct_params_[6];
+  const double rho_bl = myfunct_params_[7];
+  const double alpha_IF = myfunct_params_[8];
+
+  const double fac_if = rho_oxy / rho_if * alpha_IF;
+
+  double VF1, oxy_mass_frac_if;
+  FAD oxy_mass_frac_nv = 0.0;
+  oxy_mass_frac_nv.diff(0, 1);       // independent variable 0 out of a total of 1
+  if (variables[0].first == "phi1")  // maindiag-derivative
+  {
+    // read variables and constants (order is crucial)
+    VF1 = constants[7].second;
+    oxy_mass_frac_if = variables[0].second;
+    oxy_mass_frac_nv.val() = variables[3].second;
+  }
+  else if (variables[0].first == "p1")  // OD-derivative
+  {
+    // read variables and constants (order is crucial)
+    VF1 = variables[7].second;
+    oxy_mass_frac_if = constants[0].second;
+    oxy_mass_frac_nv.val() = constants[3].second;
+  }
+  else
+    dserror(
+        "Something went wrong in derivative evaluation of OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT");
+
+  FAD Pb = 0.0;
+  FAD CaO2 = oxy_mass_frac_nv * rho_bl / rho_oxy;
+  // safety check --> should not be larger than CaO2_max, which already correponds to partial
+  // pressures of ~250Pa
+  CaO2 = std::max(0.0, std::min(CaO2, 1.0 * CaO2_max));
+  POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<FAD>(
+      Pb, CaO2, CaO2_max, Pb50, n, alpha_bl_eff);
+  const double heaviside_oxy((Pb - oxy_mass_frac_if / fac_if) > 0. ? 1. : 0.);
+
+  if (variables[0].first == "phi1")  // maindiag-derivative
+  {
+    deriv[0] = gammarhoSV * VF1 * (-1.0 / fac_if) * heaviside_oxy;
+    deriv[3] = gammarhoSV * VF1 * (Pb.fastAccessDx(0)) * heaviside_oxy;
+  }
+  else if (variables[0].first == "p1")  // OD-derivative
+  {
+    deriv[7] = gammarhoSV * (Pb.val() - oxy_mass_frac_if / fac_if) * heaviside_oxy;
+  }
+  else
+    dserror(
+        "Something went wrong in derivative evaluation of OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT");
+
+  return deriv;
+}
+
+// transvascular exchange of oxygen from pre-existing vasculature into interstitial fluid
+// +-------------------------------------------------------------------------------------------+
+// | OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC                                                    |
+// | pi*D*gamma*rho*(P_v-P_if)*VF1*heaviside(S2_max-S2)                                        |
+// | with partial pressures of oxygen in vasculature P_v and in IF P_if                        |
+// +-------------------------------------------------------------------------------------------+
+POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc::OxygenTransvascularExchangeLawDisc(
+    std::vector<std::pair<std::string, double>> funct_params)
+    : PoroMultiPhaseScaTraFunction()
+{
+  // Check size
+  if (funct_params.size() != 10)
+    dserror(
+        "Wrong size of funct_params for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC, it should have "
+        "exactly\n"
+        "10 funct_params (in this order) n, Pb50, CaO2_max, alpha_bl_eff, gamma*rho,rho_oxy, "
+        "rho_IF, rho_bl, S2_max, alpha_IF");
+
+  // Check correct naming and order of funct_params
+  if (funct_params[0].first != "n")
+    dserror("First parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC has to be n");
+
+  if (funct_params[1].first != "Pb50")
+    dserror("Second parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC has to be Pb50");
+
+  if (funct_params[2].first != "CaO2_max")
+    dserror("Third parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC has to be CaO2_max");
+
+  if (funct_params[3].first != "alpha_bl_eff")
+    dserror("Fourth parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC has to be alpha_bl_eff");
+
+  if (funct_params[4].first != "gamma*rho")
+    dserror("Fifth parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC has to be gamma*rho");
+
+  if (funct_params[5].first != "rho_oxy")
+    dserror("Sixth parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC has to be rho_oxy");
+
+  if (funct_params[6].first != "rho_IF")
+    dserror("Sixth parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC has to be rho_IF");
+
+  if (funct_params[7].first != "rho_bl")
+    dserror("Sixth parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC has to be rho_bl");
+
+  if (funct_params[8].first != "S2_max")
+    dserror("Sixth parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC has to be S2_max");
+
+  if (funct_params[9].first != "alpha_IF")
+    dserror("Sixth parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC has to be alpha_IF");
+
+  // save funct_params in class variable
+  myfunct_params_.resize(10);
+  myfunct_params_[0] = funct_params[0].second;
+  myfunct_params_[1] = funct_params[1].second;
+  myfunct_params_[2] = funct_params[2].second;
+  myfunct_params_[3] = funct_params[3].second;
+  myfunct_params_[4] = funct_params[4].second;
+  myfunct_params_[5] = funct_params[5].second;
+  myfunct_params_[6] = funct_params[6].second;
+  myfunct_params_[7] = funct_params[7].second;
+  myfunct_params_[8] = funct_params[8].second;
+  myfunct_params_[9] = funct_params[9].second;
+
+  pos_oxy_art_ = -1;
+  pos_diam_ = -1;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc::CheckOrder(
+    const std::vector<std::pair<std::string, double>>& variables,
+    const std::vector<std::pair<std::string, double>>& constants)
+{
+  // safety check for correct ordering of variables and constants
+  // they should have been added in exactly the same way in scatra_ele_calc_multiporo_reaction, but
+  // order might be different if we do not use exactly three fluid phases
+  if (variables[0].first != "phi1")
+    dserror("wrong order in variable vector, phi1 (oxygen mass fraction) not at position 1");
+
+  // oxygen in artery
+  // we have no neo-vasculature --> at position 2, species 1: oxy in IF, species 2: NTC
+  if (variables[2].first == "phi_art1") pos_oxy_art_ = 2;
+  // we have no neo-vasculature --> at position 4, species 1: oxy in IF, species 2: NTC,
+  // species 3: TAF, species 4: oxy in NV
+  if (variables.size() >= 5 && variables[4].first == "phi_art1") pos_oxy_art_ = 4;
+  if (pos_oxy_art_ == -1) dserror("cannot find position of oxygen in arteries");
+
+  // fluid variables
+  if (constants[1].first != "p2")
+    dserror("wrong order in constants vector, p2 (pressure of tumor cells) not at position 2");
+  if (constants[4].first != "S2")
+    dserror("wrong order in constants vector, S2 (saturation of tumor cells) not at position 5");
+
+  // diameter
+  if (constants[8].first == "D") pos_diam_ = 8;
+  if (constants.size() >= 11 && constants[10].first == "D") pos_diam_ = 10;
+  if (pos_diam_ == -1) dserror("cannot find position of artery diameter");
+
+  // order is correct
+  order_checked_ = true;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc::Evaluate(const int index,
+    const std::vector<std::pair<std::string, double>>& variables,
+    const std::vector<std::pair<std::string, double>>& constants)
+{
+  // Check order (only once since it does not change)
+  if (not order_checked_) CheckOrder(variables, constants);
+
+  // read function params
+  const double n = myfunct_params_[0];
+  const double Pb50 = myfunct_params_[1];
+  const double CaO2_max = myfunct_params_[2];
+  const double alpha_bl_eff = myfunct_params_[3];
+  const double gammarho = myfunct_params_[4];
+  const double rho_oxy = myfunct_params_[5];
+  const double rho_if = myfunct_params_[6];
+  const double rho_bl = myfunct_params_[7];
+  const double S2_max = myfunct_params_[8];
+  const double alpha_IF = myfunct_params_[9];
+
+  const double fac_if = rho_oxy / rho_if * alpha_IF;
+
+  // read variables and constants (order is crucial)
+  double oxy_mass_frac_if = variables[0].second;
+  double oxy_mass_frac_nv = variables[pos_oxy_art_].second;
+  const double D = constants[pos_diam_].second;
+  const double S2 = constants[4].second;
+
+  double Pb = 0.0;
+  double CaO2 = oxy_mass_frac_nv * rho_bl / rho_oxy;
+  // safety check --> should not be larger than CaO2_max, which already correponds to partial
+  // pressures of ~250Pa
+  CaO2 = std::max(0.0, std::min(CaO2, 1.0 * CaO2_max));
+  POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<double>(
+      Pb, CaO2, CaO2_max, Pb50, n, alpha_bl_eff);
+
+  // evaluate function
+  const double heaviside_S2 = ((S2 - S2_max) > 0. ? 0. : 1.);
+  const double functval = gammarho * M_PI * D * (Pb - oxy_mass_frac_if / fac_if) * heaviside_S2;
+
+  return functval;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::vector<double> POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc::EvaluateDerivative(
+    int index, const std::vector<std::pair<std::string, double>>& variables,
+    const std::vector<std::pair<std::string, double>>& constants)
+{
+  // create derivative vector (should have size of variables)
+  std::vector<double> deriv(variables.size(), 0.0);
+
+  // read function params
+  const double n = myfunct_params_[0];
+  const double Pb50 = myfunct_params_[1];
+  const double CaO2_max = myfunct_params_[2];
+  const double alpha_bl_eff = myfunct_params_[3];
+  const double gammarho = myfunct_params_[4];
+  const double rho_oxy = myfunct_params_[5];
+  const double rho_if = myfunct_params_[6];
+  const double rho_bl = myfunct_params_[7];
+  const double S2_max = myfunct_params_[8];
+  const double alpha_IF = myfunct_params_[9];
+
+  const double fac_if = rho_oxy / rho_if * alpha_IF;
+
+  FAD oxy_mass_frac_nv = 0.0;
+  oxy_mass_frac_nv.diff(0, 1);  // independent variable 0 out of a total of 1
+
+  // read variables and constants (order is crucial)
+  oxy_mass_frac_nv.val() = variables[pos_oxy_art_].second;
+  const double D = constants[pos_diam_].second;
+  const double S2 = constants[4].second;
+
+  FAD Pb = 0.0;
+  FAD CaO2 = oxy_mass_frac_nv * rho_bl / rho_oxy;
+  // safety check --> should not be larger than CaO2_max, which already correponds to partial
+  // pressures of ~250Pa
+  CaO2 = std::max(0.0, std::min(CaO2, 1.0 * CaO2_max));
+  POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<FAD>(
+      Pb, CaO2, CaO2_max, Pb50, n, alpha_bl_eff);
+
+  // evaluate function
+  const double heaviside_S2 = ((S2 - S2_max) > 0. ? 0. : 1.);
+
+  deriv[0] = gammarho * M_PI * D * (-1.0 / fac_if) * heaviside_S2;
+  deriv[pos_oxy_art_] = gammarho * M_PI * D * (Pb.fastAccessDx(0)) * heaviside_S2;
 
   return deriv;
 }

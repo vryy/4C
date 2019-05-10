@@ -17,6 +17,7 @@
 
 #include "cut_cycle.H"
 #include "cut_edge.H"
+#include "cut_output.H"
 
 
 std::ostream& operator<<(std::ostream& stream, const GEO::CUT::Cycle& cycle)
@@ -230,7 +231,23 @@ void GEO::CUT::Cycle::TestUnique()
 {
   PointSet c_copy;
   c_copy.insert(points_.begin(), points_.end());
-  if (points_.size() != c_copy.size()) throw std::runtime_error("double point in cycle");
+  if (points_.size() != c_copy.size())
+  {
+    for (std::vector<Point*>::iterator it = points_.begin(); it != points_.end(); ++it)
+    {
+      int num_el_erased = c_copy.erase(*it);
+      // if element was duplicated we cannot erase it again
+      if (num_el_erased == 0)
+      {
+        int num_occ = std::count(points_.begin(), points_.end(), (*it));
+        Print();
+        std::stringstream str;
+        str << "Multiple( " << num_occ << " ) occcurence of point " << (*it)->Id()
+            << " in the cycle" << std::endl;
+        throw std::runtime_error(str.str());
+      }
+    }
+  }
 }
 
 void GEO::CUT::Cycle::GnuplotDump(std::ostream& stream) const
@@ -246,6 +263,23 @@ void GEO::CUT::Cycle::GnuplotDump(std::ostream& stream) const
   }
 }
 
+
+void GEO::CUT::Cycle::GmshDump(std::ofstream& file) const
+{
+  for (unsigned i = 0; i != points_.size(); ++i)
+  {
+    Point* p1 = points_[i];
+    p1->DumpConnectivityInfo();
+    Point* p2 = points_[(i + 1) % points_.size()];
+    std::stringstream section_name;
+    section_name << "Line" << i;
+    GEO::CUT::OUTPUT::GmshNewSection(file, section_name.str());
+    GEO::CUT::OUTPUT::GmshLineDump(file, p1, p2, p1->Id(), p2->Id(), false, NULL);
+    GEO::CUT::OUTPUT::GmshEndSection(file, false);
+  }
+}
+
+
 void GEO::CUT::Cycle::reverse() { std::reverse(points_.begin(), points_.end()); }
 
 /*----------------------------------------------------------------------------*
@@ -254,6 +288,6 @@ void GEO::CUT::Cycle::Print() const
 {
   std::cout << "--- Cycle ---" << std::endl;
   for (std::vector<Point*>::const_iterator cit = points_.begin(); cit != points_.end(); ++cit)
-    std::cout << "Point " << (*cit) << "\n";
+    std::cout << "Point " << (*cit)->Id() << "\n";
   std::cout << std::endl;
 }

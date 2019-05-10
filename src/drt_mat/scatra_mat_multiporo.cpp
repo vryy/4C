@@ -6,8 +6,8 @@
 
    \level 3
 
-   \maintainer  Lena Yoshihara
-                yoshihara@lnm.mw.tum.de
+   \maintainer  Johannes Kremheller
+                kremheller@lnm.mw.tum.de
                 http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
@@ -115,7 +115,8 @@ void MAT::ScatraMatMultiPoroFluid::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*/
 MAT::PAR::ScatraMatMultiPoroVolFrac::ScatraMatMultiPoroVolFrac(
     Teuchos::RCP<MAT::PAR::Material> matdata)
-    : ScatraMat(matdata), phaseID_(matdata->GetInt("PHASEID"))
+    : ScatraMat(matdata), phaseID_(matdata->GetInt("PHASEID")), delta_(matdata->GetDouble("DELTA"))
+
 {
 }
 
@@ -190,6 +191,188 @@ void MAT::ScatraMatMultiPoroVolFrac::Unpack(const std::vector<char>& data)
           DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ScatraMatMultiPoroVolFrac*>(mat);
+      else
+        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+            MaterialType());
+    }
+
+  // extract base class material
+  std::vector<char> basedata(0);
+  ExtractfromPack(position, data, basedata);
+  ScatraMat::Unpack(basedata);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+
+MAT::PAR::ScatraMatMultiPoroSolid::ScatraMatMultiPoroSolid(Teuchos::RCP<MAT::PAR::Material> matdata)
+    : ScatraMat(matdata), delta_(matdata->GetDouble("DELTA"))
+{
+}
+
+Teuchos::RCP<MAT::Material> MAT::PAR::ScatraMatMultiPoroSolid::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::ScatraMatMultiPoroSolid(this));
+}
+
+MAT::ScatraMatMultiPoroSolidType MAT::ScatraMatMultiPoroSolidType::instance_;
+
+DRT::ParObject* MAT::ScatraMatMultiPoroSolidType::Create(const std::vector<char>& data)
+{
+  MAT::ScatraMatMultiPoroSolid* scatra_mat = new MAT::ScatraMatMultiPoroSolid();
+  scatra_mat->Unpack(data);
+  return scatra_mat;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+MAT::ScatraMatMultiPoroSolid::ScatraMatMultiPoroSolid() : params_(NULL) {}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+MAT::ScatraMatMultiPoroSolid::ScatraMatMultiPoroSolid(MAT::PAR::ScatraMatMultiPoroSolid* params)
+    : ScatraMat(params), params_(params)
+{
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ScatraMatMultiPoroSolid::Pack(DRT::PackBuffer& data) const
+{
+  DRT::PackBuffer::SizeMarker sm(data);
+  sm.Insert();
+
+  // pack type of this instance of ParObject
+  int type = UniqueParObjectId();
+  AddtoPack(data, type);
+
+  // matid
+  int matid = -1;
+  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  AddtoPack(data, matid);
+
+  // add base class material
+  ScatraMat::Pack(data);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ScatraMatMultiPoroSolid::Unpack(const std::vector<char>& data)
+{
+  std::vector<char>::size_type position = 0;
+  // extract type
+  int type = 0;
+  ExtractfromPack(position, data, type);
+  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  // matid
+  int matid;
+  ExtractfromPack(position, data, matid);
+  params_ = NULL;
+  if (DRT::Problem::Instance()->Materials() != Teuchos::null)
+    if (DRT::Problem::Instance()->Materials()->Num() != 0)
+    {
+      const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+      MAT::PAR::Parameter* mat =
+          DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      if (mat->Type() == MaterialType())
+        params_ = static_cast<MAT::PAR::ScatraMatMultiPoroSolid*>(mat);
+      else
+        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+            MaterialType());
+    }
+
+  // extract base class material
+  std::vector<char> basedata(0);
+  ExtractfromPack(position, data, basedata);
+  ScatraMat::Unpack(basedata);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+
+MAT::PAR::ScatraMatMultiPoroTemperature::ScatraMatMultiPoroTemperature(
+    Teuchos::RCP<MAT::PAR::Material> matdata)
+    : ScatraMat(matdata),
+      numfluidphases_(matdata->GetInt("NUMFLUIDPHASES")),
+      numvolfrac_(matdata->GetInt("NUMVOLFRAC")),
+      cp_fluid_(*(matdata->Get<std::vector<double>>("CP_FLUID"))),
+      cp_volfrac_(*(matdata->Get<std::vector<double>>("CP_VOLFRAC"))),
+      cp_solid_(matdata->GetDouble("CP_SOLID")),
+      kappa_fluid_(*(matdata->Get<std::vector<double>>("KAPPA_FLUID"))),
+      kappa_volfrac_(*(matdata->Get<std::vector<double>>("KAPPA_VOLFRAC"))),
+      kappa_solid_(matdata->GetDouble("KAPPA_SOLID"))
+{
+}
+
+Teuchos::RCP<MAT::Material> MAT::PAR::ScatraMatMultiPoroTemperature::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::ScatraMatMultiPoroTemperature(this));
+}
+
+MAT::ScatraMatMultiPoroTemperatureType MAT::ScatraMatMultiPoroTemperatureType::instance_;
+
+DRT::ParObject* MAT::ScatraMatMultiPoroTemperatureType::Create(const std::vector<char>& data)
+{
+  MAT::ScatraMatMultiPoroTemperature* scatra_mat = new MAT::ScatraMatMultiPoroTemperature();
+  scatra_mat->Unpack(data);
+  return scatra_mat;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+MAT::ScatraMatMultiPoroTemperature::ScatraMatMultiPoroTemperature() : params_(NULL) {}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+MAT::ScatraMatMultiPoroTemperature::ScatraMatMultiPoroTemperature(
+    MAT::PAR::ScatraMatMultiPoroTemperature* params)
+    : ScatraMat(params), params_(params)
+{
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ScatraMatMultiPoroTemperature::Pack(DRT::PackBuffer& data) const
+{
+  DRT::PackBuffer::SizeMarker sm(data);
+  sm.Insert();
+
+  // pack type of this instance of ParObject
+  int type = UniqueParObjectId();
+  AddtoPack(data, type);
+
+  // matid
+  int matid = -1;
+  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  AddtoPack(data, matid);
+
+  // add base class material
+  ScatraMat::Pack(data);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ScatraMatMultiPoroTemperature::Unpack(const std::vector<char>& data)
+{
+  std::vector<char>::size_type position = 0;
+  // extract type
+  int type = 0;
+  ExtractfromPack(position, data, type);
+  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  // matid
+  int matid;
+  ExtractfromPack(position, data, matid);
+  params_ = NULL;
+  if (DRT::Problem::Instance()->Materials() != Teuchos::null)
+    if (DRT::Problem::Instance()->Materials()->Num() != 0)
+    {
+      const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+      MAT::PAR::Parameter* mat =
+          DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      if (mat->Type() == MaterialType())
+        params_ = static_cast<MAT::PAR::ScatraMatMultiPoroTemperature*>(mat);
       else
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());

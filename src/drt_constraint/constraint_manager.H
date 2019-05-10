@@ -4,7 +4,7 @@
 \brief Class controlling constraints and containing the necessary data, code originally by Thomas
 Kloeppel
 
-\maintainer Marc Hirschvogel
+\maintainer Amadeus Gebauer
 
 \level 2
 
@@ -19,6 +19,7 @@ Kloeppel
 #include <Epetra_RowMatrix.h>
 #include <Teuchos_ParameterList.hpp>
 
+// forward declarations
 namespace IO
 {
   class DiscretizationReader;

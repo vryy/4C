@@ -33,11 +33,8 @@ namespace DRT
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// General input parameters for structural problems
   namespace STR
   {
-    /// @name Time integration
-    //@{
     /// Active element technologies
     enum EleTech
     {
@@ -163,16 +160,24 @@ namespace INPAR
       return type;
     };
 
+    /// @name Time integration
+    //!@{
+
+    /*! \brief Time integration strategy
+     *
+     *  \warning Implement new features only in the \c int_standard framework
+     *  as the old framework is supposed to go away.
+     */
     enum IntegrationStrategy
     {
-      int_old,  // old structure (FixMe deprecated and should be deleted, as soon as the clean-up is
-                // finished!)
-      int_standard,  // standard time integration (implicit or explicit)
-      int_loca       // path following with LOCA
+      int_old, /**< old structure (FixMe deprecated and should be deleted, as soon as the clean-up
+                * is finished!) */
+      int_standard,  ///< standard time integration (implicit or explicit)
+      int_loca       ///< path following with LOCA
     };
 
     /// Type of time integrator including statics
-    enum DynamicType
+    enum DynamicType : int
     {
       dyna_statics,            ///< static analysis
       dyna_genalpha,           ///< generalised-alpha time integrator (implicit)
@@ -236,11 +241,12 @@ namespace INPAR
       damp_brownianmotion  ///< damping due to brownian motion
     };
 
-    /// Mid-average type of internal forces for generalised-alpha-like
-    /// time integration schemes
-    ///
-    /// \author bborn
-    /// \date 11/08
+    /*! \brief Mid-average type of internal forces for generalised-alpha-like time integration
+     * schemes
+     *
+     * \author bborn
+     * \date 11/08
+     */
     enum MidAverageEnum
     {
       midavg_vague = 0,  ///< undefined mid-averaging type
@@ -277,10 +283,63 @@ namespace INPAR
       }
     }
 
-    //@}
+    /// Type of predictor
+    enum PredEnum : int
+    {
+      pred_vague,     ///< undetermined
+      pred_constdis,  ///< constant displacements, consistent velocities and accelerations
+      pred_constvel,  ///< constant velocity, extrapolated displacements, consistent accelerations
+      pred_constacc,  ///< constant acceleration, extrapolated displacements and velocities
+      pred_constdisvelacc,  ///< constant displacements,
+                            ///< velocities and accelerations
+      pred_tangdis,         ///< linearised solution obeying DBC displacements via tangent
+                     ///< D_{n+1}^{<0>} = D_{n} + Ktang_{n,eff}^{-1} . (- Ktang_{n} . (D_{n+1}^{DBC}
+                     ///< - D_{n})) This looks hilarious, but remember Ktan_{n,eff}^{-1} is not the
+                     ///< inverse of Ktan_{n} due to the application of the Dirichlet BCs (i.e. the
+                     ///< reduction to the test space).
+      pred_tangdis_constfext,  ///< tangential displacement predictor with respect
+                               ///< to a constant Neumann force during the predictor
+                               ///< step
+      pred_constdispres,       ///< constant displacements and pressure
+      pred_constdisvelaccpres  ///< constant displacements,
+                               ///< velocities and accelerations
+                               ///< and pressures
+    };
+
+    /// Map predictor enum term to std::string
+    static inline const std::string PredEnumString(const PredEnum name  ///< identifier
+    )
+    {
+      switch (name)
+      {
+        case pred_vague:
+          return "Vague";
+        case pred_constdis:
+          return "ConstDis";
+        case pred_constvel:
+          return "ConstVel";
+        case pred_constacc:
+          return "ConstAcc";
+        case pred_constdisvelacc:
+          return "ConstDisVelAcc";
+        case pred_tangdis:
+          return "TangDis";
+        case pred_tangdis_constfext:
+          return "TangDisConstFext";
+        case pred_constdispres:
+          return "ConstDisPres";
+        case pred_constdisvelaccpres:
+          return "ConstDisVelAccPres";
+        default:
+          dserror("Cannot make std::string for predictor %d", name);
+          exit(EXIT_FAILURE);
+      }
+    }
+
+    //!@}
 
     /// @name Solution technique and related
-    //@{
+    //!@{
 
     /// type of control
     enum ControlType
@@ -441,60 +500,6 @@ namespace INPAR
                              ///< set in input file
     };
 
-
-    /// Type of predictor
-    enum PredEnum : int
-    {
-      pred_vague,     ///< undetermined
-      pred_constdis,  ///< constant displacements, consistent velocities and accelerations
-      pred_constvel,  ///< constant velocity, extrapolated displacements, consistent accelerations
-      pred_constacc,  ///< constant acceleration, extrapolated displacements and velocities
-      pred_constdisvelacc,  ///< constant displacements,
-                            ///< velocities and accelerations
-      pred_tangdis,         ///< linearised solution obeying DBC displacements via tangent
-                     ///< D_{n+1}^{<0>} = D_{n} + Ktang_{n,eff}^{-1} . (- Ktang_{n} . (D_{n+1}^{DBC}
-                     ///< - D_{n})) This looks hilarious, but remember Ktan_{n,eff}^{-1} is not the
-                     ///< inverse of Ktan_{n} due to the application of the Dirichlet BCs (i.e. the
-                     ///< reduction to the test space).
-      pred_tangdis_constfext,  ///< tangential displacement predictor with respect
-                               ///< to a constant Neumann force during the predictor
-                               ///< step
-      pred_constdispres,       ///< constant displacements and pressure
-      pred_constdisvelaccpres  ///< constant displacements,
-                               ///< velocities and accelerations
-                               ///< and pressures
-    };
-
-    /// Map predictor enum term to std::string
-    static inline const std::string PredEnumString(const PredEnum name  ///< identifier
-    )
-    {
-      switch (name)
-      {
-        case pred_vague:
-          return "Vague";
-        case pred_constdis:
-          return "ConstDis";
-        case pred_constvel:
-          return "ConstVel";
-        case pred_constacc:
-          return "ConstAcc";
-        case pred_constdisvelacc:
-          return "ConstDisVelAcc";
-        case pred_tangdis:
-          return "TangDis";
-        case pred_tangdis_constfext:
-          return "TangDisConstFext";
-        case pred_constdispres:
-          return "ConstDisPres";
-        case pred_constdisvelaccpres:
-          return "ConstDisVelAccPres";
-        default:
-          dserror("Cannot make std::string for predictor %d", name);
-          exit(EXIT_FAILURE);
-      }
-    }
-
     /// type of norm to check for convergence
     enum ConvNorm
     {
@@ -510,12 +515,14 @@ namespace INPAR
       bop_and  ///<  and
     };
 
-    /// type of norm to check for convergence
+    //!@}
+
+    /// type of prestressing algorithm
     enum PreStress
     {
       prestress_none,  ///<  none
-      prestress_mulf,  ///<  mulf
-      prestress_id     ///<  id
+      prestress_mulf,  ///<  Modifed Updated Lagrangian Formulation (cf. Gee et al. (2010))
+      prestress_id     ///<  Inverse Design
     };
 
     /// STC scaling for thin shell structures
@@ -547,23 +554,31 @@ namespace INPAR
       }
     }
 
-    //@}
-
     /// @name Constraints (global, geometric)
-    //@{
+    //!@{
 
     /// possible constraint solvers
     enum ConSolveAlgo
     {
-      consolve_direct,  ///< build monolythic system for Lagrange multipliers
+      consolve_direct,  ///< build monolithic system for Lagrange multipliers
       consolve_uzawa,   ///< solve linear system iteratively (partitioned)
       consolve_simple   ///< use simple preconditioner for iterative solve
     };
 
-    //@}
+    //!@}
 
     /// @name Output
-    //@{
+    //!@{
+
+    enum class ConditionNumber : char
+    {
+      none,             ///< no condition number
+      gmres_estimate,   ///< use the GMRES method to compute an condition number estimate
+      max_min_ev_ratio, /**< compute the condition number based on the maximal and minimal
+                         *   eigenvalue */
+      one_norm,         ///< Use the 1-norm to compute the condition number
+      inf_norm          ///< Use the inf-norm to compute the condition number
+    };
 
     /// Type of structural stress output
     /// (this enum represents the input file parameter STRUCT_STRESS and
@@ -594,10 +609,10 @@ namespace INPAR
       optquantity_membranethickness  ///< output of thickness of membrane finite elements
     };
 
-    //@}
+    //!@}
 
-    /// @name Time adapivity
-    //@{
+    /// @name Time adaptivity
+    //!@{
 
     /// type of adaptivity in time
     enum TimAdaKind
@@ -609,10 +624,10 @@ namespace INPAR
       timada_kind_centraldiff  ///< Central difference indicator
     };
 
-    //@}
+    //!@}
 
     /// @name General
-    //@{
+    //!@{
 
     /// type of vector norm used for error/residual vectors
     enum VectorNorm
@@ -660,7 +675,7 @@ namespace INPAR
       kinem_linear,          ///< linear kinematics
       kinem_nonlinearTotLag  ///< nonlinear kinematics Total Lagrange
     };
-    //@}
+    //!@}
 
     /// set the structure parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);

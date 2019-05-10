@@ -3,7 +3,7 @@
 
 \brief Basic constraint class, dealing with constraints living on boundaries
 
-\maintainer Marc Hirschvogel
+\maintainer Amadeus Gebauer
 
 \level 2
 
@@ -18,13 +18,6 @@
 #include <Teuchos_ParameterList.hpp>
 
 #include "constraint.H"
-
-
-
-/*!
-\brief UTILS: namespace containing general utils for BACI, as constraints, potentials, surface
-stress, ...
-*/
 
 namespace UTILS
 {

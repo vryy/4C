@@ -58,7 +58,8 @@ namespace INPAR
     enum InteractionType
     {
       interaction_none,  //! no particle interaction
-      interaction_sph    //! smoothed particle hydrodynamics
+      interaction_sph,   //! smoothed particle hydrodynamics
+      interaction_dem    //! discrete element method
     };
 
     //! data format for written numeric data via vtp
@@ -66,6 +67,14 @@ namespace INPAR
     {
       binary,
       ascii
+    };
+
+    //! type of particle wall source
+    enum ParticleWallSource
+    {
+      NoParticleWall,    //! no particle wall
+      DiscretCondition,  //! particle wall from discretization condition
+      BoundingBox        //! particle wall from bounding box
     };
 
     /*---------------------------------------------------------------------------*
@@ -140,11 +149,55 @@ namespace INPAR
       GeneralizedTransportVelocity
     };
 
+    //! type of temperature evaluation scheme
+    enum TemperatureEvaluationScheme
+    {
+      NoTemperatureEvaluation,
+      TemperatureIntegration
+    };
+
+    //! type of heat source
+    enum HeatSourceType
+    {
+      NoHeatSource,
+      VolumeHeatSource,
+      SurfaceHeatSource
+    };
+
     //! type of surface tension formulation
     enum SurfaceTensionFormulation
     {
       NoSurfaceTension,
       ContinuumSurfaceForce
+    };
+
+    //! type of phase change
+    enum PhaseChangeType
+    {
+      NoPhaseChange,
+      TwoWayScalarPhaseChange
+    };
+
+    /*---------------------------------------------------------------------------*
+     | discrete element method (DEM) specific control parameters                 |
+     *---------------------------------------------------------------------------*/
+
+    //! type of normal contact law
+    enum NormalContact
+    {
+      NormalLinSpring,
+      NormalLinSpringDamp,
+      NormalHertz,
+      NormalLeeHerrmann,
+      NormalKuwabaraKono,
+      NormalTsuji
+    };
+
+    //! type of tangential contact law
+    enum TangentialContact
+    {
+      NoTangentialContact,
+      TangentialLinSpringDamp
     };
 
 

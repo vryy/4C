@@ -1,7 +1,4 @@
-// Maintainer: Marc Hirschvogel
-// hirschvogel@mhpc.mw.tum.de
-// http://www.mhpc.mw.tum.de
-// 089 - 289-10363
+// Maintainer: Amadeus Gebauer
 ==================================================================
 General Data File CCARAT
 ==================================================================
@@ -44,8 +41,6 @@ SHAPEFCT                        Polynomial
 LINEAR_SOLVER                   1
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-CONTROLNODE                     -1 -1 -1
-CONTROLTYPE                     load
 DAMPING                         No
 DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta //Statics OneStepTheta

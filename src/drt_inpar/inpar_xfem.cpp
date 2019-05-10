@@ -7,7 +7,7 @@
 \level 2
 
 <pre>
-\maintainer  Ager Christoph
+\maintainer  Christoph Ager
              ager@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15249
@@ -201,8 +201,12 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           ),
       &xfluid_stab);
 
-  BoolParameter("VISC_ADJOINT_SYMMETRY", "yes",
-      "viscous and adjoint viscous interface terms with matching sign?", &xfluid_stab);
+  setStringToIntegralParameter<int>("VISC_ADJOINT_SYMMETRY", "yes",
+      "viscous and adjoint viscous interface terms with matching sign?",
+      tuple<std::string>("yes", "no", "sym", "skew", "none"),
+      tuple<int>(INPAR::XFEM::adj_sym, INPAR::XFEM::adj_skew, INPAR::XFEM::adj_sym,
+          INPAR::XFEM::adj_skew, INPAR::XFEM::adj_none),
+      &xfluid_stab);
 
   // viscous and convective Nitsche/MSH stabilization parameter
   DoubleParameter(
@@ -220,6 +224,13 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                                           // solving a local element-wise eigenvalue
                                                           // problem
           ),
+      &xfluid_stab);
+
+  setStringToIntegralParameter<int>("UPDATE_EIGENVALUE_TRACE_ESTIMATE", "every_iter",
+      "how often should the local eigenvalue problem be updated",
+      tuple<std::string>("every_iter", "every_timestep", "once"),
+      tuple<int>(INPAR::XFEM::Eigenvalue_update_every_iter,
+          INPAR::XFEM::Eigenvalue_update_every_timestep, INPAR::XFEM::Eigenvalue_update_once),
       &xfluid_stab);
 
   setStringToIntegralParameter<int>("VISC_STAB_HK", "ele_vol_div_by_max_ele_surf",
@@ -495,6 +506,12 @@ void INPAR::XFEM::SetValidConditions(
   {
     xfem_levelset_neumann->AddComponent(neumanncomponents[i]);
   }
+
+  // define if we use inflow stabilization on the xfem neumann surf condition
+  xfem_levelset_neumann->AddComponent(
+      Teuchos::rcp(new SeparatorConditionComponent("INFLOW_STAB", true)));
+  xfem_levelset_neumann->AddComponent(
+      Teuchos::rcp(new IntVectorConditionComponent("InflowStab", 1, true, true, true)));
 
   condlist.push_back(xfem_levelset_neumann);
 
@@ -823,6 +840,12 @@ void INPAR::XFEM::SetValidConditions(
   {
     xfem_surf_neumann->AddComponent(neumanncomponents[i]);
   }
+
+  // define if we use inflow stabilization on the xfem neumann surf condition
+  xfem_surf_neumann->AddComponent(
+      Teuchos::rcp(new SeparatorConditionComponent("INFLOW_STAB", true)));
+  xfem_surf_neumann->AddComponent(
+      Teuchos::rcp(new IntVectorConditionComponent("InflowStab", 1, true, true, true)));
 
   condlist.push_back(xfem_surf_neumann);
 

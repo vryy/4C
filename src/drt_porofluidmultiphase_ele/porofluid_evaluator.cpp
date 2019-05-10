@@ -6,8 +6,8 @@
 
    \level 3
 
-   \maintainer  Lena Yoshihara
-                yoshihara@lnm.mw.tum.de
+   \maintainer  Johannes Kremheller
+                kremheller@lnm.mw.tum.de
                 http://www.lnm.mw.tum.de251
  *----------------------------------------------------------------------*/
 
@@ -289,11 +289,6 @@ DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<nsd, nen>::CreateEvaluator
         tmpevaluator = Teuchos::rcp(new EvaluatorVolFracPressureReac<nsd, nen>(assembler, -1));
         evaluator_volfrac->AddEvaluator(tmpevaluator);
 
-        // identify DOFs with valid volume fraction pressures
-        assembler = Teuchos::rcp(new AssembleStandard(-1, inittimederiv));
-        tmpevaluator = Teuchos::rcp(new EvaluatorValidVolFracPressures<nsd, nen>(assembler, -1));
-        evaluator_volfrac->AddEvaluator(tmpevaluator);
-
         // add the evaluator of the volfractions to the multiphase evaluator
         evaluator_multiphase->AddEvaluator(evaluator_volfrac);
       }
@@ -364,6 +359,13 @@ DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<nsd, nen>::CreateEvaluator
         evaluator_multiphase->AddEvaluator(tmpevaluator);
       }
       evaluator = evaluator_multiphase;
+
+      break;
+    }
+    case POROFLUIDMULTIPHASE::calc_valid_dofs:
+    {
+      Teuchos::RCP<AssembleInterface> assembler = Teuchos::rcp(new AssembleStandard(-1, false));
+      evaluator = Teuchos::rcp(new EvaluatorValidVolFracPressures<nsd, nen>(assembler, -1));
 
       break;
     }
@@ -2656,6 +2658,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorValidVolFracPressures<nsd,
   const int numvolfrac = phasemanager.NumVolFrac();
 
   Epetra_SerialDenseVector& valid_volfracpress = *elevec[1];
+  Epetra_SerialDenseVector& valid_volfracspec = *elevec[2];
 
   for (int inode = 0; inode < nen; inode++)
   {
@@ -2663,12 +2666,18 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorValidVolFracPressures<nsd,
     {
       const int fvi = inode * numdofpernode + idof;
 
-      bool evaluatevolfracpress =
+      const bool evaluatevolfracpress =
           variablemanager.ElementHasValidVolFracPressure(idof - numfluidphases - numvolfrac);
 
+      const bool evaluatevolfracspec =
+          variablemanager.ElementHasValidVolFracSpecies(idof - numfluidphases - numvolfrac);
+
       if (evaluatevolfracpress) valid_volfracpress[fvi] = 1.0;
+      if (evaluatevolfracspec) valid_volfracspec[fvi] = 1.0;
     }
   }
+
+  return;
 };
 
 /*----------------------------------------------------------------------*
@@ -4363,31 +4372,65 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
                 for (int idof = 0; idof < numfluidphases; ++idof)
                 {
                   const int fui = ui * numdofpernode + idof;
-                  // 1) saturation deriv
-                  // 2) porosity deriv
-                  mymat(fvi, fui) +=
-                      vfunct *
-                      (phasemanager.SaturationDeriv(phasemanager.ScalarToPhaseID(iscal), idof) *
-                              phasemanager.VolFrac(ivolfrac - numfluidphases) *
-                              phasemanager.Porosity() +
-                          phasemanager.PorosityDeriv(idof) *
-                              phasemanager.Saturation(phasemanager.ScalarToPhaseID(iscal)) *
-                              phasemanager.VolFrac(ivolfrac - numfluidphases));
+
+                  // chemotaxis
+                  if (phasemanager.ScalarToPhase(iscal).species_type ==
+                      MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid)
+                  {
+                    if (phasemanager.ScalarToPhase(iscal).phaseID > phasemanager.NumFluidPhases())
+                      dserror("Wrong PhaseID");
+                    // 1) saturation deriv
+                    // 2) porosity deriv
+                    mymat(fvi, fui) +=
+                        vfunct *
+                        (phasemanager.SaturationDeriv(
+                             phasemanager.ScalarToPhase(iscal).phaseID, idof) *
+                                phasemanager.VolFrac(ivolfrac - numfluidphases) *
+                                phasemanager.Porosity() +
+                            phasemanager.PorosityDeriv(idof) *
+                                phasemanager.Saturation(phasemanager.ScalarToPhase(iscal).phaseID) *
+                                phasemanager.VolFrac(ivolfrac - numfluidphases));
+                  }
+                  // haptotaxis
+                  else if (phasemanager.ScalarToPhase(iscal).species_type ==
+                           MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid)
+                    // derivative of solid phase volume fraction w.r.t. all fluid phases = 0
+                    break;
+                  else
+                    dserror("AddScalarDependentFlux only possible for species in fluid or solid!");
                 }
                 // derivative w.r.t. volfrac phases
                 for (int jvolfrac = numfluidphases; jvolfrac < numdofpernode; ++jvolfrac)
                 {
                   const int fui = ui * numdofpernode + jvolfrac;
-                  // 1) derivative w.r.t. current volume fraction ivolfrac
-                  if (ivolfrac == jvolfrac)
+                  // haptotaxis
+                  if (phasemanager.ScalarToPhase(iscal).species_type ==
+                      MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid)
+                  {
+                    // 1) derivative w.r.t. current volume fraction ivolfrac
+                    if (ivolfrac == jvolfrac)
+                      mymat(fvi, fui) +=
+                          vfunct * (1.0 - phasemanager.Porosity() - phasemanager.SumAddVolFrac());
+                    // 2) derivative of solid phase volume fraction w.r.t. all volume fractions = 0
+                  }
+                  // chemotaxis
+                  else if (phasemanager.ScalarToPhase(iscal).species_type ==
+                           MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid)
+                  {
+                    // 1) derivative w.r.t. current volume fraction ivolfrac
+                    if (ivolfrac == jvolfrac)
+                      mymat(fvi, fui) += vfunct * (phasemanager.Saturation(
+                                                       phasemanager.ScalarToPhase(iscal).phaseID) *
+                                                      phasemanager.Porosity());
+                    // 2) porosity deriv w.r.t. all volume fractions
                     mymat(fvi, fui) +=
-                        vfunct * (phasemanager.Saturation(phasemanager.ScalarToPhaseID(iscal)) *
-                                     phasemanager.Porosity());
-                  // 2) porosity deriv w.r.t. all volume fractions
-                  mymat(fvi, fui) +=
-                      vfunct * (phasemanager.PorosityDeriv(jvolfrac) *
-                                   phasemanager.Saturation(phasemanager.ScalarToPhaseID(iscal)) *
-                                   phasemanager.VolFrac(ivolfrac - numfluidphases));
+                        vfunct *
+                        (phasemanager.PorosityDeriv(jvolfrac) *
+                            phasemanager.Saturation(phasemanager.ScalarToPhase(iscal).phaseID) *
+                            phasemanager.VolFrac(ivolfrac - numfluidphases));
+                  }
+                  else
+                    dserror("AddScalarDependentFlux only possible for species in fluid or solid!");
                 }
               }
             }
@@ -4436,10 +4479,24 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
           for (int i = 0; i < nsd; i++)
             difftensoraddflux(i, i) = phasemanager.ScalarDiff(ivolfrac - numfluidphases, iscal);
 
-          // scale with phi_volfrac*S*porosity
-          difftensoraddflux.Scale(phasemanager.VolFrac(ivolfrac - numfluidphases) *
-                                  phasemanager.Porosity() *
-                                  phasemanager.Saturation(phasemanager.ScalarToPhaseID(iscal)));
+          // haptotaxis: scale with volfrac * (1 - porosity - sumaddvolfrac)
+          if (phasemanager.ScalarToPhase(iscal).species_type ==
+              MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid)
+          {
+            difftensoraddflux.Scale(phasemanager.VolFrac(ivolfrac - numfluidphases) *
+                                    (1.0 - phasemanager.Porosity() - phasemanager.SumAddVolFrac()));
+          }
+          // chemotaxis: scale with volfrac * S * porosity
+          else if (phasemanager.ScalarToPhase(iscal).species_type ==
+                   MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid)
+          {
+            difftensoraddflux.Scale(
+                phasemanager.VolFrac(ivolfrac - numfluidphases) * phasemanager.Porosity() *
+                phasemanager.Saturation(phasemanager.ScalarToPhase(iscal).phaseID));
+          }
+          else
+            dserror("AddScalarDependentFlux only possible for species in fluid or solid!");
+
           static LINALG::Matrix<nsd, 1> diffflux(true);
           diffflux.Multiply(difftensoraddflux, gradscalarnp[iscal]);
           for (int vi = 0; vi < nen; ++vi)
@@ -4496,16 +4553,46 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
             difftensoraddflux(i, i) = phasemanager.ScalarDiff(ivolfrac - numfluidphases, iscal);
 
           static LINALG::Matrix<nsd, 1> diffflux(true);
-          diffflux.Multiply(phasemanager.VolFrac(ivolfrac - numfluidphases) *
-                                phasemanager.Porosity() *
-                                phasemanager.Saturation(phasemanager.ScalarToPhaseID(iscal)),
-              difftensoraddflux, gradscalarnp[iscal]);
+          // haptotaxis: scale with volfrac * (1 - porosity - sumaddvolfrac)
+          if (phasemanager.ScalarToPhase(iscal).species_type ==
+              MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid)
+          {
+            diffflux.Multiply(phasemanager.VolFrac(ivolfrac - numfluidphases) *
+                                  (1 - phasemanager.Porosity() - phasemanager.SumAddVolFrac()),
+                difftensoraddflux, gradscalarnp[iscal]);
+          }
+          // chemotaxis: scale with volfrac * S * porosity
+          else if (phasemanager.ScalarToPhase(iscal).species_type ==
+                   MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid)
+          {
+            diffflux.Multiply(
+                phasemanager.VolFrac(ivolfrac - numfluidphases) * phasemanager.Porosity() *
+                    phasemanager.Saturation(phasemanager.ScalarToPhase(iscal).phaseID),
+                difftensoraddflux, gradscalarnp[iscal]);
+          }
+          else
+            dserror("AddScalarDependentFlux only possible for species in fluid or solid!");
 
+          double v(0.0);
           // TODO: anisotropic difftensor
-          const double v = difftensoraddflux(0, 0) * timefacfac / det *
-                           phasemanager.VolFrac(ivolfrac - numfluidphases) *
-                           phasemanager.Porosity() *
-                           phasemanager.Saturation(phasemanager.ScalarToPhaseID(iscal));
+          // haptotaxis: scale with volfrac * (1 - porosity - sumaddvolfrac)
+          if (phasemanager.ScalarToPhase(iscal).species_type ==
+              MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid)
+          {
+            v = difftensoraddflux(0, 0) * timefacfac / det *
+                phasemanager.VolFrac(ivolfrac - numfluidphases) *
+                (1 - phasemanager.Porosity() - phasemanager.SumAddVolFrac());
+          }
+          // chemotaxis: scale with volfrac * S * porosity
+          else if (phasemanager.ScalarToPhase(iscal).species_type ==
+                   MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid)
+          {
+            v = difftensoraddflux(0, 0) * timefacfac / det *
+                phasemanager.VolFrac(ivolfrac - numfluidphases) * phasemanager.Porosity() *
+                phasemanager.Saturation(phasemanager.ScalarToPhase(iscal).phaseID);
+          }
+          else
+            dserror("AddScalarDependentFlux only possible for species in fluid or solid!");
 
           // gradient of phi w.r.t. reference coordinates
           LINALG::Matrix<nsd, 1> refgradscalarnp(true);
@@ -4528,11 +4615,30 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
           if (phasemanager.PorosityDependsOnStruct())
           {
             static LINALG::Matrix<nsd, 1> diffflux2(true);
-            diffflux2.Multiply(phasemanager.VolFrac(ivolfrac - numfluidphases) *
-                                   phasemanager.Saturation(phasemanager.ScalarToPhaseID(iscal)) *
-                                   phasemanager.JacobianDefGrad() *
-                                   phasemanager.PorosityDerivWrtJacobianDefGrad(),
-                difftensoraddflux, gradscalarnp[iscal]);
+
+            // haptotaxis
+            if (phasemanager.ScalarToPhase(iscal).species_type ==
+                MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid)
+            {
+              diffflux2.Multiply(phasemanager.VolFrac(ivolfrac - numfluidphases) * (-1.0) *
+                                     phasemanager.JacobianDefGrad() *
+                                     phasemanager.PorosityDerivWrtJacobianDefGrad(),
+                  difftensoraddflux, gradscalarnp[iscal]);
+            }
+            // chemotaxis
+            else if (phasemanager.ScalarToPhase(iscal).species_type ==
+                     MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid)
+            {
+              diffflux2.Multiply(
+                  phasemanager.VolFrac(ivolfrac - numfluidphases) *
+                      phasemanager.Saturation(phasemanager.ScalarToPhase(iscal).phaseID) *
+                      phasemanager.JacobianDefGrad() *
+                      phasemanager.PorosityDerivWrtJacobianDefGrad(),
+                  difftensoraddflux, gradscalarnp[iscal]);
+            }
+            else
+              dserror("AddScalarDependentFlux only possible for species in fluid or solid!");
+
             for (int vi = 0; vi < nen; ++vi)
             {
               const int fvi = vi * numdofpernode + ivolfrac;
@@ -4590,9 +4696,20 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
           LINALG::Matrix<nsd, nsd> difftensoraddflux(true);
           for (int i = 0; i < nsd; i++)
             difftensoraddflux(i, i) = phasemanager.ScalarDiff(ivolfrac - numfluidphases, iscal);
-          difftensoraddflux.Scale(phasemanager.VolFrac(ivolfrac - numfluidphases) *
-                                  phasemanager.Porosity() *
-                                  phasemanager.Saturation(phasemanager.ScalarToPhaseID(iscal)));
+
+          // haptotaxis: scale with volfrac * (1 - porosity - sumaddvolfrac)
+          if (phasemanager.ScalarToPhase(iscal).species_type ==
+              MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid)
+            difftensoraddflux.Scale(phasemanager.VolFrac(ivolfrac - numfluidphases) *
+                                    (1.0 - phasemanager.Porosity() - phasemanager.SumAddVolFrac()));
+          // chemotaxis: scale with volfrac * S * porosity
+          else if (phasemanager.ScalarToPhase(iscal).species_type ==
+                   MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid)
+            difftensoraddflux.Scale(
+                phasemanager.VolFrac(ivolfrac - numfluidphases) * phasemanager.Porosity() *
+                phasemanager.Saturation(phasemanager.ScalarToPhase(iscal).phaseID));
+          else
+            dserror("AddScalarDependentFlux only possible for species in fluid or solid!");
 
           static LINALG::Matrix<nsd, nen> diffflux(true);
           diffflux.Multiply(difftensoraddflux, derxy);

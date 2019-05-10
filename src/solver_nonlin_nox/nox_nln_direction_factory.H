@@ -15,6 +15,7 @@
 #define NOX_NLN_DIRECTION_FACTORY_H_
 
 #include <Teuchos_RCP.hpp>
+#include <NOX_Direction_UserDefinedFactory.H>
 
 // forward declarations
 namespace Teuchos
@@ -37,12 +38,12 @@ namespace NOX
        \brief Factory to build direction objects derived from NOX::Direction::Generic.
 
        This factory class is closely related to the NOX_Direction_Factory.H. The main
-       difference is, that derived class objects are build and a small amount of directions
-       is supported at the moment.
+       difference is that it allows to use direction methods which differ from the
+       default NOX package.
 
        \author Michael Hiermeier
        */
-      class Factory
+      class Factory : public NOX::Direction::UserDefinedFactory
       {
        public:
         //! Constructor
@@ -51,7 +52,11 @@ namespace NOX
         //! Destructor
         virtual ~Factory(){};
 
-        /*! \brief Factory to build a direction object.
+        /*! \brief Factory to build user-defined direction objects.
+
+            \note All direction methods which differ from the default NOX direction
+            routines are user-defined. That means the user is the BACI user and the BACI
+            programmer.
 
             @param gd A global data pointer that contains the top level parameter list.  Without
            storing this inside the direction object, there is no guarantee that the second parameter
@@ -59,8 +64,8 @@ namespace NOX
             @param params Sublist with direction construction parameters.
 
         */
-        Teuchos::RCP<NOX::Direction::Generic> BuildDirection(
-            const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params);
+        Teuchos::RCP<NOX::Direction::Generic> buildDirection(
+            const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params) const override;
       };
 
       /*! Nonmember function to build a direction object.

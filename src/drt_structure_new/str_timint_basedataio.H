@@ -2,12 +2,9 @@
 /*!
 \file str_timint_basedataio.H
 
-\brief Input/output data container for the structural (time)
-       integration
+\brief Input/output data container for the structural (time) integration
 
 \maintainer Michael Hiermeier
-
-\date Jan 11, 2016
 
 \level 3
 
@@ -18,15 +15,18 @@
 #ifndef SRC_DRT_STRUCTURE_NEW_STR_TIMINT_BASEDATAIO_H_
 #define SRC_DRT_STRUCTURE_NEW_STR_TIMINT_BASEDATAIO_H_
 
-#include "../drt_lib/drt_dserror.H"
 #include "../drt_inpar/inpar_structure.H"
 
 #include "../solver_nonlin_nox/nox_nln_abstract_prepostoperator.H"
 
-namespace Teuchos
+// forward declarations
+namespace IO
 {
-  class ParameterList;
-}  // namespace Teuchos
+  class DiscretizationWriter;
+  class EveryIterationWriterInterface;
+  class EveryIterationWriter;
+}  // namespace IO
+
 namespace NOX
 {
   namespace LineSearch
@@ -34,12 +34,12 @@ namespace NOX
     class Generic;
   }  // namespace LineSearch
 }  // namespace NOX
-namespace IO
+
+namespace Teuchos
 {
-  class DiscretizationWriter;
-  class EveryIterationWriterInterface;
-  class EveryIterationWriter;
-}  // namespace IO
+  class ParameterList;
+}  // namespace Teuchos
+
 namespace STR
 {
   namespace TIMINT
@@ -77,10 +77,7 @@ namespace STR
       virtual const bool& IsSetup() const { return issetup_; };
 
       /// Check if Init() and Setup() have been called, yet.
-      virtual void CheckInitSetup() const
-      {
-        if (!IsInit() or !IsSetup()) dserror("Call Init() and Setup() first!");
-      }
+      virtual void CheckInitSetup() const;
 
      public:
       /// get the binary output writer
@@ -110,6 +107,9 @@ namespace STR
         CheckInitSetup();
         return params_runtime_vtp_output_;
       };
+
+      /// \brief return TRUE if the results shall be written for this load/time \c step
+      bool WriteResultsForThisStep(const int step) const;
 
       /// @name Get printing and output parameters/files
       ///@{
@@ -186,11 +186,25 @@ namespace STR
         return writevelacc_;
       };
 
+      /// Shall we write the current element volume?
+      bool IsWriteCurrentEleVolume() const
+      {
+        CheckInitSetup();
+        return writecurrentelevolume_;
+      }
+
       /// Shall we write the jacobian to MATLAB?
       bool IsWriteJacobianToMatlab() const
       {
         CheckInitSetup();
         return writejac2matlab_;
+      }
+
+      /// Shall we compute and write the condition number?
+      INPAR::STR::ConditionNumber ConditionNumberType() const
+      {
+        CheckInitSetup();
+        return conditionnumbertype_;
       }
 
       /// Is this the first output of the current run?
@@ -294,16 +308,16 @@ namespace STR
 
      protected:
       /// @name variables for internal use only
-      /// @{
+      ///@{
       ///
       bool isinit_;
 
       bool issetup_;
-      /// @}
+      ///@}
 
      private:
       /// @name Printing and output
-      /// @{
+      ///@{
 
       /// binary output
       Teuchos::RCP<IO::DiscretizationWriter> output_;
@@ -353,6 +367,9 @@ namespace STR
       /// flag whether this output step is the first one (restarted or not)
       bool firstoutputofrun_;
 
+      /// flag element volume on/off
+      bool writecurrentelevolume_ = false;
+
       /// print infos to standard out every n steps
       int printscreen_;
 
@@ -386,9 +403,11 @@ namespace STR
       /// optional quantity type
       INPAR::STR::OptQuantityType writeoptquantity_;
 
+      INPAR::STR::ConditionNumber conditionnumbertype_;
+
       Teuchos::RCP<Teuchos::ParameterList> p_io_every_iteration_;
 
-      //@}
+      ///@}
     };  // class BaseDataIO
   }     // namespace TIMINT
 }  // namespace STR

@@ -2,12 +2,9 @@
 /*!
 \file str_model_evaluator_data.H
 
-\brief Concrete implementation of the structural and all related
-       parameter interfaces.
+\brief Concrete implementation of the structural and all related parameter interfaces.
 
 \maintainer Michael Hiermeier
-
-\date Mar 24, 2016
 
 \level 3
 
@@ -28,8 +25,9 @@
 #include "../headers/pairedvector.H"
 
 
-// forward declaration ...
+// forward declarations
 class Epetra_Comm;
+
 namespace GEO
 {
   namespace MESHFREE
@@ -37,6 +35,7 @@ namespace GEO
     class BoundingBox;
   }
 }  // namespace GEO
+
 namespace STR
 {
   namespace TIMINT
@@ -55,14 +54,25 @@ namespace STR
 
     /*! \brief Discrete implementation of the STR::ELEMENTS::ParamsInterface
      *
-     *  This class represents an actual implementation of the STR::ELEMENTS::ParamsInterface class
-     *  and gives you all the functionality to interchange data between the elements and the
-     * structural time integrators. Please consider to derive a special interface class, if you need
-     * special parameters inside of your element. Keep everything else untouched and cast the
-     * interface object to the desired object at the place you need access.
+     * This class represents an actual implementation of the STR::ELEMENTS::ParamsInterface class
+     * and gives you all the functionality to interchange data between the elements and the
+     * structural time integrators.
      *
-     *  \date 03/2016
-     *  \author hiermeier */
+     * To add a new and more specialized data container or method
+     * that is not directly linked to the pure structure problem,
+     * but is linked to related problem classes such as contact, beam interaction or
+     * Brownian dynamics instead, please refer to these sub-containers.
+     * If these sub-containers are not sufficient for your purposes,
+     * other sub-containers can be added following the provided templates.
+     * To do so, the following basic steps should be considered:
+     * - Add a pointer pointing to your new container as a member to this class (parent class).
+     * - Initialize and setup your container in the Setup routine of this parent class.
+     * - Add an accessor such as Contact() or BrownianDyn().
+     * - Create your own data container class and use a call-back to the parent container to avoid
+     *   code redundancy.
+     *
+     * \author hiermeier \date 03/2016
+     */
     class Data : public STR::ELEMENTS::ParamsInterface
     {
       typedef std::map<enum NOX::NLN::StatusTest::QuantityType,
@@ -83,7 +93,8 @@ namespace STR
       void Setup();
 
       //! @name Derived STR::ELEMENTS::ParamsInterface accessors
-      //! @{
+      //!@{
+
       //! get the desired action type [derived]
       virtual inline enum DRT::ELEMENTS::ActionType GetActionType() const
       {
@@ -189,14 +200,22 @@ namespace STR
       //! read-only access to energy data
       std::map<enum STR::EnergyType, double> const& GetEnergyData() const;
 
+      //! read-only access to energy data
+      double GetEnergyData(enum STR::EnergyType type) const;
+
       //! set value for a specific energy type
       void SetValueForEnergyType(double value, enum STR::EnergyType type);
 
       //! clear values for all energy types
       void ClearValuesForAllEnergyTypes();
 
-      //! add contribution to energy of specified type [derived]
-      void AddContributionToEnergyType(double value, enum STR::EnergyType type) override;
+      /*! \brief Add contribution to energy of specified type [derived]
+       *
+       * @param value Value to be added
+       * @param type Type of energy to be added to
+       */
+      void AddContributionToEnergyType(
+          const double value, const enum STR::EnergyType type) override;
 
       //! get Interface to brownian dyn data [derived]
       virtual inline const Teuchos::RCP<BROWNIANDYN::ParamsInterface> GetBrownianDynParamInterface()
@@ -224,29 +243,79 @@ namespace STR
 
         return *model_ptr_;
       }
-      //! @}
+
+      /// get the current non-linear solver correction type
+      NOX::NLN::CorrectionType GetCorrectionType() const
+      {
+        CheckInitSetup();
+        return corr_type_;
+      }
+
+      /// get number of system modifications in case of a mod. Newton direction method
+      int GetNumberOfModifiedNewtonCorrections() const
+      {
+        CheckInitSetup();
+        return num_corr_mod_newton_;
+      }
 
       //!@name set routines which can be called inside of the element [derived]
       //! @{
 
-      //! set the element evaluation error flag inside of the element
+      /*! \brief Set the element evaluation error flag inside the element
+       *
+       * @param[in] error_flag Error flag to be set
+       */
       virtual inline void SetEleEvalErrorFlag(const enum STR::ELEMENTS::EvalErrorFlag& error_flag)
       {
         ele_eval_error_flag_ = error_flag;
       }
 
-      //! collects and calculates the update norm of the current processor
+      /*! \brief Collects and calculates the update norm of the current processor
+       *
+       * These methods are used to calculate the norms for a status test
+       * w.r.t. internally, elementwise stored quantities.
+       *
+       * This is supported by the EAS formulation of the HEX8 element.
+       * This specific method is used for the NormUpdate status test that tests the increments
+       * of the solution variables.
+       *
+       * @param[in] qtype Quantity type which is tested
+       * @param[in] numentries Length/size of the value arrays
+       * @param[in] my_update_values Local part of increment/direction vector (with default step
+       *                             length)
+       * @param[in] my_new_sol_values Local part of the already updated solution vector
+       * @param[in] step_length Step length of a possible active globalization strategy
+       * @param[in] owner Owner of the corresponding element (used to avoid summing up ghost
+       *                  entries)
+       *
+       * \sa SumIntoMyPreviousSolNorm
+       */
       virtual void SumIntoMyUpdateNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype,
           const int& numentries, const double* my_update_values, const double* my_new_sol_values,
           const double& step_length, const int& owner);
 
-      //! collects and calculates the solution norm of the previous accepted Newton step on the
-      //! current proc
+      /*! brief Collect and calculate solution norm of previous accepted Newton step on current proc
+       *
+       * @param[in] qtype Quantity type which is tested
+       * @param[in] numentries Length/size of the value arrays
+       * @param[in] my_old_sol_values Local part of the previous solution vector
+       * @param[in] owner Owner of the corresponding element (used to avoid summing up ghost
+       *                  entries)
+       *
+       * \sa SumIntoMyUpdateNorm
+       */
       void SumIntoMyPreviousSolNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype,
           const int& numentries, const double* my_old_sol_values, const int& owner);
-      //! @}
 
-      //! returns the partial update norm of the given quantity on the current processor
+      //!@}
+
+      /*! \brief Returns the partial update norm of the given quantity on the current processor
+       *
+       * \todo Complete documentation of return parameters.
+       *
+       * @param[in] qtype Quantity type which is tested
+       * @return
+       */
       inline double GetMyUpdateNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype) const
       {
         CheckInitSetup();
@@ -257,7 +326,13 @@ namespace STR
         return c_it->second;
       }
 
-      //! returns the partial rms norm of the given quantity on the current processor
+      /*! \brief Return partial root-mean-squared norm of given quantity on current processor
+       *
+       * \todo Complete documentation of return parameters.
+       *
+       * @param[in] qtype Quantity type which is tested
+       * @return
+       */
       inline double GetMyRMSNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype) const
       {
         CheckInitSetup();
@@ -268,8 +343,14 @@ namespace STR
         return c_it->second;
       }
 
-      //! returns the partial solution norm of the previous accepted Newton step of the given
-      //! quantity on the current processor
+      /*! \brief Return partial solution norm of previous accepted Newton step of given quantity on
+       *  current processor
+       *
+       * \todo Complete documentation of return parameters.
+       *
+       * @param[in] qtype Quantity type which is tested
+       * @return
+       */
       inline double GetMyPreviousSolNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype) const
       {
         CheckInitSetup();
@@ -280,7 +361,13 @@ namespace STR
         return c_it->second;
       }
 
-      //! returns the update norm type
+      /*! brief Returns the update norm type
+       *
+       * \todo Complete documentation of return parameters.
+       *
+       * @param[in] qtype Quantity type which is tested
+       * @return
+       */
       inline enum NOX::Abstract::Vector::NormType GetUpdateNormType(
           const enum NOX::NLN::StatusTest::QuantityType& qtype) const
       {
@@ -302,7 +389,13 @@ namespace STR
         return c_it->second;
       }
 
-      //! returns the dof number
+      /*! \brief Returns the dof number
+       *
+       * \todo Complete documentation of return parameters.
+       *
+       * @param[in] qtype Quantity type which is tested
+       * @return
+       */
       inline int GetMyDofNumber(const enum NOX::NLN::StatusTest::QuantityType& qtype) const
       {
         CheckInitSetup();
@@ -313,32 +406,67 @@ namespace STR
         return static_cast<int>(c_it->second);
       }
 
-      //! Did an element evaluation error occur?
+      /*! \brief Did an element evaluation error occur?
+       *
+       * @return Boolean flag to indicate occurrence error during element evaluation
+       */
       bool IsEleEvalError() const;
 
-      /*! @name set routines which are used to set the parameters of the data container
+      /*! brief Access the element evaluation error flag
        *
-       *  These functions are not allowed to be called by the elements! */
-      //! @{
-      //! set the action type
+       * @return Flag describing errors during element evaluation
+       */
+      inline STR::ELEMENTS::EvalErrorFlag GetEleEvalErrorFlag() const override
+      {
+        return ele_eval_error_flag_;
+      }
+
+      /*! @name Set routines which are used to set the parameters of the data container
+       *
+       *  \warning These functions are not allowed to be called by the elements!
+       */
+      //!@{
+
+      /*! \brief Set the action type
+       *
+       * @param[in] actiontype Action type
+       */
       inline void SetActionType(const enum DRT::ELEMENTS::ActionType& actiontype)
       {
         ele_action_ = actiontype;
       }
 
-      //! set the tolerate errors flag
+      /*! \brief Set the tolerate errors flag
+       *
+       * @param[in] is_tolerate_errors Boolean flag to indicate error tolerance
+       */
       inline void SetIsTolerateError(const bool& is_tolerate_errors)
       {
         is_tolerate_errors_ = is_tolerate_errors;
       }
 
-      //! set the current step length
+      /*! \brief Set the current step length
+       *
+       * @param[in] step_length Value for current step length to be set
+       */
       inline void SetStepLength(const double& step_length) { step_length_ = step_length; }
 
       //! set the default step flag
       inline void SetIsDefaultStep(const bool& is_default_step)
       {
         is_default_step_ = is_default_step;
+      }
+
+      /// set the number of system corrections in case of a mod. Newton direction method
+      inline void SetNumberOfModifiedNewtonCorrections(const int num_corr)
+      {
+        num_corr_mod_newton_ = num_corr;
+      }
+
+      /// set the current system correction type of the non-linear solver
+      inline void SetCorrectionType(const NOX::NLN::CorrectionType corr_type)
+      {
+        corr_type_ = corr_type;
       }
 
       //! set the total time for the evaluation call
@@ -371,6 +499,12 @@ namespace STR
         stressdata_ptr_ = stressdata;
       }
 
+      //! set element volume data vector
+      inline void SetElementVolumeData(const Teuchos::RCP<Epetra_Vector>& ele_volumes)
+      {
+        elevolumes_ptr_ = ele_volumes;
+      }
+
       //! set stress data vector
       inline void SetCouplingStressData(const Teuchos::RCP<std::vector<char>>& couplstressdata)
       {
@@ -401,6 +535,9 @@ namespace STR
       //! reset the partial update norm value of the current processor
       void ResetMyNorms(const bool& isdefaultstep);
 
+      //! return element volume data vector (read-only)
+      const Epetra_Vector& CurrentElementVolumeData() const;
+
       //! return the stress data (read-only)
       const std::vector<char>& StressData() const;
 
@@ -416,11 +553,14 @@ namespace STR
       //! return the optional quantity data (read-only)
       const std::vector<char>& OptQuantityData() const;
 
-      //! @}
+      //!@}
 
-      //! @name accessors to the remaining data containers
-      //! you are not allowed to call these functions on element level
-      //! @{
+      /*! @name Accessors to the remaining data containers
+       *
+       * \warning You are not allowed to call these functions on element level.
+       */
+      //!@{
+
       //! access the beam data container, if applicable
       inline BeamData& GetBeamData()
       {
@@ -456,11 +596,11 @@ namespace STR
         if (browniandyn_data_ptr_.is_null()) dserror("The brownian dynamic model is not active!");
         return browniandyn_data_ptr_;
       }
-      //! @}
+      //!@}
 
       /*! @name Accessors to some important member variables
        *  (necessary for possible other model evaluator containers, etc.) */
-      //! @{
+      //!@{
 
       //! Time integration strategy
       inline const STR::TIMINT::Base& TimInt() const
@@ -503,7 +643,7 @@ namespace STR
        *  restarted. Equal to 0 if no restart has been performed. */
       int GetRestartStep() const;
 
-      //! @}
+      //!@}
 
      protected:
       //! returns the isinit_ flag
@@ -542,16 +682,37 @@ namespace STR
       bool GetWRMSTolerances(
           const enum NOX::NLN::StatusTest::QuantityType& qtype, double& atol, double& rtol);
 
-      //! Sum locally values into a norm of the desired type
+      /*! \brief Sum locally values into a norm of the desired type
+       *
+       * \todo Complete documentation of input parameters.
+       *
+       * @param[in] numentries
+       * @param[in] my_values
+       * @param[in] normtype
+       * @param[in] step_length
+       * @param[in/out] my_norm
+       */
       void SumIntoMyNorm(const int& numentries, const double* my_values,
           const enum NOX::Abstract::Vector::NormType& normtype, const double& step_length,
           double& my_norm) const;
 
       /*! \brief Calculate a local relative mean square sum for the global WRMS status test
        *
-       * (1)  \f$ v_i = x_{i}^{k-1} = x_{i}^{k} - sl* \Delta x_{i}^{k} \f$
-       * (2)  \f$ my_rms_norm = \sum_{i} [(x_i^{k}-x_{i}^{k-1}) / (RTOL * |x_{i}^{k-1}| + ATOL)]^{2}
-       * \f$ */
+       * \todo Complete documentation of input parameters.
+       *
+       * (1) \f$ v_i = x_{i}^{k-1} = x_{i}^{k} - sl* \Delta x_{i}^{k} \f$
+       * (2) \f$ my_rms_norm = \sum_{i} [(x_i^{k}-x_{i}^{k-1}) / (RTOL * |x_{i}^{k-1}| + ATOL)]^{2}
+       * \f$
+       *
+       * \param[in] atol Absolute tolerance
+       * \param[in] rtol Relative tolerance
+       * \param[in] step_length Step length of a possible active globalization strategy
+       * \param[in] numentries Length/size of the value arrays
+       * \param[in] my_update_values Local part of increment/direction vector (with default step
+       *                             length)
+       * \param[in] my_new_sol_values Local part of the already updated solution vector
+       * \param[in/out] my_rms Root mean squared norm (to be summed into)
+       */
       void SumIntoMyRelativeMeanSquare(const double& atol, const double& rtol,
           const double& step_length, const int& numentries, const double* my_update_values,
           const double* my_new_sol_values, double& my_rms) const;
@@ -565,12 +726,15 @@ namespace STR
       //! indicator if the Setup() routine has been called, yet.
       bool issetup_;
 
-      /*! indicator for the norm type maps. If true the norm type maps have
-       *  already been initialized successfully. */
+      /*! \brief Indicator for the norm type maps
+       *
+       * If true, the norm type maps have already been initialized successfully.
+       */
       bool isntmaps_filled_;
 
       //! @name General element control parameters
-      //! @{
+      //!@{
+
       //! Current action type
       enum DRT::ELEMENTS::ActionType ele_action_;
 
@@ -588,10 +752,11 @@ namespace STR
 
       //! current time step for the evaluation
       double delta_time_;
-      //! @}
+      //!@}
 
       //! @name Control parameters for the handling of element internal variables (e.g. EAS)
-      //! @{
+      //!@{
+
       //! Current step length of the nonlinear solver
       double step_length_;
 
@@ -599,19 +764,33 @@ namespace STR
        *
        *  Only important for the internal elementwise update. */
       bool is_default_step_;
-      //! @}
+
+      /// number of system corrections (modified Newton direction method)
+      int num_corr_mod_newton_;
+
+      /// system correction type (e.g. in case of a SOC step, see the
+      /// NOX::NLN::INNER::StatusTest::Filter method)
+      NOX::NLN::CorrectionType corr_type_;
+
+      //!@}
 
       //! @name time integration parameters
-      //! @{
+      //!@{
+
       //! time integration factor for the displacements
       double timintfactor_disp_;
 
       //! time integration factor for the velocities
       double timintfactor_vel_;
-      //! @}
+
+      //!@}
 
       //! @name references to output data container
-      //! @{
+      //!@{
+
+      //! element volume data vector
+      Teuchos::RCP<Epetra_Vector> elevolumes_ptr_;
+
       //! stress data vector
       Teuchos::RCP<std::vector<char>> stressdata_ptr_;
 
@@ -630,7 +809,8 @@ namespace STR
 
       //! system energy, stored separately by type
       std::map<enum STR::EnergyType, double> energy_data_;
-      //! @}
+
+      //!@}
 
       //! map holding the force/rhs norm type of the active quantities
       quantity_norm_type_map normtype_force_;
@@ -707,7 +887,8 @@ namespace STR
       void Setup();
 
       //! @name Derived STR::ELEMENTS::BeamParamsInterface accessors
-      //! @{
+      //!@{
+
       //! get the Lie group GenAlpha time integration parameters [derived]
       virtual inline double GetBeta() const
       {
@@ -733,26 +914,26 @@ namespace STR
         return alpham_;
       }
 
+      //!@}
+
       /*! @name set routines which are used to set the parameters of the data container
        *
        *  These functions are not allowed to be called by the elements! */
-      //! @{
+      //!@{
 
       //! set the Lie group GenAlpha time integration parameters
       inline void SetBeta(const double& beta) { beta_ = beta; }
-
       inline void SetGamma(const double& gamma) { gamma_ = gamma; }
-
       inline void SetAlphaf(const double& alphaf) { alphaf_ = alphaf; }
-
       inline void SetAlpham(const double& alpham) { alpham_ = alpham; }
-      //! @}
+
+      //!@}
 
      protected:
-      //! returns the isinit_ flag
+      //! returns the #isinit_ flag
       inline const bool& IsInit() const { return isinit_; };
 
-      //! returns the issetup_ flag
+      //! returns the #issetup_ flag
       inline const bool& IsSetup() const { return issetup_; };
 
       //! Checks the init and setup status
@@ -773,16 +954,24 @@ namespace STR
       bool issetup_;
 
       //! @name time integration parameters
-      //! @{
-      //! Lie group GenAlpha parameters for element-internal update of angular velocities and
-      //! accelerations
-      //  needed in case of non-additive rotation vector DOFs (see Lie group GenAlpha time
-      //  integration for details)
+      //!@{
+
+      /*! \brief Lie-group Generalized-\f$\alpha\f$ parameters
+       *
+       * These parameters are needed for element-internal updates of angular velocities and
+       * accelerations in case of non-additive rotation vector DOFs.
+       *
+       * See Lie-group Generalized-\f$\alpha\f$ time integration for details.
+       *
+       * \sa STR::IMPLICIT::GenAlphaLieGroup
+       */
       double beta_;
       double gamma_;
       double alphaf_;
       double alpham_;
-      //! @}
+
+      //!@}
+
     };  // class BeamData
 
 
@@ -833,9 +1022,27 @@ namespace STR
         return str_data_ptr_->IsPredictor();
       };
 
-      /// \brief get the current active predictor type
-      /** If no predictor is active pred_vague will be returned.
-       *  \author hiermeier \date 02/18 */
+      /// derived
+      NOX::NLN::CorrectionType GetCorrectionType() const override
+      {
+        CheckInit();
+        return str_data_ptr_->GetCorrectionType();
+      }
+
+      /// derived
+      int GetNumberOfModifiedNewtonCorrections() const override
+      {
+        CheckInit();
+        return str_data_ptr_->GetNumberOfModifiedNewtonCorrections();
+      }
+
+      /*! \brief Get the current active predictor type
+       *
+       * If no predictor is active, \c pred_vague will be returned.
+       *
+       * @return Type of predictor
+       *
+       * \author hiermeier \date 02/18 */
       virtual enum INPAR::STR::PredEnum GetPredictorType() const
       {
         CheckInit();
@@ -893,8 +1100,10 @@ namespace STR
         var_type_ = var_type;
       }
 
-      /*! Get the step number from which the current simulation has been
-       *  restarted. Equal to 0 if no restart has been performed. */
+      /*! \brief Get time step number from which the current simulation has been restarted
+       *
+       * Equal to 0 if no restart has been performed.
+       */
       virtual int GetRestartStep() const
       {
         CheckInit();

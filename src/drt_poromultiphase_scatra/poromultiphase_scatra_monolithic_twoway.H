@@ -17,10 +17,9 @@
 #include "poromultiphase_scatra_monolithic.H"
 #include <Epetra_Time.h>
 
-#include "../drt_inpar/inpar_poromultiphase_scatra.H"
 #include "poromultiphase_scatra_utils.H"
 
-
+// forward declarations
 namespace LINALG
 {
   class SparseMatrix;
@@ -49,7 +48,8 @@ namespace POROMULTIPHASESCATRA
         const Teuchos::ParameterList& structparams, const Teuchos::ParameterList& fluidparams,
         const Teuchos::ParameterList& scatraparams, const std::string& struct_disname,
         const std::string& fluid_disname, const std::string& scatra_disname, bool isale,
-        int nds_disp, int nds_vel, int nds_solidpressure, int ndsporofluid_scatra);
+        int nds_disp, int nds_vel, int nds_solidpressure, int ndsporofluid_scatra,
+        const std::map<int, std::set<int>>* nearbyelepairs);
 
     /// setup
     virtual void SetupSystem();
@@ -222,6 +222,9 @@ namespace POROMULTIPHASESCATRA
 
     // do we solve the structure?
     bool solve_structure_;
+
+    // for building blocks
+    int struct_offset_;
 
     //! block systemmatrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;

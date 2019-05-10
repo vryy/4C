@@ -86,6 +86,10 @@ namespace NOX
         void applyDiagonalInverse(
             LINALG::SparseMatrix& mat, Epetra_Vector& lhs, const Epetra_Vector& rhs) const;
 
+        /// return a pointer to the currently active linear solver
+        Teuchos::RCP<LINALG::Solver> GetLinearContactSolver(
+            const std::map<NOX::NLN::SolutionType, Teuchos::RCP<LINALG::Solver>>& solvers) const;
+
        private:
         struct LinearSubProblem
         {

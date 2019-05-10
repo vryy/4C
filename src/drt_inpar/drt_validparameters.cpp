@@ -78,9 +78,11 @@ Maintainer: Martin Kronbichler
 #include "inpar_beaminteraction.H"
 #include "inpar_binningstrategy.H"
 #include "inpar_browniandyn.H"
+#include "inpar_geometry_pair.H"
 #include "inpar_cardiovascular0d.H"
 #include "inpar_contact_xcontact.H"
 #include "inpar_plasticity.H"
+#include "inpar_mor.H"
 #include "inpar_IO_monitor_structure_dbc.H"
 #include "inpar_IO_runtime_vtk_output.H"
 #include "inpar_IO_runtime_vtk_output_structure.H"
@@ -449,6 +451,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 #endif
 
   /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& meshpartitioning = list->sublist("MESH PARTITIONING", false, "");
+
+  DoubleParameter("IMBALANCE_TOL", 1.1,
+      "Tolerance for relative imbalance of subdomain sizes for graph partitioning of unstructured "
+      "meshes read from input files.",
+      &meshpartitioning);
+
+  /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& io = list->sublist("IO", false, "");
 
   setStringToIntegralParameter<int>("OUTPUT_GMSH", "No", "", yesnotuple, yesnovalue, &io);
@@ -472,6 +482,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       "STRUCT_VEL_ACC", "No", "Output of velocity and acceleration", yesnotuple, yesnovalue, &io);
   setStringToIntegralParameter<int>(
       "STRUCT_SE", "No", "Output of strain energy", yesnotuple, yesnovalue, &io);
+  setStringToIntegralParameter<int>("STRUCT_CURRENT_VOLUME", "No",
+      "Output of current element volume as scalar value for each structural element", yesnotuple,
+      yesnovalue, &io);
   setStringToIntegralParameter<int>("STRUCT_STRESS", "No", "Output of stress",
       tuple<std::string>("No", "no", "NO", "Yes", "yes", "YES", "Cauchy", "cauchy", "2PK", "2pk"),
       tuple<int>(INPAR::STR::stress_none, INPAR::STR::stress_none, INPAR::STR::stress_none,
@@ -511,6 +524,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("STRUCT_SURFACTANT", "No", "", yesnotuple, yesnovalue, &io);
   setStringToIntegralParameter<int>(
       "STRUCT_JACOBIAN_MATLAB", "No", "", yesnotuple, yesnovalue, &io);
+  setStringToIntegralParameter<INPAR::STR::ConditionNumber>("STRUCT_CONDITION_NUMBER", "none",
+      "Compute the condition number of the structural system matrix and write it to a text file.",
+      tuple<std::string>("gmres_estimate", "max_min_ev_ratio", "one-norm", "inf-norm", "none"),
+      tuple<INPAR::STR::ConditionNumber>(INPAR::STR::ConditionNumber::gmres_estimate,
+          INPAR::STR::ConditionNumber::max_min_ev_ratio, INPAR::STR::ConditionNumber::one_norm,
+          INPAR::STR::ConditionNumber::inf_norm, INPAR::STR::ConditionNumber::none),
+      &io);
   setStringToIntegralParameter<int>("FLUID_SOL", "Yes", "", yesnotuple, yesnovalue, &io);
   setStringToIntegralParameter<int>("FLUID_STRESS", "No", "", yesnotuple, yesnovalue, &io);
   setStringToIntegralParameter<int>(
@@ -530,6 +550,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       tuple<std::string>("None", "No", "NO", "no", "Current", "Initial"),
       tuple<int>(INPAR::THR::tempgrad_none, INPAR::THR::tempgrad_none, INPAR::THR::tempgrad_none,
           INPAR::THR::tempgrad_none, INPAR::THR::tempgrad_current, INPAR::THR::tempgrad_initial),
+      &io);
+  setStringToIntegralParameter<int>("THERM_PHASE", "None", "output of phase",
+      tuple<std::string>("None", "No", "NO", "no", "Yes", "yes", "YES"),
+      tuple<int>(INPAR::THR::phase_none, INPAR::THR::phase_none, INPAR::THR::phase_none,
+          INPAR::THR::phase_none, INPAR::THR::phase_yes, INPAR::THR::phase_yes,
+          INPAR::THR::phase_yes),
       &io);
 
   IntParameter("FILESTEPS", 1000, "Amount of timesteps written to a single result file", &io);
@@ -587,11 +613,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
 
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& mor = list->sublist("MOR", false, "");
-
-  StringParameter("POD_MATRIX", "none", "filename of file containing projection matrix", &mor);
-
-  /*----------------------------------------------------------------------*/
   /* Finally call the problem-specific SetValidParameter functions        */
   /*----------------------------------------------------------------------*/
 
@@ -612,6 +633,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::BEAMPOTENTIAL::SetValidParameters(list);
   INPAR::BEAMINTERACTION::SetValidParameters(list);
   INPAR::BROWNIANDYN::SetValidParameters(list);
+  INPAR::GEOMETRYPAIR::SetValidParameters(list);
 
   INPAR::LOCA::SetValidParameters(list);
   INPAR::PLASTICITY::SetValidParameters(list);
@@ -623,6 +645,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::TWOPHASE::SetValidParameters(list);
   INPAR::LOMA::SetValidParameters(list);
   INPAR::TOPOPT::SetValidParameters(list);
+  INPAR::CUT::SetValidParameters(list);
   INPAR::XFEM::SetValidParameters(list);
 
   INPAR::LUBRICATION::SetValidParameters(list);
@@ -658,6 +681,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   INPAR::PARTICLEOLD::SetValidParameters(list);
   INPAR::CAVITATION::SetValidParameters(list);
+
+  INPAR::MOR::SetValidParameters(list);
 
   INPAR::ACOU::SetValidParameters(list);
   INPAR::ELEMAG::SetValidParameters(list);

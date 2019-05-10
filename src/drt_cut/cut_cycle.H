@@ -135,6 +135,9 @@ namespace GEO
 
       void GnuplotDump(std::ostream& stream) const;
 
+      // output cycle as as collection of lines into gmsh
+      void GmshDump(std::ofstream& file) const;
+
       /// Print the stored points to the screen
       void Print() const;
 

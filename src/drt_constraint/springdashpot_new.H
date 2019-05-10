@@ -5,7 +5,7 @@
 
 \level 2
 
-\maintainer Martin Pfaller
+\maintainer Amadeus Gebauer
 
 *----------------------------------------------------------------------*/
 
@@ -17,6 +17,7 @@
 
 #include "../headers/pairedvector.H"
 
+// forward declarations
 class Epetra_Vector;
 class Epetra_MultiVector;
 

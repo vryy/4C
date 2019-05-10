@@ -38,7 +38,7 @@ namespace WEAR
     WearLagrangeStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
         std::vector<Teuchos::RCP<CONTACT::CoInterface>> interfaces, int dim,
-        Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
+        Teuchos::RCP<const Epetra_Comm> comm, double alphaf, int maxdof);
 
     /*!
     \brief Destructor
@@ -71,12 +71,12 @@ namespace WEAR
     \brief Recovery method
 
     We only recover the Lagrange multipliers here, which had been
-    statically condensated during the setup of the global problem!
+    statically condensed during the setup of the global problem!
     Optionally satisfaction or violation of the contact boundary
     conditions can be checked, too.
 
     */
-    void Recover(Teuchos::RCP<Epetra_Vector> disi);
+    void Recover(Teuchos::RCP<Epetra_Vector> disi) override;
 
     /*!
     \brief Redistribute all contact interfaces in parallel
@@ -84,8 +84,9 @@ namespace WEAR
     We hand in the current global displacement state so that
     a contact search can be performed and set state called.
 
+    \return TRUE if a redistribution took place. Return FALSE otherwise.
     */
-    void RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis);
+    bool RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis) final;
 
     /*!
     \brief Build 2x2 saddle point system
@@ -94,26 +95,24 @@ namespace WEAR
     \param fd (in): the displacement dof r.h.s. (upper block)
     \param sold (in): the displacement dof solution increment
     \param dirichtoggle (in): toggle vector for dirichlet conditions
-    \param numiter (in): current nonlinear iteration step
     \param blockMat (out): Epetra_Operator containing the 2x2 block sparse matrix object
     \param mergedsol (out): Epetra_Vector for merged solution vector
     \param mergedrhs (out): Epetra_Vector for merged right hand side vector
     */
     void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
-        Teuchos::RCP<LINALG::MapExtractor> dbcmaps, int numiter,
-        Teuchos::RCP<Epetra_Operator>& blockMat, Teuchos::RCP<Epetra_Vector>& blocksol,
-        Teuchos::RCP<Epetra_Vector>& blockrhs);
+        Teuchos::RCP<LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
+        Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override;
 
     /*!
     \brief Update internal member variables after solving the 2x2 saddle point contact system
 
-    \param sold (in): the displacement dof solution increment (associated with displacement dofs)
+    \param sold (out): the displacement dof solution increment (associated with displacement dofs)
     \param mergedsol (in): Epetra_Vector for merged solution vector (containing the new solution
     vector of the full merged linear system)
     */
     void UpdateDisplacementsAndLMincrements(
-        Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol);
+        Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override;
 
     /*!
     \brief Evaluate wear vector
@@ -146,23 +145,28 @@ namespace WEAR
     */
     void DoReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis);
 
-
     /*!
     \brief Update active set and check for convergence
 
     In this function we loop over all interfaces and then over all
     slave nodes to check, whether the assumption of them being active
     or inactive respectively has been correct. If a single node changes
-    state, the active set is adapted accordingly and the convegence
-    flag is kept on false. Here we have the semi-smooth Newton case
+    state, the active set is adapted accordingly and the convergence
+    flag is kept on false.
+
+    Here we have the semi-smooth Newton case
     with one combined iteration loop for active set search and large
     deformations. As a consequence this method is called AFTER each
     (not yet converged) Newton step. If there is a change in the active
     set or the residual and disp norm are still above their limits,
     another Newton step has to be performed.
 
+    \note We use the flag \c firstStepPredictor to overwrite the active set status
+    for each node in the predictor of the first time step
+
+    \param[in] firstStepPredictor Boolean flag to indicate the predictor step in the first time step
     */
-    void UpdateActiveSetSemiSmooth();
+    void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false);
 
     /*!
     \brief Store/Reset nodal wear quantities for pv approach
@@ -318,8 +322,8 @@ namespace WEAR
 
    private:
     // don't want = operator and cctor
-    WearLagrangeStrategy operator=(const WearLagrangeStrategy& old);
-    WearLagrangeStrategy(const WearLagrangeStrategy& old);
+    WearLagrangeStrategy operator=(const WearLagrangeStrategy& old) = delete;
+    WearLagrangeStrategy(const WearLagrangeStrategy& old) = delete;
 
     std::vector<Teuchos::RCP<WEAR::WearInterface>> interface_;
 

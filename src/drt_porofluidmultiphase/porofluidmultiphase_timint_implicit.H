@@ -7,8 +7,8 @@
 
    \level 3
 
-   \maintainer  Lena Yoshihara
-                yoshihara@lnm.mw.tum.de
+   \maintainer  Johannes Kremheller
+                kremheller@lnm.mw.tum.de
                 http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
@@ -63,9 +63,6 @@ namespace ADAPTER
 }
 
 
-/*==========================================================================*/
-//! Algorithm and time integration classes for porous multiphase flow problems
-/*==========================================================================*/
 namespace POROFLUIDMULTIPHASE
 {
   // forward declaration
@@ -91,7 +88,8 @@ namespace POROFLUIDMULTIPHASE
     virtual ~TimIntImpl();
 
     //! initialize time integration
-    virtual void Init(bool isale, int nds_disp, int nds_vel, int nds_solidpressure, int nds_scalar);
+    virtual void Init(bool isale, int nds_disp, int nds_vel, int nds_solidpressure, int nds_scalar,
+        const std::map<int, std::set<int>>* nearbyelepairs);
 
     /*========================================================================*/
     //! @name general framework
@@ -272,10 +270,10 @@ namespace POROFLUIDMULTIPHASE
     //! return number of dof set associated with solid pressure
     int GetDofSetNumberOfSolidPressure() const { return nds_solidpressure_; };
 
-    //! return pressure field
-    Teuchos::RCP<const Epetra_Vector> ValidVolFracPressDofs() const
+    //! return valid volume fraction species
+    Teuchos::RCP<const Epetra_Vector> ValidVolFracSpecDofs() const
     {
-      return valid_volfracpress_dofs_;
+      return valid_volfracspec_dofs_;
     }
 
    protected:
@@ -328,6 +326,12 @@ namespace POROFLUIDMULTIPHASE
 
     //! call elements to calculate system matrix and rhs and assemble
     virtual void AssembleMatAndRHS();
+
+    //! call elements to find the valid volume frac pressures and species
+    virtual void EvaluateValidVolumeFracPressAndSpec();
+
+    //! apply the additional volume fraction pressures as DBC
+    virtual void ApplyAdditionalDBCForVolFracPress();
 
     //! call elements to calculate fluid coupling matrix with structure and assemble
     virtual void AssembleFluidStructCouplingMat(Teuchos::RCP<LINALG::SparseOperator> k_fs);
@@ -564,7 +568,11 @@ namespace POROFLUIDMULTIPHASE
     //  EvaluatorValidVolFracPressures: if at least one nodal volume fraction value of an element is
     //  bigger than a threshold (min volfrac), the volume fraction pressure is a valid (physically
     //  meaningful) quantity in this element and the respective Darcy equation has to be solved
+    //  for volume fraction species we only evaluate if all nodal volume fraction values of the
+    //  element are bigger than the threshold (min volfrac), this turned out to be the most stable
+    //  approach
     Teuchos::RCP<Epetra_Vector> valid_volfracpress_dofs_;
+    Teuchos::RCP<Epetra_Vector> valid_volfracspec_dofs_;
 
     //! velocity of each phase at time n+1 (post-processed from pressure solution)
     Teuchos::RCP<Epetra_MultiVector> flux_;

@@ -21,16 +21,11 @@
 
 
 // forward declarations
-
 namespace LINALG
 {
   class SparseOperator;
 }
 
-/*! \brief Just wrap the time integrator. Do nothing new.
- *
- * \date 12/2016
- * \author rauch (rauch@lnm.mw.tum.de)    */
 namespace ADAPTER
 {
   class AdapterScatraWrapper : public ScatraInterface

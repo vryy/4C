@@ -21,13 +21,12 @@ namespace DRT
   namespace INPUT
   {
     class ConditionDefinition;
-  }
+  }  // namespace INPUT
 }  // namespace DRT
 
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// Input parameters for MORTAR coupling
   namespace MORTAR
   {
     /// Type of employed set of Lagrange multiplier shape functions
@@ -60,6 +59,14 @@ namespace INPAR
       search_binarytree  ///< binary tree element based
     };
 
+    /// Type of binary tree update
+    /// (this enum represents the input file parameter BINARYTREE_UPDATETYPE)
+    enum BinaryTreeUpdateType
+    {
+      binarytree_bottom_up,  ///< indicates a bottom-up update of binary tree
+      binarytree_top_down    ///< indicates a top-down update of binary tree
+    };
+
     /// Type of mesh relocation
     /// (this enum represents the input file parameter MESH_RELOCATION)
     enum MeshRelocation
@@ -69,7 +76,7 @@ namespace INPAR
       relocation_none       ///< no mesh relocation
     };
 
-    /// Type of redudancy in interface storage
+    /// Type of redundancy in interface storage
     /// (this enum represents the input file parameter REDUNDANT_STORAGE)
     enum RedundantStorage
     {

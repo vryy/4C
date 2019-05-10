@@ -1437,7 +1437,82 @@ LINALG::Matrix<3, 1> DRT::UTILS::getNodeCoordinates(
 {
   LINALG::Matrix<3, 1> coord(true);
 
-  if (distype == DRT::Element::quad4)
+  if (distype == DRT::Element::line2)
+  {
+    switch (nodeId)
+    {
+      case 0:
+      {
+        coord(0) = -1.0;
+        break;
+      }
+      case 1:
+      {
+        coord(0) = 1.0;
+        break;
+      }
+      default:
+        dserror("node number not correct");
+    }
+    coord(1) = 0.0;
+    coord(2) = 0.0;
+  }
+  else if (distype == DRT::Element::line3)
+  {
+    switch (nodeId)
+    {
+      case 0:
+      {
+        coord(0) = -1.0;
+        break;
+      }
+      case 1:
+      {
+        coord(0) = 1.0;
+        break;
+      }
+      case 2:
+      {
+        coord(0) = 0.0;
+        break;
+      }
+      default:
+        dserror("node number not correct");
+    }
+    coord(1) = 0.0;
+    coord(2) = 0.0;
+  }
+  else if (distype == DRT::Element::line4)
+  {
+    switch (nodeId)
+    {
+      case 0:
+      {
+        coord(0) = -1.0;
+        break;
+      }
+      case 1:
+      {
+        coord(0) = 1.0;
+        break;
+      }
+      case 2:
+      {
+        coord(0) = -1. / 3.;
+        break;
+      }
+      case 3:
+      {
+        coord(0) = 1. / 3.;
+        break;
+      }
+      default:
+        dserror("node number not correct");
+    }
+    coord(1) = 0.0;
+    coord(2) = 0.0;
+  }
+  else if (distype == DRT::Element::quad4)
   {
     switch (nodeId)
     {

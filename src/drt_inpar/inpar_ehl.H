@@ -30,7 +30,6 @@ namespace DRT
  *----------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// Input parameters for lubrication structure interaction
   namespace EHL
   {
     /// Type of coupling strategy for EHL problems

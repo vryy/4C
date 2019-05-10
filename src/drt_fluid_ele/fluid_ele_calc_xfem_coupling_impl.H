@@ -7,7 +7,7 @@
 \level 2
 
 <pre>
-\maintainer  Ager Christoph
+\maintainer  Christoph Ager
              ager@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15249
@@ -639,6 +639,19 @@ namespace DRT
             const std::pair<bool, double>& m_col,                      ///< scaling for master col
             const std::pair<bool, double>& s_col,                      ///< scaling for slave col
             bool only_rhs = false                                      ///< evaluat only rhs
+        );
+
+        //!  evaluate linearization of Nitsche's penalty term
+        void NIT_Stab_Penalty_lin(const LINALG::Matrix<nen_, 1>& funct_m,  ///< funct
+            const double& timefacfac,              ///< time integration factor
+            const std::pair<bool, double>& m_row,  ///< scaling for master row
+            const std::pair<bool, double>&
+                m_row_linm1,  ///< linearization of scaling for master row w.r.t. master comp. one
+            const std::pair<bool, double>&
+                m_row_linm2,  ///< linearization of scaling for master row w.r.t. master comp. two
+            const std::pair<bool, double>&
+                m_row_linm3,  ///< linearization of scaling for master row w.r.t. master comp. three
+            bool only_rhs = false  ///< evaluat only rhs
         );
 
         //!  evaluate Nitsche's penalty term

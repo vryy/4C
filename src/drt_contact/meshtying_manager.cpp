@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file meshtying_manager.cpp
 
-\level 2
+\level 1
 
 \maintainer Matthias Mayr
 
@@ -42,8 +42,6 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf)
 {
   // overwrite base class communicator
   comm_ = Teuchos::rcp(Discret().Comm().Clone());
-
-  // welcome message
 
   // create some local variables (later to be stored in strategy)
   int dim = DRT::Problem::Instance()->NDim();
@@ -158,7 +156,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf)
       }
       else
       {
-        dserror("ERROR: MtManager: Unknown contact side qualifier!");
+        dserror("ERROR: MtManager: Unknown mortar side qualifier!");
       }
     }
 
@@ -180,7 +178,9 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf)
         else if (*active[j] == "Inactive")
           dserror("ERROR: Slave side must be active for meshtying!");
         else
-          dserror("ERROR: Unknown contact init qualifier!");
+          dserror(
+              "ERROR: Unknown initialization qualifier for slave side of mortar meshtying "
+              "interface!");
       }
       else if (*sides[j] == "Master")
       {
@@ -190,7 +190,9 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf)
         else if (*active[j] == "Inactive")
           isactive[j] = false;
         else
-          dserror("ERROR: Unknown contact init qualifier!");
+          dserror(
+              "ERROR: Unknown initialization qualifier for master side of mortar meshtying "
+              "interface!");
       }
       else
       {
@@ -443,12 +445,12 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
           INPAR::CONTACT::solution_penalty &&
       meshtying.get<double>("PENALTYPARAM") <= 0.0)
-    dserror("ERROR: Penalty parameter eps = 0, must be greater than 0");
+    dserror("ERROR: Penalty parameter eps <= 0, must be greater than 0");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
           INPAR::CONTACT::solution_uzawa &&
       meshtying.get<double>("PENALTYPARAM") <= 0.0)
-    dserror("ERROR: Penalty parameter eps = 0, must be greater than 0");
+    dserror("ERROR: Penalty parameter eps <= 0, must be greater than 0");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
           INPAR::CONTACT::solution_uzawa &&

@@ -18,7 +18,7 @@
 #include <Teuchos_RCP.hpp>
 
 #include "beam_to_beam_contact_pair.H"
-#include "beam_to_solid_volume_meshtying_pair.H"
+#include "beam_to_solid_volume_meshtying_pair_factory.H"
 #include "beam_to_sphere_contact_pair.H"
 
 #include "../drt_beam3/beam3_base.H"
@@ -27,12 +27,20 @@
 #include "beam_to_beam_contact_params.H"
 
 #include "beam_contact_params.H"
-#include "beam_contact_evaluation_data.H"
+
+#include "../drt_geometry_pair/geometry_pair.H"
+#include "../drt_geometry_pair/geometry_pair_evaluation_data_global.H"
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 BEAMINTERACTION::BeamContactPair::BeamContactPair()
-    : isinit_(false), issetup_(false), params_(Teuchos::null), element1_(NULL), element2_(NULL)
+    : isinit_(false),
+      issetup_(false),
+      geometry_pair_(Teuchos::null),
+      params_(Teuchos::null),
+      element1_(NULL),
+      element2_(NULL)
 {
   // empty constructor
 }
@@ -40,18 +48,23 @@ BEAMINTERACTION::BeamContactPair::BeamContactPair()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamContactPair::Init(
-    const Teuchos::RCP<BEAMINTERACTION::BeamContactEvaluationData> evaluation_data_ptr,
     const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
+    const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> geometry_evaluation_data_ptr,
     std::vector<DRT::Element const*> elements)
 {
   issetup_ = false;
 
-  evaluationData_ = evaluation_data_ptr;
   params_ = params_ptr;
 
   element1_ = elements[0];
   element2_ = elements[1];
 
+  // Create the geometry pair.
+  CreateGeometryPair(geometry_evaluation_data_ptr);
+
+  // If a geometry pair is created by a derived class, call its Init function.
+  if (geometry_pair_ != Teuchos::null)
+    geometry_pair_->Init(geometry_evaluation_data_ptr, element1_, element2_);
 
   isinit_ = true;
 }
@@ -62,13 +75,17 @@ void BEAMINTERACTION::BeamContactPair::Setup()
 {
   CheckInit();
 
+  // If a geometry pair is created by a derived class, call its Setup function.
+  if (geometry_pair_ != Teuchos::null) geometry_pair_->Setup();
+
   // the flag issetup_ will be set in the derived method!
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair::Create(
-    std::vector<DRT::Element const*> const& ele_ptrs)
+    std::vector<DRT::Element const*> const& ele_ptrs,
+    const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr)
 {
   // note: numnodes is to be interpreted as number of nodes used for centerline interpolation.
   // numnodalvalues = 1: only positions as primary nodal DoFs ==> Lagrange interpolation
@@ -200,46 +217,8 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair:
           }
           else if (dynamic_cast<DRT::ELEMENTS::So_base const*>(ele_ptrs[1]) != NULL)
           {
-            // if the second element is a solid element, additionally the number of nodes
-            // of that element have to be considered
-            DRT::ELEMENTS::So_base const* solidele =
-                dynamic_cast<DRT::ELEMENTS::So_base const*>(ele_ptrs[1]);
-
-            const unsigned int numnodessol = solidele->NumNode();
-
-            switch (numnodessol)
-            {
-              case 8:
-              {
-                return Teuchos::rcp(new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<8, 2, 2>());
-              }
-              case 20:
-              {
-                return Teuchos::rcp(
-                    new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<20, 2, 2>());
-              }
-              case 27:
-              {
-                return Teuchos::rcp(
-                    new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<27, 2, 2>());
-              }
-              case 4:
-              {
-                return Teuchos::rcp(new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<4, 2, 2>());
-              }
-              case 10:
-              {
-                return Teuchos::rcp(
-                    new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<10, 2, 2>());
-              }
-              default:
-              {
-                dserror(
-                    "ERROR: So far only numnodessol = 8, 20, 27, 4, 10 are "
-                    "implemented for Beam-to-solid volume meshtying)");
-                break;
-              }
-            }
+            // Create the beam to solid pair.
+            return BeamToSolidVolumeMeshtyingPairFactory(ele_ptrs, params_ptr);
           }
           else if (dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele_ptrs[1]) != NULL)
           {

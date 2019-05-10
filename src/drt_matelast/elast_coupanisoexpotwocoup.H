@@ -5,11 +5,11 @@
 \brief This file contains the routines required for the passive behaviour of cardiac muscle
 according to Holzapfel and Ogden, "Constitutive modelling of passive myocardium", 2009.
 
-\maintainer Marc Hirschvogel, originally by A. Nagler
+\maintainer Amadeus Gebauer
 
 \level 2
-
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 #ifndef ELAST_COUPANISOEXPOTWOCOUP_H_
 #define ELAST_COUPANISOEXPOTWOCOUP_H_
 

@@ -1,3 +1,15 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_nox_jacobian.H
+
+\brief Matrix-free Newton-Krylov for FSI
+
+\level 1
+
+\maintainer Matthias Mayr
+*/
+/*----------------------------------------------------------------------*/
+
 #ifndef FSI_NOX_JACOBIAN_H
 #define FSI_NOX_JACOBIAN_H
 

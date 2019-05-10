@@ -1,4 +1,14 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_nox_newton.H
 
+\brief NOX Newton direction with adaptive linear solver tolerance for FSI
+
+\level 2
+
+\maintainer Matthias Mayr
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef FSI_NOX_NEWTON_H
 #define FSI_NOX_NEWTON_H

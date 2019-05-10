@@ -13,7 +13,6 @@
       <ParameterList name="Test 0">
         <Parameter name="Test Type"  type="string" value="NormF" />
         <!-- NormF - Quantity 0: Check the right-hand-side norm of the structural quantities -->
-        <!--
         <ParameterList name="Quantity 0">
           <Parameter name="Quantity Type"  type="string" value="Structure" />
           <Parameter name="Tolerance Type" type="string" value="Absolute" />
@@ -21,12 +20,11 @@
           <Parameter name="Norm Type"      type="string" value="Two Norm" />
           <Parameter name="Scale Type"     type="string" value="Unscaled" />
         </ParameterList>
-        -->
         <!-- NormF - Quantity 1: Check the right-hand-side norm of the contact quantities -->
-        <ParameterList name="Quantity 0">
+        <ParameterList name="Quantity 1">
           <Parameter name="Quantity Type"  type="string" value="Contact-Normal" />
           <Parameter name="Tolerance Type" type="string" value="Absolute" />
-          <Parameter name="Tolerance"      type="double" value="1.0e-6" />
+          <Parameter name="Tolerance"      type="double" value="1.0e-10" />
           <Parameter name="Norm Type"      type="string" value="Two Norm" />
           <Parameter name="Scale Type"     type="string" value="Unscaled" />
         </ParameterList>
@@ -37,7 +35,7 @@
         <Parameter name="Test Type"          type="string" value="NormUpdate" />
         <Parameter name="Alpha"              type="double" value="1.0" />
         <Parameter name="Beta"               type="double" value="0.5" />
-        <!-- NormUpdate - Quantity 0: Check the increment of the structural displacements -->
+        <!-- NormUpdate - Quantity 0: Check the increment of the Lagrange multipliers -->
         <ParameterList name="Quantity 0">
           <Parameter name="Quantity Type"    type="string" value="Contact-Normal" />
           <Parameter name="Tolerance Type"   type="string" value="Relative" />
@@ -45,15 +43,8 @@
           <Parameter name="Norm Type"        type="string" value="Two Norm" />
           <Parameter name="Scale Type"       type="string" value="Unscaled" />
         </ParameterList>
-      </ParameterList>
-      <!-- END: Combo AND - Test 1: "NormUpdate" -->
-      <!-- BEGIN: Combo AND - Test 2: "NormUpdate" -->
-      <ParameterList name="Test 2">
-        <Parameter name="Test Type"          type="string" value="NormUpdate" />
-        <Parameter name="Alpha"              type="double" value="1.0" />
-        <Parameter name="Beta"               type="double" value="0.5" />
-        <!-- NormUpdate - Quantity 0: Check the increment of the structural displacements -->
-        <ParameterList name="Quantity 0">
+        <!-- NormUpdate - Quantity 1: Check the increment of the structural displacements -->
+        <ParameterList name="Quantity 1">
           <Parameter name="Quantity Type"    type="string" value="Structure" />
           <Parameter name="Tolerance Type"   type="string" value="Relative" />
           <Parameter name="Tolerance"        type="double" value="1.0e-10" />
@@ -62,41 +53,8 @@
         </ParameterList>
       </ParameterList>
       <!-- END: Combo AND - Test 2: "NormUpdate" -->
-      <!-- BEGIN: Combo AND - Test 2: "NormWRMS" -->
-      <!--
-      <ParameterList name="Test 2">
-        <Parameter name="Test Type"          type="string" value="NormWRMS" />
-        <Parameter name="Alpha"              type="double" value="1.0" />
-        <Parameter name="Beta"               type="double" value="0.5" />
-      -->
-        <!-- NormWRMS - Quantity 0: Check the increment of the structural displacements -->
-        <!--
-        <ParameterList name="Quantity 0">
-          <Parameter name="Quantity Type"              type="string" value="Structure" />
-          <Parameter name="Absolute Tolerance"         type="double" value="1.0e-07" />
-          <Parameter name="Relative Tolerance"         type="double" value="1.0e-05" />
-          <Parameter name="Tolerance"                  type="double" value="1.0" />
-          <Parameter name="BDF Multiplier"             type="double" value="1.0" />
-          <Parameter name="Disable Implicit Weighting" type="string" value="Yes" />
-        </ParameterList>
-        -->
-        <!-- NormWRMS - Quantity 1: Check the increment of the contact lagrange multiplier increment -->
-        <!--
-        <ParameterList name="Quantity 1">
-          <Parameter name="Quantity Type"              type="string" value="Contact" />
-          <Parameter name="Absolute Tolerance"         type="double" value="1.0e-07" />
-          <Parameter name="Relative Tolerance"         type="double" value="1.0e-05" />
-          <Parameter name="Tolerance"                  type="double" value="1.0" />
-          <Parameter name="BDF Multiplier"             type="double" value="1.0" />
-          <Parameter name="Disable Implicit Weighting" type="string" value="Yes" />
-        </ParameterList>
-        -->
-      <!--
-      </ParameterList>
-      -->
-      <!-- END: Combo AND - Test 2: "NormWRMS" -->
       <!-- BEGIN: Combo AND - Test 3: "ActiveSet" -->
-      <ParameterList name="Test 3">
+      <ParameterList name="Test 2">
           <Parameter name="Test Type"          type="string" value="ActiveSet" />
           <Parameter name="Quantity Type"    type="string" value="Contact-Normal" />
           <Parameter name="Max Cycle Size"   type="int"    value="3" />
@@ -107,15 +65,35 @@
   <!-- Combo OR - Test 1: "MaxIters" -->
   <ParameterList name="Test 1">
     <Parameter name="Test Type"          type="string" value="MaxIters" />
-    <Parameter name="Maximum Iterations" type="int"    value="200" />
+    <Parameter name="Maximum Iterations" type="int"    value="500" />
   </ParameterList>
 </ParameterList>
  <!-- Inner Status Test: line search stopping criteria -->
 <ParameterList name="Inner Status Test">
+  <!--
+  <Parameter name="Test Type"                     type="string" value="UpperBound" />
+  <Parameter name="Quantity Type"                 type="string" value="Structure" />
+  <Parameter name="Value"                         type="double" value="5.0" />
+  <Parameter name="Norm Type"                     type="string" value="Max Norm" />
+  -->
   <!-- At the moment only supported by backtracking line search -->
-  <Parameter name="Test Type"              type="string" value="Armijo" />
-  <Parameter name="c_1"                    type="double" value="1.0e-04" />
-  <Parameter name="Monotone"               type="bool"   value="true" />
-  <Parameter name="Maximal History Length" type="int"    value="2" />
+  <!--
+  <Parameter name="Test Type"                     type="string" value="Filter" />
+  <Parameter name="Objective Function Weight"     type="double" value="1.0" />
+  <Parameter name="Ftype Condition Exponent s_f"  type="double" value="5.0" />
+  <Parameter name="Ftype Condition Exponent s_t"  type="double" value="2.0" />
+  <Parameter name="Infeasibility Function Weight" type="double" value="1.0" />
+  <Parameter name="Gamma Alpha"                   type="double" value="0.05" />
+  <Parameter name="Second Order Correction"       type="bool"   value="true" />
+  <Parameter name="SOC Type"                      type="string" value="auto" />
+  <ParameterList name="Filter-Armijo">
+      <Parameter name="c_1"                    type="double" value="1.0e-4" />
+      <Parameter name="Monotone"               type="bool"   value="true" />
+      <Parameter name="Maximal History Length" type="int"    value="2" />
+  </ParameterList>
+  <ParameterList name="Infeasibility Function 0">
+    <Parameter name="Type" type="string" value="Two Norm Active" />
+  </ParameterList>
+  -->
 </ParameterList>
 </ParameterList>

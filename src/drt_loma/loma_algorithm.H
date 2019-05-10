@@ -21,11 +21,6 @@
 #include "../drt_adapter/adapter_scatra_fluid_coupling_algorithm.H"
 #include "../linalg/linalg_mapextractor.H"
 
-
-/*!
-\brief LOMA: namespace of the module for low-Mach-number flow problems in BACI
-
-*/
 namespace LOMA
 {
   /// LOMA algorithm base

@@ -146,26 +146,24 @@ namespace CONTACT
     \param fd (in): the displacement dof r.h.s. (upper block)
     \param sold (in): the displacement dof solution increment
     \param dirichtoggle (in): toggle vector for dirichlet conditions
-    \param numiter (in): current nonlinear iteration step
     \param blockMat (out): Epetra_Operator containing the 2x2 block sparse matrix object
     \param mergedsol (out): Epetra_Vector for merged solution vector
     \param mergedrhs (out): Epetra_Vector for merged right hand side vector
     */
     void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
-        Teuchos::RCP<LINALG::MapExtractor> dbcmaps, int numiter,
-        Teuchos::RCP<Epetra_Operator>& blockMat, Teuchos::RCP<Epetra_Vector>& blocksol,
-        Teuchos::RCP<Epetra_Vector>& blockrhs);
+        Teuchos::RCP<LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
+        Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override;
 
     /*!
     \brief Update internal member variables after solving the 2x2 saddle point contact system
 
-    \param sold (in): the displacement dof solution increment (associated with displacement dofs)
+    \param sold (out): the displacement dof solution increment (associated with displacement dofs)
     \param mergedsol (in): Epetra_Vector for merged solution vector (containing the new solution
     vector of the full merged linear system)
     */
     void UpdateDisplacementsAndLMincrements(
-        Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol);
+        Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override;
 
     /*!
     \brief The entries of the constraint right-hand side are
@@ -179,7 +177,7 @@ namespace CONTACT
     \brief evaluate mortar coupling (MT)
 
     */
-    void MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis);
+    void MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis);
 
     /*!
     \brief Recovery method
@@ -190,7 +188,7 @@ namespace CONTACT
     conditions can be checked, too.
 
     */
-    void Recover(Teuchos::RCP<Epetra_Vector> disi);
+    void Recover(Teuchos::RCP<Epetra_Vector> disi) override;
 
     /*!
     \brief Update active set and check for convergence
@@ -214,16 +212,22 @@ namespace CONTACT
     In this function we loop over all interfaces and then over all
     slave nodes to check, whether the assumption of them being active
     or inactive respectively has been correct. If a single node changes
-    state, the active set is adapted accordingly and the convegence
-    flag is kept on false. Here we have the semi-smooth Newton case
+    state, the active set is adapted accordingly and the convergence
+    flag is kept on false.
+
+    Here we have the semi-smooth Newton case
     with one combined iteration loop for active set search and large
     deformations. As a consequence this method is called AFTER each
     (not yet converged) Newton step. If there is a change in the active
     set or the residual and disp norm are still above their limits,
     another Newton step has to be performed.
 
+    \note We use the flag \c firstStepPredictor to overwrite the active set status
+    for each node in the predictor of the first time step
+
+    \param[in] firstStepPredictor Boolean flag to indicate the predictor step in the first time step
     */
-    void UpdateActiveSetSemiSmooth();
+    void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false);
 
     /*!
     \brief Reset active set status for next time step
@@ -283,6 +287,7 @@ namespace CONTACT
     void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) {}
     void UpdateUzawaAugmentedLagrange() {}
     void UpdateConstraintNorm(int uzawaiter = 0) {}
+    bool IsPenalty() const override { return false; };
 
    protected:
     //! derived
@@ -309,8 +314,8 @@ namespace CONTACT
 
    private:
     // don't want = operator and cctor
-    SmoothingStrategy operator=(const SmoothingStrategy& old);
-    SmoothingStrategy(const SmoothingStrategy& old);
+    SmoothingStrategy operator=(const SmoothingStrategy& old) = delete;
+    SmoothingStrategy(const SmoothingStrategy& old) = delete;
 
     // Store Coupling Matrices in case of Poro Lagrange Strategy ... here just ignore!
     virtual void SaveCouplingMatrices(Teuchos::RCP<LINALG::SparseMatrix> dhat,

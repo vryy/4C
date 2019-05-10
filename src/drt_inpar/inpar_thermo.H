@@ -37,7 +37,6 @@ namespace DRT
  *----------------------------------------------------------------------*/
 namespace INPAR
 {
-  //! General input parameters for thermal problems
   namespace THR
   {
     //! @name Time integration
@@ -171,6 +170,18 @@ namespace INPAR
       divcont_repeat_simulation,  ///< repeat the whole simulation
     };
 
+    /// convergence of nonlinear solver
+    enum ConvergenceStatus
+    {
+      conv_success = 0,      ///< converged successfully
+      conv_nonlin_fail = 1,  ///< nonlinear solution procedure failed
+      conv_lin_fail = 2,     ///< linear system failed
+      conv_ele_fail = 3,     ///< failure in element in form of negative Jac. det.
+      conv_fail_repeat = 4   ///< nonlinear solver failed, repeat step according to divercont action
+                             ///< set in input file
+    };
+
+
     /// Map  enum to string
     static inline const std::string DivContActString(
         const enum DivContAct name  ///< enum to convert
@@ -293,6 +304,13 @@ namespace INPAR
       tempgrad_none,     //!< no thermal gradient output
       tempgrad_current,  //!< output of thermal gradient in current configuration
       tempgrad_initial   //!< output of thermal gradient in initial configuration
+    };
+
+    //! Type of phase output (in SLM)
+    enum PhaseType
+    {
+      phase_none,  //!< no phase output
+      phase_yes    //!< write phase output
     };
 
     //! Map predictor enum term to std::string

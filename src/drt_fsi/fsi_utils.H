@@ -48,7 +48,6 @@ namespace IO
 
 namespace FSI
 {
-  /// FSI::UTILS: Random stuff that might be helpful when dealing with FSI problems
   namespace UTILS
   {
     /// write interface jacobian to file

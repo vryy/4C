@@ -6,7 +6,7 @@ transform matrixes, vectors, ...
 \level 2
 
 <pre>
-\maintainer Ager Christoph
+\maintainer Christoph Ager
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289 15249
@@ -20,6 +20,7 @@ transform matrixes, vectors, ...
 
 #define COUP_MANAGER_DEBUG_OUT
 
+// forward declarations
 namespace DRT
 {
   class Discretization;

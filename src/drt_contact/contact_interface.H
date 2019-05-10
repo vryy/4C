@@ -20,23 +20,22 @@
 #include "../linalg/linalg_fixedsizematrix.H"
 #include <Epetra_FEVector.h>
 
-
-/*!
-\brief CONTACT: namespace of the BACI contact and meshtying algorithms
-
-*/
+// forward declarations
 namespace LINALG
 {
   class SerialDenseMatrix;
 }
+
 namespace ADAPTER
 {
   class Coupling;
 }
+
 namespace DRT
 {
   class Node;
 }
+
 namespace CONTACT
 {
   class CoInterface;
@@ -76,6 +75,10 @@ namespace CONTACT
     inline bool& IsNonSmoothContact() { return nonSmoothContact_; }
 
     inline bool IsNonSmoothContact() const { return nonSmoothContact_; }
+
+    inline bool IsTwoHalfPass() const { return two_half_pass_; }
+
+    inline bool& IsTwoHalfPass() { return two_half_pass_; }
 
     inline enum INPAR::CONTACT::ConstraintDirection& ConstraintDirection()
     {
@@ -193,6 +196,7 @@ namespace CONTACT
     bool selfcontact_;       ///< flag indicating if this is a self contact interface
     bool friction_;          ///< flag for frictional contact
     bool nonSmoothContact_;  ///< flag for non-smooth contact algorithm
+    bool two_half_pass_;     ///< flag for two half pass contact algorithm
     INPAR::CONTACT::ConstraintDirection
         constr_direction_;  ///< direction in which the contact constraints are formulated
 
@@ -251,7 +255,8 @@ namespace CONTACT
      *  \param id        (in) : unique interface ID
      *  \param comm      (in) : communicator object
      *  \param dim       (in) : problem dimension
-     *  \param imortar   (in) : global contact parameter-list
+     *  \param icontact   (in) : global contact parameter-list
+     *  \param selfcontact (in): Boolean flag to indicate self-contact
      *  \param redundant (in) : type of redundancy in interface storage
      *
      *  \author hiermeier \date 03/17 */
@@ -266,6 +271,7 @@ namespace CONTACT
     to a specific setting. Throughout the evaluation process, this set will be employed
     for the field of lagrangian multipliers.
 
+    \param idata_ptr (in): data container
     \param id (in): Unique interface id
     \param comm (in): A communicator object
     \param dim (in): Global problem dimension
@@ -288,6 +294,7 @@ namespace CONTACT
     /*!
     \brief Print this Interface
 
+    \param[in] os Output stream used for printing
     */
     virtual void Print(std::ostream& os) const;
 
@@ -296,11 +303,21 @@ namespace CONTACT
     /*!
     \brief Get self contact status of this interface
 
+    \return Boolean flag to indicate self contact status of this interface
     */
-    virtual const bool& SelfContact() { return selfcontact_; }
+    virtual const bool& SelfContact() const { return selfcontact_; }
 
     /*!
-    \brief Get row map of active nodes (Filled()==true is prerequisite)
+    \brief Get two half pass status of this interface
+
+    \return Boolean flag to indicate if two half pass algorithm shall be used
+    */
+    virtual const bool& TwoHalfPass() const { return two_half_pass_; }
+
+    /*!
+    \brief Get row map of active nodes
+
+    \pre Filled() == true is prerequisite
 
     */
     virtual const Teuchos::RCP<Epetra_Map> ActiveNodes() const
@@ -312,7 +329,9 @@ namespace CONTACT
 
 
     /*!
-    \brief Get row map of active dofs (Filled()==true is prerequisite)
+    \brief Get row map of active dofs
+
+    \pre Filled() == true is prerequisite
 
     */
     virtual const Teuchos::RCP<Epetra_Map> ActiveDofs() const
@@ -331,7 +350,9 @@ namespace CONTACT
 
 
     /*!
-    \brief Get row map of active dofs (Filled()==true is prerequisite)
+    \brief Get row map of active dofs
+
+    \pre Filled() == true is prerequisite
 
     */
     virtual const Teuchos::RCP<Epetra_Map> InActiveDofs() const
@@ -342,7 +363,9 @@ namespace CONTACT
     }
 
     /*!
-    \brief Get row map of matrix N (Filled()==true is prerequisite)
+    \brief Get row map of matrix N
+
+    \pre Filled() == true is prerequisite
 
     */
     virtual const Teuchos::RCP<Epetra_Map> ActiveNDofs() const
@@ -353,7 +376,9 @@ namespace CONTACT
     }
 
     /*!
-    \brief Get row map of matrix T (Filled()==true is prerequisite)
+    \brief Get row map of matrix T
+
+    \pre Filled() == true is prerequisite
 
     */
     virtual const Teuchos::RCP<Epetra_Map> ActiveTDofs() const
@@ -364,7 +389,9 @@ namespace CONTACT
     }
 
     /*!
-    \brief Get row map of slip nodes (Filled()==true is prerequisite)
+    \brief Get row map of slip nodes
+
+    \pre Filled() == true is prerequisite
 
     */
     virtual const Teuchos::RCP<Epetra_Map> SlipNodes() const
@@ -377,7 +404,9 @@ namespace CONTACT
     }
 
     /*!
-    \brief Get row map of slip node dofs (Filled()==true is prerequisite)
+    \brief Get row map of slip node dofs
+
+    \pre Filled() == true is prerequisite
 
     */
     virtual const Teuchos::RCP<Epetra_Map> SlipDofs() const
@@ -390,7 +419,9 @@ namespace CONTACT
     }
 
     /*!
-    \brief Get row map of matrix T for slip nodes (Filled()==true is prerequisite)
+    \brief Get row map of matrix T for slip nodes
+
+    \pre Filled() == true is prerequisite
 
     */
     virtual const Teuchos::RCP<Epetra_Map> SlipTDofs() const
@@ -403,7 +434,9 @@ namespace CONTACT
     }
 
     /*!
-    \brief Get row map of nonsmooth node (Filled()==true is prerequisite)
+    \brief Get row map of nonsmooth node
+
+    \pre Filled() == true is prerequisite
 
     */
     virtual const Teuchos::RCP<Epetra_Map> NonSmoothNodes() const
@@ -416,7 +449,9 @@ namespace CONTACT
     }
 
     /*!
-    \brief Get row map of smooth nodes (Filled()==true is prerequisite)
+    \brief Get row map of smooth nodes
+
+    \pre Filled() == true is prerequisite
 
     */
     virtual const Teuchos::RCP<Epetra_Map> SmoothNodes() const
@@ -429,7 +464,9 @@ namespace CONTACT
     }
 
     /*!
-    \brief Get row map of smooth nodes (Filled()==true is prerequisite)
+    \brief Get row map of smooth nodes
+
+    \pre Filled() == true is prerequisite
 
     */
     virtual const Teuchos::RCP<Epetra_Map> SdofVertexRowmap() const
@@ -441,7 +478,9 @@ namespace CONTACT
       exit(EXIT_FAILURE);  // calm down the compiler
     }
     /*!
-    \brief Get row map of smooth nodes (Filled()==true is prerequisite)
+    \brief Get row map of smooth nodes
+
+    \pre Filled() == true is prerequisite
 
     */
     virtual const Teuchos::RCP<Epetra_Map> SdofVertexColmap() const
@@ -484,6 +523,7 @@ namespace CONTACT
         dserror("CONTACT::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
+
     /*!
     \brief Get number of slave / master pairs of this interface (proc local)
 
@@ -517,7 +557,9 @@ namespace CONTACT
     virtual void AddCoNode(Teuchos::RCP<CONTACT::CoNode> cnode);
 
     /*!
-    \brief Add a CONTACT::CoElement to the interface (Filled()==true is prerequisite)
+    \brief Add a CONTACT::CoElement to the interface
+
+    \pre Filled() == true is prerequisite
 
     \param cele (in): Teuchos::rcp to a contact element
 
@@ -578,10 +620,20 @@ namespace CONTACT
     void RoundRobinExtendGhosting(bool firstevaluation);
 
     /*!
-    \brief Collect data concering load balance and parallel distribution
+    \brief Collect data concerning load balance and parallel distribution
 
+    Check all slave elements and count
+    - possibly active elements in the column map
+    - possibly active elements in the row map
+
+    \param[out] numColElements Number of column elements that are potentially in contact
+    \param[out] numRowElements Number of row elements that are potentially in contact
+
+    \note We are only interested in slave elements here, since they have to do (almost) all the work
+    during evaluation. Master elements don't require any computations and, hence, can be neglected
+    here.
     */
-    void CollectDistributionData(int& loadele, int& crowele);
+    void CollectDistributionData(int& numColElements, int& numRowElements);
 
     /*!
     \brief Create binary search tree
@@ -635,12 +687,11 @@ namespace CONTACT
     /*!
     \brief Integrate Mortar matrix M and gap g on slave/master overlaps
 
-    Derived verision!
+    Derived version!
 
     */
-    virtual bool MortarCoupling(MORTAR::MortarElement* sele,
-        std::vector<MORTAR::MortarElement*> mele,
-        const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+    bool MortarCoupling(MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele,
+        const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) override;
 
     /*!
     \brief evaluate coupling terms for nts coupling + lin
@@ -894,15 +945,33 @@ namespace CONTACT
 
     In this function we loop over all  slave nodes to check, whether the
     assumption of them being active or inactive respectively has been correct.
-    If a single node changes state, the active set is adapted accordingly and the convegence
-    flag is kept on false. Here we have the semi-smooth Newton case
+    If a single node changes state, the active set is adapted accordingly and the convergence
+    flag is kept on false.
+
+    Here we have the semi-smooth Newton case
     with one combined iteration loop for active set search and large
     deformations. As a consequence this method is called AFTER each
     (not yet converged) Newton step. If there is a change in the active
     set or the residual and disp norm are still above their limits,
     another Newton step has to be performed.
+
+    \return Boolean flag indicating convergence of active set
     */
     virtual bool UpdateActiveSetSemiSmooth();
+
+    /*!
+    \brief Update active set to conform with given active set from input file
+
+    In this function we loop over all  slave nodes to check, whether the
+    current active set decision for each node still conforms with the prescribed value
+    from the input file. If not, the input file overrules the current value.
+
+    Since this just enforces prescribed information from the input file,
+    this is not to be considered as a change in the active set and, thus,
+    does not affect the convergence of the active set. So, not convergence flag
+    on return.
+    */
+    virtual void UpdateActiveSetInitialStatus() const;
 
     /*!
     \brief Build active set (nodes / dofs) of this interface
@@ -910,6 +979,9 @@ namespace CONTACT
     If the flag init==true, the active set is initialized (for t=0)
     according to the contact initialization defined in the input file.
 
+    \param[in] init Boolean flag to enforce initialization of the active set
+
+    \return true (hard-coded)
     */
     virtual bool BuildActiveSet(bool init = false);
 
@@ -919,11 +991,12 @@ namespace CONTACT
     */
     virtual bool SplitActiveDofs();
 
-    /// \brief update the lagrange multiplier sets for self contact
-    /**
-     *  \param(in) gref_lmmap: global lagrange multiplier reference map
-     *  \param(in) gref_smmap: global merged slave/master reference map
-     */
+    /*!
+    \brief Update the lagrange multiplier sets for self contact
+
+    \param(in) gref_lmmap: global lagrange multiplier reference map
+    \param(in) gref_smmap: global merged slave/master reference map
+    */
     void UpdateSelfContactLagMultSet(const Epetra_Map& gref_lmmap, const Epetra_Map& gref_smmap);
 
     /*!
@@ -941,20 +1014,38 @@ namespace CONTACT
                                           // sglobal, otherwise lin. w.r.t. displacements!
     );
 
-    // Derivative of D-matrix multiplied with a slave dof vector
+    /*!
+    \brief Derivative of D-matrix multiplied with a slave dof vector
+
+    \todo Complete documentation of input parameters.
+
+    @param CoupLin ??
+    @param x ??
+    */
     virtual void AssembleCoupLinD(
         LINALG::SparseMatrix& CoupLin, const Teuchos::RCP<Epetra_Vector> x);
 
-    // Derivative of (transposed) M-matrix multiplied with a slave dof vector
+    /*! \brief Derivative of (transposed) M-matrix multiplied with a slave dof vector
+
+    \todo Complete documentation of input parameters.
+
+    @param CoupLin ??
+    @param x ??
+    */
     virtual void AssembleCoupLinM(
         LINALG::SparseMatrix& CoupLin, const Teuchos::RCP<Epetra_Vector> x);
 
+    /*!
+    \brief Store current (contact) nodal entries to old ones
 
-    /*! \brief Store current (contact) nodal entries to old ones
+    \todo Complete documentation of input parameters.
 
-     Contact nodes own their current entries and old ones (last converged
-     state) from. p.e. the mortar matrices D and M. This function writes the
-     current ones to the old ones. */
+    Contact nodes own their current entries and old ones (last converged
+    state) from. p.e. the mortar matrices D and M. This function writes the
+    current ones to the old ones.
+
+    \param type ??
+    */
     virtual void StoreToOld(MORTAR::StrategyBase::QuantityType type);
 
     //@}
@@ -963,21 +1054,35 @@ namespace CONTACT
 
     /*!
     \brief Calculate the resultant angular momentum
+
     Necessary to check the angular momentum conservation
 
     */
     void EvalResultantMoment(const Epetra_Vector& fs, const Epetra_Vector& fm,
         LINALG::SerialDenseMatrix* conservation_data_ptr = NULL) const;
 
-    // get the nodal interface force
+    /*!
+    \brief Get the nodal interface force
+
+    \todo Complete documentation of input parameters.
+
+    @param nodal_force ??
+    @param force ??
+    @param node Node that is queried
+    */
     void GetForceOfNode(
         LINALG::Matrix<3, 1>& nodal_force, const Epetra_Vector& force, const DRT::Node& node) const;
 
     /*!
     \brief Visualize contact stuff with gmsh
 
+    \param[in] step Time step index
+    \param[in] iter Nonlinear iteration index
     */
     void VisualizeGmsh(const int step, const int iter);
+
+    //! @name Finite difference checks
+    //!@{
 
     /*!
     \brief Check normal/tangent derivatives with finite differences
@@ -1067,6 +1172,8 @@ namespace CONTACT
     */
     virtual void FDCheckPenaltyTracFric();
 
+    //!@}
+
     void WriteNodalCoordinatesToFile(
         const int interfacel_id, const Epetra_Map& nodal_map, const std::string& full_path) const;
 
@@ -1134,13 +1241,30 @@ namespace CONTACT
       if (ctValues_.is_null()) dserror("The ctValues_ is not initialized!");
       return *ctValues_;
     }
-    //@}
 
     inline bool IsFriction() const { return friction_; }
 
     const CoInterface& GetMaSharingRefInterface() const;
 
    protected:
+    /** \brief split the interface elements into a far and a close set
+     *
+     *  This version of the method performs the split closely bound to the
+     *  information collected during the contact search. See the derived
+     *  version(s) for alternatives.
+     *
+     *  \note The here collected information mainly decides over the
+     *  distribution after the parallel redistribution.
+     *
+     *  \param closeele (out)     (slave) interface element GIDs of the close set
+     *  \param noncloseele (out)  (slave) interface element GIDs of the far set
+     *  \param localcns (out)     (slave) node GIDs of the elements in the close set
+     *  \param localfns (out)     (slave) node GIDs of the elements in the far set
+     *
+     *  All sets are restricted to the current/local processor. */
+    virtual void SplitIntoFarAndCloseSets(std::vector<int>& closeele, std::vector<int>& noncloseele,
+        std::vector<int>& localcns, std::vector<int>& localfns) const;
+
     /*!
     \brief initialize node and element data container
 
@@ -1158,7 +1282,7 @@ namespace CONTACT
     virtual void InitializeCornerEdge();
 
     /*!
-    \brief set cpp normal and tangent to data container
+    \brief Set closest-point-projection normal and tangent to data container
 
     Derived version!
 
@@ -1341,6 +1465,24 @@ namespace CONTACT
     virtual void UpdateMasterSlaveSets();
 
    private:
+    /*! \brief Set node active if it is active in input file
+     *
+     * A given node \c cnode is set to be active if it has been specified
+     * as active in the input file.
+     *
+     * @param[in/out] cnode A single contact node
+     */
+    virtual void SetNodeInitiallyActive(CONTACT::CoNode& cnode) const;
+
+    /*! \brief Check if node \c cnode is set active by gap on input
+     *
+     * Check if the contact node \c cnode is set active using the INITCONTACTGAPVALUE
+     * mechanism. If yes, set the status of the contact node \c cnode to active.
+     *
+     * @param[in/out] cnode A single contact node
+     */
+    void SetNodeInitiallyActiveByGap(CoNode& cnode) const;
+
     /// pointer to the interface data object
     Teuchos::RCP<CONTACT::IDataContainer> idata_ptr_;
 
@@ -1349,8 +1491,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoInterface operator=(const CoInterface& old);
-    CoInterface(const CoInterface& old);
+    CoInterface operator=(const CoInterface& old) = delete;
+    CoInterface(const CoInterface& old) = delete;
 
     /** @name References to the interface data container content
      *
@@ -1358,11 +1500,17 @@ namespace CONTACT
      *  corresponding data container, instead! If you have any questions
      *  concerning this, do not hesitate and ask me.
      *                                                          hiermeier 03/17 */
+    // TODO: As already noted by Michael Hiermeier above, the contact interface should not store
+    // references to all member variables of the IDataContainer as it is currently implemented.
+    // Instead, the contact interface should only store a reference to the data container and then
+    // directly access the member variables of the data container using suitable set and get
+    // methods! Please also refer to GitLab Issue 165 for more details.
     /// @{
 
     bool& selfcontact_;       ///< ref. to flag indicating if this is a self contact interface
     bool& friction_;          ///< ref. to flag for frictional contact
     bool& nonSmoothContact_;  ///< ref. to flag for non-smooth contact algorithm
+    bool& two_half_pass_;     ///< ref. to flag for two half pass contact algorithm
     INPAR::CONTACT::ConstraintDirection&
         constr_direction_;  ///< ref. to direction in which the contact constraints are formulated
 
@@ -1378,12 +1526,12 @@ namespace CONTACT
 
     Teuchos::RCP<Epetra_Map>& nonsmoothnodes_;    ///< ref. to row map of all nonsmooth slave nodes
     Teuchos::RCP<Epetra_Map>& smoothnodes_;       ///< ref. to row map of all smooth slave nodes
-    Teuchos::RCP<Epetra_Map>& sdofVertexRowmap_;  //< ref. to  row map of all nonsmooth slave nodes
-    Teuchos::RCP<Epetra_Map>& sdofVertexColmap_;  //< ref. to  row map of all smooth slave nodes
-    Teuchos::RCP<Epetra_Map>& sdofEdgeRowmap_;    //< ref. to  row map of all nonsmooth slave nodes
-    Teuchos::RCP<Epetra_Map>& sdofEdgeColmap_;    //< ref. to  row map of all smooth slave nodes
-    Teuchos::RCP<Epetra_Map>& sdofSurfRowmap_;    //< ref. to  row map of all nonsmooth slave nodes
-    Teuchos::RCP<Epetra_Map>& sdofSurfColmap_;    //< ref. to  row map of all smooth slave nodes
+    Teuchos::RCP<Epetra_Map>& sdofVertexRowmap_;  ///< ref. to row map of all nonsmooth slave nodes
+    Teuchos::RCP<Epetra_Map>& sdofVertexColmap_;  ///< ref. to row map of all smooth slave nodes
+    Teuchos::RCP<Epetra_Map>& sdofEdgeRowmap_;    ///< ref. to row map of all nonsmooth slave nodes
+    Teuchos::RCP<Epetra_Map>& sdofEdgeColmap_;    ///< ref. to row map of all smooth slave nodes
+    Teuchos::RCP<Epetra_Map>& sdofSurfRowmap_;    ///< ref. to row map of all nonsmooth slave nodes
+    Teuchos::RCP<Epetra_Map>& sdofSurfColmap_;    ///< ref. to row map of all smooth slave nodes
 
     Teuchos::RCP<Epetra_Map>& nextendedghosting_;
     Teuchos::RCP<Epetra_Map>& eextendedghosting_;
@@ -1406,7 +1554,7 @@ namespace CONTACT
 }  // namespace CONTACT
 
 
-// << operator
+//! << operator
 std::ostream& operator<<(std::ostream& os, const CONTACT::CoInterface& interface);
 
 

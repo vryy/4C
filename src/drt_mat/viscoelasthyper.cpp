@@ -15,10 +15,7 @@ MAT 0   MAT_ViscoElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 \level 1
 
 <pre>
-\maintainer Lena Yoshihara
-            yoshihara@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15255
+\maintainer Fabian Braeu
 </pre>
  */
 
@@ -1031,14 +1028,14 @@ void MAT::ViscoElastHyper::EvaluateViscoGeneralizedGenMax(LINALG::Matrix<6, 1>& 
 
 
   // check size, correct if needed (only needed in the first time step)
-  if (S_n.size() != abs(numbranch))
+  if (S_n.size() != (unsigned int)(abs(numbranch)))
   {
     std::vector<LINALG::Matrix<6, 1>> S_n(numbranch);
     for (int branch = 0; branch < numbranch; branch++) S_n.at(branch).Clear();
     histbranchelaststresslast_->at(gp) = S_n;
   }
 
-  if (Q_n.size() != abs(numbranch))
+  if (Q_n.size() != (unsigned int)(abs(numbranch)))
   {
     std::vector<LINALG::Matrix<6, 1>> Q_n(numbranch);
     for (int branch = 0; branch < numbranch; branch++) Q_n.at(branch).Clear();

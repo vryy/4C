@@ -7,10 +7,7 @@
 \level 1
 
 <pre>
-\maintainer Lena Wiechert
-            yoshihara@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15303
+\maintainer Fabian Braeu
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -75,8 +72,10 @@
 #include "plastic_VarConstUpdate.H"
 #include "cnst_1d_art.H"
 #include "fourieriso.H"
+#include "fouriervar.H"
 #include "soret.H"
 #include "membrane_elasthyper.H"
+#include "membrane_active_strain.H"
 #include "growthremodel_elasthyper.H"
 #include "inelastic_defgrad_factors.H"
 #include "scalardepinterp.H"
@@ -118,6 +117,7 @@
 #include "particle_mat_ellipsoids.H"
 #include "acoustic.H"
 #include "acoustic_sol.H"
+#include "electromagnetic.H"
 #include "activefiber.H"
 #include "biochemo_mechano_cell_activefiber.H"
 #include "biochemo_mechano_cell_passivefiber.H"
@@ -125,8 +125,9 @@
 #include "fluidporo_relpermeability_law.H"
 #include "fluidporo_viscosity_law.H"
 #include "multiplicative_split_defgrad_elasthyper.H"
-#include "particle_material_base.H"
-#include "particle_material_sph.H"
+#include "particle_material_sph_fluid.H"
+#include "particle_material_sph_boundary.H"
+#include "particle_material_dem.H"
 #include "superelastic_sma.H"
 
 
@@ -345,6 +346,22 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
         curmat->SetParameter(new MAT::PAR::ScatraMatMultiPoroVolFrac(curmat));
       MAT::PAR::ScatraMatMultiPoroVolFrac* params =
           static_cast<MAT::PAR::ScatraMatMultiPoroVolFrac*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_scatra_multiporo_solid:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::ScatraMatMultiPoroSolid(curmat));
+      MAT::PAR::ScatraMatMultiPoroSolid* params =
+          static_cast<MAT::PAR::ScatraMatMultiPoroSolid*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_scatra_multiporo_temperature:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::ScatraMatMultiPoroTemperature(curmat));
+      MAT::PAR::ScatraMatMultiPoroTemperature* params =
+          static_cast<MAT::PAR::ScatraMatMultiPoroTemperature*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_scatra_bondreac:
@@ -943,6 +960,18 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
       MAT::PAR::FourierIso* params = static_cast<MAT::PAR::FourierIso*>(curmat->Parameter());
       return params->CreateMaterial();
     }
+    case INPAR::MAT::m_th_fourier_var:
+    {
+      if (curmat->Parameter() == NULL) curmat->SetParameter(new MAT::PAR::FourierVar(curmat));
+      MAT::PAR::FourierVar* params = static_cast<MAT::PAR::FourierVar*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_consolidation:
+    {
+      if (curmat->Parameter() == NULL) curmat->SetParameter(new MAT::PAR::Consolidation(curmat));
+      MAT::PAR::Consolidation* params = static_cast<MAT::PAR::Consolidation*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
     case INPAR::MAT::m_soret:
     {
       if (curmat->Parameter() == NULL) curmat->SetParameter(new MAT::PAR::Soret(curmat));
@@ -955,6 +984,14 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
         curmat->SetParameter(new MAT::PAR::Membrane_ElastHyper(curmat));
       MAT::PAR::Membrane_ElastHyper* params =
           static_cast<MAT::PAR::Membrane_ElastHyper*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_membrane_activestrain:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::Membrane_ActiveStrain(curmat));
+      MAT::PAR::Membrane_ActiveStrain* params =
+          static_cast<MAT::PAR::Membrane_ActiveStrain*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_growthremodel_elasthyper:
@@ -1084,20 +1121,31 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
           static_cast<MAT::PAR::ParticleMatEllipsoids*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_particle_base:
+    case INPAR::MAT::m_particle_sph_fluid:
     {
+      // note: dynamic_cast needed due diamond inheritance structure
       if (curmat->Parameter() == NULL)
-        curmat->SetParameter(new MAT::PAR::ParticleMaterialBase(curmat));
-      MAT::PAR::ParticleMaterialBase* params =
-          static_cast<MAT::PAR::ParticleMaterialBase*>(curmat->Parameter());
+        curmat->SetParameter(new MAT::PAR::ParticleMaterialSPHFluid(curmat));
+      MAT::PAR::ParticleMaterialSPHFluid* params =
+          dynamic_cast<MAT::PAR::ParticleMaterialSPHFluid*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_particle_sph:
+    case INPAR::MAT::m_particle_sph_boundary:
     {
+      // note: dynamic_cast needed due diamond inheritance structure
       if (curmat->Parameter() == NULL)
-        curmat->SetParameter(new MAT::PAR::ParticleMaterialSPH(curmat));
-      MAT::PAR::ParticleMaterialSPH* params =
-          static_cast<MAT::PAR::ParticleMaterialSPH*>(curmat->Parameter());
+        curmat->SetParameter(new MAT::PAR::ParticleMaterialSPHBoundary(curmat));
+      MAT::PAR::ParticleMaterialSPHBoundary* params =
+          dynamic_cast<MAT::PAR::ParticleMaterialSPHBoundary*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_particle_dem:
+    {
+      // note: dynamic_cast needed due diamond inheritance structure
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::ParticleMaterialDEM(curmat));
+      MAT::PAR::ParticleMaterialDEM* params =
+          dynamic_cast<MAT::PAR::ParticleMaterialDEM*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_acousticmat:
@@ -1111,6 +1159,14 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
       if (curmat->Parameter() == NULL) curmat->SetParameter(new MAT::PAR::AcousticSolMat(curmat));
       MAT::PAR::AcousticSolMat* params =
           static_cast<MAT::PAR::AcousticSolMat*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_electromagneticmat:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::ElectromagneticMat(curmat));
+      MAT::PAR::ElectromagneticMat* params =
+          static_cast<MAT::PAR::ElectromagneticMat*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_activefiber:

@@ -4,7 +4,7 @@
 \level 2
 <pre>
 \maintainer Luca Berardocco
-            berardoccoo@lnm.mw.tum.de
+            berardocco@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15244
 </pre>
@@ -28,7 +28,6 @@ namespace DRT
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-  // Input parameters for acoustical simulations
   namespace ACOU
   {
     // Type of time integrator

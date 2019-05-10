@@ -24,7 +24,7 @@
 
 #include "../drt_inpar/inpar_fsi.H"
 
-/// forward declarations
+// forward declarations
 namespace ADAPTER
 {
   class AleFsiWrapper;

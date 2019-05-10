@@ -765,7 +765,7 @@ void FS3I::BiofilmFSI::FluidAleSolve()
   // change nodes reference position also for scatra fluid field
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[0];
   Teuchos::RCP<DRT::Discretization> scatradis = scatra->ScaTraField()->Discretization();
-  FS3I::Biofilm::UTILS::ScatraChangeConfig(scatradis, fluiddis, fluiddisp);
+  FS3I::BIOFILM::UTILS::ScatraChangeConfig(scatradis, fluiddis, fluiddisp);
 
   // set the total displacement due to growth for output reasons
   // fluid
@@ -811,7 +811,7 @@ void FS3I::BiofilmFSI::StructAleSolve()
   // change nodes reference position also for scatra structure field
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> struscatra = scatravec_[1];
   Teuchos::RCP<DRT::Discretization> struscatradis = struscatra->ScaTraField()->Discretization();
-  FS3I::Biofilm::UTILS::ScatraChangeConfig(struscatradis, structdis, structdisp);
+  FS3I::BIOFILM::UTILS::ScatraChangeConfig(struscatradis, structdis, structdisp);
 
   // set the total displacement due to growth for output reasons
   // structure

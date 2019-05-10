@@ -33,14 +33,15 @@
 namespace PARTICLEINTERACTION
 {
   class SPHKernelBase;
-  class SPHMaterialHandler;
   class SPHEquationOfStateBundle;
   class SPHNeighborPairs;
   class SPHDensityBase;
   class SPHPressure;
+  class SPHTemperature;
   class SPHMomentum;
   class SPHSurfaceTensionBase;
   class SPHBoundaryParticleBase;
+  class SPHPhaseChangeBase;
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*
@@ -62,7 +63,8 @@ namespace PARTICLEINTERACTION
 
     //! setup particle interaction handler
     virtual void Setup(
-        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
+        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
+        const std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface);
 
     //! write restart of particle interaction handler
     virtual void WriteRestart(const int step, const double time) const;
@@ -84,6 +86,12 @@ namespace PARTICLEINTERACTION
     //! maximum interaction distance (on this processor)
     virtual double MaxInteractionDistance() const override;
 
+    //! distribute interaction history
+    virtual void DistributeInteractionHistory() const override;
+
+    //! communicate interaction history
+    virtual void CommunicateInteractionHistory() const override;
+
     //! set current time
     virtual void SetCurrentTime(const double currenttime);
 
@@ -93,9 +101,6 @@ namespace PARTICLEINTERACTION
    private:
     //! init kernel handler
     virtual void InitKernelHandler();
-
-    //! init particle material handler
-    virtual void InitParticleMaterialHandler();
 
     //! init equation of state bundle
     virtual void InitEquationOfStateBundle();
@@ -109,6 +114,9 @@ namespace PARTICLEINTERACTION
     //! init pressure handler
     virtual void InitPressureHandler();
 
+    //! init temperature handler
+    virtual void InitTemperatureHandler();
+
     //! init momentum handler
     virtual void InitMomentumHandler();
 
@@ -118,20 +126,17 @@ namespace PARTICLEINTERACTION
     //! init boundary particle handler
     virtual void InitBoundaryParticleHandler();
 
+    //! init phase change handler
+    virtual void InitPhaseChangeHandler();
+
     //! compute initial consistent particle volume
     virtual double ComputeConsistentParticleVolume() const;
-
-    //! refresh initial states of ghosted particles
-    virtual void RefreshInitialStates() const;
 
     //! smoothed particle hydrodynamics specific parameter list
     const Teuchos::ParameterList& params_sph_;
 
     //! kernel handler
     std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel_;
-
-    //! particle material handler
-    std::shared_ptr<PARTICLEINTERACTION::SPHMaterialHandler> particlematerial_;
 
     //! equation of state bundle
     std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle_;
@@ -145,6 +150,9 @@ namespace PARTICLEINTERACTION
     //! pressure handler
     std::unique_ptr<PARTICLEINTERACTION::SPHPressure> pressure_;
 
+    //! temperature handler
+    std::unique_ptr<PARTICLEINTERACTION::SPHTemperature> temperature_;
+
     //! momentum handler
     std::unique_ptr<PARTICLEINTERACTION::SPHMomentum> momentum_;
 
@@ -153,6 +161,9 @@ namespace PARTICLEINTERACTION
 
     //! boundary particle handler
     std::unique_ptr<PARTICLEINTERACTION::SPHBoundaryParticleBase> boundaryparticle_;
+
+    //! phase change handler
+    std::unique_ptr<PARTICLEINTERACTION::SPHPhaseChangeBase> phasechange_;
   };
 
 }  // namespace PARTICLEINTERACTION

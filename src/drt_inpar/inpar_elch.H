@@ -5,8 +5,8 @@
 \level 2
 
 <pre>
-\maintainer Rui Fang
-            fang@lnm.mw.tum.de
+\maintainer Christoph Schmidt
+            schmidt@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089 - 289-15251
 </pre>
@@ -28,7 +28,6 @@ namespace DRT
 
 namespace INPAR
 {
-  /// Input parameters for ELCH
   namespace ELCH
   {
     /// possible types of moving boundary simulation

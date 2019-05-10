@@ -7,10 +7,10 @@
 \level 1
 
 <pre>
-\maintainer Rui Fang
-            fang@lnm.mw.tum.de
+\maintainer Anh-Tu Vuong
+            vuong@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
-            089 - 289-15251
+            089 - 289-15237
 </pre>
  */
 /*----------------------------------------------------------------------*/
@@ -1451,6 +1451,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcRobinBoundary(DRT::FaceE
 
   // get on/off flags
   const std::vector<int>* onoff = cond->Get<std::vector<int>>("onoff");
+
+  // safety check
+  if ((int)(onoff->size()) != numscal_)
+    dserror(
+        "Mismatch in size for Robin boundary conditions, onoff has length %i, but you have %i "
+        "scalars",
+        onoff->size(), numscal_);
 
   // extract prefactor and reference value from condition
   const double prefac = cond->GetDouble("prefactor");

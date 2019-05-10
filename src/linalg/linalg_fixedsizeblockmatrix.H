@@ -8,8 +8,8 @@
             http://www.lnm.mw.tum.de
             089 - 289-15235
 </pre>
-
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 #ifndef LINALG_FIXEDSIZEBLOCKMATRIX_H
 #define LINALG_FIXEDSIZEBLOCKMATRIX_H
 

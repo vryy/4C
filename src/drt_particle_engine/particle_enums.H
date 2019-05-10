@@ -36,9 +36,16 @@ namespace PARTICLEENGINE
     DensitySum,
     DensityDot,
     Pressure,
+    Temperature,
+    TemperatureDot,
     Position,
     Velocity,
     Acceleration,
+    AngularVelocity,
+    AngularAcceleration,
+    Force,
+    Moment,
+    LastTransferPosition,
     ReferencePosition,
     ModifiedVelocity,
     ModifiedAcceleration,
@@ -49,7 +56,7 @@ namespace PARTICLEENGINE
     InterfaceNormal,
     UnitWallNormal,
     WallDistance,
-    Curvature
+    TemperatureGradient
   };
 
   //! get dimension of particle state
@@ -58,13 +65,17 @@ namespace PARTICLEENGINE
   //! get name of particle state
   std::string EnumToStateName(const enum PARTICLEENGINE::ParticleState& stateEnum);
 
+  //! get enum of particle states
+  enum PARTICLEENGINE::ParticleState EnumFromStateName(const std::string& stateName);
+
 
   //! enums of particle types
   enum ParticleType
   {
     Phase1,
     Phase2,
-    BoundaryPhase
+    BoundaryPhase,
+    RigidPhase
   };
 
   //! get name of particle types

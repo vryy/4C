@@ -82,8 +82,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoNitscheStrategyPoro operator=(const CoNitscheStrategyPoro& old);
-    CoNitscheStrategyPoro(const CoNitscheStrategyPoro& old);
+    CoNitscheStrategyPoro operator=(const CoNitscheStrategyPoro& old) = delete;
+    CoNitscheStrategyPoro(const CoNitscheStrategyPoro& old) = delete;
 
     // create an appropriate vector for the RHS
     virtual Teuchos::RCP<Epetra_FEVector> SetupRhsBlockVec(

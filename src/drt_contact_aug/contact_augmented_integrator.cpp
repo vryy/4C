@@ -73,8 +73,12 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivCell3DAuxPlane(MORTAR::Mort
         "ERROR: IntegrateDerivCell3DAuxPlane supports no Dual shape functions for the "
         "augmented Lagrange solving strategy!");
 
+  GlobalTimeMonitor* timer_ptr = cparams_ptr->GetTimer<GlobalTimeID>(0);
+
+  timer_ptr->start(GlobalTimeID::IntegrateDerivCell3DAuxPlane);
   integrator_ = IntegratorGeneric::Create(Dim(), sele.Shape(), mele.Shape(), *cparams_ptr, this);
   integrator_->IntegrateDerivCell3DAuxPlane(sele, mele, *cell, auxn);
+  timer_ptr->stop(GlobalTimeID::IntegrateDerivCell3DAuxPlane);
 
   return;
 }
@@ -116,6 +120,9 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle3D(MORTAR::MortarElement
   //  *boundary_ele = BoundarySegmCheck3D(sele,meles);
   *boundary_ele = false;
 
+  GlobalTimeMonitor* timer_ptr = cparams_ptr->GetTimer<GlobalTimeID>(0);
+  timer_ptr->start(GlobalTimeID::IntegrateDerivEle3D);
+
   *proj = INTEGRATOR::FindFeasibleMasterElements(sele, meles, boundary_ele, *this, projInfo_);
 
   for (auto& info_pair : projInfo_)
@@ -124,6 +131,15 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle3D(MORTAR::MortarElement
     integrator_ = IntegratorGeneric::Create(Dim(), sele.Shape(), mele.Shape(), *cparams_ptr, this);
     integrator_->Evaluate(sele, mele, *boundary_ele, info_pair.second);
   }
+
+  timer_ptr->stop(GlobalTimeID::IntegrateDerivEle3D);
+
+  Epetra_Vector* sele_times = cparams_ptr->Get<Epetra_Vector>(0);
+  const int slid = sele_times->Map().LID(sele.Id());
+  if (slid == -1)
+    dserror("Couldn't find the current slave element GID #%d on proc #%d.", sele.Id(),
+        sele_times->Map().Comm().MyPID());
+  (*sele_times)[slid] += timer_ptr->getLastTimeIncr();
 
   return;
 }
@@ -185,8 +201,13 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivSegment2D(MORTAR::MortarEle
   if ((mxia < -1.0) || (mxib > 1.0))
     dserror("ERROR: IntegrateAndDerivSegment called with infeasible master limits!");
 
+  GlobalTimeMonitor* timer_ptr = cparams_ptr->GetTimer<GlobalTimeID>(0);
+  timer_ptr->start(GlobalTimeID::IntegrateDerivSegment2D);
+
   integrator_ = IntegratorGeneric::Create(Dim(), sele.Shape(), mele.Shape(), *cparams_ptr, this);
   integrator_->IntegrateDerivSegment2D(sele, sxia, sxib, mele, mxia, mxib);
+
+  timer_ptr->stop(GlobalTimeID::IntegrateDerivSegment2D);
 
   return;
 }
@@ -236,6 +257,9 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle2D(MORTAR::MortarElement
     bound += mymrtrnode->IsOnBound();
   }
 
+  GlobalTimeMonitor* timer_ptr = cparams_ptr->GetTimer<GlobalTimeID>(0);
+  timer_ptr->start(GlobalTimeID::IntegrateDerivEle2D);
+
   // Boundary Segmentation check -- HasProj()-check
   if (IntegrationType() == INPAR::MORTAR::inttype_elements_BS)
     *boundary_ele = BoundarySegmCheck2D(sele, meles);
@@ -252,6 +276,15 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle2D(MORTAR::MortarElement
       integrator_->Evaluate(sele, mele, false, info_pair.second);
     }
   }  // boundary_ele check
+
+  timer_ptr->stop(GlobalTimeID::IntegrateDerivEle2D);
+
+  Epetra_Vector* sele_times = cparams_ptr->Get<Epetra_Vector>(0);
+  const int slid = sele_times->Map().LID(sele.Id());
+  if (slid == -1)
+    dserror("Couldn't find the current slave element GID #%d on proc #%d.", sele.Id(),
+        sele_times->Map().Comm().MyPID());
+  (*sele_times)[slid] += timer_ptr->getLastTimeIncr();
 
   return;
 }
@@ -433,7 +466,11 @@ CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Instance(
 
   if (delete_me)
   {
-    if (instance) delete instance;
+    if (instance)
+    {
+      instance->IntPolicy::timer_.write(std::cout);
+      delete instance;
+    }
 
     return NULL;
   }
@@ -444,6 +481,7 @@ CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Instance(
   }
 
   instance->Init(cparams, wrapper);
+  instance->IntPolicy::timer_.setComm(&wrapper->Comm());
 
   return instance;
 }
@@ -826,6 +864,9 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integr
       // integrate scaling factor kappa
       GP_kappa(sele, lmval_, wgt, jacslave);
 
+      // calculate the averaged unified GP normal
+      GP_Normal(sele, sval_, &gpn_[0]);
+
       // evaluate normal gap (split into slave and master contributions)
       double gapn_sl = 0.0;
       double gapn_ma = 0.0;
@@ -969,7 +1010,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
     IntPolicy>::ExtractActiveSlaveNodeLIDs(std::vector<unsigned>& active_nlids,
     const MORTAR::MortarElement& sele) const
 {
-  const Epetra_Map* active_snode_row_map = this->CParams().template Get<Epetra_Map>(0);
+  const Epetra_Map* active_snode_row_map = this->CParams().template Get<Epetra_Map>(1);
 
   const int* nodeids = sele.NodeIds();
 

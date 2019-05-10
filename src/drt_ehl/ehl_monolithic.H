@@ -67,7 +67,6 @@ namespace CONTACT
   class CoElement;
 }
 
-//! EHL: Elastohydrodynamic lubrication (lubrication-structure interaction)
 namespace EHL
 {
   //! monolithic EHL algorithm

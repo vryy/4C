@@ -7,10 +7,10 @@
 \level 1
 
 <pre>
-\maintainer Rui Fang
-            fang@lnm.mw.tum.de
+\maintainer Anh-Tu Vuong
+            vuong@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
-            089 - 289-15251
+            089 - 289-15237
 </pre>
  */
 /*----------------------------------------------------------------------*/
@@ -35,41 +35,6 @@ namespace FLD
   class RotationallySymmetricPeriodicBC;
 }
 
-/// Internal Scalar transport element implementation
-/*!
-  This internal class keeps all the working arrays needed to
-  calculate the transport element. Additionally the method Sysmat()
-  provides a clean and fast element implementation.
-
-  <h3>Purpose</h3>
-
-  The idea is to separate the element maintenance (class Transport)
-  from the mathematical contents (this class). Of course there are
-  different implementations of the Transport element, this is just one
-  such implementation.
-
-  The Transport element will allocate exactly one object of this class
-  for all transport elements with the same number of nodes in the mesh.
-  This allows us to use exactly matching working arrays (and keep them
-  around.)
-
-  The code is meant to be as clean as possible. This is the only way
-  to keep it fast. The number of working arrays has to be reduced to
-  a minimum so that the element fits into the cache. (There might be
-  room for improvements.)
-
-  <h3>History</h3>
-
-  The implementation here is the standard convection-diffusion element
-  capable of dealing with systems of transported scalars.
-
-  Right now we do not read any stabilization parameters from the
-  input file but have a fixed version.
-
-  \author gjb
-  \date 08/08
-*/
-
 namespace DRT
 {
   namespace ELEMENTS
@@ -77,6 +42,40 @@ namespace DRT
     class ScaTraEleParameterStd;
     class ScaTraEleParameterTimInt;
 
+    /*! \brief Internal Scalar transport element implementation
+
+      This internal class keeps all the working arrays needed to
+      calculate the transport element. Additionally the method Sysmat()
+      provides a clean and fast element implementation.
+
+      <h3>Purpose</h3>
+
+      The idea is to separate the element maintenance (class Transport)
+      from the mathematical contents (this class). Of course there are
+      different implementations of the Transport element, this is just one
+      such implementation.
+
+      The Transport element will allocate exactly one object of this class
+      for all transport elements with the same number of nodes in the mesh.
+      This allows us to use exactly matching working arrays (and keep them
+      around.)
+
+      The code is meant to be as clean as possible. This is the only way
+      to keep it fast. The number of working arrays has to be reduced to
+      a minimum so that the element fits into the cache. (There might be
+      room for improvements.)
+
+      <h3>History</h3>
+
+      The implementation here is the standard convection-diffusion element
+      capable of dealing with systems of transported scalars.
+
+      Right now we do not read any stabilization parameters from the
+      input file but have a fixed version.
+
+      \author gjb
+      \date 08/08
+    */
     template <DRT::Element::DiscretizationType distype>
     class ScaTraEleBoundaryCalc : public ScaTraBoundaryInterface
     {

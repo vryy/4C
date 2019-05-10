@@ -24,7 +24,15 @@
 #include "mortar_interface.H"            // for the enum state type
 #include "../drt_inpar/inpar_contact.H"  // for the INPAR::CONTACT enums
 
+
 // forward declarations
+namespace INPAR
+{
+  namespace STR
+  {
+    enum DynamicType : int;
+  }  // namespace STR
+}  // namespace INPAR
 namespace DRT
 {
   class Discretization;
@@ -87,6 +95,18 @@ namespace MORTAR
     double& AlphaF() { return alphaf_; };
     const double& AlphaF() const { return alphaf_; };
 
+    /// get the (dynamic) time integration type
+    inline INPAR::STR::DynamicType GetDynType() const { return dyntype_; };
+
+    /// return dynamic time integration parameter
+    inline double GetDynParameterN() const { return dynparamN_; }
+
+    /// set dynamic time integration parameter
+    inline void SetDynParameterN(const double dynparamN) { dynparamN_ = dynparamN; }
+
+    /// set the (dynamic) time integration type
+    inline void SetDynType(INPAR::STR::DynamicType dyntype) { dyntype_ = dyntype; }
+
     //! Return flag indicating parallel redistribution status
     bool& IsParRedist() { return parredist_; };
     const bool& IsParRedist() const { return parredist_; };
@@ -126,6 +146,12 @@ namespace MORTAR
 
     //! Current used system type
     INPAR::CONTACT::SystemType systype_;
+
+    //! time integration type
+    INPAR::STR::DynamicType dyntype_;
+
+    //! time integration parameter for the contributions of the old/previous time step
+    double dynparamN_;
   };
 
   /*!
@@ -174,7 +200,7 @@ namespace MORTAR
     \param noderowmap (in): noderowmap of underlying problem
     \param elementrowmap (in): elementrowmap of underlying problem
     \param params (in): List of meshtying/contact parameters
-    \param dim (in): Global problem dimension
+    \param spatialDim (in): Global problem dimension
     \param comm (in): A communicator object
     \param alphaf (in): Midpoint for Gen-alpha time integration
     \param maxdof (in): Highest dof number in global problem
@@ -182,11 +208,11 @@ namespace MORTAR
     */
     StrategyBase(const Teuchos::RCP<MORTAR::StratDataContainer>& data_ptr,
         const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
-        const Teuchos::ParameterList& params, int dim, const Teuchos::RCP<const Epetra_Comm>& comm,
-        double alphaf, int maxdof);
+        const Teuchos::ParameterList& params, const int spatialDim,
+        const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof);
 
     //! Destructor
-    virtual ~StrategyBase(){};
+    virtual ~StrategyBase() = default;
 
     //! @name Access methods
     //! @{
@@ -213,6 +239,9 @@ namespace MORTAR
 
     //@}
 
+    /// Set the time integration information
+    void SetTimeIntegrationInfo(const double time_fac, const INPAR::STR::DynamicType dyntype);
+
     //! @name Purely virtual functions
 
     // All these functions are defined in one or more specific derived classes,
@@ -234,7 +263,7 @@ namespace MORTAR
     virtual void InitBinStrategyforTimestep(Teuchos::RCP<const Epetra_Vector> vel) = 0;
     virtual void CollectMapsForPreconditioner(Teuchos::RCP<Epetra_Map>& MasterDofMap,
         Teuchos::RCP<Epetra_Map>& SlaveDofMap, Teuchos::RCP<Epetra_Map>& InnerDofMap,
-        Teuchos::RCP<Epetra_Map>& ActiveDofMap) = 0;
+        Teuchos::RCP<Epetra_Map>& ActiveDofMap) const = 0;
     virtual double ConstraintNorm() const = 0;
     virtual Teuchos::RCP<Epetra_Vector> ContactNorStress() = 0;
     virtual Teuchos::RCP<Epetra_Vector> ContactTanStress() = 0;
@@ -268,16 +297,16 @@ namespace MORTAR
     virtual Teuchos::RCP<Epetra_Vector> LagrMultOld() = 0;
     virtual Teuchos::RCP<Epetra_Vector> ConstrRhs() = 0;
     virtual Teuchos::RCP<Epetra_Vector> LagrMultSolveIncr() = 0;
-    virtual Teuchos::RCP<Epetra_Vector> MeshInitialization() = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> MeshInitialization() = 0;
     virtual Teuchos::RCP<LINALG::SparseMatrix> MMatrix() = 0;
-    virtual void MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis) = 0;
+    virtual void MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis) = 0;
     virtual int NumberOfActiveNodes() const = 0;
     virtual int NumberOfSlipNodes() const = 0;
     virtual void OutputStresses() = 0;
     virtual void Print(std::ostream& os) const = 0;
     virtual void PrintActiveSet() const = 0;
     virtual void Recover(Teuchos::RCP<Epetra_Vector> disi) = 0;
-    virtual void RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis) = 0;
+    virtual bool RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis) = 0;
     virtual void RedistributeMeshtying() = 0;
     virtual void ResetActiveSet() = 0;
     virtual void ResetPenalty() = 0;
@@ -285,11 +314,10 @@ namespace MORTAR
     virtual void RestrictMeshtyingZone() = 0;
     virtual void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
-        Teuchos::RCP<LINALG::MapExtractor> dbcmaps, int numiter,
-        Teuchos::RCP<Epetra_Operator>& blockMat, Teuchos::RCP<Epetra_Vector>& blocksol,
-        Teuchos::RCP<Epetra_Vector>& blockrhs) = 0;
+        Teuchos::RCP<LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
+        Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) = 0;
     virtual void UpdateDisplacementsAndLMincrements(
-        Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol) = 0;
+        Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) = 0;
     virtual void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) = 0;
     virtual void SetState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) = 0;
     virtual const Teuchos::RCP<Epetra_Map> SlipRowNodes() = 0;
@@ -297,7 +325,7 @@ namespace MORTAR
     virtual void StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type) = 0;
     virtual void Update(Teuchos::RCP<const Epetra_Vector> dis) = 0;
     virtual void UpdateActiveSet() = 0;
-    virtual void UpdateActiveSetSemiSmooth() = 0;
+    virtual void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false) = 0;
     virtual void UpdateUzawaAugmentedLagrange() = 0;
     virtual void UpdateConstraintNorm(int uzawaiter = 0) = 0;
     virtual void VisualizeGmsh(const int step, const int iter) = 0;
@@ -326,6 +354,7 @@ namespace MORTAR
     // constraint preconditioner functions
     virtual bool IsSaddlePointSystem() const = 0;
     virtual bool IsCondensedSystem() const = 0;
+    virtual bool IsPenalty() const = 0;
     virtual void FillMapsForPreconditioner(std::vector<Teuchos::RCP<Epetra_Map>>& maps) const = 0;
     //@}
 

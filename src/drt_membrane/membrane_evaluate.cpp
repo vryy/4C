@@ -5,7 +5,7 @@
 \level 3
 
 <pre>
-\maintainer Fabian Bräu
+\maintainer Fabian Braeu
             braeu@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
@@ -22,6 +22,7 @@
 
 #include "../drt_mat/material.H"
 #include "../drt_mat/membrane_elasthyper.H"
+#include "../drt_mat/membrane_active_strain.H"
 #include "../drt_mat/growthremodel_elasthyper.H"
 
 #include "../drt_fluid_ele/fluid_ele_action.H"
@@ -335,7 +336,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
         // principle stretch in thickness direction
         double lambda3 = 1.0;
 
-        // standard evalutation (incompressible, plane stress)
+        // standard evaluation (incompressible, plane stress)
         if (Material()->MaterialType() == INPAR::MAT::m_membrane_elasthyper)
         {
           // incompressibility condition to get principle stretch in thickness direction
@@ -361,12 +362,12 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
         cauchygreen_loc.MultiplyTN(1.0, defgrd_loc, defgrd_loc, 0.0);
 
         /*===============================================================================*
-         | call material law for evalutation of strain energy                            |
+         | call material law for evaluation of strain energy                            |
          *===============================================================================*/
 
         double psi = 0.0;
 
-        // standard evalutation (incompressible, plane stress)
+        // standard evaluation (incompressible, plane stress)
         if (Material()->MaterialType() == INPAR::MAT::m_membrane_elasthyper)
         {
           Teuchos::rcp_dynamic_cast<MAT::Membrane_ElastHyper>(DRT::Element::Material(), true)
@@ -977,8 +978,9 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
     // principle stretch in thickness direction
     double lambda3 = 1.0;
 
-    // standard evalutation (incompressible, plane stress)
-    if (Material()->MaterialType() == INPAR::MAT::m_membrane_elasthyper)
+    // standard evaluation (incompressible, plane stress)
+    if (Material()->MaterialType() == INPAR::MAT::m_membrane_elasthyper or
+        Material()->MaterialType() == INPAR::MAT::m_membrane_activestrain)
     {
       // Remark:
       // incompressibility condition to get principle stretch in thickness direction
@@ -1022,10 +1024,19 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
     // material tangent matrix for plane stress
     LINALG::Matrix<3, 3> cmatred_loc(true);
 
-    // standard evalutation (incompressible, plane stress)
+    // standard evaluation (incompressible, plane stress)
     if (Material()->MaterialType() == INPAR::MAT::m_membrane_elasthyper)
     {
       Teuchos::rcp_dynamic_cast<MAT::Membrane_ElastHyper>(DRT::Element::Material(), true)
+          ->Evaluate(cauchygreen_loc, params, Q_trafo, &pk2red_loc, &cmatred_loc, Id());
+    }
+    // active strain with passive elasthyper component (incompressible, plane stress)
+    else if (Material()->MaterialType() == INPAR::MAT::m_membrane_activestrain)
+    {
+      // set current gauss point
+      params.set<int>("gp", gp);
+
+      Teuchos::rcp_dynamic_cast<MAT::Membrane_ActiveStrain>(DRT::Element::Material(), true)
           ->Evaluate(cauchygreen_loc, params, Q_trafo, &pk2red_loc, &cmatred_loc, Id());
     }
     // growth remodel elasthyper evaluation

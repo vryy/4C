@@ -23,10 +23,12 @@ namespace LINALG
 {
   class SparseMatrix;
 }  // namespace LINALG
+
 namespace CONTACT
 {
   class Beam3cmanager;
 }  // namespace CONTACT
+
 namespace STR
 {
   namespace MODELEVALUATOR
@@ -56,6 +58,9 @@ namespace STR
 
       //! derived
       virtual bool EvaluateForceStiff();
+
+      //! derived
+      void PreEvaluate() override { return; };
 
       //! derived
       virtual void PostEvaluate(){/* currently unused */};

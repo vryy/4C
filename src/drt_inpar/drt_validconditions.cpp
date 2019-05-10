@@ -6,12 +6,7 @@
 
 \level 1
 
-<pre>
 \maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 */
 /*----------------------------------------------------------------------*/
 
@@ -44,6 +39,8 @@
 #include "inpar_cavitation.H"
 #include "inpar_beampotential.H"
 #include "inpar_beaminteraction.H"
+#include "inpar_poromultiphase_scatra.H"
+#include "inpar_elemag.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -1178,11 +1175,15 @@ DRT::INPUT::ValidConditions()
 
   INPAR::ACOU::SetValidConditions(condlist);
 
+  INPAR::ELEMAG::SetValidConditions(condlist);
+
   INPAR::BEAMPOTENTIAL::SetValidConditions(condlist);
 
   INPAR::BEAMINTERACTION::SetValidConditions(condlist);
 
   INPAR::EHL::SetValidConditions(condlist);
+
+  INPAR::POROMULTIPHASESCATRA::SetValidConditions(condlist);
 
   // finally some conditions that do not have their own files yet are problem-specific
   SetMiscellaneousConditions(condlist);

@@ -9,7 +9,8 @@
             089 - 289-15235
 Created on: Jul 4, 2011
 </pre>
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 #ifndef SOLVER_PRECONDITIONERTYPE_H_
 #define SOLVER_PRECONDITIONERTYPE_H_
 
@@ -57,7 +58,14 @@ namespace LINALG
        */
       virtual Epetra_LinearProblem& LinearProblem() { return lp_; }
 
-      /// support routine for setup
+      /*! \brief Support routine for setup
+       *
+       * Pass the components of the linear system on to the Epetra_LinearProblem.
+       *
+       * @param matrix Matrix of the linear problem
+       * @param x Solution vector of the linear problem
+       * @param b Right-hand side of the linear problem
+       */
       void SetupLinearProblem(
           Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b);
 

@@ -1,7 +1,5 @@
 //
-// Maintainer: Michael Hiermeier
-// hiermeier@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
+// Maintainer: Matthias Mayr
 //
 ==================================================================
          General Data File BACI
@@ -70,9 +68,8 @@ TIMEINIT                        0
 MAXTIME                         1.0
 STC_SCALING                     no
 STC_LAYER                       1
-NLNSOL                          fullnewton // noxnln, fullnewton
-MATERIALTANGENT                 analytical // finitedifferences, analytical
-CONTROLNODE                     -1 -1 -1
+NLNSOL                          fullnewton
+MATERIALTANGENT                 analytical
 LOADLIN                         No
 MASSLIN                         No
 NEGLECTINERTIA                  No
@@ -95,16 +92,16 @@ NUMGP_PER_DIM                   10
 TRIANGULATION                   Delaunay
 ----------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   1
-STRATEGY                        StdLagrange // Combo
+STRATEGY                        StdLagrange
 SYSTEM                          SaddlePoint
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  1.0
 SEMI_SMOOTH_CT                  100
 CPP_NORMALS                     No
 ------------------------------------------CONTACT DYNAMIC/AUGMENTED
-PRINT_LINEAR_CONSERVATION       No // Yes
-PRINT_ANGULAR_CONSERVATION      No // Yes
-VARIATIONAL_APPROACH            incomplete // complete, incomplete
+PRINT_LINEAR_CONSERVATION       No
+PRINT_ANGULAR_CONSERVATION      No
+VARIATIONAL_APPROACH            incomplete
 ASSEMBLE_STRATEGY               node_based
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
@@ -121,24 +118,14 @@ MAT 2 ELAST_CoupLogNeoHooke MODE YN C1 1 C2 0.0       // C1 = Young, C2 = nue
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION ramp
 VARIABLE 0 NAME ramp TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1.0 10.0 VALUES 0 1.2 1.2
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 E 5 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 1.0 FUNCT 0 0 1
 E 12 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE                           0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE                           0
 -----------------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF                           2
 E 6 - 1 Master Inactive FrCoeffOrBound 0.0
 E 11 - 1 Slave Inactive FrCoeffOrBound 0.0
------------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
-DLINE                           0
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL                            0
 --------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                           16
 NDLINE                            24
@@ -1190,9 +1177,7 @@ CP          51 COORD  +1.00000000e+00  +0.00000000e+00  +7.00000000e+00  +1.0000
 CP          52 COORD  -1.00000000e+00  +1.00000000e+00  +7.00000000e+00  +1.000000000000e+00
 CP          53 COORD  +0.00000000e+00  +1.00000000e+00  +7.00000000e+00  +1.000000000000e+00
 CP          54 COORD  +1.00000000e+00  +1.00000000e+00  +7.00000000e+00  +1.000000000000e+00
-------------------------------------------------------------FLUID ELEMENTS
 --------------------------------------------------------STRUCTURE ELEMENTS
             1     SONURBS27       NURBS27             1             2             3             4             5             6             7             8             9            10            11            12            13            14            15            16            17            18            19            20            21            22            23            24            25            26            27 MAT 1 GP 3 3 3
             2     SONURBS27       NURBS27            28            29            30            31            32            33            34            35            36            37            38            39            40            41            42            43            44            45            46            47            48            49            50            51            52            53            54 MAT 1 GP 3 3 3
---------------------------------------------------------------ALE ELEMENTS
 -----------------------------------------------------------------------END

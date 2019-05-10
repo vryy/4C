@@ -256,7 +256,7 @@ namespace STR
     void PredictConstAcc();
 
     //! Create force residual #fres_ and its stiffness #stiff_
-    void EvaluateForceStiffResidual(Teuchos::ParameterList& params);
+    void EvaluateForceStiffResidual(Teuchos::ParameterList& params) final;
 
     //! Evaluate/define the residual force vector #fres_ for
     //! relaxation solution with SolveRelaxationLinear

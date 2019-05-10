@@ -6,7 +6,7 @@
 
  \level 2
 
-\maintainer Ager Christoph
+\maintainer Christoph Ager
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289 15249
@@ -53,7 +53,6 @@ namespace ADAPTER
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-/// POROELAST: namespace for all porous media problems
 namespace POROELAST
 {
   // forward declaration

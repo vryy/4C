@@ -1,0 +1,47 @@
+/*---------------------------------------------------------------------------*/
+/*!
+\file particle_interaction_dem_neighbor_pair_struct.H
+
+\brief neighbor pair struct for discrete element method (DEM) interactions
+
+\level 3
+
+\maintainer  Sebastian Fuchs
+             fuchs@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289 -15262
+
+*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*
+ | definitions                                                sfuchs 11/2018 |
+ *---------------------------------------------------------------------------*/
+#ifndef PARTICLE_INTERACTION_DEM_NEIGHBOR_PAIR_STRUCT_H
+#define PARTICLE_INTERACTION_DEM_NEIGHBOR_PAIR_STRUCT_H
+
+/*---------------------------------------------------------------------------*
+ | class definitions                                          sfuchs 11/2018 |
+ *---------------------------------------------------------------------------*/
+namespace PARTICLEINTERACTION
+{
+  //! struct to store quantities of interacting particles
+  struct DEMNeighborPair
+  {
+    //! local index tuple of particles i and j
+    PARTICLEENGINE::LocalIndexTuple tuple_i_;
+    PARTICLEENGINE::LocalIndexTuple tuple_j_;
+
+    //! gap between particles
+    double gap_;
+
+    //! versor from particle i to j
+    double e_ji_[3];
+
+    //! effective mass of particles i and j
+    double m_eff_;
+  };
+}  // namespace PARTICLEINTERACTION
+
+/*---------------------------------------------------------------------------*/
+#endif

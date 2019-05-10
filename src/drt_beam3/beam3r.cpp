@@ -2102,7 +2102,7 @@ void DRT::ELEMENTS::Beam3r::GetNodalTriadsFromDispTheta(
 
     // renormalize quaternion to keep its absolute value one even in case of long simulations and
     // intricate calculations
-    Qnode[node].Scale(1.0 / FADUTILS::VectorNorm<4>(Qnode[node]));
+    Qnode[node].Scale(1.0 / FADUTILS::VectorNorm(Qnode[node]));
   }
 }
 

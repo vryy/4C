@@ -58,20 +58,30 @@ namespace PARTICLEENGINE
     static ParticleObjectType instance_;
   };
 
-  //! particle object
+  /**
+   * \brief A particle object for parallel communication of particle data.
+   *
+   * The class members of the particle object are either initialized via an constructor with
+   * initializer list or via unpacking of the data (after communication and receiving of packed
+   * data).
+   *
+   * \note A separate method for initializing or modifying of class members is not provided due to
+   * performance reasons (avoid copy operations) and due to the fact that a particle object only
+   * needs to be packed once (without being modified afterwards) and is directly sent to another
+   * processor.
+   */
   class ParticleObject : public DRT::ParObject
   {
    public:
     //! constructor
     ParticleObject();
 
+    //! standard constructor
+    ParticleObject(TypeEnum particletype, int particleglobalid,
+        const ParticleStates& particlestates, int bingid = -1, int containerindex = -1);
+
     //! virtual destructor
     virtual ~ParticleObject(){};
-
-    //! init particle object
-    void Init(TypeEnum particletype,
-        const std::map<StateEnum, std::vector<double>>& particlestates_, int bingid = -1,
-        int containerindex = -1);
 
     //! return unique ParObject id
     virtual int UniqueParObjectId() const
@@ -86,26 +96,29 @@ namespace PARTICLEENGINE
     virtual void Unpack(const std::vector<char>& data);
 
     //! return particle type
-    TypeEnum ReturnParticleType() const { return particletype_; };
+    inline TypeEnum ReturnParticleType() const { return particletype_; };
 
-    //! return particle states
-    std::map<StateEnum, std::vector<double>> ReturnParticleStates() const
-    {
-      return particlestates_;
-    };
+    //! return particle global id
+    inline int ReturnParticleGlobalID() const { return particleglobalid_; };
+
+    //! return reference to particle states
+    inline const ParticleStates& ReturnParticleStates() const { return particlestates_; };
 
     //! return bin gid
-    int ReturnBinGid() const { return bingid_; };
+    inline int ReturnBinGid() const { return bingid_; };
 
     //! return index
-    int ReturnContainerIndex() const { return containerindex_; };
+    inline int ReturnContainerIndex() const { return containerindex_; };
 
    private:
     //! particle type enum
     TypeEnum particletype_;
 
+    //! particle global id
+    int particleglobalid_;
+
     //! maps particle state enum to state
-    std::map<StateEnum, std::vector<double>> particlestates_;
+    ParticleStates particlestates_;
 
     //! bin gid particle is located in
     int bingid_;

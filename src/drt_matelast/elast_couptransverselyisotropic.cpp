@@ -19,6 +19,8 @@
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_linedefinition.H"
 
+#include "../drt_structure_new/str_elements_paramsinterface.H"
+
 #include "../drt_mat/material_service.H"
 #include "../drt_io/io_pstream.H"
 
@@ -200,7 +202,8 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::AddStressAnisoPrincipal(
     const LINALG::Matrix<6, 1>& rcg, LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& stress,
     Teuchos::ParameterList& params, const int eleGID)
 {
-  ResetInvariants(rcg);
+  // direct return if an error occurred
+  if (ResetInvariants(rcg, &params)) return;
 
   // switch to stress notation
   LINALG::Matrix<6, 1> rcg_s(rcg);
@@ -278,14 +281,21 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::UpdateElasticityTensor(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupTransverselyIsotropic::ResetInvariants(const LINALG::Matrix<6, 1>& rcg)
+int MAT::ELASTIC::CoupTransverselyIsotropic::ResetInvariants(
+    const LINALG::Matrix<6, 1>& rcg, const Teuchos::ParameterList* params)
 {
   // calculate the square root of the third invariant alias the determinant
   // of the deformation gradient
   const double I3 = rcg(0) * rcg(1) * rcg(2) + 0.25 * rcg(3) * rcg(4) * rcg(5) -
                     0.25 * rcg(1) * rcg(5) * rcg(5) - 0.25 * rcg(2) * rcg(3) * rcg(3) -
                     0.25 * rcg(0) * rcg(4) * rcg(4);
-  if (I3 < 0.0) dserror("I3 is negative!");
+  if (I3 < 0.0)
+  {
+    std::stringstream msg;
+    msg << __LINE__ << " -- " << __PRETTY_FUNCTION__ << "I3 is negative!";
+    ErrorHandling(params, msg);
+    return -1;
+  }
 
   // jacobian determinant
   j_ = std::sqrt(I3);
@@ -299,6 +309,8 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::ResetInvariants(const LINALG::Matr
   MAT::VStrainUtils::PowerOfSymmetricTensor(2, rcg, rcg_quad);
   I5_ = AA_(0) * (rcg_quad(0)) + AA_(1) * (rcg_quad(1)) + AA_(2) * (rcg_quad(2)) +
         AA_(3) * (rcg_quad(3)) + AA_(4) * (rcg_quad(4)) + AA_(5) * (rcg_quad(5));
+
+  return 0;
 }
 
 /*----------------------------------------------------------------------------*
@@ -337,4 +349,26 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::UpdateSecondPiolaKirchhoffStress(
     const double fac = -alpha;
     stress.Update(fac, caa_aac, 1.0);
   }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void MAT::ELASTIC::CoupTransverselyIsotropic::ErrorHandling(
+    const Teuchos::ParameterList* params, std::stringstream& msg) const
+{
+  if (params and params->isParameter("interface"))
+  {
+    Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> interface_ptr = Teuchos::null;
+    interface_ptr = params->get<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface");
+    Teuchos::RCP<STR::ELEMENTS::ParamsInterface> pinter =
+        Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(interface_ptr, true);
+
+    if (pinter->IsTolerateErrors())
+    {
+      pinter->SetEleEvalErrorFlag(STR::ELEMENTS::ele_error_material_failed);
+      return;
+    }
+  }
+
+  dserror("Uncaught error detected:\n%s", msg.str().c_str());
 }

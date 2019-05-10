@@ -1,12 +1,14 @@
 /*----------------------------------------------------------------------------*/
-/** \file cut_side.H
+/*!
+ \file cut_side.H
  *
  *  \brief class representing a geometrical side
  *
- *  \level 3
- *
- *  \maintainer Andy Wirtz  */
-/*----------------------------------------------------------------------------*/
+
+\level 2
+
+\maintainer Christoph Ager
+ *------------------------------------------------------------------------------------------------*/
 
 #ifndef CUT_SIDE_H
 #define CUT_SIDE_H
@@ -135,6 +137,12 @@ namespace GEO
 
       /*! \brief Calculates the points at which the side is cut by this edge */
       virtual bool Cut(Mesh& mesh, Edge& edge, PointSet& cut_points) = 0;
+
+      virtual bool JustParallelCut(Mesh& mesh, Edge& edge, PointSet& cut_points, int idx = -1)
+      {
+        dserror("JustParallelCut is not implemented for the levelset!");
+        return false;
+      }
 
       /*! \brief get all edges adjacent to given local coordinates */
       template <class T1>
@@ -344,6 +352,13 @@ namespace GEO
 
       bool HaveCommonNode(Side& side);
 
+      // Finds if this sides is touched by the other side at the point "p"
+      bool IsTouched(Side& other, Point* p);
+
+      // Finds if this side is topologically touched by the other side in the point "p"
+      // Purely based on the location of the point might not even be in the node of other side
+      bool IsTouchedAt(Side* other, Point* p);
+
       bool HaveCommonEdge(Side& side);
 
       Element* CommonElement(Side* other);
@@ -367,14 +382,15 @@ namespace GEO
       virtual bool FindAmbiguousCutLines(
           Mesh& mesh, Element* element, Side& side, const PointSet& cut);
 
-      /*! \brief Create lines based on cut points arising from an intersection, which
-       *  should basically be a straight line!
-       *
-       *  Due to numeric precision and finally merging of Points this can happen!
-       *  The approach is to create a vector, which points in direction of the line and
-       *  the sort all points along this vector, and connect the points in this sorted order! */
-      bool FindAmbiguousCutLinesonEdge(
-          Mesh& mesh, Element* element, Side& side, const PointSet& cut);
+      // Find part of this side (cut points on the cut_edges), that lies on the other side
+      // (parallel)
+      virtual bool FindParallelIntersection(
+          Mesh& mesh, Element* element, Side& side, const PointSet& cut, point_line_set& new_lines);
+
+
+      // create paralle cut surface between two sides
+      virtual bool CreateParallelCutSurface(Mesh& mesh, Element* element, Side& other,
+          const PointSet& cut, std::vector<Point*>* cut_point_for_lines_out = NULL);
 
       void GetBoundaryCells(plain_boundarycell_set& bcells);
 
@@ -408,10 +424,12 @@ namespace GEO
 
       const std::vector<Node*>& Nodes() const { return nodes_; }
 
+      virtual bool FindCutPointsDispatch(Mesh& mesh, Element* element, Side& side, Edge& e);
+
       /*!
        \brief Calculate the points at which the other side intersects with this considered side
        */
-      bool FindCutPoints(Mesh& mesh, Element* element, Side& other, int recursion);
+      virtual bool FindCutPoints(Mesh& mesh, Element* element, Side& other);
 
       /*!
        \brief Draw cut lines between the cut points of this edge and "other"
@@ -498,6 +516,13 @@ namespace GEO
       /// get bounding volume
       const BoundingBox& GetBoundingVolume() const { return *boundingvolume_; }
 
+      /// Remove point p from this side
+      void RemovePoint(Point* p) { cut_points_.erase(p); };
+
+      /// Parallel Cut Surfaces on this side (represented by the points)
+      std::set<std::set<Point*>>& GetParallelCutSurfaces() { return parallel_cut_surfaces_; }
+
+
      protected:
       bool AllOnNodes(const PointSet& points);
 
@@ -561,6 +586,18 @@ namespace GEO
        *  \author hiermeier \date 01/17 */
       unsigned UncutFacetNumberPerSide() const;
 
+      /// Simplifies topological connection in the case, when side contains two parallel cut
+      /// surfaces, which are self-intersecting.
+      void SimplifyMixedParallelCutSurface(Mesh& mesh, Element* element, Side& other,
+          std::set<Point*>& new_surface, std::vector<Point*>& cut_points_for_lines);
+
+      /// Does this Side have another parallel cut surface than this?
+      bool HasMixedParallelCutSurface(const std::set<Point*>& surface)
+      {
+        return (parallel_cut_surfaces_.size() > 0 &&
+                parallel_cut_surfaces_.find(surface) == parallel_cut_surfaces_.end());
+      }
+
      private:
       int sid_;
 
@@ -579,6 +616,10 @@ namespace GEO
       PointSet cut_points_;
 
       std::vector<Facet*> facets_;
+
+      /// in some extreme cases surface can be partially
+      /// parallel to the other side
+      std::set<std::set<Point*>> parallel_cut_surfaces_;
 
       /// all sides which are cutting this cutside
       plain_side_set cutting_sides_;
@@ -670,6 +711,11 @@ namespace GEO
       virtual bool Cut(Mesh& mesh, Edge& edge, PointSet& cut_points)
       {
         return edge.Cut(mesh, *this, cut_points);
+      }
+
+      virtual bool JustParallelCut(Mesh& mesh, Edge& edge, PointSet& cut_points, int idx = -1)
+      {
+        return edge.JustParallelCut(mesh, *this, cut_points, idx);
       }
 
       /** \brief Is this side closer to the start-point as the other side?

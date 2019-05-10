@@ -196,6 +196,7 @@ NDPARTICLE                      0
 //
 -------------------------------------------------STRUCTURAL DYNAMIC
 //
+INT_STRATEGY                   Standard
 // type of time integration control
 //     Statics
 //     GenAlpha
@@ -242,46 +243,6 @@ M_DAMP                          -1
 //
 K_DAMP                          -1
 //
-// tolerance in the displacement norm for the newton iteration
-TOLDISP                         1e-10
-//
-// type of norm for displacement convergence check
-//     Abs,Rel,Mix
-NORM_DISP                       Abs
-//
-// tolerance in the residual norm for the newton iteration
-TOLRES                          1e-08
-//
-// type of norm for residual convergence check
-//     Abs,Rel,Mix
-NORM_RESF                       Abs
-//
-// tolerance in pressure norm for the newton iteration
-TOLPRE                          1e-08
-//
-// type of norm for pressure convergence check
-//     Abs
-NORM_PRES                       Abs
-//
-// tolerance in the incompressible residual norm for the newton iteration
-TOLINCO                         1e-08
-//
-// type of norm for incompressible residual convergence check
-//     Abs
-NORM_INCO                       Abs
-//
-// binary operator to combine pressure and displacement values
-//     And,Or
-NORMCOMBI_DISPPRES              And
-//
-// binary operator to combine force and incompressible residual
-//     And,Or
-NORMCOMBI_RESFINCO              And
-//
-// binary operator to combine displacement and residual force values
-//     And,Or
-NORMCOMBI_RESFDISP              And
-//
 // Scaled director conditioning for thin shell structures
 //     no,No,NO,Symmetric,Right
 STC_SCALING                     no
@@ -292,19 +253,6 @@ STC_LAYER                       1
 // pseudo time step for pseudo transient continuation (PTC) stabilized Newton procedure
 PTCDT                           0.1
 //
-// tolerance in the constr error norm for the newton iteration
-TOLCONSTR                       1e-08
-//
-// maximum number of iterations allowed for Newton-Raphson iteration before failure
-MAXITER                         50
-//
-// minimum number of iterations to be done within Newton-Raphson loop
-MINITER                         0
-//
-// type of norm to be applied to residuals
-//     L1,L2,Rms,Inf
-ITERNORM                        L2
-//
 // What to do with time integration when Newton-Raphson iteration failed
 //     stop
 //     continue
@@ -314,44 +262,11 @@ ITERNORM                        L2
 //     rand_adapt_step
 //     rand_adapt_step_ele_err
 //     repeat_simulation
-DIVERCONT                       stop
-//
-// Nonlinear solution technique
-//     vague
-//     fullnewton
-//     modnewton
-//     lsnewton
-//     ptc
-//     newtonlinuzawa
-//     augmentedlagrange
-//     NoxNewtonLineSearch
-//     noxgeneral
-//     NLNSOL
-NLNSOL                          fullnewton
 //
 // maximum number of line search steps
 LSMAXITER                       30
 //
-// step reduction factor alpha in (Newton) line search scheme
-ALPHA_LS                        0.5
-//
-// sufficient descent factor in (Newton) line search scheme
-SIGMA_LS                        0.0001
-//
-// way of evaluating the constitutive matrix
-//     analytical,finitedifferences
 MATERIALTANGENT                 analytical
-//
-// load, disp, arc1, arc2 control
-//     load,Load,disp,Disp,Displacement,arc1,Arc1,arc2,Arc2
-CONTROLTYPE                     load
-//
-// for methods other than load control: [node(fortran numbering)] [dof(c-numbering)] [curve(fortran numbering)]
-CONTROLNODE                     -1 -1 -1
-//
-// Use linearization of external follower load in Newton
-//     Yes,No,yes,no,YES,NO
-LOADLIN                         yes
 //
 // Application of nonlinear inertia terms
 //     No,no,Standard,standard,Rotations,rotations
@@ -367,25 +282,6 @@ MASSLIN                         No
 //     ConstDisPres
 //     ConstDisVelAccPres
 PREDICT                         ConstDis
-//
-// Parameter for Uzawa algorithm dealing with lagrange multipliers
-UZAWAPARAM                      1
-//
-// Tolerance for iterative solve with Uzawa algorithm
-UZAWATOL                        1e-08
-//
-// maximum number of iterations allowed for uzawa algorithm before failure going to next newton step
-UZAWAMAXITER                    50
-//
-//     uzawa,simple,direct
-UZAWAALGO                       direct
-//
-// Switch on adaptive control of linear solver tolerance for nonlinear solution
-//     Yes,No,yes,no,YES,NO
-ADAPTCONV                       No
-//
-// The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit
-ADAPTCONV_BETTER                0.1
 //
 // Lump the mass matrix for explicit time integration
 //     Yes,No,yes,no,YES,NO
@@ -424,6 +320,9 @@ ALPHA_M                         0.5
 // Generalised-alpha factor in [0,1)
 ALPHA_F                         0.5
 //
+--------------------------------------------STRUCT NOX/Status Test
+// The XML file contains all nonlinear solver related information
+XML File                       =  fsi_part_struct_solver.xml
 ----------------------------------------------------MORTAR COUPLING
 //
 // Type of employed set of shape functions

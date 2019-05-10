@@ -34,7 +34,7 @@ namespace STR
 
 namespace ADAPTER
 {
-  /// forward declaration
+  // forward declaration
   class StructureNew;
 
   /*! \brief Wrapper for structural time integration in case of Struct-Ale.

@@ -107,6 +107,8 @@ void SCATRA::MeshtyingStrategyArtery::SetupMeshtying()
           *arttoscatracoupling_->GlobalExtractor(), *arttoscatracoupling_->GlobalExtractor(), 81,
           false, true));
 
+  arttoscatracoupling_->Setup();
+
   return;
 }
 
@@ -219,7 +221,8 @@ void SCATRA::MeshtyingStrategyArtery::SetupSystem(
     const Teuchos::RCP<Epetra_Vector>& residual                //!< residual vector
     ) const
 {
-  arttoscatracoupling_->SetSolutionVectors(scatratimint_->Phinp(), artscatratimint_->Phinp());
+  arttoscatracoupling_->SetSolutionVectors(
+      scatratimint_->Phinp(), Teuchos::null, artscatratimint_->Phinp());
 
   arttoscatracoupling_->SetupSystem(comb_systemmatrix_, rhs_,
       Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix),
@@ -266,6 +269,17 @@ void SCATRA::MeshtyingStrategyArtery::SetArteryTimeIntegrator(
   return;
 }
 
+/*-------------------------------------------------------------------------*
+ | set element pairs that are close                       kremheller 03/19 |
+ *------------------------------------------------------------------------ */
+void SCATRA::MeshtyingStrategyArtery::SetNearbyElePairs(
+    const std::map<int, std::set<int>>* nearbyelepairs)
+{
+  arttoscatracoupling_->SetNearbyElePairs(nearbyelepairs);
+
+  return;
+}
+
 /*--------------------------------------------------------------------------*
  | setup the coupled matrix                                kremheller 04/18 |
  *--------------------------------------------------------------------------*/
@@ -287,9 +301,9 @@ void SCATRA::MeshtyingStrategyArtery::SetArteryPressure() const
 /*--------------------------------------------------------------------------*
  | apply mesh movement on artery coupling                  kremheller 07/18 |
  *--------------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyArtery::ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> disp)
+void SCATRA::MeshtyingStrategyArtery::ApplyMeshMovement()
 {
-  arttoscatracoupling_->ApplyMeshMovement(disp);
+  arttoscatracoupling_->ApplyMeshMovement();
   return;
 }
 

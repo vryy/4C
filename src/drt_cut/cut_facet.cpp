@@ -290,7 +290,7 @@ bool GEO::CUT::Facet::IsPlanar(Mesh& mesh, const std::vector<Point*>& points)
     LINALG::Matrix<3, 3> B;
     B = A;
     x2 = 0;
-    double det = LINALG::gaussElimination<true, 3>(B, x3, x2);
+    double det = LINALG::gaussElimination<true, 3, double>(B, x3, x2);
     if (fabs(det) < LINSOLVETOL)
     {
       throw std::runtime_error("failed to find point position");
@@ -982,7 +982,37 @@ bool GEO::CUT::Facet::HaveConsistantNormal(Facet* f, bool& result)
                (bmatchingppoints->second + 1) % (points2.size()))
         secondordering = false;
       else
+      {
+        // it can be almost-hole facet, but touching at one point
+        // in that case pointgraph produces two no-hole facets
+        Side* parentside = f->ParentSide();
+        const auto& facets = parentside->Facets();
+        std::set<Point*> my_points(f->points_.begin(), f->points_.end());
+
+        for (auto& facet : facets)
+        {
+          if (facet != f)
+          {
+            std::set<Point*> common;
+            std::set<Point*> other_points(facet->points_.begin(), facet->points_.end());
+            std::set_intersection(my_points.begin(), my_points.end(), other_points.begin(),
+                other_points.end(), std::inserter(common, common.begin()));
+            // if one is fully inside another
+            if (common == other_points)
+            {
+              // we cannot find anything meaningful on this cycle -> it
+              // includes all points of other facet, that is not a hole..
+              // better try that facet instead
+              return false;
+            }
+            else
+            {
+              dserror("Check this case!");
+            }
+          }
+        }
         dserror("Is there a point between the matched edges?");
+      }
 
       // ordering of the edge hast to be different, if the facets are ordered equal and vice versa!
       result = !(firstordering == secondordering);

@@ -8,10 +8,7 @@ Interface class for materials of (visco)elasthyper toolbox.
 \level 1
 
 <pre>
-\maintainer Lena Yoshihara
-            yoshihara@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15255
+\maintainer Fabian Braeu
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -40,12 +37,8 @@ namespace DRT
 
 namespace MAT
 {
-  /// This namespace contains hyperelastic summands
-  /// and their derivatives with respect to invariants
   namespace ELASTIC
   {
-    /// This namespace contains the input data -- parameters -- for
-    /// hyperelastic summands
     namespace PAR
     {
       // !brief enum for mapping between material parameter and entry in the matparams_ vector

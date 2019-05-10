@@ -6,8 +6,8 @@
 
    \level 3
 
-   \maintainer  Lena Yoshihara
-                yoshihara@lnm.mw.tum.de
+   \maintainer  Johannes Kremheller
+                kremheller@lnm.mw.tum.de
                 http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
@@ -18,6 +18,7 @@
 #include <Epetra_Vector.h>
 #include "../linalg/linalg_utils.H"
 
+// forward declarations
 namespace ADAPTER
 {
   class PoroFluidMultiphaseWrapper;
@@ -45,7 +46,8 @@ namespace ADAPTER
         const Teuchos::ParameterList& algoparams, const Teuchos::ParameterList& structparams,
         const Teuchos::ParameterList& fluidparams, const std::string& struct_disname,
         const std::string& fluid_disname, bool isale, int nds_disp, int nds_vel,
-        int nds_solidpressure, int ndsporofluid_scatra) = 0;
+        int nds_solidpressure, int ndsporofluid_scatra,
+        const std::map<int, std::set<int>>* nearbyelepairs) = 0;
 
     /// read restart
     virtual void ReadRestart(int restart) = 0;

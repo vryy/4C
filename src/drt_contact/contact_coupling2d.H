@@ -18,10 +18,6 @@
 #include "../drt_inpar/inpar_wear.H"
 #include "../drt_mortar/mortar_coupling2d.H"
 
-/*!
-\brief CONTACT: namespace of the BACI contact and meshtying algorithms
-
-*/
 namespace CONTACT
 {
   /*!
@@ -92,8 +88,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoCoupling2d operator=(const CoCoupling2d& old);
-    CoCoupling2d(const CoCoupling2d& old);
+    CoCoupling2d operator=(const CoCoupling2d& old) = delete;
+    CoCoupling2d(const CoCoupling2d& old) = delete;
 
     // new variables as compared to base class
     INPAR::CONTACT::SolvingStrategy stype_;
@@ -167,8 +163,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    CoCoupling2dManager operator=(const CoCoupling2dManager& old);
-    CoCoupling2dManager(const CoCoupling2dManager& old);
+    CoCoupling2dManager operator=(const CoCoupling2dManager& old) = delete;
+    CoCoupling2dManager(const CoCoupling2dManager& old) = delete;
 
     INPAR::CONTACT::SolvingStrategy stype_;  // solving strategy
 

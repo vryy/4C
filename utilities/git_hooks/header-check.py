@@ -1,6 +1,5 @@
-#!/bin/env python
+#!/bin/env python2
 " Baci header check to be executed along with the Git pre-commit hook. "
-
 import os
 import baciheader as bh
 import inputheader as ih
@@ -16,7 +15,7 @@ def is_source_file(fname):
   return os.path.splitext(fname)[1] in ".c .cpp .cxx .h .H .hpp".split()
 
 def is_support_file(fname):
-  return os.path.splitext(fname)[1] in ".dat .cmake .config".split()
+  return os.path.splitext(fname)[1] in ".dat .cmake .config .md".split()
 
 def path_contains(test, path):
   head, tail = os.path.split(path)
@@ -112,19 +111,19 @@ def check_cpp_files_for_header(look_cmd, allerrors):
 #allerrors.append("The following files are missing a \\brief tag:")
 #allerrors += cpp_files_wo_brief
 # \maintainer tag
-  cpp_files_wo_maint = [ff for ff,hdr in headers.items() if len(hdr.get_maintainer()) < 5]
+  cpp_files_wo_maint = [ff for ff,hdr in headers.items() if len(hdr.get_maintainer()) < 1]
   if len(cpp_files_wo_maint) > 0:
     if len(allerrors) > 0:
       allerrors.append("")
-    allerrors.append("The following files are missing a \\maintainer tag:")
+    allerrors.append("The following files have an incorrect or are missing a \\maintainer tag:")
     allerrors += cpp_files_wo_maint
 
 # check for correct start of header
-  cpp_files_wrong_start = [ff for ff,hdr in headers.items() if len(hdr.get_start())>0]
+  cpp_files_wrong_start = [ff for ff,hdr in headers.items() if len(hdr.get_start())<1]
   if len(cpp_files_wrong_start) > 0:
     if len(allerrors) > 0:
       allerrors.append("")
-    allerrors.append("The following files do not start with /*! as an appropriate header marker:")
+    allerrors.append("The following files do not start with '/*!' or '/**' as an appropriate header marker:")
     allerrors += cpp_files_wrong_start
 # \level tag
   cpp_files_wo_lvl = [ff for ff,hdr in headers.items() if not (0 <= hdr.get_level() <= 3)]
@@ -133,26 +132,48 @@ def check_cpp_files_for_header(look_cmd, allerrors):
       allerrors.append("")
     allerrors.append("The following files are missing a \\level tag:")
     allerrors += cpp_files_wo_lvl
+
+# check compliance of maintainer with the baci_developers.json (List of active BACI developers)
+  cpp_files_uncompliant_maintainer = [ff for ff,hdr in headers.items() if len(hdr.get_compliant_maintainer())<1]
+  if len(cpp_files_uncompliant_maintainer) > 0:
+    if len(allerrors) > 0:
+        allerrors.append("")
+    allerrors.append("The following files contain an uncompliant maintainer. Please check './utilities/git/hooks/baci_developers.json' for a list of compliant maintainers. Several maintainers are not allowed!")
+    allerrors += cpp_files_uncompliant_maintainer
+
+
 #print example header
-  if len(cpp_files_wo_file) > 0 or len(cpp_files_wo_brief) > 0 or len(cpp_files_wrong_start) > 0 or len(cpp_files_wo_maint) > 0 or len(cpp_files_wo_lvl) > 0:
+  if len(cpp_files_wo_file) > 0 or len(cpp_files_wo_brief) > 0 or len(cpp_files_wrong_start) > 0 or len(cpp_files_wo_maint) > 0 or len(cpp_files_wo_lvl) > 0 or len(cpp_files_uncompliant_maintainer):
     allerrors += bh.Header.get_example()
 
-  return len(cpp_files_wo_file)+len(cpp_files_wo_brief)+len(cpp_files_wo_maint)+len(cpp_files_wo_lvl)+len(cpp_files_wrong_start)
+  return len(cpp_files_wo_file)+len(cpp_files_wo_brief)+len(cpp_files_wo_maint)+len(cpp_files_wo_lvl)+len(cpp_files_wrong_start)+len(cpp_files_uncompliant_maintainer)
 
 #CHECK INPUT FILE HEADERS
 def check_input_files_for_header(look_cmd, allerrors):
   " Check .dat file in the Input folder for a proper header. "
   headers = dict([(ff,ih.Header(file_contents(ff))) for ff in files_changed(look_cmd)[:-1] if is_input_file(ff)])
-  datfiles_without_header = [ff for ff,hdr in headers.items() if len(hdr.get_maintainer()) < 5]
+  datfiles_without_header = [ff for ff,hdr in headers.items() if len(hdr.get_maintainer()) < 1]
   if len(datfiles_without_header) > 0:
     if len(allerrors) > 0:
       allerrors.append("")
     allerrors.append("The following files are missing a maintainer:")
     allerrors += datfiles_without_header
+
+# check compliance of maintainer in input files with the baci_developers.json (List of active BACI developers)
+  dat_files_uncompliant_maintainer = [ff for ff,hdr in headers.items() if len(hdr.get_compliant_maintainer())<1]
+
+  if len(dat_files_uncompliant_maintainer) > 0:
+    if len(allerrors) > 0:
+        allerrors.append("")
+    allerrors.append("The following input files (.dat) contain an uncompliant maintainer. Please check './utilities/git/hooks/baci_developers.json' for a list of compliant maintainers. Several maintainers are not allowed!")
+    allerrors += dat_files_uncompliant_maintainer
+
 #print example header
-  if len(datfiles_without_header) > 0:
+  if len(datfiles_without_header) > 0 or len(dat_files_uncompliant_maintainer)>0:
     allerrors += ih.Header.get_example()
-  return len(datfiles_without_header)
+
+  return len(datfiles_without_header)+len(dat_files_uncompliant_maintainer)
+
 
 #CHECK FOR.GITIGNORE FILES
 

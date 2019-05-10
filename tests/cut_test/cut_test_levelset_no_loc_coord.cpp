@@ -1,3 +1,11 @@
+/*!----------------------------------------------------------------------
+\brief Test for the CUT Library
+\file cut_test_levelset_no_loc_coord.cpp
+
+\level 1
+
+\maintainer Christoph Ager
+*----------------------------------------------------------------------*/
 // Issues with non-local cut!
 // Tried to be resolved here (Only for small deformation created from cubit).
 // Sheared elements needs to be tested separately
@@ -21,7 +29,6 @@
 #include "cut_test_utils.H"
 
 #include <iterator>
-#include <cmath>
 
 #define PRECISION24
 //#define GMSH_OUTPUT_LSNOLOC_CUT_TEST
@@ -71,6 +78,7 @@ GEO::CUT::CombIntersection Cut_With_Tesselation(std::vector<int> nids, std::vect
 {
   // non-planar cut surface
   GEO::CUT::CombIntersection ci(-1);
+  ci.GetOptions().Init_for_Cuttests();
   ci.AddLevelSetSide(1);
 
   ci.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0], false);
@@ -99,6 +107,7 @@ GEO::CUT::CombIntersection Cut_With_DirectDivergence(std::vector<int> nids,
 {
   // non-planar cut surface
   GEO::CUT::CombIntersection ci(-1);
+  ci.GetOptions().Init_for_Cuttests();
   ci.AddLevelSetSide(1);
 
   ci.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0], false);
@@ -128,7 +137,9 @@ void Test_LevelSetCut_Tesselation_and_DD(std::vector<int> nids, std::vector<doub
 {
   // non-planar cut surface
   GEO::CUT::CombIntersection ci(-1);
+  ci.GetOptions().Init_for_Cuttests();
   GEO::CUT::CombIntersection cidd(-1);
+  cidd.GetOptions().Init_for_Cuttests();
   ci.AddLevelSetSide(1);
   cidd.AddLevelSetSide(1);
 
@@ -1229,6 +1240,7 @@ void test_ls_mesh_hex8_simple()
 
 
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids_mesh;
 
   int sidecount = 0;
@@ -1324,6 +1336,7 @@ void test_ls_mesh_hex8_simple()
 void test_ls_hex8_experiment_magnus()
 {
   GEO::CUT::CombIntersection ci(-1);
+  ci.GetOptions().Init_for_Cuttests();
   ci.AddLevelSetSide(1);
 
   // simple hex8 element

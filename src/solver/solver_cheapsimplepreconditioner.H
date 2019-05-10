@@ -7,8 +7,8 @@
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
 </pre>
-
- *----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 #ifndef SOLVER_CHEAPSIMPLE_H
 #define SOLVER_CHEAPSIMPLE_H
 

@@ -94,8 +94,14 @@ void DRT::INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShr
     std::string tmp2;
     int filecount = 0;
 
+    int particlecounter = 0;
+
     PARTICLEENGINE::TypeEnum particleType;
-    std::map<PARTICLEENGINE::StateEnum, std::vector<double>> particlestates;
+    int globalid(0);
+    PARTICLEENGINE::ParticleStates particlestates;
+
+    // allocate memory to hold particle states
+    particlestates.assign((PARTICLEENGINE::Position + 1), std::vector<double>(0));
 
     // note that the last block is special....
     for (int block = 0; block < nblock; ++block)
@@ -126,17 +132,17 @@ void DRT::INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShr
             // get enum of particle types
             particleType = PARTICLEENGINE::EnumFromTypeName(type);
 
-            // insert position state
-            particlestates.clear();
-            particlestates.insert(std::make_pair(PARTICLEENGINE::Position, pos));
+            // set position state
+            particlestates[PARTICLEENGINE::Position] = pos;
 
-            // construct and init particleobject
-            PARTICLEENGINE::ParticleObjShrdPtr particleobject =
-                std::make_shared<PARTICLEENGINE::ParticleObject>();
-            particleobject->Init(particleType, particlestates);
+            // set global id
+            globalid = particlecounter;
 
-            // store read in particles
-            particles.push_back(particleobject);
+            // construct and store read in particle object
+            particles.emplace_back(std::make_shared<PARTICLEENGINE::ParticleObject>(
+                particleType, globalid, particlestates));
+
+            ++particlecounter;
 
             ++bcount;
             if (block != nblock - 1)  // last block takes all the rest

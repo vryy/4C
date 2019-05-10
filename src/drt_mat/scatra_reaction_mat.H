@@ -6,10 +6,10 @@
 
 \level 2
 <pre>
-\maintainer Moritz Thon
-            thon@mhpc.mw.tum.de
+\maintainer Johannes Kremheller
+            kremheller@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089-289-10364
+            089-289-15262
 </pre>
 *----------------------------------------------------------------------*/
 
@@ -232,7 +232,7 @@ namespace MAT
     define explicitly define a reaction coefficient as spatially constant by stating
     <CODE>DISTRFUNCT 0</CODE>. Stating <CODE>DISTRFUNCT 0</CODE> may be omitted.
 
-    \author Sebastian Brandstäter (brandstaeter@lnm.mw.tum.de)
+    \author Sebastian Brandstaeter (brandstaeter@lnm.mw.tum.de)
     */
 
     /*----------------------------------------------------------------------*/

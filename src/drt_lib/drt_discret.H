@@ -27,6 +27,7 @@
 #include "drt_dofset_interface.H"
 #include "drt_dserror.H"
 
+// forward declarations
 namespace LINALG
 {
   class SparseOperator;
@@ -39,10 +40,6 @@ namespace IO
   class DiscretizationWriter;
 }
 
-/*!
-\brief DRT: namespace of the baci discretization module
-
-*/
 namespace DRT
 {
   class AssembleStrategy;

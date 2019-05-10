@@ -34,7 +34,12 @@ namespace GEO
           bool positions = true, bool simpleshapes = true, bool genline2 = true,
           bool genquad4 = true, bool genhex8 = true, bool genwedge6 = false,
           bool genpyramid5 = false)
-          : nodal_dofset_strategy_(nodal_dofset_strategy),
+          : geomintersect_floattype_(INPAR::CUT::floattype_double),
+            geomdistance_floattype_(INPAR::CUT::floattype_double),
+            general_position_dist_floattype_(INPAR::CUT::floattype_none),
+            general_position_pos_floattype_(INPAR::CUT::floattype_none),
+            direct_divergence_refplane_(INPAR::CUT::DirDiv_refplane_none),
+            nodal_dofset_strategy_(nodal_dofset_strategy),
             positions_(positions),
             simpleshapes_(simpleshapes),
             genquad4_(genquad4),
@@ -44,6 +49,17 @@ namespace GEO
             gen_bcell_position_(INPAR::CUT::bcells_on_cut_side)
       {
       }
+
+      /// Initializes Cut Parameters by Parameterlist (typically from *.dat-file section CUT
+      /// GENERAL)
+      void Init_by_Paramlist();
+
+      /// Initializes Cut Parameters by Parameterlist (typically from *.dat-file section CUT
+      /// GENERAL)
+      void Init_by_Paramlist(const Teuchos::ParameterList& cutparams);
+
+      /// Initializes Cut Parameters for Cuttests (use full cln)
+      void Init_for_Cuttests();
 
       void SetFindPositions(bool positions) { positions_ = positions; }
 
@@ -68,6 +84,24 @@ namespace GEO
         gen_bcell_position_ = gen_bcell_position;
       };
 
+      /** \brief Float_type for geometric intersection computation */
+      enum INPAR::CUT::CUT_Floattype GeomIntersect_Floattype() const
+      {
+        return geomintersect_floattype_;
+      }
+
+      /** \brief Float_type for geometric distance computation */
+      enum INPAR::CUT::CUT_Floattype GeomDistance_Floattype() const
+      {
+        return geomdistance_floattype_;
+      }
+
+      /** \brief Which Referenceplanes are used in DirectDivergence */
+      enum INPAR::CUT::CUT_DirectDivergence_Refplane Direct_Divergence_Refplane() const
+      {
+        return direct_divergence_refplane_;
+      }
+
       enum INPAR::CUT::BoundaryCellPosition GenBoundaryCellPosition() const
       {
         return gen_bcell_position_;
@@ -90,6 +124,21 @@ namespace GEO
       bool GenPyramid5() const { return genpyramid5_; }
 
      private:
+      /** \brief Float_type for geometric intersection computation */
+      INPAR::CUT::CUT_Floattype geomintersect_floattype_;
+
+      /** \brief Float_type for geometric distance computation */
+      INPAR::CUT::CUT_Floattype geomdistance_floattype_;
+
+      /** \brief Float_type used in GEO::CUT::POSITION for ComputeDistance*/
+      INPAR::CUT::CUT_Floattype general_position_dist_floattype_;
+
+      /** \brief Float_type used in GEO::CUT::POSITION for ComputePosition*/
+      INPAR::CUT::CUT_Floattype general_position_pos_floattype_;
+
+      /** \brief Specifies which Referenceplanes are used in DirectDivergence*/
+      INPAR::CUT::CUT_DirectDivergence_Refplane direct_divergence_refplane_;
+
       INPAR::CUT::NodalDofSetStrategy nodal_dofset_strategy_;
 
       bool positions_;
@@ -119,6 +168,8 @@ namespace GEO
        *  If TRUE a PYRAMID5 element is used as integration cell or otherwise the
        *  PYRAMID5 is splitted into 2 TRI4 elements. */
       bool genpyramid5_;
+
+
 
       enum INPAR::CUT::BoundaryCellPosition gen_bcell_position_;
     };

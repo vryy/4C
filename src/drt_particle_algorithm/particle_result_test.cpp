@@ -20,35 +20,31 @@
 #include "particle_result_test.H"
 
 #include "../drt_particle_engine/particle_engine_interface.H"
-#include "../drt_particle_engine/particle_enums.H"
 #include "../drt_particle_engine/particle_container_bundle.H"
 #include "../drt_particle_engine/particle_container.H"
 
 #include "../drt_lib/drt_linedefinition.H"
 
-#include "../drt_io/io_pstream.H"
-
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-PARTICLEALGORITHM::ResultTest::ResultTest(const Epetra_Comm& comm)
-    : DRT::ResultTest("PARTICLE"), comm_(comm)
+PARTICLEALGORITHM::ParticleResultTest::ParticleResultTest() : DRT::ResultTest("PARTICLE")
 {
   // empty constructor
 }
 
 /*---------------------------------------------------------------------------*
- | init result test                                           sfuchs 07/2018 |
+ | init particle result test                                  sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::ResultTest::Init()
+void PARTICLEALGORITHM::ParticleResultTest::Init()
 {
   // nothing to do
 }
 
 /*---------------------------------------------------------------------------*
- | setup result test                                          sfuchs 07/2018 |
+ | setup particle result test                                 sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::ResultTest::Setup(
+void PARTICLEALGORITHM::ParticleResultTest::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
 {
   // set interface to particle engine
@@ -58,93 +54,36 @@ void PARTICLEALGORITHM::ResultTest::Setup(
 /*---------------------------------------------------------------------------*
  | test special quantity                                      sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::ResultTest::TestSpecial(
+void PARTICLEALGORITHM::ParticleResultTest::TestSpecial(
     DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
-  // extract string of particle type
-  std::string type;
-  res.ExtractString("TYPE", type);
+  // extract global particle id
+  int globalid;
+  res.ExtractInt("ID", globalid);
 
-  // extract reference position of particle
-  std::vector<double> refpos(3, 0);
-  res.ExtractDoubleVector("POS", refpos);
+  // get local index in specific particle container
+  PARTICLEENGINE::LocalIndexTupleShrdPtr localindextuple =
+      particleengineinterface_->GetLocalIndexInSpecificContainer(globalid);
 
-  // extract position tolerance of particle
-  double positiontolerance = 0.0;
-  res.ExtractDouble("POSTOLERANCE", positiontolerance);
-
-  // get enum of particle types
-  PARTICLEENGINE::TypeEnum particleType = PARTICLEENGINE::EnumFromTypeName(type);
-
-  // get particle container bundle
-  PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
-      particleengineinterface_->GetParticleContainerBundle();
-
-  // get container of owned particles of current particle type
-  PARTICLEENGINE::ParticleContainerShrdPtr container =
-      particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
-
-  // get number of particles stored in container
-  int particlestored = container->ParticlesStored();
-
-  // get dimension of particle position
-  int posstatedim = PARTICLEENGINE::EnumToStateDim(PARTICLEENGINE::Position);
-
-  // init minimum distance
-  double minimumdistance = 1.0;
-  int indexofparticlewithminimumdistance = -1;
-
-  // declare pointer variables for current particle
-  const double* pos;
-
-  // only if particles are stored on this processor
-  if (particlestored > 0)
+  // particle with global id found on this processor
+  if (localindextuple)
   {
-    // get pointer to particle states
-    pos = container->GetPtrToParticleState(PARTICLEENGINE::Position, 0);
+    // access values of local index tuple
+    PARTICLEENGINE::TypeEnum particleType;
+    PARTICLEENGINE::StatusEnum particleStatus;
+    int index;
+    std::tie(particleType, particleStatus, index) = *localindextuple;
 
-    // find particle
-    for (int i = 0; i < particlestored; ++i)
+    // consider only owned particle
+    if (particleStatus == PARTICLEENGINE::Owned)
     {
-      // distance vector between reference position and current particle
-      std::vector<double> currentdistancevector(3);
-      for (int dim = 0; dim < posstatedim; ++dim)
-        currentdistancevector[dim] = (pos[posstatedim * i + dim] - refpos[dim]);
+      // get particle container bundle
+      PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
+          particleengineinterface_->GetParticleContainerBundle();
 
-      // get distance between reference position and current particle
-      double currentdistance =
-          std::sqrt(std::pow(currentdistancevector[0], 2) + std::pow(currentdistancevector[1], 2) +
-                    std::pow(currentdistancevector[2], 2));
-
-      // store current particle index and the distance
-      if (currentdistance < minimumdistance)
-      {
-        minimumdistance = currentdistance;
-        indexofparticlewithminimumdistance = i;
-      }
-    }
-  }
-
-  // get minimum distance over all processors
-  double minimumdistanceallprocs = 0.0;
-  comm_.MinAll(&minimumdistance, &minimumdistanceallprocs, 1);
-
-  // decide which processor is the owner of the particle
-  if (minimumdistance == minimumdistanceallprocs)
-  {
-    // prepare stringstream containing general information on particle position
-    std::stringstream msghead;
-    msghead << std::left << std::setw(9) << "PARTICLE"
-            << ": " << std::left << std::setw(8) << "position"
-            << "\t";
-
-    if (minimumdistance < positiontolerance)
-    {
-      // position found
-      IO::cout << msghead.str() << "\t is CORRECT"
-               << ", abs(diff)=" << std::setw(24) << std::setprecision(17) << std::scientific
-               << minimumdistance << " <" << std::setw(24) << std::setprecision(17)
-               << std::scientific << positiontolerance << "\n";
+      // get container of owned particles of current particle type
+      PARTICLEENGINE::ParticleContainer* container =
+          particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
       // get result
       std::string quantity;
@@ -159,8 +98,22 @@ void PARTICLEALGORITHM::ResultTest::TestSpecial(
       // declare enum of particle state
       PARTICLEENGINE::StateEnum particleState;
 
+      // position
+      if (quantity == "posx" or quantity == "posy" or quantity == "posz")
+      {
+        // get enum of particle state
+        particleState = PARTICLEENGINE::Position;
+
+        // get component of result
+        if (quantity == "posx")
+          dim = 0;
+        else if (quantity == "posy")
+          dim = 1;
+        else if (quantity == "posz")
+          dim = 2;
+      }
       // velocity
-      if (quantity == "velx" or quantity == "vely" or quantity == "velz")
+      else if (quantity == "velx" or quantity == "vely" or quantity == "velz")
       {
         // get enum of particle state
         particleState = PARTICLEENGINE::Velocity;
@@ -185,6 +138,20 @@ void PARTICLEALGORITHM::ResultTest::TestSpecial(
         else if (quantity == "accy")
           dim = 1;
         else if (quantity == "accz")
+          dim = 2;
+      }
+      // angular velocity
+      else if (quantity == "angvelx" or quantity == "angvely" or quantity == "angvelz")
+      {
+        // get enum of particle state
+        particleState = PARTICLEENGINE::AngularVelocity;
+
+        // get component of result
+        if (quantity == "angvelx")
+          dim = 0;
+        else if (quantity == "angvely")
+          dim = 1;
+        else if (quantity == "angvelz")
           dim = 2;
       }
       // radius
@@ -214,43 +181,49 @@ void PARTICLEALGORITHM::ResultTest::TestSpecial(
         // get component of result
         dim = 0;
       }
+      // temperature
+      else if (quantity == "temperature")
+      {
+        // get enum of particle state
+        particleState = PARTICLEENGINE::Temperature;
+
+        // get component of result
+        dim = 0;
+      }
+      // temperature gradient
+      else if (quantity == "tempgradx" or quantity == "tempgrady" or quantity == "tempgradz")
+      {
+        // get enum of particle state
+        particleState = PARTICLEENGINE::TemperatureGradient;
+
+        // get component of result
+        if (quantity == "tempgradx")
+          dim = 0;
+        else if (quantity == "tempgrady")
+          dim = 1;
+        else if (quantity == "tempgradz")
+          dim = 2;
+      }
       else
         dserror("result check failed with unknown quantity '%s'!", quantity.c_str());
+
+      // container contains current particle state
+      if (not(container->GetStoredStates()).count(particleState))
+        dserror("state '%s' not found in container!",
+            PARTICLEENGINE::EnumToStateName(particleState).c_str());
 
       // get pointer to particle state
       const double* state = container->GetPtrToParticleState(particleState, 0);
 
-      // get dimension of particle state
-      int statedim = PARTICLEENGINE::EnumToStateDim(particleState);
+      // get particle state dimension
+      int statedim = container->GetParticleStateDim(particleState);
 
       // get actual result
-      actresult = state[statedim * indexofparticlewithminimumdistance + dim];
+      actresult = state[statedim * index + dim];
 
       // compare values
       const int err = CompareValues(actresult, "SPECIAL", res);
       nerr += err;
-      test_count++;
-    }
-    else
-    {
-      // position not found
-      IO::cout << msghead.str() << "\t is WRONG"
-               << ", abs(diff)=" << std::setw(24) << std::setprecision(17) << std::scientific
-               << minimumdistance << " >" << std::setw(24) << std::setprecision(17)
-               << std::scientific << positiontolerance << "\n"
-               << "--> actposition: x=" << std::setw(24) << std::setprecision(17) << std::scientific
-               << pos[posstatedim * indexofparticlewithminimumdistance + 0]
-               << " y=" << std::setw(24) << std::setprecision(17) << std::scientific
-               << pos[posstatedim * indexofparticlewithminimumdistance + 1]
-               << " z=" << std::setw(24) << std::setprecision(17) << std::scientific
-               << pos[posstatedim * indexofparticlewithminimumdistance + 2] << "\n"
-               << "--> refposition: x=" << std::setw(24) << std::setprecision(17) << std::scientific
-               << refpos[0] << " y=" << std::setw(24) << std::setprecision(17) << std::scientific
-               << refpos[1] << " z=" << std::setw(24) << std::setprecision(17) << std::scientific
-               << refpos[2] << "\n";
-
-      // increase counter
-      nerr++;
       test_count++;
     }
   }

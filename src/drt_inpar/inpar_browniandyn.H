@@ -18,7 +18,6 @@
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// Input parameters used in statistical mechanics
   namespace BROWNIANDYN
   {
     /// the way how damping coefficient values for beams are specified

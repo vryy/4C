@@ -6,7 +6,7 @@
 
 \level 2
 
-\maintainer Ager Christoph
+\maintainer Christoph Ager
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289 15249
@@ -315,7 +315,11 @@ std::map<std::string, std::string> POROELAST::UTILS::PoroScatraCloneStrategy::Co
   conditions_to_copy.insert(
       std::pair<std::string, std::string>("ArtScatraCouplCon", "ArtScatraCouplCon"));
 
-  // artery to scatra coupling
+  // oxygen partial pressure calculation
+  conditions_to_copy.insert(std::pair<std::string, std::string>(
+      "PoroMultiphaseScatraOxyPartPressCalcCond", "PoroMultiphaseScatraOxyPartPressCalcCond"));
+
+  // Robin boundary condition
   conditions_to_copy.insert(
       std::pair<std::string, std::string>("TransportRobin", "TransportRobin"));
 

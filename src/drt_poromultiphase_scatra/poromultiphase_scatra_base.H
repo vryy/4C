@@ -6,8 +6,8 @@
 
    \level 3
 
-   \maintainer  Lena Yoshihara
-                yoshihara@lnm.mw.tum.de
+   \maintainer  Johannes Kremheller
+                kremheller@lnm.mw.tum.de
                 http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
@@ -17,11 +17,13 @@
 
 #include "../drt_adapter/adapter_algorithmbase.H"
 #include "../drt_porofluidmultiphase/porofluidmultiphase_utils.H"
+#include "../drt_inpar/inpar_poromultiphase_scatra.H"
 
 #include "Teuchos_RCP.hpp"
 #include <Epetra_Vector.h>
 #include <Epetra_Time.h>
 
+// forward declarations
 namespace ADAPTER
 {
   class ScaTraBaseAlgorithm;
@@ -57,7 +59,8 @@ namespace POROMULTIPHASESCATRA
         const Teuchos::ParameterList& structparams, const Teuchos::ParameterList& fluidparams,
         const Teuchos::ParameterList& scatraparams, const std::string& struct_disname,
         const std::string& fluid_disname, const std::string& scatra_disname, bool isale,
-        int nds_disp, int nds_vel, int nds_solidpressure, int ndsporofluid_scatra) = 0;
+        int nds_disp, int nds_vel, int nds_solidpressure, int ndsporofluid_scatra,
+        const std::map<int, std::set<int>>* nearbyelepairs) = 0;
 
     /// read restart
     void ReadRestart(int restart);
@@ -95,6 +98,9 @@ namespace POROMULTIPHASESCATRA
     //! apply solution of scatra to poro
     void SetScatraSolution();
 
+    //! apply the additional Dirichlet boundary condition for volume fraction species
+    void ApplyAdditionalDBCForVolFracSpecies();
+
     //! access to poro field
     const Teuchos::RCP<ADAPTER::PoroMultiPhase>& PoroField() { return poromulti_; }
 
@@ -104,6 +110,8 @@ namespace POROMULTIPHASESCATRA
     /// dof map of vector of unknowns of scatra field
     virtual Teuchos::RCP<const Epetra_Map> ScatraDofRowMap() const;
 
+    //! handle divergence of solver
+    void HandleDivergence() const;
 
    private:
     /// underlying poroelast multi phase
@@ -123,8 +131,13 @@ namespace POROMULTIPHASESCATRA
     double dttimestep_;          //!< duration of one time step
 
    protected:
+    //! what to do when nonlinear solution fails
+    enum INPAR::POROMULTIPHASESCATRA::DivContAct divcontype_;
     // do we perform coupling with 1D artery
     const bool artery_coupl_;
+
+    // additional volume-fraction species Dirichlet conditions
+    Teuchos::RCP<Epetra_Map> add_dirichmaps_volfrac_spec_;
 
     Teuchos::RCP<SCATRA::MeshtyingStrategyArtery> scatramsht_;
 

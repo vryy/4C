@@ -7,10 +7,10 @@
 <pre>
 \level 1
 
-\maintainer Rui Fang
-            fang@lnm.mw.tum.de
+\maintainer Anh-Tu Vuong
+            vuong@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
-            089 - 289-15251
+            089 - 289-15237
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -115,7 +115,9 @@ void SCATRA::ScatraFluidCloneStrategy::CheckMaterialType(const int matid)
       (mtype != INPAR::MAT::m_matlist) && (mtype != INPAR::MAT::m_matlist_reactions) &&
       (mtype != INPAR::MAT::m_matlist_bondreacs) && (mtype != INPAR::MAT::m_myocard) &&
       (mtype != INPAR::MAT::m_scatra_multiporo_fluid) &&
-      (mtype != INPAR::MAT::m_scatra_multiporo_volfrac))
+      (mtype != INPAR::MAT::m_scatra_multiporo_volfrac) &&
+      (mtype != INPAR::MAT::m_scatra_multiporo_solid) &&
+      (mtype != INPAR::MAT::m_scatra_multiporo_temperature))
     dserror("Material with ID %d is not admissible for scalar transport elements", matid);
 }
 

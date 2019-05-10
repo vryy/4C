@@ -357,6 +357,10 @@ namespace DRT
     {
       return getParameterList()->sublist("BROWNIAN DYNAMICS");
     }
+    const Teuchos::ParameterList& GeometryPairParams() const
+    {
+      return getParameterList()->sublist("GEOMETRY PAIR");
+    }
     const Teuchos::ParameterList& ThermalDynamicParams() const
     {
       return getParameterList()->sublist("THERMAL DYNAMIC");
@@ -408,6 +412,10 @@ namespace DRT
     const Teuchos::ParameterList& CellMigrationParams() const
     {
       return getParameterList()->sublist("CELL DYNAMIC");
+    }
+    const Teuchos::ParameterList& CutGeneralParams() const
+    {
+      return getParameterList()->sublist("CUT GENERAL");
     }
     const Teuchos::ParameterList& XFEMGeneralParams() const
     {
@@ -547,6 +555,10 @@ namespace DRT
     {
       return getParameterList()()->sublist("MOR");
     };
+    const Teuchos::ParameterList& MeshPartitioningParams() const
+    {
+      return getParameterList()->sublist("MESH PARTITIONING");
+    }
 
     const Teuchos::ParameterList& SolverParams(int solverNr) const;
     const Teuchos::ParameterList& RandomFieldParams(int randomfieldNr) const;

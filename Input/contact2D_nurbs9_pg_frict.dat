@@ -1,8 +1,6 @@
 //
 // Maintainer: Alexander Popp
-// popp@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15238
+//
 ============================================================================
 General Data File BACI
 ============================================================================
@@ -27,19 +25,14 @@ RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-CONTROLNODE                     -1 -1 -1
-CONTROLTYPE                     load
-DAMPING                         Material
 DIVERCONT                       stop
-DYNAMICTYP                      Statics//OneStepTheta //OneStepTheta Statics
+DYNAMICTYP                      Statics
 ITERNORM                        L2
-K_DAMP                          0.5
 LOADLIN                         no
 MAXITER                         500
 MAXTIME                         0.5
 MINITER                         0
-M_DAMP                          0.5
-NLNSOL                          fullnewton //fullnewton newtonlinuzawa
+NLNSOL                          fullnewton
 NORMCOMBI_DISPPRES              And
 NORMCOMBI_RESFDISP              And
 NORMCOMBI_RESFINCO              And
@@ -65,8 +58,7 @@ UZAWAMAXITER                    50
 UZAWAPARAM                      1
 UZAWATOL                        1e-08
 LINEAR_SOLVER                   1
----------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
-THETA                           0.66
+INT_STRATEGY                    Standard
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 STRATEGY                        Lagrange

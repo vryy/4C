@@ -23,8 +23,6 @@
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 08/2018 |
  *---------------------------------------------------------------------------*/
-#include "particle_interaction_typedefs.H"
-
 #include "../drt_particle_engine/particle_enums.H"
 #include "../drt_particle_engine/particle_typedefs.H"
 
@@ -47,7 +45,7 @@ namespace PARTICLEENGINE
 namespace PARTICLEINTERACTION
 {
   class SPHKernelBase;
-  class SPHMaterialHandler;
+  class MaterialHandler;
   class SPHEquationOfStateBundle;
   class SPHNeighborPairs;
   class SPHDensityCorrectionBase;
@@ -74,7 +72,7 @@ namespace PARTICLEINTERACTION
     virtual void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHMaterialHandler> particlematerial,
+        const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
         const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle,
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
 
@@ -96,9 +94,6 @@ namespace PARTICLEINTERACTION
     virtual void ComputeDensity() const = 0;
 
    protected:
-    //! refresh density of ghosted particles
-    virtual void RefreshDensity() const final;
-
     //! evaluate sum of weighted mass and colorfield
     virtual void SumWeightedMassAndColorfield() const final;
 
@@ -118,13 +113,16 @@ namespace PARTICLEINTERACTION
     std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel_;
 
     //! particle material handler
-    std::shared_ptr<PARTICLEINTERACTION::SPHMaterialHandler> particlematerial_;
+    std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial_;
 
     //! equation of state bundle
     std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle_;
 
     //! neighbor pair handler
     std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs_;
+
+    //! density of ghosted particles to refresh
+    PARTICLEENGINE::StatesOfTypesToRefresh densitytorefresh_;
 
     //! time step size
     double dt_;
@@ -188,7 +186,7 @@ namespace PARTICLEINTERACTION
     virtual void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHMaterialHandler> particlematerial,
+        const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
         const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle,
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
 

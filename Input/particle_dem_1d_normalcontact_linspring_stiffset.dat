@@ -1,0 +1,54 @@
+//
+// Maintainer: Sebastian Fuchs
+//
+==================================================================
+                  General Data File BACI
+==================================================================
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Particle
+SHAPEFCT                        Meshfree
+RANDSEED                        1
+RESTART                         0
+--------------------------------------------------------------------------IO
+STDOUTEVRY                      200
+VERBOSITY                       standard
+------------------------------------------------------------BINNING STRATEGY
+CUTOFF_RADIUS                   0.025
+PERIODICONOFF                   0 0 0
+BOUNDINGBOX                     -0.05 -0.01 -0.01 0.05 0.01 0.01
+WRITEBINS                       none
+------------------------------------------------------------PARTICLE DYNAMIC
+DYNAMICTYP                      VelocityVerlet
+INTERACTION                     DEM
+RESULTSEVRY                     10
+RESTARTEVRY                     500
+OUTPUT_DATA_FORMAT              Binary
+WRITE_GHOSTED_PARTICLES         no
+TIMESTEP                        0.001
+NUMSTEP                         1000
+MAXTIME                         1
+TRANSFER_EVERY                  no
+PHASE_TO_DYNLOADBALFAC          phase1 1.0
+PHASE_TO_MATERIAL_ID            phase1 1
+----------------------------PARTICLE DYNAMIC/INITIAL AND BOUNDARY CONDITIONS
+INITIAL_VELOCITY_FIELD          phase1 1
+--------------------------------------------------------PARTICLE DYNAMIC/DEM
+NORMALCONTACTLAW                NormalLinearSpring
+MAX_RADIUS                      0.01
+MAX_VELOCITY                    3.0e-2
+NORMAL_STIFF                    3.5e-5
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION 1.0e-2*(2.0*heaviside(-x)-heaviside(x))
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_ParticleDEM INITRADIUS 0.01 INITDENSITY 5.0e-3
+----------------------------------------------------------RESULT DESCRIPTION
+PARTICLE ID 0 QUANTITY posx VALUE -1.41849933259985145e-02 TOLERANCE 1.0e-12
+PARTICLE ID 0 QUANTITY velx VALUE -9.99999722426987529e-03 TOLERANCE 1.0e-12
+PARTICLE ID 1 QUANTITY posx VALUE 2.41849933259973837e-02 TOLERANCE 1.0e-12
+PARTICLE ID 1 QUANTITY velx VALUE 1.99999972242698790e-02 TOLERANCE 1.0e-12
+-------------------------------------------------------------------PARTICLES
+TYPE phase1 POS -0.015 0.0 0.0
+TYPE phase1 POS 0.015 0.0 0.0
+-------------------------------------------------------------------------END

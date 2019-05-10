@@ -3,13 +3,9 @@
 
  \brief class that provides all routines to handle cutsides which cut each other
 
- <pre>
-\level 3
-\maintainer Andy Wirtz
- wirtz@lnm.mw.tum.de
- http://www.lnm.mw.tum.de
- 089 - 289-15270
- </pre>
+\level 2
+
+\maintainer Christoph Ager
  *------------------------------------------------------------------------------------------------*/
 
 #ifndef CUT_SELFCUT_H

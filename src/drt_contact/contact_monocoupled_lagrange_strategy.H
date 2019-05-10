@@ -70,7 +70,7 @@ namespace CONTACT
 
     // Overload CONTACT::CoLagrangeStrategy::Recover as this is called in the structure --> no
     // enought information available for monolithically coupled algorithms!
-    virtual void Recover(Teuchos::RCP<Epetra_Vector> disi)
+    void Recover(Teuchos::RCP<Epetra_Vector> disi) override
     {
       if (has_to_recover_ && 0)
         dserror(
@@ -118,8 +118,8 @@ namespace CONTACT
 
    protected:
     // don't want = operator and cctor
-    MonoCoupledLagrangeStrategy operator=(const MonoCoupledLagrangeStrategy& old);
-    MonoCoupledLagrangeStrategy(const MonoCoupledLagrangeStrategy& old);
+    MonoCoupledLagrangeStrategy operator=(const MonoCoupledLagrangeStrategy& old) = delete;
+    MonoCoupledLagrangeStrategy(const MonoCoupledLagrangeStrategy& old) = delete;
 
     void SaveCouplingMatrices(Teuchos::RCP<LINALG::SparseMatrix> dhat,
         Teuchos::RCP<LINALG::SparseMatrix> mhataam, Teuchos::RCP<LINALG::SparseMatrix> invda);

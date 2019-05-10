@@ -38,10 +38,6 @@ namespace LINALG
   class SerialDenseMatrix;
 }  // namespace LINALG
 
-/*!
- \brief CONTACT: namespace of the BACI contact and meshtying algorithms
-
- */
 namespace CONTACT
 {
   class CoNode;

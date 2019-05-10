@@ -19,10 +19,6 @@
 
 // forward declarations
 
-/*!
- \brief CONTACT: namespace of the BACI contact and meshtying algorithms
-
- */
 namespace CONTACT
 {
   // forward declarations

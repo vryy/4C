@@ -174,7 +174,7 @@ void GEO::CUT::FacetIntegration::IsClockwise(
 #ifdef LOCAL
       phi_deriv1 = elem1_->GetLevelSetGradientAtLocalCoordsInLocalCoords(coord);
 #else
-      phi_deriv1 = elem1_->GetLevelSetGradient(coord, false);
+      phi_deriv1 = elem1_->GetLevelSetGradient(coord);
 #endif
 
       dotProduct = eqn_plane[0] * phi_deriv1[0] + eqn_plane[1] * phi_deriv1[1] +

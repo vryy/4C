@@ -1465,6 +1465,7 @@ VERBOSITY                       0
 //
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 //
+INT_STRATEGY                    Standard
 // Switch on adaptive control of linear solver tolerance for nonlinear solution
 //                              Yes,No,yes,no,YES,NO
 ADAPTCONV                       No
@@ -1474,13 +1475,6 @@ ADAPTCONV_BETTER                0.1
 //
 // TEMPORARY FLAG: Switch on time integration driver based on ADAPTER::Structure rather than independent implementation
 //                              Yes,No,yes,no,YES,NO
-//
-// for methods other than load control: [node(fortran numbering)] [dof(c-numbering)] [curve(fortran numbering)]
-CONTROLNODE -1 -1 -1
-//
-// load, disp, arc1, arc2 control
-//                              load,Load,disp,Disp,Displacement,arc1,Arc1,arc2,Arc2
-CONTROLTYPE                     load
 //
 // type of damping: (1) Rayleigh damping matrix and use it from M_DAMP x M + K_DAMP x K, (2) Material based and calculated in elements
 //                              no,No,NO,yes,Yes,YES,Rayleigh,Material,BrownianMotion

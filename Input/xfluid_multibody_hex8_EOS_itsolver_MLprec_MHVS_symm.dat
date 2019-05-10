@@ -1,5 +1,5 @@
 //
-// Maintainer: Ager Christoph
+// Maintainer: Christoph Ager
 // ager@lnm.mw.tum.de
 // http://www.lnm.mw.tum.de
 // 089 - 289-15249
@@ -81,7 +81,7 @@ GMSH_DEBUG_OUT                  No
 GMSH_SOL_OUT                    No
 GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
-VOLUME_GAUSS_POINTS_BY          Tessellation
+VOLUME_GAUSS_POINTS_BY          DirectDivergence
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
@@ -93,7 +93,7 @@ VISC_STAB_HK                    vol_equivalent                // vol_div_by_surf
 CONV_STAB_SCALING               abs_inflow                    //abs_normal_vel // inflow // const // none
 GHOST_PENALTY_STAB              Yes
 GHOST_PENALTY_FAC               0.1
-VISC_ADJOINT_SYMMETRY           Yes
+VISC_ADJOINT_SYMMETRY           yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR                     // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

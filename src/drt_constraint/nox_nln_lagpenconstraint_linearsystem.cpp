@@ -5,7 +5,7 @@
 \brief Derived class which manages the special requirements to the linear
        solver for structural-constraint problems.
 
-\maintainer Marc Hirschvogel
+\maintainer Amadeus Gebauer
 
 \date Jul 15, 2016
 

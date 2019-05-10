@@ -28,6 +28,8 @@
 
 #include "../drt_lib/drt_dserror.H"
 
+#include <Teuchos_TimeMonitor.hpp>
+
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 08/2018 |
  *---------------------------------------------------------------------------*/
@@ -49,7 +51,7 @@ void PARTICLEINTERACTION::SPHPressure::Init()
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHPressure::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHMaterialHandler> particlematerial,
+    const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
     const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle)
 {
   // set interface to particle engine
@@ -63,6 +65,20 @@ void PARTICLEINTERACTION::SPHPressure::Setup(
 
   // set equation of state handler
   equationofstatebundle_ = equationofstatebundle;
+
+  // setup pressure of ghosted particles to refresh
+  {
+    std::vector<PARTICLEENGINE::StateEnum> states{PARTICLEENGINE::Pressure};
+
+    for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
+    {
+      // no refreshing of density states for boundary or rigid particles
+      if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
+        continue;
+
+      pressuretorefresh_.push_back(std::make_pair(typeEnum, states));
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*
@@ -87,24 +103,21 @@ void PARTICLEINTERACTION::SPHPressure::ReadRestart(
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHPressure::ComputePressure() const
 {
-  // iterate over particle types
-  for (auto& typeIt : particlecontainerbundle_->GetRefToAllContainersMap())
-  {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum type = typeIt.first;
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHPressure::ComputePressure");
 
-    // no pressure computation for boundary particles
-    if (type == PARTICLEENGINE::BoundaryPhase) continue;
+  // iterate over particle types
+  for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
+  {
+    // no pressure computation for boundary or rigid particles
+    if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
+      continue;
 
     // get container of owned particles of current particle type
-    auto statusIt = (typeIt.second).find(PARTICLEENGINE::Owned);
-    if (statusIt == (typeIt.second).end())
-      dserror("particle status '%s' not found!",
-          PARTICLEENGINE::EnumToStatusName(PARTICLEENGINE::Owned).c_str());
-    PARTICLEENGINE::ParticleContainerShrdPtr container = statusIt->second;
+    PARTICLEENGINE::ParticleContainer* container =
+        particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
-    int particlestored = container->ParticlesStored();
+    const int particlestored = container->ParticlesStored();
 
     // no owned particles of current particle type
     if (particlestored <= 0) continue;
@@ -114,12 +127,12 @@ void PARTICLEINTERACTION::SPHPressure::ComputePressure() const
     double* press = container->GetPtrToParticleState(PARTICLEENGINE::Pressure, 0);
 
     // get material for current particle type
-    const MAT::PAR::ParticleMaterialSPH* material =
-        particlematerial_->GetPtrToParticleMatParameter(type);
+    const MAT::PAR::ParticleMaterialBase* material =
+        particlematerial_->GetPtrToParticleMatParameter(typeEnum);
 
     // get equation of state for current particle type
-    std::shared_ptr<SPHEquationOfStateBase> equationofstate =
-        equationofstatebundle_->GetSpecificEquationOfState(type);
+    const PARTICLEINTERACTION::SPHEquationOfStateBase* equationofstate =
+        equationofstatebundle_->GetPtrToSpecificEquationOfState(typeEnum);
 
     // iterate over owned particles of current type
     for (int i = 0; i < particlestored; ++i)
@@ -127,30 +140,5 @@ void PARTICLEINTERACTION::SPHPressure::ComputePressure() const
   }
 
   // refresh pressure of ghosted particles
-  RefreshPressure();
-}
-
-/*---------------------------------------------------------------------------*
- | refresh pressure of ghosted particles                      sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHPressure::RefreshPressure() const
-{
-  // init map
-  std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>> particlestatestotypes;
-
-  // iterate over particle types
-  for (auto& typeIt : particlecontainerbundle_->GetRefToAllContainersMap())
-  {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum type = typeIt.first;
-
-    // no refreshing of pressure states for boundary particles
-    if (type == PARTICLEENGINE::BoundaryPhase) continue;
-
-    // set state enums to map
-    particlestatestotypes[type].insert(PARTICLEENGINE::Pressure);
-  }
-
-  // refresh specific states of particles of specific types
-  particleengineinterface_->RefreshSpecificStatesOfParticlesOfSpecificTypes(particlestatestotypes);
+  particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(pressuretorefresh_);
 }

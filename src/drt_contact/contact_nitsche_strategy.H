@@ -60,9 +60,6 @@ namespace CONTACT
 
     virtual bool IsCondensedSystem() const { return false; }
 
-    void Evaluate(CONTACT::ParamsInterface& cparams,
-        const std::vector<Teuchos::RCP<const Epetra_Vector>>* eval_vec);
-
     virtual void Integrate(CONTACT::ParamsInterface& cparams);
 
     virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
@@ -126,36 +123,33 @@ namespace CONTACT
 
     //! Get the active node row map of the previous Newton step
     virtual Teuchos::RCP<const Epetra_Map> GetOldActiveRowNodes() const { return Teuchos::null; };
-    virtual Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const
-    {
-      dserror("Currently unsupported for the penalty strategy!");
-      return Teuchos::null;
-    };
+    virtual Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const { return Teuchos::null; };
     virtual bool IsNitsche() const { return true; }
     virtual void PrintActiveSet() const {};
     bool ActiveSetSemiSmoothConverged() const { return true; }
     bool ActiveSetConverged() { return true; }
     int ActiveSetSteps() { return 0; }
     void ResetActiveSet() {}
-    void Recover(Teuchos::RCP<Epetra_Vector> disi) {}
+    void Recover(Teuchos::RCP<Epetra_Vector> disi) override { return; };
     void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
-        Teuchos::RCP<LINALG::MapExtractor> dbcmaps, int numiter,
-        Teuchos::RCP<Epetra_Operator>& blockMat, Teuchos::RCP<Epetra_Vector>& blocksol,
-        Teuchos::RCP<Epetra_Vector>& blockrhs)
+        Teuchos::RCP<LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
+        Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override
     {
-      std::cout << __FILE__ << ":" << __LINE__ << "WARNING: saddle point system makes no sense here"
-                << std::endl;
+      dserror(
+          "Nitsche does not have Lagrange multiplier DOFs. So, saddle point system makes no sense "
+          "here.");
     }
     void UpdateDisplacementsAndLMincrements(
-        Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol)
+        Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override
     {
-      std::cout << __FILE__ << ":" << __LINE__ << "WARNING: saddle point system makes no sense here"
-                << std::endl;
+      dserror(
+          "Nitsche does not have Lagrange multiplier DOFs. So, saddle point system makes no sense "
+          "here.");
     }
     void EvalConstrRHS() {}
     void UpdateActiveSet() {}
-    void UpdateActiveSetSemiSmooth() {}
+    void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false) {}
     void EvaluateRelMovPredict() {}
     void ModifyPenalty() {}
     void UpdateUzawaAugmentedLagrange() {}
@@ -179,6 +173,7 @@ namespace CONTACT
     void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) {}
     double InitialPenalty() { return 0.0; }
     double ConstraintNorm() const { return 0.0; }
+    bool IsPenalty() const override { return false; };
 
    protected:
     //! derived
@@ -189,6 +184,20 @@ namespace CONTACT
     {
       return interface_;
     }
+
+    /// derived
+    void EvalForce(CONTACT::ParamsInterface& cparams) override;
+
+    /// derived
+    void EvalForceStiff(CONTACT::ParamsInterface& cparams) override;
+
+    /// derived
+    void Reset(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp,
+        const Epetra_Vector& xnew) override;
+
+    /// derived
+    void RunPostComputeX(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
+        const Epetra_Vector& dir, const Epetra_Vector& xnew) override;
 
     // fill RHS vector of block
     virtual Teuchos::RCP<Epetra_FEVector> CreateRhsBlockPtr(
@@ -210,8 +219,8 @@ namespace CONTACT
         const enum DRT::UTILS::MatBlockType& bt);
 
     // don't want = operator and cctor
-    CoNitscheStrategy operator=(const CoNitscheStrategy& old);
-    CoNitscheStrategy(const CoNitscheStrategy& old);
+    CoNitscheStrategy operator=(const CoNitscheStrategy& old) = delete;
+    CoNitscheStrategy(const CoNitscheStrategy& old) = delete;
 
     std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface_;
 

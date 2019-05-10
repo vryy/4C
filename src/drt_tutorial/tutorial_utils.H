@@ -4,14 +4,12 @@
 \brief student's c++/baci tutorial utility methods
 
 \maintainer  Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15240
 
+\level 3
  *----------------------------------------------------------------------*/
 
-/// All header files should have #define guards to prevent multiple inclusion.
-/// The format of the symbol name should be <PROJECT>_<PATH>_<FILE>_H_.
+// All header files should have #define guards to prevent multiple inclusion.
+// The format of the symbol name should be <PROJECT>_<PATH>_<FILE>_H_.
 #ifndef TUTORIAL_UTILS_H
 #define TUTORIAL_UTILS_H
 

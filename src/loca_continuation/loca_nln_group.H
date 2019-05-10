@@ -68,6 +68,8 @@ namespace LOCA
       //! derived
       NOX::Abstract::Group::ReturnType computeFandJacobian();
 
+      //! derived
+      void resetIsValid() override;
 
     };  // class Group
   }     // namespace NLN

@@ -20,7 +20,6 @@
  *----------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// Input parameters for poroelasticity with scalar transport
   namespace PORO_SCATRA
   {
     /// Type of coupling strategy for poro scatra problems

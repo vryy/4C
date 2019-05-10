@@ -11,8 +11,10 @@
 /*----------------------------------------------------------------------*/
 
 #include "linalg_gauss.H"
-#include <limits>
 #include <stdexcept>
+#include <cmath>
+
+#include "../drt_cut/cut_clnwrapper.H"
 
 namespace LINALG
 {
@@ -23,10 +25,10 @@ namespace LINALG
     \tparam dim      (in)    : dimension of the matrix
     \return determinant of system matrix
   */
-  template <bool do_piv, unsigned dim>
-  double gaussElimination(LINALG::Matrix<dim, dim>& A,  ///< (in)    : system matrix
-      LINALG::Matrix<dim, 1>& b,                        ///< (in)    : right-hand-side
-      LINALG::Matrix<dim, 1>& x                         ///< (out)   : solution vector
+  template <bool do_piv, unsigned dim, typename valtype>
+  valtype gaussElimination(LINALG::Matrix<dim, dim, valtype>& A,  ///< (in)    : system matrix
+      LINALG::Matrix<dim, 1, valtype>& b,                         ///< (in)    : right-hand-side
+      LINALG::Matrix<dim, 1, valtype>& x                          ///< (out)   : solution vector
   )
   {
     if (dim > 1)
@@ -68,7 +70,7 @@ namespace LINALG
           // search for pivot element
           for (unsigned i = k + 1; i < dim; ++i)
           {
-            pivot = (fabs(A(pivot, k)) < fabs(A(i, k))) ? i : pivot;
+            pivot = (std::abs(A(pivot, k)) < std::abs(A(i, k))) ? i : pivot;
           }
 
           // exchange pivot row and current row
@@ -82,9 +84,9 @@ namespace LINALG
             changesign = not changesign;
           }
 
-          if (fabs(A(k, k)) < std::numeric_limits<double>::min())
+          if (A(k, k) == 0.0)
           {
-            return 0;
+            return 0.0;
           }
 
           A(k, k) = 1. / A(k, k);
@@ -118,8 +120,7 @@ namespace LINALG
         }
         x(i, 0) = b(i, 0) * A(i, i);
       }
-
-      double det = 1.0;
+      valtype det = 1.0;
       for (unsigned i = 0; i < dim; ++i) det *= 1.0 / A(i, i);
 
       if (changesign) det *= -1.0;
@@ -149,35 +150,58 @@ namespace LINALG
     }
   }
 
-  template double gaussElimination<true, 1>(LINALG::Matrix<1, 1>& A,  ///< (in)    : system matrix
-      LINALG::Matrix<1, 1>& b,                                        ///< (in)    : right-hand-side
-      LINALG::Matrix<1, 1>& x                                         ///< (out)   : solution vector
+  template GEO::CUT::ClnWrapper gaussElimination<true, 3, GEO::CUT::ClnWrapper>(
+      LINALG::Matrix<3, 3, GEO::CUT::ClnWrapper>& A,  ///< (in)    : system matrix
+      LINALG::Matrix<3, 1, GEO::CUT::ClnWrapper>& b,  ///< (in)    : right-hand-side
+      LINALG::Matrix<3, 1, GEO::CUT::ClnWrapper>& x   ///< (out)   : solution vector
   );
-  template double gaussElimination<false, 1>(LINALG::Matrix<1, 1>& A,  ///< (in)    : system matrix
+  template GEO::CUT::ClnWrapper gaussElimination<true, 2, GEO::CUT::ClnWrapper>(
+      LINALG::Matrix<2, 2, GEO::CUT::ClnWrapper>& A,  ///< (in)    : system matrix
+      LINALG::Matrix<2, 1, GEO::CUT::ClnWrapper>& b,  ///< (in)    : right-hand-side
+      LINALG::Matrix<2, 1, GEO::CUT::ClnWrapper>& x   ///< (out)   : solution vector
+  );
+  template GEO::CUT::ClnWrapper gaussElimination<true, 1, GEO::CUT::ClnWrapper>(
+      LINALG::Matrix<1, 1, GEO::CUT::ClnWrapper>& A,  ///< (in)    : system matrix
+      LINALG::Matrix<1, 1, GEO::CUT::ClnWrapper>& b,  ///< (in)    : right-hand-side
+      LINALG::Matrix<1, 1, GEO::CUT::ClnWrapper>& x   ///< (out)   : solution vector
+  );
+  template double gaussElimination<true, 1, double>(
+      LINALG::Matrix<1, 1, double>& A,  ///< (in)    : system matrix
+      LINALG::Matrix<1, 1, double>& b,  ///< (in)    : right-hand-side
+      LINALG::Matrix<1, 1, double>& x   ///< (out)   : solution vector
+  );
+  template double gaussElimination<false, 1, double>(
+      LINALG::Matrix<1, 1>& A,  ///< (in)    : system matrix
       LINALG::Matrix<1, 1>& b,  ///< (in)    : right-hand-side
       LINALG::Matrix<1, 1>& x   ///< (out)   : solution vector
   );
-  template double gaussElimination<true, 2>(LINALG::Matrix<2, 2>& A,  ///< (in)    : system matrix
-      LINALG::Matrix<2, 1>& b,                                        ///< (in)    : right-hand-side
-      LINALG::Matrix<2, 1>& x                                         ///< (out)   : solution vector
-  );
-  template double gaussElimination<false, 2>(LINALG::Matrix<2, 2>& A,  ///< (in)    : system matrix
+  template double gaussElimination<true, 2, double>(
+      LINALG::Matrix<2, 2>& A,  ///< (in)    : system matrix
       LINALG::Matrix<2, 1>& b,  ///< (in)    : right-hand-side
       LINALG::Matrix<2, 1>& x   ///< (out)   : solution vector
   );
-  template double gaussElimination<true, 3>(LINALG::Matrix<3, 3>& A,  ///< (in)    : system matrix
-      LINALG::Matrix<3, 1>& b,                                        ///< (in)    : right-hand-side
-      LINALG::Matrix<3, 1>& x                                         ///< (out)   : solution vector
+  template double gaussElimination<false, 2, double>(
+      LINALG::Matrix<2, 2>& A,  ///< (in)    : system matrix
+      LINALG::Matrix<2, 1>& b,  ///< (in)    : right-hand-side
+      LINALG::Matrix<2, 1>& x   ///< (out)   : solution vector
   );
-  template double gaussElimination<false, 3>(LINALG::Matrix<3, 3>& A,  ///< (in)    : system matrix
+  template double gaussElimination<true, 3, double>(
+      LINALG::Matrix<3, 3>& A,  ///< (in)    : system matrix
       LINALG::Matrix<3, 1>& b,  ///< (in)    : right-hand-side
       LINALG::Matrix<3, 1>& x   ///< (out)   : solution vector
   );
-  template double gaussElimination<true, 4>(LINALG::Matrix<4, 4>& A,  ///< (in)    : system matrix
-      LINALG::Matrix<4, 1>& b,                                        ///< (in)    : right-hand-side
-      LINALG::Matrix<4, 1>& x                                         ///< (out)   : solution vector
+  template double gaussElimination<false, 3, double>(
+      LINALG::Matrix<3, 3>& A,  ///< (in)    : system matrix
+      LINALG::Matrix<3, 1>& b,  ///< (in)    : right-hand-side
+      LINALG::Matrix<3, 1>& x   ///< (out)   : solution vector
   );
-  template double gaussElimination<false, 4>(LINALG::Matrix<4, 4>& A,  ///< (in)    : system matrix
+  template double gaussElimination<true, 4, double>(
+      LINALG::Matrix<4, 4>& A,  ///< (in)    : system matrix
+      LINALG::Matrix<4, 1>& b,  ///< (in)    : right-hand-side
+      LINALG::Matrix<4, 1>& x   ///< (out)   : solution vector
+  );
+  template double gaussElimination<false, 4, double>(
+      LINALG::Matrix<4, 4>& A,  ///< (in)    : system matrix
       LINALG::Matrix<4, 1>& b,  ///< (in)    : right-hand-side
       LINALG::Matrix<4, 1>& x   ///< (out)   : solution vector
   );

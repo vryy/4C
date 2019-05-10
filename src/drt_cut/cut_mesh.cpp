@@ -6,7 +6,7 @@ mesh
 
 \level 3
 <pre>
-\maintainer  Ager Christoph
+\maintainer  Christoph Ager
              ager@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15249
@@ -214,7 +214,7 @@ GEO::CUT::Side* GEO::CUT::Mesh::CreateQuad4Side(int sid, const std::vector<int>&
  * creates a new point, optional information about cut-edge and cut-side
  *-------------------------------------------------------------------------------------*/
 GEO::CUT::Point* GEO::CUT::Mesh::NewPoint(
-    const double* x, Edge* cut_edge, Side* cut_side, double tolerance)
+    const double* x, Edge* cut_edge, Side* cut_side, double tolerance, double tol_scale)
 {
   bb_->AddPoint(x);  // add the point to the mesh's bounding box
   // Point* p = pp_->NewPoint( x, cut_edge, cut_side, setup_ ? SETUPNODECATCHTOL : MINIMALTOL );
@@ -247,8 +247,85 @@ void GEO::CUT::Mesh::NewLine(Point* p1, Point* p2, Side* cut_side1, Side* cut_si
     {
       Edge* e = *i;
       std::vector<Point*> line_points;
-      e->CutPointsIncluding(p1, p2, line_points);
+      try
+      {
+        e->CutPointsIncluding(p1, p2, line_points);
+      }
+      catch (std::exception& err)
+      {
+        for (std::vector<Point*>::iterator it = line_points.begin(); it != line_points.end(); ++it)
+        {
+          double coord = (*it)->t(e);
+          std::cout << "Id = " << (*it)->Id() << "Coord = " << std::setprecision(15) << coord;
+          if (not((*it)->IsCut(cut_side1, cut_side2)))
+          {
+            (*it)->DumpConnectivityInfo();
+            dserror("this point does not belong here!");
+          }
+        }
+        dserror("Point does lie on edge!");
+        throw err;
+      }
 
+      // if there was new point extracted between these two, we check if it belongs here
+      // NOTE: Used for easier debugging and problem identification. Can be removed later on for
+      // perfomance.
+      if (line_points.size() > 2)
+      {
+        for (std::vector<Point*>::iterator it = line_points.begin(); it != line_points.end(); /* */)
+        {
+          if (not(*it)->IsCut(cut_side1, cut_side2))
+          {
+            std::stringstream err_msg;
+            err_msg << "This point does not belong here!\n ";
+            // output all line points
+            std::ofstream file("additional_point_on_line.pos");
+
+            err_msg << "Line points are: \n";
+            for (std::vector<Point*>::iterator jt = line_points.begin(); jt != line_points.end();
+                 ++jt)
+            {
+              double coord = (*jt)->t(e);
+              err_msg << "Id = " << (*jt)->Id() << "Coord = " << std::setprecision(15) << coord
+                      << std::endl;
+              (*jt)->DumpConnectivityInfo();
+
+              std::stringstream section_name;
+              section_name << "CutPoint" << (*jt)->Id();
+              GEO::CUT::OUTPUT::GmshNewSection(file, section_name.str());
+              GEO::CUT::OUTPUT::GmshPointDump(file, *jt, (*jt)->Id(), false, NULL);
+              GEO::CUT::OUTPUT::GmshEndSection(file, false);
+              if ((*it) == (*jt)) file << " //Wrong point!!" << std::endl;
+            }
+
+            file.close();
+
+            err_msg << "Wrong point is: \n";
+            double coord = (*it)->t(e);
+            err_msg << "Id = " << (*it)->Id() << "Coord = " << std::setprecision(15) << coord
+                    << std::endl;
+
+
+            GEO::CUT::OUTPUT::GmshNewSection(file, "CutSide1");
+            GEO::CUT::OUTPUT::GmshSideDump(file, cut_side1, false, NULL);
+            GEO::CUT::OUTPUT::GmshEndSection(file, false);
+            GEO::CUT::OUTPUT::GmshNewSection(file, "CutSide2");
+            GEO::CUT::OUTPUT::GmshSideDump(file, cut_side2, false, NULL);
+            GEO::CUT::OUTPUT::GmshEndSection(file, false);
+
+            GEO::CUT::OUTPUT::GmshNewSection(file, "CommonEdge");
+            GEO::CUT::OUTPUT::GmshEdgeDump(file, e, false, NULL);
+            GEO::CUT::OUTPUT::GmshEndSection(file, true);
+
+            // it = line_points.erase(it);
+            // ++it;
+            // not really certain what to do now, for now throw an error
+            dserror(err_msg.str());
+          }
+          else
+            ++it;
+        }
+      }
       NewLinesBetween(line_points, cut_side1, cut_side2, cut_element, newlines);
     }
 
@@ -727,7 +804,7 @@ void GEO::CUT::Mesh::BuildStaticSearchTree()
  * Cuts the background elements of the mesh with all the cut sides     *
  * Called by Tetmeshintersection (but not for normal meshintersection) *
  *---------------------------------------------------------------------*/
-void GEO::CUT::Mesh::Cut(Mesh& mesh, plain_element_set& elements_done, int recursion)
+void GEO::CUT::Mesh::Cut(Mesh& mesh, plain_element_set& elements_done)
 {
   TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 6/6 --- Cut_Finalize --- CUT (incl. tetmesh-cut)");
 
@@ -738,7 +815,7 @@ void GEO::CUT::Mesh::Cut(Mesh& mesh, plain_element_set& elements_done, int recur
        ++i)
   {
     Side& side = *i->second;
-    mesh.Cut(side, elements_done, my_elements_done, recursion);
+    mesh.Cut(side, elements_done, my_elements_done);
   }
 
   std::copy(my_elements_done.begin(), my_elements_done.end(),
@@ -751,7 +828,7 @@ void GEO::CUT::Mesh::Cut(Mesh& mesh, plain_element_set& elements_done, int recur
  * Called by Tetmeshintersection (but not for normal meshintersection)    *
  *-----------------------------------------------------------------------*/
 void GEO::CUT::Mesh::Cut(
-    Side& side, const plain_element_set& done, plain_element_set& elements_done, int recursion)
+    Side& side, const plain_element_set& done, plain_element_set& elements_done)
 {
   // define a bounding box around the maybe twisted side to determine a
   // preselection of cutting sides and elements
@@ -834,7 +911,7 @@ void GEO::CUT::Mesh::Cut(
       Element* e = *i;
       if (done.count(e) == 0)
       {
-        if (e->Cut(*this, side, recursion))
+        if (e->Cut(*this, side))
         {
           elements_done.insert(e);
         }
@@ -857,7 +934,7 @@ void GEO::CUT::Mesh::Cut(Side& side)
     Element& e = *i->second;
     try
     {
-      e.Cut(*this, side, 0);
+      e.Cut(*this, side);
     }
     catch (std::runtime_error& err)
     {
@@ -871,7 +948,7 @@ void GEO::CUT::Mesh::Cut(Side& side)
     Element& e = *i->second;
     try
     {
-      e.Cut(*this, side, 0);
+      e.Cut(*this, side);
     }
     catch (std::runtime_error& err)
     {
@@ -939,7 +1016,7 @@ void GEO::CUT::Mesh::SearchCollisions(Mesh& cutmesh)
  * finds intersections between sides and edges                                         *
  *                                                                         wirtz 08/14 *
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::Mesh::FindCutPoints(int recursion)
+void GEO::CUT::Mesh::FindCutPoints()
 {
   TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 4/6 --- Cut_MeshIntersection --- FindCutPoints");
 
@@ -949,7 +1026,7 @@ void GEO::CUT::Mesh::FindCutPoints(int recursion)
     Element& e = *i->second;
     try
     {
-      e.FindCutPoints(*this, recursion);
+      e.FindCutPoints(*this);
     }
     catch (std::runtime_error& err)
     {
@@ -963,7 +1040,7 @@ void GEO::CUT::Mesh::FindCutPoints(int recursion)
     Element& e = *i->second;
     try
     {
-      e.FindCutPoints(*this, recursion);
+      e.FindCutPoints(*this);
     }
     catch (std::runtime_error& err)
     {
@@ -1766,7 +1843,8 @@ void GEO::CUT::Mesh::TestElementVolume(DRT::Element::DiscretizationType shape, E
     //#endif
 
 
-    //    if ( fatal and fabs( volume_error ) > 1e-5 )       //Normal test...
+
+    // if (fatal and fabs(volume_error) > VOLUME_ERROR_TOL)  // Normal test...
     if (fatal and fabs(ev - cv) / (max_norm) > LINSOLVETOL)
     {
       std::stringstream err;
@@ -2700,7 +2778,9 @@ GEO::CUT::Node* GEO::CUT::Mesh::GetNode(int nid, const double* xyz, double lsv, 
   //       }
   //     }
   //   }
+  pp_->SetMergeStrategy(Pointpool_MergeStrategy::InitialLoad);
   Point* p = NewPoint(xyz, NULL, NULL, tolerance);
+  pp_->SetMergeStrategy(Pointpool_MergeStrategy::NormalCutLoad);
   Node* n = new Node(nid, p, lsv);
   nodes_[nid] = Teuchos::rcp(n);
 #ifdef DRT_CUT_DUMPCREATION
@@ -3407,6 +3487,22 @@ void GEO::CUT::Mesh::CreateSideIds_CutTest(int lastid)
   cutmesh_ = true;
 }
 
+
+// used just for testing, in order to track down ids of the sides that are failing
+int GEO::CUT::Mesh::CreateSideIdsAll_CutTest(int lastid)
+{
+  for (std::map<plain_int_set, Teuchos::RCP<Side>>::iterator i = sides_.begin(); i != sides_.end();
+       ++i)
+  {
+    Side* s = &*i->second;
+    if (!s->IsCutSide())
+    {
+      lastid -= 1;
+      s->SetId(lastid);
+    }
+  }
+  return lastid;
+}
 
 /*----------------------------------------------------------------------------*
  * ?

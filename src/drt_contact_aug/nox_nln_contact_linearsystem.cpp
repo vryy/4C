@@ -191,10 +191,6 @@ NOX::NLN::SolutionType NOX::NLN::CONTACT::LinearSystem::GetActiveLinSolver(
     const std::map<NOX::NLN::SolutionType, Teuchos::RCP<LINALG::Solver>>& solvers,
     Teuchos::RCP<LINALG::Solver>& currSolver)
 {
-  // check input
-  if (solvers.size() > 2)
-    throwError("GetCurrentLinSolver",
-        "There have to be exactly two LINALG::Solvers (structure + contact)!");
   // ---------------------------------------------------------------------
   // Solving a saddle point system
   // (1) Standard / Dual Lagrange multipliers -> SaddlePoint
@@ -227,7 +223,7 @@ NOX::NLN::SolutionType NOX::NLN::CONTACT::LinearSystem::GetActiveLinSolver(
 
   if (issaddlepoint or iscondensed)
   {
-    currSolver = solvers.at(NOX::NLN::sol_contact);
+    currSolver = GetLinearContactSolver(solvers);
     return NOX::NLN::sol_contact;
   }
   // ----------------------------------------------------------------------
@@ -241,8 +237,30 @@ NOX::NLN::SolutionType NOX::NLN::CONTACT::LinearSystem::GetActiveLinSolver(
   }
 
   // default return
-  currSolver = solvers.at(NOX::NLN::sol_contact);
+  currSolver = GetLinearContactSolver(solvers);
   return NOX::NLN::sol_contact;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::Solver> NOX::NLN::CONTACT::LinearSystem::GetLinearContactSolver(
+    const std::map<NOX::NLN::SolutionType, Teuchos::RCP<LINALG::Solver>>& solvers) const
+{
+  auto cs_iter = solvers.find(NOX::NLN::sol_contact);
+  if (cs_iter != solvers.end() and not cs_iter->second.is_null()) return cs_iter->second;
+
+  /* If no general linear solver is provided we ask the currently active
+   * strategy for a meaningful linear solver. This is a small work around
+   * to enable different linear solvers for changing contact solving strategies.
+   *                                                       06/18 -- hiermeier */
+  LINALG::Solver* linsolver = iConstrPrec_.begin()->second->GetLinearSolver();
+
+  if (not linsolver)
+    dserror(
+        "Neither the general solver map, nor the constraint preconditioner "
+        "knows the correct linear solver. Please check your input file.");
+
+  return Teuchos::rcpFromRef(*linsolver);
 }
 
 /*----------------------------------------------------------------------------*
@@ -293,7 +311,8 @@ void NOX::NLN::CONTACT::LinearSystem::LinearSubProblem::ExtractActiveBlocks(
     }
 
     if (block_mat(r, r).EpetraMatrix()->NumGlobalDiagonals() ==
-        block_mat(r, r).EpetraMatrix()->NumGlobalNonzeros())
+            block_mat(r, r).EpetraMatrix()->NumGlobalNonzeros() &&
+        !isempty[r][r])
       isdiagonal[r] = true;
   }
 

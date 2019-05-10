@@ -214,7 +214,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::Evaluate()
   artnettimint_->PrepareLinearSolve();
 
   arttoporofluidcoupling_->SetSolutionVectors(
-      porofluidmultitimint_->Phinp(), artnettimint_->Pressurenp());
+      porofluidmultitimint_->Phinp(), porofluidmultitimint_->Phin(), artnettimint_->Pressurenp());
 
   // SetupCoupledArteryPoroFluidSystem();
   arttoporofluidcoupling_->SetupSystem(comb_systemmatrix_, rhs_,
@@ -287,12 +287,30 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::CheckInitialFields(
   return;
 }
 
+/*-------------------------------------------------------------------------*
+ | set element pairs that are close                       kremheller 03/19 |
+ *------------------------------------------------------------------------ */
+void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::SetNearbyElePairs(
+    const std::map<int, std::set<int>>* nearbyelepairs)
+{
+  arttoporofluidcoupling_->SetNearbyElePairs(nearbyelepairs);
+  return;
+}
+
+/*-------------------------------------------------------------------------*
+ | setup the strategy                                     kremheller 03/19 |
+ *------------------------------------------------------------------------ */
+void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::Setup()
+{
+  arttoporofluidcoupling_->Setup();
+  return;
+}
+
 /*----------------------------------------------------------------------*
  | apply mesh movement                                 kremheller 06/18 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::ApplyMeshMovement(
-    Teuchos::RCP<const Epetra_Vector> disp) const
+void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::ApplyMeshMovement() const
 {
-  arttoporofluidcoupling_->ApplyMeshMovement(disp);
+  arttoporofluidcoupling_->ApplyMeshMovement();
   return;
 }

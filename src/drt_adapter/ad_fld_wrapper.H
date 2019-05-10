@@ -5,12 +5,9 @@
 
 \level 1
 
-\maintainer  Martin Kronbichler & Volker Gravemeier
-             {kronbichler,vgravem}@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15235/-245
-
-*----------------------------------------------------------------------*/
+\maintainer  Martin Kronbichler
+*/
+/*---------------------------------------------------------------------*/
 #ifndef ADAPTER_FLUID_WRAPPER_H
 #define ADAPTER_FLUID_WRAPPER_H
 

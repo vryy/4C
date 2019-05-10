@@ -25,6 +25,7 @@
 class Epetra_Vector;
 class Epetra_RowMatrix;
 class Epetra_LinearProblem;
+class Epetra_Map;
 
 namespace Teuchos
 {
@@ -35,6 +36,9 @@ namespace LINALG
   class Solver;
   class SparseOperator;
   class SparseMatrix;
+  class SerialDenseMatrix;
+  class SerialDenseVector;
+  class BlockSparseMatrixBase;
 }  // namespace LINALG
 namespace NOX
 {
@@ -137,6 +141,9 @@ namespace NOX
       bool computeCorrectionSystem(const enum NOX::NLN::CorrectionType type,
           const NOX::Abstract::Group& grp, const NOX::Epetra::Vector& x, NOX::Epetra::Vector& rhs);
 
+      bool applyJacobianBlock(const NOX::Epetra::Vector& input,
+          Teuchos::RCP<NOX::Epetra::Vector>& result, unsigned rbid, unsigned cbid) const;
+
       //! derived
       virtual bool applyJacobian(
           const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) const;
@@ -172,9 +179,32 @@ namespace NOX
       //! NOX::Epetra::Interface::Preconditioner accessor
       Teuchos::RCP<const NOX::Epetra::Interface::Preconditioner> getPrecInterface() const;
 
+      /** \brief return the Jacobian range map
+       *
+       *  \param rbid  row block id
+       *  \param cbid  column block id */
+      const Epetra_Map& getJacobianRangeMap(unsigned rbid, unsigned cbid) const;
+
+      /** \brief access the Jacobian block
+       *
+       *  \param rbid  row block id
+       *  \param cbid  column block id */
+      const LINALG::SparseMatrix& getJacobianBlock(unsigned rbid, unsigned cbid) const;
+
+      /** \brief get a copy of the block diagonal
+       *
+       *  \param diag_bid  diagonal block id */
+      Teuchos::RCP<Epetra_Vector> getDiagonalOfJacobian(unsigned diag_bid) const;
+
+      /** \brief replace the diagonal of the diagonal block in the Jacobian
+       *
+       *  \param diag_bid  diagonal block id */
+      void replaceDiagonalOfJacobian(const Epetra_Vector& new_diag, unsigned diag_bid);
+
       //! Returns Jacobian Epetra_Operator pointer
       Teuchos::RCP<const Epetra_Operator> getJacobianOperator() const;
 
+      /// return jacobian operator
       Teuchos::RCP<Epetra_Operator> getJacobianOperator();
 
       //! Returns the operator type of the jacobian
@@ -224,7 +254,28 @@ namespace NOX
       //! destroy the jacobian ptr
       bool DestroyJacobian();
 
+      //! compute the eigenvalues of the jacobian operator in serial mode
+      /**
+       *  \pre Not supported in parallel. The Jacobian matrix should be not too
+       *  large since the sparse matrix is transformed to a full matrix.
+       *
+       *  \note The computation can become quite expensive even for rather
+       *  small matrices. The underlying LAPACK routine computes all
+       *  eigenvalues of your system matrix. Therefore, if you are only interested
+       *  in an estimate for condition number think about the GMRES variant.
+       *  Nevertheless, the here computed eigenvalues are the exact ones.
+       *
+       *  \return the computed condition number.
+       *  \author hiermeier \date 04/18 */
+      void computeSerialEigenvaluesOfJacobian(
+          LINALG::SerialDenseVector& reigenvalues, LINALG::SerialDenseVector& ieigenvalues) const;
+
+      /// compute the respective condition number (only possible in serial mode)
+      double computeSerialConditionNumberOfJacobian(
+          const LinSystem::ConditionNumber condnum_type) const;
+
      protected:
+      /// access the jacobian
       inline LINALG::SparseOperator& Jacobian() const
       {
         if (jacPtr_.is_null()) throwError("JacPtr", "JacPtr is NULL!");
@@ -232,6 +283,7 @@ namespace NOX
         return *jacPtr_;
       }
 
+      /// access the jacobian (read-only)
       inline const Teuchos::RCP<LINALG::SparseOperator>& JacobianPtr() const
       {
         if (jacPtr_.is_null()) throwError("JacPtr", "JacPtr is NULL!");
@@ -266,6 +318,33 @@ namespace NOX
        *  \author hiermeier \date 04/17 */
       virtual void CompleteSolutionAfterSolve(
           const Epetra_LinearProblem& linProblem, Epetra_Vector& lhs) const;
+
+      /// convert jacobian matrix to dense matrix
+      void convertJacobianToDenseMatrix(LINALG::SerialDenseMatrix& dense) const;
+
+      /// convert sparse matrix to dense matrix
+      void convertSparseToDenseMatrix(const LINALG::SparseMatrix& sparse,
+          LINALG::SerialDenseMatrix& dense, const Epetra_Map& full_rangemap,
+          const Epetra_Map& full_domainmap) const;
+
+      /// prepare the dense matrix in case of a block sparse matrix
+      void prepareBlockDenseMatrix(const LINALG::BlockSparseMatrixBase& block_sparse,
+          LINALG::SerialDenseMatrix& block_dense) const;
+
+      /// throw an error if there is a row containing only zeros
+      void throwIfZeroRow(const LINALG::SerialDenseMatrix& block_dense) const;
+
+      /// solve the non-symmetric eigenvalue problem
+      void solveNonSymmEigenValueProblem(LINALG::SerialDenseMatrix& mat,
+          LINALG::SerialDenseVector& reigenvalues, LINALG::SerialDenseVector& ieigenvalues) const;
+
+      /// call GEEV from LAPACK
+      void callGEEV(LINALG::SerialDenseMatrix& mat, LINALG::SerialDenseVector& reigenvalues,
+          LINALG::SerialDenseVector& ieigenvalues) const;
+
+      /// call GGEV from LAPACK
+      void callGGEV(LINALG::SerialDenseMatrix& mat, LINALG::SerialDenseVector& reigenvalues,
+          LINALG::SerialDenseVector& ieigenvalues) const;
 
      private:
       //! throws an error

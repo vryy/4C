@@ -84,8 +84,11 @@ namespace POROMULTIPHASESCATRA
     /// init the strategy
     void Init();
 
+    /// setup the strategy
+    void Setup();
+
     /// apply mesh movement (on artery elements)
-    void ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> disp);
+    void ApplyMeshMovement();
 
     //! print out the coupling method
     void PrintOutCouplingMethod() const;

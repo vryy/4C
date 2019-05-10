@@ -23,8 +23,6 @@
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 08/2018 |
  *---------------------------------------------------------------------------*/
-#include "particle_interaction_typedefs.H"
-
 #include "../drt_particle_engine/particle_enums.H"
 #include "../drt_particle_engine/particle_typedefs.H"
 
@@ -44,7 +42,7 @@ namespace PARTICLEENGINE
 
 namespace PARTICLEINTERACTION
 {
-  class SPHMaterialHandler;
+  class MaterialHandler;
   class SPHEquationOfStateBundle;
 }  // namespace PARTICLEINTERACTION
 
@@ -68,7 +66,7 @@ namespace PARTICLEINTERACTION
     //! setup pressure handler
     virtual void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHMaterialHandler> particlematerial,
+        const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
         const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle);
 
     //! write restart of pressure handler
@@ -81,9 +79,6 @@ namespace PARTICLEINTERACTION
     virtual void ComputePressure() const;
 
    protected:
-    //! refresh pressure of ghosted particles
-    virtual void RefreshPressure() const;
-
     //! interface to particle engine
     std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface_;
 
@@ -91,10 +86,13 @@ namespace PARTICLEINTERACTION
     PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle_;
 
     //! particle material handler
-    std::shared_ptr<PARTICLEINTERACTION::SPHMaterialHandler> particlematerial_;
+    std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial_;
 
     //! equation of state bundle
     std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle_;
+
+    //! pressure of ghosted particles to refresh
+    PARTICLEENGINE::StatesOfTypesToRefresh pressuretorefresh_;
   };
 
 }  // namespace PARTICLEINTERACTION

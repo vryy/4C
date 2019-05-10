@@ -18,7 +18,6 @@
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// Input parameters for structural CONTACT and meshtying
   namespace CONTACT
   {
     /// Type of contact friction law
@@ -41,19 +40,22 @@ namespace INPAR
 
     /// Type of employed solving strategy
     /// (this enum represents the input file parameter STRATEGY)
-    enum SolvingStrategy
+    enum SolvingStrategy : int
     {
-      solution_vague,            ///< no solving strategy defined
-      solution_lagmult,          ///< method of Lagrange multipliers
-      solution_penalty,          ///< penalty approach
-      solution_uzawa,            ///< Uzawa augmented Lagrange approach
-      solution_combo,            ///< combination of multiple augmented solving strategies
-      solution_augmented,        ///< augmented Lagrange approach
-      solution_steepest_ascent,  ///< steepest ascent approach (based on the augmented formulation)
-      solution_std_lagrange,     ///< lagrange strategy (based on the augmented formulation)
-      solution_xcontact,         ///< eXtended contact approach
-      solution_nitsche,          ///< Nitsche contact solution method
-      solution_ehl               ///< method for elasto-hydrodynamic lubrication
+      solution_vague,              ///< no solving strategy defined
+      solution_lagmult,            ///< method of Lagrange multipliers
+      solution_penalty,            ///< penalty approach
+      solution_uzawa,              ///< Uzawa augmented Lagrange approach
+      solution_combo,              ///< combination of multiple augmented solving strategies
+      solution_augmented,          ///< augmented Lagrange approach
+      solution_steepest_ascent,    /**< condensed steepest ascent approach (based on the augmented
+                                    *   formulation) */
+      solution_steepest_ascent_sp, /**< steepest ascent approach as saddlepoint formulation
+                                    *   (based on the augmented formulation) */
+      solution_std_lagrange,       ///< lagrange strategy (based on the augmented formulation)
+      solution_xcontact,           ///< eXtended contact approach
+      solution_nitsche,            ///< Nitsche contact solution method
+      solution_ehl                 ///< method for elasto-hydrodynamic lubrication
     };
 
     inline std::string SolvingStrategy2String(enum SolvingStrategy stype)
@@ -74,6 +76,8 @@ namespace INPAR
           return "solution_augmented";
         case solution_steepest_ascent:
           return "solution_steepest_ascent";
+        case solution_steepest_ascent_sp:
+          return "solution_steepest_ascent_sp";
         case solution_std_lagrange:
           return "solution_std_lagrange";
         case solution_xcontact:
@@ -94,7 +98,7 @@ namespace INPAR
 
     /// Type of linear system setup and solution
     /// (this enum represents the input file parameter SYSTEM)
-    enum SystemType
+    enum SystemType : int
     {
       system_none,               ///< no system defined
       system_condensed,          ///< condensed system
@@ -192,7 +196,7 @@ namespace INPAR
     /// Variational approach for the augmented Lagrangian framework
     enum VariationalApproach : int
     {
-      var_unknown,
+      var_unknown,    ///< unspecified
       var_complete,   ///< complete variation
       var_incomplete  ///< incomplete variation
     };
@@ -215,17 +219,15 @@ namespace INPAR
 
     enum class FDCheck : char
     {
-      off,
-      global,
-      gauss_point
+      off,         ///< switch off
+      global,      ///< global finite difference check
+      gauss_point  ///< finite difference check based on GP/nodal values
     };
 
     /// Penalty update types
     enum class PenaltyUpdate : char
     {
       vague,                     ///< no update strategy defined (default)
-      lm_gap_ratio,              ///< use the ratio between Lagrange multiplier and weighted gap
-      complementarity,           ///< enforce the complementarity condition
       sufficient_lin_reduction,  ///< enforce sufficient reduction of the linear infeasibility model
       sufficient_angle,          ///< enforce sufficient angle
       none                       ///< perform no penalty parameter update
@@ -238,10 +240,6 @@ namespace INPAR
       {
         case PenaltyUpdate::vague:
           return "PenaltyUpdate::vague";
-        case PenaltyUpdate::lm_gap_ratio:
-          return "PenaltyUpdate::lm_gap_ratio";
-        case PenaltyUpdate::complementarity:
-          return "PenaltyUpdate::complementarity";
         case PenaltyUpdate::sufficient_lin_reduction:
           return "PenaltyUpdate::sufficient_lin_reduction";
         case PenaltyUpdate::sufficient_angle:
@@ -255,19 +253,19 @@ namespace INPAR
 
     enum class PlotMode : int
     {
-      off,
-      write_single_iteration_of_step,
-      write_each_iteration_of_step,
-      write_last_iteration_of_step
+      off,                             ///< switch everything off
+      write_single_iteration_of_step,  ///< plot only for one iterate
+      write_each_iteration_of_step,    ///< plot for each iterate of one step
+      write_last_iteration_of_step     ///< plot for last iterate of step
     };
 
     enum class PlotType : int
     {
-      vague = -2,
-      scalar = -1,
-      line = 0,
-      surface = 1,
-      vector_field_2d = 2
+      vague = -2,          ///< unspecified
+      scalar = -1,         ///< scalar-valued
+      line = 0,            ///< line plot
+      surface = 1,         ///< surface plot
+      vector_field_2d = 2  ///< 2-dimensional vector arrow plot
     };
 
     inline std::string PlotType2String(const enum PlotType ptype)
@@ -291,17 +289,20 @@ namespace INPAR
 
     enum class PlotFuncName : char
     {
-      vague,
-      lagrangian,
-      infeasibility,
-      energy,
-      energy_gradient,
-      weighted_gap,
-      weighted_gap_gradient,
-      weighted_gap_mod_gradient,
-      weighted_gap_gradient_error,
-      weighted_gap_gradient_nodal_jacobian_error,
-      weighted_gap_gradient_nodal_ma_proj_error
+      vague,                        ///< unspecified
+      lagrangian,                   ///< plot Lagrangian values
+      infeasibility,                ///< plot infeasibility function values
+      energy,                       ///< plot the values of the energy contributions
+      energy_gradient,              ///< plot the energy gradient
+      weighted_gap,                 ///< plot the weighted gap
+      weighted_gap_gradient,        ///< plot the (true) weighted gap gradient
+      weighted_gap_mod_gradient,    ///< plot the (possibly) modified weighted gap gradient
+      weighted_gap_gradient_error,  ///< plot the total error of the mod gap gradient
+      weighted_gap_gradient_nodal_jacobian_error, /**< plot the mod gap gradient error wrt the
+                                                   *   missing jacobian contributions */
+      weighted_gap_gradient_nodal_ma_proj_error   /**< plot the mod gap gradient error wrt the
+                                                   *   missing master parametric coordinate
+                                                   *   projection contributions */
     };
 
     inline std::string PlotFuncName2String(const enum PlotFuncName pfunc)
@@ -337,25 +338,28 @@ namespace INPAR
 
     enum class PlotReferenceType : char
     {
-      vague,
-      current_solution,
-      previous_solution
+      vague,             ///< not specified
+      current_solution,  ///< use the current solution as reference
+      previous_solution  ///< use the previous solution as reference
     };
 
+    /// different options for the x-axis type
     enum class PlotSupportType : char
     {
       vague,
       step_length,
       characteristic_element_length,
-      position_angle
+      position_angle,
+      position_distance
     };
 
+    /// plot direction types
     enum class PlotDirection : char
     {
-      vague,
-      current_search_direction,
-      read_from_file,
-      zero
+      vague,                     ///< not specified
+      current_search_direction,  ///< use the current search direction
+      read_from_file,            ///< read search direction from file
+      zero                       ///< set the search direction to zero
     };
 
     /// direction split for the surface PlotType
@@ -366,13 +370,15 @@ namespace INPAR
       slave_master_displacements         ///< split into slave/master displ.
     };
 
+    /// supported file formats
     enum class PlotFileFormat : char
     {
-      vague,
-      matlab,
-      pgfplot
+      vague,   ///< file format is unspecified
+      matlab,  ///< file in matlab style
+      pgfplot  ///< file in tikz/pgfplot style
     };
 
+    /// convert to string
     inline std::string PlotFileFormat2String(const enum PlotFileFormat pformat)
     {
       switch (pformat)

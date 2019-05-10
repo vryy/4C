@@ -4,12 +4,7 @@
 
 \brief Internal implementation of fluid internal faces elements
 
-<pre>
-\maintainer  Ager Christoph
-             ager@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15249
-</pre>
+\maintainer  Christoph Ager
 
 \level 2
 
@@ -23,11 +18,11 @@
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_inpar/inpar_xfem.H"
 
+// forward declarations
 namespace LINALG
 {
   class SparseMatrix;
 }
-
 
 namespace DRT
 {

@@ -6,10 +6,7 @@
 \level 2
 
 <pre>
-\maintainer Marc Hirschvogel
-            hirschvogel@mhpc.mw.tum.de
-            http://www.mhpc.mw.tum.de
-            089 - 289-10363
+\maintainer Amadeus Gebauer
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -33,12 +30,12 @@ namespace DRT
   class Condition;
   class Discretization;
 }  // namespace DRT
+
 namespace LINALG
 {
   class SparseMatrix;
   class SparseOperator;
 }  // namespace LINALG
-
 
 namespace UTILS
 {

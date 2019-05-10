@@ -71,8 +71,6 @@ MINITER                         0
 ITERNORM                        L2
 DIVERCONT                       stop
 NLNSOL                          fullnewton
-CONTROLTYPE                     load
-CONTROLNODE                     -1 -1 -1
 LOADLIN                         no
 MASSLIN                         no
 PREDICT                         ConstDis
@@ -107,8 +105,6 @@ CONTACTFORCE_ENDTIME            No
 VELOCITY_UPDATE                 No
 EMOUTPUT                        None
 ERROR_NORMS                     None
-INITCONTACTBYGAP                No
-INITCONTACTGAPVALUE             0
 NORMCOMBI_RESFCONTCONSTR        And
 NORMCOMBI_DISPLAGR              And
 TOLCONTCONSTR                   1e-06

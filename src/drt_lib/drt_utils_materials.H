@@ -23,7 +23,6 @@
 
 namespace DRT
 {
-  /// collection of useful and important but less central stuff
   namespace UTILS
   {
     /*! brief Update material configuration with displacements stored in dofrowmap format

@@ -29,6 +29,8 @@ namespace CONTACT
     /*!
     \brief Constructor
 
+    \param discret (in): A discretization containing contact boundary conditions
+    \param alphaf (in): Generalized-alpha parameter (set to 0.0 by default)
     */
     SmoothingManager(DRT::Discretization& discret, double alphaf = 0.0);
 
@@ -36,7 +38,7 @@ namespace CONTACT
     \brief Destructor
 
     */
-    virtual ~SmoothingManager(){};
+    virtual ~SmoothingManager() = default;
 
     //! @name Access methods
 
@@ -44,7 +46,7 @@ namespace CONTACT
     \brief Get discretization
 
     */
-    DRT::Discretization& Discret() const { return discret_; };
+    const DRT::Discretization& Discret() const { return discret_; };
 
     //@}
 
@@ -60,7 +62,10 @@ namespace CONTACT
     \param output (in): IO::Discretization writer for restart
 
     */
-    void WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart = false) { return; };
+    void WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart = false) final
+    {
+      return;
+    };
 
     /*!
     \brief Read restart information for contact
@@ -77,7 +82,7 @@ namespace CONTACT
 
     */
     void ReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<Epetra_Vector> zero)
+        Teuchos::RCP<Epetra_Vector> zero) final
     {
       return;
     };
@@ -88,7 +93,7 @@ namespace CONTACT
     \param output (in): IO::Discretization writer for restart
 
     */
-    void PostprocessQuantities(IO::DiscretizationWriter& output);
+    void PostprocessQuantities(IO::DiscretizationWriter& output) final;
     //@}
 
 
@@ -105,10 +110,11 @@ namespace CONTACT
     bool ReadAndCheckInput(Teuchos::ParameterList& cparams);
 
     // don't want = operator and cctor
-    SmoothingManager operator=(const SmoothingManager& old);
-    SmoothingManager(const SmoothingManager& old);
+    SmoothingManager operator=(const SmoothingManager& old) = delete;
+    SmoothingManager(const SmoothingManager& old) = delete;
 
-    DRT::Discretization& discret_;  // the underlying problem discretization
+    //! Underlying problem discretization
+    DRT::Discretization& discret_;
 
   };  // class SmoothingManager
 }  // namespace CONTACT

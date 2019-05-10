@@ -27,17 +27,11 @@
 
 #include "../drt_lib/drt_dserror.H"
 
+// Attention: In the case a LINALG::Matrix or LINALG::TMatrix is created with float_type ClnWrapper,
+// include the header "/drt_cut/cut_clnwrapper.H" before this header is processed.
+
 namespace LINALG
 {
-  /// Compile time error check for fixed size serial dense classes
-  /*!
-
-    This namespace contains the compile time error checker used by
-    Matrix and FixedSizeSerialDenseSolver.
-
-    \author Martin Kuettler
-    \date 09/08
-   */
   namespace DENSEERROR
   {
     /// Compile time error definitions
@@ -78,22 +72,6 @@ namespace LINALG
 
   }  // namespace DENSEERROR
 
-  /// Internal templated serial dense functions
-  /*!
-    This namespace contains inlined templated functions for various
-    matrix operations. They need the matrix sizes as template
-    arguments and take the matrices as Epetra_SerialDenseMatrix, or as
-    value_type*. Normally there is no need for calling them directly,
-    because Matrix provides a more convenient
-    interface.
-
-    All value_type* arguments are considered to be pointers to a matrix stored
-    in column-major mode, just like the function A() of Epetra- or
-    fixed size serial dense matrices return them.
-
-    \author Martin Kuettler
-    \date 09/08
-   */
   namespace DENSEFUNCTIONS
   {
     /*
@@ -2044,7 +2022,7 @@ namespace LINALG
       if (out == in) dserror("'out' and 'in' point to same memory location");
 #endif
       const value_type det = in[0];
-      if (det > -1e-30 and det < 1e-30) dserror("Determinant of 1x1 matrix is zero");
+      if (det == 0.0) dserror("Determinant of 1x1 matrix is zero");
       out[0] = 1.0 / in[0];
       return det;
     }
@@ -2056,7 +2034,7 @@ namespace LINALG
       if (out == in) dserror("'out' and 'in' point to same memory location");
 #endif
       const value_type det = in[0] * in[1 + 1 * 2] - in[1] * in[1 * 2];
-      if (det > -1e-30 and det < 1e-30) dserror("Determinant of 2x2 matrix is zero");
+      if (det == 0.0) dserror("Determinant of 2x2 matrix is zero");
       const value_type invdet = 1.0 / det;
       out[0] = invdet * in[1 + 1 * 2];
       out[1] = -invdet * in[1];
@@ -2082,7 +2060,7 @@ namespace LINALG
       //                   in[0+3*2]*in[1+3*1]*in[2+3*0] -
       //                   in[0+3*0]*in[1+3*2]*in[2+3*1] -
       //                   in[0+3*1]*in[1+3*0]*in[2+3*2];
-      if (det > -1e-30 and det < 1e-30) dserror("Determinant of 3x3 matrix is zero");
+      if (det == 0.0) dserror("Determinant of 3x3 matrix is zero");
       const value_type invdet = 1.0 / det;
       out[0] *= invdet;
       out[1] *= invdet;
@@ -2124,7 +2102,7 @@ namespace LINALG
     inline value_type invert1x1(value_type* mat)
     {
       const value_type det = mat[0];
-      if (det > -1e-30 and det < 1e-30) dserror("Determinant of 1x1 matrix is zero");
+      if (det == 0.0) dserror("Determinant of 1x1 matrix is zero");
       mat[0] = 1.0 / mat[0];
       return det;
     }
@@ -2134,7 +2112,7 @@ namespace LINALG
     {
       value_type tmp;
       const value_type det = mat[0] * mat[1 + 1 * 2] - mat[1] * mat[1 * 2];
-      if (det > -1e-30 and det < 1e-30) dserror("Determinant of 2x2 matrix is zero");
+      if (det == 0.0) dserror("Determinant of 2x2 matrix is zero");
       const value_type invdet = 1.0 / det;
       tmp = mat[0];
       mat[0] = invdet * mat[1 + 1 * 2];
@@ -2158,7 +2136,7 @@ namespace LINALG
       //                    mat[0+3*2]*mat[1+3*1]*mat[2+3*0] -
       //                    mat[0+3*0]*mat[1+3*2]*mat[2+3*1] -
       //                    mat[0+3*1]*mat[1+3*0]*mat[2+3*2];
-      if (det > -1e-30 and det < 1e-30) dserror("Determinant of 3x3 matrix is zero");
+      if (det == 0.0) dserror("Determinant of 3x3 matrix is zero");
       const value_type invdet = 1.0 / det;
       const value_type tmp01 = mat[1 * 3];
       const value_type tmp11 = mat[1 + 1 * 3];
@@ -2196,6 +2174,40 @@ namespace LINALG
       }
     }
 
+    template <class value_type>
+    inline value_type determinant_large_matrix(
+        unsigned int i, unsigned int j, const value_type* mat)
+    {
+      dserror("determinant_large_matrix not implemented for this value_type!");
+      return 0.0;
+    }
+
+    // specialization for double as lapack routine is used
+    template <>
+    inline double determinant_large_matrix<double>(
+        unsigned int i, unsigned int j, const double* mat)
+    {
+      // taken from src/drt_lib/linalg_utils.cpp: LINALG::DeterminantLU,
+      // only with minor changes.
+      std::vector<double> tmp(i * j);
+      std::copy(mat, mat + i * j, &tmp[0]);
+      Epetra_LAPACK lapack;
+      std::vector<int> ipiv(j);
+      int info;
+      lapack.GETRF(i, j, &tmp[0], i, &ipiv[0], &info);
+      if (info < 0)
+        dserror("Lapack's dgetrf returned %d", info);
+      else if (info > 0)
+        return 0.0;
+      double d = tmp[0];
+      for (unsigned int c = 1; c < j; ++c) d *= tmp[c + i * c];
+      // swapping rows of A changes the sign of the determinant, so we have to
+      // undo lapack's permutation w.r.t. the determinant
+      // note the fortran indexing convention in ipiv
+      for (unsigned int c = 0; c < j; ++c)
+        if (static_cast<unsigned>(ipiv[c]) != c + 1) d *= -1.0;
+      return d;
+    }
 
     template <class value_type, unsigned int i, unsigned int j>
     inline value_type determinant(const value_type* mat)
@@ -2212,37 +2224,11 @@ namespace LINALG
           return mat[0] * (mat[1 + 1 * 3] * mat[2 + 2 * 3] - mat[2 + 1 * 3] * mat[1 + 2 * 3]) +
                  mat[1 * 3] * (mat[2] * mat[1 + 2 * 3] - mat[1] * mat[2 + 2 * 3]) +
                  mat[2 * 3] * (mat[1] * mat[2 + 1 * 3] - mat[2] * mat[1 + 1 * 3]);
-          // return mat[0]*mat[1+3*1]*mat[2+3*2] +
-          //  mat[0+3*1]*mat[1+3*2]*mat[2+3*0] +
-          //  mat[0+3*2]*mat[1+3*0]*mat[2+3*1] -
-          //  mat[0+3*2]*mat[1+3*1]*mat[2+3*0] -
-          //  mat[0+3*0]*mat[1+3*2]*mat[2+3*1] -
-          //  mat[0+3*1]*mat[1+3*0]*mat[2+3*2];
         default:
-        {
-          // taken from src/drt_lib/linalg_utils.cpp: LINALG::DeterminantLU,
-          // only with minor changes.
-          std::vector<value_type> tmp(i * j);
-          update<value_type, i, j>(&tmp[0], mat);
-          Epetra_LAPACK lapack;
-          std::vector<int> ipiv(j);
-          int info;
-          lapack.GETRF(i, j, &tmp[0], i, &ipiv[0], &info);
-          if (info < 0)
-            dserror("Lapack's dgetrf returned %d", info);
-          else if (info > 0)
-            return 0.0;
-          value_type d = tmp[0];
-          for (unsigned int c = 1; c < j; ++c) d *= tmp[c + i * c];
-          // swapping rows of A changes the sign of the determinant, so we have to
-          // undo lapack's permutation w.r.t. the determinant
-          // note the fortran indexing convention in ipiv
-          for (unsigned int c = 0; c < j; ++c)
-            if (static_cast<unsigned>(ipiv[c]) != c + 1) d *= -1.0;
-          return d;
-        }
+          return determinant_large_matrix<value_type>(i, j, mat);
       }
     }
+
 
     /* add matrices */
 
@@ -2545,7 +2531,7 @@ namespace LINALG
     {
       // the memset method is needed for arbitrary precision (cln) data types instead of the fill
       // method std::memset(mat,0,i*j*sizeof(value_type));
-      std::fill(mat, mat + i * j, 0);
+      std::fill(mat, mat + i * j, 0.0);
     }
 
 
@@ -2617,13 +2603,13 @@ namespace LINALG
     template <class value_type, unsigned int i, unsigned int j>
     inline value_type normInf(const value_type* mat)
     {
-      value_type result = *mat > 0 ? *mat : -*mat;
+      value_type result = std::abs(*mat);
       value_type tmp;
       for (unsigned int c = 1; c < i * j; ++c)
       {
         ++mat;
-        tmp = *mat >= 0 ? *mat : -*mat;
-        if (tmp > result) result = tmp;
+        tmp = std::abs(*mat);
+        result = std::max(result, tmp);
       }
       return result;
     }
@@ -4268,7 +4254,7 @@ namespace LINALG
     if (isview_)
     {
       isreadonly_ = true;
-      data_ = const_cast<double*>(d);
+      data_ = const_cast<value_type*>(d);
     }
     else
     {
@@ -4340,7 +4326,7 @@ namespace LINALG
     if (isview_)
     {
       isreadonly_ = true;
-      data_ = const_cast<double*>(source.A());
+      data_ = const_cast<value_type*>(source.A());
     }
     else
     {
@@ -4559,42 +4545,50 @@ namespace LINALG
 
 
   /// Serial dense matrix with double numbers and templated dimensions
-  template <unsigned int rows, unsigned int cols>
-  class Matrix : public TMatrix<double, rows, cols>
+  template <unsigned int rows, unsigned int cols, typename value_type = double>
+  class Matrix : public TMatrix<value_type, rows, cols>
   {
    public:
     /// Constructor
-    explicit Matrix(bool setzero = true) : TMatrix<double, rows, cols>(setzero) {}
+    explicit Matrix(bool setzero = true) : TMatrix<value_type, rows, cols>(setzero) {}
 
     /// Constructor
-    explicit Matrix(double* d, bool view = false) : TMatrix<double, rows, cols>(d, view) {}
+    explicit Matrix(value_type* d, bool view = false) : TMatrix<value_type, rows, cols>(d, view) {}
 
     /// Constructor
-    explicit Matrix(const double* d, bool view = false) : TMatrix<double, rows, cols>(d, view) {}
+    explicit Matrix(const value_type* d, bool view = false)
+        : TMatrix<value_type, rows, cols>(d, view)
+    {
+    }
 
     /// Constructor
     explicit Matrix(Epetra_SerialDenseMatrix& d, bool view = false)
-        : TMatrix<double, rows, cols>(d, view)
+        : TMatrix<value_type, rows, cols>(d, view)
     {
     }
 
     /// Constructor
-    Matrix(Matrix<rows, cols>& source, bool view) : TMatrix<double, rows, cols>(source, view) {}
+    Matrix(Matrix<rows, cols, value_type>& source, bool view)
+        : TMatrix<value_type, rows, cols>(source, view)
+    {
+    }
 
     /// Copy constructor
-    Matrix(const Matrix<rows, cols>& source) : TMatrix<double, rows, cols>(source) {}
+    Matrix(const Matrix<rows, cols, value_type>& source) : TMatrix<value_type, rows, cols>(source)
+    {
+    }
 
     /// = operator
-    inline Matrix<rows, cols>& operator=(const Matrix<rows, cols>& other)
+    inline Matrix<rows, cols, value_type>& operator=(const Matrix<rows, cols, value_type>& other)
     {
-      TMatrix<double, rows, cols>::operator=(other);
+      TMatrix<value_type, rows, cols>::operator=(other);
       return *this;
     }
 
-    /// = operator for double
-    inline Matrix<rows, cols>& operator=(const double other)
+    /// = operator
+    inline Matrix<rows, cols, value_type>& operator=(const value_type other)
     {
-      TMatrix<double, rows, cols>::operator=(other);
+      TMatrix<value_type, rows, cols>::operator=(other);
       return *this;
     }
   };

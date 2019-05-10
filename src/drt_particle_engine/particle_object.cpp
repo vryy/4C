@@ -38,21 +38,23 @@ DRT::ParObject* PARTICLEENGINE::ParticleObjectType::Create(const std::vector<cha
  | constructor                                                sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
 PARTICLEENGINE::ParticleObject::ParticleObject()
-    : particletype_(PARTICLEENGINE::Phase1), bingid_(-1), containerindex_(-1)
+    : particletype_(PARTICLEENGINE::Phase1), particleglobalid_(0), bingid_(-1), containerindex_(-1)
 {
   // empty constructor
 }
 
 /*---------------------------------------------------------------------------*
- | init particle object                                       sfuchs 03/2018 |
+ | standard constructor                                       sfuchs 02/2019 |
  *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleObject::Init(TypeEnum particletype,
-    const std::map<StateEnum, std::vector<double>>& particlestates, int bingid, int containerindex)
+PARTICLEENGINE::ParticleObject::ParticleObject(TypeEnum particletype, int particleglobalid,
+    const ParticleStates& particlestates, int bingid, int containerindex)
+    : particletype_(particletype),
+      particleglobalid_(particleglobalid),
+      particlestates_(particlestates),
+      bingid_(bingid),
+      containerindex_(containerindex)
 {
-  particletype_ = particletype;
-  particlestates_ = particlestates;
-  bingid_ = bingid;
-  containerindex_ = containerindex;
+  // empty constructor
 }
 
 /*---------------------------------------------------------------------------*
@@ -70,8 +72,13 @@ void PARTICLEENGINE::ParticleObject::Pack(DRT::PackBuffer& data) const
   // particletype_
   AddtoPack(data, particletype_);
 
-  // particle_
-  AddtoPack(data, particlestates_);
+  // particleglobalid_
+  AddtoPack(data, particleglobalid_);
+
+  // particle states
+  int numstates = particlestates_.size();
+  AddtoPack(data, numstates);
+  for (int i = 0; i < numstates; ++i) AddtoPack(data, particlestates_[i]);
 
   // bingid_
   AddtoPack(data, bingid_);
@@ -95,8 +102,14 @@ void PARTICLEENGINE::ParticleObject::Unpack(const std::vector<char>& data)
   // particletype_
   ExtractfromPack(position, data, particletype_);
 
-  // particle_
-  ExtractfromPack(position, data, particlestates_);
+  // particleglobalid_
+  ExtractfromPack(position, data, particleglobalid_);
+
+  // particle states
+  int numstates = 0;
+  ExtractfromPack(position, data, numstates);
+  particlestates_.resize(numstates);
+  for (int i = 0; i < numstates; ++i) ExtractfromPack(position, data, particlestates_[i]);
 
   // bingid_
   ExtractfromPack(position, data, bingid_);

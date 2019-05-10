@@ -5,14 +5,11 @@
 \brief Structural adapter for FSI problems containing the interface
        and methods dependent on the interface
 
-\maintainer Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
+\maintainer Matthias Mayr
 
 \level 1
 */
-
+/*----------------------------------------------------------------------*/
 #ifndef FSI_STRUCTURE_WRAPPER_H
 #define FSI_STRUCTURE_WRAPPER_H
 

@@ -68,7 +68,6 @@ typedef enum _FSI_COUPLING
 
 namespace INPAR
 {
-  /// Input parameters for FSI
   namespace FSI
   {
     /// Type of partitioned coupling for FSI problems
@@ -161,6 +160,13 @@ namespace INPAR
       Redistribute_fluid,      ///< redistribute fluid field only
       Redistribute_both,       ///< redistribute both structure and fluid field
       Redistribute_monolithic  ///< redistribute monolithic graph (fluid + structure)
+    };
+
+    /// Coupling variable for Dirichlet-Neumann algorithms
+    enum CoupVarPart
+    {
+      disp, /*!< displacement coupling*/
+      force /*!< force coupling*/
     };
 
     //@}

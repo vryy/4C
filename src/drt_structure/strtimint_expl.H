@@ -379,7 +379,7 @@ namespace STR
     /// Do the nonlinear solve, i.e. (multiple) corrector,
     /// for the time step. All boundary conditions have
     /// been set.
-    virtual INPAR::STR::ConvergenceStatus Solve()
+    virtual INPAR::STR::ConvergenceStatus Solve() final
     {
       IntegrateStep();
       return INPAR::STR::conv_success;

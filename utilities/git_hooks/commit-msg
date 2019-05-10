@@ -142,9 +142,6 @@ validate_commit_message() {
   COMMIT_MSG_STR="${COMMIT_MSG_LINES[*]}"
   test -z "${COMMIT_MSG_STR[*]// }" && return;
 
-  # if the commit subject starts with 'fixup! ' there's nothing to validate, we can return here
-  [[ $COMMIT_SUBJECT == 'fixup! '* ]] && return;
-
   # 1. Separate subject from body with a blank line
   # ------------------------------------------------------------------------------
 
@@ -160,7 +157,8 @@ validate_commit_message() {
   # 3. Capitalize the subject line
   # ------------------------------------------------------------------------------
 
-  [[ ${COMMIT_SUBJECT} =~ ^[[:blank:]]*([[:upper:]]{1}[[:lower:]]*|[[:digit:]]+)([[:blank:]]|[[:punct:]]|$) ]]
+  #[[ ${COMMIT_SUBJECT} =~ ^[[:blank:]]*([[:upper:]]{3}[[:lower:]]*|[[:digit:]]+)([[:blank:]]|[[:punct:]]|$) ]]
+  [[ ${COMMIT_SUBJECT} =~ ^[[:blank:]]*([[:upper:]]) ]]
   test $? -eq 0 || add_warning 1 "Capitalize the subject line"
 
   # 4. Do not end the subject line with a period

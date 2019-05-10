@@ -2,9 +2,9 @@
 /*!
 \file str_nln_solver_fullnewton.H
 
-\maintainer Michael Hiermeier
+\brief NOX's Newton with full step
 
-\date Oct 7, 2015
+\maintainer Michael Hiermeier
 
 \level 3
 
@@ -28,6 +28,9 @@ namespace STR
   {
     namespace SOLVER
     {
+      /*! \brief Newton's method with full step via NOX for structural dynamics
+       *
+       */
       class FullNewton : public Nox
       {
        public:
@@ -37,7 +40,7 @@ namespace STR
         //! destructor
         virtual ~FullNewton(){};
 
-        // derived from the base class
+        //! derived from the base class
         virtual void Setup();
 
        private:

@@ -1,0 +1,61 @@
+/*---------------------------------------------------------------------------*/
+/*!
+\file particle_interaction_dem_history_pair_struct.H
+
+\brief history pair struct for discrete element method (DEM) interactions
+
+\level 3
+
+\maintainer  Sebastian Fuchs
+             fuchs@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289 -15262
+
+*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*
+ | definitions                                                sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
+#ifndef PARTICLE_INTERACTION_DEM_HISTORY_PAIR_STRUCT_H
+#define PARTICLE_INTERACTION_DEM_HISTORY_PAIR_STRUCT_H
+
+/*---------------------------------------------------------------------------*
+ | headers                                                    sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
+#include "../drt_lib/drt_parobject.H"
+
+/*---------------------------------------------------------------------------*
+ | class definitions                                          sfuchs 03/2019 |
+ *---------------------------------------------------------------------------*/
+namespace PARTICLEINTERACTION
+{
+  //! struct to store tangential contact history of interacting particles
+  struct DEMHistoryPairTangential
+  {
+    //! tangential stick flag
+    bool stick_ = false;
+
+    //! tangential gap
+    double gap_t_[3] = {0.0};
+
+    //! pack history pair data
+    void Pack(DRT::PackBuffer& data) const
+    {
+      data.AddtoPack(stick_);
+
+      for (int i = 0; i < 3; ++i) data.AddtoPack(gap_t_[i]);
+    }
+
+    //! unpack history pair data
+    void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data)
+    {
+      DRT::ParObject::ExtractfromPack(position, data, stick_);
+
+      for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, data, gap_t_[i]);
+    }
+  };
+}  // namespace PARTICLEINTERACTION
+
+/*---------------------------------------------------------------------------*/
+#endif

@@ -1,14 +1,11 @@
 /*----------------------------------------------------------------------*/
-/**
+/*!
 \file so_sh8_evaluate.cpp
 \brief some element evaluate
 \level 1
-<pre>
+
 \maintainer Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 #include "so_sh8.H"
@@ -544,6 +541,8 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList& params,
     }
     case ELEMENTS::struct_create_backup:
     case ELEMENTS::struct_recover_from_backup:
+    case ELEMENTS::struct_calc_mass_volume:
+    case ELEMENTS::analyse_jacobian_determinant:
     {
       So_hex8::Evaluate(params, discretization, lm, elemat1_epetra, elemat2_epetra, elevec1_epetra,
           elevec2_epetra, elevec3_epetra);
@@ -595,10 +594,11 @@ double DRT::ELEMENTS::So_sh8::sosh8_calc_energy(
   }
 
   // safety check before the actual evaluation starts
-  const double min_detJ_curr = sosh8_get_min_det_jac_at_corners(xcurr);
+  const double min_detJ_curr = soh8_get_min_det_jac_at_corners(xcurr);
   if (min_detJ_curr <= 0.0)
   {
-    sosh8_error_handling(min_detJ_curr, params, __LINE__);
+    soh8_error_handling(
+        min_detJ_curr, params, __LINE__, STR::ELEMENTS::ele_error_determinant_at_corner);
     return 0.0;
   }
 
@@ -692,7 +692,8 @@ double DRT::ELEMENTS::So_sh8::sosh8_calc_energy(
 
     if (not sosh8_evaluatejacobians(gp, derivs, xrefe, xcurr, jac, detJ, jac_cur, detJ_cur))
     {
-      sosh8_error_handling(detJ_cur, params, __LINE__);
+      soh8_error_handling(
+          detJ_cur, params, __LINE__, STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
       return 0.0;
     }
 
@@ -730,7 +731,8 @@ double DRT::ELEMENTS::So_sh8::sosh8_calc_energy(
     const double I3 = sosh8_third_invariant(glstrain);
     if (I3 <= 0.0)
     {
-      sosh8_error_handling(I3, params, __LINE__);
+      soh8_error_handling(
+          I3, params, __LINE__, STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
       return 0.0;
     }
 
@@ -791,10 +793,11 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // locatio
     xcurr(i, 2) = xrefe(i, 2) + disp[i * NODDOF_SOH8 + 2];
   }
 
-  const double min_detJ_curr = sosh8_get_min_det_jac_at_corners(xcurr);
+  const double min_detJ_curr = soh8_get_min_det_jac_at_corners(xcurr);
   if (min_detJ_curr <= 0.0)
   {
-    sosh8_error_handling(min_detJ_curr, params, __LINE__);
+    soh8_error_handling(
+        min_detJ_curr, params, __LINE__, STR::ELEMENTS::ele_error_determinant_at_corner);
     return;
   }
 
@@ -951,7 +954,8 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // locatio
 
     if (not sosh8_evaluatejacobians(gp, derivs, xrefe, xcurr, jac, detJ, jac_cur, detJ_cur))
     {
-      sosh8_error_handling(detJ_cur, params, __LINE__);
+      soh8_error_handling(
+          detJ_cur, params, __LINE__, STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
 
       if (stiffmatrix) stiffmatrix->Clear();
       if (force) force->Clear();
@@ -993,7 +997,8 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // locatio
     const double I3 = sosh8_third_invariant(glstrain);
     if (I3 <= 0.0)
     {
-      sosh8_error_handling(I3, params, __LINE__);
+      soh8_error_handling(
+          I3, params, __LINE__, STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
 
       if (stiffmatrix) stiffmatrix->Clear();
       if (force) force->Clear();
@@ -1033,6 +1038,13 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // locatio
 
     LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrd;
     sosh8_get_deformationgradient(gp, derivs, xcurr, glstrain, defgrd);
+    const double det_defgrd = defgrd.Determinant();
+    if (det_defgrd <= 0.0)
+    {
+      soh8_error_handling(
+          det_defgrd, params, __LINE__, STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
+      return;
+    }
 
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
@@ -1408,68 +1420,6 @@ void DRT::ELEMENTS::So_sh8::sosh8_evaluatejacobian(const unsigned gp,
 
   // compute determinant of Jacobian by Sarrus' rule
   detJ = jac.Determinant();
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-double DRT::ELEMENTS::So_sh8::sosh8_get_min_det_jac_at_corners(
-    const LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr) const
-{
-  LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> deriv_at_c(false);
-  LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> jac_at_c(false);
-
-  // parametric coordinates of the HEX8 corners
-  static const double rst[NUMNOD_SOH8 * NUMDIM_SOH8] = {-1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0,
-      -1.0, -1.0, 1.0, -1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 1.0};
-  double min_detJ = std::numeric_limits<double>::max();
-
-  for (unsigned c = 0; c < NUMNOD_SOH8; ++c)
-  {
-    const LINALG::Matrix<NUMDIM_SOH8, 1> rst_c(rst + NUMDIM_SOH8 * c, true);
-    DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(rst_c, deriv_at_c);
-    jac_at_c.Multiply(deriv_at_c, xcurr);
-
-    const double detJ_at_c = jac_at_c.Determinant();
-    if (detJ_at_c < min_detJ) min_detJ = detJ_at_c;
-  }
-
-  return min_detJ;
-}
-
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8::sosh8_error_handling(
-    const double& det_curr, Teuchos::ParameterList& params, const int line_id)
-{
-  // check, if errors are tolerated or should throw a dserror
-  if (IsParamsInterface() and StrParamsInterface().IsTolerateErrors())
-  {
-    // Note: Here the current jacobian determinant or the determinant of
-    // the deformation gradient can be considered, since both quantities are
-    // proportional to each other.
-    StrParamsInterface().SetEleEvalErrorFlag(STR::ELEMENTS::ele_error_negative_def_gradient);
-    return;
-  }
-  else
-  {
-    // === DEPRECATED (hiermeier, 11/17) ==================================
-    bool error_tol = false;
-    if (params.isParameter("tolerate_errors")) error_tol = params.get<bool>("tolerate_errors");
-    if (error_tol)
-    {
-      params.set<bool>("eval_error", true);
-      return;
-    }
-    // === DEPRECATED =====================================================
-    else
-    {
-      if (det_curr == 0.0)
-        dserror("ZERO DETERMINANT DETECTED in line %d", line_id);
-      else if (det_curr < 0.0)
-        dserror("NEGATIVE DETERMINANT DETECTED in line %d", line_id);
-    }
-  }
 }
 
 /*----------------------------------------------------------------------------*

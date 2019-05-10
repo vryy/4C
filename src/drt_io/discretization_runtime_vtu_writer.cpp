@@ -62,7 +62,6 @@ void DiscretizationRuntimeVtuWriter::Initialize(
 
   // todo: if you want to use absolute positions, do this every time you write output
   // with current col displacements
-  // fixme: if parallel distribution changes during simulation, do this each time this is the case
   SetGeometryFromDiscretizationStandard();
 }
 
@@ -162,12 +161,25 @@ void DiscretizationRuntimeVtuWriter::SetGeometryFromDiscretizationStandard()
     dserror("DiscretizationRuntimeVtuWriter expected %d cell offset values, but got %d",
         num_row_elements, cell_offsets.size());
   }
+
+  // store node row and col maps (needed to check for changed parallel distribution)
+  noderowmap_last_geometry_set_ = Teuchos::rcp(new Epetra_Map(*discretization_->NodeRowMap()));
+  nodecolmap_last_geometry_set_ = Teuchos::rcp(new Epetra_Map(*discretization_->NodeColMap()));
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void DiscretizationRuntimeVtuWriter::ResetTimeAndTimeStep(double time, unsigned int timestep)
 {
+  // check if parallel distribution of discretization changed
+  int map_changed = ((not noderowmap_last_geometry_set_->SameAs(*discretization_->NodeRowMap())) or
+                     (not nodecolmap_last_geometry_set_->SameAs(*discretization_->NodeColMap())));
+  int map_changed_allproc(0);
+  discretization_->Comm().MaxAll(&map_changed, &map_changed_allproc, 1);
+
+  // reset geometry of runtime vtu writer
+  if (map_changed_allproc) SetGeometryFromDiscretizationStandard();
+
   // Todo allow for independent setting of time/timestep and geometry name
   runtime_vtuwriter_->SetupForNewTimeStepAndGeometry(time, timestep, discretization_->Name());
 }
@@ -180,6 +192,11 @@ void DiscretizationRuntimeVtuWriter::AppendDofBasedResultDataVector(
 {
   /* the idea is to transform the given data to a 'point data vector' and append it to the
    * collected solution data vectors by calling AppendVisualizationPointDataVector() */
+
+  // safety checks
+  if (result_data_dofbased->MyLength() != discretization_->DofColMap()->NumMyElements())
+    dserror("DiscretizationRuntimeVtpWriter: expected Epetra_MultiVector with length %d but got %d",
+        discretization_->DofColMap()->NumMyElements(), result_data_dofbased->MyLength());
 
   // count number of nodes and number of elements for each processor
   unsigned int num_row_elements = (unsigned int)discretization_->NumMyRowElements();
@@ -247,7 +264,6 @@ void DiscretizationRuntimeVtuWriter::AppendDofBasedResultDataVector(
         result_num_dofs_per_node * pointcounter, vtu_point_result_data.size());
   }
 
-
   runtime_vtuwriter_->AppendVisualizationPointDataVector(
       vtu_point_result_data, result_num_dofs_per_node, resultname);
 }
@@ -258,14 +274,73 @@ void DiscretizationRuntimeVtuWriter::AppendNodeBasedResultDataVector(
     const Teuchos::RCP<Epetra_MultiVector>& result_data_nodebased,
     unsigned int result_num_components_per_node, const std::string& resultname)
 {
-  // Todo
-  /*  see PostVtuWriter::WriteDofResultStep() for implementation based on PostField
-   *
-   *  the idea is to transform the given data to a 'point data vector' and append it to the
-   *  collected solution data vectors by calling AppendVisualizationPointDataVector()
-   */
+  /* the idea is to transform the given data to a 'point data vector' and append it to the
+   * collected solution data vectors by calling AppendVisualizationPointDataVector() */
 
-  dserror("not implemented yet");
+  // safety checks
+  if ((unsigned int)result_data_nodebased->NumVectors() != result_num_components_per_node)
+    dserror(
+        "DiscretizationRuntimeVtpWriter: expected Epetra_MultiVector with %d columns but got %d",
+        result_num_components_per_node, result_data_nodebased->NumVectors());
+
+  if (result_data_nodebased->MyLength() != discretization_->NumMyColNodes())
+    dserror("DiscretizationRuntimeVtpWriter: expected Epetra_MultiVector with length %d but got %d",
+        discretization_->NumMyColNodes(), result_data_nodebased->MyLength());
+
+  // count number of nodes and number of elements for each processor
+  unsigned int num_row_elements = (unsigned int)discretization_->NumMyRowElements();
+
+  unsigned int num_nodes = 0;
+  for (unsigned int iele = 0; iele < num_row_elements; ++iele)
+    num_nodes += discretization_->lRowElement(iele)->NumNode();
+
+  std::vector<double> vtu_point_result_data;
+  vtu_point_result_data.reserve(result_num_components_per_node * num_nodes);
+
+  unsigned int pointcounter = 0;
+
+  for (unsigned int iele = 0; iele < num_row_elements; ++iele)
+  {
+    const DRT::Element* ele = discretization_->lRowElement(iele);
+
+    // check for beam element that potentially needs special treatment due to Hermite interpolation
+    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+
+    // simply skip beam elements here (handled by BeamDiscretizationRuntimeVtuWriter)
+    if (beamele != NULL) continue;
+
+    const std::vector<int>& numbering =
+        DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(ele->Shape()).second;
+
+    for (unsigned int inode = 0; inode < (unsigned int)ele->NumNode(); ++inode)
+    {
+      const DRT::Node* node = ele->Nodes()[numbering[inode]];
+
+      const int lid = node->LID();
+
+      for (unsigned int icpn = 0; icpn < result_num_components_per_node; ++icpn)
+      {
+        Epetra_Vector* column = (*result_data_nodebased)(icpn);
+
+        if (lid > -1)
+          vtu_point_result_data.push_back((*column)[lid]);
+        else
+          dserror("received illegal node local id: %d", lid);
+      }
+    }
+
+    pointcounter += ele->NumNode();
+  }
+
+  // sanity check
+  if (vtu_point_result_data.size() != result_num_components_per_node * pointcounter)
+  {
+    dserror("DiscretizationRuntimeVtuWriter expected %d result values, but got %d",
+        result_num_components_per_node * pointcounter, vtu_point_result_data.size());
+  }
+
+  runtime_vtuwriter_->AppendVisualizationPointDataVector(
+      vtu_point_result_data, result_num_components_per_node, resultname);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -274,14 +349,58 @@ void DiscretizationRuntimeVtuWriter::AppendElementBasedResultDataVector(
     const Teuchos::RCP<Epetra_MultiVector>& result_data_elementbased,
     unsigned int result_num_components_per_element, const std::string& resultname)
 {
-  // Todo
-  /*  see PostVtuWriter::WriteDofResultStep() for implementation based on PostField
-   *
-   *  the idea is to transform the given data to a 'cell data vector' and append it to the
-   *  collected solution data vectors by calling AppendVisualizationCellDataVector()
-   */
+  /* the idea is to transform the given data to a 'cell data vector' and append it to the
+   *  collected solution data vectors by calling AppendVisualizationCellDataVector() */
 
-  dserror("not implemented yet");
+  // safety check
+  if ((unsigned int)result_data_elementbased->NumVectors() != result_num_components_per_element)
+    dserror(
+        "DiscretizationRuntimeVtpWriter: expected Epetra_MultiVector with %d columns but got %d",
+        result_num_components_per_element, result_data_elementbased->NumVectors());
+
+  if (result_data_elementbased->MyLength() != discretization_->NumMyColElements())
+    dserror("DiscretizationRuntimeVtpWriter: expected Epetra_MultiVector with length %d but got %d",
+        discretization_->NumMyColElements(), result_data_elementbased->MyLength());
+
+  // count number of elements for each processor
+  unsigned int num_row_elements = (unsigned int)discretization_->NumMyRowElements();
+
+  std::vector<double> vtu_cell_result_data;
+  vtu_cell_result_data.reserve(result_num_components_per_element * num_row_elements);
+
+  unsigned int cellcounter = 0;
+
+  for (unsigned int iele = 0; iele < num_row_elements; ++iele)
+  {
+    const DRT::Element* ele = discretization_->lRowElement(iele);
+
+    // check for beam element that potentially needs special treatment due to Hermite interpolation
+    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+
+    // simply skip beam elements here (handled by BeamDiscretizationRuntimeVtuWriter)
+    if (beamele != NULL) continue;
+
+    const int lid = discretization_->ElementColMap()->LID(ele->Id());
+
+    for (unsigned int icpe = 0; icpe < result_num_components_per_element; ++icpe)
+    {
+      Epetra_Vector* column = (*result_data_elementbased)(icpe);
+
+      if (lid > -1) vtu_cell_result_data.push_back((*column)[lid]);
+    }
+
+    ++cellcounter;
+  }
+
+  // sanity check
+  if (vtu_cell_result_data.size() != result_num_components_per_element * cellcounter)
+  {
+    dserror("DiscretizationRuntimeVtuWriter expected %d result values, but got %d",
+        result_num_components_per_element * cellcounter, vtu_cell_result_data.size());
+  }
+
+  runtime_vtuwriter_->AppendVisualizationCellDataVector(
+      vtu_cell_result_data, result_num_components_per_element, resultname);
 }
 
 /*-----------------------------------------------------------------------------------------------*

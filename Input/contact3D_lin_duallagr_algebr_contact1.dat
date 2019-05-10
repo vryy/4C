@@ -1,8 +1,6 @@
 //
-// Maintainer: Tobias Wiesner
-// wiesner@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15240
+// Maintainer: Matthias Mayr
+//
 // simple two rigid-body contact example
 // use "algebraic permutation" for contact solver
 // with MueLu_contact2 preconditioner
@@ -36,9 +34,9 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     1
-NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
-TIMESTEP                        0.02                          // 0.01
-NUMSTEP                         5 //50                        // extract first system
+NLNSOL                          fullnewton
+TIMESTEP                        0.02
+NUMSTEP                         5
 MAXTIME                         1.0
 DAMPING                         No
 M_DAMP                          0.00001
@@ -65,7 +63,7 @@ AZITER                          300
 AZOMEGA                         0
 AZOUTPUT                        10
 AZPOLY                          3
-AZPREC                          ML //MueLu_sym //ILU //MueLu_contact2 //ILU
+AZPREC                          ML
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
@@ -105,7 +103,7 @@ AZITER                          300
 AZOMEGA                         0
 AZOUTPUT                        10
 AZPOLY                          3
-AZPREC MueLu_contact //ILU
+AZPREC                          MueLu_contact
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
@@ -117,15 +115,15 @@ IFPACKCOMBINE                   Add
 IFPACKFILL                      1
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
-ML_AGG_SIZE                     9 //27
+ML_AGG_SIZE                     9
 ML_COARSEN                      UC
 ML_DAMPCOARSE                   1
 ML_DAMPFINE                     0.8
 ML_DAMPMED                      0.8
 ML_MAXCOARSESIZE                10
-ML_MAXLEVEL 2 //2
+ML_MAXLEVEL                     2
 ML_PRINT                        10
-ML_PROLONG_SMO 0.0 //1.33
+ML_PROLONG_SMO                  0.0
 ML_PROLONG_THRES                0
 ML_SMOOTHERCOARSE               Jacobi
 ML_SMOOTHERFINE                 Jacobi
@@ -626,10 +624,6 @@ NODE 216 COORD -5.2000000000069813e-01 -3.9999999999999997e-01 -3.99999999999092
 98 SOLIDH8 HEX8 186 188 196 195 204 206 214 213 MAT 1 KINEM nonlinear EAS none
 99 SOLIDH8 HEX8 188 190 197 196 206 208 215 214 MAT 1 KINEM nonlinear EAS none
 100 SOLIDH8 HEX8 190 192 198 197 208 210 216 215 MAT 1 KINEM nonlinear EAS none
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 67 QUANTITY dispx VALUE 5.22358657399997397e-03 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 67 QUANTITY dispy VALUE 6.45900648549378514e-04 TOLERANCE 1e-8

@@ -1,3 +1,11 @@
+/*!----------------------------------------------------------------------
+\brief Test for the CUT Library
+\file cut_test_alex_39.cpp
+
+\level 1
+
+\maintainer Christoph Ager
+*----------------------------------------------------------------------*/
 
 #include <iostream>
 #include <map>
@@ -17,6 +25,7 @@
 void test_alex39()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -612,48 +621,5 @@ void test_alex39()
 
 
   intersection.Status();
-  intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_Tessellation);
-
-  std::vector<double> tessVol, momFitVol, dirDivVol;
-
-  GEO::CUT::Mesh mesh = intersection.NormalMesh();
-  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>& other_cells = mesh.VolumeCells();
-  for (std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
-       i != other_cells.end(); ++i)
-  {
-    GEO::CUT::VolumeCell* vc = &**i;
-    tessVol.push_back(vc->Volume());
-  }
-
-  intersection.Status();
-  for (std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
-       i != other_cells.end(); ++i)
-  {
-    GEO::CUT::VolumeCell* vc = &**i;
-    vc->MomentFitGaussWeights(
-        vc->ParentElement(), mesh, true, INPAR::CUT::BCellGaussPts_Tessellation);
-    momFitVol.push_back(vc->Volume());
-  }
-
-  for (unsigned i = 0; i < tessVol.size(); i++)
-  {
-    if (fabs(tessVol[i] - momFitVol[i]) > 1e-5)
-      dserror("The volumes calculated by momentFitting and Tessellation are not the same");
-  }
-
-  for (std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
-       i != other_cells.end(); ++i)
-  {
-    GEO::CUT::VolumeCell* vc = &**i;
-    vc->DirectDivergenceGaussRule(vc->ParentElement(), mesh, true);
-    dirDivVol.push_back(vc->Volume());
-  }
-
-  std::cout << "the volumes predicted by\n tessellation \t MomentFitting \t DirectDivergence\n";
-  for (unsigned i = 0; i < tessVol.size(); i++)
-  {
-    std::cout << tessVol[i] << "\t" << momFitVol[i] << "\t" << dirDivVol[i] << "\n";
-    if (fabs(tessVol[i] - momFitVol[i]) > 1e-9 || fabs(dirDivVol[i] - momFitVol[i]) > 1e-9)
-      dserror("volume predicted by either one of the method is wrong");
-  }
+  intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
 }

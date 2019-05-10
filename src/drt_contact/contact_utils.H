@@ -1,5 +1,4 @@
-/*----------------------------------------------------------------------------*/
-/**
+/*!
 \file contact_utils.H
 
 \brief Contains a summary of contact utility functions
@@ -18,6 +17,7 @@
 
 #include <Teuchos_RCP.hpp>
 
+// forward declarations
 namespace DRT
 {
   class Condition;
@@ -26,10 +26,12 @@ namespace DRT
   class Element;
   class Condition;
 }  // namespace DRT
+
 namespace LINALG
 {
   class SerialDenseMatrix;
 }  // namespace LINALG
+
 namespace CONTACT
 {
   namespace UTILS
@@ -49,6 +51,22 @@ namespace CONTACT
 
     /// Gather information which side is master and which side is slave
     void GetMasterSlaveSideInfo(std::vector<bool>& isslave, std::vector<bool>& isself,
+        const std::vector<DRT::Condition*> cond_grp);
+
+    /**
+     * \brief Gather information on initialization (Active/Inactive)
+     *
+     * \param [in,out]  Two_half_pass: two half pass approach applied for current condition group
+     * \param [in,out]  Check_nonsmooth_selfcontactsurface: reference configuration check for
+     *                  non-smooth self contact shall be performed for current condition group
+     * \param [in,out]  isactive:  condition is set active
+     * \param [in]      isslave:   condition is defined as slave side
+     * \param [in]      isself:    condition is self contact condition
+     * \param [in]      cond_grp: current contact condition group (i.e. conditions with same ID)
+     *
+     * \author cschmidt \date 11/18 */
+    void GetInitializationInfo(bool& Two_half_pass, bool& Check_nonsmooth_selfcontactsurface,
+        std::vector<bool>& isactive, std::vector<bool>& isslave, std::vector<bool>& isself,
         const std::vector<DRT::Condition*> cond_grp);
 
     /// write conservation data to an output file

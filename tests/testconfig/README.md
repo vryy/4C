@@ -21,7 +21,7 @@ Since Baci is used in different environments and configurations, there are some 
 
 ### Daily tests
 
-Each night a full release and a full debug test are started by a GitLab Scheduler on all configurations. If the release test passes, `doxygen` is build and copied to a folder with constant path (if the documentation is automatically loaded to a server it is better if it is always in the same location, the path is given with a variable and can be different for the different configurations).  
+Each night a full release and a full debug test are started by a GitLab Scheduler on all configurations. If the release test passes, `doxygen` is build and copied to a folder with constant path (if the documentation is automatically loaded to a server it is better if it is always in the same location, the path is given with a variable and can be different for the different configurations).
 
 ### Minimal tests
 
@@ -31,11 +31,14 @@ Every time something changes in the `master` branch, a pipeline is created that 
 
 Since we allow merges to `master` only for tested commits, the user has to start a pipeline on the commit when submitting a merge request. This can be done under the GitLab web interface: Goto `CI/CD - Pipelines - Run Pipeline`, then select the branch you want to test (the latest commit on that branch will be tested) and push the button `Create pipeline`. This will first perform the code checks and if they pass a full release build and test on all configurations.
 
+> **Note**: To start a pipeline in debug mode, set the variable `CTEST_BUILD_TYPE_GITLAB` to `debug`.
+
 ### Output
 
 For each job certain testing output is displayed in GitLab (select job under `CI/CD - Pipelines`).
-For the minimal tests the full output can be viewed in the GitLab terminal.
-The full tests produce too much output for the web interface, only the last 200 lines of each failed test are displayed, as well as a summary of the `ctest` call.
+During the build process all lines starting with `[` are displayed and the build summary at the end is displayed.
+The final line of each testing output is also shown.
+Therefore it is always possilbe to see the current state of the testing pipeline.
 If the pipeline fails, the full `log` file is compressed and uploaded as a GitLab `artifact`.
 The `artifacts` can be found under `CI/CD - Pipelines` (on the right hand side of the failed pipeline).
-After 4 weeks the `artifacts` are deleted. 
+After 4 weeks the `artifacts` are deleted.

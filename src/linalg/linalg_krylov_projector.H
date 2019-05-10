@@ -18,7 +18,7 @@
 
 #include "Teuchos_RCP.hpp"
 
-//!@name forward decarations
+// forward declarations
 class Epetra_MultiVector;
 class Epetra_Operator;
 class Epetra_BlockMap;

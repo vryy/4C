@@ -9,7 +9,7 @@ Can only be used in conjunction with XFluid!
 \level 1
 
 <pre>
-\maintainer  Ager Christoph
+\maintainer  Christoph Ager
              ager@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15249
@@ -29,8 +29,7 @@ Can only be used in conjunction with XFluid!
 #include "../linalg/linalg_mapextractor.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 
-/// forward declarations
-
+// forward declarations
 namespace DRT
 {
   class Condition;

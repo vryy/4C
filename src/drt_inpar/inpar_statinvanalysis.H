@@ -6,9 +6,9 @@
 
 <pre>
 \level 3
-\maintainer Sebastian Kehl
-            kehl@lnm.mw.tum.de
-            089-289-10361
+\maintainer Sebastian Brandstaeter
+            brandstaeter@lnm.mw.tum.de
+            089 - 289-15276
 </pre>
 */
 
@@ -21,7 +21,6 @@
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// Input parameters for Inverse Analysis
   namespace INVANA
   {
     enum StatInvRegularization

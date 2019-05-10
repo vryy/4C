@@ -50,7 +50,6 @@ namespace GEO
 /*----------------------------------------------------------------------*
  | binning strategy                                         ghamm 11/13 |
  *----------------------------------------------------------------------*/
-/// BINSTRATEGY namespace
 namespace BINSTRATEGY
 {
   // forward declaration

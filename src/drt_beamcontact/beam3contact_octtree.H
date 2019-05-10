@@ -24,6 +24,7 @@
 
 using namespace CONTACT;
 
+// forward declarations
 namespace DRT
 {
   class Discretization;

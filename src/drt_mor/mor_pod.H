@@ -6,7 +6,7 @@
 \level 2
 
 <pre>
-\maintainer Martin Pfaller
+\maintainer Amadeus Gebauer
 </pre>
 
  *----------------------------------------------------------------------*/
@@ -20,6 +20,7 @@
 #include <Epetra_RowMatrix.h>
 #include <Teuchos_ParameterList.hpp>
 
+// forward declarations
 namespace DRT
 {
   class Discretization;

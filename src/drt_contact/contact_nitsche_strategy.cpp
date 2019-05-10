@@ -200,41 +200,26 @@ void CONTACT::CoNitscheStrategy::SetParentState(
   return;
 }
 
-void CONTACT::CoNitscheStrategy::Evaluate(CONTACT::ParamsInterface& cparams,
-    const std::vector<Teuchos::RCP<const Epetra_Vector>>* eval_vec)
+void CONTACT::CoNitscheStrategy::EvalForce(CONTACT::ParamsInterface& cparams)
 {
-  PreEvaluate(cparams);
-  const enum MORTAR::ActionType& act = cparams.GetActionType();
-  switch (act)
-  {
-    case MORTAR::eval_none:
-      break;
-    case MORTAR::eval_force:
-    case MORTAR::eval_force_stiff:
-      Integrate(cparams);
-      break;
-    case MORTAR::eval_run_pre_evaluate:
-      break;
-    case MORTAR::eval_run_post_evaluate:
-      break;
-    case MORTAR::eval_reset:
-      SetState(MORTAR::state_new_displacement, *((*eval_vec)[0]));
-      break;
-    case MORTAR::eval_run_post_compute_x:
-      break;
-    case MORTAR::eval_run_pre_compute_x:
-      break;
-    case MORTAR::eval_run_post_iterate:
-      break;
-    case MORTAR::eval_run_post_apply_jacobian_inverse:
-      break;
-    case MORTAR::remove_condensed_contributions_from_str_rhs:
-      break;
-    default:
-      dserror("unknown action: %s", MORTAR::ActionType2String(act).c_str());
-      break;
-  }
-  return;
+  Integrate(cparams);
+}
+
+void CONTACT::CoNitscheStrategy::EvalForceStiff(CONTACT::ParamsInterface& cparams)
+{
+  Integrate(cparams);
+}
+
+void CONTACT::CoNitscheStrategy::Reset(
+    const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp, const Epetra_Vector& xnew)
+{
+  SetState(MORTAR::state_new_displacement, dispnp);
+}
+
+void CONTACT::CoNitscheStrategy::RunPostComputeX(const CONTACT::ParamsInterface& cparams,
+    const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
+{
+  // do nothing
 }
 
 void CONTACT::CoNitscheStrategy::Integrate(CONTACT::ParamsInterface& cparams)
@@ -308,10 +293,18 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategy::GetRhsBlockPtr(
     const enum DRT::UTILS::VecBlockType& bt) const
 {
   if (curr_state_eval_ == false) dserror("you didn't evaluate this contact state first");
-  if (bt == DRT::UTILS::block_displ)
-    return Teuchos::rcp(new Epetra_Vector(Copy, *(fc_), 0));
-  else
-    dserror("GetRhsBlockPtr: your type is no treated properly!");
+  switch (bt)
+  {
+    case DRT::UTILS::block_displ:
+      return Teuchos::rcp(new Epetra_Vector(Copy, *(fc_), 0));
+      break;
+    case DRT::UTILS::block_constraint:
+      return Teuchos::null;
+      break;
+    default:
+      dserror("GetRhsBlockPtr: your type is no treated properly!");
+      break;
+  }
 
   return Teuchos::null;
 }
@@ -383,7 +376,17 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::GetMatrixBlockPtr
 
 void CONTACT::CoNitscheStrategy::Setup(bool redistributed, bool init)
 {
-  if (isselfcontact_) dserror("no self contact with Nitsche yet");
+  // we need to init the isselfcontact_ flag here, as we do not want to call the CoAbstractStrategy
+  if (init)
+  {
+    // set potential global self contact status
+    // (this is TRUE if at least one contact interface is a self contact interface)
+    bool selfcontact = false;
+    for (unsigned i = 0; i < Interfaces().size(); ++i)
+      if (Interfaces()[i]->SelfContact()) selfcontact = true;
+
+    if (selfcontact) isselfcontact_ = true;
+  }
   ReconnectParentElements();
   curr_state_ = Teuchos::null;
   curr_state_eval_ = false;

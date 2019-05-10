@@ -22,10 +22,9 @@
 
 namespace DRT
 {
-  /// forward declarations
+  // forward declarations
   class Discretization;
 
-  /// collection of useful and important but less central stuff
   namespace UTILS
   {
     //! Given a nodal row and coloumn map, this routines creates the corresponding element maps and

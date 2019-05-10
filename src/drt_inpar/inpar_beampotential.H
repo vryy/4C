@@ -27,7 +27,6 @@ namespace DRT
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// Input parameters for potential-based beam interaction
   namespace BEAMPOTENTIAL
   {
     /// type of potential interaction

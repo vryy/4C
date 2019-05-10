@@ -8,7 +8,7 @@ between the xfluid class and the cut-library
 \level 2
 
 <pre>
-\maintainer  Ager Christoph
+\maintainer  Christoph Ager
              ager@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15249
@@ -304,7 +304,9 @@ XFEM::MeshVolCoupling::MeshVolCoupling(
     const std::string& suffix  ///< suffix for cutterdisname
     )
     : MeshCoupling(bg_dis, cond_name, cond_dis, coupling_id, time, step, suffix),
-      init_volcoupling_(false)
+      init_volcoupling_(false),
+      traceEstimate_eigenvalue_update_(INPAR::XFEM::Eigenvalue_update_every_iter),
+      reset_step_(-1)
 {
 }
 
@@ -325,6 +327,11 @@ void XFEM::MeshVolCoupling::Init()
     CreateAuxiliaryDiscretization();
 
     ele_to_max_eigenvalue_ = Teuchos::rcp(new std::map<int, double>());
+
+    traceEstimate_eigenvalue_update_ =
+        DRT::INPUT::IntegralValue<INPAR::XFEM::TraceEstimate_eigenvalue_update>(
+            DRT::Problem::Instance()->XFluidDynamicParams().sublist("STABILIZATION"),
+            "UPDATE_EIGENVALUE_TRACE_ESTIMATE");
   }
 }
 
@@ -477,6 +484,38 @@ double XFEM::MeshVolCoupling::Get_EstimateNitscheTraceMaxEigenvalue(DRT::Element
     EstimateNitscheTraceMaxEigenvalue(ele);
 
   return ele_to_max_eigenvalue_->at(ele->Id());
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshVolCoupling::ResetEvaluatedTraceEstimates()
+{
+  switch (traceEstimate_eigenvalue_update_)
+  {
+    case INPAR::XFEM::Eigenvalue_update_every_iter:
+    {
+      ele_to_max_eigenvalue_->clear();
+      break;
+    }
+    case INPAR::XFEM::Eigenvalue_update_every_timestep:
+    {
+      if (reset_step_ < step_)
+      {
+        ele_to_max_eigenvalue_->clear();
+        reset_step_ = step_;
+      }
+      break;
+    }
+    case INPAR::XFEM::Eigenvalue_update_once:
+    {
+      break;
+    }
+    default:
+    {
+      dserror("Unknown Eigenvalue update strategy!");
+      break;
+    }
+  }
 }
 
 /*--------------------------------------------------------------------------*
@@ -852,7 +891,7 @@ void XFEM::MeshCouplingBC::EvaluateImplementation(std::vector<double>& final_val
     arg = -angle_vel * (time - t_4) + M_PI / T * (t_2 - t_1) + 2.0 * M_PI / T * (t_3 - t_2);
   }
   else
-    dserror("for that time we did not define an implemented rotation %d", time);
+    dserror("for that time we did not define an implemented rotation %f", time);
 
 
   // rotation with constant angle velocity around point
@@ -1011,14 +1050,19 @@ void XFEM::MeshCouplingWeakDirichlet::SetupConfigurationMap()
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingWeakDirichlet::UpdateConfigurationMap_GP(
-    double& kappa_m, double& visc_m, double& visc_s,
+    double& kappa_m,         //< fluid sided weighting
+    double& visc_m,          //< master sided dynamic viscosity
+    double& visc_s,          //< slave sided dynamic viscosity
+    double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
     double& full_stab, const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond,
     DRT::Element* ele,   //< Element
     DRT::Element* bele,  //< Boundary Element
     double* funct,       //< local shape function for Gauss Point (from fluid element)
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-    LINALG::Matrix<3, 1>& rst_slave  //< local coord of gp on slave boundary element
+    LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+    LINALG::Matrix<3, 1>& normal,     //< normal at gp
+    LINALG::Matrix<3, 1>& vel_m       //< master velocity at gp
 )
 {
   // Configuration of Penalty Terms
@@ -1026,6 +1070,93 @@ void XFEM::MeshCouplingWeakDirichlet::UpdateConfigurationMap_GP(
 
   return;
 }
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshCouplingNeumann::DoConditionSpecificSetup()
+{
+  // Call Base Class
+  XFEM::MeshCouplingBC::DoConditionSpecificSetup();
+
+  // Check if Inflow Stabilisation is active
+  if (!cutterele_conds_.size()) dserror("cutterele_conds_.size = 0!");
+  DRT::Condition* cond = (cutterele_conds_[0]).second;
+  const int inflow_stab = cond->GetInt("InflowStab") + 1;
+  for (uint i = 0; i < cutterele_conds_.size(); ++i)
+  {
+    DRT::Condition* cond = (cutterele_conds_[i]).second;
+    if (inflow_stab != cond->GetInt("InflowStab") + 1)
+      dserror(
+          "You want to stabilized just some of your Neumann Boundaries? - feel free to implement!");
+  }
+
+  if (inflow_stab)
+  {
+    std::cout << "==| MeshCouplingNeumann: Inflow Stabilization active! |==" << std::endl;
+    inflow_stab_ = true;
+  }
+  else
+    inflow_stab_ = false;
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshCouplingNeumann::SetupConfigurationMap()
+{
+  if (inflow_stab_)
+  {
+    // Configuration of Penalty Terms
+    configuration_map_[INPAR::XFEM::F_Pen_Col] = std::pair<bool, double>(true, 1.0);
+    configuration_map_[INPAR::XFEM::F_Adj_Col] =
+        std::pair<bool, double>(true, 1.0);  //<-- IMPORTANT!: used for the constraint scaling
+  }
+  return;
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshCouplingNeumann::UpdateConfigurationMap_GP(
+    double& kappa_m,         //< fluid sided weighting
+    double& visc_m,          //< master sided dynamic viscosity
+    double& visc_s,          //< slave sided dynamic viscosity
+    double& density_m,       //< master sided density
+    double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
+    double& full_stab, const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond,
+    DRT::Element* ele,   //< Element
+    DRT::Element* bele,  //< Boundary Element
+    double* funct,       //< local shape function for Gauss Point (from fluid element)
+    double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
+    LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+    LINALG::Matrix<3, 1>& normal,     //< normal at gp
+    LINALG::Matrix<3, 1>& vel_m       //< master velocity at gp
+)
+{
+  if (inflow_stab_)
+  {
+    // Configuration of Penalty Terms
+    double veln = normal.Dot(vel_m);  // as the normal is the structural body, inflow is positive
+    if (veln < 0)
+    {
+      configuration_map_[INPAR::XFEM::F_Pen_Row] = std::pair<bool, double>(true, -density_m * veln);
+      configuration_map_[INPAR::XFEM::F_Pen_Row_linF1] =
+          std::pair<bool, double>(true, -density_m * normal(0));
+      configuration_map_[INPAR::XFEM::F_Pen_Row_linF2] =
+          std::pair<bool, double>(true, -density_m * normal(1));
+      configuration_map_[INPAR::XFEM::F_Pen_Row_linF3] =
+          std::pair<bool, double>(true, -density_m * normal(2));
+    }
+    else
+    {
+      configuration_map_[INPAR::XFEM::F_Pen_Row] = std::pair<bool, double>(false, 0);
+      configuration_map_[INPAR::XFEM::F_Pen_Row_linF1] = std::pair<bool, double>(false, 0);
+      configuration_map_[INPAR::XFEM::F_Pen_Row_linF2] = std::pair<bool, double>(false, 0);
+      configuration_map_[INPAR::XFEM::F_Pen_Row_linF3] = std::pair<bool, double>(false, 0);
+    }
+  }
+
+  return;
+}
+
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingNeumann::EvaluateCouplingConditions(LINALG::Matrix<3, 1>& ivel,
@@ -1419,14 +1550,19 @@ void XFEM::MeshCouplingNavierSlip::SetupConfigurationMap()
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingNavierSlip::UpdateConfigurationMap_GP(
-    double& kappa_m, double& visc_m, double& visc_s,
+    double& kappa_m,         //< fluid sided weighting
+    double& visc_m,          //< master sided dynamic viscosity
+    double& visc_s,          //< slave sided dynamic viscosity
+    double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
     double& full_stab, const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond,
     DRT::Element* ele,   //< Element
     DRT::Element* bele,  //< Boundary Element
     double* funct,       //< local shape function for Gauss Point (from fluid element)
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-    LINALG::Matrix<3, 1>& rst_slave  //< local coord of gp on slave boundary element
+    LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+    LINALG::Matrix<3, 1>& normal,     //< normal at gp
+    LINALG::Matrix<3, 1>& vel_m       //< master velocity at gp
 )
 {
   double dynvisc = (kappa_m * visc_m + (1.0 - kappa_m) * visc_s);
@@ -1900,7 +2036,7 @@ void XFEM::MeshCouplingFSI::SetupConfigurationMap()
       configuration_map_[INPAR::XFEM::X_Con_n_Row] = std::pair<bool, double>(true, 1.0);
 
       // Configuration of Adjount Consistency Terms
-      configuration_map_[INPAR::XFEM::XS_Adj_n_Row] = std::pair<bool, double>(true, -1.0);
+      configuration_map_[INPAR::XFEM::XS_Adj_n_Row] = std::pair<bool, double>(true, 1.0);
       configuration_map_[INPAR::XFEM::F_Adj_n_Col] = std::pair<bool, double>(true, 1.0);
       configuration_map_[INPAR::XFEM::X_Adj_n_Col] = std::pair<bool, double>(true, 1.0);
 
@@ -1918,7 +2054,7 @@ void XFEM::MeshCouplingFSI::SetupConfigurationMap()
       configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool, double>(true, 1.0);
 
       // Configuration of Adjount Consistency Terms
-      configuration_map_[INPAR::XFEM::XS_Adj_Row] = std::pair<bool, double>(true, -1.0);
+      configuration_map_[INPAR::XFEM::XS_Adj_Row] = std::pair<bool, double>(true, 1.0);
       configuration_map_[INPAR::XFEM::F_Adj_Col] = std::pair<bool, double>(true, 1.0);
       configuration_map_[INPAR::XFEM::X_Adj_Col] = std::pair<bool, double>(true, 1.0);
 
@@ -1941,20 +2077,25 @@ void XFEM::MeshCouplingFSI::SetupConfigurationMap()
 /*--------------------------------------------------------------------------*
  * first version without possibility to use Navier Slip
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP(
-    double& kappa_m, double& visc_m, double& visc_s,
+void XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP(double& kappa_m,  //< fluid sided weighting
+    double& visc_m,          //< master sided dynamic viscosity
+    double& visc_s,          //< slave sided dynamic viscosity
+    double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
     double& full_stab, const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond,
     DRT::Element* ele,   //< Element
     DRT::Element* bele,  //< Boundary Element
     double* funct,       //< local shape function for Gauss Point (from fluid element)
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-    LINALG::Matrix<3, 1>& rst_slave  //< local coord of gp on slave boundary element
+    LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+    LINALG::Matrix<3, 1>& normal,     //< normal at gp
+    LINALG::Matrix<3, 1>& vel_m       //< master velocity at gp
 )
 {
 #ifdef DEBUG
-  if (kappa_m != 1)
-    dserror("XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP: kappa_m == %d", kappa_m);
+  if ((kappa_m != 1 && GetAveragingStrategy() == INPAR::XFEM::Xfluid_Sided) ||
+      (kappa_m != 0 && GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided))
+    dserror("XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP: kappa_m == %f", kappa_m);
 #endif
 
   if (GetAveragingStrategy() == INPAR::XFEM::Xfluid_Sided)
@@ -2239,14 +2380,19 @@ void XFEM::MeshCouplingFluidFluid::SetupConfigurationMap()
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingFluidFluid::UpdateConfigurationMap_GP(
-    double& kappa_m, double& visc_m, double& visc_s,
+    double& kappa_m,         //< fluid sided weighting
+    double& visc_m,          //< master sided dynamic viscosity
+    double& visc_s,          //< slave sided dynamic viscosity
+    double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
     double& full_stab, const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond,
     DRT::Element* ele,   //< Element
     DRT::Element* bele,  //< Boundary Element
     double* funct,       //< local shape function for Gauss Point (from fluid element)
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-    LINALG::Matrix<3, 1>& rst_slave  //< local coord of gp on slave boundary element
+    LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+    LINALG::Matrix<3, 1>& normal,     //< normal at gp
+    LINALG::Matrix<3, 1>& vel_m       //< master velocity at gp
 )
 {
 #ifdef DEBUG

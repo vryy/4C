@@ -1,3 +1,11 @@
+/*!----------------------------------------------------------------------
+\brief Test for the CUT Library
+\file cut_test_shadan_6.cpp
+
+\level 1
+
+\maintainer Christoph Ager
+*----------------------------------------------------------------------*/
 
 #include <iostream>
 #include <map>
@@ -16,6 +24,7 @@
 void test_shadan6()
 {
   GEO::CUT::MeshIntersection intersection;
+  intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -438,6 +447,5 @@ void test_shadan6()
 
 
   intersection.Status();
-  intersection.CutTest_Cut(true);
-  intersection.Status();
+  intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
 }
