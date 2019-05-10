@@ -1,15 +1,15 @@
-/*!----------------------------------------------------------------------
-\file matlist.H
+/*----------------------------------------------------------------------------*/
+/*!
+\brief generic material that stores a list of materials, where each material itself defines the
+properties of e.g. one species in a scalar transport problem, or one phase in a fluid problem
 
 \level 1
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
-</pre>
-*----------------------------------------------------------------------*/
+
+*/
+/*----------------------------------------------------------------------------*/
+
 #ifndef MATLIST_H
 #define MATLIST_H
 

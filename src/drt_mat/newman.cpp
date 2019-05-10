@@ -1,18 +1,15 @@
-/*!----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
-\file newman.cpp
+\brief material stores parameters for ion species in electrolyte solution. The newman material is
+derived for a binary electrolyte using the electroneutrality condition to condense the non-reacting
+species
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
-</pre>
-*/
-/*----------------------------------------------------------------------*/
 
+*/
+/*----------------------------------------------------------------------------*/
 
 #include <vector>
 #include "newman.H"
@@ -20,7 +17,6 @@
 #include "../drt_mat/matpar_bundle.H"
 
 // TODO: math.H was included automatically
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

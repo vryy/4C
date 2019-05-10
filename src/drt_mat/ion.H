@@ -1,21 +1,17 @@
-/*!----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
-\file ion.H
+\brief material that stores parameters of ion species in electrolyte solution. Former file of Georg
+Bauer
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
-</pre>
+
 */
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+
 #ifndef IONIC_H
 #define IONIC_H
-
-
 
 #include "matpar_parameter.H"
 #include "material.H"
