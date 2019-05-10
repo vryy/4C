@@ -356,6 +356,10 @@ namespace BEAMINTERACTION
         LINALG::SerialDenseMatrix& stiffmat11, LINALG::SerialDenseMatrix& stiffmat12,
         LINALG::SerialDenseMatrix& stiffmat21, LINALG::SerialDenseMatrix& stiffmat22) const;
 
+    /** \brief compute discrete force vectors using automatic differentiation
+     *
+     *  \author grill
+     *  \date 02/19 */
     void CalcFpotGausspointAutomaticDifferentiationIfRequired(
         LINALG::TMatrix<double, 3 * numnodes * numnodalvalues, 1>& force_pot1,
         LINALG::TMatrix<double, 3 * numnodes * numnodalvalues, 1>& force_pot2,
@@ -365,6 +369,10 @@ namespace BEAMINTERACTION
         LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3 * numnodes * numnodalvalues> const&
             lin_xi_master_masterDofs) const;
 
+    /** \brief compute discrete force vectors using automatic differentiation
+     *
+     *  \author grill
+     *  \date 02/19 */
     void CalcFpotGausspointAutomaticDifferentiationIfRequired(
         LINALG::TMatrix<Sacado::Fad::DFad<double>, 3 * numnodes * numnodalvalues, 1>& force_pot1,
         LINALG::TMatrix<Sacado::Fad::DFad<double>, 3 * numnodes * numnodalvalues, 1>& force_pot2,
@@ -374,6 +382,10 @@ namespace BEAMINTERACTION
         LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3 * numnodes * numnodalvalues> const&
             lin_xi_master_masterDofs) const;
 
+    /** \brief compute discrete force vectors using automatic differentiation
+     *
+     *  \author grill
+     *  \date 02/19 */
     void CalcFpotGausspointAutomaticDifferentiationIfRequired(
         LINALG::TMatrix<double, 3 * numnodes * numnodalvalues, 1>& force_pot1,
         LINALG::TMatrix<double, 3 * numnodes * numnodalvalues, 1>& force_pot2,

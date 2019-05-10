@@ -899,27 +899,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
             fpot_tmp(i) = q1q2_JacFac_GaussWeights * dist(i) / norm_dist * gap_exp1;
 
 
-          //          if (regularization_type == INPAR::BEAMPOTENTIAL::regularization_linear and
-          //              gap < regularization_separation)
-          //          {
-          //            T gap_linextpol_exp2 = std::pow(gap_regularized, -m_ + 1.5);
-          //
-          //            for (unsigned int i = 0; i < 3; i++)
-          //              fpot_tmp(i) += q1q2_JacFac_GaussWeights * dist(i) / norm_dist * (m_
-          //              - 2.5) *
-          //                             gap_linextpol_exp2 * (regularization_separation - gap);
-
-
-          // add the quadratic contribution from this part of the force law
-          //            interaction_potential_ += prefactor * q1q2_JacFac_GaussWeights * 0.5 * (m_
-          //            - 2.5) *
-          //                                      FADUTILS::CastToDouble(gap_linextpol_exp2) *
-          //                                      (regularization_separation -
-          //                                      FADUTILS::CastToDouble(gap)) *
-          //                                      (regularization_separation -
-          //                                      FADUTILS::CastToDouble(gap));
-          //          }
-
           //********************************************************************
           // calculate fpot1: force on element 1
           //********************************************************************
@@ -967,14 +946,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
                                                  jacobifactor_segment1 * gausspoints.qwgt[igp1],
               FADUTILS::CastToDouble<T, 3, 1>(dist), 1.0);
 
-          //          if (regularization_type == INPAR::BEAMPOTENTIAL::regularization_linear and
-          //              gap < regularization_separation)
-          //          {
-          //            // add the linear contribution from the regularization
-          //            forces_pot_GP1_[igp1_total].Update(0.0, FADUTILS::CastToDouble<T, 3,
-          //            1>(dist), 1.0); forces_pot_GP2_[igp1_total].Update(0.0,
-          //            FADUTILS::CastToDouble<T, 3, 1>(dist), 1.0);
-          //          }
         }  // end: loop over gauss points of element 2
       }    // end: loop over gauss points of element 1
 
@@ -1020,12 +991,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
      * and this contribution to the stiffness matrix vanishes */
     gap_exp2 = 0.0;
   }
-
-  //  if (Params()->RegularizationType() == INPAR::BEAMPOTENTIAL::regularization_linear and
-  //      gap < Params()->RegularizationSeparation())
-  //  {
-  //    gap_exp1 += (m_ - 2.5) * gap_exp2 * (Params()->RegularizationSeparation() - gap);
-  //  }
 
   double aux_fac1 = gap_exp1 / norm_dist * q1q2_JacFac_GaussWeights;
   double aux_fac2 = (gap_exp1 / norm_dist / norm_dist / norm_dist +
@@ -1371,8 +1336,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
       if (i == num_initial_values)
       {
-        // Fixme
-        //      dserror("Point-to-curve projection ultimately failed!");
         std::cout << "\nWARNING: Point-to-Curve Projection ultimately failed at "
                      "xi_slave="
                   << xi_GP << " of ele pair " << Element1()->Id() << " & " << Element2()->Id()
@@ -1501,25 +1464,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
           dist_ul, r_xi_master, r_xixi_master);
 
 
-      //************************** DEBUG ******************************************
-      //      LINALG::TMatrix<double, 1, 3> xi_master_partial_r_slave_double(true);
-      //      xi_master_partial_r_slave_double.Update(FADUTILS::CastToDouble(xi_master_partial_r_slave));
-      //      for (unsigned int idim = 0; idim < 3; ++idim)
-      //        xi_master_partial_r_slave(idim) = xi_master_partial_r_slave_double(idim);
-      //
-      //      LINALG::TMatrix<double, 1, 3> xi_master_partial_r_master_double(true);
-      //      xi_master_partial_r_master_double.Update(FADUTILS::CastToDouble(xi_master_partial_r_master));
-      //      for (unsigned int idim = 0; idim < 3; ++idim)
-      //        xi_master_partial_r_master(idim) = xi_master_partial_r_master_double(idim);
-      //
-      //      LINALG::TMatrix<double, 1, 3> xi_master_partial_r_xi_master_double(true);
-      //      xi_master_partial_r_xi_master_double.Update(
-      //          FADUTILS::CastToDouble(xi_master_partial_r_xi_master));
-      //      for (unsigned int idim = 0; idim < 3; ++idim)
-      //        xi_master_partial_r_xi_master(idim) = xi_master_partial_r_xi_master_double(idim);
-      //*********************** END DEBUG *****************************************
-
-
       // evaluate all quantities which depend on the the applied disk-cylinder potential law
 
       // 'full' disk-cylinder interaction potential
@@ -1582,13 +1526,12 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         // auxiliary quantity
         T a = 0.5 / radius1_ + 0.5 * cos_alpha * cos_alpha / radius2_;
 
-        //************************** DEBUG ******************************************
+        // safety check
         if (FADUTILS::CastToDouble(a) <= 0.0)
         {
           this->Print(std::cout);
           dserror("auxiliary quantity a<=0! Fatal error.");
         }
-        //*********************** END DEBUG *****************************************
 
         // interaction potential
         interaction_potential_GP = std::pow(4 * gap_ul_regularized, -m_ + 4.5) / FADUTILS::sqrt(a);
@@ -1830,79 +1773,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         pot_ia_2ndderiv_cos_alpha *= rho1rho2_JacFac_GaussWeight;
 
 
-        //************************** DEBUG ******************************************
-
-        // for verification purposes during implementation of analytic linearization:
-        /* temporarily cast variable to double and store back to neglect dependence on primary
-         * variables and thus its contributions to the linearization
-         * this allows a step-by-step implementation and verification of individual contributions to
-         * the analytic linearization */
-
-        //        double pot_ia_deriv_gap_ul_double = FADUTILS::CastToDouble(pot_ia_deriv_gap_ul);
-        //        pot_ia_deriv_gap_ul = pot_ia_deriv_gap_ul_double;
-        //
-        //
-        //        LINALG::TMatrix<double, 3, 1> gap_ul_deriv_r_slave_double(true);
-        //        gap_ul_deriv_r_slave_double.Update(FADUTILS::CastToDouble(gap_ul_deriv_r_slave));
-        //        for (unsigned int idim = 0; idim < 3; ++idim)
-        //          gap_ul_deriv_r_slave(idim) = gap_ul_deriv_r_slave_double(idim);
-        //
-        //
-        //        LINALG::TMatrix<double, 3, 1> gap_ul_deriv_r_master_double(true);
-        //        gap_ul_deriv_r_master_double.Update(FADUTILS::CastToDouble(gap_ul_deriv_r_master));
-        //        for (unsigned int idim = 0; idim < 3; ++idim)
-        //          gap_ul_deriv_r_master(idim) = gap_ul_deriv_r_master_double(idim);
-
-
-
-        //        double pot_ia_deriv_cos_alpha_double =
-        //        FADUTILS::CastToDouble(pot_ia_deriv_cos_alpha); pot_ia_deriv_cos_alpha =
-        //        pot_ia_deriv_cos_alpha_double;
-        //
-        //
-        //        LINALG::TMatrix<double, 3, 1> cos_alpha_deriv_r_slave_double(true);
-        //        cos_alpha_deriv_r_slave_double.Update(FADUTILS::CastToDouble(cos_alpha_deriv_r_slave));
-        //        for (unsigned int idim = 0; idim < 3; ++idim)
-        //          cos_alpha_deriv_r_slave(idim) = cos_alpha_deriv_r_slave_double(idim);
-        //
-        //        LINALG::TMatrix<double, 3, 1> cos_alpha_deriv_r_xi_slave_double(true);
-        //        cos_alpha_deriv_r_xi_slave_double.Update(
-        //            FADUTILS::CastToDouble(cos_alpha_deriv_r_xi_slave));
-        //        for (unsigned int idim = 0; idim < 3; ++idim)
-        //          cos_alpha_deriv_r_xi_slave(idim) = cos_alpha_deriv_r_xi_slave_double(idim);
-        //
-        //        LINALG::TMatrix<double, 3, 1> cos_alpha_deriv_r_master_double(true);
-        //        cos_alpha_deriv_r_master_double.Update(FADUTILS::CastToDouble(cos_alpha_deriv_r_master));
-        //        for (unsigned int idim = 0; idim < 3; ++idim)
-        //          cos_alpha_deriv_r_master(idim) = cos_alpha_deriv_r_master_double(idim);
-        //
-        //        LINALG::TMatrix<double, 3, 1> cos_alpha_deriv_r_xi_master_double(true);
-        //        cos_alpha_deriv_r_xi_master_double.Update(
-        //            FADUTILS::CastToDouble(cos_alpha_deriv_r_xi_master));
-        //        for (unsigned int idim = 0; idim < 3; ++idim)
-        //          cos_alpha_deriv_r_xi_master(idim) = cos_alpha_deriv_r_xi_master_double(idim);
-
-
-
-        // the following reflects the dependency of N_i_master and N_i_xi_master on the primary
-        // Dofs, because both depend on xi_master
-        // if we do the cast here, immediately before using it for the discrete variation of
-        // cos_alpha, but AFTER using it for interpolation of other quantities, it only eliminates
-        // the contributions from the linearization of the (variation of cos_alpha) ??!??
-
-        //        LINALG::TMatrix<double, 1, numnodes * numnodalvalues> N_i_master_double(true);
-        //        N_i_master_double.Update(FADUTILS::CastToDouble(N_i_master));
-        //        for (unsigned int idim = 0; idim < numnodes * numnodalvalues; ++idim)
-        //          N_i_master(idim) = N_i_master_double(idim);
-        //
-        //        LINALG::TMatrix<double, 1, numnodes * numnodalvalues> N_i_xi_master_double(true);
-        //        N_i_xi_master_double.Update(FADUTILS::CastToDouble(N_i_xi_master));
-        //        for (unsigned int idim = 0; idim < numnodes * numnodalvalues; ++idim)
-        //          N_i_xi_master(idim) = N_i_xi_master_double(idim);
-
-        //*********************** END DEBUG *****************************************
-
-
         //********************************************************************
         // calculate fpot1: force/residual vector on slave element
         //********************************************************************
@@ -1976,12 +1846,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
       if (stiffmat11 != NULL and stiffmat12 != NULL and stiffmat21 != NULL and stiffmat22 != NULL)
       {
-        // Todo: check and remove if possible:
-        /* I think we don't even need to do this "manual" addition of terms from linearization of
-         * xi_master according to the chain rule since we consistently use FAD variables throughout
-         * the (iterative) solution for xi_master; first investigations suggest that these
-         * contributions are zero anyway ?!? Todo: understand why */
-
         AddStiffmatContributionsXiMasterAutomaticDifferentiationIfRequired(force_pot_slave_GP,
             force_pot_master_GP, lin_xi_master_slaveDofs, lin_xi_master_masterDofs, *stiffmat11,
             *stiffmat12, *stiffmat21, *stiffmat22);
@@ -2185,36 +2049,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   const unsigned int num_spatial_dimensions = 3;
   const unsigned int num_dofs_per_spatial_dimension = numnodes * numnodalvalues;
 
-  //**************************** BEGIN INFO ****************************************
-
-  //  for (unsigned int idofperdim = 0; idofperdim < (numnodes * numnodalvalues); ++idofperdim)
-  //  {
-  //    for (unsigned int jdim = 0; jdim < 3; ++jdim)
-  //    {
-  //      force_pot_slave_GP(3 * idofperdim + jdim) +=
-  //          N_i_slave[igp](idofperdim) * pot_ia_deriv_gap_ul * gap_ul_deriv_r_slave(jdim);
-  //
-  //      force_pot_slave_GP(3 * idofperdim + jdim) +=
-  //          N_i_slave[igp](idofperdim) * pot_ia_deriv_cos_alpha * cos_alpha_deriv_r_slave(jdim);
-  //
-  //      force_pot_slave_GP(3 * idofperdim + jdim) += N_i_xi_slave[igp](idofperdim) *
-  //                                                   pot_ia_deriv_cos_alpha *
-  //                                                   cos_alpha_deriv_r_xi_slave(jdim);
-  //
-  //      force_pot_master_GP(3 * idofperdim + jdim) +=
-  //          N_i_master(idofperdim) * pot_ia_deriv_gap_ul * gap_ul_deriv_r_master(jdim);
-  //
-  //      force_pot_master_GP(3 * idofperdim + jdim) +=
-  //          N_i_master(idofperdim) * pot_ia_deriv_cos_alpha * cos_alpha_deriv_r_master(jdim);
-  //
-  //      force_pot_master_GP(3 * idofperdim + jdim) += N_i_xi_master(idofperdim) *
-  //                                                    pot_ia_deriv_cos_alpha *
-  //                                                    cos_alpha_deriv_r_xi_master(jdim);
-  //    }
-  //  }
-
-  //**************************** END INFO ****************************************
-
 
   // auxiliary and intermediate quantities required for second derivatives of the unilateral gap
   LINALG::TMatrix<double, 3, 3> unit_matrix(true);
@@ -2248,9 +2082,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       normal_ul_deriv_dist_ul(i, j) -= normal_ul(i) * normal_ul(j);
   }
   normal_ul_deriv_dist_ul.Scale(1.0 / norm_dist_ul);
-
-  //  LINALG::TMatrix<double, 1, 3> r_xi_master_T_normal_ul_deriv_dist_ul(true);
-  //  r_xi_master_T_normal_ul_deriv_dist_ul.MultiplyTN(r_xi_master, normal_ul_deriv_dist_ul);
 
 
   // second derivatives of the unilateral gap
@@ -2298,136 +2129,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   }
 
 
-
-  //   Fixme: the following terms should vanish!
-  //    for (unsigned int irow = 0; irow < 3; ++irow)
-  //    {
-  //      for (unsigned int icol = 0; icol < 3; ++icol)
-  //      {
-  //        gap_ul_deriv_r_slave_deriv_r_xi_master(irow, icol) -=
-  //            xi_master_partial_r_slave(irow) * normal_ul(icol);
-  //
-  //        gap_ul_deriv_r_master_deriv_r_xi_master(irow, icol) -=
-  //            xi_master_partial_r_master(irow) * normal_ul(icol);
-  //
-  //        gap_ul_deriv_r_xi_master_deriv_r_xi_master(irow, icol) -=
-  //            xi_master_partial_r_xi_master(irow) * normal_ul(icol);
-  //      }
-  //    }
-  //
-  //    // add contributions from linearization of master parameter coordinate xi_master
-  //    // to gap_ul_deriv_(.)_deriv_r_xi_master expression (according to chain rule)
-  //    LINALG::TMatrix<double, 3, 1> tmp_vec0;
-  //    tmp_vec0.Multiply(gap_ul_deriv_r_slave_deriv_r_xi_master, r_xixi_master);
-  //
-  //    for (unsigned int irow = 0; irow < 3; ++irow)
-  //    {
-  //      for (unsigned int icol = 0; icol < 3; ++icol)
-  //      {
-  //        gap_ul_deriv_r_slave_deriv_r_slave(irow, icol) +=
-  //            tmp_vec0(irow) * xi_master_partial_r_slave(icol);
-  //
-  //        gap_ul_deriv_r_slave_deriv_r_master(irow, icol) +=
-  //            tmp_vec0(irow) * xi_master_partial_r_master(icol);
-  //
-  //        gap_ul_deriv_r_slave_deriv_r_xi_master(irow, icol) +=
-  //            tmp_vec0(irow) * xi_master_partial_r_xi_master(icol);
-  //      }
-  //    }
-  //
-  //    tmp_vec0.Multiply(gap_ul_deriv_r_master_deriv_r_xi_master, r_xixi_master);
-  //
-  //    for (unsigned int irow = 0; irow < 3; ++irow)
-  //    {
-  //      for (unsigned int icol = 0; icol < 3; ++icol)
-  //      {
-  //        gap_ul_deriv_r_master_deriv_r_slave(irow, icol) +=
-  //            tmp_vec0(irow) * xi_master_partial_r_slave(icol);
-  //
-  //        gap_ul_deriv_r_master_deriv_r_master(irow, icol) +=
-  //            tmp_vec0(irow) * xi_master_partial_r_master(icol);
-  //
-  //        gap_ul_deriv_r_master_deriv_r_xi_master(irow, icol) +=
-  //            tmp_vec0(irow) * xi_master_partial_r_xi_master(icol);
-  //      }
-  //    }
-  //
-  //    tmp_vec0.Multiply(gap_ul_deriv_r_xi_master_deriv_r_xi_master, r_xixi_master);
-  //
-  //    for (unsigned int irow = 0; irow < 3; ++irow)
-  //    {
-  //      for (unsigned int icol = 0; icol < 3; ++icol)
-  //      {
-  //        gap_ul_deriv_r_xi_master_deriv_r_slave(irow, icol) +=
-  //            tmp_vec0(irow) * xi_master_partial_r_slave(icol);
-  //
-  //        gap_ul_deriv_r_xi_master_deriv_r_master(irow, icol) +=
-  //            tmp_vec0(irow) * xi_master_partial_r_master(icol);
-  //
-  //        gap_ul_deriv_r_xi_master_deriv_r_xi_master(irow, icol) +=
-  //            tmp_vec0(irow) * xi_master_partial_r_xi_master(icol);
-  //      }
-  //    }
-  //
-  //   Fixme: the following terms should vanish!
-  //   add contributions from variation of master parameter coord xi_master
-  //    LINALG::TMatrix<double, 3, 3> gap_ul_deriv_r_xi_master_deriv_r_slave(true);
-  //    LINALG::TMatrix<double, 3, 3> gap_ul_deriv_r_xi_master_deriv_r_master(true);
-  //    LINALG::TMatrix<double, 3, 3> gap_ul_deriv_r_xi_master_deriv_r_xi_master(true);
-  //
-  //    LINALG::TMatrix<double, 1, 3> tmp_vec0;
-  //    tmp_vec0.MultiplyTN(r_xi_master, gap_ul_deriv_r_master_deriv_r_slave);
-  //
-  //    for (unsigned int irow = 0; irow < 3; ++irow)
-  //    {
-  //      for (unsigned int icol = 0; icol < 3; ++icol)
-  //      {
-  //        gap_ul_deriv_r_slave_deriv_r_slave(irow, icol) +=
-  //            xi_master_partial_r_slave(irow) * tmp_vec0(icol);
-  //
-  //        gap_ul_deriv_r_master_deriv_r_slave(irow, icol) +=
-  //            xi_master_partial_r_master(irow) * tmp_vec0(icol);
-  //
-  //        gap_ul_deriv_r_xi_master_deriv_r_slave(irow, icol) +=
-  //            xi_master_partial_r_xi_master(irow) * tmp_vec0(icol);
-  //      }
-  //    }
-  //
-  //    tmp_vec0.MultiplyTN(r_xi_master, gap_ul_deriv_r_master_deriv_r_master);
-  //
-  //    for (unsigned int irow = 0; irow < 3; ++irow)
-  //    {
-  //      for (unsigned int icol = 0; icol < 3; ++icol)
-  //      {
-  //        gap_ul_deriv_r_slave_deriv_r_master(irow, icol) +=
-  //            xi_master_partial_r_slave(irow) * tmp_vec0(icol);
-  //
-  //        gap_ul_deriv_r_master_deriv_r_master(irow, icol) +=
-  //            xi_master_partial_r_master(irow) * tmp_vec0(icol);
-  //
-  //        gap_ul_deriv_r_xi_master_deriv_r_master(irow, icol) +=
-  //            xi_master_partial_r_xi_master(irow) * tmp_vec0(icol);
-  //      }
-  //    }
-  //
-  //    tmp_vec0.MultiplyTN(r_xi_master, gap_ul_deriv_r_master_deriv_r_xi_master);
-  //
-  //    for (unsigned int irow = 0; irow < 3; ++irow)
-  //    {
-  //      for (unsigned int icol = 0; icol < 3; ++icol)
-  //      {
-  //        gap_ul_deriv_r_slave_deriv_r_xi_master(irow, icol) +=
-  //            xi_master_partial_r_slave(irow) * tmp_vec0(icol);
-  //
-  //        gap_ul_deriv_r_master_deriv_r_xi_master(irow, icol) +=
-  //            xi_master_partial_r_master(irow) * tmp_vec0(icol);
-  //
-  //        gap_ul_deriv_r_xi_master_deriv_r_xi_master(irow, icol) +=
-  //            xi_master_partial_r_xi_master(irow) * tmp_vec0(icol);
-  //      }
-  //    }
-
-
   // second derivatives of cos(alpha)
   LINALG::TMatrix<double, 3, 3> cos_alpha_deriv_r_slave_deriv_r_slave(true);
   LINALG::TMatrix<double, 3, 3> cos_alpha_deriv_r_slave_deriv_r_xi_slave(true);
@@ -2439,7 +2140,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   LINALG::TMatrix<double, 3, 3> cos_alpha_deriv_r_xi_slave_deriv_r_xi_slave(true);
   LINALG::TMatrix<double, 3, 3> cos_alpha_deriv_r_xi_slave_deriv_r_master(true);
   LINALG::TMatrix<double, 3, 3> cos_alpha_deriv_r_xi_slave_deriv_r_xi_master(true);
-  //  LINALG::TMatrix<double, 3, 3> cos_alpha_deriv_r_xi_slave_deriv_r_xixi_master(true);
 
   LINALG::TMatrix<double, 3, 3> cos_alpha_deriv_r_master_deriv_r_slave(true);
   LINALG::TMatrix<double, 3, 3> cos_alpha_deriv_r_master_deriv_r_xi_slave(true);
@@ -2866,32 +2566,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   cos_alpha_deriv_r_xixi_master_deriv_r_master.Scale(signum_tangentsscalarproduct);
   cos_alpha_deriv_r_xixi_master_deriv_r_xi_master.Scale(signum_tangentsscalarproduct);
 
-  // ************************************ DEBUG *******************************
-  //  cos_alpha_deriv_r_slave_deriv_r_slave.Scale(0.0);
-  //  cos_alpha_deriv_r_slave_deriv_r_xi_slave.Scale(0.0);
-  //  cos_alpha_deriv_r_slave_deriv_r_master.Scale(0.0);
-  //  cos_alpha_deriv_r_slave_deriv_r_xi_master.Scale(0.0);
-  //  cos_alpha_deriv_r_slave_deriv_r_xixi_master.Scale(0.0);
-
-  //  cos_alpha_deriv_r_xi_slave_deriv_r_slave.Scale(0.0);
-  //  cos_alpha_deriv_r_xi_slave_deriv_r_xi_slave.Scale(0.0);
-  //  cos_alpha_deriv_r_xi_slave_deriv_r_master.Scale(0.0);
-  //  cos_alpha_deriv_r_xi_slave_deriv_r_xi_master.Scale(0.0);
-
-  //  cos_alpha_deriv_r_master_deriv_r_slave.Scale(0.0);
-  //  cos_alpha_deriv_r_master_deriv_r_xi_slave.Scale(0.0);
-  //  cos_alpha_deriv_r_master_deriv_r_master.Scale(0.0);
-  //  cos_alpha_deriv_r_master_deriv_r_xi_master.Scale(0.0);
-  //  cos_alpha_deriv_r_master_deriv_r_xixi_master.Scale(0.0);
-
-  //  cos_alpha_deriv_r_xi_master_deriv_r_slave.Scale(0.0);
-  //  cos_alpha_deriv_r_xi_master_deriv_r_xi_slave.Scale(0.0);
-  //  cos_alpha_deriv_r_xi_master_deriv_r_master.Scale(0.0);
-  //  cos_alpha_deriv_r_xi_master_deriv_r_xi_master.Scale(0.0);
-  //  cos_alpha_deriv_r_xi_master_deriv_r_xixi_master.Scale(0.0);
-  // ******************************* END DEBUG **************************************
-
-
 
   // assemble all pre-computed terms into the stiffness matrices
   for (unsigned int irowdofperdim = 0; irowdofperdim < num_dofs_per_spatial_dimension;
@@ -2974,7 +2648,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
                               N_i_master(icolumndofperdim) +
                           gap_ul_deriv_r_xi_master_deriv_r_xi_master(irowdim, icolumndim) *
                               N_i_xi_master(icolumndofperdim)));
-
 
 
           // variation of cos_alpha * linearization of pot_ia_deriv_cos_alpha
@@ -3122,8 +2795,6 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   const double regularization_separation = Params()->RegularizationSeparation();
 
 
-
-  // *** BEGIN: DISK-CYL-POT SPECIFIC ***
   T sin_alpha = 0.0;                         // sine of mutual angle of tangent vectors
   T sin_2alpha = 0.0;                        // sine of 2*mutual angle of tangent vectors
   LINALG::TMatrix<T, 3, 1> normal_bl(true);  // normal vector at bilateral closest point
@@ -3153,11 +2824,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   T Delta_partial_x = 0.0;
   T Delta_partial_gap_bl = 0.0;
   T Delta_partial_cos_alpha = 0.0;
-  // *** END: DISK-CYL-POT SPECIFIC ***
 
-
-
-  // *** BEGIN: DISK-CYL-POT SPECIFIC ***
   T pot_ia_partial_beta = 0.0;
   T pot_ia_partial_a = 0.0;
   T pot_ia_partial_Delta = 0.0;
@@ -3176,11 +2843,8 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   T pot_ia_partial_x = 0.0;
   T pot_ia_partial_cos_alpha = 0.0;
   T pot_ia_partial_gap_bl = 0.0;
-  // *** END: DISK-CYL-POT SPECIFIC ***
 
 
-
-  // *** BEGIN: DISK-CYL-POT SPECIFIC ***
   // components from variation of bilateral gap
   LINALG::TMatrix<T, 3, 1> gap_bl_partial_r_slave(true);
   LINALG::TMatrix<T, 3, 1> gap_bl_partial_r_master(true);
@@ -3203,15 +2867,10 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   T x_partial_xi_master = 0.0;
 
 
-
   // auxiliary variables
   LINALG::TMatrix<T, 3, 1> fpot_tmp(true);
   LINALG::TMatrix<T, 3, 3> v_mat_tmp(true);
-  // *** END: DISK-CYL-POT SPECIFIC ***
 
-
-
-  // *** BEGIN: DISK-CYL-POT SPECIFIC ***
   sin_alpha = std::sin(alpha);
   sin_2alpha = std::sin(2 * alpha);
 
@@ -3358,8 +3017,8 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     Delta_regularized = regularization_separation;
 
     //************************** DEBUG ******************************************
-    std::cout << "\nDelta: " << FADUTILS::CastToDouble(Delta) << ": regularization active!";
-    std::cout << "\nDelta_regularized: " << FADUTILS::CastToDouble(Delta_regularized);
+    //    std::cout << "\nDelta: " << FADUTILS::CastToDouble(Delta) << ": regularization active!";
+    //    std::cout << "\nDelta_regularized: " << FADUTILS::CastToDouble(Delta_regularized);
     //
     // this->Print(std::cout);
     // std::cout << "\nigp_total: " << igp_total;
@@ -3657,12 +3316,9 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 
     x_partial_xi_master = r_xixi_master.Dot(x_partial_r_xi_master);
   }
-  // *** END: DISK-CYL-POT SPECIFIC ***
 
 
   // store for vtk visualization
-
-  // *** BEGIN: DISK-CYL-POT SPECIFIC ***
   vtk_force_pot_slave_GP.Update(prefactor_vtk * FADUTILS::CastToDouble(pot_ia_partial_gap_bl),
       FADUTILS::CastToDouble<T, 3, 1>(gap_bl_partial_r_slave), 1.0);
 
@@ -3853,7 +3509,6 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     }
   }
 
-  // *** END: DISK-CYL-POT SPECIFIC ***
   return true;
 }
 

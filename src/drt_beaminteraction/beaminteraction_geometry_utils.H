@@ -96,8 +96,6 @@ namespace BEAMINTERACTION
      *         respect to centerline position of slave point, master point and centerline tangent of
      *         master
      *
-     *  Fixme: the (out) variables should be called (...)_partial_(...)_deriv_(...) !
-     *
      *  \author grill
      *  \date 04/19 */
     template <typename T>
