@@ -57,13 +57,21 @@ DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::LubricationEleCalc(const st
           new LubricationEleInternalVariableManager<nsd_, nen_>())),  // internal variable manager
       eid_(0),
       ele_(NULL),
-      Dt_(0.0)
+      Dt_(0.0),
+
+      // heightint_(0.0),
+      // heightdotint_(0.0),
+      pflowfac_(true),
+      pflowfacderiv_(true),
+      sflowfac_(0.0),
+      sflowfacderiv_(0.0)
 {
   dsassert(
       nsd_ >= nsd_ele_, "problem dimension has to be equal or larger than the element dimension!");
 
   return;
 }
+
 
 /*----------------------------------------------------------------------*
  | singleton access method                                  wirtz 10/15 |
@@ -221,7 +229,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::ExtractElementAndNodeV
     DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
 {
-  // 1. Extract the tangential velocity
+  // 1. Extract the average tangential velocity
 
   // nodeset the velocity is defined on
   const int ndsvel = 1;
@@ -239,6 +247,14 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::ExtractElementAndNodeV
       lmvel[inode * nsd_ + idim] = la[ndsvel].lm_[inode * numveldofpernode + idim];
 
   DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_, nen_>>(*vel, eAvTangVel_, lmvel);
+
+  // 1.1 Extract the relative tangential velocity
+  // get the global vector
+  Teuchos::RCP<const Epetra_Vector> velrel = discretization.GetState(ndsvel, "rel_tang_vel");
+  if (velrel.is_null()) dserror("got NULL pointer for \"rel_tang_vel\"");
+
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_, nen_>>(*velrel, eRelTangVel_, lmvel);
+
 
   // 2. In case of ale, extract the displacements of the element nodes and update the nodal
   // coordinates
@@ -383,24 +399,56 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Sysmat(
 
     double rhsfac = fac;  // works only for stationary problems!
 
-    // 1) element matrix
+    // bool modifiedreynolds = lubricationpara_->ModifiedReynolds();
+    if (lubricationpara_->ModifiedReynolds())
+    {
+      // dserror("we should not be here");
+      // std::cout << "modified reynolds check" << lubricationpara_->ModifiedReynolds() <<
+      // std::endl;
+      // calculate relative surface velocity of the contacting bodies at Integration point
+      LINALG::Matrix<nsd_, 1> relvel(true);  // relative surface velocity, initialized to zero
+      CalcRelVelAtIntPoint(relvel);
 
-    // 1.1) calculation of Poiseuille contribution of element matrix
+      // calculate pressure flow factor at Integration point
+      // LINALG::Matrix<nsd_, 1> pflowfac(true);  // Pressure flow factor, initialized to zero
+      // LINALG::Matrix<nsd_, 1> pflowfacderiv(true);
+      CalcPFlowFacAtIntPoint(pflowfac_, pflowfacderiv_, heightint);
 
-    CalcMatPsl(emat, timefacfac, visc, heightint);
+      // calculate shear flow factor at Integration point
+      // double sflowfac(0.0);
+      // double sflowfacderiv(0.0);
+      CalcSFlowFacAtIntPoint(sflowfac_, sflowfacderiv_, heightint);
 
-    // 2) rhs matrix
+      // 1) element matrix
+      // 1.1) calculation of Poiseuille contribution of element matrix -> Kpp
+      CalcMatPsl(emat, timefacfac, visc, heightint, pflowfac_);
+      // CalcMatPDVis(emat,timefacfac,visc, heightint_);
+      // 2) rhs matrix
+      // 2.0) calculation of shear contribution to RHS matrix
+      CalcRhsShear(erhs, rhsfac, relvel, sflowfac_);
 
-    // 2.1) calculation of Poiseuille contribution of rhs matrix
+      // 2.1) calculation of Poiseuille contribution of rhs matrix
 
-    CalcRhsPsl(erhs, rhsfac, visc, heightint);
+      CalcRhsPsl(erhs, rhsfac, visc, heightint, pflowfac_);
+    }
+    else
+    {
+      // 1) element matrix
+      // 1.1) calculation of Poiseuille contribution of element matrix
 
+      CalcMatPsl(emat, timefacfac, visc, heightint);
+
+      // 2) rhs matrix
+      // 2.1) calculation of Poiseuille contribution of rhs matrix
+
+      CalcRhsPsl(erhs, rhsfac, visc, heightint);
+    }
     // 2.2) calculation of Wedge contribution of rhs matrix
 
     CalcRhsWdg(erhs, rhsfac, heightint, avrvel);
 
     // 2.3) calculation of squeeze contribution to RHS matrix
-    CalcRhsSqz(erhs, rhsfac, heightdotint);
+    if (lubricationpara_->AddSqz()) CalcRhsSqz(erhs, rhsfac, heightdotint);
 
   }  // end loop Gauss points
 
@@ -453,18 +501,95 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::MatrixforEHLMon(
     GetMaterialParams(ele, densn, densnp, densam, visc, iquad);
 
     const LINALG::Matrix<nsd_, 1>& gradpre = lubricationvarmanager_->GradPre();
+    const double roughness = lubricationpara_->RoughnessDeviation();
+    // std::cout << "roughness is equal to check::" << roughness << std::endl;
 
-    // Linearization of Poiseuille term wrt the film height
-    for (int vi = 0; vi < nen_; vi++)
+    if (lubricationpara_->ModifiedReynolds())
     {
-      double laplawf(0.0);
-      GetLaplacianWeakFormRHS(laplawf, gradpre, vi);
-      for (int ui = 0; ui < nen_; ui++)
+      // dserror("we should not be here");
+      // calculate relative surface velocity of the contacting bodies at Integration point
+      LINALG::Matrix<nsd_, 1> relvel(true);  // relative surface velocity, initialized to zero
+      CalcRelVelAtIntPoint(relvel);
+
+      // calculate pressure flow factor at Integration point
+      // LINALG::Matrix<nsd_, 1> pflowfac(true);  // Pressure flow factor, initialized to zero
+      // LINALG::Matrix<nsd_, 1> pflowfacderiv(true);
+      CalcPFlowFacAtIntPoint(pflowfac_, pflowfacderiv_, heightint);
+
+      // calculate shear flow factor at Integration point
+      // double sflowfac(0.0);
+      // double sflowfacderiv(0.0);
+      CalcSFlowFacAtIntPoint(sflowfac_, sflowfacderiv_, heightint);
+
+      // Linearization of Poiseuille term wrt the film height (first part)
+      for (int vi = 0; vi < nen_; vi++)
       {
-        double val = fac * (1 / (12 * visc)) * 3 * heightint * heightint * laplawf * funct_(ui);
-        ematheight(vi, (ui * nsd_)) -= val;
-      }
-    }  // end loop for linearization of Poiseuille term wrt the film height
+        double laplawf(0.0);
+        GetLaplacianWeakFormRHS(laplawf, gradpre, vi, pflowfac_);
+        for (int ui = 0; ui < nen_; ui++)
+        {
+          double val = fac * (1 / (12 * visc)) * 3 * heightint * heightint * laplawf * funct_(ui);
+          ematheight(vi, (ui * nsd_)) -= val;
+        }
+      }  // end loop for linearization of Poiseuille term wrt the film height (first part)
+
+      // Linearization of Poiseuille term wrt the film height (second part)
+      for (int vi = 0; vi < nen_; vi++)
+      {
+        double laplawf(0.0);
+        GetLaplacianWeakFormRHS(laplawf, gradpre, vi, pflowfacderiv_);
+        for (int ui = 0; ui < nen_; ui++)
+        {
+          double val =
+              fac * (1 / (12 * visc)) * heightint * heightint * heightint * laplawf * funct_(ui);
+          ematheight(vi, (ui * nsd_)) -= val;
+        }
+      }  // end loop for linearization of Poiseuille term wrt the film height (second part)
+
+      // Linearization of Shear term wrt the film height
+      for (int vi = 0; vi < nen_; vi++)
+      {
+        double val(0.0);
+
+        for (int idim = 0; idim < nsd_; idim++)
+        {
+          val += derxy_(idim, vi) * relvel(idim);
+        }
+
+        for (int ui = 0; ui < nen_; ui++)
+        {
+          ematheight(vi, (ui * nsd_)) += fac * roughness * sflowfacderiv_ * val * funct_(ui);
+        }
+      }  // end loop for linearization of Shear term wrt the film height
+
+      // Linearization of Shear term wrt the velocities
+      for (int vi = 0; vi < nen_; vi++)
+      {
+        for (int ui = 0; ui < nen_; ui++)
+        {
+          for (int idim = 0; idim < nsd_; idim++)
+          {
+            ematvel(vi, (ui * nsd_ + idim)) -=
+                fac * sflowfac_ * roughness * derxy_(idim, vi) * funct_(ui);
+          }
+        }
+      }  // end loop for linearization of Shear term wrt the velocities
+    }
+    else
+    {
+      // Linearization of Poiseuille term wrt the film height
+      for (int vi = 0; vi < nen_; vi++)
+      {
+        double laplawf(0.0);
+        GetLaplacianWeakFormRHS(laplawf, gradpre, vi);
+        for (int ui = 0; ui < nen_; ui++)
+        {
+          double val = fac * (1 / (12 * visc)) * 3 * heightint * heightint * laplawf * funct_(ui);
+          ematheight(vi, (ui * nsd_)) -= val;
+        }
+      }  // end loop for linearization of Poiseuille term wrt the film height
+    }
+
 
     // Linearization of Couette term wrt the film height
     for (int vi = 0; vi < nen_; vi++)
@@ -482,14 +607,17 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::MatrixforEHLMon(
       }
     }  // end loop for linearization of Couette term wrt the film height
 
-    // Linearization of Squeeze term wrt the film height
-    for (int vi = 0; vi < nen_; vi++)
+    if (lubricationpara_->AddSqz())
     {
-      for (int ui = 0; ui < nen_; ui++)
+      // Linearization of Squeeze term wrt the film height
+      for (int vi = 0; vi < nen_; vi++)
       {
-        ematheight(vi, (ui * nsd_)) -= fac * (1.0 / Dt_) * funct_(ui) * funct_(vi);
-      }
-    }  // end loop for linearization of Squeeze term wrt the film height
+        for (int ui = 0; ui < nen_; ui++)
+        {
+          ematheight(vi, (ui * nsd_)) -= fac * (1.0 / Dt_) * funct_(ui) * funct_(vi);
+        }
+      }  // end loop for linearization of Squeeze term wrt the film height
+    }
 
     // Linearization of Couette term wrt the velocities
     for (int vi = 0; vi < nen_; vi++)
@@ -516,6 +644,45 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::SetInternalVariablesForMatAndRHS()
 {
   lubricationvarmanager_->SetInternalVariables(funct_, derxy_, eprenp_);
+  return;
+}
+
+/*------------------------------------------------------------------------------*
+ | set internal variables (pressure flow factor)                   Faraji 02/19 |
+ *------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcPFlowFacAtIntPoint(
+    LINALG::Matrix<nsd_, 1>& pflowfac, LINALG::Matrix<nsd_, 1>& pflowfacderiv,
+    const double heightint)
+{
+  if (!(lubricationpara_->ModifiedReynolds()))
+    dserror("Classical Reynolds Equ. does NOT need flow factors!");
+  // lubricationvarmanager_->PressureFlowFactor(funct_, derxy_, eprenp_);
+  const double roughness = lubricationpara_->RoughnessDeviation();
+  const double r = (roughness / heightint);
+  for (int i = 0; i < nsd_; ++i)
+  {
+    pflowfac(i) = 1 + 3 * r * r;
+    pflowfacderiv(i) = (-6) * r * r / heightint;
+  }
+  return;
+}
+
+/*------------------------------------------------------------------------------*
+ | set internal variables  (shear flow factor)                     Faraji 02/19 |
+ *------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcSFlowFacAtIntPoint(
+    double& sflowfac, double& sflowfacderiv, const double heightint)
+{
+  if (!(lubricationpara_->ModifiedReynolds()))
+    dserror("Classical Reynolds Equ. does NOT need flow factors!");
+  // lubricationvarmanager_->ShearFlowFactor(sflowfac, sflowfacderiv, heightint);
+  const double roughness = lubricationpara_->RoughnessDeviation();
+  const double r = (roughness / heightint);
+  sflowfac = (-3 * r - 30 * r * r * r) / (1 + 6 * r * r);
+  sflowfacderiv = (3 * r + 54 * r * r * r - 360 * r * r * r * r * r) /
+                  (heightint * (1 + 6 * r * r) * (1 + 6 * r * r));
   return;
 }
 
@@ -595,6 +762,81 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::MatLubrication(
 }  // LubricationEleCalc<distype>::MatLubrication
 
 /*------------------------------------------------------------------- *
+ |  calculate linearization of the Laplacian (weak form)
+ *--------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::GetLaplacianWeakForm(
+    double& val,   //!< value of linearization of weak laplacian
+    const int vi,  //!< node index for the weighting function
+    const int ui   //!< node index for the shape function
+)
+{
+  val = 0.0;
+  for (int j = 0; j < nsd_; j++)
+  {
+    val += derxy_(j, vi) * derxy_(j, ui);
+  }
+  return;
+}
+
+/*------------------------------------------------------------------- *
+ |  calculate linearization of the Laplacian (weak form)
+ *--------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::GetLaplacianWeakForm(
+    double& val,   //!< value of linearization of weak laplacian
+    const int vi,  //!< node index for the weighting function
+    const int ui,  //!< node index for the shape function
+    const LINALG::Matrix<nsd_, 1> pflowfac)
+{
+  // dserror("we should not be here");
+  val = 0.0;
+  for (int j = 0; j < nsd_; j++)
+  {
+    val += derxy_(j, vi) * derxy_(j, ui) * pflowfac(j);
+  }
+
+  return;
+}
+
+/*------------------------------------------------------------------- *
+ |  calculate the Laplacian (weak form)
+ *--------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::GetLaplacianWeakFormRHS(
+    double& val,                             //!< value of weak laplacian
+    const LINALG::Matrix<nsd_, 1>& gradpre,  //!< pressure gradient at gauss point
+    const int vi                             //!< node index for the weighting function
+)
+{
+  val = 0.0;
+  for (int j = 0; j < nsd_; j++)
+  {
+    val += derxy_(j, vi) * gradpre(j);
+  }
+  return;
+}
+
+/*------------------------------------------------------------------- *
+ |  calculate the Laplacian (weak form)
+ *--------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::GetLaplacianWeakFormRHS(
+    double& val,                             //!< value of weak laplacian
+    const LINALG::Matrix<nsd_, 1>& gradpre,  //!< pressure gradient at gauss point
+    const int vi,                            //!< node index for the weighting function
+    const LINALG::Matrix<nsd_, 1> pflowfac)
+{
+  // dserror("we should not be here");
+  val = 0.0;
+  for (int j = 0; j < nsd_; j++)
+  {
+    val += derxy_(j, vi) * gradpre(j) * pflowfac(j);
+  }
+  return;
+}
+
+/*------------------------------------------------------------------- *
  |  calculation of Poiseuille element matrix
  *--------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
@@ -609,6 +851,31 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcMatPsl(Epetra_Seri
     {
       double laplawf(0.0);
       GetLaplacianWeakForm(laplawf, ui, vi);
+      emat(vi, ui) -= fac_psl * laplawf;
+    }
+  }
+  return;
+}
+
+/*------------------------------------------------------------------- *
+ |  calculation of Poiseuille element matrix           Faraji  02/19  |
+ *--------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcMatPsl(Epetra_SerialDenseMatrix& emat,
+    const double timefacfac, const double viscosity, const double height,
+    const LINALG::Matrix<nsd_, 1> pflowfac)
+{
+  if (!(lubricationpara_->ModifiedReynolds()))
+    dserror("There is no pressure flow factor in classical reynolds Equ.");
+
+  // Poiseuille term
+  const double fac_psl = timefacfac * (1 / (12 * viscosity)) * height * height * height;
+  for (int vi = 0; vi < nen_; ++vi)
+  {
+    for (int ui = 0; ui < nen_; ++ui)
+    {
+      double laplawf(0.0);
+      GetLaplacianWeakForm(laplawf, ui, vi, pflowfac);
       emat(vi, ui) -= fac_psl * laplawf;
     }
   }
@@ -631,6 +898,30 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcRhsPsl(Epetra_Seri
   {
     double laplawf(0.0);
     GetLaplacianWeakFormRHS(laplawf, gradpre, vi);
+    erhs[vi] += fac_rhs_psl * laplawf;
+  }
+  return;
+}
+
+/*------------------------------------------------------------------- *
+ |  calculation of Poiseuille rhs matrix              Faraji   02/19  |
+ *--------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcRhsPsl(Epetra_SerialDenseVector& erhs,
+    const double rhsfac, const double viscosity, const double height,
+    const LINALG::Matrix<nsd_, 1> pflowfac)
+{
+  if (!(lubricationpara_->ModifiedReynolds()))
+    dserror("There is no pressure flow factor in classical reynolds Equ.");
+  // Poiseuille rhs term
+  const double fac_rhs_psl = rhsfac * (1 / (12 * viscosity)) * height * height * height;
+
+  const LINALG::Matrix<nsd_, 1>& gradpre = lubricationvarmanager_->GradPre();
+
+  for (int vi = 0; vi < nen_; ++vi)
+  {
+    double laplawf(0.0);
+    GetLaplacianWeakFormRHS(laplawf, gradpre, vi, pflowfac);
     erhs[vi] += fac_rhs_psl * laplawf;
   }
   return;
@@ -666,12 +957,40 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcRhsSqz(
     Epetra_SerialDenseVector& erhs, const double rhsfac, const double heightdot)
 {
+  if (!lubricationpara_->AddSqz()) dserror("You chosed NOT to add the squeeze term! WATCHOUT");
   // Squeeze rhs term
   const double fac_rhs_sqz = rhsfac * heightdot;
 
   for (int vi = 0; vi < nen_; ++vi)
   {
     erhs[vi] += fac_rhs_sqz * funct_(vi);
+  }
+  return;
+}
+
+/*------------------------------------------------------------------- *
+ |  calculation of shear rhs matrix                     Faraji 02/19  |
+ *--------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcRhsShear(
+    Epetra_SerialDenseVector& erhs, const double rhsfac, const LINALG::Matrix<nsd_, 1> velocity,
+    const double sflowfac)
+{
+  if (!(lubricationpara_->ModifiedReynolds()))
+    dserror("There is no shear term in classical reynolds Equ.");
+  // shear rhs term
+  const double roughness = lubricationpara_->RoughnessDeviation();
+  const double fac_rhs_shear = rhsfac * roughness;
+
+  for (int vi = 0; vi < nen_; ++vi)
+  {
+    double val(0.0);
+
+    for (int i = 0; i < nsd_; ++i)
+    {
+      val += derxy_(i, vi) * velocity(i) * sflowfac;
+    }
+    erhs[vi] -= fac_rhs_shear * val;
   }
   return;
 }
@@ -855,6 +1174,20 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcAvrVelAtIntPoint(
   return;
 }
 
+/*-----------------------------------------------------------------------*
+  |  get the relative velocity of the contacting bodies interpolated at   |
+  |  the Int Point
+  *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcRelVelAtIntPoint(
+    LINALG::Matrix<nsd_, 1>& relvel  //!< relative surface velocity at Int point
+)
+{
+  // interpolate the velocities at the integration point
+  relvel.Multiply(1., eRelTangVel_, funct_, 0.);
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  | evaluate service routine                                 wirtz 10/15 |
