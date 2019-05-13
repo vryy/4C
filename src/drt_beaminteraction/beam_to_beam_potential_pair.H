@@ -216,7 +216,7 @@ namespace BEAMINTERACTION
      *  \date 10/17 */
     void EvaluateStiffpotAnalyticContributions_DoubleLengthSpecific_SmallSepApprox(
         LINALG::TMatrix<double, 3, 1> const& dist, double const& norm_dist, double const& gap,
-        double const& gap_exp1, double q1q2_JacFac_GaussWeights,
+        double const& gap_regularized, double const& gap_exp1, double q1q2_JacFac_GaussWeights,
         LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N1_i_GP1,
         LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N2_i_GP2,
         LINALG::SerialDenseMatrix& stiffmat11, LINALG::SerialDenseMatrix& stiffmat12,
@@ -230,7 +230,8 @@ namespace BEAMINTERACTION
     void EvaluateStiffpotAnalyticContributions_DoubleLengthSpecific_SmallSepApprox(
         LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1> const& dist,
         Sacado::Fad::DFad<double> const& norm_dist, Sacado::Fad::DFad<double> const& gap,
-        Sacado::Fad::DFad<double> const& gap_exp1, double q1q2_JacFac_GaussWeights,
+        Sacado::Fad::DFad<double> const& gap_regularized, Sacado::Fad::DFad<double> const& gap_exp1,
+        double q1q2_JacFac_GaussWeights,
         LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N1_i_GP1,
         LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N2_i_GP2,
         LINALG::SerialDenseMatrix& stiffmat11, LINALG::SerialDenseMatrix& stiffmat12,
@@ -249,6 +250,30 @@ namespace BEAMINTERACTION
         LINALG::TMatrix<T, 3 * numnodes * numnodalvalues, 1>& force_pot2,
         LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
         LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22);
+
+    /** \brief Evaluate all quantities for the full disk-cylinder potential law
+     *
+     *  \author grill
+     *  \date 03/19 */
+    bool EvaluateFullDiskCylinderPotential(T& interaction_potential_GP,
+        LINALG::TMatrix<T, 3 * numnodes * numnodalvalues, 1>& force_pot_slave_GP,
+        LINALG::TMatrix<T, 3 * numnodes * numnodalvalues, 1>& force_pot_master_GP,
+        LINALG::TMatrix<T, 3, 1> const& r_slave, LINALG::TMatrix<T, 3, 1> const& r_xi_slave,
+        LINALG::TMatrix<T, 3, 1> const& t1_slave, LINALG::TMatrix<T, 3, 1> const& r_master,
+        LINALG::TMatrix<T, 3, 1> const& r_xi_master, LINALG::TMatrix<T, 3, 1> const& r_xixi_master,
+        LINALG::TMatrix<T, 3, 1> const& t1_master, T alpha, T cos_alpha,
+        LINALG::TMatrix<T, 3, 1> const& dist_ul,
+        LINALG::TMatrix<T, 1, 3> const& xi_master_partial_r_slave,
+        LINALG::TMatrix<T, 1, 3> const& xi_master_partial_r_master,
+        LINALG::TMatrix<T, 1, 3> const& xi_master_partial_r_xi_master, double prefactor_vtk,
+        LINALG::TMatrix<double, 3, 1>& vtk_force_pot_slave_GP,
+        LINALG::TMatrix<double, 3, 1>& vtk_force_pot_master_GP,
+        LINALG::TMatrix<double, 3, 1>& vtk_moment_pot_slave_GP,
+        LINALG::TMatrix<double, 3, 1>& vtk_moment_pot_master_GP, double rho1rho2_JacFac_GaussWeight,
+        LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N_i_slave,
+        LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N_i_xi_slave,
+        LINALG::TMatrix<T, 1, numnodes * numnodalvalues> const& N_i_master,
+        LINALG::TMatrix<T, 1, numnodes * numnodalvalues> const& N_i_xi_master);
 
     /** \brief scale given stiffness matrices by given scalar factor
      *
@@ -331,25 +356,114 @@ namespace BEAMINTERACTION
         LINALG::SerialDenseMatrix& stiffmat11, LINALG::SerialDenseMatrix& stiffmat12,
         LINALG::SerialDenseMatrix& stiffmat21, LINALG::SerialDenseMatrix& stiffmat22) const;
 
-    //  void CalcFpotGausspointAutomaticDifferentiationIfRequired(
-    //      LINALG::TMatrix<double,3*numnodes*numnodalvalues,1>& force_pot1,
-    //      LINALG::TMatrix<double,3*numnodes*numnodalvalues,1>& force_pot2,
-    //      Sacado::Fad::DFad<double> const& interaction_potential,
-    //      LINALG::TMatrix<Sacado::Fad::DFad<double>,1,3*numnodes*numnodalvalues> const&
-    //      lin_xi_master_slaveDofs,
-    //      LINALG::TMatrix<Sacado::Fad::DFad<double>,1,3*numnodes*numnodalvalues> const&
-    //      lin_xi_master_masterDofs) const;
-    //
-    //  void CalcFpotGausspointAutomaticDifferentiationIfRequired(
-    //      LINALG::TMatrix<double,3*numnodes*numnodalvalues,1>& force_pot1,
-    //      LINALG::TMatrix<double,3*numnodes*numnodalvalues,1>& force_pot2,
-    //      double const& interaction_potential,
-    //      LINALG::TMatrix<double,1,3*numnodes*numnodalvalues> const& lin_xi_master_slaveDofs,
-    //      LINALG::TMatrix<double,1,3*numnodes*numnodalvalues> const& lin_xi_master_masterDofs)
-    //      const
-    //  {
-    //    // this is a dummy since for type double, no automatic differentiation is available
-    //  }
+    /** \brief compute discrete force vectors using automatic differentiation
+     *
+     *  \author grill
+     *  \date 02/19 */
+    void CalcFpotGausspointAutomaticDifferentiationIfRequired(
+        LINALG::TMatrix<double, 3 * numnodes * numnodalvalues, 1>& force_pot1,
+        LINALG::TMatrix<double, 3 * numnodes * numnodalvalues, 1>& force_pot2,
+        Sacado::Fad::DFad<double> const& interaction_potential,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3 * numnodes * numnodalvalues> const&
+            lin_xi_master_slaveDofs,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3 * numnodes * numnodalvalues> const&
+            lin_xi_master_masterDofs) const;
+
+    /** \brief compute discrete force vectors using automatic differentiation
+     *
+     *  \author grill
+     *  \date 02/19 */
+    void CalcFpotGausspointAutomaticDifferentiationIfRequired(
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 3 * numnodes * numnodalvalues, 1>& force_pot1,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 3 * numnodes * numnodalvalues, 1>& force_pot2,
+        Sacado::Fad::DFad<double> const& interaction_potential,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3 * numnodes * numnodalvalues> const&
+            lin_xi_master_slaveDofs,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3 * numnodes * numnodalvalues> const&
+            lin_xi_master_masterDofs) const;
+
+    /** \brief compute discrete force vectors using automatic differentiation
+     *
+     *  \author grill
+     *  \date 02/19 */
+    void CalcFpotGausspointAutomaticDifferentiationIfRequired(
+        LINALG::TMatrix<double, 3 * numnodes * numnodalvalues, 1>& force_pot1,
+        LINALG::TMatrix<double, 3 * numnodes * numnodalvalues, 1>& force_pot2,
+        double const& interaction_potential,
+        LINALG::TMatrix<double, 1, 3 * numnodes * numnodalvalues> const& lin_xi_master_slaveDofs,
+        LINALG::TMatrix<double, 1, 3 * numnodes * numnodalvalues> const& lin_xi_master_masterDofs)
+        const
+    {
+      // this is a dummy since for type double, no automatic differentiation is available
+    }
+
+    /** \brief evaluate analytic linearization (i.e. stiffness matrices) at current Gauss point
+     *
+     *  \param stiffmat11 d (Residuum_vec_1) / d (dof_vec_1)
+     *
+     *  \author grill
+     *  \date 04/19 */
+    void EvaluateStiffpotAnalyticContributions_SingleLengthSpecific_SmallSepApprox_Simple(
+        LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N_i_slave,
+        LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N_i_xi_slave,
+        LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N_i_master,
+        LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N_i_xi_master,
+        LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N_i_xixi_master,
+        double const& xi_master, LINALG::TMatrix<double, 3, 1> const& r_xi_slave,
+        LINALG::TMatrix<double, 3, 1> const& r_xi_master,
+        LINALG::TMatrix<double, 3, 1> const& r_xixi_master, double const& norm_dist_ul,
+        LINALG::TMatrix<double, 3, 1> const& normal_ul, double const& pot_ia_deriv_gap_ul,
+        double const& pot_ia_deriv_cos_alpha, double const& pot_ia_2ndderiv_gap_ul,
+        double const& pot_ia_deriv_gap_ul_deriv_cos_alpha, double const& pot_ia_2ndderiv_cos_alpha,
+        LINALG::TMatrix<double, 3, 1> const& gap_ul_deriv_r_slave,
+        LINALG::TMatrix<double, 3, 1> const& gap_ul_deriv_r_master,
+        LINALG::TMatrix<double, 3, 1> const& cos_alpha_deriv_r_slave,
+        LINALG::TMatrix<double, 3, 1> const& cos_alpha_deriv_r_master,
+        LINALG::TMatrix<double, 3, 1> const& cos_alpha_deriv_r_xi_slave,
+        LINALG::TMatrix<double, 3, 1> const& cos_alpha_deriv_r_xi_master,
+        LINALG::TMatrix<double, 1, 3> const& xi_master_partial_r_slave,
+        LINALG::TMatrix<double, 1, 3> const& xi_master_partial_r_master,
+        LINALG::TMatrix<double, 1, 3> const& xi_master_partial_r_xi_master,
+        LINALG::SerialDenseMatrix& stiffmat11, LINALG::SerialDenseMatrix& stiffmat12,
+        LINALG::SerialDenseMatrix& stiffmat21, LINALG::SerialDenseMatrix& stiffmat22) const;
+
+    /** \brief evaluate analytic linearization (i.e. stiffness matrices) at current Gauss point
+     *
+     *  \author grill
+     *  \date 04/19 */
+    void EvaluateStiffpotAnalyticContributions_SingleLengthSpecific_SmallSepApprox_Simple(
+        LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N_i_slave,
+        LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N_i_xi_slave,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, numnodes * numnodalvalues> const& N_i_master,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, numnodes * numnodalvalues> const&
+            N_i_xi_master,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, numnodes * numnodalvalues> const&
+            N_i_xixi_master,
+        Sacado::Fad::DFad<double> const& xi_master,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1> const& r_xi_slave,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1> const& r_xi_master,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1> const& r_xixi_master,
+        Sacado::Fad::DFad<double> const& norm_dist_ul,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1> const& normal_ul,
+        Sacado::Fad::DFad<double> const& pot_ia_deriv_gap_ul,
+        Sacado::Fad::DFad<double> const& pot_ia_deriv_cos_alpha,
+        Sacado::Fad::DFad<double> const& pot_ia_2ndderiv_gap_ul,
+        Sacado::Fad::DFad<double> const& pot_ia_deriv_gap_ul_deriv_cos_alpha,
+        Sacado::Fad::DFad<double> const& pot_ia_2ndderiv_cos_alpha,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1> const& gap_ul_deriv_r_slave,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1> const& gap_ul_deriv_r_master,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1> const& cos_alpha_deriv_r_slave,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1> const& cos_alpha_deriv_r_master,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1> const& cos_alpha_deriv_r_xi_slave,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1> const& cos_alpha_deriv_r_xi_master,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3> const& xi_master_partial_r_slave,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3> const& xi_master_partial_r_master,
+        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3> const& xi_master_partial_r_xi_master,
+        LINALG::SerialDenseMatrix& stiffmat11, LINALG::SerialDenseMatrix& stiffmat12,
+        LINALG::SerialDenseMatrix& stiffmat21, LINALG::SerialDenseMatrix& stiffmat22) const
+    {
+      // this is a dummy since for type FAD, no analytic linearization is required
+    }
 
     /*!
     \brief Calculate shape function values for given parameter values

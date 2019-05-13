@@ -42,13 +42,23 @@ namespace INPAR
     /// (this enum represents the input file parameter STRATEGY)
     enum BeamPotentialStrategy
     {
-      strategy_doublelengthspec_largesepapprox,  ///< double length specific potential, large
-                                                 ///< separations
-      strategy_doublelengthspec_smallsepapprox,  ///< double length specific potential, small
-                                                 ///< separations
-      strategy_singlelengthspec_smallsepapprox,  ///< single length specific potential, small
-                                                 ///< separations
+      strategy_doublelengthspec_largesepapprox,         ///< double length specific potential, large
+                                                        ///< separations
+      strategy_doublelengthspec_smallsepapprox,         ///< double length specific potential, small
+                                                        ///< separations
+      strategy_singlelengthspec_smallsepapprox,         ///< single length specific potential, small
+                                                        ///< separations
+      strategy_singlelengthspec_smallsepapprox_simple,  ///< reduced variant of the previous one
       strategy_vague
+    };
+
+    /// available types to regularize the force law for separations smaller than
+    /// the specified regularization parameter
+    enum BeamPotentialRegularizationType
+    {
+      regularization_linear,    ///< linear extrapolation
+      regularization_constant,  ///< constant extrapolation, i.e. f(r)=f(r_reg) for all r<r_reg
+      regularization_none       ///< no regularization
     };
 
     /// data format for written numeric data via vtk

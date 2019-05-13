@@ -35,6 +35,7 @@ INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
 RESULTSEVRY                     1
+RESEVRYERGY                     1
 RESTARTEVRY                     10
 NLNSOL                          fullnewton
 TIMESTEP                        1.0e-4
