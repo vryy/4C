@@ -1,12 +1,12 @@
-/*!----------------------------------------------------------------------
-
+/*---------------------------------------------------------------------*/
+/*!
 \brief global algorithm control class for all immersed and cell migration algorithms
 
 \level 2
 
 \maintainer Jonas Eichinger
-
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 #include <Teuchos_TimeMonitor.hpp>
 #include "immersed_problem_dyn.H"
 #include "immersed_base.H"

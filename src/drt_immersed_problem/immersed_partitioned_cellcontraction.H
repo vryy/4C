@@ -1,23 +1,22 @@
-/*!----------------------------------------------------------------------
-
+/*---------------------------------------------------------------------*/
+/*!
 \brief partitioned immersed contraction algorithm
 
 \level 3
 
 \maintainer Jonas Eichinger
-
-*----------------------------------------------------------------------*/
-*----------------------------------------------------------------------* /
+*/
+/*---------------------------------------------------------------------*/
 #ifndef IMMERSED_PARTITIONED_CELLCONTRACTION_H
 #define IMMERSED_PARTITIONED_CELLCONTRACTION_H
 
 #include "immersed_partitioned.H"
 #include "immersed_field_exchange_manager.H"
 
-    /*----------------------------------------------------------------------*
-     | forward declarations                                                  |
-     *----------------------------------------------------------------------*/
-    namespace POROELAST
+/*----------------------------------------------------------------------*
+ | forward declarations                                                  |
+ *----------------------------------------------------------------------*/
+namespace POROELAST
 {
   // class Monolithic;
   class PoroScatraBase;
