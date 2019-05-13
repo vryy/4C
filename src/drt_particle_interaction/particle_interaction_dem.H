@@ -98,6 +98,12 @@ namespace PARTICLEINTERACTION
     //! init contact handler
     virtual void InitContactHandler();
 
+    //! set initial radius
+    virtual void SetInitialRadius();
+
+    //! set initial mass
+    virtual void SetInitialMass();
+
     //! clear force and moment states of particles
     virtual void ClearForceAndMomentStates() const;
 

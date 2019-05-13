@@ -200,6 +200,13 @@ namespace INPAR
       TangentialLinSpringDamp
     };
 
+    //! type of (random) particle radius distribution
+    enum RadiusDistribution
+    {
+      NoRadiusDistribution,
+      NormalRadiusDistribution,
+      LogNormalRadiusDistribution
+    };
 
     //! set the particle parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
