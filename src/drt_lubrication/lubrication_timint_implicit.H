@@ -109,6 +109,9 @@ namespace LUBRICATION
     //! set the time derivative of the height (film thickness) by OST
     void SetHeightDotField(const int nds, Teuchos::RCP<const Epetra_Vector> heightdot);
 
+    //! set relative tangential interface velocity for Reynolds equation
+    void SetRelativeVelocityField(const int nds, Teuchos::RCP<const Epetra_Vector> rel_vel);
+
     //! set average tangential interface velocity for Reynolds equation
     void SetAverageVelocityField(const int nds, Teuchos::RCP<const Epetra_Vector> av_vel);
 
@@ -376,6 +379,13 @@ namespace LUBRICATION
     //! incremental or linear full solving? rename -> is_incremental_
     bool incremental_;
 
+    //! flag for Modified Reynolds Equation
+    bool modified_reynolds_;
+
+    //! flag for adding squeeze term to Reynolds Equ.
+    bool addsqz_;
+
+
     /*--- query and output ---------------------------------------------------*/
 
     //! flag for printing out mean values of pressures
@@ -479,7 +489,11 @@ namespace LUBRICATION
     //! write restart data every uprestart_ steps ? writesolutioneveryrestart_
     int uprestart_;
 
+    //! Surface roughness standard deviation used in Modified Reynolds Equation
+    double roughness_deviation_;
+
     /*========================================================================*/
+
 
   };  // class TimIntImpl
 }  // namespace LUBRICATION

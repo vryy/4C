@@ -134,6 +134,7 @@ namespace DRT
 
       //! number of space dimensions
       static const int nsd_ = probdim;
+
       //! space dimension of Lubrication element (only for flat domains nsd_ele_ = nsd_)
       static const int nsd_ele_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
@@ -175,6 +176,11 @@ namespace DRT
           LINALG::Matrix<nsd_, 1>& avrvel  //!< average surface velocity at Int point
       );
 
+      //! Calculate the relative velocity of the contacting bodies at the Int point
+      virtual void CalcRelVelAtIntPoint(
+          LINALG::Matrix<nsd_, 1>& relvel  //!< relative surface velocity at Int point
+      );
+
       //! read element coordinates
       virtual void ReadElementCoordinates(const DRT::Element* ele);
 
@@ -189,6 +195,14 @@ namespace DRT
 
       //! set internal variables
       virtual void SetInternalVariablesForMatAndRHS();
+
+      //! evaluate pressure and shear flow factors for modified reynolds equation
+      virtual void CalcPFlowFacAtIntPoint(LINALG::Matrix<nsd_, 1>& pflowfac,
+          LINALG::Matrix<nsd_, 1>& pflowfacderiv, const double heightint);
+
+      //! evaluate pressure and shear flow factors for modified reynolds equation
+      virtual void CalcSFlowFacAtIntPoint(
+          double& sflowfac, double& sflowfacderiv, const double heightint);
 
       /*========================================================================*/
       //! @name routines for additional element evaluations (called from EvaluateAction)
@@ -244,41 +258,32 @@ namespace DRT
       //! @name methods for evaluation of individual terms
       /*========================================================================*/
 
-      //! calculate linearization of the Laplacian (weak form)
-      void GetLaplacianWeakForm(double& val,  //!< value of linearization of weak laplacian
-          const int vi,                       //!< node index for the weighting function
-          const int ui                        //!< node index for the shape function
-      )
-      {
-        val = 0.0;
-        for (int j = 0; j < nsd_; j++)
-        {
-          val += derxy_(j, vi) * derxy_(j, ui);
-        }
-        return;
-      };
-
+      //! calculate linearization of the Laplacian (weak form) for element integration
+      virtual void GetLaplacianWeakForm(double& val, const int vi, const int ui);
+      //! calculate linearization of the Laplacian (weak form) for element integration
+      virtual void GetLaplacianWeakForm(
+          double& val, const int vi, const int ui, const LINALG::Matrix<nsd_, 1> pflowfac);
       //! calculate the Laplacian (weak form)
-      void GetLaplacianWeakFormRHS(double& val,    //!< value of weak laplacian
-          const LINALG::Matrix<nsd_, 1>& gradpre,  //!< pressure gradient at gauss point
-          const int vi                             //!< node index for the weighting function
-      )
-      {
-        val = 0.0;
-        for (int j = 0; j < nsd_; j++)
-        {
-          val += derxy_(j, vi) * gradpre(j);
-        }
-        return;
-      };
-
+      virtual void GetLaplacianWeakFormRHS(
+          double& val, const LINALG::Matrix<nsd_, 1>& gradpre, const int vi);
+      //! calculate the Laplacian (weak form)
+      virtual void GetLaplacianWeakFormRHS(double& val, const LINALG::Matrix<nsd_, 1>& gradpre,
+          const int vi, const LINALG::Matrix<nsd_, 1> pflowfac);
       //! calculation of Poiseuille contribution to element matrix
       virtual void CalcMatPsl(Epetra_SerialDenseMatrix& emat, const double timefacfac,
           const double viscosity, const double height);
 
+      //! calculation of Poiseuille contribution to element matrix in modified Rey. Equ.
+      virtual void CalcMatPsl(Epetra_SerialDenseMatrix& emat, const double timefacfac,
+          const double viscosity, const double height, const LINALG::Matrix<nsd_, 1> pflowfac);
+
       //! calculation of Poiseuille contribution to RHS matrix
       virtual void CalcRhsPsl(Epetra_SerialDenseVector& erhs, const double rhsfac,
           const double viscosity, const double height);
+
+      //! calculation of Poiseuille contribution to RHS matrix in modified Rey. Equ.
+      virtual void CalcRhsPsl(Epetra_SerialDenseVector& erhs, const double rhsfac,
+          const double viscosity, const double height, const LINALG::Matrix<nsd_, 1> pflowfac);
 
       //! calculation of Wedge contribution to RHS matrix
       virtual void CalcRhsWdg(Epetra_SerialDenseVector& erhs, const double rhsfac,
@@ -287,6 +292,10 @@ namespace DRT
       //! calculation of Squeeze contribution to RHS matrix
       virtual void CalcRhsSqz(
           Epetra_SerialDenseVector& erhs, const double rhsfac, const double heightdot);
+
+      //! calculation of Shear contribution to RHS matrix
+      virtual void CalcRhsShear(Epetra_SerialDenseVector& erhs, const double rhsfac,
+          const LINALG::Matrix<nsd_, 1> velocity, const double sflowfac);
 
       /*========================================================================*/
       //! @name parameter lists
@@ -332,6 +341,9 @@ namespace DRT
       //! Average tangential interface velocity
       LINALG::Matrix<nsd_, nen_> eAvTangVel_;
 
+      //! Relative tangential interface velocity
+      LINALG::Matrix<nsd_, nen_> eRelTangVel_;
+
       //!  array of element nodal displacement at time n+1
       LINALG::Matrix<nsd_, nen_> edispnp_;
 
@@ -355,6 +367,18 @@ namespace DRT
       DRT::Element* ele_;
       //! time step
       double Dt_;
+
+      /// Pressure flow factor, initialized to zero
+      LINALG::Matrix<nsd_, 1> pflowfac_;
+
+      /// Pressure flow factor derivative, initialized to zero
+      LINALG::Matrix<nsd_, 1> pflowfacderiv_;
+
+      /// shear flow factor
+      double sflowfac_;
+
+      /// shear flow factor derivative
+      double sflowfacderiv_;
     };
 
     /// LubricationEleInternalVariableManager implementation

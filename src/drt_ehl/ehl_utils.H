@@ -4,12 +4,10 @@
 
 \brief utility class for  elastohydrodynamic lubrication (lubrication structure interaction)
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15270
-</pre>
+\level 3
+
+\maintainer Mostafa Faraji
+
 */
 /*--------------------------------------------------------------------------*/
 #ifndef SRC_DRT_EHL_EHL_UTILS_H_
@@ -30,7 +28,12 @@ namespace EHL
     // Modification of time parameter list for problem with different time step size
     void ChangeTimeParameter(const Epetra_Comm& comm, Teuchos::ParameterList& ehlparams,
         Teuchos::ParameterList& lubricationdyn, Teuchos::ParameterList& sdyn);
+
   };  // namespace Utils
+
+  //! prints the BACI EHL-logo on the screen
+  void printlogo();
+
 }  // namespace EHL
 
 

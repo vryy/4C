@@ -46,7 +46,7 @@ void INPAR::LUBRICATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   BoolParameter("MATLAB_STATE_OUTPUT", "No",
       "Do you want to write the state solution to Matlab file?", &lubricationdyn);
 
-  // linear solver id used for lubrication problems
+  /// linear solver id used for lubrication problems
   IntParameter("LINEAR_SOLVER", -1, "number of linear solver used for the Lubrication problem",
       &lubricationdyn);
 
@@ -77,7 +77,7 @@ void INPAR::LUBRICATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
       tuple<std::string>("L1", "L2", "Rms", "Inf"),
       tuple<int>(norm_l1, norm_l2, norm_rms, norm_inf), &lubricationdyn);
 
-  // Iterationparameters
+  /// Iterationparameters
   DoubleParameter("TOLPRE", 1.0E-06, "tolerance in the temperature norm of the Newton iteration",
       &lubricationdyn);
 
@@ -88,4 +88,17 @@ void INPAR::LUBRICATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
       "PENALTY_CAVITATION", 0., "penalty parameter for regularized cavitation", &lubricationdyn);
 
   DoubleParameter("GAP_OFFSET", 0., "Additional offset to the fluid gap", &lubricationdyn);
+
+  DoubleParameter(
+      "ROUGHNESS_STD_DEVIATION", 0., "standard deviation of surface roughness", &lubricationdyn);
+
+  /// use modified reynolds equ.
+  BoolParameter("MODIFIED_REYNOLDS_EQU", "No",
+      "the lubrication problem will use the modified reynolds equ. in order to consider surface"
+      " roughness",
+      &lubricationdyn);
+
+  /// Flag for considering the Squeeze term in Reynolds Equation
+  BoolParameter("ADD_SQUEEZE_TERM", "No",
+      "the squeeze term will also be considered in the Reynolds Equation", &lubricationdyn);
 }

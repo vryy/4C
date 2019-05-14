@@ -21,6 +21,38 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+/*----------------------------------------------------------------------*
+ | BACI Logo for  EHL problems                             Faraji 05/19 |
+ *----------------------------------------------------------------------*/
+void printehllogo()
+{
+  std::cout << "---------------------------------------------------------------------------------"
+            << std::endl;
+  std::cout << "---------------------------------------------------------------------------------"
+            << std::endl;
+  std::cout << "-----------  Welcome to the Elasto-Hydrodynamic Lubrication problem  ------------"
+            << std::endl;
+  std::cout << "---------------------------------------------------------------------------------"
+            << std::endl;
+  std::cout << "---------------------------------------------------------------------------------"
+            << std::endl;
+  return;
+}
+
+void printehlmixlogo()
+{
+  std::cout << "---------------------------------------------------------------------------------"
+            << std::endl;
+  std::cout << "-----------------        Welcome to the problem type EHL        -----------------"
+            << std::endl;
+  std::cout << "-----------------               Mixed Lubrication               -----------------"
+            << std::endl;
+  std::cout << "-----------------           Averaged Reynolds Equation          -----------------"
+            << std::endl;
+  std::cout << "---------------------------------------------------------------------------------"
+            << std::endl;
+  return;
+}
 
 /*----------------------------------------------------------------------*
  | Main control routine for EHL problems                    wirtz 12/15 |
@@ -38,10 +70,25 @@ void ehl_dyn()
   // access lubrication params list
   Teuchos::ParameterList& lubricationdyn =
       const_cast<Teuchos::ParameterList&>(problem->LubricationDynamicParams());
+  // do we want to use Modified Reynolds Equation?
+  bool modifiedreynolds = (DRT::INPUT::IntegralValue<int>(lubricationdyn, "MODIFIED_REYNOLDS_EQU"));
+
+  // print problem specific logo
+  if (!problem->GetDis("structure")->Comm().MyPID())
+  {
+    if (!modifiedreynolds)
+      printehllogo();
+    else
+      printehlmixlogo();
+  }
+
+  if (!problem->GetDis("structure")->Comm().MyPID()) EHL::printlogo();
+
   // access structural dynamic params list which will be possibly modified while creating the time
   // integrator
   Teuchos::ParameterList& sdyn =
       const_cast<Teuchos::ParameterList&>(DRT::Problem::Instance()->StructuralDynamicParams());
+
 
   //  //Modification of time parameter list
   EHL::Utils::ChangeTimeParameter(comm, ehlparams, lubricationdyn, sdyn);

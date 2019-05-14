@@ -36,6 +36,11 @@ namespace IO
   class DiscretizationReader;
 }
 
+namespace PARTICLEALGORITHM
+{
+  class WallHandlerInterface;
+}
+
 namespace PARTICLEENGINE
 {
   class ParticleEngineInterface;
@@ -47,8 +52,9 @@ namespace PARTICLEENGINE
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  typedef std::vector<PARTICLEINTERACTION::DEMNeighborPair> DEMNeighborPairData;
-}
+  typedef std::vector<PARTICLEINTERACTION::DEMParticlePair> DEMParticlePairData;
+  typedef std::vector<PARTICLEINTERACTION::DEMParticleWallPair> DEMParticleWallPairData;
+}  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 11/2018 |
@@ -69,7 +75,8 @@ namespace PARTICLEINTERACTION
 
     //! setup neighbor pair handler
     void Setup(
-        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
+        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
+        const std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface);
 
     //! write restart of neighbor pair handler
     void WriteRestart(const int step, const double time) const;
@@ -77,24 +84,42 @@ namespace PARTICLEINTERACTION
     //! read restart of neighbor pair handler
     void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
-    //! get reference to neighbor pair data
-    inline const DEMNeighborPairData& GetRefToNeighborPairData() const
+    //! get reference to particle pair data
+    inline const DEMParticlePairData& GetRefToParticlePairData() const
     {
-      return neighborpairdata_;
+      return particlepairdata_;
+    };
+
+    //! get reference to particle-wall pair data
+    inline const DEMParticleWallPairData& GetRefToParticleWallPairData() const
+    {
+      return particlewallpairdata_;
     };
 
     //! evaluate neighbor pairs
     void EvaluateNeighborPairs();
 
    private:
-    //! neighbor pair data with evaluated quantities
-    DEMNeighborPairData neighborpairdata_;
+    //! evaluate particle pairs
+    void EvaluateParticlePairs();
+
+    //! evaluate particle-wall pairs
+    void EvaluateParticleWallPairs();
+
+    //! particle pair data with evaluated quantities
+    DEMParticlePairData particlepairdata_;
+
+    //! particle-wall pair data with evaluated quantities
+    DEMParticleWallPairData particlewallpairdata_;
 
     //! interface to particle engine
     std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface_;
 
     //! particle container bundle
     PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle_;
+
+    //! interface to particle wall handler
+    std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface_;
   };
 
 }  // namespace PARTICLEINTERACTION

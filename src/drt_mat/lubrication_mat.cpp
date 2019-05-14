@@ -48,7 +48,7 @@ MAT::PAR::LubricationMat::LubricationMat(Teuchos::RCP<MAT::PAR::Material> matdat
       break;
     }
     default:
-      dserror("invalid material for porosity law %d", curmat->Type());
+      dserror("invalid material for lubrication law %d", curmat->Type());
       break;
   }
 }

@@ -93,6 +93,7 @@ ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 PENALTY_CAVITATION              1e8
 GAP_OFFSET                      0.0025
+ADD_SQUEEZE_TERM                yes
 -----------------------------------------------ELASTO HYDRO DYNAMIC
 RESTARTEVRYTIME                 1
 RESTARTEVRY                     1

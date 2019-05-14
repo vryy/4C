@@ -128,6 +128,9 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForce()
 {
   CheckInitSetup();
 
+  // measure time for evaluating this function
+  TEUCHOS_FUNC_TIME_MONITOR("BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForce");
+
   // resulting discrete element force vectors of the two interacting elements
   std::vector<LINALG::SerialDenseVector> eleforce(2);
 
@@ -212,6 +215,9 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForce()
 bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateStiff()
 {
   CheckInitSetup();
+
+  // measure time for evaluating this function
+  TEUCHOS_FUNC_TIME_MONITOR("BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateStiff");
 
   // linearizations
   std::vector<std::vector<LINALG::SerialDenseMatrix>> elestiff(
@@ -300,6 +306,10 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateStiff()
 bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForceStiff()
 {
   CheckInitSetup();
+
+  // measure time for evaluating this function
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForceStiff");
 
   // resulting discrete element force vectors of the two interacting elements
   std::vector<LINALG::SerialDenseVector> eleforce(2);

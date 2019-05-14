@@ -92,6 +92,40 @@ namespace BEAMINTERACTION
         const LINALG::TMatrix<T, 3, 1>& r_xixi_master);
 
     /** \brief point-to-curve projection:
+     *         partial second derivatives of the parameter coordinate on master xi_master with
+     *         respect to centerline position of slave point, master point and centerline tangent of
+     *         master
+     *
+     *  \author grill
+     *  \date 04/19 */
+    template <typename T>
+    void CalcPointToCurveProjectionParameterCoordMasterPartial2ndDerivs(
+        LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_slave_partial_r_slave,
+        LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_slave_partial_r_master,
+        LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_slave_partial_r_xi_master,
+        LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_slave_partial_r_xixi_master,
+        LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_master_partial_r_slave,
+        LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_master_partial_r_master,
+        LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_master_partial_r_xi_master,
+        LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_master_partial_r_xixi_master,
+        LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_xi_master_partial_r_slave,
+        LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_xi_master_partial_r_master,
+        LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_xi_master_partial_r_xi_master,
+        LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_xi_master_partial_r_xixi_master,
+        LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_xixi_master_partial_r_slave,
+        LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_xixi_master_partial_r_master,
+        LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_xixi_master_partial_r_xi_master,
+        const LINALG::TMatrix<T, 1, 3>& xi_master_partial_r_slave,
+        const LINALG::TMatrix<T, 1, 3>& xi_master_partial_r_master,
+        const LINALG::TMatrix<T, 1, 3>& xi_master_partial_r_xi_master,
+        const LINALG::TMatrix<T, 3, 3>& delta_r_deriv_r_slave,
+        const LINALG::TMatrix<T, 3, 3>& delta_r_deriv_r_master,
+        const LINALG::TMatrix<T, 3, 3>& delta_r_deriv_r_xi_master,
+        const LINALG::TMatrix<T, 3, 1>& delta_r, const LINALG::TMatrix<T, 3, 1>& r_xi_master,
+        const LINALG::TMatrix<T, 3, 1>& r_xixi_master,
+        const LINALG::TMatrix<T, 3, 1>& r_xixixi_master);
+
+    /** \brief point-to-curve projection:
      *         partial derivative of the orthogonality condition with respect to parameter
      * coordinate on master xi_master
      *

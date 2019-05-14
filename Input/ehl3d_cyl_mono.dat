@@ -85,6 +85,9 @@ CONVTOL                         1.0e-6
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 PENALTY_CAVITATION              1e8
+ROUGHNESS_STD_DEVIATION         0.002
+MODIFIED_REYNOLDS_EQU           no
+ADD_SQUEEZE_TERM                yes
 -----------------------------------------------ELASTO HYDRO DYNAMIC
 RESTARTEVRYTIME                 0
 RESTARTEVRY                     1
