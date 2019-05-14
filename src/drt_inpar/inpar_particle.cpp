@@ -286,8 +286,21 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       tuple<int>(INPAR::PARTICLE::NoTangentialContact, INPAR::PARTICLE::TangentialLinSpringDamp),
       &particledyndem);
 
+  DoubleParameter("MIN_RADIUS", -1.0, "minimum expected particle radius", &particledyndem);
   DoubleParameter("MAX_RADIUS", -1.0, "maximum expected particle radius", &particledyndem);
   DoubleParameter("MAX_VELOCITY", -1.0, "maximum expected particle velocity", &particledyndem);
+
+  // type of (random) particle radius distribution
+  setStringToIntegralParameter<int>("RADIUSDISTRIBUTION", "NoRadiusDistribution",
+      "type of (random) particle radius distribution",
+      tuple<std::string>(
+          "NoRadiusDistribution", "NormalRadiusDistribution", "LogNormalRadiusDistribution"),
+      tuple<int>(INPAR::PARTICLE::NoRadiusDistribution, INPAR::PARTICLE::NormalRadiusDistribution,
+          INPAR::PARTICLE::LogNormalRadiusDistribution),
+      &particledyndem);
+
+  DoubleParameter("RADIUSDISTRIBUTION_VAR", -1.0, "variance of random particle radius distribution",
+      &particledyndem);
 
   DoubleParameter("REL_PENETRATION", -1.0,
       "maximum allowed relative penetration (particle-particle)", &particledyndem);

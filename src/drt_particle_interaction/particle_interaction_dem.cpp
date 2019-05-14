@@ -31,6 +31,8 @@
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_container.H"
 
+#include "../drt_lib/drt_globalproblem.H"
+
 #include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
@@ -154,36 +156,11 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::InsertParticleStatesOfParticle
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialStates()
 {
-  // iterate over particle types
-  for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
-  {
-    // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainer* container =
-        particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
+  // set initial radius
+  SetInitialRadius();
 
-    // get number of particles stored in container
-    const int particlestored = container->ParticlesStored();
-
-    // no owned particles of current particle type
-    if (particlestored <= 0) continue;
-
-    // get material for current particle type
-    const MAT::PAR::ParticleMaterialBase* material =
-        particlematerial_->GetPtrToParticleMatParameter(typeEnum);
-
-    // (initial) radius of current phase
-    std::vector<double> initradius(1);
-    initradius[0] = material->initRadius_;
-
-    // (initial) mass of current phase
-    std::vector<double> initmass(1);
-    initmass[0] = material->initDensity_ * 4.0 / 3.0 * M_PI * UTILS::pow<3>(material->initRadius_);
-
-    // set initial mass and radius for all particles of current type
-    particlecontainerbundle_->SetStateSpecificContainer(initmass, PARTICLEENGINE::Mass, typeEnum);
-    particlecontainerbundle_->SetStateSpecificContainer(
-        initradius, PARTICLEENGINE::Radius, typeEnum);
-  }
+  // set initial mass
+  SetInitialMass();
 }
 
 /*---------------------------------------------------------------------------*
@@ -285,6 +262,161 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::InitContactHandler()
 
   // init contact handler
   contact_->Init();
+}
+
+/*---------------------------------------------------------------------------*
+ | set initial radius                                         sfuchs 05/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialRadius()
+{
+  // get type of (random) particle radius distribution
+  INPAR::PARTICLE::RadiusDistribution radiusdistributiontype =
+      DRT::INPUT::IntegralValue<INPAR::PARTICLE::RadiusDistribution>(
+          params_dem_, "RADIUSDISTRIBUTION");
+
+  switch (radiusdistributiontype)
+  {
+    // no (random) particle radius distribution
+    case INPAR::PARTICLE::NoRadiusDistribution:
+    {
+      // iterate over particle types
+      for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
+      {
+        // get container of owned particles of current particle type
+        PARTICLEENGINE::ParticleContainer* container =
+            particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
+
+        // get number of particles stored in container
+        const int particlestored = container->ParticlesStored();
+
+        // no owned particles of current particle type
+        if (particlestored <= 0) continue;
+
+        // get material for current particle type
+        const MAT::PAR::ParticleMaterialBase* material =
+            particlematerial_->GetPtrToParticleMatParameter(typeEnum);
+
+        // (initial) radius of current phase
+        std::vector<double> initradius(1);
+        initradius[0] = material->initRadius_;
+
+        // set initial radius for all particles of current type
+        particlecontainerbundle_->SetStateSpecificContainer(
+            initradius, PARTICLEENGINE::Radius, typeEnum);
+      }
+
+      break;
+    }
+    // normal or log-normal random particle radius distribution
+    case INPAR::PARTICLE::NormalRadiusDistribution:
+    case INPAR::PARTICLE::LogNormalRadiusDistribution:
+    {
+      // get allowed bounds for particle radius
+      double r_min = params_dem_.get<double>("MIN_RADIUS");
+      double r_max = params_dem_.get<double>("MAX_RADIUS");
+
+      // safety checks
+      if (not(r_min > 0.0)) dserror("non-positive minimum particle radius!");
+      if (not(r_max > 0.0)) dserror("non-positive maximum particle radius!");
+      if (r_min > r_max) dserror("minimum particle radius larger than maximum particle radius!");
+
+      // get variance of random particle radius distribution
+      double variance = params_dem_.get<double>("RADIUSDISTRIBUTION_VAR");
+
+      // safety check
+      if (not(variance > 0.0))
+        dserror("non-positive variance of random particle radius distribution!");
+
+      // iterate over particle types
+      for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
+      {
+        // get container of owned particles of current particle type
+        PARTICLEENGINE::ParticleContainer* container =
+            particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
+
+        // get number of particles stored in container
+        const int particlestored = container->ParticlesStored();
+
+        // no owned particles of current particle type
+        if (particlestored <= 0) continue;
+
+        // get material for current particle type
+        const MAT::PAR::ParticleMaterialBase* material =
+            particlematerial_->GetPtrToParticleMatParameter(typeEnum);
+
+        // get pointer to particle state
+        double* radius = container->GetPtrToParticleState(PARTICLEENGINE::Radius, 0);
+
+        // determine mean of normal random number generator
+        const double mean = (radiusdistributiontype == INPAR::PARTICLE::NormalRadiusDistribution)
+                                ? material->initRadius_
+                                : std::log(material->initRadius_);
+
+        // initialize random number generator
+        DRT::Problem::Instance()->Random()->SetMeanVariance(mean, variance);
+
+        // iterate over particles stored in container
+        for (int i = 0; i < particlestored; ++i)
+        {
+          // generate random value
+          const double randomvalue = DRT::Problem::Instance()->Random()->Normal();
+
+          // set normal or log-normal distributed random value for particle radius
+          radius[i] = (radiusdistributiontype == INPAR::PARTICLE::NormalRadiusDistribution)
+                          ? randomvalue
+                          : std::exp(randomvalue);
+
+          // adjust radius to allowed bounds
+          if (radius[i] > r_max)
+            radius[i] = r_max;
+          else if (radius[i] < r_min)
+            radius[i] = r_min;
+        }
+      }
+      break;
+    }
+    default:
+    {
+      dserror("invalid type of (random) particle radius distribution!");
+      break;
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*
+ | set initial mass                                           sfuchs 05/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialMass()
+{
+  // iterate over particle types
+  for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
+  {
+    // get container of owned particles of current particle type
+    PARTICLEENGINE::ParticleContainer* container =
+        particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
+
+    // get number of particles stored in container
+    const int particlestored = container->ParticlesStored();
+
+    // no owned particles of current particle type
+    if (particlestored <= 0) continue;
+
+    // get material for current particle type
+    const MAT::PAR::ParticleMaterialBase* material =
+        particlematerial_->GetPtrToParticleMatParameter(typeEnum);
+
+    // declare pointer variables
+    const double* radius;
+    double* mass;
+
+    // get pointer to particle states
+    radius = container->GetPtrToParticleState(PARTICLEENGINE::Radius, 0);
+    mass = container->GetPtrToParticleState(PARTICLEENGINE::Mass, 0);
+
+    // compute mass via particle volume and initial density
+    const double fac = material->initDensity_ * 4.0 / 3.0 * M_PI;
+    for (int i = 0; i < particlestored; ++i) mass[i] = fac * UTILS::pow<3>(radius[i]);
+  }
 }
 
 /*---------------------------------------------------------------------------*
