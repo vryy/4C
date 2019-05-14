@@ -1,14 +1,11 @@
 /*!------------------------------------------------------------------------------------------------*
-\file ad_opt.cpp
 
 \brief topology optimization adapter
 
-<pre>
-Maintainer: Martin Winklmaier
-            winklmaier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15241
-</pre>
+\level 3
+
+\maintainer Martin Kronbichler
+
  *------------------------------------------------------------------------------------------------*/
 
 

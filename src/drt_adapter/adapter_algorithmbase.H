@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_algorithmbase.H
 
 \brief Base algorithm for all kinds of coupled problems
 

@@ -1,12 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_str_structalewrapper.H
 
 \brief Structural adapter for Structure-ALE problems.
 
-\maintainer Andreas Rauch
+\maintainer Anh-Tu Vuong
 
-\date Dec 05, 2016
 
 \level 3
 */

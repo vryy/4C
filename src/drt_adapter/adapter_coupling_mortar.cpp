@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_coupling_mortar.cpp
 
 \brief A class providing coupling capabilities based on mortar methods
 

@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_fld_fluid_ac_fsi.cpp
 
 \brief Fluid field adapter for AC-FS3I problems
 
-\date 2015-07-29
+\maintainer Matthias Mayr
 
-\maintainer Moritz Thon
-            thon@mhpc.mw.tum.de
-            089/289-10364
 
 \level 3
 */

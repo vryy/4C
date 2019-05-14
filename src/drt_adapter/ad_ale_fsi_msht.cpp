@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file ad_ale_fsi_msht.cpp
 
 \brief FSI Wrapper for the ALE time integration with internal mesh tying or mesh sliding interface
 

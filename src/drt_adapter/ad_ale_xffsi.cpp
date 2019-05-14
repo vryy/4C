@@ -1,17 +1,12 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file ad_ale_xffsi.cpp
 
 \brief Wrapper for the ALE time integration
 
 \level 2
 
-<pre>
 \maintainer  Christoph Ager
-             ager@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15249
- </pre>
+
 */
 /*----------------------------------------------------------------------------*/
 

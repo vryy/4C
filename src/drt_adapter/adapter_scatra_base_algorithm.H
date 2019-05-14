@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_scatra_base_algorithm.H
 
 \brief scalar transport field base algorithm
 

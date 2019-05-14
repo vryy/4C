@@ -1,11 +1,10 @@
 /*!------------------------------------------------------------------------------------------------*
-\file ad_opt.H
 
 \brief topology optimization adapter
 
 \level 3
 
-\maintainer Martin Winklmaier
+\maintainer Martin Kronbichler
  *------------------------------------------------------------------------------------------------*/
 
 

@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file adapter_coupling_nonlin_mortar.cpp
 
 \brief A class providing coupling capabilities based on non-linear
        mortar methods

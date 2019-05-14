@@ -1,9 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_scatra_wrapper.cpp
 \brief Wrapper for the scatra time integrator.
 \level 1
-\maintainer Andreas Rauch
+\maintainer Anh-Tu Vuong
  */
 /*----------------------------------------------------------------------*/
 

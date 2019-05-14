@@ -1,13 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_str_structure.H
 
 \brief Deprecated structure field adapter
        (see ad_str_structure_new.H/.cpp for the new version)
 
 \level 1
 
-\maintainer Michael Hiermeier
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 

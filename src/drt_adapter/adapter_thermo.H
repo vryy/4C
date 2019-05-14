@@ -1,13 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_thermo.H
 
 \brief Thermo field adapter
 \level 1
-<pre>
+
 \maintainer Christoph Meier
 
-</pre>
+
 */
 
 

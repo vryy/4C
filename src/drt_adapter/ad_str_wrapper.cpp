@@ -1,15 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_str_wrapper.cpp
 
 \brief Wrapper for the structural time integration
 
 \level 1
 
-<pre>
-\maintainer Michael Hiermeier
-            hiermeier@lnm.mw.tum.de
-</pre>
+\maintainer Anh-Tu Vuong
+
 */
 /*----------------------------------------------------------------------*/
 

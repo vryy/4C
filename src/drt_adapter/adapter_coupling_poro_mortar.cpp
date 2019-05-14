@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file adapter_coupling_poro_mortar.cpp
 
 \brief coupling adapter for porous meshtying
 

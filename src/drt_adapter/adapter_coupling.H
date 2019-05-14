@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file adapter_coupling.H
 
 \brief Coupling of two discretizations (surface- or volume-coupling)
 

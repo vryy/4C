@@ -1,10 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_fld_fluid_fsi.cpp
 
-\brief Fluid field adapter for fsi
-
-Can only be used in conjunction with FLD::FluidImplicitTimeInt
+\brief Fluid field adapter for fsi. Can only be used in conjunction with FLD::FluidImplicitTimeInt
 
 \level 2
 

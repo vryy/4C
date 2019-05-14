@@ -1,10 +1,10 @@
 /*-----------------------------------------------------------*/
 /*!
-\file ad_str_loca.H
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Nov 20, 2015
+\brief  structure adapter using the LOCA library
+
 
 \level 3
 

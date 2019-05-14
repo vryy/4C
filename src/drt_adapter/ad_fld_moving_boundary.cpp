@@ -1,8 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_fld_moving_boundary.cpp
 
-\brief to be set by the maintainer
+\brief Fluid field adapter for moving boundary problems
 
 \maintainer  Christoph Ager
 

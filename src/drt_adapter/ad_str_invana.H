@@ -1,16 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_str_invana.H
 
 \brief Wrapper for the structural time integration to be used
 in the inverse analysis
 
-<pre>
-Maintainer: Sebastian Kehl
-            kehl@mhpc.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-10361
-</pre>
+\maintainer Harald Willmann
+
 */
 /*----------------------------------------------------------------------*/
 

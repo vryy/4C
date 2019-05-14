@@ -1,18 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_field_wrapper.H
 
 \brief Wrapper for the field time integration - This Wrapper already implements the functionality to
 use StepIncrements, therefore set NOXCorrection == true!!!
 
 \level 2
 
-<pre>
 \maintainer Christoph Ager
-            ager@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289 15249
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 

@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file adapter_lubrication.H
 
 \brief Lubrication field base algorithm
 

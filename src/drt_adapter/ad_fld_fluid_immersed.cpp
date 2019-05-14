@@ -1,15 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_fld_fluid_immersed.cpp
 
 \brief Fluid field adapter for immersed fluids
 
-<pre>
-Maintainer:  Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15240
-</pre>
+\maintainer Jonas Eichinger
 */
 /*----------------------------------------------------------------------*/
 #include "../drt_lib/drt_globalproblem.H"

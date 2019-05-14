@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
- \file ad_ale_fsi.cpp
 
  \brief FSI Wrapper for the ALE time integration
 

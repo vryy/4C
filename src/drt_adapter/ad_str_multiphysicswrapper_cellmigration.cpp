@@ -1,10 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_str_multiphysicswrapper_cellmigration.cpp
 
 \brief Adapter wrapper for multiphysics in cell migration.
 
-\maintainer Andreas Rauch
+\maintainer Jonas Eichinger
 
 \level 1
 */

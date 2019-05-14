@@ -1,10 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file ad_str_factory.cpp
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Jan 5, 2016
+\brief factory for structure adapters
 
 \level 3
 

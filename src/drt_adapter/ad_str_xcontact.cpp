@@ -1,12 +1,10 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file ad_str_xcontact.cpp
 
 \brief Interface between the xcontact algorithm and the structure algorithm
 
-\maintainer Michael Hiermeier
+\maintainer Matthias Mayr
 
-\date Jun 17, 2016
 
 \level 3
 

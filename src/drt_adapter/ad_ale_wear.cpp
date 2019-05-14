@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
- \file ad_ale_wear.cpp
 
  \brief Wrapper for the ALE time integration
 

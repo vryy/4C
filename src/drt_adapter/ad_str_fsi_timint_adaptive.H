@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_str_fsi_timint_adaptive.H
 
 \brief Structure field adapter for time step size adaptivity within monolithic FSI
 

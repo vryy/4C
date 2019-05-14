@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file adapter_coupling_ehl_mortar.cpp
 \brief mortar coupling terms of ehl
 
 \level 3

@@ -1,11 +1,12 @@
 /*!----------------------------------------------------------------------
-\file adapter_coupling_nonlin_mortar.H
+
+\brief A class providing coupling capabilities based on non-linear
+       mortar methods
 
 \level 1
-<pre>
+
 \maintainer Alexander Popp
 
-</pre>
 *----------------------------------------------------------------------*/
 
 #ifndef ADAPTER_COUPLING_NONLIN_MORTAR_H_

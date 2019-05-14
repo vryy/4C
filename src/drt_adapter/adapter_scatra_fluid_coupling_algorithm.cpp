@@ -1,18 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_scatra_fluid_coupling_algorithm.cpp
 
 \brief Basis of all algorithms that perform a coupling between Navier-Stokes
        and (active or passive) scalar transport equations
 
 \level 1
 
-<pre>
 \maintainer Anh-Tu Vuong
-            vuong@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15237
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 

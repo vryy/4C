@@ -1,8 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_fld_moving_boundary.H
 
-\brief
+ \brief Fluid field adapter for moving boundary problems
 
 \level 2
 

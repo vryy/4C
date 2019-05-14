@@ -1,9 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_scatra_interface.H
 \brief Interface for all scatra adapters.
 \level 1
-\maintainer Andreas Rauch
+\maintainer Anh-Tu Vuong
  */
 /*----------------------------------------------------------------------*/
 

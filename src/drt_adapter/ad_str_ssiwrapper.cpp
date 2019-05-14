@@ -1,10 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_str_ssiwrapper.cpp
 
 \brief Structural adapter for SSI problems.
 
-\maintainer Andreas Rauch
+\maintainer Christoph Schmidt
 
 \level 1
 */

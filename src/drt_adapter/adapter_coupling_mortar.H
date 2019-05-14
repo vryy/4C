@@ -1,14 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_coupling_mortar.H
 
 \brief A class providing coupling capabilities based on mortar methods
 
 \level 2
 
-<pre>
 \maintainer Anh-Tu Vuong
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

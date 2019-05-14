@@ -1,5 +1,13 @@
 /*----------------------------------------------------------------------*/
+/*!
 
+\brief Structure field adapter for coupling with reduced-D airway trees
+
+\level 3
+
+\maintainer Carolin Geitner
+
+*/
 /*----------------------------------------------------------------------*/
 #include "ad_str_redairway.H"
 #include "../drt_lib/drt_discret.H"

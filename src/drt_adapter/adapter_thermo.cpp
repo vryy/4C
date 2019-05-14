@@ -1,12 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_thermo.cpp
 
 \brief Thermo field adapter
 \level 1
-<pre>
+
 \maintainer Christoph Meier
-</pre>
+
 */
 
 

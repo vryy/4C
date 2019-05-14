@@ -1,16 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_str_timeloop.H
 
 \brief Wrapper for the structural time integration which gives fine grained
        access in the time loop
 
 \level 0
 
-<pre>
-\maintainer Michael Hiermeier
-            hiermeier@lnm.mw.tum.de
-</pre>
+\maintainer Anh-Tu Vuong
 */
 /*----------------------------------------------------------------------*/
 

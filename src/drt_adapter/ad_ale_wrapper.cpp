@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file ad_ale_wrapper.cpp
 
 \brief Wrapper for the ALE time integration
 

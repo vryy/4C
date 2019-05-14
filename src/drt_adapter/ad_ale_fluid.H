@@ -1,17 +1,11 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file ad_ale_fluid.H
-
 \brief Wrapper for the ALE time integration for fluid problems with moving boundaries
 
 \level 2
 
-<pre>
 \maintainer  Christoph Ager
-             ager@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15249
- </pre>
+
  */
 /*----------------------------------------------------------------------------*/
 
