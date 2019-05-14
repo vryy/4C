@@ -5,12 +5,7 @@
 
  \level 1
 
- <pre>
-\maintainer  Andy Wirtz
-              wirtz@lnm.mw.tum.de
-              http://www.lnm.mw.tum.de
-              089 - 289-15270
- </pre>
+ \maintainer Martin Kronbichler
  */
 
 #include "element_coordtrafo.H"
@@ -844,7 +839,7 @@ GEO::ObjectType GEO::nearest3DObjectOnElement(DRT::Element* surfaceelement,
 
   pointFound =
       GEO::getDistanceToSurface(surfaceelement, currentpositions, point, x_surface, distance);
-  if (pointFound && distance < min_distance)
+  if (pointFound && distance <= min_distance)
   {
     pointFound = false;
     min_distance = distance;
@@ -857,7 +852,7 @@ GEO::ObjectType GEO::nearest3DObjectOnElement(DRT::Element* surfaceelement,
   {
     pointFound =
         GEO::getDistanceToLine(eleLines[i].get(), currentpositions, point, x_surface, distance);
-    if (pointFound && distance < min_distance)
+    if (pointFound && distance <= min_distance)
     {
       pointFound = false;
       min_distance = distance;
@@ -876,7 +871,7 @@ GEO::ObjectType GEO::nearest3DObjectOnElement(DRT::Element* surfaceelement,
     // absolute distance between point and node
     distance = distance_vector.Norm2();
 
-    if (distance < min_distance)
+    if (distance <= min_distance)
     {
       min_distance = distance;
       nearestObject.setNodeObjectType(nodeIter->first, -1, nodeIter->second);
