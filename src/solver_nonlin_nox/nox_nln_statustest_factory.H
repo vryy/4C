@@ -4,9 +4,8 @@
 
 \brief Create the desired outer status test.
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Jul 31, 2015
 
 \level 3
 

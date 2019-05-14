@@ -2,9 +2,8 @@
 /*!
 \file nox_nln_direction_defaultsteptest.H
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Aug 16, 2018
 
 \level 3
 

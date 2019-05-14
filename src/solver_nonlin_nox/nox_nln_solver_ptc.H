@@ -5,9 +5,8 @@
 \brief %NOX::NLN implementation of a pseudo transient non-linear
        solver.
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Oct 6, 2015
 
 \level 3
 

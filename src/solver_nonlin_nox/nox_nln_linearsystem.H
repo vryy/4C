@@ -4,9 +4,8 @@
 
 \brief %NOX::NLN extension of the %NOX::Epetra::LinearSystem.
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Jun 29, 2015
 
 \level 3
 

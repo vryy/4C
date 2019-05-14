@@ -5,9 +5,8 @@
 \brief Check the active set for convergence. Only meaningful for
        inequality constrained problems.
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Oct 30, 2015
 
 \level 3
 

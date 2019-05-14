@@ -10,9 +10,8 @@
 
        - Unlike merit functions, filter methods keep these two goals separate
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Mar 6, 2017
 
 \level 3
 

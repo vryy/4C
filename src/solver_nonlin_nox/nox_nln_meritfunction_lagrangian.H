@@ -5,9 +5,8 @@
 \brief Implementation of the Lagrangian merit function for
        constrained problems.
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Jun 9, 2015
 
 \level 3
 

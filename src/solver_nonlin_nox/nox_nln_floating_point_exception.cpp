@@ -4,9 +4,8 @@
 
 \brief Bundle the floating point exception handling in one class.
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Aug 27, 2018
 
 \level 3
 

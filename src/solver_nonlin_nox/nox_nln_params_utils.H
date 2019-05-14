@@ -6,9 +6,8 @@
  *
  * \level 3
  *
- * \maintainer Michael Hiermeier
+ * \maintainer Anh-Tu Vuong
  *
- * \date Feb 13, 2018
  */
 /*----------------------------------------------------------------------------*/
 

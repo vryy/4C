@@ -6,9 +6,8 @@
        if a %NOX::NLN solver is supposed to be used. Therefore a
        lean function call becomes possible.
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Jun 30, 2015
 
 \level 3
 

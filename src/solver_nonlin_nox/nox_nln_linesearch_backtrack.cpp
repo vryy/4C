@@ -4,9 +4,8 @@
 
 \brief %NOX::NLN backtracking line search implementation.
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Jun 11, 2015
 
 \level 3
 

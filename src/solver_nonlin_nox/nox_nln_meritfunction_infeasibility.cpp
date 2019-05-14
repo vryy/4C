@@ -5,9 +5,8 @@
 \brief Implementation of the infeasibility merit function for
        constrained problems. Especially useful for the filter method.
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Apr 20, 2017
 
 \level 3
 

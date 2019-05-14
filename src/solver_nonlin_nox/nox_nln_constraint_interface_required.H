@@ -7,9 +7,8 @@
         and the evaluation of special constraint status
         tests)
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Jun 9, 2015
 
 \level 3
 

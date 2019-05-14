@@ -6,9 +6,8 @@
        increment. A detailed description can be found in the NOX
        documentation.
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Aug 4, 2015
 
 \level 3
 

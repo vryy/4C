@@ -4,9 +4,8 @@
 
 \brief %NOX::NLN factory to create a %NOX::Epetra::LinearSystem.
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Jul 14, 2015
 
 \level 3
 

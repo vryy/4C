@@ -7,9 +7,8 @@
 
 \level 3
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Oct 19, 2015
 
 
 

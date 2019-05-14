@@ -6,9 +6,8 @@
        test can be used to check the solution increment \f$\Delta x\f$
        for convergence.
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Sep 17, 2015
 
 \level 3
 

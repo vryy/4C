@@ -4,9 +4,8 @@
 
 \brief Factory to create the desired non-linear solver object.
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Jun 11, 2015
 
 \level 3
 

@@ -6,7 +6,6 @@
 
 \maintainer Maximilian Grill
 
-\date 07/2016
 
 \level 3
 */

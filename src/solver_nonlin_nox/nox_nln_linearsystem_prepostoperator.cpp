@@ -2,9 +2,8 @@
 /*!
 \file nox_nln_linearsystem_prepostoperator.cpp
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Oct 7, 2015
 
 \level 3
 

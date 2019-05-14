@@ -4,9 +4,8 @@
 
 \brief wrapper class for a user derived NOX PrePostOperator
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Oct 19, 2015
 
 \level 3
 

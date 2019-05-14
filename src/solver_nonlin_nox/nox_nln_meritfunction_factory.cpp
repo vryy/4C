@@ -4,9 +4,8 @@
 
 \brief Factory to create a merit function evaluation object.
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Jun 12, 2015
 
 \level 3
 
