@@ -183,14 +183,17 @@ namespace PARTICLEINTERACTION
     //! colorfield gradient and interface normal of ghosted particles to refresh
     PARTICLEENGINE::StatesOfTypesToRefresh cfgintnormtorefresh_;
 
-    //! surface tension coefficient
-    const double surfacetensioncoefficient_;
+    //! constant factor of surface tension coefficient
+    const double alpha0_;
 
     //! static contact angle
     const double staticcontactangle_;
 
-    //! derivative of surface tension coefficient
-    const double surfacetensionderivfac_;
+    //! factor of dependence of surface tension coefficient on temperature
+    const double alphaT_;
+
+    //! reference temperature for surface tension coefficient
+    const double reftemp_;
 
     //! wall correction factor
     std::vector<std::vector<std::vector<double>>> f_i_;
