@@ -120,9 +120,10 @@ void PARTICLEINTERACTION::SPHSurfaceTensionBase::SetCurrentTime(const double cur
 PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::SPHSurfaceTensionContinuumSurfaceForce(
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::SPHSurfaceTensionBase(params),
-      surfacetensioncoefficient_(params_sph_.get<double>("SURFACETENSIONCOEFFICIENT")),
+      alpha0_(params_sph_.get<double>("SURFACETENSIONCOEFFICIENT")),
       staticcontactangle_(params_sph_.get<double>("STATICCONTACTANGLE")),
-      surfacetensionderivfac_(params_sph_.get<double>("SURFACETENSIONDERIVFAC"))
+      alphaT_(params_sph_.get<double>("SURFACETENSIONTEMPFAC")),
+      reftemp_(params_sph_.get<double>("SURFACETENSIONREFTEMP"))
 {
   // empty constructor
 }
@@ -136,23 +137,16 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::Init()
   SPHSurfaceTensionBase::Init();
 
   // safety check
-  if (not(surfacetensioncoefficient_ > 0.0))
-    dserror(
-        "the parameter 'SURFACETENSIONCOEFFICIENT' must be positive when applying continuum "
-        "surface force formulation!");
+  if (not(alpha0_ > 0.0)) dserror("constant factor of surface tension coefficient not positive!");
 
-  if (surfacetensionderivfac_ > 0.0)
+  if (alphaT_ != 0.0)
   {
     if (DRT::INPUT::IntegralValue<INPAR::PARTICLE::TemperatureEvaluationScheme>(
             params_sph_, "TEMPERATUREEVALUATION") == INPAR::PARTICLE::NoTemperatureEvaluation)
-      dserror(
-          "set 'TEMPERATUREEVALUATION' for surface tension formulation with temperature gradient "
-          "driven contribution!");
+      dserror("temperature evaluation needed for temperature dependent surface tension!");
 
     if (DRT::INPUT::IntegralValue<int>(params_sph_, "TEMPERATUREGRADIENT") == false)
-      dserror(
-          "set 'TEMPERATUREGRADIENT' for surface tension formulation with temperature gradient "
-          "driven contribution!");
+      dserror("temperature gradient evaluation needed for temperature dependent surface tension!");
   }
 }
 
@@ -295,7 +289,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::AddAcceleratio
   ComputeSurfaceTensionContribution();
 
   // compute temperature gradient driven contribution
-  if (surfacetensionderivfac_ > 0.0) ComputeTempGradDrivenContribution();
+  if (alphaT_ != 0.0) ComputeTempGradDrivenContribution();
 }
 
 /*---------------------------------------------------------------------------*
@@ -1096,7 +1090,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
     {
       // declare pointer variables for particle i
-      const double *rad_i, *dens_i, *colorfieldgrad_i;
+      const double *rad_i, *dens_i, *temp_i, *colorfieldgrad_i;
       double* acc_i;
 
       // get pointer to particle states
@@ -1106,6 +1100,9 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
           container_i->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_i);
       acc_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_i);
 
+      if (alphaT_ != 0.0)
+        temp_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Temperature, particle_i);
+
       // only add meaningful contributions
       if (std::abs(sumj_Vj_Wij[type_i][particle_i]) > (1.0e-10 * rad_i[0]))
       {
@@ -1113,9 +1110,12 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
         const double curvature_i =
             -sumj_nij_Vj_eij_dWij[type_i][particle_i] / sumj_Vj_Wij[type_i][particle_i];
 
+        // evaluate surface tension coefficient
+        double alpha = alpha0_;
+        if (alphaT_ != 0.0) alpha += alphaT_ * (temp_i[0] - reftemp_);
+
         // add contribution to acceleration
-        UTILS::vec_addscale(acc_i, -timefac * surfacetensioncoefficient_ * curvature_i / dens_i[0],
-            colorfieldgrad_i);
+        UTILS::vec_addscale(acc_i, -timefac * alpha * curvature_i / dens_i[0], colorfieldgrad_i);
       }
     }
   }
@@ -1168,8 +1168,8 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
           tempgrad_i_proj, -UTILS::vec_dot(tempgrad_i, interfacenormal_i), interfacenormal_i);
 
       // add contribution to acceleration
-      UTILS::vec_addscale(acc_i,
-          -timefac * surfacetensionderivfac_ * UTILS::vec_norm2(colorfieldgrad_i), tempgrad_i_proj);
+      UTILS::vec_addscale(
+          acc_i, timefac * alphaT_ * UTILS::vec_norm2(colorfieldgrad_i), tempgrad_i_proj);
     }
   }
 }
