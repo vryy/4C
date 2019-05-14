@@ -215,6 +215,27 @@ namespace BEAMINTERACTION
         std::vector<std::vector<LINALG::SerialDenseMatrix>> const& elemat,
         Teuchos::RCP<Epetra_FEVector> fe_sysvec, Teuchos::RCP<LINALG::SparseMatrix> fe_sysmat);
 
+    /*----------------------------------------------------------------------------*
+     *----------------------------------------------------------------------------*/
+
+    /**
+     * \brief Assembles element coupling contributions into global coupling matrices and force
+     * vectors needed for partitioned algorithms
+     *
+     * The function expects a vector object of length 2 containing discretizations
+     *
+     */
+    void FEAssembleEleForceStiffIntoSystemVectorMatrices(
+        const Teuchos::RCP<const std::vector<Teuchos::RCP<DRT::Discretization>>>& discretizations,
+        std::vector<int> const& elegid, std::vector<LINALG::SerialDenseVector> const& elevec,
+        std::vector<std::vector<LINALG::SerialDenseMatrix>> const& elemat,
+        Teuchos::RCP<Epetra_FEVector>& ff, Teuchos::RCP<Epetra_FEVector>& fb,
+        Teuchos::RCP<LINALG::SparseMatrix>& cff, Teuchos::RCP<LINALG::SparseMatrix>& cbb,
+        Teuchos::RCP<LINALG::SparseMatrix>& cfb, Teuchos::RCP<LINALG::SparseMatrix>& cbf);
+
+    /*----------------------------------------------------------------------------*
+     *----------------------------------------------------------------------------*/
+
     /**
      * \brief Get the local indices of the centerline DOFs of an element.
      * @param discret (in) Pointer to the discretization.
@@ -228,12 +249,50 @@ namespace BEAMINTERACTION
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
+
+    /**
+     * \brief Get the local indices of the centerline DOFs of an element.
+     * @param discret (in) Pointer to the discretization.
+     * @param ele (in) Pointer to the element.
+     * @param ele_centerline_dof_indices (out) Vector with local indices of centerline DOFs in the
+     * element.
+     * @param num_dof (out) Number total DOFs on the element.
+     */
+    void GetFBIElementCenterlineDOFIndices(DRT::Discretization const& discret,
+        const DRT::Element* ele, std::vector<unsigned int>& ele_centerline_dof_indices,
+        unsigned int& num_dof);
+
+
+    /*----------------------------------------------------------------------------*
+     *----------------------------------------------------------------------------*/
     void AssembleCenterlineDofForceStiffIntoElementForceStiff(DRT::Discretization const& discret,
         std::vector<int> const& elegid,
         std::vector<LINALG::SerialDenseVector> const& eleforce_centerlineDOFs,
         std::vector<std::vector<LINALG::SerialDenseMatrix>> const& elestiff_centerlineDOFs,
         std::vector<LINALG::SerialDenseVector>* eleforce,
         std::vector<std::vector<LINALG::SerialDenseMatrix>>* elestiff);
+
+    /*----------------------------------------------------------------------------*
+     *----------------------------------------------------------------------------*/
+
+    /**
+     * \brief Assembles centerline DOF coupling contributions into element coupling matrices and
+     * force vectors
+     *
+     * The function expects a vector object of length 2 containing discretizations
+     *
+     */
+
+    void AssembleCenterlineDofForceStiffIntoFBIElementForceStiff(
+        const Teuchos::RCP<const std::vector<Teuchos::RCP<DRT::Discretization>>>& discretizations,
+        std::vector<int> const& elegid,
+        std::vector<LINALG::SerialDenseVector> const& eleforce_centerlineDOFs,
+        std::vector<std::vector<LINALG::SerialDenseMatrix>> const& elestiff_centerlineDOFs,
+        std::vector<LINALG::SerialDenseVector>* eleforce,
+        std::vector<std::vector<LINALG::SerialDenseMatrix>>* elestiff);
+
+    /*----------------------------------------------------------------------------*
+     *----------------------------------------------------------------------------*/
 
     /**
      * \brief Assemble a matrix with columns based on centerline DOFs of an element into a matrix
@@ -253,7 +312,12 @@ namespace BEAMINTERACTION
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
     void ExtractPosDofVecAbsoluteValues(DRT::Discretization const& discret, DRT::Element const* ele,
-        Teuchos::RCP<Epetra_Vector> const& ia_discolnp,
+        Teuchos::RCP<const Epetra_Vector> const& ia_discolnp,
+        std::vector<double>& element_posdofvec_absolutevalues);
+    /*----------------------------------------------------------------------------*
+     *----------------------------------------------------------------------------*/
+    void ExtractPosDofVecValues(DRT::Discretization const& discret, DRT::Element const* ele,
+        Teuchos::RCP<const Epetra_Vector> const& ia_discolnp,
         std::vector<double>& element_posdofvec_absolutevalues);
 
     /*----------------------------------------------------------------------------*
