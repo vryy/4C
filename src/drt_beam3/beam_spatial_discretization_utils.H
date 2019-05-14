@@ -133,6 +133,42 @@ namespace DRT
         }
       }
 
+      /** \brief evaluate third derivatives of shape function at position \xi in element parameter
+       *         space [-1,1]
+       *
+       *  \author grill
+       *  \date 04/19 */
+      template <unsigned int nnode, unsigned int vpernode, typename T>
+      void EvaluateShapeFunction3rdDerivsAtXi(const T& xi,
+          LINALG::TMatrix<T, 1, vpernode * nnode>& I_i_xixixi,
+          const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0)
+      {
+        I_i_xixixi.Clear();
+
+        switch (vpernode)
+        {
+          case 1:
+          {
+            // evaluate Lagrange shape function derivs at xi
+            dserror("Please implement 3rd derivatives of Lagrange shape functions!");
+            break;
+          }
+          case 2:
+          {
+            dsassert(hermite_length_param != -1.0,
+                "you must provide a length parameter in case of "
+                "Hermite interpolation!");
+
+            // evaluate Hermite shape function derivs at xi: vpernode=2 means 3rd order, i.e. line2
+            DRT::UTILS::shape_function_hermite_1D_deriv3(
+                I_i_xixixi, xi, hermite_length_param, DRT::Element::line2);
+            break;
+          }
+          default:
+            dserror("invalid value for vpernode (number of values per node) specified");
+        }
+      }
+
       /** \brief evaluate shape functions and its first derivatives at position \xi in element
        *         parameter space [-1,1]
        *

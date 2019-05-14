@@ -46,16 +46,30 @@ void INPAR::BEAMPOTENTIAL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLis
 
   setStringToIntegralParameter<int>("STRATEGY", "DoubleLengthSpecific_LargeSepApprox",
       "strategy to evaluate interaction potential: double/single length specific, "
-      "small/large separation approximation",
+      "small/large separation approximation, ...",
       tuple<std::string>("DoubleLengthSpecific_LargeSepApprox",
-          "DoubleLengthSpecific_SmallSepApprox", "SingleLengthSpecific_SmallSepApprox"),
+          "DoubleLengthSpecific_SmallSepApprox", "SingleLengthSpecific_SmallSepApprox",
+          "SingleLengthSpecific_SmallSepApprox_Simple"),
       tuple<int>(strategy_doublelengthspec_largesepapprox, strategy_doublelengthspec_smallsepapprox,
-          strategy_singlelengthspec_smallsepapprox),
+          strategy_singlelengthspec_smallsepapprox,
+          strategy_singlelengthspec_smallsepapprox_simple),
       &beampotential);
 
   DoubleParameter("CUTOFF_RADIUS", -1.0,
       "Neglect all potential contributions at separation larger"
       "than this cutoff radius",
+      &beampotential);
+
+  setStringToIntegralParameter<int>("REGULARIZATION_TYPE", "none",
+      "Type of regularization applied to the force law",
+      tuple<std::string>("linear_extrapolation", "constant_extrapolation", "None", "none"),
+      tuple<int>(
+          regularization_linear, regularization_constant, regularization_none, regularization_none),
+      &beampotential);
+
+  DoubleParameter("REGULARIZATION_SEPARATION", -1.0,
+      "Use regularization of force law at separations "
+      "smaller than this separation",
       &beampotential);
 
   IntParameter("NUM_INTEGRATION_SEGMENTS", 1,

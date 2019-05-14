@@ -30,6 +30,8 @@ BEAMINTERACTION::BeamPotentialParams::BeamPotentialParams()
       potential_type_(INPAR::BEAMPOTENTIAL::beampot_vague),
       strategy_(INPAR::BEAMPOTENTIAL::strategy_vague),
       cutoff_radius_(0.0),
+      regularization_type_(INPAR::BEAMPOTENTIAL::regularization_none),
+      regularization_separation_(0.0),
       num_integration_segments_(-1),
       num_GPs_(-1),
       useFAD_(false),
@@ -87,13 +89,6 @@ void BEAMINTERACTION::BeamPotentialParams::Init()
   }
 
   /****************************************************************************/
-  potential_type_ = DRT::INPUT::IntegralValue<INPAR::BEAMPOTENTIAL::BeamPotentialType>(
-      beam_potential_params_list, "BEAMPOTENTIAL_TYPE");
-
-  if (potential_type_ == INPAR::BEAMPOTENTIAL::beampot_vague)
-    dserror("You must specify the type of the specified beam interaction potential!");
-
-  /****************************************************************************/
   strategy_ = DRT::INPUT::IntegralValue<INPAR::BEAMPOTENTIAL::BeamPotentialStrategy>(
       beam_potential_params_list, "STRATEGY");
 
@@ -101,10 +96,48 @@ void BEAMINTERACTION::BeamPotentialParams::Init()
     dserror("You must specify a strategy to be used to evaluate beam interaction potential!");
 
   /****************************************************************************/
+  potential_type_ = DRT::INPUT::IntegralValue<INPAR::BEAMPOTENTIAL::BeamPotentialType>(
+      beam_potential_params_list, "BEAMPOTENTIAL_TYPE");
+
+  if (potential_type_ == INPAR::BEAMPOTENTIAL::beampot_vague)
+    dserror("You must specify the type of the specified beam interaction potential!");
+
+  if (potential_type_ == INPAR::BEAMPOTENTIAL::beampot_surf and
+      strategy_ != INPAR::BEAMPOTENTIAL::strategy_doublelengthspec_largesepapprox)
+  {
+    dserror("Surface interaction is not implemented for this strategy yet!");
+  }
+
+  /****************************************************************************/
   cutoff_radius_ = beam_potential_params_list.get<double>("CUTOFF_RADIUS");
 
   if (cutoff_radius_ != -1.0 and cutoff_radius_ <= 0.0)
     dserror("Invalid cutoff radius! Must be positive value or -1 to deactivate.");
+
+  /****************************************************************************/
+  regularization_type_ =
+      DRT::INPUT::IntegralValue<INPAR::BEAMPOTENTIAL::BeamPotentialRegularizationType>(
+          beam_potential_params_list, "REGULARIZATION_TYPE");
+
+  if ((regularization_type_ != INPAR::BEAMPOTENTIAL::regularization_none and
+          strategy_ == INPAR::BEAMPOTENTIAL::strategy_doublelengthspec_largesepapprox) or
+      (regularization_type_ == INPAR::BEAMPOTENTIAL::regularization_constant and
+          strategy_ == INPAR::BEAMPOTENTIAL::strategy_singlelengthspec_smallsepapprox))
+  {
+    dserror(
+        "This kind of regularization of the force law is not implemented for this strategy yet!");
+  }
+
+  /****************************************************************************/
+  regularization_separation_ = beam_potential_params_list.get<double>("REGULARIZATION_SEPARATION");
+
+  if (regularization_type_ != INPAR::BEAMPOTENTIAL::regularization_none and
+      regularization_separation_ <= 0.0)
+  {
+    dserror(
+        "Invalid regularization separation! Must be a positive value since force law "
+        "is not defined for separations <= 0!");
+  }
 
   /****************************************************************************/
   num_integration_segments_ = beam_potential_params_list.get<int>("NUM_INTEGRATION_SEGMENTS");

@@ -174,9 +174,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::ReadRestart(const int restartstep)
   // read restart of particle engine
   particleengine_->ReadRestart(reader, particlestodistribute_);
 
-  // read restart of wall handler
-  if (particlewall_) particlewall_->ReadRestart(restartstep);
-
   // read restart of particle time integration
   particletimint_->ReadRestart(reader);
 
@@ -188,6 +185,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::ReadRestart(const int restartstep)
 
   // read restart of viscous damping handler
   if (viscousdamping_) viscousdamping_->ReadRestart(reader);
+
+  // read restart of wall handler
+  if (particlewall_) particlewall_->ReadRestart(restartstep);
 
   // set time and step after restart
   SetTimeStep(restarttime, restartstep);
@@ -291,9 +291,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Output() const
     // write restart of particle engine
     particleengine_->WriteRestart(Step(), Time());
 
-    // write restart of wall handler
-    if (particlewall_) particlewall_->WriteRestart(Step(), Time());
-
     // write restart of particle time integration
     particletimint_->WriteRestart(Step(), Time());
 
@@ -305,6 +302,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Output() const
 
     // write restart of viscous damping handler
     if (viscousdamping_) viscousdamping_->WriteRestart(Step(), Time());
+
+    // write restart of wall handler
+    if (particlewall_) particlewall_->WriteRestart(Step(), Time());
 
     // short screen output
     if (myrank_ == 0)

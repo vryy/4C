@@ -27,9 +27,15 @@
 #include "particle_interaction_dem_contact_normal.H"
 #include "particle_interaction_dem_contact_tangential.H"
 
+#include "../drt_particle_algorithm/particle_wall_interface.H"
+
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_container.H"
 
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+
+#include "../drt_lib/drt_element.H"
+#include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -69,6 +75,7 @@ void PARTICLEINTERACTION::DEMContact::Init()
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContact::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
+    const std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface,
     const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
     const std::shared_ptr<PARTICLEINTERACTION::DEMNeighborPairs> neighborpairs,
     const std::shared_ptr<PARTICLEINTERACTION::DEMHistoryPairs> historypairs)
@@ -78,6 +85,9 @@ void PARTICLEINTERACTION::DEMContact::Setup(
 
   // set particle container bundle
   particlecontainerbundle_ = particleengineinterface_->GetParticleContainerBundle();
+
+  // set interface to particle wall hander
+  particlewallinterface_ = particlewallinterface;
 
   // set particle material handler
   particlematerial_ = particlematerial;
@@ -207,145 +217,11 @@ void PARTICLEINTERACTION::DEMContact::CheckCriticalTimeStep() const
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContact::AddForceAndMomentContribution()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::DEMContact::AddForceAndMomentContribution");
+  // evaluate particle contact contribution
+  EvaluateParticleContact();
 
-  // get reference to tangential history pair data
-  DEMHistoryPairTangentialData& tangentialhistorydata =
-      historypairs_->GetRefToTangentialHistoryData();
-
-  // iterate over neighbor pairs
-  for (const auto& neighborpair : neighborpairs_->GetRefToNeighborPairData())
-  {
-    // access values of local index tuples of particle i and j
-    PARTICLEENGINE::TypeEnum type_i;
-    PARTICLEENGINE::StatusEnum status_i;
-    int particle_i;
-    std::tie(type_i, status_i, particle_i) = neighborpair.tuple_i_;
-
-    PARTICLEENGINE::TypeEnum type_j;
-    PARTICLEENGINE::StatusEnum status_j;
-    int particle_j;
-    std::tie(type_j, status_j, particle_j) = neighborpair.tuple_j_;
-
-    // get corresponding particle containers
-    PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
-
-    PARTICLEENGINE::ParticleContainer* container_j =
-        particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
-
-    // get global ids of particle
-    const int* globalid_i = container_i->GetPtrToParticleGlobalID(particle_i);
-    const int* globalid_j = container_j->GetPtrToParticleGlobalID(particle_j);
-
-    // declare pointer variables for particle i and j
-    const double *vel_i, *rad_i, *angvel_i;
-    double *force_i, *moment_i;
-
-    const double *vel_j, *rad_j, *angvel_j;
-    double *force_j, *moment_j;
-
-    // get pointer to particle states
-    vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
-    rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-    force_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Force, particle_i);
-
-    vel_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_j);
-    rad_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_j);
-    force_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Force, particle_j);
-
-    if (contacttangential_)
-    {
-      angvel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::AngularVelocity, particle_i);
-      moment_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Moment, particle_i);
-
-      angvel_j = container_j->GetPtrToParticleState(PARTICLEENGINE::AngularVelocity, particle_j);
-      moment_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Moment, particle_j);
-    }
-
-    // compute vectors from particle i and j to contact point c
-    double r_ci[3], r_cj[3];
-    if (contacttangential_)
-    {
-      UTILS::vec_setscale(r_ci, (rad_i[0] + 0.5 * neighborpair.gap_), neighborpair.e_ji_);
-      UTILS::vec_setscale(r_cj, -(rad_j[0] + 0.5 * neighborpair.gap_), neighborpair.e_ji_);
-    }
-
-    // relative velocity in contact point c between particle i and j
-    double vel_rel[3];
-    UTILS::vec_set(vel_rel, vel_i);
-    UTILS::vec_sub(vel_rel, vel_j);
-    if (contacttangential_)
-    {
-      UTILS::vec_addcross(vel_rel, angvel_i, r_ci);
-      UTILS::vec_addcross(vel_rel, r_cj, angvel_j);
-    }
-
-    // magnitude of relative velocity in normal direction
-    const double vel_rel_normal = UTILS::vec_dot(vel_rel, neighborpair.e_ji_);
-
-    // calculate normal contact force
-    double normalcontactforce(0.0);
-    contactnormal_->NormalContactForce(
-        neighborpair.gap_, rad_i, rad_j, vel_rel_normal, neighborpair.m_eff_, normalcontactforce);
-
-    // add normal contact force contribution
-    UTILS::vec_addscale(force_i, normalcontactforce, neighborpair.e_ji_);
-    if (status_j == PARTICLEENGINE::Owned)
-      UTILS::vec_addscale(force_j, -normalcontactforce, neighborpair.e_ji_);
-
-    // calculation of tangential contact force
-    if (contacttangential_)
-    {
-      // get reference to touched tangential history
-      TouchedDEMHistoryPairTangential& touchedtangentialhistory_ij =
-          tangentialhistorydata[globalid_i[0]][globalid_j[0]];
-
-      // mark tangential history as touched
-      touchedtangentialhistory_ij.first = true;
-
-      // get reference to tangential history
-      DEMHistoryPairTangential& tangentialhistory_ij = touchedtangentialhistory_ij.second;
-
-      // relative velocity in tangential direction
-      double vel_rel_tangential[3];
-      UTILS::vec_set(vel_rel_tangential, vel_rel);
-      UTILS::vec_addscale(vel_rel_tangential, -vel_rel_normal, neighborpair.e_ji_);
-
-      // calculate tangential contact force
-      double tangentialcontactforce[3];
-      contacttangential_->TangentialContactForce(tangentialhistory_ij.gap_t_,
-          tangentialhistory_ij.stick_, neighborpair.e_ji_, vel_rel_tangential, neighborpair.m_eff_,
-          normalcontactforce, tangentialcontactforce);
-
-      // copy history from interaction pair ij to ji
-      if (status_j == PARTICLEENGINE::Owned)
-      {
-        // get reference to touched tangential history
-        TouchedDEMHistoryPairTangential& touchedtangentialhistory_ji =
-            tangentialhistorydata[globalid_j[0]][globalid_i[0]];
-
-        // mark tangential history as touched
-        touchedtangentialhistory_ji.first = true;
-
-        // get reference to tangential history
-        DEMHistoryPairTangential& tangentialhistory_ji = touchedtangentialhistory_ji.second;
-
-        // set tangential gap and tangential stick flag
-        UTILS::vec_setscale(tangentialhistory_ji.gap_t_, -1.0, tangentialhistory_ij.gap_t_);
-        tangentialhistory_ji.stick_ = tangentialhistory_ij.stick_;
-      }
-
-      // add tangential contact force contribution
-      UTILS::vec_add(force_i, tangentialcontactforce);
-      if (status_j == PARTICLEENGINE::Owned) UTILS::vec_sub(force_j, tangentialcontactforce);
-
-      // add tangential contact moment contribution
-      UTILS::vec_addcross(moment_i, r_ci, tangentialcontactforce);
-      if (status_j == PARTICLEENGINE::Owned)
-        UTILS::vec_addcross(moment_j, tangentialcontactforce, r_cj);
-    }
-  }
+  // evaluate particle-wall contact contribution
+  if (particlewallinterface_) EvaluateParticleWallContact();
 }
 
 /*---------------------------------------------------------------------------*
@@ -463,4 +339,288 @@ double PARTICLEINTERACTION::DEMContact::GetMaxDensityOfAllMaterials() const
   }
 
   return maxdensity;
+}
+
+/*---------------------------------------------------------------------------*
+ | evaluate particle contact contribution                     sfuchs 11/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::DEMContact::EvaluateParticleContact()
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::DEMContact::EvaluateParticleContact");
+
+  // get reference to particle tangential history pair data
+  DEMHistoryPairTangentialData& tangentialhistorydata =
+      historypairs_->GetRefToParticleTangentialHistoryData();
+
+  // iterate over particle pairs
+  for (const auto& particlepair : neighborpairs_->GetRefToParticlePairData())
+  {
+    // access values of local index tuples of particle i and j
+    PARTICLEENGINE::TypeEnum type_i;
+    PARTICLEENGINE::StatusEnum status_i;
+    int particle_i;
+    std::tie(type_i, status_i, particle_i) = particlepair.tuple_i_;
+
+    PARTICLEENGINE::TypeEnum type_j;
+    PARTICLEENGINE::StatusEnum status_j;
+    int particle_j;
+    std::tie(type_j, status_j, particle_j) = particlepair.tuple_j_;
+
+    // get corresponding particle containers
+    PARTICLEENGINE::ParticleContainer* container_i =
+        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+
+    PARTICLEENGINE::ParticleContainer* container_j =
+        particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
+
+    // get global ids of particle
+    const int* globalid_i = container_i->GetPtrToParticleGlobalID(particle_i);
+    const int* globalid_j = container_j->GetPtrToParticleGlobalID(particle_j);
+
+    // declare pointer variables for particle i and j
+    const double *vel_i, *rad_i, *angvel_i;
+    double *force_i, *moment_i;
+
+    const double *vel_j, *rad_j, *angvel_j;
+    double *force_j, *moment_j;
+
+    // get pointer to particle states
+    vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
+    rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
+    force_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Force, particle_i);
+
+    vel_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_j);
+    rad_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_j);
+    force_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Force, particle_j);
+
+    if (contacttangential_)
+    {
+      angvel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::AngularVelocity, particle_i);
+      moment_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Moment, particle_i);
+
+      angvel_j = container_j->GetPtrToParticleState(PARTICLEENGINE::AngularVelocity, particle_j);
+      moment_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Moment, particle_j);
+    }
+
+    // compute vectors from particle i and j to contact point c
+    double r_ci[3], r_cj[3];
+    if (contacttangential_)
+    {
+      UTILS::vec_setscale(r_ci, (rad_i[0] + 0.5 * particlepair.gap_), particlepair.e_ji_);
+      UTILS::vec_setscale(r_cj, -(rad_j[0] + 0.5 * particlepair.gap_), particlepair.e_ji_);
+    }
+
+    // relative velocity in contact point c between particle i and j
+    double vel_rel[3];
+    UTILS::vec_set(vel_rel, vel_i);
+    UTILS::vec_sub(vel_rel, vel_j);
+    if (contacttangential_)
+    {
+      UTILS::vec_addcross(vel_rel, angvel_i, r_ci);
+      UTILS::vec_addcross(vel_rel, r_cj, angvel_j);
+    }
+
+    // magnitude of relative velocity in normal direction
+    const double vel_rel_normal = UTILS::vec_dot(vel_rel, particlepair.e_ji_);
+
+    // calculate normal contact force
+    double normalcontactforce(0.0);
+    contactnormal_->NormalContactForce(
+        particlepair.gap_, rad_i, rad_j, vel_rel_normal, particlepair.m_eff_, normalcontactforce);
+
+    // add normal contact force contribution
+    UTILS::vec_addscale(force_i, normalcontactforce, particlepair.e_ji_);
+    if (status_j == PARTICLEENGINE::Owned)
+      UTILS::vec_addscale(force_j, -normalcontactforce, particlepair.e_ji_);
+
+    // calculation of tangential contact force
+    if (contacttangential_)
+    {
+      // get reference to touched tangential history
+      TouchedDEMHistoryPairTangential& touchedtangentialhistory_ij =
+          tangentialhistorydata[globalid_i[0]][globalid_j[0]];
+
+      // mark tangential history as touched
+      touchedtangentialhistory_ij.first = true;
+
+      // get reference to tangential history
+      DEMHistoryPairTangential& tangentialhistory_ij = touchedtangentialhistory_ij.second;
+
+      // relative velocity in tangential direction
+      double vel_rel_tangential[3];
+      UTILS::vec_set(vel_rel_tangential, vel_rel);
+      UTILS::vec_addscale(vel_rel_tangential, -vel_rel_normal, particlepair.e_ji_);
+
+      // calculate tangential contact force
+      double tangentialcontactforce[3];
+      contacttangential_->TangentialContactForce(tangentialhistory_ij.gap_t_,
+          tangentialhistory_ij.stick_, particlepair.e_ji_, vel_rel_tangential, particlepair.m_eff_,
+          normalcontactforce, tangentialcontactforce);
+
+      // copy history from interaction pair ij to ji
+      if (status_j == PARTICLEENGINE::Owned)
+      {
+        // get reference to touched tangential history
+        TouchedDEMHistoryPairTangential& touchedtangentialhistory_ji =
+            tangentialhistorydata[globalid_j[0]][globalid_i[0]];
+
+        // mark tangential history as touched
+        touchedtangentialhistory_ji.first = true;
+
+        // get reference to tangential history
+        DEMHistoryPairTangential& tangentialhistory_ji = touchedtangentialhistory_ji.second;
+
+        // set tangential gap and tangential stick flag
+        UTILS::vec_setscale(tangentialhistory_ji.gap_t_, -1.0, tangentialhistory_ij.gap_t_);
+        tangentialhistory_ji.stick_ = tangentialhistory_ij.stick_;
+      }
+
+      // add tangential contact force contribution
+      UTILS::vec_add(force_i, tangentialcontactforce);
+      if (status_j == PARTICLEENGINE::Owned) UTILS::vec_sub(force_j, tangentialcontactforce);
+
+      // add tangential contact moment contribution
+      UTILS::vec_addcross(moment_i, r_ci, tangentialcontactforce);
+      if (status_j == PARTICLEENGINE::Owned)
+        UTILS::vec_addcross(moment_j, tangentialcontactforce, r_cj);
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*
+ | evaluate particle-wall contact contribution                sfuchs 05/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact");
+
+  // get reference to particle-wall tangential history pair data
+  DEMHistoryPairTangentialData& tangentialhistorydata =
+      historypairs_->GetRefToParticleWallTangentialHistoryData();
+
+  // iterate over particle-wall pairs
+  for (const auto& particlewallpair : neighborpairs_->GetRefToParticleWallPairData())
+  {
+    // access values of local index tuple of particle i
+    PARTICLEENGINE::TypeEnum type_i;
+    PARTICLEENGINE::StatusEnum status_i;
+    int particle_i;
+    std::tie(type_i, status_i, particle_i) = particlewallpair.tuple_i_;
+
+    // get corresponding particle container
+    PARTICLEENGINE::ParticleContainer* container_i =
+        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+
+    // get global id of particle
+    const int* globalid_i = container_i->GetPtrToParticleGlobalID(particle_i);
+
+    // declare pointer variables for particle i
+    const double *vel_i, *rad_i, *mass_i, *angvel_i;
+    double *force_i, *moment_i;
+
+    // get pointer to particle states
+    vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
+    rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
+    mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+    force_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Force, particle_i);
+
+    if (contacttangential_)
+    {
+      angvel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::AngularVelocity, particle_i);
+      moment_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Moment, particle_i);
+    }
+
+    // get pointer to column wall element
+    DRT::Element* ele = particlewallpair.ele_;
+
+    // declare zero radius for wall contact point j
+    const double rad_j = 0.0;
+
+    // velocity of wall contact point j
+    double vel_j[3] = {0.0};
+
+    if (particlewallinterface_->GetVel() != Teuchos::null)
+    {
+      // number of nodes of wall element
+      const int numnodes = ele->NumNode();
+
+      // evaluate shape functions of element at wall contact point
+      Epetra_SerialDenseVector funct(numnodes);
+      DRT::UTILS::shape_function_2D(
+          funct, particlewallpair.elecoords_[0], particlewallpair.elecoords_[1], ele->Shape());
+
+      // get location vector of wall element
+      std::vector<int> lmele;
+      lmele.reserve(numnodes * 3);
+      std::vector<int> lmowner;
+      std::vector<int> lmstride;
+      ele->LocationVector(
+          *particlewallinterface_->GetWallDiscretization(), lmele, lmowner, lmstride);
+
+      // get nodal velocities
+      std::vector<double> nodal_vel_j(numnodes * 3);
+      DRT::UTILS::ExtractMyValues(*particlewallinterface_->GetVel(), nodal_vel_j, lmele);
+
+      // determine velocity of wall contact point j
+      for (int node = 0; node < numnodes; ++node)
+        for (int dim = 0; dim < 3; ++dim) vel_j[dim] += funct[node] * nodal_vel_j[node * 3 + dim];
+    }
+
+    // compute vector from particle i to wall contact point j
+    double r_ji[3];
+    if (contacttangential_)
+      UTILS::vec_setscale(r_ji, (rad_i[0] + particlewallpair.gap_), particlewallpair.e_ji_);
+
+    // relative velocity in wall contact point j
+    double vel_rel[3];
+    UTILS::vec_set(vel_rel, vel_i);
+    UTILS::vec_sub(vel_rel, vel_j);
+    if (contacttangential_) UTILS::vec_addcross(vel_rel, angvel_i, r_ji);
+
+    // magnitude of relative velocity in normal direction
+    const double vel_rel_normal = UTILS::vec_dot(vel_rel, particlewallpair.e_ji_);
+
+    // calculate normal contact force
+    double normalcontactforce(0.0);
+    contactnormal_->NormalContactForce(
+        particlewallpair.gap_, rad_i, &rad_j, vel_rel_normal, mass_i[0], normalcontactforce);
+
+    // add normal contact force contribution
+    UTILS::vec_addscale(force_i, normalcontactforce, particlewallpair.e_ji_);
+
+    // calculation of tangential contact force
+    if (contacttangential_)
+    {
+      // get reference to touched tangential history
+      TouchedDEMHistoryPairTangential& touchedtangentialhistory_ij =
+          tangentialhistorydata[globalid_i[0]][ele->Id()];
+
+      // mark tangential history as touched
+      touchedtangentialhistory_ij.first = true;
+
+      // get reference to tangential history
+      DEMHistoryPairTangential& tangentialhistory_ij = touchedtangentialhistory_ij.second;
+
+      // relative velocity in tangential direction
+      double vel_rel_tangential[3];
+      UTILS::vec_set(vel_rel_tangential, vel_rel);
+      UTILS::vec_addscale(vel_rel_tangential, -vel_rel_normal, particlewallpair.e_ji_);
+
+      // calculate tangential contact force
+      double tangentialcontactforce[3];
+      contacttangential_->TangentialContactForce(tangentialhistory_ij.gap_t_,
+          tangentialhistory_ij.stick_, particlewallpair.e_ji_, vel_rel_tangential, mass_i[0],
+          normalcontactforce, tangentialcontactforce);
+
+      // add tangential contact force contribution
+      UTILS::vec_add(force_i, tangentialcontactforce);
+
+      // add tangential contact moment contribution
+      UTILS::vec_addcross(moment_i, r_ji, tangentialcontactforce);
+
+      // copy history to relevant wall elements in penetration volume
+      for (int histele : particlewallpair.histeles_)
+        tangentialhistorydata[globalid_i[0]][histele] = touchedtangentialhistory_ij;
+    }
+  }
 }

@@ -28,6 +28,7 @@ To incorporate a `feature` branch into the `master` branch, BACI employs GitLab'
       1. [Feedback](#feedback)
       1. [Merging a Merge Request](#merging-a-merge-request)
    1. [Final Clean-Up](#final-clean-up)
+   1. [Actively watch the nightly pipeline](#actively-watch-the-nightly-pipeline)
 
 ## Setup and Initial Configuration
 
@@ -45,6 +46,8 @@ Set-up instructions for various IDEs can be found on the respective [Wiki page](
 ## The Baci Development Workflow
 
 ### Create a GitLab Issue
+
+It is highly recommended to open an issue, when planning any change to Baci. It is good practice to open the issues when starting to work on something (and not after working on it or just prior to create the merge request).
 
 Navigate to BACI's [GitLab Issues page](https://gitlab.lrz.de/baci/baci/issues) and create a new issue.
 The issue can be used for any number of things &mdash; reporting a bug, suggesting an enhancement, posing a question, etc.
@@ -107,12 +110,18 @@ then use `git rebase -i` to reorganize your commits before sharing.
 
 ##### Commit Messages
 
+Use the commit message to explain the context and reasons for your changes, i.e. the **What?** and **Why?**, rather than providing details on how you changed the code. Use comments in the source code or in the Doxygen documentation to explain *how* the code works.
+
+Commit messages must be detailed and directly include all necessary information. Including references to issues and merge requests is considered good practice, but does not replace a detailed and self-contained commit message.
+
+To differentiate from the documentation in GitLab: Commit messages are for the developers of the affected code parts, whereas issue and merge requests descriptions are meant for reviewers.
+
+Commit messages should meet the following points:
 * The **first line** of the commit message should be a descriptive title, **limited to 50 characters**.
 * This is then followed by a blank line, and then the rest of the commit message is a description of the changes,
 limited to 72 characters wide.
 * Make sure your commit messages reference the appropriate GitLab issue numbers using the `#<issueNumber>` syntax.
 
-Use the commit message to explain the context and reasons for your changes, i.e. the **What?** and **Why?**, rather than providing details on how you changed the code. Use comments in the source code or in the Doxygen documentation to explain *how* the code works.
 
 [↑ Contents](#contents)
 
@@ -180,9 +189,16 @@ move the issue card from **In Progress** to **Under Review** on our
       * target branch: `master`
    * On the new merge request creation page, select a merge request template from the dropdown menu to pre-populate the *Description* field with some text. Follow the instructions in that template to give as much information as you can such that the merge request can be reviewed and accepted as soon as it is practicable.
    * To notify interested parties and possible reviewers about your merge request, @mention possible reviewers for this merge request as well as the maintainers of all the files you've touched in the *Interested Parties / Possible Reviewers* section of the *Description* field.
+   * Assign an available reviewer from the @baci/baci_maintainer group who will take care of the reviewing/merging process (Members of the @baci/baci_maintainer group do not assign themselves).
+   > **Note** Do not create the merge request by clicking on the button *Create merge request* in your issue (creates a new branch).
 * Trigger the execution of the test suite manually:
-   * Go to BACI's [CI/CD](https://gitlab.lrz.de/baci/baci/pipelines) page
+   * Go to BACI's [CI/CD](https://gitlab.lrz.de/baci/baci/pipelines) page and select `Run Pipeline`
    * Select your branch `<branchName>` and start the pipeline
+   * A manually triggered pipeline has to pass on the `feature` branch at least once.
+For subsequent minor changes on the `feature` branch, the selected reviewer and the affected developer can agree to reduce the additional testing scope.
+   > **Note** This pipeline tests only the standard BACI release configuration for workstations (Not included is testing of the debug version, cluster configurations, ...). In contrast to that, all configurations are tested once a day by the @baci_test_bot. These additional BACI configurations can be tested by setting appropriate variables if desired.
+
+
 
 [↑ Contents](#contents)
 
@@ -234,5 +250,17 @@ Either way is completely fine.  After that you can remove your local branch with
 ```bash
 git branch -D <branchName>
 ```
+
+[↑ Contents](#contents)
+
+### Actively watch the nightly pipeline
+
+After your merge request was merged into the `master` branch, actively watch the nightly pipeline which is executed in the following night.
+In the case any configuration on the `master` branch of the nightly pipeline is failing (this can happen as we do not test the same/all configurations before the merge):
+* All **developer(s)** and **reviewer(s)** who merged into the `master` branch since the last nightly pipeline passed are **responsible** for fixing the reason for the failing pipeline.
+* This responsible group coordinates this bug-fixing process independently.
+* If you are member of the responsible group, open an issue using the `TEST_FAILING` template if not yet done (can be skipped for immediately fixed trivial bugs).
+* The file maintainers and other developers support this process if requested but are not leading this process.
+* If a merge request has to be reverted is decided by the reviewer (in discussion with the developer), depending on the expected time to fix the issue and how critical the problem is.
 
 [↑ Contents](#contents)

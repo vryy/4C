@@ -240,9 +240,13 @@ void EHL::Base::SetStructSolution(Teuchos::RCP<const Epetra_Vector> disp)
   // Displace the mesh of the lubrication field in accordance with the slave-side interface
   SetMeshDisp(disp);
 
-  // Calculate the tangential fractions of the structure velocities at the interface and provide
-  // them to the lubrication field
+  // Calculate the average tangential fractions of the structure velocities at the interface and
+  // provide them to the lubrication field
   SetAverageVelocityField();
+
+  // Calculate the relative tangential fractions of the structure velocities at the interface and
+  // provide them to the lubrication field
+  SetRelativeVelocityField();
 
   // Provide the gap at the interface
   SetHeightField();
@@ -453,6 +457,16 @@ void EHL::Base::SetAverageVelocityField()
   Teuchos::RCP<Epetra_Vector> avVelLub =
       ada_strDisp_to_lubDisp_->MasterToSlave(mortaradapter_->AvTangVel());
   lubrication_->LubricationField()->SetAverageVelocityField(1, avVelLub);
+}
+
+/*----------------------------------------------------------------------*
+ | set structure relative velocity fields on lub. field     faraji 02/19 |
+ *----------------------------------------------------------------------*/
+void EHL::Base::SetRelativeVelocityField()
+{
+  Teuchos::RCP<Epetra_Vector> relVelLub =
+      ada_strDisp_to_lubDisp_->MasterToSlave(mortaradapter_->RelTangVel());
+  lubrication_->LubricationField()->SetRelativeVelocityField(1, relVelLub);
 }
 
 /*----------------------------------------------------------------------*

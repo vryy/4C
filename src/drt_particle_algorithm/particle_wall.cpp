@@ -338,12 +338,13 @@ void PARTICLEALGORITHM::WallHandlerBase::BuildParticleToWallNeighbors(
         LINALG::Matrix<3, 1> closestpos;
         GEO::nearest3DObjectOnElement(ele, colelenodalpos, currpos, closestpos);
 
-        // distance between particle and closest point on current column wall element
-        LINALG::Matrix<3, 1> dist;
-        dist.Update(1.0, currpos, -1.0, closestpos);
+        // distance vector from particle to closest point on current column wall element
+        double dist[3];
+        for (int i = 0; i < 3; i++) dist[i] = closestpos(i) - currpos(i);
 
-        // distance larger than minimum bin size
-        if (dist.Norm2() > minbinsize) continue;
+        // distance between particle and wall element larger than minimum bin size
+        if (dist[0] * dist[0] + dist[1] * dist[1] + dist[2] * dist[2] > (minbinsize * minbinsize))
+          continue;
 
         // append potential wall neighbor pair
         potentialwallneighbors_.push_back(std::make_pair(
@@ -366,6 +367,40 @@ PARTICLEALGORITHM::WallHandlerBase::GetPotentialWallNeighbors() const
   if (not validwallneighbors_) dserror("invalid wall neighbors!");
 
   return potentialwallneighbors_;
+}
+
+/*---------------------------------------------------------------------------*
+ | determine nodal positions of column wall element           sfuchs 11/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::WallHandlerBase::DetermineColWallEleNodalPos(
+    DRT::Element* ele, std::map<int, LINALG::Matrix<3, 1>>& colelenodalpos) const
+{
+  // get pointer to nodes of current column wall element
+  DRT::Node** nodes = ele->Nodes();
+  const int numnodes = ele->NumNode();
+
+  // determine nodal displacements
+  std::vector<double> nodal_disp(numnodes * 3, 0.0);
+  if (disp_col_ != Teuchos::null)
+  {
+    std::vector<int> lm_wall;
+    lm_wall.reserve(numnodes * 3);
+    std::vector<int> lmowner;
+    std::vector<int> lmstride;
+    ele->LocationVector(*walldiscretization_, lm_wall, lmowner, lmstride);
+
+    DRT::UTILS::ExtractMyValues(*disp_col_, nodal_disp, lm_wall);
+  }
+
+  // iterate over nodes of current column wall element
+  for (int k = 0; k < numnodes; ++k)
+  {
+    // get reference to current nodal position
+    LINALG::Matrix<3, 1>& currpos = colelenodalpos[nodes[k]->Id()];
+
+    // determine nodal position
+    for (int dim = 0; dim < 3; ++dim) currpos(dim) = nodes[k]->X()[dim] + nodal_disp[k * 3 + dim];
+  }
 }
 
 /*---------------------------------------------------------------------------*
@@ -407,40 +442,6 @@ void PARTICLEALGORITHM::WallHandlerBase::SetupWallVtuWriter()
   // initialize the writer object
   wallvtuwriter_->Initialize(
       walldiscretization_, max_number_timesteps_to_be_written, setuptime_, write_binary_output);
-}
-
-/*---------------------------------------------------------------------------*
- | determine nodal positions of column wall element           sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallHandlerBase::DetermineColWallEleNodalPos(
-    DRT::Element* ele, std::map<int, LINALG::Matrix<3, 1>>& colelenodalpos)
-{
-  // get pointer to nodes of current column wall element
-  DRT::Node** nodes = ele->Nodes();
-  const int numnodes = ele->NumNode();
-
-  // determine nodal displacements
-  std::vector<double> nodal_disp(numnodes * 3, 0.0);
-  if (disp_col_ != Teuchos::null)
-  {
-    std::vector<int> lm_wall;
-    lm_wall.reserve(numnodes * 3);
-    std::vector<int> lmowner;
-    std::vector<int> lmstride;
-    ele->LocationVector(*walldiscretization_, lm_wall, lmowner, lmstride);
-
-    DRT::UTILS::ExtractMyValues(*disp_col_, nodal_disp, lm_wall);
-  }
-
-  // iterate over nodes of current column wall element
-  for (int k = 0; k < numnodes; ++k)
-  {
-    // get reference to current nodal position
-    LINALG::Matrix<3, 1>& currpos = colelenodalpos[nodes[k]->Id()];
-
-    // determine nodal position
-    for (int dim = 0; dim < 3; ++dim) currpos(dim) = nodes[k]->X()[dim] + nodal_disp[k * 3 + dim];
-  }
 }
 
 /*---------------------------------------------------------------------------*
@@ -668,6 +669,16 @@ void PARTICLEALGORITHM::WallHandlerBoundingBox::SetupWallDiscretization() const
 
     // get bounding box dimension
     LINALG::Matrix<3, 2> xaabb = binstrategy_->XAABB();
+
+    // reduce bounding box size to account for round-off errors
+    for (int dim = 0; dim < 3; ++dim)
+    {
+      // periodic boundary conditions in current spatial direction
+      if (binstrategy_->HavePBC(dim)) continue;
+
+      xaabb(dim, 0) += 1.0e-12;
+      xaabb(dim, 1) -= 1.0e-12;
+    }
 
     // init vector of corner node positions
     std::vector<std::vector<double>> nodepositions;

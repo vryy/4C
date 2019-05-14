@@ -489,6 +489,137 @@ class TsiThermoMonWriter : public ThermoMonWriter
  private:
 };  // end of class TsiThermoMonWriter
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/**
+ * \brief monitoring for porofluidmultiphase-problems
+ */
+class PoroFluidMultiMonWriter : public FieldMonWriter
+{
+ public:
+  //! constructor
+  PoroFluidMultiMonWriter(PostProblem& problem, std::string& infieldtype, int node)
+      : FieldMonWriter(problem, infieldtype, node), poro_dof_(node)
+  {
+    output_porosity_ = false;
+    if (problem.optquantitytype() == "porosity") output_porosity_ = true;
+  }
+
+  //! destructor
+  virtual ~PoroFluidMultiMonWriter() {}
+
+ protected:
+  //! check if infieldtype is correct
+  void CheckInfieldType(std::string& infieldtype);
+
+  //! print out error
+  void FieldError(int node);
+
+  //! write header into output file
+  virtual void WriteHeader(std::ofstream& outfile);
+
+  //! write table head into output file
+  void WriteTableHead(std::ofstream& outfile, int dim);
+
+  //! write result into output file
+  virtual void WriteResult(
+      std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim);
+
+ private:
+  //! flag for output of porosity
+  bool output_porosity_;
+  //! dof for output of porosity ( = node number, since defined as nodal quantity)
+  int poro_dof_;
+};  // end of class FluidMonWriter
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/**
+ * \brief monitoring for porofluidmultiphase-quantities as part of a
+ *        Poromultiphase(Scatra)-problem
+ */
+class PoroMultiElastScatraFluidMonWriter : public PoroFluidMultiMonWriter
+{
+ public:
+  //! constructor
+  PoroMultiElastScatraFluidMonWriter(PostProblem& problem, std::string& infieldtype, int node)
+      : PoroFluidMultiMonWriter(problem, infieldtype, node)
+  {
+  }
+
+  //! destructor
+  virtual ~PoroMultiElastScatraFluidMonWriter() {}
+
+ protected:
+  //! get pointer to field
+  PostField* GetFieldPtr(PostProblem& problem);
+
+  //! write header into output file
+  void WriteHeader(std::ofstream& outfile);
+
+ private:
+};  // end of class PoroMultiElastFluidMonWriter
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/**
+ * \brief monitoring for scatra-quantities as part of a
+ *        Poromultiphase(Scatra)-problem
+ */
+class PoroMultiElastScatraScatraMonWriter : public ScatraMonWriter
+{
+ public:
+  //! constructor
+  PoroMultiElastScatraScatraMonWriter(PostProblem& problem, std::string& infieldtype, int node)
+      : ScatraMonWriter(problem, infieldtype, node)
+  {
+  }
+
+  //! destructor
+  virtual ~PoroMultiElastScatraScatraMonWriter() {}
+
+ protected:
+  //! get pointer to field
+  PostField* GetFieldPtr(PostProblem& problem);
+
+  //! write header into output file
+  void WriteHeader(std::ofstream& outfile);
+
+ private:
+};  // end of class PoroMultiElastScatraScatraMonWriter
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/**
+ * \brief monitoring for artery_scatra-quantities (1D discretization) as part of a
+ *        Poromultiphase(Scatra)-problem
+ */
+class PoroMultiElastScatraArteryScatraMonWriter : public ScatraMonWriter
+{
+ public:
+  //! constructor
+  PoroMultiElastScatraArteryScatraMonWriter(
+      PostProblem& problem, std::string& infieldtype, int node)
+      : ScatraMonWriter(problem, infieldtype, node)
+  {
+  }
+
+  //! destructor
+  virtual ~PoroMultiElastScatraArteryScatraMonWriter() {}
+
+ protected:
+  //! get pointer to field
+  PostField* GetFieldPtr(PostProblem& problem);
+
+  //! write header into output file
+  void WriteHeader(std::ofstream& outfile);
+
+ private:
+};  // end of class PoroMultiElastScatraArteryScatraMonWriter
 
 
 #endif /*POST_DRT_MONITOR_H_*/

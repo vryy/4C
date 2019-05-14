@@ -63,13 +63,27 @@ void PARTICLEINTERACTION::DEMHistoryPairs::WriteRestart(const int step, const do
       particleengineinterface_->GetBinDiscretizationWriter();
 
   // prepare buffer
-  Teuchos::RCP<std::vector<char>> buffer = Teuchos::rcp(new std::vector<char>);
+  Teuchos::RCP<std::vector<char>> buffer;
 
-  // pack tangential history pair data
-  if (not tangentialhistorydata_.empty()) PackAllHistoryPairs(*buffer, tangentialhistorydata_);
+  // particle tangential history data
+  {
+    buffer = Teuchos::rcp(new std::vector<char>);
 
-  // write tangential history pair data
-  binwriter->WriteCharVector("TangentialHistoryData", buffer);
+    if (not particletangentialhistorydata_.empty())
+      PackAllHistoryPairs(*buffer, particletangentialhistorydata_);
+
+    binwriter->WriteCharVector("ParticleTangentialHistoryData", buffer);
+  }
+
+  // particle-wall tangential history pair data
+  {
+    buffer = Teuchos::rcp(new std::vector<char>);
+
+    if (not particlewalltangentialhistorydata_.empty())
+      PackAllHistoryPairs(*buffer, particlewalltangentialhistorydata_);
+
+    binwriter->WriteCharVector("ParticleWallTangentialHistoryData", buffer);
+  }
 }
 
 /*---------------------------------------------------------------------------*
@@ -79,13 +93,25 @@ void PARTICLEINTERACTION::DEMHistoryPairs::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // prepare buffer
-  Teuchos::RCP<std::vector<char>> buffer = Teuchos::rcp(new std::vector<char>);
+  Teuchos::RCP<std::vector<char>> buffer;
 
-  // read tangential history pair data
-  reader->ReadCharVector(buffer, "TangentialHistoryData");
+  // particle tangential history data
+  {
+    buffer = Teuchos::rcp(new std::vector<char>);
 
-  // unpack tangential history pair data
-  if (buffer->size() > 0) UnpackHistoryPairs(*buffer, tangentialhistorydata_);
+    reader->ReadCharVector(buffer, "ParticleTangentialHistoryData");
+
+    if (buffer->size() > 0) UnpackHistoryPairs(*buffer, particletangentialhistorydata_);
+  }
+
+  // particle-wall tangential history pair data
+  {
+    buffer = Teuchos::rcp(new std::vector<char>);
+
+    reader->ReadCharVector(buffer, "ParticleWallTangentialHistoryData");
+
+    if (buffer->size() > 0) UnpackHistoryPairs(*buffer, particlewalltangentialhistorydata_);
+  }
 }
 
 /*---------------------------------------------------------------------------*
@@ -120,7 +146,8 @@ void PARTICLEINTERACTION::DEMHistoryPairs::DistributeHistoryPairs()
   }
 
   // communicate specific history pairs
-  CommunicateSpecificHistoryPairs(particletargets, tangentialhistorydata_);
+  CommunicateSpecificHistoryPairs(particletargets, particletangentialhistorydata_);
+  CommunicateSpecificHistoryPairs(particletargets, particlewalltangentialhistorydata_);
 }
 
 /*---------------------------------------------------------------------------*
@@ -135,7 +162,8 @@ void PARTICLEINTERACTION::DEMHistoryPairs::CommunicateHistoryPairs()
       particleengineinterface_->GetCommunicatedParticleTargets();
 
   // communicate specific history pairs
-  CommunicateSpecificHistoryPairs(particletargets, tangentialhistorydata_);
+  CommunicateSpecificHistoryPairs(particletargets, particletangentialhistorydata_);
+  CommunicateSpecificHistoryPairs(particletargets, particlewalltangentialhistorydata_);
 }
 
 /*---------------------------------------------------------------------------*
@@ -146,7 +174,11 @@ void PARTICLEINTERACTION::DEMHistoryPairs::UpdateHistoryPairs()
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::DEMHistoryPairs::UpdateHistoryPairs");
 
   // erase untouched history pairs
-  if (not tangentialhistorydata_.empty()) EraseUntouchedHistoryPairs(tangentialhistorydata_);
+  if (not particletangentialhistorydata_.empty())
+    EraseUntouchedHistoryPairs(particletangentialhistorydata_);
+
+  if (not particlewalltangentialhistorydata_.empty())
+    EraseUntouchedHistoryPairs(particlewalltangentialhistorydata_);
 }
 
 /*---------------------------------------------------------------------------*
@@ -186,7 +218,7 @@ void PARTICLEINTERACTION::DEMHistoryPairs::CommunicateSpecificHistoryPairs(
   PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
 
   // unpack history pairs
-  for (auto& p : rdata) UnpackHistoryPairs(p.second, tangentialhistorydata_);
+  for (auto& p : rdata) UnpackHistoryPairs(p.second, historydata);
 }
 
 /*---------------------------------------------------------------------------*

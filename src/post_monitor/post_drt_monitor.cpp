@@ -1620,11 +1620,155 @@ void TsiThermoMonWriter::WriteHeader(std::ofstream& outfile)
   outfile << "# TSI problem, writing nodal data of thermal node ";
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void PoroFluidMultiMonWriter::CheckInfieldType(std::string& infieldtype)
+{
+  if (infieldtype != "porofluid")
+    std::cout << "\nPure fluid problem, field option other than porofluid has been ignored!\n\n";
+}
 
+/*----------------------------------------------------------------------*/
+void PoroFluidMultiMonWriter::FieldError(int node)
+{
+  dserror("Node %i does not belong to porofluid field!", node);
+}
+
+/*----------------------------------------------------------------------*/
+void PoroFluidMultiMonWriter::WriteHeader(std::ofstream& outfile)
+{
+  outfile << "# porofluidmultiphase problem, writing nodal data of node ";
+}
+
+/*----------------------------------------------------------------------*/
+void PoroFluidMultiMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
+{
+  switch (dim)
+  {
+    case 2:
+    case 3:
+      outfile << "# step   time     phi_1 ... phi_n     saturation_1 ... saturation_n     "
+                 "pressure_1 ... pressure_n ... porosity (with --optquantity=porosity)\n";
+      break;
+    default:
+      dserror("Number of dimensions in space differs from 2 and 3!");
+      break;
+  }
+}
+
+/*----------------------------------------------------------------------*/
+void PoroFluidMultiMonWriter::WriteResult(
+    std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
+{
+  // get actual result vector for displacement
+  Teuchos::RCP<Epetra_Vector> resvec = result.read_result("phinp_fluid");
+  Teuchos::RCP<Epetra_Vector> resvec_sat = result.read_result("saturation");
+  Teuchos::RCP<Epetra_Vector> resvec_press = result.read_result("pressure");
+
+  const Epetra_BlockMap& phimap = resvec->Map();
+  const Epetra_BlockMap& satmap = resvec_sat->Map();
+  const Epetra_BlockMap& pressmap = resvec_press->Map();
+
+  // do output of general time step data
+  outfile << std::right << std::setw(10) << result.step();
+  outfile << std::right << std::setw(20) << std::scientific << result.time();
+
+  // compute second part of offset
+  int offset2 = phimap.MinAllGID();
+
+  // do output for primary variable
+  for (unsigned i = 0; i < gdof.size(); ++i)
+  {
+    const int lid = phimap.LID(gdof[i] + offset2);
+    outfile << std::right << std::setw(20) << std::setprecision(10) << std::scientific
+            << (*resvec)[lid];
+  }
+  // do output for saturations
+  for (unsigned i = 0; i < gdof.size(); ++i)
+  {
+    const int lid = satmap.LID(gdof[i] + offset2);
+    outfile << std::right << std::setw(20) << std::setprecision(10) << std::scientific
+            << (*resvec_sat)[lid];
+  }
+  // do output for pressures
+  for (unsigned i = 0; i < gdof.size(); ++i)
+  {
+    const int lid = pressmap.LID(gdof[i] + offset2);
+    outfile << std::right << std::setw(20) << std::setprecision(10) << std::scientific
+            << (*resvec_press)[lid];
+  }
+  // do output for porosity
+  if (output_porosity_)
+  {
+    Teuchos::RCP<Epetra_Vector> resvec_poro = result.read_result("porosity");
+    const Epetra_BlockMap& poromap = resvec_poro->Map();
+    const int lid = poromap.LID(poro_dof_);
+    outfile << std::right << std::setw(20) << std::setprecision(10) << std::scientific
+            << (*resvec_poro)[lid];
+  }
+  outfile << "\n";
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+PostField* PoroMultiElastScatraFluidMonWriter::GetFieldPtr(PostProblem& problem)
+{
+  // get pointer to discretisation of actual field
+  PostField* myfield = problem.get_discretization(1);
+  if (myfield->name() != "porofluid") dserror("Fieldtype of field 2 is not porofluid.");
+  return myfield;
+}
+
+/*----------------------------------------------------------------------*/
+void PoroMultiElastScatraFluidMonWriter::WriteHeader(std::ofstream& outfile)
+{
+  outfile << "# PoroMultiElast(Scatra) problem, writing nodal data of porofluid node ";
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+PostField* PoroMultiElastScatraScatraMonWriter::GetFieldPtr(PostProblem& problem)
+{
+  // get pointer to discretisation of actual field
+  PostField* myfield = problem.get_discretization(2);
+
+  if (myfield->name() != "scatra")
+  {
+    std::cout
+        << "Scatra-dis is not the third field. Artery coupling active? Trying field 4 for scatra"
+        << std::endl;
+    myfield = problem.get_discretization(3);
+    if (myfield->name() != "scatra") dserror("Fieldtype of field 3 or 4 is not scatra.");
+  }
+  return myfield;
+}
+
+/*----------------------------------------------------------------------*/
+void PoroMultiElastScatraScatraMonWriter::WriteHeader(std::ofstream& outfile)
+{
+  outfile << "# PoroMultiElastScatra problem, writing nodal data of scatra node ";
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+PostField* PoroMultiElastScatraArteryScatraMonWriter::GetFieldPtr(PostProblem& problem)
+{
+  // get pointer to discretisation of actual field
+  PostField* myfield = problem.get_discretization(4);
+  if (myfield->name() != "artery_scatra") dserror("Fieldtype of field 5 is not artery_scatra.");
+  return myfield;
+}
+
+/*----------------------------------------------------------------------*/
+void PoroMultiElastScatraArteryScatraMonWriter::WriteHeader(std::ofstream& outfile)
+{
+  outfile << "# PoroMultiElastScatra problem, writing nodal data of artery_scatra node ";
+}
+
 /*!
  * \brief filter main routine for monitoring filter
  *
@@ -1782,6 +1926,56 @@ int main(int argc, char** argv)
         StructMonWriter mymonwriter(problem, infieldtype, node);
         mymonwriter.WriteMonFile(problem, infieldtype, node);
       }
+      break;
+    }
+    case prb_porofluidmultiphase:
+    {
+      PoroFluidMultiMonWriter mymonwriter(problem, infieldtype, node);
+      mymonwriter.WriteMonFile(problem, infieldtype, node);
+      break;
+    }
+    case prb_poromultiphase:
+    {
+      if (infieldtype == "structure")
+      {
+        StructMonWriter mymonwriter(problem, infieldtype, node);
+        mymonwriter.WriteMonFile(problem, infieldtype, node);
+      }
+      else if (infieldtype == "porofluid")
+      {
+        PoroMultiElastScatraFluidMonWriter mymonwriter(problem, infieldtype, node);
+        mymonwriter.WriteMonFile(problem, infieldtype, node);
+      }
+      else
+        dserror("Unsupported field type %s for problem-type Multiphase_Poroelasticity",
+            infieldtype.c_str());
+      break;
+    }
+    case prb_poromultiphasescatra:
+    {
+      if (infieldtype == "structure")
+      {
+        StructMonWriter mymonwriter(problem, infieldtype, node);
+        mymonwriter.WriteMonFile(problem, infieldtype, node);
+      }
+      else if (infieldtype == "porofluid")
+      {
+        PoroMultiElastScatraFluidMonWriter mymonwriter(problem, infieldtype, node);
+        mymonwriter.WriteMonFile(problem, infieldtype, node);
+      }
+      else if (infieldtype == "scatra")
+      {
+        PoroMultiElastScatraScatraMonWriter mymonwriter(problem, infieldtype, node);
+        mymonwriter.WriteMonFile(problem, infieldtype, node);
+      }
+      else if (infieldtype == "artery_scatra")
+      {
+        PoroMultiElastScatraArteryScatraMonWriter mymonwriter(problem, infieldtype, node);
+        mymonwriter.WriteMonFile(problem, infieldtype, node);
+      }
+      else
+        dserror("Unsupported field type %s for problem-type Multiphase_Poroelasticity_ScaTra",
+            infieldtype.c_str());
       break;
     }
     default:

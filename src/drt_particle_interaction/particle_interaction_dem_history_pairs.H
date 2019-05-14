@@ -82,10 +82,16 @@ namespace PARTICLEINTERACTION
     //! read restart of history pair handler
     void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
-    //! get reference to tangential history pair data
-    inline DEMHistoryPairTangentialData& GetRefToTangentialHistoryData()
+    //! get reference to particle tangential history pair data
+    inline DEMHistoryPairTangentialData& GetRefToParticleTangentialHistoryData()
     {
-      return tangentialhistorydata_;
+      return particletangentialhistorydata_;
+    };
+
+    //! get reference to particle-wall tangential history pair data
+    inline DEMHistoryPairTangentialData& GetRefToParticleWallTangentialHistoryData()
+    {
+      return particlewalltangentialhistorydata_;
     };
 
     //! distribute history pairs
@@ -130,8 +136,11 @@ namespace PARTICLEINTERACTION
     //! communication
     const Epetra_Comm& comm_;
 
-    //! tangential history pair data
-    DEMHistoryPairTangentialData tangentialhistorydata_;
+    //! particle tangential history pair data
+    DEMHistoryPairTangentialData particletangentialhistorydata_;
+
+    //! particle-wall tangential history pair data
+    DEMHistoryPairTangentialData particlewalltangentialhistorydata_;
 
     //! interface to particle engine
     std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface_;
