@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file str_model_evaluator_contact.H
 
 \brief Evaluation and assembly of all contact terms
 

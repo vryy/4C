@@ -1,10 +1,10 @@
 /*-----------------------------------------------------------*/
 /*!
-\file loca_str_constraint_arclength.H
 
-\brief ToDo Add description.
+\brief Implementation of LOCA::MultiContinuation::ConstraintInterfaceMVDX for arc-length
+continuation.
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
 \level 3
 

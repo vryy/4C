@@ -1,10 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_nln_solver_utils.H
 
 \brief Utility routines for the structural non-linear solver classes.
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
 \level 3
 

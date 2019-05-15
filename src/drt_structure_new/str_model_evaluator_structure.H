@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_model_evaluator_structure.H
 
 \brief Evaluation and assembly of all structure terms
 

@@ -1,10 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_nln_solver_factory.H
 
 \brief Factory for nonlinear solvers in structural dynamics
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
 \level 3
 

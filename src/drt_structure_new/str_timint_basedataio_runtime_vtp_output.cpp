@@ -1,12 +1,11 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*!
-\file str_timint_basedataio_runtime_vtp_output.cpp
 
 \brief input parameters related to VTP output at runtime for the structural (time) integration
 
 \level 3
 
-\maintainer Jons Eichinger, Maximilian Grill
+\maintainer Maximilian Grill
 */
 /*-----------------------------------------------------------------------------------------------*/
 

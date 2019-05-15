@@ -1,12 +1,10 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_predict_generic.H
 
 \brief Generic class for all predictors.
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Aug 13, 2015
 
 \level 3
 

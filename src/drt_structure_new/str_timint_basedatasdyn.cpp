@@ -1,13 +1,10 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_timint_basedatasdyn.cpp
 
 \brief Structural dynamics data container for the structural (time)
        integration
 
-\maintainer Michael Hiermeier
-
-\date Jan 12, 2016
+\maintainer Anh-Tu Vuong
 
 \level 3
 

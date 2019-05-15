@@ -1,10 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_nln_solver_generic.H
 
 \brief Generic class of the non-linear structural solvers.
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
 \level 3
 

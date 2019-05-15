@@ -1,14 +1,11 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_elements_paramsinterface.H
 
 \brief Collection of a bunch of possible element functions/methods
        to pass information down to the structural elements and
        vice versa
 
-\maintainer Michael Hiermeier
-
-\date Mar 24, 2016
+\maintainer Anh-Tu Vuong
 
 \level 3
 

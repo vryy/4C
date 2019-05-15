@@ -1,10 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_nln_solver_factory.cpp
 
-\maintainer Michael Hiermeier
+\brief Factory for nonlinear solvers in structural dynamics
 
-\date Sep 2, 2015
+\maintainer Anh-Tu Vuong
 
 \level 3
 

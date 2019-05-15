@@ -1,10 +1,8 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_nln_solver_fullnewton.cpp
+\brief NOX's Newton with full step
 
-\maintainer Michael Hiermeier
-
-\date Sep 18, 2015
+\maintainer Anh-Tu Vuong
 
 \level 3
 

@@ -1,12 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_timint_loca_continuation.H
 
 \brief Library of Continuation Algorithms (LOCA) implementation.
 
-\maintainer Michael Hiermeier
-
-\date Nov 18, 2015
+\maintainer Anh-Tu Vuong
 
 \level 3
 

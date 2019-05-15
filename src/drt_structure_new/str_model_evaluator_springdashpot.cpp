@@ -1,12 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_model_evaluator_springdashpot.cpp
 
 \brief Evaluation and assembly of all spring dashpot terms
 
 \maintainer Amadeus Gebauer
-
-\date Feb 29, 2016
 
 \level 3
 

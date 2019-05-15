@@ -1,10 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_dbc.H
 
 \brief Wrapper for all Dirichlet boundary condition tasks.
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
 \level 3
 

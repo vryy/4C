@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file str_model_evaluator_meshtying.H
 
 \brief Evaluation and assembly of all meshtying terms
 

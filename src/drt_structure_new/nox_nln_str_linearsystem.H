@@ -1,13 +1,10 @@
 /*-----------------------------------------------------------*/
 /*!
-\file nox_nln_str_linearsystem.H
 
 \brief Derived class which manages the special requirements to the linear
        solver for structural problems.
 
-\maintainer Michael Hiermeier
-
-\date Aug 7, 2015
+\maintainer Anh-Tu Vuong
 
 \level 3
 

@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_utils.cpp
 
 \brief Utility methods for the structural time integration.
 

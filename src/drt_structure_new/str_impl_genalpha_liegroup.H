@@ -1,13 +1,10 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_impl_genalpha_liegroup.H
 
 \brief Modified Generalized Alpha time integrator for Lie groups
        (can handle non-additive rotational pseudo-vector DoFs)
 
 \maintainer Maximilian Grill
-
-\date Jun 29, 2016
 
 \level 3
 

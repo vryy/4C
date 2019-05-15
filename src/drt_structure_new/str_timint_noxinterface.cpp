@@ -1,13 +1,10 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_timint_noxinterface.cpp
 
 \brief Concrete implementation of the Jacobian, Required and
        Preconditioner %NOX::NLN interfaces.
 
-\maintainer Michael Hiermeier
-
-\date Nov 27, 2015
+\maintainer Anh-Tu Vuong
 
 \level 3
 

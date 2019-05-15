@@ -1,10 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_timint_basedataio.cpp
 
 \brief Input/output data container for the structural (time) integration
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
 \level 3
 

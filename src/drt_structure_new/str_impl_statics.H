@@ -1,12 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_impl_statics.H
 
 \brief Static (time) integrator.
 
-\maintainer Michael Hiermeier
-
-\date Aug 13, 2015
+\maintainer Anh-Tu Vuong
 
 \level 3
 

@@ -1,10 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_predict_constdisvelaccpress.H
 
-\maintainer Michael Hiermeier
+\brief implementation of predictor for either constant displacement, velocity or acceleration
 
-\date Aug 13, 2015
+\maintainer Anh-Tu Vuong
 
 \level 3
 

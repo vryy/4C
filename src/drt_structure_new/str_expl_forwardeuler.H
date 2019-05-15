@@ -1,10 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_expl_forwardeuler.H
 
 \brief Explicit Euler time integration for solid dynamics
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
 \level 3
 

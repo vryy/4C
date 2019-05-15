@@ -1,10 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_factory.H
 
 \brief factory for time integrator
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
 \level 3
 

@@ -1,10 +1,8 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_resulttest.H
+\brief Structure specific result test class
 
-\maintainer Michael Hiermeier
-
-\date Dec 21, 2015
+\maintainer Anh-Tu Vuong
 
 \level 3
 

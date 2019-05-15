@@ -1,12 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_timint_factory.cpp
 
 \brief factory for time integration base strategy and data container
 
-\maintainer Michael Hiermeier
-
-\date Sep 4, 2015
+\maintainer Anh-Tu Vuong
 
 \level 3
 

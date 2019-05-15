@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_model_evaluator_generic.H
 
 \brief Generic class for all model evaluators.
 

@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_model_evaluator_springdashpot.H
 
 \brief Evaluation and assembly of all spring dashpot terms
 

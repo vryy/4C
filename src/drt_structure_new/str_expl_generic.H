@@ -1,10 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_expl_generic.H
 
 \brief Generic class for all explicit time integrators
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
 \level 3
 

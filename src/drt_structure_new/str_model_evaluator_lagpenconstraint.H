@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file str_model_evaluator_lagpenconstraint.H
 
 \brief Evaluation and assembly of all constraint terms
 
