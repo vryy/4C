@@ -781,6 +781,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_ehl.cpp
   src/drt_inpar/inpar_elemag.cpp
   src/drt_inpar/inpar_elch.cpp
+  src/drt_inpar/inpar_fbi.cpp
   src/drt_inpar/inpar_fluid.cpp
   src/drt_inpar/inpar_fpsi.cpp
   src/drt_inpar/inpar_fs3i.cpp
@@ -1236,8 +1237,20 @@ set(OBJS_DRT_MEMBRANE_LIB
   src/drt_membrane/membrane_scatra.cpp
   src/drt_membrane/membrane_scatra_evaluate.cpp
 )
-set(OBJS_DRT_FSI
+set(OBJS_DRT_FBI
   src/drt_fbi/constraintenforcer_fbi.cpp
+  src/drt_fbi/ad_fbi_constraintbridge.cpp
+  src/drt_fbi/beam_to_fluid_meshtying_pair_base.cpp
+  src/drt_fbi/beam_to_fluid_meshtying_pair_factory.cpp
+  src/drt_fbi/beam_to_fluid_meshtying_pair_gauss_point.cpp
+  src/drt_fbi/beam_to_fluid_meshtying_params.cpp
+  src/drt_fbi/constraintenforcer_fbi_factory.cpp
+  src/drt_fbi/constraintenforcer_fbi_penalty.cpp
+  src/drt_fbi/ad_fbi_constraintbridge_penalty.cpp
+  src/drt_fbi/partitioned_penaltycoupling_assembly_manager.cpp
+  src/drt_fbi/partitioned_penaltycoupling_assembly_manager_direct.cpp
+)
+set(OBJS_DRT_FSI
   src/drt_fsi/fsi_str_model_evaluator_partitioned.cpp
   src/drt_fsi/fs_monolithic.cpp
   src/drt_fsi/fsi_algorithm.cpp
@@ -2727,6 +2740,7 @@ set(ELEMENT_LIBRARIES
 # algorithm libraries that depend on adapters
 add_library(alg_elch ${OBJS_DRT_ELCH})
 add_library(alg_var ${OBJS_DRT_VAR})
+add_library(alg_fbi ${OBJS_DRT_FBI})
 add_library(alg_fsi ${OBJS_DRT_FSI})
 add_library(alg_immersed_problem ${OBJS_DRT_IMMERSED_PROBLEM})
 add_library(alg_fsi_xfem ${OBJS_DRT_FSI_XFEM})
@@ -2749,6 +2763,7 @@ set(MULTIFIELD_LIBRARIES
   alg_elch
   alg_var
   alg_fsi
+  alg_fbi
   alg_fsi_xfem
   alg_loma
   alg_two_phase
