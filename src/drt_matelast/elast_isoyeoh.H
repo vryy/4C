@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_isoyeoh.H
-
 \brief
 This file contains the routines required to calculate the isochoric contribution
 of a Yeoh-type material.

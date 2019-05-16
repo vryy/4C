@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_coupanisoneohooke.H
 \brief This file contains the routines required for the anisotropic material using a neo-Hooke
 material
 
@@ -8,8 +7,6 @@ material
 
 <pre>
 \maintainer Fabian Braeu
-            braeu@lnm.mw.tum.de
-            089/289 15236
 </pre>
 */
 

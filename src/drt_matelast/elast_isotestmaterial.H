@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_isotestmaterial.H
-
 \brief
 This file contains the routines required to calculate the isochoric contribution
 of a Material, which is not realistic, but contains all possible derivatives of invariants.

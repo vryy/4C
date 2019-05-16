@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_coupsimopister.cpp
-
 \brief
 This file contains the routines required to calculate the Simo and Pister
 material model. (U(J) is not implemented).

@@ -1,7 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_coupblatzko.cpp
-
+\brief
 This file contains the routines required for Blatz and Ko material model
 according to Holzapfel, "Nonlinear solid mechanics", 2001.
 The input line should read

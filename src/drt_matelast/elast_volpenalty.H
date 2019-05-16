@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_volpenalty.H
-
 \brief
 This file contains the routines required for the volumetic function
 of a penalty material

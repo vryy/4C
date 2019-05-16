@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file visco_fract.H
 \brief
 This file contains the routines required to read the material parameters
 and add the contribution of the viscous part, calculated according to a

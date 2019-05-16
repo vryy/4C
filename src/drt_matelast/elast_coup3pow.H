@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_coup3pow.H
 \brief This file contains the routines required to calculate the volumetric contribution
 of a general power-type material.
 

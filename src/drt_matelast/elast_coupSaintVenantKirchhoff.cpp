@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_coupSaintVenantKirchhoff.cpp
-
 \brief
 This file contains the routines required for Saint-Venant-Kirchhoff material
 The input line should read

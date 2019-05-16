@@ -1,16 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_isovolHUdependentneohooke.H
 \brief  This file contains the routines required to calculate the isochoric and volumetric
 contribution of the HU dependent neo hooke material. E.g used for inclusion of calcification in AAA
 simulations
 
 \level 2
 
-\maintainer André Hemmler
-            hemmler@mhpc.mw.tum.de
-            http://www.mhpc.mw.tum.de
-            089 - 289-10389
+\maintainer Amadeus Gebauer
 
 *----------------------------------------------------------------------*/
 #ifndef ELAST_ISOVOLHUDEPENDENTNEOHOOKE_H_

@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_isoexpopow.H
-
 \brief
 This file contains the routines required to calculate the isochoric contribution
 of an exponential material.

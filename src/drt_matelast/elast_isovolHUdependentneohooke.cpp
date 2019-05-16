@@ -1,16 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_isovolHUdependentneohooke.cpp
 \brief  This file contains the routines required to calculate the isochoric and volumetric
 contribution of the cc neo hooke material MAT 20 ELAST_IsoVolHUDependentNeoHooke ALPHA_MAX 8.929E6
 CT_MIN 30.0 CT_MAX 600.0 NUE 0.49 BETA -2.0
 
 \level 2
 
-\maintainer André Hemmler
-            hemmler@mhpc.mw.tum.de
-            http://www.mhpc.mw.tum.de
-            089 - 289-10389
+\maintainer Amadeus Gebauer
 */
 /*----------------------------------------------------------------------*/
 #include "elast_isovolHUdependentneohooke.H"

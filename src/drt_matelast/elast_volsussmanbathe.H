@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_volsussmanbathe.H
-
 \brief
 This file contains the routines required for logarithmic neo-Hooke material
 according to Bonet and Wood, "Nonlinear continuum mechanics for finite

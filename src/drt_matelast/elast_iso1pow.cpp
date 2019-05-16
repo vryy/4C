@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_iso1pow.cpp
-
 \brief
 This file contains the routines required to calculate the isochoric contribution
 of a general power-type material.

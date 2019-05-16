@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_coup2pow.cpp
-
 \brief
 This file contains the routines required to calculate the contribution
 of a general power-type material.

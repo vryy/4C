@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_anisoactivestress_evolution.H
-
 \brief Active stress material
 
 \maintainer Amadeus Gebauer
