@@ -1,16 +1,14 @@
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 /*!
-\file fluid_timint_poro.cpp
+
 \brief base class of time integration schemes for porous fluid
 
 \maintainer Christoph Ager
-            ager@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289 15249
 
 \level 2
+
 */
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 
 #include "fluid_timint_poro.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"

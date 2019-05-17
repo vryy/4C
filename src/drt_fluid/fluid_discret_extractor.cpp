@@ -1,18 +1,14 @@
-/*!----------------------------------------------------------------------
-\file fluid_discret_extractor.cpp
+/*-----------------------------------------------------------*/
+/*!
 
 \brief creates a second discretization as part of the complete discretization for inflow generation
 
-<pre>
 \maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
 
 \level 1
-</pre>
 
-*----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------*/
 
 #include "../drt_fluid/fluid_discret_extractor.H"
 #include "../drt_lib/drt_periodicbc.H"

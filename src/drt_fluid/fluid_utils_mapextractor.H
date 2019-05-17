@@ -1,17 +1,15 @@
-/*!----------------------------------------------------------------------
-\file fluid_utils_mapextractor.H
+/*-----------------------------------------------------------*/
+/*!
 
 \brief extracting maps of fluid discretizations
 
-\level 1
-<pre>
 \maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*----------------------------------------------------------------------*/
+\level 1
+
+*/
+/*-----------------------------------------------------------*/
+
 #ifndef FLUID_UTILS_MAPEXTRACTOR_H
 #define FLUID_UTILS_MAPEXTRACTOR_H
 

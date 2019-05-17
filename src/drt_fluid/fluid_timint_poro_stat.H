@@ -1,17 +1,14 @@
-/*!----------------------------------------------------------------------
-\file fluid_timint_poro_stat.H
-\brief
+/*-----------------------------------------------------------*/
+/*!
+
+\brief Stationary problem driver for porous fluid
+
+\maintainer Christoph Ager
 
 \level 2
 
-<pre>
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
-
-*----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------*/
 
 #ifndef FLD_TIMINT_PORO_STAT_H
 #define FLD_TIMINT_PORO_STAT_H

@@ -1,18 +1,14 @@
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 /*!
-\file fluid_timint_ost.cpp
 
-\brief One-Step-Theta time-integration scheme
+\brief One-step theta time integration for fluids
+
+\maintainer Martin Kronbichler
 
 \level 2
-<pre>
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+
 */
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 
 #include "fluid_timint_ost.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"

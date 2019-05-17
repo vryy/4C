@@ -1,12 +1,14 @@
-/*!----------------------------------------------------------------------
-\file fluid_volumetric_surfaceFlow_condition.cpp
+/*-----------------------------------------------------------*/
+/*!
+
 \brief evaluation of womersley flow bc
 
-\maintainer Lena Yoshihara
+\maintainer Martin Kronbichler
 
 \level 3
 
-*----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------*/
 
 
 #include <stdio.h>

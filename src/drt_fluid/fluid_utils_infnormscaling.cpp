@@ -1,17 +1,14 @@
-/*!----------------------------------------------------------------------
-\file fluid_utils_infnormscaling.cpp
+/*-----------------------------------------------------------*/
+/*!
+
 \brief infnorm-scaling utility class for preconditioning of fluid problems
+
+\maintainer Martin Kronbichler
 
 \level 3
 
-<pre>
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
-
-*----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------*/
 
 #include "fluid_utils_infnormscaling.H"
 #include <stdio.h>

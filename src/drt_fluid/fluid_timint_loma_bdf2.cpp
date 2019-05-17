@@ -1,18 +1,14 @@
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 /*!
-\file fluid_timint_loma_bdf2.cpp
-\brief TimIntLomaBDF2
+
+\brief BDF2 time integrator for Low Mach number problems
+
+\maintainer Martin Kronbichler
 
 \level 2
 
-<pre>
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 */
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 
 #include "fluid_timint_loma_bdf2.H"
 #include "../drt_io/io.H"

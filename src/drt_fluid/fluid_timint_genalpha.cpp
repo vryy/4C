@@ -1,18 +1,15 @@
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 /*!
-\file fluid_timint_genalpha.cpp
 
 \brief Generalized-alpha time-integration scheme
 
+\maintainer Martin Kronbichler
+
 \level 2
 
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-
 */
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
+
 
 #include "fluid_timint_genalpha.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"

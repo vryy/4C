@@ -1,19 +1,15 @@
-/*!-----------------------------------------------------------------------------------------------*
-\file fluid_discret_extractor.H
+/*-----------------------------------------------------------*/
+/*!
 
-  \brief creates a second discretization as part of the complete discretization for inflow
+\brief creates a second discretization as part of the complete discretization for inflow
 generation
+
+\maintainer Martin Kronbichler
 
 \level 1
 
-<pre>
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
- *------------------------------------------------------------------------------------------------*/
-
+*/
+/*-----------------------------------------------------------*/
 
 #ifndef FLUID_DISCRET_EXTRACTOR_H
 #define FLUID_DISCRET_EXTRACTOR_H

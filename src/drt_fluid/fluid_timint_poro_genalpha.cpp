@@ -1,18 +1,14 @@
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 /*!
- \file fluid_timint_poro_genalpha.cpp
 
- \brief generalized alpha time integration scheme for porous fluid
+\brief generalized alpha time integration scheme for porous fluid
 
- <pre>
 \maintainer Christoph Ager
-            ager@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289 15249
 
 \level 2
- </pre>
- *----------------------------------------------------------------------*/
+
+*/
+/*-----------------------------------------------------------*/
 
 #include "fluid_timint_poro_genalpha.H"
 #include "../drt_io/io.H"

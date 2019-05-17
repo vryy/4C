@@ -1,13 +1,13 @@
-/*!----------------------------------------------------------------------
-\file fluid_coupling_red_models.cpp
+/*-----------------------------------------------------------*/
+/*!
 
 \brief evaluation of 3D/redD coupled vascular bc
 
-\maintainer Lena Yoshihara
+\maintainer Martin Kronbichler
 
 \level 3
-
-*----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------*/
 
 //#ifdef D_COUPLED_ARTNET
 

@@ -1,18 +1,15 @@
-/*!----------------------------------------------------------------------
-\file fluid_meshtying.H
+/*-----------------------------------------------------------*/
+/*!
 
 \brief Methods to apply meshtying to fluid and scatra systems
 
+\maintainer Martin Kronbichler
+
 \level 2
 
-<pre>
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+*/
+/*-----------------------------------------------------------*/
 
- *----------------------------------------------------------------------*/
 #ifndef FLUID_MESHTYING_H_
 #define FLUID_MESHTYING_H_
 

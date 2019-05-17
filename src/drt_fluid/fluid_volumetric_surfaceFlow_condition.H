@@ -1,12 +1,14 @@
-/*!----------------------------------------------------------------------
-\file fluid_volumetric_surfaceFlow_condition.H
+/*-----------------------------------------------------------*/
+/*!
+
 \brief Method to deal with womersley flow profiles
 
-\maintainer Lena Yoshihara
+\maintainer Martin Kronbichler
 
 \level 3
 
-*----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------*/
 
 #ifndef FLUIDWOMERSLEYCONDITION_H
 #define FLUIDWOMERSLEYCONDITION_H

@@ -1,17 +1,14 @@
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 /*!
-\file fluid_timint_hdg.cpp
-\brief HDG time-integration scheme
 
-<pre>
-\level 3
+\brief Basic HDG time-integration scheme
+
 \maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+
+\level 2
+
 */
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 
 #include "fluid_timint_hdg.H"
 #include "../drt_lib/drt_discret_hdg.H"

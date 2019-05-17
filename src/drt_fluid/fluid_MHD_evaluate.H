@@ -1,17 +1,14 @@
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 /*!
-\file fluid_MHD_evaluate.H
 
-\brief Class FLD::FluidMHDEvaluate
-\level 2
-<pre>
+\brief Evaluate calls for magno-hydrodynamics
+
 \maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+
+\level 2
 
 */
+/*-----------------------------------------------------------*/
 
 
 #ifndef FLUID_MHD_EVALUATE_H

@@ -1,17 +1,14 @@
-/*!----------------------------------------------------------------------
-\file fluid_timint_two_phase.H
+/*-----------------------------------------------------------*/
+/*!
 
-\brief TimIntTwoPhase
+\brief Basic time integration class for two-phase flow
+
+\maintainer Christoph Ager
 
 \level 2
-<pre>
-\maintainer Christoph Ager & Martin Kronbichler
-             {winter,kronbichler}@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15236/-235
-</pre>
 
-*----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------*/
 
 #ifndef FLD_TIMINT_TWO_PHASE_H
 #define FLD_TIMINT_TWO_PHASE_H

@@ -1,18 +1,14 @@
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 /*!
-\file fluid_xwall.cpp
+
+\brief implementation of enrichment-based wall model for turbulence
 
 \maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
 
 \level 2
 
-\brief handling the time-integration-level for xwall
-
 */
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 
 #include "fluid_xwall.H"
 #include "fluidimplicitintegration.H"
