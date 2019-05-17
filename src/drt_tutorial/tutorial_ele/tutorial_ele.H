@@ -1,16 +1,14 @@
-/*!----------------------------------------------------------------------
-\file tutorial_ele.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief student's c++/baci tutorial element
 
-\level 3
+\maintainer  Martin Kronbichler
 
-\maintainer  Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15240
+\level 2
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 // All header files should have #define guards to prevent multiple inclusion.
 // The format of the symbol name should be <PROJECT>_<PATH>_<FILE>_H_.

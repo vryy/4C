@@ -1,13 +1,14 @@
-/*!----------------------------------------------------------------------
-\file tutorial_struct_ale_coupling.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief student's c++/baci nonlinear truss tutorial
 
+\maintainer  Martin Kronbichler
 
-\maintainer  Andreas Rauch
+\level 2
 
-\level 3
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 // All header files should have #define guards to prevent multiple inclusion.
 // The format of the symbol name should be <PROJECT>_<PATH>_<FILE>_H_.

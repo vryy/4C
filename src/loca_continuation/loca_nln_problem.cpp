@@ -1,10 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file loca_nln_problem.cpp
 
-\maintainer Michael Hiermeier
+\brief LOCA nonlinear problem definition interface
 
-\date Nov 20, 2015
+\maintainer Martin Kronbichler
 
 \level 3
 

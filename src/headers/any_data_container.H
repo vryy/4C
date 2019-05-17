@@ -4,7 +4,7 @@
 
 \brief Any data container based on vectors of Teuchos::any data.
 
-\maintainer Michael Hiermeier
+\maintainer Martin Kronbichler
 
 \level 1
 */

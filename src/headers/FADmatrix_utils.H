@@ -1,15 +1,15 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file FADmatrix_utils.H
+
 \brief A collection of helper methods and classes using automatic differentiation with FAD;
 
 \level 3
 
-<pre>
 \maintainer Fabian Braeu
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
+
 #ifndef FADMATRIX_UTILS_H_
 #define FADMATRIX_UTILS_H_
 

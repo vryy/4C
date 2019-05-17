@@ -1,14 +1,15 @@
-/*!----------------------------------------------------------------------
-\file tutorial_fixedpoint_scheme.cpp
+/*---------------------------------------------------------------------*/
+/*!
 
-\brief student's c++/baci simple fixed point problem
+\brief student's c++/baci tutorial simple fixed-point problem
 
-\maintainer  Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15240
+\maintainer  Martin Kronbichler
 
-*----------------------------------------------------------------------*/
+\level 2
+
+*/
+/*---------------------------------------------------------------------*/
+
 #include "tutorial_fixedpoint_scheme.H"
 
 #include "../drt_lib/drt_globalproblem.H"

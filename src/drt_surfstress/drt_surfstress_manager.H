@@ -1,14 +1,14 @@
-/*!----------------------------------------------------------------------
-\file drt_surfstress_manager.H
+/*---------------------------------------------------------------------*/
+/*!
 
-<pre>
-Maintainer: Lena Yoshihara
-            yoshihara@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15303
-</pre>
+\brief surface stresses due to interfacial phenomena
 
-*----------------------------------------------------------------------*/
+\maintainer Martin Kronbichler
+
+\level 2
+
+*/
+/*---------------------------------------------------------------------*/
 
 #ifndef SURFSTRESS_MANAGER_H
 #define SURFSTRESS_MANAGER_H

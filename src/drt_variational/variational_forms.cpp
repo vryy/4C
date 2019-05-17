@@ -1,16 +1,16 @@
-/*!----------------------------------------------------------------------
-\file variational_forms.cpp
+/*---------------------------------------------------------------------*/
+/*!
+
 \brief Control routine for variational formulations
 
 \level 2
 
-<pre>
-\maintainer Jorge De Anda Salazar
-            DeAnda@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
-</pre>
-*----------------------------------------------------------------------*/
+\maintainer Martin Kronbichler
+
+*/
+/*---------------------------------------------------------------------*/
+
+
 #include "../drt_ale/ale_utils_clonestrategy.H"
 
 #include "../drt_inpar/drt_validparameters.H"

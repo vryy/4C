@@ -1,12 +1,14 @@
-/*!----------------------------------------------------------------------
-\file microstatic.H
+/*---------------------------------------------------------------------*/
+/*!
 
-\brief ??
+\brief Quasi-static control for microstructural analysis
+
+\maintainer Martin Kronbichler
 
 \level 2
 
-\maintainer Lena Yoshihara
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 #ifndef STRU_MICRO_STAT_H
 #define STRU_MICRO_STAT_H

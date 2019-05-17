@@ -1,19 +1,14 @@
-/*!-------------------------------------------------------------------
-\file drt_surfstress_manager.cpp
+/*---------------------------------------------------------------------*/
+/*!
 
-\brief Class controlling surface stresses due to interfacial phenomena
-and containing all necessary history data
+\brief surface stresses due to interfacial phenomena
+
+\maintainer Martin Kronbichler
 
 \level 2
 
-<pre>
-\maintainer Lena Yoshihara
-            yoshihara@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15303
-</pre>
-
-*--------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>

@@ -1,9 +1,14 @@
-/*!---------------------------------------------------------------------
-\file compiler_definitions.h
+/*---------------------------------------------------------------------*/
+/*!
+
 \brief build options and definition of fortran functions
+
 \level 1
+
 \maintainer Martin Kronbichler
----------------------------------------------------------------------*/
+
+*/
+/*---------------------------------------------------------------------*/
 
 #ifndef COMPILER_DEFINITIONS_H
 #define COMPILER_DEFINITIONS_H

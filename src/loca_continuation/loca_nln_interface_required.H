@@ -1,9 +1,14 @@
-/*
- * loca_nln_interface_required.H
- *
- *  Created on: Nov 19, 2015
- *      Author: hiermeier
- */
+/*-----------------------------------------------------------*/
+/*!
+
+\brief LOCA nonlinear interface required defintion
+
+\maintainer Martin Kronbichler
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
 
 #ifndef SRC_LOCA_CONTINUATION_LOCA_NLN_INTERFACE_REQUIRED_H_
 #define SRC_LOCA_CONTINUATION_LOCA_NLN_INTERFACE_REQUIRED_H_

@@ -1,17 +1,15 @@
-/*!----------------------------------------------------------------------
-\file var_chemdiff_dyn.cpp
+/*---------------------------------------------------------------------*/
+/*!
+
 \brief Control routine for Chemical diffusion (variational form) module.
 
 \level 2
 
-<pre>
-\maintainer Jorge De Anda Salazar
-            DeAnda@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
-</pre>
+\maintainer Martin Kronbichler
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
+
 #include "../drt_ale/ale_utils_clonestrategy.H"
 
 #include "../drt_inpar/drt_validparameters.H"

@@ -1,10 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file loca_nln_stepper.H
 
-\maintainer Michael Hiermeier
+\brief LOCA stepper interface
 
-\date Nov 16, 2015
+\maintainer Martin Kronbichler
 
 \level 3
 

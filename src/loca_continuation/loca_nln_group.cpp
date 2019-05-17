@@ -1,12 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file loca_nln_group.cpp
 
 \brief LOCA specific group
 
-\maintainer Michael Hiermeier
-
-\date Nov 16, 2015
+\maintainer Martin Kronbichler
 
 \level 3
 
