@@ -1,18 +1,14 @@
-/*!----------------------------------------------------------------------
-\file randomfield_spectral.cpp
-Created on: 15 May, 2014
+/*----------------------------------------------------------------------*/
+/*!
 \brief Class for generating samples of gaussian and non gaussian random fields based on spectral
 representation
 
-\level 2
+\maintainer Jonas Nitzler
 
- <pre>
-\maintainer Jonas Biehler
-            biehler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15276
-</pre>
+\level 2
 */
+/*----------------------------------------------------------------------*/
+
 #ifdef HAVE_FFTW
 
 // disable boost long double functions because they do not work together with

@@ -1,16 +1,12 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
-\file mc_var_thickness_manager.cpp
 \brief class to modify wall thickness of cardiovascular structures on the fly
+
+\maintainer Jonas Nitzler
+
 \level 2
-<pre>
-\maintainer Jonas Biehler
-            biehler@lnm.mw.tum.de
-            089 - 28915276
-</pre>
 
-!*/
-
+*/
 /*----------------------------------------------------------------------------*/
 /* headers */
 

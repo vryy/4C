@@ -1,15 +1,12 @@
-/*!----------------------------------------------------------------------
-\file  mc_utils.cpp
+/*----------------------------------------------------------------------*/
+/*!
 \brief Some utility functions for Monte Carlo analysis
 
+\maintainer Jonas Nitzler
 
- <pre>
-Maintainer: Jonas Biehler
-            biehler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15276
-</pre>
- *!----------------------------------------------------------------------*/
+\level 3
+*/
+/*----------------------------------------------------------------------*/
 
 #include "mlmc.H"
 #include "mc_utils.H"

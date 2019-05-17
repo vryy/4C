@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file mc_mat_par_manager.H
 \brief Class to handle calls to material parameters from a uq routine
 
-<pre>
-Maintainer: Jonas Biehler
-            biehler@lnm.mw.tum.de
-            089 - 289-15276
-</pre>
-*/
+\maintainer Jonas Nitzler
 
+\level 3
+*/
 /*----------------------------------------------------------------------------*/
 #ifdef HAVE_FFTW
 #ifndef MC_MATPAR_MANAGER_H

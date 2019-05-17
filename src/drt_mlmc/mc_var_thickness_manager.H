@@ -1,9 +1,9 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
-\file mc_var_thickness_manager.H
 \brief class to modify wall thickness of cardiovascular structures on the fly
 
-\maintainer Jonas Biehler
+\maintainer Jonas Nitzler
+
 \level 3
 */
 /*----------------------------------------------------------------------------*/

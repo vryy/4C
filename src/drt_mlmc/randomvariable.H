@@ -1,15 +1,13 @@
-/*!-----------------------------------------------------------------------------
-\file   randomvariable.H
+/*-----------------------------------------------------------------------------*/
+/*!
 \brief Class for generating random variables
 
+\maintainer Jonas Nitzler
 
- <pre>
-Maintainer: Jonas Biehler
-            biehler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15276
-</pre>
- *!---------------------------------------------------------------------------*/
+\level 3
+*/
+/*-----------------------------------------------------------------------------*/
+
 #ifdef HAVE_FFTW
 #ifndef RANDOMVARIABLE_H_
 #define RANDOMVARIABLE_H_

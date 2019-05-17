@@ -1,12 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\level 2
-
 \brief Input parameters for multi-level monte carlo
 
-\maintainer Jonas Biehler
-*/
+\maintainer Jonas Nitzler
 
+\level 2
+*/
 /*----------------------------------------------------------------------*/
 
 

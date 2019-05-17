@@ -1,19 +1,11 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file randomvariable.cpp
 \brief class for generating random variables
 
-<pre>
-Maintainer: Jonas Biehler
-            biehler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15276
-</pre>
-*/
-/*-----------------------------------------------------------------------------*
- *
+\maintainer Jonas Nitzler
 
- *----------------------------------------------------------------------------*/
+\level 3
+*/
 /*----------------------------------------------------------------------------*/
 
 #include "randomvariable.H"
