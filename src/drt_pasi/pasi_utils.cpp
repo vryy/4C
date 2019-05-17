@@ -1,33 +1,25 @@
-/*!----------------------------------------------------------------------
-
+/*---------------------------------------------------------------------------*/
+/*!
 \brief utility methods for particle structure interaction
 
 \level 3
 
 \maintainer  Sebastian Fuchs
-             fuchs@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15262
+*/
+/*---------------------------------------------------------------------------*/
 
-*----------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------*
- | headers                                               sfuchs 01/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | headers                                                    sfuchs 01/2017 |
+ *---------------------------------------------------------------------------*/
 #include "pasi_utils.H"
 
-/*----------------------------------------------------------------------*
- | modification of time parameter list                   sfuchs 02/2017 |
- *----------------------------------------------------------------------*/
-void PASI::UTILS::ChangeTimeParameter(const Epetra_Comm& comm,  //! local epetra communicator
-    const Teuchos::ParameterList&
-        pasi_params,  //! input parameters for particle structure interaction
-    Teuchos::ParameterList& particle_params,  //! input parameters for particle dynamics
-    Teuchos::ParameterList& struct_params     //! input parameters for structural dynamics
-)
+/*---------------------------------------------------------------------------*
+ | modification of time parameter list                        sfuchs 02/2017 |
+ *---------------------------------------------------------------------------*/
+void PASI::UTILS::ChangeTimeParameter(const Epetra_Comm& comm,
+    const Teuchos::ParameterList& pasi_params, Teuchos::ParameterList& particle_params,
+    Teuchos::ParameterList& struct_params)
 {
-  // set time parameters from particle structure interaction to subproblems
-
   // the default time step size
   particle_params.set<double>("TIMESTEP", pasi_params.get<double>("TIMESTEP"));
   struct_params.set<double>("TIMESTEP", pasi_params.get<double>("TIMESTEP"));
@@ -78,13 +70,11 @@ void PASI::UTILS::ChangeTimeParameter(const Epetra_Comm& comm,  //! local epetra
     std::cout << "======= currently equal for both structure and particle field ========"
               << std::endl;
   }
+}
 
-  return;
-}  // PASI::UTILS::ChangeTimeParameter()
-
-/*----------------------------------------------------------------------*
- | print particle structure interaction logo             sfuchs 02/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | print particle structure interaction logo                  sfuchs 02/2017 |
+ *---------------------------------------------------------------------------*/
 void PASI::UTILS::Logo()
 {
   std::cout << "============================ Welcome to =============================="
@@ -108,6 +98,4 @@ void PASI::UTILS::Logo()
   std::cout << "" << std::endl;
   std::cout << "======================================================================"
             << std::endl;
-
-  return;
-}  // PASI::UTILS::Logo()
+}

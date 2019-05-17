@@ -1,22 +1,24 @@
-/*!----------------------------------------------------------------------
-\brief Input parameters for particle structure interaction problems
+/*---------------------------------------------------------------------------*/
+/*!
+\brief input parameters for particle structure interaction problems
 
 \level 3
 
 \maintainer  Sebastian Fuchs
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------*
- | headers                                               sfuchs 01/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | headers                                                    sfuchs 01/2017 |
+ *---------------------------------------------------------------------------*/
 #include "inpar_pasi.H"
 #include "drt_validparameters.H"
 #include "inpar_parameterlist_utils.H"
 #include "../drt_lib/drt_conditiondefinition.H"
 
-/*----------------------------------------------------------------------*
- | set valid parameters for pasi                         sfuchs 01/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | set valid parameters for pasi                              sfuchs 01/2017 |
+ *---------------------------------------------------------------------------*/
 void INPAR::PASI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace DRT::INPUT;
@@ -63,16 +65,4 @@ void INPAR::PASI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   DoubleParameter("STARTOMEGA", 1.0, "fixed relaxation parameter", &pasidynpart);
   DoubleParameter("MAXOMEGA", 10.0, "largest omega allowed for Aitken relaxation", &pasidynpart);
   DoubleParameter("MINOMEGA", 0.1, "smallest omega allowed for Aitken relaxation", &pasidynpart);
-
-}  // INPAR::PASI::SetValidParameters
-
-/*----------------------------------------------------------------------*
- | set valid conditions for pasi                         sfuchs 01/2017 |
- *----------------------------------------------------------------------*/
-void INPAR::PASI::SetValidConditions(
-    std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist)
-{
-  using namespace DRT::INPUT;
-
-  return;
-}  // INPAR::PASI::SetValidConditions
+}

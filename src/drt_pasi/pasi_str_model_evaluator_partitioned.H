@@ -1,38 +1,35 @@
-/*!----------------------------------------------------------------------
-
+/*---------------------------------------------------------------------------*/
+/*!
 \brief model evaluator for structure part of partitioned pasi
 
 \level 3
 
 \maintainer  Sebastian Fuchs
-             fuchs@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15262
+*/
+/*---------------------------------------------------------------------------*/
 
-*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | definitions                                                sfuchs 01/2017 |
+ *---------------------------------------------------------------------------*/
+#ifndef PASI_STR_MODEL_EVALUATOR_PARTITIONED_H
+#define PASI_STR_MODEL_EVALUATOR_PARTITIONED_H
 
-/*----------------------------------------------------------------------*
- | definitions                                           sfuchs 01/2017 |
- *----------------------------------------------------------------------*/
-#ifndef PASI_STR_MODEL_EVALUATOR_PARTITIONED_H_
-#define PASI_STR_MODEL_EVALUATOR_PARTITIONED_H_
-
-/*----------------------------------------------------------------------*
- | headers                                               sfuchs 01/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | headers                                                    sfuchs 01/2017 |
+ *---------------------------------------------------------------------------*/
 #include "../drt_structure_new/str_model_evaluator_generic.H"
 
-/*----------------------------------------------------------------------*
- | forward declarations                                  sfuchs 01/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | forward declarations                                       sfuchs 01/2017 |
+ *---------------------------------------------------------------------------*/
 namespace ADAPTER
 {
   class Structure;
-}  // namespace ADAPTER
+}
 
-/*----------------------------------------------------------------------*
- | partitioned pasi structure model evaluator            sfuchs 01/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | class definitions                                          sfuchs 01/2017 |
+ *---------------------------------------------------------------------------*/
 namespace STR
 {
   namespace MODELEVALUATOR
@@ -44,7 +41,7 @@ namespace STR
       PartitionedPASI();
 
       //! destructor
-      virtual ~PartitionedPASI(){};
+      ~PartitionedPASI(){};
 
       //! setup class variables [derived]
       void Setup() override;
@@ -157,12 +154,11 @@ namespace STR
      private:
       //! pasi interface force at \f$t_{n+1}\f$
       Teuchos::RCP<Epetra_Vector> interface_force_np_ptr_;
-
-    };  // class PartitionedPASI: public Generic
+    };
 
   }  // namespace MODELEVALUATOR
 
 }  // namespace STR
 
-/*----------------------------------------------------------------------*/
-#endif  // PASI_STR_MODEL_EVALUATOR_PARTITIONED_H_
+/*---------------------------------------------------------------------------*/
+#endif

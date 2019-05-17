@@ -1,33 +1,32 @@
-/*!----------------------------------------------------------------------
-
+/*---------------------------------------------------------------------------*/
+/*!
 \brief partitioned algorithm for particle structure interaction
 
 \level 3
 
 \maintainer  Sebastian Fuchs
-             fuchs@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15262
+*/
+/*---------------------------------------------------------------------------*/
 
-*----------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------*
- | definitions                                           sfuchs 01/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | definitions                                                sfuchs 01/2017 |
+ *---------------------------------------------------------------------------*/
 #ifndef PASI_PARTITIONED_H
 #define PASI_PARTITIONED_H
 
-/*----------------------------------------------------------------------*
- | headers                                               sfuchs 01/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | headers                                                    sfuchs 01/2017 |
+ *---------------------------------------------------------------------------*/
 #include "../drt_adapter/adapter_algorithmbase.H"
 
-#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 
-/*----------------------------------------------------------------------*
- | forward declarations                                  sfuchs 01/2017 |
- *----------------------------------------------------------------------*/
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+
+/*---------------------------------------------------------------------------*
+ | forward declarations                                       sfuchs 01/2017 |
+ *---------------------------------------------------------------------------*/
 namespace ADAPTER
 {
   class Particle;
@@ -39,11 +38,11 @@ namespace ADAPTER
 namespace PARTICLE
 {
   class Algorithm;
-}  // namespace PARTICLE
+}
 
-/*----------------------------------------------------------------------*
- | partitioned algorithm for pasi                        sfuchs 01/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | class definitions                                          sfuchs 01/2017 |
+ *---------------------------------------------------------------------------*/
 namespace PASI
 {
   //! partitioned algorithm for particle structure interaction
@@ -51,68 +50,25 @@ namespace PASI
   {
    public:
     //! constructor
-    explicit PartitionedAlgo(const Epetra_Comm& comm,  //! communicator
-        const Teuchos::ParameterList&
-            pasi_params  //! input parameters for particle structure interaction
-    );
+    explicit PartitionedAlgo(const Epetra_Comm& comm, const Teuchos::ParameterList& pasi_params);
 
     //! virtual destructor
     virtual ~PartitionedAlgo(){};
 
-    /*! \brief Initialize this object
+    //! init pasi algorithm
+    virtual void Init();
 
-    Hand in all objects/parameters/etc. from outside.
-    Construct and manipulate internal objects.
-
-    \note Try to only perform actions in Init(), which are still valid
-          after parallel redistribution of discretizations.
-          If you have to perform an action depending on the parallel
-          distribution, make sure you adapt the affected objects after
-          parallel redistribution.
-          Example: cloning a discretization from another discretization is
-          OK in Init(...). However, after redistribution of the source
-          discretization do not forget to also redistribute the cloned
-          discretization.
-          All objects relying on the parallel distribution are supposed to
-          the constructed in \ref Setup().
-
-    \warning none
-    \return int
-    \date 01/17
-    \author rauch  */
-    virtual void Init(const Epetra_Comm& comm  //! communicator
-    );
-
-    /*! \brief Setup all class internal objects and members
-
-     Setup() is not supposed to have any input arguments !
-
-     Must only be called after Init().
-
-     Construct all objects depending on the parallel distribution and
-     relying on valid maps like, e.g. the state vectors, system matrices, etc.
-
-     Call all Setup() routines on previously initialized internal objects and members.
-
-    \note Must only be called after parallel (re-)distribution of discretizations is finished !
-          Otherwise, e.g. vectors may have wrong maps.
-
-    \warning none
-    \return void
-    \date 01/17
-    \author rauch  */
+    //! setup pasi algorithm
     virtual void Setup();
 
-    //! read restart data
-    virtual void ReadRestart(int step  //! time step for restart
-    );
+    //! read restart information for given time step
+    virtual void ReadRestart(int restartstep);
 
     //! timeloop of coupled problem
     virtual void Timeloop() = 0;
 
-    //! test results (if necessary)
-    virtual void TestResults(const Epetra_Comm& comm  //! local epetra communicator
-    );
+    //! perform result tests
+    void TestResults(const Epetra_Comm& comm);
 
     //! access to structural field
     const Teuchos::RCP<::ADAPTER::PASIStructureWrapper>& StructureField() const
@@ -123,68 +79,67 @@ namespace PASI
     //! access to particle field
     const Teuchos::RCP<PARTICLE::Algorithm>& ParticleField() const { return particles_; };
 
-    //! returns true if Setup() was called and is still valid
-    bool IsSetup() { return issetup_; };
-
-    //! returns true if Init(..) was called and is still valid
+    //! get initialization status
     bool IsInit() { return isinit_; };
+
+    //! get setup status
+    bool IsSetup() { return issetup_; };
 
    protected:
     //! prepare time step
-    virtual void PrepareTimeStep(bool printheader);
+    void PrepareTimeStep(bool printheader = true);
 
     //! structural time step
-    virtual void StructStep();
+    void StructStep();
 
     //! particle time step
-    virtual void ParticleStep();
+    void ParticleStep();
 
     //! set structural states
-    virtual void SetStructStates();
+    void SetStructStates();
 
-    //! structural output
-    virtual void StructOutput();
+    //! output of structure field
+    void StructOutput();
 
-    //! particle output
-    virtual void ParticleOutput();
+    //! output of particle field
+    void ParticleOutput();
 
-    //! check if \ref Setup() was called
+    //! check correct setup
     void CheckIsSetup()
     {
-      if (not IsSetup()) dserror("Setup() was not called.");
+      if (not IsSetup()) dserror("pasi algorithm not setup correctly!");
     };
 
-    //! check if \ref Init() was called
+    //! check correct initialization
     void CheckIsInit()
     {
-      if (not IsInit()) dserror("Init(...) was not called.");
+      if (not IsInit()) dserror("pasi algorithm not initialized correctly!");
     };
 
-    //! ptr to underlying structure
+    //! structural field
     Teuchos::RCP<::ADAPTER::PASIStructureWrapper> structure_;
 
-    //! ptr to underlying particle algorithm
+    //! particle algorithm
     Teuchos::RCP<PARTICLE::Algorithm> particles_;
 
    private:
     //! ptr to the underlying structure problem base algorithm
     Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> struct_adapterbase_ptr_;
 
-    //! flag indicating if class is setup
-    bool issetup_;
-
-    //! flag indicating if class is initialized
+    //! flag indicating correct initialization
     bool isinit_;
 
-    //! set flag true after setup or false if setup became invalid
-    void SetIsSetup(bool trueorfalse) { issetup_ = trueorfalse; };
+    //! flag indicating correct setup
+    bool issetup_;
 
-    //! set flag true after init or false if init became invalid
-    void SetIsInit(bool trueorfalse) { isinit_ = trueorfalse; };
+    //! set flag indicating correct initialization
+    void SetIsInit(bool isinit) { isinit_ = isinit; };
 
-  };  // class PartitionedAlgo: public ADAPTER::AlgorithmBase
+    //! set flag indicating correct setup
+    void SetIsSetup(bool issetup) { issetup_ = issetup; };
+  };
 
 }  // namespace PASI
 
-/*----------------------------------------------------------------------*/
-#endif  // PASI_PARTITIONED_H
+/*---------------------------------------------------------------------------*/
+#endif

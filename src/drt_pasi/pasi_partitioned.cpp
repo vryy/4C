@@ -1,22 +1,20 @@
-/*!----------------------------------------------------------------------
-
+/*---------------------------------------------------------------------------*/
+/*!
 \brief partitioned algorithm for particle structure interaction
 
 \level 3
 
 \maintainer  Sebastian Fuchs
-             fuchs@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15262
+*/
+/*---------------------------------------------------------------------------*/
 
-*----------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------*
- | headers                                               sfuchs 01/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | headers                                                    sfuchs 01/2017 |
+ *---------------------------------------------------------------------------*/
 #include "pasi_partitioned.H"
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
 
 #include "../drt_adapter/adapter_particle.H"
 #include "../drt_adapter/ad_str_structure_new.H"
@@ -29,49 +27,37 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-/*----------------------------------------------------------------------*
- | constructor                                           sfuchs 01/2017 |
- *----------------------------------------------------------------------*/
-PASI::PartitionedAlgo::PartitionedAlgo(const Epetra_Comm& comm,  //! communicator
-    const Teuchos::ParameterList&
-        pasi_params  //! input parameters for particle structure interaction
-    )
-    :  // instantiate base class
-      AlgorithmBase(comm, pasi_params),
-
+/*---------------------------------------------------------------------------*
+ | constructor                                                sfuchs 01/2017 |
+ *---------------------------------------------------------------------------*/
+PASI::PartitionedAlgo::PartitionedAlgo(
+    const Epetra_Comm& comm, const Teuchos::ParameterList& pasi_params)
+    : AlgorithmBase(comm, pasi_params),
       structure_(Teuchos::null),
       particles_(Teuchos::null),
       struct_adapterbase_ptr_(Teuchos::null),
-      issetup_(false),
-      isinit_(false)
+      isinit_(false),
+      issetup_(false)
 {
-  // Keep this constructor empty!
-  // First do everything on the more basic objects like the discretizations, like e.g.
-  // redistribution of elements. Only then call the setup to this class. This will call the setup to
-  // all classes in the inheritance hierarchy. This way, this class may also override a method that
-  // is called during Setup() in a base class.
+  // empty constructor
+}
 
-}  // PASI::PartitionedAlgo::PartitionedAlgo()
-
-/*----------------------------------------------------------------------*
- | Init this class                                       sfuchs 02/2017 |
- *----------------------------------------------------------------------*/
-void PASI::PartitionedAlgo::Init(const Epetra_Comm& comm  //! communicator
-)
+/*---------------------------------------------------------------------------*
+ | init pasi algorithm                                        sfuchs 02/2017 |
+ *---------------------------------------------------------------------------*/
+void PASI::PartitionedAlgo::Init()
 {
-  // reset the setup flag
+  // reset setup flag
   SetIsSetup(false);
 
   // get the global problem
   DRT::Problem* problem = DRT::Problem::Instance();
 
   // get parameter lists
-  // note that time parameters for subproblems are set in PASI::UTILS::ChangeTimeParameter
   const Teuchos::ParameterList& struct_params = problem->StructuralDynamicParams();
   const Teuchos::ParameterList& particle_params = problem->ParticleParamsOld();
 
-  // safety check: moving_walls_ flag in particle algorithm is always set to 'Yes' for pasi
-  // simulations
+  // safety check
   if ((bool)DRT::INPUT::IntegralValue<int>(particle_params, "MOVING_WALLS") == false)
   {
     const_cast<Teuchos::ParameterList&>(particle_params).set<std::string>("MOVING_WALLS", "Yes");
@@ -102,23 +88,21 @@ void PASI::PartitionedAlgo::Init(const Epetra_Comm& comm  //! communicator
         "Set parameter INT_STRATEGY to Standard in ---STRUCTURAL DYNAMIC section!");
 
   // build particle algorithm with pasi_params for time settings
-  particles_ = Teuchos::rcp(new PARTICLE::Algorithm(comm, particle_params));
+  particles_ = Teuchos::rcp(new PARTICLE::Algorithm(Comm(), particle_params));
 
   // init particle simulation
   particles_->Init(false);
 
-  // set isinit_ flag true
+  // set init flag
   SetIsInit(true);
+}
 
-  return;
-}  // PASI::PartitionedAlgo::Init()
-
-/*----------------------------------------------------------------------*
- | Setup this class                                      sfuchs 01/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | setup pasi algorithm                                       sfuchs 01/2017 |
+ *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::Setup()
 {
-  // make sure Init(...) was called first
+  // check correct initialization
   CheckIsInit();
 
   // if adapter base has not already been set up outside.
@@ -145,82 +129,80 @@ void PASI::PartitionedAlgo::Setup()
         Teuchos::rcp_dynamic_cast<STR::MODELEVALUATOR::PartitionedPASI>(pasi_model_ptr));
   }
 
-  // set flag issetup true
+  // set setup flag
   SetIsSetup(true);
+}
 
-  return;
-}  // PASI::PartitionedAlgo::Setup()
-
-/*----------------------------------------------------------------------*
- | read restart data                                     sfuchs 01/2017 |
- *----------------------------------------------------------------------*/
-void PASI::PartitionedAlgo::ReadRestart(int step  //! time step for restart
-)
+/*---------------------------------------------------------------------------*
+ | read restart information for given time step               sfuchs 01/2017 |
+ *---------------------------------------------------------------------------*/
+void PASI::PartitionedAlgo::ReadRestart(int restartstep)
 {
   // read structure restart variables
-  structure_->ReadRestart(step);
+  structure_->ReadRestart(restartstep);
 
   // read particle restart variables
-  particles_->ReadRestart(step);
+  particles_->ReadRestart(restartstep);
 
-  // set time and time step
-  SetTimeStep(structure_->TimeOld(), step);
+  // set time and step after restart
+  SetTimeStep(structure_->TimeOld(), restartstep);
+}
 
-  return;
-}  // PASI::PartitionedAlgo::ReadRestart()
+/*---------------------------------------------------------------------------*
+ | perform result tests                                       sfuchs 01/2017 |
+ *---------------------------------------------------------------------------*/
+void PASI::PartitionedAlgo::TestResults(const Epetra_Comm& comm)
+{
+  DRT::Problem* problem = DRT::Problem::Instance();
 
-/*----------------------------------------------------------------------*
- | prepare time step                                     sfuchs 01/2017 |
- *----------------------------------------------------------------------*/
+  problem->AddFieldTest(particles_->AdapterParticle()->CreateFieldTest());
+  problem->AddFieldTest(structure_->CreateFieldTest());
+  problem->TestAll(comm);
+}
+
+/*---------------------------------------------------------------------------*
+ | prepare time step                                          sfuchs 01/2017 |
+ *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::PrepareTimeStep(bool printheader)
 {
+  // increment time and step
   IncrementTimeAndStep();
 
+  // print header
   if (printheader) PrintHeader();
 
-  particles_->PrepareTimeStep(false);
-
   structure_->PrepareTimeStep();
+  particles_->PrepareTimeStep(false);
+}
 
-  return;
-}  // PASI::PartitionedAlgo::PrepareTimeStep()
-
-/*----------------------------------------------------------------------*
- | structural time step                                  sfuchs 02/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | structural time step                                       sfuchs 02/2017 |
+ *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::StructStep()
 {
   if (Comm().MyPID() == 0)
   {
-    std::cout << "----------------------------------------------------------------------"
-              << std::endl;
-    std::cout << "                           STRUCTURE SOLVER                           "
-              << std::endl;
-    std::cout << "----------------------------------------------------------------------"
-              << std::endl;
+    std::cout << "-----------------------------------------------------------------" << std::endl;
+    std::cout << " STRUCTURE SOLVER" << std::endl;
+    std::cout << "-----------------------------------------------------------------" << std::endl;
   }
 
   TEUCHOS_FUNC_TIME_MONITOR("PASI::PartitionedAlgo::StructStep");
 
-  // Newton-Raphson iteration
+  // integrate structural time step
   structure_->Solve();
+}
 
-  return;
-}  // PASI::PartitionedAlgo::StructStep()
-
-/*----------------------------------------------------------------------*
- | particle time step                                    sfuchs 02/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | particle time step                                         sfuchs 02/2017 |
+ *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::ParticleStep()
 {
   if (Comm().MyPID() == 0)
   {
-    std::cout << "----------------------------------------------------------------------"
-              << std::endl;
-    std::cout << "                           PARTICLE SOLVER                            "
-              << std::endl;
-    std::cout << "----------------------------------------------------------------------"
-              << std::endl;
+    std::cout << "-----------------------------------------------------------------" << std::endl;
+    std::cout << " PARTICLE SOLVER" << std::endl;
+    std::cout << "-----------------------------------------------------------------" << std::endl;
   }
 
   TEUCHOS_FUNC_TIME_MONITOR("PASI::PartitionedAlgo::ParticleStep");
@@ -230,13 +212,11 @@ void PASI::PartitionedAlgo::ParticleStep()
 
   // integrate particle time step
   particles_->AdapterParticle()->IntegrateStep();
+}
 
-  return;
-}  // PASI::PartitionedAlgo::ParticleStep()
-
-/*----------------------------------------------------------------------*
- | set structural states                                 sfuchs 02/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | set structural states                                      sfuchs 02/2017 |
+ *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::SetStructStates()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PASI::PartitionedAlgo::SetStructStates");
@@ -254,12 +234,10 @@ void PASI::PartitionedAlgo::SetStructStates()
 
   if (Comm().MyPID() == 0)
   {
-    std::cout << "----------------------------------------------------------------------"
-              << std::endl;
+    std::cout << "-----------------------------------------------------------------" << std::endl;
     std::cout << " Norm of boundary displacements:  " << std::setprecision(7) << normbdrydispnp
               << std::endl;
-    std::cout << "----------------------------------------------------------------------"
-              << std::endl;
+    std::cout << "-----------------------------------------------------------------" << std::endl;
   }
 
   // hand wall states to particle field
@@ -267,13 +245,11 @@ void PASI::PartitionedAlgo::SetStructStates()
 
   // set wall states to particle wall discretization
   particles_->SetUpWallDiscret();
+}
 
-  return;
-}  // PASI::PartitionedAlgo::SetStructStates()
-
-/*----------------------------------------------------------------------*
- | structural output                                     sfuchs 02/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | output of structure field                                  sfuchs 02/2017 |
+ *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::StructOutput()
 {
   // calculate stresses, strains, energies
@@ -284,13 +260,11 @@ void PASI::PartitionedAlgo::StructOutput()
 
   // write output to files
   structure_->Output();
+}
 
-  return;
-}  // PASI::PartitionedAlgo::StructOutput()
-
-/*----------------------------------------------------------------------*
- | particle output                                       sfuchs 02/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | output of particle field                                   sfuchs 02/2017 |
+ *---------------------------------------------------------------------------*/
 void PASI::PartitionedAlgo::ParticleOutput()
 {
   // calculate all output quantities
@@ -301,20 +275,4 @@ void PASI::PartitionedAlgo::ParticleOutput()
 
   // write output to files
   particles_->Output();
-
-  return;
-}  // PASI::PartitionedAlgo::ParticleOutput()
-
-/*----------------------------------------------------------------------*
- | single fields are tested                              sfuchs 01/2017 |
- *----------------------------------------------------------------------*/
-void PASI::PartitionedAlgo::TestResults(const Epetra_Comm& comm)
-{
-  DRT::Problem* problem = DRT::Problem::Instance();
-
-  problem->AddFieldTest(particles_->AdapterParticle()->CreateFieldTest());
-  problem->AddFieldTest(structure_->CreateFieldTest());
-  problem->TestAll(comm);
-
-  return;
-}  // PASI::PartitionedAlgo::TestResults()
+}

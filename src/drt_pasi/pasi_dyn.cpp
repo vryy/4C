@@ -1,26 +1,20 @@
-/*!----------------------------------------------------------------------
-
-\brief Control routine for particle structure interaction problems.
+/*---------------------------------------------------------------------------*/
+/*!
+\brief control routine for particle structure interaction problems
 
 \level 3
 
 \maintainer  Sebastian Fuchs
-             fuchs@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15262
+*/
+/*---------------------------------------------------------------------------*/
 
-*----------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------*
- | headers                                               sfuchs 01/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | headers                                                    sfuchs 01/2017 |
+ *---------------------------------------------------------------------------*/
 #include "pasi_dyn.H"
 #include "pasi_partitioned_onewaycoup.H"
 #include "pasi_partitioned_twowaycoup.H"
 #include "pasi_utils.H"
-
-#include <Epetra_MpiComm.h>
-#include <Teuchos_TimeMonitor.hpp>
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
@@ -28,9 +22,9 @@
 
 #include "../drt_inpar/inpar_pasi.H"
 
-/*----------------------------------------------------------------------*
- | entry point for particle structure interaction        sfuchs 01/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | control routine for particle structure interaction         sfuchs 01/2017 |
+ *---------------------------------------------------------------------------*/
 void pasi_dyn()
 {
   // get pointer to global problem
@@ -65,52 +59,46 @@ void pasi_dyn()
     {
       algo = Teuchos::rcp(new PASI::PASI_PartOneWayCoup(comm, pasi_params));
       break;
-    }  // case INPAR::PASI::partitioned_onewaycoup (default)
-
+    }
     case INPAR::PASI::partitioned_twowaycoup:
     {
       algo = Teuchos::rcp(new PASI::PASI_PartTwoWayCoup(comm, pasi_params));
       break;
-    }  // case INPAR::PASI::partitioned_twowaycoup
-
+    }
     case INPAR::PASI::partitioned_twowaycoup_forcerelax:
     {
       algo = Teuchos::rcp(new PASI::PASI_PartTwoWayCoup_ForceRelax(comm, pasi_params));
       break;
-    }  // case INPAR::PASI::partitioned_twowaycoup_forcerelax
-
+    }
     case INPAR::PASI::partitioned_twowaycoup_forcerelaxaitken:
     {
       algo = Teuchos::rcp(new PASI::PASI_PartTwoWayCoup_ForceRelaxAitken(comm, pasi_params));
       break;
-    }  // case INPAR::PASI::partitioned_twowaycoup_forcerelaxaitken
-
+    }
     default:
     {
-      dserror("No valid coupling type for particle structure interaction specified.");
+      dserror("no valid coupling type for particle structure interaction specified!");
       break;
-    }  // default
+    }
+  }
 
-  }  // end switch coupling
+  // init pasi algorithm
+  algo->Init();
 
-  // init algorithm
-  algo->Init(comm);
-
-  // setup algorithm
+  // setup pasi algorithm
   algo->Setup();
 
-  // read restart
+  // read restart information
   const int restart = problem->Restart();
   if (restart) algo->ReadRestart(restart);
 
   // solve partitioned particle structure interaction
   algo->Timeloop();
 
-  // perform the result test
+  // perform result tests
   algo->TestResults(comm);
 
-  // print time monitor output
+  // print summary statistics for all timers
   Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm = COMM_UTILS::toTeuchosComm<int>(comm);
   Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
-
-}  // pasi_dyn()
+}

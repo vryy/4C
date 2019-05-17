@@ -1,19 +1,16 @@
-/*!----------------------------------------------------------------------
-
+/*---------------------------------------------------------------------------*/
+/*!
 \brief two way coupled partitioned algorithm for particle structure interaction
 
 \level 3
 
 \maintainer  Sebastian Fuchs
-             fuchs@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15262
+*/
+/*---------------------------------------------------------------------------*/
 
-*----------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------*
- | headers                                               sfuchs 02/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | headers                                                    sfuchs 02/2017 |
+ *---------------------------------------------------------------------------*/
 #include "pasi_partitioned_twowaycoup.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -32,15 +29,12 @@
 #include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_FEVector.h>
 
-/*----------------------------------------------------------------------*
- | constructor                                           sfuchs 02/2017 |
- *----------------------------------------------------------------------*/
-PASI::PASI_PartTwoWayCoup::PASI_PartTwoWayCoup(const Epetra_Comm& comm,  //! communicator
-    const Teuchos::ParameterList&
-        pasi_params  //! input parameters for particle structure interaction
-    )
-    :  // instantiate pasi algorithm class
-      PartitionedAlgo(comm, pasi_params),
+/*---------------------------------------------------------------------------*
+ | constructor                                                sfuchs 02/2017 |
+ *---------------------------------------------------------------------------*/
+PASI::PASI_PartTwoWayCoup::PASI_PartTwoWayCoup(
+    const Epetra_Comm& comm, const Teuchos::ParameterList& pasi_params)
+    : PartitionedAlgo(comm, pasi_params),
       forcenp_(Teuchos::null),
       dispincnp_(Teuchos::null),
       forceincnp_(Teuchos::null),
@@ -49,22 +43,16 @@ PASI::PASI_PartTwoWayCoup::PASI_PartTwoWayCoup(const Epetra_Comm& comm,  //! com
       ignoreconvcheck_(false),
       writerestartevery_(-1)
 {
-  // Keep this constructor empty!
-  // First do everything on the more basic objects like the discretizations, like e.g.
-  // redistribution of elements. Only then call the setup to this class. This will call the setup to
-  // all classes in the inheritance hierarchy. This way, this class may also override a method that
-  // is called during Setup() in a base class.
+  // empty constructor
+}
 
-}  // PASI::PASI_PartTwoWayCoup::PASI_PartTwoWayCoup()
-
-/*----------------------------------------------------------------------*
- | Init this class                                       sfuchs 02/2017 |
- *----------------------------------------------------------------------*/
-void PASI::PASI_PartTwoWayCoup::Init(const Epetra_Comm& comm  //! communicator
-)
+/*---------------------------------------------------------------------------*
+ | init pasi algorithm                                        sfuchs 02/2017 |
+ *---------------------------------------------------------------------------*/
+void PASI::PASI_PartTwoWayCoup::Init()
 {
-  // call Init() in base class
-  PASI::PartitionedAlgo::Init(comm);
+  // call base class init
+  PASI::PartitionedAlgo::Init();
 
   // get the global problem
   DRT::Problem* problem = DRT::Problem::Instance();
@@ -99,16 +87,14 @@ void PASI::PASI_PartTwoWayCoup::Init(const Epetra_Comm& comm  //! communicator
   {
     dserror("Two way coupled partitioned PASI just implemented for DYNAMICTYP: 'CentrDiff'");
   }
+}
 
-  return;
-}  // PASI::PASI_PartTwoWayCoup::Init()
-
-/*----------------------------------------------------------------------*
- | Setup this class                                      sfuchs 02/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | setup pasi algorithm                                       sfuchs 02/2017 |
+ *---------------------------------------------------------------------------*/
 void PASI::PASI_PartTwoWayCoup::Setup()
 {
-  // call Setup() in base class
+  // call base class setup
   PASI::PartitionedAlgo::Setup();
 
   // construct state and increment vectors
@@ -121,31 +107,26 @@ void PASI::PASI_PartTwoWayCoup::Setup()
   Teuchos::RCP<Epetra_FEVector> f_structure =
       Teuchos::rcp(new Epetra_FEVector(*structure_->DofRowMap(), true));
   particles_->AdapterParticle()->SetFstructure(f_structure);
+}
 
-  return;
-}  // PASI::PASI_PartTwoWayCoup::Setup()
-
-/*----------------------------------------------------------------------*
- | read restart data                                     sfuchs 03/2017 |
- *----------------------------------------------------------------------*/
-void PASI::PASI_PartTwoWayCoup::ReadRestart(int step  //! time step for restart
-)
+/*---------------------------------------------------------------------------*
+ | read restart information for given time step               sfuchs 03/2017 |
+ *---------------------------------------------------------------------------*/
+void PASI::PASI_PartTwoWayCoup::ReadRestart(int restartstep)
 {
-  // call ReadRestart() in base class
-  PASI::PartitionedAlgo::ReadRestart(step);
+  // call base class read restart
+  PASI::PartitionedAlgo::ReadRestart(restartstep);
 
-  IO::DiscretizationReader reader(structure_->Discretization(), step);
-  if (step != reader.ReadInt("step")) dserror("Time step on file not equal to given step");
+  IO::DiscretizationReader reader(structure_->Discretization(), restartstep);
+  if (restartstep != reader.ReadInt("step")) dserror("Time step on file not equal to given step");
 
   // get forcenp_ from restart
   reader.ReadVector(forcenp_, "forcenp_");
+}
 
-  return;
-}  // PASI::PASI_PartTwoWayCoup::ReadRestart()
-
-/*----------------------------------------------------------------------*
- | partitioned two way coupled timeloop                  sfuchs 02/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | partitioned two way coupled timeloop                       sfuchs 02/2017 |
+ *---------------------------------------------------------------------------*/
 void PASI::PASI_PartTwoWayCoup::Timeloop()
 {
   // safety checks
@@ -157,8 +138,8 @@ void PASI::PASI_PartTwoWayCoup::Timeloop()
     // redistribute load in parallel
     particles_->DynamicLoadBalancing();
 
-    // increment time and step
-    PrepareTimeStep(true);
+    // counter and print header
+    PrepareTimeStep();
 
     // iteration loop between coupled fields
     Outerloop();
@@ -166,13 +147,11 @@ void PASI::PASI_PartTwoWayCoup::Timeloop()
     // update and output
     UpdateOutput();
   }
+}
 
-  return;
-}  // PASI::PASI_PartTwoWayCoup::Timeloop()
-
-/*----------------------------------------------------------------------*
- | iteration loop between coupled fields                 sfuchs 02/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | iteration loop between coupled fields                      sfuchs 02/2017 |
+ *---------------------------------------------------------------------------*/
 void PASI::PASI_PartTwoWayCoup::Outerloop()
 {
   int itnum = 0;
@@ -180,15 +159,9 @@ void PASI::PASI_PartTwoWayCoup::Outerloop()
 
   if (Comm().MyPID() == 0)
   {
-    printf(
-        "+-----------------------------------------------------------------------------------------"
-        "--------------+\n");
-    printf(
-        "|  ITERATION LOOP BETWEEN COUPLED FIELDS                                                  "
-        "              |\n");
-    printf(
-        "+-----------------------------------------------------------------------------------------"
-        "--------------+\n");
+    printf("+--------------------------------------------------------------------------------+\n");
+    printf("|  ITERATION LOOP BETWEEN COUPLED FIELDS                                         |\n");
+    printf("+--------------------------------------------------------------------------------+\n");
   }
 
   while (stopnonliniter == false)
@@ -196,37 +169,35 @@ void PASI::PASI_PartTwoWayCoup::Outerloop()
     // increment number of iteration
     itnum++;
 
-    // update the states to the last solutions obtained
+    // update the current states in every iteration
     IterUpdateStates(structure_->Dispnp(), forcenp_);
 
-    // set particle forces in structural field
+    // set particle forces
     SetParticleForces(forcenp_);
 
-    // solve structural time step
+    // structural time step
     StructStep();
 
-    // set structural states in particle field
+    // set structural states
     SetStructStates();
 
     // reset particle states
     ResetParticleStates();
 
-    // solve particle time step
+    // particle time step
     ParticleStep();
 
-    // get particle forces acting on structural boundary
+    // get particle forces
     GetParticleForces();
 
-    // check convergence criterion
+    // convergence check for structure and particles fields
     stopnonliniter = ConvergenceCheck(itnum);
   }
+}
 
-  return;
-}  // PASI::PASI_PartTwoWayCoup::Outerloop()
-
-/*----------------------------------------------------------------------*
- | update and output                                     sfuchs 03/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | update and output                                          sfuchs 03/2017 |
+ *---------------------------------------------------------------------------*/
 void PASI::PASI_PartTwoWayCoup::UpdateOutput()
 {
   // output of structure field
@@ -238,13 +209,11 @@ void PASI::PASI_PartTwoWayCoup::UpdateOutput()
 
   // output of particle field
   ParticleOutput();
+}
 
-  return;
-}  // PASI::PASI_PartTwoWayCoup::UpdateOutput()
-
-/*----------------------------------------------------------------------*
- | reset particle states                                 sfuchs 03/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | reset particle states                                      sfuchs 03/2017 |
+ *---------------------------------------------------------------------------*/
 void PASI::PASI_PartTwoWayCoup::ResetParticleStates()
 {
   // reset displacements, velocities and accelerations
@@ -266,13 +235,11 @@ void PASI::PASI_PartTwoWayCoup::ResetParticleStates()
 
   // clear vector of particle forces on structural discretization
   particles_->AdapterParticle()->WriteAccessFstructure()->PutScalar(0.0);
+}
 
-  return;
-}  // PASI::PASI_PartTwoWayCoup::ResetParticleStates()
-
-/*----------------------------------------------------------------------*
- | get particle forces                                   sfuchs 04/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | get particle forces                                        sfuchs 04/2017 |
+ *---------------------------------------------------------------------------*/
 void PASI::PASI_PartTwoWayCoup::GetParticleForces()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PASI::PASI_PartTwoWayCoup::GetParticleForces");
@@ -290,16 +257,12 @@ void PASI::PASI_PartTwoWayCoup::GetParticleForces()
 
   // save vector of particle forces on structural boundary as Epetra_Vector
   forcenp_ = Teuchos::rcp(new Epetra_Vector(Copy, *f_structure, 0));
+}
 
-  return;
-}  // PASI::PASI_PartTwoWayCoup::GetParticleForces()
-
-/*----------------------------------------------------------------------*
- | set particle forces                                   sfuchs 03/2017 |
- *----------------------------------------------------------------------*/
-void PASI::PASI_PartTwoWayCoup::SetParticleForces(
-    Teuchos::RCP<const Epetra_Vector> forcenp  //! particle wall forces at \f$t_{n+1}\f$
-)
+/*---------------------------------------------------------------------------*
+ | set particle forces                                        sfuchs 03/2017 |
+ *---------------------------------------------------------------------------*/
+void PASI::PASI_PartTwoWayCoup::SetParticleForces(Teuchos::RCP<const Epetra_Vector> forcenp)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PASI::PASI_PartTwoWayCoup::SetParticleForces");
 
@@ -308,42 +271,33 @@ void PASI::PASI_PartTwoWayCoup::SetParticleForces(
 
   if (Comm().MyPID() == 0)
   {
-    std::cout << "----------------------------------------------------------------------"
-              << std::endl;
+    std::cout << "-----------------------------------------------------------------" << std::endl;
     std::cout << " Norm of boundary forces:         " << std::setprecision(7) << normbdryforce
               << std::endl;
-    std::cout << "----------------------------------------------------------------------"
-              << std::endl;
+    std::cout << "-----------------------------------------------------------------" << std::endl;
   }
 
   // apply particle force on structure discretization
   structure_->ApplyInterfaceForce(structure_->Interface()->ExtractPASICondVector(forcenp));
+}
 
-  return;
-}  // PASI::PASI_PartTwoWayCoup::SetParticleForces()
-
-/*----------------------------------------------------------------------*
- | update the current states in every iteration          sfuchs 03/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | update the current states in every iteration               sfuchs 03/2017 |
+ *---------------------------------------------------------------------------*/
 void PASI::PASI_PartTwoWayCoup::IterUpdateStates(
-    Teuchos::RCP<const Epetra_Vector> dispnp,  //! structural displacements at \f$t_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> forcenp  //! particle wall forces at \f$t_{n+1}\f$
-)
+    Teuchos::RCP<const Epetra_Vector> dispnp, Teuchos::RCP<const Epetra_Vector> forcenp)
 {
   // store last solutions (current states)
   // will be compared in ConvergenceCheck to the solutions
   // obtained from the next Structure and Particle steps
   dispincnp_->Update(1.0, *dispnp, 0.0);
   forceincnp_->Update(1.0, *forcenp, 0.0);
+}
 
-  return;
-}  // PASI::PASI_PartTwoWayCoup::IterUpdateStates()
-
-/*----------------------------------------------------------------------*
- | convergence check for structure and particles fields  sfuchs 02/2017 |
- *----------------------------------------------------------------------*/
-bool PASI::PASI_PartTwoWayCoup::ConvergenceCheck(int itnum  //! number of iterations
-)
+/*---------------------------------------------------------------------------*
+ | convergence check for structure and particles fields       sfuchs 02/2017 |
+ *---------------------------------------------------------------------------*/
+bool PASI::PASI_PartTwoWayCoup::ConvergenceCheck(int itnum)
 {
   // convergence check based on the scalar increment
   bool stopnonliniter = false;
@@ -387,8 +341,8 @@ bool PASI::PASI_PartTwoWayCoup::ConvergenceCheck(int itnum  //! number of iterat
         "+------------+--------------------+----------------+----------------+-----------------+---"
         "--------------+\n");
     printf(
-        "|- step/max -|- tol       [norm] -|- abs-disp-inc -|- rel-disp-inc -|- abs-force-inc -|- "
-        "rel-force-inc -|\n");
+        "|  step/max  |  tol       [norm]  |  abs-disp-inc  |  rel-disp-inc  |  abs-force-inc  |  "
+        "rel-force-inc  |\n");
     printf("|   %3d/%3d  | %10.3E [L_2 ]  |    %10.3E  |    %10.3E  |     %10.3E  |     %10.3E  |",
         itnum, itmax_, ittol_, abs_disp_inc, rel_disp_inc, abs_force_inc, rel_force_inc);
     printf("\n");
@@ -451,79 +405,63 @@ bool PASI::PASI_PartTwoWayCoup::ConvergenceCheck(int itnum  //! number of iterat
   }
 
   return stopnonliniter;
-}  // PASI::PASI_PartTwoWayCoup::ConvergenceCheck()
+}
 
-/*----------------------------------------------------------------------*
- | constructor                                           sfuchs 03/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | constructor                                                sfuchs 03/2017 |
+ *---------------------------------------------------------------------------*/
 PASI::PASI_PartTwoWayCoup_ForceRelax::PASI_PartTwoWayCoup_ForceRelax(
-    const Epetra_Comm& comm,  //! communicator
-    const Teuchos::ParameterList&
-        pasi_params  //! input parameters for particle structure interaction
-    )
+    const Epetra_Comm& comm, const Teuchos::ParameterList& pasi_params)
     : PASI_PartTwoWayCoup(comm, pasi_params), omega_(0.0)
 {
-  // Keep this constructor empty!
-  // First do everything on the more basic objects like the discretizations, like e.g.
-  // redistribution of elements. Only then call the setup to this class. This will call the setup to
-  // all classes in the inheritance hierarchy. This way, this class may also override a method that
-  // is called during Setup() in a base class.
+  // empty constructor
+}
 
-}  // PASI::PASI_PartTwoWayCoup_ForceRelax::PASI_PartTwoWayCoup_ForceRelax()
-
-/*----------------------------------------------------------------------*
- | Init this class                                       sfuchs 03/2017 |
- *----------------------------------------------------------------------*/
-void PASI::PASI_PartTwoWayCoup_ForceRelax::Init(const Epetra_Comm& comm  //! communicator
-)
+/*---------------------------------------------------------------------------*
+ | init pasi algorithm                                        sfuchs 03/2017 |
+ *---------------------------------------------------------------------------*/
+void PASI::PASI_PartTwoWayCoup_ForceRelax::Init()
 {
-  // call Init() in base class
-  PASI::PASI_PartTwoWayCoup::Init(comm);
+  // call base class init
+  PASI::PASI_PartTwoWayCoup::Init();
 
   // get parameter lists
   const Teuchos::ParameterList& pasi_params_part =
       DRT::Problem::Instance()->PASIDynamicParams().sublist("PARTITIONED");
 
   omega_ = pasi_params_part.get<double>("STARTOMEGA");
+}
 
-  return;
-}  // PASI::PASI_PartTwoWayCoup_ForceRelax::Init()
-
-/*----------------------------------------------------------------------*
- | Setup this class                                      sfuchs 03/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | setup pasi algorithm                                       sfuchs 03/2017 |
+ *---------------------------------------------------------------------------*/
 void PASI::PASI_PartTwoWayCoup_ForceRelax::Setup()
 {
-  // call Setup() in base class
+  // call base class setup
   PASI::PASI_PartTwoWayCoup::Setup();
+}
 
-  return;
-}  // PASI::PASI_PartTwoWayCoup_ForceRelax::Setup()
-
-/*----------------------------------------------------------------------*
- | read restart data                                     sfuchs 03/2017 |
- *----------------------------------------------------------------------*/
-void PASI::PASI_PartTwoWayCoup_ForceRelax::ReadRestart(int step  //! time step for restart
-)
+/*---------------------------------------------------------------------------*
+ | read restart information for given time step               sfuchs 03/2017 |
+ *---------------------------------------------------------------------------*/
+void PASI::PASI_PartTwoWayCoup_ForceRelax::ReadRestart(int restartstep)
 {
-  // call ReadRestart() in base class
-  PASI::PartitionedAlgo::ReadRestart(step);
+  // call base class read restart
+  PASI::PartitionedAlgo::ReadRestart(restartstep);
 
-  IO::DiscretizationReader reader(structure_->Discretization(), step);
-  if (step != reader.ReadInt("step")) dserror("Time step on file not equal to given step");
+  IO::DiscretizationReader reader(structure_->Discretization(), restartstep);
+  if (restartstep != reader.ReadInt("step")) dserror("Time step on file not equal to given step");
 
   // get forcenp_ from restart
   reader.ReadVector(forcenp_, "forcenp_");
 
   // get omega_ from restart
   omega_ = reader.ReadDouble("omega_");
+}
 
-  return;
-}  // PASI::PASI_PartTwoWayCoup_ForceRelax::ReadRestart()
-
-/*----------------------------------------------------------------------*
- | iteration loop with relaxed forces                    sfuchs 03/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | iteration loop between coupled fields with relaxed forces  sfuchs 03/2017 |
+ *---------------------------------------------------------------------------*/
 void PASI::PASI_PartTwoWayCoup_ForceRelax::Outerloop()
 {
   int itnum = 0;
@@ -531,15 +469,9 @@ void PASI::PASI_PartTwoWayCoup_ForceRelax::Outerloop()
 
   if (Comm().MyPID() == 0)
   {
-    printf(
-        "+-----------------------------------------------------------------------------------------"
-        "--------------+\n");
-    printf(
-        "|  ITERATION LOOP BETWEEN COUPLED FIELDS WITH RELAXED FORCES                              "
-        "              |\n");
-    printf(
-        "+-----------------------------------------------------------------------------------------"
-        "--------------+\n");
+    printf("+--------------------------------------------------------------------------------+\n");
+    printf("|  ITERATION LOOP BETWEEN COUPLED FIELDS WITH RELAXED FORCES                     |\n");
+    printf("+--------------------------------------------------------------------------------+\n");
   }
 
   // init the relaxed input
@@ -555,28 +487,28 @@ void PASI::PASI_PartTwoWayCoup_ForceRelax::Outerloop()
     // update the states to the last solutions obtained
     IterUpdateStates(structure_->Dispnp(), forcenp);
 
-    // set particle forces in structural field
+    // set particle forces
     SetParticleForces(forcenp);
 
-    // solve structural time step
+    // structural time step
     StructStep();
 
-    // set structural states in particle field
+    // set structural states
     SetStructStates();
 
     // reset particle states
     ResetParticleStates();
 
-    // solve particle time step
+    // particle time step
     ParticleStep();
 
-    // get particle forces acting on structural boundary
+    // get particle forces
     GetParticleForces();
 
-    // check convergence criterion
+    // convergence check for structure and particles fields
     stopnonliniter = ConvergenceCheck(itnum);
 
-    // get relaxation parameter
+    // calculate relaxation parameter
     CalcOmega(omega_, itnum);
 
     // do the relaxation
@@ -584,13 +516,11 @@ void PASI::PASI_PartTwoWayCoup_ForceRelax::Outerloop()
     //         = d^i + omega^{i+1} * ( d^{i+1} - d^i )
     forcenp->Update(omega_, *forceincnp_, 1.0);
   }
+}
 
-  return;
-}  // PASI::PASI_PartTwoWayCoup_ForceRelax::Outerloop()
-
-/*----------------------------------------------------------------------*
- | update and output                                     sfuchs 03/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | update and output                                          sfuchs 03/2017 |
+ *---------------------------------------------------------------------------*/
 void PASI::PASI_PartTwoWayCoup_ForceRelax::UpdateOutput()
 {
   // output of structure field
@@ -605,85 +535,62 @@ void PASI::PASI_PartTwoWayCoup_ForceRelax::UpdateOutput()
 
   // output of particle field
   ParticleOutput();
+}
 
-  return;
-}  // PASI::PASI_PartTwoWayCoup_ForceRelax::UpdateOutput()
-
-/*----------------------------------------------------------------------*
- | calculate relaxation parameter                        sfuchs 03/2017 |
- *----------------------------------------------------------------------*/
-void PASI::PASI_PartTwoWayCoup_ForceRelax::CalcOmega(double& omega,  //! relaxation parameter
-    const int itnum  //! number of partitioned coupling iterations
-)
+/*---------------------------------------------------------------------------*
+ | calculate relaxation parameter                             sfuchs 03/2017 |
+ *---------------------------------------------------------------------------*/
+void PASI::PASI_PartTwoWayCoup_ForceRelax::CalcOmega(double& omega, const int itnum)
 {
-  // constant relaxation parameter omega
-  if (Comm().MyPID() == 0)
-    std::cout << "Fixed relaxation parameter omega is: " << omega << std::endl;
+  // output constant relaxation parameter omega
+  if (Comm().MyPID() == 0) std::cout << "Fixed relaxation parameter omega: " << omega << std::endl;
+}
 
-  return;
-}  // PASI::PASI_PartTwoWayCoup_ForceRelax::CalcOmega()
-
-/*----------------------------------------------------------------------*
- | constructor                                           sfuchs 03/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | constructor                                                sfuchs 03/2017 |
+ *---------------------------------------------------------------------------*/
 PASI::PASI_PartTwoWayCoup_ForceRelaxAitken::PASI_PartTwoWayCoup_ForceRelaxAitken(
-    const Epetra_Comm& comm,  //! communicator
-    const Teuchos::ParameterList&
-        pasi_params  //! input parameters for particle structure interaction
-    )
+    const Epetra_Comm& comm, const Teuchos::ParameterList& pasi_params)
     : PASI_PartTwoWayCoup_ForceRelax(comm, pasi_params),
       forceincnpold_(Teuchos::null),
       maxomega_(0.0),
       minomega_(0.0)
 {
-  // Keep this constructor empty!
-  // First do everything on the more basic objects like the discretizations, like e.g.
-  // redistribution of elements. Only then call the setup to this class. This will call the setup to
-  // all classes in the inheritance hierarchy. This way, this class may also override a method that
-  // is called during Setup() in a base class.
+  // empty constructor
+}
 
-}  // PASI::PASI_PartTwoWayCoup_ForceRelaxAitken::PASI_PartTwoWayCoup_ForceRelaxAitken()
-
-/*----------------------------------------------------------------------*
- | Init this class                                       sfuchs 03/2017 |
- *----------------------------------------------------------------------*/
-void PASI::PASI_PartTwoWayCoup_ForceRelaxAitken::Init(const Epetra_Comm& comm  //! communicator
-)
+/*---------------------------------------------------------------------------*
+ | init pasi algorithm                                        sfuchs 03/2017 |
+ *---------------------------------------------------------------------------*/
+void PASI::PASI_PartTwoWayCoup_ForceRelaxAitken::Init()
 {
-  // call Init() in base class
-  PASI::PASI_PartTwoWayCoup_ForceRelax::Init(comm);
+  // call base class init
+  PASI::PASI_PartTwoWayCoup_ForceRelax::Init();
 
   // get parameter lists
   const Teuchos::ParameterList& pasi_params_part =
       DRT::Problem::Instance()->PASIDynamicParams().sublist("PARTITIONED");
 
   maxomega_ = pasi_params_part.get<double>("MAXOMEGA");
-
   minomega_ = pasi_params_part.get<double>("MINOMEGA");
+}
 
-  return;
-}  // PASI::PASI_PartTwoWayCoup_ForceRelaxAitken::Init()
-
-/*----------------------------------------------------------------------*
- | Setup this class                                      sfuchs 03/2017 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | setup pasi algorithm                                       sfuchs 03/2017 |
+ *---------------------------------------------------------------------------*/
 void PASI::PASI_PartTwoWayCoup_ForceRelaxAitken::Setup()
 {
-  // call Setup() in base class
+  // call base class setup
   PASI::PASI_PartTwoWayCoup_ForceRelax::Setup();
 
   // construct old increment vector
   forceincnpold_ = LINALG::CreateVector(*structure_->DofRowMap(), true);
+}
 
-  return;
-}  // PASI::PASI_PartTwoWayCoup_ForceRelaxAitken::Setup()
-
-/*----------------------------------------------------------------------*
- | calculate relaxation parameter                        sfuchs 03/2017 |
- *----------------------------------------------------------------------*/
-void PASI::PASI_PartTwoWayCoup_ForceRelaxAitken::CalcOmega(double& omega,  //! relaxation parameter
-    const int itnum  //! number of partitioned coupling iterations
-)
+/*---------------------------------------------------------------------------*
+ | calculate relaxation parameter                             sfuchs 03/2017 |
+ *---------------------------------------------------------------------------*/
+void PASI::PASI_PartTwoWayCoup_ForceRelaxAitken::CalcOmega(double& omega, const int itnum)
 {
   // forceincnpdiff =  r^{i+1}_{n+1} - r^i_{n+1}
   Teuchos::RCP<Epetra_Vector> forceincnpdiff = LINALG::CreateVector(*structure_->DofRowMap(), true);
@@ -701,6 +608,7 @@ void PASI::PASI_PartTwoWayCoup_ForceRelaxAitken::CalcOmega(double& omega,  //! r
   double forceincsdot = 0.0;  // delsdot = ( r^{i+1}_{n+1} - r^i_{n+1} )^T . r^{i+1}_{n+1}
   forceincnpdiff->Dot(*forceincnp_, &forceincsdot);
 
+  // in first iteration reuse omega from previous step
   if (itnum != 1 and forceincnpdiffnorm > 1e-06)
   {
     // relaxation parameter
@@ -729,14 +637,9 @@ void PASI::PASI_PartTwoWayCoup_ForceRelaxAitken::CalcOmega(double& omega,  //! r
     }
   }
 
-  // else //if itnum==1 nothing is to do here since we want to take the last omega from the previous
-  // step
-  if (Comm().MyPID() == 0)
-    std::cout << "Using Aitken the relaxation parameter omega was estimated to: " << omega
-              << std::endl;
+  // output Aitken relaxation parameter omega
+  if (Comm().MyPID() == 0) std::cout << "Aitken relaxation parameter omega: " << omega << std::endl;
 
   // update history vector old increment r^i_{n+1}
   forceincnpold_->Update(1.0, *forceincnp_, 0.0);
-
-  return;
-}  // PASI::PASI_PartTwoWayCoup_ForceRelaxAitken::CalcOmega()
+}
