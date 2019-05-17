@@ -1,17 +1,14 @@
-/*!----------------------------------------------------------------------
-\file drt_matchingoctree.cpp
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief Search closest node in given set of nodes using an octree search
 
-<pre>
 \level 1
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 
 #include "drt_matchingoctree.H"

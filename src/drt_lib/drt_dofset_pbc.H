@@ -1,5 +1,5 @@
-/*!----------------------------------------------------------------------
-\file drt_dofset_pbc.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief A modified set of degrees of freedom for periodic boundary
        conditions. This class is inherited from dofset and replaces the
@@ -9,15 +9,13 @@
        slavenodes. It is absolutely mandatory that for each slave node
        on this proc the master is (ghosted) on this proc, too!
 
-<pre>
 \level 0
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
+
 #ifndef PBCDOFSET_H
 #define PBCDOFSET_H
 

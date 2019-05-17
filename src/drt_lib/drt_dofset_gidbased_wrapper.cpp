@@ -1,16 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file drt_dofset_gidbased_wrapper.cpp
 
  \brief Implementation of a dofset using a GID based mapping
 
 \level 2
 
-\maintainer Andreas Rauch
-            rauch@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
+\maintainer Martin Kronbichler
 
- *----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #include "drt_dofset_gidbased_wrapper.H"
 

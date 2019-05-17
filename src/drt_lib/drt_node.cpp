@@ -1,14 +1,14 @@
-/*!----------------------------------------------------------------------
-\file drt_node.cpp
-\brief A virtual class for a node
-<pre>
-\level 0
-\maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+/*---------------------------------------------------------------------*/
+/*!
 
-*----------------------------------------------------------------------*/
+\brief A virtual class for a node
+
+\level 0
+
+\maintainer Martin Kronbichler
+
+*/
+/*---------------------------------------------------------------------*/
 
 #include "drt_node.H"
 #include "drt_dserror.H"

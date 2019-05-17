@@ -1,17 +1,15 @@
-/*----------------------------------------------------------------------------*/
-/**
-\file drt_utils_discret_evaluate.cpp
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief Utils methods concerning the discretization evaluation
 
-\maintainer Michael Hiermeier
-
-\date Dec 12, 2016
+\maintainer Martin Kronbichler
 
 \level 2
 
 */
 /*----------------------------------------------------------------------------*/
+
 #include "drt_utils_discret.H"
 #include "drt_assemblestrategy.H"
 #include "drt_discret.H"

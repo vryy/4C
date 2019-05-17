@@ -1,5 +1,5 @@
-/*!----------------------------------------------------------------------
-\file drt_utils_parmetis.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief A collection of helper methods related to partitioning and parallel distribution
 
@@ -7,7 +7,9 @@
 
 \maintainer Martin Kronbichler
 
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
+
 #ifndef UTILS_PARMETIS_H
 #define UTILS_PARMETIS_H
 

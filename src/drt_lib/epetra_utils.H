@@ -1,16 +1,14 @@
-/*----------------------------------------------------------------------*/
-/**
-\file epetra_utils.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief General utility methods for all Epetra objects
 
+\maintainer Martin Kronbichler
+
 \level 1
 
-\maintainer Michael Hiermeier
-
-\date Feb 27, 2018
 */
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_LIB_EPETRA_UTILS_H_
 #define SRC_DRT_LIB_EPETRA_UTILS_H_

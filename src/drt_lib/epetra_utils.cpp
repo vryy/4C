@@ -1,16 +1,14 @@
-/*----------------------------------------------------------------------*/
-/**
-\file epetra_utils.cpp
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief General utility methods for all Epetra objects
 
+\maintainer Martin Kronbichler
+
 \level 1
 
-\maintainer Michael Hiermeier
-
-\date Feb 27, 2018
 */
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 
 #include <Epetra_Object.h>
 #include "epetra_utils.H"

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file drt_locsys.cpp
 
 \brief Class controlling local coordinate systems on points, lines and
 surfaces and supplying all necessary transformation methods for parallel
@@ -8,7 +7,8 @@ vectors and matrices.
 
 \level 1
 
-\maintainer Michael Hiermeier
+\maintainer Martin Kronbichler
+
 */
 /*----------------------------------------------------------------------------*/
 

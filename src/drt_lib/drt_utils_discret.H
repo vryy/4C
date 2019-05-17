@@ -1,17 +1,14 @@
-/*----------------------------------------------------------------------------*/
-/**
-\file drt_utils_discret.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief Utils methods concerning the discretization
 
-\maintainer Michael Hiermeier
-
-\date Oct 14, 2016
+\maintainer Martin Kronbichler
 
 \level 2
 
 */
-/*----------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_LIB_DRT_UTILS_DISCRET_H_
 #define SRC_DRT_LIB_DRT_UTILS_DISCRET_H_

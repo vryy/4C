@@ -1,24 +1,17 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_parser.H
 
 \brief Parser for mathematical expressions, which contain literals
        ('1.0', 'pi', etc) operations ('+', '-', 'sin', etc.).
        The parsed expression is organised in a syntax tree whose nodes
        can either hold an operation or a literal.
 
-<pre>
 \level 0
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-\author u.kue
-\date 10/07
 */
-
+/*---------------------------------------------------------------------*/
 
 #ifndef DRT_PARSER_H
 #define DRT_PARSER_H

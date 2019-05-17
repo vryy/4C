@@ -1,17 +1,15 @@
-/*!----------------------------------------------------------------------
-\file drt_dofset_base.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief Base class implementing common functionality and dofset registration
 
-<pre>
 \level 0
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
+
 #ifndef DOFSETBASE_H
 #define DOFSETBASE_H
 

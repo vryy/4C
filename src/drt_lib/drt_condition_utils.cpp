@@ -1,16 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_condition_utils.cpp
 
 \brief Implementation of utils on conditions
 
-<pre>
 \level 1
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 

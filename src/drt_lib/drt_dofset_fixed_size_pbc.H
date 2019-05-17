@@ -1,5 +1,5 @@
-/*!----------------------------------------------------------------------
-\file drt_dofset_fixed_size_pbc.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief A modified set of degrees of freedom that always pretends to be
        of a certain size in order to reserve space for fields that vary
@@ -9,7 +9,9 @@
 
 \maintainer Martin Kronbichler
 
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
+
 #ifndef DOFSET_FIXED_SIZE_PBC_H
 #define DOFSET_FIXED_SIZE_PBC_H
 

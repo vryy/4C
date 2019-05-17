@@ -1,17 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_assemblestrategy.cpp
 
 \brief Routines for the handing a collection of element matrices and vectors to
        the actual assembly calls into one global sparse matrix and global load vector
 
-<pre>
 \level 0
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 

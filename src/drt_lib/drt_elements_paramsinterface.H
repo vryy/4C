@@ -1,15 +1,12 @@
 /*-----------------------------------------------------------*/
 /*!
-\file drt_elements_paramsinterface.H
 
 \brief collection of a serial of possible element actions to pass information
        down to elements
 
 \level 3
 
-\maintainer Michael Hiermeier
-
-\date Mar 24, 2016
+\maintainer Martin Kronbichler
 
 */
 /*-----------------------------------------------------------*/

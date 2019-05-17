@@ -1,14 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_globalproblem.cpp
 
 \brief global list of problems
 
 \level 1
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
 
 */
 /*----------------------------------------------------------------------*/

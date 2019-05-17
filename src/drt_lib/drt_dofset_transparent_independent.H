@@ -1,12 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_dofset_transparent_independent.H
 
-\brief A set of degrees of freedom special for ???
+\brief A set of degrees of freedom on two discretizations
 
 \level 2
 
 \maintainer Martin Kronbichler
+
 */
 /*----------------------------------------------------------------------*/
 

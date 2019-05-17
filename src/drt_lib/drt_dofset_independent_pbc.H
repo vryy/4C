@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_dofset_independent_pbc.H
 
 \brief A modified set of degrees of freedom. This class inherits from
        both the independent dofset as well as the pbc dofset.
@@ -8,6 +7,7 @@
 \level 2
 
 \maintainer Martin Kronbichler
+
 */
 /*----------------------------------------------------------------------*/
 

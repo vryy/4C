@@ -1,14 +1,15 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file drt_locsys.H
 
 \brief Local coordinate systems and transformations for all types of objects
 
 \level 1
 
-\maintainer Michael Hiermeier
+\maintainer Martin Kronbichler
+
 */
 /*----------------------------------------------------------------------------*/
+
 #ifndef DRT_LOCSYS_H
 #define DRT_LOCSYS_H
 

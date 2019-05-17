@@ -1,17 +1,15 @@
-/*!----------------------------------------------------------------------
-\file drt_discret_iterator.H
+/*----------------------------------------------------------------------*/
+/*!
 
 \brief An iterator class over discretization objects
 
-<pre>
 \level 1
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
+
 #ifndef DRT_DISCRET_ITERATOR_H
 #define DRT_DISCRET_ITERATOR_H
 

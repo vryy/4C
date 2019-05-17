@@ -1,5 +1,5 @@
-/*!----------------------------------------------------------------------
-\file drt_discret_evaluate.cpp
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief Implementation of evaluate calls on discretization
 
@@ -7,7 +7,8 @@
 
 \maintainer Martin Kronbichler
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 #include "drt_utils_discret.H"
 #include "drt_globalproblem.H"

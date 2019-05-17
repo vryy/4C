@@ -1,17 +1,15 @@
-/*!----------------------------------------------------------------------
-\file drt_singletondestruction.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief Base class for singletons that need explicit destruction
 
-<pre>
 \level 0
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
+
 #ifndef DRT_SINGLETONDESTRUCTION_H
 #define DRT_SINGLETONDESTRUCTION_H
 

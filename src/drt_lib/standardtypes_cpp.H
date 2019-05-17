@@ -1,17 +1,15 @@
+/*---------------------------------------------------------------------*/
 /*!
- * \file standardtypes_cpp.H
- *
- * Use this header when you need access to standardtypes.h
-*
 
- * <pre>
- * \brief include standardtypes header
- * \level 0
- * \maintainer Martin Kronbichler
- *             http://www.lnm.mw.tum.de
- *             089 - 289-15235
- * </pre>
- */
+\brief include standardtypes header
+
+\maintainer Martin Kronbichler
+
+\level 0
+
+*/
+/*---------------------------------------------------------------------*/
+
 #ifndef STANDARDTYPES_CPP_H
 #define STANDARDTYPES_CPP_H
 

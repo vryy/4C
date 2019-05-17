@@ -1,15 +1,14 @@
-/*!---------------------------------------------------------------------
-\file drt_globalproblem_enums.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief Some important enums used in conjunction with DRT::Problem
 
 \level 1
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
 
----------------------------------------------------------------------*/
+*/
+/*--------------------------------------------------------------------*/
 
 #ifndef DRT_GLOBALPROBLEM_ENUMS_H
 #define DRT_GLOBALPROBLEM_ENUMS_H

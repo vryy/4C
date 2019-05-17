@@ -1,15 +1,15 @@
-/*!----------------------------------------------------------------------
-\file drt_utils_reader.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief A collection of helper methods for readers
 
-<pre>
 \level 0
 
 \maintainer Martin Kronbichler
-</pre>
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
+
 #ifndef UTILS_READER_H
 #define UTILS_READER_H
 #if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)

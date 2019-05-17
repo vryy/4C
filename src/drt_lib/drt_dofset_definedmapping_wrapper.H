@@ -1,16 +1,15 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file drt_dofset_definedmapping_wrapper.H
 
- \brief A dofset that does not rely on same GID/LID numbers but uses
-         a defined node mapping instead (not implemented for element DOFs).
+\brief A dofset that does not rely on same GID/LID numbers but uses
+       a defined node mapping instead (not implemented for element DOFs).
 
-   \level 3
+\level 3
 
-   \maintainer Andreas Rauch
-                rauch@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
- *----------------------------------------------------------------------*/
+\maintainer Martin Kronbichler
+
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_LIB_DRT_DOFSET_DEFINEDMAPPING_WRAPPER_H_
 #define SRC_DRT_LIB_DRT_DOFSET_DEFINEDMAPPING_WRAPPER_H_

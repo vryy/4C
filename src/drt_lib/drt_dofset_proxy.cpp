@@ -1,16 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_dofset_proxy.cpp
 
 \brief Proxy to a set of degrees of freedom
 
-<pre>
 \level 1
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 

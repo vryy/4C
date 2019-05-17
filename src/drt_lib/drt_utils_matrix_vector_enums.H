@@ -1,14 +1,11 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file drt_utils_matrix_vector_enums.H
 
 \brief Contains ONLY lists of enumerators and is supposed to be included
        into the header files, if necessary and till the C++11 standard is
        available in BACI.
 
-\maintainer Michael Hiermeier
-
-\date Apr 21, 2016
+\maintainer Martin Kronbichler
 
 \level 3
 

@@ -1,15 +1,11 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file drt_particlereader.cpp
 
 \brief functionality to read particles from file
 
 \level 3
 
 \maintainer  Sebastian Fuchs
-             fuchs@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15262
 
 */
 /*---------------------------------------------------------------------------*/

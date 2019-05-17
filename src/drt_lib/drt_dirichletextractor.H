@@ -1,17 +1,15 @@
-/*!----------------------------------------------------------------------
-\file drt_dirichletextractor.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief A map extractor for Dirichlet conditions
 
-<pre>
 \level 0
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
+
 #ifndef DRT_DIRICHLETEXTRACTOR_H
 #define DRT_DIRICHLETEXTRACTOR_H
 

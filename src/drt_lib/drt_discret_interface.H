@@ -1,17 +1,14 @@
-/*!----------------------------------------------------------------------
-\file drt_discret_interface.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief Interface class for DRT::Discretization, the main discretization class
 
-<pre>
 \level 0
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_LIB_DRT_DISCRET_INTERFACE_H_
 #define SRC_DRT_LIB_DRT_DISCRET_INTERFACE_H_

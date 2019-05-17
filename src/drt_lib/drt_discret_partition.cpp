@@ -1,12 +1,14 @@
-/*!----------------------------------------------------------------------
-\file drt_discret_partition.cpp
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief Partition part of the setup of a discretization
 
 \level 0
 
 \maintainer Martin Kronbichler
-*----------------------------------------------------------------------*/
+
+*/
+/*---------------------------------------------------------------------*/
 
 #include <Epetra_FECrsGraph.h>
 #include <Epetra_Time.h>

@@ -1,12 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_element_vtk_cell_type_register.H
 
 \brief A register that matches BACI element shape types to VTK cell types
 
 \level 2
 
 \maintainer Martin Kronbichler
+
 */
 /*----------------------------------------------------------------------*/
 

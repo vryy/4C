@@ -1,16 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_functionvariables.H
 
 \brief Time dependent variables for function definition
 
-<pre>
 \level 0
 
 \maintainer Andrea La Spina
-            http://www.lnm.mw.tum.de
-            089 - 289-15265
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 

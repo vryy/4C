@@ -1,18 +1,15 @@
-/*!----------------------------------------------------------------------
-\file drt_dofset_pbc.cpp
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief A modified set of degrees of freedom for periodic boundary
        conditions
 
-<pre>
 \level 0
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 #include "drt_dofset_pbc.H"
 

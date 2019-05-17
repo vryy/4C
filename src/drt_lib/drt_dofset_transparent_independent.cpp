@@ -1,12 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_dofset_transparent_independent.cpp
 
 \brief transparent independent dofset
 
 \level 2
 
 \maintainer Martin Kronbichler
+
 */
 /*----------------------------------------------------------------------*/
 

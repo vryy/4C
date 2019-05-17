@@ -1,15 +1,14 @@
-/*!----------------------------------------------------------------------
- \file drt_utils_reference_configuration.H
+/*---------------------------------------------------------------------*/
+/*!
 
  \brief Utility functions to calculate properties in the reference configuration
 
  \level 2
 
  \maintainer Christoph Schmidt
- http://www.lnm.mw.tum.de
- 089 - 289-15251
 
- *----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 #ifndef DRT_UTILS_REFERENCE_CONFIGURATION
 #define DRT_UTILS_REFERENCE_CONFIGURATION

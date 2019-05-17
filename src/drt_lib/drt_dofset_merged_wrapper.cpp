@@ -1,16 +1,15 @@
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 /*!
- \file drt_dofset_merged_wrapper.cpp
 
  \brief A proxy of a dofset that adds additional, existing degrees of freedom from the same
         discretization to nodes (not implemented for element DOFs).
 
  \level 2
 
- \maintainer  Andreas Rauch
-              rauch@lnm.mw.tum.de
-              http://www.lnm.mw.tum.de
- *----------------------------------------------------------------------*/
+ \maintainer  Martin Kronbichler
+
+*/
+/*---------------------------------------------------------------------*/
 
 
 #include "../drt_lib/drt_matchingoctree.H"

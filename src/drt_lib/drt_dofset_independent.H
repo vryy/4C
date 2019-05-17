@@ -1,5 +1,5 @@
-/*!----------------------------------------------------------------------
-\file drt_dofset_independent.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief This class is inherited from dofset and replaces the
        method AssignDegreesOfFreedom by a version that does not query
@@ -12,7 +12,9 @@
 
 \maintainer Martin Kronbichler
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
+
 #ifndef DOFSET_INDEPENDENT_H
 #define DOFSET_INDEPENDENT_H
 
