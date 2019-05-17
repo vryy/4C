@@ -537,6 +537,21 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
     // get pointer to column wall element
     DRT::Element* ele = particlewallpair.ele_;
 
+    // number of nodes of wall element
+    const int numnodes = ele->NumNode();
+
+    // evaluate shape functions of element at wall contact point
+    Epetra_SerialDenseVector funct(numnodes);
+    DRT::UTILS::shape_function_2D(
+        funct, particlewallpair.elecoords_[0], particlewallpair.elecoords_[1], ele->Shape());
+
+    // get location vector of wall element
+    std::vector<int> lmele;
+    lmele.reserve(numnodes * 3);
+    std::vector<int> lmowner;
+    std::vector<int> lmstride;
+    ele->LocationVector(*particlewallinterface_->GetWallDiscretization(), lmele, lmowner, lmstride);
+
     // declare zero radius for wall contact point j
     const double rad_j = 0.0;
 
@@ -545,22 +560,6 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
 
     if (walldatastate->GetVelCol() != Teuchos::null)
     {
-      // number of nodes of wall element
-      const int numnodes = ele->NumNode();
-
-      // evaluate shape functions of element at wall contact point
-      Epetra_SerialDenseVector funct(numnodes);
-      DRT::UTILS::shape_function_2D(
-          funct, particlewallpair.elecoords_[0], particlewallpair.elecoords_[1], ele->Shape());
-
-      // get location vector of wall element
-      std::vector<int> lmele;
-      lmele.reserve(numnodes * 3);
-      std::vector<int> lmowner;
-      std::vector<int> lmstride;
-      ele->LocationVector(
-          *particlewallinterface_->GetWallDiscretization(), lmele, lmowner, lmstride);
-
       // get nodal velocities
       std::vector<double> nodal_vel(numnodes * 3);
       DRT::UTILS::ExtractMyValues(*walldatastate->GetVelCol(), nodal_vel, lmele);
@@ -593,6 +592,7 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
     UTILS::vec_addscale(force_i, normalcontactforce, particlewallpair.e_ji_);
 
     // calculation of tangential contact force
+    double tangentialcontactforce[3];
     if (contacttangential_)
     {
       // get reference to touched tangential history
@@ -611,7 +611,6 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
       UTILS::vec_addscale(vel_rel_tangential, -vel_rel_normal, particlewallpair.e_ji_);
 
       // calculate tangential contact force
-      double tangentialcontactforce[3];
       contacttangential_->TangentialContactForce(tangentialhistory_ij.gap_t_,
           tangentialhistory_ij.stick_, particlewallpair.e_ji_, vel_rel_tangential, mass_i[0],
           normalcontactforce, tangentialcontactforce);
@@ -625,6 +624,26 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
       // copy history to relevant wall elements in penetration volume
       for (int histele : particlewallpair.histeles_)
         tangentialhistorydata[globalid_i[0]][histele] = touchedtangentialhistory_ij;
+    }
+
+    // assemble contact force acting on wall element
+    if (walldatastate->GetForceCol() != Teuchos::null)
+    {
+      // wall contact force
+      double wallcontactforce[3];
+      UTILS::vec_setscale(wallcontactforce, -normalcontactforce, particlewallpair.e_ji_);
+      UTILS::vec_sub(wallcontactforce, tangentialcontactforce);
+
+      // determine nodal forces
+      double nodal_force[numnodes * 3];
+      for (int node = 0; node < numnodes; ++node)
+        for (int dim = 0; dim < 3; ++dim)
+          nodal_force[node * 3 + dim] = funct[node] * wallcontactforce[dim];
+
+      // assemble nodal forces
+      const int err = walldatastate->GetMutableForceCol()->SumIntoGlobalValues(
+          numnodes * 3, &nodal_force[0], &(lmele)[0]);
+      if (err < 0) dserror("sum into Epetra_Vector failed!");
     }
   }
 }
