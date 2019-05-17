@@ -67,6 +67,16 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Setu
   ele1pos_.Clear();
   ele2pos_.Clear();
 
+  /* take care of how to assign the role of master and slave (only applicable to
+   * "SingleLengthSpecific" approach). Immediately before this Setup(), the element with smaller GID
+   * has been assigned as element1_, i.e., slave. */
+  if (Params()->ChoiceMasterSlave() == INPAR::BEAMPOTENTIAL::higher_eleGID_is_slave)
+  {
+    // interchange order, i.e., role of elements
+    DRT::Element const* tmp_ele_ptr = Element1();
+    SetElement1(Element2());
+    SetElement2(tmp_ele_ptr);
+  }
 
   // get initial length of beam elements
   beam_element1_ = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(Element1());
@@ -81,15 +91,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Setu
     dserror(
         "The class BeamToBeamPotentialPair currently only supports element "
         "pairs of the same beam element type!");
-
-  // Todo check this prerequisite, still necessary?
-  if (Element1()->Id() >= Element2()->Id())
-  {
-    dserror(
-        "Element 1 has to have the smaller element-ID. Ele1GID: %d, Ele2GID: %d."
-        " Adapt your search algorithm!",
-        Element1()->Id(), Element2()->Id());
-  }
 
   // initialize line charge conditions applied to element1 and element2
   linechargeconds_.resize(2);
