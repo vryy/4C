@@ -24,6 +24,7 @@
 
 #include <Teuchos_RCP.hpp>
 
+#include "cut_clnwrapper.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 
 #include "cut_utils.H"

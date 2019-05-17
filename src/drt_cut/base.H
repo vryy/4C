@@ -22,6 +22,7 @@
 #include <cmath>
 #include <iostream>
 
+#include "cut_clnwrapper.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 
 /*!

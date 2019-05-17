@@ -23,6 +23,7 @@ surface meshes
 #include "Epetra_Vector.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_SerialDenseMatrix.h"
+#include "cut_clnwrapper.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 
 

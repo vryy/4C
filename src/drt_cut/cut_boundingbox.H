@@ -18,6 +18,7 @@
 #ifndef CUT_BOUNDINGBOX_H
 #define CUT_BOUNDINGBOX_H
 
+#include "cut_clnwrapper.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "cut_tolerance.H"
 

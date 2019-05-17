@@ -21,6 +21,7 @@ equations
 
 #include <vector>
 #include "cut_enum.H"
+#include "cut_clnwrapper.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 
 #include "../../src/drt_fem_general/drt_utils_gausspoints.H"
