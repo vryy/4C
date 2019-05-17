@@ -1,16 +1,21 @@
-/*!----------------------------------------------------------------------
-\file turbulence_statistics_bfda.H
+/*----------------------------------------------------------------------*/
+/*!
+
+\brief routines for bfda test case (Semesterarbeit Sebastian Buechner)
+  ___________          ______________
+ |           \ ______|              |
+ |            _______O              |     ----------> z direction
+ |___________/       |______________|
+
+ (Origin of coordinate system is marked by O)
+
+
+\maintainer Martin Kronbichler
 
 \level 2
 
-<pre>
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
-
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef TURBULENCE_STATISTICS_BFDA_H
 #define TURBULENCE_STATISTICS_BFDA_H

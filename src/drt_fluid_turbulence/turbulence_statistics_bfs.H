@@ -1,11 +1,9 @@
-/*!----------------------------------------------------------------------
-\file turbulence_statistics_bfs.H
+/*----------------------------------------------------------------------*/
+/*!
 
 \brief Write (time and space) averaged values to file for
 turbulent flow over a backward-facing step
 
-
-<pre>
 o Create sets for various evaluation lines in domain
   (Construction based on a round robin communication pattern):
   - 21 lines in x2-direction
@@ -33,13 +31,12 @@ given on input.
 This method is intended to be called every upres_ steps during fluid
 output.
 
-Maintainer: Volker Gravemeier
-            vgravem@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15245
-</pre>
+\maintainer Martin Kronbichler
 
-*----------------------------------------------------------------------*/
+\level 2
+
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef TURBULENCE_STATISTICS_BFS_H
 #define TURBULENCE_STATISTICS_BFS_H

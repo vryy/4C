@@ -1,17 +1,15 @@
-/*!-----------------------------------------------------------------------------------------------*
-\file turbulent_flow_algorithm.H
+/*----------------------------------------------------------------------*/
+/*!
 
-  \brief algorithm for turbulent flows with separate inflow section
+\brief algorithm for turbulent flows with separate inflow section
+
+\maintainer Martin Kronbichler
 
 \level 2
 
-<pre>
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
- *------------------------------------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
+
 #ifndef TURBULENT_FLOW_ALGORITHM_H
 #define TURBULENT_FLOW_ALGORITHM_H
 

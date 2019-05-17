@@ -1,11 +1,9 @@
-/*!----------------------------------------------------------------------
-\file turbulence_statistics_sqc.H
+/*----------------------------------------------------------------------*/
+/*!
 
 \brief Write (time and space) averaged values to file for
 turbulent flow past a square cylinder
 
-
-<pre>
 o Create sets for various evaluation lines in domain
   (Construction based on a round robin communication pattern):
   - centerline in x1-direction
@@ -33,15 +31,14 @@ expected to be contained in the fluid time integration parameter list
 given on input.
 
 This method is intended to be called every upres_ steps during fluid
-output.
+output
 
-Maintainer: Volker Gravemeier
-            vgravem@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15245
-</pre>
+\maintainer Martin Kronbichler
 
-*----------------------------------------------------------------------*/
+\level 2
+
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef TURBULENCE_STATISTICS_SQC_H
 #define TURBULENCE_STATISTICS_SQC_H

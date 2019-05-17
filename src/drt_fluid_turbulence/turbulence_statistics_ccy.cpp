@@ -1,18 +1,15 @@
-/*!----------------------------------------------------------------------
-  \file turbulence_statistics_ccy.cpp
+/*----------------------------------------------------------------------*/
+/*!
 
 \brief Compute (time and space) averaged values for turbulent flows
-       around a rotating cylinder and write them to files.
+       around a rotating cylinder and write them to files
+
+\maintainer Martin Kronbichler
 
 \level 2
-<pre>
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #include "turbulence_statistics_ccy.H"
 #include "../drt_lib/drt_discret.H"

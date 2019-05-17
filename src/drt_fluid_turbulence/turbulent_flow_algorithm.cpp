@@ -1,17 +1,14 @@
-/*!-----------------------------------------------------------------------------------------------*
-\file turbulent_flow_algorithm.cpp
+/*----------------------------------------------------------------------*/
+/*!
 
-  \brief algorithm for turbulent flows with separate inflow section
+\brief algorithm for turbulent flows with separate inflow section
+
+\maintainer Martin Kronbichler
 
 \level 2
 
-<pre>
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
- *------------------------------------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #include "turbulent_flow_algorithm.H"
 #include "../drt_fluid/fluid_discret_extractor.H"

@@ -1,14 +1,16 @@
+/*----------------------------------------------------------------------*/
 /*!
-\file turbulence_statistics_mean_general.H
 
 \brief Computation of mean values of nodal/cp quantities. The
-means are computed as time averages.
-
-\level 2
+means are computed as time averages
 
 \maintainer Martin Kronbichler
 
+\level 2
+
 */
+/*----------------------------------------------------------------------*/
+
 #ifndef TURBULENCE_STATISTICS_MEAN_GENERAL_H
 #define TURBULENCE_STATISTICS_MEAN_GENERAL_H
 

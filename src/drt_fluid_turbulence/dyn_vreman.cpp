@@ -1,21 +1,14 @@
-/*!----------------------------------------------------------------------
-\file dyn_vreman.cpp
+/*----------------------------------------------------------------------*/
+/*!
 
-\computes Vreman constant C_v dynamically
+\brief computes Vreman constant C_v dynamically
 
-Documentation see header.
+\maintainer Martin Kronbichler
 
 \level 2
 
-<pre>
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
-
-*----------------------------------------------------------------------*/
-
+*/
+/*----------------------------------------------------------------------*/
 
 #include "dyn_vreman.H"
 #include "boxfilter.H"

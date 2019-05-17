@@ -1,20 +1,17 @@
-/*!----------------------------------------------------------------------
-\file drt_transfer_turb_inflow.cpp
+/*----------------------------------------------------------------------*/
+/*!
 
 \brief Methods to transfer a turbulent inflow profile from a (usually
 periodic boundary condition) separate domain to a name Dirichlet
 boundary of the actual domain
 
-\level 3
-
-<pre>
 \maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*----------------------------------------------------------------------*/
+\level 2
+
+*/
+/*----------------------------------------------------------------------*/
+
 #include "drt_transfer_turb_inflow.H"
 #include "../drt_lib/drt_matchingoctree.H"
 #include "../drt_lib/drt_globalproblem.H"

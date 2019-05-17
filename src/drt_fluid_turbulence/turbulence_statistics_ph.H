@@ -1,17 +1,9 @@
-/*!----------------------------------------------------------------------
-\file turbulence_statistics_ph.H
+/*----------------------------------------------------------------------*/
+/*!
 
 \brief Write (time and space) averaged values to file for
 turbulent flow over a periodic hill
 
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-
-\level 2
-
-<pre>
 o Create sets for various evaluation lines in domain
   (Construction based on a round robin communication pattern):
   - 21 lines in x2-direction
@@ -34,9 +26,12 @@ and the basename of the statistics outfile. These parameters are
 expected to be contained in the fluid time integration parameter list
 given on input.
 
-</pre>
+\maintainer Martin Kronbichler
 
-*----------------------------------------------------------------------*/
+\level 2
+
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef TURBULENCE_STATISTICS_PH_H
 #define TURBULENCE_STATISTICS_PH_H

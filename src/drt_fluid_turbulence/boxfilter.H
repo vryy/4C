@@ -1,13 +1,10 @@
+/*----------------------------------------------------------------------*/
 /*!
-
-\file boxfilter.H
 
 \brief Filter methods for the dynamic Smagorinsky, dynamic Vreman and any other model requiring a
 box filter
 
 References are
-
-<pre>
 
     M. Germano, U. Piomelli, P. Moin, W.H. Cabot:
     A dynamic subgrid-scale eddy viscosity model
@@ -25,20 +22,12 @@ References are
     flows with a stabilized finite element method
     (Phd thesis, Rensselaer Polytechnic Institute, Troy, New York)
 
-</pre>
+\maintainer Martin Kronbichler
 
 \level 2
 
-<pre>
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
-
 */
-
-
+/*----------------------------------------------------------------------*/
 
 #ifndef BOXFILTER_H
 #define BOXFILTER_H
