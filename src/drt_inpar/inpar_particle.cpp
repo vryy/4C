@@ -97,6 +97,10 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
           INPAR::PARTICLE::BoundingBox),
       &particledyn);
 
+  // flags defining considered states of particle wall
+  BoolParameter("PARTICLE_WALL_MOVING", "no", "consider a moving particle wall", &particledyn);
+  BoolParameter("PARTICLE_WALL_LOADED", "no", "consider loading on particle wall", &particledyn);
+
   /*-------------------------------------------------------------------------*
    | control parameters for initial/boundary conditions                      |
    *-------------------------------------------------------------------------*/

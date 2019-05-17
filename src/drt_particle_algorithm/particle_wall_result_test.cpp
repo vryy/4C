@@ -18,7 +18,8 @@
  *---------------------------------------------------------------------------*/
 #include "particle_wall_result_test.H"
 
-#include "../drt_particle_algorithm/particle_wall_interface.H"
+#include "particle_wall_interface.H"
+#include "particle_wall_datastate.H"
 
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_discret.H"
@@ -85,6 +86,10 @@ void PARTICLEALGORITHM::WallResultTest::TestNode(
     // node not owned on this processor
     if (actnode->Owner() != walldiscretization_->Comm().MyPID()) return;
 
+    // get wall data state container
+    std::shared_ptr<PARTICLEALGORITHM::WallDataState> walldatastate =
+        particlewallinterface_->GetWallDataState();
+
     // extract test quantity
     std::string quantity;
     res.ExtractString("QUANTITY", quantity);
@@ -96,7 +101,7 @@ void PARTICLEALGORITHM::WallResultTest::TestNode(
     if (quantity == "posx" or quantity == "posy" or quantity == "posz")
     {
       // get wall displacements
-      Teuchos::RCP<const Epetra_Vector> disp = particlewallinterface_->GetDisp();
+      Teuchos::RCP<const Epetra_Vector> disp = walldatastate->GetDispCol();
 
       int idx = -1;
       if (quantity == "posx")
@@ -125,7 +130,8 @@ void PARTICLEALGORITHM::WallResultTest::TestNode(
     else if (quantity == "dispx" or quantity == "dispy" or quantity == "dispz")
     {
       // get wall displacements
-      Teuchos::RCP<const Epetra_Vector> disp = particlewallinterface_->GetDisp();
+      Teuchos::RCP<const Epetra_Vector> disp = walldatastate->GetDispCol();
+
       if (disp == Teuchos::null) return;
 
       int idx = -1;

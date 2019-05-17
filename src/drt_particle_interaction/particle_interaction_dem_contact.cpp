@@ -27,6 +27,7 @@
 #include "particle_interaction_dem_contact_tangential.H"
 
 #include "../drt_particle_algorithm/particle_wall_interface.H"
+#include "../drt_particle_algorithm/particle_wall_datastate.H"
 
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_container.H"
@@ -493,6 +494,10 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact");
 
+  // get wall data state container
+  std::shared_ptr<PARTICLEALGORITHM::WallDataState> walldatastate =
+      particlewallinterface_->GetWallDataState();
+
   // get reference to particle-wall tangential history pair data
   DEMHistoryPairTangentialData& tangentialhistorydata =
       historypairs_->GetRefToParticleWallTangentialHistoryData();
@@ -538,7 +543,7 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
     // velocity of wall contact point j
     double vel_j[3] = {0.0};
 
-    if (particlewallinterface_->GetVel() != Teuchos::null)
+    if (walldatastate->GetVelCol() != Teuchos::null)
     {
       // number of nodes of wall element
       const int numnodes = ele->NumNode();
@@ -557,12 +562,12 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
           *particlewallinterface_->GetWallDiscretization(), lmele, lmowner, lmstride);
 
       // get nodal velocities
-      std::vector<double> nodal_vel_j(numnodes * 3);
-      DRT::UTILS::ExtractMyValues(*particlewallinterface_->GetVel(), nodal_vel_j, lmele);
+      std::vector<double> nodal_vel(numnodes * 3);
+      DRT::UTILS::ExtractMyValues(*walldatastate->GetVelCol(), nodal_vel, lmele);
 
       // determine velocity of wall contact point j
       for (int node = 0; node < numnodes; ++node)
-        for (int dim = 0; dim < 3; ++dim) vel_j[dim] += funct[node] * nodal_vel_j[node * 3 + dim];
+        for (int dim = 0; dim < 3; ++dim) vel_j[dim] += funct[node] * nodal_vel[node * 3 + dim];
     }
 
     // compute vector from particle i to wall contact point j

@@ -40,6 +40,11 @@ namespace IO
   class DiscretizationReader;
 }
 
+namespace PARTICLEALGORITHM
+{
+  class WallDataState;
+}
+
 namespace PARTICLEENGINE
 {
   class ParticleEngineInterface;
@@ -113,11 +118,12 @@ namespace PARTICLEALGORITHM
       return walldiscretization_;
     };
 
-    //! get wall displacements
-    virtual Teuchos::RCP<const Epetra_Vector> GetDisp() const override final { return disp_col_; };
-
-    //! get wall velocities
-    virtual Teuchos::RCP<const Epetra_Vector> GetVel() const override final { return vel_col_; };
+    //! get wall data state container
+    virtual std::shared_ptr<PARTICLEALGORITHM::WallDataState> GetWallDataState()
+        const override final
+    {
+      return walldatastate_;
+    }
 
     //! get reference to potential wall neighbors
     virtual const PARTICLEENGINE::PotentialWallNeighbors& GetPotentialWallNeighbors()
@@ -133,6 +139,12 @@ namespace PARTICLEALGORITHM
 
     //! setup wall discretization
     virtual void SetupWallDiscretization() const = 0;
+
+    //! init wall data state container
+    virtual void InitWallDataState() final;
+
+    //! setup wall data state container
+    virtual void SetupWallDataState() final;
 
     //! init wall discretization runtime vtu writer
     virtual void InitWallVtuWriter() final;
@@ -174,17 +186,8 @@ namespace PARTICLEALGORITHM
     //! wall discretization
     Teuchos::RCP<DRT::Discretization> walldiscretization_;
 
-    //! wall displacements (row map based)
-    Teuchos::RCP<Epetra_Vector> disp_row_;
-
-    //! wall displacements (column map based)
-    Teuchos::RCP<Epetra_Vector> disp_col_;
-
-    //! wall displacements (row map based) after last transfer
-    Teuchos::RCP<Epetra_Vector> disp_row_last_transfer_;
-
-    //! wall velocities (column map based)
-    Teuchos::RCP<Epetra_Vector> vel_col_;
+    //! wall data state container
+    std::shared_ptr<PARTICLEALGORITHM::WallDataState> walldatastate_;
 
     //! wall discretization runtime vtu writer
     std::unique_ptr<DiscretizationRuntimeVtuWriter> wallvtuwriter_;
@@ -215,12 +218,6 @@ namespace PARTICLEALGORITHM
    private:
     //! extend wall element ghosting
     virtual void ExtendWallElementGhosting(std::map<int, std::set<int>>& bintorowelemap);
-
-    //! update maps of state vectors
-    virtual void UpdateMapsOfStateVectors();
-
-    //! store displacements after last transfer
-    virtual void StoreDisplacementsAfterLastTransfer();
 
     //! setup wall discretization
     virtual void SetupWallDiscretization() const override;
