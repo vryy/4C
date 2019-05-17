@@ -1,16 +1,14 @@
-/*!------------------------------------------------------------------------------------------------*
-\file topopt_fluidAdjoint3_impl_parameter.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief general element parameter for fluid adjoint equations for topology optimization
 
-<pre>
-Maintainer: Martin Winklmaier
-            winklmaier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15241
-</pre>
- *------------------------------------------------------------------------------------------------*/
+\maintainer Martin Kronbichler
 
+\level 3
+
+*/
+/*---------------------------------------------------------------------*/
 
 #ifndef TOPOPT_FLUIDADJOINT3_IMPL_PARAMETER_H_
 #define TOPOPT_FLUIDADJOINT3_IMPL_PARAMETER_H_

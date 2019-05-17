@@ -1,17 +1,14 @@
-/*!------------------------------------------------------------------------------------------------*
-\file topopt_fluidAdjoint3_boundary.cpp
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief boundary element implementation of fluid adjoint equations for topology optimization
 
-\level 2
+\maintainer Martin Kronbichler
 
-<pre>
-\maintainer Martin Winklmaier
-            winklmaier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15241
-</pre>
- *------------------------------------------------------------------------------------------------*/
+\level 3
+
+*/
+/*---------------------------------------------------------------------*/
 
 
 #include "topopt_fluidAdjoint3_boundary.H"

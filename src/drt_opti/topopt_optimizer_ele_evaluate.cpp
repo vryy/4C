@@ -1,15 +1,14 @@
-/*!------------------------------------------------------------------------------------------------*
-\file topopt_optimizer_ele_evaluate.cpp
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief evaluate interface of the topopt element
 
-<pre>
-Maintainer: Martin Winklmaier
-            winklmaier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15241
-</pre>
- *------------------------------------------------------------------------------------------------*/
+\level 3
+
+\maintainer Martin Kronbichler
+
+*/
+/*---------------------------------------------------------------------*/
 
 
 #include "topopt_optimizer_ele.H"

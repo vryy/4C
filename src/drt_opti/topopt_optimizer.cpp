@@ -1,13 +1,14 @@
-/*!------------------------------------------------------------------------------------------------*
-\file topopt_optimizer.cpp
+/*----------------------------------------------------------------------*/
+/*!
 
 \brief optimizer of the topology optimization
 
-\maintainer Martin Winklmaier
+\maintainer Martin Kronbichler
 
 \level 3
- *------------------------------------------------------------------------------------------------*/
 
+*/
+/*----------------------------------------------------------------------*/
 
 #include "topopt_optimizer.H"
 #include "topopt_fluidAdjoint3_impl_parameter.H"

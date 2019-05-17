@@ -1,15 +1,14 @@
-/*!------------------------------------------------------------------------------------------------*
-\file topopt_optimizer_ele_parameter.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief Evaluation of element parameter
 
-<pre>
-Maintainer: Martin Winklmaier
-            winklmaier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15241
-</pre>
- *------------------------------------------------------------------------------------------------*/
+\level 3
+
+\maintainer Martin Kronbichler
+
+*/
+/*---------------------------------------------------------------------*/
 
 
 #ifndef TOPOPT_OPTIMIZER_ELE_PARAMETER_H_

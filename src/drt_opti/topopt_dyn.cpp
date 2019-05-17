@@ -1,17 +1,14 @@
-/*!------------------------------------------------------------------------------------------------*
-\file topopt_dyn.cpp
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief control routine of topology optimization for fluid domains
 
-\level 2
+\maintainer Martin Kronbichler
 
-<pre>
-\maintainer Martin Winklmaier
-            winklmaier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15241
-</pre>
- *------------------------------------------------------------------------------------------------*/
+\level 3
+
+*/
+/*---------------------------------------------------------------------*/
 
 
 #include <Epetra_MpiComm.h>

@@ -1,16 +1,14 @@
-/*!------------------------------------------------------------------------------------------------*
-\file topopt_fluidAdjointResulttest.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief Result test for the adjoint fluid equations
 
-<pre>
-Maintainer: Martin Winklmaier
-            winklmaier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15241
-</pre>
- *------------------------------------------------------------------------------------------------*/
+\maintainer Martin Kronbichler
 
+\level 3
+
+*/
+/*---------------------------------------------------------------------*/
 
 #ifndef TOPOPT_FLUIDADJOINTRESULTTEST_H_
 #define TOPOPT_FLUIDADJOINTRESULTTEST_H_

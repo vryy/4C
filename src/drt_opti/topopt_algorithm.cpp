@@ -1,16 +1,14 @@
-/*!------------------------------------------------------------------------------------------------*
-\file topopt_algorithm.cpp
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief base algorithm for topology optimization of fluid domains
 
-<pre>
-Maintainer: Martin Winklmaier
-            winklmaier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15241
-</pre>
- *------------------------------------------------------------------------------------------------*/
+\maintainer Martin Kronbichler
 
+\level 3
+
+*/
+/*---------------------------------------------------------------------*/
 
 #include "topopt_algorithm.H"
 #include "topopt_fluidAdjoint_timeint.H"

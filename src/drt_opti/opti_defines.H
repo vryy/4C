@@ -1,5 +1,5 @@
-/*!------------------------------------------------------------------------------------------------*
-\file opti_defines.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief for an exact gradient, we need fully linearized adjoint equations with
  respect to the primal variables (velocity, pressure). Therefore, the stabilization
@@ -30,13 +30,12 @@
       tau_old_(2) = 1.0+10*(fldAdPara_->Time()+fldAdPara_->Dt());
  #endif
 
-<pre>
-Maintainer: Martin Winklmaier
-            winklmaier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15241
-</pre>
- *------------------------------------------------------------------------------------------------*/
+\maintainer Martin Kronbichler
+
+\level 3
+
+*/
+/*---------------------------------------------------------------------*/
 
 
 #ifndef OPTI_DEFINES_H_

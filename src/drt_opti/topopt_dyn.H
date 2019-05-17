@@ -1,16 +1,14 @@
-/*!------------------------------------------------------------------------------------------------*
-\file topopt_dyn.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief control routine of topology optimization
 
-<pre>
-Maintainer: Martin Winklmaier
-            winklmaier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15241
-</pre>
- *------------------------------------------------------------------------------------------------*/
+\maintainer Martin Kronbichler
 
+\level 3
+
+*/
+/*---------------------------------------------------------------------*/
 
 #ifndef TOPOPT_DYN_H
 #define TOPOPT_DYN_H

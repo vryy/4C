@@ -1,13 +1,14 @@
-/*!------------------------------------------------------------------------------------------------*
-\file topopt_fluidAdjoint3_impl_parameter.cpp
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief general element parameter for fluid adjoint equations for topology optimization
 
+\maintainer Martin Kronbichler
+
 \level 3
 
-\maintainer Martin Winklmaier
- *------------------------------------------------------------------------------------------------*/
-
+*/
+/*---------------------------------------------------------------------*/
 
 #include "topopt_fluidAdjoint3_impl_parameter.H"
 #include "../drt_lib/drt_dserror.H"
