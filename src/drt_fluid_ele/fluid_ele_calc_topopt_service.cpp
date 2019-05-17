@@ -1,17 +1,14 @@
-/*!------------------------------------------------------------------------------------------------*
-\file fluid_ele_calc_topopt_service.cpp
+/*----------------------------------------------------------------------*/
+/*!
 
-\brief
+\brief service routines for fluid topology optimization element
 
-\level 2
+\level 3
 
-<pre>
-\maintainer Martin Winklmaier
-            winklmaier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15241
-</pre>
- *------------------------------------------------------------------------------------------------*/
+\maintainer  Martin Kronbichler
+
+*/
+/*----------------------------------------------------------------------*/
 
 
 #include "fluid_ele_calc.H"

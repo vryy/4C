@@ -1,18 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid_ele_calc_std.H
 
 \brief standard routines for calculation of fluid element
 
 \level 1
 
-<pre>
-\maintainer Volker Gravemeier
-            vgravem@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15236/-245
-</pre>
- */
+\maintainer  Martin Kronbichler
+
+*/
 /*----------------------------------------------------------------------*/
 
 #ifndef FLUID_ELE_CALC_STD_H

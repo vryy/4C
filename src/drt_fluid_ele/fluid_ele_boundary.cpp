@@ -1,18 +1,14 @@
-/*!----------------------------------------------------------------------
-\file fluid_ele_boundary.cpp
-\brief
+/*----------------------------------------------------------------------*/
+/*!
+
+\brief fluid boundary element
 
 \level 1
 
-<pre>
-\maintainer Volker Gravemeier
-            vgravem@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15236/-245
-</pre>
+\maintainer  Martin Kronbichler
 
-*----------------------------------------------------------------------*/
-
+*/
+/*----------------------------------------------------------------------*/
 
 #include "fluid_ele.H"
 

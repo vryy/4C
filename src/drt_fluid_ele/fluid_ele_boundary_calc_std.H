@@ -1,15 +1,14 @@
-/*!----------------------------------------------------------------------
-\file fluid_ele_boundary_calc_std.cpp
+/*----------------------------------------------------------------------*/
+/*!
 
-\brief evaluation of fluid terms at integration points
+\brief evaluation of fluid terms at integration points of boundaries
 
-<pre>
-Maintainers: Ursula Rasthofer & Volker Gravemeier
-             {rasthofer,vgravem}@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15236/-245
-</pre>
-*----------------------------------------------------------------------*/
+\level 1
+
+\maintainer  Martin Kronbichler
+
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef FLUID_ELE_BOUNDARY_CALC_STD_H
 #define FLUID_ELE_BOUNDARY_CALC_STD_H

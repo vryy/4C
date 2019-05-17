@@ -1,15 +1,14 @@
-/*!----------------------------------------------------------------------
-\file fluid_ele.cpp
-\brief
+/*----------------------------------------------------------------------*/
+/*!
 
-<pre>
-Maintainer: Ursula Rasthofer & Volker Gravemeier
-            {rasthofer,vgravem}@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15236/-245
-</pre>
+\brief Implementation of the main fluid element
 
-*----------------------------------------------------------------------*/
+\maintainer Martin Kronbichler
+
+\level 1
+
+*/
+/*----------------------------------------------------------------------*/
 
 #include "fluid_ele.H"
 #include "fluid_ele_tds.H"

@@ -1,13 +1,14 @@
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 /*!
- \file fluid_ele_poro.cpp
 
- \brief Fluid element for poroelasticity problems
+\brief Fluid element for poroelasticity problems
+
+\maintainer Christoph Ager
 
 \level 2
 
-\maintainer  Christoph Ager
- *----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------*/
 
 
 #include "fluid_ele_poro.H"

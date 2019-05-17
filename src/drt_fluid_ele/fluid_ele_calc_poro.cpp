@@ -1,12 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid_ele_calc_poro.cpp
 
 \brief Internal implementation of poro Fluid element (standard poro fluid)
 
 \level 2
 
 \maintainer  Christoph Ager
+
 */
 /*----------------------------------------------------------------------*/
 

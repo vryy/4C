@@ -1,18 +1,14 @@
-/*!----------------------------------------------------------------------
-\file fluid_ele_boundary_factory.cpp
+/*----------------------------------------------------------------------*/
+/*!
 
-\brief factory for fluid boundary evaluation
-
-<pre>
-\maintainer  Ursula Rasthofer & Volker Gravemeier
-             {rasthofer,vgravem}@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15236/-245
-</pre>
+\brief factory class into templated evaluators for fluid boundary integration
 
 \level 1
 
-*----------------------------------------------------------------------*/
+\maintainer  Martin Kronbichler
+
+*/
+/*----------------------------------------------------------------------*/
 
 #include "fluid_ele_boundary_factory.H"
 #include "fluid_ele_boundary_interface.H"

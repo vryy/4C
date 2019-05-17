@@ -1,17 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid_ele_calc_xfem_coupling_impl.H
 
 \brief Classes for interface coupling in the XFEM
 
 \level 2
 
-<pre>
 \maintainer  Christoph Ager
-             ager@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15249
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 

@@ -1,16 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid_ele_boundary_evaluate.cpp
 
-\brief Evaluate boundary conditions for fluid problems
+\brief outer evaluation class of fluid terms at integration points of boundaries
 
-<pre>
-Maintainer: Ursula Rasthofer & Volker Gravemeier
-            {rasthofer,vgravem}@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15236/-245
-</pre>
- */
+\level 1
+
+\maintainer  Martin Kronbichler
+
+*/
 /*----------------------------------------------------------------------*/
 
 

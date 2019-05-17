@@ -1,21 +1,17 @@
-/*!----------------------------------------------------------------------
-\file fluid_ele_boundary_calc.H
+/*----------------------------------------------------------------------*/
+/*!
 
-\brief evaluation of fluid terms at integration points
+\brief evaluation of fluid terms at integration points of boundaries
 
-<pre>
-Maintainers: Ursula Rasthofer & Volker Gravemeier
-             {rasthofer,vgravem}@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15236/-245
-</pre>
-*----------------------------------------------------------------------*/
+\level 1
+
+\maintainer  Martin Kronbichler
+
+*/
+/*----------------------------------------------------------------------*/
 
 #include "fluid_ele_boundary_calc_std.H"
-//#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_elementtype.H"
-//#include "fluid_ele.H"
-//#include "fluid_ele_action.H"
 #include "fluid_ele_parameter_std.H"
 
 /*----------------------------------------------------------------------*

@@ -1,14 +1,14 @@
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 /*!
- \file fluid_ele_poro_boundary_evaluate.cpp
 
- \brief evaluation methods for the poro boundary element
+\brief evaluation routines for the fluid poro boundary element
+
+\maintainer Christoph Ager
 
 \level 2
 
-\maintainer  Christoph Ager
-
- *----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------*/
 
 #include "fluid_ele_poro.H"
 #include "fluid_ele_action.H"

@@ -1,13 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file fluid_ele_calc_poro_p1.cpp
 
- \brief Internal implementation of poro Fluid element (p1 poro fluid)
+\brief Internal implementation of poro Fluid element (p1 poro fluid)
+
+\maintainer Christoph Ager
 
 \level 2
 
-\maintainer  Christoph Ager
- *----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #include "fluid_ele_calc_poro_p1.H"
 

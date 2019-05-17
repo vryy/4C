@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid_ele_intfaces_calc.H
 
 \brief Internal implementation of fluid internal faces elements
 

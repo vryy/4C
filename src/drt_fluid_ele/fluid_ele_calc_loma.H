@@ -1,17 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid_ele_calc_loma.H
 
 \brief Low-Mach-number flow routines for calculation of fluid element
 
+\maintainer Martin Kronbichler
+
 \level 2
 
-<pre>
-\maintainer Volker Gravemeier
-            vgravem@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15245
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

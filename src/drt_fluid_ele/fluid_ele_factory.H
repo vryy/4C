@@ -1,19 +1,15 @@
-/*--------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 /*!
-\file fluid_ele_factory.H
 
-\brief Factory of fluid elements
-
-<pre>
-\maintainer Volker Gravemeier
-            vgravem@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15236/245
-</pre>
+\brief Factory class going from the generic evaluation routines to the ones
+  templated by the element shape and specialization
 
 \level 1
+
+\maintainer Martin Kronbichler
+
 */
-/*--------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 
 #ifndef FLUID_ELE_FACTORY_H
 #define FLUID_ELE_FACTORY_H

@@ -1,12 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid_ele_calc_general_service.cpp
 
 \brief general service routines for calculation of fluid element
 
-\maintainer Volker Gravemeier
-
 \level 1
+
+\maintainer  Martin Kronbichler
+
 */
 /*----------------------------------------------------------------------*/
 

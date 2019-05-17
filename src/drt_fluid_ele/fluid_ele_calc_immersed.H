@@ -1,17 +1,14 @@
-/*!----------------------------------------------------------------------
-\file fluid_ele_calc_immersed.H
+/*----------------------------------------------------------------------*/
+/*!
 
 \brief calc class for immersed problems
 
+\maintainer Martin Kronbichler
+
 \level 3
 
-<pre>
-\maintainer  Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289--15240
-</pre>
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef FLUID_ELE_CALC_IMMERSED_H
 #define FLUID_ELE_CALC_IMMERSED_H

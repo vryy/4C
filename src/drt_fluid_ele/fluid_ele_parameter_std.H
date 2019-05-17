@@ -1,17 +1,14 @@
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 /*!
-\file fluid_ele_parameter_std.H
 
 \brief Setting of general fluid parameter for element evaluation
 
-<pre>
-Maintainers: Ursula Rasthofer & Volker Gravemeier
-             {rasthofer,vgravem}@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15236/-245
-</pre>
+\maintainer Martin Kronbichler
+
+\level 1
+
 */
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 
 #ifndef FLUID_ELE_PARAMETER_STD_H
 #define FLUID_ELE_PARAMETER_STD_H

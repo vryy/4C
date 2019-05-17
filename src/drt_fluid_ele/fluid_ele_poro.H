@@ -1,17 +1,17 @@
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 /*!
- \file fluid_ele_poro.H
 
 \brief A C++ wrapper for the poro fluid element
 
 This file contains the element-specific service routines such as
 Pack, Unpack, NumDofPerNode etc.
 
+\maintainer Christoph Ager
 
 \level 2
 
-\maintainer  Christoph Ager
- *----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------*/
 
 
 #ifndef FLUID_ELE_PORO_H_

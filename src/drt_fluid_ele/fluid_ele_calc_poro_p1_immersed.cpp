@@ -1,16 +1,14 @@
-/*!----------------------------------------------------------------------
-\file fluid_ele_calc_poro_p1_immersed.cpp
+/*----------------------------------------------------------------------*/
+/*!
 
 \brief internal implementation of poro immersed fluid element (p1 poro fluid)
 
-\maintainer  Andreas Rauch
-           rauch@lnm.mw.tum.de
-           http://www.lnm.mw.tum.de
-           089 - 289 -15240
+\maintainer Martin Kronbichler
 
-\level 1
+\level 3
 
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #include "fluid_ele_poro.H"
 #include "fluid_ele_immersed.H"

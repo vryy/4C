@@ -1,17 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid_ele_calc_newOST.cpp
 
 \brief main file containing routines for calculation of fluid element
+       new one-step theta time integration variant
+
+\maintainer Martin Kronbichler
 
 \level 3
 
-<pre>
-\maintainer Volker Gravemeier
-            vgravem@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15245
-</pre>
 */
 /*----------------------------------------------------------------------*/
 
