@@ -87,6 +87,9 @@ void PASI::PartitionedAlgo::Init()
         "Unknown time integration requested!\n"
         "Set parameter INT_STRATEGY to Standard in ---STRUCTURAL DYNAMIC section!");
 
+  // build and register structure model evaluator
+  BuildStructureModelEvaluator();
+
   // build particle algorithm with pasi_params for time settings
   particles_ = Teuchos::rcp(new PARTICLE::Algorithm(Comm(), particle_params));
 
@@ -105,29 +108,7 @@ void PASI::PartitionedAlgo::Setup()
   // check correct initialization
   CheckIsInit();
 
-  // if adapter base has not already been set up outside.
-  if (not struct_adapterbase_ptr_->IsSetup())
-  {
-    // build and register pasi model evaluator
-    Teuchos::RCP<STR::MODELEVALUATOR::Generic> pasi_model_ptr =
-        Teuchos::rcp(new STR::MODELEVALUATOR::PartitionedPASI());
-
-    struct_adapterbase_ptr_->RegisterModelEvaluator("Partitioned Coupling Model", pasi_model_ptr);
-
-    // call Setup() on structure base algorithm (wrapper is created inside)
-    struct_adapterbase_ptr_->Setup();
-
-    // get wrapper and cast it to specific type
-    structure_ = Teuchos::rcp_dynamic_cast<::ADAPTER::PASIStructureWrapper>(
-        struct_adapterbase_ptr_->StructureField());
-
-    if (structure_ == Teuchos::null)
-      dserror("No valid pointer to ADAPTER::PASIStructureWrapper set!");
-
-    // set pointer to model evaluator in PASIStructureWrapper
-    structure_->SetModelEvaluatorPtr(
-        Teuchos::rcp_dynamic_cast<STR::MODELEVALUATOR::PartitionedPASI>(pasi_model_ptr));
-  }
+  // nothing to do
 
   // set setup flag
   SetIsSetup(true);
@@ -275,4 +256,34 @@ void PASI::PartitionedAlgo::ParticleOutput()
 
   // write output to files
   particles_->Output();
+}
+
+/*---------------------------------------------------------------------------*
+ | build and register structure model evaluator               sfuchs 05/2019 |
+ *---------------------------------------------------------------------------*/
+void PASI::PartitionedAlgo::BuildStructureModelEvaluator()
+{
+  // if adapter base has not already been set up outside.
+  if (not struct_adapterbase_ptr_->IsSetup())
+  {
+    // build and register pasi model evaluator
+    Teuchos::RCP<STR::MODELEVALUATOR::Generic> pasi_model_ptr =
+        Teuchos::rcp(new STR::MODELEVALUATOR::PartitionedPASI());
+
+    struct_adapterbase_ptr_->RegisterModelEvaluator("Partitioned Coupling Model", pasi_model_ptr);
+
+    // call Setup() on structure base algorithm (wrapper is created inside)
+    struct_adapterbase_ptr_->Setup();
+
+    // get wrapper and cast it to specific type
+    structure_ = Teuchos::rcp_dynamic_cast<::ADAPTER::PASIStructureWrapper>(
+        struct_adapterbase_ptr_->StructureField());
+
+    if (structure_ == Teuchos::null)
+      dserror("No valid pointer to ADAPTER::PASIStructureWrapper set!");
+
+    // set pointer to model evaluator in PASIStructureWrapper
+    structure_->SetModelEvaluatorPtr(
+        Teuchos::rcp_dynamic_cast<STR::MODELEVALUATOR::PartitionedPASI>(pasi_model_ptr));
+  }
 }

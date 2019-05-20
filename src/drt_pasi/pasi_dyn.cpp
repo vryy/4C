@@ -85,12 +85,12 @@ void pasi_dyn()
   // init pasi algorithm
   algo->Init();
 
-  // setup pasi algorithm
-  algo->Setup();
-
   // read restart information
   const int restart = problem->Restart();
   if (restart) algo->ReadRestart(restart);
+
+  // setup pasi algorithm
+  algo->Setup();
 
   // solve partitioned particle structure interaction
   algo->Timeloop();

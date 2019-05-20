@@ -54,6 +54,11 @@ void PASI::PASI_PartTwoWayCoup::Init()
   // call base class init
   PASI::PartitionedAlgo::Init();
 
+  // construct state and increment vectors
+  forcenp_ = LINALG::CreateVector(*structure_->DofRowMap(), true);
+  dispincnp_ = LINALG::CreateVector(*structure_->DofRowMap(), true);
+  forceincnp_ = LINALG::CreateVector(*structure_->DofRowMap(), true);
+
   // get the global problem
   DRT::Problem* problem = DRT::Problem::Instance();
 
@@ -97,15 +102,11 @@ void PASI::PASI_PartTwoWayCoup::Setup()
   // call base class setup
   PASI::PartitionedAlgo::Setup();
 
-  // construct state and increment vectors
-  forcenp_ = LINALG::CreateVector(*structure_->DofRowMap(), true);
-  dispincnp_ = LINALG::CreateVector(*structure_->DofRowMap(), true);
-  forceincnp_ = LINALG::CreateVector(*structure_->DofRowMap(), true);
-
-  // construct vector of particle forces on structural discretization and set it in particle time
-  // integration
+  // construct vector of particle forces on structural field
   Teuchos::RCP<Epetra_FEVector> f_structure =
       Teuchos::rcp(new Epetra_FEVector(*structure_->DofRowMap(), true));
+
+  // set vector of particle forces on structural field in particle field
   particles_->AdapterParticle()->SetFstructure(f_structure);
 }
 
@@ -433,15 +434,6 @@ void PASI::PASI_PartTwoWayCoup_ForceRelax::Init()
 }
 
 /*---------------------------------------------------------------------------*
- | setup pasi algorithm                                       sfuchs 03/2017 |
- *---------------------------------------------------------------------------*/
-void PASI::PASI_PartTwoWayCoup_ForceRelax::Setup()
-{
-  // call base class setup
-  PASI::PASI_PartTwoWayCoup::Setup();
-}
-
-/*---------------------------------------------------------------------------*
  | read restart information for given time step               sfuchs 03/2017 |
  *---------------------------------------------------------------------------*/
 void PASI::PASI_PartTwoWayCoup_ForceRelax::ReadRestart(int restartstep)
@@ -567,24 +559,15 @@ void PASI::PASI_PartTwoWayCoup_ForceRelaxAitken::Init()
   // call base class init
   PASI::PASI_PartTwoWayCoup_ForceRelax::Init();
 
+  // construct old increment vector
+  forceincnpold_ = LINALG::CreateVector(*structure_->DofRowMap(), true);
+
   // get parameter lists
   const Teuchos::ParameterList& pasi_params_part =
       DRT::Problem::Instance()->PASIDynamicParams().sublist("PARTITIONED");
 
   maxomega_ = pasi_params_part.get<double>("MAXOMEGA");
   minomega_ = pasi_params_part.get<double>("MINOMEGA");
-}
-
-/*---------------------------------------------------------------------------*
- | setup pasi algorithm                                       sfuchs 03/2017 |
- *---------------------------------------------------------------------------*/
-void PASI::PASI_PartTwoWayCoup_ForceRelaxAitken::Setup()
-{
-  // call base class setup
-  PASI::PASI_PartTwoWayCoup_ForceRelax::Setup();
-
-  // construct old increment vector
-  forceincnpold_ = LINALG::CreateVector(*structure_->DofRowMap(), true);
 }
 
 /*---------------------------------------------------------------------------*

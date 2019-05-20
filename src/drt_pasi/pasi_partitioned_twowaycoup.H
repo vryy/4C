@@ -106,9 +106,6 @@ namespace PASI
     //! init pasi algorithm
     virtual void Init() override;
 
-    //! setup pasi algorithm
-    virtual void Setup() override;
-
     //! read restart information for given time step
     virtual void ReadRestart(int restartstep) override;
 
@@ -139,9 +136,6 @@ namespace PASI
 
     //! init pasi algorithm
     virtual void Init() override;
-
-    //! setup pasi algorithm
-    virtual void Setup() override;
 
    protected:
     //! calculate relaxation parameter

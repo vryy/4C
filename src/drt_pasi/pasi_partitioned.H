@@ -123,6 +123,9 @@ namespace PASI
     Teuchos::RCP<PARTICLE::Algorithm> particles_;
 
    private:
+    //! build and register structure model evaluator
+    void BuildStructureModelEvaluator();
+
     //! ptr to the underlying structure problem base algorithm
     Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> struct_adapterbase_ptr_;
 
