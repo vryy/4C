@@ -33,15 +33,12 @@
  | constructor                                                sfuchs 02/2017 |
  *---------------------------------------------------------------------------*/
 PASI::PASI_PartTwoWayCoup::PASI_PartTwoWayCoup(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& pasi_params)
-    : PartitionedAlgo(comm, pasi_params),
-      forcenp_(Teuchos::null),
-      dispincnp_(Teuchos::null),
-      forceincnp_(Teuchos::null),
-      itmax_(-1),
-      ittol_(-1.0),
-      ignoreconvcheck_(false),
-      writerestartevery_(-1)
+    const Epetra_Comm& comm, const Teuchos::ParameterList& params)
+    : PartitionedAlgo(comm, params),
+      itmax_(params.get<int>("ITEMAX")),
+      ittol_(params.get<double>("CONVTOL")),
+      ignoreconvcheck_(DRT::INPUT::IntegralValue<bool>(params, "IGNORE_CONV_CHECK")),
+      writerestartevery_(params.get<int>("RESTARTEVRY"))
 {
   // empty constructor
 }
@@ -59,23 +56,6 @@ void PASI::PASI_PartTwoWayCoup::Init()
   dispincnp_ = LINALG::CreateVector(*structure_->DofRowMap(), true);
   forceincnp_ = LINALG::CreateVector(*structure_->DofRowMap(), true);
 
-  // get the global problem
-  DRT::Problem* problem = DRT::Problem::Instance();
-
-  // get parameter lists
-  const Teuchos::ParameterList& pasi_params = problem->PASIDynamicParams();
-  const Teuchos::ParameterList& pasi_params_part =
-      problem->PASIDynamicParams().sublist("PARTITIONED");
-  const Teuchos::ParameterList& particle_params = problem->ParticleParamsOld();
-
-  // get the parameters for the ConvergenceCheck
-  itmax_ = pasi_params.get<int>("ITEMAX");
-  ittol_ = pasi_params_part.get<double>("CONVTOL");
-  ignoreconvcheck_ = (bool)DRT::INPUT::IntegralValue<int>(pasi_params_part, "IGNORE_CONV_CHECK");
-
-  // write restart every n steps
-  writerestartevery_ = pasi_params.get<int>("RESTARTEVRY");
-
   // safety check: two way coupled pasi not implemented for all Particle Interaction Types
   if (particles_->ParticleInteractionType() != INPAR::PARTICLEOLD::Normal_DEM and
       particles_->ParticleInteractionType() != INPAR::PARTICLEOLD::NormalAndTang_DEM)
@@ -87,7 +67,8 @@ void PASI::PASI_PartTwoWayCoup::Init()
 
   // safety check: two way coupled pasi currently just implemented for CentrDiff time integration
   // scheme in particle field
-  if (DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::DynamicType>(particle_params, "DYNAMICTYP") !=
+  if (DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::DynamicType>(
+          DRT::Problem::Instance()->ParticleParamsOld(), "DYNAMICTYP") !=
       INPAR::PARTICLEOLD::dyna_centrdiff)
   {
     dserror("Two way coupled partitioned PASI just implemented for DYNAMICTYP: 'CentrDiff'");
@@ -412,25 +393,10 @@ bool PASI::PASI_PartTwoWayCoup::ConvergenceCheck(int itnum)
  | constructor                                                sfuchs 03/2017 |
  *---------------------------------------------------------------------------*/
 PASI::PASI_PartTwoWayCoup_ForceRelax::PASI_PartTwoWayCoup_ForceRelax(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& pasi_params)
-    : PASI_PartTwoWayCoup(comm, pasi_params), omega_(0.0)
+    const Epetra_Comm& comm, const Teuchos::ParameterList& params)
+    : PASI_PartTwoWayCoup(comm, params), omega_(params.get<double>("STARTOMEGA"))
 {
   // empty constructor
-}
-
-/*---------------------------------------------------------------------------*
- | init pasi algorithm                                        sfuchs 03/2017 |
- *---------------------------------------------------------------------------*/
-void PASI::PASI_PartTwoWayCoup_ForceRelax::Init()
-{
-  // call base class init
-  PASI::PASI_PartTwoWayCoup::Init();
-
-  // get parameter lists
-  const Teuchos::ParameterList& pasi_params_part =
-      DRT::Problem::Instance()->PASIDynamicParams().sublist("PARTITIONED");
-
-  omega_ = pasi_params_part.get<double>("STARTOMEGA");
 }
 
 /*---------------------------------------------------------------------------*
@@ -542,11 +508,10 @@ void PASI::PASI_PartTwoWayCoup_ForceRelax::CalcOmega(double& omega, const int it
  | constructor                                                sfuchs 03/2017 |
  *---------------------------------------------------------------------------*/
 PASI::PASI_PartTwoWayCoup_ForceRelaxAitken::PASI_PartTwoWayCoup_ForceRelaxAitken(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& pasi_params)
-    : PASI_PartTwoWayCoup_ForceRelax(comm, pasi_params),
-      forceincnpold_(Teuchos::null),
-      maxomega_(0.0),
-      minomega_(0.0)
+    const Epetra_Comm& comm, const Teuchos::ParameterList& params)
+    : PASI_PartTwoWayCoup_ForceRelax(comm, params),
+      maxomega_(params.get<double>("MAXOMEGA")),
+      minomega_(params.get<double>("MINOMEGA"))
 {
   // empty constructor
 }
@@ -561,13 +526,6 @@ void PASI::PASI_PartTwoWayCoup_ForceRelaxAitken::Init()
 
   // construct old increment vector
   forceincnpold_ = LINALG::CreateVector(*structure_->DofRowMap(), true);
-
-  // get parameter lists
-  const Teuchos::ParameterList& pasi_params_part =
-      DRT::Problem::Instance()->PASIDynamicParams().sublist("PARTITIONED");
-
-  maxomega_ = pasi_params_part.get<double>("MAXOMEGA");
-  minomega_ = pasi_params_part.get<double>("MINOMEGA");
 }
 
 /*---------------------------------------------------------------------------*

@@ -21,8 +21,8 @@
  | constructor                                                sfuchs 02/2017 |
  *---------------------------------------------------------------------------*/
 PASI::PASI_PartOneWayCoup::PASI_PartOneWayCoup(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& pasi_params)
-    : PartitionedAlgo(comm, pasi_params)
+    const Epetra_Comm& comm, const Teuchos::ParameterList& params)
+    : PartitionedAlgo(comm, params)
 {
   // empty constructor
 }

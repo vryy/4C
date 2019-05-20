@@ -29,8 +29,7 @@ namespace PASI
   {
    public:
     //! constructor
-    explicit PASI_PartTwoWayCoup(
-        const Epetra_Comm& comm, const Teuchos::ParameterList& pasi_params);
+    explicit PASI_PartTwoWayCoup(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
     //! virtual destructor
     virtual ~PASI_PartTwoWayCoup(){};
@@ -98,13 +97,10 @@ namespace PASI
    public:
     //! constructor
     explicit PASI_PartTwoWayCoup_ForceRelax(
-        const Epetra_Comm& comm, const Teuchos::ParameterList& pasi_params);
+        const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
     //! virtual destructor
     virtual ~PASI_PartTwoWayCoup_ForceRelax(){};
-
-    //! init pasi algorithm
-    virtual void Init() override;
 
     //! read restart information for given time step
     virtual void ReadRestart(int restartstep) override;
@@ -129,7 +125,7 @@ namespace PASI
    public:
     //! constructor
     PASI_PartTwoWayCoup_ForceRelaxAitken(
-        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
+        const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
     //! virtual destructor
     virtual ~PASI_PartTwoWayCoup_ForceRelaxAitken(){};

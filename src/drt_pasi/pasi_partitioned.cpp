@@ -31,8 +31,8 @@
  | constructor                                                sfuchs 01/2017 |
  *---------------------------------------------------------------------------*/
 PASI::PartitionedAlgo::PartitionedAlgo(
-    const Epetra_Comm& comm, const Teuchos::ParameterList& pasi_params)
-    : AlgorithmBase(comm, pasi_params),
+    const Epetra_Comm& comm, const Teuchos::ParameterList& params)
+    : AlgorithmBase(comm, params),
       structure_(Teuchos::null),
       particles_(Teuchos::null),
       struct_adapterbase_ptr_(Teuchos::null),
@@ -90,7 +90,7 @@ void PASI::PartitionedAlgo::Init()
   // build and register structure model evaluator
   BuildStructureModelEvaluator();
 
-  // build particle algorithm with pasi_params for time settings
+  // build particle algorithm
   particles_ = Teuchos::rcp(new PARTICLE::Algorithm(Comm(), particle_params));
 
   // init particle simulation

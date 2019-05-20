@@ -50,7 +50,7 @@ namespace PASI
   {
    public:
     //! constructor
-    explicit PartitionedAlgo(const Epetra_Comm& comm, const Teuchos::ParameterList& pasi_params);
+    explicit PartitionedAlgo(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
     //! virtual destructor
     virtual ~PartitionedAlgo(){};

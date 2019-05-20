@@ -49,8 +49,8 @@ void pasi_dyn()
   // create particle structure interaction algorithm
   Teuchos::RCP<PASI::PartitionedAlgo> algo = Teuchos::null;
 
-  // choose algorithm
-  int coupling = DRT::INPUT::IntegralValue<int>(pasi_params, "COUPALGO");
+  // get type of partitioned coupling
+  int coupling = DRT::INPUT::IntegralValue<int>(pasi_params, "COUPLING");
 
   // query algorithm
   switch (coupling)

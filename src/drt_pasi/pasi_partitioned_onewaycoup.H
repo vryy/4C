@@ -29,8 +29,7 @@ namespace PASI
   {
    public:
     //! constructor
-    explicit PASI_PartOneWayCoup(
-        const Epetra_Comm& comm, const Teuchos::ParameterList& pasi_params);
+    explicit PASI_PartOneWayCoup(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
     //! virtual destructor
     virtual ~PASI_PartOneWayCoup(){};
