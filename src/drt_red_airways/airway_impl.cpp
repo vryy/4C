@@ -1,15 +1,16 @@
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 /*!
-\file airway_impl.cpp
 
-\brief Internal implementation of RedAirway element
+\brief Internal implementation of RedAirway element. Methods implemented here
+       are called by airway_evaluate.cpp by DRT::ELEMENTS::RedAirway::Evaluate()
+       with the corresponding action.
 
-\maintainer Lena Yoshihara
+\maintainer Carolin Geitner
 
 \level 3
 
 */
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 
 
 

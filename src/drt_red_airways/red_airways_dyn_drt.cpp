@@ -1,13 +1,16 @@
-/*!----------------------------------------------------------------------
-\file red_airways_dyn_drt.cpp
-\brief Main control routine for reduced dimensional airways network
- (time) integration.
+/*---------------------------------------------------------------------*/
+/*!
 
-\maintainer Lena Yoshihara
+\brief Main control routine for reduced dimensional airways network
+ (time) integration. Includes routines for pure reduced modeling and for
+ reduced_airway-tissue coupling.
+
+\maintainer Carolin Geitner
 
 \level 3
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 #include "red_airway_resulttest.H"
 #include "red_airways_dyn_drt.H"

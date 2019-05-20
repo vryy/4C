@@ -1,16 +1,16 @@
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 /*!
-\file acinus_impl.cpp
 
 \brief Internal implementation of RedAcinus element. Methods implemented here
        are called by acinus_evaluate.cpp by DRT::ELEMENTS::RedAcinus::Evaluate()
        with the corresponding action.
 
-\maintainer Lena Yoshihara
+\maintainer Carolin Geitner
 
 \level 3
+
 */
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 
 
 

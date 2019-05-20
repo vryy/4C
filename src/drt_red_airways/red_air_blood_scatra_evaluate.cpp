@@ -1,13 +1,16 @@
+/*---------------------------------------------------------------------*/
+/*!
 
-/*!----------------------------------------------------------------------
-\file red_air_blood_scatra_evaluate.cpp
-\brief
+\brief Incomplete! - Purpose: Templated Evaluate file for blood scatra element containing the
+action types for a reduced blood scatra element RedAirBloodScatra. The actual implementation of the
+routines called during the possible actions is contained in red_air_blood_scatra_impl.cpp
+
+\maintainer Carolin Geitner
 
 \level 3
 
-\maintainer Lena Yoshihara
-
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 
 #include "red_airway.H"

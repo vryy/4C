@@ -1,14 +1,15 @@
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 /*!
-\file red_airway.H
 
-\brief Implements an airway element
+\brief Header for implementations of the various reduced elements
+
+\maintainer Carolin Geitner
 
 \level 3
 
-\maintainer Lena Yoshihara
 */
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
+
 #ifndef RED_AIRWAY_H_
 #define RED_AIRWAY_H_
 

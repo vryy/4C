@@ -1,14 +1,14 @@
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 /*!
-\file red_airway_resulttest.H
 
-\brief testing of Red_Airway calculation results
+\brief Testing of calculation results for reduced elements
+
+\maintainer Carolin Geitner
 
 \level 3
 
-\maintainer Lena Yoshihara
 */
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 
 #ifndef RED_AIRWAY_RESULTTEST_H
 #define RED_AIRWAY_RESULTTEST_H

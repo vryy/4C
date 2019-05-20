@@ -1,12 +1,14 @@
-/*!----------------------------------------------------------------------
-\file red_air_blood_scatraLine3.cpp
-\brief
+/*---------------------------------------------------------------------*/
+/*!
 
-\maintainer Lena Yoshihara
+\brief Incomplete! - Purpose: Implements RedAirBloodScatraLine3 element
+
+\maintainer Carolin Geitner
 
 \level 3
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 #include "red_airway.H"
 #include "../drt_lib/drt_discret.H"

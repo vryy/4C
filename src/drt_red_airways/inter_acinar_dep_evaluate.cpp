@@ -1,16 +1,17 @@
+/*---------------------------------------------------------------------*/
+/*!
 
-/*!----------------------------------------------------------------------
-\file inter_acinar_dep_evaluate.cpp
 \brief Templated Evaluate file for inter-acinar linker element containing
-       the action types for an reduced inter-acinar linker element
+       the action types for a reduced inter-acinar linker element
        RedInterAcinarDep. The actual implementation of the routines called
        during the possible actions is contained in inter_acinar_dep_impl.cpp
 
+\maintainer Carolin Geitner
+
 \level 3
 
-\maintainer Lena Yoshihara
-
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 
 #include "red_airway.H"
