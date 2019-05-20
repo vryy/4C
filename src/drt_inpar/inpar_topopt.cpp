@@ -4,7 +4,7 @@
 
 \brief Input parameters for topopt
 
-\maintainer Martin Winklmaier
+\maintainer Martin Kronbichler
 
 */
 

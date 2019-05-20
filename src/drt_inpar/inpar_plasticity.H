@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_plasticity.H
+\brief Input parameters for plasticity
 \maintainer Matthias Mayr
 \level 2
 */

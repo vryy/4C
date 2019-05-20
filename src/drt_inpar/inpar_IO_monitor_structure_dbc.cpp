@@ -4,7 +4,7 @@
 
 \level 2
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 */
 /*----------------------------------------------------------------------*/
 

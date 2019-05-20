@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\brief
+\brief Input parameters for LOCA continuation
 
-\maintainer
+\maintainer Martin Kronbichler
 
-\level
+\level 3
 
  */
 /*----------------------------------------------------------------------*/

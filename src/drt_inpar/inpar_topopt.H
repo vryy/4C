@@ -3,7 +3,7 @@
 
 \level 3
 
-\maintainer Martin Winklmaier
+\maintainer Martin Kronbichler
  *------------------------------------------------------------------------------------------------*/
 
 
