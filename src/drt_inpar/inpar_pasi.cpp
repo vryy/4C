@@ -14,7 +14,6 @@
 #include "inpar_pasi.H"
 #include "drt_validparameters.H"
 #include "inpar_parameterlist_utils.H"
-#include "../drt_lib/drt_conditiondefinition.H"
 
 /*---------------------------------------------------------------------------*
  | set valid parameters for pasi                              sfuchs 01/2017 |

@@ -20,17 +20,6 @@
 #include "inpar_parameterlist_utils.H"
 
 /*---------------------------------------------------------------------------*
- | forward declarations                                       sfuchs 01/2017 |
- *---------------------------------------------------------------------------*/
-namespace DRT
-{
-  namespace INPUT
-  {
-    class ConditionDefinition;
-  }
-}  // namespace DRT
-
-/*---------------------------------------------------------------------------*
  | Input parameters for particle structure interaction        sfuchs 01/2017 |
  *---------------------------------------------------------------------------*/
 namespace INPAR
