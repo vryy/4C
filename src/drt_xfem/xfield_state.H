@@ -6,9 +6,8 @@
 
 \level 3
 
-\maintainer Michael Hiermeier
+\maintainer Matthias Mayr
 
-\date Jun 27, 2016
 */
 /*---------------------------------------------------------------------------*/
 

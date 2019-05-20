@@ -1,4 +1,10 @@
+/*!----------------------------------------------------------------------
+\brief Test for the CUT Library
 
+\level 1
+
+\maintainer Christoph Ager
+*----------------------------------------------------------------------*/
 #include <iostream>
 #include <iterator>
 #include <map>
