@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file so_pyramid5fbar.cpp
 
-\brief ToDo Add meaningful comment.
+\brief pyramid shaped solid element
 
 \level 1
 

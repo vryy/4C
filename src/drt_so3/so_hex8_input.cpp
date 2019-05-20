@@ -1,9 +1,10 @@
 /*!----------------------------------------------------------------------
 \file so_hex8_input.cpp
-\brief
-\level 1
-\maintainer Christoph Meier
+\brief Solid Hex8 element
 
+\level 1
+
+\maintainer Christoph Meier
 *----------------------------------------------------------------------*/
 
 #include "so_hex8.H"

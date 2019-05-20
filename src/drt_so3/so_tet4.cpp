@@ -1,11 +1,11 @@
 /*!----------------------------------------------------------------------
 \file so_tet4.cpp
 
-\brief ToDo Add meaningful comment.
+\brief Solid Tet4 element
 
 \level 1
 
-\maintainer Michael Gee
+\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 

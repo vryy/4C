@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file so_pyramid5fbar_evaluate.cpp
-\brief
+\brief pyramid shaped solid element
 \level 2
 
 \maintainer Christoph Meier

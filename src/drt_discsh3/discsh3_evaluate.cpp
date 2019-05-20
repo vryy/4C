@@ -1,13 +1,10 @@
 /*-----------------------------------------------------------*/
 /*!
-\file discsh3_evaluate.cpp
-
-\brief discsh3 element
-
-\maintainer Dhrubajyoti Mukherjee
+\brief evaluate routines for discsh3 element
 
 \level 3
 
+\maintainer Christoph Meier
 */
 /*-----------------------------------------------------------*/
 

@@ -1,13 +1,10 @@
 /*-----------------------------------------------------------*/
 /*!
-\file discsh3.H
-
 \brief discsh3 element
-
-\maintainer Dhrubajyoti Mukherjee
 
 \level 3
 
+\maintainer Christoph Meier
 */
 /*-----------------------------------------------------------*/
 // header file only included if not yet included!

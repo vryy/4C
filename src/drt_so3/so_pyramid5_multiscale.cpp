@@ -1,13 +1,10 @@
 /*!----------------------------------------------------------------------
 \file so_pyramid5_multiscale.cpp
-\brief
+\brief multiscale functionality for pyramid shaped solid element
 \level 2
 
 <pre>
-\maintainer Lena Yoshihara
-            yoshihara@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15303
+\maintainer Christoph Meier
 </pre>
 
 *----------------------------------------------------------------------*/

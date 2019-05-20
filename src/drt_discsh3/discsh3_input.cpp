@@ -1,15 +1,12 @@
-/*!----------------------------------------------------------------------
-\file discsh3_input.cpp
-\brief
+/*----------------------------------------------------------------------*/
+/*!
+\brief input routines for discsh3 element
 
-<pre>
-Maintainer: Dhrubajyoti Mukherjee
-            mukherjee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15270
-</pre>
+\level 3
 
-*----------------------------------------------------------------------*/
+\maintainer Christoph Meier
+*/
+/*----------------------------------------------------------------------*/
 #include "discsh3.H"
 #include "../drt_lib/drt_linedefinition.H"
 

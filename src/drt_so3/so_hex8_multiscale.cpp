@@ -1,15 +1,11 @@
 /*!----------------------------------------------------------------------
 \file so_hex8_multiscale.cpp
-\brief
+
+\brief multiscale functionality of Solid Hex8 element
+
 \level 2
 
-<pre>
-\maintainer Lena Yoshihara
-            yoshihara@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15303
-</pre>
-
+\maintainer Christoph Meier
 *----------------------------------------------------------------------*/
 
 

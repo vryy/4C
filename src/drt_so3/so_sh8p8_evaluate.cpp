@@ -1,9 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file so_sh8p8_evaluate.cpp
-\brief some element evaluate
+\brief 8-node solid shell element evaluate
 \level 3
-\maintainer Martin Kronbichler
+\maintainer Christoph Meier
 
 */
 

@@ -1,9 +1,11 @@
 /*!----------------------------------------------------------------------
 \file so_hex8fbar_input.cpp
-\brief
+\brief Solid Hex8 element with F-bar modification
+
+\level 1
 
 <pre>
-Maintainer: Alexander Popp
+\maintainer Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238

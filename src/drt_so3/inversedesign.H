@@ -2,12 +2,7 @@
 /**
 \file inversedesign.H
 \brief special element adaptions for inverse design
-<pre>
-\maintainer Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15239
-</pre>
+\maintainer Christoph Meier
 \level 2
 */
 /*----------------------------------------------------------------------*/

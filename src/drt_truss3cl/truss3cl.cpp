@@ -1,18 +1,14 @@
-/*!----------------------------------------------------------------------
-\file truss3cl.cpp
- \brief three dimensional interpolated total Lagrange hybrid beam-truss element
+/*----------------------------------------------------------------------------*/
+/*!
+\brief three dimensional interpolated total Lagrange hybrid beam-truss element
  (can be connected to beam3 elements)
 
 \level 3
 
-<pre>
-\maintainer Dhrubajyoti Mukherjee
-            mukherjee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15270
-</pre>
+\maintainer Maximilian Grill
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------------*/
 
 #include "truss3cl.H"
 #include "../drt_lib/drt_discret.H"

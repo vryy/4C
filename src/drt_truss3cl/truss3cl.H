@@ -1,17 +1,14 @@
-/*!----------------------------------------------------------------------
-\file truss3cl.H
-
+/*----------------------------------------------------------------------------*/
+/*!
 \brief three dimensional interpolated total Lagrange hybrid beam-truss element
  (can be connected to beam3 elements)
 
 \level 3
 
-\maintainer Dhrubajyoti Mukherjee
-            mukherjee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15270
-*----------------------------------------------------------------------*/
-// administrative line in order to make a difference between BACI and Ccarat files
+\maintainer Maximilian Grill
+
+*/
+/*---------------------------------------------------------------------------*/
 
 // header file only included if not yet included!
 #ifndef TRUSS3CL_H

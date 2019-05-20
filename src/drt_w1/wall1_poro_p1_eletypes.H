@@ -1,14 +1,13 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
- \file wall1_poro_p1_eletypes.H
-
- \brief element types of the 2D solid-poro element (p1/mixed approach)
+\brief Element types of the 2D solid-poro element (p1/mixed approach).
 
 \level 2
 
-\maintainer  Christoph Ager
- *----------------------------------------------------------------------*/
+\maintainer Christoph Meier
 
+*/
+/*---------------------------------------------------------------------------*/
 
 #ifndef WALL1_PORO_P1_ELETYPES_H_
 #define WALL1_PORO_P1_ELETYPES_H_

@@ -2,12 +2,11 @@
 /*!
 \file so_hex8_determinant_analysis.cpp
 
-\maintainer Michael Hiermeier
-
-\date Sep 5, 2018
+\brief Determinant analysis for Solid Hex8 element
 
 \level 3
 
+\maintainer Christoph Meier
 */
 /*-----------------------------------------------------------*/
 

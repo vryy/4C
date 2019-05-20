@@ -1,11 +1,11 @@
 /*!----------------------------------------------------------------------
 \file so_tet10.cpp
 
-\brief ToDo Add meaningful comment.
+\brief Solid Tet10 Element
 
 \level 1
 
-\maintainer Jonas Biehler
+\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 

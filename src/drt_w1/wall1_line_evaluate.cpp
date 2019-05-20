@@ -1,15 +1,13 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
-\file wall1_line_evaluate.cpp
-
 \brief Evaluation on the boundary lines of a wall1 element.
 
 \level 1
 
-\maintainer Michael Hiermeier
+\maintainer Christoph Meier
 
 */
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #include "wall1.H"
 #include "../linalg/linalg_utils.H"

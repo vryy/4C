@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file so_sh8.cpp
 
-\brief ToDo Add meaningful comment.
+\brief solid shell8 element formulation
 
 \level 1
 

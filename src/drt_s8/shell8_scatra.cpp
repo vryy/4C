@@ -1,17 +1,13 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
- \file shell8_scatra.cpp
+\brief A 2D shell element with scatra functionality
 
- \brief a 2D shell element with scatra functionality
+\level 1
 
- \level 2
+\maintainer Christoph Schmidt
 
- \maintainer Christoph Schmidt
-             schmidt@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15251
- *----------------------------------------------------------------------*/
-
+*/
+/*---------------------------------------------------------------------------*/
 #include "shell8_scatra.H"
 #include "../drt_lib/drt_linedefinition.H"
 

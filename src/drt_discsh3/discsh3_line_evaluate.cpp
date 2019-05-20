@@ -1,15 +1,12 @@
-/*!----------------------------------------------------------------------
-\file discsh3_line_evaluate.cpp
-\brief line evaluation routines
-
-\maintainer Dhrubajyoti Mukherjee
-            mukherjee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15270
+/*----------------------------------------------------------------------*/
+/*!
+\brief line evaluate routines for discsh3 element
 
 \level 3
 
-*----------------------------------------------------------------------*/
+\maintainer Christoph Meier
+*/
+/*----------------------------------------------------------------------*/
 //#ifdef DISCSH3_H
 #include <Teuchos_TimeMonitor.hpp>
 //#include <algorithm>

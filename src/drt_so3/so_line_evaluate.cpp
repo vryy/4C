@@ -1,12 +1,11 @@
 /*!----------------------------------------------------------------------
 \file so_line_evaluate.cpp
 
-\brief Evaluate routines for structural line element
+\brief line element
 
-\maintainer Michael Gee
+\level 1
 
-\level 2
-
+\maintainer Christoph Meier
 *----------------------------------------------------------------------*/
 
 #include "so_line.H"

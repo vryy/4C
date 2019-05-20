@@ -1,14 +1,8 @@
 /*!----------------------------------------------------------------------**###
 \file so_tet10_input.cpp
-\brief
-
-<pre>
-Maintainer: Jonas Biehler
-            biehler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15276
-</pre>
-
+\brief Solid Tet10 Element
+\level 2
+\maintainer Christoph Meier
 *----------------------------------------------------------------------*/
 
 #include "so_tet10.H"

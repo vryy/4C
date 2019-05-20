@@ -1,15 +1,13 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
-\file wall1_input.cpp
-
-\brief ToDo Add meaningful comment.
+\brief Input for wall1 element.
 
 \level 1
 
-\maintainer Michael Hiermeier
+\maintainer Christoph Meier
 
 */
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #include "wall1.H"
 #include "../drt_lib/drt_linedefinition.H"

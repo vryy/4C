@@ -1,14 +1,10 @@
 /*!----------------------------------------------------------------------*
 \file so_nstet_evaluate.cpp
-\brief to be filled by the maintainer
-\level 3
-<pre>
-\maintainer Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15239
-</pre>
+\brief NStet element
 
+\level 3
+
+\maintainer Christoph Meier
 *----------------------------------------------------------------------*/
 
 #include "../drt_lib/drt_discret.H"

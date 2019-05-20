@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file so_pyramid5.H
-\brief
+\brief pyramid shaped solid element
 \level 1
 
 <pre>

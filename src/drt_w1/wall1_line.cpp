@@ -1,14 +1,13 @@
-/*!----------------------------------------------------------------------
-\file wall1_line.cpp
-\brief
+/*----------------------------------------------------------------------------*/
+/*!
+\brief Line definitions for wall1 element.
 
 \level 1
-<pre>
-\maintainer Michael Hiermeier
-            hiermeier@lnm.mw.tum.de
-</pre>
 
-*----------------------------------------------------------------------*/
+\maintainer Christoph Meier
+
+*/
+/*---------------------------------------------------------------------------*/
 
 #include "wall1.H"
 #include "../linalg/linalg_utils.H"

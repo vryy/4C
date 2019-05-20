@@ -1,13 +1,13 @@
-/*!----------------------------------------------------------------------
-\file wall1_nurbs.cpp
-
-\brief 2D solid-wall elements using NURBS shape functions
+/*----------------------------------------------------------------------------*/
+/*!
+\brief 2D solid-wall elements using NURBS shape functions.
 
 \level 2
 
 \maintainer Christoph Meier
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------------*/
 
 #include "wall1_nurbs.H"
 #include "../drt_lib/drt_utils_factory.H"

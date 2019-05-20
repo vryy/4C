@@ -1,15 +1,10 @@
 /*!----------------------------------------------------------------------
 \file so_nstet5_multiscale.cpp
-\brief
+\brief multiscale variant of NStet5 element
+
 \level 3
 
-<pre>
-\maintainer Lena Yoshihara
-            yoshihara@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15303
-</pre>
-
+\maintainer Christoph Meier
 *----------------------------------------------------------------------*/
 
 #include "so_nstet5.H"

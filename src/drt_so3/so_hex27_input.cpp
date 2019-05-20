@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file so_hex27_input.cpp
-\brief
+\brief tri-quadratic displacement based solid element
 \level 1
 \maintainer Christoph Meier
 

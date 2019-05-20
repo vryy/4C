@@ -1,15 +1,13 @@
-/*!----------------------------------------------------------------------
-\file truss3_input.cpp
+/*----------------------------------------------------------------------------*/
+/*!
 \brief three dimensional total Lagrange truss element
 
-<pre>
-Maintainer: Dhrubajyoti Mukherjee
-            mukherjee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15270
-</pre>
+\level 3
 
-*----------------------------------------------------------------------*/
+\maintainer Maximilian Grill
+
+*/
+/*---------------------------------------------------------------------------*/
 
 #include "truss3.H"
 #include "../drt_lib/drt_linedefinition.H"

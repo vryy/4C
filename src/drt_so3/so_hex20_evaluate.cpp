@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file so_hex20_evaluate.cpp
-\brief 3D-serendipity element
+\brief 3D quadratic serendipity element
 \level 1
 
 <pre>

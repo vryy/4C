@@ -1,14 +1,10 @@
 /*!----------------------------------------------------------------------
 \file so_line.cpp
-\brief
+\brief line element
 
-<pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15239
-</pre>
+\level 1
 
+\maintainer Christoph Meier
 *----------------------------------------------------------------------*/
 
 #include "so_line.H"

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file so_sh8p8.cpp
-\brief
+\brief 8-node solid shell element
 \level 2
 \maintainer Christoph Meier
 */

@@ -6,9 +6,7 @@
 \level 2
 
 <pre>
-   \maintainer Thon Moritz
-               thon@mhpc.mw.tum.de
-               089 - 289-10264
+   \maintainer Christoph Schmidt
 </pre>
 
 *----------------------------------------------------------------------*/

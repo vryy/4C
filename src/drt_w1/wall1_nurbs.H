@@ -1,13 +1,14 @@
-/*!----------------------------------------------------------------------
-\file wall1_nurbs.H
-
-\brief 2D solid-wall elements using NURBS shape functions
+/*----------------------------------------------------------------------------*/
+/*!
+\brief 2D solid-wall elements using NURBS shape functions.
 
 \level 2
 
 \maintainer Christoph Meier
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------------*/
+
 #ifndef WALL1_NURBS_H
 #define WALL1_NURBS_H
 
