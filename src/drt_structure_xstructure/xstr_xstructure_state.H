@@ -1,12 +1,9 @@
 /*----------------------------------------------------------------------------*/
 /**
-\file xstr_xstructure_state.H
 
 \brief XStructure state handling ( only one single XFEM-discretization )
 
-\maintainer Michael Hiermeier
-
-\date Jun 28, 2016
+\maintainer Anh-Tu Vuong
 
 \level 3
 

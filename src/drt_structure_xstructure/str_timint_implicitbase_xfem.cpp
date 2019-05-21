@@ -1,15 +1,12 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file str_timint_implicitbase_xfem.cpp
 
 \brief This file contains the adaptions of the implicit structural time
        integration due to XFEM
 
 \level 2
 
-\maintainer Michael Hiermeier
-
-\date Feb 8, 2017
+\maintainer Anh-Tu Vuong
 
 */
 /*----------------------------------------------------------------------------*/

@@ -1,12 +1,9 @@
 /*----------------------------------------------------------------------------*/
 /**
-\file xstr_multi_io.H
 
 \brief Input/output routines for the multi discretization wrapper
 
-\maintainer Michael Hiermeier
-
-\date Oct 24, 2016
+\maintainer Anh-Tu Vuong
 
 \level 3
 
