@@ -4,7 +4,7 @@
 
 \level 2
 
-\maintainer Julia Hoermann
+\maintainer Anh-Tu Vuong
 */
 /*----------------------------------------------------------------------*/
 #include "inpar_cardiac_monodomain.H"

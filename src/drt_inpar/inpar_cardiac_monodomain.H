@@ -4,7 +4,7 @@
 
 \level 2
 
-\maintainer Julia Hoermann
+\maintainer Anh-Tu Vuong
 */
 /*----------------------------------------------------------------------*/
 #ifndef INPAR_CARDIAC_MONODOMAIN_H
