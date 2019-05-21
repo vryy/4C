@@ -33,6 +33,7 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_utils_factory.H"
+#include "../drt_lib/drt_dofset_transparent.H"
 
 #include "../drt_io/io.H"
 #include "../drt_io/discretization_runtime_vtu_writer.H"
@@ -648,6 +649,12 @@ void PARTICLEALGORITHM::WallHandlerDiscretCondition::SetupWallDiscretization() c
       walldiscretization_->AddElement(wallele);
     }
   }
+
+  // reuse dofs of structural discretization for wall discretization
+  bool parallel = (comm_.NumProc() == 1) ? false : true;
+  Teuchos::RCP<DRT::DofSet> newdofset =
+      Teuchos::rcp(new DRT::TransparentDofSet(structurediscretization, parallel));
+  walldiscretization_->ReplaceDofSet(newdofset);
 
   // finalize wall discretization construction
   walldiscretization_->FillComplete(true, false, false);
