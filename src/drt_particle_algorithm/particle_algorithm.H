@@ -24,6 +24,8 @@
  *---------------------------------------------------------------------------*/
 #include "../drt_adapter/adapter_algorithmbase.H"
 
+#include "particle_wall.H"
+
 #include "../drt_particle_engine/particle_typedefs.H"
 #include "../drt_particle_engine/particle_engine.H"
 
@@ -35,7 +37,6 @@ namespace PARTICLEALGORITHM
   class TimInt;
   class GravityHandler;
   class ViscousDampingHandler;
-  class WallHandlerBase;
 }  // namespace PARTICLEALGORITHM
 
 namespace PARTICLEINTERACTION
@@ -96,6 +97,13 @@ namespace PARTICLEALGORITHM
         const
     {
       return particleengine_;
+    }
+
+    //! get interface to particle wall handler
+    const std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> GetParticleWallHandlerInterface()
+        const
+    {
+      return particlewall_;
     }
 
    private:
