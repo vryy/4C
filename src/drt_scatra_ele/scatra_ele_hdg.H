@@ -1,19 +1,13 @@
 /*!
-\file scatra_ele_hdg.H
 
 \brief Routines for ScaTraHDG element
 
 Scatra element based on the hybridizable discontinuous Galerkin method instead
 of the usual Lagrangian polynomials for standard transport elements
 
-<pre>
 \level 3
 
-\maintainer Julia Hoermann
-            hoermann@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15264
-</pre>
+\maintainer Martin Kronbichler
 
 */
 #ifndef DRT_SCATRA_ELE_HDG_H

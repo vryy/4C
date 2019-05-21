@@ -1,15 +1,9 @@
 /*!----------------------------------------------------------------------
-\file scatra_timint_genalpha.H
 \brief Generalized-alpha time-integration scheme
 
-<pre>
 \level 1
 
-\maintainer Volker Gravemeier
-            vgravem@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15245
-</pre>
+\maintainer Anh-Tu Vuong
 
 *----------------------------------------------------------------------*/
 

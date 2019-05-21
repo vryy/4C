@@ -1,19 +1,13 @@
 /*!
-\file scatra_ele.H
 
 \brief The scalar transport element
 
 This file contains the element specific service routines like
 Pack, Unpack, NumDofPerNode etc.
 
-<pre>
 \level 1
 
 \maintainer Anh-Tu Vuong
-            vuong@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15237
-</pre>
 */
 #ifndef DRT_SCATRA_ELEMENT_H
 #define DRT_SCATRA_ELEMENT_H
@@ -317,12 +311,10 @@ namespace DRT
       etc. directly.
 
       Following implementations of the element are allowed:
-      <pre>
         o Evaluation of system matrix and residual for the One-Step-Theta or BDF2
           method
 
         o Evaluation of system matrix and residual for the stationary fluid solver
-      </pre>
 
       \param params (in/out): ParameterList for communication between control routine
                               and elements

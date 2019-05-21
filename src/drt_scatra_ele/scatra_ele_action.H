@@ -1,5 +1,4 @@
 /*!---------------------------------------------------------------------------
-\file scatra_ele_action.H
 
 \brief provides enum of actions. Motivation was to have a quick enum
 comparison instead of a cumbersome std::string compare.
@@ -7,9 +6,6 @@ comparison instead of a cumbersome std::string compare.
 \level 1
 
 \maintainer Anh-Tu Vuong
-            vuong@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15237
 
 *---------------------------------------------------------------------------*/
 

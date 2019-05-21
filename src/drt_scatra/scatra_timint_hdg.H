@@ -1,14 +1,8 @@
 /*!----------------------------------------------------------------------
-\file scatra_timint_hdg.H
 \brief Time integration class for HDG discretization for scalar transport
 
-<pre>
 \level 3
-\maintainer Julia Hoermann
-            hoermann@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15264
-</pre>
+\maintainer Martin Kronbichler
 
 *----------------------------------------------------------------------*/
 

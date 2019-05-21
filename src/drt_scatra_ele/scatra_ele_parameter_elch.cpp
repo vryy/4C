@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_ele_parameter_elch.cpp
 
 \brief singleton class holding all static electrochemistry parameters required for element
 evaluation
@@ -13,12 +12,7 @@ general static parameters required for scalar transport element evaluation.
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #include "../drt_lib/drt_dserror.H"

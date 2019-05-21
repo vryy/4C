@@ -1,16 +1,10 @@
 /*!----------------------------------------------------------------------
-\file scatra_ele_boundary_evaluate.cpp
 
 \brief Evaluate boundary conditions for scalar transport problems
 
 \level 2
 
-<pre>
 \maintainer Anh-Tu Vuong
-            vuong@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15237
-</pre>
  *----------------------------------------------------------------------*/
 #include "../drt_mat/elchmat.H"
 

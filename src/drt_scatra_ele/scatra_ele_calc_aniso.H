@@ -1,17 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_ele_calc_aniso.H
 
 \brief scatra_ele_calc_aniso.H
 
 \level 3
 
-<pre>
-  \maintainer Lasse Jagschies
-              jagschies@mhpc.mw.tum.de
-              http://www.lnm.mw.tum.de
-              089 - 289-10365
-</pre>
+\maintainer Anh-Tu Vuong
  *----------------------------------------------------------------------*/
 
 

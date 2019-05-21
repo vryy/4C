@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_timint_loma_bdf2.cpp
 
 \brief bdf2 time-integration scheme with extensions for loma problems
 
 \level 2
 
-\maintainer Volker Gravemeier
-            vgravem@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15245
+\maintainer Anh-Tu Vuong
 
 */
 /*----------------------------------------------------------------------*/

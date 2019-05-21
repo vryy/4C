@@ -1,16 +1,10 @@
 /*!----------------------------------------------------------------------
-\file scatra_cardiac_monodomain_dyn.H
 
 \brief entry point for cardiac monodomain scalar transport problems
 
 \level 2
 
-<pre>
-\maintainer Julia Hoermann
-            hoermann@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15264
-</pre>
+\maintainer Anh-Tu Vuong
 
 *----------------------------------------------------------------------*/
 

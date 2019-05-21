@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_ele_parameter_elch_diffcond.cpp
 
 \brief singleton class holding all static diffusion-conduction parameters required for element
 evaluation
@@ -11,14 +10,9 @@ initialization of the global time integrator, and then never touched again throu
 simulation. This parameter class needs to coexist with more general parameter classes holding
 additional static parameters required for scalar transport element evaluation.
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
 
 \level 2
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #include "scatra_ele_parameter_elch_diffcond.H"

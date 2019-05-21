@@ -1,16 +1,10 @@
 /*!----------------------------------------------------------------------
-\file scatra_timint_meshtying_strategy_s2i.H
 
 \brief Scatra-scatra interface coupling strategy for standard scalar transport problems
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
-</pre>
 
 *----------------------------------------------------------------------*/
 #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_H
@@ -86,7 +80,6 @@ namespace SCATRA
   can be circumvented. This class contains the scatra-scatra interface coupling strategy for
   standard scalar transport problems.
 
-  \author fang (fang@lnm.mw.tum.de)
   */
 
   class MeshtyingStrategyS2I : public MeshtyingStrategyBase

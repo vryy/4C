@@ -1,16 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_dyn.cpp
 
 \brief entry point for scalar transport problems
 
 \level 1
-<pre>
-\maintainer Volker Gravemeier
-            vgravem@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15245
-</pre>
+
+\maintainer Anh-Tu Vuong
+
 */
 /*----------------------------------------------------------------------*/
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"

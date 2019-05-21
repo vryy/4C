@@ -1,16 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_timint_hdg.cpp
 \brief HDG time-integration scheme
 
-<pre>
 \level 3
 
-\maintainer Julia Hoermann
-            hoermann@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15264
-</pre>
+\maintainer Martin Kronbichler
 */
 /*----------------------------------------------------------------------*/
 

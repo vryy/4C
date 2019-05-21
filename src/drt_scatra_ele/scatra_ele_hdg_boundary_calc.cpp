@@ -1,16 +1,10 @@
 /*!
-\file scatra_ele_hdg_boundary_calc.cpp
 
 \brief Routines for ScaTraHDG boundary elements
 
-<pre>
 \level 3
 
-\maintainer Julia Hoermann
-            hoermann@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15271
-</pre>
+\maintainer Martin Kronbichler
 */
 /*--------------------------------------------------------------------------*/
 

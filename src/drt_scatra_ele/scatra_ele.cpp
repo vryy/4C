@@ -1,15 +1,9 @@
 /*!
-\file scatra_ele.cpp
 \brief A finite element for simulation transport phenomena
 
-<pre>
 \level 1
 
 \maintainer Anh-Tu Vuong
-            vuong@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15237
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #include "../drt_lib/drt_discret.H"

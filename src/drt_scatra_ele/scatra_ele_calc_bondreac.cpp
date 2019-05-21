@@ -1,18 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file scatra_ele_calc_bondreac.cpp
 
  \brief main file containing routines for calculation of scatra element with reactive scalars and
  bond dynamics.
 
  \level 2
 
- <pre>
-   \maintainer Andreas Rauch
-               rauch@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289 - 15240
- </pre>
+\maintainer Anh-Tu Vuong
  *----------------------------------------------------------------------*/
 
 

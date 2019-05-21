@@ -1,17 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_resulttest_elch.H
 
 \brief result tests for electrochemistry problems
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
 
 \level 2
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 #ifndef SCATRA_RESULTTEST_ELCH_H

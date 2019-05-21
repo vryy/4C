@@ -1,16 +1,10 @@
 /*!----------------------------------------------------------------------
-\file scatra_timint_cardiac_monodomain_scheme_hdg.H
 
 \brief  Connecting time-integration schemes for HDG with
         cardiac-monodomain-specific implementation
 
-<pre>
 \level 3
-\maintainer Julia Hoermann
-            hoermann@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15264
-</pre>
+\maintainer Martin Kronbichler
 
 *----------------------------------------------------------------------*/
 

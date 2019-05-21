@@ -1,16 +1,11 @@
 /*!-----------------------------------------------------------------------------------------------*
-\file scatra_timint_elch.H
 
 \brief scatra time integration for elch
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
-</pre>
+
  *------------------------------------------------------------------------------------------------*/
 
 #ifndef SCATRA_TIMINT_ELCH_H

@@ -1,24 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_timint_convcheck_strategies.cpp
 
 \brief strategies for Newton-Raphson convergence check for scalar transport problems
 
-To keep the scalar transport time integrator class and derived classes as plain as possible,
-the convergence check for the Newton-Raphson iteration has been encapsulated within separate
-strategy classes. Every specific convergence check strategy (e.g., for standard scalar transport
-or electrochemistry problems with or without scatra-scatra interface coupling involving Lagrange
-multipliers) computes, checks, and outputs different relevant vector norms and is implemented
-in a subclass derived from an abstract, purely virtual interface class.
-
 \level 1
 
-<pre>
 \maintainer Anh-Tu Vuong
-            vuong@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15237
-</pre>
+
  */
 /*----------------------------------------------------------------------*/
 #include "scatra_timint_convcheck_strategies.H"

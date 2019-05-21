@@ -1,17 +1,11 @@
 /*!----------------------------------------------------------------------
-\file scatra_timint_cardiac_monodomain_scheme.H
 
 \brief  connecting time-integration schemes (OST, BDF2, GenAlpha, Stationary) with
         Cardiac-monodomain-specific implementation (class TimIntCardiacMonodomain)
 
 \level 2
 
-<pre>
-\maintainer Lasse Jagschies
-            lasse.jagschies@tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-10365
-</pre>
+\maintainer Anh-Tu Vuong
 
 *----------------------------------------------------------------------*/
 

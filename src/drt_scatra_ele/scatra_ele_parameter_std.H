@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_ele_parameter_std.H
 
 \brief singleton class holding all static parameters required for the evaluation of a standard
 scalar transport element
@@ -14,14 +13,9 @@ problem specific singleton classes holding additional static parameters required
 evaluation. These additional singleton classes are not meant to be derived from, but rather to
 coexist with this general class.
 
-<pre>
 \level 1
 
 \maintainer Anh-Tu Vuong
-            vuong@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15237
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #ifndef SCATRA_ELE_PARAMETER_STD_H

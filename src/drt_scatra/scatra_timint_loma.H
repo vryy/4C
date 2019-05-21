@@ -1,8 +1,7 @@
 /*!-----------------------------------------------------------------------------------------------*
-\file scatra_timint_loma.H
 \brief scatra time integration for loma
 \level 2
-\maintainer Volker Gravemeier
+\maintainer Anh-Tu Vuong
  *------------------------------------------------------------------------------------------------*/
 
 #ifndef SCATRA_TIMINT_LOMA_H

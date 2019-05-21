@@ -1,16 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_timint_loma_ost.cpp
 
 \brief One-step-theta time-integration scheme with extensions for
        loma problems
 
 \level 2
 
-\maintainer Volker Gravemeier
-            vgravem@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15245
+\maintainer Anh-Tu Vuong
 
 */
 /*----------------------------------------------------------------------*/

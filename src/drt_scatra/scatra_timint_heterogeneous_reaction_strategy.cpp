@@ -1,16 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file scatra_timint_heterogeneous_reaction_strategy.cpp
 
  \brief Solution strategy for heterogeneous reactions. This is not meshtying!!!
 
-    \level 3
+  \level 3
 
-   \maintainer  Andreas Rauch
-                rauch@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
- *----------------------------------------------------------------------*/
-
+ \maintainer Anh-Tu Vuong
+*/
 /*----------------------------------------------------------------------*/
 #include "scatra_timint_heterogeneous_reaction_strategy.H"
 

@@ -1,18 +1,12 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file scatra_ele_calc_elch_electrode_sti_thermo.H
 
 \brief evaluation of scatra elements for conservation of mass concentration and electronic charge
 within thermodynamic electrodes
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
-</pre>
 */
 /*--------------------------------------------------------------------------*/
 #ifndef SCATRA_ELE_CALC_ELCH_ELECTRODE_STI_THERMO_H

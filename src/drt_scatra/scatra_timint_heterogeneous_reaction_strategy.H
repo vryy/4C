@@ -1,14 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file scatra_timint_heterogeneous_reaction_strategy.H
 
  \brief Solution strategy for heterogeneous reactions
 
    \level 3
 
-   \maintainer  Andreas Rauch
-                rauch@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
+   \maintainer Anh-Tu Vuong
 
  *----------------------------------------------------------------------*/
 
@@ -36,7 +33,6 @@ namespace SCATRA
   parts, a bunch of unhandy if-else selections within the time integrator classes themselves
   can be circumvented. This class contains the solution strategy for heterogeneous reactions.
 
-  \author fang (fang@lnm.mw.tum.de)
   */
 
   class HeterogeneousReactionStrategy : public MeshtyingStrategyStd

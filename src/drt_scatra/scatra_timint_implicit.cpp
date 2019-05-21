@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_timint_implicit.cpp
 \brief Control routine for convection-diffusion (in)stationary solvers,
 
      including instationary solvers based on
@@ -16,9 +15,7 @@
 \level 1
 
 \maintainer Anh-Tu Vuong
-            vuong@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15237
+
 */
 /*----------------------------------------------------------------------*/
 #include "scatra_timint_implicit.H"

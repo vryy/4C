@@ -1,15 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_ele_calc_poro.H
 
  \brief evaluation class containing routines for calculation of scalar transport
         within porous medium
 
 \level 2
 
-\maintainer Andreas Rauch
-            rauch@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
+\maintainer Anh-Tu Vuong
  *----------------------------------------------------------------------*/
 
 

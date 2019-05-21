@@ -1,18 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_ele_boundary_calc_elch_electrode_growth.H
 
 \brief evaluation of ScaTra boundary elements for isothermal electrodes exhibiting surface layer
 growth, e.g., lithium plating
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
-</pre>
  */
 /*----------------------------------------------------------------------*/
 #ifndef SCATRA_ELE_BOUNDARY_CALC_ELCH_ELECTRODE_GROWTH_H

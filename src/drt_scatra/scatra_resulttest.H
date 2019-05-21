@@ -1,17 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_resulttest.H
 
 \brief testing of scalar transport calculation results
 
-<pre>
 \level 1
 
 \maintainer Anh-Tu Vuong
-            vuong@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15237
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 #ifndef SCATRA_RESULTTEST_H

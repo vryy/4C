@@ -1,13 +1,10 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file nox_nln_scatra_linearsystem.H
 
 \brief Derived class which manages the special requirements to the linear
        solver for scatra problems.
 
-\maintainer Michael Hiermeier
-
-\date Dec 7, 2016
+\maintainer Anh-Tu Vuong
 
 \level 3
 

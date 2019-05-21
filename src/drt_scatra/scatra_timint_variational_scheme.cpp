@@ -1,17 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_timint_variational_scheme.cpp
 
 \brief  Time integration for variational formulation problems using different schemes
 
 \level 2
 
-<pre>
-\maintainer Jorge De Anda Salazar
-            deanda@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089-289-15251
-</pre>
+\maintainer Martin Kronbichler
 */
 /*----------------------------------------------------------------------*/
 #include "scatra_timint_variational_scheme.H"

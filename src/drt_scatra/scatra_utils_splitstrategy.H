@@ -1,18 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_utils_splitstrategy.H
 
 \brief  special assemble/split strategy for blockmatrices arising
         when simulating electrochemical problems with ion transport
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

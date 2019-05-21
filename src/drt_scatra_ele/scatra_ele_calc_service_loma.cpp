@@ -1,17 +1,11 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file scatra_ele_calc_service_loma.cpp
 
 \brief evaluation of scatra elements for loma
 
 \level 2
 
-<pre>
-\maintainer Ursula Rasthofer / Volker Gravemeier
-            {rasthofer,vgravem}@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15236/45
-</pre>
+\maintainer Anh-Tu Vuong
 */
 /*--------------------------------------------------------------------------*/
 #include "../drt_geometry/position_array.H"
