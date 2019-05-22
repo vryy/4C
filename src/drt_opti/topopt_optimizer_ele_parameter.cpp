@@ -1,13 +1,14 @@
-/*!------------------------------------------------------------------------------------------------*
-\file topopt_optimizer_ele_parameter.cpp
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief Evaluation of element parameter
 
 \level 3
 
-\maintainer Martin Winklmaier
- *------------------------------------------------------------------------------------------------*/
+\maintainer Martin Kronbichler
 
+*/
+/*---------------------------------------------------------------------*/
 
 #include "topopt_optimizer_ele_parameter.H"
 #include "../drt_lib/drt_dserror.H"

@@ -1,16 +1,10 @@
 /*!----------------------------------------------------------------------
-\file porofluidmultiphase_meshtying_strategy_base.H
-
 \brief Abstract interface for meshtying strategies in porofluidmultiphase problems
        (including standard strategy without meshtying)
 
 \level 3
 
 \maintainer Johannes Kremheller
-            kremheller@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-
-
 *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_MESHTYING_STRATEGY_BASE_H_

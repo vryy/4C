@@ -1,13 +1,9 @@
 /*!----------------------------------------------------------------------
-\file scatra_utils.H
 \brief Performs ScaTra specifc functions not yet generalized for other fields.
 
 \level 2
 
 \maintainer Christoph Ager
-            ager@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15236
 
 *----------------------------------------------------------------------*/
 

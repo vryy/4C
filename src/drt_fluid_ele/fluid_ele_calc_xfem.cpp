@@ -1,19 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid_ele_calc_xfem.cpp
-
 \brief Internal implementation of XFluid element interface coupling
 
 \level 2
 
-<pre>
 \maintainer  Christoph Ager
-             ager@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15249
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
+
 #include <Teuchos_TimeMonitor.hpp>
 
 #include <fstream>

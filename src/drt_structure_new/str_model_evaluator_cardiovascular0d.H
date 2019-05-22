@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file str_model_evaluator_cardiovascular0d.H
 
 \brief Evaluation and assembly of all 0D cardiovascular model terms
 

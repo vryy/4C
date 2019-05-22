@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file invana_auglagr.H
- * \brief augmented lagrange functional specialization of Invana base class
- *
-<pre>
+\brief augmented lagrange functional specialization of Invana base class
+
 \level 3
+
 \maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
-</pre>
  */
 /*----------------------------------------------------------------------*/
 #ifndef INVANA_AUGLAGR_H

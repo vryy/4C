@@ -1,12 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_model_evaluator_generic.cpp
 
 \brief Generic class for all model evaluators.
 
-\maintainer Michael Hiermeier
-
-\date Dec 1, 2015
+\maintainer Matthias Mayr
 
 \level 3
 

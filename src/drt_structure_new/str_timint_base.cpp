@@ -1,12 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_timint_base.cpp
 
 \brief Base class for all structural time integration strategies.
 
-\maintainer Michael Hiermeier
-
-\date Aug 12, 2015
+\maintainer Anh-Tu Vuong
 
 \level 3
 

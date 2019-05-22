@@ -1,15 +1,8 @@
 /*!----------------------------------------------------------------------
 \file so_tet10.H
-\brief
+\brief Solid Tet10 Element
 \level 1
-
-<pre>
-\maintainer Jonas Biehler
-            biehler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15276
-</pre>
-
+\maintainer Christoph Meier
 *----------------------------------------------------------------------*/
 #ifndef SO_TET10_H
 #define SO_TET10_H

@@ -1,20 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_elementreader.H
 
 \brief Read element sections of dat files.
 
-<pre>
 \level 0
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
-
-
 
 #ifndef DRT_ELEMENTREADER_H
 #define DRT_ELEMENTREADER_H

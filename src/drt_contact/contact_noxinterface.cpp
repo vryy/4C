@@ -1,15 +1,11 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_noxinterface.cpp
-
 \brief Concrete mplementation of all the %NOX::NLN::CONSTRAINT::Interface::Required
        (pure) virtual routines.
 
 \level 3
 
-\maintainer Michael Hiermeier
-
-\date May 2, 2016
+\maintainer Matthias Mayr
 
 */
 /*---------------------------------------------------------------------*/

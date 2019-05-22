@@ -1,15 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file ad_porofluidmultiphase_wrapper.cpp
-
  \brief a wrapper for porous multiphase flow algorithms
 
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
-
  *----------------------------------------------------------------------*/
 
 #include "ad_porofluidmultiphase_wrapper.H"

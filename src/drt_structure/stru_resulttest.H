@@ -1,15 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file stru_resulttest.H
-
 \brief testing of structure calculation results
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\maintainer Alexander Popp
+
+\level 1
 */
 /*----------------------------------------------------------------------*/
 

@@ -1,13 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file poro_law.H
-
  \brief calculation classes for evaluation of constitutive relation for porosity
 
 \maintainer Christoph Ager
-            ager@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289 15249
 
 \level 2
  *----------------------------------------------------------------------*/

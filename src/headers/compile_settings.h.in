@@ -1,4 +1,15 @@
-/* the configured options and settings for baci */
+/*---------------------------------------------------------------------*/
+/*!
+
+\brief the configured options and settings for baci, populated by cmake
+
+\level 0
+
+\maintainer Martin Kronbichler
+
+*/
+/*---------------------------------------------------------------------*/
+
 #define BACI_VERSION_MAJOR @baci_VERSION_MAJOR@
 #define BACI_VERSION_MINOR @baci_VERSION_MINOR@
 

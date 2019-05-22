@@ -1,17 +1,15 @@
-/*!----------------------------------------------------------------------
-\file fluid_timint_red.H
+/*-----------------------------------------------------------*/
+/*!
 
-\brief TimIntRedModels
+\brief Basic time integration driver for reduced models
 
-\level 3
-<pre>
 \maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*----------------------------------------------------------------------*/
+\level 2
+
+*/
+/*-----------------------------------------------------------*/
+
 
 #ifndef FLD_TIMINT_RED_H
 #define FLD_TIMINT_RED_H

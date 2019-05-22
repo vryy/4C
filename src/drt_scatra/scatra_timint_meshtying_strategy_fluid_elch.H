@@ -1,14 +1,10 @@
 /*!----------------------------------------------------------------------
-\file scatra_timint_meshtying_strategy_fluid_elch.H
 
 \brief Fluid-fluid meshtying strategy for electrochemistry problems
 
 \level 2
 
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
 
 *----------------------------------------------------------------------*/
 #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_FLUID_ELCH_H
@@ -32,7 +28,6 @@ namespace SCATRA
   can be circumvented. This class contains the fluid-fluid meshtying strategy for electrochemistry
   problems.
 
-  \author fang (fang@lnm.mw.tum.de)
   */
 
   class MeshtyingStrategyFluidElch : public MeshtyingStrategyFluid

@@ -1,10 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_nln_solver_uzawa.H
 
-\maintainer Michael Hiermeier
+\brief uzawa (DEPRECATED)
 
-\date Aug 13, 2015
+\maintainer Anh-Tu Vuong
 
 \level 3
 

@@ -1,17 +1,13 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
- \file wall1_poro_eletypes.H
-
-\brief element types of the 2D solid-poro element
-
-\maintainer Christoph Ager
-            ager@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289 15249
+\brief Element types of the 2D solid-poro element.
 
 \level 2
- *----------------------------------------------------------------------*/
 
+\maintainer Christoph Meier
+
+*/
+/*---------------------------------------------------------------------------*/
 
 #ifndef WALL1_PORO_ELETYPES_H_
 #define WALL1_PORO_ELETYPES_H_

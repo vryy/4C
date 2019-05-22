@@ -1,17 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_fld_fluid_xfem.cpp
 
 \brief Fluid field adapter for xfem-fluids with moving boundaries
 
 \level 1
 
-<pre>
 \maintainer  Christoph Ager
-             ager@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15249
- </pre>
+
 */
 /*----------------------------------------------------------------------*/
 #include "../drt_lib/drt_globalproblem.H"

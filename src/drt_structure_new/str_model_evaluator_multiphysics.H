@@ -1,10 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_model_evaluator_multiphysics.H
 
 \brief Base class for modelevaluators in partitioned algorithms.
 
-\maintainer Matthias Mayr
+\maintainer Anh-Tu Vuong
 
 \level 3
 */

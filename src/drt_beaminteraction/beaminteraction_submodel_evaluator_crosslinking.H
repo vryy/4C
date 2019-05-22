@@ -1,13 +1,10 @@
 /*-----------------------------------------------------------*/
 /*!
-\file beaminteraction_submodel_evaluator_crosslinking.H
-
 \brief class for submodel crosslinking
 
-\maintainer Jonas Eichinger, Maximilian Grill
+\maintainer Jonas Eichinger
 
 \level 3
-
 */
 /*-----------------------------------------------------------*/
 

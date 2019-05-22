@@ -1,7 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*!
-\file beam_elasthyper.H
-
 \brief constitutive relations for beam cross-section resultants (hyperelastic stored energy
 function)
 

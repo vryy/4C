@@ -1,8 +1,7 @@
 /*!----------------------------------------------------------------------
-\file art_junction.H
 \brief Method to deal with one dimensional artery juction bcs
 
-\maintainer Lena Yoshihara
+\maintainer Johannes Kremheller
 
 \level 3
 

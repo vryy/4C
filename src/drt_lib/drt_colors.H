@@ -1,16 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_colors.H
 
 \brief Color escape sequences for those that prefer colorful output.
 
-<pre>
 \level 2
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 

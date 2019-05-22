@@ -1,15 +1,10 @@
 /*----------------------------------------------------------------------------*/
 /**
-\file xcontact_levelset_reinit_generic.H
-
 \brief xcontact level-set generic reinitialization algorithm
 
-\maintainer Michael Hiermeier
-
-\date Dec 1, 2016
+\maintainer Matthias Mayr
 
 \level 3
-
 */
 /*----------------------------------------------------------------------------*/
 

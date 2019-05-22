@@ -1,19 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_function.cpp
 
 \brief Managing and evaluating of spatial functions
 
-<pre>
 \level 0
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
-
 
 #include <Sacado.hpp>
 #include "drt_function.H"

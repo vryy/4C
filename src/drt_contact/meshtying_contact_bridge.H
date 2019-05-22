@@ -1,14 +1,11 @@
 /*!----------------------------------------------------------------------
-\file meshtying_contact_bridge.H
-
 \level 2
 
-<pre>
 \maintainer Alexander Popp
 
-</pre>
-
-*-----------------------------------------------------------------------*/
+\brief Bridge for accessing meshtying & contact from STR time integration
+*/
+/*-----------------------------------------------------------------------*/
 #ifndef MESHTYING_CONTACT_BRIDGE_H_
 #define MESHTYING_CONTACT_BRIDGE_H_
 

@@ -1,16 +1,14 @@
-/*!----------------------------------------------------------------------
-\file fluid_ele_poro_immersed.cpp
+/*-----------------------------------------------------------*/
+/*!
 
 \brief specialized immersed element extending poro fluid element
 
+\maintainer Anh-Tu Vuong
+
 \level 2
 
-\maintainer  Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 - 15240
-
-*----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------*/
 
 #include "fluid_ele_poro_immersed.H"
 #include "../drt_lib/drt_linedefinition.H"

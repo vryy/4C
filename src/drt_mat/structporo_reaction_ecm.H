@@ -1,12 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file structporo_reaction_ecm.H
-
  \brief porous material for dissolution reaction in ECM model
 
-   \maintainer Andreas Rauch
-               rauch@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
+\maintainer Christoph Schmidt
 
 \level 3
  *----------------------------------------------------------------------*/

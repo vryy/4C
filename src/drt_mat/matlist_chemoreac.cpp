@@ -1,17 +1,13 @@
 /*!----------------------------------------------------------------------
-\file matlist_chemoreac.cpp
-
  \brief
 
 This file contains the material for reactive AND chemotactic scalars. It is
 in diamond inheritance with MatListReactions and MatListChemotaxis,
 which govern the actual doings
 
+\level 3
 <pre>
-Maintainer: Moritz Thon
-            thon@mhpc.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-10364
+\maintainer Christoph Schmidt
 </pre>
 *----------------------------------------------------------------------*/
 

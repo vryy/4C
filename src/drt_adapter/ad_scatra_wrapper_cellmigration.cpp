@@ -1,9 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_scatra_wrapper_cellmigration.cpp
 \brief Cell Migration specific wrapper for the scatra time integrator.
 \level 1
-\maintainer Andreas Rauch
+\maintainer Jonas Eichinger
 */
 /*----------------------------------------------------------------------*/
 

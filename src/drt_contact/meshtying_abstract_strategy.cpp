@@ -1,7 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file meshtying_abstract_strategy.cpp
-
 \brief Main abstract class for meshtying solution strategies
 
 \level 2

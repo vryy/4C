@@ -1,14 +1,10 @@
 /*!----------------------------------------------------------------------
-\file scatra_ele_calc.cpp
 
 \brief main file containing routines for calculation of scatra element
 
 \level 1
 
 \maintainer Anh-Tu Vuong
-            vuong@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15237
 
 *----------------------------------------------------------------------*/
 

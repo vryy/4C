@@ -1,15 +1,16 @@
-/*----------------------------------------------------------------------*/
-/**
-\file pairedvector.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief This class is meant as a replacement for std::maps, when other
        storage and access characteristics are needed.
 
-\maintainer Michael Hiermeier
-
 \level 1
+
+\maintainer Martin Kronbichler
+
 */
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
+
 #ifndef PAIREDVECTOR_H_
 #define PAIREDVECTOR_H_
 

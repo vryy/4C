@@ -4,12 +4,10 @@
 
 \brief Factory of Lubrication elements
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15270
-</pre>
+\level 3
+
+\maintainer Mostafa Faraji
+
 */
 /*--------------------------------------------------------------------------*/
 

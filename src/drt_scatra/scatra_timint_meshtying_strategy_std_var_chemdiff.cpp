@@ -1,17 +1,11 @@
 /*!----------------------------------------------------------------------
-\file scatra_timint_meshtying_strategy_std_var_chemdiff.cpp
 
 \brief Standard solution strategy for variational chemical diffusion
      problems (without meshtying)
 
 \level 3
 
-<pre>
-\maintainer Jorge De Anda Salazar
-            deanda@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089-289-15251
-</pre>
+\maintainer Martin Kronbichler
 
 *----------------------------------------------------------------------*/
 #include "scatra_timint_meshtying_strategy_std_var_chemdiff.H"

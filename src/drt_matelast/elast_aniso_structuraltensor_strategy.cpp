@@ -1,12 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_aniso_structuraltensor_strategy.cpp
-
 \brief strategy for evaluation of the structural tensor in anisotropic materials
 
 \level 2
 
-\maintainer Andreas Rauch
+\maintainer Amadeus Gebauer
 
 */
 /*----------------------------------------------------------------------*/

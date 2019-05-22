@@ -1,7 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_interface.H
-
 \brief One contact interface
 
 \level 2

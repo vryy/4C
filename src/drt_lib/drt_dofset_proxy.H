@@ -1,17 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_dofset_proxy.H
 
 \brief Proxy to a set of degrees of freedom
 
-<pre>
 \level 1
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-</pre>
-*----------------------------------------------------------------------*/
 
+*/
+/*---------------------------------------------------------------------*/
 
 #ifndef DRT_DOFSET_PROXY_H
 #define DRT_DOFSET_PROXY_H

@@ -1,18 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_validmaterials.cpp
 \maintainer Martin Kronbichler
 
 \brief Setup of the list of valid materials for input
 
-<pre>
 \level 1
 
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #include "drt_validmaterials.H"

@@ -1,16 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_condition_selector.H
 
 \brief Split conditions into map extrators
 
-<pre>
 \level 1
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 

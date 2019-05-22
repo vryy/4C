@@ -1,12 +1,13 @@
 /*!----------------------------------------------------------------------
-\file ad_fld_lung.cpp
 
-<pre>
-Maintainer: Lena Yoshihara
-            yoshihara@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15303
-</pre>
+\brief Fluid field adapter for fsi airway simulations with attached
+parenchyma balloon
+
+\level 2
+
+\maintainer Carolin Geitner
+
+
 
 *----------------------------------------------------------------------*/
 

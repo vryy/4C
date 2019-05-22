@@ -1,15 +1,14 @@
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 /*!
-\file inpar_tutorial.H
-
-\maintainer Andreas Rauch
 
 \brief tutorial input parameters
 
-\level 3
-*/
+\maintainer  Martin Kronbichler
 
-/*----------------------------------------------------------------------*/
+\level 2
+
+*/
+/*---------------------------------------------------------------------*/
 
 // All header files should have #define guards to prevent multiple inclusion.
 // The format of the symbol name should be <PROJECT>_<PATH>_<FILE>_H_.

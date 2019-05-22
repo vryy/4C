@@ -1,12 +1,11 @@
 /*!----------------------------------------------------------------------*
 \file so_nstet_nodalstrain.cpp
 
-\brief Nstet element nodal strain implementation
-
-\maintainer Michael Gee
+\brief NStet element
 
 \level 3
 
+\maintainer Christoph Meier
 *----------------------------------------------------------------------*/
 
 #include <Teuchos_TimeMonitor.hpp>

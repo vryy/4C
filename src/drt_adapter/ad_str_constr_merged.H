@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_str_constr_merged.H
 
 \brief Adapter Layer for Structures with Algebraic Constraints
 

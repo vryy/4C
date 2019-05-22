@@ -1,17 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_resulttest_elch.cpp
 
 \brief result tests for electrochemistry problems
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 #include "scatra_timint_elch.H"

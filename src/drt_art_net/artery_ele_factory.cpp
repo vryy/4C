@@ -1,16 +1,11 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file artery_ele_factory.cpp
 
 \brief Factory of artery elements
 
-<pre>
 \level 3
 
 \maintainer Johannes Kremheller
-            kremheller@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-</pre>
 */
 /*--------------------------------------------------------------------------*/
 #include "artery_ele_factory.H"

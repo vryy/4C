@@ -6,9 +6,8 @@
        test can be used to check the residual (right-hand-side)
        for convergence.
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Aug 3, 2015
 
 \level 3
 

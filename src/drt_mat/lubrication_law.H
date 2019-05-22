@@ -1,7 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file lubrication_law.H
-
 \brief calculation classes for evaluation of constitutive relation for lubrication
 
 \level 3

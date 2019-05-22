@@ -1,8 +1,7 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_impl_prestress.H
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
 \date Sep 2, 2015
 

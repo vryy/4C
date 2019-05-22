@@ -1,17 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_ele_boundary_calc.cpp
 
 \brief evaluation of scatra boundary terms at integration points
 
 \level 1
 
-<pre>
 \maintainer Anh-Tu Vuong
-            vuong@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15237
-</pre>
  */
 /*----------------------------------------------------------------------*/
 #include "scatra_ele_boundary_calc.H"

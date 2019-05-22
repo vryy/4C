@@ -1,17 +1,14 @@
-/*!----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
-\file elchphase.H
+\brief material that stores a list of ion species in electrolyte solutions
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
-</pre>
+
 */
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+
 #ifndef ELCHPHASE_H
 #define ELCHPHASE_H
 

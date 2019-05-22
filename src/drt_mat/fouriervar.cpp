@@ -1,11 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fouriervar.cpp
 \brief heat conduction according to fourier's law with variable conductivity and capacity
 
 \level 2
 <pre>
-\maintainer Sebastian Pröll
+\maintainer Sebastian Proell
 </pre>
 */
 

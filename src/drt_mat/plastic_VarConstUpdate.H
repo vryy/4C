@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file plastic_VarConstUpdate.H
 \level 3
 \brief finite deformation plasticity algorithm based on
        variational constitutive update

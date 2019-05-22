@@ -1,24 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_timint_convcheck_strategies.H
 
 \brief strategies for Newton-Raphson convergence check for scalar transport problems
 
-To keep the scalar transport time integrator class and derived classes as plain as possible,
-the convergence check for the Newton-Raphson iteration has been encapsulated within separate
-strategy classes. Every specific convergence check strategy (e.g., for standard scalar transport
-or electrochemistry problems with or without scatra-scatra interface coupling involving Lagrange
-multipliers) computes, checks, and outputs different relevant vector norms and is implemented
-in a subclass derived from an abstract, purely virtual interface class.
-
 \level 1
 
-<pre>
 \maintainer Anh-Tu Vuong
-            vuong@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15237
-</pre>
+
  */
 /*----------------------------------------------------------------------*/
 #ifndef SCATRA_TIMINT_CONVCHECK_STRATEGIES_H
@@ -40,7 +28,12 @@ namespace SCATRA
   /*!
   \brief abstract strategy for Newton-Raphson convergence check for scalar transport problems
 
-  \author fang (fang@lnm.mw.tum.de)
+   To keep the scalar transport time integrator class and derived classes as plain as possible,
+   the convergence check for the Newton-Raphson iteration has been encapsulated within separate
+   strategy classes. Every specific convergence check strategy (e.g., for standard scalar transport
+   or electrochemistry problems with or without scatra-scatra interface coupling involving Lagrange
+   multipliers) computes, checks, and outputs different relevant vector norms and is implemented
+   in a subclass derived from an abstract, purely virtual interface class.
   */
 
   class ConvCheckStrategyBase
@@ -94,7 +87,6 @@ namespace SCATRA
   \brief specific strategy for Newton-Raphson convergence check for standard scalar transport
   problems without scatra-scatra interface coupling involving Lagrange multipliers
 
-  \author fang (fang@lnm.mw.tum.de)
   */
 
   class ConvCheckStrategyStd : public ConvCheckStrategyBase
@@ -131,7 +123,6 @@ namespace SCATRA
   \brief specific strategy for Newton-Raphson convergence check for micro scale in multi-scale
   simulations of scalar transport problems
 
-  \author fang (fang@lnm.mw.tum.de)
   */
 
   class ConvCheckStrategyStdMicroScale : public ConvCheckStrategyBase
@@ -164,7 +155,6 @@ namespace SCATRA
   \brief specific strategy for Newton-Raphson convergence check for electrochemistry problems
   without scatra-scatra interface coupling involving Lagrange multipliers
 
-  \author fang (fang@lnm.mw.tum.de)
   */
 
   class ConvCheckStrategyStdElch : public ConvCheckStrategyBase
@@ -197,7 +187,6 @@ namespace SCATRA
   \brief specific strategy for Newton-Raphson convergence check for standard scalar transport
   problems with scatra-scatra interface coupling involving Lagrange multipliers
 
-  \author fang (fang@lnm.mw.tum.de)
   */
 
   class ConvCheckStrategyS2ILM : public ConvCheckStrategyBase
@@ -230,7 +219,6 @@ namespace SCATRA
   \brief specific strategy for Newton-Raphson convergence check for electrochemistry problems with
   scatra-scatra interface coupling involving Lagrange multipliers
 
-  \author fang (fang@lnm.mw.tum.de)
   */
 
   class ConvCheckStrategyS2ILMElch : public ConvCheckStrategyBase
@@ -263,7 +251,6 @@ namespace SCATRA
   \brief specific strategy for Newton-Raphson convergence check for macro scale in multi-scale
   simulations of electrochemistry problems
 
-  \author fang (fang@lnm.mw.tum.de)
   */
 
   class ConvCheckStrategyStdMacroScaleElch : public ConvCheckStrategyBase
@@ -301,7 +288,6 @@ namespace SCATRA
   problems
          || delta phi|| / || phi || < tol    and    || res || / sqrt(totalnumdof) < tol
 
-  \author kremheller (kremheller@lnm.mw.tum.de)
   */
 
   class ConvCheckStrategyPoroMultiphaseScatra : public ConvCheckStrategyBase
@@ -335,7 +321,6 @@ namespace SCATRA
          || delta phi|| / || phi || < tol    and    || res || / sqrt(totalnumdof) < tol
          where phi are both artery_scatra and scatra DOFs and res is the combined residual
 
-  \author kremheller (kremheller@lnm.mw.tum.de)
   */
 
   class ConvCheckStrategyPoroMultiphaseScatraArtMeshTying : public ConvCheckStrategyBase

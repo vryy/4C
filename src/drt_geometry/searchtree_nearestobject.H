@@ -3,12 +3,9 @@
 
 \brief stores data about nearest object in search tree
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15270
-</pre>
+\level 3
+
+\maintainer Martin Kronbichler
 
 *----------------------------------------------------------------------*/
 #ifndef SEARCHTREE_NEARESTOBJECT_H_

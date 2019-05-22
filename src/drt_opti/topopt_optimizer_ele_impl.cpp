@@ -1,15 +1,14 @@
-/*!------------------------------------------------------------------------------------------------*
-\file topopt_optimizer_ele_impl.cpp
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief element routines of the topology optimization element
 
-<pre>
-Maintainer: Martin Winklmaier
-            winklmaier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15241
-</pre>
- *------------------------------------------------------------------------------------------------*/
+\level 3
+
+\maintainer Martin Kronbichler
+
+*/
+/*---------------------------------------------------------------------*/
 
 
 #include "topopt_optimizer_ele_impl.H"

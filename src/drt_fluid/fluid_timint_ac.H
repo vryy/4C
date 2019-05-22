@@ -1,16 +1,14 @@
-/*!----------------------------------------------------------------------
-\file fluid_timint_ac.H
+/*-----------------------------------------------------------*/
+/*!
 
 \brief Fluid time integrator for FS3I-AC problems
 
-\date 2015-07-29
-
-\maintainer Moritz Thon
-            thon@mhpc.mw.tum.de
-            089/289-10364
+\maintainer Christoph Ager
 
 \level 3
-----------------------------------------------------------------------*/
+
+*/
+/*-----------------------------------------------------------*/
 
 #ifndef FLD_TIMINT_AC_H
 #define FLD_TIMINT_AC_H

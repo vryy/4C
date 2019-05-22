@@ -1,7 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_coupling2d.cpp
-
 \brief Classes for mortar contact coupling in 2D.
 
 \level 2

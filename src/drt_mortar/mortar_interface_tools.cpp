@@ -1,6 +1,5 @@
-/*!----------------------------------------------------------------------
-\file mortar_interface_tools.cpp
-
+/*-----------------------------------------------------------------------*/
+/*!
 \brief Tools for the mortar interface
 
 \maintainer Alexander Popp

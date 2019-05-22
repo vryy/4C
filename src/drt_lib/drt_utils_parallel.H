@@ -1,17 +1,15 @@
-/*!----------------------------------------------------------------------
-\file drt_utils_parallel.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief A collection of helper methods for namespace DRT
 
-<pre>
 \level 1
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
+
 #ifndef UTILS_PARALLEL_H
 #define UTILS_PARALLEL_H
 

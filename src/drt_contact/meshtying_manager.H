@@ -1,13 +1,12 @@
-/*!----------------------------------------------------------------------
-\file meshtying_manager.H
-
+/*-----------------------------------------------------------------------*/
+/*!
 \level 1
 
 \maintainer Matthias Mayr
 
 \brief BACI implementation of main class to control all meshtying
-
-*-----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 #ifndef MESHTYING_MANAGER_H
 #define MESHTYING_MANAGER_H
 

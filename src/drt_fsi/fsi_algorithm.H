@@ -4,7 +4,7 @@
 
 \brief Basis of all FSI algorithms
 
-\maintainer Andreas Rauch
+\maintainer Matthias Mayr
 
 \level 1
 */

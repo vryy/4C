@@ -1,17 +1,12 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_augmented_integrator.H
-
 \brief A class to perform integrations of Mortar matrices on the overlap
        of two MortarElements in 1D and 2D (derived version for
        augmented contact)
 
 \level 2
 
-\maintainer Michael Hiermeier
-
-\date Apr 28, 2014
-
+\maintainer Matthias Mayr
 */
 /*---------------------------------------------------------------------*/
 

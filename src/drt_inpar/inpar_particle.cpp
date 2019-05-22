@@ -1,15 +1,10 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file inpar_particle.cpp
-
 \brief input parameters for particle problems
 
 \level 3
 
 \maintainer  Sebastian Fuchs
-             fuchs@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15262
 
 */
 /*---------------------------------------------------------------------------*/

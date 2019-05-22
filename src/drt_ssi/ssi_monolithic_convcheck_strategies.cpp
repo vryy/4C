@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ssi_monolithic_convcheck_strategies.cpp
-
 \brief strategies for Newton-Raphson convergence check for monolithic scalar-structure interaction
 problems
 
@@ -14,12 +12,8 @@ derived from an abstract, purely virtual interface class.
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
-</pre>
+
  */
 /*----------------------------------------------------------------------*/
 #include "ssi_monolithic_convcheck_strategies.H"

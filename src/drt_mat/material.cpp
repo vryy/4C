@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file material.cpp
-
 \brief Interface class for complex materials at Gauss points
 
 \level 1

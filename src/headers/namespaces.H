@@ -1,13 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file namespaces.H
 
 \brief Doxygen documentation of all namespaces in one central place
 
 \level 3
 
 \maintainer Matthias Mayr
+
 */
+/*----------------------------------------------------------------------*/
 
 /* Note:
  * - Put ALL namespace documentations into this file.

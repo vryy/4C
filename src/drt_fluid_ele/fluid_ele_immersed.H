@@ -1,16 +1,15 @@
-/*!----------------------------------------------------------------------
-\file fluid_ele_immersed.H
+/*----------------------------------------------------------------------*/
+/*!
 
 \brief specialized immersed element used in immersed fsi
 
-\level 1
+\level 3
 
-\maintainer  Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 - 15240
+\maintainer  Martin Kronbichler
 
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
+
 #include "fluid_ele_immersed_base.H"
 
 #ifndef FLUID_ELE_IMMERSED_H

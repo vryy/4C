@@ -1,15 +1,10 @@
 /*----------------------------------------------------------------------------*/
 /**
-\file xcontact_dyn.cpp
-
 \brief inequality level-set approach a.k.a. xcontact or extended contact
 
-\maintainer Michael Hiermeier
-
-\date Jun 14, 2016
+\maintainer Matthias Mayr
 
 \level 3
-
 */
 /*----------------------------------------------------------------------------*/
 

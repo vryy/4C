@@ -1,12 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid_ele_calc.H
 
 \brief main file containing routines for calculation of fluid element
 
-\maintainer Volker Gravemeier
-
 \level 1
+
+\maintainer  Martin Kronbichler
+
 */
 /*----------------------------------------------------------------------*/
 

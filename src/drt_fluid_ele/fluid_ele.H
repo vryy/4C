@@ -1,5 +1,5 @@
+/*----------------------------------------------------------------------*/
 /*!
-\file fluid_ele.H
 
 \brief A C++ wrapper for the fluid element
 
@@ -11,15 +11,13 @@ and Gauss point loop (depending on the fluid implementation)
 as well as some additional service routines (for the evaluation
 of errors, turbulence statistics etc.).
 
+\maintainer Martin Kronbichler
+
 \level 1
 
-<pre>
-\maintainer Volker Gravemeier
-            vgravem@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15236/-245
-</pre>
 */
+/*----------------------------------------------------------------------*/
+
 #ifndef DRT_FLUID_ELE_H
 #define DRT_FLUID_ELE_H
 

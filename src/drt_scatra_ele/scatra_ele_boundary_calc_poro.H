@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_ele_boundary_calc_poro.H
 
 \brief evaluation of scatra boundary terms at integration points
 
-<pre>
-Maintainer: Andreas Rauch
-            rauch@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15240
-</pre>
+\level 2
+
+\maintainer Anh-Tu Vuong
  */
 /*----------------------------------------------------------------------*/
 

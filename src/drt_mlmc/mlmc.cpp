@@ -1,10 +1,13 @@
-/*!----------------------------------------------------------------------
-\file  mlmc.cpp
+/*----------------------------------------------------------------------*/
+/*!
 \brief Class for performing Multi Level Monte Carlo (MLMC)analysis of structure
-\level 2
-\maintainer Jonas Biehler
 
- *!----------------------------------------------------------------------*/
+\maintainer Jonas Nitzler
+
+\level 2
+*/
+/*----------------------------------------------------------------------*/
+
 #ifdef HAVE_FFTW
 
 #include "../drt_adapter/ad_str_structure.H"

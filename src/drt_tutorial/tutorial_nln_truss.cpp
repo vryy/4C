@@ -1,14 +1,15 @@
-/*!----------------------------------------------------------------------
-\file tutorial_nln_truss.cpp
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief student's c++/baci nonlinear truss tutorial
 
-\maintainer  Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15240
+\maintainer  Martin Kronbichler
 
-*----------------------------------------------------------------------*/
+\level 2
+
+*/
+/*---------------------------------------------------------------------*/
+
 #include "tutorial_utils.H"
 #include "tutorial_nln_truss.H"
 #include "tutorial_ele/tutorial_ele_calc.H"

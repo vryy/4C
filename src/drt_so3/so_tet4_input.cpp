@@ -1,12 +1,8 @@
 /*!----------------------------------------------------------------------**###
 \file so_tet4_input.cpp
-\brief
-\level 1
-
-<pre>
+\brief Solid Tet4 Element
 \maintainer Christoph Meier
-</pre>
-
+\level 1
 *----------------------------------------------------------------------*/
 
 #include "so_tet4.H"

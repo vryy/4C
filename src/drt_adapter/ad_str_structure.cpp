@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_str_structure.cpp
 
 \brief Deprecated structure field adapter
        (see ad_str_structure_new.H/.cpp for the new version)

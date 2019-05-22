@@ -1,14 +1,12 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file ad_fld_fluid_ale_immersed.cpp
 
-\brief
+\brief Solver for fluid field on a moving ALE mesh in combination with an immersed structure
 
-<pre>
-Maintainer: Andreas Rauch
-            rauch@lnm.mw.tum.de
-            089 - 289 10240
-</pre>
+\level 3
+
+\maintainer Jonas Eichinger
+
 */
 /*----------------------------------------------------------------------------*/
 #include "ad_fld_fluid_ale_immersed.H"

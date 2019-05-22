@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*!
-\file str_timint_basedataio_runtime_vtk_output.cpp
 
 \brief input parameters related to VTK output at runtime for the structural (time) integration
 

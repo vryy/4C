@@ -1,15 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_uq_dyn.cpp
-\brief  Uncertainty Quantification
+\brief Uncertainty Quantification
 
-<pre>
-Maintainer: Jonas Biehler
-            biehler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15276
-</pre>
+\maintainer Jonas Nitzler
+
+\level 3
 */
+/*----------------------------------------------------------------------*/
+
 #ifdef HAVE_FFTW
 
 

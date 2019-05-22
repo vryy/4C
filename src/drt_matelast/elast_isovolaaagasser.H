@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_isovolaaagasser.H
 \brief This file contains the routines required to calculate the isochoric contribution
 of the aaagasser material and the corresponding volumetric contribution.
 
@@ -9,10 +8,7 @@ MAT 20 ELAST_IsoVolAAAGasser CLUM 2.62E3 CMED 1.98E3 CABLUM 1.73E3 NUE 0.49 BETA
 \level 1
 
 <pre>
-\maintainer Jonas Biehler
-            biehler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15276
+\maintainer Amadeus Gebauer
 </pre>
 
 *----------------------------------------------------------------------*/

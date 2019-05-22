@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file ad_fld_fluid_ale.H
 
 \brief Solver for fluid field on a moving ALE mesh
 

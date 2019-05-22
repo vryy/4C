@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file acoustic_sol.H
 \brief contains a density, a speed of sound and a viscosity to characterize
        all necessary properties for sound propagation in acoustic material
        example input line:
@@ -7,9 +6,6 @@
 <pre>
 \level 2
 \maintainer Luca Berardocco
-            berardocco@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15244
 </pre>
  */
 /*----------------------------------------------------------------------*/

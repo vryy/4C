@@ -5,7 +5,7 @@
 
 \level 3
 
-\maintainer Andy Wirtz
+\maintainer Martin Kronbichler
 
 *----------------------------------------------------------------------*/
 #ifndef SEARCHTREE_GEOMETRY_SERVICE_H_

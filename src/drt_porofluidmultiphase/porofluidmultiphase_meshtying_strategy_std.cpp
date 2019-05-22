@@ -1,15 +1,9 @@
 /*!----------------------------------------------------------------------
-\file porofluidmultiphase_meshtying_strategy_std.cpp
-
 \brief standard case without mesh tying
 
 \level 3
 
 \maintainer Johannes Kremheller
-            kremheller@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-
-
 *----------------------------------------------------------------------*/
 
 #include "porofluidmultiphase_meshtying_strategy_std.H"

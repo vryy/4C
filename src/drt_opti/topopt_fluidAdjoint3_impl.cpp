@@ -1,13 +1,14 @@
-/*!------------------------------------------------------------------------------------------------*
-\file topopt_fluidAdjoint3_impl.cpp
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief Functionality of the element level of the fluid adjoint equations
 
-\maintainer Martin Winklmaier
+\maintainer Martin Kronbichler
 
 \level 3
- *------------------------------------------------------------------------------------------------*/
 
+*/
+/*---------------------------------------------------------------------*/
 
 #include "topopt_fluidAdjoint3_impl.H"
 #include "topopt_fluidAdjoint3_impl_parameter.H"

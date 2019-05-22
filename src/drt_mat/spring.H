@@ -1,13 +1,10 @@
 /*!----------------------------------------------------------------------
-\file spring.H
-
 \brief Material law for elastic spring (either translational or rotational spring)
 
+\level 3
+
 <pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
+\maintainer Alexander Popp
 </pre>
 *----------------------------------------------------------------------*/
 #ifndef SPRING_H

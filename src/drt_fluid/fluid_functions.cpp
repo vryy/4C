@@ -1,18 +1,14 @@
-/*!-----------------------------------------------------------------------------------------------*
- \file fluid_functions.cpp
+/*-----------------------------------------------------------*/
+/*!
 
- \brief Managing and evaluating of spatial functions for fluid problems
+\brief Managing and evaluating of spatial functions for fluid problems
 
-  detailed description in header file
+\maintainer Christoph Ager
 
 \level 2
 
-<pre>
-\maintainer Christoph Ager
-            ager@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
- *------------------------------------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------*/
 
 #include "fluid_functions.H"
 #include "../drt_lib/drt_globalproblem.H"

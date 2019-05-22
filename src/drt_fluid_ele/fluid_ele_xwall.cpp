@@ -1,19 +1,18 @@
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 /*!
- \file fluid_ele_xwall.cpp
 
- \brief
+\brief Implementation of enrichment-wall fluid elements.
+In addition to that, it contains the interface between element call
+and Gauss point loop (depending on the fluid implementation)
+as well as some additional service routines (for the evaluation
+of errors, turbulence statistics etc.)
 
- \level 2
-
-<pre>
 \maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
 
- </pre>
- *----------------------------------------------------------------------*/
+\level 2
+
+*/
+/*-----------------------------------------------------------*/
 
 
 #include "fluid_ele_xwall.H"

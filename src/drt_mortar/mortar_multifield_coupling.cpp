@@ -1,6 +1,5 @@
-/*!----------------------------------------------------------------------
-\file mortar_multifield_coupling.cpp
-
+/*-----------------------------------------------------------------------*/
+/*!
 \brief Class performing coupling (condensation/recovery) for dual mortar
        methods in (volume) monolithic multi-physics applications, i.e. in
        block matrix systems. This also accounts for the correct condensation
@@ -9,8 +8,8 @@
 \level 2
 
 \maintainer Matthias Mayr
-
-*-----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 #include "mortar_multifield_coupling.H"
 #include "../linalg/linalg_blocksparsematrix.H"
 #include "../drt_lib/drt_discret.H"

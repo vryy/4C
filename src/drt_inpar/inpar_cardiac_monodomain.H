@@ -1,17 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_cardiac_monodomain.H
-
 \brief Input parameters for cardiac monodomain
 
 \level 2
 
-<pre>
-\maintainer Julia Hoermann
-            hoermann@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089-289-15264
-</pre>
+\maintainer Anh-Tu Vuong
 */
 /*----------------------------------------------------------------------*/
 #ifndef INPAR_CARDIAC_MONODOMAIN_H

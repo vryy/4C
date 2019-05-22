@@ -1,19 +1,16 @@
-/*!----------------------------------------------------------------------
-\file fluid_rotsym_periodicbc.H
+/*-----------------------------------------------------------*/
+/*!
 
-\brief Methods to apply rotationally symmetric periodic boundary conditions
-       for fluid problems on element level
+\brief Methods to apply rotationally symmetric periodic boundary
+       conditions for fluid problems on element level
+
+\maintainer Martin Kronbichler
 
 \level 1
 
-<pre>
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+*/
+/*-----------------------------------------------------------*/
 
- *----------------------------------------------------------------------*/
 #ifndef FLUID_ROTSYM_PERIODICBC_H
 #define FLUID_ROTSYM_PERIODICBC_H
 

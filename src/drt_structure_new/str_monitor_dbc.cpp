@@ -1,13 +1,11 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file str_monitor_dbc.cpp
 
 \brief Monitor tagged Dirichlet boundary conditions
 
 \level 3
 
-\maintainer Michael Hiermeier
-\date Jan 2, 2018
+\maintainer Anh-Tu Vuong
 
 */
 /*----------------------------------------------------------------------------*/

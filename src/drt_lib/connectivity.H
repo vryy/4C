@@ -1,12 +1,9 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file connectivity.H
 
 \brief Find connectivities in a discretization.
 
-\maintainer Michael Hiermeier
-
-\date Mar 8, 2018
+\maintainer Martin Kronbichler
 
 \level 3
 */

@@ -1,16 +1,14 @@
-/*!----------------------------------------------------------------------
-\file fluid_ele_immersed_base.cpp
+/*----------------------------------------------------------------------*/
+/*!
 
-\brief base class for all immersed fluid elements
+\brief Base class for the immersed fluid elements
 
-\level 1
+\maintainer Martin Kronbichler
 
-\maintainer  Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15240
+\level 3
 
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #include "fluid_ele_immersed_base.H"
 #include "fluid_ele_immersed.H"

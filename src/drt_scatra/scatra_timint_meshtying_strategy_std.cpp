@@ -1,16 +1,10 @@
 /*!----------------------------------------------------------------------
-\file scatra_timint_meshtying_strategy_std.cpp
 
 \brief Standard solution strategy for standard scalar transport problems (without meshtying)
 
 \level 2
 
-<pre>
 \maintainer Anh-Tu Vuong
-            vuong@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15237
-</pre>
 
 *----------------------------------------------------------------------*/
 #include "scatra_timint_meshtying_strategy_std.H"

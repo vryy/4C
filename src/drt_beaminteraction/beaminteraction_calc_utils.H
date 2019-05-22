@@ -1,13 +1,10 @@
 /*-----------------------------------------------------------*/
 /*!
-\file beaminteraction_calc_utils.H
-
 \brief calc utils for beam interaction framework
 
-\maintainer Jonas Eichinger, Maximilian Grill
+\maintainer Jonas Eichinger
 
 \level 3
-
 */
 /*-----------------------------------------------------------*/
 

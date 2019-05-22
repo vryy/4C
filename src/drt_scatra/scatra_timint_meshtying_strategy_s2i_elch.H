@@ -1,16 +1,10 @@
 /*!----------------------------------------------------------------------
-\file scatra_timint_meshtying_strategy_s2i_elch.H
 
 \brief Scatra-scatra interface coupling strategy for electrochemistry problems
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
-</pre>
 
 *----------------------------------------------------------------------*/
 #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_ELCH_H
@@ -34,7 +28,6 @@ namespace SCATRA
   can be circumvented. This class contains the scatra-scatra interface coupling strategy for
   electrochemistry problems.
 
-  \author fang (fang@lnm.mw.tum.de)
   */
 
   class MeshtyingStrategyS2IElch : public MeshtyingStrategyS2I

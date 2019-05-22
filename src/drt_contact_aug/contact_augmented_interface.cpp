@@ -1,15 +1,10 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_augmented_interface.cpp
-
 \brief Augmented contact interface.
 
 \level 2
 
-\maintainer Michael Hiermeier
-
-\date Apr 16, 2014
-
+\maintainer Matthias Mayr
 */
 /*---------------------------------------------------------------------*/
 #include "contact_augmented_interface.H"

@@ -1,13 +1,10 @@
 /*!----------------------------------------------------------------------
-\file immersed_partitioned_adhesion_traction.H
-\level 2
 
 \brief partitioned immersed cell-ecm interaction via adhesion traction
 
-\maintainer  Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15240
+\level 2
+
+\maintainer Jonas Eichinger
 
 *----------------------------------------------------------------------*/
 #ifndef IMMERSED_PARTITIONED_ADHESION_TRACTION_H

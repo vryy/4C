@@ -1,12 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file FAD_utils.H
 
 \brief A set of utility functions for Forward Automatic Differentiation
 
 \level 3
 
 \maintainer Maximilian Grill
+
 */
 /*----------------------------------------------------------------------*/
 

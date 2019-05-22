@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file aaagasser.H
 \brief
 Be sure to include 'AAA' in your BACI configurations file!!!
 This file contains the routines required for OGDEN-like material model
@@ -11,9 +10,11 @@ the input line should read:
   MAT 1 MAT_Struct_AAAGasser DENS 0.0001 VOL OgSiMi NUE 0.49 BETA -2.0 CLUM 2.62e-3 CMED 2.13e-3
 CABLUM 1.98e-3
 
-<pre>
-Maintainer: goe
-</pre>
+\level 3
+
+\maintainer Christoph Schmidt
+
+
 */
 /*----------------------------------------------------------------------*/
 #ifndef AAAGASSER_H_

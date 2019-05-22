@@ -1,10 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_timint_locainterface.H
 
-\maintainer Michael Hiermeier
+\brief  interface to Nox and LOCA for structural dynamics
 
-\date Nov 27, 2015
+\maintainer Anh-Tu Vuong
 
 \level 3
 

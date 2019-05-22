@@ -1,13 +1,10 @@
 /*!----------------------------------------------------------------------
-\file artery_ele_calc.H
 
 \brief main file containing routines for calculation of artery element
 
 \level 3
 
 \maintainer Johannes Kremheller
-            kremheller@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
 
 *----------------------------------------------------------------------*/
 

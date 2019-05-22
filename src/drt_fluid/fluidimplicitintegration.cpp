@@ -1,5 +1,6 @@
-/*!----------------------------------------------------------------------
-\file fluidimplicitintegration.cpp
+/*-----------------------------------------------------------*/
+/*!
+
 \brief Control routine for fluid (in)stationary solvers,
 
      including instationary solvers based on
@@ -13,14 +14,13 @@
 
      and a stationary solver.
 
+\maintainer Martin Kronbichler
+
 \level 1
 
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
+*/
+/*-----------------------------------------------------------*/
 
-*----------------------------------------------------------------------*/
 #undef WRITEOUTSTATISTICS
 
 #include "fluidimplicitintegration.H"

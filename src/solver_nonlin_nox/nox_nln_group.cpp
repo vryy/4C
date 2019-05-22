@@ -5,9 +5,8 @@
 \brief %NOX::NLN implementation of a %NOX::Epetra::Group
        to handle unconstrained problems.
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Jun 29, 2015
 
 \level 3
 

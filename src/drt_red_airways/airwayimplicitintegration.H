@@ -1,16 +1,15 @@
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 /*!
-\file airwayimplicitintegration.H
 
 \brief Associated with control routine for reduced dimensional airways
   solvers
 
+\maintainer Carolin Geitner
+
 \level 3
 
-\maintainer Lena Yoshihara
-
 */
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 
 #ifndef AIRWAYIMPLICITINTEGRATION_H
 #define AIRWAYIMPLICITINTEGRATION_H

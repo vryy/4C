@@ -1,16 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file newtonianfluid.cpp
-
 \brief Newtonian fluid material
 
 \level 1
 
 <pre>
 \maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
 </pre>
 */
 /*----------------------------------------------------------------------*/

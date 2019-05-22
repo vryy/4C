@@ -1,15 +1,15 @@
-/*!----------------------------------------------------------------------
-\file fluid_ele_tds.cpp
-\brief
-\level 3
-<pre>
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+/*-----------------------------------------------------------*/
+/*!
 
-*----------------------------------------------------------------------*/
+\brief time-dependent subgrid scale functionality
+
+\maintainer Martin Kronbichler
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
+
 
 #include "fluid_ele_tds.H"
 

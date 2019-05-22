@@ -1,10 +1,9 @@
 
 /*!
-\file str_timint_basedataglobalstate.H
 
 \brief Global state data container for the structural (time) integration
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
 \level 3
 

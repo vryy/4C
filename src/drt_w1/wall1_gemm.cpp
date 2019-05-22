@@ -1,6 +1,5 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
-\file wall1_gemm.cpp
 \brief Routines for generalised energy-momentum method
        FixMe This file is currently unsupported in the new structural
        time integration, since the corresponding time integration is
@@ -8,13 +7,10 @@
 
 \level 1
 
-<pre>
-\maintainer Michael Hiermeier
-            hiermeier@lnm.mw.tum.de
-</pre>
-*/
+\maintainer Christoph Meier
 
-/*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------------*/
 /* macros */
 
 /*----------------------------------------------------------------------*/

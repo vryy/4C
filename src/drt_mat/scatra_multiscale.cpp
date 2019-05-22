@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_multiscale.cpp
-
 \brief auxiliary material for macro-scale elements in multi-scale simulations of scalar transport
 problems
 
@@ -9,9 +7,6 @@ problems
 
 <pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
 </pre>
 */
 /*----------------------------------------------------------------------*/

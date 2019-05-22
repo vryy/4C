@@ -1,16 +1,11 @@
 /*!-----------------------------------------------------------------------------------------------*
-\file scatra_timint_elch.cpp
 
 \brief scatra time integration for elch
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
-</pre>
+
  *------------------------------------------------------------------------------------------------*/
 #include "../drt_fluid/fluid_utils.H"  // for splitter
 

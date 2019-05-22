@@ -1,12 +1,9 @@
-/*----------------------------------------------------------------------------*/
-/**
-\file drt_utils_discret_dbc.cpp
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief Utils methods to apply DBCs to the system-vectors of a discretization
 
-\maintainer Michael Hiermeier
-
-\date Oct 14, 2016
+\maintainer Martin Kronbichler
 
 \level 2
 

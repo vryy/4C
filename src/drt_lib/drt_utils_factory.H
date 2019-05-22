@@ -1,17 +1,15 @@
-/*!----------------------------------------------------------------------
-\file drt_utils_factory.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief A collection of helper methods for namespace DRT
 
-<pre>
 \level 0
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
+
 #ifndef UTILS_FACTORY_H
 #define UTILS_FACTORY_H
 

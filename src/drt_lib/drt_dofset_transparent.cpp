@@ -1,17 +1,14 @@
-/*!----------------------------------------------------------------------
-\file drt_dofset_transparent.cpp
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief A set of degrees of freedom special for contact
 
-<pre>
 \level 1
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 #include "drt_dofset_transparent.H"
 #include "../linalg/linalg_utils.H"

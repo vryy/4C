@@ -1,14 +1,11 @@
 /*----------------------------------------------------------------------------*/
 /**
-\file xstr_xstructure_structure_state.cpp
 
 \brief XStructure/Structure state handling ( combination of XFEM and std.
        discretizations )
 
 
-\maintainer Michael Hiermeier
-
-\date Jun 28, 2016
+\maintainer Anh-Tu Vuong
 
 \level 3
 

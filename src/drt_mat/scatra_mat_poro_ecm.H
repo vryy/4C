@@ -1,13 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file scatra_mat_poro_ecm.H
-
  \brief scatra material for transport within porous model with special implementations
         for ECM model
 
-   \maintainer Andreas Rauch
-               rauch@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
+\maintainer Christoph Schmidt
 
 \level 3
  *----------------------------------------------------------------------*/

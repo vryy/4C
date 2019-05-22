@@ -1,15 +1,15 @@
-/*!----------------------------------------------------------------------
-\file tutorial_struct_ale_coupling.cpp
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief student's c++/baci nonlinear truss tutorial
 
+\maintainer  Martin Kronbichler
 
-\maintainer  Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15240
+\level 2
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
+
 #include "tutorial_struct_ale_coupling.H"
 #include "tutorial_nln_truss.H"
 

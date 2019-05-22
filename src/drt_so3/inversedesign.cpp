@@ -1,12 +1,9 @@
 /*!----------------------------------------------------------------------
 \file inversedesign.cpp
 
-<pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15239
-</pre>
+\brief special element adaptions for inverse design
+\maintainer Christoph Meier
+\level 2
 
 *----------------------------------------------------------------------*/
 

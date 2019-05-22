@@ -1,16 +1,15 @@
-/*!----------------------------------------------------------------------
-\file drt_discret_faces.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief a class to manage an enhanced discretization including the faces between elements
 
-</pre>
-
-<pre>
 \level 1
 
 \maintainer Martin Kronbichler
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
+
 #ifndef DISCRET_FACES_H
 #define DISCRET_FACES_H
 

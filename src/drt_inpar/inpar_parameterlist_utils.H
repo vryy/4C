@@ -1,9 +1,9 @@
 /*----------------------------------------------------------------------------*/
-/** \file inpar_parameterlist_utils.H
- *  \brief Utility routines for the Teuchos::ParameterList
- *
- *  \level 1
- *  \maintainer Martin Kronbichler
+/*!
+\brief Utility routines for the Teuchos::ParameterList
+
+\level 1
+\maintainer Martin Kronbichler
  */
 /*----------------------------------------------------------------------------*/
 

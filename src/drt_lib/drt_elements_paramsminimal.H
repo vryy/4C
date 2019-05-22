@@ -1,14 +1,15 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file drt_elements_paramsminimal.H
 
-\brief Minimal implementation of the parameter interface for the element <--> time integrator data
-exchange
+\brief Minimal implementation of the parameter interface for the element
+<--> time integrator data exchange
 
 \level 3
 
-\maintainer Michael Hiermeier
- *----------------------------------------------------------------------*/
+\maintainer Martin Kronbichler
+
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_LIB_DRT_ELEMENTS_PARAMSMINIMAL_H_
 #define SRC_DRT_LIB_DRT_ELEMENTS_PARAMSMINIMAL_H_

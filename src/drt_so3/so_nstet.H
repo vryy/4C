@@ -1,13 +1,11 @@
 /*!----------------------------------------------------------------------
 \file so_nstet.H
 
-<pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15239
-</pre>
+\brief NStet element
 
+\level 3
+
+\maintainer Christoph Meier
 *----------------------------------------------------------------------*/
 #ifndef SO_NSTET4_H
 #define SO_NSTET4_H

@@ -2,17 +2,18 @@
 /*!
 \file lubrication_ele_action.H
 
-\brief provides enum of actions. Motivation was to have a quick enum
+\brief provides enum of actions.
+
+Motivation was to have a quick enum
 comparison instead of a cumbersome std::string compare.
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15270
-</pre>
+\level 3
+
+\maintainer Mostafa Faraji
+
 */
 /*--------------------------------------------------------------------------*/
+
 #ifndef SRC_DRT_LUBRICATION_ELE_LUBRICATION_ELE_ACTION_H_
 #define SRC_DRT_LUBRICATION_ELE_LUBRICATION_ELE_ACTION_H_
 

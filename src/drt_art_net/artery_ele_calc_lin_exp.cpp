@@ -1,10 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file artery_ele_calc_lin_exp.cpp
 
 \brief Internal implementation of LinExp artery element
 
-\maintainer Lena Yoshihara
+\maintainer Johannes Kremheller
 
 \level 3
 */

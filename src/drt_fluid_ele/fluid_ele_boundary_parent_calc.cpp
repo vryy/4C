@@ -1,18 +1,14 @@
-/*!----------------------------------------------------------------------
-\file fluid_ele_boundary_parent_calc.cpp
-\brief
+/*----------------------------------------------------------------------*/
+/*!
 
 \brief evaluate boundary conditions requiring parent-element evaluations
 
 \level 2
 
-<pre>
-\maintainer  Ursula Rasthofer & Volker Gravemeier
-             {rasthofer,vgravem}@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15236/-245
-</pre>
-*----------------------------------------------------------------------*/
+\maintainer  Martin Kronbichler
+
+*/
+/*----------------------------------------------------------------------*/
 
 #include "fluid_ele_boundary_parent_calc.H"
 #include "fluid_ele.H"

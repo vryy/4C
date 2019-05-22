@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file chol_factor.cpp
- * \brief Cholesky factorization using Epetra_SerialSpdDenseSolver
- *
-<pre>
+\brief Cholesky factorization using Epetra_SerialSpdDenseSolver
+
 \level 3
+
 \maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #include "chol_factor.H"

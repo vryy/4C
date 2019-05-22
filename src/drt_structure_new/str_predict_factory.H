@@ -1,10 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_predict_factory.H
 
 \brief Factory class to build predictor objects
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
 \level 3
 

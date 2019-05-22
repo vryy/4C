@@ -1,12 +1,11 @@
 /*!----------------------------------------------------------------------**###
 \file so_nstet5_input.cpp
 
-<pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15239
-</pre>
+\brief NStet5 element
+
+\level 2
+
+\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 

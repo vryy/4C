@@ -1,12 +1,9 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file str_model_evaluator_cardiovascular0d.cpp
 
 \brief Evaluation and assembly of all 0D cardiovascular model terms
 
 \maintainer Amadeus Gebauer
-
-\date Jun 29, 2016
 
 \level 3
 

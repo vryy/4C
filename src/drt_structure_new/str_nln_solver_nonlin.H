@@ -1,6 +1,7 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_nln_solver_nonlin.H
+
+\brief Interface to Baci's NLNSOL as nonlinear solver in structural dynamics
 
 \maintainer Matthias Mayr
 

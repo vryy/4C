@@ -1,17 +1,14 @@
-/*!----------------------------------------------------------------------
-\file fluid_timint_two_phase_ost.H
-\brief
+/*-----------------------------------------------------------*/
+/*!
+
+\brief One-step theta time integration for two-phase flow
+
+\maintainer Christoph Ager
 
 \level 2
 
-<pre>
-\maintainer Christoph Ager & Martin Kronbichler
-             {ager,kronbichler}@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15236/-235
-</pre>
-
-*----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------*/
 
 #ifndef FLD_TIMINT_TWO_PHASE_OST_H
 #define FLD_TIMINT_TWO_PHASE_OST_H

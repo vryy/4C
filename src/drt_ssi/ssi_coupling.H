@@ -1,14 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file ssi_coupling.H
-
  \brief helper classes for  scalar-structure coupling
 
  \level 3
 
-   \maintainer Andreas Rauch
-               rauch@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
+ \maintainer Christoph Schmidt
+
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_SSI_SSI_COUPLING_H_

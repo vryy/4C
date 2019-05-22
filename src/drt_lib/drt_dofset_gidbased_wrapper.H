@@ -1,15 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file drt_dofset_gidbased_wrapper.H
 
  \brief subproxy functionality to dofsets
 
 \level 2
 
-\maintainer Andreas Rauch
-            rauch@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
- *----------------------------------------------------------------------*/
+\maintainer Martin Kronbichler
+
+*/
+/*----------------------------------------------------------------------*/
 
 
 #ifndef DRT_DOFSET_SUBSET_H_

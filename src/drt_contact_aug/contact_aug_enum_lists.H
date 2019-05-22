@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file contact_aug_enum_lists.H
-
 \brief Enumerator lists for the internal use (no input parameters)
 
 \level 3
 
-\maintainer Michael Hiermeier
-\date Sep 29, 2017
-
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------------*/
 

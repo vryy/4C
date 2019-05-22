@@ -1,16 +1,14 @@
-/*!------------------------------------------------------------------------------------------------*
-\file topopt_fluidAdjoint3_interface.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief Interface for element level of adjoint fluid equations
 
-<pre>
-Maintainer: Martin Winklmaier
-            winklmaier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15241
-</pre>
- *------------------------------------------------------------------------------------------------*/
+\maintainer Martin Kronbichler
 
+\level 3
+
+*/
+/*---------------------------------------------------------------------*/
 
 #ifndef TOPOPT_FLUIDADJOINT3_INTERFACE_H_
 #define TOPOPT_FLUIDADJOINT3_INTERFACE_H_

@@ -1,17 +1,11 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file scatra_ele_calc_service_cardiac_monodomain.cpp
 
 \brief evaluation of scatra elements for cardiac monodomain problems
 
 \level 2
 
-<pre>
-\maintainer Lasse Jagschies
-            lasse.jagschies@tum.de
-            http://www.lnm.mw.tum.de
-            089-289-10365
-</pre>
+\maintainer Anh-Tu Vuong
 */
 /*--------------------------------------------------------------------------*/
 

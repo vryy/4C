@@ -1,16 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_levelset.cpp
-
 \brief Input parameters for level set
 
 \level 2
 
-<pre>
 \maintainer Christoph Ager
-            ager@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 

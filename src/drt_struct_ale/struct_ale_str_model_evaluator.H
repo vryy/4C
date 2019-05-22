@@ -1,15 +1,10 @@
 /*-----------------------------------------------------------*/
 /*!
-\file struct_ale_str_model_evaluator.H
-
 \brief Model evaluator for Structure-ALE problems.
 
-\maintainer Andreas Rauch
-
-\date Dec 05, 2016
+\maintainer Matthias Mayr
 
 \level 3
-
 */
 /*-----------------------------------------------------------*/
 

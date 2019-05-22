@@ -1,16 +1,10 @@
 /*!----------------------------------------------------------------------
-\file scatra_reaction_mat.H
-
 \brief This file contains the base material for reactive scalars. This includes all
        calculations of the reactions terms and all its derivatives.
 
 \level 2
-<pre>
+
 \maintainer Johannes Kremheller
-            kremheller@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15262
-</pre>
 *----------------------------------------------------------------------*/
 
 

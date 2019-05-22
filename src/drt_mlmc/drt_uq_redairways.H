@@ -1,13 +1,13 @@
-/*!----------------------------------------------------------------------
-\file drt_uq_redairways.H
-
+/*----------------------------------------------------------------------*/
+/*!
 \brief Class for performing UQ analysis with redairways
 
-\level 2
+\maintainer Jonas Nitzler
 
-\maintainer Jonas Biehler
+\level 2
 */
 /*----------------------------------------------------------------------*/
+
 #ifdef HAVE_FFTW
 #ifndef DRT_UQ_REDAIRWAYS_H_
 #define DRT_UQ_REDAIRWAYS_H_

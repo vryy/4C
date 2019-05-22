@@ -1,16 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_timint_ost.cpp
 \brief One-Step-Theta time-integration scheme
 
 \level 1
 
-<pre>
 \maintainer Anh-Tu Vuong
-            vuong@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15237
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #include "scatra_timint_ost.H"

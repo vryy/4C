@@ -1,16 +1,11 @@
 /*!-----------------------------------------------------------------------------------------------*
-\file scatra_timint_cardiac_monodomain.H
 
 \brief scatra time integration for cardiac monodomain
 
 \level 2
 
-<pre>
-\maintainer Lasse Jagschies
-            lasse.jagschies@tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-10365
-</pre>
+\maintainer Anh-Tu Vuong
+
  *------------------------------------------------------------------------------------------------*/
 
 #ifndef SCATRA_TIMINT_CARDIAC_MONODOMAIN_H

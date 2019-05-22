@@ -1,3 +1,13 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file so_hex8p1j1.cpp
+\brief 'Q1P0' element in 8-node hexahedron shape
+
+\level 2
+
+\maintainer Christoph Meier
+*/
+/*----------------------------------------------------------------------*/
 
 #include "so_hex8p1j1.H"
 #include "../drt_lib/drt_discret.H"

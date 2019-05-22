@@ -1,13 +1,9 @@
 /*!------------------------------------------------------------------------------------------------*
- \file ssi_base.cpp
-
  \brief base class for all scalar structure algorithms
 
  \level 1
 
-   \maintainer Andreas Rauch
-               rauch@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
+ \maintainer Christoph Schmidt
 
  *------------------------------------------------------------------------------------------------*/
 

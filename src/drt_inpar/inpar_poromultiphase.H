@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file inpar_poromultiphase.H
-
- \brief input paramters for porous multiphase problem
+ \brief input parameters for porous multiphase problem
 
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_INPAR_INPAR_POROMULTIPHASE_H_

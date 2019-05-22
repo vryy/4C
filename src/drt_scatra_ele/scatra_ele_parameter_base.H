@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_ele_parameter_base.H
 
 \brief abstract interface for parameter classes required for scalar transport element evaluation
 
@@ -10,14 +9,9 @@ evaluation, e.g., general parameters, turbulence parameters, and problem specifi
 parameters are usually set only once at the beginning of a simulation, namely during initialization
 of the global time integrator, and then never touched again throughout the simulation.
 
-<pre>
 \maintainer Anh-Tu Vuong
-            vuong@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15237
 
 \level 1
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #ifndef SCATRA_ELE_PARAMETER_BASE_H

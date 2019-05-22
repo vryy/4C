@@ -6,9 +6,8 @@
        and objects, which are necessary to setup a NOX::NLN
        solution strategy.
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Jul 17, 2015
 
 \level 3
 

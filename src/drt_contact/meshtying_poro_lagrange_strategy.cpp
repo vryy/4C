@@ -1,7 +1,6 @@
-/*!----------------------------------------------------------------------
-\file meshtying_poro_lagrange_strategy.cpp
-
-\brief Meshtying of porpus media using Lagrange multipliers
+/*-----------------------------------------------------------------------*/
+/*!
+\brief Meshtying of porous media using Lagrange multipliers
 
 // Masterthesis of h.Willmann under supervision of Anh-Tu Vuong and Christoph Ager
 // Originates from contact_poro_lagrange_strategy
@@ -9,8 +8,8 @@
 \maintainer Christoph Ager
 
 \level 3
-
-*----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------------------*/
 
 #include "Epetra_SerialComm.h"
 #include "meshtying_poro_lagrange_strategy.H"

@@ -102,13 +102,6 @@ def check_cpp_files_for_header(look_cmd, allerrors):
   " Check C/C++ files in this transaction have a maintainer. "
   import os
   headers = dict([(ff,bh.Header(file_contents(ff))) for ff in files_changed(look_cmd)[:-1] if is_source_file(ff)])
-# \file tag
-  cpp_files_wo_file = [ff for ff,hdr in headers.items() if hdr.get_file() != os.path.basename(ff)]
-  if len(cpp_files_wo_file) > 0:
-    if len(allerrors) > 0:
-      allerrors.append("")
-    allerrors.append("The following files have an incorrect or are missing a \\file tag:")
-    allerrors += cpp_files_wo_file
 # \brief tag
   cpp_files_wo_brief = []
 #cpp_files_wo_brief = [ff for ff, hdr in headers.items() if len(hdr.get_brief()) < 5]
@@ -147,10 +140,10 @@ def check_cpp_files_for_header(look_cmd, allerrors):
     allerrors += cpp_files_uncompliant_maintainer
 
 #print example header
-  if len(cpp_files_wo_file) > 0 or len(cpp_files_wo_brief) > 0 or len(cpp_files_wrong_start) > 0 or len(cpp_files_wo_maint) > 0 or len(cpp_files_wo_lvl) > 0 or len(cpp_files_uncompliant_maintainer):
+  if len(cpp_files_wo_brief) > 0 or len(cpp_files_wrong_start) > 0 or len(cpp_files_wo_maint) > 0 or len(cpp_files_wo_lvl) > 0 or len(cpp_files_uncompliant_maintainer):
     allerrors += bh.Header.get_example()
 
-  return len(cpp_files_wo_file)+len(cpp_files_wo_brief)+len(cpp_files_wo_maint)+len(cpp_files_wo_lvl)+len(cpp_files_wrong_start)+len(cpp_files_uncompliant_maintainer)
+  return len(cpp_files_wo_brief)+len(cpp_files_wo_maint)+len(cpp_files_wo_lvl)+len(cpp_files_wrong_start)+len(cpp_files_uncompliant_maintainer)
 
 
 #CHECK INPUT FILE HEADERS

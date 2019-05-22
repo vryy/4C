@@ -1,16 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_resulttest.H
 
 \brief general result test framework
 
-<pre>
 \level 1
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de/Members/kuettler
-            089 - 289-15235
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 

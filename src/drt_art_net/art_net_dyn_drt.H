@@ -1,8 +1,7 @@
 /*!----------------------------------------------------------------------
-\file art_net_dyn_drt.H
 \brief Main control routine for all arterial network solvers.
 
-\maintainer Lena Yoshihara
+\maintainer Johannes Kremheller
 
 \level 3
 

@@ -1,13 +1,11 @@
 /*!----------------------------------------------------------------------**##
 \file so_nstet.cpp
 
-<pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15239
-</pre>
+\brief NStet element
 
+\level 3
+
+\maintainer Christoph Meier
 *----------------------------------------------------------------------*/
 
 #include <Teuchos_TimeMonitor.hpp>

@@ -1,17 +1,15 @@
-/*!----------------------------------------------------------------------
-\file drt_parobject.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief functionality to pack, unpack and communicate classes with MPI
 
-<pre>
 \level 0
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*-----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
+
 #ifndef PAROBJECT_H
 #define PAROBJECT_H
 

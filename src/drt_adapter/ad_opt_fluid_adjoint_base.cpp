@@ -1,18 +1,11 @@
 /*!------------------------------------------------------------------------------------------------*
-\file ad_opt_fluid_adjoint_base.cpp
 
 \brief base adapter of adjoint fluid equations for topology optimization
 
 \level 2
 
-\maintainer Martin Winklmaier
+\maintainer Martin Kronbichler
 
-<pre>
-Maintainer: Martin Winklmaier
-            winklmaier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15241
-</pre>
  *------------------------------------------------------------------------------------------------*/
 
 

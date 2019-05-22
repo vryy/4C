@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file ad_art_net.H
-
  \brief adapter for artery network
 
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_ADAPTER_AD_ART_NET_H_

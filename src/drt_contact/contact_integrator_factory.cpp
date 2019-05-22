@@ -1,14 +1,10 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_integrator_factory.cpp
-
 \brief Factory to create the desired integrator object.
 
 \level 2
 
-\maintainer Michael Hiermeier
-
-\date 04/2016
+\maintainer Matthias Mayr
 
 */
 /*---------------------------------------------------------------------*/

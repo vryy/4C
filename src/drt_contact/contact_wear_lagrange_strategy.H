@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file contact_wear_lagrange_strategy.H
-
 \brief wear strategy for finite wear modeling
 
 \level 2

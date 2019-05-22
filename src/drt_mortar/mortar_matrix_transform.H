@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file mortar_matrix_transform.H
-
 \brief matrix transformation tools: Switch between different parallel
 distributions
 
 \level 3
 
-\maintainer Michael Hiermeier
-\date Apr 4, 2017
-
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------------*/
 

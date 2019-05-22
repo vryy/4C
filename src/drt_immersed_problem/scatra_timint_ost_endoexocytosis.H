@@ -1,11 +1,10 @@
 /*!----------------------------------------------------------------------
-\file scatra_timint_ost_endoexocytosis.H
 
 \brief One-Step-Theta time-integration scheme for endo-/exocytosis model
 
 \level 2
 
-\maintainer Andreas Rauch
+\maintainer Jonas Eichinger
 
 *----------------------------------------------------------------------*/
 

@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_coupneohooke.cpp
-
 \brief
 This file contains the routines required to calculate the isochoric
 contribution of a CoupNeoHookean material material.

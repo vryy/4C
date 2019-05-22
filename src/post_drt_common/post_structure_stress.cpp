@@ -1,13 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file post_structure_stress.cpp
-
 \brief postprocessing of structural stresses
 
 \level 1
 
-\maintainer Lena Yoshihara
-
+\maintainer Christoph Meier
 */
 /*----------------------------------------------------------------------*/
 

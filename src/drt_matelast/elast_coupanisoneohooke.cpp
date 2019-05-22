@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_coupanisoneohooke.cpp
 \brief the input line should read
   MAT 1 CoupAnisoNeoHooke C 100 GAMMA 35.0 INIT 0 ADAPT_ANGLE 0
 
@@ -8,8 +7,6 @@
 
 <pre>
 \maintainer Fabian Braeu
-            braeu@lnm.mw.tum.de
-            089/289 15236
 </pre>
 */
 

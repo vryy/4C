@@ -1,15 +1,10 @@
 /*!----------------------------------------------------------------------
-\file immersed_discretization.cpp
 
 \brief immersed specific background discretization
 
-</pre>
-
-<pre>
 \level 1
 
-\maintainer Andreas Rauch
-</pre>
+\maintainer Jonas Eichinger
 
 *----------------------------------------------------------------------*/
 

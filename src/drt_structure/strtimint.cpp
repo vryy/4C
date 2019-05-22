@@ -1,15 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file strtimint.cpp
-
 \brief Time integration for structural dynamics
 
 \level 1
 
 \maintainer Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
 */
 /*----------------------------------------------------------------------*/
 

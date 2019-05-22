@@ -1,14 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file strtimint_expleuler.cpp
 \brief Structural time integration with forward Euler (explicit)
 \level 2
-<pre>
 \maintainer Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
 */
 
 /*----------------------------------------------------------------------*/

@@ -1,11 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_solver_nonlin.H
-
-
 \brief Input parameters for nonlinear solvers
 
-\maintainer Michael Hiermeier
+\maintainer Matthias Mayr
 
 \level 1
 */

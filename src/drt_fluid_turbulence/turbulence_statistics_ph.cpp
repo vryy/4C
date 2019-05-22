@@ -1,20 +1,17 @@
-/*!----------------------------------------------------------------------
-\file turbulence_statistics_ph.cpp
+/*----------------------------------------------------------------------*/
+/*!
 
-\brief calculate pressures, mean velocity values and fluctuations for
-turbulent flow over a periodic constrictions
+\brief Write (time and space) averaged values to file for
+turbulent flow over a periodic hill
 literature see Froehlich Mellen Rodi Temmerman Leschziner (2004) and Rapp Breuer Manhart Peller
 (2010) created in a Semesterarbeit by Stephan Jaeger 2015
 
+\maintainer Martin Kronbichler
+
 \level 2
 
-<pre>
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 */
+/*----------------------------------------------------------------------*/
 
 #include "turbulence_statistics_ph.H"
 

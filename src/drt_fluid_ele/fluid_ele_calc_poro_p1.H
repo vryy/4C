@@ -1,14 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file fluid_ele_calc_poro_p1.H
 
- \brief Internal implementation of poro Fluid element (p1, mixed poro fluid)
+\brief Internal implementation of poro Fluid element (p1, mixed poro fluid)
+
+\maintainer Christoph Ager
 
 \level 2
 
-\maintainer  Christoph Ager
- *----------------------------------------------------------------------*/
-
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef FLUID_ELE_CALC_PORO_P1_H_
 #define FLUID_ELE_CALC_PORO_P1_H_

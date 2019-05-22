@@ -1,15 +1,15 @@
-/*----------------------------------------------------------------------*/
-/**
-\file pairedmatrix.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief This class is meant as a replacement for std::maps of std::maps, when
        other storage and access characteristics are needed.
 
-\maintainer Michael Hiermeier
-
 \level 1
+
+\maintainer Martin Kronbichler
+
 */
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 
 #ifndef SRC_HEADERS_PAIREDMATRIX_H_
 #define SRC_HEADERS_PAIREDMATRIX_H_

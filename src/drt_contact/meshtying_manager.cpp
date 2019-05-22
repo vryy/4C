@@ -1,13 +1,11 @@
 /*!----------------------------------------------------------------------
-\file meshtying_manager.cpp
-
 \level 1
 
 \maintainer Matthias Mayr
 
-\brief BACI implementation of main class to control all meshtying
-
-*-----------------------------------------------------------------------*/
+\brief BACI implementation of main class to control all solid meshtying
+*/
+/*----------------------------------------------------------------------*/
 
 #include <Teuchos_Time.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>

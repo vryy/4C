@@ -1,16 +1,14 @@
-/*!----------------------------------------------------------------------
-\file fluidimpedancecondition.H
+/*-----------------------------------------------------------*/
+/*!
 
 \brief method to deal with three-element windkessel and other flow dependent pressure conditions
 
+\maintainer Martin Kronbichler
+
 \level 3
 
-<pre>
-\maintainer  Moritz Thon
-             thon@mhpc.mw.tum.de
-</pre>
-
-*----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------*/
 
 #ifndef FLUIDIMPEDANCECONDITION_H
 #define FLUIDIMPEDANCECONDITION_H

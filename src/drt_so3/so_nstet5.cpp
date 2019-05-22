@@ -1,11 +1,11 @@
 /*!----------------------------------------------------------------------
 \file so_nstet5.cpp
 
-\brief ToDo Add meaningful comment.
+\brief NStet5 element
 
 \level 3
 
-\maintainer Michael Gee
+\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 

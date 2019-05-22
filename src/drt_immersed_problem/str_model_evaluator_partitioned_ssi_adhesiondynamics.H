@@ -1,15 +1,13 @@
-/*-----------------------------------------------------------*/
-/*!
-\file str_model_evaluator_partitioned_ssi_adhesiondynamics.H
+/*!----------------------------------------------------------------------
 
-\brief Model evaluator for partitioned ssi adhesion dynamics.
-
-\maintainer Andreas Rauch
+\brief Model evaluator for partitioned ssi adhesion dynamics
 
 \level 3
 
-*/
-/*-----------------------------------------------------------*/
+\maintainer Jonas Eichinger
+
+*----------------------------------------------------------------------*/
+
 
 
 #ifndef SSI_STR_MODEL_EVALUATOR_PARTITIONED_SSI_ADHESIONDYNAMICS_H_

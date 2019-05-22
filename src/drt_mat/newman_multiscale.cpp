@@ -1,16 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file newman_multiscale.cpp
-
 \brief material for macro-scale elements in multi-scale simulations of electrochemistry problems
 
 \level 2
 
 <pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
 </pre>
 */
 /*----------------------------------------------------------------------*/

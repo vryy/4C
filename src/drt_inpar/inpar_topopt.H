@@ -1,11 +1,9 @@
 /*!------------------------------------------------------------------------------------------------*
-\file inpar_topopt.H
-
 \brief Input parameters for topopt
 
 \level 3
 
-\maintainer Martin Winklmaier
+\maintainer Martin Kronbichler
  *------------------------------------------------------------------------------------------------*/
 
 

@@ -1,12 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_impl_genalpha.cpp
 
 \brief Generalized Alpha time integrator.
 
-\maintainer Michael Hiermeier
-
-\date Dec 14, 2015
+\maintainer Anh-Tu Vuong
 
 \level 3
 

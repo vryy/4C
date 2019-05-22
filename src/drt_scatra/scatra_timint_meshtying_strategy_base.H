@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file scatra_timint_meshtying_strategy_base.H
 
 \brief Abstract interface for meshtying strategies in scalar transport problems (including standard
 strategy without meshtying)
@@ -7,9 +6,6 @@ strategy without meshtying)
 \level 2
 
 \maintainer Anh-Tu Vuong
-            vuong@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15237
 
 
 *----------------------------------------------------------------------*/
@@ -55,7 +51,6 @@ namespace SCATRA
   scatra interface coupling, and also the standard algorithm without meshtying, has to be
   implemented in a subclass derived from this abstract, purely virtual interface class.
 
-  \author fang (fang@lnm.mw.tum.de)
   */
 
   class MeshtyingStrategyBase

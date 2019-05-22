@@ -1,15 +1,13 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
- \file wall1_scatra.H
+\brief a 2D solid-wall element with ScaTra coupling.
 
- \brief a 2D solid-wall element with ScaTra coupling
+\level 2
 
- \level 2
+\maintainer Christoph Meier
 
- \maintainer Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
- *----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------------*/
 
 #ifndef WALL1_SCATRA_H_
 #define WALL1_SCATRA_H_

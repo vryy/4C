@@ -1,14 +1,10 @@
 /*!----------------------------------------------------------------------
-\file fsi_partitioned_immersed.H
 
 \brief partitioned immersed fsi subclass
 
 \level 1
 
-\maintainer  Andreas Rauch
-           rauch@lnm.mw.tum.de
-           http://www.lnm.mw.tum.de
-           089 - 289 -15240
+\maintainer Jonas Eichinger
 
 *----------------------------------------------------------------------*/
 #ifndef FSI_PARTITIONED_IMMERSED_H

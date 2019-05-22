@@ -1,3 +1,14 @@
+/*----------------------------------------------------------------------*/
+/*!
+\brief Input parameters for LOCA continuation
+
+\maintainer Martin Kronbichler
+
+\level 3
+
+ */
+/*----------------------------------------------------------------------*/
+
 /*
  * inpar_loca_continuation.cpp
  *

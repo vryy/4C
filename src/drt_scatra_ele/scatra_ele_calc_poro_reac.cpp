@@ -1,15 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_ele_calc_poro_reac.cpp
 
  \brief evaluation class containing routines for calculation of scalar transport
         within porous medium including advanced reactions
 
 \level 2
 
-\maintainer Andreas Rauch
-            rauch@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
+\maintainer Anh-Tu Vuong
  *----------------------------------------------------------------------*/
 #include "scatra_ele_calc_poro_reac.H"
 #include "scatra_ele_parameter_std.H"

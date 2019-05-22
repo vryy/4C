@@ -1,17 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_timint_cardiac_monodomain_scheme.cpp
 \brief time-integration scheme with extensions for
        cardiac monodomain problems
 
 \level 2
 
-<pre>
-\maintainer Lasse Jagschies
-            lasse.jagschies@tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-10365
-</pre>
+\maintainer Anh-Tu Vuong
+
 */
 /*----------------------------------------------------------------------*/
 

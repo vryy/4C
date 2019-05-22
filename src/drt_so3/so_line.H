@@ -1,13 +1,11 @@
 /*!----------------------------------------------------------------------
 \file so_line.H
 
-<pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15239
-</pre>
+\brief line element
 
+\level 1
+
+\maintainer Christoph Meier
 *----------------------------------------------------------------------*/
 #ifndef SO_LINE_H
 #define SO_LINE_H

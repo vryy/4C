@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file growthremodel_elasthyper.cpp
-
 \brief This file is used to manage the homogenized constraint mixture during growth and remodeling
 
 The input line should read

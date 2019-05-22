@@ -1,7 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_monocoupled_lagrange_strategy.cpp
-
 \brief This class provides the functionality to use contact with Lagrangian
 multipliers for monolithical coupled multifield problems!
 Therefore ApplyForceStiffCmt() & Recover() are overloaded by this class and

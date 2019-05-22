@@ -1,25 +1,15 @@
-/*!----------------------------------------------------------------------
-\file turbulence_statistics_ldc.cpp
+/*----------------------------------------------------------------------*/
+/*!
 
 \brief calculate mean values and fluctuations for turbulent flow in a
 lid-driven cavity.
 
-<pre>
-o Create sets for centerlines in x1- and x2-direction
-  (Construction based on a round robin communication pattern)
+\maintainer Martin Kronbichler
 
-o loop nodes closest to centerlines
+\level 2
 
-o values on centerlines are averaged in time over all steps between two
-  outputs
-
-Maintainer: Volker Gravemeier
-            vgravem@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15245
-</pre>
-
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #include "turbulence_statistics_ldc.H"
 

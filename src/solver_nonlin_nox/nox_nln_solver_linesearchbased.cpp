@@ -2,9 +2,8 @@
 /*!
 \file nox_nln_solver_linesearchbased.cpp
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Jun 11, 2015
 
 \level 3
 

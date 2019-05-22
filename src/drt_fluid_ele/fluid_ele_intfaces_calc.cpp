@@ -1,15 +1,15 @@
-/*!----------------------------------------------------------------------
-\file fluid_ele_intfaces_calc.cpp
+/*----------------------------------------------------------------------*/
+/*!
+
 \brief Integrate internal faces (stabilization) terms on an internal face element
 
-\maintainer  Christoph Ager
-             ager@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15249
+\maintainer Christoph Ager
 
 \level 2
 
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
+
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "fluid_ele_action.H"

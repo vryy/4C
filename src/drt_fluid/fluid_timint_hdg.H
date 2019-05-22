@@ -1,15 +1,15 @@
-/*!----------------------------------------------------------------------
-\file fluid_timint_hdg.H
-\brief Time integration class for HDG discretization
+/*-----------------------------------------------------------*/
+/*!
 
-<pre>
-Maintainer: Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+\brief Basic HDG time-integration scheme
 
-*----------------------------------------------------------------------*/
+\maintainer Martin Kronbichler
+
+\level 2
+
+*/
+/*-----------------------------------------------------------*/
+
 
 #ifndef FLD_TIMINT_HDG_H
 #define FLD_TIMINT_HDG_H

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid_ele_calc_intfaces_stab.cpp
 
 \brief edge-oriented/continuous interior penalty stabilization for fluid (especially xfluid)
 problems.
@@ -15,12 +14,9 @@ finite element method E.Burman, M.A.Fernandez and P.Hansbo (2006)
 convection-diffusion-reaction equation E.Burman, M.A.Fernandez Comput. Methods Appl. Mech. Engrg.
 198 (2009) 2508-2519
 
-\level 2
+\maintainer Christoph Ager
 
-\maintainer  Christoph Ager
-             ager@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15249
+\level 2
 
 */
 /*----------------------------------------------------------------------*/

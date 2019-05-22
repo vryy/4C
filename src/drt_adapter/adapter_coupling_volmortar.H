@@ -1,13 +1,10 @@
 /*!----------------------------------------------------------------------
-\file adapter_coupling_volmortar.H
 
 \brief adapter for the volmortar framework
 
 \level 2
 
-<pre>
 \maintainer Alexander Popp
-</pre>
 
 *----------------------------------------------------------------------*/
 #ifndef ADAPTER_COUPLING_VOLMORTAR_H_

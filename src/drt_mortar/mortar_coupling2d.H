@@ -1,13 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file mortar_coupling2d.H
-
 \brief Classes for mortar coupling in 2D.
 
 \level 2
 
 \maintainer Matthias Mayr
-
 */
 /*----------------------------------------------------------------------*/
 #ifndef MORTAR_COUPLING2D_H

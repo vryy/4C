@@ -1,14 +1,14 @@
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 /*!
-\file red_airway_resulttest.cpp
 
-\brief testing of Red_Airway calculation results
+\brief Testing of calculation results for reduced elements
 
-\maintainer Lena Yoshihara
+\maintainer Carolin Geitner
 
 \level 3
+
 */
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 
 
 #include "airwayimplicitintegration.H"

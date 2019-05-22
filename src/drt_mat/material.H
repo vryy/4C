@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file material.H
-
 \brief Interface class for materials at Gauss points
 
 \level 1

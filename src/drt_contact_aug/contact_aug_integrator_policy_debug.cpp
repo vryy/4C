@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file contact_aug_integrator_policy_debug.cpp
-
 \brief Debugging contact integration policies
 
 \level 3
 
-\maintainer Michael Hiermeier
-\date Jun 8, 2017
-
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------------*/
 

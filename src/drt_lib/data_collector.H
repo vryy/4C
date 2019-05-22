@@ -1,12 +1,13 @@
 /*----------------------------------------------------------------------------*/
-/** \file data_collector.H
- *
- *  \brief collect data in parallel
- *
- *  \level 1
- *  \maintainer Michael Hiermeier
- *  \date Nov 29, 2017
- */
+/*!
+
+\brief collect data in parallel
+
+\level 1
+
+\maintainer Martin Kronbichler
+
+*/
 /*----------------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_LIB_DATA_COLLECTOR_H_

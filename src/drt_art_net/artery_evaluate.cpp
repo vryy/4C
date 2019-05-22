@@ -1,8 +1,9 @@
 
 /*!----------------------------------------------------------------------
-\file artery_evaluate.cpp
 
-\maintainer Lena Yoshihara
+ \brief evaluate routines for the artery element
+
+\maintainer Johannes Kremheller
 
 \level 3
 

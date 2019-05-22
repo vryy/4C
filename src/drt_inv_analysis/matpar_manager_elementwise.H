@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file matpar_manager_elementwise.H
 \brief Class to handle calls to material parameters from an optimization routine
 
-<pre>
 \level 3
+
 \maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
-</pre>
 */
 
 /*----------------------------------------------------------------------*/

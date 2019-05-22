@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
- \file ad_ale_fpsi.H
 
  \brief FPSI wrapper for the ALE time integration
 

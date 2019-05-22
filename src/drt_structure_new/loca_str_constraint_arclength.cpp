@@ -1,9 +1,15 @@
-/*
- * loca_str_constraint_arclength.cpp
- *
- *  Created on: Nov 19, 2015
- *      Author: hiermeier
- */
+/*-----------------------------------------------------------*/
+/*!
+
+\brief Implementation of LOCA::MultiContinuation::ConstraintInterfaceMVDX for arc-length
+continuation.
+
+\maintainer Anh-Tu Vuong
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
 
 #include "loca_str_constraint_arclength.H"
 #include "../drt_lib/drt_dserror.H"

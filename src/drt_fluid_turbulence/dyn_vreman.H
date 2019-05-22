@@ -1,12 +1,10 @@
+/*----------------------------------------------------------------------*/
 /*!
-
-\file dyn_vreman.H
 
 \brief Filter methods for the dynamic Smagorinsky model
 
 Reference:
 
-<pre>
     Subgrid viscosity:
     D. You, P. Moin:
     A dynamic global-coefficient
@@ -23,20 +21,14 @@ Reference:
     Remark:
     alphaij=transpose(velderxy)
     rows and colums of the jacobian alphaij are swapped in comparison
-    to the jacobian velderxy used in baci
+    to the jacobian velderxy used in baciroutines for bfda test case
 
-</pre>
-\level 2
-<pre>
 \maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+
+\level 2
 
 */
-
-
+/*----------------------------------------------------------------------*/
 
 #ifndef DYN_VREMAN_H
 #define DYN_VREMAN_H

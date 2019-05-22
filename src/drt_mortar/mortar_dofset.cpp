@@ -1,6 +1,5 @@
-/*!----------------------------------------------------------------------
-\file mortar_dofset.cpp
-
+/*-----------------------------------------------------------------------*/
+/*!
 \brief A set of degrees of freedom special for mortar coupling
 
 \maintainer Alexander Popp

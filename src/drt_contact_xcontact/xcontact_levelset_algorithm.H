@@ -1,14 +1,9 @@
 /*!
-\file xcontact_levelset_algorithm.H
-
 \brief level-set algorithm for the extended contact formulation
 
-\maintainer Michael Hiermeier
-
-\date Nov 22, 2016
+\maintainer Matthias Mayr
 
 \level 3
-
 */
 /*----------------------------------------------------------------------------*/
 

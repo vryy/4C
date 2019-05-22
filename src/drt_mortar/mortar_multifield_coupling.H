@@ -1,6 +1,5 @@
-/*!----------------------------------------------------------------------
-\file mortar_multifield_coupling.H
-
+/*-----------------------------------------------------------------------*/
+/*!
 \brief Class performing coupling (condensation/recovery) for dual mortar
        methods in (volume) monolithic multi-physics applications, i.e. in
        block matrix systems. This also accounts for the correct condensation
@@ -9,8 +8,8 @@
 \level 2
 
 \maintainer Matthias Mayr
-
-*-----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------------------*/
 #ifndef MORTAR_MULTIFIELD_COUPLING_H
 #define MORTAR_MULTIFIELD_COUPLING_H
 

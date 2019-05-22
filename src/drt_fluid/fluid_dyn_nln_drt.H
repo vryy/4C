@@ -1,25 +1,25 @@
-/*!----------------------------------------------------------------------
-\file fluid_dyn_nln_drt.H
-\brief Control routine for fluid (time) integration. Calls
+/*-----------------------------------------------------------*/
+/*!
 
-     o Single step one-step-theta time integration
+\brief Main control routine for all fluid (in)stationary solvers,
 
-     o Two step BDF2 Gear's methode with one-step-theta start step
+     including instationary solvers based on
 
-     o Genalpha time integartion
+     o one-step-theta time-integration scheme
 
-     o Stationary solver
+     o two-step BDF2 time-integration scheme
+       (with potential one-step-theta start algorithm)
+
+     o generalized-alpha time-integration scheme
+
+     and stationary solver.
+
+\maintainer Martin Kronbichler
 
 \level 1
 
-<pre>
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
-
-*----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------*/
 
 
 #ifndef FLUID_DYN_NLN_DRT_H

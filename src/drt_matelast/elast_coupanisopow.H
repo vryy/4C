@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_coupanisopow.H
-
 \brief This file contains the routines required for the anisotropic material using a pow-like
 material
 

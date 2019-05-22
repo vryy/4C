@@ -1,13 +1,13 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
- \file wall1_poro_p1.cpp
-
- \brief a 2D wall element for solid-part of porous medium using p1 (mixed) approach
+\brief A 2D wall element for solid-part of porous medium using p1 (mixed) approach.
 
 \level 2
 
-\maintainer  Christoph Ager
- *----------------------------------------------------------------------*/
+\maintainer Christoph Ager
+
+*/
+/*---------------------------------------------------------------------------*/
 
 #include "wall1_poro_p1.H"
 #include "wall1_poro_p1_eletypes.H"

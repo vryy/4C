@@ -1,12 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid_ele_evaluate.cpp
 
-\brief to be set by the maintainer
-
-\maintainer Volker Gravemeier
+\brief Implementation of actions of fluid element
 
 \level 1
+
+\maintainer Martin Kronbichler
+
 */
 /*----------------------------------------------------------------------*/
 
@@ -29,8 +29,6 @@
 #include "fluid_ele_tds.H"
 
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
-
-//#include "../drt_geometry/position_array.H"
 
 #include "../drt_inpar/inpar_fluid.H"
 

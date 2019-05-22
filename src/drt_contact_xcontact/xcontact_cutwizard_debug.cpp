@@ -1,15 +1,10 @@
 /*----------------------------------------------------------------------------*/
 /**
-\file xcontact_cutwizard_debug.cpp
-
 \brief debug output methods for the xcontact cutwizard
 
-\maintainer Michael Hiermeier
-
-\date Jan 18, 2017
+\maintainer Matthias Mayr
 
 \level 3
-
 */
 /*----------------------------------------------------------------------------*/
 

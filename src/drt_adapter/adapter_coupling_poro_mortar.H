@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file adapter_coupling_poro_mortar.H
 
 
  \brief coupling adapter for porous meshtying

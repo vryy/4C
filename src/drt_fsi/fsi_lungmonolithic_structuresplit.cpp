@@ -3,12 +3,9 @@
 \file fsi_lungmonolithic_structuresplit.cpp
 \brief Volume-coupled FSI (structure-split)
 
-<pre>
-Maintainer: Lena Yoshihara
-            yoshihara@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15303
-</pre>
+\maintainer Matthias Mayr
+
+\level 3
 */
 /*----------------------------------------------------------------------*/
 #include <Teuchos_TimeMonitor.hpp>

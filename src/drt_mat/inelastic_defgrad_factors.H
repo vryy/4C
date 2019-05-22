@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inelastic_defgrad_factors.H
-
 \brief evaluation of inelastic deformation gradients and their derivatives
 
 \level 3

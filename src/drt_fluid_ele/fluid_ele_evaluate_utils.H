@@ -1,12 +1,12 @@
+/*----------------------------------------------------------------------*/
 /*!
-\file fluid_ele_evaluate_utils.H
+
+\brief Utilities for the fluid element evaluation
+
 \level 1
-<pre>
+
 \maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 

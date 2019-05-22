@@ -1,12 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_timint_explicit.cpp
 
 \brief explicit structural time integration
 
-\maintainer Michael Hiermeier
-
-\date Aug 13, 2015
+\maintainer Anh-Tu Vuong
 
 \level 3
 

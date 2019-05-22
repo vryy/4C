@@ -1,14 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_globalproblem.H
 
 \brief internal representation of an input file
 
 \level 1
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
 
 */
 /*----------------------------------------------------------------------*/

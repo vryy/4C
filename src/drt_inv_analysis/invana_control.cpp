@@ -1,15 +1,10 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file invana_control.cpp
-
 \brief Control object to handle solution of the inverse analysis
 
-<pre>
 \level 3
+
 \maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
-</pre>
 */
 
 /*----------------------------------------------------------------------------*/

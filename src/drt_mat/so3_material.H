@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file so3_material.H
-
 \brief a common base class for all solid materials
 
 \level 1

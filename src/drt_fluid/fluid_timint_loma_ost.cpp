@@ -1,18 +1,14 @@
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 /*!
-\file fluid_timint_loma_ost.cpp
-\brief TimIntLomaOst
+
+\brief One-step theta time integrator for Low Mach number problems
+
+\maintainer Martin Kronbichler
 
 \level 2
 
-<pre>
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 */
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 
 #include "fluid_timint_loma_ost.H"
 #include "../drt_io/io.H"

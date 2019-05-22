@@ -1,19 +1,14 @@
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 /*!
- \file fluid_ele_xwall_boundary.cpp
 
- \brief
+\brief boundary element for the wall-enrichment elements
 
- \level 2
-
-<pre>
 \maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
 
- </pre>
- *----------------------------------------------------------------------*/
+\level 2
+
+*/
+/*-----------------------------------------------------------*/
 
 #include "fluid_ele_xwall.H"
 #include "fluid_ele_action.H"

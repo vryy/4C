@@ -6,9 +6,8 @@
        into the header files, if necessary and till the C++11 standard is
        available in BACI.
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date May 1, 2016
 
 \level 3
 

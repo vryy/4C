@@ -1,13 +1,10 @@
 /*!----------------------------------------------------------------------
-\file immersed_partitioned_cellmigration.H
-\level 2
 
 \brief partitioned immersed cell migration algorithm
 
-\maintainer  Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15240
+\level 2
+
+\maintainer Jonas Eichinger
 
 *----------------------------------------------------------------------*/
 #ifndef IMMERSED_PARTITIONED_CELLMIGRATION_H

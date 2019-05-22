@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file aaagasser.cpp
 \brief
 This file contains the routines required for OGDEN-like material model
 according to GASSER: "Failure properties of intraluminal thrombus in abdominal
@@ -10,9 +9,11 @@ the input line should read:
   MAT 1 MAT_Struct_AAAGasser DENS 0.0001 VOL OgSiMi NUE 0.49 BETA -2.0 CLUM 2.62e-3 CMED 2.13e-3
 CABLUM 1.98e-3
 
-<pre>
-Maintainer: goe
-</pre>
+\level 3
+
+\maintainer Christoph Schmidt
+
+
 */
 /*----------------------------------------------------------------------*/
 

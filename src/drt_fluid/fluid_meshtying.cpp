@@ -1,13 +1,14 @@
-/*!----------------------------------------------------------------------
-\file fluid_meshtying.cpp
+/*-----------------------------------------------------------*/
+/*!
 
 \brief Methods to apply meshtying to fluid and scatra systems
 
-\level 2
-
 \maintainer Martin Kronbichler
 
-*----------------------------------------------------------------------*/
+\level 2
+
+*/
+/*-----------------------------------------------------------*/
 
 #define DIRECTMANIPULATION
 #define ZEROSYSMAT

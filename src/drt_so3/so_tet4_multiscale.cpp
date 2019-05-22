@@ -1,15 +1,8 @@
 /*!----------------------------------------------------------------------
 \file so_tet4_multiscale.cpp
-\brief
+\brief Solid Tet4 Element
+\maintainer Christoph Meier
 \level 2
-
-<pre>
-\maintainer Lena Yoshihara
-            yoshihara@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15303
-</pre>
-
 *----------------------------------------------------------------------*/
 
 #include "so_tet4.H"

@@ -1,12 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_impl_gemm.H
 
 \brief Generalized Energy Momentum time integrator.
 
-\maintainer Michael Hiermeier
-
-\date Aug 13, 2015
+\maintainer Anh-Tu Vuong
 
 \level 3
 

@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file poromultiphase_scatra_function.cpp
-
  \brief Managing and evaluating of (reaction) functions for poromultiphase_scatra
         problems
 
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 #include "poromultiphase_scatra_function.H"

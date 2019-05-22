@@ -1,20 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_materialdefinition.H
 
 \brief base class for material line parts
 
-<pre>
 \level 0
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
-*/
 
+*/
 /*----------------------------------------------------------------------*/
-/* definitions */
 
 #ifndef DRT_MATERIALDEFINITION_H
 #define DRT_MATERIALDEFINITION_H

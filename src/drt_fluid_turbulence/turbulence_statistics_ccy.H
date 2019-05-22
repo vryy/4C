@@ -1,10 +1,8 @@
-/*!----------------------------------------------------------------------
-\file turbulence_statistics_ccy.H
+/*----------------------------------------------------------------------*/
+/*!
 
 \brief Compute (time and space) averaged values for turbulent flows
        around a rotating cylinder and write them to files.
-
-<pre>
 
 o Create set of all available homogeneous shells
   (Construction based on a round robin communication pattern)
@@ -25,15 +23,12 @@ parameter list given on input.
 This method is intended to be called every upres_ steps during fluid
 output.
 
+\maintainer Martin Kronbichler
+
 \level 2
 
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
-
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef TURBULENCE_STATISTICS_CCY_H
 #define TURBULENCE_STATISTICS_CCY_H

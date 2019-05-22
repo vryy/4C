@@ -1,14 +1,11 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_timint_implicitbase.cpp
 
 \brief This class summarizes the functionality which all
        implicit time integration strategies share and have in
        common.
 
-\maintainer Michael Hiermeier
-
-\date Dec 16, 2015
+\maintainer Anh-Tu Vuong
 
 \level 3
 

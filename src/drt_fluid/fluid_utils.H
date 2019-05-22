@@ -1,14 +1,14 @@
-/*!----------------------------------------------------------------------
-\file fluid_utils.H
+/*-----------------------------------------------------------*/
+/*!
+
 \brief utility functions for fluid problems
 
-\level 2
 \maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
 
-*----------------------------------------------------------------------*/
+\level 2
+
+*/
+/*-----------------------------------------------------------*/
 
 #ifndef FLUID_UTILS_H
 #define FLUID_UTILS_H

@@ -1,17 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_ele_utils_elch_electrode.cpp
 
 \brief utility class supporting element evaluation for electrodes
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
 
 \level 2
-</pre>
  */
 /*----------------------------------------------------------------------*/
 #include "scatra_ele_utils_elch_electrode.H"

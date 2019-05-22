@@ -1,18 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_fld_fluid_fluid_fsi.H
 
-\brief
-Fluid field adapter for embedded (ALE-)fluid-fluid problems using XFEM
+\brief Fluid field adapter for embedded (ALE-)fluid-fluid problems using XFEM
 
 \level 2
 
-<pre>
 \maintainer  Christoph Ager
-             ager@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15249
- </pre>
+
 */
 /*----------------------------------------------------------------------*/
 #ifndef ADAPTER_FLUID_FLUID_FSI_H

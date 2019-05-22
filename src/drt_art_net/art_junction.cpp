@@ -1,8 +1,7 @@
 /*!----------------------------------------------------------------------
-\file art_junction.cpp
 \brief evaluation of 1d-artery junction bc
 
-\maintainer Lena Yoshihara
+\maintainer Johannes Kremheller
 
 \level 3
 

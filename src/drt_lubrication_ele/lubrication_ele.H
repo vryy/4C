@@ -1,18 +1,18 @@
+/*--------------------------------------------------------------------------*/
 /*!
 \file lubrication_ele.H
 
-\brief The lubrication element
+\brief Lubrication elements
 
 This file contains the element specific service routines like
 Pack, Unpack, NumDofPerNode etc.
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15270
-</pre>
+\level 3
+
+\maintainer Mostafa Faraji
+
 */
+/*--------------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_LUBRICATION_ELE_LUBRICATION_ELE_H_
 #define SRC_DRT_LUBRICATION_ELE_LUBRICATION_ELE_H_

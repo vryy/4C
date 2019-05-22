@@ -1,14 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_thermo.cpp
-
 \brief Input parameters for thermo problems
 
 \level 1
 
-<pre>
 \maintainer Christoph Meier
-</pre>
+
 */
 
 /*----------------------------------------------------------------------*/

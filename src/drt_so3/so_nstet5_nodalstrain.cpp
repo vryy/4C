@@ -3,7 +3,7 @@
 
 \brief Nstet element nodal strain implementation
 
-\maintainer Michael Gee
+\maintainer Christoph Meier
 
 \level 3
 

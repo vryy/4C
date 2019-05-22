@@ -1,16 +1,10 @@
 /*!----------------------------------------------------------------------
-\file immersed_partitioned.cpp
 
 \brief base class for all partitioned immersed algorithms
 
 \level 2
 
-<pre>
-\maintainer  Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15240
-</pre>
+\maintainer Jonas Eichinger
 *----------------------------------------------------------------------*/
 #include "immersed_base.H"
 #include "immersed_partitioned.H"

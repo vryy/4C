@@ -1,7 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_nitsche_utils.cpp
-
 \brief Some helpers for nitsche contact
 
 \level 3

@@ -1,18 +1,12 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file scatra_ele_sti_elch.cpp
 
 \brief supplementary element calculation class providing general utility for evaluation of heat
 transport within electrochemical substances
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
-</pre>
 */
 /*--------------------------------------------------------------------------*/
 #include "scatra_ele_sti_elch.H"

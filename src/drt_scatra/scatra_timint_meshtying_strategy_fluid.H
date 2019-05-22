@@ -1,16 +1,10 @@
 /*!----------------------------------------------------------------------
-\file scatra_timint_meshtying_strategy_fluid.H
 
 \brief Fluid-fluid meshtying strategy for standard scalar transport problems
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
-</pre>
 
 *----------------------------------------------------------------------*/
 #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_FLUID_H
@@ -40,7 +34,6 @@ namespace SCATRA
   can be circumvented. This class contains the fluid-fluid meshtying strategy for standard
   scalar transport problems.
 
-  \author fang (fang@lnm.mw.tum.de)
   */
 
   class MeshtyingStrategyFluid : public MeshtyingStrategyBase

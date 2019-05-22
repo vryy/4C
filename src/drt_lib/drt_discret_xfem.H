@@ -1,18 +1,15 @@
-/*!----------------------------------------------------------------------
-\file drt_discret_xfem.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief a class to manage one discretization with changing dofs in xfem context
 
-<pre>
 \level 1
 
 \maintainer Christoph Ager
-            http://www.lnm.mw.tum.de
-            089 - 289 - 15249
-</pre>
-*/
 
+*/
 /*----------------------------------------------------------------------*/
+
 #ifndef DISCRET_XFEM_H
 #define DISCRET_XFEM_H
 

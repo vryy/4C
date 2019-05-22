@@ -1,17 +1,15 @@
-/*!----------------------------------------------------------------------
-\file drt_utils_materials.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief A collection of helper methods for namespace DRT
 
-<pre>
 \level 1
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
+
 #ifndef UTILS_MATERIALS_H
 #define UTILS_MATERIALS_H
 

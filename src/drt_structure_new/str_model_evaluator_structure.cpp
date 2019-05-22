@@ -1,12 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_model_evaluator_structure.cpp
 
 \brief Evaluation and assembly of all structure terms
 
-\maintainer Michael Hiermeier
-
-\date Aug 11, 2015
+\maintainer Matthias Mayr
 
 \level 3
 

@@ -1,19 +1,16 @@
-/*--------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 /*!
-\file fluid_ele_factory.cpp
 
-\brief Factory of fluid elements
-
-<pre>
-\maintainer Volker Gravemeier
-            vgravem@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15236/245
-</pre>
+\brief Factory class going from the generic evaluation routines to the ones
+  templated by the element shape and specialization
 
 \level 1
+
+\maintainer Martin Kronbichler
+
 */
-/*--------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+
 
 #include "fluid_ele_factory.H"
 #include "fluid_ele_interface.H"

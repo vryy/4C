@@ -1,27 +1,15 @@
-/*!----------------------------------------------------------------------
-\file turbulence_statistics_bfs.cpp
+/*----------------------------------------------------------------------*/
+/*!
 
 \brief calculate pressures, mean velocity values and fluctuations for
 turbulent flow over a backward-facing step
 
-<pre>
-o Create sets for various evaluation lines in domain
-  (Construction based on a round robin communication pattern):
-  - 21 lines in x2-direction
-  - lines along upper and lower wall
+\maintainer Martin Kronbichler
 
-o loop nodes closest to / on lines
+\level 2
 
-o values on lines are averaged in time over all steps between two
-  outputs
-
-Maintainer: Volker Gravemeier
-            vgravem@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15245
-</pre>
-
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #include "turbulence_statistics_bfs.H"
 

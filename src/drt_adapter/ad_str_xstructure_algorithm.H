@@ -1,13 +1,10 @@
 /*----------------------------------------------------------------------------*/
 /**
-\file ad_str_xstructure_algorithm.H
 
 \brief Adaption for the xstructure case
 
 
-\maintainer Michael Hiermeier
-
-\date Jun 29, 2016
+\maintainer Matthias Mayr
 
 \level 3
 

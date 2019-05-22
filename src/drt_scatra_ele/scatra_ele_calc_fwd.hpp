@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file scatra_ele_calc_fwd.hpp
 
  \brief forward declarations for scatra_ele_calc classes
 
 \level 1
 
 \maintainer Anh-Tu Vuong
-            vuong@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15237
  *----------------------------------------------------------------------*/
 
 

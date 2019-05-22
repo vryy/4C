@@ -1,14 +1,8 @@
 /*!----------------------------------------------------------------------
 \file so_tet4.H
-\brief
-\level 1
-
-\maintainer Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15239
-</pre>
-
+\brief Solid Tet4 Element
+\maintainer Christoph Meier
+\level 3
 *----------------------------------------------------------------------*/
 #ifndef SO_TET4_H
 #define SO_TET4_H

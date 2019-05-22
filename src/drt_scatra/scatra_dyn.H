@@ -1,13 +1,8 @@
 /*!----------------------------------------------------------------------
-\file scatra_dyn.H
 \brief scalar transport control algorithm
-\level 2
-<pre>
-\maintainer Volker Gravemeier
-            vgravem@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15245
-</pre>
+\level 1
+
+\maintainer Anh-Tu Vuong
 
 *----------------------------------------------------------------------*/
 

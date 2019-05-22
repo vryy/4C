@@ -1,13 +1,10 @@
 /*----------------------------------------------------------------------------*/
 /**
-\file xstr_multi_discretization_wrapper.cpp
 
 \brief Implementation of a multi discretization wrapper for eXtended structural
        problems
 
-\maintainer Michael Hiermeier
-
-\date Oct 6, 2016
+\maintainer Anh-Tu Vuong
 
 \level 3
 

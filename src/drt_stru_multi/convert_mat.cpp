@@ -1,14 +1,14 @@
-/*!----------------------------------------------------------------------
-\file convert_mat.cpp
+/*---------------------------------------------------------------------*/
+/*!
 
-<pre>
-Maintainer: Lena Yoshihara
-            yoshihara@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15303
-</pre>
+\brief Material conversion (old file by Lena Yoshihara)
 
-*----------------------------------------------------------------------*/
+\maintainer Martin Kronbichler
+
+\level 2
+
+*/
+/*---------------------------------------------------------------------*/
 
 
 #include "microstatic.H"

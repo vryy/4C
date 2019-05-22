@@ -1,17 +1,15 @@
-/*!----------------------------------------------------------------------
-\file fluid_ele_boundary_calc.cpp
+/*----------------------------------------------------------------------*/
+/*!
 
-\brief evaluation of fluid terms at integration points
+\brief evaluation of fluid terms at integration points of boundaries
 
 \level 1
 
-<pre>
-\maintainer Martin Kronbichler & Volker Gravemeier
-             {kronbichler,vgravem}@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15236/-245
-</pre>
-*----------------------------------------------------------------------*/
+\maintainer  Martin Kronbichler
+
+*/
+/*----------------------------------------------------------------------*/
+
 
 #include "fluid_ele_boundary_calc.H"
 #include "fluid_ele.H"

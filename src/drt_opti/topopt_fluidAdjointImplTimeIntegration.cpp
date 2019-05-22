@@ -1,13 +1,14 @@
-/*!------------------------------------------------------------------------------------------------*
-\file topopt_fluidAdjointImplTimeIntegration.cpp
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief fluid adjoint implicit time integration for topology optimization
 
-\maintainer Martin Winklmaier
+\maintainer Martin Kronbichler
 
 \level 3
 
- *------------------------------------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 
 #include "topopt_fluidAdjointImplTimeIntegration.H"

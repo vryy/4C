@@ -1,13 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file structporo_reaction_ecm.cpp
-
  \brief solid material for  porous model with special implementations
         for ECM model (dissolution of ECM)
 
-   \maintainer Andreas Rauch
-               rauch@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
+   \maintainer Christoph Schmidt
 
 \level 3
  *----------------------------------------------------------------------*/

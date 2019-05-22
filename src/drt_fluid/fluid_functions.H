@@ -1,16 +1,14 @@
-/*!-------------------------------------------------------------------------*
-\file fluid_functions.H
+/*-----------------------------------------------------------*/
+/*!
 
 \brief Managing and evaluating of spatial functions for fluid problems
 
+\maintainer Christoph Ager
+
 \level 2
 
-<pre>
-\maintainer Christoph Ager
-            ager@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
-*----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------*/
 
 #include "../drt_lib/drt_function.H"
 

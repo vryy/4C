@@ -1,17 +1,14 @@
-/*!----------------------------------------------------------------------
-\file fluid_timint_two_phase_stat.H
-\brief
+/*-----------------------------------------------------------*/
+/*!
+
+\brief stationary two-phase flow problems
+
+\maintainer Christoph Ager
 
 \level 2
 
-<pre>
-\maintainer Christoph Ager & Martin Kronbichler
-             {winter,kronbichler}@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15236/-235
-</pre>
-
-*----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------*/
 
 #ifndef FLD_TIMINT_TWO_PHASE_STAT_H
 #define FLD_TIMINT_TWO_PHASE_STAT_H

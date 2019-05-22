@@ -1,13 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file optimizer_factory.cpp
- * \brief Factory for optimzation algorithm within the inverse analysis
+\brief Factory for optimzation algorithm within the inverse analysis
 
 \level 3
 
+
 \maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
 */
 /*----------------------------------------------------------------------*/
 #include "optimizer_factory.H"

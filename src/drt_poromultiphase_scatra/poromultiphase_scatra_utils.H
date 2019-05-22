@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file poromultiphase_scatra_utils.H
-
  \brief helper functions/classes for scalar transport within multiphase porous medium
 
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_UTILS_H_

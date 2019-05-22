@@ -1,14 +1,15 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file turbulence_statistics_mean_general.cpp
-\brief Computation of mean values of nodal/cp quantities.
-\level 2
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
- *----------------------------------------------------------------------*/
 
+\brief Computation of mean values of nodal/cp quantities. The
+means are computed as time averages
+
+\maintainer Martin Kronbichler
+
+\level 2
+
+*/
+/*----------------------------------------------------------------------*/
 
 
 #include "turbulence_statistics_mean_general.H"

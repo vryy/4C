@@ -1,15 +1,14 @@
-/*!----------------------------------------------------------------------
-\file drt_discret_utils.cpp
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief Auxiliary functions of the main discretization class
 
 \level 0
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 #include "drt_discret.H"
 #include "drt_exporter.H"

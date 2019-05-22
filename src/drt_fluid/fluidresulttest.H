@@ -1,19 +1,14 @@
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 /*!
-\file fluidresulttest.H
 
 \brief testing of fluid calculation results
 
+\maintainer Martin Kronbichler
+
 \level 1
 
-<pre>
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 */
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 
 #ifndef FLUIDRESULTTEST_H
 #define FLUIDRESULTTEST_H

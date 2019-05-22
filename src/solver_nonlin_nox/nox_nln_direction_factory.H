@@ -2,9 +2,8 @@
 /*!
 \file nox_nln_direction_factory.H
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Aug 6, 2015
 
 \level 3
 

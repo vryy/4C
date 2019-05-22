@@ -7,10 +7,7 @@
 
 \level 2
 
-\maintainer Moritz Thon
-            thon@mhpc.mw.tum.de
-            http://www.mhpc.mw.tum.de
-            089 - 289-10364
+\maintainer Christoph Schmidt
 
 
 *----------------------------------------------------------------------*/

@@ -1,17 +1,11 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file scatra_ele_calc_sti_diffcond.H
 
 \brief evaluate heat transport within binary, concentrated electrolytes on element level
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
-</pre>
 */
 /*--------------------------------------------------------------------------*/
 #ifndef SCATRA_ELE_CALC_STI_DIFFCOND_H

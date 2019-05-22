@@ -5,9 +5,7 @@
 \brief Special coupling routines to handle the possible changing number of DoFs
        from node to node during XFEM simulations
 
-\maintainer Michael Hiermeier
-
-\date Sep 28, 2016
+\maintainer Matthias Mayr
 
 \level 3
 

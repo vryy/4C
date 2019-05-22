@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file myocard_san_garny.H
 \brief san garny myocard material model
 
 <pre>
 \level 3
 
-\maintainer Julia Hoermann
-            hoermann@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15264
+\maintainer Amadeus Gebauer
 </pre>
 */
 

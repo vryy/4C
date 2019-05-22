@@ -1,16 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_elemag.cpp
-
 \brief Input parameters for electromagnetic simulations
 
-<pre>
 \level 3
 
 \maintainer Luca Berardocco
-            berardocco@lnm.mw.tum.de
-            089 - 289-15244
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 

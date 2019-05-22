@@ -1,9 +1,12 @@
-/*!----------------------------------------------------------------------
-\file randomfield.H
+/*----------------------------------------------------------------------*/
+/*!
 \brief Interface class for random fields using FFT algorithms
+
+\maintainer Jonas Nitzler
+
 \level 2
-\maintainer Jonas Biehler
- *----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #ifdef HAVE_FFTW
 #ifndef RANDOMFIELD_H_

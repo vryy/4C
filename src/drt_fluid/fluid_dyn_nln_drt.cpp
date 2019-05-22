@@ -1,5 +1,6 @@
-/*!----------------------------------------------------------------------
-\file fluid_dyn_nln_drt.cpp
+/*-----------------------------------------------------------*/
+/*!
+
 \brief Main control routine for all fluid (in)stationary solvers,
 
      including instationary solvers based on
@@ -13,21 +14,12 @@
 
      and stationary solver.
 
+\maintainer Martin Kronbichler
+
 \level 1
 
-<pre>
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
-
- *----------------------------------------------------------------------*/
-/*
-#include <ctime>
-#include <cstdlib>
-#include <iostream>
 */
+/*-----------------------------------------------------------*/
 
 #include "fluid_dyn_nln_drt.H"
 #include "../drt_lib/drt_globalproblem.H"

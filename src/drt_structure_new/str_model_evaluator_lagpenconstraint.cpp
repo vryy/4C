@@ -1,12 +1,9 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file str_model_evaluator_lagpenconstraint.cpp
 
 \brief Evaluation and assembly of all constraint terms
 
 \maintainer Amadeus Gebauer
-
-\date Jun 29, 2016
 
 \level 3
 

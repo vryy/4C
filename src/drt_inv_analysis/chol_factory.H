@@ -1,15 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file chol_factory.H
-
 \brief Factory for the cholesky factorization
 
-<pre>
 \level 3
+
 \maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #ifndef CHOL_FACTORY_H

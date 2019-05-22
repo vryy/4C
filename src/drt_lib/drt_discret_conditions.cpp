@@ -1,17 +1,14 @@
-/*!----------------------------------------------------------------------
-\file drt_discret_conditions.cpp
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief Implementation of all sorts of conditions on discretization
 
-<pre>
 \level 0
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 #include "drt_discret.H"
 #include "drt_exporter.H"

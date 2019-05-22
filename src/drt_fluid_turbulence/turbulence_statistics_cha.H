@@ -1,5 +1,5 @@
-/*!----------------------------------------------------------------------
-\file turbulence_statistics_cha.H
+/*----------------------------------------------------------------------*/
+/*!
 
 \brief Compute (time and space) averaged values for turbulent channel
        flows and write them to files.
@@ -47,14 +47,12 @@ parameter list given on input.
 This method is intended to be called every upres_ steps during fluid
 output.
 
+\maintainer Martin Kronbichler
+
 \level 2
 
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef TURBULENCE_STATISTICS_H
 #define TURBULENCE_STATISTICS_H

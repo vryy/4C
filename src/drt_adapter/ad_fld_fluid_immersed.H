@@ -1,12 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_fld_fluid_immersed.H
 
 \brief Fluid field adapter for immersed-fluids
 
 \level 3
 
-\maintainer  Andreas Rauch
+\maintainer Jonas Eichinger
 */
 /*----------------------------------------------------------------------*/
 

@@ -1,12 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_IO_runtime_vtp_output_structure.cpp
-
 \brief input parameters for VTP output of structural problem at runtime
 
 \level 2
 
-\maintainer Jonas Eichinger, Maximilian Grill
+\maintainer Maximilian Grill
 */
 /*----------------------------------------------------------------------*/
 

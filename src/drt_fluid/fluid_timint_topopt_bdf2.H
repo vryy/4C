@@ -1,17 +1,14 @@
-/*!----------------------------------------------------------------------
-\file fluid_timint_topopt_bdf2.H
-\brief
+/*-----------------------------------------------------------*/
+/*!
+
+\brief BDF-2 time integration for topology optimization
+
+\maintainer Martin Kronbichler
 
 \level 3
 
-<pre>
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
-
-*----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------*/
 
 #ifndef FLD_TIMINT_TOPOPT_BDF2_H
 #define FLD_TIMINT_TOPOPT_BDF2_H

@@ -1,20 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_function.H
 
 \brief Managing and evaluating of spatial functions
 
-<pre>
 \level 0
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
-
-
 
 #ifndef DRT_FUNCTION_H
 #define DRT_FUNCTION_H

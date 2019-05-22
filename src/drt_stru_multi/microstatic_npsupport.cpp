@@ -1,18 +1,15 @@
-/*!----------------------------------------------------------------------
-\file microstatic_npsupport.cpp
+/*---------------------------------------------------------------------*/
+/*!
+
 \brief Static control for  microstructural problems in case of multiscale
 analysis for supporting processors
 
+\maintainer Martin Kronbichler
+
 \level 3
 
-<pre>
-\maintainer Lena Yoshihara
-            yoshihara@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15303
-</pre>
-
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 #include "microstatic_npsupport.H"
 #include "../drt_lib/drt_globalproblem.H"

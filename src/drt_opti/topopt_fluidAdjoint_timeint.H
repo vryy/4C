@@ -1,12 +1,14 @@
-/*!------------------------------------------------------------------------------------------------*
-\file topopt_fluidAdjoint_timeint.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief base class for time integration of fluid adjoint equations in topology optimization
 
+\maintainer Martin Kronbichler
+
 \level 3
 
-\maintainer Martin Winklmaier
- *------------------------------------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 
 #ifndef TOPOPT_FLUID_ADJOINT_TIMEINT_H_

@@ -1,7 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*!
-\file beam_elasthyper_parameter.cpp
-
 \brief constitutive parameters for a beam material based on hyperelastic stored energy function
 
 \maintainer Maximilian Grill

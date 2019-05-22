@@ -1,12 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file artery_ele_calc_pres_based.H
 
 \brief Internal implementation of PressureBased artery element
 
 \maintainer Johannes Kremheller
-            kremheller@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
 
 \level 3
 

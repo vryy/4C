@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file thermoplasticlinelast.H
 \brief Contains the functions to establish local material law /
        stress-strain law for isotropic material for a 3D hex element
        following an associative von Mises plasticity and a linear thermoelastic

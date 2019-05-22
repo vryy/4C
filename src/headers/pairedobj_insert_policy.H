@@ -1,16 +1,16 @@
-/*----------------------------------------------------------------------*/
-/**
-\file pairedobj_insert_policy.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief These classes are meant as policies for the paired objects and
        are NOT supposed to be accessed directly. Use the methods of the derived
        classes, instead.
 
-\maintainer Michael Hiermeier
-
 \level 1
+
+\maintainer Martin Kronbichler
+
 */
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 
 #ifndef SRC_HEADERS_PAIREDOBJ_INSERT_POLICY_H_
 #define SRC_HEADERS_PAIREDOBJ_INSERT_POLICY_H_

@@ -1,15 +1,12 @@
 /*!----------------------------------------------------------------------
 \file so_q1p0hex8_input.cpp
-\brief
+\brief 'Q1P0' element in 8-node hexahedron shape
 
-<pre>
-Maintainer: Lena Wiechert
-            yoshihara@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15303
-</pre>
+\level 2
 
-*----------------------------------------------------------------------*/
+\maintainer Christoph Meier
+*/
+/*----------------------------------------------------------------------*/
 
 
 #include "so_hex8p1j1.H"

@@ -1,14 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_mlmc.cpp
+\brief Input parameters for multi-level monte carlo
 
-<pre>
-Maintainer: Jonas Biehler
-            biehler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
+\maintainer Jonas Nitzler
+
+\level 2
 */
-
 /*----------------------------------------------------------------------*/
 
 

@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file poromultiphase_scatra_artery_coupling_pair.cpp
-
  \brief one pair consisting of exactly one artery element and one poro-
-        multiphase-scatra element which might be tied to each other
+        multiphase-scatra element which might be coupled to each other
 
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 #include "poromultiphase_scatra_artery_coupling_pair.H"

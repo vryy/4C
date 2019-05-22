@@ -1,24 +1,19 @@
-/*!----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
-\file ion.cpp
+\brief material that stores parameters of ion species in electrolyte solution. Former file of Georg
+Bauer
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
-</pre>
-*/
-/*----------------------------------------------------------------------*/
 
+*/
+/*----------------------------------------------------------------------------*/
 
 #include <vector>
 #include "ion.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

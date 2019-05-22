@@ -1,6 +1,4 @@
 /*!----------------------------------------------------------------------
-\file membrane_elasthyper.cpp
-
 \brief hyperelastic toolbox for membranes assuming incompressibility and plane stress
 
 The input line should read
@@ -9,9 +7,6 @@ MAT 0 MAT_Membrane_ElastHyper NUMMAT 2 MATIDS 1 2 DENS 0
 \level 3
 
 \maintainer  Sebastian Fuchs
-             fuchs@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15262
 
 *----------------------------------------------------------------------*/
 

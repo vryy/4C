@@ -1,8 +1,7 @@
 /*!-----------------------------------------------------------------------------------------------*
-\file scatra_timint_loma.cpp
 \brief scatra time integration for loma
 \level 2
-\maintainer Volker Gravemeier
+\maintainer Anh-Tu Vuong
  *------------------------------------------------------------------------------------------------*/
 #include "../drt_fluid/fluid_utils.H"  // for splitter
 

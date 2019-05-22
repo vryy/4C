@@ -2,11 +2,7 @@
 \file so_tet4_evaluate.cpp
 \brief quadratic nonlinear tetrahedron
 \level 1
-
-<pre>
 \maintainer Christoph Meier
-</pre>
-
 *----------------------------------------------------------------------*/
 #include "so_tet4.H"
 #include "../drt_lib/drt_discret.H"

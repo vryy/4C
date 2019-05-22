@@ -1,17 +1,14 @@
-/*----------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 /*!
-\file drt_utils_elements.H
 
 \brief Collection of general element utility functions
 
-\maintainer Michael Hiermeier
-
-\date Sep 27, 2018
+\maintainer Martin Kronbichler
 
 \level 1
 
 */
-/*----------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_LIB_DRT_UTILS_ELEMENTS_H_
 #define SRC_DRT_LIB_DRT_UTILS_ELEMENTS_H_

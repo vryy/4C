@@ -1,15 +1,10 @@
 /*----------------------------------------------------------------------------*/
 /**
-\file xcontact_multi_discretization_wrapper.cpp
-
 \brief wrapper of the discretizations involved in a xcontact simulation
 
-\maintainer Michael Hiermeier
-
-\date Nov 10, 2016
+\maintainer Matthias Mayr
 
 \level 3
-
 */
 /*----------------------------------------------------------------------------*/
 

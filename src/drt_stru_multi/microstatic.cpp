@@ -1,16 +1,14 @@
-/*!----------------------------------------------------------------------
-\file microstatic.cpp
-\brief Static control for  microstructural problems in case of multiscale
-analyses
+/*---------------------------------------------------------------------*/
+/*!
 
-<pre>
-Maintainer: Lena Yoshihara
-            yoshihara@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15303
-</pre>
+\brief Quasi-static control for microstructural analysis
 
-*----------------------------------------------------------------------*/
+\maintainer Martin Kronbichler
+
+\level 2
+
+*/
+/*---------------------------------------------------------------------*/
 
 
 

@@ -1,13 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file mortar_interface.H
-
 \brief One mortar coupling interface
 
 \level 1
 
 \maintainer Matthias Mayr
-
 */
 /*----------------------------------------------------------------------*/
 #ifndef MORTAR_INTERFACE_H

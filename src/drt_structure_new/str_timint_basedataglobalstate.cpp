@@ -1,13 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_timint_basedataglobalstate.cpp
 
-\brief Global state data container for the structural (time)
-       integration
+\brief Global state data container for the structural (time) integration
 
-\maintainer Michael Hiermeier
-
-\date Jan 12, 2016
+\maintainer Anh-Tu Vuong
 
 \level 3
 

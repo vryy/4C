@@ -1,16 +1,10 @@
 /*!----------------------------------------------------------------------
-\file scatra_timint_var_chemdiffusion.H
 
 \brief  Time integration for variational formulation of chemical diffusion,
     it inherits directly from scatra_timint_ost.
 \level 2
 
-<pre>
-\maintainer Jorge De Anda Salazar
-            deanda@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089-289-15251
-</pre>
+\maintainer Martin Kronbichler
 
 *----------------------------------------------------------------------*/
 

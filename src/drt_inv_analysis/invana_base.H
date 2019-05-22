@@ -1,15 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file invana_base.H
-
 \brief inverse analysis base class
 
-<pre>
 \level 3
+
 \maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #ifndef INVANA_BASE_H

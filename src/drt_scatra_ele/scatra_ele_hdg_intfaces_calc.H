@@ -1,17 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_ele_hdg_intfaces_calc.H
 
 \brief Internal implementation of ScaTraHDG internal faces elements
 
-<pre>
 \level 3
 
-\maintainer Julia Hoermann
-            hoermann@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15264
-</pre>
+\maintainer Martin Kronbichler
 */
 /*----------------------------------------------------------------------*/
 

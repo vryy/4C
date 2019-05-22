@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file ad_porofluidmultiphase_wrapper.H
-
  \brief a wrapper for porous multiphase flow algorithms
 
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_ADAPTER_AD_POROFLUIDMULTIPHASE_WRAPPER_H_

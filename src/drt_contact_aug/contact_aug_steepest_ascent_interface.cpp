@@ -1,16 +1,11 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_aug_steepest_ascent_interface.cpp
-
 \brief Steepest ascent interface based on the augmented contact
        formulation.
 
 \level 3
 
-\maintainer Michael Hiermeier
-
-\date Mar 7, 2017
-
+\maintainer Matthias Mayr
 */
 /*---------------------------------------------------------------------*/
 

@@ -1,21 +1,16 @@
-/*!----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
-\file elchmat.H
+\brief material that stores a list of species and phases for electrochemistry applications
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
-</pre>
+
 */
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+
 #ifndef ELCHMAT_H
 #define ELCHMAT_H
-
-
 
 #include "matpar_parameter.H"
 #include "material.H"

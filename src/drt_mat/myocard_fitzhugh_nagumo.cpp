@@ -1,15 +1,10 @@
 /*!----------------------------------------------------------------------
-\file myocard_fitzhugh_nagumo.cpp
-
 \brief Fitzhugh Nagumo model for myocard material
 
 \level 2
 
 <pre>
-\maintainer Julia Hoermann
-            hoermann@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15264
+\maintainer Amadeus Gebauer
 </pre>
 */
 

@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file poromultiphase_monolithic.cpp
-
  \brief base class for monolithic porous multiphase flow through elastic medium problems
 
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 

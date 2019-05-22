@@ -1,9 +1,13 @@
-/*!----------------------------------------------------------------------
-\file  mlmc.H
+/*----------------------------------------------------------------------*/
+/*!
 \brief Class for performing Multi Level Monte Carlo (MLMC)analysis of structure
+
+\maintainer Jonas Nitzler
+
 \level 2
-\maintainer Jonas Biehler
- *!----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
+
 #ifdef HAVE_FFTW
 #ifndef MLMC_H
 #define MLMC_H

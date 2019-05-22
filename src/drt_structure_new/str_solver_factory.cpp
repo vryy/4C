@@ -1,12 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_solver_factory.cpp
 
-\brief str_solver_factory
+\brief Factory to build the desired linear solver std::map corresponding to the active model types
 
-\maintainer Michael Hiermeier
-
-\date Sep 9, 2015
+\maintainer Anh-Tu Vuong
 
 \level 3
 

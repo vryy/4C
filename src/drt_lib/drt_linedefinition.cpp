@@ -1,19 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_linedefinition.cpp
 
 \brief Definition of one line of an input file.
 
-<pre>
 \level 0
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
-
 
 
 #include "drt_linedefinition.H"

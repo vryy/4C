@@ -1,12 +1,9 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file str_model_evaluator_contactdata.cpp
 
 \brief Concrete implementation of the contact parameter interfaces.
 
-\maintainer Michael Hiermeier
-
-\date Apr 18, 2016
+\maintainer Matthias Mayr
 
 \level 3
 

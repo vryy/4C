@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_ele_boundary_calc_poro.cpp
 
 \brief evaluation of scatra boundary terms at integration points
 
 \level 2
 
-\maintainer  Moritz Thon & Andre Hemmler
-               thon@mhpc.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-10364
+\maintainer Anh-Tu Vuong
 
  */
 /*----------------------------------------------------------------------*/

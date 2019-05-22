@@ -1,12 +1,10 @@
 /*-----------------------------------------------------------*/
 /*!
-\file ad_str_structure_new.cpp
 
 \brief Adapter for the new structural time integration framework.
 
-\maintainer Michael Hiermeier
+\maintainer  Anh-Tu Vuong
 
-\date Sep 2, 2015
 
 \level 3
 

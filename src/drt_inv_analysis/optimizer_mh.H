@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file optimizer_mh.H
- * \brief Metropolis Hastings monte carlo
- *
-<pre>
+\brief Metropolis Hastings Monte Carlo
+
 \level 3
+
 \maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
-</pre>
 */
 /*----------------------------------------------------------------------*/
 
@@ -36,7 +32,7 @@ namespace INVANA
   class ParticleComm;
 
   /*! \class OptimizerMH
-   * \brief Metropolis Hastings monte carlo sampling algorithm
+   * \brief Metropolis Hastings Monte Carlo sampling algorithm
    *
    * Basic version of Metropolis Hastings algorithm. To sample from
    * a posterior probability. This posterior probability is provided
@@ -67,7 +63,7 @@ namespace INVANA
     virtual void Setup();
     //@}
 
-    //! perform the sequential monte carlo procedure
+    //! perform the Sequential Monte Carlo procedure
     virtual void Integrate();
 
     //! print step information

@@ -1,12 +1,9 @@
 /*!------------------------------------------------------------------------------------------------*
- \file ad_fld_poro.H
 
  \brief Fluid field adapter for poroelasticity
 
 \maintainer Christoph Ager
-            ager@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289 15249
+
 
 \level 2
 

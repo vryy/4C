@@ -1,19 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_inputreader.cpp
 
 \brief Internal classes to read elements and nodes
 
-<pre>
 \level 1
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
-
 
 
 #include "drt_inputreader.H"

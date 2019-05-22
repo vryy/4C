@@ -1,6 +1,5 @@
 
 /*!----------------------------------------------------------------------
-\file artnetexplicitintegration.cpp
 \brief Control routine for artery solvers,
 
      including solvers based on
@@ -9,7 +8,7 @@
 
 \level 2
 
-\maintainer Lena Yoshihara
+\maintainer Johannes Kremheller
 
 
 *----------------------------------------------------------------------*/

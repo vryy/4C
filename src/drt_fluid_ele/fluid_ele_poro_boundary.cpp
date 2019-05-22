@@ -1,13 +1,15 @@
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 /*!
- \file fluid_ele_poro_boundary.cpp
 
- \brief  the poro boundary element
+\brief Implementation of a boundary element for fluid poro problems
+
+\maintainer Christoph Ager
 
 \level 2
 
-\maintainer  Christoph Ager
- *----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------*/
+
 
 #include "fluid_ele_poro.H"
 

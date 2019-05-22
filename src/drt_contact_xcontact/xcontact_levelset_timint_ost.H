@@ -1,15 +1,10 @@
 /*----------------------------------------------------------------------------*/
 /**
-\file xcontact_levelset_timint_ost.H
-
 \brief xcontact level-set one step theta algorithm
 
-\maintainer Michael Hiermeier
-
-\date Nov 25, 2016
+\maintainer Matthias Mayr
 
 \level 3
-
 */
 /*----------------------------------------------------------------------------*/
 #ifndef SRC_DRT_CONTACT_XCONTACT_XCONTACT_LEVELSET_TIMINT_OST_H_

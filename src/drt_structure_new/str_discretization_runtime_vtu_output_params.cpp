@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*!
-\file str_discretization_runtime_vtu_output_params.cpp
 
 \brief input parameters related to VTU output at runtime for beams
 

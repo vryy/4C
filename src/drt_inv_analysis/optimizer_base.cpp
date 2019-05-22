@@ -1,15 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file optimizer_base.cpp
-
 \brief Optimization algorithm base class
 
-<pre>
 \level 3
+
 \maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #include "optimizer_base.H"

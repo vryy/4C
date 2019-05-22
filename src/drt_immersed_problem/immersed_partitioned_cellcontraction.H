@@ -1,16 +1,12 @@
-/*!----------------------------------------------------------------------
-\file immersed_partitioned_cellcontraction.H
-
+/*---------------------------------------------------------------------*/
+/*!
 \brief partitioned immersed contraction algorithm
-
-\maintainer  Andreas Rauch
-           rauch@lnm.mw.tum.de
-           http://www.lnm.mw.tum.de
-           089 - 289 -15240
 
 \level 3
 
-*----------------------------------------------------------------------*/
+\maintainer Jonas Eichinger
+*/
+/*---------------------------------------------------------------------*/
 #ifndef IMMERSED_PARTITIONED_CELLCONTRACTION_H
 #define IMMERSED_PARTITIONED_CELLCONTRACTION_H
 

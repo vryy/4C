@@ -2,9 +2,8 @@
 /*!
 \file nox_nln_linesearch_prepostoperator.cpp
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Nov 30, 2017
 
 \level 3
 

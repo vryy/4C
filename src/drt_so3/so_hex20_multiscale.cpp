@@ -1,13 +1,10 @@
 /*!----------------------------------------------------------------------
 \file so_hex20_multiscale.cpp
-\brief
+\brief multiscale variant of 3D quadratic serendipity element
 \level 2
 
 <pre>
-\maintainer Lena Yoshihara
-            yoshihara@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15303
+\maintainer Christoph Meier
 </pre>
 
 *----------------------------------------------------------------------*/

@@ -1,16 +1,12 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_paramsinterface.H
-
 \brief Contact parameter interface. Necessary for the communication
        between the structural time integration framework and the
        contact strategies.
 
 \level 3
 
-\maintainer Michael Hiermeier
-
-\date May 2, 2016
+\maintainer Matthias Mayr
 
 */
 /*---------------------------------------------------------------------*/

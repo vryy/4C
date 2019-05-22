@@ -1,18 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file scatra_ele_calc_advanced_reaction.cpp
-
  \brief main file containing routines for calculation of scatra element with advanced reaction terms
 
-
- <pre>
  \level 2
 
    \maintainer Johannes Kremheller
-               kremheller@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089-289-15262
- </pre>
  *----------------------------------------------------------------------*/
 
 

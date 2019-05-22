@@ -1,18 +1,16 @@
-/*!----------------------------------------------------------------------
-\file drt_discret_hdg.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief A class to manage an enhanced discretization for hybridizable
      discontinuous Galerkin methods (HDG)
 
-<pre>
 \level 2
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
+
 #ifndef DISCRET_HDG_H
 #define DISCRET_HDG_H
 

@@ -1,12 +1,8 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file contact_utils.cpp
-
 \brief Contains a summary of contact utility functions
 
-\maintainer Michael Hiermeier
-
-\date Jun 15, 2016
+\maintainer Matthias Mayr
 
 \level 2
 

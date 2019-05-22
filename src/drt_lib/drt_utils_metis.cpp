@@ -1,17 +1,14 @@
-/*!----------------------------------------------------------------------
-\file drt_utils_metis.cpp
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief A collection of helper methods for namespace DRT
 
-<pre>
 \level 2
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 #include "drt_utils_metis.H"
 #include "../linalg/linalg_utils.H"

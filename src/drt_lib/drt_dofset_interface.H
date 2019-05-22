@@ -1,17 +1,15 @@
-/*!----------------------------------------------------------------------
-\file drt_dofset_interface.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief Common interface class for all sets of degrees of freedom.
 
-<pre>
 \level 0
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
+
 #ifndef DOFSET_INTERFACE_H
 #define DOFSET_INTERFACE_H
 

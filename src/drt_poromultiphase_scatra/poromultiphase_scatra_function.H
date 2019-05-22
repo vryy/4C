@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file poromultiphase_scatra_function.H
-
  \brief Managing and evaluating of (reaction) functions for poromultiphase_scatra
         problems
         Contains hard-coded derivatives and evaluation routines for the most commonly
@@ -11,8 +9,6 @@
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 #include "../drt_lib/drt_function.H"

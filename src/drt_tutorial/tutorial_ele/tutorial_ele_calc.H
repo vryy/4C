@@ -1,15 +1,15 @@
-/*!----------------------------------------------------------------------
-\file tutorial_ele_calc.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief student's c++/baci tutorial element evaluation
 
+\maintainer  Martin Kronbichler
 
-\maintainer  Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15240
+\level 2
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
+
 #ifndef TUTORIAL_ELE_CALC_H
 #define TUTORIAL_ELE_CALC_H
 

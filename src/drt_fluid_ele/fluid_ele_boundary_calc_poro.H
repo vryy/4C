@@ -1,12 +1,15 @@
-/*!----------------------------------------------------------------------
-\file fluid_ele_boundary_calc_poro.H
+/*----------------------------------------------------------------------*/
+/*!
 
 \brief evaluate boundary conditions for poroelast / fpsi
 
 \level 2
 
 \maintainer  Christoph Ager
-*----------------------------------------------------------------------*/
+
+*/
+/*----------------------------------------------------------------------*/
+
 #ifndef FLUID_ELE_BOUNDARY_CALC_PORO_H
 #define FLUID_ELE_BOUNDARY_CALC_PORO_H
 

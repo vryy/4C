@@ -1,8 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file hemoglobin_0d_O2_saturation.cpp
+\brief
+Former file of Lena Yoshihara
 
-\maintainer Lena Yoshihara
+\maintainer Martin Kronbichler
 
 \level 3
 */

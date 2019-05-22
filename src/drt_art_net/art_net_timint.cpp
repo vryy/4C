@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file art_net_timint.cpp
 \brief Control routine for arterial network (time) integration.
 
 \maintainer Johannes Kremheller

@@ -2,9 +2,8 @@
 /*!
 \file nox_nln_solver_prepostop_generic.cpp
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Jul 29, 2015
 
 \level 3
 

@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_coup1pow.H
-
 \brief This file contains the routines required to calculate the contribution
 of a general power-type material.
 The input line should read

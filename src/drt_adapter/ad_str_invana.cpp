@@ -1,16 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_str_invana.cpp
 
 \brief Wrapper for the structural time integration which gives fine grained
        access in the time loop
 
-<pre>
-Maintainer: Sebastian Kehl
-            kehl@mhpc.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-10361
-</pre>
+\level 2
+
+\maintainer Harald Willmann
+
 */
 /*----------------------------------------------------------------------*/
 

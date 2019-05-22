@@ -1,13 +1,12 @@
-/*!----------------------------------------------------------------------
-\file fsi_nox_aitken_immersed_ale.cpp
-
+/*---------------------------------------------------------------------*/
+/*!
 \brief class computing step length for AITKEN relaxation
 
-\maintainer Andreas Rauch
+\maintainer Matthias Mayr
 
 \level 2
-
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 #include "fsi_nox_aitken_immersed_ale.H"
 #include "fsi_utils.H"

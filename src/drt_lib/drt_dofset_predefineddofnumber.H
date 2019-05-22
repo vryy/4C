@@ -1,15 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file drt_dofset_predefineddofnumber.H
 
  \brief A dofset that owns a predefined number of dofs
 
  \level 2
 
- \maintainer  Andreas Rauch
-              rauch@lnm.mw.tum.de
-              http://www.lnm.mw.tum.de
- *----------------------------------------------------------------------*/
+ \maintainer Martin Kronbichler
+
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef drt_dofset_predefineddofnumber_H_
 #define drt_dofset_predefineddofnumber_H_

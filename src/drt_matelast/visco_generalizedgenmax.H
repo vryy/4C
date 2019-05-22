@@ -1,10 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file visco_generalizedgenmax.H
 
 \brief generalized maxwell model
 \level 2
-\maintainer Andreas Rauch
+\maintainer Amadeus Gebauer
 
 */
 /*----------------------------------------------------------------------*/

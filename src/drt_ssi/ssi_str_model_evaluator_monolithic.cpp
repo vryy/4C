@@ -1,17 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ssi_str_model_evaluator_monolithic.cpp
-
 \brief structural model evaluator for monolithic scalar-structure interaction
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 #include "ssi_str_model_evaluator_monolithic.H"

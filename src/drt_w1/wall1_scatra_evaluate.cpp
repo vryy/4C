@@ -1,15 +1,13 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
- \file wall1_scatra_evaluate.cpp
+\brief evaluate methods of the 2D solid-wall element with ScaTra coupling.
 
- \brief evaluate methods of the 2D solid-wall element with ScaTra coupling
+\level 2
 
- \level 2
+\maintainer Christoph Meier
 
- \maintainer Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
- *----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------------*/
 
 #include "wall1_scatra.H"
 

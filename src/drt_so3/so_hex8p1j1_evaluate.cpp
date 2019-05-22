@@ -1,16 +1,12 @@
 /*!----------------------------------------------------------------------
 \file so_hex8p1j1_evaluate.cpp
-\brief to be filled by the maintainer
+\brief 'Q1P0' element in 8-node hexahedron shape
+
 \level 2
 
-<pre>
-\maintainer Lena Wiechert
-            yoshihara@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15303
-</pre>
-
-*----------------------------------------------------------------------*/
+\maintainer Christoph Meier
+*/
+/*----------------------------------------------------------------------*/
 
 #include "so_hex8p1j1.H"
 #include "../drt_lib/drt_discret.H"

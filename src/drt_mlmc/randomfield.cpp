@@ -1,17 +1,13 @@
-/*!----------------------------------------------------------------------
-\file randomfield.cpp
-Created on: 15 May, 2014
-\brief Class for generating samples of gaussian and non gaussian random fields based on spectral
-representation
+/*----------------------------------------------------------------------*/
+/*!
+\brief Class for generating samples of random fields based on spectral representation
 
+\maintainer Jonas Nitzler
 
- <pre>
-Maintainer: Jonas Biehler
-            biehler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15276
-</pre>
+\level 3
 */
+/*----------------------------------------------------------------------*/
+
 #ifdef HAVE_FFTW
 
 #include "randomfield.H"

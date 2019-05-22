@@ -1,15 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_particle_old.H
-
 \brief Input parameters for particle problems (old implementation)
 
 \level 3
 
 \maintainer  Sebastian Fuchs
-             fuchs@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15262
 
 *-----------------------------------------------------------------------*/
 #ifndef INPAR_PARTICLE_OLD_H_

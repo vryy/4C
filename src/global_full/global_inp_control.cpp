@@ -1,11 +1,11 @@
 /*!----------------------------------------------------------------------
 \file global_inp_control.cpp
 
-\brief global control routine of baci
+\brief Global control routine of baci
 
 \level 0
 
-\maintainer Michael Gee
+\maintainer Martin Kronbichler
 *----------------------------------------------------------------------*/
 
 #include "../drt_lib/drt_globalproblem.H"

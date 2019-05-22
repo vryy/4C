@@ -1,15 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_str_redairway.H
 
 \brief Structure field adapter for coupling with reduced-D airway trees
 
-<pre>
-Maintainer: Lena Yoshiahra
-            yoshihara@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15303
-</pre>
+\maintainer Carolin Geitner
+
+\level 3
+
 */
 
 /*----------------------------------------------------------------------*/

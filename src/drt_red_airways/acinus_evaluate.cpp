@@ -1,16 +1,17 @@
+/*---------------------------------------------------------------------*/
+/*!
 
-/*!----------------------------------------------------------------------
-\file acinus_evaluate.cpp
 \brief Templated Evaluate file for acinus element containing the action
-       types for an reduced acinus element RedAcinus. The actual
+       types for a reduced acinus element RedAcinus. The actual
        implementation of the routines called during the possible actions
-       is contained in inter_acinus_impl.cpp
+       is contained in acinus_impl.cpp
 
-\maintainer Lena Yoshihara
+\maintainer Carolin Geitner
 
 \level 3
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 #include "red_airway.H"
 #include "acinus_impl.H"

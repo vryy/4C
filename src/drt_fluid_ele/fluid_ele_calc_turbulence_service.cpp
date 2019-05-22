@@ -1,17 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid_ele_calc_turbulence_service.cpp
 
-\brief Internal implementation of Fluid element
+\brief Internal implementation of turbulence functionality of fluid element
 
 \level 2
 
-<pre>
 \maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 

@@ -1,17 +1,14 @@
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 /*!
-\file fluid_timint_stat_hdg.cpp
 
-\brief solution algorithm for HDG stationary problems
+\brief Stationary fluid problem with HDG discretization
+
+\maintainer Andrea La Spina
 
 \level 2
-<pre>
-\maintainer Andrea La Spina
-            http://www.lnm.mw.tum.de
-            089 - 289-15265
-</pre>
+
 */
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 
 #include "fluid_timint_stat_hdg.H"
 #include "fluid_volumetric_surfaceFlow_condition.H"

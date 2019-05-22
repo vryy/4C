@@ -1,17 +1,13 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
- \file wall1_poro_scatra.H
+\brief 2D wall element for structure part of porous medium including scatra functionality.
 
- \brief 2D wall element for structure part of porous medium including scatra functionality
+\level 2
 
- \level 2
+\maintainer Christoph Schmidt
 
- \maintainer Christoph Schmidt
-             schmidt@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 15251
- *----------------------------------------------------------------------*/
-
+*/
+/*---------------------------------------------------------------------------*/
 
 #ifndef WALL1_SCATRA_PORO_H_
 #define WALL1_SCATRA_PORO_H_

@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file electromagnetic.H
 \brief Contains conductivity, permittivity and permeability of the medium for isotropic
        electromagetic field evolution.
        example input line:
@@ -9,8 +8,6 @@
 \level 2
 
 \maintainer Luca Berardocco
-            berardocco@lnm.mw.tum.de
-            089 - 289-15244
 
 </pre>
  */

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fourieriso.H
 \brief material for heat conduction according to fourier's law
 \level 1
 <pre>

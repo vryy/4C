@@ -1,16 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file contact_augmented_strategy.cpp
-
 \brief Augmented contact solving strategy with standard Lagrangian
        multipliers.
 
 \level 3
 
-\maintainer Michael Hiermeier
-
-\date Apr 7, 2014
-
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 #include "contact_augmented_strategy.H"

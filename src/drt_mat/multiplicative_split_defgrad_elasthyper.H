@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file multiplicative_split_defgrad_elasthyper.H
-
 \brief evaluation of a generic material whose deformation gradient is modeled to be split
 multiplicatively into elastic and inelastic parts
 

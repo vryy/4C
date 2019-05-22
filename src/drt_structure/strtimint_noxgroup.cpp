@@ -1,13 +1,9 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file strtimint_noxgroup.cpp
-
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\brief Definitions of NOX group for non-linear solution techniques
+       used within implicit structural time integration
+\level 1
+\maintainer Alexander Popp
 */
 
 /*----------------------------------------------------------------------------*/

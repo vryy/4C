@@ -1,13 +1,10 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file mortar_strategy_factory.cpp
-
 \brief Base class for the CONTACT/MESHTYING factories.
 
 \level 3
 
 \maintainer Matthias Mayr
-
 */
 /*---------------------------------------------------------------------*/
 #include "mortar_strategy_factory.H"

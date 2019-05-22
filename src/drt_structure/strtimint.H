@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file strtimint.H
-
 \maintainer Alexander Popp
 
 \level 1

@@ -1,14 +1,14 @@
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 /*!
-\file red_air_blood_scatra_impl.cpp
 
-\brief Internal implementation of RedAcinus element
+\brief Incomplete! - Purpose: Internal implementation of RedAirBloodScatra element
 
-\maintainer Lena Yoshihara
+\maintainer Carolin Geitner
 
 \level 3
+
 */
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 
 
 

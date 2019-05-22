@@ -1,13 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file arrhenius_pv.cpp
+\brief scalar transport material according to Sutherland law with
+       Arrhenius-type chemical kinetics (progress variable)
 
-<pre>
-Maintainer: Volker Gravemeier
-            vgravem@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15245
-</pre>
+\level 2
+
+\maintainer Volker Gravemeier
 */
 /*----------------------------------------------------------------------*/
 

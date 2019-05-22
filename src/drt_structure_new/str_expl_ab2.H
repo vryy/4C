@@ -1,10 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_expl_ab2.H
 
 \brief Adams-Bashforth-2 time integration for solid dynamics
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
 \level 3
 

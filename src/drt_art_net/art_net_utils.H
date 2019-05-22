@@ -1,14 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file art_net_utils.H
 
  \brief helper functions/classes for artery problems
 
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_ART_NET_ART_NET_UTILS_H_

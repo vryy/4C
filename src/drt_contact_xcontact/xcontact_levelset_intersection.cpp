@@ -1,16 +1,11 @@
 /*----------------------------------------------------------------------------*/
 /**
-\file xcontact_levelset_intersection.cpp
-
 \brief compute the intersection of the zero level-set iso-contour on the
   SCATRA surface discretization and evaluate important quantities
 
-\maintainer Michael Hiermeier
-
-\date Nov 23, 2016
+\maintainer Matthias Mayr
 
 \level 3
-
 */
 /*----------------------------------------------------------------------------*/
 

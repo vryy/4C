@@ -1,15 +1,16 @@
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 /*!
-\file inter_acinar_dep_impl.cpp
 
-\brief Internal implementation of RedInterAcinarDep element. Routines
-       from inter_acinar_dep_evaluate are re-implemented here.
+\brief Internal implementation of RedInterAcinarDep element. Methods implemented here
+       are called by inter_acinar_dep_evaluate.cpp by DRT::ELEMENTS::RedInterAcinarDep::Evaluate()
+       with the corresponding action.
 
-\maintainer Lena Yoshihara
+\maintainer Carolin Geitner
 
 \level 3
+
 */
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 
 
 

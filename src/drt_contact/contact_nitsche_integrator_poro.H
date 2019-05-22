@@ -1,7 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_nitsche_integrator_poro.H
-
 \brief A class to perform integrations of nitsche related terms for the poro contact case
 
 \level 3

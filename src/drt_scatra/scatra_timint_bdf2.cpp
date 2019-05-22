@@ -1,16 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_timint_bdf2.cpp
 \brief BDF2 time-integration scheme
 
 \level 1
 
-<pre>
 \maintainer Anh-Tu Vuong
-            vuong@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15237
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 

@@ -1,12 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_dofset_independent_pbc.cpp
 
 \brief Independent dof set for periodic boundary conditions
 
 \level 2
 
 \maintainer Martin Kronbichler
+
 */
 /*----------------------------------------------------------------------*/
 

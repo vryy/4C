@@ -3,12 +3,9 @@
 \file fsi_lungmonolithic_structuresplit.H
 \brief Volume-coupled FSI (structure-split)
 
-<pre>
-Maintainer: Lena Yoshihara
-            yoshihara@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15303
-</pre>
+\maintainer Matthias Mayr
+
+\level 3
 */
 /*----------------------------------------------------------------------*/
 

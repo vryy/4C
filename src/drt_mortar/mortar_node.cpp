@@ -1,12 +1,11 @@
-/*!----------------------------------------------------------------------
-\file mortar_node.cpp
-
+/*-----------------------------------------------------------------------*/
+/*!
 \brief A class for a mortar coupling node
 
 \level 2
 
 \maintainer Matthias Mayr
-*----------------------------------------------------------------------*/
+*/
 
 #include "mortar_node.H"
 #include "mortar_element.H"

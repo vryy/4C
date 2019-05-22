@@ -1,15 +1,10 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file contact_aug_timemonitor.cpp
-
 \brief Fast time monitor. E. g. to measure the element evaluation times.
 
-\maintainer Michael Hiermeier
-
-\date May 23, 2018
+\maintainer Matthias Mayr
 
 \level 3
-
 */
 /*----------------------------------------------------------------------------*/
 

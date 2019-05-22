@@ -1,17 +1,15 @@
-/*!----------------------------------------------------------------------
-\file fluid_timint_ac_ost.cpp
+/*-----------------------------------------------------------*/
+/*!
 
 \brief OST time integrator for FS3I-AC problems. Is in diamond inhertance with TimIntOneStepTheta
-and TimIntAC.
+       and TimIntAC
 
-\date 2015-07-29
-
-\maintainer Moritz Thon
-            thon@mhpc.mw.tum.de
-            089/289-10364
+\maintainer Christoph Ager
 
 \level 3
-----------------------------------------------------------------------*/
+
+*/
+/*-----------------------------------------------------------*/
 
 #include "fluid_timint_ac_ost.H"
 

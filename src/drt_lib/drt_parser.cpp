@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_parser.cpp
 
 \brief Parser for mathematical expressions, which contain literals
        ('1.0', 'pi', etc) and operations ('+', '-', 'sin', etc.)
@@ -9,16 +8,12 @@
        A few non-templated methods of the Lexer base class
        are declared here.
 
-<pre>
 \level 0
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
-</pre>
-
-\author u.kue
-\date 10/07
 */
+/*---------------------------------------------------------------------*/
 
 
 #include "drt_parser.H"

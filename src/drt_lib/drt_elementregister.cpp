@@ -1,14 +1,14 @@
-/*!----------------------------------------------------------------------
-\file drt_elementregister.cpp
-\brief Element registration functionality
-<pre>
-\level 0
-\maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+/*---------------------------------------------------------------------*/
+/*!
 
-*----------------------------------------------------------------------*/
+\brief Element registration functionality
+
+\level 0
+
+\maintainer Martin Kronbichler
+
+*/
+/*---------------------------------------------------------------------*/
 
 #include "drt_elementregister.H"
 #include "drt_dserror.H"

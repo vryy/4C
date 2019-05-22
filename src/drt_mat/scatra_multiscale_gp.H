@@ -1,7 +1,5 @@
 /*!---------------------------------------------------------------------*/
 /*!
-\file scatra_multiscale_gp.H
-
 \brief submaterial associated with macro-scale Gauss point in multi-scale simulations of scalar
 transport problems
 
@@ -9,9 +7,6 @@ transport problems
 
 <pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
 </pre>
 */
 /*----------------------------------------------------------------------*/

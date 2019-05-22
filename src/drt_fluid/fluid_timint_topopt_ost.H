@@ -1,17 +1,14 @@
-/*!----------------------------------------------------------------------
-\file fluid_timint_topopt_ost.H
-\brief
+/*-----------------------------------------------------------*/
+/*!
+
+\brief One-step theta time integration for topology optimization
+
+\maintainer Martin Kronbichler
 
 \level 3
 
-<pre>
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
-
-*----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------*/
 
 #ifndef FLD_TIMINT_TOPOPT_OST_H
 #define FLD_TIMINT_TOPOPT_OST_H

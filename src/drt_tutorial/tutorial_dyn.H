@@ -1,14 +1,15 @@
-/*!----------------------------------------------------------------------
-\file tutorial_dyn.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief student's c++/baci tutorial control algorithm
 
-\maintainer  Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15240
+\maintainer  Martin Kronbichler
 
-*----------------------------------------------------------------------*/
+\level 2
+
+*/
+/*---------------------------------------------------------------------*/
+
 #ifndef TUTORIAL_DYN_H
 #define TUTORIAL_DYN_H
 

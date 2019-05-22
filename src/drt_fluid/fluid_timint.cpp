@@ -1,17 +1,14 @@
-/*!----------------------------------------------------------------------
-\file fluid_timint.cpp
-\brief Baseclass for all fluid time integrations
+/*-----------------------------------------------------------*/
+/*!
+
+\brief Base class for all fluid time integrations
+
+\maintainer Martin Kronbichler
 
 \level 1
 
-<pre>
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
-
-*----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------*/
 
 #include "fluid_timint.H"
 

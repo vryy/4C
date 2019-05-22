@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file so_weg6.cpp
 
-\brief ToDo Add meaningful comment.
+\brief Solid Wedge6 Element
 
 \level 1
 

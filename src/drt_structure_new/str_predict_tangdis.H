@@ -1,12 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_predict_tangdis.H
 
-\brief Tangential displacemnt predictor.
+\brief Tangential displacement predictor.
 
-\maintainer Michael Hiermeier
-
-\date Aug 13, 2015
+\maintainer Anh-Tu Vuong
 
 \level 3
 

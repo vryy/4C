@@ -1,14 +1,10 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file xcontact_strategy.cpp
-
 \brief Extended contact solving strategy with Level-Set and X-FEM
 
 \level 3
 
-\maintainer Michael Hiermeier
-
-\date Aug 18, 2016
+\maintainer Matthias Mayr
 */
 /*---------------------------------------------------------------------------*/
 

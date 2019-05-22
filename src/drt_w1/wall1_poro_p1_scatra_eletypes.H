@@ -1,18 +1,14 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
- \file wall1_poro_p1_scatra_eletypes.H
+\brief Element types of the 2D wall element for solid-part of porous medium using p1 (mixed)
+ approach including scatra functionality.
 
- \brief element types of the 2D wall element for solid-part of porous medium using p1 (mixed)
- approach including scatra functionality
+\level 2
 
- \level 2
+\maintainer Christoph Schmidt
 
- \maintainer Christoph Schmidt
-             schmidt@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 15251
- *----------------------------------------------------------------------*/
-
+*/
+/*---------------------------------------------------------------------------*/
 
 #ifndef WALL1_PORO_P1_SCATRA_ELETYPES_H_
 #define WALL1_PORO_P1_SCATRA_ELETYPES_H_

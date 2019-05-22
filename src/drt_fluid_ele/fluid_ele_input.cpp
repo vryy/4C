@@ -1,15 +1,14 @@
-/*!----------------------------------------------------------------------
-\file fluid_ele_input.cpp
-\brief
+/*----------------------------------------------------------------------*/
+/*!
 
-<pre>
-Maintainer: Ursula Rasthofer & Volker Gravemeier
-            {rasthofer,vgravem}@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15236/-245
-</pre>
+\brief ReadElement method of the fluid element implementation
 
-*----------------------------------------------------------------------*/
+\maintainer Martin Kronbichler
+
+\level 1
+
+*/
+/*----------------------------------------------------------------------*/
 
 #include "fluid_ele.H"
 #include "../drt_lib/drt_linedefinition.H"

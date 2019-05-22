@@ -1,12 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_integrator.cpp
 
 \brief Generic class for all explicit/implicit time integrators.
 
-\maintainer Michael Hiermeier
-
-\date Dec 7, 2015
+\maintainer Anh-Tu Vuong
 
 \level 3
 

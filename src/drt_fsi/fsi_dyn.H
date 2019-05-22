@@ -1,4 +1,3 @@
-
 /*----------------------------------------------------------------------*/
 /*!
 \file fsi_dyn.H
@@ -9,12 +8,10 @@
 
 \maintainer Matthias Mayr
 */
-
 /*----------------------------------------------------------------------*/
 
 #ifndef FSI_DYN_H
 #define FSI_DYN_H
-
 
 void fluid_ale_drt();
 void fluid_xfem_drt();

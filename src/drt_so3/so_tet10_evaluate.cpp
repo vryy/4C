@@ -2,14 +2,7 @@
 \file so_tet10_evaluate.cpp
 \brief quadratic nonlinear tetrahedron
 \level 1
-
-<pre>
-\maintainer Jonas Biehler
-            biehler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15276
-</pre>
-
+\maintainer Christoph Meier
 *----------------------------------------------------------------------*/
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "so_tet10.H"

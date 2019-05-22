@@ -1,16 +1,11 @@
 /*----------------------------------------------------------------------------*/
 /**
-\file xcontact_cutwizard.cpp
-
 \brief Cutwizard of the xcontact algorithm ( level-set cut of the structural
        XFEM discretization )
 
-\maintainer Michael Hiermeier
-
-\date Jan 11, 2017
+\maintainer Matthias Mayr
 
 \level 3
-
 */
 /*----------------------------------------------------------------------------*/
 

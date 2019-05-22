@@ -1,13 +1,14 @@
-/*!----------------------------------------------------------------------
-\file fluid_ele_boundary_factory.H
+/*----------------------------------------------------------------------*/
+/*!
 
-\brief factory for fluid boundary evaluation
-
-\maintainer Martin Kronbichler & Volker Gravemeier
+\brief factory class into templated evaluators for fluid boundary integration
 
 \level 1
-*----------------------------------------------------------------------*/
 
+\maintainer  Martin Kronbichler
+
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef FLUID_ELE_BOUNDARY_FACTORY_H
 #define FLUID_ELE_BOUNDARY_FACTORY_H

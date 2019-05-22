@@ -1,16 +1,13 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
- \file wall1_poro_scatra_eletypes.cpp
-
-\brief element types of the 2D solid-poro element including scatra functionality
+\brief Element types of the 2D solid-poro element including scatra functionality.
 
 \level 2
 
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289 15251
- *----------------------------------------------------------------------*/
+
+*/
+/*---------------------------------------------------------------------------*/
 
 #include "wall1_poro_scatra.H"
 #include "wall1_poro_scatra_eletypes.H"

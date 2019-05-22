@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file scatra_timint_meshtying_strategy_artery.H
-
  \brief routines for coupling between 1D arterial network and 2D/3D
         scatra-algorithm
 
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_SCATRA_SCATRA_TIMINT_MESHTYING_STRATEGY_ARTERY_H_

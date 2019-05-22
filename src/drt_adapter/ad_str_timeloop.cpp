@@ -1,12 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_str_timeloop.cpp
 
 \brief Wrapper for the structural time integration which gives fine grained
        access in the time loop
 
-\maintainer Michael Hiermeier
-            hiermeier@lnm.mw.tum.de
+\maintainer Anh-Tu Vuong
 
 \level 1
 

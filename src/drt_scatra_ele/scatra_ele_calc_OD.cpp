@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file scatra_ele_calc_OD.cpp
 
  \brief routines for calculation of off diagonal terms of scatra element
 
  \level 3
 
 \maintainer Anh-Tu Vuong
-            vuong@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15237
  *----------------------------------------------------------------------*/
 
 

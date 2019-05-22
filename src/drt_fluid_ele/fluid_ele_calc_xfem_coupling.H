@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid_ele_calc_xfem_coupling.H
 
 \brief Factory class for providing an implementation for coupling with
        Mixed/Stress/Hybrid methods or Nitsche's method to enforce
@@ -8,12 +7,8 @@
 
 \level 2
 
-<pre>
 \maintainer  Christoph Ager
-             ager@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15249
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 

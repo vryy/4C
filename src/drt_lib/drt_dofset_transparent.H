@@ -1,17 +1,15 @@
-/*!----------------------------------------------------------------------
-\file drt_dofset_transparent.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief A set of degrees of freedom special for contact
 
-<pre>
 \level 1
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
+
 #ifndef TRANSPARENTDOFSET_H
 #define TRANSPARENTDOFSET_H
 

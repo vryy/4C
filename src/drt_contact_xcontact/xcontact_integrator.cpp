@@ -1,15 +1,11 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file xcontact_integrator.cpp
-
 \brief Integrator class for the inequality constraint level-set approach
        (originally created by student Michael Hofer)
 
 \level 3
 
-\maintainer Michael Hiermeier
-
-\date Jul 06, 2016
+\maintainer Matthias Mayr
 */
 /*---------------------------------------------------------------------------*/
 

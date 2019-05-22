@@ -1,11 +1,10 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*!
-\file str_enum_lists.H
 
 \brief Contains ONLY lists of enumerators and is supposed to be included
        in the header files if required
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
 \level 3
 

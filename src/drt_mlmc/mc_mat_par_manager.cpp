@@ -1,16 +1,14 @@
 /*----------------------------------------------------------------------------*/
 /*!
- \file mc_mat_par_manager.cpp
 \brief manages material parameters during UQ at some point this should
        be merged with the mat par manager in stat inv ana
 
-<pre>
-Maintainer: Jonas Biehler
-            biehler@lnm.mw.tum.de
-            089 - 28915276
-</pre>
+\maintainer Jonas Nitzler
 
-!*/
+\level 3
+*/
+/*----------------------------------------------------------------------------*/
+
 #ifdef HAVE_FFTW
 /*----------------------------------------------------------------------------*/
 /* headers */

@@ -4,9 +4,8 @@
 
 \brief Implementation of a modified Newton approach
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Aug 15, 2018
 
 \level 3
 

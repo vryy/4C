@@ -1,16 +1,14 @@
-/*!------------------------------------------------------------------------------------------------*
-\file opti_resulttest.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief Result test for optimization algorithms
 
-<pre>
-Maintainer: Martin Winklmaier
-            winklmaier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15241
-</pre>
- *------------------------------------------------------------------------------------------------*/
+\maintainer Martin Kronbichler
 
+\level 3
+
+*/
+/*---------------------------------------------------------------------*/
 
 #ifndef OPTI_RESULTTEST_H_
 #define OPTI_RESULTTEST_H_

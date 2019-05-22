@@ -1,16 +1,14 @@
-/*!----------------------------------------------------------------------
-\file fluid_ele_immersed.cpp
+/*----------------------------------------------------------------------*/
+/*!
 
 \brief specialized immersed element used in immersed fsi
 
-\level 1
+\level 3
 
-\maintainer  Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 - 15240
+\maintainer  Martin Kronbichler
 
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #include "fluid_ele_immersed.H"
 #include "../drt_lib/drt_linedefinition.H"

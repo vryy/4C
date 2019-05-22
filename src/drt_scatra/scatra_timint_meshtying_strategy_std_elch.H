@@ -1,16 +1,10 @@
 /*!----------------------------------------------------------------------
-\file scatra_timint_meshtying_strategy_std_elch.H
 
 \brief Standard solution strategy for electrochemistry problems (without meshtying)
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
 
 \level 2
-</pre>
 
 *----------------------------------------------------------------------*/
 #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_STD_ELCH_H
@@ -34,7 +28,6 @@ namespace SCATRA
   can be circumvented. This class contains the standard solution strategy for electrochemistry
   problems without meshtying.
 
-  \author fang (fang@lnm.mw.tum.de)
   */
 
   class MeshtyingStrategyStdElch : public MeshtyingStrategyStd

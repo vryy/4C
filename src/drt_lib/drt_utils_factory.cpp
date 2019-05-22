@@ -1,17 +1,14 @@
-/*!----------------------------------------------------------------------
-\file drt_utils_factory.cpp
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief A collection of helper methods for namespace DRT
 
-<pre>
 \level 0
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 #include "drt_utils_factory.H"
 #include "drt_parobjectfactory.H"

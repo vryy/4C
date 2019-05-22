@@ -1,16 +1,13 @@
 /*!----------------------------------------------------------------------
 \file fsi_matrixtransform.cpp
 
+\brief Utilities for matrix transformations in FSI
+
 \level 1
 
-<pre>
 \maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
-
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 #include <vector>
 #include <iterator>

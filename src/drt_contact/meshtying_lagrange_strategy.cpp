@@ -1,13 +1,13 @@
-/*!----------------------------------------------------------------------
-\file meshtying_lagrange_strategy.cpp
-
+/*----------------------------------------------------------------------------*/
+/*!
 \brief strategy handling mesh tying problems with Lagrange multipliers
 
 \level 1
 
 \maintainer Matthias Mayr
 
-*-----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------------*/
 
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>

@@ -1,19 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_condition_selector.cpp
 
 \brief Split conditions into map extractors
 
-<pre>
 \level 1
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
-
 
 
 #include "drt_condition_selector.H"

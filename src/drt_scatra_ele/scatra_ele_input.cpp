@@ -1,16 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_ele_input.cpp
 \brief Read scalar transport element
 
-<pre>
 \level 1
 
 \maintainer Anh-Tu Vuong
-            vuong@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15237
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #include "../drt_lib/drt_linedefinition.H"

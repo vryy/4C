@@ -1,15 +1,10 @@
 /*!------------------------------------------------------------------------------------------------*
-\file inpar_ssi.H
-
 \brief input parameters for solid-scatra-interaction
 
-<pre>
 \level 2
 
-\maintainer Moritz Thon
-            thon@mhpc.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
+\maintainer Christoph Schmidt
+
  *------------------------------------------------------------------------------------------------*/
 
 

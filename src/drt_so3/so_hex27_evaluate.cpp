@@ -1,13 +1,10 @@
 /*!----------------------------------------------------------------------
 \file so_hex27_evaluate.cpp
-\brief bla bla bla
+\brief tri-quadratic displacement based solid element
 
 \level 1
 
-<pre>
 \maintainer Christoph Meier
-</pre>
-
 *----------------------------------------------------------------------*/
 
 #include "so_hex27.H"

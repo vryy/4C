@@ -1,12 +1,10 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file crosslinking_params.cpp
-
 \brief data container holding all crosslinking input parameters
 
 \level 3
 
-\maintainer Jonas Eichinger, Maximilian Grill
+\maintainer Jonas Eichinger
 */
 /*----------------------------------------------------------------------------*/
 

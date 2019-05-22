@@ -4,16 +4,12 @@
 
 \brief testing of lubrication calculation results
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15270
-</pre>
+\level 3
+
+\maintainer Mostafa Faraji
+
 */
 /*--------------------------------------------------------------------------*/
-
-
 
 #include "lubrication_timint_implicit.H"
 #include "lubrication_resulttest.H"

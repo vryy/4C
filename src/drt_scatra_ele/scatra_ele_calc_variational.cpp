@@ -1,17 +1,11 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file scatra_ele_calc_variational.cpp
 
 \brief evaluation of ScaTra elements for ion-transport equation
 
 \level 2
 
-<pre>
-\maintainer Jorge De Anda Salazar
-            DeAnda@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089-289-15251
-</pre>
+\maintainer Martin Kronbichler
 */
 /*--------------------------------------------------------------------------*/
 #include "scatra_ele_calc_variational.H"

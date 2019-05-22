@@ -1,18 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file scatra_ele_calc_chemo_reac.H
-
  \brief main file containing routines for calculation of scatra element with chemotactic AND
 reactive scalars
 
 \level 2
 
- <pre>
    \maintainer Johannes Kremheller
-               kremheller@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089-289-15262
- </pre>
  *----------------------------------------------------------------------*/
 
 #ifndef SCATRA_ELE_CALC_CHEMO_REAC_H_

@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file art_net_impl_stationary.H
 \brief Control routine for arterial network stationary formulation.
 
 \maintainer Johannes Kremheller
@@ -23,7 +22,7 @@ namespace ART
   /*!
   \brief stationary formulation for arterial network problems
 
-  \author kremheller (kremheller@lnm.mw.tum.de)
+  \author kremheller
   */
   class ArtNetImplStationary : public TimInt
   {

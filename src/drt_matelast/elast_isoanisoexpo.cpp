@@ -1,17 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_isoanisoexpo.cpp
-
 \brief
-
 The input line should read
   MAT 1 ELAST_IsoAnisoExpo K1 10.0 K2 1.0 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0 INIT 0 ADAPT_ANGLE 0
 
 \level 1
 
 <pre>
-\maintainer Andreas Rauch
-            rauch@lnm.mw.tum.de
+\maintainer Amadeus Gebauer
 </pre>
 */
 

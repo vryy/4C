@@ -1,14 +1,13 @@
-#ifdef HAVE_Kokkos
 /*----------------------------------------------------------------------*/
 /*!
-\file objective_funct_surfcurr.H
 \brief Surface current based objective function
+
 \level 3
+
 \maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
 */
 /*----------------------------------------------------------------------*/
+#ifdef HAVE_Kokkos
 
 #ifndef OBJECTIVE_FUNCT_SURFCURR_H
 #define OBJECTIVE_FUNCT_SURFCURR_H

@@ -1,10 +1,8 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_nln_solver_nonlin.cpp
+\brief Interface to Baci's NLNSOL as nonlinear solver in structural dynamics
 
 \maintainer Matthias Mayr
-
-\date Aug 13, 2015
 
 \level 3
 

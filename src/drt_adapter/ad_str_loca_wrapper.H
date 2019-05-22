@@ -1,10 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file ad_str_loca_wrapper.H
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Nov 24, 2015
+\brief wrapper for structure adapter using the LOCA library
 
 \level 3
 

@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file nox_nln_meshtying_linearsystem.H
-
 \brief Derived class which manages the special requirements to the linear
        solver for mesh tying problems.
 

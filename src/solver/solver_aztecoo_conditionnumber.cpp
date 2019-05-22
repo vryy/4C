@@ -2,9 +2,9 @@
 /*!
 \file solver_aztecoo_conditionnumber.cpp
 
-\maintainer Michael Hiermeier
+\maintainer Martin Kronbichler
 
-\date Apr 5, 2018
+\brief Condition number via AztecOO
 
 \level 3
 

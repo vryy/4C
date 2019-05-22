@@ -1,14 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file base_binarytree.cpp
-
 \brief A base class for binary trees and binary tree nodes providing common functionality
 
 \level 1
 
 \maintainer Christoph Schmidt
-
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 #include "base_binarytree.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_discret.H"

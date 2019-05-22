@@ -1,6 +1,4 @@
 /*!----------------------------------------------------------------------
- \file membrane_active_strain.H
-
  \brief Active strain membrane material for gastric electromechanics
 
  The input line should read
@@ -9,8 +7,6 @@
  \level 3
 
  \maintainer Sebastian Brandstaeter
-             brandstaeter@lnm.mw.tum.de
-             089 - 289-15276
 
 
  *----------------------------------------------------------------------*/

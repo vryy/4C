@@ -1,14 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file compogden.H
+\brief
+Former file of Lena Yoshihara
 
 \level 3
 
-<pre>
-\maintainer Lena Yoshihara
-            yoshihara@lnm.mw.tum.de
-            089/289 15255
-</pre>
+\maintainer Martin Kronbichler
 */
 /*----------------------------------------------------------------------*/
 #ifndef COMPOGDEN_H_

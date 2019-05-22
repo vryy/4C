@@ -1,12 +1,11 @@
 /*!----------------------------------------------------------------------
-\file ad_str_lung.cpp
 
-<pre>
-Maintainer: Lena Yoshihara
-            yoshihara@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15303
-</pre>
+\maintainer Carolin Geitner
+
+\level 3
+
+\brief Structure field adapter for fsi airway simulations with
+attached parenchyma balloon
 
 *----------------------------------------------------------------------*/
 

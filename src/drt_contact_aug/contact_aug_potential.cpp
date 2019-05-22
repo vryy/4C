@@ -1,16 +1,11 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_aug_potential.cpp
-
 \brief Class for the evaluation of the contact potential and its
        linearization.
 
 \level 2
 
-\maintainer Michael Hiermeier
-
-\date Mar 14, 2017
-
+\maintainer Matthias Mayr
 */
 /*---------------------------------------------------------------------*/
 

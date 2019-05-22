@@ -1,5 +1,5 @@
+/*----------------------------------------------------------------------*/
 /*!
-\file turbulence_statistic_manager.cpp
 
 \brief Manage the computation of averages for several
 canonical flows like channel flow, flow around a square
@@ -8,16 +8,12 @@ cylinder, flow in a lid driven cavity, flow over a backward-facing step etc.
 The manager is intended to remove as much of the averaging
 overhead as possible from the time integration method.
 
-\level 3
-
-<pre>
 \maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+
+\level 2
 
 */
+/*----------------------------------------------------------------------*/
 
 #include "turbulence_statistic_manager.H"
 #include "../drt_fluid/fluidimplicitintegration.H"

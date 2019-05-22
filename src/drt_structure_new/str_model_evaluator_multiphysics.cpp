@@ -1,12 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_model_evaluator_multiphysics.cpp
 
 \brief Base class for modelevaluators in partitioned algorithms.
 
-\maintainer Andreas Rauch
-
-\date Nov 28, 2016
+\maintainer Anh-Tu Vuong
 
 \level 3
 

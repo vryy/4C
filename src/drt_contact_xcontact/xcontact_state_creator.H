@@ -1,15 +1,10 @@
 /*----------------------------------------------------------------------------*/
 /**
-\file xcontact_state_creator.H
-
 \brief State creator for the xcontact simulation
 
-\maintainer Michael Hiermeier
-
-\date Jan 19, 2017
+\maintainer Matthias Mayr
 
 \level 3
-
 */
 /*----------------------------------------------------------------------------*/
 

@@ -1,12 +1,10 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file inpar_lubrication.H
-
 \brief Lubrication dynamic parameters
 
 \level 3
 
-\maintainer Andy Wirtz
+\maintainer Mostafa Faraji
 */
 /*--------------------------------------------------------------------------*/
 #ifndef SRC_DRT_INPAR_INPAR_LUBRICATION_H_

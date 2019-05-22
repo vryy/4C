@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file scatra_ele_calc_variational.H
 
 \brief evaluation of ScaTra elements for chemical diffusion under a variational framework
 \Equations : Evolution eq: Conservation of mass
@@ -8,12 +7,7 @@
 
 \level 2
 
-<pre>
-\maintainer Jorge De Anda Salazar
-            DeAnda@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089-289-15251
-</pre>
+\maintainer Martin Kronbichler
 */
 /*--------------------------------------------------------------------------*/
 

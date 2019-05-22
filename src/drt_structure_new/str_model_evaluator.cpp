@@ -1,12 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_model_evaluator.cpp
 
 \brief Manager of the model evaluator calls.
 
-\maintainer Michael Hiermeier
-
-\date Nov 30, 2015
+\maintainer Anh-Tu Vuong
 
 \level 3
 

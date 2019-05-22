@@ -1,20 +1,14 @@
-/*!
+/*!----------------------------------------------------------------------
 
-\file turbulence_hit_initial_scalar_field.H
 
 \brief routines to initialize homogeneous isotropic turbulence simulations with passive scalar
 transport
 
 \level 2
 
-<pre>
 \maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*/
+*----------------------------------------------------------------------*/
 
 
 #ifndef TURBULENCE_HIT_INITIAL_SCALAR_FIELD_H

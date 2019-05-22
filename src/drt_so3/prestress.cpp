@@ -1,13 +1,11 @@
 /*!----------------------------------------------------------------------
 \file prestress.cpp
 
-<pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15239
-</pre>
+\brief prestress functionality in solid elements
 
+\level 2
+
+\maintainer Christoph Meier
 *----------------------------------------------------------------------*/
 
 #include "prestress.H"

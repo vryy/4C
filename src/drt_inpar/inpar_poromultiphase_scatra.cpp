@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file inpar_poromultiphase_scatra.cpp
-
  \brief input parameters for porous multiphase problem with scalar transport
 
    \level 3
 
    \maintainer  Johannes Kremheller
-                kremheller@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de15251
  *----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_INPAR_INPAR_POROMULTIPHASE_SCATRA_CPP_

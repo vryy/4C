@@ -1,17 +1,14 @@
-/*!----------------------------------------------------------------------
-\file drt_discret_hdg.cpp
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief a class to manage an enhanced discretization including all faces for HDG
 
-<pre>
 \level 2
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 #include "drt_discret_hdg.H"
 

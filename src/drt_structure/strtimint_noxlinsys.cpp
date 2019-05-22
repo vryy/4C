@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file strtimint_noxlinsys.cpp
 \brief Use #NOX as non-linear solution technique for implicit
        structureal time integration
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\maintainer Alexander Popp
+
+\level 3
 */
 
 /*----------------------------------------------------------------------*/

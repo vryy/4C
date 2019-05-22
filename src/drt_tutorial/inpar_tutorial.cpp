@@ -1,16 +1,15 @@
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 /*!
-\file inpar_tutorial.cpp
 
-\brief Input parameters for tutorial
+\brief tutorial input parameters
 
-\maintainer Andreas Rauch
-            rauch@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
+\maintainer  Martin Kronbichler
+
+\level 2
 
 */
+/*---------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------*/
 #include "inpar_tutorial.H"
 
 #include "../drt_inpar/drt_validparameters.H"

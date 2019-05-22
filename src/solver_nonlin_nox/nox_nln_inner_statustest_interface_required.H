@@ -2,9 +2,8 @@
 /*!
 \file nox_nln_inner_statustest_interface_required.H
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Aug 17, 2015
 
 \level 3
 

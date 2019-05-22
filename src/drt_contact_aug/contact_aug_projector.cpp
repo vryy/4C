@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file contact_aug_projector.cpp
-
 \brief GP projector template
 
 \level 3
 
-\maintainer Michael Hiermeier
-\date Jun 23, 2017
-
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------------*/
 

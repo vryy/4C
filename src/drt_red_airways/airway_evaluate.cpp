@@ -1,13 +1,17 @@
+/*---------------------------------------------------------------------*/
+/*!
 
-/*!----------------------------------------------------------------------
-\file airway_evaluate.cpp
-\brief
+\brief Templated Evaluate file for airway element containing the action
+       types for a reduced airway element RedAirway. The actual
+       implementation of the routines called during the possible actions
+       is contained in airway_impl.cpp
 
-\maintainer Lena Yoshihara
+\maintainer Carolin Geitner
 
 \level 3
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 #include "red_airway.H"
 #include "airway_impl.H"
 

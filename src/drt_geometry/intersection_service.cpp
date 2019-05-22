@@ -3,13 +3,9 @@
 
 \brief collection of service methods for intersection computations
 
+\level 3
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15270
-</pre>
+\maintainer Martin Kronbichler
 *----------------------------------------------------------------------*/
 
 

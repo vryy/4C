@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file thermoplastichyperelast.H
 \brief Contains the functions to establish local material law /
        stress-strain law for isotropic material following finite strain
        von-Mises plasticity with nonlinear isotropic hardening and general

@@ -1,18 +1,14 @@
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 /*!
-\file fluid_timint_topopt_genalpha.cpp
-\brief TimIntTopOptGenAlpha
+
+\brief Generalized alpha time integration for topology optimization
+
+\maintainer Martin Kronbichler
 
 \level 3
 
-<pre>
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 */
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 
 #include "fluid_timint_topopt_genalpha.H"
 #include "../drt_io/io.H"

@@ -1,18 +1,14 @@
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 /*!
-\file fluid_timint_two_phase_ost.cpp
-\brief TimIntTwoPhaseOst
+
+\brief One-step theta time integration for two-phase flow
+
+\maintainer Christoph Ager
 
 \level 2
 
-<pre>
-\maintainer  Christoph Ager & Martin Kronbichler
-             {ager,kronbichler}@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15236/-235
-</pre>
 */
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 
 #include "fluid_timint_two_phase_ost.H"
 #include "../drt_io/io.H"

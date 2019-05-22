@@ -4,9 +4,8 @@
 
 \brief Preconditioner interface for constrained problems.
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Apr 22, 2016
 
 \level 3
 

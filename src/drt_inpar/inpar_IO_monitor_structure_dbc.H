@@ -1,12 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_IO_monitor_structure_dbc.H
-
 \brief input parameters monitoring dirichlet boundary conditions
 
 \level 2
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 */
 /*----------------------------------------------------------------------*/
 /* definitions */

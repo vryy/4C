@@ -1,14 +1,11 @@
 /*!----------------------------------------------------------------------
-\file immersed_partitioned_confine_cell.cpp
 
 \brief partitioned immersed cell-ecm interaction via cell confinement in ecm pore
 
-\maintainer  Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15240
-
 \level 3
+
+\maintainer Jonas Eichinger
+
 *----------------------------------------------------------------------*/
 #include "immersed_partitioned_confine_cell.H"
 

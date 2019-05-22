@@ -3,13 +3,9 @@
 
 \brief A set of preprocessor defines for solid element methods
 
-<pre>
-Maintainer: Andreas Rauch
-            rauch@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15240
-</pre>
+\maintainer Christoph Meier
 
+\level 3
 *-----------------------------------------------------------------------*/
 #ifndef SO3_DEFINES_H
 #define SO3_DEFINES_H

@@ -1,15 +1,10 @@
 /*!----------------------------------------------------------------------
-\file porofluidmultiphase_meshtying_strategy_artery.cpp
 
 \brief routines for coupling with artery network
 
 \level 3
 
 \maintainer Johannes Kremheller
-            kremheller@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-
-
 *----------------------------------------------------------------------*/
 
 #include "porofluidmultiphase_meshtying_strategy_artery.H"

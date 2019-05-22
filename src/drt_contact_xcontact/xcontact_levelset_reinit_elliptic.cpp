@@ -1,15 +1,10 @@
 /*----------------------------------------------------------------------------*/
 /**
-\file xcontact_levelset_reinit_elliptic.cpp
-
 \brief xcontact level-set elliptical reinitialization algorithm
 
-\maintainer Michael Hiermeier
-
-\date Dec 1, 2016
+\maintainer Matthias Mayr
 
 \level 3
-
 */
 /*----------------------------------------------------------------------------*/
 

@@ -1,16 +1,12 @@
-/*!----------------------------------------------------------------------
-\file invana_cal_drt.cpp
-
+/*----------------------------------------------------------------------*/
+/*!
 \brief Start routines for the inverse analysis
 
-<pre>
 \level 3
-\maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
-</pre>
 
-*----------------------------------------------------------------------*/
+\maintainer Sebastian Brandstaeter
+*/
+/*----------------------------------------------------------------------*/
 #include "../drt_lib/drt_globalproblem.H"
 #include "invana_cal_drt.H"
 #include "../drt_inpar/inpar_statinvanalysis.H"

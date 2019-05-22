@@ -7,7 +7,6 @@ class Header(object):
   def __init__(self, filetext):
     self.header     = False
     self.start      = ""
-    self.file       = ""
     self.brief      = ""
     self.maintainer = ""
     self.compliant_maintainer = ""
@@ -23,14 +22,7 @@ class Header(object):
           if len(start)>=1:
             self.start=start
           break
-      # check for file tag
-      for line in blk:
-        if "\\file " in line:
-          file = line.split("\\file ",1)[1].strip()
-          if len(file) >= 1:
-            self.file = file
-          break
-      # check for brief tag
+     # check for brief tag
       for line in blk:
         if "\\brief " in line:
           brief = line.split("\\brief ",1)[1].strip()
@@ -71,9 +63,6 @@ class Header(object):
   def has_header(self):
     return self.header
 
-  def get_file(self):
-    return self.file
-
   def get_start(self):
     return self.start
 
@@ -94,8 +83,6 @@ class Header(object):
     return ["","An appropriate header block looks as follows:",
             "/*----------------------------------------------------------------------------*/",
             "/*!",
-            "\\file fe_simulation.H",
-            "",
             "\\brief This header provides the interface for all FE simulations",
             "",
             "\\level 3",

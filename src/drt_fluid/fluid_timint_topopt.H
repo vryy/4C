@@ -1,17 +1,14 @@
-/*!----------------------------------------------------------------------
-\file fluid_timint_topopt.H
+/*-----------------------------------------------------------*/
+/*!
 
-\brief TimIntTopOpt
+\brief Basic time integration driver for topology optimization
 
-\level 2
-<pre>
 \maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*----------------------------------------------------------------------*/
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
 
 #ifndef FLD_TIMINT_TOPOPT_H
 #define FLD_TIMINT_TOPOPT_H

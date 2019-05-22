@@ -1,17 +1,14 @@
-/*!----------------------------------------------------------------------
-\file drt_element.cpp
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief Implementation of base element class in BACI with basic operations
 
-<pre>
 \level 0
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 #include "drt_element.H"
 #include "drt_node.H"

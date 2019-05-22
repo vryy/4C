@@ -1,20 +1,14 @@
+/*----------------------------------------------------------------------*/
 /*!
-
-\file turbulence_statistics_hit.H
 
 \brief routines for homogeneous isotropic turbulence
 
+\maintainer Martin Kronbichler
+
 \level 2
 
-<pre>
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
-
 */
-
+/*----------------------------------------------------------------------*/
 
 #ifndef TURBULENCE_STATISTICS_HIT_H
 #define TURBULENCE_STATISTICS_HIT_H

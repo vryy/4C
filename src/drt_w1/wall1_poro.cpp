@@ -1,16 +1,13 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
- \file wall1_poro.cpp
+\brief 2D wall element for structure part of porous medium.
 
- \brief 2D wall element for structure part of porous medium
+\level 2
 
- \level 2
+\maintainer Christoph Meier
 
-\maintainer Christoph Ager
-            ager@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289 15249
- *----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------------*/
 
 #include "wall1_poro.H"
 

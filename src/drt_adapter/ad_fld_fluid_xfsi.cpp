@@ -1,19 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_fld_fluid_xfsi.cpp
 
-\brief Fluid field adapter for XFSI
-
-Can only be used in conjunction with XFluid!
+\brief Fluid field adapter for XFSI. Can only be used in conjunction with XFluid!
 
 \level 1
 
-<pre>
 \maintainer  Christoph Ager
-             ager@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15249
- </pre>
+
 */
 /*----------------------------------------------------------------------*/
 

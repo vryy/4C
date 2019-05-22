@@ -1,15 +1,15 @@
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 /*!
-\file red_airway_input.cpp
 
-\brief Input of RedAirway element
+\brief Input for RedAirway, RedAcinus, RedInterAcinarDep, RedAirBloodScatra and
+RedAirBloodScatraLine3 elements
 
-\maintainer Lena Yoshihara
+\maintainer Carolin Geitner
 
 \level 3
 
 */
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 
 #include "red_airway.H"
 #include "../drt_lib/drt_globalproblem.H"

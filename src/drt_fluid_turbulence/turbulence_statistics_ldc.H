@@ -1,10 +1,8 @@
-/*!----------------------------------------------------------------------
-\file turbulence_statistics_ldc.H
+/*----------------------------------------------------------------------*/
+/*!
 
 \brief Write (time and space) averaged values to file.
 
-
-<pre>
 o Create sets for centerlines in x1-, x2- and x3-direction
   (Construction based on a round robin communication pattern)
 
@@ -30,13 +28,12 @@ given on input.
 This method is intended to be called every upres_ steps during fluid
 output.
 
-Maintainer: Volker Gravemeier
-            vgravem@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15245
-</pre>
+\maintainer Martin Kronbichler
 
-*----------------------------------------------------------------------*/
+\level 2
+
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef TURBULENCE_STATISTICS_LDC_H
 #define TURBULENCE_STATISTICS_LDC_H

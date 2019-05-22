@@ -1,17 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_sti.H
-
 \brief input quantities and globally accessible enumerations for scatra-thermo interaction
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 #ifndef INPAR_STI_H

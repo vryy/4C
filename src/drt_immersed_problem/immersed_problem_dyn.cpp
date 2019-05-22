@@ -1,16 +1,12 @@
-/*!----------------------------------------------------------------------
-\file immersed_problem_dyn.cpp
-
+/*---------------------------------------------------------------------*/
+/*!
 \brief global algorithm control class for all immersed and cell migration algorithms
-
-\maintainer  Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15240
 
 \level 2
 
-*----------------------------------------------------------------------*/
+\maintainer Jonas Eichinger
+*/
+/*---------------------------------------------------------------------*/
 #include <Teuchos_TimeMonitor.hpp>
 #include "immersed_problem_dyn.H"
 #include "immersed_base.H"

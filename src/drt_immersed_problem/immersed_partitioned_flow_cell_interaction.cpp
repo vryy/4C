@@ -1,15 +1,10 @@
 /*!----------------------------------------------------------------------
-\file immersed_partitioned_flow_cell_interaction.cpp
 
 \brief partitioned immersed cell - interstitial flow interaction algorithm
 
 \level 2
 
-\maintainer  Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15240
-
+\maintainer Jonas Eichinger
 *----------------------------------------------------------------------*/
 #include "immersed_partitioned_flow_cell_interaction.H"
 

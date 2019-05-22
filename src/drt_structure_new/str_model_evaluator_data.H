@@ -1,10 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_model_evaluator_data.H
 
 \brief Concrete implementation of the structural and all related parameter interfaces.
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
 \level 3
 

@@ -1,16 +1,15 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file drt_dofset_merged_wrapper.H
 
  \brief A dofset that adds additional, existing degrees of freedom from the same
         discretization to nodes (not yet to elements).
 
  \level 2
 
- \maintainer  Andreas Rauch
-              rauch@lnm.mw.tum.de
-              http://www.lnm.mw.tum.de
- *----------------------------------------------------------------------*/
+ \maintainer  Martin Kronbichler
+
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_LIB_DRT_DOFSET_MERGED_WRAPPER_H_
 #define SRC_DRT_LIB_DRT_DOFSET_MERGED_WRAPPER_H_

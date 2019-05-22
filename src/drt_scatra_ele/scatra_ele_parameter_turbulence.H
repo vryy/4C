@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_ele_parameter_turbulence.H
 
 \brief singleton class holding all static turbulence parameters required for scalar transport
 element evaluation
@@ -11,14 +10,9 @@ initialization of the global time integrator, and then never touched again throu
 simulation. This parameter class needs to coexist with the general parameter class holding all
 general static parameters required for scalar transport element evaluation.
 
-<pre>
 \maintainer Anh-Tu Vuong
-            vuong@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15237
 
 \level 2
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #ifndef SCATRA_ELE_PARAMETER_TURBULENCE_H

@@ -1,20 +1,19 @@
+/*-----------------------------------------------------------*/
 /*!
-\file fluid_ele_xwall.H
 
+\brief Implementation of enrichment-wall fluid elements.
 In addition to that, it contains the interface between element call
 and Gauss point loop (depending on the fluid implementation)
 as well as some additional service routines (for the evaluation
-of errors, turbulence statistics etc.).
+of errors, turbulence statistics etc.)
+
+\maintainer Martin Kronbichler
 
 \level 2
 
-<pre>
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 */
+/*-----------------------------------------------------------*/
+
 #ifndef DRT_FLUID_ELE_XWALL_H
 #define DRT_FLUID_ELE_XWALL_H
 

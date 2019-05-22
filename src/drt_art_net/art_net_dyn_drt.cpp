@@ -1,12 +1,11 @@
 /*!----------------------------------------------------------------------
-\file art_net_dyn_drt.cpp
 \brief Main control routine for all arterial network  solvers,
 
      including instationary solvers based on
 
      o
 
-\maintainer Lena Yoshihara
+\maintainer Johannes Kremheller
 
 \level 3
 

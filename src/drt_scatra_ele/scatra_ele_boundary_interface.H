@@ -1,17 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_ele_boundary_interface.H
 
-\brief Interface of scatra elements
+\brief Interface of scatra boundary elements
 
 \level 1
 
-<pre>
 \maintainer Anh-Tu Vuong
-            vuong@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15237
-</pre>
  */
 /*----------------------------------------------------------------------*/
 #ifndef SCATRA_ELE_BOUNDARY_INTERFACE_H

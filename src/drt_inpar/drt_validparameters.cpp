@@ -1,18 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_validparameters.cpp
 \maintainer Martin Kronbichler
 
 \brief Setup of the list of valid input parameters
 
 \level 1
 
-<pre>
-Maintainer: Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

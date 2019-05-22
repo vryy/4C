@@ -1,15 +1,10 @@
 /*!----------------------------------------------------------------------
-\file scatra_mat_aniso.H
-
 \brief scatra_mat_aniso.H
 
 \level 3
 
 <pre>
-  \maintainer Lasse Jagschies
-              jagschies@mhpc.mw.tum.de
-              http://www.lnm.mw.tum.de
-              089 - 289-10365
+\maintainer Christoph Schmidt
 </pre>
 *----------------------------------------------------------------------*/
 #ifndef SCATRA_MAT_ANISO_H

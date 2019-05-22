@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file contact_aug_plot.H
-
 \brief unite all necessary methods to generate the data for external plots in
 MATLAB, PGFPlot or other tools.
 
 \level 3
 
-\maintainer Michael Hiermeier
-\date Aug 24, 2017
-
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------------*/
 

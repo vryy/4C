@@ -1,15 +1,14 @@
-/*!----------------------------------------------------------------------
-\file drt_discret_faces.cpp
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief a class to manage an enhanced discretization including the faces between elements
 
-<pre>
 \level 1
 
 \maintainer Martin Kronbichler
-</pre>
 
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #include <Teuchos_TimeMonitor.hpp>
 

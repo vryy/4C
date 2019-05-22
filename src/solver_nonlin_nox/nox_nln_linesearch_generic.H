@@ -4,9 +4,8 @@
 
 \brief generic class for %NOX::NLN backtracking line search
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
-\date Aug 19, 2015
 
 \level 3
 

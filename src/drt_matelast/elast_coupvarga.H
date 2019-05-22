@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_coupvarga.H
-
 \brief
 This file contains the routines required for Varga's material.
 The input line should read

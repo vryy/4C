@@ -1,7 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file mortar_strategy_factory.H
-
 \brief Base class for the CONTACT/MESHTYING factories.
 
 \level 2

@@ -1,15 +1,14 @@
-/*!------------------------------------------------------------------------------------------------*
-\file opti_GCMMA.cpp
+/*---------------------------------------------------------------------*/
+/*!
 
-\brief Optimization algorithm GCMMA
+\brief Optimization algorithm Globally Convergent Method of Moving Asyptotes (GCMMA)
 
-<pre>
-Maintainer: Martin Winklmaier
-            winklmaier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15241
-</pre>
- *------------------------------------------------------------------------------------------------*/
+\maintainer Martin Kronbichler
+
+\level 3
+
+*/
+/*---------------------------------------------------------------------*/
 
 
 #include "opti_GCMMA.H"

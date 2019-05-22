@@ -1,10 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_remodelfiber.H
-
 \brief Base class for fiber materials which remodel. Has a pointer to the single fiber families
 
-\level 3
+\level 2
 
 \maintainer Fabian Braeu
 

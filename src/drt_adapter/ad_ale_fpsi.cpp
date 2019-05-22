@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------*/
 /*!
- \file ad_ale_fpsi.cpp
+ \brief FPSI wrapper for the ALE time integration
 
  \level 2
 

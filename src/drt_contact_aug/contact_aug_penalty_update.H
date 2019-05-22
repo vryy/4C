@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file contact_aug_penalty_update.H
-
 \brief different strategies for the update/correction of the regularization
 parameter cn
 
 \level 3
 
-\maintainer Michael Hiermeier
-\date Jul 28, 2017
-
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------------*/
 

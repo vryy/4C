@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid_linear_density_viscosity.H
-
 \brief Linear law (pressure-dependent) for the density and the viscosity
 
 <pre>
 \level 1
 
 \maintainer Andrea La Spina
-            http://www.lnm.mw.tum.de
-            089 - 289-15265
 </pre>
 */
 /*----------------------------------------------------------------------*/

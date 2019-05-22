@@ -1,17 +1,12 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_augmented_integrator_evaluate.cpp
-
 \brief A class to perform integrations of Mortar matrices on the overlap
        of two MortarElements in 1D and 2D (derived version for
        augmented contact). This file contains only the evaluate routines.
 
 \level 2
 
-\maintainer Michael Hiermeier
-
-\date Mar 8, 2017
-
+\maintainer Matthias Mayr
 */
 /*---------------------------------------------------------------------*/
 

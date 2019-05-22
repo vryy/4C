@@ -1,18 +1,12 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file scatra_ele_calc_elch_diffcond_multiscale.cpp
 
 \brief evaluation of ScaTra elements for diffusion-conduction ion-transport equations within a
 multi-scale framework
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
-</pre>
 */
 /*--------------------------------------------------------------------------*/
 #include "scatra_ele_calc_elch_diffcond_multiscale.H"

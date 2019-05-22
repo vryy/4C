@@ -1,16 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_fld_lung.H
 
 \brief Fluid field adapter for fsi airway simulations with attached
 parenchyma balloon
 
-<pre>
-Maintainer: Lena Wiechert
-            yoshihara@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15303
-</pre>
+\level 2
+
+\maintainer Carolin Geitner
+
 */
 /*----------------------------------------------------------------------*/
 

@@ -1,14 +1,17 @@
-/*!----------------------------------------------------------------------
-\file red_airways_dyn_drt.H
-\brief Control routine for reduced dimensional airways network
- (time) integration. Calls
+/*---------------------------------------------------------------------*/
+/*!
 
+\brief Main control routine for reduced dimensional airways network
+ (time) integration. Includes routines for pure reduced modeling and for
+ reduced_airway-tissue coupling.
 
-\maintainer Lena Yoshihara
+\maintainer Carolin Geitner
 
 \level 3
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
+
 #ifndef RED_AIRWAYS_DRT_DRT_H
 #define RED_AIRWAYS_DRT_DRT_H
 

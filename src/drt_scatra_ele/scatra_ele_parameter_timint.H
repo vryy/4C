@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_ele_parameter_timint.H
 
 \brief singleton class holding all static time integration parameters required for scalar transport
 element evaluation
@@ -11,14 +10,9 @@ namely during initialization of the global time integrator, and then never touch
 the simulation. This parameter class needs to coexist with the general parameter class holding all
 general static parameters required for scalar transport element evaluation.
 
-<pre>
 \maintainer Anh-Tu Vuong
-            vuong@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15237
 
 \level 1
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #ifndef SCATRA_ELE_PARAMETER_TIMINT_H

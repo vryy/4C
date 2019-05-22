@@ -1,17 +1,15 @@
-/*!----------------------------------------------------------------------
-\file fluid_timint_red_ost.H
-\brief
+/*-----------------------------------------------------------*/
+/*!
+
+\brief One-step theta time integration for reduced models
+
+\maintainer Martin Kronbichler
 
 \level 2
 
-<pre>
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+*/
+/*-----------------------------------------------------------*/
 
-*----------------------------------------------------------------------*/
 
 #ifndef FLD_TIMINT_RED_OST_H
 #define FLD_TIMINT_RED_OST_H

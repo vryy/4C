@@ -1,10 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_expl_centrdiff.H
 
 \brief Central differences time integration for solid dynamics
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
 \level 3
 

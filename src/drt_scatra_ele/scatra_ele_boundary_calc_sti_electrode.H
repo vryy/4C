@@ -1,17 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_ele_boundary_calc_sti_electrode.H
 
 \brief evaluation of ScaTra boundary elements for heat transport within electrodes
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
-</pre>
  */
 /*----------------------------------------------------------------------*/
 #ifndef SCATRA_ELE_BOUNDARY_CALC_STI_ELECTRODE_H

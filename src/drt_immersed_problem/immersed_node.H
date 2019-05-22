@@ -1,17 +1,10 @@
 /*!----------------------------------------------------------------------
-\file immersed_node.H
 
 \brief specialized node for immersed problems.
 
 \level 2
 
-<pre>
-\maintainer  Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15240
-</pre>
-
+\maintainer Jonas Eichinger
 *----------------------------------------------------------------------*/
 #ifndef IMMERSED_NODE_H
 #define IMMERSED_NODE_H

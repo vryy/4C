@@ -1,8 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file maxwell_0d_acinus.cpp
+\brief
+Former file of Lena Yoshihara
 
-\maintainer Lena Yoshihara
+\maintainer Martin Kronbichler
 
 \level 3
 */

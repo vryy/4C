@@ -1,17 +1,11 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file scatra_ele_calc_sti_electrode.cpp
 
 \brief evaluate heat transport within electrodes on element level
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
-</pre>
 */
 /*--------------------------------------------------------------------------*/
 #include "scatra_ele_calc_sti_electrode.H"

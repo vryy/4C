@@ -1,7 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file lubrication_mat.cpp
-
 \brief Material model for the lubrication film
 
 \level 3

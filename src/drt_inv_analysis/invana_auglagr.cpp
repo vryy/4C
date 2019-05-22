@@ -1,16 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-
-\file invana_auglagr.cpp
-
 \brief Augmetend lagrangian functional control algorithm
 
-<pre>
 \level 3
+
 \maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #include <string>

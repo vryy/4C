@@ -1,18 +1,14 @@
-/*!----------------------------------------------------------------------
-\file fluid_ele_calc_xwall.H
+/*----------------------------------------------------------------------*/
+/*!
 
 \brief main file containing routines for calculation of fluid element with xfem wall modeling
 
 \level 2
 
-<pre>
 \maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef FLUID_ELE_CALC_XWALL_H
 #define FLUID_ELE_CALC_XWALL_H

@@ -1,16 +1,14 @@
-/*!----------------------------------------------------------------------
- \file truss3.H
+/*----------------------------------------------------------------------------*/
+/*!
+\brief three dimensional total Lagrange truss element
 
- \brief three dimensional total Lagrange truss element
+\level 3
 
- \level 3
+\maintainer Maximilian Grill
 
- \maintainer Dhrubajyoti Mukherjee
-             mukherjee@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15270
- *----------------------------------------------------------------------*/
-// administrative line in order to make a difference between BACI and Ccarat files
+*/
+/*---------------------------------------------------------------------------*/
+
 // header file only included if not yet included!
 #ifndef TRUSS3_H
 #define TRUSS3_H

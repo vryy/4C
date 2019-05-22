@@ -1,16 +1,15 @@
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 /*!
-\file airwayimplicitintegration.cpp
 
 \brief Associated with control routine for reduced dimensional airways
   solvers
 
+\maintainer Carolin Geitner
+
 \level 3
 
-\maintainer Lena Yoshihara
-
 */
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 #include <stdio.h>
 
 #include "airwayimplicitintegration.H"

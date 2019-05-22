@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_multiscale_evaluate.cpp
-
 \brief evaluation of multi-scale scalar transport material
 
 The functions implemented in this file have to be separated from the remainder
@@ -22,9 +20,6 @@ the file filter_commmon/filter_evaluation.cpp needs to be adapted accordingly.
 
 <pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
 </pre>
 */
 /*----------------------------------------------------------------------*/

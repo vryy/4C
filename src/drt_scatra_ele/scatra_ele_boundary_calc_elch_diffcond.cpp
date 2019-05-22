@@ -1,17 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_ele_boundary_calc_elch_diffcond.cpp
 
 \brief evaluation of ScaTra boundary elements for diffusion-conduction formulation
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
-            schmidt@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089 - 289-15251
-</pre>
  */
 /*----------------------------------------------------------------------*/
 #include "scatra_ele_boundary_calc_elch_diffcond.H"

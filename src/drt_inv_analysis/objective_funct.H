@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file objective_funct.H
- * \brief Objective function interface
- *
-<pre>
+\brief Objective function interface
+
 \level 3
+
 \maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

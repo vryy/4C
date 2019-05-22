@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file viscoelasthyper.H
-
 \brief
 This file contains the viscohyperelastic material toolbox.
 The availabele viscous models can be applied to any hyperelastic law

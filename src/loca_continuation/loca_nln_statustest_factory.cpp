@@ -1,10 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file loca_nln_statustest_factory.cpp
 
-\maintainer Michael Hiermeier
+\brief LOCA status test factory
 
-\date Nov 23, 2015
+\maintainer Martin Kronbichler
 
 \level 3
 

@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file growth_law.H
-
 \brief growth law for the volumetric growth materials. This file contains routines needed for the
 calculation of the volumetric growth parameter theta. These so called growthlaws are to be used for
 the isovolumetric split growth materials MAT::Growth. Upon request a growthlaw delivers a growth

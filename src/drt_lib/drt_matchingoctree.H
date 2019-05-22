@@ -1,17 +1,15 @@
-/*!----------------------------------------------------------------------
-\file drt_matchingoctree.H
+/*---------------------------------------------------------------------*/
+/*!
 
 \brief connect nodes from two nodesets by their distance
 
-<pre>
 \level 1
 
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
+
 #ifndef MATCHINGOCTREE_H
 #define MATCHINGOCTREE_H
 

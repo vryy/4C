@@ -1,14 +1,10 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file xcontact_interface.H
-
 \brief Interface class for the eXtended contact evaluation
 
 \level 3
 
-\maintainer Michael Hiermeier
-
-\date Aug 17, 2016
+\maintainer Matthias Mayr
 */
 /*---------------------------------------------------------------------------*/
 

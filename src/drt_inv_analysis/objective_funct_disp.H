@@ -1,13 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file objective_funct_disp.H
- * \brief Displacement based objective function
- *
- *
+\brief Displacement based objective function
+
 \level 3
+
 \maintainer Sebastian Brandstaeter
-            brandstaeter@lnm.mw.tum.de
-            089 - 289-15276
 */
 /*----------------------------------------------------------------------*/
 

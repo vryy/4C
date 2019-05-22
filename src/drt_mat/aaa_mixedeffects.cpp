@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file aaa_mixedeffects.cpp
 \brief
 This file contains the routines required for aneurysmatic artery wall following
 Raghavan and Vorp [2000]
@@ -7,12 +6,9 @@ Raghavan and Vorp [2000]
 The input line should read
  MAT 1 MAT_Struct_AAA_MixedEffects AGE 67 REFDIA 22.5 NUE 0.49 DENS 0.0001
 
-<pre>
-Maintainer: Andreas Maier
-            a.maier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15268
-</pre>
+\level 3
+
+\maintainer Christoph Schmidt
 
 *----------------------------------------------------------------------*/
 

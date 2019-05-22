@@ -1,7 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_lagrange_strategy.H
-
 \brief Contact solving strategy with (standard/dual) Lagrangian multipliers.
 
 \level 2

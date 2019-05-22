@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid_ele_parameter.H
 
 \brief Setting of general fluid parameter for element evaluation
 
@@ -10,12 +9,8 @@ be set in problem specific parameter lists derived from this class.
 
 \level 2
 
-<pre>
-\maintainer  Volker Gravemeier
-             vgravem@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15236/-245
-</pre>
+\maintainer  Martin Kronbichler
+
 */
 /*----------------------------------------------------------------------*/
 

@@ -1,15 +1,9 @@
 /*!----------------------------------------------------------------------
-\file scatra_ele_hdg.cpp
 
 \brief Routines for ScaTraHDG element
 
-<pre>
 \level 3
-\maintainer Julia Hoermann
-            hoermann@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15264
-</pre>
+\maintainer Martin Kronbichler
 
 *----------------------------------------------------------------------*/
 

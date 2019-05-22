@@ -3,7 +3,7 @@
 \file fsi_lung_overlapprec.cpp
 \brief BGS preconditioner for volume-coupled FSI
 
-\maintainer Lena Yoshihara
+\maintainer Matthias Mayr
 
 \level 2
 */

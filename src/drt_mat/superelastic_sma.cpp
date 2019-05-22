@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file superelastic_sma.cpp
 \brief Material law for superelastic isotropic material
        following finite strain with linear and exponential
        flow rules.
@@ -28,10 +27,7 @@
 
 \level 3
 
-\maintainer André Hemmler
-            hemmler@mhpc.mw.tum.de
-            http://www.mhpc.mw.tum.de
-            089 - 289-1038
+\maintainer Christoph Schmidt
 
 
 */

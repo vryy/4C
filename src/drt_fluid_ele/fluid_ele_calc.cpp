@@ -1,17 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid_ele_calc.cpp
 
 \brief main file containing routines for calculation of fluid element
 
 \level 1
 
-<pre>
-\maintainer Volker Gravemeier
-            vgravem@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15236/-245
-</pre>
+\maintainer  Martin Kronbichler
+
 */
 /*----------------------------------------------------------------------*/
 

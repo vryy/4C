@@ -1,11 +1,14 @@
-/*!----------------------------------------------------------------------
-\file redairway_tissue.cpp
+/*---------------------------------------------------------------------*/
+/*!
+
 \brief Control routine for coupled reduced airways and continuum tissue models
 
-\maintainer Lena Yoshihara
+\maintainer Carolin Geitner
 
 \level 3
-*----------------------------------------------------------------------*/
+
+*/
+/*---------------------------------------------------------------------*/
 
 
 #include <stdio.h>

@@ -1,17 +1,14 @@
-/*!----------------------------------------------------------------------
-\file fluid_timint_topopt_stat.H
-\brief
+/*-----------------------------------------------------------*/
+/*!
+
+\brief Stationary problem setup for topology optimization
+
+\maintainer Martin Kronbichler
 
 \level 3
 
-<pre>
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
-
-*----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------*/
 
 #ifndef FLD_TIMINT_TOPOPT_STAT_H
 #define FLD_TIMINT_TOPOPT_STAT_H

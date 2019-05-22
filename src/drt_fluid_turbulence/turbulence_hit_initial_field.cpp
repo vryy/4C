@@ -1,24 +1,17 @@
+/*----------------------------------------------------------------------*/
 /*!
-
-\file turbulence_hit_initial_field.cpp
 
 \brief routines to initialize homogeneous isotropic turbulence simulations
 
 References are S. Collis, Multiscale methods for turbulence simulation and control.
 Technical Report 034, MEMS, Rice University (2002) 16.
 
-<pre>
-
-</pre>
-\level 2
-<pre>
 \maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+
+\level 2
 
 */
+/*----------------------------------------------------------------------*/
 
 #include <complex>
 #include <math.h>

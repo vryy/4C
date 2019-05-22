@@ -1,7 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file contact_nitsche_strategy.cpp
-
 \brief Nitsche contact solving strategy
 
 \level 3

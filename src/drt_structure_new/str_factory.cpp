@@ -1,12 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_factory.cpp
 
 \brief factory for time integrator
 
-\maintainer Michael Hiermeier
-
-\date Nov 20, 2015
+\maintainer Anh-Tu Vuong
 
 \level 3
 

@@ -1,17 +1,14 @@
-/*!----------------------------------------------------------------------
-\file fluid_xwall.H
-\brief
+/*-----------------------------------------------------------*/
+/*!
+
+\brief Implementation of enrichment-based wall model
+
+\maintainer Martin Kronbichler
 
 \level 2
 
-<pre>
-\maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
-
-*----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------*/
 
 #ifndef FLD_XWALL_H
 #define FLD_XWALL_H

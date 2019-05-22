@@ -1,8 +1,7 @@
 /*!----------------------------------------------------------------------
-\file art_terminal_bc.H
 \brief Method to deal with one dimensional artery inlet bcs
 
-\maintainer Lena Yoshihara
+\maintainer Johannes Kremheller
 
 \level 3
 

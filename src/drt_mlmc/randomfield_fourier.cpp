@@ -1,19 +1,17 @@
-/*!----------------------------------------------------------------------
-\file randomfield_fourier.cpp
-Created on: 15 May, 2014
-\brief
-Class for generating samples of gaussian and lognormal random fields with
-a squared exponential covariance structure based on a fourier series expansion.
+/*----------------------------------------------------------------------*/
+/*!
+\brief Generate samples of (log)normal random fields based on a fourier series expansion.
+
 This particular type of expansion is taken from the PhD Thesis from Tamellini
   "Polynomial approximation of PDEs with stochastic coefficients"
+The correlation structure is based on squared exponential kernel
 
- <pre>
-Maintainer: Jonas Biehler
-            biehler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15276
-</pre>
- *!----------------------------------------------------------------------*/
+\maintainer Jonas Nitzler
+
+\level 3
+*/
+/*----------------------------------------------------------------------*/
+
 #ifdef HAVE_FFTW
 
 #include "../drt_inpar/inpar_mlmc.H"

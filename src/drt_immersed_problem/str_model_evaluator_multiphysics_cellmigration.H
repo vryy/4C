@@ -1,15 +1,12 @@
-/*-----------------------------------------------------------*/
-/*!
-\file str_model_evaluator_multiphysics_cellmigration.H
+/*!----------------------------------------------------------------------
 
 \brief Generic class for all model evaluators.
 
-\maintainer Andreas Rauch
-
 \level 3
 
-*/
-/*-----------------------------------------------------------*/
+\maintainer Jonas Eichinger
+
+*----------------------------------------------------------------------*/
 
 
 #ifndef STR_MODEL_EVALUATOR_MULTIPHYSICS_CELLMIGRATION_H_

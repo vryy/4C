@@ -1,15 +1,10 @@
 /*!----------------------------------------------------------------------
-\file ssi_partitioned_2wc_protrusionformation.cpp
 
 \brief specialization of ssi2wc, including "structale"-surface growth
 
 \level 2
 
-\maintainer  Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15240
-
+\maintainer Jonas Eichinger
  *----------------------------------------------------------------------*/
 #include "ssi_partitioned_2wc_protrusionformation.H"
 #include "../drt_inpar/inpar_cell.H"

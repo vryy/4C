@@ -1,15 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_mlmc.H
-
 \brief Input parameters for multi-level monte carlo
 
+\maintainer Jonas Nitzler
+
 \level 2
-
-\maintainer Jonas Biehler
 */
-
 /*----------------------------------------------------------------------*/
+
 #ifndef INPAR_MLMC_H
 #define INPAR_MLMC_H
 

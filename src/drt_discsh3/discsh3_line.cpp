@@ -1,15 +1,12 @@
-/*!----------------------------------------------------------------------
-\file discsh3_line.cpp
-\brief
+/*----------------------------------------------------------------------*/
+/*!
+\brief line definitions for discsh3 element
 
-<pre>
-Maintainer: Dhrubajyoti Mukherjee
-            mukherjee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15270
-</pre>
+\level 3
 
-*----------------------------------------------------------------------*/
+\maintainer Christoph Meier
+*/
+/*----------------------------------------------------------------------*/
 //#ifdef DISCSH3_H
 
 #include "discsh3.H"

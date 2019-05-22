@@ -1,16 +1,13 @@
-/*!----------------------------------------------------------------------
- \file  drt_uq_redairways.cpp
- \brief Class for performing UQ with redairway problems
+/*----------------------------------------------------------------------*/
+/*!
+\brief Class for performing UQ with redairway problems
 
- \level 2
+\maintainer Jonas Nitzler
 
- <pre>
- \maintainer Jonas Biehler
-          biehler@lnm.mw.tum.de
-          http://www.lnm.mw.tum.de
-          089 - 289-15276
- </pre>
- *!----------------------------------------------------------------------*/
+\level 2
+*/
+/*----------------------------------------------------------------------*/
+
 #ifdef HAVE_FFTW
 
 #include "../drt_io/io.H"

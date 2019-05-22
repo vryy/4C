@@ -1,10 +1,9 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_model_evaluator.H
 
 \brief Manager of the model evaluator calls.
 
-\maintainer Michael Hiermeier
+\maintainer Anh-Tu Vuong
 
 \level 3
 

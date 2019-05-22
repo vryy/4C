@@ -1,15 +1,14 @@
-/*!-----------------------------------------------------------------------------------------------------------
- \file truss3_evaluate.cpp
-
- \brief three dimensional total Lagrange truss element (can be connected to beam3 elements and
+/*----------------------------------------------------------------------------*/
+/*!
+\brief three dimensional total Lagrange truss element (can be connected to beam3 elements and
 adapts assembly automatically according to the thereby changed number of nodal degrees of freedom)
-
-\maintainer Dhrubajyoti Mukherjee
 
 \level 3
 
+\maintainer Maximilian Grill
 
- *-----------------------------------------------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------------*/
 
 #include "truss3.H"
 #include "../drt_beam3/beam3eb.H"

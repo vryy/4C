@@ -1,13 +1,12 @@
-/*!----------------------------------------------------------------------
-\file selfcontact_binarytree.H
-
+/*-----------------------------------------------------------------------*/
+/*!
 \brief Search tree for self-contact problems
 
 \level 2
 
 \maintainer Alexander Popp
-
-*-----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------------------*/
 #ifndef SELFCONTACT_BINARYTREE_SELF_H
 #define SELFCONTACT_BINARYTREE_SELF_H
 

@@ -1,18 +1,12 @@
-/*!----------------------------------------------------------------------
-\file mortar_utils.H
-
+/*-----------------------------------------------------------------------*/
+/*!
 \brief A set of utility functions for mortar methods
 
 \level 1
 
-<pre>
 \maintainer Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
-
-*----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------------------*/
 #ifndef MORTAR_UTILS_H
 #define MORTAR_UTILS_H
 

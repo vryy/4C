@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file fluid_ele_calc_poro.H
 
  \brief Internal implementation of poro Fluid element (standard poro fluid)
 
@@ -8,7 +7,8 @@
 
 \maintainer  Christoph Ager
 
- *----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef FLUID_ELE_CALC_PORO_H
 #define FLUID_ELE_CALC_PORO_H

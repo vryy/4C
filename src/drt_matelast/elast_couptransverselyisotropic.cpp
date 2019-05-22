@@ -1,13 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_couptransverselyisotropic.cpp
-
 \brief Summand for the transversely hyperelastic isotropic material model
 \level 3
 
-\maintainer Michael Hiermeier
-
-\date Sep 20, 2017
+\maintainer Amadeus Gebauer
 
 */
 /*----------------------------------------------------------------------*/
