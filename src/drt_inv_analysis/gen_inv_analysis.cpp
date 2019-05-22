@@ -83,8 +83,6 @@
 #include "../drt_structure/stru_aux.H"
 
 #include "../drt_fsi/fsi_monolithic.H"
-//#include "../drt_adapter/adapter_coupling.H"
-//#include "../drt_adapter/ad_str_wrapper.H"
 
 #include "../drt_ale/ale_utils_clonestrategy.H"
 #include "../drt_lib/drt_utils_createdis.H"
@@ -111,7 +109,6 @@
 #include "../drt_binstrategy/binning_strategy.H"
 
 #include "../drt_structure/stru_resulttest.H"
-//#include "../linalg/linalg_mapextractor.H"
 
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 
@@ -1953,51 +1950,6 @@ void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseVector delta_p)
     for (int j = 0; j < delta_p.Length(); j++) printf("%10.3e", p_s_(i, j));
     printf("\n");
 
-    // I don't like this printout, there is no legend. Also, its sorted in x and y
-    // which is absolutely not guaranteed to be true upon input. So its potentially mixed!
-    // I just leave it here because somebody might need it?
-    // I commented this out becauses it yields columns of zeros only anyway
-    // mwgee
-#if 0
-    printf("\n");
-    for (int i=0; i < nmp_/2.; i++)
-    {
-      printf(" %10.5f ",  mcurve_(i*2));
-      if (numb_run_<15)
-      {
-        for (int j=0; j<numb_run_+1; j++)
-          printf(" %10.5f ",  ccurve_s_((i)*2, j));
-      }
-      else
-      {
-        for (int j=numb_run_-14; j<numb_run_+1; j++)
-          printf(" %10.5f ",  ccurve_s_((i)*2, j));
-      }
-      printf("\n");
-    }
-
-    printf("\n");
-
-    for (int i=0; i < nmp_/2.; i++)
-    {
-      printf(" %10.5f ",  mcurve_((i)*2+1));
-      if (numb_run_<15)
-      {
-        for (int j=0; j<numb_run_+1; j++)
-          printf(" %10.5f ",  ccurve_s_((i)*2+1, j));
-      }
-      else
-      {
-        for (int j=numb_run_-14; j<numb_run_+1; j++)
-          printf(" %10.5f ",  ccurve_s_((i)*2+1, j));
-      }
-      printf("\n");
-    }
-
-    printf("################################################");
-    printf("##############################################\n");
-    std::cout << std::endl;
-#endif
     printf("\n");
     fflush(stdout);
   }
