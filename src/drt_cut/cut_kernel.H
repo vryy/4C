@@ -16,10 +16,10 @@
 #ifndef CUT_KERNEL_H
 #define CUT_KERNEL_H
 
+#include "cut_clnwrapper.H"
 #include "cut_tolerance.H"
 #include "cut_utils.H"
 #include "cut_enum.H"
-#include "cut_clnwrapper.H"
 #include "cut_memory_manager.H"
 
 #include "../linalg/linalg_gauss.H"

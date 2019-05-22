@@ -8,6 +8,7 @@
 \maintainer Christoph Ager
  *------------------------------------------------------------------------------------------------*/
 
+#include "cut_clnwrapper.H"
 #include "cut_side.H"
 #include "cut_position.H"
 #include "cut_intersection.H"
@@ -17,6 +18,7 @@
 #include "cut_levelsetside.H"
 
 #include "../drt_lib/drt_globalproblem.H"
+
 
 #include <string>
 #include <stack>

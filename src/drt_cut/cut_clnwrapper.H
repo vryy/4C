@@ -144,7 +144,9 @@ namespace GEO
         value_ = CachedConvert(other, precision_);
         return *this;
       }
-      inline operator double() const { return cln::double_approx(value_); }
+      // note: we MUST not have implicit convertion, since it will lead to unpredictable behaviour
+      // lose of precision and potential memory leaks
+      explicit inline operator double() const { return cln::double_approx(value_); }
       inline ClnWrapper& operator+=(double other)
       {
         value_ += CachedConvert(other, value_);
