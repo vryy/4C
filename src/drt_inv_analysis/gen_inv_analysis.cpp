@@ -304,10 +304,11 @@ void STR::GenInvAnalysis::Integrate()
   {
     if (!myrank)
     {
-      std::cout << "#################################################################" << std::endl;
-      std::cout << "########################### making Jacobian matrix ##############" << std::endl;
-      std::cout << "#################################################################" << std::endl;
-      printf("Measured points nmp_= %d # parameters to fit np_= %d\n", nmp_, np_);
+      std::cout << "#################################################################\n"
+                << "########################### making Jacobian matrix ##############\n"
+                << "#################################################################\n"
+                << "No. of measured points: nmp_= " << nmp_
+                << " # no. of parameters to fit: np_= " << np_ << std::endl;
     }
 
     // perturbation of material parameter (should be relative to the value that is perturbed)

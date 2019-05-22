@@ -30,7 +30,7 @@ void invana_cal()
           INPAR::STR::inv_none) and
       (DRT::INPUT::IntegralValue<INPAR::INVANA::StatInvAnalysisType>(invp, "STAT_INV_ANALYSIS") !=
           INPAR::INVANA::stat_inv_none))
-    dserror("This should not happen. Decide between INV_ANALYSIS or STAT_INV_ANALYSIS.");
+    dserror("Use either INV_ANALYSIS or STAT_INV_ANALYSIS. They cannot be used simultaneously.");
   // do we want to do inverse analysis?
   else if (DRT::INPUT::IntegralValue<INPAR::STR::InvAnalysisType>(iap, "INV_ANALYSIS") !=
            INPAR::STR::inv_none)
