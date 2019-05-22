@@ -77,6 +77,15 @@ namespace BEAMINTERACTION
       //! derived
       virtual bool EvaluateForceStiff();
 
+      /**
+       * \brief Call PreEvaluate on each pair.
+       *
+       * This has to be done outside of the the assembly managers, as PreEvaluate should only be
+       * called once per pair, and it is technically possible that the same pair is in multiple
+       * assembly managers.
+       */
+      void PreEvaluate();
+
       //! derived
       virtual void UpdateStepState(const double& timefac_n);
 

@@ -60,13 +60,6 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::Evalu
   // are non-zero stiffness values returned which need assembly?
   bool pair_is_active = false;
 
-
-  for (auto& elepairptr : assembly_contact_elepairs_)
-  {
-    // PreEvaluate the pair
-    elepairptr->PreEvaluate();
-  }
-
   for (auto& elepairptr : assembly_contact_elepairs_)
   {
     // Evaluate the pair and check if there is active contact
