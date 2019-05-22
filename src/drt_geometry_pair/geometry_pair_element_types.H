@@ -16,7 +16,6 @@
 #include "geometry_pair_utility_classes.H"
 
 #include "../drt_lib/drt_element.H"
-#include "../linalg/linalg_utils.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_beam3/beam3.H"
 

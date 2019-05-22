@@ -13,6 +13,7 @@
 #include "geometry_pair_utility_classes.H"
 #include "geometry_pair_constants.H"
 
+#include "../linalg/linalg_utils_densematrix_inverse.H"
 #include "../drt_lib/drt_dserror.H"
 
 
