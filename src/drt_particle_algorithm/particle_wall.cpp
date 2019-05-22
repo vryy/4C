@@ -135,6 +135,43 @@ void PARTICLEALGORITHM::WallHandlerBase::ReadRestart(const int restartstep)
 }
 
 /*---------------------------------------------------------------------------*
+ | insert wall handler dependent states of all particle types sfuchs 05/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::WallHandlerBase::InsertParticleStatesOfParticleTypes(
+    std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
+    const
+{
+  // get flags defining considered states of particle wall
+  bool ismoving = DRT::INPUT::IntegralValue<int>(params_, "PARTICLE_WALL_MOVING");
+  bool isloaded = DRT::INPUT::IntegralValue<int>(params_, "PARTICLE_WALL_LOADED");
+
+  if (not(ismoving and isloaded)) return;
+
+  // iterate over particle types
+  for (auto& typeIt : particlestatestotypes)
+  {
+    // set of particle states for current particle type
+    std::set<PARTICLEENGINE::StateEnum>& particlestates = typeIt.second;
+
+    // insert states needed for iteration in particle structure interaction
+    particlestates.insert({
+        PARTICLEENGINE::LastIterPosition,
+        PARTICLEENGINE::LastIterVelocity,
+        PARTICLEENGINE::LastIterAcceleration,
+    });
+
+    if (particlestates.count(PARTICLEENGINE::AngularVelocity))
+      particlestates.insert(PARTICLEENGINE::LastIterAngularVelocity);
+
+    if (particlestates.count(PARTICLEENGINE::AngularAcceleration))
+      particlestates.insert(PARTICLEENGINE::LastIterAngularAcceleration);
+
+    if (particlestates.count(PARTICLEENGINE::ModifiedAcceleration))
+      particlestates.insert(PARTICLEENGINE::LastIterModifiedAcceleration);
+  }
+}
+
+/*---------------------------------------------------------------------------*
  | write wall runtime vtu output                              sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::WallHandlerBase::WriteWallRuntimeVtuOutput(

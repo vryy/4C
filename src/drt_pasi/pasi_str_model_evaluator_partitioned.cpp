@@ -28,7 +28,7 @@
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 01/2017 |
  *---------------------------------------------------------------------------*/
-STR::MODELEVALUATOR::PartitionedPASI::PartitionedPASI() : interface_force_np_ptr_(Teuchos::null)
+STR::MODELEVALUATOR::PartitionedPASI::PartitionedPASI()
 {
   // empty constructor
 }

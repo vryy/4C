@@ -14,7 +14,7 @@
 #include "pasi_utils.H"
 
 /*---------------------------------------------------------------------------*
- | modification of time parameter list                        sfuchs 02/2017 |
+ | modification of time parameters of subproblems             sfuchs 02/2017 |
  *---------------------------------------------------------------------------*/
 void PASI::UTILS::ChangeTimeParameter(const Epetra_Comm& comm,
     const Teuchos::ParameterList& pasi_params, Teuchos::ParameterList& particle_params,

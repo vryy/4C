@@ -263,7 +263,7 @@ CAVITATION::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::Paramet
   if (computeradiusRPbased_ && MyRank() == 0)
     IO::cout << "Radius is adapted based on Rayleigh-Plesset equation" << IO::endl;
 
-  if (moving_walls_) dserror("moving walls do not (yet) work for cavitation problems");
+  if (moving_walls_) dserror("moving walls do not supported in cavitation problems");
 
   if (rep_strategy_ != INPAR::PARTICLEOLD::repstr_everydt)
     dserror("REPARTITIONSTRATEGY must be set to Everydt");

@@ -55,7 +55,13 @@ namespace PARTICLEENGINE
     InterfaceNormal,
     UnitWallNormal,
     WallDistance,
-    TemperatureGradient
+    TemperatureGradient,
+    LastIterPosition,
+    LastIterVelocity,
+    LastIterAcceleration,
+    LastIterAngularVelocity,
+    LastIterAngularAcceleration,
+    LastIterModifiedAcceleration,
   };
 
   //! get dimension of particle state

@@ -29,15 +29,13 @@
  *---------------------------------------------------------------------------*/
 namespace ADAPTER
 {
-  class Particle;
-  class Structure;
   class StructureBaseAlgorithmNew;
   class PASIStructureWrapper;
 }  // namespace ADAPTER
 
-namespace PARTICLE
+namespace PARTICLEALGORITHM
 {
-  class Algorithm;
+  class ParticleAlgorithm;
 }
 
 /*---------------------------------------------------------------------------*
@@ -69,15 +67,6 @@ namespace PASI
 
     //! perform result tests
     void TestResults(const Epetra_Comm& comm);
-
-    //! access to structural field
-    const Teuchos::RCP<::ADAPTER::PASIStructureWrapper>& StructureField() const
-    {
-      return structure_;
-    };
-
-    //! access to particle field
-    const Teuchos::RCP<PARTICLE::Algorithm>& ParticleField() const { return particles_; };
 
     //! get initialization status
     bool IsInit() { return isinit_; };
@@ -117,12 +106,18 @@ namespace PASI
     };
 
     //! structural field
-    Teuchos::RCP<::ADAPTER::PASIStructureWrapper> structure_;
+    Teuchos::RCP<::ADAPTER::PASIStructureWrapper> structurefield_;
 
     //! particle algorithm
-    Teuchos::RCP<PARTICLE::Algorithm> particles_;
+    Teuchos::RCP<PARTICLEALGORITHM::ParticleAlgorithm> particlealgorithm_;
 
    private:
+    //! init structure field
+    void InitStructureField();
+
+    //! init particle algorithm
+    void InitParticleAlgorithm();
+
     //! build and register structure model evaluator
     void BuildStructureModelEvaluator();
 

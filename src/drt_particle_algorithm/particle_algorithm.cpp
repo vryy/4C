@@ -575,10 +575,12 @@ void PARTICLEALGORITHM::ParticleAlgorithm::DetermineParticleStatesOfParticleType
   // iterate over particle types
   for (auto& typeIt : particlestatestotypes_)
   {
+    // set of particle states for current particle type
+    std::set<PARTICLEENGINE::StateEnum>& particlestates = typeIt.second;
+
     // insert default particle states
-    (typeIt.second)
-        .insert({PARTICLEENGINE::Position, PARTICLEENGINE::Velocity, PARTICLEENGINE::Acceleration,
-            PARTICLEENGINE::LastTransferPosition});
+    particlestates.insert({PARTICLEENGINE::Position, PARTICLEENGINE::Velocity,
+        PARTICLEENGINE::Acceleration, PARTICLEENGINE::LastTransferPosition});
   }
 
   // insert integration dependent states of all particle types
@@ -587,6 +589,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::DetermineParticleStatesOfParticleType
   // insert interaction dependent states of all particle types
   if (particleinteraction_)
     particleinteraction_->InsertParticleStatesOfParticleTypes(particlestatestotypes_);
+
+  // insert wall handler dependent states of all particle types
+  if (particlewall_) particlewall_->InsertParticleStatesOfParticleTypes(particlestatestotypes_);
 }
 
 /*---------------------------------------------------------------------------*

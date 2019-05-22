@@ -89,6 +89,11 @@ namespace PARTICLEALGORITHM
     //! read restart of wall handler
     virtual void ReadRestart(const int restartstep);
 
+    //! insert wall handler dependent states of all particle types
+    virtual void InsertParticleStatesOfParticleTypes(
+        std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
+            particlestatestotypes) const final;
+
     //! write wall runtime vtu output
     virtual void WriteWallRuntimeVtuOutput(const int step, const double time) const;
 

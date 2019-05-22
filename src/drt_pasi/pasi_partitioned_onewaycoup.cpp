@@ -13,9 +13,9 @@
  *---------------------------------------------------------------------------*/
 #include "pasi_partitioned_onewaycoup.H"
 
-#include "../drt_adapter/ad_str_pasiwrapper.H"
-
-#include "../drt_particle/particle_algorithm.H"
+#include "../drt_particle_algorithm/particle_algorithm.H"
+#include "../drt_particle_algorithm/particle_wall_interface.H"
+#include "../drt_particle_algorithm/particle_wall_datastate.H"
 
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 02/2017 |
@@ -28,6 +28,32 @@ PASI::PASI_PartOneWayCoup::PASI_PartOneWayCoup(
 }
 
 /*---------------------------------------------------------------------------*
+ | setup pasi algorithm                                       sfuchs 02/2017 |
+ *---------------------------------------------------------------------------*/
+void PASI::PASI_PartOneWayCoup::Setup()
+{
+  // call base class setup
+  PASI::PartitionedAlgo::Setup();
+
+  // safety check
+  {
+    // get interface to particle wall handler
+    std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface =
+        particlealgorithm_->GetParticleWallHandlerInterface();
+
+    // get wall data state container
+    std::shared_ptr<PARTICLEALGORITHM::WallDataState> walldatastate =
+        particlewallinterface->GetWallDataState();
+
+    if (walldatastate->GetDispRow() == Teuchos::null or
+        walldatastate->GetDispCol() == Teuchos::null)
+      dserror("wall displacements not initialized!");
+    if (walldatastate->GetVelCol() == Teuchos::null) dserror("wall velocities not initialized!");
+    if (walldatastate->GetAccCol() == Teuchos::null) dserror("wall accelerations not initialized!");
+  }
+}
+
+/*---------------------------------------------------------------------------*
  | partitioned one way coupled timeloop                       sfuchs 02/2017 |
  *---------------------------------------------------------------------------*/
 void PASI::PASI_PartOneWayCoup::Timeloop()
@@ -36,11 +62,9 @@ void PASI::PASI_PartOneWayCoup::Timeloop()
   CheckIsInit();
   CheckIsSetup();
 
+  // time loop
   while (NotFinished())
   {
-    // redistribute load in parallel
-    particles_->DynamicLoadBalancing();
-
     // counter and print header
     PrepareTimeStep();
 

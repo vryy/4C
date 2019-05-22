@@ -50,24 +50,30 @@ namespace PASI
     //! iteration loop between coupled fields
     virtual void Outerloop();
 
-    //! update and output
-    virtual void UpdateOutput();
-
-    //! reset particle states in outerloop iteration
-    virtual void ResetParticleStates();
-
-    //! get particle forces
-    virtual void GetParticleForces();
-
-    //! set particle forces
-    virtual void SetParticleForces(Teuchos::RCP<const Epetra_Vector> forcenp);
+    //! output of fields
+    virtual void Output();
 
     //! update the current states in every iteration
-    virtual void IterUpdateStates(
+    void IterUpdateStates(
         Teuchos::RCP<const Epetra_Vector> dispnp, Teuchos::RCP<const Epetra_Vector> forcenp);
 
+    //! set wall forces
+    void SetWallForces(Teuchos::RCP<const Epetra_Vector> forcenp);
+
+    //! reset particle states
+    void ResetParticleStates();
+
+    //! clear wall forces
+    void ClearWallForces();
+
+    //! get wall forces
+    void GetWallForces();
+
     //! convergence check for structure and particles fields
-    virtual bool ConvergenceCheck(int itnum);
+    bool ConvergenceCheck(int itnum);
+
+    //! save particle states
+    void SaveParticleStates();
 
     //! particle force acting on structural boundary
     Teuchos::RCP<Epetra_Vector> forcenp_;
@@ -102,15 +108,9 @@ namespace PASI
     //! virtual destructor
     virtual ~PASI_PartTwoWayCoup_ForceRelax(){};
 
-    //! read restart information for given time step
-    virtual void ReadRestart(int restartstep) override;
-
    protected:
     //! iteration loop between coupled fields with relaxed forces
     virtual void Outerloop() override;
-
-    //! update and output
-    virtual void UpdateOutput() override;
 
     //! calculate relaxation parameter
     virtual void CalcOmega(double& omega, const int itnum);
@@ -133,7 +133,13 @@ namespace PASI
     //! init pasi algorithm
     virtual void Init() override;
 
+    //! read restart information for given time step
+    virtual void ReadRestart(int restartstep) override;
+
    protected:
+    //! output of fields
+    virtual void Output() override;
+
     //! calculate relaxation parameter
     virtual void CalcOmega(double& omega, const int itnum) override;
 

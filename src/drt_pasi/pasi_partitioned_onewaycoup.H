@@ -34,6 +34,9 @@ namespace PASI
     //! virtual destructor
     virtual ~PASI_PartOneWayCoup(){};
 
+    //! setup pasi algorithm
+    virtual void Setup() override;
+
     //! partitioned one way coupled timeloop
     virtual void Timeloop() override;
   };

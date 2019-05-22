@@ -61,6 +61,12 @@ int PARTICLEENGINE::EnumToStateDim(const enum PARTICLEENGINE::ParticleState& sta
     case PARTICLEENGINE::InterfaceNormal:
     case PARTICLEENGINE::UnitWallNormal:
     case PARTICLEENGINE::TemperatureGradient:
+    case PARTICLEENGINE::LastIterPosition:
+    case PARTICLEENGINE::LastIterVelocity:
+    case PARTICLEENGINE::LastIterAcceleration:
+    case PARTICLEENGINE::LastIterAngularVelocity:
+    case PARTICLEENGINE::LastIterAngularAcceleration:
+    case PARTICLEENGINE::LastIterModifiedAcceleration:
       dim = 3;
       break;
 
@@ -160,6 +166,24 @@ std::string PARTICLEENGINE::EnumToStateName(const enum PARTICLEENGINE::ParticleS
       break;
     case PARTICLEENGINE::TemperatureGradient:
       name = "temperaturegradient";
+      break;
+    case PARTICLEENGINE::LastIterPosition:
+      name = "position last iteration";
+      break;
+    case PARTICLEENGINE::LastIterVelocity:
+      name = "velocity last iteration";
+      break;
+    case PARTICLEENGINE::LastIterAcceleration:
+      name = "acceleration last iteration";
+      break;
+    case PARTICLEENGINE::LastIterAngularVelocity:
+      name = "angular velocity last iteration";
+      break;
+    case PARTICLEENGINE::LastIterAngularAcceleration:
+      name = "angular acceleration last iteration";
+      break;
+    case PARTICLEENGINE::LastIterModifiedAcceleration:
+      name = "modified acceleration last iteration";
       break;
     default:
       dserror("particle state enum unknown!");
