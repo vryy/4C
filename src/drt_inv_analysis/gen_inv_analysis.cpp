@@ -292,7 +292,7 @@ void STR::GenInvAnalysis::Integrate()
 {
   const int myrank = discret_->Comm().MyPID();
   const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
-  int max_itter = iap.get<int>("INV_ANA_MAX_RUN");
+  const int max_iter = iap.get<int>("INV_ANA_MAX_RUN");
   int newfiles = DRT::INPUT::IntegralValue<int>(iap, "NEW_FILES");
 
   // multiple inverse analysis is just implemented for parallel use
@@ -313,8 +313,8 @@ void STR::GenInvAnalysis::Integrate()
 
     // perturbation of material parameter (should be relative to the value that is perturbed)
     std::vector<double> perturb(np_, 0.0);
-    double alpha = iap.get<double>("INV_ALPHA");
-    double beta = iap.get<double>("INV_BETA");
+    const double alpha = iap.get<double>("INV_ALPHA");
+    const double beta = iap.get<double>("INV_BETA");
 
     for (int i = 0; i < np_; ++i)
     {
@@ -418,7 +418,7 @@ void STR::GenInvAnalysis::Integrate()
       error_i_ = error_;
 
 
-  } while (error_i_ > tol_ && numb_run_ < max_itter && !nodescentdirection_);
+  } while (error_i_ > tol_ && numb_run_ < max_iter && !nodescentdirection_);
 
 
   // print results to file
