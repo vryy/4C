@@ -50,8 +50,12 @@ void INPAR::INVANA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   IntParameter("INV_ANA_MAX_RUN", 100, "max iterations for inverse analysis", &iap);
 
   // perturbation parameters
-  DoubleParameter("INV_ALPHA", 1.0e-3, "perturbation parameters", &iap);
-  DoubleParameter("INV_BETA", 1.0e-3, "perturbation parameters", &iap);
+  DoubleParameter("INV_ALPHA", 1.0e-3,
+      "Absolute perturbation parameters for finite differencing of gradient", &iap);
+  DoubleParameter("INV_BETA", 1.0e-3,
+      "Relative perturbation parameters (to be scaled with the parameter) for finite differencing "
+      "of gradient",
+      &iap);
 
   // initial regularization parameter
   DoubleParameter("INV_INITREG", 1.0, "initial regularization parameter", &iap);

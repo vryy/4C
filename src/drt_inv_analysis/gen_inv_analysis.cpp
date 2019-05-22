@@ -321,7 +321,7 @@ void STR::GenInvAnalysis::Integrate()
       if (!myrank) printf("perturbation[%d] %15.10e\n", i, perturb[i]);
     }
 
-    // as the actual inv analysis is on proc 0 only, do only provide storage on proc 0
+    // as the actual inverse analysis is on proc 0 only, do only provide storage on proc 0
     Epetra_SerialDenseMatrix cmatrix;
     if (!myrank) cmatrix.Shape(nmp_, np_ + 1);
 
@@ -363,8 +363,7 @@ void STR::GenInvAnalysis::Integrate()
 
       SetParameters(p_cur);
 
-      // compute nonlinear problem and obtain computed displacements
-      // output at the last step
+      // Solve forward problem and obtain computed displacements output at the last step
       Epetra_SerialDenseVector cvector;
 
       switch (forward_prb_type_)
@@ -816,12 +815,25 @@ void STR::GenInvAnalysis::CalcNewParameters(
     mcurve = mcurve_;
   }
 
-  // initalization of the Jacobian and other storage
+  // --------------------------------------------------------------------
+  // initialization of the Jacobian and other storage
+  // --------------------------------------------------------------------
+  // matrix to be inverted in each LVM iteration
   Epetra_SerialDenseMatrix sto(np_, np_);
+
+  // parameter increment (to be solved for)
   Epetra_SerialDenseVector delta_p(np_);
-  Epetra_SerialDenseVector tmp(np_);
+
+  // right hand side for LVM iteration
+  Epetra_SerialDenseVector rightHandSide(np_);
+
+  // residuum (i.e. deviation of measurements and simulation results)
   Epetra_SerialDenseVector rcurve(nmp);
+
+  // Simulation results
   Epetra_SerialDenseVector ccurve(nmp);
+
+  // --------------------------------------------------------------------
 
   // copy column with unperturbed values to extra vector
   for (int i = 0; i < nmp; i++) ccurve[i] = cmatrix(i, np_);
@@ -844,7 +856,7 @@ void STR::GenInvAnalysis::CalcNewParameters(
     // of volume-pressure-change experiment
 
     // number of data points of pressure-volume-change experiment
-    nmp_volexp_ = 287;
+    nmp_volexp_ = 287;  // ToDo Why is this value hard-coded? This seems to be dangerous!
     // initialization of measured pressure and volume-change values
     std::vector<double> volexp_deltap(nmp_volexp_, 0.0);
     std::vector<double> volexp_deltaV(nmp_volexp_, 0.0);
@@ -890,16 +902,17 @@ void STR::GenInvAnalysis::CalcNewParameters(
     }
     double fac_norm = sqrt(nmp) * (max_zug - min_zug);
 
-    //
     // calculating Jacobi-Matrix J(p)
     // tensile test data
     for (int i = 0; i < nmp; i++)
+    {
       for (int j = 0; j < np_; j++)
       {
         J(i, j) -= ccurve[i];
         J(i, j) /= perturb[j];
         J(i, j) /= fac_norm;  // normalize J
       }
+    }
     // add data of pressure-volume-change experiment
     J.Reshape(nmp + nmp_volexp_, np_);
     for (int i = 0; i < nmp_volexp_; i++)
@@ -968,10 +981,10 @@ void STR::GenInvAnalysis::CalcNewParameters(
   for (int i = 0; i < np_; i++) sto(i, i) += mu_ * sto(i, i);
 
   // delta_p = (J.T*J+mu*diag(J.T*J))^{-1} * J.T*R
-  tmp.Multiply('T', 'N', -1.0, J, rcurve, 0.0);  // sign of update rule
+  rightHandSide.Multiply('T', 'N', -1.0, J, rcurve, 0.0);  // sign of update rule
   Epetra_SerialDenseSolver solver;
   solver.SetMatrix(sto);
-  solver.SetVectors(delta_p, tmp);
+  solver.SetVectors(delta_p, rightHandSide);
   solver.SolveToRefinedSolution(true);
   solver.Solve();
 
@@ -1001,6 +1014,9 @@ void STR::GenInvAnalysis::CalcNewParameters(
   // Gradient based update of mu based on
   // Kelley, C. T., Liao, L. Z., Qi, L., Chu, M. T., Reese, J. P., & Winton, C. (2009)
   // Projected pseudotransient continuation. SIAM Journal on Numerical Analysis, 46(6), 3071.
+  /* ToDo Which of the updates formulas in this paper is used here? The paper presents three
+   * distinct update formulas, denoted as SER-A, SER-B, and TTE.
+   */
   if (reg_update_ == grad_based)
   {
     if (error_ < error_o_)
@@ -1835,6 +1851,9 @@ void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseVector delta_p)
   // This routine runs just for material coupexppol (birzle 08/2014)
   // Recalculates the material parameters b and c for (and just for) printout
   // Inverse Analysis is done with ln(b) and ln(c) --> print exp(b) and exp(c)
+  /* ToDo is the above comment really true? I don't see any guard that prevents this routine to run
+   * also in other cases than for material coupexppol.
+   */
   for (unsigned prob = 0; prob < DRT::Problem::NumInstances(); ++prob)
   {
     const std::map<int, Teuchos::RCP<MAT::PAR::Material>>& mats =
