@@ -68,10 +68,10 @@ void INPAR::INVANA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
           INPAR::STR::reg_update_grad, INPAR::STR::reg_update_grad),
       &iap);
 
-  // experiment ID if running multiple files in one inverse analysis
-  // id range is from 0 to #experiments-1
-  IntParameter("EXP_ID_MULT_INV_ANA", -1, "id of experiment", &iap);
-
+  IntParameter("EXP_ID_MULT_INV_ANA", -1,
+      "ID of experiment when running multiple files in one inverse analysis. ID ranges from 0 to "
+      "#experiments-1",
+      &iap);
 
   StringParameter(
       "MONITORFILE", "none.monitor", "filename of file containing measured displacements", &iap);
@@ -113,11 +113,8 @@ void INPAR::INVANA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
     // Type of measurement written in monitor file
     setStringToIntegralParameter<int>("MEASUREMENT_TYPE", "dofs",
-        "Type of measurement written in monitor file",
-        tuple<std::string>("dofs", "dof_based", "points", "point_based"),
-        tuple<int>(INPAR::STR::meas_dofs, INPAR::STR::meas_dofs, INPAR::STR::meas_points,
-            INPAR::STR::meas_points),
-        &iap);
+        "Type of measurement written in monitor file", tuple<std::string>("dofs", "points"),
+        tuple<int>(INPAR::STR::meas_dofs, INPAR::STR::meas_points), &iap);
   }
 
   /*----------------------------------------------------------------------*/
