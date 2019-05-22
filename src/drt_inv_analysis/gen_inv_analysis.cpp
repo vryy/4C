@@ -192,18 +192,18 @@ STR::GenInvAnalysis::GenInvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
   }
 
   // special inverse analysis types
-  spec_inv_ana_mult_ = 0;
-  spec_inv_ana_coup_ = 0;
-  switch (DRT::INPUT::IntegralValue<int>(iap, "SPECIAL_INV_ANALYSIS"))
+  spec_inv_ana_mult_ = false;
+  spec_inv_ana_coup_ = false;
+  switch (DRT::INPUT::IntegralValue<INPAR::STR::SpecInvAnalysisType>(iap, "SPECIAL_INV_ANALYSIS"))
   {
     case INPAR::STR::spec_inv_mult:
     {
-      spec_inv_ana_mult_ = 1;
+      spec_inv_ana_mult_ = true;
     }
     break;
     case INPAR::STR::spec_inv_coup:
     {
-      spec_inv_ana_coup_ = 1;
+      spec_inv_ana_coup_ = true;
     }
     break;
     default:  // normal inverse analysis --> do nothing
