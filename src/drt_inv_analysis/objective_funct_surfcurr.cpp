@@ -1,4 +1,3 @@
-#ifdef HAVE_Kokkos
 /*----------------------------------------------------------------------*/
 /*!
 \brief Surface current based objective function
@@ -8,6 +7,8 @@
 \maintainer Sebastian Brandstaeter
 */
 /*----------------------------------------------------------------------*/
+
+#ifdef HAVE_Kokkos
 
 #include "objective_funct_surfcurr.H"
 #include "../drt_lib/drt_discret.H"

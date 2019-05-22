@@ -1,4 +1,3 @@
-#ifdef HAVE_Kokkos
 /*----------------------------------------------------------------------*/
 /*!
 \brief Surface current based objective function
@@ -8,6 +7,7 @@
 \maintainer Sebastian Brandstaeter
 */
 /*----------------------------------------------------------------------*/
+#ifdef HAVE_Kokkos
 
 #ifndef OBJECTIVE_FUNCT_SURFCURR_H
 #define OBJECTIVE_FUNCT_SURFCURR_H

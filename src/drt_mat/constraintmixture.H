@@ -1,4 +1,3 @@
-
 /*----------------------------------------------------------------------------*/
 /*!
 \brief This file contains routines for constraint mixture growth and remodeling.

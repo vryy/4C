@@ -1,13 +1,11 @@
 /*!----------------------------------------------------------------------
 \file global_inp_control.H
-\brief
 
-<pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15239
-</pre>
+\brief Global control routine of baci
+
+\level 0
+
+\maintainer Martin Kronbichler
 
 *----------------------------------------------------------------------*/
 
