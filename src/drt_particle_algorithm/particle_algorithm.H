@@ -25,6 +25,7 @@
 #include "../drt_adapter/adapter_algorithmbase.H"
 
 #include "../drt_particle_engine/particle_typedefs.H"
+#include "../drt_particle_engine/particle_engine.H"
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                       sfuchs 04/2018 |
@@ -44,9 +45,8 @@ namespace PARTICLEINTERACTION
 
 namespace PARTICLEENGINE
 {
-  class ParticleEngine;
   class ParticleObject;
-}  // namespace PARTICLEENGINE
+}
 
 namespace DRT
 {
@@ -90,6 +90,13 @@ namespace PARTICLEALGORITHM
 
     //! create particle field specific result test objects
     std::vector<std::shared_ptr<DRT::ResultTest>> CreateResultTests();
+
+    //! get interface to particle engine
+    const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> GetParticleEngineInterface()
+        const
+    {
+      return particleengine_;
+    }
 
    private:
     //! init particle engine
