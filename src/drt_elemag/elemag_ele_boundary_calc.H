@@ -7,13 +7,11 @@
 The routins are copied from the acoustic module and are supposed to be useful in the creation of
 boundary elements for the electromagnetic module. The correct implementation is still missing.
 
-<pre>
 \level 2
 
 \maintainer Luca Berardocco
             berardocco@lnm.mw.tum.de
             089 - 289-15244
-</pre>
 */
 /*--------------------------------------------------------------------------*/
 

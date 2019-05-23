@@ -2,11 +2,9 @@
 /*!
 \brief minimal modoel for myocard material
 
-<pre>
 \level 3
 
 \maintainer Amadeus Gebauer
-</pre>
 */
 
 /*----------------------------------------------------------------------*

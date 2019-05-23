@@ -1,14 +1,12 @@
 /*!----------------------------------------------------------------------
 \file solver_amgnxn_hierarchies.H
 
-<pre>
 \brief Declaration
 \level 1
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15262
 Created on: Aug 11, 2014
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #ifndef AMGNXN_HIERARCHIES_H

@@ -3,9 +3,7 @@
 \brief pyramid shaped solid element
 \level 1
 
-<pre>
 \maintainer Christoph Meier
-</pre>
 
 *----------------------------------------------------------------------*/
 

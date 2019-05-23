@@ -4,9 +4,7 @@
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #ifndef ELECTRODE_H

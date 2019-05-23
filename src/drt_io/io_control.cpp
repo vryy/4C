@@ -3,12 +3,10 @@
  * \file io_control.cpp
 \brief output control
 \level 0
-<pre>
 \maintainer Martin Kronbichler
             kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089 - 289-15235
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

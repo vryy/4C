@@ -69,20 +69,17 @@ namespace DRT
     spatial function), we compute control point values u_cp such that they
     minimize the following least-squares problem:
 
-    <pre>
-                      ||                                   || 2
+                          ||                                   || 2
                       || +----+                            ||
                       ||  \                                ||
                  min  ||   +    N   (x) * u     -  u   (x) ||
                       ||  /      cp       - cp     - 0     ||
                  u    || +----+                            ||
                  - cp ||   cp                              ||
-    </pre>
 
 
     This is equivalent to the solution of the following linear system:
 
-    <pre>
 
              /                         \               /                         \
             |    /                      |             |    /                      |
@@ -99,7 +96,6 @@ namespace DRT
 
                    M(assmatrix)                                   rhs
 
-    </pre>
 
 
     \param dis         (i) the discretisation

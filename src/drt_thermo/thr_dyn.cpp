@@ -3,9 +3,7 @@
 \file thr_dyn.cpp
 \brief entry point for (in)stationary heat conduction
 \level 1
-<pre>
 \maintainer Christoph Meier
-</pre>
 */
 
 /*----------------------------------------------------------------------*

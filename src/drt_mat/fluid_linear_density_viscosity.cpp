@@ -2,11 +2,9 @@
 /*!
 \brief Linear law (pressure-dependent) for the density and the viscosity
 
-<pre>
 \level 1
 
 \maintainer Andrea La Spina
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

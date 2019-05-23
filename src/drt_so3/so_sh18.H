@@ -3,9 +3,7 @@
 \brief a in-plane bi-quadratic solid-like 7-parameter shell
 \level 3
 
-<pre>
 \maintainer Christoph Meier
-</pre>
 
 *----------------------------------------------------------------------*/
 #ifndef SH18_H

@@ -60,14 +60,12 @@ namespace FLD
     /*!
     \brief Standard Constructor (public)
 
-    <pre>
-    o Create vector of radial coordinates of homogeneous shells
+        o Create vector of radial coordinates of homogeneous shells
 
     o allocate all sum_something vectors
 
     o initialise the output (open/clear files, print header)
 
-    </pre>
 
     */
     TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discretization> actdis, bool alefluid,

@@ -30,9 +30,8 @@ namespace DRT
 /*!----------------------------------------------------------------------
 \brief enum of arterial network dynamic types
 
-<pre>                                                      ismail 11/08
+\author ismail \date 11/08
 This is the enumeration of all types of different integration schemes
-</pre>
 
 *-----------------------------------------------------------------------*/
 
@@ -40,9 +39,8 @@ This is the enumeration of all types of different integration schemes
 /*!----------------------------------------------------------------------
 \brief enum of reduced dimensional airways dynamic types
 
-<pre>                                                     ismail 01/10
+\author ismail \date 01/10
 This is the enumeration of all types of different integration schemes
-</pre>
 
 *-----------------------------------------------------------------------*/
 typedef enum _RED_AIRWAYS_DYNTYPE
@@ -89,9 +87,8 @@ namespace INPAR
     /*!----------------------------------------------------------------------
     \brief enum of reduced dimensional relaxation type
 
-    <pre>                                                     roth 10/13
+    \author roth \date 10/13
     This is the enumeration of all types of different relaxation types
-    </pre>
 
     *-----------------------------------------------------------------------*/
     enum RELAXTYPE_3D_0D

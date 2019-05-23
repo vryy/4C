@@ -6,12 +6,10 @@ coordinate system
 
 \level 2
 
-<pre>
 \maintainer Christoph Ager
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
-</pre>
  *------------------------------------------------------------------------------------------------*/
 #ifndef DIRECT_DIVERGENCE_REFPLANE_H_
 #define DIRECT_DIVERGENCE_REFPLANE_H_

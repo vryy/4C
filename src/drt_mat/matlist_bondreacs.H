@@ -4,10 +4,8 @@
 
  \level 2
 
- <pre>
-   \maintainer Martin Kronbichler
- </pre>
- *----------------------------------------------------------------------*/
+    \maintainer Martin Kronbichler
+  *----------------------------------------------------------------------*/
 
 #ifndef MATLIST_BONDREACS_H_
 #define MATLIST_BONDREACS_H_

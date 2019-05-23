@@ -6,10 +6,8 @@
 
 \level 3
 
-<pre>
 \maintainer Christoph Ager
             ager@lnm.mw.tum.de
-</pre>
 
 *----------------------------------------------------------------------*/
 #include "cut_memory_manager.H"

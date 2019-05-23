@@ -3,11 +3,9 @@
 
 \brief Methods for spring and dashpot constraints / boundary conditions:
 
-<pre>
 \level 3
 
 \maintainer Amadeus Gebauer
-</pre>
 
 *----------------------------------------------------------------------*/
 

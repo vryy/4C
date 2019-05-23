@@ -4,12 +4,10 @@
 \brief Base class for implementation of sparse operations (including sparse
        matrices)
 
-<pre>
 \level 0
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
-</pre>
 
 *----------------------------------------------------------------------*/
 #ifndef LINALG_SPARSEOPERATOR_H_

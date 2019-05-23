@@ -24,7 +24,6 @@ namespace DRT
     \brief A service method for accessing knotvector and weights for
            an isogeometric element
 
-    </pre>
 
     \param dis         (i) the discretisation
     \param ele         (i) a pointer to the element
@@ -90,7 +89,6 @@ namespace DRT
     \brief A service method for accessing knotvector and weights for
            an isogeometric boundary element
 
-    </pre>
 
     \param boundaryele      (i) a pointer to the boundary element
     \param localsurfaceid   (i) local id of this boundary element
@@ -142,7 +140,6 @@ namespace DRT
     \brief A service method for accessing knotvector and weights for
            an isogeometric boundary element and parent element
 
-    </pre>
 
     \param boundaryele      (i) a pointer to the boundary element
     \param localsurfaceid   (i) local id of this boundary element

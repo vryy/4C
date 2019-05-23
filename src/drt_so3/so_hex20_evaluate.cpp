@@ -3,9 +3,7 @@
 \brief 3D quadratic serendipity element
 \level 1
 
-<pre>
 \maintainer Christoph Meier
-</pre>
 
 *----------------------------------------------------------------------*/
 

@@ -10,9 +10,7 @@
        USE ELASTHYPER-Toolbox!!
 \level 3
 
-<pre>
 \maintainer Fabian Braeu
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #ifndef NEOHOOKE_H_

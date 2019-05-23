@@ -3,12 +3,10 @@
 
 \brief A collection of helper methods for namespace LINALG
 
-<pre>
 \level 0
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
-</pre>
 
 *-----------------------------------------------------------------------*/
 #ifndef LINALG_UTILS_H

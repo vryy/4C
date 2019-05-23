@@ -8,9 +8,7 @@ The input line should read
 
 \level 2
 
-<pre>
 \maintainer Fabian Braeu
-</pre>
 */
 
 /*----------------------------------------------------------------------*/

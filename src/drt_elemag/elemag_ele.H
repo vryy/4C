@@ -7,14 +7,12 @@
 This file contains the element-specific service routines such as
 Pack, Unpack, NumDofPerNode etc.
 
-<pre>
 
 \level 2
 
 \maintainer Luca Berardocco
             berardocco@lnm.mw.tum.de
             089 - 289-15244
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

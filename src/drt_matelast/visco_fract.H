@@ -9,9 +9,7 @@ the same tau, alpha and beta.
 
 \level 2
 
-<pre>
 \maintainer Fabian Braeu
-</pre>
 
 *----------------------------------------------------------------------*/
 #ifndef VISCO_FRACT_H_

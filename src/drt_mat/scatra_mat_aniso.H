@@ -3,9 +3,7 @@
 
 \level 3
 
-<pre>
 \maintainer Christoph Schmidt
-</pre>
 *----------------------------------------------------------------------*/
 #ifndef SCATRA_MAT_ANISO_H
 #define SCATRA_MAT_ANISO_H

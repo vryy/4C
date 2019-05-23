@@ -5,9 +5,7 @@ transport problems
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
-</pre>
  */
 /*----------------------------------------------------------------------*/
 #include "scatra_multiscale_gp.H"

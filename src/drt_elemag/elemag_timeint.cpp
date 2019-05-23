@@ -4,13 +4,11 @@
 
 \brief Base class functions for time integration of electromagnetics
 
-<pre>
 \level 3
 
 \maintainer Luca Berardocco
             berardocco@lnm.mw.tum.de
             089 - 289-15244
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

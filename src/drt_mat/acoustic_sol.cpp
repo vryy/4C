@@ -3,10 +3,8 @@
        all necessary properties for sound propagation in acoustic material
        example input line:
        MAT 1 MAT_AcousticSol DENSITY 1000.0 C 1500.0 VISC 1.0
-<pre>
 \level 2
 \maintainer Luca Berardocco
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

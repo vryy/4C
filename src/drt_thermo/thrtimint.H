@@ -3,9 +3,7 @@
 \file thrtimint.H
 \brief base class for all time integrators in thermal field
 \level 1
-<pre>
 \maintainer Christoph Meier
-</pre>
 */
 
 

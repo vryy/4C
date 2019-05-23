@@ -2,13 +2,11 @@
 \file constraint_element2.H
 \brief A 2D constraint element with no physics attached
 \level 2
-<pre>
 
 \maintainer Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
-</pre>
 
 *----------------------------------------------------------------------*/
 

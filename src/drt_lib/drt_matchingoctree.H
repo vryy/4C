@@ -42,7 +42,6 @@ namespace DRT
 
       /*! \brief initialize this class (public)
 
-      <pre>
 
       Initialize processor local octree                               rauch 09/16
 
@@ -64,7 +63,6 @@ namespace DRT
       distance between two nodes. Thus, it should be of the order or magnitude
       of the smallest element size.
 
-      </pre>
 
       \param   actdis         (i) discretisation
       \param   mastereleids   (i) list of master entity ids
@@ -83,7 +81,6 @@ namespace DRT
 
       /*! \brief Declaration
 
-      <pre>
 
       Search closest entity to given coordinate x in local octree.
 
@@ -91,7 +88,6 @@ namespace DRT
 
       gammi 05/07
 
-      </pre>
 
       \param  x                  (i) coordinate of slavenode
       \param  idofclosestpoint   (o) the node id of the closest point
@@ -141,7 +137,6 @@ namespace DRT
 
       /*! \brief Search for closest (slave) nodes on all procs
 
-      <pre>
 
       Search for closest (slave) entities on all processors to given (master)
       entity set (only in bounding box of master entities)        gammi 05/07
@@ -163,7 +158,6 @@ namespace DRT
       On output, we get a map from masterids on this proc to slavenodeids
       (on arbitrary procs).
 
-      </pre>
 
       \param  slavenodeids     (i) list of slavenodeids
       \param  dofsforpbcplane  (i) specification of the plane containing
@@ -375,7 +369,6 @@ namespace DRT
 
       /*! \brief initialize this class
 
-      <pre>
 
       Initialize one element in octree                              rauch 09/16
 
@@ -386,7 +379,6 @@ namespace DRT
       one leaf element. tol is a tolerance used to assign the tree-nodes to the
       tree-elements by checking if they are in the bounding box or not.
 
-      </pre>
 
       \param  actdis          (i) the discretisation
       \param  nodeids         (i) tree-nodes attached to tree-element
@@ -406,14 +398,12 @@ namespace DRT
 
       /*! \brief Find closest point in leaf
 
-      <pre>
 
       leaf contains still maxnodeperleaf nodes. This function
       determines the closest point of all nodes attached to this leaf.
 
                                                        gammi 05/07
 
-      </pre>
 
       \param   x                  (i) coordinate of point
       \param   idofclosestpoint   (o) global id of closest point
@@ -429,11 +419,9 @@ namespace DRT
 
       /*! \brief Question if coordinate is in bounding box
 
-      <pre>
 
       Is x in the bounding box of the element?              gammi 05/07
 
-      </pre>
 
       \param x         (i) coordinate of point
 
@@ -442,26 +430,22 @@ namespace DRT
 
       /*! \brief Question if octree element is leaf
 
-      <pre>
 
       is the octree element a leaf, i.e. does it posess a vector
       of nodes attached to it?                         gammi 05/07
 
-      </pre>
 
       \return  bool true if element is leaf  */
       bool IsLeaf();
 
       /*! \brief Return child containing point
 
-      <pre>
 
       Determine which child contains the coordinate x. In some cases
       the return value may not be the unique answer (overlap!)
 
                                                        gammi 05/07
 
-      </pre>
 
       \param   x   (i) coordinate
 
@@ -470,12 +454,10 @@ namespace DRT
 
       /*! \brief Print some information on the octree leaf
 
-      <pre>
 
       std::cout the node coordinates associated to a leaf
                                                        gammi 05/07
 
-      </pre>
 
       \param  os (i)
 

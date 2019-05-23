@@ -3,9 +3,7 @@
 \file thr_dyn.H
 \brief
 \level 1
-<pre>
 \maintainer Christoph Meier
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #ifndef THR_DYN_H

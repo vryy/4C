@@ -8,14 +8,11 @@ that the performed operations might be expensive and are meant to be
 used during debugging, not in optimized runs.
 
 -------------------------------------------------------------------------
-</pre>
 
-<pre>
 \level 2
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
-</pre>
 
 *----------------------------------------------------------------------*/
 

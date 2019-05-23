@@ -1,12 +1,10 @@
 /*!----------------------------------------------------------------------
 \file solver_cheapsimplepreconditioner.H
 
-<pre>
 \brief Declaration
 \level 1
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #ifndef SOLVER_CHEAPSIMPLE_H

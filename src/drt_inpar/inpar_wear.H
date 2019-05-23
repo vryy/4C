@@ -4,9 +4,7 @@
 
 \level 1
 
-<pre>
 \maintainer Alexander Popp
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #ifndef INPAR_WEAR_H

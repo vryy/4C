@@ -103,16 +103,14 @@ namespace MAT
   /// C}^{-\frac{2}{3}}\f$
   ///
   /// symbols:
-  /// <pre>
-  /// \f$c\f$ .. position dependend stiffness parameter <br>
+  ///   /// \f$c\f$ .. position dependend stiffness parameter <br>
   /// \f$\Psi\f$  .. strain energy function <br>
   /// \f$\mathbf{C}\f$  .. right CAUCHY-GREEN tensor <br>
   /// \f$\bar{\lambda}_{\alpha}\f$  .. modified principle streches \f$(\alpha = 1, \ldots ,3)\f$
   /// <br> \f$I_{\mathbf{C}}, II_{\mathbf{C}}, III_{\mathbf{C}}\f$ .. principle invariants of the
   /// right CG tensor <br> \f$\bar{I}_{\mathbf{C}}, \bar{II}_{\mathbf{C}}\f$ .. modified invariants
   /// <br>
-  /// </pre>
-  ///
+  ///   ///
   /// <h3>Volumetric Material Description:</h3>
   ///
   /// material according to OGDEN / SIMO & MIEHE [2].
@@ -141,12 +139,11 @@ namespace MAT
   ///
   ///
   /// symbols:
-  /// <pre>
-  /// \f$J\f$ .. volume ratio (JACOBIAN determinant) (\f$= III_{\mathbf{C}}^{-\frac{1}{2}}\f$) <br>
+  ///   /// \f$J\f$ .. volume ratio (JACOBIAN determinant) (\f$= III_{\mathbf{C}}^{-\frac{1}{2}}\f$)
+  ///   <br>
   /// \f$\kappa\f$  .. dilatational modulus acc. to \f$ \kappa = 24c / (3 - 6\nu) \f$ [4] <br>
   /// \f$\beta\f$ .. material parameter acc. to OGDEN <br>
-  /// </pre>
-  ///
+  ///   ///
   ///
   /// <h3>Reference:</h3>
   /// <ul>
@@ -237,8 +234,7 @@ namespace MAT
     /// <h2>the material routine - hyperelastic stress response and elasticity tensor:</h2>
     ///
     /// symbols:
-    /// <pre>
-    /// \f$c\f$ .. position dependend stiffness parameter acc. to GASSER <br>
+    ///     /// \f$c\f$ .. position dependend stiffness parameter acc. to GASSER <br>
     /// \f$\Psi\f$ .. strain energy function <br>
     /// \f$\mathbf{C}\f$ .. right CAUCHY-GREEN tensor <br>
     /// \f$I_{\mathbf{C}}, II_{\mathbf{C}}, III_{\mathbf{C}}\f$ .. invariants of the right CG tensor
@@ -248,8 +244,7 @@ namespace MAT
     /// \f$J\f$ .. volume ratio (JACOBIAN determinant) (\f$= III_{\mathbf{C}}^{-\frac{1}{2}}\f$)
     /// <br> \f$\kappa\f$ .. dilatational modulus <br> \f$\beta\f$ .. material parameter acc. to
     /// OGDEN <br>
-    /// </pre>
-    ///
+    ///     ///
     /// <h3>Isochoric Part:</h3>
     ///
     /// Determine isochoric PK2 stress response \f$\mathbf{S}_{iso}\f$ and isochoric material

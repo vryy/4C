@@ -72,14 +72,12 @@ namespace POROELAST
 
     /*! do the setup for the monolithic system
 
-     <pre>
 
      1.) setup coupling
      2.) get maps for all blocks in the system (and for the whole system as well)
      create combined map
      3.) create system matrix
 
-     </pre>
 
      \note We want to do this setup after reading the restart information, not
      directly in the constructor. This is necessary since during restart (if

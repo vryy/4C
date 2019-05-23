@@ -3,11 +3,9 @@
 
 \brief Registration class for all singletons used within baci, modified version for the cut tests
 
-<pre>
 \level 1
 
 \maintainer Martin Kronbichler
-</pre>
 
 *----------------------------------------------------------------------*/
 

@@ -2,11 +2,9 @@
 /*!
 \brief Weakly compressible fluid according to Murnaghan-Tait
 
-<pre>
 \level 1
 
 \maintainer Andrea La Spina
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #ifndef MURNAGHANTAITFLUID_H

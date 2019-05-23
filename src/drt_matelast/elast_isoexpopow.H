@@ -9,9 +9,7 @@ C = Exponent D
 
 \level 1
 
-<pre>
 \maintainer Fabian Braeu
-</pre>
 
 *----------------------------------------------------------------------*/
 #ifndef ELAST_ISOEXPOPOW_H_

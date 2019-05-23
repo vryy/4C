@@ -6,10 +6,8 @@
 
 \level 2
 
-<pre>
 \maintainer Jan Schnabel
             jan-eike.schnabel@hzg.de
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

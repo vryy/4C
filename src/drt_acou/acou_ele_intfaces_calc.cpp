@@ -4,14 +4,12 @@
 
 Integrate internal face terms on an internal faces element
 
-<pre>
 \level 2
 
 \maintainer Luca Berardocco
             berardocco@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15244
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #include <Teuchos_TimeMonitor.hpp>

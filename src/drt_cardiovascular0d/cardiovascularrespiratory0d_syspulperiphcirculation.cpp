@@ -5,9 +5,7 @@
 
 \level 3
 
-<pre>
 \maintainer Amadeus Gebauer
-</pre>
 *----------------------------------------------------------------------*/
 
 #include "cardiovascularrespiratory0d_syspulperiphcirculation.H"

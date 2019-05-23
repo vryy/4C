@@ -2,12 +2,10 @@
 \file drt_utils_shapevalues_hdg.cpp
 \brief Evaluation of scalar shape functions for HDG
 
-<pre>
 \level 2
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
-</pre>
 
 *----------------------------------------------------------------------*/
 

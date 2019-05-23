@@ -3,10 +3,8 @@
 
 \brief A collection of helper methods for solid elements
 
-<pre>
 \level 1
 \maintainer Amadeus Gebauer
-</pre>
 *-----------------------------------------------------------------------*/
 
 #ifndef SO_UTILS_H

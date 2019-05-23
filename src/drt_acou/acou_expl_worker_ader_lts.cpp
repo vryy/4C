@@ -2,14 +2,12 @@
 \file acou_expl_worker_ader_lts.cpp
 \brief Control routine for acoustic explicit time integration with ADER LTS
 
-<pre>
 \level 3
 
 \maintainer Luca Berardocco
             berardocco@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15244
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

@@ -59,9 +59,8 @@ void ntam(int argc, char *argv[]);
 
 \brief main routine
 
-<pre>                                                        m.gee 8/00
+\author m.gee \date 8/00
 main is only printing the ccarat head and the finish
-</pre>
 \param argc     INT     (i)   number of arguments on command line including exe
 \param argv     *char[] (i)   array of arguments from command line
 

@@ -5,9 +5,7 @@
 
 \level 2
 
-<pre>
    \maintainer Christoph Schmidt
-</pre>
 
 *----------------------------------------------------------------------*/
 #ifndef SO3_SCATRA_ELETYPES_H_

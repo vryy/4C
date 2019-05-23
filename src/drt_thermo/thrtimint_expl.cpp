@@ -5,9 +5,7 @@
 
 \level 3
 
-<pre>
 \maintainer Christoph Meier
-</pre>
 */
 
 

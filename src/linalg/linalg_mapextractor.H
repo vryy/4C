@@ -4,12 +4,10 @@
 
 \brief Declaration of map extractor class
 
-<pre>
 \level 0
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #ifndef LINALG_MAPEXTRACTOR_H

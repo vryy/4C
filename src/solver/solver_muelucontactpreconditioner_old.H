@@ -3,13 +3,11 @@
 
 \brief Interface class for MueLu contact preconditioner
 
-<pre>
 \level 1
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
 Created on: Jan 11, 2012
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

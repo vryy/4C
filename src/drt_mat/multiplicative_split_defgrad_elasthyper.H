@@ -5,9 +5,7 @@ multiplicatively into elastic and inelastic parts
 
 \level 3
 
-<pre>
 \maintainer Christoph Schmidt
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #ifndef MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_H

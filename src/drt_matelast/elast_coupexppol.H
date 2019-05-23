@@ -9,9 +9,7 @@ The input line should read
 
 \level 1
 
-<pre>
 \maintainer Fabian Braeu
-</pre>
 
 *----------------------------------------------------------------------*/
 #ifndef ELAST_EXPPOL_H_

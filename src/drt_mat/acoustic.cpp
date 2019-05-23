@@ -4,10 +4,8 @@
        like material
        example input line:
        MAT 1
-<pre>
 \level 2
 \maintainer Luca Berardocco
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

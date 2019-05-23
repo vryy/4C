@@ -2,13 +2,11 @@
 \file constraintdofset.cpp
 \brief A set of degrees of freedom for constraint problems
 \level 2
-<pre>
 
 \maintainer Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
-</pre>
 
 *----------------------------------------------------------------------*/
 

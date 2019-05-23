@@ -4,10 +4,8 @@
 \brief Control routine for thermo-structure-interaction problems.
 
 
-<pre>
 \level 2
 \maintainer    Christoph Meier
-</pre>
 */
 
 

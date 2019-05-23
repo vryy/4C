@@ -20,9 +20,7 @@
 
 \level 2
 
-<pre>
 \maintainer Matthias Mayr
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #ifndef VISCOPLASTICROBINSON_H_

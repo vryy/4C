@@ -4,7 +4,6 @@
 \brief Compute (time and space) averaged values for turbulent channel
        flows and write them to files.
 
-<pre>
 
 o Create set of all available homogeneous planes
   (Construction based on a round robin communication pattern)
@@ -84,8 +83,7 @@ namespace FLD
     /*!
     \brief Standard Constructor (public)
 
-    <pre>
-    o Create vector of homogeneous plane coordinates
+        o Create vector of homogeneous plane coordinates
 
     o Allocate 4 distributed toggle vectors and one distributed vector
       for squares, both for integral and pointwise means
@@ -94,7 +92,6 @@ namespace FLD
 
     o initialise the output (open/clear files, print header)
 
-    </pre>
 
     */
     TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discretization> actdis, bool alefluid,

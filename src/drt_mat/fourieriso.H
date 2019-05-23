@@ -2,9 +2,7 @@
 /*!
 \brief material for heat conduction according to fourier's law
 \level 1
-<pre>
 \maintainer Christoph Meier
-</pre>
 */
 
 /*----------------------------------------------------------------------*

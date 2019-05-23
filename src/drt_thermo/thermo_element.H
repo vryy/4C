@@ -7,9 +7,7 @@ This file contains the element specific service routines like
 Pack, Unpack, NumDofPerNode etc.
 
 \level 1
-<pre>
 \maintainer Christoph Meier
-</pre>
 */
 
 /*----------------------------------------------------------------------*
@@ -300,12 +298,10 @@ namespace DRT
       //! etc. directly.
       //!
       //! Following implementations of the element are allowed:
-      //! <pre>
-      //!  o Evaluation of thermal system matrix and residual for the One-Step-Theta
+      //!       //!  o Evaluation of thermal system matrix and residual for the One-Step-Theta
       //!
       //!  o Evaluation of thermal system matrix and residual for the stationary thermal solver
-      //! </pre>
-      //!
+      //!       //!
       //! \param params (in/out): ParameterList for communication between control routine
       //!                         and elements
       //! \param discretization (in): A reference to the underlying discretization

@@ -64,11 +64,9 @@ namespace FLD
     /*!
     \brief Standard Constructor (public)
 
-    <pre>
-    o Create sets for centerlines in x1-, x2- and x3-direction
+        o Create sets for centerlines in x1-, x2- and x3-direction
 
     o Allocate distributed vector for squares
-    </pre>
 
     */
     TurbulenceStatisticsLdc(Teuchos::RCP<DRT::Discretization> actdis,

@@ -8,9 +8,7 @@ is just a "control instance".
 
 
 \level 3
-<pre>
 \maintainer Christoph Schmidt
-</pre>
 *----------------------------------------------------------------------*/
 
 #ifndef MATLIST_CHEMOTAXIS_H_

@@ -4,12 +4,10 @@
 \brief A class that wraps Epetra_SerialDenseMatrix with minor modifications
        in the constructor
 
-<pre>
 \level 0
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
-</pre>
 
 *----------------------------------------------------------------------*/
 

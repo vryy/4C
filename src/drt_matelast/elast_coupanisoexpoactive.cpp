@@ -6,9 +6,7 @@ ADAPT_ANGLE 0 S 54000 LAMBDAMAX 1.4 LAMBDA0 0.8 DENS 1050
 
 \level 2
 
-<pre>
 \maintainer Fabian Braeu
-</pre>
 */
 
 /*----------------------------------------------------------------------*/

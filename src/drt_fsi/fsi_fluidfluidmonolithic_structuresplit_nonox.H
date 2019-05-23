@@ -5,12 +5,10 @@ using XFEM
 
 \level 3
 
-<pre>
 \maintainer  Christoph Ager
              ager@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15249
-</pre>
 
 *----------------------------------------------------------------------*/
 
@@ -56,13 +54,11 @@ namespace FSI
 
     /*! do the setup for the monolithic system
 
-    <pre>
 
     1.) setup coupling; right now, we use matching meshes at the interface
     2.) create combined map
     3.) create block system matrix
 
-    </pre>
 
     */
     virtual void SetupSystem();

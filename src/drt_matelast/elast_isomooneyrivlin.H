@@ -8,9 +8,7 @@ MAT 1 ELAST_IsoMooneyRivlin C1 100 C2 50
 
 \level 1
 
-<pre>
 \maintainer Fabian Braeu
-</pre>
 
 *----------------------------------------------------------------------*/
 #ifndef ELAST_ISOMOONEYRIVLIN_H_

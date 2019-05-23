@@ -2,11 +2,9 @@
 /*!
 \brief ten tusscher myocard material model
 
-<pre>
 \level 3
 
 \maintainer Amadeus Gebauer
-</pre>
 */
 
 /*----------------------------------------------------------------------*

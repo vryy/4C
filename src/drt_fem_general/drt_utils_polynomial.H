@@ -3,12 +3,10 @@
 
  \brief Generic polynomials for HDG methods in 1D, 2D, 3D
 
-<pre>
 \level 2
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
-</pre>
 
  */
 

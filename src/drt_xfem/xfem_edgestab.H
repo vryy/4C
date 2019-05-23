@@ -7,12 +7,10 @@ continuous interior penalty) scheme
 
 \level 1
 
-<pre>
 \maintainer  Christoph Ager
              ager@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15249
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

@@ -2,11 +2,9 @@
 /*!
 \brief myocard tools
 
-<pre>
 \level 3
 
 \maintainer Amadeus Gebauer
-</pre>
 */
 
 /*----------------------------------------------------------------------*

@@ -3,9 +3,7 @@
 \file thrtimint_expleuler.cpp
 \brief Thermal time integration with forward Euler
 \level 3
-<pre>
 \maintainer Christoph Meier
-</pre>
 */
 
 

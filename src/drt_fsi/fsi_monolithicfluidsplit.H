@@ -94,13 +94,11 @@ namespace FSI
 
     /*! do the setup for the monolithic system
 
-    <pre>
 
     1.) setup coupling; right now, we use matching meshes at the interface
     2.) create combined map
     3.) create block system matrix
 
-    </pre>
 
     */
     virtual void SetupSystem();

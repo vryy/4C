@@ -32,9 +32,7 @@
 
 \level 2
 
-<pre>
 \maintainer Matthias Mayr
-</pre>
 */
 /*----------------------------------------------------------------------*
  | definitions                                               dano 08/11 |

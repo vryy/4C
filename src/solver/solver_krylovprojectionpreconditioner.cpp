@@ -1,14 +1,12 @@
 /*!----------------------------------------------------------------------
 \file solver_krylovprojectionpreconditioner.cpp
 
-<pre>
 \brief Declaration
 \level 1
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
 Created on: Jul 4, 2011
-</pre>
 *----------------------------------------------------------------------*/
 
 #include "../linalg/linalg_krylov_projector.H"

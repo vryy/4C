@@ -3,9 +3,7 @@
 \brief evaluation routines for sosh18 elements
 \level 3
 
-<pre>
 \maintainer Christoph Meier
-</pre>
 
 *----------------------------------------------------------------------*/
 

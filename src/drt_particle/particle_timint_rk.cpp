@@ -5,12 +5,10 @@
        scheme of 2nd/4th order (explicit),
 
 \level 3
-<pre>
 \maintainer Sebastian Fuchs
             fuchs@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
 
-</pre>
 */
 
 /*----------------------------------------------------------------------*/

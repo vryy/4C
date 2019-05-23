@@ -4,9 +4,7 @@ This file contains the base material for chemotactic scalars.
 
 \level 3
 
-<pre>
 \maintainer Christoph Schmidt
-</pre>
 *----------------------------------------------------------------------*/
 
 #ifndef SCATRA_CHEMOTAXIS_MAT_H_

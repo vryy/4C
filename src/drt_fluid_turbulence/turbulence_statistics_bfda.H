@@ -43,11 +43,9 @@ namespace FLD
     /*!
     \brief Standard Constructor (public)
 
-    <pre>
-    o Create vector "zcoordinates" with coordinates along z-axis
+        o Create vector "zcoordinates" with coordinates along z-axis
     o Create matrix "rcoordinates_" with coordinates of radial coordinates of evaluation planes
       columns are evaluation planes corresponding to the positions in "posEvaluation_"
-    </pre>
 
     */
     TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discretization> actdis,

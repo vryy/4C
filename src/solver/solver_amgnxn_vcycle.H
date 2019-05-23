@@ -1,14 +1,12 @@
 /*!----------------------------------------------------------------------
 \file solver_amgnxn_vcycle.H
 
-<pre>
 \brief Declaration
 \level 1
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15262
 Created on: Feb 27, 2014
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #ifndef AMGNXN_VCYCLE_H

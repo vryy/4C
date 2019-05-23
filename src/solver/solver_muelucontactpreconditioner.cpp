@@ -1,12 +1,10 @@
 /*!----------------------------------------------------------------------
 \file solver_muelucontactpreconditioner.cpp
 
-<pre>
 \brief MueLu contact preconditioner class
 \level 1
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
-</pre>
 
 Created on: Aug 2, 2012
 Author: wiesner
