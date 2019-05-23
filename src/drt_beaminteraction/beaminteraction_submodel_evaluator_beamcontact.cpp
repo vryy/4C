@@ -214,6 +214,8 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForce()
 {
   CheckInitSetup();
 
+  PreEvaluate();
+
   // Loop over the assembly manager and assemble contributions into the global force vector.
   for (auto& assembly_manager : assembly_managers_)
   {
@@ -230,6 +232,8 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForce()
 bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateStiff()
 {
   CheckInitSetup();
+
+  PreEvaluate();
 
   // Loop over the assembly manager and assemble contributions into the global stiffness matrix.
   for (auto& assembly_manager : assembly_managers_)
@@ -248,6 +252,8 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForceStiff()
 {
   CheckInitSetup();
 
+  PreEvaluate();
+
   // Loop over the assembly manager and assemble contributions into the global force vector and
   // stiffness matrix.
   for (auto& assembly_manager : assembly_managers_)
@@ -259,6 +265,13 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForceStiff()
   PrintActiveBeamContactSet(IO::cout.os(IO::verbose));
 
   return true;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::PreEvaluate()
+{
+  for (auto& elepairptr : contact_elepairs_) elepairptr->PreEvaluate();
 }
 
 /*----------------------------------------------------------------------*
