@@ -799,7 +799,7 @@ void STR::GenInvAnalysis::CalcNewParameters(
     Epetra_SerialDenseMatrix& cmatrix, std::vector<double>& perturb)
 {
   // in case of multiple inverse analysis: use measured dofs of all experiments
-  double nmp = 0.0;
+  int nmp = 0.0;
   Epetra_SerialDenseVector mcurve;
   if (spec_inv_ana_mult_)
   {
@@ -898,7 +898,7 @@ void STR::GenInvAnalysis::CalcNewParameters(
       min_zug = std::min(min_zug, mcurve(n));
       max_zug = std::max(max_zug, mcurve(n));
     }
-    double fac_norm = sqrt(nmp) * (max_zug - min_zug);
+    double fac_norm = sqrt((double)nmp) * (max_zug - min_zug);
 
     // calculating Jacobi-Matrix J(p)
     // tensile test data
@@ -996,7 +996,7 @@ void STR::GenInvAnalysis::CalcNewParameters(
   if ((spec_inv_ana_coup_) || (spec_inv_ana_mult_))
     error_ = rcurve.Norm2();  // already normalized
   else
-    error_ = rcurve.Norm2() / sqrt(nmp);
+    error_ = rcurve.Norm2() / sqrt((double)nmp);
 
   // get jacobian:
   Epetra_SerialDenseVector Ji(np_);
