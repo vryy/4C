@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file beaminteraction_submodel_evaluator_beamcontact.cpp
 
 \brief class for submodel beam contact
 

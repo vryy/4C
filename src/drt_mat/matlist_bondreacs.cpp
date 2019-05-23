@@ -4,10 +4,8 @@
 
  \level 2
 
- <pre>
-   \maintainer Martin Kronbichler
- </pre>
- *----------------------------------------------------------------------*/
+    \maintainer Martin Kronbichler
+  *----------------------------------------------------------------------*/
 
 
 #include <vector>

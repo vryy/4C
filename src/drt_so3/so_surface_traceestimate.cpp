@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so_surface_traceestimate.cpp
 
 \brief evaluation for nitsche trace inequality estimate
 

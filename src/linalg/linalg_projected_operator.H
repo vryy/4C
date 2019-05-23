@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file  linalg_projected_operator.H
 
 \brief Declaration
 

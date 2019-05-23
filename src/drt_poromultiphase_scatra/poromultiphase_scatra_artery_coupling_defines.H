@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file poromultiphase_scatra_artery_coupling_defines.H
 
 \brief A set of defines for coupling between poromultiphase_scatra-framework
        and flow in artery networks including scalar transport (mainly for

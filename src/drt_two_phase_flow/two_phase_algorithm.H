@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file two_phase_algorithm.H
 
 \brief Basis of all two phase flow (TPF) algorithms
 

@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file solver_krylovsolver.H
 
 \brief Declaration of Baci's interface to Krylov solvers
 

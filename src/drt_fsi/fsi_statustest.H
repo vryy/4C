@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_statustest.H
 
 \brief Test routines for monolithic FSI convergence test
 

@@ -1,11 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file thrtimint_expleuler.H
 \brief Thermal time integration with forward Euler order (explicit)
 \level 3
-<pre>
 \maintainer Christoph Meier
-</pre>
 */
 
 /*----------------------------------------------------------------------*

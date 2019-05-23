@@ -1,13 +1,10 @@
 /*!----------------------------------------------------------------------
-\file cardiovascular0d_arterialproxdist.H
 
 \brief Monolithic coupling of 3D structure Cardiovascular0D models
 
 \level 2
 
-<pre>
 \maintainer Amadeus Gebauer
-</pre>
 
 An arterial 0D flow model derived from physical considerations of mass and momentum balance in the
 proximal and distal arterial part, incl. valves (formulation proposed by Cristobal Bertoglio)

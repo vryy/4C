@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_interaction_dem_neighbor_pairs.cpp
 
 \brief neighbor pair handler for discrete element method (DEM) interactions
 

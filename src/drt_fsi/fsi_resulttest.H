@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_resulttest.H
 
 \brief testing of fsi specific calculation results
 

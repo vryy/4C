@@ -1,14 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file thermo_ele_boundary_impl.H
 
 \brief internal implementation of thermo boundary elements
 
 \level 1
 
-<pre>
 \maintainer Christoph Meier
-</pre>
 */
 
 /*----------------------------------------------------------------------*

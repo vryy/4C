@@ -1,16 +1,13 @@
 /*!----------------------------------------------------------------------
-\file fsi_xfem_monolithic.cpp
 \brief Control routine for monolithic FSI (XFSI) solved via a classical Newton scheme
        taking into account changing fluid dofsets
 
 \level 2
 
-<pre>
 \maintainer  Christoph Ager
              ager@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15249
-</pre>
 *----------------------------------------------------------------------*/
 
 #include "../drt_adapter/adapter_coupling.H"

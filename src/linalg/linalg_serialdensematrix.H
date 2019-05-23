@@ -1,14 +1,11 @@
 /*!----------------------------------------------------------------------
-\file linalg_serialdensematrix.H
 
 \brief Declaration of serial dense matrix wrapper class
 
-<pre>
 \level 0
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #ifndef SERIALDENSEMATRIX_H

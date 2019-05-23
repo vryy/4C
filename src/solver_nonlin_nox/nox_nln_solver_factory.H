@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file nox_nln_solver_factory.H
 
 \brief Factory to create the desired non-linear solver object.
 

@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file str_model_evaluator_browniandyndata.cpp
 
 \brief Concrete implementation of the brownian dynamic parameter interface
 

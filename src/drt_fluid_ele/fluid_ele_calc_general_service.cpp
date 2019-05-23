@@ -4942,7 +4942,6 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
 
                                                              gammi 07/07
 
-    <pre>
 
     this method assumes that each 2 dimensional integration element
     in the homogeneous plane is parallel to the wall!!!
@@ -5016,7 +5015,6 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
     as well as numele and the element area.
     All results are communicated via the parameter list!
 
-    </pre>
 
    */
 

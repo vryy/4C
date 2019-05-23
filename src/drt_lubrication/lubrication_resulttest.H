@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file lubrication_resulttest.H
 
 \brief testing of lubrication calculation results
 

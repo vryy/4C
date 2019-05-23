@@ -1,5 +1,4 @@
 /*!
- \file post_processor.cpp
 
  \brief main routine of the main postprocessor filters
 

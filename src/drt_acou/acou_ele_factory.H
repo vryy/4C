@@ -1,17 +1,14 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file acou_ele_factory.H
 
 \brief Factory of acoustic elements
 
-<pre>
 \level 2
 
 \maintainer Luca Berardocco
             berardocco@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15244
-</pre>
 */
 /*--------------------------------------------------------------------------*/
 

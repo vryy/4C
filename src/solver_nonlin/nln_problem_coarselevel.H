@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file nln_problem_coarselevel.H
 
 \brief Coarse level interface of nonlinear solver to BACI
 

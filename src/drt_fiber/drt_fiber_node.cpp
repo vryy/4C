@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file drt_fiber_node.cpp
 
 \brief   This is basically a (3d-) node with an additional fiber direction.
 

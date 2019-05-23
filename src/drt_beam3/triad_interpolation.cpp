@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*!
-\file triad_interpolation.cpp
 
 \brief base class for a triad interpolation scheme
 

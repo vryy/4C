@@ -1,13 +1,10 @@
 /*!----------------------------------------------------------------------
-\file so3_scatra_eletypes.cpp
 
 \brief Solid-scatra elements types
 
 \level 2
 
-<pre>
    \maintainer Christoph Schmidt
-</pre>
 
 *----------------------------------------------------------------------*/
 

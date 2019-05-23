@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file so_sh8p8_evaluate.cpp
 \brief 8-node solid shell element evaluate
 \level 3
 \maintainer Christoph Meier

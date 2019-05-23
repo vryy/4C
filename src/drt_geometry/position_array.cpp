@@ -1,5 +1,4 @@
 /*!
-\file position_array.cpp
 
 \brief collection of service methods for intersection computations
 

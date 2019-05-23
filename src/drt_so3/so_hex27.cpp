@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so_hex27.cpp
 
 \brief tri-quadratic displacement based solid element
 

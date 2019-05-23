@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file post_drt_vtu_writer_node_based.cpp
 
 \brief node based VTU filter
 

@@ -1,6 +1,4 @@
 /*!------------------------------------------------------------------------------------------------*
-\file cut_parallel.cpp
-
 \brief provides the basic parallel cut classes "Parallel"
 
 \level 1

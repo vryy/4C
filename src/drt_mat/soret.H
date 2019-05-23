@@ -2,11 +2,9 @@
 /*!
 \brief material for heat transport due to Fourier-type thermal conduction and the Soret effect
 
-<pre>
 \maintainer Christoph Schmidt
 
 \level 2
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #ifndef SORET_H

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file binning_strategy_utils.H
 
 \brief utils class for use of binning strategy
 

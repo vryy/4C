@@ -1,14 +1,11 @@
 /*!----------------------------------------------------------------------
-\file solver_directsolver.H
 
-<pre>
 \brief Description
 \level 0
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
 Created on: Jul 4, 2011
-</pre>
 *----------------------------------------------------------------------*/
 #ifndef SOLVER_DIRECTSOLVER_H_
 #define SOLVER_DIRECTSOLVER_H_

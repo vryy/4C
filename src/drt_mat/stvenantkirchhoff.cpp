@@ -5,9 +5,7 @@ St. Venant-Kirchhoff material
 
 \level 2
 
-<pre>
 \maintainer Fabian Braeu
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

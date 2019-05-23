@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so3_ssn_plast_eletypes.cpp
 \brief so3_plast element types
 \level 2
 \maintainer Matthias Mayr

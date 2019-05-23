@@ -1,14 +1,11 @@
 /*!----------------------------------------------------------------------
-\file drt_utils_bspline.H
 
 \brief Specification of B-splines
 
-<pre>
 \level 2
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
-</pre>
 
 *----------------------------------------------------------------------*/
 
@@ -31,8 +28,7 @@ namespace DRT
     namespace UTILS
     {
       /*!
-      \file bspline.H
-      \class BsplinePolynomial
+            \class BsplinePolynomial
       \brief A class which allows to evaluate all bspline
              polynomials which are nonzero in the 'central'
              knotvector interval

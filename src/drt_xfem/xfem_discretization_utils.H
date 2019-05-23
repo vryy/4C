@@ -1,17 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfem_discretization_utils.H
 
 \brief Basic discretization-related tools used in XFEM routines
 
 \level 1
 
-<pre>
 \maintainer  Christoph Ager
              ager@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15249
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

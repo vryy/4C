@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file so3_poro_p1_eletypes.cpp
 
  \brief element types of the p1 (mixed) solid-poro element
 

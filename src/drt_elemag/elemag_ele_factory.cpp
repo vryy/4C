@@ -1,16 +1,13 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file elemag_ele_factory.cpp
 
 \brief Factory of electromagnetic elements
 
-<pre>
 \level 2
 
 \maintainer Luca Berardocco
             berardocco@lnm.mw.tum.de
             089 - 289-15244
-</pre>
 */
 /*--------------------------------------------------------------------------*/
 

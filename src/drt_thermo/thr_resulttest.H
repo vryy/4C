@@ -1,14 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file thr_resulttest.H
 
 \brief testing of thermo calculation results
 
 \level 1
 
-<pre>
 \maintainer Christoph Meier
-</pre>
 */
 
 

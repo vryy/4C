@@ -1,15 +1,12 @@
 /*!---------------------------------------------------------------------------
 
-\file solver_aztecsolver_projectedresidual.H
 
-<pre>
 \brief Declaration
 \level 1
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
 
 Created on: Mar 4, 2013
-</pre>
 */
 /*---------------------------------------------------------------------------*/
 #ifndef SOLVER_AZTECSOLVER_PROJECTEDRESIDUAL_H_

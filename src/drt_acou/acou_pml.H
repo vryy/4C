@@ -1,15 +1,12 @@
 /*!----------------------------------------------------------------------
-\file acou_pml.H
 \brief PML definition for HDG acoustics
 
-<pre>
 \level 3
 
 \maintainer Luca Berardocco
             berardocco@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15244
-</pre>
  *----------------------------------------------------------------------*/
 
 #ifndef ACOU_PML_H

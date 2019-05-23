@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_mortar.cpp
 
 \brief Input parameters for mortar coupling
 

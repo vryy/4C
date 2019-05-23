@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file MueLu_NodeDefinition.hpp
 
 \brief Definition of the serial node type for MueLu
 \level 2

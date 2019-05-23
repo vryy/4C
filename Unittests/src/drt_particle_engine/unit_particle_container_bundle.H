@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file unit_particle_container_bundle.H
 
 \brief unittests for particle container bundle class
 

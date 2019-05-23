@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file nln_problem_nox.cpp
 
 \brief Field problem using NOX interface to Baci
 

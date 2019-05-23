@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file post_drt_monitor.cpp
 
 \brief monitoring filter for one data
 

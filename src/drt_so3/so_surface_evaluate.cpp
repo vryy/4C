@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so_surface_evaluate.cpp
 
 \brief class for evaluation of equations on the structural surface
 

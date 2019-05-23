@@ -1,5 +1,4 @@
 /*!---------------------------------------------------------------------*
-\file unit_so_hex8_determinant_analysis.H
 
 \brief Unittests for the determinant validity check
 

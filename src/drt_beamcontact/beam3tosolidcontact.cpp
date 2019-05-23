@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file beam3tosolidcontact.cpp
 
 \brief One beam and solid contact pair (two elements)
 

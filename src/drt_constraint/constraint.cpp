@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file constraint.cpp
 
 \brief Basic constraint class, dealing with constraints living on boundaries, code originally by
 Thomas Kloeppel

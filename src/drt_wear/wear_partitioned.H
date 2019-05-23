@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file wear_partitioned.H
 
 \brief  Basis of partitioned wear algorithm
         (Lagrangian step followed by Eulerian step)

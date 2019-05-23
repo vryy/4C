@@ -1,13 +1,10 @@
 /*!----------------------------------------------------------------------
-\file cardiovascularrespiratory0d_syspulperiphcirculation.H
 
 \brief Monolithic coupling of 3D structure Cardiovascular0D models
 
 \level 3
 
-<pre>
 \maintainer Amadeus Gebauer
-</pre>
 
 A closed-loop cardiovascular model with 0D bi-resistive cardiac valve laws and lumped parameter
 models for the systemic and pulmonary circulation; heart can either be fully 3D, partly 3D (only

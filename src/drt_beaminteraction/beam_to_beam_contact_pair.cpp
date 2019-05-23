@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file beam_to_beam_contact_pair.cpp
 
 \brief One beam contact pair (two beam elements) consisting of several contact segments
 

@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_typedefs.H
 
 \brief particle type definitions
 

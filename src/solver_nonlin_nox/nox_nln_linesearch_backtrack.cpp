@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file nox_nln_linesearch_backtrack.cpp
 
 \brief %NOX::NLN backtracking line search implementation.
 

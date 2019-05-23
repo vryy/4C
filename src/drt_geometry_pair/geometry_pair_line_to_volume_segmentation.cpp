@@ -1,5 +1,4 @@
 /*!
-\file geometry_pair_line_to_volume_segmentation.cpp
 
 \brief Line to volume interaction with full segmentation of the line.
 

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file so_sh8.H
 \brief solid shell8 element formulation
 
 \maintainer Alexander Popp

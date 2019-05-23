@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file prestress.cpp
 
 \brief prestress functionality in solid elements
 

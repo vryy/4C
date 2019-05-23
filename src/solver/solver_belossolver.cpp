@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file solver_belossolver.cpp
 
 \brief Implementation of interface to Belos solver package
 

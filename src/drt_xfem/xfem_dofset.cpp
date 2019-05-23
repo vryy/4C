@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfem_dofset.cpp
 
 \brief provides a general XFEM dofset which uses the information from the cut-library to determine
 the number of dofs per node when multiple sets of degrees of freedom per node have to be used
@@ -8,12 +7,10 @@ the number of dofs per node when multiple sets of degrees of freedom per node ha
 
 \level 1
 
-<pre>
 \maintainer  Christoph Ager
              ager@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15249
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

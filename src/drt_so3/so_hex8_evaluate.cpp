@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so_hex8_evaluate.cpp
 
 \brief Evaluate routines for Solid Hex8 element
 

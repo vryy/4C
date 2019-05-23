@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*!
-\file beam_to_sphere_potential_pair.cpp
 
 \brief One beam-to-sphere potential-based interacting pair
 

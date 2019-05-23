@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file pasi_partitioned_onewaycoup.cpp
 
 \brief one way coupled partitioned algorithm for particle structure interaction
 

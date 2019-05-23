@@ -1,17 +1,14 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file particle_ellipsoid_node.cpp
 
 \brief node representing ellipsoidal particle with possibly specified semi-axes and orientation
 
 \level 2
 
-<pre>
 \maintainer Sebastian Fuchs
             fuchs@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15262
-</pre>
 */
 /*--------------------------------------------------------------------------*/
 #include "particle_ellipsoid_node.H"

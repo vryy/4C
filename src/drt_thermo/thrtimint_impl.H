@@ -1,11 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file thrtimint_impl.H
 \brief base class for all implicit time integrators in thermo-field
 \level 1
-<pre>
 \maintainer Christoph Meier
-</pre>
 */
 
 /*----------------------------------------------------------------------*

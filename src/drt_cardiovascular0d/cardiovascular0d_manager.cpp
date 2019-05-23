@@ -1,13 +1,10 @@
 /*!----------------------------------------------------------------------
-\file cardiovascular0d_manager.cpp
 
 \brief Monolithic coupling of 3D structure and 0D cardiovascular flow models
 
 \level 2
 
-<pre>
 \maintainer Amadeus Gebauer
-</pre>
 
 *----------------------------------------------------------------------*/
 

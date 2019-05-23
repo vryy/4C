@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file lubrication_dyn.cpp
 
 \brief entry point for the solution of Lubrication problems
 

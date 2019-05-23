@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_communication_utils.H
 
 \brief communication utils for particle engine
 

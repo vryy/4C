@@ -4,9 +4,7 @@
 
 \level 2
 
-<pre>
 \maintainer Sebastian Fuchs
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #include "particle_mat_ellipsoids.H"

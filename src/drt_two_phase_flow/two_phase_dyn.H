@@ -1,14 +1,11 @@
 /*!----------------------------------------------------------------------
-\file two_phase_dyn.H
 \brief Control routine for fluid/xfluid and ScaTra coupled routines.
 \level 2
 
-<pre>
 \maintainer Christoph Ager
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089/28915236
-</pre>
 
 *----------------------------------------------------------------------*/
 

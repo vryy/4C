@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file muelu_utils.cpp
 
 \brief Utilities for interaction with MueLu
 

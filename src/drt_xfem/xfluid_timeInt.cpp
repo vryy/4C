@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfluid_timeInt.cpp
 
 \brief provides the xfluid timeIntegration,
        maps vectors from old interface position to vectors at new interface position,
@@ -8,12 +7,10 @@
 
 \level 2
 
-<pre>
 \maintainer  Christoph Ager
              ager@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15249
-</pre>
 
 */
 /*----------------------------------------------------------------------*/

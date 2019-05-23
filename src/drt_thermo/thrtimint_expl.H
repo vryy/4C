@@ -1,11 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file thrtimint_expl.H
 \brief Explicit time integration for thermal dynamics
 \level 3
-<pre>
 \maintainer Christoph Meier
-</pre>
 */
 
 /*----------------------------------------------------------------------*/

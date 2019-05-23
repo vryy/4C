@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_nox_jacobian.cpp
 
 \brief Matrix-free Newton-Krylov for FSI
 

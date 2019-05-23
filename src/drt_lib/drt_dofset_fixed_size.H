@@ -43,11 +43,9 @@ namespace DRT
     \brief Standard Constructor
 
 
-    <pre>
 
     create a dofset that reserves a certain amount of dofGIDs
 
-    </pre>
 
     \return void
 

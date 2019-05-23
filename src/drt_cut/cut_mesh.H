@@ -1,16 +1,13 @@
 /*!-----------------------------------------------------------------------------------------------*
-\file cut_mesh.H
 
 \brief class that holds information about a mesh that is cut or about a cutmesh that cuts another
 mesh
 
 \level 3
-<pre>
 \maintainer  Christoph Ager
              ager@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15249
-</pre>
  *------------------------------------------------------------------------------------------------*/
 
 #ifndef CUT_MESH_H

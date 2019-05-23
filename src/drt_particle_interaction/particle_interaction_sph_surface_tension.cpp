@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_interaction_sph_surface_tension.cpp
 
 \brief surface tension handler for smoothed particle hydrodynamics (SPH) interactions
 

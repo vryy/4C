@@ -1,5 +1,4 @@
 /*!
-  \file post_drt_ensight_writer.cpp
 
   \brief Ensight filter basis class
 

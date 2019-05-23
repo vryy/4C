@@ -5,9 +5,7 @@ of a general power-type material.
 
 \level 2
 
-<pre>
 \maintainer Fabian Braeu
-</pre>
 
 *----------------------------------------------------------------------*/
 #ifndef ELAST_COUP3POW_H_

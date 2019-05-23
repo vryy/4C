@@ -12,7 +12,6 @@ functionality
 
 /*----------------------------------------------------------------------*/
 /*!
- \file wall1_poro_p1_scatra.H
 
  \brief a 2D wall element for solid-part of porous medium using p1 (mixed) approach including scatra
 functionality

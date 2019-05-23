@@ -1,16 +1,13 @@
 /*!-------------------------------------------------------------------------*
-\file xfluid_functions_combust.H
 
 \brief Managing and evaluating of spatial functions for combustion and two-phase flow problems
 
 \level 2
 
-<pre>
 \maintainer  Christoph Ager
              ager@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15249
-</pre>
 *----------------------------------------------------------------------*/
 
 #include "../drt_lib/drt_function.H"

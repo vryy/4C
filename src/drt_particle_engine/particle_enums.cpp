@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_enums.cpp
 
 \brief defining enums of particle states
 

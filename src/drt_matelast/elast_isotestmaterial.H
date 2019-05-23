@@ -8,9 +8,7 @@ isochoric parts of the Elasthyper-Toolbox.
 
 \level 1
 
-<pre>
 \maintainer Fabian Braeu
-</pre>
 
 
 *----------------------------------------------------------------------*/

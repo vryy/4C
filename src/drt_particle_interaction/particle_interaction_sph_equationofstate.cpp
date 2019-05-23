@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_interaction_sph_equationofstate.cpp
 
 \brief equation of state handler for smoothed particle hydrodynamics (SPH) interactions
 

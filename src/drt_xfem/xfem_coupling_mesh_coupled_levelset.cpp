@@ -1,17 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfem_coupling_mesh_coupled_levelset.cpp
 
 \brief manages a mesh coupling object with knowledge of a level set field
 
 \level 3
 
-<pre>
 \maintainer Christoph Ager
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

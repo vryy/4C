@@ -1,18 +1,15 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_sidehandle.cpp
 
 \brief Sidehandle represents a side original loaded into the cut, internal it can be split into
 subsides
 
 \level 3
 
-<pre>
 \maintainer Christoph Ager
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15249
-</pre>
 
 *----------------------------------------------------------------------*/
 

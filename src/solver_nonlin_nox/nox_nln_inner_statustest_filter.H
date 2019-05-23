@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file nox_nln_inner_statustest_filter.H
 
 \brief Inner status test class for constraint problems. Filter
        techniques are based on ideas from multi-objective optimization:

@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_input_generator.cpp
 
 \brief particle input generator for particle simulations
 

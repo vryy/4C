@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file binning_strategy.cpp
 
 \brief Binning strategy for neighborhood search
 

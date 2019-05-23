@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file solver_muelucontactpreconditioner_old.cpp
 
 \brief Implementation
 

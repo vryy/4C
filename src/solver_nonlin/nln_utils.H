@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file nln_utils.H
 
 \brief Collection of utilities for nonlinear solver objects
 

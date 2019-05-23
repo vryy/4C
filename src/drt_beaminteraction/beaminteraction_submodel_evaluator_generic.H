@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file beaminteraction_submodel_evaluator_generic.H
 
 \brief Generic class for all beaminteraction submodel evaluators.
 

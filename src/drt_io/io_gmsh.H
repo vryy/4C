@@ -1,6 +1,5 @@
 /*!
- * \file io_gmsh.H
- * \brief simple element print library for Gmsh
+ *  * \brief simple element print library for Gmsh
  *
  * Useful for debugging, only output per processor (no communication supported)
  *
@@ -12,14 +11,12 @@ documentation.
  * and should be much faster when large discretizations are piped into a file.
  *
 
-<pre>
 
 \level 2
 \maintainer Martin Kronbichler
              kronbichler@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15235
-</pre>
 
  */
 #ifndef GMSH_H

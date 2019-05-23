@@ -3,9 +3,7 @@
 \brief material for heat conduction according to fourier's law with variable conductivity
 
 \level 1
-<pre>
 \maintainer Sebastian Proell
-</pre>
 */
 
 /*----------------------------------------------------------------------*

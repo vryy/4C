@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file particle_utils.H
 
 \brief General functions for the particle dynamics
 

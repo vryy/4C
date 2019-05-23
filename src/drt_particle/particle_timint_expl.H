@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file particle_timint_expl.H
 
 \brief Particle time integration with explicit time integration
 

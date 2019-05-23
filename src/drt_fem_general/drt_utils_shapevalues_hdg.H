@@ -1,14 +1,11 @@
 /*!----------------------------------------------------------------------
-\file drt_utils_shapevalues_hdg.H
 
 \brief evaluation of arbitrary lagrange polynomials in HDG context
 
-<pre>
 \level 2
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
-</pre>
 
 *----------------------------------------------------------------------*/
 

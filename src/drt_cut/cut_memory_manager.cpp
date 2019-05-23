@@ -1,15 +1,12 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_memory_manager.cpp
 
 \brief Custom memory allocator user for CLN data type
 
 \level 3
 
-<pre>
 \maintainer Christoph Ager
             ager@lnm.mw.tum.de
-</pre>
 
 *----------------------------------------------------------------------*/
 #include "cut_memory_manager.H"

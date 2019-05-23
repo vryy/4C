@@ -1,11 +1,8 @@
 /*!
-\file thermo_element.cpp
 \brief basic thermo element
 
 \level 1
-<pre>
 \maintainer Christoph Meier
-</pre>
 */
 
 

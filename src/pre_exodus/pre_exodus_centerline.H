@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file pre_exodus_centerline.H
 
 \brief pre_exodus centerline definition
 

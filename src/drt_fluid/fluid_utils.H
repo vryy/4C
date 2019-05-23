@@ -498,13 +498,11 @@ namespace FLD
             initial configuration, i.e. are built with the coordinates X of a particular
             node irrespective of its current position.
 
-    <pre>
-    Maintainer: Ursula Rasthofer
+        Maintainer: Ursula Rasthofer
                 rasthofer@lnm.mw.tum.de
                 http://www.lnm.mw.tum.de
                 089 - 289-15236
-    </pre>
-      \author chfoe
+          \author chfoe
       \date 11/07
      */
     void LiftDrag(const Teuchos::RCP<const DRT::Discretization>

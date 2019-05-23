@@ -1,11 +1,8 @@
 /*!----------------------------------------------------------------------
-\file so_pyramid5.H
 \brief pyramid shaped solid element
 \level 1
 
-<pre>
 \maintainer Christoph Meier
-</pre>
 
 *----------------------------------------------------------------------*/
 #ifndef SOP5_H

@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file drt_knotvector.H
 
 \brief knot vectors for nurbs problems (isogeometric analysis)
 

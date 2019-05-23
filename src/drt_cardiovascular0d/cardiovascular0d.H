@@ -1,13 +1,10 @@
 /*!----------------------------------------------------------------------
-\file cardiovascular0d.H
 
 \brief Monolithic coupling of 3D structure Cardiovascular0D models
 
 \level 2
 
-<pre>
 \maintainer Amadeus Gebauer
-</pre>
 
 *----------------------------------------------------------------------*/
 

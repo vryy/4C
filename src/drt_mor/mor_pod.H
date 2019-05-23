@@ -1,13 +1,10 @@
 /*!----------------------------------------------------------------------
-\file mor_pod.H
 
 \brief Model Order Reduction (MOR) using Proper Orthogonal Decomposition (POD)
 
 \level 2
 
-<pre>
 \maintainer Amadeus Gebauer
-</pre>
 
  *----------------------------------------------------------------------*/
 

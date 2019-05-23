@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file beam3contactnew.cpp
 
 \brief contact element for contact between two 3D beam elements
 

@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file so_hex8_determinant_analysis.cpp
 
 \brief Determinant analysis for Solid Hex8 element
 

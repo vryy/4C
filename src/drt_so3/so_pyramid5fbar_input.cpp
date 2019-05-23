@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so_pyramid5fbar_input.cpp
 \brief pyramid shaped solid element
 \level 2
 \maintainer Christoph Meier

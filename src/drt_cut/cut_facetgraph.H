@@ -1,17 +1,14 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_facetgraph.H
 
 \brief graph to create volumecells from facets and lines
 
 \level 3
 
-<pre>
 \maintainer Christoph Ager
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15249
-</pre>
 
 *----------------------------------------------------------------------*/
 

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file largerotations.cpp
 
 \brief A set of utility functions for large rotations
 

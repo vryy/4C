@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file fsi_monolithic_timintada.cpp
 
 \brief Provide time adaptivity functionalities within the Monolithic class
 

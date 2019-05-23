@@ -1,5 +1,4 @@
 /*!---------------------------------------------------------------------*
-\file DatFileReader_stub.H
 
 \brief A stub for reading from fake datfiles
 

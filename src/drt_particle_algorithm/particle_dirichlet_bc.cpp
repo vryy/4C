@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_dirichlet_bc.cpp
 
 \brief dirichlet boundary condition handler for particle simulations
 

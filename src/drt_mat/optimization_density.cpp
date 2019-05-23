@@ -4,9 +4,7 @@ Former file of Martin Winklmaier
 
 \level 3
 
-<pre>
 \maintainer Martin Kronbichler
-</pre>
  *------------------------------------------------------------------------------------------------*/
 
 

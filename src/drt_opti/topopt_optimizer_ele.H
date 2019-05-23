@@ -249,12 +249,10 @@ namespace DRT
       etc. directly.
 
       Following implementations of the element are allowed:
-      <pre>
-        o Evaluation of system matrix and residual for the One-Step-Theta or BDF2
+              o Evaluation of system matrix and residual for the One-Step-Theta or BDF2
           method
 
         o Evaluation of system matrix and residual for the stationary fluid solver
-      </pre>
 
       \param params (in/out): ParameterList for communication between control routine
                               and elements

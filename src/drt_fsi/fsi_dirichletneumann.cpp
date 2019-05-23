@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_dirichletneumann.cpp
 
 \brief Solve FSI problems using a Dirichlet-Neumann partitioning approach
 

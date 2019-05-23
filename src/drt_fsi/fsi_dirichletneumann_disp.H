@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_dirichletneumann_disp.H
 
 \brief Solve FSI problems using a Dirichlet-Neumann partitioned approach
 coupling the displacements

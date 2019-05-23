@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file lubrication_resulttest.cpp
 
 \brief testing of lubrication calculation results
 

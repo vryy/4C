@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file pasi_str_model_evaluator_partitioned.H
 
 \brief model evaluator for structure part of partitioned pasi
 

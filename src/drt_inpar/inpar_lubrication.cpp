@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file inpar_lubrication.cpp
 
 \brief Lubrication dynamic parameters
 

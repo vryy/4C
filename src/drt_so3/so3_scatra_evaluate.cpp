@@ -1,13 +1,10 @@
 /*!----------------------------------------------------------------------
-\file so3_scatra_evaluate.cpp
 
 \brief Solid-scatra elements evaluate
 
 \level 2
 
-<pre>
    \maintainer Christoph Schmidt
-</pre>
 
 *----------------------------------------------------------------------*/
 

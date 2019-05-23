@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file ale3_nurbs.cpp
 
 \brief A nurbs implementation of the ale3 element
 

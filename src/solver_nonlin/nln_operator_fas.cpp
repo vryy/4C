@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file nln_operator_fas.cpp
 
 \brief AMG-FAS as nonlinear preconditioner
 

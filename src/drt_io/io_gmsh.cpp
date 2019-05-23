@@ -1,9 +1,7 @@
 /*!
-\file io_gmsh.cpp
 
 \brief simple element print library for Gmsh
 
-<pre>
 
 \level 2
 
@@ -11,7 +9,6 @@
             kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
-</pre>
 */
 
 

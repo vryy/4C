@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file searchtree_nearestobject.H
 
 \brief stores data about nearest object in search tree
 

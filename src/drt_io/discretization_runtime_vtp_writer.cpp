@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*!
-\file discretization_runtime_vtp_writer.cpp
 
 \brief Write visualization output for a discretization in vtk/vtp format at runtime
 

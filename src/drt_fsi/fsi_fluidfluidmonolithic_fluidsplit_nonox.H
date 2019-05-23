@@ -1,16 +1,13 @@
 /*!----------------------------------------------------------------------
-\file fsi_fluidfluidmonolithic_fluidsplit_nonox.H
 \brief Control routine for monolithic fluid-fluid-fsi (fluidsplit)
 using XFEM
 
 \level 3
 
-<pre>
 \maintainer  Christoph Ager
              ager@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15249
-</pre>
 
 *----------------------------------------------------------------------*/
 

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file so_base.cpp
 
 \brief a common base class for all solid elements
 

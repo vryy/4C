@@ -1,13 +1,10 @@
 /*!----------------------------------------------------------------------
- \file volmortar_coupling.cpp
 
 \brief main routines for the volmortar framework
 
 \level 1
 
- <pre>
-\maintainer Alexander Popp
- </pre>
+ \maintainer Alexander Popp
 
  *----------------------------------------------------------------------*/
 

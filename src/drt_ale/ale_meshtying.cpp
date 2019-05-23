@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file ale_meshtying.cpp
 
 \brief Mesh tying for ale problems
 

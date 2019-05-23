@@ -1,11 +1,8 @@
 /*!----------------------------------------------------------------------
-\file so_pyramid5_multiscale.cpp
 \brief multiscale functionality for pyramid shaped solid element
 \level 2
 
-<pre>
 \maintainer Christoph Meier
-</pre>
 
 *----------------------------------------------------------------------*/
 

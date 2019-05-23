@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_structure.cpp
 
 \brief Input parameters for structure
 

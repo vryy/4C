@@ -1,6 +1,5 @@
 /*!----------------------------------------------------------------------
 \brief Test for the CUT Library
-\file cut_test_levelset_no_loc_coord.cpp
 
 \level 1
 

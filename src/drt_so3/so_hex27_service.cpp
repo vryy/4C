@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so_hex27_service.cpp
 \brief tri-quadratic displacement based solid element
 \level 1
 \maintainer Christoph Meier

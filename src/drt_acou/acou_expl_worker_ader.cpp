@@ -1,16 +1,13 @@
 /*!----------------------------------------------------------------------
-\file acou_expl_worker_ader.cpp
 \brief Control routine for acoustic explicit time integration with ADER
 \level 3
 
-<pre>
 \level 3
 
 \maintainer Luca Berardocco
             berardocco@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15244
-</pre>
 *----------------------------------------------------------------------*/
 
 #include "acou_expl_worker.H"

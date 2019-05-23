@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file MueLu_BaciFactoryFactory_decl.hpp
 
 \brief MueLu factory class for BACI
 \level 2

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file thermo_ele_action.H
 
  \brief enums defining action of the thermo elements and related helper functions
 

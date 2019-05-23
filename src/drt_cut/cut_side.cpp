@@ -1,6 +1,4 @@
 /*!-----------------------------------------------------------------------------------------------*
- \file cut_side.cpp
-
  \brief class representing a geometrical side
 
 \level 2

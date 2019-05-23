@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file nox_nln_meritfunction_lagrangian.cpp
 
 \brief Implementation of the Lagrangian merit function for
        constrained problems.

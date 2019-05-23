@@ -1,6 +1,5 @@
 /*!----------------------------------------------------------------------*
 
-\file io.cpp
 
 \brief output context of one discretization
 

@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file nox_nln_linesearch_generic.H
 
 \brief generic class for %NOX::NLN backtracking line search
 

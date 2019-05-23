@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file nox_nln_linearsystem_prepostoperator.H
 
 \maintainer Anh-Tu Vuong
 

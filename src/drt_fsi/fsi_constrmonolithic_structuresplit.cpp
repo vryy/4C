@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_constrmonolithic_structuresplit.cpp
 
 \brief Solve FSI problem with constraints
 

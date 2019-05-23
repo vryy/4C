@@ -1,5 +1,4 @@
 /*!
-\file searchtree_nearestobject.cpp
 
 \brief stores data about nearest object in oct tree
 

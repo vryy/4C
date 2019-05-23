@@ -1,5 +1,4 @@
 /*!incomplete
-\file geometry_pair_line_to_volume_gauss_point_projection_cross_section.cpp
 
 \brief Line to volume interaction with Gauss point projection on the cylinder surface along the
 line.

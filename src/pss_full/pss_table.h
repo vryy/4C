@@ -1,5 +1,4 @@
 /*!---------------------------------------------------------------------
-\file pss_table.h
 \brief A very simple symbol table implementation.
 
 \maintainer Martin Kronbichler
@@ -17,20 +16,16 @@ represent these files internally. And here it is.
 A control file consists of definitions. Simple definitions look like
 this:
 
-<pre>
 attr_name = value
-</pre>
 
 where value might be a string, an integer or a double constant. (It's
 easily possible to enhance the parser to understand mathematical
 expressions. Speak up if you need this.) Additionally you can group
 your definitions:
 
-<pre>
 group_name:
     attr_name_1 = value
     attr_name_2 = value
-</pre>
 
 This looks a little like python and indeed indentions do matter
 here. But on the other hand you can have many groups using the same

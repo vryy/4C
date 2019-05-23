@@ -1,15 +1,12 @@
 /*!----------------------------------------------------------------------
-\file linalg_downwindmatrix.cpp
 
 \brief An approximate block factorization preconditioner based on the
        SIMPLE family of methods
 
-<pre>
 \level 2
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
-</pre>
 
 *----------------------------------------------------------------------*/
 #include "linalg_downwindmatrix.H"

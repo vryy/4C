@@ -1,5 +1,4 @@
 /*!---------------------------------------------------------------------
-\file pss_cpp.h
 \brief Proper access to legacy parser module written in C.
 
 \maintainer Martin Kronbichler

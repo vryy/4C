@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file nln_operator_base.H
 
 \brief General nonlinear operator base class
 

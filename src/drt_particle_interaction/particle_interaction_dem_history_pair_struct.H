@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_interaction_dem_history_pair_struct.H
 
 \brief history pair struct for discrete element method (DEM) interactions
 

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_constrmonolithic_structuresplit.H
 
 \brief Solve FSI problem with constraints
 
@@ -39,12 +38,10 @@ namespace FSI
         const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
     /*! do the setup for the monolithic system
-    <pre>
-    1.) setup coupling; right now, we use matching meshes at the interface
+        1.) setup coupling; right now, we use matching meshes at the interface
     2.) create combined map
     3.) create block system matrix
-    </pre>
-    */
+        */
     virtual void SetupSystem();
 
     /// setup composed system matrix from field solvers

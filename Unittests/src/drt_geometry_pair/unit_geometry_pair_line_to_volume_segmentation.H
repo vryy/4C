@@ -1,5 +1,4 @@
 /*!
-\file unit_geometry_pair_line_to_volume_segmentation.H
 
 \brief Unit tests for line to volume geometry pairs with the segmentation algorithm.
 

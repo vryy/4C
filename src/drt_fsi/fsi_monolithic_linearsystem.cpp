@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_monolithic_linearsystem.cpp
 
 \brief Linear system for solving FSI problems with NOX
 

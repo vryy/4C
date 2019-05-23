@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file intersection_math.cpp
 
 \brief collection of math tools for the interface determination of trv1o meshes
 

@@ -23,9 +23,7 @@
 
 \level 3
 
-<pre>
 \maintainer Matthias Mayr
-</pre>
 */
 /*----------------------------------------------------------------------*
  | definitions                                               dano 03/13 |

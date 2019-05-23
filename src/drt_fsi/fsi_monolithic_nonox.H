@@ -1,16 +1,13 @@
 /*!----------------------------------------------------------------------
-\file fsi_monolithic_nonox.H
 \brief Base class for monolithic fluid-fluid-fsi algorithm
  using XFEM (without NOX)
 
 \level 2
 
-<pre>
 \maintainer  Christoph Ager
              ager@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15249
-</pre>
 *----------------------------------------------------------------------*/
 
 #ifndef FSI_MONOLITHIC_NONOX_H
@@ -48,13 +45,11 @@ namespace FSI
     ///
     /*! do the setup for the monolithic system
 
-    <pre>
 
     1.) setup coupling
     2.) get maps for all blocks in the system (and for the whole system as well)
     3.) if necessary, define system block matrix
 
-    </pre>
 
     \note We want to do this setup after reading the restart information, not
     directly in the constructor. This is necessary since during restart (if

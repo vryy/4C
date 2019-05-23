@@ -1,15 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file cut_elementhandle.H
 \brief Outside world interface to element. Converts quadratic to linear element. This provides the
   Gaussian rules generated from the cut
 
-<pre>
 \maintainer  Christoph Ager
              ager@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15249
-</pre>
 
 \level 2
 */

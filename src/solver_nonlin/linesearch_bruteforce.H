@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file linesearch_bruteforce.H
 
 \brief Line search based on a brute force backtracking strategy
 

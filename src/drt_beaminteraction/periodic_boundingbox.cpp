@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file periodic_boundingbox.cpp
 
 \brief A class handling a (periodic) bounding box as simulation volume
 

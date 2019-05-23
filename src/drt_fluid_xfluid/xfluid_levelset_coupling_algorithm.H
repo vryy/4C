@@ -1,17 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfluid_levelset_coupling_algorithm.H
 
 \brief Base algorithm of Xfluid utilizing level set for cut
 
 \level 3
 
-<pre>
 \maintainer Christoph Ager
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089/28915236
-</pre>
  */
 /*----------------------------------------------------------------------*/
 

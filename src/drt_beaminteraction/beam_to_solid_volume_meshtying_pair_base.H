@@ -1,5 +1,4 @@
 /*!
-\file beam_to_solid_volume_meshtying_pair_base.H
 
 \brief Base meshtying element for meshtying between a 3D beam and a 3D solid element.
 

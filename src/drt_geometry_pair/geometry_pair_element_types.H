@@ -1,5 +1,4 @@
 /*!
-\file geometry_pair_element_types.H
 
 \brief Element types that can be part of a pair. This types can be used as a template argument.
 

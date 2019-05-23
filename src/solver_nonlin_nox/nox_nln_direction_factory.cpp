@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file nox_nln_direction_factory.cpp
 
 \maintainer Anh-Tu Vuong
 

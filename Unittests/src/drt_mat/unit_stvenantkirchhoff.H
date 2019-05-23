@@ -1,15 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file unit_stvenantkirchhoff.H
 
 \brief unit testing functionality for stvenantkirchhoff material
 
 \level 2
 
-<pre>
 \maintainer Jan Schnabel
             jan-eike.schnabel@hzg.de
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

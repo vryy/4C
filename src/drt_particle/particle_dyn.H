@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file particle_dyn.H
 
 \brief Main control routine for particle simulations
 

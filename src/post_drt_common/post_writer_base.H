@@ -1,15 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file post_writer_base.H
 
 \brief contains base class for a generic output filter (ensight and vtk are derived from this class)
 
-<pre>
 \level 2
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

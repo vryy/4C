@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file fsi_nox_fixpoint.cpp
 
 \brief Calculates the fix point direction.
 

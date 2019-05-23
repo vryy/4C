@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file unit_particle_interaction_sph_equationofstate.H
 
 \brief unittests for equation of state handler for smoothed particle hydrodynamics (SPH)
 interactions

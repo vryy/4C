@@ -1,13 +1,10 @@
 /*!----------------------------------------------------------------------
-\file cardiovascular0d_dofset.H
 
 \brief A set of degrees of freedom
 
 \level 2
 
-<pre>
 \maintainer Amadeus Gebauer
-</pre>
 
 *----------------------------------------------------------------------*/
 #ifndef CARDIOVASCULAR0D_DOFSET_H

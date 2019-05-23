@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file beaminteraction_data.cpp
 
 \brief small data containers for beam interaction framework
 

@@ -3,9 +3,7 @@
 
 \level 3
 
-<pre>
 \maintainer Alexander Popp
-</pre>
 *----------------------------------------------------------------------*/
 #ifndef SPRING_H
 #define SPRING_H

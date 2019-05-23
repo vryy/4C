@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file  linalg_krylov_projector.H
 
 \brief A common interface for ifpack, ml and simpler preconditioners.
        This interface allows a modification of the vector returned

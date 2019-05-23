@@ -1,11 +1,8 @@
 /*!----------------------------------------------------------------------
-\file so_pyramid5fbar.H
 \brief pyramid shaped solid element
 \level 2
 
-<pre>
 \maintainer Christoph Meier
-</pre>
 
 *----------------------------------------------------------------------*/
 #ifndef SOP5FBAR_H

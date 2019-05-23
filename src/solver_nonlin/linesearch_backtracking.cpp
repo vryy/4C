@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file linesearch_backtracking.cpp
 
 \brief Linesearch algorithm based on backtracking
 

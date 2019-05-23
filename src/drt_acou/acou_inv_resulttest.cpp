@@ -1,17 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file acou_inv_resulttest.cpp
 
 \brief testing of inverse photoacoustic reconstruction results
 
-<pre>
 \level 2
 
 \maintainer Martin Kronbichler
             kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15235
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

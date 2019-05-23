@@ -1,17 +1,14 @@
 /*!----------------------------------------------------------------------
-\file levelset_timint_stat.H
 
 \brief stationary time integration scheme for level-set problems (for coupled problems only)
        just a dummy
 
 \level 2
 
-<pre>
 \maintainer Christoph Ager
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
-</pre>
 
 *----------------------------------------------------------------------*/
 

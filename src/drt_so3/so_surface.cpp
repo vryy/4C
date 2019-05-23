@@ -1,12 +1,9 @@
 /*!----------------------------------------------------------------------
-\file so_surface.cpp
 
 \brief class for evaluation of equations on the structural surface
 \level 1
 
-<pre>
 \maintainer Christoph Meier
-</pre>
 
 *----------------------------------------------------------------------*/
 

@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file springdashpot.H
 
 \brief Methods for spring and dashpot constraints / boundary conditions
 

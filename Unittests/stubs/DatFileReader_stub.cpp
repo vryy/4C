@@ -1,5 +1,4 @@
 /*!---------------------------------------------------------------------*
-\file DatFileReader_stub.cpp
 
 \brief A stub for reading from fake datfiles
 

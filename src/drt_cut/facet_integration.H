@@ -1,18 +1,15 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file facet_integration.H
 
 \brief Integrates base functions over the facet for both volumecell facets and for boundarycells
 equations
 
 \level 2
 
-<pre>
 \maintainer Christoph Ager
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
-</pre>
 
 *----------------------------------------------------------------------*/
 #ifndef FACET_INTEGRATION_H

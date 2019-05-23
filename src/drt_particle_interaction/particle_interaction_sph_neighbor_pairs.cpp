@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_interaction_sph_neighbor_pairs.cpp
 
 \brief neighbor pair handler for smoothed particle hydrodynamics (SPH) interactions
 

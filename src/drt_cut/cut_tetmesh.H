@@ -1,17 +1,14 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_tetmesh.H
 
 \brief Tessellate the element by means of a Delauney triangulation
 
 \level 3
 
-<pre>
 \maintainer Christoph Ager
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
-</pre>
 
 *----------------------------------------------------------------------*/
 

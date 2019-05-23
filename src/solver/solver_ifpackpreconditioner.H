@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file solver_ifpackpreconditioner.H
 
 \level 0
 \maintainer Martin Kronbichler

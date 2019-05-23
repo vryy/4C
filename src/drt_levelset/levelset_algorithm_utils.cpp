@@ -1,5 +1,4 @@
 /*!-----------------------------------------------------------------------------------------------*
-\file levelset_algorithm_utils.cpp
 
 \brief base level-set algorithm: collection of useful helper functions
 
@@ -7,12 +6,10 @@
 
 \level 2
 
-<pre>
 \maintainer Christoph Ager
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
-</pre>
  *------------------------------------------------------------------------------------------------*/
 
 

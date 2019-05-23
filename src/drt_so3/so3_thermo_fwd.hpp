@@ -1,5 +1,4 @@
 /*!
-\file so3_thermo_fwd.hpp
 
 \level 1
 

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file linesearch_fullstep.cpp
 
 \brief Line search with fixed full step
 

@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file nox_nln_linearsystem_factory.H
 
 \brief %NOX::NLN factory to create a %NOX::Epetra::LinearSystem.
 

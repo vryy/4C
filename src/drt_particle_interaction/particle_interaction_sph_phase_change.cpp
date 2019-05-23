@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_interaction_sph_phase_change.cpp
 
 \brief phase change handler for smoothed particle hydrodynamics (SPH) interactions
 

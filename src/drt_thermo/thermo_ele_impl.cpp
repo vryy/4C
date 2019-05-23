@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file thermo_ele_impl.cpp
 
 \brief Internal implementation of thermo elements
 

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file poro_scatra_part_1wc.cpp
 
  \brief partitioned one way coupled poroelasticity scalar transport interaction algorithms
 
@@ -9,8 +8,9 @@
 \maintainer Christoph Ager
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289 15249 </pre>
- *----------------------------------------------------------------------*/
+            089 - 289 15249
+*/
+/*---------------------------------------------------------------------*/
 
 
 #include "poro_scatra_part_1wc.H"

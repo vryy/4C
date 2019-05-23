@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file constraint_manager.cpp
 
 \brief Class controlling constraints and containing the necessary data, code originally by Thomas
 Kloeppel

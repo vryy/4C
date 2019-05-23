@@ -1,14 +1,11 @@
 /*!----------------------------------------------------------------------
-\file linalg_utils.cpp
 
 \brief A collection of helper methods for namespace LINALG
 
-<pre>
 \level 0
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
- </pre>
 
 *-----------------------------------------------------------------------*/
 

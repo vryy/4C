@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file solver_aztecsolver.H
 
 \brief Declaration of interface to AztecOO solver package
 

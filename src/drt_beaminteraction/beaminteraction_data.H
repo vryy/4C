@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file beaminteraction_data.H
 
 \brief small data container for beam interaction framework
 

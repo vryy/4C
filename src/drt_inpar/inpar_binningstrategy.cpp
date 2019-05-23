@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file inpar_binningstrategy.cpp
 
 \brief input parameter for binning strategy
 

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file beam_link_truss.cpp
 
 \brief Wrapper for a truss element used as mechanical link
        between two beam elements

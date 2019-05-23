@@ -1,7 +1,6 @@
 /*!-----------------------------------------------------------------------------------------------*
- \file cut_edge.cpp
 
- \brief class representing a geometrical edge
+\brief class representing a geometrical edge
 
 \level 2
 

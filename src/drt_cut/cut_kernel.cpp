@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_kernel.cpp
 
 \brief The cut kernel computes basic geometric operation, implemented are
     - Intersection of Surface and line or line and line

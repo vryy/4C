@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file tsi_defines.H
 
 \brief A set of preprocessor defines for tsi methods
 

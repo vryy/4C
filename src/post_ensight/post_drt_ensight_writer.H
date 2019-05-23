@@ -1,5 +1,4 @@
 /*!
- \file post_drt_ensight_writer.H
 
  \brief contains basis class for the Ensight filter
 

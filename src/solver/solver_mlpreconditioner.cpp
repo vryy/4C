@@ -1,16 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file solver_mlpreconditioner.cpp
 
 \brief Interface class to ML preconditoner
 
-<pre>
 \brief Declaration
 \level 0
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
-</pre>
 */
 
 #include "../drt_lib/drt_dserror.H"

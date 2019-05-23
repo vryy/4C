@@ -1,5 +1,4 @@
 /*!------------------------------------------------------------------------------------------------*
- \file poro_dyn.cpp
 
  \brief control routine of poroelasticity problems
 

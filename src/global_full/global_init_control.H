@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file global_init_control.H
 
 \brief general initialization routine of BACI
 

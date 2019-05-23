@@ -1,5 +1,4 @@
 /*!
-\file geometry_pair_utility_functions.cpp
 
 \brief Utility functions for the geometry pairs.
 

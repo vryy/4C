@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file poro_scatra_part.H
 
  \brief  base class for partitioned poroelasticity scalar transport interaction algorithms
 

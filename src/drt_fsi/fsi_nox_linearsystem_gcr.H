@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_nox_linearsystem_gcr.H
 
 \brief Generalized conjugate residual linear system solver for FSI
 

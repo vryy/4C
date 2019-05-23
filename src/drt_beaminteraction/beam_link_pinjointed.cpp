@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file beam_link_pinjointed.cpp
 
 \brief connecting beam linked by pin joint
 

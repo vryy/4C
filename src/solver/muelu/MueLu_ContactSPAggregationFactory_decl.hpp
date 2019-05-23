@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file MueLu_ContactSPAggregationFactory_decl.hpp
 
 \brief MueLu contact aggregation factory class for saddle point formulations
 \level 2

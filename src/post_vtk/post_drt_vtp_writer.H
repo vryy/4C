@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file post_drt_vtp_writer.H
 
 \brief VTP filter specialized for particle output
 

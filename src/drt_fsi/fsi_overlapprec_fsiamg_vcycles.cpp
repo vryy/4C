@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_overlapprec_fsiamg_vcycles.cpp
 
 \brief V-Cycles for FSI AMG preconditioners
 

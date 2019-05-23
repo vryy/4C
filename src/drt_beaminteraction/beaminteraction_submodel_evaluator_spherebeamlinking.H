@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file beaminteraction_submodel_evaluator_spherebeamlinking.H
 
 \brief class for managing rigid sphere to beam crosslinking
 

@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_interaction_utils.H
 
 \brief utils for particle interactions
 

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_overlapprec_fsiamg_analysis.cpp
 
 \brief Analysis tool for FSI preconditioners
 

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file tsi_utils.cpp
 
 \brief utility functions for tsi problems
 

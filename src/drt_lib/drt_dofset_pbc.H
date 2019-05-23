@@ -49,12 +49,10 @@ namespace DRT
     \brief Standard Constructor
 
 
-    <pre>
 
     create a dofset that allows coupled nodes for periodic boundary
     conditions                                         gammi 05/07
 
-    </pre>
 
     \param couplednodes (i) list of coupled nodes
 

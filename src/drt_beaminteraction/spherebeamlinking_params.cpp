@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file spherebeamlinking_params.cpp
 
 \brief data container holding all contractile cells input parameters
 

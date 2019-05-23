@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_monolithicinterface.H
 
 \brief Interfacing FSI problems with NOX
 

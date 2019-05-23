@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid_ele_calc_xfem_coupling.cpp
 
 \brief Factory class for providing an implementation for coupling with
        Mixed/Stress/Hybrid methods or Nitsche's method to enforce

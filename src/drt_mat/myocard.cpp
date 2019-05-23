@@ -1,11 +1,9 @@
 /*!----------------------------------------------------------------------
 \brief myocard material
 
-<pre>
 \level 3
 
 \maintainer Amadeus Gebauer
-</pre>
 */
 
 

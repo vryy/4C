@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /**
-\file xfem_multi_field_mapextractor.H
 
 \brief MultiFieldMapExtractor class to handle different discretizations
        with joint interfaces

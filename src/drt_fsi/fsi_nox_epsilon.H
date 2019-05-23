@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file fsi_nox_epsilon.H
 
 \brief Calculates vector extrapolation via epsilon algorithm.
 

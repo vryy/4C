@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file nox_nln_constraint_interface_required.H
 
 \brief Required interface for constrained problems.
        (necessary for the NOX::NLN::CONSTRAINT::Group

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_solver.H
 
 \brief Input parameters for linear solvers
 

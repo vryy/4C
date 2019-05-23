@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file beam_contact_pair.H
 
 \brief one generic (beam-to-?) contact element pair
 

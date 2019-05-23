@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file element_normals.H
 
 \brief computes element normals
 

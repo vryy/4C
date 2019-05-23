@@ -1,7 +1,6 @@
 /*----------------------------------------------------------------------------*/
 /*!
- * \file nox_nln_params_utils.H
- *
+ *  *
  * \brief Utility methods to handle and parse (input) parameter lists
  *
  * \level 3

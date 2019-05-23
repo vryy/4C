@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file linesearch_bruteforce.cpp
 
 \brief Line search based on a brute force strategy
 

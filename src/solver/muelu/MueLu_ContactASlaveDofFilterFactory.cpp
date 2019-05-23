@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file MueLu_ContactASlaveDofFilterFactory.cpp
 
 \brief MueLu contact filter factory class
 \level 2

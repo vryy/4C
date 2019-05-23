@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file poro_scatra_part.cpp
 
  \brief  scalar transport in porous media
 

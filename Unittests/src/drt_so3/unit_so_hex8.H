@@ -1,5 +1,4 @@
 /*!---------------------------------------------------------------------*
-\file unit_so_hex8.H
 
 \brief Unittests for the So_hex8 class
 

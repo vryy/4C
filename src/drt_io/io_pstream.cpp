@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file io_pstream.cpp
 
 \brief A substitute for STL cout for parallel and complex output schemes.
 

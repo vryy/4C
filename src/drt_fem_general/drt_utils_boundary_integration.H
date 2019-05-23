@@ -1,5 +1,4 @@
 /*!
-\file drt_utils_boundary_integration.H
 
 \brief methods for the integration over boundary elements
 
@@ -9,12 +8,10 @@
     over boundary elements, required for example in weak
     dirichlet boundary conditions).
 
-<pre>
 \level 0
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089-289-15235
-</pre>
 */
 
 #ifndef UTILS_BOUNDARY_INTEGRATION_H

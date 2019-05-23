@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_dirichletneumann_factory.H
 
 \brief Factory to create appropriate DirichletNeumann Algorithm
 

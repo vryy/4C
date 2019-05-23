@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file solver_blockpreconditioners.cpp
 
 \brief Implementation
 

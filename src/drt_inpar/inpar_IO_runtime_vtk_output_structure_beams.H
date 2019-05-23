@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_IO_runtime_vtk_output_structure_beams.H
 
 \brief input parameters for VTK output of beam discretization at runtime
 

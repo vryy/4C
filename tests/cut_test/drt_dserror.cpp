@@ -1,6 +1,5 @@
 /*!----------------------------------------------------------------------
- * \file drt_dserror.cpp
- *
+ *  *
  * \brief printing error messages
  *
  * \level 2

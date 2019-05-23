@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file particle_handler.cpp
 
 \brief Handler to control particle simulations
 

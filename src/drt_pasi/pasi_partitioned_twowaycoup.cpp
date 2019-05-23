@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file pasi_partitioned_twowaycoup.cpp
 
 \brief two way coupled partitioned algorithm for particle structure interaction
 

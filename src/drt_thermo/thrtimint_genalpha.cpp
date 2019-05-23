@@ -1,11 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file thrtimint_genalpha.cpp
 \brief Thermal time integration with generalised-alpha
 \level 1
-<pre>
 \maintainer Christoph Meier
-</pre>
 */
 
 /*----------------------------------------------------------------------*

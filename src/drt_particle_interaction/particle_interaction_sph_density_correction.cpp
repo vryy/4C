@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_interaction_sph_density_correction.cpp
 
 \brief density correction handler in smoothed particle hydrodynamics (SPH)
 

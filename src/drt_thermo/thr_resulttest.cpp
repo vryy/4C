@@ -1,13 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file thr_resulttest.cpp
 
 \brief tesing of structure calculation results
 
 \level 1
-<pre>
 \maintainer Christoph Meier
-</pre>
 */
 
 /*----------------------------------------------------------------------*

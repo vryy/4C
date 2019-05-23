@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*!
-\file beam3k_input.cpp
 
 \brief three dimensional nonlinear Kirchhoff beam element based on a C1 curve
 

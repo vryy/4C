@@ -1,17 +1,14 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file particle_radius_node.cpp
 
 \brief particle node with specified radius
 
 \level 2
 
-<pre>
 \maintainer Sebastian Fuchs
             fuchs@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15262
-</pre>
 */
 /*--------------------------------------------------------------------------*/
 #include "particle_radius_node.H"

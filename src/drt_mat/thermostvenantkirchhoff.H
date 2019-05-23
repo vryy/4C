@@ -9,9 +9,7 @@
 
 \level 2
 
-<pre>
 \maintainer Christoph Meier
-</pre>
 */
 /*----------------------------------------------------------------------*
  | definitions                                               dano 02/10 |

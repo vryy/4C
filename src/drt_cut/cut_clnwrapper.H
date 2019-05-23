@@ -1,15 +1,11 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_clnwrapper.H
-
 \brief Class which stores floating points numbers of arbitrary precision (equivalent to double )
 
 \level 3
 
-<pre>
 \maintainer Christoph Ager
             ager@lnm.mw.tum.de
-</pre>
 
 *----------------------------------------------------------------------*/
 

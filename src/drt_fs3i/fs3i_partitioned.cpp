@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file fs3i_partitioned.cpp
 \brief General algorithmic routines for partitioned solution approaches
        to fluid-structure-scalar-scalar interaction (FS3I), that is,
        algorithmic routines not specifically related to partitioned

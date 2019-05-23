@@ -1,5 +1,4 @@
 /*!
- \file fs_monolithic.H
 
  \brief Free-surface flow as monolithic problem
 

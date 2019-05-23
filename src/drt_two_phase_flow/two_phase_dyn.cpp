@@ -1,14 +1,11 @@
 /*!----------------------------------------------------------------------
-\file two_phase_dyn.cpp
 \brief Control routine for fluid/xfluid and ScaTra coupled routines.
 \level 2
 
-<pre>
 \maintainer Christoph Ager
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089/28915236
-</pre>
 
 *----------------------------------------------------------------------*/
 #include "../drt_fluid_xfluid/xfluid_levelset_coupling_algorithm.H"

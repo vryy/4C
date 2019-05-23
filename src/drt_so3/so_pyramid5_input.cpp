@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so_pyramid5_input.cpp
 \brief pyramid shaped solid element
 \level 2
 

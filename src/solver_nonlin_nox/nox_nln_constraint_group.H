@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file nox_nln_constraint_group.H
 
 \brief %NOX::NLN implementation of a %NOX::Epetra::Group
        to handle constrained problems.

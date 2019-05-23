@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file fsi_slidingmonolithic_structuresplit.cpp
 
 \brief Solve FSI problem with sliding grids using a monolithic scheme
 with condensed structure interface displacements

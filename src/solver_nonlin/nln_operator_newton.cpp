@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file nln_operator_newton.cpp
 
 \brief Newton-type algorithm
 

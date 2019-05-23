@@ -1,15 +1,12 @@
 /*!----------------------------------------------------------------------
-\file linalg_blocksparsematrix.cpp
 
 \brief block sparse matrix implementation
 
-<pre>
 \level 0
 
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
-</pre>
 
 *----------------------------------------------------------------------*/
 

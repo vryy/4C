@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file poro_monolithicsplit_nopenetration.cpp
 
  \brief porous medium algorithm with matrix split for condensation of
       no-penetration constraint

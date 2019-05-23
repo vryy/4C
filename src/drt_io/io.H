@@ -1,6 +1,5 @@
 /*!----------------------------------------------------------------------*
 
-\file io.H
 
 \brief output context of one discretization
 

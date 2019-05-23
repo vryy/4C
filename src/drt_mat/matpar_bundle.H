@@ -5,9 +5,7 @@ Former file of Lena Yoshihara
 
 \level 1
 
-<pre>
 \maintainer Fabian Braeu
-</pre>
 */
 
 /*----------------------------------------------------------------------*/

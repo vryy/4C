@@ -1,16 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elemag_dyn.cpp
 
 \brief Main control routine for electromagnetic simulations
 
-<pre>
 \level 3
 
 \maintainer Luca Berardocco
             berardocco@lnm.mw.tum.de
             089 - 289-15244
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_gravity.H
 
 \brief gravity acceleration handler for particle simulations
 

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file linesearch_polynomial.cpp
 
 \brief Line search based on polynomials
 

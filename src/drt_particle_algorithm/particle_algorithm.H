@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_algorithm.H
 
 \brief algorithm to control particle simulations
 

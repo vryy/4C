@@ -11,9 +11,7 @@ or
 
 \level 1
 
-<pre>
 \maintainer Fabian Braeu
-</pre>
 
 *----------------------------------------------------------------------*/
 #ifndef ELAST_LOGNEOHOOKE_H_

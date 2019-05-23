@@ -1,14 +1,11 @@
 /*!----------------------------------------------------------------------
-\file drt_utils_integration.H
 
 \brief structs to store integration points and weights together
 
-<pre>
 \level 0
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
-</pre>
 
 *----------------------------------------------------------------------*/
 #ifndef UTILS_INTEGRATION_H
@@ -724,13 +721,12 @@ namespace DRT
     /*!
     \brief integration parameters
 
-    <pre>                                                gerstenberger 06/07
+    \author gerstenberger \date 06/07
 
     In this structure the coordinates and weights used by numerical integration
     are stored.
 
-    </pre>
-    */
+        */
     struct IntegrationPoints1D
     {
       /// constructor

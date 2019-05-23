@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file volmortar_utils.cpp
 
  \brief utils functions related to volmortar
 

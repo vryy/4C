@@ -1,5 +1,4 @@
 /*!------------------------------------------------------------------------------------------------*
-\file fpsi_dyn.H
 \brief control routine of fluid-porous-structure-interaction problems
 \level 2
 \maintainer  Christoph Ager

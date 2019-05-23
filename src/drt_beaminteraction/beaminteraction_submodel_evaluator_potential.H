@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*!
-\file beaminteraction_submodel_evaluator_potential.H
 
 \brief submodel for potential-based beam interactions
 

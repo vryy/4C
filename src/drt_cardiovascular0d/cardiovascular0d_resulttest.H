@@ -1,13 +1,10 @@
 /*!----------------------------------------------------------------------
-\file cardiovascular0d_resulttest.H
 
 \brief Monolithic coupling of 3D structural dynamics and 0D cardiovascular flow models
 
 \level 2
 
-<pre>
 \maintainer Amadeus Gebauer
-</pre>
 *----------------------------------------------------------------------*/
 
 #ifndef CARDIOVASCULAR0DRESULTTEST_H

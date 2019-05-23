@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file nox_nln_inner_statustest_combo.cpp
 
 \maintainer Anh-Tu Vuong
 

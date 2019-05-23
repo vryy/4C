@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file largerotations.H
 
 \brief A set of utility functions for large rotations
 

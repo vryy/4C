@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file str_model_evaluator_beamdata.cpp
 
 \brief Concrete implementation of the beam parameter interface
 

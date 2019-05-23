@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file ale3_surface_evaluate.cpp
 
 \brief Evaluate 3D ALE element
 

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file ale2_evaluate.cpp
 
 \brief Evaluate routines of ALE element for 2D case
 

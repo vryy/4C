@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file pre_exodus_readbc.cpp
 
 \brief pre_exodus bc-file reader
 

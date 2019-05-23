@@ -1,15 +1,12 @@
 /*!----------------------------------------------------------------------
-\file membrane_line_evaluate.cpp
 \brief
 
 \level 3
 
-<pre>
 \maintainer Fabian Braeu
             braeu@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
-</pre>
 
 \brief Nonlinear Membrane Finite Element line evaluation
 

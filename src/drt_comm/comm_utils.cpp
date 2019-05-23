@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file comm_utils.cpp
 
 \brief Helper class for everything that deals with communication
 

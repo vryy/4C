@@ -1,18 +1,15 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file line_integration.cpp
 
 \brief Integrates base functions over a line using one-dimensional Gauss quadrature
 equations
 
 \level 2
 
-<pre>
 \maintainer Christoph Ager
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
-</pre>
 
 *----------------------------------------------------------------------*/
 

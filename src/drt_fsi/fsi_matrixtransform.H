@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file fsi_matrixtransform.H
 
 \brief Utilities for matrix transformations in FSI
 

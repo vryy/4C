@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_partitioned.cpp
 
 \brief Partitioned FSI base
 

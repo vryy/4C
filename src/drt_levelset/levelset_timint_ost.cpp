@@ -1,16 +1,13 @@
 /*!----------------------------------------------------------------------
-\file levelset_timint_ost.cpp
 
 \brief one-step theta time integration scheme for level-set problems
 
 \level 2
 
-<pre>
 \maintainer Christoph Ager
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
-</pre>
 
 *----------------------------------------------------------------------*/
 

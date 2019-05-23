@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file beam3contact.H
 
 \brief One beam contact pair (two beam elements) consisting of several contact segments
 

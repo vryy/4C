@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file solver_ifpackpreconditioner.cpp
 
 \brief Declaration
 \level 0

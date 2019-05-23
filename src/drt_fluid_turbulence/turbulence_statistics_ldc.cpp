@@ -19,11 +19,9 @@ lid-driven cavity.
 /*!
   \brief Standard Constructor (public)
 
-  <pre>
-  o Create sets for centerlines in x1- and x2-direction
+    o Create sets for centerlines in x1- and x2-direction
 
   o Allocate distributed vector for squares
-  </pre>
 
 */
 /*----------------------------------------------------------------------*/

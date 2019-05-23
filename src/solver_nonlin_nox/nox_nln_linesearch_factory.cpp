@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file nox_nln_linesearch_factory.cpp
 
 \brief Factory to create the desired Line Search object.
 

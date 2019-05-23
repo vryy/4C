@@ -62,11 +62,9 @@ namespace FLD
     /*!
     \brief Standard Constructor (public)
 
-    <pre>
-    o Create sets for lines
+        o Create sets for lines
 
     o Allocate distributed vector for squares
-    </pre>
 
     */
     TurbulenceStatisticsBfs(Teuchos::RCP<DRT::Discretization> actdis,

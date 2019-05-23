@@ -1,16 +1,13 @@
 /*!----------------------------------------------------------------------
-\file acou_expl_worker.cpp
 \brief Control routine for acoustic explicit time integration.
 \level 2
 
-<pre>
 \level 2
 
 \maintainer Luca Berardocco
             berardocco@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15244
-</pre>
 *----------------------------------------------------------------------*/
 
 #include "acou_expl_worker.H"

@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file MueLu_ContactSPRepartitionInterface_def.hpp
 
 \brief MueLu repartition algorithm for contact
 \level 2

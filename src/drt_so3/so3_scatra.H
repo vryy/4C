@@ -1,13 +1,10 @@
 /*!----------------------------------------------------------------------
-\file so3_scatra.H
 
 \brief Solid-scatra elements base class
 
 \level 2
 
-<pre>
    \maintainer Christoph Schmidt
-</pre>
 
 *----------------------------------------------------------------------*/
 #ifndef SO3_SCATRA_H

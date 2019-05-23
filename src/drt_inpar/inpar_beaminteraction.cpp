@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file inpar_beaminteraction.cpp
 
 \brief input parameter for beaminteraction
 

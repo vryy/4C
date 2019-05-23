@@ -1,5 +1,4 @@
 /*!
-\file beam_to_solid_volume_meshtying_pair_factory.H
 
 \brief Create the pairs for beam to solid volume meshtying depending on the input parameters..
 

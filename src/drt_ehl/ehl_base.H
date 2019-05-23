@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file ehl_base.H
 
 \brief base class for all elastohydrodynamic lubrication (lubrication structure interaction)
 algorithms

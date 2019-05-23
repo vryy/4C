@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file solver_muelucontactpenaltypreconditioner.cpp
 
 \brief Implementation
 

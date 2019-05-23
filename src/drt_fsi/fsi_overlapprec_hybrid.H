@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file fsi_overlapprec_hybrid.H
 
 \brief Hybrid Additive/Multiplicative Schwarz Block Preconditioner for FSI
 

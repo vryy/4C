@@ -1,5 +1,4 @@
 /*!
-\file inpar_geometry_pair.H
 
 \brief Input parameter for geometry pairs.
 

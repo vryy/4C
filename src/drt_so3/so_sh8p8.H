@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file so_sh8p8.H
 \level 2
 \brief 8-node solid shell element
 \maintainer Christoph Meier

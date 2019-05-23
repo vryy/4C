@@ -1,5 +1,4 @@
 /*!---------------------------------------------------------------------*
-\file unit_drt_domainreader.H
 
 \brief Unittests for the DomainReader class
 

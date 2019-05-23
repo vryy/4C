@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_wall.cpp
 
 \brief particle wall handler for particle simulations
 

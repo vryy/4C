@@ -5,9 +5,7 @@ Interface class for materials of (visco)elasthyper toolbox.
 
 \level 1
 
-<pre>
 \maintainer Fabian Braeu
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #ifndef ELAST_SUMMAND_H

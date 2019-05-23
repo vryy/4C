@@ -1,5 +1,4 @@
 /*!
-\file beam_to_solid_vtu_output_writer_visualization.H
 
 \brief Object that stores the relevant data for a single output file.
 

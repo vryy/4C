@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file beam3tospherecontact.cpp
 
 \brief class to handle contact between a 3D beam element and a rigid sphere
 

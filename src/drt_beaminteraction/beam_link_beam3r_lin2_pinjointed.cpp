@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file beam_link_beam3r_lin2_pinjointed.cpp
 
 \brief Wrapper for a linear Reissner beam element used as mechanical pin joint
        between two other beam elements

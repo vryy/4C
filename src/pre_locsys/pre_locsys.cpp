@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file pre_locsys.cpp
 
 \brief Run time for locsys
 \level 2

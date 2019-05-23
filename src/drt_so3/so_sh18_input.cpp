@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so_sh18_input.cpp
 \brief Input for solid shell 18
 \level 3
 \maintainer Christoph Meier

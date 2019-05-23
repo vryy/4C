@@ -1,12 +1,9 @@
 /*!----------------------------------------------------------------------
-\file so_utils.cpp
 
 \brief A collection of helper methods for solid elements
 
-<pre>
 \level 1
 \maintainer Amadeus Gebauer
-</pre>
  *-----------------------------------------------------------------------*/
 
 #include "so_utils.H"

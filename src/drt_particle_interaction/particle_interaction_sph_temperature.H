@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_interaction_sph_temperature.H
 
 \brief temperature handler for smoothed particle hydrodynamics (SPH) interactions
 

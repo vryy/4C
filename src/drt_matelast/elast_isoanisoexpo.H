@@ -6,9 +6,7 @@ The input line should read
 
 \level 1
 
-<pre>
 \maintainer Amadeus Gebauer
-</pre>
 
 *----------------------------------------------------------------------*/
 #ifndef ELAST_ISOANISOEXPO_H_

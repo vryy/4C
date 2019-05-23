@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so_nurbs27_input.cpp
 
 \brief input-related methods of the quadratic NURBS 27 element
 

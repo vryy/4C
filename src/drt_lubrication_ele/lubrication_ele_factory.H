@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file lubrication_ele_factory.H
 
 \brief Factory of Lubrication elements
 

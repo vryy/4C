@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file nox_nln_direction_newton.cpp
 
 \maintainer Anh-Tu Vuong
 

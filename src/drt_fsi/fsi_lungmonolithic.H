@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_lungmonolithic.H
 \brief Volume-coupled FSI (base class)
 
 \level 3
@@ -52,12 +51,10 @@ namespace FSI
     explicit LungMonolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
     /*! do the setup for the monolithic system
-    <pre>
-    1.) setup coupling; right now, we use matching meshes at the interface
+        1.) setup coupling; right now, we use matching meshes at the interface
     2.) create combined map
     3.) create block system matrix
-    </pre>
-    */
+        */
     virtual void SetupSystem() = 0;
 
     /// some general setup stuff necessary for both fluid and

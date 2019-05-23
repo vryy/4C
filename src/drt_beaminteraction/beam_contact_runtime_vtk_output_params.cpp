@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*!
-\file beam_contact_runtime_vtk_output_params.cpp
 
 \brief data container holding all input parameters for vtk-based visualization of beam contact
 

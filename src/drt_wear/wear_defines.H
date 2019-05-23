@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file wear_defines.H
 
 \brief  norms and tolerances for wear algorithm
 

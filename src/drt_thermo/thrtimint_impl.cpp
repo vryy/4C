@@ -1,12 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file thrtimint_impl.cpp
 \brief Implicit time integration for spatial discretised
        thermal dynamics
 \level 1
-<pre>
 \maintainer Christoph Meier
-</pre>
 */
 
 /*----------------------------------------------------------------------*

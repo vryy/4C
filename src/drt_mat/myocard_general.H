@@ -2,11 +2,9 @@
 /*!
 \brief general myocard material model
 
-<pre>
 \level 3
 
 \maintainer Amadeus Gebauer
-</pre>
 */
 
 /*----------------------------------------------------------------------*

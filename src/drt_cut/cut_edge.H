@@ -1,7 +1,6 @@
 /*!-----------------------------------------------------------------------------------------------*
- \file cut_edge.H
 
- \brief class representing a geometrical edge
+\brief class representing a geometrical edge
 
 \level 2
 

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file poro_monolithicsplit.cpp
 
  \brief porous medium algorithm with block matrices for splitting and condensation
 

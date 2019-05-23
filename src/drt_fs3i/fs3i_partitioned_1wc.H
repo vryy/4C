@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file fs3i_partitioned_1wc.H
 \brief H-file associated with algorithmic routines for partitioned
        solution approaches to fluid-structure-scalar-scalar interaction
        (FS3I) specifically related to one-way-coupled problem

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file so3_poro_p1_fwd.hpp
 
  \brief forward declarations (explicit instantiation) of the templated p1 (mixed )poro-elements
 

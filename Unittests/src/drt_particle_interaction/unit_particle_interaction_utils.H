@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file unit_particle_interaction_utils.H
 
 \brief unittests for utils for particle interactions
 

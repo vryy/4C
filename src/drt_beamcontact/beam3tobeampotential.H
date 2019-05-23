@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file beam3tobeampotential.H
 
 \brief One beam-to-beam potential-based interacting pair (two beam elements)
 

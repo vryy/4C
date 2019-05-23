@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file linalg_gauss.H
 
 \brief Gauss elimination for small nxn systems
 

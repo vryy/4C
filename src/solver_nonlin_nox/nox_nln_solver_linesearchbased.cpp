@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file nox_nln_solver_linesearchbased.cpp
 
 \maintainer Anh-Tu Vuong
 

@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*!
-\file beam_spatial_discretization_utils.H
 
 \brief utility functions for spatial discretization of beam elements
 

@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_temperature_bc.H
 
 \brief temperature boundary condition handler for particle simulations
 

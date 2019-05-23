@@ -1,15 +1,12 @@
 /*!---------------------------------------------------------------------------
-\file elemag_ele_action.H
 
 \brief Provides enum of actions for electromagnetics elements
 
-<pre>
 \level 2
 
 \maintainer Luca Berardocco
             berardocco@lnm.mw.tum.de
             089 - 289-15244
-</pre>
 *---------------------------------------------------------------------------*/
 
 #ifndef ELEMAG_ELE_ACTION_H

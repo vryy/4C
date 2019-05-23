@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*!
-\file runtime_vtu_writer.cpp
 
 \brief Write visualization output in vtk/vtu format at runtime
 

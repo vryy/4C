@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file fas_nlnlevel.H
 
 \brief Nonlinear level containing the representation and operations for a single
 nonlinear multigrid level

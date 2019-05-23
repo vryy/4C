@@ -1,15 +1,12 @@
 /*!----------------------------------------------------------------------
-\file acou_expl_worker_sol.cpp
 \brief Control routine for acoustic explicit time integration for solids
        or aka elastodynamics
 \level 2
 
-<pre>
 \maintainer Luca Berardocco
             berardocco@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15244
-</pre>
 *----------------------------------------------------------------------*/
 
 #include "acou_expl_worker.H"

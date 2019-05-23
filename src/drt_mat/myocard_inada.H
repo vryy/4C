@@ -2,11 +2,9 @@
 /*!
 \brief inada myocard material model
 
-<pre>
 \level 3
 
 \maintainer Amadeus Gebauer
-</pre>
 */
 
 /*----------------------------------------------------------------------*

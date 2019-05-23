@@ -43,11 +43,9 @@ namespace DRT
     \brief Standard Constructor
 
 
-    <pre>
 
     create a dofset that is independent of the other dofsets
 
-    </pre>
 
     \return void
 

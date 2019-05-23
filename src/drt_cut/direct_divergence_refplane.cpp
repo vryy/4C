@@ -1,17 +1,14 @@
 /*!-----------------------------------------------------------------------------------------------*
-\file direct_divergence_refplane.cpp
 
 \brief Construct reference plane for direct divergence method when used in global
 coordinate system
 
 \level 2
 
-<pre>
 \maintainer Christoph Ager
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
-</pre>
  *------------------------------------------------------------------------------------------------*/
 #include "direct_divergence_refplane.H"
 #include "cut_kernel.H"

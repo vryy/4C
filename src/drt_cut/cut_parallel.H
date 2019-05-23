@@ -1,5 +1,4 @@
 /*!-----------------------------------------------------------------------------------------------*
-\file cut_parallel.H
 
 \brief provides the basic parallel cut classes "Parallel"
 

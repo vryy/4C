@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file solver_belossolver.H
 
 \brief Declaration of interface to Belos solver package
 

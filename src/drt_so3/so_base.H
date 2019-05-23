@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file so_base.H
 
 \brief a common base class for all solid elements
 

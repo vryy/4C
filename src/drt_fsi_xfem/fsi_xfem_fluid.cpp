@@ -1,17 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_xfem_fluid.cpp
 
 \brief ...
 
 \level 2
 
-<pre>
 \maintainer  Christoph Ager
              ager@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15249
-</pre>
 */
 
 #include "../drt_fsi_xfem/fsi_xfem_fluid.H"

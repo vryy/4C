@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_interaction_sph_kernel.cpp
 
 \brief kernel handler for smoothed particle hydrodynamics (SPH) interactions
 

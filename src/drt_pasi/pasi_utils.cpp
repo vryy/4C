@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file pasi_utils.cpp
 
 \brief utility methods for particle structure interaction
 

@@ -1,5 +1,4 @@
 /*!
-\file geometry_pair_factory.cpp
 
 \brief functions to create geometry pairs.
 

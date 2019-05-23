@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_dirichletneumann_disp.cpp
 
 \brief Solve FSI problems using a Dirichlet-Neumann partitioned approach
 based on the interface displacements

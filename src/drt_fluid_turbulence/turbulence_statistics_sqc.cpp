@@ -17,11 +17,9 @@ turbulent flow past a square cylinder
 /*!
   \brief Standard Constructor (public)
 
-  <pre>
-  o Create sets for lines in x1- and x2-direction
+    o Create sets for lines in x1- and x2-direction
 
   o Allocate distributed vector for squares
-  </pre>
 
 */
 /*----------------------------------------------------------------------*/

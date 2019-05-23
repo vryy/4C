@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file so_hex8fbar.cpp
 
 \brief Solid Hex8 element with F-bar modification
 

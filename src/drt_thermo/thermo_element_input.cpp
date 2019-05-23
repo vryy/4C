@@ -1,11 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file thermo_element_input.cpp
 \brief element input routines
 \level 1
-<pre>
 \maintainer Christoph Meier
-</pre>
 */
 
 /*----------------------------------------------------------------------*

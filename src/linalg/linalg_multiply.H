@@ -1,15 +1,12 @@
 /*!----------------------------------------------------------------------
-\file linalg_multiply.H
 
 \brief matrix multiplication header
 
-<pre>
 \level 1
 
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
-</pre>
 */
 /*----------------------------------------------------------------------*/
 
@@ -31,8 +28,7 @@ namespace LINALG
   A factor of 5 - 10 in speed has been observed when comparing.
   It uses ML instead of EpetraExt for the multiplication kernel.
 
-  <pre>
-                         ***Warning***
+                           ***Warning***
            This method is not well tested (yet) and there is some risk of
            failure AND wrong results without notice. This depends
            on structural properties of the input matrices A and B.
@@ -50,7 +46,6 @@ namespace LINALG
            problems should work fine.
            Fourth:
            If you have a choice how to formulate your problem:
-  </pre>
 
   \note The Mat-Mat-Mult kernel used herein
         was optimized for algebraic multigrid. This means, the method

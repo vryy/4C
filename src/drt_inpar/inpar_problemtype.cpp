@@ -1,7 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
  *
-\file inpar_problemtype.cpp
 \brief convert problem type string to enum
 \level 1
 \maintainer Martin Kronbichler

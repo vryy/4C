@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file linesearch_backtracking.H
 
 \brief Line search based on a simple backtracking strategy
 

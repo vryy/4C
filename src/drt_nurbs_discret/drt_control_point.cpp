@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file drt_control_point.cpp
 
 \brief   This is basically a (3d-) node with an additional weight.
    The weight is required for the evaluation of the nurbs

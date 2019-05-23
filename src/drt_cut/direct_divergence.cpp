@@ -1,17 +1,14 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file direct_divergence.cpp
 
 \brief Generate main Gauss points when using "DirectDivergence" approach.
 
 \level 2
 
-<pre>
 \maintainer Christoph Ager
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
-</pre>
 
 *----------------------------------------------------------------------*/
 

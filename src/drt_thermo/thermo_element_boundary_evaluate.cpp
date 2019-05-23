@@ -1,15 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file thermo_element_boundary_evaluate.cpp
 \brief
 
 Evaluate boundary conditions for thermo problems
 
 \level 1
 
-<pre>
 \maintainer Christoph Meier
-</pre>
 */
 
 /*----------------------------------------------------------------------*

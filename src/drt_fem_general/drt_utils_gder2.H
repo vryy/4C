@@ -1,14 +1,11 @@
 /*!
-\file drt_utils_gder2.H
 
 \brief calculate second global derivatives w.r.t x/y/z at point r,s,t
 
-<pre>
 \level 1
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
-</pre>
 */
 #ifndef UTILS_GDER2_H
 #define UTILS_GDER2_H

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fpsi_monolithic_plain.cpp
 
 \brief Solve FPSI problem with matching grids using a monolithic scheme
        in its plain form. Only interface ale displacements are condensed.

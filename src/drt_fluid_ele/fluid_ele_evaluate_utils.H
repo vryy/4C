@@ -1294,7 +1294,6 @@ namespace FLD
     flows with a stabilized finite element method
     (Phd thesis, Rensselaer Polytechnic Institute, Troy, New York)
 
-    <pre>
 
     L_ij : the tensor of resolved components of the stress tensor associated
            with the scales of motion between the resolved and the test scale
@@ -1303,7 +1302,6 @@ namespace FLD
            with the scales of motion between the resolved and the test scale
            (modulo 2Cs, a constant)
 
-    </pre>
 
 
     \param evelaf                        (in )  : nodal velocities

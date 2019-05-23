@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file solver_muelucontactsppreconditioner.cpp
 
 \brief Implementation of MueLu-base contact saddle-point preconditioners
 

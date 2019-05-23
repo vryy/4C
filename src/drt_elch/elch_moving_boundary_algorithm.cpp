@@ -1,17 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elch_moving_boundary_algorithm.cpp
 
 \brief Basis of all ELCH algorithms with moving boundaries
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
             schmidt@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

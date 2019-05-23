@@ -1,16 +1,13 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*!
-\file cut_combintersection.H
 
 \brief provides the basic functionality for cutting a mesh with a level set function and/or a
        mesh
 
-<pre>
 \maintainer  Christoph Ager
              ager@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15249
-</pre>
 
 \level 2
 */

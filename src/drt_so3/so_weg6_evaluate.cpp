@@ -1,11 +1,8 @@
 /*!----------------------------------------------------------------------
-\file so_weg6_evaluate.cpp
 \brief Solid Wedge6 Element
 \level 1
 
-<pre>
 \maintainer Christoph Meier
-</pre>
 
 *----------------------------------------------------------------------*/
 #include "so_weg6.H"

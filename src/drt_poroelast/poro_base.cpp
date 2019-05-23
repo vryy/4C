@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file poro_base.cpp
 
  \brief  Basis of all porous media algorithms
 

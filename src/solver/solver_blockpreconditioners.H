@@ -1,14 +1,11 @@
 /*!----------------------------------------------------------------------
-\file solver_blockpreconditioners.H
 
-<pre>
 \brief Declaration
 \level 1
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
 Created on: Jul 4, 2011
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #ifndef SOLVER_BLOCKPRECONDITIONERS_H_

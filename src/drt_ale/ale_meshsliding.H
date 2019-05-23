@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file ale_meshsliding.H
 
 \brief Mesh sliding for ale problems
 

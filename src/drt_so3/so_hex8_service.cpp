@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so_hex8_service.cpp
 
 \brief Service routines for Solid Hex8 element
 

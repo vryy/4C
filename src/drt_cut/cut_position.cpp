@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file cut_position.cpp
 
 \brief Class to check whether a point lies inside an element, and also to
        compute local coordinates of a point with respect to the element.

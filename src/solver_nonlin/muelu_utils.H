@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file muelu_utils.H
 
 \brief Collection of utilities for MueLu
 

@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_interaction_dem.cpp
 
 \brief discrete element method (DEM) interaction handler
 

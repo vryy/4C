@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_sim.cpp
 
 \brief main control routine for particle simulations
 

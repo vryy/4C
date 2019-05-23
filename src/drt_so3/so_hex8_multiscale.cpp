@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so_hex8_multiscale.cpp
 
 \brief multiscale functionality of Solid Hex8 element
 

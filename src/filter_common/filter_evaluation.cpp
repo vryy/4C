@@ -1,17 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file filter_evaluation.cpp
 
 \brief compatibility definitions
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
             schmidt@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089 - 289-15251
-</pre>
 
 Some discretization functions cannot be included in the filter build
 because they use ccarat facilities that are not available inside the

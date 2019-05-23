@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_lungmonolithic_fluidsplit.cpp
 \brief Volume-coupled FSI (fluid-split)
 
 \maintainer Matthias Mayr

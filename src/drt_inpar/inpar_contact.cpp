@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_contact.cpp
 
 \brief Input parameters for contact
 

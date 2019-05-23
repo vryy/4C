@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file pre_exodus_validate.H
 
 \brief validate a given .dat-file
 

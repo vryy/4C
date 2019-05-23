@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file lubrication_ele_parameter.H
 
 \brief singleton class holding all static parameters required for Lubrication element evaluation
 

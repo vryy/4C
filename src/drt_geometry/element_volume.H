@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file element_volume.H
 
 \brief computes element volume
 

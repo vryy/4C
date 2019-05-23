@@ -1,7 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file fpsi_utils.cpp
- \brief  Utility Methods For Fluid Porous Structure Interaction Problems
+  \brief  Utility Methods For Fluid Porous Structure Interaction Problems
 \level 3
 
 \maintainer  Christoph Ager

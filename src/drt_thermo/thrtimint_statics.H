@@ -1,11 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file thrtimint_statics.H
 \brief Statics analysis, i.e. no capacity terms
 \level 1
-<pre>
 \maintainer Christoph Meier
-</pre>
 */
 
 

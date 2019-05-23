@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file MueLu_ContactTransferFactory.cpp
 
 \brief MueLu transfer factory class for contact
 \level 2

@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file MueLu_MeshtyingSPAmalgamationFactory_def.hpp
 
 \brief MueLu amalgamation factory for meshtying
 \level 2

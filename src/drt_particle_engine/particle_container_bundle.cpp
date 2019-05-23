@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_container_bundle.cpp
 
 \brief class holding all particle containers
 

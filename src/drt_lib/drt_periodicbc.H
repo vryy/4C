@@ -54,12 +54,10 @@ namespace DRT
 
 
 
-<pre>
 Maintainer: Ursula Rasthofer
             rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
-</pre>
 
 */
 class PeriodicBoundaryConditions

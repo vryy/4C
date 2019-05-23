@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file pre_exodus_writedat.cpp
 
 \brief pre_exodus .dat-file writer
 

@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so_nurbs27.cpp
 
 \brief implementation of the quadratic NURBS 27 element
 

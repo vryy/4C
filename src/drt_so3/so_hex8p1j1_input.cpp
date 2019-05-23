@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so_q1p0hex8_input.cpp
 \brief 'Q1P0' element in 8-node hexahedron shape
 
 \level 2

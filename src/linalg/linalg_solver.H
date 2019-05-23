@@ -1,14 +1,11 @@
 /*!----------------------------------------------------------------------
-\file linalg_solver.H
 
 \brief Declaration of basic solver interface
 
-<pre>
 \level 0
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
-</pre>
 
 *----------------------------------------------------------------------*/
 #ifndef LINALG_SOLVER_H

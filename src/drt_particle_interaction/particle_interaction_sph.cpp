@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_interaction_sph.cpp
 
 \brief smoothed particle hydrodynamics (SPH) interaction handler
 

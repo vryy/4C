@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file bele3.H
 
 \brief dummy 3D boundary element without any physics
 

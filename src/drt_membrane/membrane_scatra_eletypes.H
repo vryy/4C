@@ -1,14 +1,11 @@
 /*!----------------------------------------------------------------------
-\file membrane_scatra_eletypes.H
 
 \level 3
 
-<pre>
 \maintainer Sebastian Fuchs
             fuchs@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15262
-</pre>
 
 \brief Nonlinear Membrane Finite Element Type with ScaTra coupling
 

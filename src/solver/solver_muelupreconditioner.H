@@ -1,15 +1,12 @@
 /*!----------------------------------------------------------------------
-\file solver_muelupreconditioner.H
 
 \brief Interface class for MueLu preconditioner
 
-<pre>
 \level 1
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
 Created on: Dec 1, 2011
-</pre>
 */
 /*----------------------------------------------------------------------*/
 

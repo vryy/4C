@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file integrationcell.H
 
 \brief integration cell classes for domain and boundary integration
 

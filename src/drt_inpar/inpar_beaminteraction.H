@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file inpar_beaminteraction.H
 
 \brief input parameter for beaminteraction
 

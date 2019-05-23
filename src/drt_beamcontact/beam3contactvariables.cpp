@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file beam3contactvariables.cpp
 
 \brief One beam contact segment living on an element pair
 

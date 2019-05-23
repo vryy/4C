@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file nox_nln_linesearch_prepostoperator.cpp
 
 \maintainer Anh-Tu Vuong
 

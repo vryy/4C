@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file nox_nln_floating_point_exception.H
 
 \brief Bundle the floating point exception handling in one class.
 

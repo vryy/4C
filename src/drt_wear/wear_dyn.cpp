@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file wear_dyn.cpp
 \brief Control routine for structure with ale problems.
 
 \level 2

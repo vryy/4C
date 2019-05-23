@@ -1,17 +1,14 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_find_cycles.H
 
 \brief part of the facetgraph to create facets from lines and edges
 
 \level 3
 
-<pre>
 \maintainer Christoph Ager
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15249
-</pre>
 
 *----------------------------------------------------------------------*/
 

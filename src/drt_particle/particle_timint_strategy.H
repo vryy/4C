@@ -1,17 +1,14 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file particle_timint_strategy.H
 
 \brief time integration strategies for particle problems
 
 \level 1
 
-<pre>
 \maintainer Sebastian Fuchs
             fuchs@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15262
-</pre>
 */
 /*--------------------------------------------------------------------------*/
 #ifndef PARTICLE_TIMINT_STRATEGY_H

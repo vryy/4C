@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file torsion3.H
 
 \brief three dimensional torsion spring element
 

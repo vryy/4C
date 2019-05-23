@@ -4,9 +4,7 @@
 
 \level 2
 
-<pre>
 \maintainer Sebastian Fuchs
-</pre>
 */
 /*----------------------------------------------------------------------*/
 #ifndef PARTICLE_MAT_ELLIPSOIDS_H

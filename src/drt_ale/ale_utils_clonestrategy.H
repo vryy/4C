@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file ale_utils_clonestrategy.H
 
 \brief Strategy to clone ALE discretization form other discretization
 

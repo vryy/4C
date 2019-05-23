@@ -1,13 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file tsi_algorithm.H
 
 \brief Basis of all TSI algorithms that perform a coupling between the
        structural field equation and temperature field equations
 \level 2
-<pre>
   \maintainer  Christoph Meier
-</pre>
 */
 
 

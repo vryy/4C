@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file nox_nln_direction_modified_newton.cpp
 
 \brief Implementation of a modified Newton approach
 

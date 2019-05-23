@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file lubrication_timint_implicit.H
 
 \brief Associated with control routine for Lubrication solvers,
 

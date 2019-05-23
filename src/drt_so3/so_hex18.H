@@ -1,11 +1,8 @@
 /*!----------------------------------------------------------------------
-\file so_hex18.H
 \brief 18-node hexahedral (bi-quadratic linear)
 \level 1
 
-<pre>
 \maintainer Christoph Meier
-</pre>
 
 *----------------------------------------------------------------------*/
 #ifndef SOH18_H

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_overlapprec_fsiamg_smoothers.cpp
 
 \brief Smoothers for FSI AMG preconditioners
 

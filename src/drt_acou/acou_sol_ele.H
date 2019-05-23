@@ -1,19 +1,16 @@
 /*!
-\file acou_sol_ele.H
 
 \brief A C++ wrapper for the acoustic element
 
 This file contains the element-specific service routines such as
 Pack, Unpack, NumDofPerNode etc.
 
-<pre>
 \level 2
 
 \maintainer Luca Berardocco
             berardocco@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15244
-</pre>
 */
 
 #ifndef ACOU_SOL_ELE_H

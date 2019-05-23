@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file timintmstep.H
 
 \brief Multi-step functionalities for time integration
 

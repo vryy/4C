@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_lung_overlapprec.H
 \brief BGS preconditioner for volume-coupled FSI
 \level 2
 \maintainer Matthias Mayr

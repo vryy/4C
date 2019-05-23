@@ -1,15 +1,12 @@
 /*!-----------------------------------------------------------------------------------------------*
-\file cut_meshintersection.cpp
 
 \brief provides the specific functionality for cutting a mesh with other meshes
 
 \level 3
-<pre>
 \maintainer  Christoph Ager
              ager@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15249
-</pre>
  *------------------------------------------------------------------------------------------------*/
 
 #include <Teuchos_TimeMonitor.hpp>

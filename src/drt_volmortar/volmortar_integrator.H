@@ -1,13 +1,10 @@
 /*!----------------------------------------------------------------------
-\file volmortar_integrator.H
 
 \brief integration routines for the volmortar framework
 
 \level 1
 
-<pre>
 \maintainer Alexander Popp
-</pre>
 
 *----------------------------------------------------------------------*/
 

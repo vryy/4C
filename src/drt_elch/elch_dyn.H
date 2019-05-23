@@ -1,15 +1,12 @@
 /*!----------------------------------------------------------------------
-\file elch_dyn.H
 \brief Control routine for Electrochemistry module.
 
 \level 2
 
-<pre>
 \maintainer Christoph Schmidt
             schmidt@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089 - 289-15251
-</pre>
 
 *----------------------------------------------------------------------*/
 

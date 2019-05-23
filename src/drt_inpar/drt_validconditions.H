@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_validconditions.H
 
 \brief Setup of the list of valid conditions for input
 

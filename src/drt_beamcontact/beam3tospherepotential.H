@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file beam3tospherepotential.H
 
 \brief One beam-to-sphere potential-based interacting pair
 

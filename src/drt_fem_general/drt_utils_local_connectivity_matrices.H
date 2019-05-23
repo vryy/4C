@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file drt_utils_local_connectivity_matrices.H
 
 \brief Provide a node numbering scheme together with a set of shape functions
 
@@ -15,12 +14,10 @@ The corresponding graphics and a detailed description can be found
 in the Baci guide in the Convention chapter.
 !!!!
 
-<pre>
 \level 0
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
-</pre>
 
 *----------------------------------------------------------------------*/
 #ifndef DRT_UTILS_LOCAL_CONNECTIVITY_MATRICES_H

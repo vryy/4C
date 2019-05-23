@@ -1,15 +1,12 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*!
-\file cut_parentintersection.H
 
 \brief provides the basic functionality for cutting a mesh
 
-<pre>
 \maintainer  Christoph Ager
              ager@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15249
-</pre>
 
 \level 2
 */

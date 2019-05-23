@@ -1,7 +1,6 @@
 /*----------------------------------------------------------------------------*/
 /*!
- \file cut_side.H
- *
+  *
  *  \brief class representing a geometrical side
  *
 

@@ -1,12 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file thrtimint_ost.cpp
 \brief Thermal time integration with one-step-theta
 \level 1
-<pre>
 \maintainer Christoph Meier
 
-</pre>
 */
 
 

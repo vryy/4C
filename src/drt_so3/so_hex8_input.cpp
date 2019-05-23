@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so_hex8_input.cpp
 \brief Solid Hex8 element
 
 \level 1
