@@ -17,6 +17,7 @@
 #include "../drt_contact/contact_interpolator.H"  // MT interpolator is located in here
 
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_inverse.H"
 #include "../linalg/linalg_serialdensevector.H"
 
 

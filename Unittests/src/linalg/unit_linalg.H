@@ -15,7 +15,7 @@
 
 #include <cxxtest/TestSuite.h>
 
-#include "src/linalg/linalg_utils.H"
+#include "src/linalg/linalg_utils_densematrix_inverse.H"
 
 
 // Forward declaration.

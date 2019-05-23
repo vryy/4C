@@ -13,8 +13,6 @@
 #define GEOMETRY_PAIR_UTILITY_FUNCTIONS_H
 
 
-#include "../linalg/linalg_utils.H"
-
 #include "geometry_pair_element_types.H"
 #include "../drt_beam3/beam3.H"
 #include "../headers/FAD_utils.H"

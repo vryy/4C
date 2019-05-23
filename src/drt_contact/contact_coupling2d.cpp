@@ -19,6 +19,7 @@
 
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils_densematrix_inverse.H"
 #include "../linalg/linalg_serialdensevector.H"
 
 #include "../drt_mortar/mortar_defines.H"
