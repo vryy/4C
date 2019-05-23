@@ -2,5 +2,9 @@ steps 1 nnodes 3
 30 2 0 1
 31 2 0 1
 34 2 0 1
+#comments here and in following lines
+#numbers above: #element ID # number of dofs for element # first dof-ID # second dof ID
 #mind element counting difference to datfile, dataset aquired with E=700, nue=0.3
+#scheme of following lines for numbers # seperated by arbitrary number of spaces: 
+#time #x-displacement element 30 #y-displacement element 30 #x #y ..element 31 #x #y ..element 34
 6.000000e+00 -1.067288e-01 -3.809520e-02 -1.161020e-01 1.190118e-02 -1.815343e-01 -5.180123e-03

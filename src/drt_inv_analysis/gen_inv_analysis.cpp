@@ -4316,6 +4316,8 @@ void STR::GenInvAnalysis::ConstrainAlpha()
 
 void STR::GenInvAnalysis::ReadMonitorDofBased(int myrank)
 {
+  // old comment is destroyed by clang format: please consult *.monitor files in /Input folder
+
   /* this is how a dof based monitor file should look like:
 
 steps 25 nnodes 5
@@ -4476,10 +4478,21 @@ steps 2 npoints 5
 2 0 1
 2 0 1
 # any number of comment lines, but only at this position
-# x and y coords at 5 points, x and y coords at corresponding point in measurement direction
-(towards interface) # time point x y x' y', x y x' y', x y x' y', x y x' y', x y x' y' # for example
-with measurement downwards in vertical (y)-direction 2.000000e-02 4.000000e-02
+# x and y coords at 5 points, x and y coords at corresponding points (x' y') in measurement
+# direction (towards interface)
+(first time point) x1 y1 x1' y1' x2 y2 x2' y2' x3 y3 x3' y3' x4 y4 x4' y4' x5 y5 x5' y5'
+(second time point) x1 y1 x1' y1' x2 y2 x2' y2' x3 y3 x3' y3' x4 y4 x4' y4' x5 y5 x5' y5'
 */
+
+  // the following is a minimal example, mind that Levenberg Marquardt needs
+  // steps*npoints > number of parameters to fit
+  /*
+  steps 1 npoints 1
+  2 0 1
+  # for example with measurement downwards in vertical (y)-direction for
+  # one point (npoints 1) in 2D at time t=1.0 (steps 1)
+  1.0 2.000000e-02 4.000000e-02 2.000000e-02 3.000000e-02
+  */
   ndofs_ = 0;
 
   // input parameters inverse analysis
