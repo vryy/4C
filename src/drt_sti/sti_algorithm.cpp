@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file sti_algorithm.cpp
 
 \brief general coupling algorithm for scatra-thermo interaction
 

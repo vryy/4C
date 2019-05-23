@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file poroelast_utils.H
 
  \brief utility functions for poroelasticity problems
 

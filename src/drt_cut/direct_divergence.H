@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file direct_divergence.H
 
 \brief Generate main Gauss points when using "DirectDivergence" approach.
 

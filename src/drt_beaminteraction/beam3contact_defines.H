@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file beam3contact_defines.H
 
 \brief A set of preprocessor defines for beam contact methods
 

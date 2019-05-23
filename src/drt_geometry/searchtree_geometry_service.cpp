@@ -1,5 +1,4 @@
 /*!
- \file searchtree_geometry_service.cpp
 
  \brief provides geometry methods for a search tree
 

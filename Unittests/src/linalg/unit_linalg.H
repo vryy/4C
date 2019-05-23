@@ -1,5 +1,4 @@
 /*!
-\file unit_linalg.H
 
 \brief Unit tests for linalg routines.
 

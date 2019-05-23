@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file linalg_serialdensevector.H
 
 \brief Specification of wrapper to a serial vector
 

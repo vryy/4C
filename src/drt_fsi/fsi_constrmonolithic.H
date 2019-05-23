@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_constrmonolithic.H
 
 \brief Solve FSI problem with constraints
 

@@ -1,5 +1,4 @@
 /*!
-\file beam_to_solid_vtu_output_writer_base.cpp
 
 \brief Base object that stores all relevant data for beam to solid output
 

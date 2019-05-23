@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
- \file nln_operator_linprec.cpp
 
 \brief Wrapper around a linear preconditioner from Baci
 

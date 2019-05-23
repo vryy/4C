@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file thermo_ele_impl_utils.cpp
 
 \level 1
 \maintainer Christoph Meier

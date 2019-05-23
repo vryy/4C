@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file mor_pod.H
 
 \brief Model Order Reduction (MOR) using Proper Orthogonal Decomposition (POD)
 

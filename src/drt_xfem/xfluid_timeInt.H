@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfluid_timeInt.H
 
 \brief provides the xfluid timeIntegration,
        maps vectors from old interface position to vectors at new interface position,

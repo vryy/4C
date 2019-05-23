@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file drt_utils_parallel_proctoproc.cpp
 
 \brief utils for proc to proc communication
 

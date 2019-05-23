@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file linalg_mapextractor.H
 
 \brief Declaration of map extractor class
 

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file nln_problem.H
 
 \brief Field problem base class for different types of BACI problems
 

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_volmortar.cpp
 
 \brief Input parameters for volmortar
 

@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file elemag_ele.cpp
 \brief Electromagnetic element implementations
 
 

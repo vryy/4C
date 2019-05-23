@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_object.H
 
 \brief particle object class for communication
 

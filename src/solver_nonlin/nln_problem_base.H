@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file nln_problem_base.H
 
 \brief Base class for interface of nonlinear solver to BACI
 

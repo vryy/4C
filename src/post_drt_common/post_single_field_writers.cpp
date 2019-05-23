@@ -1,5 +1,4 @@
 /*!
-  \file post_single_field_writers.cpp
 
   \brief main routine of the Ensight filter
 

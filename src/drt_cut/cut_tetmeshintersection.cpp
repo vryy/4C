@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_tetmeshintersection.cpp
 
 \brief Cut tets used for the Tessellation routine
 

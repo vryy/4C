@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_boolifyparameters.cpp
 
 \brief Auxiliar routine to boolify integral Yes/No data
 

@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file unit_particle_interaction_dem_contact_normal.H
 
 \brief unittests for normal contact handler for discrete element method (DEM) interactions
 

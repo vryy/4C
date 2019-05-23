@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file volmortar_shape.H
 
 \brief shape functions for the volmortar framework
 

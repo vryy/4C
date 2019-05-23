@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file solver_solvertype.H
 
 \brief Declaration of solver type base class
 

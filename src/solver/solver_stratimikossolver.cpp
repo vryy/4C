@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file solver_stratimikossolver.cpp
 
 \brief Solver class using Trilinos STRATIMIKOS framework
 

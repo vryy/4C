@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file wear_partitioned.cpp
 
 \brief  Basis of all structure approaches with ale
         (Lagrangian step followed by Shape Evolution step )

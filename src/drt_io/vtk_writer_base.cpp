@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file vtk_writer_base.cpp
 
 \brief VTK writer base class
 

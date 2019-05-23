@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*!
-\file beam_potential_runtime_vtk_output_params.H
 
 \brief data container for input parameters for vtk-based visualization of potential-based beam
        interactions

@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file solver_pointpreconditioner.H
 
 \brief Declaration
 \level 1

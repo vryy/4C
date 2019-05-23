@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfluid_levelset_coupling_algorithm.H
 
 \brief Base algorithm of Xfluid utilizing level set for cut
 

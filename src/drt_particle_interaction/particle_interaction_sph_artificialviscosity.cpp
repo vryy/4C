@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_interaction_sph_artificialviscosity.cpp
 
 \brief artificial viscosity handler for smoothed particle hydrodynamics (SPH) interactions
 

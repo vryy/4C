@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file linalg_mlapi_operator.H
 
 \brief Declaration of MLAPI interface to ML
 

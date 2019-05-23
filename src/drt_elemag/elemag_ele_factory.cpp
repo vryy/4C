@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file elemag_ele_factory.cpp
 
 \brief Factory of electromagnetic elements
 

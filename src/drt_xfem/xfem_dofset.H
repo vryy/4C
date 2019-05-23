@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfem_dofset.H
 
 \brief provides a general XFEM dofset which uses the information from the cut-library to determine
 the number of dofs per node when multiple sets of degrees of freedom per node have to be used

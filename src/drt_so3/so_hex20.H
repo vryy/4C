@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so_hex20.H
 \brief 3D quadratic serendipity element
 \level 1
 \maintainer Christoph Meier

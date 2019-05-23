@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so_hex18.cpp
 \brief 18-node hexahedral (bi-quadratic linear)
 \level 1
 

@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file lubrication_ele_interface.H
 
 \brief Interface of Lubrication element evaluation routine
 

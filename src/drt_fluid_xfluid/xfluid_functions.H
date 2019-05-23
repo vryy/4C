@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfluid_functions.H
 
 \brief Managing and evaluating of spatial functions for Xfluid problems
 

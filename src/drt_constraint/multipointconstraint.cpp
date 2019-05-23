@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file multipointconstraint.cpp
 \brief Basic constraint class, dealing with multi point constraints
 \level 2
 

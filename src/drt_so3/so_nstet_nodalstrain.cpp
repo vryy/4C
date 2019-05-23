@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------*
-\file so_nstet_nodalstrain.cpp
 
 \brief NStet element
 

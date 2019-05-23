@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfem_coupling_mesh_coupled_levelset.H
 
 \brief manages a mesh coupling object with knowledge of a level set field
 

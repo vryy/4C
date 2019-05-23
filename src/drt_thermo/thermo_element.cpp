@@ -1,5 +1,4 @@
 /*!
-\file thermo_element.cpp
 \brief basic thermo element
 
 \level 1

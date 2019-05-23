@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so_tet4av.H
 \brief Solid Tet4 Element
 \maintainer Christoph Meier
 \level 3

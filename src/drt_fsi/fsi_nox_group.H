@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_nox_group.H
 
 \brief Implementation of NOX::Group for FSI
 

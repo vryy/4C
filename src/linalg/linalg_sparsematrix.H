@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file linalg_sparsematrix.H
 
 \brief Declaration of general BACI sparse matrix class
 

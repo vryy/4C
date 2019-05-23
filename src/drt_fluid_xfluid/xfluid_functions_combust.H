@@ -1,5 +1,4 @@
 /*!-------------------------------------------------------------------------*
-\file xfluid_functions_combust.H
 
 \brief Managing and evaluating of spatial functions for combustion and two-phase flow problems
 

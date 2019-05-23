@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-  \file post_thermo_heatflux.cpp
 
   \brief postprocessing of thermal heatfluxes
 

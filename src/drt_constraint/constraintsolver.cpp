@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file constraintsolver.cpp
 \brief Class containing Uzawa algorithm to solve linear system.
 \level 2
 

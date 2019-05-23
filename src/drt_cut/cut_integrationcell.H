@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_integrationcell.H
 
 \brief Create and handle integrationcells
 

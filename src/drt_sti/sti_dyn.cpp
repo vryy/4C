@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file sti_dyn.cpp
 
 \brief main control routine for monolithic scalar-thermo interaction
 

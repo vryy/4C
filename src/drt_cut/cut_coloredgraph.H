@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_coloredgraph.H
 
 \brief colored graph to create volumecells from facets
 

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfem_dofset_transparent_independent.cpp
 
 \brief transparent independent dofset
 

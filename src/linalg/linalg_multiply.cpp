@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file linalg_multiply.cpp
 \brief Implementation
 
 \level 1

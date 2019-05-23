@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_enums.H
 
 \brief defining enums of particle states
 

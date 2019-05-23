@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file linalg_sparsematrixbase.cpp
 \brief Implementation
 
 \level 0

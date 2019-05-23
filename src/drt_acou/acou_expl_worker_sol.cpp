@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file acou_expl_worker_sol.cpp
 \brief Control routine for acoustic explicit time integration for solids
        or aka elastodynamics
 \level 2

@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file XFScoupling_manager.cpp
 \brief  Coupling Manager for eXtended Fluid Structural Coupling
 
 \level 2

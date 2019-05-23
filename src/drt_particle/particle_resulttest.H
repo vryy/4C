@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file particle_resulttest.H
 
 \brief testing of particle calculation results
 

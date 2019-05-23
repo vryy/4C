@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file levelset_timint_stat.cpp
 
 \brief stationary time integration scheme for level-set problems (for coupled problems only)
        just a dummy

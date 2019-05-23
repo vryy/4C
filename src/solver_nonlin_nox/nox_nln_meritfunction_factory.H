@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file nox_nln_meritfunction_factory.H
 
 \brief Factory to create a merit function evaluation object.
 

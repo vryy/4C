@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_utils.H
 
 \brief Utils Header defining ours sets of geometrical objects
        and containing many useful utility methods

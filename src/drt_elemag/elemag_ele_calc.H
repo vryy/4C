@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file elemag_ele_calc.H
 
 \brief All functionality for electromagnetic element evaluations
 

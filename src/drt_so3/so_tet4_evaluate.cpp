@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------*
-\file so_tet4_evaluate.cpp
 \brief quadratic nonlinear tetrahedron
 \level 1
 \maintainer Christoph Meier

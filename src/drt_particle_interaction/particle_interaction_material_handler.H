@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_interaction_material_handler.H
 
 \brief particle material handler for particle simulations
 

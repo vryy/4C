@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file MueLu_ContactTransferFactory_fwd.hpp
 
 \brief MueLu transfer factory class for contact
 \level 2

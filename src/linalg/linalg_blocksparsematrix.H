@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file linalg_blocksparsematrix.H
 
 \brief block sparse matrix
 

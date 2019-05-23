@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file acou_ele_intfaces_calc.cpp
 \brief
 
 Integrate internal face terms on an internal faces element

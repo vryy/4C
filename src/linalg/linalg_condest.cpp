@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file linalg_condest.cpp
 \brief estimate condition number of a matrix
 
 copied and adapted from

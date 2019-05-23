@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
- \file volmortar_coupling.cpp
 
 \brief main routines for the volmortar framework
 

@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file constraint_element2_evaluate.cpp
 \brief A 2D constraint element with no physics attached
 \level 2
 

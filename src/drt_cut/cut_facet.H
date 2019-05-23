@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_facet.H
 
 \brief cut facet (surface descripted by a cycle of points)
 

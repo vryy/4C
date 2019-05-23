@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file drt_utils_nurbs_shapefunctions.H
 
 \brief Specification of nurbs basis functions
 

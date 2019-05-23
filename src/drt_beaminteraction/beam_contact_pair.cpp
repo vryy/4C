@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file beam_contact_pair.cpp
 
 \brief one generic (beam-to-?) contact element pair
 

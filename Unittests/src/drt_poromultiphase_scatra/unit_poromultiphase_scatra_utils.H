@@ -1,5 +1,4 @@
 /*!
-\file unit_poromultiphase_scatra_utils.H
 
 \brief unittests for utils of poromultiphase_scatra-framework
 

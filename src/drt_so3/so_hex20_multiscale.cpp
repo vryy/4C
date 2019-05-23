@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so_hex20_multiscale.cpp
 \brief multiscale variant of 3D quadratic serendipity element
 \level 2
 

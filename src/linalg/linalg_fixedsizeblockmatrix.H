@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file linalg_fixedsizeblockmatrix.H
 \brief Declaration
 
 \level 2

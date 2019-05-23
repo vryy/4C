@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_interaction_sph_neighbor_pair_struct.H
 
 \brief neighbor pair struct for smoothed particle hydrodynamics (SPH) interactions
 

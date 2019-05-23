@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_interaction_base.H
 
 \brief base particle interaction handler
 

@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file XFAcoupling_manager.H
 \brief Coupling Manager for eXtended Fluid Ale Coupling
 
 \level 3

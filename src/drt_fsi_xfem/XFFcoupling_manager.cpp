@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file XFFcoupling_manager.cpp
 \brief Coupling Manager for eXtended Fluid Fluid Coupling
 
 \level 3

@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file ehl_utils.H
 
 \brief utility class for  elastohydrodynamic lubrication (lubrication structure interaction)
 

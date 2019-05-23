@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file unit_particle_container.H
 
 \brief unittests for smart particle container class
 

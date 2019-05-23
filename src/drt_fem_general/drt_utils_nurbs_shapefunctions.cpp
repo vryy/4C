@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file drt_utils_nurbs_shapefunctions.cpp
 
 \brief Specification of nurbs shape functions
 

@@ -1,5 +1,4 @@
 /*!
-\file beam_to_solid_mortar_manager.H
 
 \brief Manage the creation of additional DOFs for mortar couplings between beams and solids.
 

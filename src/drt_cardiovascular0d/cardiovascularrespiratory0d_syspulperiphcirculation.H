@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file cardiovascularrespiratory0d_syspulperiphcirculation.H
 
 \brief Monolithic coupling of 3D structure Cardiovascular0D models
 

@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file nox_nln_statustest_activeset.cpp
 
 \brief Check the active set for convergence. Only meaningful for
        inequality constrained problems.

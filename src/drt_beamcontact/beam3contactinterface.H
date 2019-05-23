@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file beam3contactinterface.H
 
 \brief interface class for templated classes beam3contact and beam3contactnew
 

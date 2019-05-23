@@ -1,6 +1,5 @@
 /*!----------------------------------------------------------------------
 \brief Test for the CUT Library
-\file cut_test_facet_failed_cln.cpp
 
 \level 1
 

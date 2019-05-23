@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file fsi_fluidfluidmonolithic_fluidsplit_nonox.cpp
 \brief Class for monolithic fluid-fluid-FSI using XFEM
 
 \level 3

@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_gravity.cpp
 
 \brief gravity handler for particle simulations
 

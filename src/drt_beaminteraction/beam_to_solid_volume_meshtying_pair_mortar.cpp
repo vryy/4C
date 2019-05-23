@@ -1,5 +1,4 @@
 /*!
-\file beam_to_solid_volume_meshtying_pair_mortar.cpp
 
 \brief Meshtying element for meshtying between a 3D beam and a 3D solid element using mortar shape
 functions for the traction.

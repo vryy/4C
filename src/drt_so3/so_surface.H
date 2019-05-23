@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so_surface.H
 
 \brief class for evaluation of equations on the structural surface
 \level 1

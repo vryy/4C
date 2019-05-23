@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------*
-\file so_tet4av_evaluate.cpp
 \brief averaged nodal volume tet4
 \level 3
 \maintainer Christoph Meier

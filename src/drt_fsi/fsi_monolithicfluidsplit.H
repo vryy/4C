@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_monolithicfluidsplit.H
 
 \brief Solve FSI problem with matching grids using a monolithic scheme
 with condensed fluid interface velocities

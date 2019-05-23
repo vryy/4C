@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_integrationcellcreator.H
 
 \brief Create and handle integrationcells for the Tessellation routine
 

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file linesearch_factory.cpp
 
 \brief Line search factory class
 

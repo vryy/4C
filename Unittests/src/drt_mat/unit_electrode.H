@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file unit_electrode.H
 
 \brief unit testing functionality for electrode material
 

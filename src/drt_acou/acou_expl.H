@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file acou_expl.H
 \brief Control routine for acoustic explicit time integration.
 
 \level 2

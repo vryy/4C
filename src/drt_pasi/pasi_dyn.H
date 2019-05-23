@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file pasi_dyn.H
 
 \brief Control routine for particle structure interaction problems.
 

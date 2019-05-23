@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so3_poro_fwd.hpp
 \brief forward declarations (explicit instantiation) of the templated poro elements
 
 \maintainer Christoph Ager

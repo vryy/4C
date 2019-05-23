@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so_sh8.cpp
 
 \brief solid shell8 element formulation
 

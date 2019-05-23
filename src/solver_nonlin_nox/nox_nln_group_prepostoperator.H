@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file nox_nln_group_prepostoperator.H
 
 \brief wrapper class for a user derived NOX PrePostOperator
 

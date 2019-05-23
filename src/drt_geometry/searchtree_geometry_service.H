@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file searchtree_geometry_service.H
 
 \brief provides geometry methods for a search tree
 

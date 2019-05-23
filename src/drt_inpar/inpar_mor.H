@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_mor.H
 
 \brief Input parameters for model order reduction
 

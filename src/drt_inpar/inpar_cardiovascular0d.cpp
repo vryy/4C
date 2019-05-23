@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_cardiovascular0d.cpp
 
 \brief Input parameters for 0d cardiovascular-structure coupling
 

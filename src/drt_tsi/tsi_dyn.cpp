@@ -1,6 +1,5 @@
 /*!----------------------------------------------------------------------*/
 /*!
-\file tsi_dyn.cpp
 \brief Control routine for thermo-structure-interaction problems.
 
 

@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file lubrication_ele_calc.cpp
 
 \brief main file containing routines for calculation of lubrication element
 

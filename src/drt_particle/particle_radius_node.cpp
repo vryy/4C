@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file particle_radius_node.cpp
 
 \brief particle node with specified radius
 

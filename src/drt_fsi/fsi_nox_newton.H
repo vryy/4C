@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_nox_newton.H
 
 \brief NOX Newton direction with adaptive linear solver tolerance for FSI
 

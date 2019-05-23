@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file particle_node.H
 
 \brief A particle is a DRT::Node with additional knowledge of its collision status
 

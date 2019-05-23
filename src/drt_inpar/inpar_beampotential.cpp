@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_beampotential.cpp
 
 \brief input parameter definitions for beam potential-based interactions
 

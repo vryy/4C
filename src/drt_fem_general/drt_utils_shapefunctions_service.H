@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file drt_utils_shapefunctions_service.H
 
  \brief provide service routines involving shape functions
 

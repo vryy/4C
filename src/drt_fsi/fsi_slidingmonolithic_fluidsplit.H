@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file fsi_slidingmonolithic_fluidsplit.H
 
 \brief Solve FSI problem with sliding grids using a monolithic scheme
 with condensed fluid interface velocities

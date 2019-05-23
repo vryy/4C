@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file sorted_vector.H
 
 \brief  sorted vector that emulates a set (and is supposed to be much more efficient)
 

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file poro_scatra_base.cpp
 
  \brief  base class for all poroelasticity scalar transport interaction algorithms
 

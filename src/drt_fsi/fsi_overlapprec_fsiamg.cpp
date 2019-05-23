@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_overlapprec_fsiamg.cpp
 
 \brief Special version of block matrix that includes the FSI block preconditioner
 

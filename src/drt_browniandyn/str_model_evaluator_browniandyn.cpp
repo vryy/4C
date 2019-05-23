@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_model_evaluator_browniandyn.cpp
 
 \brief model evaluator for brownian (stochastic and damping)
        forces

@@ -1,5 +1,4 @@
 /*!
-\file geometry_pair_line_to_volume.H
 
 \brief Class for interaction of lines and volumes.
 

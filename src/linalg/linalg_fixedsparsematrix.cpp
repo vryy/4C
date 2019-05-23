@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file linalg_fixedsparsematrix.cpp
 \brief Implementation
 
 \level 2

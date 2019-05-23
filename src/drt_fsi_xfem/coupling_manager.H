@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file coupling_manager.H
 \brief  Pure Virtual Coupling Manager, to define the basic functionality of all specified coupling
 managers
 

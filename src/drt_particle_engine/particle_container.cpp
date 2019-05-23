@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_container.cpp
 
 \brief smart particle container class
 

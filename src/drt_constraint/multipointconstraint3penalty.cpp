@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file multipointconstraint3penalty.cpp
 \brief Basic constraint class, dealing with multi point constraints
 \level 2
 

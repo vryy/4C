@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file solver_blockpreconditioners.H
 
 \brief Declaration
 \level 1

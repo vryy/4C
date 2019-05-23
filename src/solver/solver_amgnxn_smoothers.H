@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file solver_amgnxn_smoothers.H
 
 \brief Declaration
 \level 1

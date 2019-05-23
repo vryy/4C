@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file lubrication_ele_action.H
 
 \brief provides enum of actions.
 

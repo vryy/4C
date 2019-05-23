@@ -1,5 +1,4 @@
 /*!
-\file inpar_geometry_pair.cpp
 
 \brief Input parameter for geometry pairs.
 

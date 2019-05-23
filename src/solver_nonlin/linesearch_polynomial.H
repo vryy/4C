@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file linesearch_polynomial.H
 
 \brief Line search based on polynomials
 

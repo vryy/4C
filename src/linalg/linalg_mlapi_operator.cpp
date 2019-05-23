@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file linalg_mlapi_operator.cpp
 
 \brief Implementation
 

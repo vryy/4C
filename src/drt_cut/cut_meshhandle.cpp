@@ -1,5 +1,4 @@
 /*!-----------------------------------------------------------------------------------------------*
-\file cut_meshhandle.cpp
 
 \brief handle that holds the mesh specific information
 

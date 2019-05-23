@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elemag_ele_intfaces_calc.H
 
 \brief Internal implementation of elemag internal faces elements
 

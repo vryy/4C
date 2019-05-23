@@ -1,5 +1,4 @@
 /*!
-\file drt_utils_boundary_integration.H
 
 \brief methods for the integration over boundary elements
 

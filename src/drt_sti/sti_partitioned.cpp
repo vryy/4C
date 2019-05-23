@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file sti_partitioned.cpp
 
 \brief partitioned coupling algorithm for scatra-thermo interaction
 

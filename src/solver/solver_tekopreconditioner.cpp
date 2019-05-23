@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file solver_tekopreconditioner.cpp
 
 \brief Preconditioner class using Trilinos TEKOS framework
 

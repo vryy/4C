@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file so3_thermo_evaluate.cpp
 \brief Evaluation of thermo-structure-interaction elements
        (structural part of coupling matrices)
 \level 1

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file pat_imagereconstruction.H
 
 \brief image reconstruction
 

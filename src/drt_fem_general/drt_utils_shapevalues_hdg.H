@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file drt_utils_shapevalues_hdg.H
 
 \brief evaluation of arbitrary lagrange polynomials in HDG context
 

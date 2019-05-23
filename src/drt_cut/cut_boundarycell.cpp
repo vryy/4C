@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_boundarycell.cpp
 
 \brief cut boundary cell
 

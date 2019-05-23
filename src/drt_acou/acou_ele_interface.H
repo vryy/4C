@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file acou_ele_interface.H
 
 \brief Interface of acoustic elements
 

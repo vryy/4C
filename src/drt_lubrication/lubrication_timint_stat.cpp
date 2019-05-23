@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file lubrication_timint_stat.cpp
 
 \brief solution algorithm for stationary problems
 

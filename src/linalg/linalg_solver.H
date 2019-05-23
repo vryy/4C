@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file linalg_solver.H
 
 \brief Declaration of basic solver interface
 

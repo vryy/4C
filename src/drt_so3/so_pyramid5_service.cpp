@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so_pyramid5_service.cpp
 \brief pyramid shaped solid element
 \level 2
 \maintainer Christoph Meier

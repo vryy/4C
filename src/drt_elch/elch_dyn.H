@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file elch_dyn.H
 \brief Control routine for Electrochemistry module.
 
 \level 2

@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file elemag_ele_evaluate.cpp
 \brief electromagnetic element evaluation base routines
 
 \level 2

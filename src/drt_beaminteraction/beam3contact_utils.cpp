@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file beam3contact_utils.cpp
 
 \brief A set of utility functions for beam contact
 

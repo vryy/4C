@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_overlapprec.H
 
 \brief Base class for all FSI block preconditioning matrices
 

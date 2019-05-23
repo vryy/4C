@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_algorithm_utils.cpp
 
 \brief utils for particle algorithm
 

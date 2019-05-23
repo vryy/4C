@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file deal_tria_wrapper.H
 \brief Computes a deal.II Triangulation from DRT::Discretization
 
 

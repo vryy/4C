@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfem_mesh_projector.H
 
 \brief Projection of state vectors between overlapping meshes
 

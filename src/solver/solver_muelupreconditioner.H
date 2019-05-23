@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file solver_muelupreconditioner.H
 
 \brief Interface class for MueLu preconditioner
 

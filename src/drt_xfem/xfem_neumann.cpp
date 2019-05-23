@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfem_neumann.cpp
 
 \brief base xfem Neumann boundary conditions
 

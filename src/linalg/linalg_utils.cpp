@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file linalg_utils.cpp
 
 \brief A collection of helper methods for namespace LINALG
 

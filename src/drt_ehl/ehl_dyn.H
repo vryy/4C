@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file ehl_dyn.H
 
 \brief control routine for elastohydrodynamic lubrication (lubrication structure interaction)
 

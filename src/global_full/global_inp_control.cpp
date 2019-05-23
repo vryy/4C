@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file global_inp_control.cpp
 
 \brief Global control routine of baci
 

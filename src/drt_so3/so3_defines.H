@@ -1,5 +1,4 @@
 /*!-----------------------------------------------------------------------
-\file so3_defines.H
 
 \brief A set of preprocessor defines for solid element methods
 

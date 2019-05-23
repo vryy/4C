@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_tolerance.H
 
 \brief Central file for !all! Tolerances used in the cut
 

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file vele3_surface_evaluate.cpp
 
 \brief volume element
 

@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so_pyramid5fbar.cpp
 
 \brief pyramid shaped solid element
 

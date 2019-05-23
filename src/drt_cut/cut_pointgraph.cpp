@@ -1,7 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_pointgraph.cpp
-
 \brief PointGraph, Graph Algorithm to create Facets from lines and edges
 
 \level 3

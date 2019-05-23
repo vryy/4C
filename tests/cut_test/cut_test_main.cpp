@@ -1,6 +1,5 @@
 /*!----------------------------------------------------------------------
 \brief Central fiel for the tests of the CUT Library, here all tests are called.
-\file cut_test_main.cpp
 
 \level 1
 

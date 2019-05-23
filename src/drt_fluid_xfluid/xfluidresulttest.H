@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfluidresulttest.H
 
 \brief xfem based fluid result tests
 

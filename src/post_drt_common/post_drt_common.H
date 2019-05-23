@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file post_drt_common.H
 
 \brief drt binary filter library
 

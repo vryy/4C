@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file fsi_constrmonolithic.cpp
 
 \maintainer Matthias Mayr
 

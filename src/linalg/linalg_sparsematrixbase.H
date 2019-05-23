@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file linalg_sparsematrixbase.H
 \brief Declaration
 
 \level 0

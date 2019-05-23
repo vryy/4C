@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_interaction_sph_equationofstate_bundle.cpp
 
 \brief class holding all equation of state handlers for smoothed particle hydrodynamics (SPH)
 interactions

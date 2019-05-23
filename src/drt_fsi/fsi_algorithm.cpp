@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_algorithm.cpp
 
 \brief Basis of all FSI algorithms
 

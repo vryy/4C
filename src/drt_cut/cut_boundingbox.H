@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_boundingbox.H
 
 \brief bounding box for cut
 

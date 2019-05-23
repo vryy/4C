@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*!
-\file beam_to_sphere_contact_params.H
 
 \brief data container holding all beam to sphere contact input parameters
 

@@ -1,5 +1,4 @@
 /*!------------------------------------------------------------------------------------------------*
- \file poroelast_defines.H
 
  \brief A set of preprocessor defines for poroelasticity methods
 

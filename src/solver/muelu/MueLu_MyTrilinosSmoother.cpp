@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file MueLu_MyTrilinosSmoother.cpp
 
 \brief MueLu smoother interface
 \level 2

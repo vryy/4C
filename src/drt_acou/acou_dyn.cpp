@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file acou_dyn.cpp
 \brief Main control routine for acoustic simulations
 \level 2
 \maintainer Luca Berardocco

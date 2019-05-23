@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file solver_directsolver.H
 
 \brief Description
 \level 0

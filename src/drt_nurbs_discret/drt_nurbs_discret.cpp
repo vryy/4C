@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_nurbs_discret.cpp
 
 \brief a class to manage one nurbs discretization
 

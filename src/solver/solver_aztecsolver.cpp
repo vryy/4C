@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file solver_aztecsolver.cpp
 
 \brief Implementation to AztecOO solver package
 

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file quadrature_compression.cpp
 \brief see paper by Sudhakar
 
 \maintainer  Christoph Ager

@@ -1,5 +1,4 @@
 /*!---------------------------------------------------------------------------
-\file elemag_ele_action.H
 
 \brief Provides enum of actions for electromagnetics elements
 

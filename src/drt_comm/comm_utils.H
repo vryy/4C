@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file comm_utils.H
 
 \brief Helper class for everything that deals with communication, e.g.
        MPI, Epetra_Comm and further communicators

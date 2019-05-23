@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so3_poro.cpp
 \brief implementation of the 3D solid-poro element
 
 \maintainer Christoph Ager

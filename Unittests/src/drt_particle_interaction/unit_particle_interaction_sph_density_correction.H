@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file unit_particle_interaction_sph_density_correction.H
 
 \brief unittests for density correction handler in smoothed particle hydrodynamics (SPH)
 

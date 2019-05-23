@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file solver_aztecoo_conditionnumber.H
 
 \maintainer  Martin Kronbichler
 

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_algorithm.H
 
 \brief Basis of all FSI algorithms
 

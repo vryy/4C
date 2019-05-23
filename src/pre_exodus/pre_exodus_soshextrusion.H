@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file pre_exodus_soshextrusion.H
 
 \brief solid-shell body creation by extruding surface
 

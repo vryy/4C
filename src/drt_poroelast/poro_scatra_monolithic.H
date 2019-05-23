@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file poro_scatra_monolithic.H
 
  \brief monolithic coupling algorithm for scalar transport within porous medium
 

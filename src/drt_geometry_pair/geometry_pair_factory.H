@@ -1,5 +1,4 @@
 /*!
-\file geometry_pair_factory.H
 
 \brief functions to create geometry pairs.
 

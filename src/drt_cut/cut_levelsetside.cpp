@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_levelsetside.cpp
 
 \brief for intersection with an levelset, levelsetside represents the surface described by the
 levelset

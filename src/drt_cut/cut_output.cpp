@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_output.cpp
 
 \brief Handles file writing of all cut related stuff (gmsh)
 

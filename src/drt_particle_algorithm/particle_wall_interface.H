@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_wall_interface.H
 
 \brief pure virtual interface to provide access to particle wall handler
 

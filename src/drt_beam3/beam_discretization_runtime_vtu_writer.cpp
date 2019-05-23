@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*!
-\file beam_discretization_runtime_vtu_writer.cpp
 
 \brief Write visualization output for a beam discretization in vtk/vtu format at runtime
 

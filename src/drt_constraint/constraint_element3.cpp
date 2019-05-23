@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file constraint_element3.cpp
 \brief A 3D constraint element with no physics attached
 \level 2
 

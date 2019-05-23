@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file drt_meshfree_multibin.cpp
 
 \brief element type class of meshfree multibin, creating the same
 

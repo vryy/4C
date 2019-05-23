@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file poro_scatra_part_2wc.cpp
 
  \brief partitioned two way coupled poroelasticity scalar transport interaction algorithms
 

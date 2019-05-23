@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file poro_monolithicstructuresplit.cpp
 
  \brief  monolithic structure split poroelasticity algorithm
 

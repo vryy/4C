@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file beam3contactinterface.cpp
 
 \brief interface class for beam contact
 

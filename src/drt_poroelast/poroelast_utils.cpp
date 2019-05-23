@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file poroelast_utils.cpp
 
  \brief utility functions for porous media problems
 

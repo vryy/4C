@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_structure.H
 
 \brief structural dynamics input parameters
 

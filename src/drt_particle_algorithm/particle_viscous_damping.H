@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_viscous_damping.H
 
 \brief viscous damping handler for particle simulations
 

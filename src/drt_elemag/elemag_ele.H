@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elemag_ele.H
 
 \brief A C++ wrapper for the electromagnetic element
 

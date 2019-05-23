@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file beam3contact_tangentsmoothing.H
 
 \brief A set of functions in order to calculate a smooth tangent field
 

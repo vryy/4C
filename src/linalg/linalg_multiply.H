@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file linalg_multiply.H
 
 \brief matrix multiplication header
 

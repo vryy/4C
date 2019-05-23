@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file global_control.cpp
 
 \brief the basic baci routine
 

@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*!
-\file beam3r_evaluate.cpp
 
 \brief evaluation methods for 3D nonlinear Reissner beam element
 

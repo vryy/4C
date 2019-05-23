@@ -1,5 +1,4 @@
 /*!--------------------------------------------------------------------------
-\file drt_meshfree_bin.cpp
 \brief
 
 \maintainer Jonas Eichinger

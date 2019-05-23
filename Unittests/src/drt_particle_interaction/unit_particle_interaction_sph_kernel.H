@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file unit_particle_interaction_sph_kernel.H
 
 \brief unittests for kernel handler for smoothed particle hydrodynamics (SPH) interactions
 

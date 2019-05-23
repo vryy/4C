@@ -1,6 +1,5 @@
 /*!---------------------------------------------------------------------------
 
-\file linalg_krylov_projector.cpp
 
 \brief Krylov projector
 

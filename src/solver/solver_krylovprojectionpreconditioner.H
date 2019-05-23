@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file solver_krylovprojectionpreconditioner.H
 
 \brief Declaration
 \level 1

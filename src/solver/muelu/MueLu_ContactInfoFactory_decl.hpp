@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file MueLu_ContactInfoFactory_decl.hpp
 
 \brief MueLu contact info factory class
 \level 2

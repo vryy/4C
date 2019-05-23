@@ -1,5 +1,4 @@
 /*!
-\file unit_beaminteraction_beam_to_solid_volume_meshtying_mortar.H
 
 \brief Unit tests for the beam to volume meshtying mortar pair.
 

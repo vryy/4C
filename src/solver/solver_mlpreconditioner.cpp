@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file solver_mlpreconditioner.cpp
 
 \brief Interface class to ML preconditoner
 

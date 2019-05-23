@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file ale3_nurbs.H
 
 \brief A nurbs implementation of the ale3 element
 

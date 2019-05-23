@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfluid_state.cpp
 
 \brief State class for (in)stationary XFEM fluid problems
 

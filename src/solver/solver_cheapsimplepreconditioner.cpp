@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file solver_cheapsimplepreconditioner.cpp
 
 \brief Declaration
 \level 1

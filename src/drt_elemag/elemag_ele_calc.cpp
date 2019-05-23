@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file elemag_ele_calc.cpp
 \brief All functionality for electromagnetic element evaluations
 
 \level 2

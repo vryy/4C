@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file inversedesign_evaluate.cpp
 \brief special element adaptions for inverse design
 \maintainer Christoph Meier
 \level 2

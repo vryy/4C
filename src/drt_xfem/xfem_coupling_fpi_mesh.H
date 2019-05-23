@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfem_coupling_fpi_mesh.H
 
 \brief manages mesh based coupling of fluid and porous media
 xfluid class and the cut-library

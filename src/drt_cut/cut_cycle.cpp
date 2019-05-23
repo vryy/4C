@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_cycle.cpp
 
 \brief a cylcle of points (basic to create facets)
 

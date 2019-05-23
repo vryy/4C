@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file unit_particle_interaction_sph_momentum_formulation.H
 
 \brief unittests for momentum formulation handler in smoothed particle hydrodynamics (SPH)
 

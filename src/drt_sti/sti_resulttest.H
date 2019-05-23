@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file sti_resulttest.H
 
 \brief result testing functionality for scatra-thermo interaction problems
 

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_dyn.H
 
 \brief Entry routines for FSI problems and some other problem types as well
 

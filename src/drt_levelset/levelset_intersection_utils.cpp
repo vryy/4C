@@ -1,5 +1,4 @@
 /*!-----------------------------------------------------------------------------------------------*
- \file levelset_intersection_utils.cpp
 
  \brief detailed description in header file levelset_intersection.H
 

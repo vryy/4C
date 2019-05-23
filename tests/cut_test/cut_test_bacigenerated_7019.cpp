@@ -1,6 +1,5 @@
 /*!----------------------------------------------------------------------
 \brief Test for the CUT Library
-\file cut_test_bacigenerated_7019.cpp
 
 \level 1
 

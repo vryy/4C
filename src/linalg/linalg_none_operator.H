@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file linalg_none_operator.H
 \brief Declaration
 
 \level 1

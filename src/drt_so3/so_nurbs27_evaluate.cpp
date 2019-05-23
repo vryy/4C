@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so_nurbs27_evaluate.cpp
 
 \brief evaluation methods of the quadratic NURBS 27 element
 

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfluid.cpp
 
 \brief Control routine for fluid (in)stationary solvers with XFEM,
        including instationary solvers for fluid and fsi problems coupled with an internal embedded

@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file position_array.H
 
 \brief collection of service methods for intersection computations
 

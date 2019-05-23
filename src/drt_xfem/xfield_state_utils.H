@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfield_state_utils.H
 
 \brief Utils routines for xfluid state class
 

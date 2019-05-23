@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_boundarycell.H
 
 \brief cut boundary cell header file
 

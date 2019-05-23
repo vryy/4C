@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so3_scatra_eletypes.cpp
 
 \brief Solid-scatra elements types
 

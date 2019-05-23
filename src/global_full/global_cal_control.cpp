@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file global_cal_control.cpp
 
 \brief routine to control execution phase
 

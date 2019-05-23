@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file acou_dyn.H
 \brief Control routine for problem type acoustics
 
 \level 2

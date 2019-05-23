@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file acou_ele.cpp
 \brief acoustic element implementations
 
 \level 2

@@ -1,7 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file io_hdf.H
-\brief Helpers to read HDF5 based output.
+ * \brief Helpers to read HDF5 based output.
 
 \level 1
 

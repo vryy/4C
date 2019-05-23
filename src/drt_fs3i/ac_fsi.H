@@ -1,6 +1,5 @@
 /*!----------------------------------------------------------------------
 
-\file ac_fsi.H
 
 \brief H-file associated with algorithmic routines for two-way coupled partitioned
        solution approaches to fluid-structure-scalar-scalar interaction

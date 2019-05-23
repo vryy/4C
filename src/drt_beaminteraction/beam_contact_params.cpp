@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file beam_contact_params.cpp
 
 \brief data container holding pointers to all subcontainers that in turn hold
        all input parameters specific to their problem type

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file thrtimint_expl.cpp
 \brief Explicit time integration for thermal dynamics
 
 \level 3

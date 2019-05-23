@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file poro_partitioned.H
 
  \brief  base class for partitioned poroelasticity algorithms
 

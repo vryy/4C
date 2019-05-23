@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /**
-\file xfem_enum_lists.H
 
 \brief list of important enumerators ( used for the necessary header inclusions
        till C++11 )

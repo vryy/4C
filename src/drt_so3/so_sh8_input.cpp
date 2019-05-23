@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so_sh8_input.cpp
 \brief solid shell8 element formulation
 \level 1
 \maintainer Alexander Popp

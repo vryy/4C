@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file nox_nln_interface_jacobian.H
 
 \brief %NOX::NLN extension of the %NOX::Epetra jacobian
        interface.

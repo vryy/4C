@@ -1,7 +1,6 @@
 /*!-----------------------------------------------------------------------------------------------*
- \file cut_node.cpp
 
- \brief class representing a geometrical node
+\brief class representing a geometrical node
 
 
 \level 3

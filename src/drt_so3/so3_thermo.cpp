@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file so3_thermo.cpp
 \brief 3d TSI solid element
 \level 1
 \maintainer Christoph Meier

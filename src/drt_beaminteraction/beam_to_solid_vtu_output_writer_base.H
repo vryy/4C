@@ -1,5 +1,4 @@
 /*!
-\file beam_to_solid_vtu_output_writer_base.H
 
 \brief Base object that stores all relevant data for beam to solid output
 

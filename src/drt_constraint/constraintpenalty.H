@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file constraintpenalty.H
 
 \brief Basic constraint class, dealing with constraints living on boundaries
 

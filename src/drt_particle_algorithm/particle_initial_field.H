@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_initial_field.H
 
 \brief initial field handler for particle simulations
 

@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------*
-\file so_nstet5_nodalstrain.cpp
 
 \brief Nstet element nodal strain implementation
 

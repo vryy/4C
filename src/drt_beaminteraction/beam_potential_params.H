@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*!
-\file beam_potential_params.H
 
 \brief data container holding all input parameters relevant for potential based beam interactions
 

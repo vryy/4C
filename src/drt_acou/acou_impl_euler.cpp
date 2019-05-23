@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file acou_impl_euler.cpp
 \brief specific acoustic implicit euler implementation
 
 \level 2

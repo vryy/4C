@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_wall_result_test.H
 
 \brief particle wall result test for particle simulations
 

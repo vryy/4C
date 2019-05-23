@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file linesearch_fullstep.H
 
 \brief Line search with fixed full step
 

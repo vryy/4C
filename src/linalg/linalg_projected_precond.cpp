@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file  linalg_projected_precond.cpp
 
 \brief Implementation
 

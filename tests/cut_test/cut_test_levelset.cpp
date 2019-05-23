@@ -1,6 +1,5 @@
 /*!----------------------------------------------------------------------
 \brief Test for the CUT Library
-\file cut_test_levelset.cpp
 
 \level 1
 

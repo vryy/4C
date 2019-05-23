@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfem_coupling_base.cpp
 
 \brief is the base for the different types of mesh and level-set based coupling conditions and
 thereby builds the bridge between the xfluid class and the cut-library

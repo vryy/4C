@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file acou_expl_worker_ader_lts.cpp
 \brief Control routine for acoustic explicit time integration with ADER LTS
 
 \level 3

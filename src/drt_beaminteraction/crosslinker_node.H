@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file crosslinker_node.H
 
 \brief A class for a crosslinker node
 

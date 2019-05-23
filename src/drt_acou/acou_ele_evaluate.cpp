@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file acou_ele_evaluate.cpp
 \brief acoustic element evaluation base routines
 
 \level 2

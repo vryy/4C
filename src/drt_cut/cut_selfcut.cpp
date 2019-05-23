@@ -1,7 +1,6 @@
 /*!-----------------------------------------------------------------------------------------------*
- \file cut_selfcut.cpp
 
- \brief class that provides all routines to handle cutsides which cut each other
+\brief class that provides all routines to handle cutsides which cut each other
 
 \level 2
 

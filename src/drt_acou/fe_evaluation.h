@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file fe_evaluation.h
 \brief copy and overwrite from deal for masks for ADER LTS
 \level 2
 

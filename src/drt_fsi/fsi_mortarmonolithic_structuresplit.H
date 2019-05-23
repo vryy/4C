@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file fsi_mortarmonolithic_structuresplit.H
 
 \maintainer Matthias Mayr
 

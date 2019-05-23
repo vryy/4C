@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file ale_dyn.cpp
 
 \brief Entry routine for pure ALE problems
 

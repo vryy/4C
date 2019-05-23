@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so_hex20.cpp
 
 \brief 3D quadratic serendipity element
 

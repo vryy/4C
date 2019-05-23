@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file acou_timeint.cpp
 \brief Base class functions for implicit and explicit time integration
 
 \level 2

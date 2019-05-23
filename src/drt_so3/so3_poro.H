@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so3_poro.H
 
 \brief implementation of the 3D solid-poro element
 

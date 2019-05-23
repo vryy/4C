@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file solver_muelucontactpreconditioner_old.H
 
 \brief Interface class for MueLu contact preconditioner
 

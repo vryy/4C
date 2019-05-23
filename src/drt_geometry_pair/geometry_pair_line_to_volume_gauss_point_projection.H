@@ -1,5 +1,4 @@
 /*!
-\file geometry_pair_line_to_volume_gauss_point_projection.H
 
 \brief Line to volume interaction with simple Gauss point projection and boundary segmentation.
 

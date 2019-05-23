@@ -1,6 +1,5 @@
 /*!---------------------------------------------------------------------------
 
-\file solver_aztecsolver_projectedresidual.cpp
 
 \brief Declaration
 \level 1

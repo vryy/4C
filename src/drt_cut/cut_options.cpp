@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_options.cpp
 
 \brief options to set up the cut
 

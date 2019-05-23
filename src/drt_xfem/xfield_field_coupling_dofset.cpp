@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /**
-\file xfield_field_coupling_dofset.cpp
 
 \brief DoF set for coupling a xfield and a field discretization at a common
        interface

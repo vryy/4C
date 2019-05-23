@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file solver_muelucontactpreconditioner.cpp
 
 \brief MueLu contact preconditioner class
 \level 1

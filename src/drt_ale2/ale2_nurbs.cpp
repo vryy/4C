@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file ale2_nurbs.cpp
 
 \brief Nurbs verison of 2D ALE element
 

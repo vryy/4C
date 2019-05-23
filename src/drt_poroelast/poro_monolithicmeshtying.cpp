@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file poro_monolithicmeshtying.cpp
 
  \brief base for porous media monolithic meshtying method
 

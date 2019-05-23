@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_xfem_algorithm.H
 
 \brief Basis of monolithic XFSI algorithm that performs a coupling between the
        structural field equation and XFEM fluid field equations

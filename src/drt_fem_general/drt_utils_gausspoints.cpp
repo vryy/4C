@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file drt_utils_gausspoints.cpp
 
 \brief Implementation of gauss points access functions
 

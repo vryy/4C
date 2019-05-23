@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file pasi_partitioned.cpp
 
 \brief partitioned algorithm for particle structure interaction
 

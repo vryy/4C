@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_structureale.cpp
 
 \brief Solve structure only using FSI framework
 

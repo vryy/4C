@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file acou_timeint.H
 
 \brief Acoustics Base Algorithm for implicit and explicit time integration
 

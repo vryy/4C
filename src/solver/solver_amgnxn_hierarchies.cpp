@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file solver_amgnxn_hierarchies.cpp
 
 \brief Declaration
 \level 1

@@ -1,5 +1,4 @@
 /*!
-\file beam_to_solid_volume_meshtying_pair_gauss_point_cross_section.cpp
 
 \brief Meshtying element for meshtying between a beam and a 3D solid element using Gauss points
 on the surface of the (circular) beam cross section.

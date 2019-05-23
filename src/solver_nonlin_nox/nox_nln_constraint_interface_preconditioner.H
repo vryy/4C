@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file nox_nln_constraint_interface_preconditioner.H
 
 \brief Preconditioner interface for constrained problems.
 

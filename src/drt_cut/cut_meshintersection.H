@@ -1,5 +1,4 @@
 /*!-----------------------------------------------------------------------------------------------*
-\file cut_meshintersection.H
 
 \brief provides the specific functionality for cutting a mesh with other meshes
 

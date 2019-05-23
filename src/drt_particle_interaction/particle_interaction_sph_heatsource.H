@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_interaction_sph_heatsource.H
 
 \brief heat source handler for smoothed particle hydrodynamics (SPH) interactions
 

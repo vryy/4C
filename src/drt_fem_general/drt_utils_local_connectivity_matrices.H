@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file drt_utils_local_connectivity_matrices.H
 
 \brief Provide a node numbering scheme together with a set of shape functions
 

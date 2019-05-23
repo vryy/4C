@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file lubrication_ele_calc.H
 
 \brief main file containing routines for calculation of lubrication element
 

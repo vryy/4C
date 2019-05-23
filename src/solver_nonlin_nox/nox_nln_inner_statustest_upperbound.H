@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file nox_nln_inner_statustest_upperbound.H
 
 \brief inner status test that restricts value of update vector
 

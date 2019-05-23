@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file nox_nln_statustest_normf.cpp
 
 \brief %NOX::NLN implementation of a NormF status test. This
        test can be used to check the residual (right-hand-side)

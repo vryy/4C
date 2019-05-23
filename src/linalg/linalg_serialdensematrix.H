@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file linalg_serialdensematrix.H
 
 \brief Declaration of serial dense matrix wrapper class
 

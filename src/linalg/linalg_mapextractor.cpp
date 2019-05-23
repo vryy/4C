@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file linalg_mapextractor.cpp
 
 \brief Implementation
 

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elemag_dyn.H
 
 \brief  Main control routine for electromagnetic simulations
 

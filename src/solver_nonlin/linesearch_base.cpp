@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file linesearch_base.cpp
 
 \brief Line search base class
 

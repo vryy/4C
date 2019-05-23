@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_interaction_dem_history_pairs.H
 
 \brief history pair handler for discrete element method (DEM) interactions
 

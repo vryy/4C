@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file thrtimint_ost.H
 \brief one-step-theta time integrator for thermal field
 \level 1
 \maintainer Christoph Meier

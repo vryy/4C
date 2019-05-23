@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file fs3i_partitioned_2wc.cpp
 \brief Algorithmic routines for partitioned solution approaches to
        fluid-structure-scalar-scalar interaction (FS3I) specifically
        related to two-way-coupled problem configurations

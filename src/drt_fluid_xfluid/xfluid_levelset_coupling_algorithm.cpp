@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfluid_levelset_coupling_algorithm.cpp
 
 \brief Basis of xfluid-levelset coupling.
 

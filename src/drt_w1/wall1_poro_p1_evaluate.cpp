@@ -12,7 +12,6 @@
 
 /*----------------------------------------------------------------------*/
 /*!
- \file wall1_poro_p1_evaluate.cpp
 
  \brief evaluate methods for 2D wall element for structure part of porous medium
         using p1 approach (mixed approach)

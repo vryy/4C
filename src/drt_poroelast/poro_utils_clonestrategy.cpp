@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file poro_utils_clonestrategy.cpp
 
  \brief strategy to clone porofluid from porous solid
 

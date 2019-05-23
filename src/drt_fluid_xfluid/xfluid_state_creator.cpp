@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfluid_state_creator.cpp
 
 \brief Creates a state object for (in)stationary XFEM fluid problems
 

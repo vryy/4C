@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file least_squares.H
 
 \brief Implementation of least squares by Sudhakar for Moment-fitting
 

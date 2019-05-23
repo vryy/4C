@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file nox_nln_meritfunction_infeasibility.cpp
 
 \brief Implementation of the infeasibility merit function for
        constrained problems. Especially useful for the filter method.

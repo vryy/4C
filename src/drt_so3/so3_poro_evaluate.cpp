@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so3_poro_evaluate.cpp
 
 \brief Evaluation methods for the 3D structural poro element
 

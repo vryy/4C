@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /**
-\file so_sh8_service.cpp
 \brief Service functionality for the solid shell8 elements
 
 \maintainer Alexander Popp

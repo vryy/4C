@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_tetmesh.H
 
 \brief Tessellate the element by means of a Delauney triangulation
 

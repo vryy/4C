@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file nln_operator_factory.H
 
 \brief Factory for nonlinear operators
 

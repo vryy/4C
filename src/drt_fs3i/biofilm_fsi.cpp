@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file biofilm_fsi.cpp
 
 \brief Algorithm for the calculation of biofilm growth.
        It consists of:

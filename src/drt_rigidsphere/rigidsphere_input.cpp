@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file rigidsphere_input.cpp
 
 \brief spherical particle element for brownian dynamics
 

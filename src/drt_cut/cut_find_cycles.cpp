@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_find_cycles.cpp
 
 \brief part of the facetgraph to create facets from lines and edges
 

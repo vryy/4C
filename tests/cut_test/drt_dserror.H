@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file drt_dserror.H
 
 \brief printing error messages
 

@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file drt_utils_gausspoints.H
 
 \brief Declaration of gauss formulas
 

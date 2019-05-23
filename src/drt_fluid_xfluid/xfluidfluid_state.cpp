@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfluidfluid_state.cpp
 
 \brief State class for (in)stationary XFEM fluid problems involving embedded
 fluid meshes

@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_interaction_dem_contact.H
 
 \brief contact handler for discrete element method (DEM) interactions
 

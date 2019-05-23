@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file drt_utils_integration.H
 
 \brief structs to store integration points and weights together
 

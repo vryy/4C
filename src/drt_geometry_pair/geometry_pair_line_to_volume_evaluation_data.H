@@ -1,5 +1,4 @@
 /*!
-\file geometry_pair_line_to_volume_evaluation_data.H
 
 \brief container for parameters for line to volume pairs, as well as global evaluation data.
 

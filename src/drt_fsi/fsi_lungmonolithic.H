@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_lungmonolithic.H
 \brief Volume-coupled FSI (base class)
 
 \level 3

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elch_algorithm.H
 
 \brief Basis of all ELCH algorithms
 

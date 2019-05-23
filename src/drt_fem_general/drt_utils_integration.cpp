@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file drt_utils_integration.cpp
 
 \brief Implementation of integration formulas for general integration
 

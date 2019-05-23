@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file tsi_monolithic.H
 
 \maintainer Christoph Meier
 

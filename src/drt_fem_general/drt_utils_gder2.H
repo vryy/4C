@@ -1,5 +1,4 @@
 /*!
-\file drt_utils_gder2.H
 
 \brief calculate second global derivatives w.r.t x/y/z at point r,s,t
 

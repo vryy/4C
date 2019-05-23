@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_fluid_ale.cpp
 
 \brief Solve fluid problems on ALE mesh
 

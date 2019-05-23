@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_ale.H
 
 \brief Input parameters for ALE mesh motion
 

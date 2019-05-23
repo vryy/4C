@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file biofilm_fsi_utils.cpp
 
 \brief utils for biofilm fs3i
 

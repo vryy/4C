@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file acou_inv_resulttest.cpp
 
 \brief testing of inverse photoacoustic reconstruction results
 

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file linalg_fixedsizematrix.H
 
 \brief a templated fixed size dense matrix
 

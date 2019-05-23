@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elemag_resulttest.H
 
 \brief testing of electromagnetic calculation results
 

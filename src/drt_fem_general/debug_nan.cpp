@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file debug_nan.cpp
 
 \brief A set of utility functions to identify NaNs in vectors and matrices
 

@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file volmortar_integrator.cpp
 
 \brief integration routines for the volmortar framework
 

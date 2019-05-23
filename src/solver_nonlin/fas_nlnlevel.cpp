@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file fas_nlnlevel.cpp
 
 \brief Level for nonlinear multigrid
 

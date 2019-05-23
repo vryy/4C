@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file drt_utils_fem_shapefunctions.H
 
 \brief Provide 1D, 2D and 3D shape functions
 

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file pre_exodus_readbc.H
 
 \brief pre_exodus bc-file reader
 

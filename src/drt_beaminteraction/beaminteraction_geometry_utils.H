@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*!
-\file beaminteraction_geometry_utils.H
 
 \brief utility functions for geometric problems associated with beam-to-? interactions
 

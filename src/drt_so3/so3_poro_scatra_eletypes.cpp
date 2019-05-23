@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file so3_poro_scatra_eletypes.cpp
 
  \brief element types of the 3D solid-poro element including scatra functionality
 

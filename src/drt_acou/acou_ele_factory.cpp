@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file acou_ele_factory.cpp
 
 \brief Factory of acoustic elements
 

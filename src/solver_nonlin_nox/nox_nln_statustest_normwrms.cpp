@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file nox_nln_statustest_normwrms.cpp
 
 \brief %NOX::NLN Weighted root mean square test of the solution
        increment. A detailed description can be found in the NOX

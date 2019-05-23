@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so_sh18.H
 \brief a in-plane bi-quadratic solid-like 7-parameter shell
 \level 3
 

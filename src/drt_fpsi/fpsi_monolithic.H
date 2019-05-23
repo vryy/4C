@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file fpsi_monolithic.H
 
  \brief General framework for monolithic fpsi solution schemes
 

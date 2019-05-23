@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file particle_ellipsoid_node.H
 
 \brief node representing ellipsoidal particle with possibly specified semi-axes and orientation
 

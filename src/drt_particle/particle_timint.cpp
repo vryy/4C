@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file particle_timint.cpp
 
 \brief Time integration for particle dynamics
 

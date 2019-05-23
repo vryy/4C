@@ -1,5 +1,4 @@
 /*!
-\file beam_to_solid_volume_meshtying_params.cpp
 
 \brief Data container holding all beam to solid volume meshtying input parameters.
 

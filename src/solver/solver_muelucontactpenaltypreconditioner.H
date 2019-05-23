@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file solver_muelucontactpenaltypreconditioner.H
 
 \brief MueLu contact penalty preconditioner implementation
 

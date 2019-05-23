@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_apply_nurbs_initial_condition.cpp
 
 \brief A service method allowing the application of initial conditions
        for nurbs discretisations.

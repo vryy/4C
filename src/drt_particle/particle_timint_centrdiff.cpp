@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file particle_timint_centrdiff.cpp
 
 \brief Particle time integration with central difference scheme 2nd order (explicit),
        also known as Velocity-Verlet algorithm

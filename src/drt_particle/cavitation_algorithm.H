@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file cavitation_algorithm.H
 
 \brief Algorithm to control cavitation simulations
 

@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file intersection_service.H
 
 \brief collection of service methods for intersection computations
 

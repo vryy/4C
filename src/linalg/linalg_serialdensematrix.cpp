@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file linalg_serialdensematrix.cpp
 
 \brief A class that wraps Epetra_SerialDenseMatrix with minor modifications
        in the constructor

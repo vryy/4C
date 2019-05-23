@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_statustest.cpp
 
 \brief Test routines for monolithic FSI convergence test
 

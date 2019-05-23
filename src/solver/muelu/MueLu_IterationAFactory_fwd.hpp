@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file MueLu_IterationAFactory_fwd.hpp
 
 \brief MueLu iteration factory class
 \level 2

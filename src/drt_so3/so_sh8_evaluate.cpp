@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file so_sh8_evaluate.cpp
 \brief some element evaluate
 \level 1
 

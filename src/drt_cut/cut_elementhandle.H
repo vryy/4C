@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file cut_elementhandle.H
 \brief Outside world interface to element. Converts quadratic to linear element. This provides the
   Gaussian rules generated from the cut
 

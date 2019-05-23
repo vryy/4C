@@ -1,5 +1,4 @@
 /*!
-\file geometry_pair_utility_classes.H
 
 \brief Utility classes for the geometry pairs.
 

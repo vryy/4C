@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file constraintpenalty.cpp
 
 \brief Basic constraint class, dealing with constraints living on boundaries
 

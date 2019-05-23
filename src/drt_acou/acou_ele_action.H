@@ -1,5 +1,4 @@
 /*!---------------------------------------------------------------------------
-\file acou_ele_action.H
 
 \brief Provides enum of actions for acoustic elements
 

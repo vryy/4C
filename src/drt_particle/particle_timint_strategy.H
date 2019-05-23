@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file particle_timint_strategy.H
 
 \brief time integration strategies for particle problems
 

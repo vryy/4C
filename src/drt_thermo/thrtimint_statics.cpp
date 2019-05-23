@@ -1,5 +1,4 @@
 /*!
-\file thrtimint_statics.cpp
 \brief Statics analysis
 \level 1
 \maintainer Christoph Meier

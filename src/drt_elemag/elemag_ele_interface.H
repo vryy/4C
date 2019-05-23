@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file elemag_ele_interface.H
 
 \brief Interface of electromagnetic elements
 

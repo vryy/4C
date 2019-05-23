@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so_pyramid5.H
 \brief pyramid shaped solid element
 \level 1
 

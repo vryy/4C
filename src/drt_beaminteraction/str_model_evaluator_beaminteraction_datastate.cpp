@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_model_evaluator_beaminteraction_datastate.cpp
 
 \brief Global state data container for the structural (time)
        integration

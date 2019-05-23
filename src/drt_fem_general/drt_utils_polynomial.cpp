@@ -1,5 +1,4 @@
 /*!
- \file drt_utils_polynomial.cpp
 
  \brief Generic polynomials for HDG methods in 1D, 2D, 3D
 

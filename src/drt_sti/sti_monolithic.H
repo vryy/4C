@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file sti_monolithic.H
 
 \brief monolithic coupling algorithm for scatra-thermo interaction
 

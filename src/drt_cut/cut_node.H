@@ -1,7 +1,6 @@
 /*!-----------------------------------------------------------------------------------------------*
- \file cut_node.H
 
- \brief class representing a geometrical node
+\brief class representing a geometrical node
 
 
 \level 2

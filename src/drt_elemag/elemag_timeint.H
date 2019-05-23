@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elemag_timeint.H
 
 \brief Base class functions for time integration of electromagnetics
 

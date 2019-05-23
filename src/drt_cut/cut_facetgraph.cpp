@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_facetgraph.cpp
 
 \brief graph to create volume cells from facets and lines
 

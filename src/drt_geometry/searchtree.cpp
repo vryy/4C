@@ -1,5 +1,4 @@
 /*!
- \file searchtree.cpp
 
  \brief provides a class with search tree
 

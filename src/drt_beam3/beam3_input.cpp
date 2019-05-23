@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file beam3_input.cpp
 
 \brief three dimensional nonlinear corotational Reissner beam element
 

@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file linalg_ana.cpp
 
 \brief A family of abstract nice algebra operations (ANA)
 

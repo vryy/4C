@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfluid_timeInt_std_SemiLagrange.cpp
 
 \brief provides the SemiLagrangean class
 

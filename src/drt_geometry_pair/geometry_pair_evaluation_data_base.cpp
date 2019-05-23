@@ -1,5 +1,4 @@
 /*!
-\file geometry_pair_evaluation_data_base.cpp
 
 \brief base class for geometry pair evaluation data subcontainers.
 

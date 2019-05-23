@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file drt_utils_shapevalues_hdg.cpp
 \brief Evaluation of scalar shape functions for HDG
 
 \level 2

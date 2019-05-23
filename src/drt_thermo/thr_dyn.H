@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file thr_dyn.H
 \brief
 \level 1
 \maintainer Christoph Meier

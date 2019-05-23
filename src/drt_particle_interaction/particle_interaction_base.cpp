@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_interaction_base.cpp
 
 \brief base particle interaction handler
 

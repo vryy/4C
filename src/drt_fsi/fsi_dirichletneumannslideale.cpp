@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_dirichletneumannslideale.cpp
 
 \brief Solve FSI problems using a Dirichlet-Neumann partitioning approach
        with sliding ALE-structure interfaces

@@ -1,5 +1,4 @@
 /*!---------------------------------------------------------------------*
-\file unit_so_tet4.H
 
 \brief Unittests for the So_tet4 class
 

@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file acou_expl_worker.cpp
 \brief Control routine for acoustic explicit time integration.
 \level 2
 

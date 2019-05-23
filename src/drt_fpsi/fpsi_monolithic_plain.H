@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fpsi_monolithic_plain.H
 
 \brief Solve FPSI problem with matching grids using a monolithic scheme
        in its plain form without any fancy splitting and condensation stuff

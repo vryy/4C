@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file fsi_fluidfluidmonolithic_fluidsplit_nonox.H
 \brief Control routine for monolithic fluid-fluid-fsi (fluidsplit)
 using XFEM
 

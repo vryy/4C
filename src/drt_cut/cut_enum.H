@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file cut_enum.H
 
 \brief All enumerators used in cut libraries
 

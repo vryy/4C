@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file fs3i_dyn.H
 \brief H-file associated with main control routine for
        fluid-structure-scalar-scalar interaction (FS3I)
 

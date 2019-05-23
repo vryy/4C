@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file acou_sol_ele_calc.H
 
 \brief Routines for acoustic elements
 

@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file base.H
 
 \brief used in direct divergence line integration
 

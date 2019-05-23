@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_sidehandle.H
 
 \brief Sidehandle represents a side original loaded into the cut, internal it can be split into
 subsides

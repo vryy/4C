@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file pre_exodus.cpp
 
 \brief preprocessor for exodusII format
 

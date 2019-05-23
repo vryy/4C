@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file nln_operator_sd.H
 
 \brief Steepest-descent algorithm
 

@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file base_vol.H
 
 \brief used in boundary cell integration
 

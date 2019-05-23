@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file XFPcoupling_manager.H
 \brief  Coupling Manager for eXtended Fluid Poro Coupling
 
 \level 3

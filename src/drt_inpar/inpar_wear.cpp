@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_wear.cpp
 
 \brief Input parameters for wear
 

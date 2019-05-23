@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file boundarycell_integration.H
 
 \brief used in boundary cell integration
 

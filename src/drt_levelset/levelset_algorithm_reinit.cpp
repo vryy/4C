@@ -1,5 +1,4 @@
 /*!-----------------------------------------------------------------------------------------------*
-\file levelset_algorithm_reinit.cpp
 
 \brief base level-set algorithm: collection of functions related to reinitialization
 

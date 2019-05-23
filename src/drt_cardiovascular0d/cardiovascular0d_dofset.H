@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file cardiovascular0d_dofset.H
 
 \brief A set of degrees of freedom
 

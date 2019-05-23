@@ -1,5 +1,4 @@
 /*!--------------------------------------------------------------------*
-\file dserror_stub.cpp
 
 \brief a dserror replacement, that does not crash, but throws an exception
 

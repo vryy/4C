@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file xfield_state.H
 
 \brief state management for one XFEM discretization
 

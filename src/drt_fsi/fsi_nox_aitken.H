@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file fsi_nox_aitken.H
 
 \brief class computing step length for AITKEN relaxation
 

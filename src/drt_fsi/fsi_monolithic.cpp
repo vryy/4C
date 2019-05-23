@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file fsi_monolithic.cpp
 
 \brief General framework for monolithic fsi solution schemes
 

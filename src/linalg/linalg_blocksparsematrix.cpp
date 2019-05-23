@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file linalg_blocksparsematrix.cpp
 
 \brief block sparse matrix implementation
 

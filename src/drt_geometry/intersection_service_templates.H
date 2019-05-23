@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file intersection_service_templates.H
 
 \brief collection of templated service methods for intersection computations
 

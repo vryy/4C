@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_constrmonolithic_fluidsplit.H
 
 \brief Solve FSI problem with constraints
 

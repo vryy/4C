@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file pat_imagereconstruction.cpp
 
 
 \brief image reconstruction

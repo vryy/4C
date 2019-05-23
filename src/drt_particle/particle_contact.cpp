@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file particle_contact.cpp
 
 \brief Particle collision handling
 

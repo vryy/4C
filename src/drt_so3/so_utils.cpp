@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so_utils.cpp
 
 \brief A collection of helper methods for solid elements
 

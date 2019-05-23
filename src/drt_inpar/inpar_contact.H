@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_contact.H
 
 \brief Input parameters for contact
 

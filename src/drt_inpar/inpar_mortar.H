@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_mortar.H
 
 \brief input parameters for mortar methods
 

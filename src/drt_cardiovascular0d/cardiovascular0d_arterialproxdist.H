@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file cardiovascular0d_arterialproxdist.H
 
 \brief Monolithic coupling of 3D structure Cardiovascular0D models
 

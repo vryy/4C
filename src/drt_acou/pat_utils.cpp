@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file pat_utils.cpp
 
 \brief basic helper classes for image reconstruction
 

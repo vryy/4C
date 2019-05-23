@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfem_utils.cpp
 \brief Basic tools used in XFEM routines
 
 \level 3

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_tsi.H
 \maintainer Christoph Meier
 
 \brief TSI input parameters

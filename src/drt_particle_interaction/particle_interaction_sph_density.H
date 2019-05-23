@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_interaction_sph_density.H
 
 \brief density handler for smoothed particle hydrodynamics (SPH) interactions
 

@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_model_evaluator_browniandyn.H
 
 \brief model evaluator for brownian (stochastic and damping)
        forces

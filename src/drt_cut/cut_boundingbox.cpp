@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_boundingbox.cpp
 
 \brief bounding box for cut
 

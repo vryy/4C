@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file beam3contact_manager.cpp
 
 \brief Main class to control beam contact
 

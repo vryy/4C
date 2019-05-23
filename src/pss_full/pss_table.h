@@ -1,5 +1,4 @@
 /*!---------------------------------------------------------------------
-\file pss_table.h
 \brief A very simple symbol table implementation.
 
 \maintainer Martin Kronbichler

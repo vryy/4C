@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file nox_nln_linearsystem.H
 
 \brief %NOX::NLN extension of the %NOX::Epetra::LinearSystem.
 

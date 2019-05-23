@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so_nstet5_multiscale.cpp
 \brief multiscale variant of NStet5 element
 
 \level 3

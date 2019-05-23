@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file drt_utils_bspline.cpp
 
 \brief Specification of B-splines
 

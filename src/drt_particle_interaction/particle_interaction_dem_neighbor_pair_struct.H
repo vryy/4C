@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_interaction_dem_neighbor_pair_struct.H
 
 \brief neighbor pair struct for discrete element method (DEM) interactions
 

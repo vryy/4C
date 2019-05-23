@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*!
-\file cut_parentintersection.cpp
 
 \brief provides the basic functionality for cutting a mesh
 

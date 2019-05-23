@@ -1,5 +1,4 @@
 /*!
-\file beam_to_solid_volume_meshtying_vtk_output_params.H
 
 \brief Object to store the beam to solid volume meshtying output (visualization) parameters.
 

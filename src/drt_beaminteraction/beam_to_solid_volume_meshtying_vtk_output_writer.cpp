@@ -1,5 +1,4 @@
 /*!
-\file beam_to_solid_volume_meshtying_vtk_output_writer.cpp
 
 \brief Object to handle beam to solid volume meshtying output creation.
 

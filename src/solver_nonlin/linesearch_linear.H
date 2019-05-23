@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file linesearch_linear.H
 
 \brief Line search based on linearity assumption
 

@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file nox_nln_solver_ptc.cpp
 
 \brief %NOX::NLN implementation of a pseudo transient non-linear
        solver.

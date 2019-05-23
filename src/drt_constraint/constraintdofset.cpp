@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file constraintdofset.cpp
 \brief A set of degrees of freedom for constraint problems
 \level 2
 

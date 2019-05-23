@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_memory_manager.cpp
 
 \brief Custom memory allocator user for CLN data type
 

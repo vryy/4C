@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file acou_inv_resulttest.H
 
 \brief testing of photoacoustic reconstruction results
 

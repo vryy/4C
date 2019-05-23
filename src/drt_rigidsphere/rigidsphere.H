@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file rigidsphere.H
 
 \brief spherical particle element for brownian dynamics
 

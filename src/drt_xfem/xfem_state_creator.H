@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /**
-\file xfem_state_creator.H
 
 \brief Merge the mutual functionality of the XCONTACT state creators.
 

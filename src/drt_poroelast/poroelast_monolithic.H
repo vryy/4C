@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file poroelast_monolithic.H
 
  \brief  Basis of all monolithic poroelasticity algorithms
 

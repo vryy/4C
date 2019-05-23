@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file drt_utils_boundary_integration.cpp
 
 \brief A set of integration routines for faces on elements
 

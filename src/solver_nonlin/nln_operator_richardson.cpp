@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file nln_operator_richardson.cpp
 
 \brief Nonlinear preconditioned Richardson iterations with damping
 

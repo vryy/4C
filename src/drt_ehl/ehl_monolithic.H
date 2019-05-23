@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file ehl_monolithic.H
 
 \brief basis of all monolithic EHL algorithms that perform a coupling between
        the structure field equation and lubrication field equations

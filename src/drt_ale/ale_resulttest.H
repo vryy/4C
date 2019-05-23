@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file ale_resulttest.H
 
 \brief Result tests for pure ALE problems
 

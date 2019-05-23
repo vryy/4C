@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_nox_mpe.cpp
 
 \brief Solve FSI problems using minimal polynomial vector extrapolation
 

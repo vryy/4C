@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file cardiovascular0d_resulttest.cpp
 
 \brief Monolithic coupling of 3D structural dynamics and 0D cardiovascular flow models
 

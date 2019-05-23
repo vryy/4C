@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file cavitation_service.cpp
 
 \brief Helper methods for cavitation simulations
 

@@ -1,5 +1,4 @@
 /*!---------------------------------------------------------------------
-\file pss_table_iter.h
 \brief Iterators for the symbol table.
 
 \maintainer Martin Kronbichler

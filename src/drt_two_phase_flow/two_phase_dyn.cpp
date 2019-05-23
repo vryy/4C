@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file two_phase_dyn.cpp
 \brief Control routine for fluid/xfluid and ScaTra coupled routines.
 \level 2
 

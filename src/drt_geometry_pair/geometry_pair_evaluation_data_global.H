@@ -1,5 +1,4 @@
 /*!
-\file geometry_pair_evaluation_data_global.H
 
 \brief Data container holding pointers to all subcontainers that in turn hold
        all evaluation data specific to their problem type,

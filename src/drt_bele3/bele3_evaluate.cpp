@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file bele3_evaluate.cpp
 
 \brief dummy 3D boundary element without any physics
 

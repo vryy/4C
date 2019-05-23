@@ -1,5 +1,4 @@
 /*!
-\file geometry_pair_constants.H
 
 \brief Constants used in the geometry pair namespace.
 

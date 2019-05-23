@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_tsi.cpp
 
 \brief Input parameters for tsi
 

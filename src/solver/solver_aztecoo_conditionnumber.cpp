@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file solver_aztecoo_conditionnumber.cpp
 
 \maintainer Martin Kronbichler
 

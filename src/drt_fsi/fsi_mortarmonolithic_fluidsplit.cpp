@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file fsi_mortarmonolithic_fluidsplit.cpp
 
 \maintainer Matthias Mayr
 

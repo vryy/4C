@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elemag_dyn.cpp
 
 \brief Main control routine for electromagnetic simulations
 

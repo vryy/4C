@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfluid_timeInt_base.cpp
 
 \brief provides the basic class for XFEM-time-integration, e.g. for Semi-Lagrangean methods
 

@@ -1,5 +1,4 @@
 /*!
-\file unit_geometry_pair_line_to_volume_segmentation_geometry_functions.H
 
 \brief Create the geometry for the unit tests.
 

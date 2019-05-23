@@ -1,7 +1,6 @@
 /*----------------------------------------------------------------------------*/
 /*!
 
-\file ale_utils_mapextractor.cpp
 
 \brief map extractor functionalities for interface problems for ALE field
 

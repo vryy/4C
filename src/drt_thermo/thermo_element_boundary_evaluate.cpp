@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file thermo_element_boundary_evaluate.cpp
 \brief
 
 Evaluate boundary conditions for thermo problems

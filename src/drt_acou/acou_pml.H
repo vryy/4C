@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file acou_pml.H
 \brief PML definition for HDG acoustics
 
 \level 3

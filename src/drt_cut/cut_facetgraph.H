@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_facetgraph.H
 
 \brief graph to create volumecells from facets and lines
 

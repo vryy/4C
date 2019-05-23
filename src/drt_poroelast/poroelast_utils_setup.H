@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file poroelast_utils_setup.H
 
  \brief utility methods for poro
 

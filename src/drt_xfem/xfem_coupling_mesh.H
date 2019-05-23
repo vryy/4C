@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfem_coupling_mesh.H
 
 \brief manages the different types of mesh based coupling conditions and thereby builds the bridge
 between the xfluid class and the cut-library

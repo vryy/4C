@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file ale_utils.H
 
 \brief Utility routines for ale mesh tying
 

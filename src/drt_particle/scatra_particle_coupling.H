@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_particle_coupling.H
 
 \brief Algorithm to control cavitation simulations
 

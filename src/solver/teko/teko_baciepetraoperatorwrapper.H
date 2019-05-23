@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file teko_baciepetraoperatorwrapper.H
 
 \brief wrapper class around the epetra operator in baci for use with teko
 \level 2

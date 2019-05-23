@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file nox_nln_solver_prepostop_generic.H
 
 \maintainer Anh-Tu Vuong
 

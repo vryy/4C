@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_nox_sd.cpp
 
 \brief Solve FSI problems using NonlinearCG
 

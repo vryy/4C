@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file beam3contact_octtree.H
 
 \brief Octtree for beam contact search
 

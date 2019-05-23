@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file thr_resulttest.H
 
 \brief testing of thermo calculation results
 

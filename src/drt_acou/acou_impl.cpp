@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file acou_impl.cpp
 \brief Main control routine for acoustic simulations
 
 \level 2

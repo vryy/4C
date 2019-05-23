@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_pointgraph.H
 
 \brief PointGraph, Graph Algorithm to create Facets from lines and edges
 

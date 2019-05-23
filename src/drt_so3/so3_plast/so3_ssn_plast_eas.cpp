@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file so3_ssn_plast_eas.cpp
 \brief Everything concerning EAS technology for so3_ssn_plast
        Mainly copied from so_hex8_eas.cpp. Redundancy needed,
        because of hard coded Gauss point in the so_hex8

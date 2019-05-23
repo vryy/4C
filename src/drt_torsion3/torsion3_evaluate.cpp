@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file torsion3_evaluate.cpp
 
 \brief three dimensional torsion spring element
 

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfluidfluid.cpp
 
 \brief Control routine for fluid-fluid (in)stationary solvers with XFEM
 

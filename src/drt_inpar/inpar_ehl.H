@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file inpar_ehl.H
 
 \brief Elastohydrodynamic lubrication (lubrication structure interaction) parameters
 

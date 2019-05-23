@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file linalg_sparsematrix.cpp
 
 \brief Implementation of general BACI sparse matrix class
 

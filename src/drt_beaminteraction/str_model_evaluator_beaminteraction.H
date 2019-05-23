@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_model_evaluator_beaminteraction.H
 
 \brief Evaluation of all beam interaction terms
 

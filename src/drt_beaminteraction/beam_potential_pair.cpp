@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*!
-\file beam_potential_pair.cpp
 
 \brief one generic (beam-to-?) element pair interacting via potentials
 

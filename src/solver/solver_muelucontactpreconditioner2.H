@@ -1,5 +1,4 @@
 /*!-----------------------------------------------------------------------------
-\file solver_muelucontactpreconditioner2.H
 
 \brief Declaration
 

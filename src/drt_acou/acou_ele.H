@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file acou_ele.H
 
 \brief A C++ wrapper for the acoustic element
 

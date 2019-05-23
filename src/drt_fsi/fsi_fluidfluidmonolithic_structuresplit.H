@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_fluidfluidmonolithic_structuresplit.H
 \brief Control routine for monolithic fluid-fluid-fsi
 (structuresplit) using XFEM and NOX
 

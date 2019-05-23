@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------**###
-\file so_tet10_input.cpp
 \brief Solid Tet10 Element
 \level 2
 \maintainer Christoph Meier

@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file levelset_dyn.H
 \brief entry point for level-set transport problems
 \level 2
 \maintainer Christoph Ager

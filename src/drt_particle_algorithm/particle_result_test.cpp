@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_result_test.cpp
 
 \brief particle result test for particle simulations
 

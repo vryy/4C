@@ -1,5 +1,4 @@
 /*!
-\file thermo_element_evaluate.cpp
 \brief element evaluation routines
 
 \level 1

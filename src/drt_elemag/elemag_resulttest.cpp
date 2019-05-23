@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elemag_resulttest.cpp
 
 \brief testing of electromagnetic calculation results
 

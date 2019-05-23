@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file beam3contact_utils.H
 
 \brief A set of utility functions for beam contact
 

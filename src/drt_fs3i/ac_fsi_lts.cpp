@@ -1,6 +1,5 @@
 /*!----------------------------------------------------------------------
 
-\file ac_fsi_lts.cpp
 
 \brief cpp-file associated with algorithmic routines for two-way coupled partitioned
        solution approaches to fluid-structure-scalar-scalar interaction

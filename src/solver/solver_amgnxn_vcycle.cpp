@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file solver_amgnxn_vcycle.cpp
 
 \brief Declaration
 \level 1

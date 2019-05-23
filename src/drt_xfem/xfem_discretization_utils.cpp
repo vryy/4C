@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfem_discretization_utils.cpp
 
 \brief Basic discretization-related tools used in XFEM routines
 

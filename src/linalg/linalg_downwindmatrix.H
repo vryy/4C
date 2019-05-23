@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file linalg_downwindmatrix.H
 
 \brief Specification of convection downwind numbering of a matrix
 

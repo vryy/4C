@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_problemtype.H
 \brief convert problem type string to enum
 \level 1
 \maintainer Martin Kronbichler

@@ -1,5 +1,4 @@
 /*!-----------------------------------------------------------------------------------------------*
-\file cut_mesh.cpp
 
 \brief class that holds information about a mesh that is cut or about a cutmesh that cuts another
 mesh

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_beamcontact.H
 
 \brief input parameter definitions for beam contact
 

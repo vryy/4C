@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_IO_runtime_vtk_output_structure.cpp
 
 \brief input parameters for VTK output of structural problem at runtime
 

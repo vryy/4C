@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file beam3contact_manager.H
 
 \brief contact manager for contact in a beam3 discretization
 

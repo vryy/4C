@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elch_moving_boundary_algorithm.cpp
 
 \brief Basis of all ELCH algorithms with moving boundaries
 

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_resulttest.cpp
 
 \brief testing of FSI calculation results
 

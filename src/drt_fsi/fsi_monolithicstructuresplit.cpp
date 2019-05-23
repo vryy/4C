@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file fsi_monolithicstructuresplit.cpp
 
 \brief Solve FSI problem with matching grids using a monolithic scheme
 with condensed structure interface displacements

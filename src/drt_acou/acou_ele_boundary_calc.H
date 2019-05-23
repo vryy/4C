@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file acou_ele_boundary_calc.H
 
 \brief Routines for acoustic boundary elements
 

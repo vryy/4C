@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file nln_operator_nonlincg.H
 
 \brief Nonlinear Conjugate Gradient
 

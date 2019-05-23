@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_triangulateFacet.H
 
 \brief Class to triangulate facets
 

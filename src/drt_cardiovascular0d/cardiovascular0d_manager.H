@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file cardiovascular0d_manager.H
 
 \brief Monolithic coupling of 3D structure 0D cardiovascular flow models
 

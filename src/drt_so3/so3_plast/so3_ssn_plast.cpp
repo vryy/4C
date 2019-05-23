@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file so3_ssn_plast.cpp
 \brief
 \maintainer Matthias Mayr
 \level 2

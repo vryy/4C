@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file nox_nln_interface_required.H
 
 \brief %NOX::NLN extension of the %NOX::Epetra required
        interface.

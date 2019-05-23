@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file MueLu_SelectiveSaPFactory_def.hpp
 
 \brief Factory class for MueLu
 \level 2

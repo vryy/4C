@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file nox_nln_statustest_factory.cpp
 
 \brief Create the desired outer status test.
 

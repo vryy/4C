@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file solver_directsolver.cpp
 \brief Declaration
 
 \brief Declaration

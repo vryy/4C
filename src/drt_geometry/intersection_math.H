@@ -1,5 +1,4 @@
 /*!
-\file intersection_math.H
 
 \brief collection of math tools for the interface computation of two
        curved meshes

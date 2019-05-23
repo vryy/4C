@@ -1,5 +1,4 @@
 /*!---------------------------------------------------------------------
-\file pss_table.c
 \brief A very simple symbol table implementation.
 
 \maintainer Martin Kronbichler
@@ -58,13 +57,16 @@ table. This table can be queried for those values quite easily.
 /*----------------------------------------------------------------------*/
 static void destroy_symbol(SYMBOL* symbol)
 {
-  while (symbol != NULL) {
+  while (symbol != NULL)
+  {
     SYMBOL* next;
 
-    if (symbol->type == sym_string) {
+    if (symbol->type == sym_string)
+    {
       CCAFREE(symbol->s.string);
     }
-    if (symbol->type == sym_map) {
+    if (symbol->type == sym_map)
+    {
       destroy_map(symbol->s.dir);
       CCAFREE(symbol->s.dir);
     }
@@ -176,28 +178,36 @@ static MAP_NODE* map_find_node(MAP* map, const CHAR* key)
   /* we keep hitting this problem */
   dsassert(node->key != NULL, "input system not initialized");
 
-  for (;;) {
+  for (;;)
+  {
     INT cmp;
     cmp = map_cmp_nodes(node, key);
-    if (cmp < 0) {
-      if (node->rhs == NULL) {
+    if (cmp < 0)
+    {
+      if (node->rhs == NULL)
+      {
         node = NULL;
         goto end;
       }
-      else {
+      else
+      {
         node = node->rhs;
       }
     }
-    else if (cmp > 0) {
-      if (node->lhs == NULL) {
+    else if (cmp > 0)
+    {
+      if (node->lhs == NULL)
+      {
         node = NULL;
         goto end;
       }
-      else {
+      else
+      {
         node = node->lhs;
       }
     }
-    else {
+    else
+    {
       goto end;
     }
   }
@@ -223,7 +233,8 @@ SYMBOL* map_find_symbol(MAP* map, const CHAR* key)
   SYMBOL* symbol = NULL;
 
   node = map_find_node(map, key);
-  if (node != NULL) {
+  if (node != NULL)
+  {
     symbol = node->symbol;
   }
 
@@ -325,7 +336,8 @@ CHAR* map_read_string(MAP* map, const CHAR* key)
 {
   CHAR* string;
 
-  if (!map_find_string(map, key, &string)) {
+  if (!map_find_string(map, key, &string))
+  {
     dserror("no string attribute '%s' in map", key);
   }
 
@@ -347,7 +359,8 @@ INT map_read_int(MAP* map, const CHAR* key)
 {
   INT integer;
 
-  if (!map_find_int(map, key, &integer)) {
+  if (!map_find_int(map, key, &integer))
+  {
     dserror("no int attribute '%s' in map", key);
   }
 
@@ -372,8 +385,7 @@ DOUBLE map_read_real(MAP* map, const CHAR* key)
   if (!map_find_real(map, key, &real))
   {
     INT value;
-    if (!map_find_int(map, key, &value))
-      dserror("no real attribute '%s' in map", key);
+    if (!map_find_int(map, key, &value)) dserror("no real attribute '%s' in map", key);
     real = value;
   }
 
@@ -395,7 +407,8 @@ MAP* map_read_map(MAP* map, const CHAR* key)
 {
   MAP* dir;
 
-  if (!map_find_map(map, key, &dir)) {
+  if (!map_find_map(map, key, &dir))
+  {
     dserror("no dir attribute '%s' in map", key);
   }
 
@@ -418,13 +431,16 @@ INT map_has_string(MAP* map, const CHAR* key, const CHAR* value)
   INT ret;
 
   symbol = map_find_symbol(map, key);
-  if (symbol != NULL) {
+  if (symbol != NULL)
+  {
     ret = symbol_get_string(symbol, &string);
-    if (ret) {
+    if (ret)
+    {
       ret = strcmp(string, value) == 0;
     }
   }
-  else {
+  else
+  {
     ret = 0;
   }
 
@@ -447,13 +463,16 @@ INT map_has_int(MAP* map, const CHAR* key, const INT value)
   INT ret;
 
   symbol = map_find_symbol(map, key);
-  if (symbol != NULL) {
+  if (symbol != NULL)
+  {
     ret = symbol_get_int(symbol, &integer);
-    if (ret) {
+    if (ret)
+    {
       ret = integer == value;
     }
   }
-  else {
+  else
+  {
     ret = 0;
   }
 
@@ -476,13 +495,16 @@ INT map_has_real(MAP* map, const CHAR* key, const DOUBLE value)
   INT ret;
 
   symbol = map_find_symbol(map, key);
-  if (symbol != NULL) {
+  if (symbol != NULL)
+  {
     ret = symbol_get_real(symbol, &real);
-    if (ret) {
+    if (ret)
+    {
       ret = real == value;
     }
   }
-  else {
+  else
+  {
     ret = 0;
   }
 
@@ -506,10 +528,12 @@ INT map_has_map(MAP* map, const CHAR* key)
   INT ret;
 
   symbol = map_find_symbol(map, key);
-  if (symbol != NULL) {
+  if (symbol != NULL)
+  {
     ret = symbol_is_map(symbol);
   }
-  else {
+  else
+  {
     ret = 0;
   }
 
@@ -535,11 +559,14 @@ static void map_insert_symbol(MAP* map, SYMBOL* symbol, CHAR* key)
   MAP_NODE* node;
 
   node = &(map->root);
-  for (;;) {
+  for (;;)
+  {
     INT cmp;
     cmp = map_cmp_nodes(node, key);
-    if (cmp < 0) {
-      if (node->rhs == NULL) {
+    if (cmp < 0)
+    {
+      if (node->rhs == NULL)
+      {
         node->rhs = CCACALLOC(1, sizeof(MAP_NODE));
         node->rhs->key = key;
         node->rhs->symbol = symbol;
@@ -549,12 +576,15 @@ static void map_insert_symbol(MAP* map, SYMBOL* symbol, CHAR* key)
         map->count++;
         goto end;
       }
-      else {
+      else
+      {
         node = node->rhs;
       }
     }
-    else if (cmp > 0) {
-      if (node->lhs == NULL) {
+    else if (cmp > 0)
+    {
+      if (node->lhs == NULL)
+      {
         node->lhs = CCACALLOC(1, sizeof(MAP_NODE));
         node->lhs->key = key;
         node->lhs->symbol = symbol;
@@ -564,11 +594,13 @@ static void map_insert_symbol(MAP* map, SYMBOL* symbol, CHAR* key)
         map->count++;
         goto end;
       }
-      else {
+      else
+      {
         node = node->lhs;
       }
     }
-    else {
+    else
+    {
       /* This key is already there. Free the duplicated memory. */
       CCAFREE(key);
 
@@ -603,7 +635,6 @@ void map_insert_string(MAP* map, CHAR* string, CHAR* key)
   symbol->s.string = string;
 
   map_insert_symbol(map, symbol, key);
-
 }
 
 
@@ -624,7 +655,6 @@ void map_insert_int(MAP* map, INT integer, CHAR* key)
   symbol->s.integer = integer;
 
   map_insert_symbol(map, symbol, key);
-
 }
 
 
@@ -681,9 +711,9 @@ void map_insert_string_cpy(MAP* map, CHAR* string, CHAR* key)
   CHAR* string_cpy;
   CHAR* key_cpy;
 
-  string_cpy = (CHAR*)CCAMALLOC((strlen(string)+1)*sizeof(CHAR));
+  string_cpy = (CHAR*)CCAMALLOC((strlen(string) + 1) * sizeof(CHAR));
   strcpy(string_cpy, string);
-  key_cpy = (CHAR*)CCAMALLOC((strlen(key)+1)*sizeof(CHAR));
+  key_cpy = (CHAR*)CCAMALLOC((strlen(key) + 1) * sizeof(CHAR));
   strcpy(key_cpy, key);
   map_insert_string(map, string_cpy, key_cpy);
 }
@@ -701,7 +731,7 @@ void map_insert_int_cpy(MAP* map, INT integer, CHAR* key)
 {
   CHAR* key_cpy;
 
-  key_cpy = (CHAR*)CCAMALLOC((strlen(key)+1)*sizeof(CHAR));
+  key_cpy = (CHAR*)CCAMALLOC((strlen(key) + 1) * sizeof(CHAR));
   strcpy(key_cpy, key);
   map_insert_int(map, integer, key_cpy);
 }
@@ -719,7 +749,7 @@ void map_insert_real_cpy(MAP* map, DOUBLE real, CHAR* key)
 {
   CHAR* key_cpy;
 
-  key_cpy = (CHAR*)CCAMALLOC((strlen(key)+1)*sizeof(CHAR));
+  key_cpy = (CHAR*)CCAMALLOC((strlen(key) + 1) * sizeof(CHAR));
   strcpy(key_cpy, key);
   map_insert_real(map, real, key_cpy);
 }
@@ -741,7 +771,7 @@ void map_insert_map_cpy(MAP* map, MAP* dir, CHAR* key)
 {
   CHAR* key_cpy;
 
-  key_cpy = (CHAR*)CCAMALLOC((strlen(key)+1)*sizeof(CHAR));
+  key_cpy = (CHAR*)CCAMALLOC((strlen(key) + 1) * sizeof(CHAR));
   strcpy(key_cpy, key);
   map_insert_map(map, dir, key_cpy);
 }
@@ -760,7 +790,8 @@ INT map_symbol_count(MAP* map, const CHAR* key)
   INT count = 0;
 
   const MAP_NODE* node = map_find_node(map, key);
-  if (node != NULL) {
+  if (node != NULL)
+  {
     count = node->count;
   }
 
@@ -784,7 +815,8 @@ INT map_symbol_count(MAP* map, const CHAR* key)
 void map_disconnect_symbols(MAP* map, const CHAR* key)
 {
   MAP_NODE* node = map_find_node(map, key);
-  if (node != NULL) {
+  if (node != NULL)
+  {
     node->symbol = NULL;
     node->count = 0;
   }
@@ -860,10 +892,7 @@ INT symbol_is_string(const SYMBOL* symbol)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-INT symbol_is_int(const SYMBOL* symbol)
-{
-  return (symbol != NULL) && (symbol->type == sym_int);
-}
+INT symbol_is_int(const SYMBOL* symbol) { return (symbol != NULL) && (symbol->type == sym_int); }
 
 
 /*----------------------------------------------------------------------*/
@@ -874,10 +903,7 @@ INT symbol_is_int(const SYMBOL* symbol)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-INT symbol_is_real(const SYMBOL* symbol)
-{
-  return (symbol != NULL) && (symbol->type == sym_real);
-}
+INT symbol_is_real(const SYMBOL* symbol) { return (symbol != NULL) && (symbol->type == sym_real); }
 
 
 /*----------------------------------------------------------------------*/
@@ -888,10 +914,7 @@ INT symbol_is_real(const SYMBOL* symbol)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-INT symbol_is_map(const SYMBOL* symbol)
-{
-  return (symbol != NULL) && (symbol->type == sym_map);
-}
+INT symbol_is_map(const SYMBOL* symbol) { return (symbol != NULL) && (symbol->type == sym_map); }
 
 
 
@@ -907,11 +930,13 @@ INT symbol_get_string(const SYMBOL* symbol, CHAR** string)
 {
   INT ret;
 
-  if (symbol && (symbol->type == sym_string)) {
+  if (symbol && (symbol->type == sym_string))
+  {
     *string = symbol->s.string;
     ret = 1;
   }
-  else {
+  else
+  {
     *string = "";
     ret = 0;
   }
@@ -932,11 +957,13 @@ INT symbol_get_int(const SYMBOL* symbol, INT* integer)
 {
   INT ret;
 
-  if (symbol && (symbol->type == sym_int)) {
+  if (symbol && (symbol->type == sym_int))
+  {
     *integer = symbol->s.integer;
     ret = 1;
   }
-  else {
+  else
+  {
     *integer = 0;
     ret = 0;
   }
@@ -957,11 +984,13 @@ INT symbol_get_real(const SYMBOL* symbol, DOUBLE* real)
 {
   INT ret;
 
-  if (symbol && (symbol->type == sym_real)) {
+  if (symbol && (symbol->type == sym_real))
+  {
     *real = symbol->s.real;
     ret = 1;
   }
-  else {
+  else
+  {
     *real = 0.0;
     ret = 0;
   }
@@ -981,11 +1010,13 @@ INT symbol_get_real_as_float(const SYMBOL* symbol, float* real)
 {
   INT ret;
 
-  if (symbol && (symbol->type == sym_real)) {
+  if (symbol && (symbol->type == sym_real))
+  {
     *real = (float)symbol->s.real;
     ret = 1;
   }
-  else {
+  else
+  {
     *real = 0.0;
     ret = 0;
   }
@@ -1006,11 +1037,13 @@ INT symbol_get_map(const SYMBOL* symbol, MAP** map)
 {
   INT ret;
 
-  if (symbol && (symbol->type == sym_map)) {
+  if (symbol && (symbol->type == sym_map))
+  {
     *map = symbol->s.dir;
     ret = 1;
   }
-  else {
+  else
+  {
     *map = NULL;
     ret = 0;
   }
@@ -1029,12 +1062,14 @@ INT symbol_get_map(const SYMBOL* symbol, MAP** map)
 /*----------------------------------------------------------------------*/
 CHAR* symbol_string(const SYMBOL* symbol)
 {
-  CHAR* ret=NULL;
+  CHAR* ret = NULL;
 
-  if (symbol->type == sym_string) {
+  if (symbol->type == sym_string)
+  {
     ret = symbol->s.string;
   }
-  else {
+  else
+  {
     dserror("Wrong symbol type %d", symbol->type);
   }
 
@@ -1052,12 +1087,14 @@ CHAR* symbol_string(const SYMBOL* symbol)
 /*----------------------------------------------------------------------*/
 INT symbol_int(const SYMBOL* symbol)
 {
-  INT ret=0;
+  INT ret = 0;
 
-  if (symbol->type == sym_int) {
+  if (symbol->type == sym_int)
+  {
     ret = symbol->s.integer;
   }
-  else {
+  else
+  {
     dserror("Wrong symbol type %d", symbol->type);
   }
 
@@ -1075,12 +1112,14 @@ INT symbol_int(const SYMBOL* symbol)
 /*----------------------------------------------------------------------*/
 DOUBLE symbol_real(const SYMBOL* symbol)
 {
-  DOUBLE ret=0.0;
+  DOUBLE ret = 0.0;
 
-  if (symbol->type == sym_real) {
+  if (symbol->type == sym_real)
+  {
     ret = symbol->s.real;
   }
-  else {
+  else
+  {
     dserror("Wrong symbol type %d", symbol->type);
   }
 
@@ -1098,12 +1137,14 @@ DOUBLE symbol_real(const SYMBOL* symbol)
 /*----------------------------------------------------------------------*/
 MAP* symbol_map(const SYMBOL* symbol)
 {
-  MAP* ret=NULL;
+  MAP* ret = NULL;
 
-  if (symbol->type == sym_map) {
+  if (symbol->type == sym_map)
+  {
     ret = symbol->s.dir;
   }
-  else {
+  else
+  {
     dserror("Wrong symbol type %d", symbol->type);
   }
 
@@ -1111,7 +1152,11 @@ MAP* symbol_map(const SYMBOL* symbol)
 }
 
 
-#define PRINT_INDENT(f, count) { INT i; for (i=0; i<(count); ++i) fprintf(f, " "); }
+#define PRINT_INDENT(f, count)                     \
+  {                                                \
+    INT i;                                         \
+    for (i = 0; i < (count); ++i) fprintf(f, " "); \
+  }
 
 
 /*----------------------------------------------------------------------*/
@@ -1130,30 +1175,33 @@ MAP* symbol_map(const SYMBOL* symbol)
 /*----------------------------------------------------------------------*/
 void symbol_print(FILE* f, CHAR* key, SYMBOL* symbol, INT indent)
 {
-  dsassert(strstr(key, "\n")==NULL, "malformed key");
+  dsassert(strstr(key, "\n") == NULL, "malformed key");
 
-  if (symbol != NULL) {
+  if (symbol != NULL)
+  {
     symbol_print(f, key, symbol->next, indent);
 
     PRINT_INDENT(f, indent);
-    switch (symbol->type) {
-    case sym_string:
-      fprintf(f, "%s = \"%s\"\n", key, symbol->s.string);
-      break;
-    case sym_int:
-      fprintf(f, "%s = %d\n", key, symbol->s.integer);
-      break;
-    case sym_real: {
-      /* We don't care for beauty but we need many digits. */
-      fprintf(f, "%s = %.20e\n", key, symbol->s.real);
-      break;
-    }
-    case sym_map:
-      fprintf(f, "%s:\n", key);
-      map_print(f, symbol->s.dir, indent+4);
-      break;
-    default:
-      dserror("Ups!");
+    switch (symbol->type)
+    {
+      case sym_string:
+        fprintf(f, "%s = \"%s\"\n", key, symbol->s.string);
+        break;
+      case sym_int:
+        fprintf(f, "%s = %d\n", key, symbol->s.integer);
+        break;
+      case sym_real:
+      {
+        /* We don't care for beauty but we need many digits. */
+        fprintf(f, "%s = %.20e\n", key, symbol->s.real);
+        break;
+      }
+      case sym_map:
+        fprintf(f, "%s:\n", key);
+        map_print(f, symbol->s.dir, indent + 4);
+        break;
+      default:
+        dserror("Ups!");
     }
   }
 }
@@ -1169,7 +1217,8 @@ void symbol_print(FILE* f, CHAR* key, SYMBOL* symbol, INT indent)
 /*----------------------------------------------------------------------*/
 void map_node_print(FILE* f, MAP_NODE* node, INT indent)
 {
-  if (node != NULL) {
+  if (node != NULL)
+  {
     map_node_print(f, node->lhs, indent);
     symbol_print(f, node->key, node->symbol, indent);
     map_node_print(f, node->rhs, indent);
@@ -1202,7 +1251,8 @@ void map_print(FILE* f, MAP* map, INT indent)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-typedef enum _TOKEN_TYPE {
+typedef enum _TOKEN_TYPE
+{
   tok_none,
   tok_done,
   tok_name,
@@ -1230,7 +1280,8 @@ typedef enum _TOKEN_TYPE {
   \date 08/04
  */
 /*----------------------------------------------------------------------*/
-typedef struct _PARSER_DATA {
+typedef struct _PARSER_DATA
+{
   TOKEN_TYPE tok;
   CHAR* token_string;
   INT token_int;
@@ -1284,7 +1335,8 @@ static void init_parser_data(struct _PARSER_DATA* data, const CHAR* filename, MP
     FILE* file;
     file = fopen(filename, "rb");
 
-    if (file==NULL) {
+    if (file == NULL)
+    {
       dserror("cannot read file '%s'", filename);
     }
 
@@ -1293,11 +1345,12 @@ static void init_parser_data(struct _PARSER_DATA* data, const CHAR* filename, MP
     data->file_size = ftell(file);
 
     /* read file to local buffer */
-    data->file_buffer = CCAMALLOC((data->file_size+1)*sizeof(CHAR));
+    data->file_buffer = CCAMALLOC((data->file_size + 1) * sizeof(CHAR));
     fseek(file, 0, SEEK_SET);
     /*bytes_read = fread(data->file_buffer, sizeof(CHAR), data->file_size, file);*/
-    bytes_read = fread(data->file_buffer, sizeof(CHAR), (size_t) data->file_size, file);
-    if (bytes_read != data->file_size) {
+    bytes_read = fread(data->file_buffer, sizeof(CHAR), (size_t)data->file_size, file);
+    if (bytes_read != data->file_size)
+    {
       dserror("failed to read file %s", filename);
     }
     /* a trailing zero helps a lot */
@@ -1306,21 +1359,24 @@ static void init_parser_data(struct _PARSER_DATA* data, const CHAR* filename, MP
     fclose(file);
   }
 
-  if (nprocs > 1) {
+  if (nprocs > 1)
+  {
     INT err;
-    err = MPI_Bcast(&data->file_size,1,MPI_INT,0,comm);
-    if (err != 0) {
+    err = MPI_Bcast(&data->file_size, 1, MPI_INT, 0, comm);
+    if (err != 0)
+    {
       dserror("MPI_Bcast failed: %d", err);
     }
-    if (myrank > 0) {
-      data->file_buffer = CCAMALLOC((data->file_size+1)*sizeof(CHAR));
+    if (myrank > 0)
+    {
+      data->file_buffer = CCAMALLOC((data->file_size + 1) * sizeof(CHAR));
     }
-    err = MPI_Bcast(data->file_buffer, data->file_size+1, MPI_CHAR, 0, comm);
-    if (err != 0) {
+    err = MPI_Bcast(data->file_buffer, data->file_size + 1, MPI_CHAR, 0, comm);
+    if (err != 0)
+    {
       dserror("MPI_Bcast failed: %d", err);
     }
   }
-
 }
 
 
@@ -1332,10 +1388,7 @@ static void init_parser_data(struct _PARSER_DATA* data, const CHAR* filename, MP
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-static void destroy_parser_data(struct _PARSER_DATA* data)
-{
-  CCAFREE(data->file_buffer);
-}
+static void destroy_parser_data(struct _PARSER_DATA* data) { CCAFREE(data->file_buffer); }
 
 
 #if 0
@@ -1405,10 +1458,11 @@ static void print_token(PARSER_DATA* data)
 /*----------------------------------------------------------------------*/
 static int getnext(PARSER_DATA* data)
 {
-  if (data->pos < data->file_size) {
-
+  if (data->pos < data->file_size)
+  {
     /* ignore dos line endings */
-    if (data->file_buffer[data->pos] == '\r') {
+    if (data->file_buffer[data->pos] == '\r')
+    {
       data->pos++;
     }
 
@@ -1436,29 +1490,38 @@ static void lexan(PARSER_DATA* data)
   INT t;
   INT indention = data->indent_level;
 
-  for (;;) {
+  for (;;)
+  {
     t = getnext(data);
-    if (t == ' ') {
+    if (t == ' ')
+    {
       /* ignore whitespaces */
-      if (line_begin) {
+      if (line_begin)
+      {
         indention++;
       }
     }
-    else if (t == '\t') {
+    else if (t == '\t')
+    {
       /* ignore whitespaces */
-      if (line_begin) {
+      if (line_begin)
+      {
         indention = ((indention + TABWIDTH - 1) / TABWIDTH) * TABWIDTH;
       }
     }
-    else if (t == '\n') {
+    else if (t == '\n')
+    {
       data->lineno++;
       line_begin = 1;
       indention = 0;
     }
-    else if (t == '#') {
-      for (;;) {
+    else if (t == '#')
+    {
+      for (;;)
+      {
         t = getnext(data);
-        if (t == '\n') {
+        if (t == '\n')
+        {
           break;
         }
       }
@@ -1466,37 +1529,45 @@ static void lexan(PARSER_DATA* data)
       line_begin = 1;
       indention = 0;
     }
-    else if (t == EOF) {
+    else if (t == EOF)
+    {
       data->tok = tok_done;
       goto end;
     }
-    else {
-
-      if (line_begin && (indention != data->indent_level)) {
-        if (data->indent_step == -1) {
-          if (indention > data->indent_level) {
+    else
+    {
+      if (line_begin && (indention != data->indent_level))
+      {
+        if (data->indent_step == -1)
+        {
+          if (indention > data->indent_level)
+          {
             dsassert(data->indent_level == 0, "non-zero intention at first line?!");
             data->indent_step = indention;
             data->indent_level = indention;
             data->token_int = 1;
             data->tok = tok_indent;
           }
-          else {
+          else
+          {
             dserror("dedent at toplevel!");
           }
         }
-        else {
-          if (indention > data->indent_level) {
+        else
+        {
+          if (indention > data->indent_level)
+          {
             data->tok = tok_indent;
-            dsassert((indention - data->indent_level) % data->indent_step == 0,
-                "malformed indention");
+            dsassert(
+                (indention - data->indent_level) % data->indent_step == 0, "malformed indention");
             data->token_int = (indention - data->indent_level) / data->indent_step;
             data->indent_level = indention;
           }
-          else {
+          else
+          {
             data->tok = tok_dedent;
-            dsassert((data->indent_level - indention) % data->indent_step == 0,
-                "malformed dedention");
+            dsassert(
+                (data->indent_level - indention) % data->indent_step == 0, "malformed dedention");
             data->token_int = (data->indent_level - indention) / data->indent_step;
             data->indent_level = indention;
           }
@@ -1504,101 +1575,120 @@ static void lexan(PARSER_DATA* data)
         data->pos--;
         goto end;
       }
-      else {
-
+      else
+      {
         line_begin = 0;
 
-        if ((t == '-') || isdigit(t)) {
-          data->token_string = &(data->file_buffer[data->pos-1]);
-          if (t == '-') {
+        if ((t == '-') || isdigit(t))
+        {
+          data->token_string = &(data->file_buffer[data->pos - 1]);
+          if (t == '-')
+          {
             t = getnext(data);
           }
-          while (isdigit(t)) {
+          while (isdigit(t))
+          {
             t = getnext(data);
           }
-          if ((t != '.') && (t != 'E') && (t != 'e')) {
-            if (t != EOF) {
+          if ((t != '.') && (t != 'E') && (t != 'e'))
+          {
+            if (t != EOF)
+            {
               data->pos--;
             }
             data->token_int = atoi(data->token_string);
             data->tok = tok_int;
             goto end;
           }
-          if (t == '.') {
+          if (t == '.')
+          {
             t = getnext(data);
-            if (isdigit(t)) {
-              while (isdigit(t)) {
+            if (isdigit(t))
+            {
+              while (isdigit(t))
+              {
                 t = getnext(data);
               }
             }
-            else {
-              dserror("no digits after point at line %d",
-                  data->lineno);
+            else
+            {
+              dserror("no digits after point at line %d", data->lineno);
             }
           }
-          if ((t == 'E') || (t == 'e')) {
+          if ((t == 'E') || (t == 'e'))
+          {
             t = getnext(data);
-            if ((t == '-') || (t == '+')) {
+            if ((t == '-') || (t == '+'))
+            {
               t = getnext(data);
             }
-            if (isdigit(t)) {
-              while (isdigit(t)) {
+            if (isdigit(t))
+            {
+              while (isdigit(t))
+              {
                 t = getnext(data);
               }
             }
-            else {
-              dserror("no digits after exponent at line %d",
-                  data->lineno);
+            else
+            {
+              dserror("no digits after exponent at line %d", data->lineno);
             }
           }
-          if (t != EOF) {
+          if (t != EOF)
+          {
             data->pos--;
           }
           data->token_real = strtod(data->token_string, NULL);
           data->tok = tok_real;
           goto end;
         }
-        else if (isalpha(t) || (t == '_')) {
-          data->token_string = &(data->file_buffer[data->pos-1]);
-          while (isalnum(t) || (t == '_')) {
+        else if (isalpha(t) || (t == '_'))
+        {
+          data->token_string = &(data->file_buffer[data->pos - 1]);
+          while (isalnum(t) || (t == '_'))
+          {
             t = getnext(data);
           }
-          if (t != EOF) {
+          if (t != EOF)
+          {
             data->pos--;
           }
           data->tok = tok_name;
           data->token_int = &(data->file_buffer[data->pos]) - data->token_string;
           goto end;
         }
-        else if (t == '"') {
+        else if (t == '"')
+        {
           data->token_string = &(data->file_buffer[data->pos]);
           t = getnext(data);
-          while (t != '"') {
+          while (t != '"')
+          {
             t = getnext(data);
-            if (t==EOF) {
-              dserror("expected closing \" on line %d",
-                  data->lineno);
+            if (t == EOF)
+            {
+              dserror("expected closing \" on line %d", data->lineno);
             }
           }
           data->tok = tok_string;
-          data->token_int = &(data->file_buffer[data->pos-1]) - data->token_string;
+          data->token_int = &(data->file_buffer[data->pos - 1]) - data->token_string;
           goto end;
         }
-        else if (t == ':') {
+        else if (t == ':')
+        {
           data->tok = tok_colon;
           goto end;
         }
-        else if (t == '=') {
+        else if (t == '=')
+        {
           data->tok = tok_equal;
           goto end;
         }
-        else {
+        else
+        {
           if (t >= 32)
-            dserror("unexpected char '%c' at line %d",
-                t, data->lineno);
+            dserror("unexpected char '%c' at line %d", t, data->lineno);
           else
-            dserror("unexpected char '%d' at line %d",
-                t, data->lineno);
+            dserror("unexpected char '%d' at line %d", t, data->lineno);
           data->tok = tok_none;
           goto end;
         }
@@ -1625,79 +1715,87 @@ static void parse_definitions(PARSER_DATA* data, MAP* dir)
 {
   lexan(data);
 
-  while (data->tok != tok_done) {
-    switch (data->tok) {
-    case tok_name: {
-      CHAR* name;
+  while (data->tok != tok_done)
+  {
+    switch (data->tok)
+    {
+      case tok_name:
+      {
+        CHAR* name;
 
-      /*
-       * The string is not null terminated as it's a simple pointer
-       * into the file buffer. However, we know its length so we can
-       * handle that. */
-      name = CCAMALLOC((data->token_int+1)*sizeof(CHAR));
-      /*strncpy(name, data->token_string, data->token_int);*/
-      strncpy(name, data->token_string, (size_t) data->token_int);
-      name[data->token_int] = '\0';
-
-      lexan(data);
-      switch (data->tok) {
-      case tok_colon: {
-        MAP* map;
+        /*
+         * The string is not null terminated as it's a simple pointer
+         * into the file buffer. However, we know its length so we can
+         * handle that. */
+        name = CCAMALLOC((data->token_int + 1) * sizeof(CHAR));
+        /*strncpy(name, data->token_string, data->token_int);*/
+        strncpy(name, data->token_string, (size_t)data->token_int);
+        name[data->token_int] = '\0';
 
         lexan(data);
-        if ((data->tok != tok_indent) || (data->token_int != 1)) {
-          dserror("Syntaxerror at line %d: single indention expected", data->lineno);
+        switch (data->tok)
+        {
+          case tok_colon:
+          {
+            MAP* map;
+
+            lexan(data);
+            if ((data->tok != tok_indent) || (data->token_int != 1))
+            {
+              dserror("Syntaxerror at line %d: single indention expected", data->lineno);
+            }
+
+            map = CCACALLOC(1, sizeof(MAP));
+            init_map(map);
+            parse_definitions(data, map);
+
+            map_insert_map(dir, map, name);
+
+            if ((data->tok == tok_dedent) && (data->token_int > 0))
+            {
+              data->token_int--;
+              goto end;
+            }
+
+            break;
+          }
+          case tok_equal:
+            lexan(data);
+            switch (data->tok)
+            {
+              case tok_string:
+              {
+                CHAR* string;
+
+                /* Again, be carefully with those pointers... */
+                string = CCAMALLOC((data->token_int + 1) * sizeof(CHAR));
+                /*strncpy(string, data->token_string, data->token_int);*/
+                strncpy(string, data->token_string, (size_t)data->token_int);
+                string[data->token_int] = '\0';
+
+                map_insert_string(dir, string, name);
+                break;
+              }
+              case tok_int:
+                map_insert_int(dir, data->token_int, name);
+                break;
+              case tok_real:
+                map_insert_real(dir, data->token_real, name);
+                break;
+              default:
+                dserror("Syntaxerror at line %d: string, int or real expected", data->lineno);
+            }
+            break;
+          default:
+            dserror("Syntaxerror at line %d: ':' or '=' expected", data->lineno);
         }
-
-        map = CCACALLOC(1, sizeof(MAP));
-        init_map(map);
-        parse_definitions(data, map);
-
-        map_insert_map(dir, map, name);
-
-        if ((data->tok == tok_dedent) && (data->token_int > 0)) {
-          data->token_int--;
-          goto end;
-        }
-
         break;
       }
-      case tok_equal:
-        lexan(data);
-        switch (data->tok) {
-        case tok_string: {
-          CHAR* string;
-
-          /* Again, be carefully with those pointers... */
-          string = CCAMALLOC((data->token_int+1)*sizeof(CHAR));
-          /*strncpy(string, data->token_string, data->token_int);*/
-          strncpy(string, data->token_string, (size_t) data->token_int);
-          string[data->token_int] = '\0';
-
-          map_insert_string(dir, string, name);
-          break;
-        }
-        case tok_int:
-          map_insert_int(dir, data->token_int, name);
-          break;
-        case tok_real:
-          map_insert_real(dir, data->token_real, name);
-          break;
-        default:
-          dserror(
-              "Syntaxerror at line %d: string, int or real expected", data->lineno);
-        }
-        break;
+      case tok_dedent:
+        data->token_int--;
+        goto end;
       default:
-        dserror("Syntaxerror at line %d: ':' or '=' expected", data->lineno);
-      }
-      break;
-    }
-    case tok_dedent:
-      data->token_int--;
-      goto end;
-    default:
-      dserror("Syntaxerror at line %d: name expected", data->lineno);
+        dserror("Syntaxerror at line %d: name expected", data->lineno);
     }
 
     lexan(data);
@@ -1737,7 +1835,8 @@ void parse_control_file_serial(MAP* map, const CHAR* filename)
   FILE* file;
   file = fopen(filename, "rb");
 
-  if (file==NULL) {
+  if (file == NULL)
+  {
     dserror("cannot read file '%s'", filename);
   }
 
@@ -1746,11 +1845,12 @@ void parse_control_file_serial(MAP* map, const CHAR* filename)
   data.file_size = ftell(file);
 
   /* read file to local buffer */
-  data.file_buffer = CCAMALLOC((data.file_size+1)*sizeof(CHAR));
+  data.file_buffer = CCAMALLOC((data.file_size + 1) * sizeof(CHAR));
   fseek(file, 0, SEEK_SET);
   /*bytes_read = fread(data.file_buffer, sizeof(CHAR), data.file_size, file);*/
-  bytes_read = fread(data.file_buffer, sizeof(CHAR), (size_t) data.file_size, file);
-  if (bytes_read != data.file_size) {
+  bytes_read = fread(data.file_buffer, sizeof(CHAR), (size_t)data.file_size, file);
+  if (bytes_read != data.file_size)
+  {
     dserror("failed to read file %s", filename);
   }
   /* a trailing zero helps a lot */

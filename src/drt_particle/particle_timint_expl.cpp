@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file particle_timint_expl.cpp
 
 \brief Particle time integration with explicit time integration
 

@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_coloredgraph.cpp
 
 \brief colored graph to create volumecells from facets
 

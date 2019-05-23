@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file acou_ele_intfaces_calc.H
 
 \brief Internal implementation of acou internal faces elements
 

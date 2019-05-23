@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file two_phase_algorithm.cpp
 
 \brief Basis of Two Phase algorithms utilizing standard fluid and levelset
 

@@ -1,5 +1,4 @@
 /*!---------------------------------------------------------------------*
-\file unit_drt_utils_reference_configuration.H
 
 \brief Unittests to check utility functions for the reference configuration
 

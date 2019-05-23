@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file nox_nln_cardiovascular0d_linearsystem.H
 
 \brief Derived class which manages the special requirements to the linear
        solver for 0D cardiovascular-structural problems.

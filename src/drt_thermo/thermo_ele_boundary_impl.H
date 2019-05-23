@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file thermo_ele_boundary_impl.H
 
 \brief internal implementation of thermo boundary elements
 

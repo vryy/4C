@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file solver_muelupreconditioner.cpp
 
 \brief Interface class for MueLu preconditioner
 

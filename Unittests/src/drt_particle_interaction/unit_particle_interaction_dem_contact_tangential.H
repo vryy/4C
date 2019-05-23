@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file unit_particle_interaction_dem_contact_tangential.H
 
 \brief unittests for tangential contact handler for discrete element method (DEM) interactions
 

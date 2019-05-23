@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file tsi_monolithic.cpp
 
 \brief  Basis of all monolithic TSI algorithms that perform a coupling between
         the linear momentum equation and the heat conduction equation

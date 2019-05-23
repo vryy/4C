@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so_tet10.H
 \brief Solid Tet10 Element
 \level 1
 \maintainer Christoph Meier

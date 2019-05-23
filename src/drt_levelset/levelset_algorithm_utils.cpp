@@ -1,5 +1,4 @@
 /*!-----------------------------------------------------------------------------------------------*
-\file levelset_algorithm_utils.cpp
 
 \brief base level-set algorithm: collection of useful helper functions
 

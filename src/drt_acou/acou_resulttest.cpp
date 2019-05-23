@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file acou_resulttest.cpp
 
 \brief testing of acoustical calculation results
 

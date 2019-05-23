@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfluid_outputservice.cpp
 
 \brief Service class for XFluid-related output.
 

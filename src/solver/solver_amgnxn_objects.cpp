@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file solver_amgnxn_objects.cpp
 
 \brief Declaration
 \level 1

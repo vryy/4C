@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfem_interface_utils.H
 \brief Basic routings to evaluate the terms for Nitsche Interface
 
 \level 2

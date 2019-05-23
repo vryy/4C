@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file lagpenconstraint_noxinterface.cpp
 
 \brief Concrete mplementation of all the %NOX::NLN::CONSTRAINT::Interface::Required
        (pure) virtual routines.

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file so3_poro_p1_evaluate.cpp
 
  \brief evaluate methods for porous media using the p1 approach (mixed approach)
 

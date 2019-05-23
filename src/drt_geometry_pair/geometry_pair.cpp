@@ -1,5 +1,4 @@
 /*!
-\file geometry_pair.cpp
 
 \brief base class for two or more elements that interact geometrically, e.g. contact or meshtying
 problems.

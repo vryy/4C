@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file poro_monolithicfluidsplit.cpp
 
  \brief  monolithic fluid split poroelasticity algorithms
 

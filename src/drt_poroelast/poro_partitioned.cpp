@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file poro_partitioned.cpp
 
  \brief  Partitioned poroelasticity algorithm
 

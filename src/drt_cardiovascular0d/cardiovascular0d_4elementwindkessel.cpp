@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file cardiovascular0d_4elementwindkessel.cpp
 
 \brief Monolithic coupling of 3D structural dynamics and 0D cardiovascular flow models
 

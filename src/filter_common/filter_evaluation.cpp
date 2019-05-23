@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file filter_evaluation.cpp
 
 \brief compatibility definitions
 

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfem_edgestab.H
 
 \brief provides the xfem fluid and ghost penalty stabilization based on EOS/CIP (edge-oriented,
 continuous interior penalty) scheme

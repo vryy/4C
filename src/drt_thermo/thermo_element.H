@@ -1,5 +1,4 @@
 /*!
-\file thermo_element.H
 
 \brief A C++ wrapper for the thermo element
 

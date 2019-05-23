@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file sti_clonestrategy.H
 
 \brief strategy for cloning thermo discretization from scatra discretization
 

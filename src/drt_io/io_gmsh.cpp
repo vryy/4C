@@ -1,5 +1,4 @@
 /*!
-\file io_gmsh.cpp
 
 \brief simple element print library for Gmsh
 

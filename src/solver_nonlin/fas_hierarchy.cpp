@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file fas_hierarchy.cpp
 
 \brief Implementation of hierarchy of multigrid levels based on MueLu
 

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file ale2_line_evaluate.cpp
 
 \brief Evaluate ALE2 elements
 

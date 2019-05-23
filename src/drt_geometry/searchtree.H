@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file searchtree.H
 
 \brief provides a class with search tree with various search requests
 

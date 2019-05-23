@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*!
-\file beam3r_input.cpp
 
 \brief input related methods of 3D nonlinear Reissner beam element
 

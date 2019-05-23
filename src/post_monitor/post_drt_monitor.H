@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file post_drt_monitor.H
 
 \brief monitoring filter for one data
 

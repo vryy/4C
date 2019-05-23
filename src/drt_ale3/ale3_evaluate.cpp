@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file ale3_evaluate.cpp
 
 \brief Evaluate routines of ALE element for 3D case
 

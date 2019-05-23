@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file fs3i_dyn.cpp
 \brief Main control routine for fluid-structure-scalar-scalar
        interaction (FS3I)
 

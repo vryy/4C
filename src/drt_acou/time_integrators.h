@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file time_integrators.h
 
 \brief Templated explicit time integration classes: forward Euler, classical
 Runge-Kutta method of order 4, low-storage RK methods, strong stability

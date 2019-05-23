@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file MueLu_ContactAFilterFactory_fwd.hpp
 
 \brief MueLu factory class for BACI
 \level 2

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file nln_utils_debugwriter.cpp
 
 \brief Write output for debugging purposes
 

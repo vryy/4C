@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file intersection_service.cpp
 
 \brief collection of service methods for intersection computations
 

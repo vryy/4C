@@ -1,6 +1,5 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file elemag_ele_boundary_calc.H
 
 \brief Routines for elemag boundary elements
 

@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file nox_nln_aux.cpp
 
 \brief Auxiliary methods.
 

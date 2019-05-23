@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so3_scatra.cpp
 
 \brief Solid-scatra elements base class
 

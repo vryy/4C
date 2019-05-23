@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_engine_interface.H
 
 \brief pure virtual interface to provide access to particle engine class
 

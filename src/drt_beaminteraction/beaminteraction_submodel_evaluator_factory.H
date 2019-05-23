@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------*/
 /*!
-\file beaminteraction_submodel_evaluator_factory.H
 
 \brief Factory to create the desired submodel evaluators.
 

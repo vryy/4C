@@ -1,7 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file io_control.cpp
-\brief output control
+ * \brief output control
 \level 0
 \maintainer Martin Kronbichler
             kronbichler@lnm.mw.tum.de

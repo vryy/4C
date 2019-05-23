@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_fpsi.H
 \brief fpsi parameters
 \level 1
 \maintainer  Christoph Ager

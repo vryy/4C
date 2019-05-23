@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file nln_operator_dinverse.H
 
 \brief Use inverse of diagonal of Jacobian as preconditioner
 

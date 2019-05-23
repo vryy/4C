@@ -1,5 +1,4 @@
 /*!---------------------------------------------------------------------
-\file pss_prototypes.h
 \brief Prototype classes
 
 \maintainer Martin Kronbichler

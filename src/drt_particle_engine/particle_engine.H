@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_engine.H
 
 \brief particle engine to control particle simulations
 

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file unit_stvenantkirchhoff.H
 
 \brief unit testing functionality for stvenantkirchhoff material
 

@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file fsi_debugwriter.H
 \brief write debug information for fsi applications
 \level 2
 \maintainer Matthias Mayr

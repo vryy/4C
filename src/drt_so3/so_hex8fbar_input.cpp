@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so_hex8fbar_input.cpp
 \brief Solid Hex8 element with F-bar modification
 
 \level 1

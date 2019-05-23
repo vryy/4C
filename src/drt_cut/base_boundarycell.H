@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file base_boundarycell.H
 
 \brief used in direct divergence line integration
 

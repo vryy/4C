@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_nurbs_discret.H
 
 \brief discretisation with additional knot vectors for nurbs problems
        (isogeometric analysis)

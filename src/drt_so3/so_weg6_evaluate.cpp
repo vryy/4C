@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file so_weg6_evaluate.cpp
 \brief Solid Wedge6 Element
 \level 1
 

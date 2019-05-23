@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file line_integration.H
 
 \brief Integrates base functions over a line using one-dimensional Gauss quadrature
 equations

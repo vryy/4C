@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file particle_timint_expleuler.H
 
 \brief Particle time integration with Forward Euler time integration scheme of 1st order (explicit)
 

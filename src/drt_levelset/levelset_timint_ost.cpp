@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file levelset_timint_ost.cpp
 
 \brief one-step theta time integration scheme for level-set problems
 

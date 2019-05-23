@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_runtime_vtp_writer.cpp
 
 \brief write visualization output for particles in vtk/vtp format at runtime
 

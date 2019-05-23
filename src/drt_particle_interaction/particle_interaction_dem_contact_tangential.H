@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_interaction_dem_contact_tangential.H
 
 \brief tangential contact handler for discrete element method (DEM) interactions
 

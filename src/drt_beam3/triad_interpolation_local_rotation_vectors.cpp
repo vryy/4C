@@ -1,6 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*!
-\file triad_interpolation_local_rotation_vectors.cpp
 
 \brief a triad interpolation scheme based on local rotation vectors
 

@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file linalg_fixedsparsematrix.H
 \brief Declaration
 
 \level 2

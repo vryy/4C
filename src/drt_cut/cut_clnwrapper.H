@@ -1,7 +1,5 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file cut_clnwrapper.H
-
 \brief Class which stores floating points numbers of arbitrary precision (equivalent to double )
 
 \level 3

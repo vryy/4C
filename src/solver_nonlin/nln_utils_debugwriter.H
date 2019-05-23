@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file nln_utils_debugwriter.H
 
 \brief Write output for debugging purposes
 

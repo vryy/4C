@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file wear_algorithm.cpp
 
 \brief Basis of all WEAR algorithms that perform a coupling between the
        structural field equation and ALE field equations

@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file monitor.cpp
 \brief Basic constraint class, dealing with constraints living on boundaries
 \level 2
 

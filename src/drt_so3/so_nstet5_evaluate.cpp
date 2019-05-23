@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------*
-\file so_nstet5_evaluate.cpp
 \brief NStet5 element
 
 \level 3

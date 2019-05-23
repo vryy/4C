@@ -1,5 +1,4 @@
 /*!----------------------------------------------------------------------
-\file fsi_monolithic_nonox.H
 \brief Base class for monolithic fluid-fluid-fsi algorithm
  using XFEM (without NOX)
 

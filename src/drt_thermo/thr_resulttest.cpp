@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file thr_resulttest.cpp
 
 \brief tesing of structure calculation results
 
