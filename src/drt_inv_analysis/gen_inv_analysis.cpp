@@ -799,7 +799,7 @@ void STR::GenInvAnalysis::CalcNewParameters(
     Epetra_SerialDenseMatrix& cmatrix, std::vector<double>& perturb)
 {
   // in case of multiple inverse analysis: use measured dofs of all experiments
-  double nmp;
+  double nmp = 0.0;
   Epetra_SerialDenseVector mcurve;
   if (spec_inv_ana_mult_)
   {
