@@ -162,7 +162,7 @@ namespace MAT
     virtual void Setup(const int numgp, DRT::INPUT::LineDefinition* linedef);
 
     //! update after converged time step
-    virtual void Update();
+    virtual void Update(double temperature, int gp);
 
     //! evaluates stresses for 3d
     virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd,  //!< deformation gradient
@@ -226,6 +226,9 @@ namespace MAT
 
     //! Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+
+    /// Get direct access to the Consolidation object
+    virtual Teuchos::RCP<MAT::Consolidation> Consolidation() { return consol_; }
 
     //! @name temperature-dependent material parameters E(T)
     //@{

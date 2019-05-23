@@ -194,9 +194,12 @@ void MAT::ThermoStVenantKirchhoff::Setup(const int numgp, DRT::INPUT::LineDefini
 /*----------------------------------------------------------------------*
  |  update history-variables                                             |
  *----------------------------------------------------------------------*/
-void MAT::ThermoStVenantKirchhoff::Update()
+void MAT::ThermoStVenantKirchhoff::Update(double temperature, int gp)
 {
-  if (consol_ != Teuchos::null) consol_->Update();
+  if (consol_ != Teuchos::null)
+  {
+    consol_->Update(temperature, gp);
+  }
 }
 
 

@@ -339,7 +339,7 @@ namespace MAT
     void Setup(const int numgp);
 
     //! update history variables
-    void Update();
+    void Update(double temperature, int gp);
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }

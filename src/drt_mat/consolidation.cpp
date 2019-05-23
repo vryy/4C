@@ -239,10 +239,14 @@ void MAT::Consolidation::SetupFunctionEvaluateVariables()
 /*----------------------------------------------------------------------*
  |  update history variables                     (public) proell 05/18  |
  *----------------------------------------------------------------------*/
-void MAT::Consolidation::Update()
+void MAT::Consolidation::Update(double temperature, int gp)
 {
+  // TODO remove when heat integration is moved out of consolidation code
+  if (params_->enthalpydep_)
+    cfracn_->at(gp) = CFracNext(enth_, cfracn_->at(gp));
+  else
+    cfracn_->at(gp) = CFracNext(temperature, cfracn_->at(gp));
   // careful: copy the actual content and not just the pointer!
-  *cfracn_ = *cfracnp_;
   *lhrem_ = *lhremnp_;
 }
 
