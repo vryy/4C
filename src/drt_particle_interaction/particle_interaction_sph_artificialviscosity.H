@@ -1,15 +1,10 @@
 /*---------------------------------------------------------------------------*/
 /*!
-
 \brief artificial viscosity handler for smoothed particle hydrodynamics (SPH) interactions
 
 \level 3
 
 \maintainer  Sebastian Fuchs
-             fuchs@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15262
-
 */
 /*---------------------------------------------------------------------------*/
 

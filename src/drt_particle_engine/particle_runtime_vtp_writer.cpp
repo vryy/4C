@@ -1,15 +1,10 @@
 /*---------------------------------------------------------------------------*/
 /*!
-
 \brief write visualization output for particles in vtk/vtp format at runtime
 
 \level 3
 
 \maintainer  Sebastian Fuchs
-             fuchs@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15262
-
 */
 /*---------------------------------------------------------------------------*/
 

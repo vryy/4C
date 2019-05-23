@@ -1,16 +1,10 @@
 /*---------------------------------------------------------------------------*/
 /*!
-
-\brief class holding all equation of state handlers for smoothed particle hydrodynamics (SPH)
-interactions
+\brief class holding all equation of state handlers
 
 \level 3
 
 \maintainer  Sebastian Fuchs
-             fuchs@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15262
-
 */
 /*---------------------------------------------------------------------------*/
 

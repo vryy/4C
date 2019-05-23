@@ -1,15 +1,10 @@
 /*---------------------------------------------------------------------------*/
 /*!
-
 \brief communication utils for particle engine
 
 \level 3
 
 \maintainer  Sebastian Fuchs
-             fuchs@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15262
-
 */
 /*---------------------------------------------------------------------------*/
 
