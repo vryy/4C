@@ -68,14 +68,7 @@ PARTICLE::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::Parameter
   // get particle params list
   const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParamsOld();
 
-  if (moving_walls_ == true and DRT::Problem::Instance()->ProblemType() != prb_pasi)
-    dserror(
-        "MOVING_WALLS flag is activated!\n"
-        "Set parameter PROBLEMTYP to 'Particle_Structure_Interaction' in ---PROBLEM TYP section\n"
-        "and set the particle structure interaction parameters in ---PASI DYNAMIC section\n");
-
-  if (moving_walls_ == true and rep_strategy_ != INPAR::PARTICLEOLD::repstr_everydt)
-    dserror("REPARTITIONSTRATEGY must be set to Everydt for particle problems with moving walls!");
+  if (moving_walls_) dserror("moving walls do not supported in old particle framework");
 
   gravity_acc_.PutScalar(0.0);
   // get acceleration vector due to gravity for particles

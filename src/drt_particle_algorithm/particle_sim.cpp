@@ -1,15 +1,10 @@
 /*---------------------------------------------------------------------------*/
 /*!
-
 \brief main control routine for particle simulations
 
 \level 3
 
 \maintainer  Sebastian Fuchs
-             fuchs@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15262
-
 */
 /*---------------------------------------------------------------------------*/
 
@@ -17,12 +12,9 @@
  | headers                                                    sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
 #include "particle_sim.H"
-
-#include "../drt_particle_algorithm/particle_algorithm.H"
+#include "particle_algorithm.H"
 
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_resulttest.H"
-
 #include "../drt_comm/comm_utils.H"
 
 #include <Teuchos_RCP.hpp>

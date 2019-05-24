@@ -361,7 +361,6 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--PARTICLE DYNAMIC/DEM", *list);
   reader.ReadGidSection("--PARTICLE DYNAMIC OLD", *list);
   reader.ReadGidSection("--PASI DYNAMIC", *list);
-  reader.ReadGidSection("--PASI DYNAMIC/PARTITIONED", *list);
   reader.ReadGidSection("--LEVEL-SET CONTROL", *list);
   reader.ReadGidSection("--LEVEL-SET CONTROL/PARTICLE", *list);
   reader.ReadGidSection("--LEVEL-SET CONTROL/REINITIALIZATION", *list);

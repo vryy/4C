@@ -1864,6 +1864,7 @@ set(OBJS_DRT_PARTICLE_ALGORITHM
   src/drt_particle_algorithm/particle_initial_field.cpp
   src/drt_particle_algorithm/particle_result_test.cpp
   src/drt_particle_algorithm/particle_wall.cpp
+  src/drt_particle_algorithm/particle_wall_datastate.cpp
   src/drt_particle_algorithm/particle_wall_result_test.cpp
   src/drt_particle_algorithm/particle_algorithm_utils.cpp
 )

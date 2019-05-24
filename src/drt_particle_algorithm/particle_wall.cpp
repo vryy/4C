@@ -1,15 +1,10 @@
 /*---------------------------------------------------------------------------*/
 /*!
-
 \brief particle wall handler for particle simulations
 
 \level 3
 
 \maintainer  Sebastian Fuchs
-             fuchs@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15262
-
 */
 /*---------------------------------------------------------------------------*/
 
@@ -17,6 +12,8 @@
  | headers                                                    sfuchs 10/2018 |
  *---------------------------------------------------------------------------*/
 #include "particle_wall.H"
+
+#include "particle_wall_datastate.H"
 
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_enums.H"
@@ -31,6 +28,7 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_utils_factory.H"
+#include "../drt_lib/drt_dofset_transparent.H"
 
 #include "../drt_io/io.H"
 #include "../drt_io/discretization_runtime_vtu_writer.H"
@@ -73,6 +71,9 @@ void PARTICLEALGORITHM::WallHandlerBase::Init()
   // init wall discretization
   InitWallDiscretization();
 
+  // init wall data state container
+  InitWallDataState();
+
   // init wall discretization runtime vtu writer
   InitWallVtuWriter();
 }
@@ -92,6 +93,9 @@ void PARTICLEALGORITHM::WallHandlerBase::Setup(
 
   // setup wall discretization
   SetupWallDiscretization();
+
+  // setup wall data state container
+  SetupWallDataState();
 
   // setup wall discretization runtime vtu writer
   SetupWallVtuWriter();
@@ -126,6 +130,43 @@ void PARTICLEALGORITHM::WallHandlerBase::ReadRestart(const int restartstep)
 }
 
 /*---------------------------------------------------------------------------*
+ | insert wall handler dependent states of all particle types sfuchs 05/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::WallHandlerBase::InsertParticleStatesOfParticleTypes(
+    std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
+    const
+{
+  // get flags defining considered states of particle wall
+  bool ismoving = DRT::INPUT::IntegralValue<int>(params_, "PARTICLE_WALL_MOVING");
+  bool isloaded = DRT::INPUT::IntegralValue<int>(params_, "PARTICLE_WALL_LOADED");
+
+  if (not(ismoving and isloaded)) return;
+
+  // iterate over particle types
+  for (auto& typeIt : particlestatestotypes)
+  {
+    // set of particle states for current particle type
+    std::set<PARTICLEENGINE::StateEnum>& particlestates = typeIt.second;
+
+    // insert states needed for iteration in particle structure interaction
+    particlestates.insert({
+        PARTICLEENGINE::LastIterPosition,
+        PARTICLEENGINE::LastIterVelocity,
+        PARTICLEENGINE::LastIterAcceleration,
+    });
+
+    if (particlestates.count(PARTICLEENGINE::AngularVelocity))
+      particlestates.insert(PARTICLEENGINE::LastIterAngularVelocity);
+
+    if (particlestates.count(PARTICLEENGINE::AngularAcceleration))
+      particlestates.insert(PARTICLEENGINE::LastIterAngularAcceleration);
+
+    if (particlestates.count(PARTICLEENGINE::ModifiedAcceleration))
+      particlestates.insert(PARTICLEENGINE::LastIterModifiedAcceleration);
+  }
+}
+
+/*---------------------------------------------------------------------------*
  | write wall runtime vtu output                              sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::WallHandlerBase::WriteWallRuntimeVtuOutput(
@@ -136,8 +177,9 @@ void PARTICLEALGORITHM::WallHandlerBase::WriteWallRuntimeVtuOutput(
 
 
   // node displacements
-  if (disp_col_ != Teuchos::null)
-    wallvtuwriter_->AppendDofBasedResultDataVector(disp_col_, 3, 0, "disp");
+  if (walldatastate_->GetDispCol() != Teuchos::null)
+    wallvtuwriter_->AppendDofBasedResultDataVector(
+        walldatastate_->GetRefMutableDispCol(), 3, 0, "disp");
 
   // node owner
   Teuchos::RCP<Epetra_Vector> nodeowner =
@@ -191,14 +233,15 @@ void PARTICLEALGORITHM::WallHandlerBase::UpdateBinRowAndColMap(
 void PARTICLEALGORITHM::WallHandlerBase::GetMaxWallPositionIncrement(
     double& allprocmaxpositionincrement)
 {
-  if (disp_row_ != Teuchos::null)
+  if (walldatastate_->GetDispRow() != Teuchos::null)
   {
 #ifdef DEBUG
     // safety checks
-    if (disp_row_last_transfer_ == Teuchos::null)
+    if (walldatastate_->GetDispRowLastTransfer() == Teuchos::null)
       dserror("vector of wall displacements after last transfer not set!");
 
-    if (not disp_row_->Map().SameAs(disp_row_last_transfer_->Map()))
+    if (not walldatastate_->GetDispRow()->Map().SameAs(
+            walldatastate_->GetDispRowLastTransfer()->Map()))
       dserror("maps are not equal as expected!");
 #endif
 
@@ -206,11 +249,12 @@ void PARTICLEALGORITHM::WallHandlerBase::GetMaxWallPositionIncrement(
     double maxpositionincrement = 0.0;
 
     // iterate over coordinate values of wall displacements
-    for (int i = 0; i < disp_row_->MyLength(); ++i)
+    for (int i = 0; i < walldatastate_->GetDispRow()->MyLength(); ++i)
     {
       // get position increment of wall node in current spatial dimension since last transfer
       double absolutpositionincrement =
-          std::abs(disp_row_->operator[](i) - disp_row_last_transfer_->operator[](i));
+          std::abs(walldatastate_->GetDispRow()->operator[](i) -
+                   walldatastate_->GetDispRowLastTransfer()->operator[](i));
 
       // compare to current maximum
       maxpositionincrement = std::max(maxpositionincrement, absolutpositionincrement);
@@ -231,6 +275,10 @@ void PARTICLEALGORITHM::WallHandlerBase::RelateBinsToColWallEles()
 
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::WallHandlerBase::RelateBinsToColWallEles");
 
+#ifdef DEBUG
+  walldatastate_->CheckForCorrectMaps(walldiscretization_);
+#endif
+
   // clear vector relating column wall elements to bins
   binstocolwalleles_.assign(walldiscretization_->NumMyColElements(), std::vector<int>(0));
 
@@ -245,7 +293,8 @@ void PARTICLEALGORITHM::WallHandlerBase::RelateBinsToColWallEles()
 
     // get corresponding bin ids for element
     std::vector<int> binids;
-    binstrategy_->DistributeElementToBinsUsingEleXAABB(walldiscretization_, ele, binids, disp_col_);
+    binstrategy_->DistributeElementToBinsUsingEleXAABB(
+        walldiscretization_, ele, binids, walldatastate_->GetRefMutableDispCol());
 
     // relate ids of owned bins to column wall elements
     for (int gidofbin : binids)
@@ -263,6 +312,10 @@ void PARTICLEALGORITHM::WallHandlerBase::BuildParticleToWallNeighbors(
     const PARTICLEENGINE::ParticlesToBins& particlestobins)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::WallHandlerBase::BuildParticleToWallNeighbors");
+
+#ifdef DEBUG
+  walldatastate_->CheckForCorrectMaps(walldiscretization_);
+#endif
 
   // safety check
   if ((not validwallelements_)) dserror("invalid relation of bins to column wall elements!");
@@ -374,13 +427,25 @@ PARTICLEALGORITHM::WallHandlerBase::GetPotentialWallNeighbors() const
 void PARTICLEALGORITHM::WallHandlerBase::DetermineColWallEleNodalPos(
     DRT::Element* ele, std::map<int, LINALG::Matrix<3, 1>>& colelenodalpos) const
 {
+#ifdef DEBUG
+  if (walldiscretization_->ElementColMap()->LID(ele->Id()) < 0)
+    dserror("element gid=%d not in element column map!", ele->Id());
+#endif
+
   // get pointer to nodes of current column wall element
   DRT::Node** nodes = ele->Nodes();
   const int numnodes = ele->NumNode();
 
+#ifdef DEBUG
+  for (int i = 0; i < numnodes; ++i)
+    if (walldiscretization_->NodeColMap()->LID(nodes[i]->Id()) < 0)
+      dserror(
+          "node gid=%d of column element gid=%d not in node column map", nodes[i]->Id(), ele->Id());
+#endif
+
   // determine nodal displacements
   std::vector<double> nodal_disp(numnodes * 3, 0.0);
-  if (disp_col_ != Teuchos::null)
+  if (walldatastate_->GetDispCol() != Teuchos::null)
   {
     std::vector<int> lm_wall;
     lm_wall.reserve(numnodes * 3);
@@ -388,7 +453,13 @@ void PARTICLEALGORITHM::WallHandlerBase::DetermineColWallEleNodalPos(
     std::vector<int> lmstride;
     ele->LocationVector(*walldiscretization_, lm_wall, lmowner, lmstride);
 
-    DRT::UTILS::ExtractMyValues(*disp_col_, nodal_disp, lm_wall);
+#ifdef DEBUG
+    for (int i = 0; i < numnodes * 3; ++i)
+      if (walldiscretization_->DofColMap()->LID(lm_wall[i]) < 0)
+        dserror("dof gid=%d not in dof column map!", lm_wall[i]);
+#endif
+
+    DRT::UTILS::ExtractMyValues(*walldatastate_->GetDispCol(), nodal_disp, lm_wall);
   }
 
   // iterate over nodes of current column wall element
@@ -413,6 +484,29 @@ void PARTICLEALGORITHM::WallHandlerBase::InitWallDiscretization()
 
   // create wall discretization writer
   walldiscretization_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(walldiscretization_)));
+}
+
+/*---------------------------------------------------------------------------*
+ | init wall data state container                             sfuchs 05/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::WallHandlerBase::InitWallDataState()
+{
+  // create and init wall data state container
+  walldatastate_ = std::make_shared<PARTICLEALGORITHM::WallDataState>();
+  walldatastate_->Init();
+}
+
+/*---------------------------------------------------------------------------*
+ | setup wall data state container                            sfuchs 05/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::WallHandlerBase::SetupWallDataState()
+{
+  // get flags defining considered states of particle wall
+  bool ismoving = DRT::INPUT::IntegralValue<int>(params_, "PARTICLE_WALL_MOVING");
+  bool isloaded = DRT::INPUT::IntegralValue<int>(params_, "PARTICLE_WALL_LOADED");
+
+  // setup wall data state container
+  walldatastate_->Setup(walldiscretization_, ismoving, isloaded);
 }
 
 /*---------------------------------------------------------------------------*
@@ -468,15 +562,15 @@ void PARTICLEALGORITHM::WallHandlerDiscretCondition::DistributeWallElementsAndNo
   // distribute wall elements to bins with standard ghosting
   Teuchos::RCP<Epetra_Map> stdelecolmap;
   Teuchos::RCP<Epetra_Map> stdnodecolmapdummy;
-  binstrategy_->StandardDiscretizationGhosting(
-      walldiscretization_, binrowmap_, disp_row_, stdelecolmap, stdnodecolmapdummy);
+  binstrategy_->StandardDiscretizationGhosting(walldiscretization_, binrowmap_,
+      walldatastate_->GetRefMutableDispRow(), stdelecolmap, stdnodecolmapdummy);
 
   // export displacement vector
   Teuchos::RCP<Epetra_Vector> disn_col = Teuchos::null;
-  if (disp_row_ != Teuchos::null)
+  if (walldatastate_->GetDispRow() != Teuchos::null)
   {
     disn_col = Teuchos::rcp(new Epetra_Vector(*walldiscretization_->DofColMap()));
-    LINALG::Export(*disp_row_, *disn_col);
+    LINALG::Export(*walldatastate_->GetDispRow(), *disn_col);
   }
 
   // determine bin to row wall element distribution
@@ -488,10 +582,7 @@ void PARTICLEALGORITHM::WallHandlerDiscretCondition::DistributeWallElementsAndNo
   ExtendWallElementGhosting(bintorowelemap);
 
   // update maps of state vectors
-  UpdateMapsOfStateVectors();
-
-  // store displacements after last transfer
-  StoreDisplacementsAfterLastTransfer();
+  walldatastate_->UpdateMapsOfStateVectors(walldiscretization_);
 }
 
 /*---------------------------------------------------------------------------*
@@ -500,7 +591,7 @@ void PARTICLEALGORITHM::WallHandlerDiscretCondition::DistributeWallElementsAndNo
 void PARTICLEALGORITHM::WallHandlerDiscretCondition::TransferWallElementsAndNodes()
 {
   // transfer wall elements and nodes only if wall displacements are set
-  if (disp_col_ == Teuchos::null) return;
+  if (walldatastate_->GetDispRow() == Teuchos::null) return;
 
   TEUCHOS_FUNC_TIME_MONITOR(
       "PARTICLEALGORITHM::WallHandlerDiscretCondition::TransferWallElementsAndNodes");
@@ -511,16 +602,14 @@ void PARTICLEALGORITHM::WallHandlerDiscretCondition::TransferWallElementsAndNode
 
   // transfer wall elements and nodes
   std::map<int, std::set<int>> bintorowelemap;
-  binstrategy_->TransferNodesAndElements(walldiscretization_, disp_col_, bintorowelemap);
+  binstrategy_->TransferNodesAndElements(
+      walldiscretization_, walldatastate_->GetMutableDispCol(), bintorowelemap);
 
   // extend wall element ghosting
   ExtendWallElementGhosting(bintorowelemap);
 
   // update maps of state vectors
-  UpdateMapsOfStateVectors();
-
-  // store displacements after last transfer
-  StoreDisplacementsAfterLastTransfer();
+  walldatastate_->UpdateMapsOfStateVectors(walldiscretization_);
 }
 
 /*---------------------------------------------------------------------------*
@@ -529,39 +618,12 @@ void PARTICLEALGORITHM::WallHandlerDiscretCondition::TransferWallElementsAndNode
 void PARTICLEALGORITHM::WallHandlerDiscretCondition::ExtendWallElementGhosting(
     std::map<int, std::set<int>>& bintorowelemap)
 {
-  std::map<int, std::set<int>> extbintorowelemap;
+  std::map<int, std::set<int>> colbintoelemap;
   Teuchos::RCP<Epetra_Map> extendedelecolmap =
-      binstrategy_->ExtendGhosting(bintorowelemap, extbintorowelemap, bincolmap_);
+      binstrategy_->ExtendGhosting(bintorowelemap, colbintoelemap, bincolmap_);
 
   BINSTRATEGY::UTILS::ExtendDiscretizationGhosting(
       walldiscretization_, extendedelecolmap, true, false, false);
-}
-
-/*---------------------------------------------------------------------------*
- | update maps of state vectors                               sfuchs 03/2019 |
- *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallHandlerDiscretCondition::UpdateMapsOfStateVectors()
-{
-  if (disp_row_ != Teuchos::null)
-  {
-    // export row displacement vector
-    Teuchos::RCP<Epetra_Vector> temp = disp_row_;
-    disp_row_ = Teuchos::rcp(new Epetra_Vector(*walldiscretization_->DofRowMap(), true));
-    LINALG::Export(*temp, *disp_row_);
-
-    // update column displacement vector
-    disp_col_ = Teuchos::rcp(new Epetra_Vector(*walldiscretization_->DofColMap(), true));
-    LINALG::Export(*disp_row_, *disp_col_);
-  }
-}
-
-/*---------------------------------------------------------------------------*
- | store displacements after last transfer                    sfuchs 03/2019 |
- *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallHandlerDiscretCondition::StoreDisplacementsAfterLastTransfer()
-{
-  if (disp_row_ != Teuchos::null)
-    disp_row_last_transfer_ = Teuchos::rcp(new Epetra_Vector(*disp_row_));
 }
 
 /*---------------------------------------------------------------------------*
@@ -619,6 +681,12 @@ void PARTICLEALGORITHM::WallHandlerDiscretCondition::SetupWallDiscretization() c
       walldiscretization_->AddElement(wallele);
     }
   }
+
+  // reuse dofs of structural discretization for wall discretization
+  bool parallel = (comm_.NumProc() == 1) ? false : true;
+  Teuchos::RCP<DRT::DofSet> newdofset =
+      Teuchos::rcp(new DRT::TransparentDofSet(structurediscretization, parallel));
+  walldiscretization_->ReplaceDofSet(newdofset);
 
   // finalize wall discretization construction
   walldiscretization_->FillComplete(true, false, false);

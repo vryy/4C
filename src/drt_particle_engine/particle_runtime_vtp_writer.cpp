@@ -1,15 +1,10 @@
 /*---------------------------------------------------------------------------*/
 /*!
-
 \brief write visualization output for particles in vtk/vtp format at runtime
 
 \level 3
 
 \maintainer  Sebastian Fuchs
-             fuchs@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15262
-
 */
 /*---------------------------------------------------------------------------*/
 
@@ -59,6 +54,9 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::Init(
   blackliststates_.insert({PARTICLEENGINE::ModifiedVelocity, PARTICLEENGINE::ModifiedAcceleration});
   blackliststates_.insert({PARTICLEENGINE::InterfaceNormal, PARTICLEENGINE::UnitWallNormal,
       PARTICLEENGINE::WallDistance});
+  blackliststates_.insert({PARTICLEENGINE::LastIterPosition, PARTICLEENGINE::LastIterVelocity,
+      PARTICLEENGINE::LastIterAcceleration, PARTICLEENGINE::LastIterAngularVelocity,
+      PARTICLEENGINE::LastIterAngularAcceleration, PARTICLEENGINE::LastIterModifiedAcceleration});
 }
 
 /*---------------------------------------------------------------------------*

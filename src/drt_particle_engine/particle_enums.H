@@ -1,15 +1,10 @@
 /*---------------------------------------------------------------------------*/
 /*!
-
 \brief defining enums of particle states
 
 \level 3
 
 \maintainer  Sebastian Fuchs
-             fuchs@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15262
-
 */
 /*---------------------------------------------------------------------------*/
 
@@ -55,7 +50,13 @@ namespace PARTICLEENGINE
     InterfaceNormal,
     UnitWallNormal,
     WallDistance,
-    TemperatureGradient
+    TemperatureGradient,
+    LastIterPosition,
+    LastIterVelocity,
+    LastIterAcceleration,
+    LastIterAngularVelocity,
+    LastIterAngularAcceleration,
+    LastIterModifiedAcceleration,
   };
 
   //! get dimension of particle state

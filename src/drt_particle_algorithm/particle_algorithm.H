@@ -1,15 +1,10 @@
 /*---------------------------------------------------------------------------*/
 /*!
-
 \brief algorithm to control particle simulations
 
 \level 3
 
 \maintainer  Sebastian Fuchs
-             fuchs@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15262
-
 */
 /*---------------------------------------------------------------------------*/
 
@@ -24,7 +19,10 @@
  *---------------------------------------------------------------------------*/
 #include "../drt_adapter/adapter_algorithmbase.H"
 
+#include "particle_wall.H"
+
 #include "../drt_particle_engine/particle_typedefs.H"
+#include "../drt_particle_engine/particle_engine.H"
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                       sfuchs 04/2018 |
@@ -34,7 +32,6 @@ namespace PARTICLEALGORITHM
   class TimInt;
   class GravityHandler;
   class ViscousDampingHandler;
-  class WallHandlerBase;
 }  // namespace PARTICLEALGORITHM
 
 namespace PARTICLEINTERACTION
@@ -44,9 +41,8 @@ namespace PARTICLEINTERACTION
 
 namespace PARTICLEENGINE
 {
-  class ParticleEngine;
   class ParticleObject;
-}  // namespace PARTICLEENGINE
+}
 
 namespace DRT
 {
@@ -90,6 +86,20 @@ namespace PARTICLEALGORITHM
 
     //! create particle field specific result test objects
     std::vector<std::shared_ptr<DRT::ResultTest>> CreateResultTests();
+
+    //! get interface to particle engine
+    const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> GetParticleEngineInterface()
+        const
+    {
+      return particleengine_;
+    }
+
+    //! get interface to particle wall handler
+    const std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> GetParticleWallHandlerInterface()
+        const
+    {
+      return particlewall_;
+    }
 
    private:
     //! init particle engine
