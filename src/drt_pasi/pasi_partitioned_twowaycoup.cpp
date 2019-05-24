@@ -316,6 +316,9 @@ void PASI::PASI_PartTwoWayCoup::GetWallForces()
   if (walldatastate->GetForceCol() == Teuchos::null) dserror("wall forces not initialized!");
 #endif
 
+  // clear wall forces
+  forcenp_->Scale(0.0);
+
   // assemble wall forces
   Epetra_Export exporter(walldatastate->GetForceCol()->Map(), forcenp_->Map());
   int err = forcenp_->Export(*walldatastate->GetForceCol(), exporter, Add);
