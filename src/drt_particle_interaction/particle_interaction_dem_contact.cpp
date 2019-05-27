@@ -587,7 +587,7 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
     UTILS::vec_addscale(force_i, normalcontactforce, particlewallpair.e_ji_);
 
     // calculation of tangential contact force
-    double tangentialcontactforce[3];
+    double tangentialcontactforce[3] = {0.0};
     if (contacttangential_)
     {
       // get reference to touched tangential history

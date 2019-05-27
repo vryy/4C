@@ -211,7 +211,7 @@ void PASI::PASI_PartTwoWayCoup::SetWallForces(Teuchos::RCP<const Epetra_Vector> 
 {
   TEUCHOS_FUNC_TIME_MONITOR("PASI::PASI_PartTwoWayCoup::SetWallForces");
 
-  double normwallforce;
+  double normwallforce(0.0);
   forcenp->Norm2(&normwallforce);
 
   if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
@@ -317,7 +317,7 @@ void PASI::PASI_PartTwoWayCoup::GetWallForces()
 #endif
 
   // clear wall forces
-  forcenp_->Scale(0.0);
+  forcenp_->PutScalar(0.0);
 
   // assemble wall forces
   Epetra_Export exporter(walldatastate->GetForceCol()->Map(), forcenp_->Map());
@@ -627,7 +627,7 @@ void PASI::PASI_PartTwoWayCoup_ForceRelaxAitken::CalcOmega(double& omega, const 
       LINALG::CreateVector(*structurefield_->DofRowMap(), true);
   forceincnpdiff->Update(1.0, *forceincnp_, (-1.0), *forceincnpold_, 0.0);
 
-  double forceincnpdiffnorm = 0.0;
+  double forceincnpdiffnorm(0.0);
   forceincnpdiff->Norm2(&forceincnpdiffnorm);
 
   if (forceincnpdiffnorm <= 1e-06)
@@ -641,7 +641,7 @@ void PASI::PASI_PartTwoWayCoup_ForceRelaxAitken::CalcOmega(double& omega, const 
   // in first iteration reuse Aitken relaxation parameter from previous step
   if (itnum != 1 and forceincnpdiffnorm > 1e-06)
   {
-    double forceincsdot = 0.0;
+    double forceincsdot(0.0);
     forceincnpdiff->Dot(*forceincnp_, &forceincsdot);
 
     // update Aitken relaxation parameter
