@@ -1929,7 +1929,7 @@ void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseVector delta_p)
       printf("\tGrad_error: ");
       printf("%10.3e", error_grad_s_(i));
       printf("\tParameter: ");
-      for (int j = 0; j < delta_p.Length(); j++) printf("%10.3e", p_s_(i, j));
+      for (int j = 0; j < delta_p.Length(); j++) printf("%10.3e\t", p_s_(i, j));
       // printf("\tDelta_p: ");
       // for (int j=0; j < delta_p.Length(); j++)
       //  printf("%10.3e", delta_p_s_(i, j));
@@ -1947,7 +1947,7 @@ void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseVector delta_p)
     printf("\tGrad_error: ");
     printf("%10.3e", error_grad_s_(i));
     printf("\tParameter: ");
-    for (int j = 0; j < delta_p.Length(); j++) printf("%10.3e", p_s_(i, j));
+    for (int j = 0; j < delta_p.Length(); j++) printf("%10.3e\t", p_s_(i, j));
     printf("\n");
 
     printf("\n");
