@@ -45,17 +45,17 @@ void PARTICLEALGORITHM::WallDataState::Setup(
   // create states needed for moving walls
   if (ismoving)
   {
-    disp_row_ = Teuchos::rcp(new Epetra_Vector(*curr_dof_row_map_));
-    disp_col_ = Teuchos::rcp(new Epetra_Vector(*walldiscretization->DofColMap()));
-    disp_row_last_transfer_ = Teuchos::rcp(new Epetra_Vector(*curr_dof_row_map_));
-    vel_col_ = Teuchos::rcp(new Epetra_Vector(*walldiscretization->DofColMap()));
-    acc_col_ = Teuchos::rcp(new Epetra_Vector(*walldiscretization->DofColMap()));
+    disp_row_ = Teuchos::rcp(new Epetra_Vector(*curr_dof_row_map_), true);
+    disp_col_ = Teuchos::rcp(new Epetra_Vector(*walldiscretization->DofColMap()), true);
+    disp_row_last_transfer_ = Teuchos::rcp(new Epetra_Vector(*curr_dof_row_map_), true);
+    vel_col_ = Teuchos::rcp(new Epetra_Vector(*walldiscretization->DofColMap()), true);
+    acc_col_ = Teuchos::rcp(new Epetra_Vector(*walldiscretization->DofColMap()), true);
   }
 
   // create states needed for loaded walls
   if (isloaded)
   {
-    force_col_ = Teuchos::rcp(new Epetra_Vector(*walldiscretization->DofColMap()));
+    force_col_ = Teuchos::rcp(new Epetra_Vector(*walldiscretization->DofColMap()), true);
   }
 }
 
