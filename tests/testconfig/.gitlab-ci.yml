@@ -198,6 +198,8 @@ variables:
     stage: doxygen
     script:
         - "echo Doxygen"
+        # Delete old build files.
+        - rm -rf ../baci-build/
         # Output to log because it is too much for the gitlab console.
         - "ctest -S $CI_PROJECT_DIR/tests/testconfig/test_doxygen.cmake -VV > ../doxygen.log"
         # Throw error if there are Latex errors in doxygen comments. Latex errors can be uniquely identified by a line starting with "! ".
@@ -230,6 +232,8 @@ variables:
     stage: doxygen
     script:
         - "echo Doxygen"
+        # Delete old build files.
+        - rm -rf ../baci-build/
         # Output to log because it is too much for the gitlab console.
         - "ctest -S $CI_PROJECT_DIR/tests/testconfig/test_doxygen.cmake -VV > ../doxygen.log"
         # Throw error if there are Latex errors in doxygen comments. Latex errors can be uniquely identified by a line starting with "! ".
