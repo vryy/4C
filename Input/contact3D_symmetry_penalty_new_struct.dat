@@ -47,7 +47,7 @@ PREDICT            TangDis
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER        2
 STRATEGY             Penalty
-FRICTION             none
+FRICTION                        None
 PENALTYPARAM         1
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN          std

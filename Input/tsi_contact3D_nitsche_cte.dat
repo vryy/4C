@@ -90,7 +90,7 @@ NORMCOMBI_RESFINC               Coupl_Or_Singl    // And,Or,{Coupl_}{Or,And}_Sin
 NORM_RESF                       Abs                // Abs,Mix
 MERGE_TSI_BLOCK_MATRIX          yes
 ------------------------------------------------CONTACT DYNAMIC
-FRICTION                    coulomb
+FRICTION                        Coulomb
 LINEAR_SOLVER               1
 STRATEGY                    Nitsche
 PENALTYPARAM                2e0

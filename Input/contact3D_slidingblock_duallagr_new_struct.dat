@@ -55,7 +55,7 @@ ALPHA_F                         0.5
 LINEAR_SOLVER                   2
 STRATEGY                        Lagrange
 SYSTEM                          Saddlepoint
-FRICTION                        none
+FRICTION                        None
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  1.0
 SEMI_SMOOTH_CT                  1000.0

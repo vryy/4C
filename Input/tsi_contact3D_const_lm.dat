@@ -85,7 +85,7 @@ NORMCOMBI_RESFINC               And                           // And,Or,{Coupl_}
 NORM_RESF                       Abs                           // Abs,Mix
 MERGE_TSI_BLOCK_MATRIX          yes                           // no
 -------------------------------------------------------------CONTACT DYNAMIC
-FRICTION                        none                          // coulomb
+FRICTION                        None                          // coulomb
 LINEAR_SOLVER                   1
 PENALTYPARAM                    2
 NITSCHE_THETA                   1.0

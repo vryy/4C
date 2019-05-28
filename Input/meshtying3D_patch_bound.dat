@@ -62,7 +62,6 @@ SEMI_SMOOTH_NEWTON   yes
 SEMI_SMOOTH_CN       1.0
 SEMI_SMOOTH_CT       100.0
 STRATEGY             Lagrange
-FRICTION             None
 NONSMOOTH_GEOMETRIES no
 TOLCONTCONSTR        1e-5
 TOLLAGR              1e-5
