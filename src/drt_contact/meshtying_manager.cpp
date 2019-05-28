@@ -706,3 +706,11 @@ void CONTACT::MtManager::PostprocessQuantities(IO::DiscretizationWriter& output)
 
   return;
 }
+
+/*-----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::MtManager::PostprocessQuantitiesPerInterface(
+    Teuchos::RCP<Teuchos::ParameterList> outputParams)
+{
+  GetStrategy().PostprocessQuantitiesPerInterface(outputParams);
+}

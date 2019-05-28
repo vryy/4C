@@ -1514,6 +1514,14 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
   return;
 }
 
+/*-----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::CoManager::PostprocessQuantitiesPerInterface(
+    Teuchos::RCP<Teuchos::ParameterList> outputParams)
+{
+  GetStrategy().PostprocessQuantitiesPerInterface(outputParams);
+}
+
 /*----------------------------------------------------------------------------------------------*
  |  Reconnect Contact Element -- Parent Element Pointers (required for restart)       ager 04/16|
  *---------------------------------------------------------------------------------------------*/

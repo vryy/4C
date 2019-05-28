@@ -68,6 +68,18 @@ CONTACT::MeshtyingContactBridge::MeshtyingContactBridge(DRT::Discretization& dis
     }
   }
 
+  // Sanity check for writing output for each interface
+  {
+    const bool writeInterfaceOutput =
+        DRT::INPUT::IntegralValue<bool>(GetStrategy().Params(), "OUTPUT_INTERFACES");
+
+    if (writeInterfaceOutput && HaveContact() && ContactManager()->GetStrategy().Friction())
+      dserror(
+          "Output for each interface does not work yet, if friction is enabled. Switch off the "
+          "interface-based output in the input file (or implement/fix it for frictional contact "
+          "problems.");
+  }
+
   return;
 }
 
@@ -141,6 +153,26 @@ void CONTACT::MeshtyingContactBridge::PostprocessQuantities(
 
   // meshtying
   if (HaveMeshtying()) MtManager()->PostprocessQuantities(*output);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::MeshtyingContactBridge::PostprocessQuantitiesPerInterface(
+    Teuchos::RCP<Teuchos::ParameterList> outputParams)
+{
+  // This is an optional feature, so we check if it has been enabled in the input file
+  const bool writeInterfaceOutput =
+      DRT::INPUT::IntegralValue<bool>(GetStrategy().Params(), "OUTPUT_INTERFACES");
+  if (writeInterfaceOutput)
+  {
+    // contact
+    if (HaveContact()) ContactManager()->PostprocessQuantitiesPerInterface(outputParams);
+
+    // meshtying
+    if (HaveMeshtying()) MtManager()->PostprocessQuantitiesPerInterface(outputParams);
+  }
 
   return;
 }

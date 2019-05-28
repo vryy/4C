@@ -31,6 +31,11 @@ namespace DRT
   class Element;
 }  // namespace DRT
 
+namespace Teuchos
+{
+  class ParameterList;
+}
+
 namespace MORTAR
 {
   // forward declarations
@@ -101,6 +106,16 @@ namespace MORTAR
 
     //! Write interface quantities for postprocessing
     virtual void PostprocessQuantities(IO::DiscretizationWriter& output) = 0;
+
+    /*!
+    \brief Write results for visualization separately for each meshtying/contact interface
+
+    Call each interface, such that each interface can handle its own output of results.
+
+    \param[in] outputParams Parameter list with stuff required by interfaces to write output
+    */
+    virtual void PostprocessQuantitiesPerInterface(
+        Teuchos::RCP<Teuchos::ParameterList> outputParams) = 0;
 
     //! Read restart data from disk
     virtual void ReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,

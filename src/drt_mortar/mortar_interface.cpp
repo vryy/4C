@@ -26,6 +26,7 @@
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_serialdensematrix.H"
 
+#include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 
 #include "../drt_lib/drt_utils_parmetis.H"
@@ -33,6 +34,8 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_parallel.H"
 
+#include <Epetra_Map.h>
+#include <Epetra_Vector.h>
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_Time.h>
@@ -224,35 +227,84 @@ MORTAR::MortarInterface::MortarInterface(const Teuchos::RCP<IDataContainer>& ida
 
   procmap_.clear();
 
-  // build interface disretization
+  CreateInterfaceDiscretization();
+  SetShapeFunctionType();
+
+  poro_ = false;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::CreateInterfaceDiscretization()
+{
+  Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(Comm().Clone());
+
+  // Create name for mortar interface discretization
+  std::stringstream dis_name;
+  dis_name << "mortar_interface_" << id_;
+
+  // Create the required type of discretization
+  if (nurbs_)
   {
-    Teuchos::RCP<Epetra_Comm> clonedComm = Teuchos::rcp(Comm().Clone());
-    if (!nurbs_)
+    idiscret_ = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(dis_name.str(), comm));
+
+    /*
+    Note: The NurbsDiscretization needs a Knotvector to be able to write output. This is probably
+    the place, where the Knotvector of the mortar coupling surface needs to be inserted into the
+    NurbsDiscretization. However, it's not clear how to compute that Knotvector, so we can't do it
+    right now. In the end, it should be sufficient to extract the portion from the underlying volume
+    discretization's knot vector that corresponds to the mortar interface.
+
+    As a NurbsDiscretization can't write output for now, we don't do it and rather use the 'old'
+    output style, where interface output is written by the underlying volume discretization.
+    */
+  }
+  else
+  {
+    idiscret_ = Teuchos::rcp(new DRT::Discretization(dis_name.str(), comm));
+  }
+
+  // Prepare discretization writer
+  idiscret_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(idiscret_)));
+  dsassert(idiscret_->Writer().is_null(), "Setup of discretization writer failed.");
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::SetShapeFunctionType()
+{
+  INPAR::MORTAR::ShapeFcn shapefcn =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(IParams(), "LM_SHAPEFCN");
+  switch (shapefcn)
+  {
+    case INPAR::MORTAR::shape_dual:
     {
-      // standard case
-      idiscret_ =
-          Teuchos::rcp(new DRT::Discretization((std::string) "mortar interface", clonedComm));
+      shapefcn_ = INPAR::MORTAR::shape_dual;
+      break;
     }
-    else
+    case INPAR::MORTAR::shape_petrovgalerkin:
     {
-      idiscret_ = Teuchos::rcp(
-          new DRT::NURBS::NurbsDiscretization((std::string) "mortar interface", clonedComm));
+      shapefcn_ = INPAR::MORTAR::shape_petrovgalerkin;
+      break;
+    }
+    case INPAR::MORTAR::shape_standard:
+    {
+      shapefcn_ = INPAR::MORTAR::shape_standard;
+      break;
+    }
+    default:
+    {
+      dserror(
+          "Invalid shape function type. Interface must either have dual or standard shape "
+          "functions.");
+      break;
     }
   }
 
-  // overwrite shape function type
-  INPAR::MORTAR::ShapeFcn shapefcn =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(IParams(), "LM_SHAPEFCN");
-  if (shapefcn == INPAR::MORTAR::shape_dual)
-    shapefcn_ = INPAR::MORTAR::shape_dual;
-  else if (shapefcn == INPAR::MORTAR::shape_petrovgalerkin)
-    shapefcn_ = INPAR::MORTAR::shape_petrovgalerkin;
-  else if (shapefcn == INPAR::MORTAR::shape_standard)
-    shapefcn_ = INPAR::MORTAR::shape_standard;
-  else
-    dserror("ERROR: Interface must either have dual or std. shape fct.");
-
-  poro_ = false;
   return;
 }
 
@@ -4333,4 +4385,147 @@ void MORTAR::MortarInterface::AddMaSharingRefInterface(const MortarInterface* re
   }
 
   idata_.SetMaSharingRefInterfacePtr(ref_interface);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void MORTAR::MortarInterface::PostprocessQuantities(const Teuchos::ParameterList& outputParams)
+{
+  using Teuchos::RCP;
+
+  // Check if the given parameter list contains all required data to be written to output
+  {
+    // Vector with names of all required parameter entries
+    std::vector<std::string> requiredEntries;
+    requiredEntries.push_back("step");
+    requiredEntries.push_back("time");
+    requiredEntries.push_back("displacement");
+    requiredEntries.push_back("interface traction");
+    requiredEntries.push_back("slave forces");
+    requiredEntries.push_back("master forces");
+
+    CheckOutputList(outputParams, requiredEntries);
+  }
+
+  // Get the discretization writer and get ready for writing
+  RCP<IO::DiscretizationWriter> writer = idiscret_->Writer();
+
+  // Get output for this time step started
+  {
+    const int step = outputParams.get<int>("step");
+    const double time = outputParams.get<double>("time");
+
+    writer->ClearMapCache();
+    writer->WriteMesh(step, time);
+    writer->NewStep(step, time);
+  }
+
+  /* Write interface displacement
+   *
+   * The interface displacement has been handed in via the parameter list outParams.
+   * Grab it from there, then use LINALG::Export() to extract the interface
+   * portion from the global displacement vector. Finally, write the interface
+   * portion using this interfaces' discretization writer.
+   */
+  {
+    // Get full displacement vector and extract interface displacement
+    RCP<const Epetra_Vector> disp = outputParams.get<RCP<const Epetra_Vector>>("displacement");
+    RCP<Epetra_Vector> iDisp = LINALG::CreateVector(*idiscret_->DofRowMap());
+    LINALG::Export(*disp, *iDisp);
+
+    // Write the interface displacement field
+    writer->WriteVector("displacement", iDisp, IO::VectorType::dofvector);
+  }
+
+  // Write Lagrange multiplier field
+  {
+    // Get full Lagrange multiplier vector and extract values of this interface
+    RCP<const Epetra_Vector> lagMult =
+        outputParams.get<RCP<const Epetra_Vector>>("interface traction");
+    RCP<Epetra_Vector> iLagMult = LINALG::CreateVector(*idiscret_->DofRowMap());
+    LINALG::Export(*lagMult, *iLagMult);
+
+    // Write this interface's Lagrange multiplier field
+    writer->WriteVector("interfacetraction", iLagMult, IO::VectorType::dofvector);
+  }
+
+  // Write nodal forces of slave side
+  {
+    // Get nodal forces
+    RCP<const Epetra_Vector> slaveforces =
+        outputParams.get<RCP<const Epetra_Vector>>("slave forces");
+    RCP<Epetra_Vector> forces = LINALG::CreateVector(*idiscret_->DofRowMap());
+    LINALG::Export(*slaveforces, *forces);
+
+    // Write to output
+    writer->WriteVector("slaveforces", forces, IO::VectorType::dofvector);
+  }
+
+  // Write nodal forces of master side
+  {
+    // Get nodal forces
+    RCP<const Epetra_Vector> masterforces =
+        outputParams.get<RCP<const Epetra_Vector>>("master forces");
+    RCP<Epetra_Vector> forces = LINALG::CreateVector(*idiscret_->DofRowMap());
+    LINALG::Export(*masterforces, *forces);
+
+    // Write to output
+    writer->WriteVector("masterforces", forces, IO::VectorType::dofvector);
+  }
+
+
+  // Nodes: node-based vector with '0' at slave nodes and '1' at master nodes
+  {
+    RCP<Epetra_Vector> masterVec = Teuchos::rcp(new Epetra_Vector(*mnoderowmap_));
+    masterVec->PutScalar(1.0);
+
+    RCP<const Epetra_Map> nodeRowMap = LINALG::MergeMap(snoderowmap_, mnoderowmap_, false);
+    RCP<Epetra_Vector> masterSlaveVec = LINALG::CreateVector(*nodeRowMap, true);
+    LINALG::Export(*masterVec, *masterSlaveVec);
+
+    writer->WriteVector("slavemasternodes", masterSlaveVec, IO::VectorType::nodevector);
+  }
+
+  // Elements: element-based vector with '0' at slave elements and '1' at master elements
+  {
+    RCP<Epetra_Vector> masterVec = Teuchos::rcp(new Epetra_Vector(*melerowmap_));
+    masterVec->PutScalar(1.0);
+
+    RCP<const Epetra_Map> eleRowMap = LINALG::MergeMap(selerowmap_, melerowmap_, false);
+    RCP<Epetra_Vector> masterSlaveVec = LINALG::CreateVector(*eleRowMap, true);
+    LINALG::Export(*masterVec, *masterSlaveVec);
+
+    writer->WriteVector("slavemasterelements", masterSlaveVec, IO::VectorType::elementvector);
+  }
+
+  // Write element owners
+  {
+    RCP<const Epetra_Map> eleRowMap = LINALG::MergeMap(selerowmap_, melerowmap_, false);
+    RCP<Epetra_Vector> owner = LINALG::CreateVector(*eleRowMap);
+
+    for (int i = 0; i < idiscret_->ElementRowMap()->NumMyElements(); ++i)
+      (*owner)[i] = idiscret_->lRowElement(i)->Owner();
+
+    writer->WriteVector("Owner", owner, IO::VectorType::elementvector);
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool MORTAR::MortarInterface::CheckOutputList(
+    const Teuchos::ParameterList& outParams, const std::vector<std::string>& requiredEntries) const
+{
+  // Check for each required parameter entry if it exists
+  for (std::vector<std::string>::const_iterator it = requiredEntries.begin();
+       it < requiredEntries.end(); ++it)
+  {
+    if (not outParams.isParameter(*it))
+    {
+      dserror("Parameter list is missing the required entry '%s'.", *it);
+      return false;
+    }
+  }
+
+  // We only make it to here, if all checks passed. So it's safe to return 'true'.
+  return true;
 }

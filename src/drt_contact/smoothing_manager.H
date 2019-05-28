@@ -87,6 +87,9 @@ namespace CONTACT
     */
     void PostprocessQuantities(IO::DiscretizationWriter& output) final;
 
+    //! [derived]
+    void PostprocessQuantitiesPerInterface(Teuchos::RCP<Teuchos::ParameterList> outputParams) final;
+
     //! @}
 
 

@@ -1334,6 +1334,14 @@ void CONTACT::SmoothingManager::PostprocessQuantities(IO::DiscretizationWriter& 
 
 /*-----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void CONTACT::SmoothingManager::PostprocessQuantitiesPerInterface(
+    Teuchos::RCP<Teuchos::ParameterList> outputParams)
+{
+  dserror("Not implemented, yet.");
+}
+
+/*-----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void CONTACT::SmoothingManager::ReadRestart(IO::DiscretizationReader& reader,
     Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<Epetra_Vector> zero)
 {

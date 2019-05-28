@@ -112,6 +112,9 @@ namespace CONTACT
     */
     void PostprocessQuantities(IO::DiscretizationWriter& output) final;
 
+    //! [derived]
+    void PostprocessQuantitiesPerInterface(Teuchos::RCP<Teuchos::ParameterList> outputParams) final;
+
     /*!
     \brief Reconnect Contact Element -- Parent Element Pointers
 

@@ -3363,3 +3363,38 @@ double CONTACT::CoAbstractStrategy::GetLinearizedPotentialValueTerms(const Epetr
       INPAR::CONTACT::SolvingStrategy2String(Type()).c_str());
   exit(EXIT_FAILURE);
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoAbstractStrategy::PostprocessQuantitiesPerInterface(
+    Teuchos::RCP<Teuchos::ParameterList> outputParams)
+{
+  using Teuchos::RCP;
+
+  // Evaluate slave and master forces
+  {
+    RCP<Epetra_Vector> fcslave = Teuchos::rcp(new Epetra_Vector(DMatrix()->RowMap()));
+    RCP<Epetra_Vector> fcmaster = Teuchos::rcp(new Epetra_Vector(MMatrix()->DomainMap()));
+    DMatrix()->Multiply(true, *zold_, *fcslave);
+    MMatrix()->Multiply(true, *zold_, *fcmaster);
+
+    // Append data to parameter list
+    outputParams->set<RCP<const Epetra_Vector>>("interface traction", zold_);
+    outputParams->set<RCP<const Epetra_Vector>>("slave forces", fcslave);
+    outputParams->set<RCP<const Epetra_Vector>>("master forces", fcmaster);
+  }
+
+  // Postprocess contact stresses
+  {
+    ComputeContactStresses();
+
+    // Append data to parameter list
+    outputParams->set<RCP<const Epetra_Vector>>("norcontactstress", stressnormal_);
+    outputParams->set<RCP<const Epetra_Vector>>("tancontactstress", stresstangential_);
+  }
+
+
+  for (std::vector<Teuchos::RCP<CONTACT::CoInterface>>::iterator it = Interfaces().begin();
+       it < Interfaces().end(); ++it)
+    (*it)->PostprocessQuantities(*outputParams);
+}

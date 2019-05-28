@@ -1245,6 +1245,14 @@ namespace CONTACT
 
     const CoInterface& GetMaSharingRefInterface() const;
 
+    //! @name Output
+    //! @{
+
+    //! [derived]
+    virtual void PostprocessQuantities(const Teuchos::ParameterList& outputParams);
+
+    //! @}
+
    protected:
     /** \brief split the interface elements into a far and a close set
      *

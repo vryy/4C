@@ -334,6 +334,15 @@ namespace CONTACT
     */
     void PrintActiveSet() const;
 
+    /*!
+    \brief Write results for visualization separately for each meshtying/contact interface
+
+    Call each interface, such that each interface can handle its own output of results.
+
+    \param[in] outputParams Parameter list with stuff required by interfaces to write output
+    */
+    void PostprocessQuantitiesPerInterface(Teuchos::RCP<Teuchos::ParameterList> outputParams) final;
+
     //! @}
 
     //! @name Debugging methods

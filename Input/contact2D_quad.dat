@@ -74,6 +74,7 @@ LM_QUAD                         quad
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
 LM_DUAL_CONSISTENT              none
+OUTPUT_INTERFACES               Yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

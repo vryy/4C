@@ -1196,7 +1196,49 @@ namespace MORTAR
     bool HasMaSharingRefInterface() const;
     void AddMaSharingRefInterface(const MortarInterface* ref_interface);
 
+    //! @name Output
+    //! @{
+
+    /*!
+    \brief Output results for postprocessing/visualization of this interface
+
+    Use this interface's discretization write to write output of this interface.
+
+    \note This is purely for visualization. Writing/reading restart data is still dealt with by the
+    structure discretization.
+
+    \param[in] ouputParams Parameter list with stuff required by interfaces to write output
+    */
+    virtual void PostprocessQuantities(const Teuchos::ParameterList& outputParams);
+
+    //! @}
+
    protected:
+    //! @name Output
+    //! @{
+
+    /*!
+    \brief Check validity of parameter list for restart/output writing
+
+    Writing restart data and results is controlled via parameters in the
+    \c outParams parameter list. We check whether required entries exist and
+    maybe throw an error.
+
+    To add a entry to the list of required entries, just add a new line with
+    \code
+    requiredEntries.push_back("<new entry name>");
+    \endcode
+
+    \param[in] outParams Parameter list with output configuration and auxiliary output data
+    \param[in] requiredEntries List of required parameter list entries
+
+    \sa OutputState()
+     */
+    bool CheckOutputList(const Teuchos::ParameterList& outParams,
+        const std::vector<std::string>& requiredEntries) const;
+
+    //! @}
+
     const MortarInterface* GetMaSharingRefInterfacePtr() const;
 
     /*!
@@ -1378,7 +1420,20 @@ namespace MORTAR
     */
     void InitializeLagMultConst();
 
-   private:
+    /*!
+    \brief Setup interface discretization
+
+    Creates either a regular DRT::Discretization or a DRT::NurbsDiscretization.
+    */
+    void CreateInterfaceDiscretization();
+
+    /*!
+    \brief Set type of shape functions
+
+    Read type of shape function form input file parameter list and store it in #shapefcn_.
+    */
+    void SetShapeFunctionType();
+
     /// pointer to the interface data object
     Teuchos::RCP<IDataContainer> idata_ptr_;
 
