@@ -439,7 +439,7 @@ namespace CONTACT
     void Inttime_init() { inttime_ = 0.0; };
     int NumberOfActiveNodes() const { return 0; }
     int NumberOfSlipNodes() const { return 0; }
-    void OutputStresses() {}
+    void ComputeContactStresses() final{};
     void AugForces(Epetra_Vector& augfs_lm, Epetra_Vector& augfs_g, Epetra_Vector& augfm_lm,
         Epetra_Vector& augfm_g){};
     bool RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis) final { return false; }

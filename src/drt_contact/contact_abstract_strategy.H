@@ -1355,7 +1355,7 @@ namespace CONTACT
      This is called at the end of each time or load step. It calculates
      the stress vector in normal direction and the stress vector in the
      tangential plane. */
-    virtual void OutputStresses();
+    void ComputeContactStresses() override;
 
     /*! \brief Get dirichlet B.C. status and store into CoNodes
 

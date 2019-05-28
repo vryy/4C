@@ -475,7 +475,7 @@ void STR::MODELEVALUATOR::Contact::RunPostComputeX(
 void STR::MODELEVALUATOR::Contact::DetermineStressStrain()
 {
   // evaluate contact tractions
-  Strategy().OutputStresses();
+  Strategy().ComputeContactStresses();
 
   if (Strategy().WeightedWear())
   {

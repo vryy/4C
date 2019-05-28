@@ -206,7 +206,7 @@ namespace CONTACT
       const std::vector<Teuchos::RCP<CONTACT::CoInterface>>& Interfaces() const override;
 
       /// function wrapper
-      void OutputStresses() override;
+      void ComputeContactStresses() final;
 
       /** \brief function wrapper: Redistribute and setup augmented Lagrangian members
        *

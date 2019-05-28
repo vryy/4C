@@ -1435,7 +1435,7 @@ void CONTACT::AUG::Strategy::AugForces(Epetra_Vector& gAugFs_lm, Epetra_Vector& 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Strategy::OutputStresses()
+void CONTACT::AUG::Strategy::ComputeContactStresses()
 {
   // reset contact stress class variables
   Data().StressNormalPtr() = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));

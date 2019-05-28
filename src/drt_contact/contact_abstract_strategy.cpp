@@ -1736,7 +1736,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
 /*----------------------------------------------------------------------*
  |  Output vector of normal/tang. contact stresses        gitterle 08/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoAbstractStrategy::OutputStresses()
+void CONTACT::CoAbstractStrategy::ComputeContactStresses()
 {
   // reset contact stress class variables
   stressnormal_ = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));

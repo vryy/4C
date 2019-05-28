@@ -1291,7 +1291,7 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
   // *********************************************************************
 
   // evaluate contact tractions
-  GetStrategy().OutputStresses();
+  GetStrategy().ComputeContactStresses();
 
   // export to problem dof row map
   Teuchos::RCP<Epetra_Map> problemdofs = GetStrategy().ProblemDofs();

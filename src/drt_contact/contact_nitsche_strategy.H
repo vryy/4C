@@ -89,7 +89,7 @@ namespace CONTACT
     virtual void DoWriteRestart(std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors,
         bool forcedrestart = false) const {
         /* nothing stored in nitsche strategy that would need to be written */};
-    virtual void OutputStresses(){/* nothing stress output in nitsche strategy yet */};
+    void ComputeContactStresses() final{/* nothing stress output in nitsche strategy yet */};
     virtual void ReconnectParentElements();
 
     /*!

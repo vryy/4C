@@ -1309,7 +1309,7 @@ void CONTACT::SmoothingManager::PostprocessQuantities(IO::DiscretizationWriter& 
   // *********************************************************************
 
   // evaluate contact tractions
-  GetStrategy().OutputStresses();
+  GetStrategy().ComputeContactStresses();
 
   // export to problem dof row map
   Teuchos::RCP<Epetra_Map> problemdofs = GetStrategy().ProblemDofs();
@@ -1350,4 +1350,3 @@ void CONTACT::SmoothingManager::WriteRestart(IO::DiscretizationWriter& output, b
 
   return;
 }
-

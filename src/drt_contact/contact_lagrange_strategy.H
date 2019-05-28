@@ -317,7 +317,7 @@ namespace CONTACT
 
     /*! \brief This is a postprocessing functionality for nonsmooth contact
      */
-    virtual void OutputStresses();
+    void ComputeContactStresses() final;
 
     /*!
     \brief Recovery method

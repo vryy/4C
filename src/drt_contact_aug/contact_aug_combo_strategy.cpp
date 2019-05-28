@@ -403,7 +403,7 @@ bool CONTACT::AUG::ComboStrategy::WasInContactLastIter() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::OutputStresses() { Get().OutputStresses(); }
+void CONTACT::AUG::ComboStrategy::ComputeContactStresses() { Get().ComputeContactStresses(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
