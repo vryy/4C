@@ -5,7 +5,6 @@
 One way electromechanics. Here only solid is calculated. The ssi problem
 is solved only by reading the result of the HDG scatra simulation
 Test for ssi problem with the option SCATRA_FROM_RESTART_FILE
-Maintainer: Amadeus Gebauer
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      4153
 //NODES                         928

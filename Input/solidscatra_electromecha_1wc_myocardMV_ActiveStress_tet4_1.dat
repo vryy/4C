@@ -5,7 +5,6 @@
 One way electromechanics. Here only scatra is calculated. The ssi problem
 is afterwards solved only by reading the result of this scatra simulation
 Test for ssi problem with the option SCATRA_FROM_RESTART_FILE
-Maintainer: Amadeus Gebauer
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      4153
 //NODES                         928
