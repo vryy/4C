@@ -1,8 +1,5 @@
 //
-// Maintainer: Julia Hoermann
-// hoermann@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15264
+// Maintainer: Amadeus Gebauer
 //
 -----------------------------------------------------------------------TITLE
 One way electromechanics of a Contracting cylinder:
@@ -10,7 +7,7 @@ Test example for independent time spacing off scatra and solid field, based on t
 solidscatra_electromecha_1wc_myocardMV_ActiveStress_tet4_line2
 Beware that the result differ respective the original testcase since probably
 the damping effects of the solid field are evalated less often.
-Maintainer: J. Hoermann
+Maintainer: Amadeus Gebauer
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        4153
 NODES                           928
