@@ -432,7 +432,7 @@ lnm-buildtest_daily_deep:
         CTEST_FAIL_ON_WARNING: "0"
         CTEST_MAKE: "make full -j3"
         CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-Deep-GITLAB"
-        CTEST_BUILD_CONFIG_GITLAB: "haswell_cluster_Q12015_gcc48.config"
+        CTEST_BUILD_CONFIG_GITLAB: "deep_cluster_Q12015_gcc48.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
