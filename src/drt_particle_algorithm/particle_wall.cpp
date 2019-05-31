@@ -260,6 +260,10 @@ void PARTICLEALGORITHM::WallHandlerBase::GetMaxWallPositionIncrement(
       maxpositionincrement = std::max(maxpositionincrement, absolutpositionincrement);
     }
 
+    // bin size safety check
+    if (maxpositionincrement > particleengineinterface_->MinBinSize())
+      dserror("a wall node traveled more than one bin on this processor!");
+
     // get maximum position increment on all processors
     walldiscretization_->Comm().MaxAll(&maxpositionincrement, &allprocmaxpositionincrement, 1);
   }
