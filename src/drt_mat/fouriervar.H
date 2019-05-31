@@ -146,7 +146,7 @@ namespace MAT
     void Setup(const int numgp);
 
     // update history variables
-    void Update();
+    void Update(double temperature, int gp);
 
     /// Main material call to determine heat flux and constitutive tensor
     template <unsigned nsd>

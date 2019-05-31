@@ -209,4 +209,4 @@ double MAT::FourierVar::HeatIntegrationCapacity()
 /*----------------------------------------------------------------------*
  |  update history variables                     (public) proell 04/18  |
  *----------------------------------------------------------------------*/
-void MAT::FourierVar::Update() { consol_->Update(); }
+void MAT::FourierVar::Update(double temperature, int gp) { consol_->Update(temperature, gp); }

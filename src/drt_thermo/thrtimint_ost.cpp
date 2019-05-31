@@ -346,6 +346,7 @@ void THR::TimIntOneStepTheta::UpdateStepElement()
   // action for elements
   p.set<int>("action", THR::calc_thermo_update_istep);
   // go to elements
+  discret_->SetState(0, "temperature", tempn_);
   discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
 }  // UpdateStepElement()
