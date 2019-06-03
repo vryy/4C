@@ -997,17 +997,13 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::lin_kdT_tsi(DRT::Element::Loca
   // get the thermal material tangent
   LINALG::Matrix<numstr_, 1> ctemp(true);
 
-  // ------------------------------ temperature-dependent Young's modulus
-  // if young's modulus is temperature-dependent, E(T) additional terms arise
   // for the stiffness matrix k_dT
-  bool young_temp = (params.get<int>("young_temp") == 1);
   LINALG::Matrix<nen_, 1> etemp(false);
-  if (young_temp == true)
-  {
-    // get the temperature vector
-    for (int i = 0; i < nen_; ++i) etemp(i, 0) = temp[i];
-  }  // (young_temp == true)
-  // initialise matrices required for k_dT
+
+  // get the temperature vector
+  for (int i = 0; i < nen_; ++i) etemp(i, 0) = temp[i];
+
+  // initialize matrices required for k_dT
   LINALG::Matrix<numdofperelement_, 1> Bstress_T(true);
   LINALG::Matrix<numdofperelement_, 1> Bcouplstress_T(true);
 
@@ -1039,7 +1035,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::lin_kdT_tsi(DRT::Element::Loca
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
     // default: material call in structural function is purely deformation dependent
-    if ((Material()->MaterialType() == INPAR::MAT::m_thermostvenant) and (young_temp == true))
+    if ((Material()->MaterialType() == INPAR::MAT::m_thermostvenant))  // and (young_temp == true))
     {
       Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk =
           Teuchos::rcp_dynamic_cast<MAT::ThermoStVenantKirchhoff>(Material(), true);
@@ -1094,7 +1090,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::lin_kdT_tsi(DRT::Element::Loca
 
       // in case of temperature-dependent Young's modulus, additional term for
       // coupling stiffness matrix k_dT
-      if (young_temp == true)
+      // if (young_temp == true)
       {
         // k_dT += B_d^T . dC/dT  . B_d . d . N_T
         stiffmatrix_kdT->MultiplyNT(detJ_w, Bstress_T, shapefunct, 1.0);
@@ -1408,13 +1404,11 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi(DRT::Element::Loca
   // ------------------------------ temperature-dependent Young's modulus
   // if young's modulus is temperature-dependent, E(T) additional terms arise
   // for the stiffness matrix k_dT
-  bool young_temp = (params.get<int>("young_temp") == 1);
   LINALG::Matrix<nen_, 1> etemp(true);
-  if (young_temp == true)
-  {
-    // get the temperature vector
-    for (int i = 0; i < nen_; ++i) etemp(i, 0) = temp[i];
-  }  // (young_temp == true)
+
+  // get the temperature vector
+  for (int i = 0; i < nen_; ++i) etemp(i, 0) = temp[i];
+
   // initialise matrices required for k_dT
   LINALG::Matrix<numdofperelement_, 1> Bstress_T(true);
   LINALG::Matrix<numdofperelement_, 1> Bcouplstress_T(true);
@@ -1494,7 +1488,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi(DRT::Element::Loca
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
     // default: material call in structural function is purely deformation dependent
-    if ((Material()->MaterialType() == INPAR::MAT::m_thermostvenant) and (young_temp == true))
+    if ((Material()->MaterialType() == INPAR::MAT::m_thermostvenant))
     {
       Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk =
           Teuchos::rcp_dynamic_cast<MAT::ThermoStVenantKirchhoff>(Material(), true);
@@ -1577,7 +1571,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi(DRT::Element::Loca
 
       // in case of temperature-dependent Young's modulus, additional term for
       // coupling stiffness matrix k_dT
-      if ((Material()->MaterialType() == INPAR::MAT::m_thermostvenant) and (young_temp == true))
+      if ((Material()->MaterialType() == INPAR::MAT::m_thermostvenant))
       {
         // k_dT += B_d^T . stress_T . N_T
         stiffmatrix_kdT->MultiplyNT(detJ_w, Bstress_T, shapefunct, 1.0);
@@ -1974,6 +1968,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi_fbar(DRT::Element:
     // update element geometry (8x3)
     LINALG::Matrix<nen_, nsd_> xrefe(false);  // X, material coord. of element
     LINALG::Matrix<nen_, nsd_> xcurr(false);  // x, current  coord. of element
+    LINALG::Matrix<nen_, 1> etemp(true);
     DRT::Node** nodes = Nodes();
     for (int i = 0; i < nen_; ++i)
     {
@@ -1985,6 +1980,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi_fbar(DRT::Element:
       xcurr(i, 0) = xrefe(i, 0) + disp[i * numdofpernode_ + 0];
       xcurr(i, 1) = xrefe(i, 1) + disp[i * numdofpernode_ + 1];
       xcurr(i, 2) = xrefe(i, 2) + disp[i * numdofpernode_ + 2];
+
+      etemp(i, 0) = temp[i];
     }
 
     // shape functions and their first derivatives
@@ -2025,6 +2022,14 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi_fbar(DRT::Element:
       DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
 
       params.set<int>("gp", MapMyGpToSoHex8(gp));
+      // copy structural shape functions needed for the thermo field
+      // identical shapefunctions for the displacements and the temperatures
+      LINALG::Matrix<1, 1> NT(false);
+      NT.MultiplyTN(shapefunct, etemp);  // (1x1)
+      // scalar-valued current element temperature T_{n+1}
+      // temperature-dependent material parameters, i.e. E(T), pass T_{n+1}
+      // insert T_{n+1} into parameter list
+      params.set<double>("scalartemp", NT(0, 0));
 
       /* get the inverse of the Jacobian matrix which looks like:
       **            [ x_,r  y_,r  z_,r ]^-1

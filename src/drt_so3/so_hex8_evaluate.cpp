@@ -3877,22 +3877,15 @@ void DRT::ELEMENTS::So_hex8::GetTemperatureForStructuralMaterial(
 
   if (Material()->MaterialType() == INPAR::MAT::m_thermostvenant)
   {
-    static const bool young_temp =
-        DRT::INPUT::IntegralValue<int>(
-            Problem::Instance()->StructuralDynamicParams(), "YOUNG_IS_TEMP_DEPENDENT") == 1;
-    params.set<int>("young_temp", young_temp);
-    if (young_temp == true)
+    // in StructureBaseAlgorithm() temperature not yet available, i.e. ==null
+    if (temperature_vector == Teuchos::null)
     {
-      // in StructureBaseAlgorithm() temperature not yet available, i.e. ==null
-      if (temperature_vector == Teuchos::null)
-      {
-        Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk =
-            Teuchos::rcp_dynamic_cast<MAT::ThermoStVenantKirchhoff>(Material(), true);
-        // initialise the temperature field
-        scalartemp = thrstvk->InitTemp();
-      }
-    }  // young_temp
-  }    // m_thermostvenant
+      Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk =
+          Teuchos::rcp_dynamic_cast<MAT::ThermoStVenantKirchhoff>(Material(), true);
+      // initialise the temperature field
+      scalartemp = thrstvk->InitTemp();
+    }
+  }  // m_thermostvenant
 
   // in this case the yield stress is temperature-dependent
   else if (Material()->MaterialType() == INPAR::MAT::m_thermoplhyperelast)

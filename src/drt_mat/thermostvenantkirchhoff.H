@@ -61,6 +61,8 @@ namespace MAT
       const double density_;
       //! linear coefficient of thermal expansion  \f$ \alpha_T \f$
       const double thermexpans_;
+      //! functions for thermal expansion
+      const std::vector<int> thermexpansfunct_;
       //! heat capacity \f$ C_V \f$
       const double capa_;
       //! heat conductivity \f$ k \f$
@@ -272,19 +274,28 @@ namespace MAT
 
    private:
     //! computes isotropic elasticity tensor in matrix notion for 3d
-    void SetupCmat(LINALG::Matrix<6, 6>& cmat, Teuchos::ParameterList params);
+    void SetupCmat(LINALG::Matrix<6, 6>& cmat, Teuchos::ParameterList& params);
 
-    //! calculate temperature dependent material parameter and return value
-    double GetMatParameterAtTempnp(
+    //! calculate temperature dependent Young's modulus and return value
+    double GetYoungAtTempnp(
         const std::vector<double>* paramvector,  //!< (i) given parameter is a vector
         const double& tempnp,                    // tmpr (i) current temperature
         const int gp                             // integration point
     );
 
-    //! calculate temperature dependent material parameter and return value
-    double GetMatParameterAtTempnp_T(
+    //! calculate temperature dependent thermal expansion and return value
+    double GetThermexpansAtTempnp(const double& tempnp,  // tmpr (i) current temperature
+        const int gp                                     // integration point
+    );
+
+    //! calculate temperature dependent Young's Modulus and return value
+    double GetYoungAtTempnp_T(
         const std::vector<double>* paramvector,  //!< (i) given parameter is a vector
         const double& tempnp,                    // tmpr (i) current temperature
+        const int gp);
+
+    //! calculate temperature dependent thermal expansion coefficient and return value
+    double GetThermexpansAtTempnp_T(const double& tempnp,  // tmpr (i) current temperature
         const int gp);
 
     //! calculates stress-temperature modulus
@@ -299,7 +310,7 @@ namespace MAT
     //! only in case of temperature-dependent material parameters
     void GetCmatAtTempnp_T(
         LINALG::Matrix<6, 6>& derivcmat,  //!< linearisation of mechanical tangent w.r.t. T
-        Teuchos::ParameterList params     //!< parameter list
+        Teuchos::ParameterList& params    //!< parameter list
     );
 
     double PolynomialFunction(
