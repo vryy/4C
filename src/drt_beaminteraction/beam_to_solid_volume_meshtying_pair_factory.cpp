@@ -60,6 +60,11 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairFactory(
         return Teuchos::rcp(
             new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
                 GEOMETRYPAIR::t_tet10>());
+      case DRT::Element::nurbs27:
+        return Teuchos::rcp(
+            new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
+                GEOMETRYPAIR::t_nurbs27>());
+
       default:
         dserror("Wrong element type for solid element.");
     }
@@ -96,6 +101,10 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairFactory(
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line2>());
+          case DRT::Element::nurbs27:
+            return Teuchos::rcp(
+                new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+                    GEOMETRYPAIR::t_nurbs27, GEOMETRYPAIR::t_line2>());
           default:
             dserror("Wrong element type for solid element.");
         }
@@ -125,6 +134,10 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairFactory(
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line3>());
+          case DRT::Element::nurbs27:
+            return Teuchos::rcp(
+                new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+                    GEOMETRYPAIR::t_nurbs27, GEOMETRYPAIR::t_line3>());
           default:
             dserror("Wrong element type for solid element.");
         }
@@ -154,6 +167,10 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairFactory(
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line4>());
+          case DRT::Element::nurbs27:
+            return Teuchos::rcp(
+                new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+                    GEOMETRYPAIR::t_nurbs27, GEOMETRYPAIR::t_line4>());
           default:
             dserror("Wrong element type for solid element.");
         }

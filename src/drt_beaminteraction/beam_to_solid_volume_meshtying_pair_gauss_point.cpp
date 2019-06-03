@@ -89,7 +89,8 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
       // Get the current positions on beam and solid.
       GEOMETRYPAIR::EvaluatePosition<beam>(
           projected_gauss_point.GetEta(), this->ele1pos_, r_beam, this->Element1());
-      GEOMETRYPAIR::EvaluatePosition<solid>(projected_gauss_point.GetXi(), this->ele2pos_, r_solid);
+      GEOMETRYPAIR::EvaluatePosition<solid>(
+          projected_gauss_point.GetXi(), this->ele2pos_, r_solid, this->Element2());
 
       // Calculate the force in this Gauss point. The sign of the force calculated here is the one
       // that acts on the beam.
@@ -178,3 +179,6 @@ template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<GEOMETR
 // Hermite beam element, tet10 solid element.
 template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_tet10>;
+// Hermite beam element, nurbs27 solid element.
+template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_nurbs27>;
