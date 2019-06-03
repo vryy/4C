@@ -179,6 +179,12 @@ namespace BEAMINTERACTION
       if (!is_local_maps_build_) dserror("Local maps are not build in BeamToSolidMortarManager!");
     }
 
+    /**
+     * \brief Invert the global kappa vector with accounting for non active Lagrange multipliers.
+     *
+     * @return Inverted global kappa vector.
+     */
+    Teuchos::RCP<Epetra_Vector> InvertKappa() const;
 
    private:
     //! Flag if setup was called.
@@ -248,6 +254,11 @@ namespace BEAMINTERACTION
     //! 37).
     //! With this scaling correct units and pass patch tests are achieved (in the penalty case).
     Teuchos::RCP<Epetra_FEVector> global_kappa_;
+
+    //! This vector keeps tack of all Lagrange multipliers that are active. This is needed when the
+    //! kappa vector is inverted and some entries are zero, because no active contributions act on
+    //! that Lagrange multiplier.
+    Teuchos::RCP<Epetra_FEVector> global_active_lambda_;
   };
 }  // namespace BEAMINTERACTION
 
