@@ -191,3 +191,5 @@ template class GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<double
     GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet4>;
 template class GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<double,
     GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10>;
+template class GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<double,
+    GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs27>;
