@@ -1,12 +1,12 @@
 #!/usr/bin/env wolframscript
 (* ::Package:: *)
 
+(* ::Text:: *)
+(*This script was created with Mathematica 11.3. It can be run with the command in the first line of this file or just opened with Mathematica.*)
+
+
 (* ::Title:: *)
-(*Create unit test cases for geometry pairs with nurbs27*)
-
-
-<<FEMUtils`
-<<NumericalDifferentialEquationAnalysis`
+(*Calculate analytical solution for geometry pair unit tests with nurbs27*)
 
 
 (* ::Section:: *)
@@ -14,38 +14,14 @@
 
 
 (* ::Text:: *)
-(*Get solid position vector.*)
-
-
-xSolid:={
-	fieldFunction[solidType]/.posDof->posSx[n],
-	fieldFunction[solidType]/.posDof->posSy[n],
-	fieldFunction[solidType]/.posDof->posSz[n]
-	};
-qSolid:=Flatten[Transpose[
-  {
-    discreteValues[solidType]/.posDof->posSx[n],
-    discreteValues[solidType]/.posDof->posSy[n],
-    discreteValues[solidType]/.posDof->posSz[n]
-  }]];
-
-(*Add random offset to solid coordinates. This offset is alyays the same because of the seed.*)
-replaceSolidRef:=(
-  SeedRandom[666];
-  temp=Flatten[nodalCoordiantes3D[solidType]];
-  temp=Thread[qSolid->temp + RandomReal[{-0.1,0.1},Length[temp]]]/.n->0
-  )
-
-
-(* ::Text:: *)
 (*Get beam position vector.*)
 
 
-beamType="hermite3";
+fieldFunctionHermite3=1/4 (1-xi)^2 (2+xi) posDof[1]+1/4 (2-xi) (1+xi)^2 posDof[2]+1/8 lenDof (1-xi)^2 (1+xi) tanDof[1]-1/8 lenDof (1-xi) (1+xi)^2 tanDof[2];
 xBeam:={
-	fieldFunction[beamType]/.posDof->posBx[n]/.tanDof->tanBx[n],
-	fieldFunction[beamType]/.posDof->posBy[n]/.tanDof->tanBy[n],
-	fieldFunction[beamType]/.posDof->posBz[n]/.tanDof->tanBz[n]
+	fieldFunctionHermite3/.posDof->posBx[n]/.tanDof->tanBx[n],
+	fieldFunctionHermite3/.posDof->posBy[n]/.tanDof->tanBy[n],
+	fieldFunctionHermite3/.posDof->posBz[n]/.tanDof->tanBz[n]
 	}/.lenDof->beamLength;
 
 
@@ -72,50 +48,23 @@ replaceBeamRef:={
 qBeam:=Drop[replaceBeamRef[[All,1]],1]/.x_[0]:>x[n];
 
 
-xxBeam=xBeam/.n->0/.replaceBeamRef;
-pltBeam=ParametricPlot3D[xxBeam,{xi,-1,1}];
-cyl[r_]:=Cylinder[{{0,0,0},{0,0,0.3}},r]
-cylPlot=DiscretizeRegion[RegionDifference[cyl[0.2], cyl[0.1]]];
-Show[pltBeam,cylPlot,PlotRange->All]
-
-
-(* ::Text:: *)
+(* ::Section:: *)
 (*Calculate the intersections*)
 
 
 cylCurve[r_]:=Sqrt[x^2+y^2]-r
 
 SetOptions[SelectedNotebook[], PrintPrecision -> 16]
-FindRoot[0==cylCurve[0.2]/.x->xxBeam[[1]]/.y->xxBeam[[2]],{xi,0},AccuracyGoal->20,PrecisionGoal->20]
-FindRoot[0==cylCurve[0.1]/.x->xxBeam[[1]]/.y->xxBeam[[2]],{xi,0},AccuracyGoal->20,PrecisionGoal->20]
-FindRoot[0==xxBeam[[3]]-0.3,{xi,0},AccuracyGoal->20,PrecisionGoal->20]
+sol1=FindRoot[0==cylCurve[0.2]/.x->xxBeam[[1]]/.y->xxBeam[[2]],{xi,0},AccuracyGoal->20,PrecisionGoal->20]
+sol2=FindRoot[0==cylCurve[0.1]/.x->xxBeam[[1]]/.y->xxBeam[[2]],{xi,0},AccuracyGoal->20,PrecisionGoal->20]
+sol3=FindRoot[0==xxBeam[[3]]-0.3,{xi,0},AccuracyGoal->20,PrecisionGoal->20]
 
 
-(* ::Section:: *)
-(*Baci parameters for line*)
-
-
-"   // Define the geometry of the line elements.
-    q_beam(0) = -0.05;
-    q_beam(1) = 0.05;
-    q_beam(2) = 0.3;
-    q_beam(3) = 0.5773502691896255;
-    q_beam(4) = 0.5773502691896258;
-    q_beam(5) = 0.577350269189626;
-    q_beam(6) = 0.45;
-    q_beam(7) = -0.05;
-    q_beam(8) = 0.1;
-    q_beam(9) = 0.8017837257372733;
-    q_beam(10) = -0.5345224838248488;
-    q_beam(11) = 0.2672612419124244;
-
-    q_beam_rot(0) = 1.674352746442651;
-    q_beam_rot(1) = 0.1425949677148126;
-    q_beam_rot(2) = 1.0831163124736984;
-    q_beam_rot(3) = 1.4331999091513161;
-    q_beam_rot(4) = -0.6560404572957742;
-    q_beam_rot(5) = -0.2491376152457331;
-    q_beam_rot(6) = 0.0;
-    q_beam_rot(7) = 0.0;
-    q_beam_rot(8) = 0.0;
-";
+p1=Graphics3D[{PointSize[Large],Red,Point[xxBeam/.sol1]}];
+p2=Graphics3D[{PointSize[Large],Red,Point[xxBeam/.sol2]}];
+p3=Graphics3D[{PointSize[Large],Red,Point[xxBeam/.sol3]}];
+xxBeam=xBeam/.n->0/.replaceBeamRef;
+pltBeam=ParametricPlot3D[xxBeam,{xi,-1,1}];
+cyl[r_]:=Cylinder[{{0,0,0},{0,0,0.3}},r]
+cylPlot=DiscretizeRegion[RegionDifference[cyl[0.2], cyl[0.1]]];
+Show[pltBeam,cylPlot,p1,p2,p3,PlotRange->All]
