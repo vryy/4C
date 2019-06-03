@@ -1,10 +1,8 @@
 //
-// Maintainer: Moritz Thon
-// thon@mhp.mw.tum.de
-// 089/289-10364
+// Maintainer: Christoph Meier
+//
 // Testing: homogeneous stress state for pyr5, hex8 and tet4 elements
 //
-
 ==================================================================
                   General Data File BACI
 ==================================================================
