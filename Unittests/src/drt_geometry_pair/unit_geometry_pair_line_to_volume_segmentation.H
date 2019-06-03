@@ -18,6 +18,7 @@
 #include "src/drt_so3/so_hex8.H"
 #include "src/drt_so3/so_hex27.H"
 #include "src/drt_so3/so_tet10.H"
+#include "src/drt_so3/so_nurbs27.H"
 #include "src/drt_geometry_pair/geometry_pair_element_types.H"
 #include "src/drt_geometry_pair/geometry_pair_evaluation_data_global.H"
 #include "src/drt_geometry_pair/geometry_pair_line_to_volume_segmentation.H"
@@ -25,7 +26,7 @@
 #include "src/drt_geometry_pair/geometry_pair_utility_classes.H"
 #include "src/drt_lib/drt_globalproblem.H"
 
-#include "../drt_geometry_pair/unit_geometry_pair_line_to_volume_segmentation_geometry_functions.H"
+#include "src/drt_geometry_pair/unit_geometry_pair_line_to_volume_segmentation_geometry_functions.H"
 
 
 namespace GEOMETRYPAIR
@@ -90,8 +91,8 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
         geometry_pairs;
 
     // Get the geometry.
-    xtest_line_along_element_surface_geometry(line_elements_, volume_elements_, q_line_elements,
-        q_rot_line_elements, q_volume_elements, geometry_pairs);
+    xtest_line_along_element_surface_geometry(
+        line_elements_, volume_elements_, q_line_elements, q_rot_line_elements, q_volume_elements);
 
     // Vector with vector of segments for Evaluate.
     std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>> segments_vector;
@@ -128,8 +129,8 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
         geometry_pairs;
 
     // Get the geometry.
-    xtest_multiple_intersections_hex27_geometry(line_elements_, volume_elements_, q_line_elements,
-        q_rot_line_elements, q_volume_elements, geometry_pairs);
+    xtest_multiple_intersections_hex27_geometry(
+        line_elements_, volume_elements_, q_line_elements, q_rot_line_elements, q_volume_elements);
 
     // Vector with vector of segments for Evaluate.
     std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>> segments_vector;
@@ -169,8 +170,8 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
         geometry_pairs;
 
     // Get the geometry.
-    xtest_multiple_intersections_tet10_geometry(line_elements_, volume_elements_, q_line_elements,
-        q_rot_line_elements, q_volume_elements, geometry_pairs);
+    xtest_multiple_intersections_tet10_geometry(
+        line_elements_, volume_elements_, q_line_elements, q_rot_line_elements, q_volume_elements);
 
     // Vector with vector of segments for Evaluate.
     std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>> segments_vector;
@@ -196,11 +197,54 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
     }
   }
 
+
+  /**
+   * Test a beam that has multiple intersections with a NURBS27 element.
+   */
+  void test_multiple_intersections_nurbs27()
+  {
+    // Definition of variables for this test case.
+    std::vector<LINALG::TMatrix<double, 12, 1>> q_line_elements;
+    std::vector<LINALG::TMatrix<double, 9, 1>> q_rot_line_elements;
+    std::vector<LINALG::TMatrix<double, 81, 1>> q_volume_elements;
+    std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
+        GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs27>>>
+        geometry_pairs;
+
+    // Vector with vector of segments for Evaluate.
+    std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>> segments_vector;
+
+    // Add the relevant nurbs information to the discretization.
+    Teuchos::RCP<DRT::NURBS::NurbsDiscretization> structdis =
+        Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("structure", Teuchos::null));
+    DRT::Problem::Instance()->AddDis("structure", structdis);
+
+    // Get the geometry.
+    xtest_multiple_intersections_nurbs27_geometry(line_elements_, volume_elements_, q_line_elements,
+        q_rot_line_elements, q_volume_elements, structdis);
+
+    // Create and evaluate the geometry pairs.
+    CreateEvaluatePairs(
+        geometry_pairs, q_line_elements, q_rot_line_elements, q_volume_elements, segments_vector);
+
+    // Check results.
+    {
+      // Two segments should be found.
+      TS_ASSERT_EQUALS(segments_vector[0].size(), 1);
+
+      // Check the segment coordinates on the line.
+      TS_ASSERT_DELTA(-0.413784483606813, segments_vector[0][0].GetEtaA(),
+          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+      TS_ASSERT_DELTA(-0.0069828192751272902261, segments_vector[0][0].GetEtaB(),
+          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+    }
+  }
+
  private:
   /**
    * This function set up the geometry pairs, line elements and calls evaluate on the pairs. The
-   * geometry of the test case is given in the various input parameters. The calculated segments are
-   * returned which can be checked for results.
+   * geometry of the test case is given in the various input parameters. The calculated segments
+   * are returned which can be checked for results.
    * @param geometry_pairs (out) Vector with the geometry pairs.
    * @param q_line_elements (in) Vector of DOF vectors for the positions and tangents of the line
    * element.
@@ -267,7 +311,6 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
     {
       for (unsigned int i_volume = 0; i_volume < q_volume_elements.size(); i_volume++)
       {
-        std::vector<GEOMETRYPAIR::LineSegment<double>> segments;
         geometry_pairs[counter]->Evaluate(
             q_line_elements[i_line], q_volume_elements[i_volume], segments_vector[counter]);
         counter++;
