@@ -17,6 +17,9 @@
 #include "../drt_lib/drt_element.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_beam3/beam3.H"
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+#include "../drt_nurbs_discret/drt_nurbs_utils.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 
 namespace GEOMETRYPAIR
@@ -369,6 +372,22 @@ namespace GEOMETRYPAIR
     {
       // Throw a compiler error if this function is called from an element with dim_ != 3.
       static_assert(base::dim_ == 3, "nurbs_get_3D_funct can only be called for 3D elements!");
+
+      if (element == NULL)
+        dserror("EvaluateShapeFunction for nurbs needs a valid element pointer!");
+
+      // Get the knots and weights for this element.
+      LINALG::TMatrix<double, 27, 1> weights(true);
+      std::vector<Epetra_SerialDenseVector> myknots(true);
+      DRT::NURBS::GetMyNurbsKnotsAndWeights(
+          *(DRT::Problem::Instance()->GetDis("structure")), element, myknots, weights);
+
+      // We need to redefine the discretization here, as otherwise the compiler has problems
+      // passing the static const member of the base class as a reference.
+      DRT::Element::DiscretizationType discretization = base::discretization_;
+
+      // Evaluate the shape functions.
+      DRT::NURBS::UTILS::nurbs_get_3D_funct(N, xi, myknots, weights, discretization);
     };
 
     /**
@@ -385,6 +404,23 @@ namespace GEOMETRYPAIR
     {
       // Throw a compiler error if this function is called from an element with dim_ != 3.
       static_assert(base::dim_ == 3, "EvaluateShapeFunction3D can only be called for 3D elements!");
+
+      if (element == NULL)
+        dserror("EvaluateShapeFunctionDeriv1 for nurbs needs a valid element pointer!");
+
+      // Get the knots and weights for this element.
+      LINALG::TMatrix<double, 27, 1> weights(true);
+      std::vector<Epetra_SerialDenseVector> myknots(true);
+      DRT::NURBS::GetMyNurbsKnotsAndWeights(
+          *(DRT::Problem::Instance()->GetDis("structure")), element, myknots, weights);
+
+      // We need to redefine the discretization here, as otherwise the compiler has problems
+      // passing the static const member of the base class as a reference.
+      DRT::Element::DiscretizationType discretization = base::discretization_;
+
+      // Evaluate the shape functions.
+      LINALG::TMatrix<typename V::scalar_type, base::n_nodes_, 1> dummy;
+      DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(dummy, N, xi, myknots, weights, discretization);
     };
   };
 

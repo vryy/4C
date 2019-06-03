@@ -32,7 +32,7 @@ namespace DRT
     \date 12/10
     */
     template <class WG>
-    bool GetMyNurbsKnotsAndWeights(const DRT::DiscretizationInterface& dis, DRT::Element* ele,
+    bool GetMyNurbsKnotsAndWeights(const DRT::DiscretizationInterface& dis, const DRT::Element* ele,
         std::vector<Epetra_SerialDenseVector>& myknots, WG& weights)
     {
       // try to cast dis to a nurbs discretisation
@@ -50,11 +50,12 @@ namespace DRT
         return (zero_size);
       }
       // you are still here? So get the node weights for the nurbs element as well
-      DRT::Node** nodes = ele->Nodes();
+      const DRT::Node* const* nodes = ele->Nodes();
       const int nen = ele->NumNode();
       for (int inode = 0; inode < nen; inode++)
       {
-        DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(nodes[inode]);
+        const DRT::NURBS::ControlPoint* cp =
+            dynamic_cast<const DRT::NURBS::ControlPoint*>(nodes[inode]);
         weights(inode) = cp->W();
       }
 
