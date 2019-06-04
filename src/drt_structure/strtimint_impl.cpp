@@ -341,6 +341,24 @@ void STR::TimIntImpl::InitializeEdgeElements()
 }
 
 /*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void STR::TimIntImpl::PrepareTimeStep()
+{
+  // safety checks
+  CheckIsInit();
+  CheckIsSetup();
+
+  // update end time \f$t_{n+1}\f$ of this time step to cope with time step size adaptivity
+  SetTimen((*time_)[0] + (*dt_)[0]);
+
+  // prepare contact for new time step
+  PrepareStepContact();
+
+  // predict
+  Predict();
+}
+
+/*----------------------------------------------------------------------*/
 /* predict solution */
 void STR::TimIntImpl::Predict()
 {

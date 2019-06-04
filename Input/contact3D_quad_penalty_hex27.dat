@@ -1,8 +1,5 @@
 //
 // Maintainer: Alexander Popp
-// popp@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15238
 //
 // necessary defines: D_SOLID3 BINIO
 //
@@ -33,16 +30,13 @@ NUMTHERMDIS                     0
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   No
-FLUID_SOL                       No
-FLUID_STRESS                    No
-FLUID_VIS                       No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
 RESULTSEVRY                     1
 RESTARTEVRY                     1
-NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          fullnewton
 TIMESTEP                        0.02
 NUMSTEP                         10
 MAXTIME                         0.2
@@ -69,6 +63,7 @@ PENALTYPARAM                    20000
 LM_SHAPEFCN                     Standard
 LM_QUAD                         quad
 LM_DUAL_CONSISTENT              none
+OUTPUT_INTERFACES               Yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

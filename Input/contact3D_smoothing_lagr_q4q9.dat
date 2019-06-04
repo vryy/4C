@@ -60,7 +60,7 @@ STRATEGY             Lagrange
 PENALTYPARAM         22000
 PENALTYPARAMTAN      1000
 SYSTEM               sp
-FRICTION             none
+FRICTION                        None
 SEMI_SMOOTH_NEWTON   Yes
 SEMI_SMOOTH_CN       10.0
 SEMI_SMOOTH_CT       1000.0

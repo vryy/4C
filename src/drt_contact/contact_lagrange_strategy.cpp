@@ -1370,11 +1370,11 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(
 /*----------------------------------------------------------------------*
  |  pp stresses                                              farah 11/16|
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::OutputStresses()
+void CONTACT::CoLagrangeStrategy::ComputeContactStresses()
 {
   static int step = 0;
   // call abstract function
-  CONTACT::CoAbstractStrategy::OutputStresses();
+  CONTACT::CoAbstractStrategy::ComputeContactStresses();
 
   // further scaling for nonsmooth contact
   if (nonSmoothContact_)

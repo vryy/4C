@@ -211,12 +211,12 @@ namespace CONTACT
     Teuchos::RCP<Epetra_Map> nonsmoothnodes_;  ///< row map of all nonsmooth slave nodes
     Teuchos::RCP<Epetra_Map> smoothnodes_;     ///< row map of all smooth slave nodes
 
-    Teuchos::RCP<Epetra_Map> sdofVertexRowmap_;  //< row map of all nonsmooth slave nodes
-    Teuchos::RCP<Epetra_Map> sdofVertexColmap_;  //< row map of all smooth slave nodes
-    Teuchos::RCP<Epetra_Map> sdofEdgeRowmap_;    //< row map of all nonsmooth slave nodes
-    Teuchos::RCP<Epetra_Map> sdofEdgeColmap_;    //< row map of all smooth slave nodes
-    Teuchos::RCP<Epetra_Map> sdofSurfRowmap_;    //< row map of all nonsmooth slave nodes
-    Teuchos::RCP<Epetra_Map> sdofSurfColmap_;    //< row map of all smooth slave nodes
+    Teuchos::RCP<Epetra_Map> sdofVertexRowmap_;  ///< row map of all nonsmooth slave nodes
+    Teuchos::RCP<Epetra_Map> sdofVertexColmap_;  ///< row map of all smooth slave nodes
+    Teuchos::RCP<Epetra_Map> sdofEdgeRowmap_;    ///< row map of all nonsmooth slave nodes
+    Teuchos::RCP<Epetra_Map> sdofEdgeColmap_;    ///< row map of all smooth slave nodes
+    Teuchos::RCP<Epetra_Map> sdofSurfRowmap_;    ///< row map of all nonsmooth slave nodes
+    Teuchos::RCP<Epetra_Map> sdofSurfColmap_;    ///< row map of all smooth slave nodes
 
     Teuchos::RCP<Epetra_Map> nextendedghosting_;
     Teuchos::RCP<Epetra_Map> eextendedghosting_;
@@ -250,43 +250,43 @@ namespace CONTACT
      *  This method creates first a new interface data object and subsequently
      *  a new interface object.
      *
-     *  \param id        (in) : unique interface ID
-     *  \param comm      (in) : communicator object
-     *  \param dim       (in) : problem dimension
-     *  \param icontact   (in) : global contact parameter-list
+     *  \param id (in) : unique interface ID
+     *  \param comm (in) : communicator object
+     *  \param spatialDim (in) : spatial dimension of the problem
+     *  \param icontact (in) : global contact parameter-list
      *  \param selfcontact (in): Boolean flag to indicate self-contact
      *  \param redundant (in) : type of redundancy in interface storage
      *
      *  \author hiermeier \date 03/17 */
-    static Teuchos::RCP<CoInterface> Create(const int id, const Epetra_Comm& comm, const int dim,
-        const Teuchos::ParameterList& icontact, const bool selfcontact,
+    static Teuchos::RCP<CoInterface> Create(const int id, const Epetra_Comm& comm,
+        const int spatialDim, const Teuchos::ParameterList& icontact, const bool selfcontact,
         INPAR::MORTAR::RedundantStorage redundant);
 
     /*!
     \brief Standard constructor creating empty contact interface
 
-    This initializes the employed shape function set for lagrangian mutlipliers
+    This initializes the employed shape function set for Lagrange multipliers
     to a specific setting. Throughout the evaluation process, this set will be employed
-    for the field of lagrangian multipliers.
+    for the field of Lagrange multipliers.
 
     \param idata_ptr (in): data container
     \param id (in): Unique interface id
     \param comm (in): A communicator object
-    \param dim (in): Global problem dimension
+    \param spatialDim (in): spatial dimension of the problem
     \param icontact (in): Global contact parameter list
     \param selfcontact (in): Flag for self contact status
     \param redundant (in): type of redundancy in interface storage
 
     */
     CoInterface(const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr, const int id,
-        const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
+        const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& icontact,
         bool selfcontact, INPAR::MORTAR::RedundantStorage redundant);
 
     /*!
     \brief Destructor
 
     */
-    virtual ~CoInterface() {}
+    virtual ~CoInterface() = default;
 
 
     /*!
@@ -787,7 +787,7 @@ namespace CONTACT
     right there.
 
     As a result, the function notifies the calling routine if any negative gap was detected
-    and thus wether the interface is in contact or not. In consequence, after calling this routine
+    and thus whether the interface is in contact or not. In consequence, after calling this routine
     from within the penalty strategy object, the contact status is known at a global level.
 
     Note: To be able to perform this computation, weighted gaps and normals have to be available
@@ -809,9 +809,10 @@ namespace CONTACT
     */
     virtual void AssembleRegTangentForcesUzawa();
 
-    /*
+    /*!
     \brief Assemble LM derivatives into global matrix (penalty strategy)
 
+    \param[in/out] lambdaglobal Matrix to be assembled into
     */
     virtual void AssembleLinZ(LINALG::SparseMatrix& lambdaglobal);
 
@@ -1243,6 +1244,14 @@ namespace CONTACT
     inline bool IsFriction() const { return friction_; }
 
     const CoInterface& GetMaSharingRefInterface() const;
+
+    //! @name Output
+    //! @{
+
+    //! [derived]
+    virtual void PostprocessQuantities(const Teuchos::ParameterList& outputParams);
+
+    //! @}
 
    protected:
     /** \brief split the interface elements into a far and a close set

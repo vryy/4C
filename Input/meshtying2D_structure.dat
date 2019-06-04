@@ -39,7 +39,7 @@ FILESTEPS                       1000
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESTARTEVRY                     0
 NLNSOL                          fullnewton
 TIMESTEP                        1.0
 NUMSTEP                         1
@@ -55,6 +55,7 @@ LINEAR_SOLVER                   2
 STRATEGY                        Lagrange
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     Dual
+OUTPUT_INTERFACES               Yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

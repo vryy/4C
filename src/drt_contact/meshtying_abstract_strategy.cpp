@@ -1407,3 +1407,26 @@ bool CONTACT::MtAbstractStrategy::computePreconditioner(
   dserror("Not implemented!");
   return false;
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::MtAbstractStrategy::PostprocessQuantitiesPerInterface(
+    Teuchos::RCP<Teuchos::ParameterList> outputParams)
+{
+  using Teuchos::RCP;
+
+  // Evaluate slave and master forces
+  RCP<Epetra_Vector> fcslave = Teuchos::rcp(new Epetra_Vector(DMatrix()->RowMap()));
+  RCP<Epetra_Vector> fcmaster = Teuchos::rcp(new Epetra_Vector(MMatrix()->DomainMap()));
+  DMatrix()->Multiply(true, *zold_, *fcslave);
+  MMatrix()->Multiply(true, *zold_, *fcmaster);
+
+  // Append data to parameter list
+  outputParams->set<RCP<const Epetra_Vector>>("interface traction", zold_);
+  outputParams->set<RCP<const Epetra_Vector>>("slave forces", fcslave);
+  outputParams->set<RCP<const Epetra_Vector>>("master forces", fcmaster);
+
+  for (std::vector<Teuchos::RCP<MORTAR::MortarInterface>>::iterator it = interface_.begin();
+       it < interface_.end(); ++it)
+    (*it)->PostprocessQuantities(*outputParams);
+}

@@ -64,7 +64,7 @@ THETA                           0.66
 LINEAR_SOLVER                   2
 STRATEGY                        Lagrange
 SYSTEM                          condensed
-FRICTION                        none
+FRICTION                        None
 SEMI_SMOOTH_CN                  1
 SEMI_SMOOTH_CT                  1
 -------------------------------------------------------------MORTAR COUPLING

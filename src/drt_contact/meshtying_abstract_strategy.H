@@ -258,8 +258,8 @@ namespace CONTACT
     /*!
     \brief Get some nodal quantity globally and store into MortarNodes
 
-    The enum input parameter defines, which quantity is be updated.
-    Currently the possibilities "lmold", "lmcurrent", "lmupdate" and
+    The enum input parameter defines, which quantity has to be updated.
+    Currently, the possibilities "lmold", "lmcurrent", "lmupdate" and
     "lmuzawa" exist. Note that "lmold" means the converged value LM_n
     of the last time / load step, whereas "lmcurrent" adresses the current
     (not necessarily converged) value of the LM_n+1. "lmupdate" is a special
@@ -305,7 +305,7 @@ namespace CONTACT
 
     //@}
 
-    //! @name Debugging methods
+    //! @name Output
 
     /*!
     \brief Compute interface forces and moments
@@ -335,6 +335,20 @@ namespace CONTACT
     void PrintActiveSet() const;
 
     /*!
+    \brief Write results for visualization separately for each meshtying/contact interface
+
+    Call each interface, such that each interface can handle its own output of results.
+
+    \param[in] outputParams Parameter list with stuff required by interfaces to write output
+    */
+    void PostprocessQuantitiesPerInterface(Teuchos::RCP<Teuchos::ParameterList> outputParams) final;
+
+    //! @}
+
+    //! @name Debugging methods
+    //! @{
+
+    /*!
     \brief Visualize contact stuff with gmsh
 
     \param step (in): current time step index
@@ -343,7 +357,7 @@ namespace CONTACT
     */
     void VisualizeGmsh(const int step, const int iter);
 
-    //@}
+    //! @}
 
     //! @name Preconditioner methods
     //! @{
@@ -434,7 +448,7 @@ namespace CONTACT
     void Inttime_init() { inttime_ = 0.0; };
     int NumberOfActiveNodes() const { return 0; }
     int NumberOfSlipNodes() const { return 0; }
-    void OutputStresses() {}
+    void ComputeContactStresses() final{};
     void AugForces(Epetra_Vector& augfs_lm, Epetra_Vector& augfs_g, Epetra_Vector& augfm_lm,
         Epetra_Vector& augfm_g){};
     bool RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis) final { return false; }

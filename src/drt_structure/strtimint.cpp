@@ -2347,6 +2347,15 @@ void STR::TimInt::OutputRestart(bool& datawritten)
   {
     cmtbridge_->WriteRestart(output_);
     cmtbridge_->PostprocessQuantities(output_);
+
+    {
+      Teuchos::RCP<Teuchos::ParameterList> cmtOutputParams =
+          Teuchos::rcp(new Teuchos::ParameterList());
+      cmtOutputParams->set<int>("step", step_);
+      cmtOutputParams->set<double>("time", (*time_)[0]);
+      cmtOutputParams->set<Teuchos::RCP<const Epetra_Vector>>("displacement", (*dis_)(0));
+      cmtbridge_->PostprocessQuantitiesPerInterface(cmtOutputParams);
+    }
   }
 
   // beam contact
@@ -2427,7 +2436,19 @@ void STR::TimInt::OutputState(bool& datawritten)
     surfstressman_->WriteResults(step_, (*time_)[0]);
 
   // meshtying and contact output
-  if (HaveContactMeshtying()) cmtbridge_->PostprocessQuantities(output_);
+  if (HaveContactMeshtying())
+  {
+    cmtbridge_->PostprocessQuantities(output_);
+
+    {
+      Teuchos::RCP<Teuchos::ParameterList> cmtOutputParams =
+          Teuchos::rcp(new Teuchos::ParameterList());
+      cmtOutputParams->set<int>("step", step_);
+      cmtOutputParams->set<double>("time", (*time_)[0]);
+      cmtOutputParams->set<Teuchos::RCP<const Epetra_Vector>>("displacement", (*dis_)(0));
+      cmtbridge_->PostprocessQuantitiesPerInterface(cmtOutputParams);
+    }
+  }
 
   if (porositysplitter_ != Teuchos::null)
   {

@@ -391,5 +391,5 @@ std::string DRT::ParObjectList()
 
 void PrintParObjectList()
 {
-  std::cout << "defined parobject types: " << DRT::ParObjectList() << "\n";
+  std::cout << "Here are all defined DRT::ParObject types: " << DRT::ParObjectList() << "\n";
 }

@@ -34,6 +34,8 @@
 #include "../drt_mortar/mortar_coupling3d_classes.H"
 #include "contact_nitsche_utils.H"
 
+#include "../drt_io/io.H"
+
 #include <Teuchos_TimeMonitor.hpp>
 #include "selfcontact_binarytree_unbiased.H"
 
@@ -76,11 +78,12 @@ CONTACT::IDataContainer::IDataContainer()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CONTACT::CoInterface> CONTACT::CoInterface::Create(const int id,
-    const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
+    const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& icontact,
     const bool selfcontact, INPAR::MORTAR::RedundantStorage redundant)
 {
   Teuchos::RCP<MORTAR::IDataContainer> idata_ptr = Teuchos::rcp(new CONTACT::IDataContainer());
-  return Teuchos::rcp(new CoInterface(idata_ptr, id, comm, dim, icontact, selfcontact, redundant));
+  return Teuchos::rcp(
+      new CoInterface(idata_ptr, id, comm, spatialDim, icontact, selfcontact, redundant));
 }
 
 /*----------------------------------------------------------------------------*
@@ -127,9 +130,10 @@ CONTACT::CoInterface::CoInterface(const Teuchos::RCP<CONTACT::IDataContainer>& i
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
 CONTACT::CoInterface::CoInterface(const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr,
-    const int id, const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
-    bool selfcontact, INPAR::MORTAR::RedundantStorage redundant)
-    : MORTAR::MortarInterface(idata_ptr, id, comm, dim, icontact, redundant),
+    const int id, const Epetra_Comm& comm, const int spatialDim,
+    const Teuchos::ParameterList& icontact, bool selfcontact,
+    INPAR::MORTAR::RedundantStorage redundant)
+    : MORTAR::MortarInterface(idata_ptr, id, comm, spatialDim, icontact, redundant),
       idata_ptr_(Teuchos::rcp_dynamic_cast<CONTACT::IDataContainer>(idata_ptr, true)),
       idata_(*idata_ptr_),
       selfcontact_(idata_.IsSelfContact()),
@@ -194,7 +198,7 @@ CONTACT::CoInterface::CoInterface(const Teuchos::RCP<MORTAR::IDataContainer>& id
                    "needed, as it is very expensive. But we need it e.g. for self contact."
                 << std::endl;
 
-  // init extended ghosting for RR loop
+  // initialize extended ghosting for RR loop
   eextendedghosting_ = Teuchos::null;
   nextendedghosting_ = Teuchos::null;
 
@@ -15130,4 +15134,173 @@ void CONTACT::CoInterface::SetNodeInitiallyActiveByGap(CONTACT::CoNode& cnode) c
   if (cnode.CoData().Getg() < initcontactval) cnode.Active() = true;
 
   return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::CoInterface::PostprocessQuantities(const Teuchos::ParameterList& outputParams)
+{
+  using Teuchos::RCP;
+
+  // Check if the given parameter list contains all required data to be written to output
+  {
+    // Vector with names of all required parameter entries
+    std::vector<std::string> requiredEntries;
+    requiredEntries.push_back("step");
+    requiredEntries.push_back("time");
+    requiredEntries.push_back("displacement");
+    requiredEntries.push_back("interface traction");
+    requiredEntries.push_back("slave forces");
+    requiredEntries.push_back("master forces");
+
+    CheckOutputList(outputParams, requiredEntries);
+  }
+
+  // Get the discretization writer and get ready for writing
+  RCP<IO::DiscretizationWriter> writer = idiscret_->Writer();
+
+  // Get output for this time step started
+  {
+    const int step = outputParams.get<int>("step");
+    const double time = outputParams.get<double>("time");
+
+    writer->ClearMapCache();
+    writer->WriteMesh(step, time);
+    writer->NewStep(step, time);
+  }
+
+  /* Write interface displacement
+   *
+   * The interface displacement has been handed in via the parameter list outParams.
+   * Grab it from there, then use LINALG::Export() to extract the interface
+   * portion from the global displacement vector. Finally, write the interface
+   * portion using this interfaces' discretization writer.
+   */
+  {
+    // Get full displacement vector and extract interface displacement
+    RCP<const Epetra_Vector> disp = outputParams.get<RCP<const Epetra_Vector>>("displacement");
+    RCP<Epetra_Vector> iDisp = LINALG::CreateVector(*idiscret_->DofRowMap());
+    LINALG::Export(*disp, *iDisp);
+
+    // Write the interface displacement field
+    writer->WriteVector("displacement", iDisp, IO::VectorType::dofvector);
+  }
+
+  // Write Lagrange multiplier field
+  {
+    // Get full Lagrange multiplier vector and extract values of this interface
+    RCP<const Epetra_Vector> lagMult =
+        outputParams.get<RCP<const Epetra_Vector>>("interface traction");
+    RCP<Epetra_Vector> iLagMult = LINALG::CreateVector(*idiscret_->DofRowMap());
+    LINALG::Export(*lagMult, *iLagMult);
+
+    // Write this interface's Lagrange multiplier field
+    writer->WriteVector("interfacetraction", iLagMult, IO::VectorType::dofvector);
+  }
+
+  // Write normal contact stress
+  {
+    // Get values from parameter list and export to interface DofRowMap
+    RCP<const Epetra_Vector> normalStresses =
+        outputParams.get<RCP<const Epetra_Vector>>("norcontactstress");
+    RCP<Epetra_Vector> iNormalStresses = LINALG::CreateVector(*idiscret_->DofRowMap());
+    LINALG::Export(*normalStresses, *iNormalStresses);
+
+    // Write this interface's normal contact stress field
+    writer->WriteVector("norcontactstress", iNormalStresses, IO::VectorType::dofvector);
+  }
+
+  // Write tangential contact stress
+  {
+    // Get values from parameter list and export to interface DofRowMap
+    RCP<const Epetra_Vector> tangentialStresses =
+        outputParams.get<RCP<const Epetra_Vector>>("tancontactstress");
+    RCP<Epetra_Vector> iTangentialStresses = LINALG::CreateVector(*idiscret_->DofRowMap());
+    LINALG::Export(*tangentialStresses, *iTangentialStresses);
+
+    // Write this interface's normal contact stress field
+    writer->WriteVector("tancontactstress", iTangentialStresses, IO::VectorType::dofvector);
+  }
+
+  // Write nodal forces of slave side
+  {
+    // Get nodal forces
+    RCP<const Epetra_Vector> slaveforces =
+        outputParams.get<RCP<const Epetra_Vector>>("slave forces");
+    RCP<Epetra_Vector> forces = LINALG::CreateVector(*idiscret_->DofRowMap());
+    LINALG::Export(*slaveforces, *forces);
+
+    // Write to output
+    writer->WriteVector("slaveforces", forces, IO::VectorType::dofvector);
+  }
+
+  // Write nodal forces of master side
+  {
+    // Get nodal forces
+    RCP<const Epetra_Vector> masterforces =
+        outputParams.get<RCP<const Epetra_Vector>>("master forces");
+    RCP<Epetra_Vector> forces = LINALG::CreateVector(*idiscret_->DofRowMap());
+    LINALG::Export(*masterforces, *forces);
+
+    // Write to output
+    writer->WriteVector("masterforces", forces, IO::VectorType::dofvector);
+  }
+
+
+  // Nodes: node-based vector with '0' at slave nodes and '1' at master nodes
+  {
+    RCP<Epetra_Vector> masterVec = Teuchos::rcp(new Epetra_Vector(*mnoderowmap_));
+    masterVec->PutScalar(1.0);
+
+    RCP<const Epetra_Map> nodeRowMap = LINALG::MergeMap(snoderowmap_, mnoderowmap_, false);
+    RCP<Epetra_Vector> masterSlaveVec = LINALG::CreateVector(*nodeRowMap, true);
+    LINALG::Export(*masterVec, *masterSlaveVec);
+
+    writer->WriteVector("slavemasternodes", masterSlaveVec, IO::VectorType::nodevector);
+  }
+
+  // Write active set
+  {
+    // evaluate active set and slip set
+    RCP<Epetra_Vector> activeset = Teuchos::rcp(new Epetra_Vector(*activenodes_));
+    activeset->PutScalar(1.0);
+
+    if (IsFriction())
+    {
+      RCP<Epetra_Vector> slipset = Teuchos::rcp(new Epetra_Vector(*slipnodes_));
+      slipset->PutScalar(1.0);
+      RCP<Epetra_Vector> slipsetexp = Teuchos::rcp(new Epetra_Vector(*activenodes_));
+      LINALG::Export(*slipset, *slipsetexp);
+      activeset->Update(1.0, *slipsetexp, 1.0);
+    }
+
+    // export to interface node row map
+    RCP<Epetra_Vector> activesetexp = Teuchos::rcp(new Epetra_Vector(*(idiscret_->NodeRowMap())));
+    LINALG::Export(*activeset, *activesetexp);
+
+    writer->WriteVector("activeset", activesetexp, IO::VectorType::nodevector);
+  }
+
+  // Elements: element-based vector with '0' at slave elements and '1' at master elements
+  {
+    RCP<Epetra_Vector> masterVec = Teuchos::rcp(new Epetra_Vector(*melerowmap_));
+    masterVec->PutScalar(1.0);
+
+    RCP<const Epetra_Map> eleRowMap = LINALG::MergeMap(selerowmap_, melerowmap_, false);
+    RCP<Epetra_Vector> masterSlaveVec = LINALG::CreateVector(*eleRowMap, true);
+    LINALG::Export(*masterVec, *masterSlaveVec);
+
+    writer->WriteVector("slavemasterelements", masterSlaveVec, IO::VectorType::elementvector);
+  }
+
+  // Write element owners
+  {
+    RCP<const Epetra_Map> eleRowMap = LINALG::MergeMap(selerowmap_, melerowmap_, false);
+    RCP<Epetra_Vector> owner = LINALG::CreateVector(*eleRowMap);
+
+    for (int i = 0; i < idiscret_->ElementRowMap()->NumMyElements(); ++i)
+      (*owner)[i] = idiscret_->lRowElement(i)->Owner();
+
+    writer->WriteVector("Owner", owner, IO::VectorType::elementvector);
+  }
 }

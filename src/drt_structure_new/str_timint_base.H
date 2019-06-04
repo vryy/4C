@@ -825,7 +825,14 @@ namespace STR
       void OutputStep(bool forced_writerestart);
 
      private:
-      /// create a new input/output step in the output writer, if no data were written till now
+      /*! \brief Create a new input/output step in the output writer
+       *
+       * New step is created only once per time step. This is controlled by \c datawritten.
+       * Do nothing if data has already been written in this time step.
+       *
+       * \param[in,out] Indicator whether data has already been written in this time step (true) or
+       *                not (false)
+       */
       void NewIOStep(bool& datawritten);
 
       /// output of the current state

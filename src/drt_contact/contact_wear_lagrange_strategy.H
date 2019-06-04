@@ -118,6 +118,14 @@ namespace WEAR
     Evaluates the unweighted wear vector.
     Refer also to the Semesterarbeit of Karl Wichmann 2010
 
+    \warning In case of weighted wear, this is only implemented for dual/Petrov-Galerkin shape
+    functions.
+
+    \note This requires to solve for the real wear where we need to invert the slave side mortar
+    matrix. Since we restrict ourselves to dual/Petrov-Galerkin shape functions, we can exploit
+    the diagonality of the #dmatrix_. Hence, instead of solving we just divide by the diagonal
+    elements of #dmatrix_.
+
     */
     void OutputWear();
 

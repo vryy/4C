@@ -41,7 +41,7 @@ extern "C"
  * the Constructor of PostProblem
  *----------------------------------------------------------------------*/
 PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP, int argc, char** argv)
-    : start_(0), end_(-1), step_(1)
+    : start_(0), end_(-1), step_(1), mortar_(false)
 {
 #ifdef PARALLEL
   MPI_Init(&argc, &argv);
@@ -53,6 +53,7 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP, int argc, char** ar
   struct_vel_acc_ = "no";
   struct_mat_disp_ = "no";
   struct_rot_ = "no";
+  std::string mortar_string = "no";
 
   int printparobjecttypes = 0;
 
@@ -71,6 +72,7 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP, int argc, char** ar
       "strain output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
   CLP.setOption("strain", &straintype_,
       "strain output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
+  CLP.setOption("mortar", &mortar_string, "Do post-processing of mortar interfaces [yes]");
   CLP.setOption("optquantitytype", &optquantitytype_,
       "optional quantity output type [cxyz, ndxyz, cxyz_ndxyz]");
   CLP.setOption(
@@ -151,6 +153,11 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP, int argc, char** ar
     outputtype_ = "bin";
   }
 
+  if (mortar_string == "yes")
+  {
+    mortar_ = true;
+  }
+
   result_group_ = std::vector<MAP*>();
   setup_filter(file, output);
 
@@ -159,7 +166,7 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP, int argc, char** ar
 
   const char* type = map_read_string(&control_table_, "problem_type");
   const std::string probtype(type);
-  problemtype_ = DRT::StringToProblemType(probtype);
+  problemtype_ = INPAR::PROBLEMTYPE::StringToProblemType(probtype);
 
   spatial_approx_ = map_read_string(&control_table_, "spatial_approximation");
 

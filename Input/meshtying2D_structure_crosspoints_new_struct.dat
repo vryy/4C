@@ -59,7 +59,6 @@ LINEAR_SOLVER                   2
 -------------------------------------------------------------MORTAR COUPLING
 CROSSPOINTS                     Yes
 PARALLEL_REDIST                 No
-OUTPUT_INTERFACES               Yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

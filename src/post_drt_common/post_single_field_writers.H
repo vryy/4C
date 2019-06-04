@@ -54,6 +54,39 @@ class StructureFilter : public PostFilterBase
 };
 
 /*!
+ \brief Writer for mortar interface problems
+
+ Each mortar interface is written as its own discretization. The MortarFilter will process only one
+ of these interfaces, i.e. there will be as many MortarFilers as there are mortar interfaces.
+
+ \author mayr.mt \date 08/2018
+ */
+class MortarFilter : public PostFilterBase
+{
+ public:
+  /*!
+  \brief Constructor
+
+  @param field Field to be processed
+  @param name ??
+  */
+  MortarFilter(PostField* field, std::string name) : PostFilterBase(field, name) {}
+
+ protected:
+  /*!
+  \brief Write all results of a field
+
+  So far, we don't need special control over quantities to be filtered. We just filter every result
+  field.
+
+  @param[in] field Field to be processed
+
+  \sa WriteDofResults(), WriteNodeResults(), WriteElementResults()
+  */
+  virtual void WriteAllResults(PostField* field) final;
+};
+
+/*!
  \brief Writer for fluid problems
  */
 class FluidFilter : public PostFilterBase
