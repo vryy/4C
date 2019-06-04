@@ -12,6 +12,7 @@ of species inspired by
 Sciume, G.; Gray, W. G.; Hussain, F.; Ferrari, M.; Decuzzi, P. & Schrefler, B. A.:
 Three phase flow dynamics in tumor growth Computational Mechanics, 2014, 53, 465-484
 fully monolithic framework, however, structure is fixed with DVOL condition
+Units are g, mm, s
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    400
 //NODES       1604
@@ -99,21 +100,21 @@ MAT 2 MAT_FluidPoroMultiPhaseReactions LOCAL No PERMEABILITY 1.82e-9 NUMMAT 3 MA
 MAT 20 MAT_FluidPoroSingleReaction NUMSCAL 2 TOTALNUMDOF 3 NUMVOLFRAC 0 SCALE 0 1 -1 COUPLING scalar_by_function FUNCTID 10
 // equivalent with: MAT 20 MAT_FluidPoroSingleReaction NUMSCAL 2 NUMPHASES 3 SCALE 0 1 -1 COUPLING scalar_by_function FUNCTID 4
 
-MAT 10 MAT_FluidPoroSinglePhase DOFTYPEID 101 VISCOSITYLAWID 104 DENSITYLAWID 103 DENSITY 1000.0 RELPERMEABILITYLAWID 105
+MAT 10 MAT_FluidPoroSinglePhase DOFTYPEID 101 VISCOSITYLAWID 104 DENSITYLAWID 103 DENSITY 1.0e-3 RELPERMEABILITYLAWID 105
 MAT 101 MAT_FluidPoroSinglePhaseDofDiffPressure NUMDOF 3 PRESCOEFF 1 0 -1 END PHASELAWID 102
 MAT 102 MAT_PhaseLawConstraint
 MAT 103 MAT_PoroDensityLawExp BULKMODULUS 1e15
 MAT 104 MAT_FluidPoroViscosityLawConstant VALUE 36
 MAT 105 MAT_FluidPoroRelPermeabilityLawExp EXP 2.0 MIN_SAT 0.0
 
-MAT 11 MAT_FluidPoroSinglePhase DOFTYPEID 111 VISCOSITYLAWID 114 DENSITYLAWID 113 DENSITY 1000.0 RELPERMEABILITYLAWID 115
+MAT 11 MAT_FluidPoroSinglePhase DOFTYPEID 111 VISCOSITYLAWID 114 DENSITYLAWID 113 DENSITY 1.0e-3 RELPERMEABILITYLAWID 115
 MAT 111 MAT_FluidPoroSinglePhaseDofDiffPressure NUMDOF 3 PRESCOEFF -1 1 0 END PHASELAWID 112
 MAT 112 MAT_PhaseLawTangent NUMDOF 3 PRESCOEFF -1 1 0 END RELTENSION -3.389830508475e-3 EXP 1.0 SATURATION_0 0.0
 MAT 113 MAT_PoroDensityLawExp BULKMODULUS 1e15
 MAT 114 MAT_FluidPoroViscosityLawConstant VALUE 36
 MAT 115 MAT_FluidPoroRelPermeabilityLawExp EXP 2.0 MIN_SAT 0.0
 
-MAT 12 MAT_FluidPoroSinglePhase DOFTYPEID 121 VISCOSITYLAWID 124 DENSITYLAWID 123 DENSITY 1000.0 RELPERMEABILITYLAWID 125
+MAT 12 MAT_FluidPoroSinglePhase DOFTYPEID 121 VISCOSITYLAWID 124 DENSITYLAWID 123 DENSITY 1.0e-3 RELPERMEABILITYLAWID 125
 MAT 121 MAT_FluidPoroSinglePhaseDofPressure PHASELAWID 122
 MAT 122 MAT_PhaseLawTangent NUMDOF 3 PRESCOEFF 1 0 -1 END RELTENSION 1.694915254237e-3 EXP 1.0 SATURATION_0 1.0
 MAT 123 MAT_PoroDensityLawExp BULKMODULUS 1e15
@@ -150,28 +151,28 @@ COMPONENT 1 FUNCTION 0.0
 COMPONENT 0 FUNCTION 4.2e-6
 COMPONENT 1 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT4
-VARFUNCTION (1-phi2)*porosity*S2*(9.6e-3*(phi1-2.0e-6)/(4.2e-6-2.0e-6)*heaviside((phi1-2.0e-6)/(4.2e-6-2.0e-6))*heaviside(1.3e6-p2))
+VARFUNCTION (1-phi2)*porosity*S2*(9.6e-9*(phi1-2.0e-6)/(4.2e-6-2.0e-6)*heaviside((phi1-2.0e-6)/(4.2e-6-2.0e-6))*heaviside(1.3e6-p2))
 ----------------------------------------------------------------------FUNCT5
-VARFUNCTION porosity*S2*(1-phi2)*(-9.6e-3*(phi1-2.0e-6)/(4.2e-6-2.0e-6)*heaviside(-(phi1-2.0e-6)/(4.2e-6-2.0e-6))+0.5e-3*heaviside(p2-1.3e6)) NUMCONSTANTS 3 CONSTANTS p2 0.0 porosity 0.0 S2 0.0
+VARFUNCTION porosity*S2*(1-phi2)*(-9.6e-9*(phi1-2.0e-6)/(4.2e-6-2.0e-6)*heaviside(-(phi1-2.0e-6)/(4.2e-6-2.0e-6))+0.5e-3*heaviside(p2-1.3e6)) NUMCONSTANTS 3 CONSTANTS p2 0.0 porosity 0.0 S2 0.0
 ----------------------------------------------------------------------FUNCT6
-VARFUNCTION porosity*S2*(1-phi2)*(2.4e-4*(phi1-2.0e-6)/(4.2e-6-2.0e-6)*heaviside((phi1-2.0e-6)/(4.2e-6-2.0e-6))*heaviside(1.3e6-p2)+6e-4*sin(0.5*pi*phi1/4.2e-6)) NUMCONSTANTS 3 CONSTANTS p2 0.0 S2 0.0 S3 0.0
+VARFUNCTION porosity*S2*(1-phi2)*(2.4e-10*(phi1-2.0e-6)/(4.2e-6-2.0e-6)*heaviside((phi1-2.0e-6)/(4.2e-6-2.0e-6))*heaviside(1.3e6-p2)+6e-10*sin(0.5*pi*phi1/4.2e-6)) NUMCONSTANTS 3 CONSTANTS p2 0.0 S2 0.0 S3 0.0
 ----------------------------------------------------------------------FUNCT7
-VARFUNCTION porosity*S2*phi2*((9.6e-3*(phi1-2.0e-6)/(4.2e-6-2.0e-6)*heaviside((phi1-2.0e-6)/(4.2e-6-2.0e-6))*heaviside(1.3e6-p2))*(1-phi2)) NUMCONSTANTS 3 CONSTANTS p2 0.0 porosity 0.0 S2 0.0
+VARFUNCTION porosity*S2*phi2*((9.6e-9*(phi1-2.0e-6)/(4.2e-6-2.0e-6)*heaviside((phi1-2.0e-6)/(4.2e-6-2.0e-6))*heaviside(1.3e6-p2))*(1-phi2)) NUMCONSTANTS 3 CONSTANTS p2 0.0 porosity 0.0 S2 0.0
 ----------------------------------------------------------------------FUNCT8
 COMPONENT 0 FUNCTION 4.2e-6
 COMPONENT 1 FUNCTION 2.0e-6
 ----------------------------------------------------------------------FUNCT9
-VARFUNCTION phi1*porosity*((9.6e-3*(phi1-2.0e-6)/(4.2e-6-2.0e-6)*heaviside((phi1-2.0e-6)/(4.2e-6-2.0e-6))*heaviside(1.3e6-p2))*(1-phi2)*S2) NUMCONSTANTS 3 CONSTANTS p2 0.0 S2 0.0 S3 0.0
+VARFUNCTION phi1*porosity*((9.6e-9*(phi1-2.0e-6)/(4.2e-6-2.0e-6)*heaviside((phi1-2.0e-6)/(4.2e-6-2.0e-6))*heaviside(1.3e6-p2))*(1-phi2)*S2) NUMCONSTANTS 3 CONSTANTS p2 0.0 S2 0.0 S3 0.0
 ----------------------------------------------------------------------FUNCT10
-POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE NUMPARAMS 5 PARAMS gamma_T_growth 9.6e-3 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9
+POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE NUMPARAMS 5 PARAMS gamma_T_growth 9.6e-9 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9
 ----------------------------------------------------------------------FUNCT11
-POROMULTIPHASESCATRA_FUNCTION NECROSIS_LAW_HEAVISIDE NUMPARAMS 5 PARAMS gamma_t_necr 9.6e-3 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 delta_a_t 0.0 p_t_crit 1.0e9
+POROMULTIPHASESCATRA_FUNCTION NECROSIS_LAW_HEAVISIDE NUMPARAMS 5 PARAMS gamma_t_necr 9.6e-9 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 delta_a_t 0.0 p_t_crit 1.0e9
 ----------------------------------------------------------------------FUNCT12
-POROMULTIPHASESCATRA_FUNCTION OXYGEN_CONSUMPTION_LAW_HEAVISIDE NUMPARAMS 5 PARAMS gamma_nl_growth 2.4e-4 gamma_0_nl 6e-4 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 p_t_crit 1.0e9
+POROMULTIPHASESCATRA_FUNCTION OXYGEN_CONSUMPTION_LAW_HEAVISIDE NUMPARAMS 5 PARAMS gamma_nl_growth 2.4e-10 gamma_0_nl 6e-10 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 p_t_crit 1.0e9
 ----------------------------------------------------------------------FUNCT13
-POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE_OXY NUMPARAMS 5 PARAMS gamma_T_growth 9.6e-3 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9
+POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE_OXY NUMPARAMS 5 PARAMS gamma_T_growth 9.6e-9 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9
 ----------------------------------------------------------------------FUNCT14
-POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE_NECRO NUMPARAMS 5 PARAMS gamma_T_growth 9.6e-3 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9
+POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE_NECRO NUMPARAMS 5 PARAMS gamma_T_growth 9.6e-9 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 0.0 TOLERANCE 1e-14  // DIRICH VALUE
 STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE 0.0 TOLERANCE 1e-14  // DIRICH VALUE
