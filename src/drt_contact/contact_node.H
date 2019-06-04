@@ -17,13 +17,13 @@
 
 namespace CONTACT
 {
-  // foward declaration
+  // forward declaration
   class CoNode;
 
   class CoNodeType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "CoNodeType"; }
+    std::string Name() const final { return "CoNodeType"; }
 
     static CoNodeType& Instance() { return instance_; };
 
@@ -310,52 +310,99 @@ namespace CONTACT
     CoNodeDataContainer operator=(const CoNodeDataContainer& old) = delete;
     CoNodeDataContainer(const CoNodeDataContainer& old) = delete;
 
-    double txi_[3];      //< nodal tangent t_xi for contact methods at newton step n
-    double teta_[3];     //< nodal tangent t_eta for contact methods at newton step n
-    double grow_;        //< nodal entry of g vector
-    double gnts_;        //< nodal entry of g vector for nts
-    double glts_;        //< nodal entry of g vector for lts
-    double gltl_[3];     //< nodal entry of g vector for lts
-    double jumpltl_[3];  //< nodal entry of jump vector for lts
+    //! nodal tangent t_xi for contact methods at newton step n
+    double txi_[3];
 
-    double nalpha_;   //< scaling factor for nts-mortar hybrid formulation
-    bool activeold_;  //< true if cnode was in contact (last converged state n)
+    //! nodal tangent t_eta for contact methods at newton step n
+    double teta_[3];
 
-    std::vector<GEN::pairedvector<int, double>> derivn_;  //< directional derivative of nodal normal
-    std::vector<GEN::pairedvector<int, double>>
-        derivEdge_;  //< directional derivative of nodal tangent
-    std::vector<GEN::pairedvector<int, double>>
-        derivtxi_;  //< directional derivative of nodal tangent t_xi
-    std::vector<GEN::pairedvector<int, double>>
-        derivteta_;  //< directional derivative of nodal tangent t_eta
-    std::map<int, std::map<int, double>>
-        derivd_;  //< directional derivative of nodal D-matrix value
-    std::map<int, std::map<int, double>>
-        derivdlts_;  //< directional derivative of nodal D-matrix value lts
-    std::map<int, std::map<int, double>>
-        derivdltl_;  //< directional derivative of nodal D-matrix value ltl
-    std::map<int, std::map<int, double>>
-        derivm_;  //< directional derivative of nodal M-matrix values
-    std::map<int, std::map<int, double>>
-        derivmnts_;  //< directional derivative of nodal M-matrix values nts
-    std::map<int, std::map<int, double>>
-        derivmlts_;  //< directional derivative of nodal M-matrix values lts
-    std::map<int, std::map<int, double>>
-        derivmltl_;                    //< directional derivative of nodal M-matrix values ltl
-    std::map<int, double> derivg_;     //< directional derivative of nodal weighted gap value
-    std::map<int, double> derivgnts_;  //< directional derivative of nts gap value
-    std::map<int, double> derivglts_;  //< directional derivative of lts gap value
-    std::vector<std::map<int, double>> derivgltl_;     //< directional derivative of ltl gap value
-    std::vector<std::map<int, double>> derivjumpltl_;  //< directional derivative of ltl gap value
-    std::map<int, double> derivgw_;    //< directional derivative of nodal weighted gap value
-    std::map<int, double> derivw_;     //< directional derivative of nodal weighted wear value
-    std::map<int, double> derivw_lm_;  //< directional derivative of nodal weighted wear value
+    //! nodal entry of g vector
+    double grow_;
 
-    GEN::pairedvector<int, double> alpha_;  //< lin. of scaling factor for hybrid formulation
+    //! nodal entry of g vector for nts
+    double gnts_;
+
+    //! nodal entry of g vector for lts
+    double glts_;
+
+    //! nodal entry of g vector for lts
+    double gltl_[3];
+
+    //! nodal entry of jump vector for lts
+    double jumpltl_[3];
+
+    //! scaling factor for nts-mortar hybrid formulation
+    double nalpha_;
+
+    //! true if cnode was in contact (last converged state n)
+    bool activeold_;
+
+    //! directional derivative of nodal normal
+    std::vector<GEN::pairedvector<int, double>> derivn_;
+
+    //! directional derivative of nodal tangent
+    std::vector<GEN::pairedvector<int, double>> derivEdge_;
+
+    //! directional derivative of nodal tangent t_xi
+    std::vector<GEN::pairedvector<int, double>> derivtxi_;
+
+    //! directional derivative of nodal tangent t_eta
+    std::vector<GEN::pairedvector<int, double>> derivteta_;
+
+    //! directional derivative of nodal D-matrix value
+    std::map<int, std::map<int, double>> derivd_;
+
+    //! directional derivative of nodal D-matrix value lts
+    std::map<int, std::map<int, double>> derivdlts_;
+
+    //! directional derivative of nodal D-matrix value ltl
+    std::map<int, std::map<int, double>> derivdltl_;
+
+    //! directional derivative of nodal M-matrix values
+    std::map<int, std::map<int, double>> derivm_;
+
+    //! directional derivative of nodal M-matrix values nts
+    std::map<int, std::map<int, double>> derivmnts_;
+
+    //! directional derivative of nodal M-matrix values lts
+    std::map<int, std::map<int, double>> derivmlts_;
+
+    //! directional derivative of nodal M-matrix values ltl
+    std::map<int, std::map<int, double>> derivmltl_;
+
+    //! directional derivative of nodal weighted gap value
+    std::map<int, double> derivg_;
+
+    //! directional derivative of nts gap value
+    std::map<int, double> derivgnts_;
+
+    //! directional derivative of lts gap value
+    std::map<int, double> derivglts_;
+
+    //! directional derivative of ltl gap value
+    std::vector<std::map<int, double>> derivgltl_;
+
+    //! directional derivative of ltl gap value
+    std::vector<std::map<int, double>> derivjumpltl_;
+
+    //! directional derivative of nodal weighted gap value
+    std::map<int, double> derivgw_;
+
+    //! directional derivative of nodal weighted wear value
+    std::map<int, double> derivw_;
+
+    //! directional derivative of nodal weighted wear value
+    std::map<int, double> derivw_lm_;
+
+    //! lin. of scaling factor for hybrid formulation
+    GEN::pairedvector<int, double> alpha_;
 
     // *** Penalty-related quantities **************************
-    double kappa_;                               //< gap-scaling factor kappa
-    std::vector<std::map<int, double>> derivz_;  //< direction derivative of nodal z-matrix value
+    //! gap-scaling factor kappa
+    double kappa_;
+
+    //! direction derivative of nodal z-matrix value
+    std::vector<std::map<int, double>> derivz_;
 
 
     //! @name Extended contact formulation
@@ -1004,7 +1051,7 @@ namespace CONTACT
      \brief Destructor
 
      */
-    virtual ~CoNode() { return; }
+    virtual ~CoNode() = default;
 
     /*!
      \brief Return unique ParObject id
@@ -1312,26 +1359,32 @@ namespace CONTACT
     void DerivAveragedNormal(Epetra_SerialDenseMatrix& elens, double length, double ltxi);
 
    protected:
-    bool active_;      //< true if cnode is in contact (active set strategy)
-    bool initactive_;  //< true if node is initialized as active node
-    bool involvedm_;   //< cnode is an master node for which the mortar integration is performed
-                       //(both-sided wear)
-    int linsize_;      //< number of lin entries per direction vector
+    //! true if cnode is in contact (active set strategy)
+    bool active_;
 
-    Teuchos::RCP<CONTACT::CoNodeDataContainer>
-        codata_;  //< additional information of proc's contact nodes
+    //! true if node is initialized as active node
+    bool initactive_;
 
-    Teuchos::RCP<CONTACT::AUG::NodeDataContainer>
-        augdata_;  //< additional information of proc's augmented contact nodes
+    //! cnode is an master node for which the mortar integration is performed (both-sided wear)
+    bool involvedm_;
 
-    Teuchos::RCP<CONTACT::CoNodePoroDataContainer>
-        coporodata_;  //< additional information of proc's poro contact nodes
+    //! number of lin entries per direction vector
+    int linsize_;
 
-    Teuchos::RCP<CONTACT::CoNodeTSIDataContainer>
-        cTSIdata_;  //< additional information of TSI contact nodes
+    //! Additional information of proc's contact nodes
+    Teuchos::RCP<CONTACT::CoNodeDataContainer> codata_;
 
-    Teuchos::RCP<CONTACT::CoNodeEhlDataContainer>
-        cEHLdata_;  //< additional information of TSI contact nodes
+    //! Additional information of proc's augmented contact nodes
+    Teuchos::RCP<CONTACT::AUG::NodeDataContainer> augdata_;
+
+    //! Additional information of proc's poro contact nodes
+    Teuchos::RCP<CONTACT::CoNodePoroDataContainer> coporodata_;
+
+    //! Additional information of TSI contact nodes
+    Teuchos::RCP<CONTACT::CoNodeTSIDataContainer> cTSIdata_;
+
+    //! Additional information of EHL contact nodes
+    Teuchos::RCP<CONTACT::CoNodeEhlDataContainer> cEHLdata_;
   };
   // class CoNode
 }  // namespace CONTACT

@@ -302,7 +302,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
     // We rely on this fact, therefore it is not possible to
     // do contact between two distinct discretizations here.
 
-    // collect all intial active nodes
+    // collect all initially active nodes
     std::vector<int> initialactive;
 
     //-------------------------------------------------- process nodes
@@ -319,7 +319,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
         DRT::Node* node = Discret().gNode(gid);
         if (!node) dserror("ERROR: Cannot find node with gid %", gid);
 
-        // store initial active node gids
+        // store global IDs of initially active nodes
         if (isactive[j]) initialactive.push_back(gid);
 
         // find out if this node is initial active on another Condition
@@ -392,7 +392,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
 
           // note that we do not have to worry about double entries
           // as the AddNode function can deal with this case!
-          // the only problem would have occured for the initial active nodes,
+          // the only problem would have occurred for the initial active nodes,
           // as their status could have been overwritten, but is prevented
           // by the "foundinitialactive" block above!
           interface->AddCoNode(cnode);
@@ -1291,7 +1291,7 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
   // *********************************************************************
 
   // evaluate contact tractions
-  GetStrategy().OutputStresses();
+  GetStrategy().ComputeContactStresses();
 
   // export to problem dof row map
   Teuchos::RCP<Epetra_Map> problemdofs = GetStrategy().ProblemDofs();
@@ -1512,6 +1512,14 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
     output.WriteVector("poronopen_lambda", lambdaoutexp);
   }
   return;
+}
+
+/*-----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::CoManager::PostprocessQuantitiesPerInterface(
+    Teuchos::RCP<Teuchos::ParameterList> outputParams)
+{
+  GetStrategy().PostprocessQuantitiesPerInterface(outputParams);
 }
 
 /*----------------------------------------------------------------------------------------------*

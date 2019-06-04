@@ -66,13 +66,7 @@ namespace CONTACT
     //! @name Access methods
     //!@{
 
-    /*!
-    \brief Get discretization
-
-    */
-    const DRT::Discretization& Discret() const { return discret_; };
-
-    //!@}
+    //! @}
 
     //! @name Evaluation methods
     //!@{
@@ -85,10 +79,11 @@ namespace CONTACT
     type Teuchos::ParameterList. Invalid parameter combinations are
     sorted out and throw a dserror.
 
-    \param[in/out] mtparams ParemterList with mortar parameters from input file
+    \param mtparams Meshtying parameter list
+    \param[in] discret Underlying problem discretization
 
     */
-    bool ReadAndCheckInput(Teuchos::ParameterList& mtparams);
+    bool ReadAndCheckInput(Teuchos::ParameterList& mtparams, const DRT::Discretization& discret);
 
     /*!
     \brief Write restart information for meshtying
@@ -126,18 +121,26 @@ namespace CONTACT
     */
     void PostprocessQuantities(IO::DiscretizationWriter& output) final;
 
-    //!@}
+    //! [derived]
+    void PostprocessQuantitiesPerInterface(Teuchos::RCP<Teuchos::ParameterList> outputParams) final;
+
+    /*!
+    \brief Write time step restart data/results of meshtying interfaces to output
+
+    \param[in] outParams Parameter list with output configuration and auxiliary output data
+    \param[in] writeRestart Flag to control writing of restart data
+    \param[in] writeState Flag to control writing of regular result data
+    */
+    void OutputStep(Teuchos::RCP<Teuchos::ParameterList> outParams, const bool writeRestart,
+        const bool writeState);
+
+    //@}
 
 
-   private:
-    //! don't want = operator
-    MtManager operator=(const MtManager& old);
-
-    //! don't want copy constructor
-    MtManager(const MtManager& old);
-
-    //! Underlying problem discretization
-    DRT::Discretization& discret_;
+   protected:
+    // don't want = operator and cctor
+    MtManager operator=(const MtManager& old) = delete;
+    MtManager(const MtManager& old) = delete;
 
   };  // class MtManager
 }  // namespace CONTACT

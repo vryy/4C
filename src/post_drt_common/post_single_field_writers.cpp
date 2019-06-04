@@ -203,6 +203,33 @@ void StructureFilter::WriteAllResultsOneTimeStep(PostResult& result, bool firsts
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void MortarFilter::WriteAllResults(PostField* field)
+{
+  writer_->WriteResult("displacement", "displacement", dofbased, field->problem()->num_dim());
+
+  writer_->WriteResult(
+      "norcontactstress", "norcontactstress", dofbased, field->problem()->num_dim());
+  writer_->WriteResult(
+      "tancontactstress", "tancontactstress", dofbased, field->problem()->num_dim());
+
+  writer_->WriteResult(
+      "interfacetraction", "interfacetraction", dofbased, field->problem()->num_dim());
+
+  writer_->WriteResult("slaveforces", "slaveforces", dofbased, field->problem()->num_dim());
+  writer_->WriteResult("masterforces", "masterforces", dofbased, field->problem()->num_dim());
+
+  writer_->WriteResult("norslaveforce", "norslaveforce", dofbased, field->problem()->num_dim());
+  writer_->WriteResult("tanslaveforce", "tanslaveforce", dofbased, field->problem()->num_dim());
+
+  writer_->WriteResult("normasterforce", "normasterforce", dofbased, field->problem()->num_dim());
+  writer_->WriteResult("tanmasterforce", "tanmasterforce", dofbased, field->problem()->num_dim());
+
+  WriteNodeResults(field);
+  WriteElementResults(field);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FluidFilter::WriteAllResults(PostField* field)
 {
   writer_->WriteResult("averaged_pressure", "averaged_pressure", dofbased, 1);

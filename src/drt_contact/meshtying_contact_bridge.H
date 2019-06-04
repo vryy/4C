@@ -121,10 +121,23 @@ namespace CONTACT
     bool HaveSmoothing() { return (sman_ != Teuchos::null); }
 
     /*!
-    \brief postprocess tractions for mesht/contact
+    \brief Write results for visualization for meshtying/contact problems
 
+    This routine does some postprocessing (e.g. computing interface tractions) and then writes
+    results to disk through the structure discretization's output writer \c output.
+
+    \param[in] output Output writer of structure discretization to write results to disk
     */
     void PostprocessQuantities(Teuchos::RCP<IO::DiscretizationWriter>& output);
+
+    /*!
+    \brief Write results for visualization separately for each meshtying/contact interface
+
+    Call each interface, such that each interface can handle its own output of results.
+
+    \param[in] outputParams Parameter list with stuff required by interfaces to write output
+    */
+    void PostprocessQuantitiesPerInterface(Teuchos::RCP<Teuchos::ParameterList> outputParams);
 
     /*!
     \brief read restart

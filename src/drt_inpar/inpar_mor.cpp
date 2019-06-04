@@ -12,9 +12,6 @@
 
 #include "drt_validparameters.H"
 #include "inpar_mor.H"
-#include "../drt_lib/drt_conditiondefinition.H"
-
-
 
 void INPAR::MOR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {

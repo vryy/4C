@@ -6,7 +6,6 @@
 \level 0
 
 \maintainer Martin Kronbichler
-
 */
 /*---------------------------------------------------------------------*/
 
@@ -31,6 +30,7 @@ namespace LINALG
   class SparseOperator;
   class MapExtractor;
 }  // namespace LINALG
+
 class PostProblem;
 
 namespace IO
@@ -154,7 +154,7 @@ namespace DRT
     \brief Destructor
 
     */
-    virtual ~Discretization();
+    virtual ~Discretization() = default;
 
     //! @name Query methods
 
@@ -1869,8 +1869,8 @@ namespace DRT
 
    private:
     // don't want = operator and copy constructor
-    Discretization operator=(const Discretization& old);
-    Discretization(const DRT::Discretization& old);
+    Discretization operator=(const Discretization& old) = delete;
+    Discretization(const DRT::Discretization& old) = delete;
 
     /*!
     \brief Build noderowmap_ (Filled()==true NOT prerequisite)

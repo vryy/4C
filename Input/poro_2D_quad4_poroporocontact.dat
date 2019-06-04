@@ -111,7 +111,7 @@ TRIANGULATION                   Center
 LINEAR_SOLVER                   4
 RESTART_WITH_CONTACT            Yes
 ADHESION                        None
-FRICTION                        none//Coulomb
+FRICTION                        None//Coulomb
 FRLESS_FIRST                    No
 GP_SLIP_INCR                    No
 STRATEGY                        LagrangianMultipliers

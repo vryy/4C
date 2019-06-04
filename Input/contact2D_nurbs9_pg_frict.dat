@@ -63,7 +63,7 @@ INT_STRATEGY                    Standard
 LINEAR_SOLVER                   2
 STRATEGY                        Lagrange
 SYSTEM                          condensed
-FRICTION                        coulomb
+FRICTION                        Coulomb
 SEMI_SMOOTH_CN                  1
 SEMI_SMOOTH_CT                  1
 -------------------------------------------------------------MORTAR COUPLING

@@ -15,7 +15,7 @@ namespace CONTACT
   class FriNodeType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "FriNodeType"; }
+    std::string Name() const final { return "FriNodeType"; }
 
     static FriNodeType& Instance() { return instance_; };
 
@@ -372,7 +372,7 @@ namespace CONTACT
 
    \author gitterle (gitterle@lnm.mw.tum.de)
    */
-  class FriNode : public CONTACT::CoNode
+  class FriNode : public CoNode
   {
    public:
     //! @name Enums and Friends
@@ -396,6 +396,7 @@ namespace CONTACT
      \param dofs   (in): list of global degrees of freedom
      \param isslave(in): flag indicating whether node is slave or master
      \param initactive (in): flag indicating whether initially set to active
+     \param friplus (in): ?? (looks like its related to wear)
 
      */
     FriNode(int id, const double* coords, const int owner, const int numdof,
@@ -420,7 +421,7 @@ namespace CONTACT
      \brief Destructor
 
      */
-    virtual ~FriNode() { return; }
+    virtual ~FriNode() = default;
 
     /*!
      \brief Return unique ParObject id
@@ -610,12 +611,14 @@ namespace CONTACT
     //@}
 
    protected:
-    Teuchos::RCP<CONTACT::FriNodeDataContainer>
-        fridata_;  // additional information of proc's friction nodes
-    Teuchos::RCP<CONTACT::FriNodeWearDataContainer>
-        weardata_;  // additional information to proc's data container
+    //! Additional information of proc's friction nodes
+    Teuchos::RCP<CONTACT::FriNodeDataContainer> fridata_;
 
-    bool wear_;  // bool for wear
+    //! Additional information to proc's data container
+    Teuchos::RCP<CONTACT::FriNodeWearDataContainer> weardata_;
+
+    //! bool for wear
+    bool wear_;
   };
   // class FriNode
 

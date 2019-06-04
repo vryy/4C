@@ -139,6 +139,12 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   setStringToIntegralParameter<int>("RESTART_WITH_MESHTYING", "No",
       "Must be chosen if a non-meshtying simulation is to be restarted with meshtying", yesnotuple,
       yesnovalue, &mortar);
+
+  BoolParameter("OUTPUT_INTERFACES", "No",
+      "Write output for each mortar interface separately.\nThis is an additional feature, purely "
+      "to enhance visualization. Currently, this is limited to solid meshtying and contact w/o "
+      "friction.",
+      &mortar);
 }
 
 

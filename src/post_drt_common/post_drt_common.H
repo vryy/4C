@@ -173,6 +173,10 @@ class PostProblem
 
   //! returns outputtype_
   std::string outputtype() { return outputtype_; }
+
+  //! Is post-processing of mortar interfaces activated?
+  bool DoMortarInterfaces() { return mortar_; }
+
   //@}
 
   //! read in new mesh for given step and field
@@ -240,6 +244,9 @@ class PostProblem
   int start_;
   int end_;
   int step_;
+
+  //! Activate post-processing of mortar interfaces
+  bool mortar_;
 
   //! stress output type optionally set by command line argument
   std::string stresstype_;

@@ -48,7 +48,7 @@ MAXITER                         50
 INT_STRATEGY                    Standard
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
-FRICTION                        coulomb
+FRICTION                        Coulomb
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  200
 SEMI_SMOOTH_CT                  200

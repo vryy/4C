@@ -299,7 +299,18 @@ namespace MORTAR
     virtual void MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis) = 0;
     virtual int NumberOfActiveNodes() const = 0;
     virtual int NumberOfSlipNodes() const = 0;
-    virtual void OutputStresses() = 0;
+    virtual void ComputeContactStresses() = 0;
+
+    /*!
+    \brief Write results for visualization separately for each meshtying/contact interface
+
+    Call each interface, such that each interface can handle its own output of results.
+
+    \param[in] outputParams Parameter list with stuff required by interfaces to write output
+    */
+    virtual void PostprocessQuantitiesPerInterface(
+        Teuchos::RCP<Teuchos::ParameterList> outputParams) = 0;
+
     virtual void Print(std::ostream& os) const = 0;
     virtual void PrintActiveSet() const = 0;
     virtual void Recover(Teuchos::RCP<Epetra_Vector> disi) = 0;

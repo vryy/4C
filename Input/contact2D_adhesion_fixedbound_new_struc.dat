@@ -64,7 +64,7 @@ SYSTEM               sp
 SEMI_SMOOTH_NEWTON   Yes
 SEMI_SMOOTH_CN       0.5
 STRATEGY             Lagrange
-FRICTION             none
+FRICTION                        None
 ADHESION             bounded
 ---------------------------------------------------MORTAR COUPLING
 SEARCH_ALGORITHM     Binarytree

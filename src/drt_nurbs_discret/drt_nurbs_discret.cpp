@@ -35,19 +35,8 @@ DRT::NURBS::NurbsDiscretization::NurbsDiscretization(
     const std::string name, Teuchos::RCP<Epetra_Comm> comm)
     : DRT::Discretization::Discretization(name, comm), npatches_(0), knots_(Teuchos::null)
 {
-  //  dbcsolver_ = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(1),
-  //                                               this->Comm(),
-  //                                               DRT::Problem::Instance()->ErrorFile()->Handle()));
-  //  this->ComputeNullSpaceIfNecessary(dbcsolver_->Params());
-
   return;
 }
-
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            gammi 05/08|
- *----------------------------------------------------------------------*/
-DRT::NURBS::NurbsDiscretization::~NurbsDiscretization() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -57,7 +46,10 @@ void DRT::NURBS::NurbsDiscretization::SetKnotVector(Teuchos::RCP<DRT::NURBS::Kno
 {
   if (knots == Teuchos::null)
   {
-    dserror("trying to set invalid knotvector (%s)\n", (this->Name()).c_str());
+    dserror(
+        "You're trying to set an invalid knotvector in the DRT::NURBS::NurbsDiscretization "
+        "'%s'. The given know vector is a null vector and can't be set as such.",
+        (this->Name()).c_str());
   }
 
   knots_ = knots;
@@ -73,7 +65,10 @@ Teuchos::RCP<DRT::NURBS::Knotvector> DRT::NURBS::NurbsDiscretization::GetKnotVec
 {
   if (knots_ == Teuchos::null)
   {
-    dserror("knotvector invalid (%s)\n", (this->Name()).c_str());
+    dserror(
+        "You're trying to access the NURBS knot vector in the DRT::NURBS::NurbsDiscretization "
+        "'%s'. The required knot vector is a null vector and can't be accessed as such.",
+        (this->Name()).c_str());
   }
   return knots_;
 }
@@ -87,7 +82,10 @@ Teuchos::RCP<const DRT::NURBS::Knotvector> DRT::NURBS::NurbsDiscretization::GetK
 {
   if (knots_ == Teuchos::null)
   {
-    dserror("knotvector invalid (%s)\n", (this->Name()).c_str());
+    dserror(
+        "You're trying to access the NURBS knot vector in the DRT::NURBS::NurbsDiscretization "
+        "'%s'. The required knot vector is a null vector and can't be accessed as such.",
+        (this->Name()).c_str());
   }
   return knots_;
 }

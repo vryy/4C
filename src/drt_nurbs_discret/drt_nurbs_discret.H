@@ -33,13 +33,10 @@ namespace DRT
     /*!
     \brief A class to manage a nurbs discretization in parallel
 
-           Up to now, it's only a standard discretisation
-           extendend by a knotvector.
+    Up to now, it's only a standard discretisation extendend by a knotvector.
 
-           The nodes are replaced by control points on
-           construction/input; the control points are
-           derived from the node class and are hence
-           managed by the original discretisation
+    The nodes are replaced by control points on construction/input; the control points are
+    derived from the node class and are hence managed by the original discretisation
 
     \author gammi (gamnitzer@lnm.mw.tum.de)
     */
@@ -58,7 +55,7 @@ namespace DRT
       \brief Destructor
 
       */
-      virtual ~NurbsDiscretization();
+      virtual ~NurbsDiscretization() = default;
 
       /*!
       \brief Set a knot vector
@@ -148,25 +145,26 @@ namespace DRT
 
      private:
       //! don't want = operator
-      NurbsDiscretization operator=(const NurbsDiscretization& old);
-      //! don't want copy constructor
-      NurbsDiscretization(const DRT::NURBS::NurbsDiscretization& old);
+      NurbsDiscretization operator=(const NurbsDiscretization& old) = delete;
 
-      //! the number of patches in this nurbs discretisation
+      //! don't want copy constructor
+      NurbsDiscretization(const DRT::NURBS::NurbsDiscretization& old) = delete;
+
+      //! Number of patches in this nurbs discretisation
       int npatches_;
 
-      //! the knotvector
-      //! dimension  u     : nurbs curve   (n)
-      //! dimensions u,v   : nurbs surface (n x m)
-      //! dimensions u,v,w : nurbs volume  (n x m x l)
+      /*!
+      \brief The knot vector
+
+      dimension  u     : nurbs curve   (n)
+      dimensions u,v   : nurbs surface (n x m)
+      dimensions u,v,w : nurbs volume  (n x m x l)
+      */
       Teuchos::RCP<DRT::NURBS::Knotvector> knots_;
-
-      //! linear solver to strongly enforce non-constant DirichletBC
-      // Teuchos::RCP<LINALG::Solver> dbcsolver_;
-
 
     };  // class NurbsDiscretization
   }     // namespace NURBS
+
   namespace UTILS
   {
     class DbcNurbs : public DRT::UTILS::Dbc
@@ -175,10 +173,10 @@ namespace DRT
 
      public:
       /// constructor
-      DbcNurbs(){};
+      DbcNurbs() = default;
 
       /// destructor
-      virtual ~DbcNurbs(){};
+      virtual ~DbcNurbs() = default;
 
      protected:
       /** \brief Evaluate the NURBS DBCs

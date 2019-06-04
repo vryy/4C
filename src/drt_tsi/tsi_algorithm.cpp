@@ -175,6 +175,7 @@ TSI::Algorithm::~Algorithm() {}
  *----------------------------------------------------------------------*/
 void TSI::Algorithm::Update()
 {
+  ApplyThermoCouplingState(ThermoField()->Tempnp());
   StructureField()->Update();
   ThermoField()->Update();
   if (contact_strategy_lagrange_ != Teuchos::null)

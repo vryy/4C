@@ -72,7 +72,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectP
     while (counter < CONSTANTS::local_newton_iter_max)
     {
       // Get the point coordinates on the volume.
-      GEOMETRYPAIR::EvaluatePosition<volume>(xi, q_volume, r_volume);
+      GEOMETRYPAIR::EvaluatePosition<volume>(xi, q_volume, r_volume, Element2());
 
       // Evaluate the residuum $r_{volume} - r_{line} = R_{pos}$
       residuum = r_volume;
@@ -93,7 +93,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectP
       if (residuum.Norm2() > CONSTANTS::local_newton_res_max) break;
 
       // Get the jacobian.
-      GEOMETRYPAIR::EvaluatePositionDerivative1<volume>(xi, q_volume, J_J_inv);
+      GEOMETRYPAIR::EvaluatePositionDerivative1<volume>(xi, q_volume, J_J_inv, Element2());
 
       // Invert the jacobian and check if the system is solvable.
       if (LINALG::Inverse3x3DoNotThrowErrorOnZeroDeterminant(
@@ -269,7 +269,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
     {
       // Get the point coordinates on the line and volume.
       EvaluatePosition<line>(eta, q_line, r_line, Element1());
-      EvaluatePosition<volume>(xi, q_volume, r_volume);
+      EvaluatePosition<volume>(xi, q_volume, r_volume, Element2());
 
       // Evaluate the residuum $r_{volume} - r_{line} = R_{pos}$ and $xi(i) - value = R_{surf}$
       J_J_inv.PutScalar(0.);
@@ -309,7 +309,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
 
       // Get the positional derivatives.
       EvaluatePositionDerivative1<line>(eta, q_line, dr_line, Element1());
-      EvaluatePositionDerivative1<volume>(xi, q_volume, dr_volume);
+      EvaluatePositionDerivative1<volume>(xi, q_volume, dr_volume, Element2());
 
       // Fill up the jacobian.
       for (unsigned int i = 0; i < 3; i++)
@@ -507,3 +507,5 @@ template class GEOMETRYPAIR::GeometryPairLineToVolume<double, GEOMETRYPAIR::t_he
     GEOMETRYPAIR::t_tet4>;
 template class GEOMETRYPAIR::GeometryPairLineToVolume<double, GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_tet10>;
+template class GEOMETRYPAIR::GeometryPairLineToVolume<double, GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_nurbs27>;

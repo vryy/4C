@@ -65,3 +65,6 @@ template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLine
 template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToVolumeFactory<
     double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10>(
     const Teuchos::RCP<GeometryEvaluationDataGlobal>);
+template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToVolumeFactory<
+    double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs27>(
+    const Teuchos::RCP<GeometryEvaluationDataGlobal>);

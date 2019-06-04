@@ -841,22 +841,8 @@ namespace STR
     //! Called from the previous adapters as InitialGuess()
     Teuchos::RCP<const Epetra_Vector> InitialGuess() { return disi_; }
 
-    //! Prepare time step for coupled problems with monolithic approach
-    void PrepareTimeStep()
-    {
-      // safety checks
-      CheckIsInit();
-      CheckIsSetup();
-
-      // update end time \f$t_{n+1}\f$ of this time step to cope with time step size adaptivity
-      SetTimen((*time_)[0] + (*dt_)[0]);
-
-      // prepare contact for new time step
-      PrepareStepContact();
-
-      // predict
-      Predict();
-    }
+    //! Prepare time step
+    void PrepareTimeStep();
 
     //! Evaluate routine for coupled problems with monolithic approach
     void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)

@@ -133,10 +133,32 @@ void runEnsightVtuFilter(PostProblem& problem)
     }
     case prb_structure:
     {
-      PostField* field = problem.get_discretization(0);
-      StructureFilter writer(field, problem.outname(), problem.stresstype(), problem.straintype(),
-          problem.optquantitytype());
-      writer.WriteFiles();
+      // Regular solid/structure output
+      {
+        PostField* structurefield = problem.get_discretization(0);
+        StructureFilter structwriter(structurefield, problem.outname(), problem.stresstype(),
+            problem.straintype(), problem.optquantitytype());
+        structwriter.WriteFiles();
+      }
+
+      // Deal with contact / meshtying problems
+      if (problem.DoMortarInterfaces())
+      {
+        /* Loop over all mortar interfaces and process each interface individually
+         *
+         * Start at i = 1 since discretization '0' is the structure discretization.
+         *
+         * Note: We assume that there is only one structure discretization and
+         * that all other discretizations are mortar interface discretizations.
+         */
+        for (int i = 1; i < problem.num_discr(); ++i)
+        {
+          PostField* mortarfield = problem.get_discretization(i);
+          MortarFilter mortarwriter(mortarfield, problem.outname());
+          mortarwriter.WriteFiles();
+        }
+      }
+
       break;
     }
     case prb_polymernetwork:

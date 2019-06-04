@@ -320,7 +320,7 @@ void CONTACT::FriNode::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
 
-  // extract base class MORTAR::MortarNode
+  // extract base class CONTACT::CoNode
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
   CONTACT::CoNode::Unpack(basedata);

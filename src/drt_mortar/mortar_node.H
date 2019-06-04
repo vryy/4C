@@ -251,7 +251,10 @@ namespace MORTAR
      top of drt_lib/drt_parobject.H.
 
      */
-    virtual int UniqueParObjectId() const { return MortarNodeType::Instance().UniqueParObjectId(); }
+    int UniqueParObjectId() const override
+    {
+      return MortarNodeType::Instance().UniqueParObjectId();
+    }
 
     /*!
      \brief Pack this class so it can be communicated

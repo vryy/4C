@@ -502,9 +502,10 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
     }
   }
 
-  // this flag is passed along subroutines and prevents
-  // repeated initialising of output writer, printing of
-  // state vectors, or similar
+  /* This flag indicates whether some form of output has already been written in the current time
+   * step. It is passed along subroutines and prevents repeated initialization of output writer,
+   * printing of state vectors, or similar.
+   */
   bool datawritten = false;
 
   // output restart (try this first)
@@ -592,14 +593,16 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::NewIOStep(bool& datawritten)
 {
-  if (datawritten) return;
-
-  // Make new step
   if (not datawritten)
+  {
+    // Make new step
     dataio_->GetMutableOutputPtr()->NewStep(
         dataglobalstate_->GetStepN(), dataglobalstate_->GetTimeN());
 
-  datawritten = true;
+    datawritten = true;
+  }
+
+  return;
 }
 
 /*----------------------------------------------------------------------------*

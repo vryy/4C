@@ -90,7 +90,7 @@ MERGE_TSI_BLOCK_MATRIX          yes // no
 PTCDT                           1 // --> negative values trigger condition number calculation
 // TSI_LINE_SEARCH                 structure
 -------------------------------------------------------------CONTACT DYNAMIC
-FRICTION                    coulomb
+FRICTION                        Coulomb
 LINEAR_SOLVER               1
 STRATEGY                    Nitsche
 PENALTYPARAM                2e-2

@@ -60,7 +60,7 @@ SYSTEM               condensed
 SEMI_SMOOTH_NEWTON   Yes
 SEMI_SMOOTH_CN       1.0
 STRATEGY             Lagrange
-FRICTION             none
+FRICTION                        None
 ---------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN          pg
 SEARCH_ALGORITHM     Binarytree

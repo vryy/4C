@@ -1069,7 +1069,7 @@ namespace CONTACT
        *  A better and more realistic visualization is the corresponding contact force.
        *
        *  Function overwrites the basic function in the abstract lagrange strategy. */
-      void OutputStresses() override;
+      void ComputeContactStresses() final;
 
       /*! \brief Write contact force output
        *

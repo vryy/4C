@@ -927,14 +927,28 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
   //============================================================================
   else if (action == THR::calc_thermo_update_istep)
   {
-    // get the material
+    // call material specific update
     Teuchos::RCP<MAT::Material> material = ele->Material();
     if (material->MaterialType() == INPAR::MAT::m_th_fourier_var)
     {
-      Teuchos::RCP<MAT::FourierVar> fouriermat =
-          Teuchos::rcp_dynamic_cast<MAT::FourierVar>(material, true);
-      fouriermat->Update();
-    }
+      DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+      if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
+
+      // --------------------------------------- loop over Gauss Points
+      for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+      {
+        EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad, ele->Id());
+        LINALG::Matrix<1, 1> temp(false);
+        temp.MultiplyTN(funct_, etempn_);
+        const double temperature = temp(0, 0);
+        Teuchos::RCP<MAT::FourierVar> fouriermat =
+            Teuchos::rcp_dynamic_cast<MAT::FourierVar>(material, true);
+        // fixme remove when heat integration is moved to own class
+        fouriermat->Consolidation()->SetFunct(funct_);
+        fouriermat->Update(temperature, iquad);
+      }
+
+    }  // -------------------------------- end loop over Gauss Points
   }
 
   //==================================================================================

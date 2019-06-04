@@ -31,19 +31,17 @@
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_mortar.H"
 
-
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/08|
  *----------------------------------------------------------------------*/
-CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf)
-    : MORTAR::ManagerBase(), discret_(discret)
+CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MORTAR::ManagerBase()
 {
   // overwrite base class communicator
-  comm_ = Teuchos::rcp(Discret().Comm().Clone());
+  comm_ = Teuchos::rcp(discret.Comm().Clone());
 
   // create some local variables (later to be stored in strategy)
-  int dim = DRT::Problem::Instance()->NDim();
-  if (dim != 2 && dim != 3) dserror("ERROR: Meshtying problem must be 2D or 3D");
+  const int spatialDim = DRT::Problem::Instance()->NDim();
+  if (spatialDim != 2 && spatialDim != 3) dserror("Meshtying problem must be 2D or 3D.");
 
   std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interfaces;
   Teuchos::ParameterList mtparams;
@@ -54,11 +52,11 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf)
     std::cout << "Checking meshtying input parameters...........";
     fflush(stdout);
   }
-  ReadAndCheckInput(mtparams);
+  ReadAndCheckInput(mtparams, discret);
   if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
 
   // check for FillComplete of discretization
-  if (!Discret().Filled()) dserror("ERROR: Discretization is not fillcomplete");
+  if (!discret.Filled()) dserror("Discretization of underlying problem is not fillcomplete.");
 
   // let's check for meshtying boundary conditions in discret
   // and detect groups of matching conditions
@@ -70,7 +68,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf)
   }
 
   std::vector<DRT::Condition*> contactconditions(0);
-  Discret().GetCondition("Mortar", contactconditions);
+  discret.GetCondition("Mortar", contactconditions);
 
   // there must be more than one meshtying condition
   if ((int)contactconditions.size() < 2)
@@ -87,7 +85,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf)
   // maximum dof number in discretization
   // later we want to create NEW Lagrange multiplier degrees of
   // freedom, which of course must not overlap with displacement dofs
-  int maxdof = Discret().DofRowMap()->MaxAllGID();
+  const int maxdof = discret.DofRowMap()->MaxAllGID();
 
   for (int i = 0; i < (int)contactconditions.size(); ++i)
   {
@@ -205,13 +203,13 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf)
     //    if (redundant != INPAR::MORTAR::redundant_master)
     //      dserror("ERROR: MtManager: Meshtying requires redundant master storage");
     interfaces.push_back(
-        MORTAR::MortarInterface::Create(groupid1, Comm(), dim, mtparams, redundant));
+        MORTAR::MortarInterface::Create(groupid1, Comm(), spatialDim, mtparams, redundant));
 
     // get it again
     Teuchos::RCP<MORTAR::MortarInterface> interface = interfaces[(int)interfaces.size() - 1];
 
-    // note that the nodal ids are unique because they come from
-    // one global problem discretization conatining all nodes of the
+    // note that the nodal IDs are unique because they come from
+    // one global problem discretization containing all nodes of the
     // contact interface
     // We rely on this fact, therefore it is not possible to
     // do meshtying between two distinct discretizations here
@@ -226,14 +224,13 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf)
       {
         int gid = (*nodeids)[k];
         // do only nodes that I have in my discretization
-        if (!Discret().NodeColMap()->MyGID(gid)) continue;
-        DRT::Node* node = Discret().gNode(gid);
+        if (!discret.NodeColMap()->MyGID(gid)) continue;
+        DRT::Node* node = discret.gNode(gid);
         if (!node) dserror("ERROR: Cannot find node with gid %", gid);
 
         // create MortarNode object
-        Teuchos::RCP<MORTAR::MortarNode> mtnode =
-            Teuchos::rcp(new MORTAR::MortarNode(node->Id(), node->X(), node->Owner(),
-                Discret().NumDof(0, node), Discret().Dof(0, node), isslave[j]));
+        Teuchos::RCP<MORTAR::MortarNode> mtnode = Teuchos::rcp(new MORTAR::MortarNode(node->Id(),
+            node->X(), node->Owner(), discret.NumDof(0, node), discret.Dof(0, node), isslave[j]));
         //-------------------
         // get nurbs weight!
         if (nurbs)
@@ -243,7 +240,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf)
 
         // get edge and corner information:
         std::vector<DRT::Condition*> contactcornercond(0);
-        Discret().GetCondition("mrtrcorner", contactcornercond);
+        discret.GetCondition("mrtrcorner", contactcornercond);
         for (unsigned j = 0; j < contactcornercond.size(); j++)
         {
           if (contactcornercond.at(j)->ContainsNode(node->Id()))
@@ -252,7 +249,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf)
           }
         }
         std::vector<DRT::Condition*> contactedgecond(0);
-        Discret().GetCondition("mrtredge", contactedgecond);
+        discret.GetCondition("mrtredge", contactedgecond);
         for (unsigned j = 0; j < contactedgecond.size(); j++)
         {
           if (contactedgecond.at(j)->ContainsNode(node->Id()))
@@ -263,7 +260,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf)
 
         // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
         std::vector<DRT::Condition*> contactSymconditions(0);
-        Discret().GetCondition("mrtrsym", contactSymconditions);
+        discret.GetCondition("mrtrsym", contactSymconditions);
 
         for (unsigned j = 0; j < contactSymconditions.size(); j++)
           if (contactSymconditions.at(j)->ContainsNode(node->Id()))
@@ -311,7 +308,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf)
         // get knotvector, normal factor and zero-size information for nurbs
         if (nurbs)
         {
-          MORTAR::UTILS::PrepareNURBSElement(discret, ele, mtele, dim);
+          MORTAR::UTILS::PrepareNURBSElement(discret, ele, mtele, spatialDim);
         }
 
         interface->AddMortarElement(mtele);
@@ -345,18 +342,18 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf)
     if (problemtype != prb_poroelast && problemtype != prb_fpsi && problemtype != prb_fpsi_xfem &&
         problemtype != prb_fps3i)
     {
-      strategy_ = Teuchos::rcp(new MtLagrangeStrategy(Discret().DofRowMap(), Discret().NodeRowMap(),
-          mtparams, interfaces, dim, comm_, alphaf, maxdof));
+      strategy_ = Teuchos::rcp(new MtLagrangeStrategy(discret.DofRowMap(), discret.NodeRowMap(),
+          mtparams, interfaces, spatialDim, comm_, alphaf, maxdof));
     }
     else
     {
-      strategy_ = Teuchos::rcp(new PoroMtLagrangeStrategy(Discret().DofRowMap(),
-          Discret().NodeRowMap(), mtparams, interfaces, dim, comm_, alphaf, maxdof));
+      strategy_ = Teuchos::rcp(new PoroMtLagrangeStrategy(discret.DofRowMap(), discret.NodeRowMap(),
+          mtparams, interfaces, spatialDim, comm_, alphaf, maxdof));
     }
   }
   else if (stype == INPAR::CONTACT::solution_penalty or stype == INPAR::CONTACT::solution_uzawa)
-    strategy_ = Teuchos::rcp(new MtPenaltyStrategy(Discret().DofRowMap(), Discret().NodeRowMap(),
-        mtparams, interfaces, dim, comm_, alphaf, maxdof));
+    strategy_ = Teuchos::rcp(new MtPenaltyStrategy(discret.DofRowMap(), discret.NodeRowMap(),
+        mtparams, interfaces, spatialDim, comm_, alphaf, maxdof));
   else
     dserror("ERROR: Unrecognized strategy");
 
@@ -385,7 +382,8 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf)
 /*----------------------------------------------------------------------*
  |  read and check input parameters (public)                  popp 04/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
+bool CONTACT::MtManager::ReadAndCheckInput(
+    Teuchos::ParameterList& mtparams, const DRT::Discretization& discret)
 {
   // read parameter lists from DRT::Problem
   const Teuchos::ParameterList& mortar = DRT::Problem::Instance()->MortarCouplingParams();
@@ -394,15 +392,15 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
 
   // read Problem Type and Problem Dimension from DRT::Problem
   const PROBLEM_TYP problemtype = DRT::Problem::Instance()->ProblemType();
-  int dim = DRT::Problem::Instance()->NDim();
+  const int spatialDim = DRT::Problem::Instance()->NDim();
   std::string distype = DRT::Problem::Instance()->SpatialApproximation();
 
   // get mortar information
   std::vector<DRT::Condition*> mtcond(0);
   std::vector<DRT::Condition*> ccond(0);
 
-  Discret().GetCondition("Mortar", mtcond);
-  Discret().GetCondition("Contact", ccond);
+  discret.GetCondition("Mortar", mtcond);
+  discret.GetCondition("Contact", ccond);
 
   bool onlymeshtying = false;
   bool meshtyingandcontact = false;
@@ -507,7 +505,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
     // *********************************************************************
     // not (yet) implemented combinations
     // *********************************************************************
-    if (DRT::INPUT::IntegralValue<int>(mortar, "CROSSPOINTS") == true && dim == 3)
+    if (DRT::INPUT::IntegralValue<int>(mortar, "CROSSPOINTS") == true && spatialDim == 3)
       dserror("ERROR: Crosspoints / edge node modification not yet implemented for 3D");
 
   if (DRT::INPUT::IntegralValue<int>(mortar, "CROSSPOINTS") == true &&
@@ -639,7 +637,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
     dserror("POROCONTACT: Just lagrange multiplier should be condensed for poro meshtying!");
 
   if ((problemtype == prb_poroelast || problemtype == prb_fpsi || problemtype == prb_fpsi_xfem) &&
-      (dim != 3) && (dim != 2))
+      (spatialDim != 3) && (spatialDim != 2))
   {
     const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
     if (DRT::INPUT::IntegralValue<int>(porodyn, "CONTACTNOPEN"))
@@ -659,10 +657,6 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
  *----------------------------------------------------------------------*/
 void CONTACT::MtManager::WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart)
 {
-  // write restart information for meshtying
-  //  Teuchos::RCP<Epetra_Map> problemdofs = GetStrategy().ProblemDofs();
-  //  Teuchos::RCP<Epetra_Vector> lagrmultoldexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-  //  LINALG::Export(*(GetStrategy().LagrMultOld()),*lagrmultoldexp);
   output.WriteVector("mt_lagrmultold", GetStrategy().LagrMultOld());
 
   return;
@@ -711,4 +705,12 @@ void CONTACT::MtManager::PostprocessQuantities(IO::DiscretizationWriter& output)
   output.WriteVector("masterforces", fcmasterexp);
 
   return;
+}
+
+/*-----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::MtManager::PostprocessQuantitiesPerInterface(
+    Teuchos::RCP<Teuchos::ParameterList> outputParams)
+{
+  GetStrategy().PostprocessQuantitiesPerInterface(outputParams);
 }

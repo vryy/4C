@@ -1,29 +1,33 @@
 /*----------------------------------------------------------------------*/
 /*!
+\file inpar_io.H
 
-\brief Input parameters for model order reduction
+\brief Input parameters for global IO section
 
-\level 2
+\maintainer Matthias Mayr
 
-\maintainer Amadeus Gebauer
+\level 1
 */
-
 /*----------------------------------------------------------------------*/
-#ifndef INPAR_MOR_H
-#define INPAR_MOR_H
+
+#ifndef INPAR_IO_H
+#define INPAR_IO_H
 
 #include "inpar_parameterlist_utils.H"
 
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-  namespace MOR
+  namespace IO
   {
-    /// Defines all valid parameters for model order reduction
+    /*! \brief Define valid parameter for global IO control
+     *
+     * @param[in/out] list Parameter list to be filled with valid parameters and their defaults
+     */
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-  }  // namespace MOR
+  }  // namespace IO
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_MOR_H
+#endif  // #ifndef INPAR_IO_H

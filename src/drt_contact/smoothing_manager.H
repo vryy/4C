@@ -60,10 +60,7 @@ namespace CONTACT
     \param output (in): IO::Discretization writer for restart
 
     */
-    void WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart = false) final
-    {
-      return;
-    };
+    void WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart = false) final;
 
     /*!
     \brief Read restart information for contact
@@ -80,10 +77,7 @@ namespace CONTACT
 
     */
     void ReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<Epetra_Vector> zero) final
-    {
-      return;
-    };
+        Teuchos::RCP<Epetra_Vector> zero) final;
 
     /*!
     \brief Write interface tractions for postprocessing
@@ -92,7 +86,11 @@ namespace CONTACT
 
     */
     void PostprocessQuantities(IO::DiscretizationWriter& output) final;
-    //@}
+
+    //! [derived]
+    void PostprocessQuantitiesPerInterface(Teuchos::RCP<Teuchos::ParameterList> outputParams) final;
+
+    //! @}
 
 
    private:

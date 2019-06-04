@@ -809,6 +809,13 @@ namespace INPAR
   {
   }  // namespace INVANA
 
+  /*! \brief Input parameters for global I/O control
+   *
+   */
+  namespace IO
+  {
+  }
+
   /*! \brief Input parameters for
    *
    */
@@ -964,6 +971,13 @@ namespace INPAR
   namespace POROMULTIPHASESCATRA
   {
   }  // namespace POROMULTIPHASESCATRA
+
+  /*! \brief Input parameters for global problem type
+   *
+   */
+  namespace POBLEMTYPE
+  {
+  }
 
   /*! \brief Input parameters for reduced airways simulations
    *

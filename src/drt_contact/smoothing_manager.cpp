@@ -1309,7 +1309,7 @@ void CONTACT::SmoothingManager::PostprocessQuantities(IO::DiscretizationWriter& 
   // *********************************************************************
 
   // evaluate contact tractions
-  GetStrategy().OutputStresses();
+  GetStrategy().ComputeContactStresses();
 
   // export to problem dof row map
   Teuchos::RCP<Epetra_Map> problemdofs = GetStrategy().ProblemDofs();
@@ -1328,6 +1328,33 @@ void CONTACT::SmoothingManager::PostprocessQuantities(IO::DiscretizationWriter& 
   // contact tractions in normal and tangential direction
   output.WriteVector("norcontactstress", normalstressesexp);
   output.WriteVector("tancontactstress", tangentialstressesexp);
+
+  return;
+}
+
+/*-----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::SmoothingManager::PostprocessQuantitiesPerInterface(
+    Teuchos::RCP<Teuchos::ParameterList> outputParams)
+{
+  dserror("Not implemented, yet.");
+}
+
+/*-----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::SmoothingManager::ReadRestart(IO::DiscretizationReader& reader,
+    Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<Epetra_Vector> zero)
+{
+  dserror("Not implemented, yet.");
+
+  return;
+}
+
+/*-----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::SmoothingManager::WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart)
+{
+  dserror("Not implemented, yet.");
 
   return;
 }

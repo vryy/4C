@@ -192,13 +192,13 @@ void PASI::PartitionedAlgo::SetStructStates()
   // export column to row displacements (no communication)
   LINALG::Export(*walldatastate->GetDispCol(), *walldatastate->GetMutableDispRow());
 
-  double normbwalldisp;
-  walldatastate->GetDispRow()->Norm2(&normbwalldisp);
+  double normwalldisp(0.0);
+  walldatastate->GetDispRow()->Norm2(&normwalldisp);
 
   if ((Comm().MyPID() == 0) and PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))
   {
     std::cout << "-----------------------------------------------------------------" << std::endl;
-    std::cout << " Norm of wall displacements: " << std::setprecision(7) << normbwalldisp
+    std::cout << " Norm of wall displacements: " << std::setprecision(7) << normwalldisp
               << std::endl;
     std::cout << "-----------------------------------------------------------------" << std::endl;
   }

@@ -147,7 +147,7 @@ namespace MORTAR
     IDataContainer();
 
     /// destructor
-    virtual ~IDataContainer(){};
+    virtual ~IDataContainer() = default;
 
     /// @name accessors
     /// @{
@@ -439,7 +439,11 @@ namespace MORTAR
   class MortarInterface
   {
    protected:
-    /// constructor ( only for derived classes )
+    /*!
+    \brief Constructor (only for derived classes)
+
+    @param[in] idata_ptr Interface data container
+    */
     MortarInterface(const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr);
 
    public:
@@ -448,34 +452,35 @@ namespace MORTAR
      *  This method creates first a new interface data object and subsequently
      *  a new interface object.
      *
-     *  \param id        (in) : unique interface ID
-     *  \param comm      (in) : communicator object
-     *  \param dim       (in) : problem dimension
-     *  \param imortar   (in) : global contact/mesh-tying parameter-list
+     *  \param id (in) : unique interface ID
+     *  \param comm (in) : communicator object
+     *  \param spatialDim (in) : spatial dimension of the problem
+     *  \param imortar (in) : global contact/mesh-tying parameter-list
      *  \param redundant (in) : type of redundancy in interface storage
      *
      *  \author hiermeier \date 03/17 */
     static Teuchos::RCP<MortarInterface> Create(const int id, const Epetra_Comm& comm,
-        const int dim, const Teuchos::ParameterList& imortar,
+        const int spatialDim, const Teuchos::ParameterList& imortar,
         INPAR::MORTAR::RedundantStorage redundant);
 
     /*!
     \brief Standard constructor creating empty mortar interface
 
+    \param idata_ptr (in): Interface data container
     \param id (in): Unique interface id
     \param comm (in): A communicator object
-    \param dim (in): Global problem dimension
+    \param spatialDim (in): Global problem dimension
     \param imortar (in): Global contact parameter list
     \param redundant (in): type of redundancy in interface storage
     */
     MortarInterface(const Teuchos::RCP<IDataContainer>& idata_ptr, const int id,
-        const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& imortar,
+        const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& imortar,
         INPAR::MORTAR::RedundantStorage redundant);
 
     /*!
     \brief Destructor
     */
-    virtual ~MortarInterface() {}
+    virtual ~MortarInterface() = default;
 
     inline int Id() const { return id_; }
 
@@ -990,9 +995,10 @@ namespace MORTAR
     /*!
     \brief Set current deformation state
 
+    \param[in] Enum to encode type of state
+    \param[in] Vector with state data
     */
     void SetState(const enum StateType& statetype, const Epetra_Vector& vec);
-
 
     /*!
     \brief Create integration cells for interface
@@ -1190,7 +1196,49 @@ namespace MORTAR
     bool HasMaSharingRefInterface() const;
     void AddMaSharingRefInterface(const MortarInterface* ref_interface);
 
+    //! @name Output
+    //! @{
+
+    /*!
+    \brief Output results for postprocessing/visualization of this interface
+
+    Use this interface's discretization write to write output of this interface.
+
+    \note This is purely for visualization. Writing/reading restart data is still dealt with by the
+    structure discretization.
+
+    \param[in] ouputParams Parameter list with stuff required by interfaces to write output
+    */
+    virtual void PostprocessQuantities(const Teuchos::ParameterList& outputParams);
+
+    //! @}
+
    protected:
+    //! @name Output
+    //! @{
+
+    /*!
+    \brief Check validity of parameter list for restart/output writing
+
+    Writing restart data and results is controlled via parameters in the
+    \c outParams parameter list. We check whether required entries exist and
+    maybe throw an error.
+
+    To add a entry to the list of required entries, just add a new line with
+    \code
+    requiredEntries.push_back("<new entry name>");
+    \endcode
+
+    \param[in] outParams Parameter list with output configuration and auxiliary output data
+    \param[in] requiredEntries List of required parameter list entries
+
+    \sa OutputState()
+     */
+    bool CheckOutputList(const Teuchos::ParameterList& outParams,
+        const std::vector<std::string>& requiredEntries) const;
+
+    //! @}
+
     const MortarInterface* GetMaSharingRefInterfacePtr() const;
 
     /*!
@@ -1372,7 +1420,20 @@ namespace MORTAR
     */
     void InitializeLagMultConst();
 
-   private:
+    /*!
+    \brief Setup interface discretization
+
+    Creates either a regular DRT::Discretization or a DRT::NurbsDiscretization.
+    */
+    void CreateInterfaceDiscretization();
+
+    /*!
+    \brief Set type of shape functions
+
+    Read type of shape function form input file parameter list and store it in #shapefcn_.
+    */
+    void SetShapeFunctionType();
+
     /// pointer to the interface data object
     Teuchos::RCP<IDataContainer> idata_ptr_;
 
@@ -1381,8 +1442,8 @@ namespace MORTAR
 
    protected:
     // don't want = operator and cctor
-    MortarInterface operator=(const MortarInterface& old);
-    MortarInterface(const MortarInterface& old);
+    MortarInterface operator=(const MortarInterface& old) = delete;
+    MortarInterface(const MortarInterface& old) = delete;
 
     /** @name References to the interface data container content
      *

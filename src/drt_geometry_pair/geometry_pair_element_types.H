@@ -17,6 +17,9 @@
 #include "../drt_lib/drt_element.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_beam3/beam3.H"
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+#include "../drt_nurbs_discret/drt_nurbs_utils.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 
 namespace GEOMETRYPAIR
@@ -144,6 +147,12 @@ namespace GEOMETRYPAIR
     static const GEOMETRYPAIR::DiscretizationTypeVolume volume_type_ =
         GEOMETRYPAIR::DiscretizationTypeVolume::tetraeder;
   };
+  template <>
+  struct ElementDiscretizationToVolumeType<DRT::Element::nurbs27>
+  {
+    static const GEOMETRYPAIR::DiscretizationTypeVolume volume_type_ =
+        GEOMETRYPAIR::DiscretizationTypeVolume::hexaeder;
+  };
 
 
   /**
@@ -186,7 +195,7 @@ namespace GEOMETRYPAIR
   class ElementDiscretizationStandard : public base
   {
    public:
-    //! Volume type of the element. This member will be defined for hex8/20/27 tet4/10.
+    //! Volume type of the element. This member will be defined for hex8/20/27 tet4/10 and nurbs27.
     static const GEOMETRYPAIR::DiscretizationTypeVolume volume_type_ =
         ElementDiscretizationToVolumeType<base::discretization_>::volume_type_;
 
@@ -336,6 +345,87 @@ namespace GEOMETRYPAIR
 
 
   /**
+   * \brief Discretization based on nurbs.
+   * @param base Type of base class for this class. By doing it this way, member of the base class
+   * can easily be accessed with base::member_.
+   */
+  template <typename base>
+  class ElementDiscretizationNurbs : public base
+  {
+   public:
+    //! Volume type of the element. This member will be defined for hex8/20/27 tet4/10 and nurbs27.
+    static const GEOMETRYPAIR::DiscretizationTypeVolume volume_type_ =
+        ElementDiscretizationToVolumeType<base::discretization_>::volume_type_;
+
+   public:
+    /**
+     * \brief Evaluate the 3D shape functions of the element.
+     * @param N (out) Array to store shape function values in.
+     * @param xi (in) Local coordinates on the element.
+     * @param element (in) Pointer to the element. In this case it is not needed.
+     * @param dimension (in) A type to overload the method, in order to evaluate the correct shape
+     * functions for the dimension of the element.
+     */
+    template <typename V, typename T>
+    inline static void EvaluateShapeFunction(
+        V& N, const T& xi, t_3D_element dimension, const DRT::Element* element = NULL)
+    {
+      // Throw a compiler error if this function is called from an element with dim_ != 3.
+      static_assert(base::dim_ == 3, "nurbs_get_3D_funct can only be called for 3D elements!");
+
+      if (element == NULL)
+        dserror("EvaluateShapeFunction for nurbs needs a valid element pointer!");
+
+      // Get the knots and weights for this element.
+      LINALG::TMatrix<double, 27, 1> weights(true);
+      std::vector<Epetra_SerialDenseVector> myknots(true);
+      DRT::NURBS::GetMyNurbsKnotsAndWeights(
+          *(DRT::Problem::Instance()->GetDis("structure")), element, myknots, weights);
+
+      // We need to redefine the discretization here, as otherwise the compiler has problems
+      // passing the static const member of the base class as a reference.
+      DRT::Element::DiscretizationType discretization = base::discretization_;
+
+      // Evaluate the shape functions.
+      DRT::NURBS::UTILS::nurbs_get_3D_funct(N, xi, myknots, weights, discretization);
+    };
+
+    /**
+     * \brief Evaluate the first derivative of the 3D shape functions of the element.
+     * @param N (out) Array to store shape function values in.
+     * @param xi (in) Local coordinates on the element.
+     * @param element (in) Pointer to the element. In this case it is not needed.
+     * @param dimension (in) A type to overload the method, in order to evaluate the correct shape
+     * functions for the dimension of the element.
+     */
+    template <typename V, typename T>
+    inline static void EvaluateShapeFunctionDeriv1(
+        V& N, const T& xi, t_3D_element dimension, const DRT::Element* element = NULL)
+    {
+      // Throw a compiler error if this function is called from an element with dim_ != 3.
+      static_assert(base::dim_ == 3, "EvaluateShapeFunction3D can only be called for 3D elements!");
+
+      if (element == NULL)
+        dserror("EvaluateShapeFunctionDeriv1 for nurbs needs a valid element pointer!");
+
+      // Get the knots and weights for this element.
+      LINALG::TMatrix<double, 27, 1> weights(true);
+      std::vector<Epetra_SerialDenseVector> myknots(true);
+      DRT::NURBS::GetMyNurbsKnotsAndWeights(
+          *(DRT::Problem::Instance()->GetDis("structure")), element, myknots, weights);
+
+      // We need to redefine the discretization here, as otherwise the compiler has problems
+      // passing the static const member of the base class as a reference.
+      DRT::Element::DiscretizationType discretization = base::discretization_;
+
+      // Evaluate the shape functions.
+      LINALG::TMatrix<typename V::scalar_type, base::n_nodes_, 1> dummy;
+      DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(dummy, N, xi, myknots, weights, discretization);
+    };
+  };
+
+
+  /**
    * Shortcuts to element types are created here, so the explicit template initialisations are
    * better readable.
    */
@@ -348,6 +438,7 @@ namespace GEOMETRYPAIR
   typedef ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::hex27, 1>> t_hex27;
   typedef ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::tet4, 1>> t_tet4;
   typedef ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::tet10, 1>> t_tet10;
+  typedef ElementDiscretizationNurbs<ElementDiscretizationBase<DRT::Element::nurbs27, 1>> t_nurbs27;
 
 }  // namespace GEOMETRYPAIR
 

@@ -6,7 +6,6 @@
 \level 0
 
 \maintainer Martin Kronbichler
-
 */
 /*---------------------------------------------------------------------*/
 
@@ -30,21 +29,6 @@ DRT::Discretization::Discretization(const std::string name, Teuchos::RCP<Epetra_
 {
   dofsets_.push_back(Teuchos::rcp(new DofSet()));
 }
-
-/*----------------------------------------------------------------------*
- |  copy-ctor - not wanted!!!                       (private) nis Jan14 |
- *----------------------------------------------------------------------*/
-DRT::Discretization::Discretization(const DRT::Discretization& old)
-{
-  dserror("No deep-copy of discretizations. Use CloneStrategy!!!");
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            mwgee 11/06|
- *----------------------------------------------------------------------*/
-DRT::Discretization::~Discretization() { return; }
 
 /*----------------------------------------------------------------------*
  |  Add an element (public)                                  mwgee 11/06|

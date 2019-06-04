@@ -44,11 +44,8 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
       yesnovalue, &scontact);
 
   setStringToIntegralParameter<int>("FRICTION", "None", "Type of friction law",
-      tuple<std::string>(
-          "None", "none", "Stick", "stick", "Tresca", "tresca", "Coulomb", "coulomb"),
-      tuple<int>(friction_none, friction_none, friction_stick, friction_stick, friction_tresca,
-          friction_tresca, friction_coulomb, friction_coulomb),
-      &scontact);
+      tuple<std::string>("None", "Stick", "Tresca", "Coulomb"),
+      tuple<int>(friction_none, friction_stick, friction_tresca, friction_coulomb), &scontact);
 
   setStringToIntegralParameter<int>("FRLESS_FIRST", "No",
       "If chosen the first time step of a newly in contact slave node is regarded as frictionless",

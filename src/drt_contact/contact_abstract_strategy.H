@@ -1312,15 +1312,16 @@ namespace CONTACT
     //! Is this a condensed system?
     virtual bool IsCondensedSystem() const;
 
-    /*! Fill the maps vector for the linear solver preconditioner
-     *
-     * The following order is pre-defined:
-     * (0) masterDofMap
-     * (1) slaveDofMap
-     * (2) innerDofMap
-     * (3) activeDofMap
-     *
-     * \author hiermeier */
+    /*! \brief Fill the maps vector for the linear solver preconditioner
+
+    The following order is pre-defined:
+    (0) masterDofMap
+    (1) slaveDofMap
+    (2) innerDofMap
+    (3) activeDofMap
+
+    \author hiermeier
+    */
     virtual void FillMapsForPreconditioner(std::vector<Teuchos::RCP<Epetra_Map>>& maps) const;
 
     //! compute the preconditioner operator
@@ -1354,7 +1355,7 @@ namespace CONTACT
      This is called at the end of each time or load step. It calculates
      the stress vector in normal direction and the stress vector in the
      tangential plane. */
-    virtual void OutputStresses();
+    void ComputeContactStresses() override;
 
     /*! \brief Get dirichlet B.C. status and store into CoNodes
 
@@ -1424,6 +1425,15 @@ namespace CONTACT
 
     //! Print summary of active set status to screen
     virtual void PrintActiveSet() const;
+
+    /*!
+    \brief Write results for visualization separately for each meshtying/contact interface
+
+    Call each interface, such that each interface can handle its own output of results.
+
+    \param[in] outputParams Parameter list with stuff required by interfaces to write output
+    */
+    void PostprocessQuantitiesPerInterface(Teuchos::RCP<Teuchos::ParameterList> outputParams) final;
 
     //!@}
 

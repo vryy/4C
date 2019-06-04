@@ -641,7 +641,73 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
     //============================================================================
     case calc_struct_update_istep:
     {
-      // do nothing, actual implementation is in so3_ele
+      if (Material()->MaterialType() == INPAR::MAT::m_thermostvenant)
+      {
+        std::vector<double> mytempnp(((la[0].lm_).size()) / nsd_, 0.0);
+        if (discretization.HasState(1, "temperature"))
+        {
+          // check if you can get the temperature state
+          Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(1, "temperature");
+          if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
+
+          // the temperature field has only one dof per node, disregarded by the
+          // dimension of the problem
+          const int numdofpernode_thr = discretization.NumDof(1, Nodes()[0]);
+          if (la[1].Size() != nen_ * numdofpernode_thr)
+            dserror("Location vector length for temperature does not match!");
+          // extract the current temperatures
+          DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
+        }
+
+        // vector of the current element temperatures
+        LINALG::Matrix<nen_, 1> etemp(&mytempnp[0]);
+        LINALG::Matrix<nen_, 1> shapefunct;
+
+        // --------------------------------------------------
+        // Initialisation of nurbs specific stuff
+        std::vector<Epetra_SerialDenseVector> myknots(3);
+        LINALG::Matrix<27, 1> weights;
+
+        // get nurbs specific infos
+        if (so3_ele::Shape() == DRT::Element::nurbs27)
+        {
+          // cast to nurbs discretization
+          DRT::NURBS::NurbsDiscretization* nurbsdis =
+              dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+          if (nurbsdis == NULL) dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
+
+          // zero-sized element
+          if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id())) return 1;
+
+          // get weights from cp's
+          for (int inode = 0; inode < nen_; inode++)
+            weights(inode) = dynamic_cast<DRT::NURBS::ControlPoint*>(Nodes()[inode])->W();
+        }
+
+        for (int gp = 0; gp < numgpt_; ++gp)
+        {
+          if (so3_ele::Shape() != DRT::Element::nurbs27)
+          {
+            DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
+          }
+          // evaluate shape functions NURBS-style
+          else
+            DRT::NURBS::UTILS::nurbs_get_3D_funct(
+                shapefunct, xsi_[gp], myknots, weights, DRT::Element::nurbs27);
+
+          // product of shapefunctions and element temperatures
+          LINALG::Matrix<1, 1> NT(false);
+          NT.MultiplyTN(shapefunct, etemp);
+
+          Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk =
+              Teuchos::rcp_dynamic_cast<MAT::ThermoStVenantKirchhoff>(Material(), true);
+          // fixme remove when heat integration is moved to own class
+          if (thrstvk->Consolidation() != Teuchos::null)
+            thrstvk->Consolidation()->SetFunct(shapefunct);
+          thrstvk->Update(NT(0, 0), MapMyGpToSoHex8(gp));
+        }
+      }
+
       break;
     }  // calc_struct_update_istep
 
