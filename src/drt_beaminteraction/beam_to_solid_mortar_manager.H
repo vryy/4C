@@ -180,9 +180,10 @@ namespace BEAMINTERACTION
     }
 
     /**
-     * \brief Invert the global kappa vector with accounting for non active Lagrange multipliers.
+     * \brief Invert the scaling vector global_kappa_ vector (for details see definition of
+     * global_kappa_) with accounting for non active Lagrange multipliers.
      *
-     * @return Inverted global kappa vector.
+     * @return Inverted global_kappa_ vector.
      */
     Teuchos::RCP<Epetra_Vector> InvertKappa() const;
 
