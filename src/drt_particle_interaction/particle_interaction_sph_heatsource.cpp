@@ -296,16 +296,16 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double&
     if (isabsorbing_i)
     {
       // sum contribution of neighboring particle j
-      UTILS::vec_addscale(&cfg_i[type_i][particle_i][0], fac * dens_i[0] * neighborpair.dWdrij_,
-          neighborpair.e_ij_);
+      UTILS::vec_addscale(&cfg_i[type_i][particle_i][0],
+          fac * UTILS::pow<2>(dens_i[0]) / mass_i[0] * neighborpair.dWdrij_, neighborpair.e_ij_);
     }
 
     // evaluate contribution of neighboring particle i
     if (isabsorbing_j and status_j == PARTICLEENGINE::Owned)
     {
       // sum contribution of neighboring particle i
-      UTILS::vec_addscale(&cfg_i[type_j][particle_j][0], -fac * dens_j[0] * neighborpair.dWdrji_,
-          neighborpair.e_ij_);
+      UTILS::vec_addscale(&cfg_i[type_j][particle_j][0],
+          -fac * UTILS::pow<2>(dens_j[0]) / mass_j[0] * neighborpair.dWdrji_, neighborpair.e_ij_);
     }
   }
 
