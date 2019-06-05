@@ -43,7 +43,8 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
       element_gid_to_lambda_gid_(Teuchos::null),
       global_D_(Teuchos::null),
       global_M_(Teuchos::null),
-      global_kappa_(Teuchos::null)
+      global_kappa_(Teuchos::null),
+      global_active_lambda_(Teuchos::null)
 {
   // Get the number of Lagrange multiplier DOF on a beam node and on a beam element.
   switch (params->BeamToSolidVolumeMeshtyingParams()->GetMortarShapeFunctionType())
@@ -159,6 +160,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::Setup()
   global_M_ = Teuchos::rcp(new LINALG::SparseMatrix(
       *lambda_dof_rowmap_, 100, true, true, LINALG::SparseMatrix::FE_MATRIX));
   global_kappa_ = Teuchos::rcp(new Epetra_FEVector(*lambda_dof_rowmap_));
+  global_active_lambda_ = Teuchos::rcp(new Epetra_FEVector(*lambda_dof_rowmap_));
 
   // Create the maps for beam and solid DOFs.
   SetGlobalMaps();
@@ -430,6 +432,11 @@ void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalDM(
       global_M_->FEAssemble(local_M, lambda_row, solid_row);
       global_kappa_->SumIntoGlobalValues(
           local_kappa.RowDim(), &lambda_row[0], local_kappa.Values());
+
+      // Set all entries in the local kappa vector to 1 and add them to the active vector.
+      for (int i_local = 0; i_local < local_kappa.RowDim(); i_local++) local_kappa(i_local) = 1.;
+      global_active_lambda_->SumIntoGlobalValues(
+          local_kappa.RowDim(), &lambda_row[0], local_kappa.Values());
     }
   }
 
@@ -439,6 +446,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalDM(
 
   // Complete the global scaling vector.
   if (0 != global_kappa_->GlobalAssemble(Add, false)) dserror("Error in GlobalAssemble!");
+  if (0 != global_active_lambda_->GlobalAssemble(Add, false)) dserror("Error in GlobalAssemble!");
 }
 
 /**
@@ -462,10 +470,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::AddGlobalForceStiffnessPenaltyCo
       beam_contact_parameters_ptr_->BeamToSolidVolumeMeshtyingParams()->GetPenaltyParameter();
 
   // Scale D and M with kappa^-1.
-  Teuchos::RCP<Epetra_Vector> global_kappa_inv =
-      Teuchos::rcp(new Epetra_Vector(*lambda_dof_rowmap_));
-  linalg_error = global_kappa_inv->Reciprocal(*global_kappa_);
-  if (linalg_error != 0) dserror("Error in Reciprocal!");
+  Teuchos::RCP<Epetra_Vector> global_kappa_inv = InvertKappa();
   Teuchos::RCP<LINALG::SparseMatrix> kappa_inv_mat =
       Teuchos::rcp(new LINALG::SparseMatrix(*global_kappa_inv));
   kappa_inv_mat->Complete();
@@ -583,10 +588,7 @@ Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::GetGlobal
   if (linalg_error != 0) dserror("Error in Scale!");
 
   // Scale Lambda with kappa^-1.
-  Teuchos::RCP<Epetra_Vector> global_kappa_inv =
-      Teuchos::rcp(new Epetra_Vector(*lambda_dof_rowmap_));
-  linalg_error = global_kappa_inv->Reciprocal(*global_kappa_);
-  if (linalg_error != 0) dserror("Error in Reciprocal!");
+  Teuchos::RCP<Epetra_Vector> global_kappa_inv = InvertKappa();
   Teuchos::RCP<LINALG::SparseMatrix> kappa_inv_mat =
       Teuchos::rcp(new LINALG::SparseMatrix(*global_kappa_inv));
   kappa_inv_mat->Complete();
@@ -605,4 +607,28 @@ Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::GetGlobal
   Teuchos::RCP<Epetra_Vector> lambda_col = Teuchos::rcp(new Epetra_Vector(*lambda_dof_colmap_));
   LINALG::Export(*GetGlobalLambda(disp), *lambda_col);
   return lambda_col;
+}
+
+/**
+ *
+ */
+Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::InvertKappa() const
+{
+  // Create the inverse vector.
+  Teuchos::RCP<Epetra_Vector> global_kappa_inv =
+      Teuchos::rcp(new Epetra_Vector(*lambda_dof_rowmap_));
+
+  // Calculate the local inverse of kappa.
+  double local_kappa_inv_value = 0.;
+  for (int lid = 0; lid < lambda_dof_rowmap_->NumMyElements(); lid++)
+  {
+    if (global_active_lambda_->Values()[lid] > 0.1)
+      local_kappa_inv_value = 1. / global_kappa_->Values()[lid];
+    else
+      local_kappa_inv_value = 0.0;
+
+    global_kappa_inv->ReplaceMyValue(lid, 0, local_kappa_inv_value);
+  }
+
+  return global_kappa_inv;
 }

@@ -275,7 +275,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
         EvaluateBeamPosition(projection_point, r, false);
         u = r;
         u -= X;
-        GEOMETRYPAIR::EvaluatePosition<solid>(projection_point.GetXi(), ele2pos_, r_solid);
+        GEOMETRYPAIR::EvaluatePosition<solid>(
+            projection_point.GetXi(), ele2pos_, r_solid, Element2());
         EvaluatePenaltyForce(r, r_solid, force_integration_point);
         for (unsigned int dim = 0; dim < 3; dim++)
         {
@@ -372,3 +373,6 @@ template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<GEOMETRYPAIR:
 // Hermite beam element, tet10 solid element.
 template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_tet10>;
+// Hermite beam element, nurbs27 solid element.
+template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_nurbs27>;

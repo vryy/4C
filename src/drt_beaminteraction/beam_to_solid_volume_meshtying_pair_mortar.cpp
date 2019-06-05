@@ -101,8 +101,8 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>:
           N_mortar, projected_gauss_point.GetEta(), std::integral_constant<unsigned int, 1>{});
       beam::EvaluateShapeFunction(N_beam, projected_gauss_point.GetEta(),
           std::integral_constant<unsigned int, 1>{}, this->Element1());
-      solid::EvaluateShapeFunction(
-          N_solid, projected_gauss_point.GetXi(), std::integral_constant<unsigned int, 3>{});
+      solid::EvaluateShapeFunction(N_solid, projected_gauss_point.GetXi(),
+          std::integral_constant<unsigned int, 3>{}, this->Element2());
 
       // Fill in the local templated mortar matrix D.
       for (unsigned int i_mortar_node = 0; i_mortar_node < mortar::n_nodes_; i_mortar_node++)
@@ -311,6 +311,8 @@ template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAI
     GEOMETRYPAIR::t_tet4, GEOMETRYPAIR::t_line2>;
 template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line2>;
+template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_nurbs27, GEOMETRYPAIR::t_line2>;
 
 template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line3>;
@@ -322,6 +324,8 @@ template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAI
     GEOMETRYPAIR::t_tet4, GEOMETRYPAIR::t_line3>;
 template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line3>;
+template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_nurbs27, GEOMETRYPAIR::t_line3>;
 
 template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line4>;
@@ -333,3 +337,5 @@ template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAI
     GEOMETRYPAIR::t_tet4, GEOMETRYPAIR::t_line4>;
 template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
     GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line4>;
+template class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
+    GEOMETRYPAIR::t_nurbs27, GEOMETRYPAIR::t_line4>;
