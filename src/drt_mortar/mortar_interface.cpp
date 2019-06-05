@@ -4521,7 +4521,7 @@ bool MORTAR::MortarInterface::CheckOutputList(
   {
     if (not outParams.isParameter(*it))
     {
-      dserror("Parameter list is missing the required entry '%s'.", *it);
+      dserror("Parameter list is missing the required entry '%s'.", (*it).c_str());
       return false;
     }
   }
