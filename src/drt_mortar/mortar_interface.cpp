@@ -268,7 +268,7 @@ void MORTAR::MortarInterface::CreateInterfaceDiscretization()
 
   // Prepare discretization writer
   idiscret_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(idiscret_)));
-  dsassert(idiscret_->Writer().is_null(), "Setup of discretization writer failed.");
+  dsassert(not idiscret_->Writer().is_null(), "Setup of discretization writer failed.");
 
   return;
 }
