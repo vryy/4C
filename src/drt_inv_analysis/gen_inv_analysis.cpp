@@ -979,7 +979,7 @@ void STR::GenInvAnalysis::CalcNewParameters(
   // do regularization by adding artificial mass on the main diagonal
   for (int i = 0; i < np_; i++) sto(i, i) += mu_ * sto(i, i);
 
-  // delta_p = (J.T*J+mu*diag(J.T*J))^{-1} * J.T*R
+  // delta_p = - (J.T*J+mu*diag(J.T*J))^{-1} * J.T*R
   rightHandSide.Multiply('T', 'N', -1.0, J, rcurve, 0.0);  // sign of update rule
   Epetra_SerialDenseSolver solver;
   solver.SetMatrix(sto);
