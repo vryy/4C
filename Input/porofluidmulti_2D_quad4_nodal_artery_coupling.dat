@@ -135,7 +135,7 @@ COMPONENT 4 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
 VARFUNCTION 1.0/0.01*tan(0.5*pi*(0.3-S))
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 VARFUNCTION S0-2/pi*atan(0.01*dp) NUMCONSTANTS 1 CONSTANTS S0 0.3
+VARFUNCTION S0-2/pi*atan(0.01*dp) NUMCONSTANTS 1 CONSTANTS S0 0.3
 -------------------------------------------------------------FUNCT4
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 1 1000 DESCRIPTION 1000.0*0.5*(1-cos(t*pi/1.0)) 1000

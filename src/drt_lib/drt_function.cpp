@@ -76,13 +76,6 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(variableexpr);
   lines->Add(variableexprmulti);
 
-  // Old function +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  DRT::INPUT::LineDefinition componentvarfunct;
-  componentvarfunct.AddNamedInt("COMPONENT")
-      .AddNamedString("VARFUNCTION")
-      .AddOptionalNamedInt("NUMCONSTANTS")
-      .AddOptionalNamedPairOfStringAndDoubleVector("CONSTANTS", "NUMCONSTANTS");
-
   DRT::INPUT::LineDefinition varfunct;
   varfunct.AddNamedString("VARFUNCTION")
       .AddOptionalNamedInt("NUMCONSTANTS")
@@ -216,7 +209,6 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
       .AddNamedInt("NUMCOEFF")
       .AddNamedDoubleVector("COEFF", "NUMCOEFF");
 
-  lines->Add(componentvarfunct);
   lines->Add(varfunct);
   lines->Add(linelin);
   lines->Add(radiuslin);
