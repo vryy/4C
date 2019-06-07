@@ -2069,11 +2069,13 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
       econd->MultiplyTN(fac_, derxy_, aop1, 1.0);  //(8x8)=(8x3)(3x8)
 
       // linearization of non-constant conductivity
-      LINALG::Matrix<nen_, 1> dNgradT(false);
-      dNgradT.MultiplyTN(derxy_, gradtemp_);
-      // TODO only valid for isotropic case
-      econd->MultiplyNT(dercmat_(0, 0) * fac_, dNgradT, funct_, 1.0);
-
+      // k^e_TT += ( B_T^T . dC_mat . C^{-1} . B_T . T . N) . detJ . w(gp)
+      LINALG::Matrix<nsd_, 1> CinvGradT(false);
+      CinvGradT.MultiplyNN(Cinv, gradtemp_);
+      LINALG::Matrix<nen_, 1> dNCinvGradT(false);
+      dNCinvGradT.MultiplyTN(derxy_, CinvGradT);
+      // only valid for isotropic case
+      econd->MultiplyNT(dercmat_(0, 0) * fac_, dNCinvGradT, funct_, 1.0);
 #ifndef TSISLMNOGOUGHJOULE
       // linearization of thermo-mechanical effects
       if (structmat->MaterialType() == INPAR::MAT::m_plelasthyper)
