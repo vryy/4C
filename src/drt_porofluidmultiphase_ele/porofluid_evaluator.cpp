@@ -18,7 +18,8 @@
 #include "../drt_mat/fluidporo_multiphase.H"
 #include "../drt_mat/fluidporo_singlephase.H"
 
-#include "../drt_mat/structporo.H"
+// necessary for function
+#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*
  | factory method                                           vuong 08/16 |
@@ -367,9 +368,11 @@ DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<nsd, nen>::CreateEvaluator
     }
     case POROFLUIDMULTIPHASE::calc_domain_integrals:
     {
+      int numscal = 0;
+      if (para.HasScalar()) numscal = phasemanager.NumScal();
       Teuchos::RCP<AssembleInterface> assembler = Teuchos::rcp(new AssembleStandard(-1, false));
-      evaluator = Teuchos::rcp(new EvaluatorDomainIntegrals<nsd, nen>(assembler, -1));
-
+      evaluator = Teuchos::rcp(new EvaluatorDomainIntegrals<nsd, nen>(
+          assembler, -1, para.DomainIntFunctions(), numscal));
       break;
     }
     default:
@@ -2816,10 +2819,92 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd,
     const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 
-    {
+{
+  // get vector to fill
+  Epetra_SerialDenseVector& myvec = *elevec[0];
 
-        // dserror("TODO for Antonia");
-    };
+  const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numvolfrac = phasemanager.NumVolFrac();
+
+  // get the variables + constants
+  std::vector<std::pair<std::string, double>> constants;
+  // pressures + saturations + fluiddensities + porosity + volfracs + volfracpressures +
+  // volfracdensities + scalars
+  constants.reserve(3 * numfluidphases + 1 + 3 * numvolfrac + numscal_);
+
+  std::vector<std::pair<std::string, double>> variables;
+  variables.reserve(0);
+
+  // set pressure, saturation and density values as constants
+  for (int k = 0; k < numfluidphases; k++)
+  {
+    std::ostringstream temp;
+    temp << k + 1;
+    constants.push_back(std::pair<std::string, double>("p" + temp.str(), phasemanager.Pressure(k)));
+    constants.push_back(
+        std::pair<std::string, double>("S" + temp.str(), phasemanager.Saturation(k)));
+    constants.push_back(
+        std::pair<std::string, double>("DENS" + temp.str(), phasemanager.Density(k)));
+  }
+
+  // set porosity value as constant
+  constants.push_back(std::pair<std::string, double>("porosity", phasemanager.Porosity()));
+
+  // set volfrac, volfrac pressure and volfrac density values as constants
+  for (int k = 0; k < numvolfrac; k++)
+  {
+    std::ostringstream temp;
+    temp << k + 1;
+    constants.push_back(std::pair<std::string, double>("VF" + temp.str(), phasemanager.VolFrac(k)));
+    constants.push_back(
+        std::pair<std::string, double>("VFP" + temp.str(), phasemanager.VolFracPressure(k)));
+    constants.push_back(
+        std::pair<std::string, double>("VFDENS" + temp.str(), phasemanager.VolFracDensity(k)));
+  }
+
+  // set scalar values as constants
+  for (int k = 0; k < numscal_; k++)
+  {
+    std::ostringstream temp;
+    temp << k + 1;
+    constants.push_back(
+        std::pair<std::string, double>("phi" + temp.str(), variablemanager.Scalarnp()->at(k)));
+  }
+
+  // call the functions and integrate value (multiply with fac)
+  for (unsigned int i = 0; i < domainint_funct_.size(); i++)
+  {
+    myvec[i] += Function(domainint_funct_[i] - 1)
+                    .DRT::UTILS::VariableExprFunction::Evaluate(0, variables, constants) *
+                fac;
+  }
+};
+
+/*----------------------------------------------------------------------*
+ | cast to VarExp-function                                              |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+inline DRT::UTILS::VariableExprFunction&
+DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd, nen>::Function(int functnum) const
+{
+  try
+  {
+    DRT::UTILS::VariableExprFunction& funct =
+        dynamic_cast<DRT::UTILS::VariableExprFunction&>(DRT::Problem::Instance()->Funct(functnum));
+    if (funct.NumberComponents() != 1)
+      dserror("only one component allowed for domain integral functions");
+    return funct;
+  }
+  catch (std::bad_cast& exp)
+  {
+    dserror(
+        "Cast to VarExp Function failed! For domain integrals only 'VARFUNCTION' functions are "
+        "allowed!\n"
+        "Check your input file!");
+    return dynamic_cast<DRT::UTILS::VariableExprFunction&>(
+        DRT::Problem::Instance()->Funct(functnum));
+  }
+};
 
 /*----------------------------------------------------------------------*
  | evaluate off-diagonal coupling matrix with structure kremheller 03/19 |

@@ -25,6 +25,11 @@ class Epetra_SerialDenseVector;
 
 namespace DRT
 {
+  namespace UTILS
+  {
+    // forward declaration
+    class VariableExprFunction;
+  }  // namespace UTILS
   namespace ELEMENTS
   {
     class PoroFluidMultiPhaseEleParameter;
@@ -1948,8 +1953,11 @@ namespace DRT
       {
        public:
         //! constructor
-        EvaluatorDomainIntegrals(Teuchos::RCP<AssembleInterface> assembler, int curphase)
-            : EvaluatorBase<nsd, nen>(assembler, curphase){};
+        EvaluatorDomainIntegrals(Teuchos::RCP<AssembleInterface> assembler, int curphase,
+            std::vector<int> domainint_funct, int numscal)
+            : EvaluatorBase<nsd, nen>(assembler, curphase),
+              domainint_funct_(domainint_funct),
+              numscal_(numscal){};
 
         //! destructor
         virtual ~EvaluatorDomainIntegrals(){};
@@ -2023,6 +2031,15 @@ namespace DRT
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
         );
+
+        //! cast to VarExp-function
+        inline DRT::UTILS::VariableExprFunction& Function(int functnum) const;
+
+        //! vector holding the functions to be integrated
+        std::vector<int> domainint_funct_;
+
+        //! number of scalars in system
+        int numscal_;
       };
 
       /*----------------------------------------------------------------------*
