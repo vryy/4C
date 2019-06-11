@@ -251,6 +251,9 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Init(bool isale, int nds_disp, int nds_vel
   if (domainint_funct_.size() == 1 and domainint_funct_[0] < 0) domainint_funct_.resize(0);
   num_domainint_funct_ = domainint_funct_.size();
 
+  // the values of the integrals
+  domain_integrals_ = Teuchos::rcp(new Epetra_SerialDenseVector(num_domainint_funct_));
+
   // -------------------------------------------------------------------
   // set element parameters
   // -------------------------------------------------------------------
@@ -1330,9 +1333,8 @@ void POROFLUIDMULTIPHASE::TimIntImpl::EvaluateDomainIntegrals()
   // add state vectors according to time-integration scheme
   AddTimeIntegrationSpecificVectors();
 
-  Teuchos::RCP<Epetra_SerialDenseVector> domain_integrals =
-      Teuchos::rcp(new Epetra_SerialDenseVector(num_domainint_funct_));
-  discret_->EvaluateScalars(eleparams, domain_integrals);
+  // evaluate
+  discret_->EvaluateScalars(eleparams, domain_integrals_);
 
   if (myrank_ == 0)  // only one core should do output
   {
@@ -1364,7 +1366,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::EvaluateDomainIntegrals()
     // step, time and results for each function
     file << step_ << "," << time_;
     for (int i = 0; i < num_domainint_funct_; i++)
-      file << "," << std::setprecision(9) << (*domain_integrals)[i];
+      file << "," << std::setprecision(14) << (*domain_integrals_)[i];
 
     // close file
     file << "\n";
