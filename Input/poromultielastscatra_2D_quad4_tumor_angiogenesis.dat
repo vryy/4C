@@ -231,9 +231,9 @@ VARFUNCTION VF1 NUMCONSTANTS 1 CONSTANTS VF1 0.0
 VARFUNCTION porosity*S2*(1-phi2)*DENS2 NUMCONSTANTS 4 CONSTANTS porosity 0.0 S2 0.0 phi2 0.0 DENS2 0.0
 ----------------------------------------------------------------------FUNCT27 // area times density of volume fraction 1 (=1.0e-3)
 VARFUNCTION 1.0*VFDENS1 NUMCONSTANTS 1 CONSTANTS VFDENS1 0.0
-----------------------------------------------------------------------FUNCT28 // needed for calculation of x-coordinate center of gravity of tumor
+----------------------------------------------------------------------FUNCT28 // needed for calculation of x-coordinate center of mass of tumor
 VARFUNCTION porosity*S2*DENS2*x NUMCONSTANTS 4 CONSTANTS porosity 0.0 S2 0.0 DENS2 0.0 x 0.0
-----------------------------------------------------------------------FUNCT29 // needed for calculation of y-coordinate center of gravity of tumor
+----------------------------------------------------------------------FUNCT29 // needed for calculation of y-coordinate center of mass of tumor
 VARFUNCTION porosity*S2*DENS2*y NUMCONSTANTS 4 CONSTANTS porosity 0.0 S2 0.0 DENS2 0.0 y 0.0
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 4

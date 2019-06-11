@@ -1364,7 +1364,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::EvaluateDomainIntegrals()
     // step, time and results for each function
     file << step_ << "," << time_;
     for (int i = 0; i < num_domainint_funct_; i++)
-      file << "," << std::setprecision(14) << (*domain_integrals)[i];
+      file << "," << std::setprecision(9) << (*domain_integrals)[i];
 
     // close file
     file << "\n";
