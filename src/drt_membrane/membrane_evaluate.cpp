@@ -1926,7 +1926,7 @@ void DRT::ELEMENTS::Membrane<distype>::Update_element(
     std::vector<double>& disp, Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material> mat)
 {
   // Calculate current deformation gradient
-  if (mat->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
+  if (SolidMaterial()->UsesExtendedUpdate())
   {
     // get reference configuration and determine current configuration
     LINALG::Matrix<numnod_, noddof_> xrefe(true);
@@ -1980,8 +1980,7 @@ void DRT::ELEMENTS::Membrane<distype>::Update_element(
 
       // call material update of m_growthremodel_elasthyper (calculate and update inelastic
       // deformation gradient)
-      Teuchos::rcp_dynamic_cast<MAT::GrowthRemodel_ElastHyper>(mat, true)->Update(
-          defgrd_glob, gp, params, Id());
+      SolidMaterial()->Update(defgrd_glob, gp, params, Id());
     }
   }
 

@@ -125,6 +125,7 @@
 #include "particle_material_sph_boundary.H"
 #include "particle_material_dem.H"
 #include "superelastic_sma.H"
+#include "mixture_elasthyper.H"
 
 
 /*----------------------------------------------------------------------*
@@ -885,6 +886,8 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     case INPAR::MAT::mes_coupSVK:
     case INPAR::MAT::mfi_lin_scalar_aniso:
     case INPAR::MAT::mfi_lin_scalar_iso:
+    case INPAR::MAT::mix_rule_base:
+    case INPAR::MAT::mix_elasthyper:
     {
       return Teuchos::null;
     }
@@ -996,6 +999,14 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
         curmat->SetParameter(new MAT::PAR::GrowthRemodel_ElastHyper(curmat));
       MAT::PAR::GrowthRemodel_ElastHyper* params =
           static_cast<MAT::PAR::GrowthRemodel_ElastHyper*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_mixture_elasthyper:
+    {
+      if (curmat->Parameter() == nullptr)
+        curmat->SetParameter(new MAT::PAR::Mixture_ElastHyper(curmat));
+      MAT::PAR::Mixture_ElastHyper* params =
+          dynamic_cast<MAT::PAR::Mixture_ElastHyper*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_multiplicative_split_defgrad_elasthyper:

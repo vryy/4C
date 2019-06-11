@@ -232,6 +232,22 @@ namespace MAT
         const int eleGID                 ///< Element GID
     );
 
+    static void EvaluateStressCmatStatic(
+        const LINALG::Matrix<3, 3>* defgrd,    ///< Deformation gradient
+        const LINALG::Matrix<6, 1>* glstrain,  ///< Green-Lagrange strain
+        Teuchos::ParameterList& params,        ///< Holder for additional parameters
+        LINALG::Matrix<6, 1>* stress,          ///< 2nd Piola-Kirchhoff stresses
+        LINALG::Matrix<6, 6>* cmat,            ///< Constitutive matrix
+        int eleGID,                            ///< Element GID
+        const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>&
+            potsum,       ///< Map to material/potential summands
+        bool isoprinc,    ///< flag, whether material uses principal invariants (isotropic case)
+        bool isomod,      ///< flag, whether material uses modified invariants (isotropic case)
+        bool anisoprinc,  ///< flag, whether material uses principal invariants (anisotropic case)
+        bool anisomod,    ///< flag, whether material uses modified invariants (anisotropic case)
+        bool checkpolyconvexity  ///< flag, whether polyconvexity should be checked
+    );
+
     /// evaluate for GEMM
     virtual void EvaluateGEMM(LINALG::Matrix<6, 1>* stress,  ///< 2nd Piola-Kirchhoff stresses
         LINALG::Matrix<6, 6>* cmat,                          ///< Constitutive matrix
@@ -393,15 +409,15 @@ namespace MAT
 
    protected:
     /// calculates the kinematic quantities and tensors used afterwards
-    virtual void EvaluateKinQuant(const LINALG::Matrix<6, 1>& glstrain, LINALG::Matrix<6, 1>& id2,
+    static void EvaluateKinQuant(const LINALG::Matrix<6, 1>& glstrain, LINALG::Matrix<6, 1>& id2,
         LINALG::Matrix<6, 1>& scg, LINALG::Matrix<6, 1>& rcg, LINALG::Matrix<6, 1>& icg,
         LINALG::Matrix<6, 6>& id4, LINALG::Matrix<6, 6>& id4sharp, LINALG::Matrix<3, 1>& prinv);
 
     /// calculates the derivatives of the hyperelastic laws with respect to the (modified)
     /// invariants
-    virtual void EvaluateInvariantDerivatives(const LINALG::Matrix<3, 1>& prinv,
+    static void EvaluateInvariantDerivatives(const LINALG::Matrix<3, 1>& prinv,
         LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII, int eleGID,
-        const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum);
+        const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum, bool isoprinc, bool isomod);
 
     /// converts the derivatives with respect to the modified invariants in derivatives with respect
     /// to principal invariants. Uses the following conversions:
@@ -415,7 +431,7 @@ namespace MAT
     ///  J = \sqrt{III_{\boldsymbol{C}}}
     ///\f]
 
-    virtual void ConvertModToPrinc(const LINALG::Matrix<3, 1>& prinv,
+    static void ConvertModToPrinc(const LINALG::Matrix<3, 1>& prinv,
         const LINALG::Matrix<3, 1>& dPmodI, const LINALG::Matrix<6, 1>& ddPmodII,
         LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII);
 
@@ -495,26 +511,28 @@ namespace MAT
     /// \delta_8 = -4 \frac{\partial \Psi}{\partial II_{\boldsymbol{C}}}
     ///\f]
 
-    virtual void CalculateGammaDelta(LINALG::Matrix<3, 1>& gamma, LINALG::Matrix<8, 1>& delta,
+    static void CalculateGammaDelta(LINALG::Matrix<3, 1>& gamma, LINALG::Matrix<8, 1>& delta,
         const LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<3, 1>& dPI,
         const LINALG::Matrix<6, 1>& ddPII);
 
     /// calculates the isotropic stress and elasticity tensor
-    void EvaluateIsotropicStressCmat(LINALG::Matrix<6, 1>& stress, LINALG::Matrix<6, 6>& cmat,
-        const LINALG::Matrix<6, 1>& scg, const LINALG::Matrix<6, 1>& id2,
-        const LINALG::Matrix<6, 1>& icg, const LINALG::Matrix<6, 6>& id4sharp,
-        const LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<3, 1>& dPI,
-        const LINALG::Matrix<6, 1>& ddPII);
+    static void EvaluateIsotropicStressCmat(LINALG::Matrix<6, 1>& stress,
+        LINALG::Matrix<6, 6>& cmat, const LINALG::Matrix<6, 1>& scg,
+        const LINALG::Matrix<6, 1>& id2, const LINALG::Matrix<6, 1>& icg,
+        const LINALG::Matrix<6, 6>& id4sharp, const LINALG::Matrix<3, 1>& prinv,
+        const LINALG::Matrix<3, 1>& dPI, const LINALG::Matrix<6, 1>& ddPII);
 
     /// calculates the anisotropic stress and elasticity tensor for coupled configuration
-    void EvaluateAnisotropicPrinc(LINALG::Matrix<6, 1>& stressanisoprinc,
+    static void EvaluateAnisotropicPrinc(LINALG::Matrix<6, 1>& stressanisoprinc,
         LINALG::Matrix<6, 6>& cmatanisoprinc, const LINALG::Matrix<6, 1>& rcg,
-        Teuchos::ParameterList& params, const int eleGID);
+        Teuchos::ParameterList& params, int eleGID,
+        const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum);
 
     /// calculates the anisotropic stress and elasticity tensor for decoupled configuration
-    void EvaluateAnisotropicMod(LINALG::Matrix<6, 1>& stressanisoprinc,
+    static void EvaluateAnisotropicMod(LINALG::Matrix<6, 1>& stressanisoprinc,
         LINALG::Matrix<6, 6>& cmatanisoprinc, const LINALG::Matrix<6, 1>& rcg,
-        const LINALG::Matrix<6, 1>& icg, const LINALG::Matrix<3, 1>& prinv, const int eleGID);
+        const LINALG::Matrix<6, 1>& icg, const LINALG::Matrix<3, 1>& prinv, int eleGID,
+        const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum);
 
     /// calculate modified invariants
     virtual void InvariantsModified(LINALG::Matrix<3, 1>& modinv,  ///< modified invariants
@@ -527,10 +545,12 @@ namespace MAT
     );
 
     /// determine if at least one summand uses principal stretches
-    bool HaveCoefficientsStretchesPrincipal();
+    static bool HaveCoefficientsStretchesPrincipal(
+        const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum);
 
     /// determine if at least one summand uses modified principal stretches
-    bool HaveCoefficientsStretchesModified();
+    static bool HaveCoefficientsStretchesModified(
+        const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum);
 
     /// Determine PK2 stress response and material elasticity tensor
     /// due to energy densities (MAT::ELASTIC::Summand) described
@@ -599,14 +619,14 @@ namespace MAT
     /// \author bborn
     /// \date 08/09
 
-    void ResponseStretches(LINALG::Matrix<6, 6>& cmat,  ///< material elasticity matrix
-        LINALG::Matrix<6, 1>& stress,                   ///< 2nd Piola-Kirchhoff stress vector
-        const LINALG::Matrix<6, 1>& rcg,                ///< Right Cauchy-Green tensor
+    static void ResponseStretches(LINALG::Matrix<6, 6>& cmat,  ///< material elasticity matrix
+        LINALG::Matrix<6, 1>& stress,     ///< 2nd Piola-Kirchhoff stress vector
+        const LINALG::Matrix<6, 1>& rcg,  ///< Right Cauchy-Green tensor
         const bool& havecoeffstrpr,  ///< true, if at least one summand is based on pr.stretches
         const bool&
             havecoeffstrmod,  ///< true, if at least one summand is based on mod.pr.stretches
-        const int eleGID      ///< element GID
-    );
+        const int eleGID,     ///< element GID
+        const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum);
 
     /// Check if material state is polyconvex:
     /// Polyconvexity of isotropic hyperelastic material
@@ -615,9 +635,10 @@ namespace MAT
     /// Partial derivatives of SEF are used.
     /// \author birzle
     /// \date 04/2016
-    virtual void CheckPolyconvexity(const LINALG::Matrix<3, 3>& defgrd,
+    static void CheckPolyconvexity(const LINALG::Matrix<3, 3>& defgrd,
         const LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<3, 1>& dPI,
-        const LINALG::Matrix<6, 1>& ddPII, Teuchos::ParameterList& params, const int eleGID);
+        const LINALG::Matrix<6, 1>& ddPII, Teuchos::ParameterList& params, const int eleGID,
+        bool isoprinc, bool isomod);
 
     /// Sat Inverse Analysis: add params of summands
     virtual void ElastOptParams(std::map<std::string, int>* pnames);

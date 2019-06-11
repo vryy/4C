@@ -415,6 +415,9 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList& params,
         LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, 1>(*alphao, *alpha);
       }
       // Update of history for materials
+
+      if (SolidMaterial()->UsesExtendedUpdate())
+        dserror("This element currently does not support the extended update call.");
       SolidMaterial()->Update();
     }
     break;

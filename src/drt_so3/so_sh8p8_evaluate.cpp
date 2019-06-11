@@ -415,6 +415,8 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(Teuchos::ParameterList& params,
         }
       }
       // Update of history for materials
+      if (SolidMaterial()->UsesExtendedUpdate())
+        dserror("This element currently does not support the extended update call.");
       SolidMaterial()->Update();
     }
     break;

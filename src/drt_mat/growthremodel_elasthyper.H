@@ -216,11 +216,14 @@ namespace MAT
     /// setup
     virtual void Setup(int const numgp, DRT::INPUT::LineDefinition* linedef);
 
+    /// This material uses the extended update call
+    virtual bool UsesExtendedUpdate() { return true; }
+
     /// update
-    virtual void Update(LINALG::Matrix<3, 3> const& defgrd,  ///< Deformation gradient
-        int const gp,                                        ///< Current Gauß-Point
-        Teuchos::ParameterList& params,  ///< Container for additional information
-        int const eleGID);               ///< Element ID
+    void Update(LINALG::Matrix<3, 3> const& defgrd,  ///< Deformation gradient
+        int const gp,                                ///< Current Gauß-Point
+        Teuchos::ParameterList& params,              ///< Container for additional information
+        int const eleGID) override;                  ///< Element ID
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }

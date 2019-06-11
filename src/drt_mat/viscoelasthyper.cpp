@@ -561,7 +561,7 @@ void MAT::ViscoElastHyper::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   LINALG::Matrix<33, 1> modxi(true);
 
   EvaluateKinQuant(*glstrain, id2, scg, rcg, icg, id4, id4sharp, prinv);
-  EvaluateInvariantDerivatives(prinv, dPI, ddPII, eleGID, potsum_);
+  EvaluateInvariantDerivatives(prinv, dPI, ddPII, eleGID, potsum_, isoprinc_, isomod_);
 
   if (isovisco_)
   {
@@ -652,11 +652,11 @@ void MAT::ViscoElastHyper::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
   /*----------------------------------------------------------------------*/
   // coefficients in principal stretches
-  const bool havecoeffstrpr = HaveCoefficientsStretchesPrincipal();
-  const bool havecoeffstrmod = HaveCoefficientsStretchesModified();
+  const bool havecoeffstrpr = HaveCoefficientsStretchesPrincipal(potsum_);
+  const bool havecoeffstrmod = HaveCoefficientsStretchesModified(potsum_);
   if (havecoeffstrpr or havecoeffstrmod)
   {
-    ResponseStretches(*cmat, *stress, rcg, havecoeffstrpr, havecoeffstrmod, eleGID);
+    ResponseStretches(*cmat, *stress, rcg, havecoeffstrpr, havecoeffstrmod, eleGID, potsum_);
   }
 
   /*----------------------------------------------------------------------*/
@@ -665,7 +665,7 @@ void MAT::ViscoElastHyper::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   {
     LINALG::Matrix<NUM_STRESS_3D, 1> stressanisoprinc(true);
     LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatanisoprinc(true);
-    EvaluateAnisotropicPrinc(stressanisoprinc, cmatanisoprinc, rcg, params, eleGID);
+    EvaluateAnisotropicPrinc(stressanisoprinc, cmatanisoprinc, rcg, params, eleGID, potsum_);
     stress->Update(1.0, stressanisoprinc, 1.0);
     cmat->Update(1.0, cmatanisoprinc, 1.0);
   }
@@ -674,7 +674,7 @@ void MAT::ViscoElastHyper::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   {
     LINALG::Matrix<NUM_STRESS_3D, 1> stressanisomod(true);
     LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatanisomod(true);
-    EvaluateAnisotropicMod(stressanisomod, cmatanisomod, rcg, icg, prinv, eleGID);
+    EvaluateAnisotropicMod(stressanisomod, cmatanisomod, rcg, icg, prinv, eleGID, potsum_);
     stress->Update(1.0, stressanisomod, 1.0);
     cmat->Update(1.0, cmatanisomod, 1.0);
   }
@@ -1080,7 +1080,7 @@ void MAT::ViscoElastHyper::EvaluateViscoGeneralizedGenMax(LINALG::Matrix<6, 1>& 
     LINALG::Matrix<6, 1> ddPII(true);
 
     EvaluateKinQuant(*glstrain, id2, scg, rcg, icg, id4, id4sharp, prinv);
-    EvaluateInvariantDerivatives(prinv, dPI, ddPII, eleGID, internalpotsum);
+    EvaluateInvariantDerivatives(prinv, dPI, ddPII, eleGID, internalpotsum, isoprinc, isomod);
 
     // blank resulting quantities
     // ... even if it is an implicit law that cmat is zero upon input

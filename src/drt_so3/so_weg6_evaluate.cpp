@@ -462,6 +462,8 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
         sow6_remodel(lm, mydisp, params, Material());
       }
       // Update of history for materials
+      if (SolidMaterial()->UsesExtendedUpdate())
+        dserror("This element currently does not support the extended update call.");
       SolidMaterial()->Update();
     }
     break;

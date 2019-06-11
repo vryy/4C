@@ -147,7 +147,8 @@ namespace INPAR
       m_matlist_chemoreac,  ///< collection of single materials (used for scalar transport problems)
                             ///< and collection of chemotactic pairs AND reactions
       m_mixfrac,            ///< material according to mixture-fraction approach
-      m_modpowerlaw,        ///< fluid with nonlinear viscosity according to a modified power law
+      m_mixture_elasthyper,  ///< general material for mixtures
+      m_modpowerlaw,         ///< fluid with nonlinear viscosity according to a modified power law
       m_multiplicative_split_defgrad_elasthyper,  ///< deformation gradient is split
                                                   ///< multiplicatively in elastic and inelastic
                                                   ///< parts
@@ -274,9 +275,11 @@ namespace INPAR
       mfi_lin_scalar_aniso,  ///< volume change due to (anisotropic) inelastic deformation gradient
                              ///< is a linear function of the scalar (in material configuration)
                              ///< that causes the volume change
-      mfi_lin_scalar_iso  ///< volume change due to (isotropic) inelastic deformation gradient is a
-                          ///< linear function of the scalar (in material configuration) that causes
-                          ///< the volume change
+      mfi_lin_scalar_iso,  ///< volume change due to (isotropic) inelastic deformation gradient is a
+                           ///< linear function of the scalar (in material configuration) that
+                           ///< causes the volume change
+      mix_rule_base,       ///< Base rule for the mixture model
+      mix_elasthyper       ///< Elast Hyper toolbox for Constituents
     };
 
     /*----------------------------------------------------------------------*

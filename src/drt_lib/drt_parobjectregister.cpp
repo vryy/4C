@@ -132,6 +132,7 @@
 #include "../drt_mat/membrane_elasthyper.H"
 #include "../drt_mat/membrane_active_strain.H"
 #include "../drt_mat/growthremodel_elasthyper.H"
+#include "../drt_mat/mixture_elasthyper.H"
 #include "../drt_mat/constraintmixture.H"
 #include "../drt_mat/constraintmixture_history.H"
 #include "../drt_mat/plasticlinelast.H"
@@ -181,6 +182,7 @@
 #include "../drt_binstrategy/drt_meshfree_multibin.H"
 #include "../drt_mat/growth.H"
 #include "../drt_particle_engine/particle_object.H"
+#include "../drt_mixture/mixture_rule.H"
 
 std::string DRT::ParObjectList()
 {
@@ -336,6 +338,8 @@ std::string DRT::ParObjectList()
     << " " << MAT::Membrane_ElastHyperType::Instance().Name() << " "
     << MAT::Membrane_ActiveStrainType::Instance().Name() << " "
     << MAT::GrowthRemodel_ElastHyperType::Instance().Name() << " "
+    << MAT::Mixture_ElastHyperType::Instance().Name() << " "
+    << MIXTURE::MixtureRuleType::Instance().Name() << " "
     << MAT::HerschelBulkleyType::Instance().Name() << " " << MAT::IonType::Instance().Name() << " "
     << MAT::LinearDensityViscosityType::Instance().Name() << " "
     << MAT::MatListType::Instance().Name() << " " << MAT::MatListReactionsType::Instance().Name()

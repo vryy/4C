@@ -531,6 +531,10 @@ int DRT::ELEMENTS::So_hex18::Evaluate(Teuchos::ParameterList& params,
     //==================================================================================
     case calc_struct_update_istep:
     {
+      if (SolidMaterial()->UsesExtendedUpdate())
+      {
+        dserror("This element currently does not support the extended update call.");
+      }
       SolidMaterial()->Update();
       Update();
     }

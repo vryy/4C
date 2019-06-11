@@ -265,6 +265,8 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(Teuchos::ParameterList& params,
       t_o_(0, 0) = t_(0, 0);
 
       // Update of history for materials
+      if (SolidMaterial()->UsesExtendedUpdate())
+        dserror("This element currently does not support the extended update call.");
       SolidMaterial()->Update();
     }
     break;
