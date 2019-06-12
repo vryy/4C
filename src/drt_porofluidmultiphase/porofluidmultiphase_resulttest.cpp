@@ -195,6 +195,32 @@ double POROFLUIDMULTIPHASE::ResultTest::ResultSpecial(
   double result(0.);
 
   if (quantity == "numiterlastnewton") result = (double)porotimint_.IterNum();
+  // result test of domain integrals
+  else if (!quantity.compare(0, 22, "domain_integral_value_"))
+  {
+    // get the index of the value which should be checked
+    std::string suffix = quantity.substr(22);
+    int idx = -1;
+    try
+    {
+      idx = std::stoi(suffix);
+    }
+    catch (const std::invalid_argument& e)
+    {
+      dserror(
+          "You provided the wrong format for output of domain_integral_values. The integer number "
+          "must be at the very last position of the name, separated by an underscore.\n"
+          "The correct format is: domain_integral_value_<number>");
+    }
+
+    // index should be in range [0, number_functions - 1]
+    if (idx < 0 || idx >= porotimint_.NumDomainIntFunctions())
+      dserror("detected wrong index %i, index should be in range [0,%i]", idx,
+          porotimint_.NumDomainIntFunctions() - 1);
+
+    // return the result
+    result = (*porotimint_.DomainIntValues())[idx];
+  }
   // catch unknown quantity strings
   else
     dserror("Quantity '%s' not supported in result test!", quantity.c_str());

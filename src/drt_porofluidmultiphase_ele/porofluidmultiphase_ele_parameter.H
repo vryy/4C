@@ -13,6 +13,7 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_lib/drt_singletondestruction.H"
+#include <vector>
 
 namespace DRT
 {
@@ -59,6 +60,8 @@ namespace DRT
       int NdsSolidPressure() const { return nds_solidpressure_; };
       int NdsScalar() const { return nds_scalar_; };
       bool HasScalar() const { return nds_scalar_ > -1; };
+      int NumDomainIntFunctions() const { return domainint_funct_.size(); };
+      std::vector<int> DomainIntFunctions() const { return domainint_funct_; };
       //@}
 
      private:
@@ -103,6 +106,8 @@ namespace DRT
       int nds_scalar_;
       //! setup flag
       bool isset_generalparams_;
+      //! domain integral functions
+      std::vector<int> domainint_funct_;
       //@}
 
     };  // class PoroFluidMultiPhaseEleParameter

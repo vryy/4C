@@ -25,6 +25,11 @@ class Epetra_SerialDenseVector;
 
 namespace DRT
 {
+  namespace UTILS
+  {
+    // forward declaration
+    class VariableExprFunction;
+  }  // namespace UTILS
   namespace ELEMENTS
   {
     class PoroFluidMultiPhaseEleParameter;
@@ -194,8 +199,9 @@ namespace DRT
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
             const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
             const LINALG::Matrix<nsd, nen>&
-                derxy,          //! array for shape function derivatives w.r.t x,y,z
-            int numdofpernode,  //!< total number of DOFs/phases
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int numdofpernode,                     //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -282,8 +288,9 @@ namespace DRT
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
             const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
             const LINALG::Matrix<nsd, nen>&
-                derxy,          //! array for shape function derivatives w.r.t x,y,z
-            int numdofpernode,  //!< total number of DOFs/phases
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int numdofpernode,                     //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -294,8 +301,8 @@ namespace DRT
           // loop over the evaluators
           typename std::vector<Teuchos::RCP<EvaluatorInterface<nsd, nen>>>::iterator it;
           for (it = evaluators_.begin(); it != evaluators_.end(); it++)
-            (*it)->EvaluateVector(
-                elevec, funct, derxy, numdofpernode, phasemanager, variablemanager, rhsfac, fac);
+            (*it)->EvaluateVector(elevec, funct, derxy, xyze, numdofpernode, phasemanager,
+                variablemanager, rhsfac, fac);
         };
 
         //! evaluate off-diagonal coupling matrix with structure
@@ -413,8 +420,9 @@ namespace DRT
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
             const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
             const LINALG::Matrix<nsd, nen>&
-                derxy,          //! array for shape function derivatives w.r.t x,y,z
-            int numdofpernode,  //!< total number of DOFs/phases
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int numdofpernode,                     //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -427,7 +435,7 @@ namespace DRT
           {
             // call the actual evaluation and assembly of the respective term (defined by derived
             // class)
-            EvaluateVectorAndAssemble(elevec, funct, derxy, myphase_,
+            EvaluateVectorAndAssemble(elevec, funct, derxy, xyze, myphase_,
                 assembler_->PhaseToAssembleInto(iassemble, numdofpernode), numdofpernode,
                 phasemanager, variablemanager, rhsfac, fac, assembler_->CalcInitTimeDeriv());
           }
@@ -511,10 +519,11 @@ namespace DRT
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
             const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
             const LINALG::Matrix<nsd, nen>&
-                derxy,          //! array for shape function derivatives w.r.t x,y,z
-            int curphase,       //!< index of current phase
-            int phasetoadd,     //!< index of phase to add into
-            int numdofpernode,  //!< total number of DOFs/phases
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                          //!< index of current phase
+            int phasetoadd,                        //!< index of phase to add into
+            int numdofpernode,                     //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -647,10 +656,11 @@ namespace DRT
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
             const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
             const LINALG::Matrix<nsd, nen>&
-                derxy,          //! array for shape function derivatives w.r.t x,y,z
-            int curphase,       //!< index of current phase
-            int phasetoadd,     //!< index of current phase
-            int numdofpernode,  //!< total number of DOFs/phases
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                          //!< index of current phase
+            int phasetoadd,                        //!< index of current phase
+            int numdofpernode,                     //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -739,10 +749,11 @@ namespace DRT
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
             const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
             const LINALG::Matrix<nsd, nen>&
-                derxy,          //! array for shape function derivatives w.r.t x,y,z
-            int curphase,       //!< index of current phase
-            int phasetoadd,     //!< index of current phase
-            int numdofpernode,  //!< total number of DOFs/phases
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                          //!< index of current phase
+            int phasetoadd,                        //!< index of current phase
+            int numdofpernode,                     //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -831,10 +842,11 @@ namespace DRT
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
             const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
             const LINALG::Matrix<nsd, nen>&
-                derxy,          //! array for shape function derivatives w.r.t x,y,z
-            int curphase,       //!< index of current phase
-            int phasetoadd,     //!< index of current phase
-            int numdofpernode,  //!< total number of DOFs/phases
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                          //!< index of current phase
+            int phasetoadd,                        //!< index of current phase
+            int numdofpernode,                     //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -923,10 +935,11 @@ namespace DRT
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
             const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
             const LINALG::Matrix<nsd, nen>&
-                derxy,          //! array for shape function derivatives w.r.t x,y,z
-            int curphase,       //!< index of current phase
-            int phasetoadd,     //!< index of current phase
-            int numdofpernode,  //!< total number of DOFs/phases
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                          //!< index of current phase
+            int phasetoadd,                        //!< index of current phase
+            int numdofpernode,                     //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -1016,10 +1029,11 @@ namespace DRT
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
             const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
             const LINALG::Matrix<nsd, nen>&
-                derxy,          //! array for shape function derivatives w.r.t x,y,z
-            int curphase,       //!< index of current phase
-            int phasetoadd,     //!< index of current phase
-            int numdofpernode,  //!< total number of DOFs/phases
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                          //!< index of current phase
+            int phasetoadd,                        //!< index of current phase
+            int numdofpernode,                     //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -1108,10 +1122,11 @@ namespace DRT
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
             const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
             const LINALG::Matrix<nsd, nen>&
-                derxy,          //! array for shape function derivatives w.r.t x,y,z
-            int curphase,       //!< index of current phase
-            int phasetoadd,     //!< index of current phase
-            int numdofpernode,  //!< total number of DOFs/phases
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                          //!< index of current phase
+            int phasetoadd,                        //!< index of current phase
+            int numdofpernode,                     //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -1200,10 +1215,11 @@ namespace DRT
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
             const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
             const LINALG::Matrix<nsd, nen>&
-                derxy,          //! array for shape function derivatives w.r.t x,y,z
-            int curphase,       //!< index of current phase
-            int phasetoadd,     //!< index of current phase
-            int numdofpernode,  //!< total number of DOFs/phases
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                          //!< index of current phase
+            int phasetoadd,                        //!< index of current phase
+            int numdofpernode,                     //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -1304,10 +1320,11 @@ namespace DRT
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
             const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
             const LINALG::Matrix<nsd, nen>&
-                derxy,          //! array for shape function derivatives w.r.t x,y,z
-            int curphase,       //!< index of current phase
-            int phasetoadd,     //!< index of current phase
-            int numdofpernode,  //!< total number of DOFs/phases
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                          //!< index of current phase
+            int phasetoadd,                        //!< index of current phase
+            int numdofpernode,                     //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -1410,10 +1427,11 @@ namespace DRT
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
             const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
             const LINALG::Matrix<nsd, nen>&
-                derxy,          //! array for shape function derivatives w.r.t x,y,z
-            int curphase,       //!< index of current phase
-            int phasetoadd,     //!< index of current phase
-            int numdofpernode,  //!< total number of DOFs/phases
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                          //!< index of current phase
+            int phasetoadd,                        //!< index of current phase
+            int numdofpernode,                     //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -1502,10 +1520,11 @@ namespace DRT
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
             const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
             const LINALG::Matrix<nsd, nen>&
-                derxy,          //! array for shape function derivatives w.r.t x,y,z
-            int curphase,       //!< index of current phase
-            int phasetoadd,     //!< index of current phase
-            int numdofpernode,  //!< total number of DOFs/phases
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                          //!< index of current phase
+            int phasetoadd,                        //!< index of current phase
+            int numdofpernode,                     //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -1606,10 +1625,11 @@ namespace DRT
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
             const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
             const LINALG::Matrix<nsd, nen>&
-                derxy,          //! array for shape function derivatives w.r.t x,y,z
-            int curphase,       //!< index of current phase
-            int phasetoadd,     //!< index of current phase
-            int numdofpernode,  //!< total number of DOFs/phases
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                          //!< index of current phase
+            int phasetoadd,                        //!< index of current phase
+            int numdofpernode,                     //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -1698,10 +1718,11 @@ namespace DRT
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
             const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
             const LINALG::Matrix<nsd, nen>&
-                derxy,          //! array for shape function derivatives w.r.t x,y,z
-            int curphase,       //!< index of current phase
-            int phasetoadd,     //!< index of current phase
-            int numdofpernode,  //!< total number of DOFs/phases
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                          //!< index of current phase
+            int phasetoadd,                        //!< index of current phase
+            int numdofpernode,                     //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -1793,10 +1814,11 @@ namespace DRT
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
             const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
             const LINALG::Matrix<nsd, nen>&
-                derxy,          //! array for shape function derivatives w.r.t x,y,z
-            int curphase,       //!< index of current phase
-            int phasetoadd,     //!< index of current phase
-            int numdofpernode,  //!< total number of DOFs/phases
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                          //!< index of current phase
+            int phasetoadd,                        //!< index of current phase
+            int numdofpernode,                     //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -1885,10 +1907,11 @@ namespace DRT
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
             const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
             const LINALG::Matrix<nsd, nen>&
-                derxy,          //! array for shape function derivatives w.r.t x,y,z
-            int curphase,       //!< index of current phase
-            int phasetoadd,     //!< index of current phase
-            int numdofpernode,  //!< total number of DOFs/phases
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                          //!< index of current phase
+            int phasetoadd,                        //!< index of current phase
+            int numdofpernode,                     //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -1937,6 +1960,111 @@ namespace DRT
        * **********************************************************************
        *----------------------------------------------------------------------*/
       /*!
+      \brief helper class for evaluation of domain integrals
+
+      This class implements the evaluation of domain integrals which can be used for output
+
+      \author kremheller
+      */
+      template <int nsd, int nen>
+      class EvaluatorDomainIntegrals : public EvaluatorBase<nsd, nen>
+      {
+       public:
+        //! constructor
+        EvaluatorDomainIntegrals(Teuchos::RCP<AssembleInterface> assembler, int curphase,
+            std::vector<int> domainint_funct, int numscal)
+            : EvaluatorBase<nsd, nen>(assembler, curphase),
+              domainint_funct_(domainint_funct),
+              numscal_(numscal){};
+
+        //! destructor
+        virtual ~EvaluatorDomainIntegrals(){};
+
+       protected:
+        //! evaluate element matrix
+        void EvaluateMatrixAndAssemble(
+            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
+            const LINALG::Matrix<nsd, nen>&
+                derxy,          //! array for shape function derivatives w.r.t x,y,z
+            int curphase,       //!< index of current phase
+            int phasetoadd,     //!< index of current phase
+            int numdofpernode,  //!< total number of DOFs/phases
+            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+                variablemanager,  //!< variable manager
+            double timefacfac,    //!< domain-integration factor
+            double fac,           //!< domain-integration factor times time-integration factor
+            bool inittimederiv    //!< calculate only parts for initial time derivative
+        );
+
+        //! evaluate element RHS vector
+        void EvaluateVectorAndAssemble(
+            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
+            const LINALG::Matrix<nsd, nen>&
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                          //!< index of current phase
+            int phasetoadd,                        //!< index of current phase
+            int numdofpernode,                     //!< total number of DOFs/phases
+            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+                variablemanager,  //!< variable manager
+            double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
+            double fac,         //!< domain-integration factor
+            bool inittimederiv  //!< calculate only parts for initial time derivative
+        );
+
+        //! evaluate off-diagonal coupling matrix with structure
+        void EvaluateMatrixODStructAndAssemble(
+            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
+            const LINALG::Matrix<nsd, nen>&
+                deriv,  //! array for shape function derivatives w.r.t r,s,t
+            const LINALG::Matrix<nsd, nen>&
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nsd>& xjm,
+            int curphase,       //!< index of current phase
+            int phasetoadd,     //!< index of current phase
+            int numdofpernode,  //!< total number of DOFs/phases
+            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+                variablemanager,  //!< variable manager
+            double timefacfac,    //!< domain-integration factor
+            double fac,           //!< domain-integration factor times time-integration factor
+            double det);
+
+        //! evaluate off-diagonal coupling matrix with structure
+        void EvaluateMatrixODScatraAndAssemble(
+            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
+            const LINALG::Matrix<nsd, nen>&
+                derxy,          //! array for shape function derivatives w.r.t x,y,z
+            int curphase,       //!< index of current phase
+            int phasetoadd,     //!< index of current phase
+            int numdofpernode,  //!< total number of DOFs/phases
+            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+                variablemanager,  //!< variable manager
+            double timefacfac,    //!< domain-integration factor
+            double fac            //!< domain-integration factor times time-integration factor
+        );
+
+        //! cast to VarExp-function
+        inline DRT::UTILS::VariableExprFunction& Function(int functnum) const;
+
+        //! vector holding the functions to be integrated
+        std::vector<int> domainint_funct_;
+
+        //! number of scalars in system
+        int numscal_;
+      };
+
+      /*----------------------------------------------------------------------*
+       * **********************************************************************
+       *----------------------------------------------------------------------*/
+      /*!
       \brief helper class for reconstruction of flux
 
       This class implements the linearization of the flux reconstruction matrix (L_2 projection).
@@ -1978,10 +2106,11 @@ namespace DRT
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
             const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
             const LINALG::Matrix<nsd, nen>&
-                derxy,          //! array for shape function derivatives w.r.t x,y,z
-            int curphase,       //!< index of current phase
-            int phasetoadd,     //!< index of current phase
-            int numdofpernode,  //!< total number of DOFs/phases
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                          //!< index of current phase
+            int phasetoadd,                        //!< index of current phase
+            int numdofpernode,                     //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -2071,10 +2200,11 @@ namespace DRT
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
             const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
             const LINALG::Matrix<nsd, nen>&
-                derxy,          //! array for shape function derivatives w.r.t x,y,z
-            int curphase,       //!< index of current phase
-            int phasetoadd,     //!< index of current phase
-            int numdofpernode,  //!< total number of DOFs/phases
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                          //!< index of current phase
+            int phasetoadd,                        //!< index of current phase
+            int numdofpernode,                     //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -2166,10 +2296,11 @@ namespace DRT
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
             const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
             const LINALG::Matrix<nsd, nen>&
-                derxy,          //! array for shape function derivatives w.r.t x,y,z
-            int curphase,       //!< index of current phase
-            int phasetoadd,     //!< index of current phase
-            int numdofpernode,  //!< total number of DOFs/phases
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                          //!< index of current phase
+            int phasetoadd,                        //!< index of current phase
+            int numdofpernode,                     //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -2271,10 +2402,11 @@ namespace DRT
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
             const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
             const LINALG::Matrix<nsd, nen>&
-                derxy,          //! array for shape function derivatives w.r.t x,y,z
-            int curphase,       //!< index of current phase
-            int phasetoadd,     //!< index of current phase
-            int numdofpernode,  //!< total number of DOFs/phases
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                          //!< index of current phase
+            int phasetoadd,                        //!< index of current phase
+            int numdofpernode,                     //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -2366,10 +2498,11 @@ namespace DRT
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
             const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
             const LINALG::Matrix<nsd, nen>&
-                derxy,          //! array for shape function derivatives w.r.t x,y,z
-            int curphase,       //!< index of current phase
-            int phasetoadd,     //!< index of current phase
-            int numdofpernode,  //!< total number of DOFs/phases
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                          //!< index of current phase
+            int phasetoadd,                        //!< index of current phase
+            int numdofpernode,                     //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -2461,10 +2594,11 @@ namespace DRT
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
             const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
             const LINALG::Matrix<nsd, nen>&
-                derxy,          //! array for shape function derivatives w.r.t x,y,z
-            int curphase,       //!< index of current phase
-            int phasetoadd,     //!< index of current phase
-            int numdofpernode,  //!< total number of DOFs/phases
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                          //!< index of current phase
+            int phasetoadd,                        //!< index of current phase
+            int numdofpernode,                     //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -2554,10 +2688,11 @@ namespace DRT
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
             const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
             const LINALG::Matrix<nsd, nen>&
-                derxy,          //! array for shape function derivatives w.r.t x,y,z
-            int curphase,       //!< index of current phase
-            int phasetoadd,     //!< index of current phase
-            int numdofpernode,  //!< total number of DOFs/phases
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                          //!< index of current phase
+            int phasetoadd,                        //!< index of current phase
+            int numdofpernode,                     //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -2647,10 +2782,11 @@ namespace DRT
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
             const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
             const LINALG::Matrix<nsd, nen>&
-                derxy,          //! array for shape function derivatives w.r.t x,y,z
-            int curphase,       //!< index of current phase
-            int phasetoadd,     //!< index of current phase
-            int numdofpernode,  //!< total number of DOFs/phases
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                          //!< index of current phase
+            int phasetoadd,                        //!< index of current phase
+            int numdofpernode,                     //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -2739,10 +2875,11 @@ namespace DRT
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
             const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
             const LINALG::Matrix<nsd, nen>&
-                derxy,          //! array for shape function derivatives w.r.t x,y,z
-            int curphase,       //!< index of current phase
-            int phasetoadd,     //!< index of current phase
-            int numdofpernode,  //!< total number of DOFs/phases
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                          //!< index of current phase
+            int phasetoadd,                        //!< index of current phase
+            int numdofpernode,                     //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -2831,10 +2968,11 @@ namespace DRT
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
             const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
             const LINALG::Matrix<nsd, nen>&
-                derxy,          //! array for shape function derivatives w.r.t x,y,z
-            int curphase,       //!< index of current phase
-            int phasetoadd,     //!< index of current phase
-            int numdofpernode,  //!< total number of DOFs/phases
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                          //!< index of current phase
+            int phasetoadd,                        //!< index of current phase
+            int numdofpernode,                     //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -2923,10 +3061,11 @@ namespace DRT
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
             const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
             const LINALG::Matrix<nsd, nen>&
-                derxy,          //! array for shape function derivatives w.r.t x,y,z
-            int curphase,       //!< index of current phase
-            int phasetoadd,     //!< index of current phase
-            int numdofpernode,  //!< total number of DOFs/phases
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                          //!< index of current phase
+            int phasetoadd,                        //!< index of current phase
+            int numdofpernode,                     //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -3015,10 +3154,11 @@ namespace DRT
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
             const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
             const LINALG::Matrix<nsd, nen>&
-                derxy,          //! array for shape function derivatives w.r.t x,y,z
-            int curphase,       //!< index of current phase
-            int phasetoadd,     //!< index of current phase
-            int numdofpernode,  //!< total number of DOFs/phases
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                          //!< index of current phase
+            int phasetoadd,                        //!< index of current phase
+            int numdofpernode,                     //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -3108,10 +3248,11 @@ namespace DRT
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
             const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
             const LINALG::Matrix<nsd, nen>&
-                derxy,          //! array for shape function derivatives w.r.t x,y,z
-            int curphase,       //!< index of current phase
-            int phasetoadd,     //!< index of current phase
-            int numdofpernode,  //!< total number of DOFs/phases
+                derxy,  //! array for shape function derivatives w.r.t x,y,z
+            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                          //!< index of current phase
+            int phasetoadd,                        //!< index of current phase
+            int numdofpernode,                     //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager

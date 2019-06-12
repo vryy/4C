@@ -261,6 +261,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::PrepareTimeLoop()
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::UpdateAndOutput()
 {
+  // set scatra on fluid (necessary for possible domain integrals)
+  SetScatraSolution();
   poromulti_->UpdateAndOutput();
 
   // scatra field

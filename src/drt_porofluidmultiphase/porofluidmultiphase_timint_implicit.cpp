@@ -57,8 +57,8 @@ POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(Teuchos::RCP<DRT::Discretization> ac
       skipinitder_(DRT::INPUT::IntegralValue<int>(poroparams_, "SKIPINITDER")),
       output_porosity_(DRT::INPUT::IntegralValue<int>(poroparams_, "OUTPUT_POROSITY")),
       stab_biot_(DRT::INPUT::IntegralValue<int>(poroparams_, "STAB_BIOT")),
-      //  outmean_  (DRT::INPUT::IntegralValue<int>(*params,"OUTMEAN")),
-      outmean_(false),
+      domainint_funct_(std::vector<int>()),
+      num_domainint_funct_(0),
       calcerr_(DRT::INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::CalcError>(
           poroparams_, "CALCERROR")),
       fluxrecon_(DRT::INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::FluxReconstructionMethod>(
@@ -241,6 +241,20 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Init(bool isale, int nds_disp, int nds_vel
       poroparams_.get<int>("INITFUNCNO"));
 
   // -------------------------------------------------------------------
+  // domain integration functions for output
+  // -------------------------------------------------------------------
+  int word1;
+  std::istringstream coupled_art_dof_stream(
+      Teuchos::getNumericStringParameter(poroparams_, "DOMAININT_FUNCT"));
+  while (coupled_art_dof_stream >> word1) domainint_funct_.push_back((int)(word1));
+  // no domain integration function selected by user
+  if (domainint_funct_.size() == 1 and domainint_funct_[0] < 0) domainint_funct_.resize(0);
+  num_domainint_funct_ = domainint_funct_.size();
+
+  // the values of the integrals
+  domain_integrals_ = Teuchos::rcp(new Epetra_SerialDenseVector(num_domainint_funct_));
+
+  // -------------------------------------------------------------------
   // set element parameters
   // -------------------------------------------------------------------
   SetElementGeneralParameters();
@@ -293,6 +307,10 @@ void POROFLUIDMULTIPHASE::TimIntImpl::SetElementGeneralParameters() const
   eleparams.set<bool>("using generalized-alpha time integration", false);
   eleparams.set<bool>("using stationary formulation", false);
   eleparams.set<double>("alpha_F", 1.0);
+
+  eleparams.set<int>("num_domainint_funct", num_domainint_funct_);
+  for (int ifunct = 0; ifunct < num_domainint_funct_; ifunct++)
+    eleparams.set<int>("domainint_funct_" + std::to_string(ifunct), domainint_funct_[ifunct]);
 
   // call standard loop over elements
   discret_->Evaluate(
@@ -536,6 +554,9 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Output()
     // reconstruct porosity for output; porosity is only needed for output and does not have to be
     // transferred between fields
     if (output_porosity_) ReconstructPorosity();
+
+    // evaluate domain integrals
+    if (num_domainint_funct_ > 0) EvaluateDomainIntegrals();
 
     // write state vectors
     OutputState();
@@ -1288,6 +1309,71 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ReconstructPorosity()
   {
     (*porosity_)[i] *= 1.0 / (*counter)[i];
   }
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*
+ | evaluate domain integrals                                 kremheller 03/19 |
+ *---------------------------------------------------------------------------*/
+void POROFLUIDMULTIPHASE::TimIntImpl::EvaluateDomainIntegrals()
+{
+  // time measurement: evaluation of domain integrals
+  TEUCHOS_FUNC_TIME_MONITOR("POROFLUIDMULTIPHASE:    + evaluate domain integrals");
+
+  // create parameter list for elements
+  Teuchos::ParameterList eleparams;
+
+  // action for elements
+  eleparams.set<int>("action", POROFLUIDMULTIPHASE::calc_domain_integrals);
+
+  // set vector values needed by elements
+  discret_->ClearState();
+
+  // add state vectors according to time-integration scheme
+  AddTimeIntegrationSpecificVectors();
+
+  // evaluate
+  discret_->EvaluateScalars(eleparams, domain_integrals_);
+
+  if (myrank_ == 0)  // only one core should do output
+  {
+    // set filename and file
+    const std::string filename(
+        DRT::Problem::Instance()->OutputControlFile()->FileName() + ".domain_int" + ".csv");
+    std::ofstream file;
+
+    if (step_ == 0)
+    {
+      // inform user that function output has been requested
+      std::cout << "\nINFO for domain integrals:\nUser requested " << num_domainint_funct_
+                << " function(s) which will be integrated over the entire domain" << std::endl;
+      std::cout << "The result will be written into " << filename << "\n" << std::endl;
+
+      // open file and write header
+      file.open(filename, std::fstream::trunc);
+      file << "Time,Step";
+      for (int i = 0; i < num_domainint_funct_; i++)
+      {
+        file << ",Function " << domainint_funct_[i];
+      }
+      file << "\n";
+      file.close();
+    }
+
+    // usual output
+    file.open(filename, std::fstream::app);
+    // step, time and results for each function
+    file << step_ << "," << time_;
+    for (int i = 0; i < num_domainint_funct_; i++)
+      file << "," << std::setprecision(14) << (*domain_integrals_)[i];
+
+    // close file
+    file << "\n";
+    file.close();
+  }  // if myrank == 0
+
+  discret_->ClearState();
 
   return;
 }
