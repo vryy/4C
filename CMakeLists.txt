@@ -2672,27 +2672,6 @@ if (D_ALE_BFLOW)
 endif(D_ALE_BFLOW)
 
 
-###------------------------------------------------------------------ Element flags
-
-#   other flags
-option (HAVENOT_SUPERLU "if no super lu is available, turn it on" OFF)
-if (HAVENOT_SUPERLU)
-  MESSAGE("WW No SuperLUDist available")
-  add_definitions("-DHAVENOT_SUPERLU")
-ELSE(HAVENOT_SUPERLU)
-  MESSAGE("II Found SuperLUDist")
-endif(HAVENOT_SUPERLU)
-
-option (HAVENOT_UMFPACK "if no umfpack is available, turn it on" OFF)
-if (HAVENOT_UMFPACK)
-  MESSAGE("WW No UMFPACK available")
-  add_definitions("-DHAVENOT_UMFPACK")
-ELSE(HAVENOT_SUPERLU)
-  MESSAGE("II Found UMFPACK")
-endif(HAVENOT_UMFPACK)
-
-
-
 ###------------------------------------------------------------------ Binaries
 
 # hide libraries
