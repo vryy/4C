@@ -41,7 +41,6 @@ PREDICT                         TangDis
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 LINEAR_SOLVER                   1
-YOUNG_IS_TEMP_DEPENDENT         No
 ----------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     std
 SEARCH_ALGORITHM                Binarytree

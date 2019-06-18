@@ -67,7 +67,6 @@ RESULTSEVRY                     1
 TIMESTEP                        0.05
 TOLDISP                         1e-10
 TOLRES                          1e-08
-YOUNG_IS_TEMP_DEPENDENT         No
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.66  // 0.5
 --------------------------------------------------------------------SOLVER 1

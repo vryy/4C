@@ -78,9 +78,6 @@ THR::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
       stepn_(0),
       firstoutputofrun_(true),
       lumpcapa_(DRT::INPUT::IntegralValue<int>(tdynparams, "LUMPCAPA") == 1),
-      young_temp_(
-          DRT::INPUT::IntegralValue<int>(
-              DRT::Problem::Instance()->StructuralDynamicParams(), "YOUNG_IS_TEMP_DEPENDENT") == 1),
       zeros_(Teuchos::null),
       temp_(Teuchos::null),
       rate_(Teuchos::null),
@@ -188,7 +185,6 @@ void THR::TimInt::DetermineCapaConsistTempRate()
     // other parameters that might be needed by the elements
     p.set("total time", (*time_)[0]);
     p.set("delta time", (*dt_)[0]);
-    p.set<int>("young_temp", young_temp_);
     // set vector values needed by elements
     discret_->ClearState();
     // SetState(0,...) in case of multiple dofsets (e.g. TSI)
@@ -528,7 +524,6 @@ void THR::TimInt::OutputHeatfluxTempgrad(bool& datawritten)
   // other parameters that might be needed by the elements
   p.set("total time", (*time_)[0]);
   p.set("delta time", (*dt_)[0]);
-  p.set<int>("young_temp", young_temp_);
 
   Teuchos::RCP<std::vector<char>> heatfluxdata = Teuchos::rcp(new std::vector<char>());
   p.set("heatflux", heatfluxdata);
@@ -846,7 +841,6 @@ void THR::TimInt::ApplyForceTangInternal(
   // other parameters that might be needed by the elements
   p.set("total time", time);
   p.set("delta time", dt);
-  p.set<int>("young_temp", young_temp_);
   // set vector values needed by elements
   discret_->ClearState();
   // SetState(0,...) in case of multiple dofsets (e.g. TSI)
@@ -895,7 +889,6 @@ void THR::TimInt::ApplyForceTangInternal(
   // other parameters that might be needed by the elements
   p.set("total time", time);
   p.set("delta time", dt);
-  p.set<int>("young_temp", young_temp_);
   // set vector values needed by elements
   discret_->ClearState();
   // SetState(0,...) in case of multiple dofsets (e.g. TSI)
@@ -951,7 +944,6 @@ void THR::TimInt::ApplyForceInternal(Teuchos::ParameterList& p, const double tim
   // other parameters that might be needed by the elements
   p.set("total time", time);
   p.set("delta time", dt);
-  p.set<int>("young_temp", young_temp_);
   // set vector values needed by elements
   discret_->ClearState();
   // SetState(0,...) in case of multiple dofsets (e.g. TSI)

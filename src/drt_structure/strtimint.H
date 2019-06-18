@@ -1170,8 +1170,6 @@ namespace STR
                              //!< continuing non-linear iteration was chosen
     bool firstoutputofrun_;  //!< flag whether this output step is the first one (restarted or not)
     bool lumpmass_;          //!< flag for lumping the mass matrix, default: false
-    bool
-        young_temp_;  //!< flag deciding if young's modulus is temperature-dependent, default: false
     //@}
 
     //! @name Global vectors

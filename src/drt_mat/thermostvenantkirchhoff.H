@@ -226,6 +226,12 @@ namespace MAT
       return -1;
     }
 
+    //!  @return true if Young's modulus is a funtion of temperature
+    bool YoungIsTempDependent() { return params_->youngsval_.size() > 1; }
+
+    //!  @return true if Young's modulus is a funtion of temperature
+    bool ThermExpansIsTempDependent() { return params_->thermexpansfunct_[0] != 0; }
+
     //! Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 

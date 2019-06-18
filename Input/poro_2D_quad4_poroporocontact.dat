@@ -90,7 +90,6 @@ ADAPTCONV_BETTER                0.1
 LUMPMASS                        No
 MODIFIEDEXPLEULER               Yes
 LINEAR_SOLVER                   2
-YOUNG_IS_TEMP_DEPENDENT         No
 ----------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     PetrovGalerkin//Dual
 SEARCH_ALGORITHM                Binarytree

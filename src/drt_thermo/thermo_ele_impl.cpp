@@ -1343,10 +1343,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCond(
 #endif  // CALCSTABILOFREACTTERM
   }     // m_thermostvenant
 
-  // ------------------------------ temperature-dependent Young's modulus
-  // if young's modulus is temperature-dependent, E(T) additional terms arise
-  // for the stiffness matrix k_TT
-  bool young_temp = (params.get<int>("young_temp") == 1);
   LINALG::Matrix<nen_, 1> Ndctemp_dTBvNT(true);
 
   // --------------------------------------------------- time integration
@@ -1397,7 +1393,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCond(
 
       // if young's modulus is temperature-dependent, E(T), additional terms arise
       // for the stiffness matrix k_TT
-      if (young_temp == true)
       {
         // k_TT += - N_T^T . dC_T/dT : B_d . d' . N_T . T
         // with dC_T/dT = d(m . I)/dT = d (m(T) . I)/dT
@@ -1413,7 +1408,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCond(
         Ndctemp_dTBv.Multiply(Ndctemp_dT, strainvel);
 
         Ndctemp_dTBvNT.Multiply(Ndctemp_dTBv, NT);
-      }  // (young_temp == true)
+      }
 
     }  // m_thermostvenant
 
@@ -1501,11 +1496,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCond(
 
       // in case of temperature-dependent Young's modulus, additional term for
       // conductivity matrix
-      if (young_temp == true)
       {
         // k_TT += - N_T^T . dC_T/dT : B_L . d' . N_T . T . N_T
         econd->MultiplyNT(-fac_, Ndctemp_dTBvNT, funct_, 1.0);
-      }  // (young_temp == true)
+      }
 
     }  // if (econd != NULL)
 
@@ -1766,10 +1760,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
   // ------------------------------------------------ structural material
   Teuchos::RCP<MAT::Material> structmat = GetSTRMaterial(ele);
 
-  // ------------------------------ temperature-dependent Young's modulus
-  // if young's modulus is temperature-dependent, E(T) additional terms arise
-  // for the stiffness matrix k_TT
-  bool young_temp = (params.get<int>("young_temp") == 1);
   LINALG::Matrix<nen_, 1> Ndctemp_dTCrateNT(true);
 
   // build the deformation gradient w.r.t. material configuration
@@ -1940,43 +1930,36 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
           Teuchos::rcp_dynamic_cast<MAT::ThermoStVenantKirchhoff>(structmat, true);
       thrstvk->SetupCthermo(ctemp, params);
 
-      if (young_temp == true)
+      // if young's modulus is temperature-dependent, E(T), additional terms arise
+      // for the stiffness matrix k_TT
+
+      // k_TT += - N_T^T . dC_T/dT : 1/2 . C' . N_T . T
+      // with dC_T/dT = d(m . I)/dT . N_T = d (m(T) . I)/dT . N_T
+      //
+      // k_TT += - N_T^T . (dC_T/dT} . N_T) : 1/2 . C' . N_T . T
+      // k_TT += - N_T^T . dC_T/dT : 1/2 . C' . N_T . T . N_T
+      LINALG::Matrix<6, 1> dctemp_dT(false);
+      thrstvk->GetCthermoAtTempnp_T(dctemp_dT, params);
+      // scalar product: dctemp_dTCdot = dC_T/dT : 1/2 C'
+      double dctemp_dTCdot = 0.0;
+      for (int i = 0; i < 6; ++i)
+        dctemp_dTCdot += dctemp_dT(i, 0) * (1 / 2.0) * Cratevct(i, 0);  // (6x1)(6x1)
+
+      LINALG::Matrix<nen_, 1> Ndctemp_dTCratevct(false);
+      Ndctemp_dTCratevct.Update(dctemp_dTCdot, funct_);
+      Ndctemp_dTCrateNT.Multiply(Ndctemp_dTCratevct, NT);  // (8x1)(1x1)
+
+      // ------------------------------------ special terms due to material law
+      // if young's modulus is temperature-dependent, E(T), additional terms arise
+      // for the stiffness matrix k_TT
+      if (econd != NULL)
       {
-        Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk =
-            Teuchos::rcp_dynamic_cast<MAT::ThermoStVenantKirchhoff>(structmat, true);
-
-        // if young's modulus is temperature-dependent, E(T), additional terms arise
-        // for the stiffness matrix k_TT
-
-        // k_TT += - N_T^T . dC_T/dT : 1/2 . C' . N_T . T
-        // with dC_T/dT = d(m . I)/dT . N_T = d (m(T) . I)/dT . N_T
+        // k_TT += - N_T^T . dC_T/dT : C' . N_T . T . N_T
+        // with dC_T/dT = d(m . I)/dT = d (m(T) . I)/dT
         //
-        // k_TT += - N_T^T . (dC_T/dT} . N_T) : 1/2 . C' . N_T . T
-        // k_TT += - N_T^T . dC_T/dT : 1/2 . C' . N_T . T . N_T
-        LINALG::Matrix<6, 1> dctemp_dT(false);
-        thrstvk->GetCthermoAtTempnp_T(dctemp_dT, params);
-        // scalar product: dctemp_dTCdot = dC_T/dT : 1/2 C'
-        double dctemp_dTCdot = 0.0;
-        for (int i = 0; i < 6; ++i)
-          dctemp_dTCdot += dctemp_dT(i, 0) * (1 / 2.0) * Cratevct(i, 0);  // (6x1)(6x1)
-
-        LINALG::Matrix<nen_, 1> Ndctemp_dTCratevct(false);
-        Ndctemp_dTCratevct.Update(dctemp_dTCdot, funct_);
-        Ndctemp_dTCrateNT.Multiply(Ndctemp_dTCratevct, NT);  // (8x1)(1x1)
-
-        // ------------------------------------ special terms due to material law
-        // if young's modulus is temperature-dependent, E(T), additional terms arise
-        // for the stiffness matrix k_TT
-        if (econd != NULL)
-        {
-          // k_TT += - N_T^T . dC_T/dT : C' . N_T . T . N_T
-          // with dC_T/dT = d(m . I)/dT = d (m(T) . I)/dT
-          //
-          // k_TT += - N_T^T . dC_T/dT : C' . N_T . T . N_T
-          econd->MultiplyNT(-fac_, Ndctemp_dTCrateNT, funct_, 1.0);
-        }  // (econd != NULL)
-
-      }  // m_thermostvenant and (young_temp == true)
+        // k_TT += - N_T^T . dC_T/dT : C' . N_T . T . N_T
+        econd->MultiplyNT(-fac_, Ndctemp_dTCrateNT, funct_, 1.0);
+      }  // (econd != NULL)
     }    // m_thermostvenant
 
     else if (structmat->MaterialType() == INPAR::MAT::m_thermoplhyperelast)

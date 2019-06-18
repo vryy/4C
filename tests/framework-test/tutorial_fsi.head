@@ -1646,10 +1646,6 @@ UZAWAPARAM                      1
 // Tolerance for iterative solve with Uzawa algorithm
 UZAWATOL                        1e-08
 //
-// Use temperature-dependent Young's modulus
-//                              Yes,No,yes,no,YES,NO
-YOUNG_IS_TEMP_DEPENDENT         No
-//
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 //
 // Generalised-alpha factor in [0,1)

@@ -97,14 +97,6 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::Evaluate(Teuchos::ParameterList
   else if (action == "calc_struct_stress")
     act = So3_Thermo::calc_struct_stress;
 
-  if (not(action == "postprocess_stress"))
-  {
-    static const bool young_temp =
-        DRT::INPUT::IntegralValue<int>(
-            Problem::Instance()->StructuralDynamicParams(), "YOUNG_IS_TEMP_DEPENDENT") == 1;
-    params.set<int>("young_temp", young_temp);
-  }
-
   // what should the element do
   switch (act)
   {
@@ -1035,7 +1027,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::lin_kdT_tsi(DRT::Element::Loca
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
     // default: material call in structural function is purely deformation dependent
-    if ((Material()->MaterialType() == INPAR::MAT::m_thermostvenant))  // and (young_temp == true))
+    if ((Material()->MaterialType() == INPAR::MAT::m_thermostvenant))
     {
       Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk =
           Teuchos::rcp_dynamic_cast<MAT::ThermoStVenantKirchhoff>(Material(), true);
@@ -1069,7 +1061,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::lin_kdT_tsi(DRT::Element::Loca
       // get thermal material tangent
       thrstvk->SetupCthermo(ctemp, params);
       Bcouplstress_T.MultiplyTN(boplin, couplstress_T);  // (24x6)(6x1)
-    }  // m_thermostvenant and (young_temp == true)
+    }                                                    // m_thermostvenant
     // get thermal material tangent
     else
     {
@@ -1090,7 +1082,6 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::lin_kdT_tsi(DRT::Element::Loca
 
       // in case of temperature-dependent Young's modulus, additional term for
       // coupling stiffness matrix k_dT
-      // if (young_temp == true)
       {
         // k_dT += B_d^T . dC/dT  . B_d . d . N_T
         stiffmatrix_kdT->MultiplyNT(detJ_w, Bstress_T, shapefunct, 1.0);
@@ -1098,7 +1089,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::lin_kdT_tsi(DRT::Element::Loca
         // k_dT += B_d^T . dC_T/dT  . N_T . T . N_T
         // (24x8)                          (24x1)        (8x1)
         stiffmatrix_kdT->MultiplyNT(detJ_w, Bcouplstress_T, shapefunct, 1.0);
-      }  // (young_temp == true)
+      }
 
       // Be careful: scaling with time factor is done in tsi_monolithic!!
     }  // (stiffmatrix_kdT != NULL)
@@ -1529,7 +1520,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi(DRT::Element::Loca
       // get thermal material tangent
       thrstvk->SetupCthermo(ctemp, params);
       Bcouplstress_T.MultiplyTN(bop, couplstress_T);  // (24x6)(6x1)
-    }                                                 // m_thermostvenant  and  (young_temp == true)
+    }                                                 // m_thermostvenant
 
     else if (Material()->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
     {
@@ -1581,7 +1572,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi(DRT::Element::Loca
         stiffmatrix_kdT->MultiplyNT(detJ_w, Bcouplstress_T, shapefunct, 1.0);
 
         // Be careful: scaling with time factor is done in tsi_monolithic!!
-      }  // m_thermostvenant and (young_temp == true)
+      }  // m_thermostvenant
     }
     /* =========================================================================*/
   } /* ==================================================== end of Loop over GP */

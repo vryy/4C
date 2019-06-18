@@ -278,11 +278,6 @@ namespace INPAR
       IntParameter(
           "LINEAR_SOLVER", -1, "number of linear solver used for structural problems", &sdyn);
 
-      // flag decides if young's modulus is temperature dependent, so far only available
-      // for temperature-dependent St.Venant Kirchhoff material
-      setStringToIntegralParameter<int>("YOUNG_IS_TEMP_DEPENDENT", "No",
-          "Use temperature-dependent Young's modulus", yesnotuple, yesnovalue, &sdyn);
-
       // where the geometry comes from
       setStringToIntegralParameter<int>("GEOMETRY", "full", "How the geometry is specified",
           tuple<std::string>("full", "box", "file"),

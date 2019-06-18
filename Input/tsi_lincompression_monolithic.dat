@@ -57,7 +57,6 @@ RESTARTEVRY                     1
 TIMESTEP                        1
 TOLDISP                         1e-08
 TOLRES                          1e-03  //5
-YOUNG_IS_TEMP_DEPENDENT         No
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
 -------------------------------------------------------------THERMAL DYNAMIC

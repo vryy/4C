@@ -51,7 +51,6 @@ TOLRES                          1e-06
 MAXTIME                         100
 NUMSTEP                         200
 TIMESTEP                        0.5
-YOUNG_IS_TEMP_DEPENDENT         yes
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 -------------------------------------------------------------THERMAL DYNAMIC

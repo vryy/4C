@@ -294,10 +294,6 @@ MODIFIEDEXPLEULER               Yes
 // number of linear solver used for structural problems
 LINEAR_SOLVER                   3
 //
-// Use temperature-dependent Young's modulus
-//     Yes,No,yes,no,YES,NO
-YOUNG_IS_TEMP_DEPENDENT         No
-//
 // How the geometry is specified
 //     full,box,file
 GEOMETRY                        full
