@@ -116,6 +116,9 @@ endif (ENABLE_STACKTR)
 
 find_package(HDF5 REQUIRED)
 if (HDF5_FOUND)
+  MESSAGE("-- HDF5 include directory: ${HDF5_INCLUDE_DIRS}")
+  MESSAGE("-- HDF5 library directory: ${HDF5_LIBRARY}")
+  MESSAGE("-- HDF5 libraries: ${HDF5_LIBRARIES}")
   include_directories(${HDF5_INCLUDE_DIRS})
   link_directories(${HDF5_LIBRARY_DIRS})
   set(LIBRARIES
@@ -130,9 +133,9 @@ find_package(Qhull REQUIRED)
 if (QHULL_FOUND)
   include_directories(${QHULL_INCLUDE_DIRS})
   link_directories(${QHULL_LIBRARY_DIRS})
-  MESSAGE("QHULL includes: ${QHULL_INCLUDE_DIRS}")
-  MESSAGE("QHULL library: ${QHULL_LIBRARY}")
-  MESSAGE("QHULL libraries: ${QHULL_LIBRARIES}")
+  MESSAGE("-- QHULL include directory: ${QHULL_INCLUDE_DIRS}")
+  MESSAGE("-- QHULL library directory: ${QHULL_LIBRARY}")
+  MESSAGE("-- QHULL libraries: ${QHULL_LIBRARIES}")
   set(LIBRARIES
     ${LIBRARIES}
     ${QHULL_LIBRARIES}
@@ -232,9 +235,9 @@ endif(USE_NO_SYSTEM_PATHS)
 FIND_PACKAGE(Boost COMPONENTS graph program_options system filesystem REQUIRED)
 
 if (Boost_FOUND)
-  message("Found Boost: ${Boost_INCLUDE_DIRS}")
-  message("Boost component libraries: ${Boost_LIBRARIES}")
-  message("Boost libraries directory: ${Boost_LIBRARY_DIRS}")
+  message("-- Found Boost: ${Boost_INCLUDE_DIRS}")
+  message("-- Boost component libraries: ${Boost_LIBRARIES}")
+  message("-- Boost libraries directory: ${Boost_LIBRARY_DIRS}")
   include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
   link_directories(${Boost_LIBRARY_DIRS})
   set(LIBRARIES
@@ -356,9 +359,12 @@ else()
   message("WW *************************************************************")
 endif()
 
-# FFTW for Jonas Biehler
+# FFTW
 find_package(FFTW)
 if (FFTW_FOUND)
+  MESSAGE("-- FFTW include directory: ${FFTW_INCLUDE_DIRS}")
+  MESSAGE("-- FFTW library directory: ${FFTW_LIBRARY}")
+  MESSAGE("-- FFTW libraries: ${FFTW_LIBRARIES}")
   include_directories(${FFTW_INCLUDE_DIRS})
   link_directories(${FFTW_LIBRARY_DIRS})
   set(LIBRARIES ${LIBRARIES} ${FFTW_LIBRARIES} )
@@ -395,7 +401,9 @@ find_package(CLN)
 if (CLN_FOUND)
   include_directories(SYSTEM ${CLN_INCLUDE_DIRS})
   set(LIBRARIES ${CLN_LIBRARIES} ${LIBRARIES}  )
-  MESSAGE("-- Found CLN: ${CLN_INCLUDE_DIRS}, ${CLN_LIBRARIES}")
+  MESSAGE("-- CLN include directory: ${CLN_INCLUDE_DIRS}")
+  MESSAGE("-- CLN library directory: ${CLN_LIBRARY}")
+  MESSAGE("-- CLN libraries: ${CLN_LIBRARIES}")
 endif()
 #explicitly remove all duplicate libraries, keeping the rightmost library
 #additionally remove the keywords debug;optimized;general since the libraries
