@@ -12,10 +12,10 @@
 // Amesos headers
 #include <Amesos_Klu.h>
 #include <Amesos_Lapack.h>
-#ifndef HAVENOT_UMFPACK
+#ifdef HAVE_AMESOS_UMFPACK
 #include <Amesos_Umfpack.h>
 #endif
-#ifndef HAVENOT_SUPERLU
+#ifdef HAVE_AMESOS_SUPERLU
 #include <Amesos_Superludist.h>
 #endif
 
@@ -163,7 +163,7 @@ void LINALG::SOLVER::DirectSolver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
     }
     else if (solvertype_ == "umfpack")
     {
-#ifndef HAVENOT_UMFPACK
+#ifdef HAVE_AMESOS_UMFPACK
       amesos_ = Teuchos::rcp(new Amesos_Umfpack((*reindexer_)(*lp_)));
 #else
       dserror("no umfpack here");
@@ -171,7 +171,7 @@ void LINALG::SOLVER::DirectSolver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
     }
     else if (solvertype_ == "superlu")
     {
-#ifndef HAVENOT_SUPERLU
+#ifdef HAVE_AMESOS_SUPERLU
       amesos_ = Teuchos::rcp(new Amesos_Superludist((*reindexer_)(*lp_)));
 #else
       Teuchos::RCP<Teuchos::FancyOStream> fos =
