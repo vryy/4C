@@ -17,18 +17,21 @@ ENDIF (PARMETIS_INCLUDE_DIR)
 
 FIND_PATH(PARMETIS_INCLUDE_DIR parmetis.h
   ${INCLUDE_INSTALL_DIR}
+  ${SEARCH_PARMETIS_INCLUDE_DIR}
   /usr/local/include
   /usr/include
 )
 
 FIND_LIBRARY(PARMETIS_LIBRARY parmetis
   ${LIB_INSTALL_DIR}
+  ${SEARCH_PARMETIS_LIBRARY_DIR}
   /usr/local/lib
   /usr/lib
 )
 
 FIND_LIBRARY(METIS_LIBRARY metis
   ${LIB_INSTALL_DIR}
+  ${SEARCH_PARMETIS_LIBRARY_DIR}
   /usr/local/lib
   /usr/lib
 )
