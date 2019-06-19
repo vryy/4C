@@ -274,9 +274,15 @@ namespace INPAR
       mfi_lin_scalar_aniso,  ///< volume change due to (anisotropic) inelastic deformation gradient
                              ///< is a linear function of the scalar (in material configuration)
                              ///< that causes the volume change
-      mfi_lin_scalar_iso  ///< volume change due to (isotropic) inelastic deformation gradient is a
-                          ///< linear function of the scalar (in material configuration) that causes
-                          ///< the volume change
+      mfi_lin_scalar_iso,  ///< volume change due to (isotropic) inelastic deformation gradient is a
+                           ///< linear function of the scalar (in material configuration) that
+                           ///< causes the volume change
+      mfi_poly_scalar_aniso,  ///< volume change due to (anisotropic) inelastic deformation gradient
+                              ///< is a polynomial function of the scalar (in material
+                              ///< configuration) that causes the volume change
+      mfi_poly_scalar_iso  ///< volume change due to (isotropic) inelastic deformation gradient is a
+                           ///< is a polynomial function of the scalar (in material configuration)
+                           ///< that causes the volume change
     };
 
     /*----------------------------------------------------------------------*

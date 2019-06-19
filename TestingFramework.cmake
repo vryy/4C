@@ -1586,6 +1586,7 @@ baci_test(ssi_mono_3D_3hex8_elch_s2i_butlervolmer_linaniso_liniso_growthlaw 2 ""
 baci_test(ssi_mono_3D_3hex8_elch_s2i_butlervolmer_linaniso_liniso_growthlaw_cycling 3 "")
 baci_test(ssi_mono_3D_6hex8_elch_s2i_butlervolmer 3 "" minimal)
 baci_test(ssi_mono_3D_8hex8_scatra_liniso_growthlaw 2 "")
+baci_test(ssi_mono_3D_8hex8_scatra_polyiso_NCM622_growthlaw 1 "")
 baci_test(ssi_mono_3D_8hex8_scatra_inflow_liniso_growthlaw 2 "")
 baci_test(ssi_mono_3D_8hex8_scatra_inflow_linaniso_growthlaw 2 "")
 baci_test(ssi_mono_3D_27hex8_scatra 3 5)

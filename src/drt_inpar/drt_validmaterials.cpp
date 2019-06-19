@@ -2282,6 +2282,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedInt(m, "SCALAR1", "number of growth inducing scalar");
     AddNamedReal(m, "SCALAR1_GrowthFac", "isotropic growth factor due to scalar 1");
     AddNamedReal(m, "SCALAR1_RefConc", "reference concentration of scalar 1 causing no strains");
+    AddNamedInt(m, "MATID", "material ID of the corresponding scatra material");
 
     AppendMaterialDefinition(matlist, m);
   }
@@ -2303,6 +2304,54 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedInt(m, "NUMSPACEDIM", "Number of space dimension (only 3 valid)");
     AddNamedRealVector(
         m, "GrowthDirection", "vector that defines the growth direction", "NUMSPACEDIM");
+    AddNamedInt(m, "MATID", "material ID of the corresponding scatra material");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // non-linear isotropic volumetric growth; growth is dependent on
+  // scalar mapped to material configuration, constant material density, nonlinear behavior
+  // prescribed by polynomial in input file
+  {
+    Teuchos::RCP<MaterialDefinition> m =
+        Teuchos::rcp(new MaterialDefinition("MAT_InelasticDefgradPolyScalarIso",
+            "scalar dependent isotropic growth law; volume change nonlinearly dependent on scalar"
+            "(in material configuration)",
+            INPAR::MAT::mfi_poly_scalar_iso));
+
+    AddNamedInt(m, "SCALAR1", "number of growth inducing scalar");
+    AddNamedReal(m, "SCALAR1_RefConc", "reference concentration of scalar 1 causing no strains");
+    AddNamedInt(m, "POLY_PARA_NUM", "number of polynomial coefficients");
+    AddNamedRealVector(m, "POLY_PARAMS", "coefficients of polynomial", "POLY_PARA_NUM");
+    AddNamedReal(m, "X_min", "lower bound of validity of polynomial");
+    AddNamedReal(m, "X_max", "upper bound of validity of polynomial");
+    AddNamedInt(m, "MATID", "material ID of the corresponding scatra material");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // non-linear anisotropic volumetric growth; growth direction prescribed in input-file;
+  // growth is dependent on a scalar mapped to material configuration, constant material
+  // density, nonlinear behavior prescribed by polynomial in input file
+  {
+    Teuchos::RCP<MaterialDefinition> m =
+        Teuchos::rcp(new MaterialDefinition("MAT_InelasticDefgradPolyScalarAniso",
+            "scalar dependent anisotropic growth law; growth in direction as given in input-file; "
+            "volume change linearly dependent on scalar (in material configuration)",
+            INPAR::MAT::mfi_poly_scalar_aniso));
+
+    AddNamedInt(m, "SCALAR1", "number of growth inducing scalar");
+    AddNamedReal(m, "SCALAR1_RefConc", "reference concentration of scalar 1 causing no strains");
+    AddNamedInt(m, "NUMSPACEDIM", "Number of space dimension (only 3 valid)");
+    AddNamedRealVector(
+        m, "GrowthDirection", "vector that defines the growth direction", "NUMSPACEDIM");
+    AddNamedInt(m, "POLY_PARA_NUM", "number of polynomial coefficients");
+    AddNamedRealVector(m, "POLY_PARAMS", "coefficients of polynomial", "POLY_PARA_NUM");
+    AddNamedReal(m, "X_min", "lower bound of validity of polynomial");
+    AddNamedReal(m, "X_max", "upper bound of validity of polynomial");
+    AddNamedInt(m, "MATID", "material ID of the corresponding scatra material");
 
     AppendMaterialDefinition(matlist, m);
   }

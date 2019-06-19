@@ -1,8 +1,8 @@
 //
-// Maintainer: Christoph Schmidt
-// schmidt@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de/
-// 089 - 289-15251
+// Maintainer: Mert Civaner
+// civaner@adco-engineering-gw.com
+// https://www.adco-engineering-gw.de/
+// 089/5484 2260
 //
 ==================================================================
                   General Data File BACI
@@ -11,15 +11,13 @@
 simple, academic test case for monolithic scalar-structure interaction:
 - three-dimensional problem involving standard scalar transport
 - cubic domain discretized by 8 hex8 elements
-- constant initial value 0.0 of transported scalar
-- scalar inflow via Neumann boundary condition applied to one side of the cubic domain for the first 50 seconds, after that homogeneous
-  Neumann boundary condition is applied
-- homogeneous Neumann boundary conditions are applied to all other sides throughout the simulation
+- constant initial value 0.2 of transported scalar (due to validity bound of polynomial)
+- scalar controlled via Volume Dirichlet condition (linearly ramped from 0.2 to 0.85)
 - structure and scatra fields are coupled via MAT_MultiplicativeSplitDefgradElastHyper using:
-- MAT_InelasticDefgradLinScalarAniso: anisotropic strain dependent on scalar concentration according to the following equation
-  (growth-direction vector g is prescribed via vector in Input-File):
-- F_{in} = I + [GrowthFac * det(F) * (c - RefConc)] g \otimes g
-- deformation is compared to analytically expected deformation in result tests
+- MAT_InelasticDefgradPolyScalarIso: isotropic strain dependent on scalar concentration according to the following equation:
+- F_{in} = [(1 + f(X)) / (1 + f(X_ref))]^(1/3) I
+- point in the center of the domain is fixed by Point Dirichlet condition
+- f(X) from Koerver[2018] for NCM-622 using a polynomial fit of 7th order for best approximation
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    8
 //NODES       27
@@ -41,7 +39,7 @@ INITFUNCNO                      1
 CONVFORM                        conservative
 -------------------------------------------------------SSI CONTROL
 NUMSTEP                         100
-TIMESTEP                        1.0
+TIMESTEP                        0.1
 COUPALGO                        ssi_Monolithic
 SCATRATIMINTTYPE                Standard
 --------------------------------------------SSI CONTROL/MONOLITHIC
@@ -50,51 +48,66 @@ MATRIXTYPE                      sparse
 ----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ---------------------------------------------------------MATERIALS
-MAT 1 MAT_scatra DIFFUSIVITY 2.0
-MAT 2 MAT_MultiplicativeSplitDefgradElastHyper NUMMATEL 1 MATIDSEL 3 NUMFACINEL 1 INELDEFGRADFACIDS 4 DENS 1.0e-2
-MAT 3 ELAST_CoupSVK YOUNG 1.0e1 NUE 0.3
-MAT 4 MAT_InelasticDefgradLinScalarAniso SCALAR1 1 SCALAR1_GrowthFac 0.1 SCALAR1_RefConc 0.0 NUMSPACEDIM 3 GrowthDirection 1.0 0.0 0.0 MATID 1
+MAT 1 MAT_scatra DIFFUSIVITY 1.0
+MAT 2 MAT_MultiplicativeSplitDefgradElastHyper NUMMATEL 1 MATIDSEL 3 NUMFACINEL 1 INELDEFGRADFACIDS 4 DENS 1.0e-3
+MAT 3 ELAST_CoupSVK YOUNG 1.0 NUE 0.3
+MAT 4 MAT_InelasticDefgradPolyScalarIso SCALAR1 1 SCALAR1_RefConc 0.2 POLY_PARA_NUM 8 POLY_PARAMS 0.1941858981 -4.472823969 30.9710595933 -105.395481451 200.2221282558 -216.7655334388 125.2559838841 -30.0162036269 X_min 0.1999 X_max 0.9001 MATID 1
 ----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 1
 ------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 0.0
-------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION (1.0*heaviside(t-1.0)-1.0*heaviside(t-51.0))
+COMPONENT 0 FUNCTION 0.065*t+0.2
 ------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 1 QUANTITY phi VALUE 7.13825783771653022e+00 TOLERANCE 1.e-09
-SCATRA DIS scatra NODE 7 QUANTITY phi VALUE 7.14254770700679220e+00 TOLERANCE 1.e-09
-SCATRA DIS scatra NODE 17 QUANTITY phi VALUE 7.13825783771652222e+00 TOLERANCE 1.e-09
-SCATRA DIS scatra NODE 25 QUANTITY phi VALUE 7.14139993055974376e+00 TOLERANCE 1.e-09
-STRUCTURE DIS structure NODE 9 QUANTITY dispx VALUE 0.00000000000000000e+00 TOLERANCE 1.e-20
-STRUCTURE DIS structure NODE 9 QUANTITY dispy VALUE 0.00000000000000000e+00 TOLERANCE 1.e-20
-STRUCTURE DIS structure NODE 9 QUANTITY dispz VALUE 0.00000000000000000e+00 TOLERANCE 1.e-20
-STRUCTURE DIS structure NODE 21 QUANTITY dispx VALUE 5.00312577452661600e+00 TOLERANCE 1.e-09
-STRUCTURE DIS structure NODE 21 QUANTITY dispy VALUE 0.00000000000000000e+00 TOLERANCE 1.e-14
-STRUCTURE DIS structure NODE 21 QUANTITY dispz VALUE 0.00000000000000000e+00 TOLERANCE 1.e-14
-STRUCTURE DIS structure NODE 26 QUANTITY dispx VALUE 5.00306622273398904e+00 TOLERANCE 1.e-09
-STRUCTURE DIS structure NODE 26 QUANTITY dispy VALUE -5.77447423009422116e-05 TOLERANCE 1.e-14
-STRUCTURE DIS structure NODE 26 QUANTITY dispz VALUE -5.77447423022800426e-05 TOLERANCE 1.e-14
+SCATRA DIS scatra NODE 7 QUANTITY phi VALUE 8.49999999999998757e-01 TOLERANCE 1.e-08
+STRUCTURE DIS structure NODE 9 QUANTITY dispx VALUE -1.55405939126469078e-02 TOLERANCE 1.e-11
+STRUCTURE DIS structure NODE 9 QUANTITY dispy VALUE -1.55405939126671503e-02 TOLERANCE 1.e-11
+STRUCTURE DIS structure NODE 9 QUANTITY dispz VALUE -1.55405939126470743e-02 TOLERANCE 1.e-11
+STRUCTURE DIS structure NODE 14 QUANTITY dispx VALUE -1.55405939126781814e-02 TOLERANCE 1.e-11
+STRUCTURE DIS structure NODE 14 QUANTITY dispy VALUE 1.55405939126307072e-02 TOLERANCE 1.e-11
+STRUCTURE DIS structure NODE 14 QUANTITY dispz VALUE 1.55405939126539369e-02 TOLERANCE 1.e-11
+STRUCTURE DIS structure NODE 26 QUANTITY dispx VALUE 1.55405939126445677e-02 TOLERANCE 1.e-11
+STRUCTURE DIS structure NODE 26 QUANTITY dispy VALUE 1.55405939126358836e-02 TOLERANCE 1.e-11
+STRUCTURE DIS structure NODE 26 QUANTITY dispz VALUE 1.55405939126460994e-02 TOLERANCE 1.e-11
 ------------------------------------------------DESIGN DESCRIPTION
-NDSURF  2
----------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
-DSURF  1
-E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 2
--------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF 1
+NDPOINT 1
+NDVOL   1
+----------------------------DESIGN VOL TRANSPORT DIRICH CONDITIONS
+DVOL   1
+E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 1
+-------------------------------------DESIGN POINT DIRICH CONDITIONS
+DPOINT 1
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT none none none
 -----------------------------------------------DNODE-NODE TOPOLOGY
+NODE    7 DNODE 1
 -----------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
-NODE    1 DSURF 1
-NODE    2 DSURF 1
-NODE    3 DSURF 1
-NODE    4 DSURF 1
-NODE    9 DSURF 1
-NODE    10 DSURF 1
-NODE    13 DSURF 1
-NODE    14 DSURF 1
-NODE    17 DSURF 1
 ------------------------------------------------DVOL-NODE TOPOLOGY
+NODE    1 DVOL 1
+NODE    2 DVOL 1
+NODE    3 DVOL 1
+NODE    4 DVOL 1
+NODE    5 DVOL 1
+NODE    6 DVOL 1
+NODE    7 DVOL 1
+NODE    8 DVOL 1
+NODE    9 DVOL 1
+NODE    10 DVOL 1
+NODE    11 DVOL 1
+NODE    12 DVOL 1
+NODE    13 DVOL 1
+NODE    14 DVOL 1
+NODE    15 DVOL 1
+NODE    16 DVOL 1
+NODE    17 DVOL 1
+NODE    18 DVOL 1
+NODE    19 DVOL 1
+NODE    20 DVOL 1
+NODE    21 DVOL 1
+NODE    22 DVOL 1
+NODE    23 DVOL 1
+NODE    24 DVOL 1
+NODE    25 DVOL 1
+NODE    26 DVOL 1
+NODE    27 DVOL 1
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD -1.0000000000000000e+00 -1.0000000000000000e+00  1.0000000000000000e+00
 NODE         2 COORD -1.0000000000000000e+00 -1.0000000000000000e+00  0.0000000000000000e+00
