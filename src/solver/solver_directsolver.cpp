@@ -15,7 +15,7 @@
 #ifdef HAVE_AMESOS_UMFPACK
 #include <Amesos_Umfpack.h>
 #endif
-#ifdef HAVE_AMESOS_SUPERLU
+#ifdef HAVE_AMESOS_SUPERLUDIST
 #include <Amesos_Superludist.h>
 #endif
 
@@ -171,7 +171,7 @@ void LINALG::SOLVER::DirectSolver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
     }
     else if (solvertype_ == "superlu")
     {
-#ifdef HAVE_AMESOS_SUPERLU
+#ifdef HAVE_AMESOS_SUPERLUDIST
       amesos_ = Teuchos::rcp(new Amesos_Superludist((*reindexer_)(*lp_)));
 #else
       Teuchos::RCP<Teuchos::FancyOStream> fos =
