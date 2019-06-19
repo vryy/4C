@@ -45,7 +45,7 @@
 #include "scatra_ele_factory.H"
 
 #include "scatra_ele_calc_cardiac_monodomain_hdg.H"
-#include "scatra_ele_calc_no_physics.h"
+#include "scatra_ele_calc_no_physics.H"
 
 
 /*--------------------------------------------------------------------------*

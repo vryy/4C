@@ -1,10 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 
-\brief Evaluation of a scatra element that does not contain any physics. Currently only implements
- the minimal set of actions needed for reading the scatra results from a restart file and simulating
- a one-way coupling to the structure. This ImplType is currently not capable to be used in solving
- the scatra equations, as the needed actions are not implemented yet.
+\brief Evaluation of a scatra element that does not contain any physics
 
 \level 2
 
@@ -23,7 +20,17 @@ namespace DRT
 {
   namespace ELEMENTS
   {
-    // class implementation
+    /**
+     * \brief ScaTra ImplType containing no physics.
+     *
+     * Evaluation of a scatra element that does not contain any physics. Currently, this class only
+     * implements the minimal set of actions needed for reading the scatra results from a restart
+     * file and simulating a one-way coupling to the structure. This ImplType can currently not be
+     * used in solving the scatra equations, as the needed actions are not implemented yet.
+     *
+     * @tparam distype Element shape type
+     * @tparam probdim Number of space dimensions of the problem
+     */
     template <DRT::Element::DiscretizationType distype, int probdim>
     class ScaTraEleCalcNoPhysics : public ScaTraEleCalc<distype, probdim>
     {

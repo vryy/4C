@@ -1424,7 +1424,6 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_hdg_boundary_calc.cpp
   src/drt_scatra_ele/scatra_ele_calc_cardiac_monodomain_hdg.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_no_physics.cpp
-  src/drt_scatra_ele/scatra_ele_calc_no_physics.h
   src/drt_scatra_ele/scatra_ele_calc_no_physics.cpp
 )
 set(OBJS_DRT_STI
