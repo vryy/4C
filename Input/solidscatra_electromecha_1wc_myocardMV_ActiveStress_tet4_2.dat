@@ -1,16 +1,12 @@
 //
-// Maintainer: Julia Hoermann
-// hoermann@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15264
+// Maintainer: Amadeus Gebauer
 //
 -----------------------------------------------------------------------TITLE
 One way electromechanics. Here only solid is calculated. The ssi problem
 is solved only with reading the result of the scatra simulation
 Test for ssi problem with the option SCATRA_FROM_RESTART_FILE
-Maintainer: J. Hoermann
 ----------------------------------------------------------------PROBLEM SIZE
-//ELEMENTS                      4153
+//ELEMENTS                      4171
 //NODES                         928
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
@@ -85,6 +81,7 @@ SCATRA_FILENAME                 xxx
 CONVTOL                         1e-08
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 101
+SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 201
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 10 20 DENS 0.001
 MAT 10 ELAST_CoupMooneyRivlin C1 1.0E-2 C2 0.0 C3 1.0E1
@@ -93,6 +90,8 @@ MAT 101 MAT_myocard DIFF1 0.03410 DIFF2 0.00314 DIFF3 0.00314 PERTUBATION_DERIV 
 MAT 102 MAT_myocard DIFF1 0.03410 DIFF2 0.00314 DIFF3 0.00314 PERTUBATION_DERIV 1e-6 MODEL TNNP TISSUE M TIME_SCALE 1.0
 MAT 103 MAT_myocard DIFF1 0.03410 DIFF2 0.00314 DIFF3 0.00314 PERTUBATION_DERIV 1e-6 MODEL FHN TISSUE M TIME_SCALE 1.0
 MAT 100 ELAST_StructuralTensor STRATEGY Standard
+MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 10 DENS 0.001
+MAT 201 MAT_scatra DIFFUSIVITY 1.0e-10
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION (0.5*tanh((t)/0.01)+0.5)*tanh((t)/0.1)*exp(-(((t)/500.0)^10))
 ----------------------------------------------------------------------FUNCT2
@@ -5753,6 +5752,24 @@ NODE 928 COORD -1.7820130483767356e+00 -9.0798099947909394e-01 -3.37433303930192
 4151 SOLIDT4SCATRA TET4 360 141 364 361 MAT 1 KINEM nonlinear TYPE CardMono FIBER1 0.0 0.0 1.0
 4152 SOLIDT4SCATRA TET4 121 627 626 373 MAT 1 KINEM nonlinear TYPE CardMono FIBER1 0.0 0.0 1.0
 4153 SOLIDT4SCATRA TET4 633 705 287 570 MAT 1 KINEM nonlinear TYPE CardMono FIBER1 0.0 0.0 1.0
+4154 BELE3_3 TRI3 897 825 873 MAT 2
+4155 BELE3_3 TRI3 660 436 868 MAT 2
+4156 BELE3_3 TRI3 868 436 873 MAT 2
+4157 BELE3_3 TRI3 436 415 876 MAT 2
+4158 BELE3_3 TRI3 873 825 509 MAT 2
+4159 BELE3_3 TRI3 509 868 873 MAT 2
+4160 BELE3_3 TRI3 731 868 724 MAT 2
+4161 BELE3_3 TRI3 731 724 726 MAT 2
+4162 BELE3_3 TRI3 874 876 811 MAT 2
+4163 BELE3_3 TRI3 660 415 436 MAT 2
+4164 BELE3_3 TRI3 917 585 660 MAT 2
+4165 BELE3_3 TRI3 660 585 415 MAT 2
+4166 BELE3_3 TRI3 660 868 731 MAT 2
+4167 BELE3_3 TRI3 731 726 797 MAT 2
+4168 BELE3_3 TRI3 723 731 486 MAT 2
+4169 BELE3_3 TRI3 660 731 723 MAT 2
+4170 BELE3_3 TRI3 723 910 660 MAT 2
+4171 BELE3_3 TRI3 811 876 415 MAT 2
 --------------------------------------------------------------FLUID ELEMENTS
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS

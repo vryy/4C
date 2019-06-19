@@ -139,6 +139,8 @@ INPAR::SCATRA::ImplType SSI::ScatraStructureCloneStrategy::GetImplType(
   // membrane9 scatra element
   else if (eletypename == "MembraneScatra_quad9Type")
     impltype = (dynamic_cast<DRT::ELEMENTS::MembraneScatra<DRT::Element::quad9>*>(ele))->ImplType();
+  else if (eletypename == "Bele3Type")
+    impltype = INPAR::SCATRA::impltype_no_physics;
 
   return impltype;
 }
