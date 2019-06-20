@@ -1,14 +1,10 @@
 //
-// Maintainer: Julia Hoermann
-// hoermann@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15264
+// Maintainer: Amadeus Gebauer
 //
 -----------------------------------------------------------------------TITLE
 One way electromechanics. Here only solid is calculated. The ssi problem
 is solved only by reading the result of the HDG scatra simulation
 Test for ssi problem with the option SCATRA_FROM_RESTART_FILE
-Maintainer: J. Hoermann
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      4153
 //NODES                         928

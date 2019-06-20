@@ -1,7 +1,5 @@
 //
-// Maintainer: Moritz Thon
-// thon@mhp.mw.tum.de
-// 089/289-10364
+// Maintainer: Fabian Braeu
 // scalar dependent growth of a quadratic block
 // Testing: materials MAT_MAT_GrowthVolumetricScd, MAT_ScDepInterp and MAT_GrowthACRadialRefConc
 //

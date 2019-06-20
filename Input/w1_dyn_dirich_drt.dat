@@ -1,11 +1,7 @@
 //
-// Maintainer: Burkhard Bornemann
-// bornemann@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de/Members/bornemann
-// 089 - 289-15237
+// Maintainer: Christoph Meier
 //
 // necessary defines: D_WALL1 BINIO
-//
 //
 // #define MAXNOD (4)
 // #define MAXELE (4)

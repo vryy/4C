@@ -1,8 +1,6 @@
 //
-// Maintainer: Moritz Thon
-// thon@mhpc.mw.tum.de
-// http://www.mhpc.mw.tum.de
-// 089 - 289-10364
+// Maintainer: Martin Kronbichler
+//
 // Testing: FPS3I Framework, WSS dependent Interface transport (both FPSI ans SSI), Restart of FPS3I
 //
 ==================================================================
