@@ -1,8 +1,5 @@
 //
-// Maintainer: Moritz Thon
-// thon@mhpc.mw.tum.de
-// http://www.mhpc.mw.tum.de
-// 089 - 289-10364
+// Maintainer: Martin Kronbichler
 //
 // testing: Stress calculation via ML agreagtion
 // hint: This does give different results in parallel, since the ML agreagtion Matrix does
