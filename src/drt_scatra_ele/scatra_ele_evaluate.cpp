@@ -204,6 +204,7 @@ int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
     case INPAR::SCATRA::impltype_bondreac:
     case INPAR::SCATRA::impltype_multipororeac:
     case INPAR::SCATRA::impltype_one_d_artery:
+    case INPAR::SCATRA::impltype_no_physics:
       // do nothing in these cases
       break;
 

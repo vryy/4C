@@ -213,6 +213,11 @@ namespace SCATRA
         impltypestring = "Scalar Transport in 1D artery";
         break;
       }
+      case INPAR::SCATRA::impltype_no_physics:
+      {
+        impltypestring = "Dummy with no physics";
+        break;
+      }
       case INPAR::SCATRA::impltype_undefined:
       {
         impltypestring = "Undefined";

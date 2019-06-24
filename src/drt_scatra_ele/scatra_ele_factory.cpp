@@ -45,6 +45,7 @@
 #include "scatra_ele_factory.H"
 
 #include "scatra_ele_calc_cardiac_monodomain_hdg.H"
+#include "scatra_ele_calc_no_physics.H"
 
 
 /*--------------------------------------------------------------------------*
@@ -415,7 +416,8 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
         problem != INPAR::SCATRA::impltype_advreac and
         problem != INPAR::SCATRA::impltype_lsreinit and
         problem != INPAR::SCATRA::impltype_bondreac and
-        problem != INPAR::SCATRA::impltype_one_d_artery)
+        problem != INPAR::SCATRA::impltype_one_d_artery and
+        problem != INPAR::SCATRA::impltype_no_physics)
       dserror("ImplType '%s' not implemented for transport on manifolds!",
           SCATRA::ImplTypeToString(problem).c_str());
 
@@ -567,6 +569,10 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
           numdofpernode, numscal, disname);
       break;
     }
+    case INPAR::SCATRA::impltype_no_physics:
+      return DRT::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>::Instance(
+          numdofpernode, numscal, disname);
+
     default:
     {
       dserror("Defined problem type does not exist!!");
