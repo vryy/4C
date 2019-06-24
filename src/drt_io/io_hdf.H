@@ -25,7 +25,7 @@
 
 #if H5_VERS_MINOR == 6
 #include <H5LT.h>
-#elif H5_VERS_MINOR == 8
+#elif H5_VERS_MINOR == 8 || H5_VERS_MINOR == 10
 #include <hdf5_hl.h>
 #else
 #error Unsupported hdf5 version
