@@ -168,6 +168,10 @@ fi
 # Append debug optimization flag for all configurations
 if [[ $DEBUG_OPTIMIZED == 1 ]]; then
   CXXFLAGSDEBUG="$CXXFLAGSDEBUG -Og"
+elif [[ -z "$CXXFLAGSDEBUG" ]]; then
+  CXXFLAGSDEBUG="-g"
+elif [[ $CXXFLAGSDEBUG != *"-g"* ]]; then
+  CXXFLAGSDEBUG="$CXXFLAGSDEBUG -g"
 fi
 
 if [[ "$CXX" ]]; then
