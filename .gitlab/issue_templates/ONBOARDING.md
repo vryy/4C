@@ -34,6 +34,7 @@ Tick the box as soon as a task is completed (either by inserting an "x" in edit 
 -->
 - [x] Register an account on LRZ GitLab (you wouldn't be here without it :wink:)
 - [ ] Sign the BACI user agreement
+- [ ] Complete the [brief introduction of the new team member](#brief-introduction-of-the-new-team-member)
 - [ ] Read through our [README](https://gitlab.lrz.de/baci/baci/blob/master/README.md) and follow the instructions to
    - [ ] Set up your GitLab account
    - [ ] Get the code
@@ -42,7 +43,7 @@ Tick the box as soon as a task is completed (either by inserting an "x" in edit 
 - [ ] Read through our [CONTRIBUTING GUIDELINES](https://gitlab.lrz.de/baci/baci/blob/master/CONTRIBUTING.md) and
   - [ ] Set up your Integrated Development Environment (IDE)
 - [ ] Browse through some open issues and merge requests to get a first impression
-- [ ] Browse throught the [Wiki pages](https://gitlab.lrz.de/baci/baci/wikis/home) containing a loose collection of further helpful information
+- [ ] Browse through the [Wiki pages](https://gitlab.lrz.de/baci/baci/wikis/home) containing a loose collection of further helpful information
 
 
 ## Checklist for the BACI group owners
