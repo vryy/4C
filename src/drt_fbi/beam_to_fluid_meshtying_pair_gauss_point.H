@@ -22,6 +22,8 @@ namespace FBI
 }
 namespace BEAMINTERACTION
 {
+  class BeamToFluidMeshtyingPairGPTS_TestSuite;
+
   /**
    * \brief Class for beam to fluid meshtying using Gauss point projection.
    * @param beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
@@ -31,6 +33,7 @@ namespace BEAMINTERACTION
   class BeamToFluidMeshtyingPairGaussPoint : public BeamToFluidMeshtyingPairBase<beam, fluid>
   {
     friend class FBI::PairFactory;
+    friend class BeamToFluidMeshtyingPairGPTS_TestSuite;
 
    public:
     /**
