@@ -42,7 +42,7 @@ Tick the box as soon as a task is completed (either by inserting an "x" in edit 
 - [ ] Read through our [CONTRIBUTING GUIDELINES](https://gitlab.lrz.de/baci/baci/blob/master/CONTRIBUTING.md) and
   - [ ] Set up your Integrated Development Environment (IDE)
 - [ ] Browse through some open issues and merge requests to get a first impression
-- [ ] Browse throught the [Wiki pages](https://gitlab.lrz.de/baci/baci/wikis/home) containing a loose collection of further helpful information
+- [ ] Browse through the [Wiki pages](https://gitlab.lrz.de/baci/baci/wikis/home) containing a loose collection of further helpful information
 
 
 ## Checklist for the BACI group owners
