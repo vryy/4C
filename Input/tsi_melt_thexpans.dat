@@ -9,13 +9,10 @@
 - linear interpolation of material parameters
 - Heating up to T=Ts+3/4*(Tl-Ts)
 - Cooling down to T=Ts+1/4*(Tl-Ts)
-- has been validated by analytical solution
+- has been validated by analytical solution: linear thermal expansion |u| = CTE(T_final)*(T_final-T_0)*l
 ------------------------------------------------------PROBLEM SIZE
-//ELEMENTS    8
-//NODES       27
 DIM           3
 -----------------------------------------------------DISCRETISATION
-
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
 --------------------------------------------------------PROBLEM TYP
@@ -37,7 +34,6 @@ FILESTEPS                       1000
 INT_STRATEGY                    Standard
 DYNAMICTYP                      OneStepTheta
 RESULTSEVRY                     1
-RESEVRYERGY                     0
 RESTARTEVRY                     1
 TIMESTEP                        0.5
 NUMSTEP                         200
@@ -53,12 +49,9 @@ ITERNORM                        L2
 DIVERCONT                       stop
 NLNSOL                          fullnewton
 PREDICT                         ConstDis
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 LINEAR_SOLVER                   3
 ------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
-
 ----------------------------------------------------THERMAL DYNAMIC
 DYNAMICTYP                      OneStepTheta
 RESULTSEVRY                     1
@@ -78,8 +71,6 @@ ITERNORM                        Rms
 DIVERCONT                       stop
 NLNSOL                          fullnewton
 PREDICT                         TangTemp
-ADAPTCONV                       no
-ADAPTCONV_BETTER                0.1
 LINEAR_SOLVER                   2
 ---------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
@@ -109,7 +100,7 @@ AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
 AZPOLY                          3
-AZPREC                          BGS2x2                        // ILU
+AZPREC                          BGS2x2
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
@@ -140,7 +131,7 @@ SIMPLE_DAMPING                  1
 SOLVER                          Aztec_MSR
 -----------------------------------------------------------SOLVER 2
 SOLVER                          UMFPACK
-NAME                            THEMAL SOLVER
+NAME                            THERMAL SOLVER
 -----------------------------------------------------------SOLVER 3
 SOLVER                          UMFPACK
 NAME                            STRUCTURAL SOLVER
@@ -304,16 +295,5 @@ NODE        27 COORD  1.0000000000000000e+00  1.0000000000000000e+00 -1.00000000
    6 SOLIDH8THERMO HEX8  6 11 12 7 20 23 24 21    MAT 1 KINEM nonlinear EAS none
    7 SOLIDH8THERMO HEX8  8 7 15 16 22 21 25 26    MAT 1 KINEM nonlinear EAS none
    8 SOLIDH8THERMO HEX8  7 12 18 15 21 24 27 25    MAT 1 KINEM nonlinear EAS none
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------LUBRICATION ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
-------------------------------------------------TRANSPORT2 ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------ACOUSTIC ELEMENTS
----------------------------------------------------CELL ELEMENTS
----------------------------------------------------CELLSCATRA ELEMENTS
----------------------------------------------------ELECTROMAGNETIC ELEMENTS
--------------------------------------------------------ARTERY ELEMENTS
 ---------------------------------------------------------------END
 // END

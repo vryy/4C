@@ -904,14 +904,18 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
         Teuchos::rcp(new MaterialDefinition("MAT_Struct_ThrStVenantK",
             "Thermo St.Venant--Kirchhoff material", INPAR::MAT::m_thermostvenant));
 
-    AddNamedInt(m, "YOUNGNUM", "number of Young's modulus in list");
+    AddNamedInt(m, "YOUNGNUM",
+        "number of Young's modulus in list (if 1 Young is const, if >1 Young is temperature) "
+        "dependent");
     AddNamedRealVector(m, "YOUNG", "Young's modulus", "YOUNGNUM");
-    AddNamedIntVector(m, "YOUNGFUNCT", "functions for temp.dependet Young's modulus", "YOUNGNUM", 0,
+    AddNamedIntVector(m, "YOUNGFUNCT", "functions for temperature dependent Young's modulus",
+        "YOUNGNUM", 0,
         true);  // optional
     AddNamedReal(m, "NUE", "Poisson's ratio");
     AddNamedReal(m, "DENS", "mass density");
-    AddNamedReal(m, "THEXPANS", "coefficient of linear thermal expansion");
-    AddNamedIntVector(m, "THEXPANSFUNCT", "functions for temp.dependet thermal expansion", 3, 0,
+    AddNamedReal(m, "THEXPANS", "constant coefficient of linear thermal expansion");
+    AddNamedIntVector(m, "THEXPANSFUNCT", "functions for temperature dependent thermal expansion",
+        3, 0,
         true);  // optional
     AddNamedReal(m, "CAPA", "capacity");
     AddNamedReal(m, "CONDUCT", "conductivity");

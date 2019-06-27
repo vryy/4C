@@ -220,7 +220,7 @@ void MAT::ThermoStVenantKirchhoff::StrainEnergy(
     const int eleGID                       ///< element GID
 )
 {
-  if (params_->youngsval_.size() > 1)
+  if (YoungIsTempDependent())
     dserror("Calculation of strain energy only for constant Young's modulus");
   Teuchos::ParameterList p;
 
@@ -238,7 +238,7 @@ void MAT::ThermoStVenantKirchhoff::StrainEnergy(
  | for 3d                                                               |
  *----------------------------------------------------------------------*/
 void MAT::ThermoStVenantKirchhoff::SetupCmat(
-    LINALG::Matrix<6, 6>& cmat, Teuchos::ParameterList& params)
+    LINALG::Matrix<6, 6>& cmat, const Teuchos::ParameterList& params)
 {
   // get material parameters
   // Young's modulus (modulus of elasticity)
@@ -291,7 +291,7 @@ void MAT::ThermoStVenantKirchhoff::SetupCmat(
 /*----------------------------------------------------------------------*
  | calculates stress-temperature modulus                     dano 04/10 |
  *----------------------------------------------------------------------*/
-double MAT::ThermoStVenantKirchhoff::STModulus(Teuchos::ParameterList& params)
+double MAT::ThermoStVenantKirchhoff::STModulus(const Teuchos::ParameterList& params)
 {
   double Emod = 0.0;
   double tempnp = params.get<double>("scalartemp");
@@ -309,7 +309,7 @@ double MAT::ThermoStVenantKirchhoff::STModulus(Teuchos::ParameterList& params)
 
   // initialise the thermal expansion coefficient
 
-  double thermexpans = GetThermexpansAtTempnp(tempnp, iquad);
+  const double thermexpans = GetThermexpansAtTempnp(tempnp, iquad);
 
 
   // plane strain, rotational symmetry
@@ -346,7 +346,7 @@ double MAT::ThermoStVenantKirchhoff::STModulus(Teuchos::ParameterList& params)
  | elasticity tensor in matrix notion for 3d, second(!) order tensor    |
  *----------------------------------------------------------------------*/
 void MAT::ThermoStVenantKirchhoff::SetupCthermo(
-    LINALG::Matrix<6, 1>& ctemp, Teuchos::ParameterList& params)
+    LINALG::Matrix<6, 1>& ctemp, const Teuchos::ParameterList& params)
 {
   double m = STModulus(params);
 
@@ -377,7 +377,8 @@ void MAT::ThermoStVenantKirchhoff::SetupCthermo(
  *----------------------------------------------------------------------*/
 void MAT::ThermoStVenantKirchhoff::Evaluate(
     const LINALG::Matrix<1, 1>& Ntemp,  // shapefcts . temperatures
-    LINALG::Matrix<6, 1>& ctemp, LINALG::Matrix<6, 1>& stresstemp, Teuchos::ParameterList& params)
+    LINALG::Matrix<6, 1>& ctemp, LINALG::Matrix<6, 1>& stresstemp,
+    const Teuchos::ParameterList& params)
 {
   // calculate the temperature difference
   LINALG::Matrix<1, 1> init(false);
@@ -527,7 +528,7 @@ double MAT::ThermoStVenantKirchhoff::GetThermexpansAtTempnp_T(
  | calculate linearisation of stress-temperature modulus     dano 04/10 |
  | w.r.t. T_{n+1} for k_dT, k_TT                                        |
  *----------------------------------------------------------------------*/
-double MAT::ThermoStVenantKirchhoff::GetSTModulus_T(Teuchos::ParameterList& params)
+double MAT::ThermoStVenantKirchhoff::GetSTModulus_T(const Teuchos::ParameterList& params)
 {
   const double tempnp = params.get<double>("scalartemp");
   const int gp = params.get<int>("gp");
@@ -619,7 +620,7 @@ void MAT::ThermoStVenantKirchhoff::GetThermalStress_T(const LINALG::Matrix<1, 1>
  | tensor in matrix notion for 3d for k_dT                              |
  *----------------------------------------------------------------------*/
 void MAT::ThermoStVenantKirchhoff::GetCmatAtTempnp_T(
-    LINALG::Matrix<6, 6>& derivcmat, Teuchos::ParameterList& params)
+    LINALG::Matrix<6, 6>& derivcmat, const Teuchos::ParameterList& params)
 {
   // clear the material tangent, identical to PutScalar(0.0)
   derivcmat.Clear();
