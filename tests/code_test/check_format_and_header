@@ -1,19 +1,17 @@
 #!/bin/bash
 
-#####################################################
-########## DESCRIPTION ##############################
-#####################################################
-
+#------------------------------------------------------------------------------------------------------------------------------#
 # This is a bash script meant for code checks concerning clang-format style and header compliance.
 
-# The test will fail if code is found that is not compliant with the BACI clang format style.
-# In this preliminary version uncompliant headers will not lead to a test failure but the affected files will be written out in a text file called "wrong_format.txt"
-# This ensures that the work with BACI is not interrupted and gives time to work on non-compliant headers, in parallel.
-# The files with non-compliant code format will also be written out in a file named "wrong_clang_format.txt"
+# The test will fail if code is found that is not compliant with the BACI clang format style or if our header requirements for
+# input files and source files are violated. In the event of failure, an error message is written to stdout and to the files
+# "wrong_clang_format.txt", respectively "wrong_format.txt".
 
-# Author:    Jonas Nitzler
-# Date:      20.03.2019
-# Version:   1.1
+# maintainer:   Jonas Nitzler
+#               nitzler@lnm.mw.tum.de
+#               089/28915257
+#
+#------------------------------------------------------------------------------------------------------------------------------#
 
 ## Delete old .txt files containing non-compliant files
 [ -e wrong_format.txt ] && rm wrong_format.txt
@@ -27,6 +25,7 @@ if [ -s wrong_format.txt ]
 then
   echo "Failed. Non-compliant file headers have been reported in wrong_format.txt."
   cat wrong_format.txt
+  exit 1
 else
   echo "Passed."
 fi
