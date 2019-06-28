@@ -225,26 +225,26 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double&
     cfg_i[type_i].assign(particlestored, std::vector<double>(3, 0.0));
   }
 
-  // get relevant neighbor pair indices for particle types
+  // get relevant particle pair indices for particle types
   std::vector<int> relindices;
-  neighborpairs_->GetRelevantNeighborPairIndices(absorbingtypes_, relindices);
+  neighborpairs_->GetRelevantParticlePairIndices(absorbingtypes_, relindices);
 
-  // iterate over relevant neighbor pairs
-  for (const int neighborpairindex : relindices)
+  // iterate over relevant particle pairs
+  for (const int particlepairindex : relindices)
   {
-    const SPHNeighborPair& neighborpair =
-        neighborpairs_->GetRefToNeighborPairData()[neighborpairindex];
+    const SPHParticlePair& particlepair =
+        neighborpairs_->GetRefToParticlePairData()[particlepairindex];
 
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
     PARTICLEENGINE::StatusEnum status_i;
     int particle_i;
-    std::tie(type_i, status_i, particle_i) = neighborpair.tuple_i_;
+    std::tie(type_i, status_i, particle_i) = particlepair.tuple_i_;
 
     PARTICLEENGINE::TypeEnum type_j;
     PARTICLEENGINE::StatusEnum status_j;
     int particle_j;
-    std::tie(type_j, status_j, particle_j) = neighborpair.tuple_j_;
+    std::tie(type_j, status_j, particle_j) = particlepair.tuple_j_;
 
     // no evaluation for boundary particles
     if (type_i == PARTICLEENGINE::BoundaryPhase or type_j == PARTICLEENGINE::BoundaryPhase)
@@ -297,7 +297,7 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double&
     {
       // sum contribution of neighboring particle j
       UTILS::vec_addscale(&cfg_i[type_i][particle_i][0],
-          fac * UTILS::pow<2>(dens_i[0]) / mass_i[0] * neighborpair.dWdrij_, neighborpair.e_ij_);
+          fac * UTILS::pow<2>(dens_i[0]) / mass_i[0] * particlepair.dWdrij_, particlepair.e_ij_);
     }
 
     // evaluate contribution of neighboring particle i
@@ -305,7 +305,7 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double&
     {
       // sum contribution of neighboring particle i
       UTILS::vec_addscale(&cfg_i[type_j][particle_j][0],
-          -fac * UTILS::pow<2>(dens_j[0]) / mass_j[0] * neighborpair.dWdrji_, neighborpair.e_ij_);
+          -fac * UTILS::pow<2>(dens_j[0]) / mass_j[0] * particlepair.dWdrji_, particlepair.e_ij_);
     }
   }
 
