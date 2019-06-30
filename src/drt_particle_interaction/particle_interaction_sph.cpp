@@ -109,7 +109,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Setup(
   equationofstatebundle_->Setup();
 
   // setup neighbor pair handler
-  neighborpairs_->Setup(particleengineinterface, kernel_);
+  neighborpairs_->Setup(particleengineinterface, particlewallinterface, kernel_);
 
   // setup density handler
   density_->Setup(

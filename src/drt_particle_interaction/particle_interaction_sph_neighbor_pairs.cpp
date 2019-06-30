@@ -45,6 +45,7 @@ void PARTICLEINTERACTION::SPHNeighborPairs::Init()
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHNeighborPairs::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
+    const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
     const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel)
 {
   // set interface to particle engine
@@ -52,6 +53,9 @@ void PARTICLEINTERACTION::SPHNeighborPairs::Setup(
 
   // set particle container bundle
   particlecontainerbundle_ = particleengineinterface_->GetParticleContainerBundle();
+
+  // set interface to particle wall handler
+  particlewallinterface_ = particlewallinterface;
 
   // set kernel handler
   kernel_ = kernel;
@@ -106,6 +110,9 @@ void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateNeighborPairs()
 {
   // evaluate particle pairs
   EvaluateParticlePairs();
+
+  // evaluate particle-wall pairs
+  if (particlewallinterface_) EvaluateParticleWallPairs();
 }
 
 /*---------------------------------------------------------------------------*
@@ -227,4 +234,15 @@ void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateParticlePairs()
       }
     }
   }
+}
+
+/*---------------------------------------------------------------------------*
+ | evaluate particle-wall pairs                               sfuchs 06/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateParticleWallPairs()
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHNeighborPairs::EvaluateParticleWallPairs");
+
+  // clear particle-wall pair data
+  particlewallpairdata_.clear();
 }
