@@ -335,19 +335,58 @@ namespace DRT
           return 10.0;
       }
 
-      /*!
-      \brief Evaluate Cauchy stress at given point in parameter space
-
-      \note At the moment this method is only used for the nitsche contact formulation
-      */
+      /**
+       * \brief Evaluate Cauchy stress at given point in parameter space and calculate
+       * linearizations
+       *
+       * \param xi[in]          position in parameter space xi
+       * \param disp[in]        vector of displacements
+       * \param n[in]           vector n (\f[\bold{n}\f])
+       * \param t[in]           vector t (\f[\bold{t}\f])
+       * \param sigma_nt[out]   cauchy stress tensor contracted using the vectors n and t
+                                (\f[ \bold{\sigma} \cdot \bold{n} \cdot \bold{t} \f])
+       * \param DsntDd[out]     derivative of sigma_nt w.r.t. displacements (\f[ \frac{ \mathrm{d}
+                                \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}{\mathrm{d} \bold{d}}
+                                \f])
+       * \param D2sntDd2[out]   second derivative of sigma_nt w.r.t. displacements (\f[ \frac{
+                                \mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}
+                                {\mathrm{d} \bold{d}^2} \f])
+       * \param D2sntDdDn[out]  second derivative of sigma_nt w.r.t. displacements and vector n (\f[
+                                \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}
+                                {\mathrm{d} \bold{d} \mathrm{d} \bold{n} } \f])
+       * \param D2sntDdDt[out]  second derivative of sigma_nt w.r.t. displacements and vector t (\f[
+                                \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}
+                                {\mathrm{d} \bold{d} \mathrm{d} \bold{t} } \f])
+       * \param D2sntDdDxi[out] second derivative of sigma_nt w.r.t. displacements and local
+                                parameter coordinate xi (\f[ \frac{\mathrm{d}^2 \bold{\sigma} \cdot
+                                \bold{n} \cdot \bold{t}} {\mathrm{d} \bold{d} \mathrm{d} \bold{\xi}
+                                } \f])
+       * \param DsntDn[out]     derivative of sigma_nt w.r.t. vector n (\f[ \frac{ \mathrm{d}
+                                \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}{\mathrm{d} \bold{n}}
+                                \f])
+       * \param DsntDt[out]     derivative of sigma_nt w.r.t. vector n (\f[ \frac{ \mathrm{d}
+                                \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}{\mathrm{d} \bold{t}}
+                                \f])
+       * \param DsntDxi[out]    derivative of sigma_nt w.r.t. local parameter coordinate xi (\f[
+                                \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot
+                                \bold{t}}{\mathrm{d} \bold{\xi}} \f])
+       * \param temp[in]        temperature
+       * \param DsntDT[out]     derivative of sigma_nt w.r.t. temperature (\f[ \frac{ \mathrm{d}
+                                \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}{\mathrm{d} T} \f])
+       * \param D2sntDdDT[out]  second derivative of sigma_nt w.r.t. displacements and temperature
+                                (\f[ \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}
+                                {\mathrm{d} \bold{d} \mathrm{d} T } \f])
+       *
+       * \note At the moment this method is only used for the nitsche contact formulation
+       */
       void GetCauchyAtXi(const LINALG::Matrix<3, 1>& xi, const std::vector<double>& disp,
           const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& t, double& sigma_nt,
-          Epetra_SerialDenseMatrix* dsntdd, Epetra_SerialDenseMatrix* d2sntdd2,
-          Epetra_SerialDenseMatrix* d2sntDdDn, Epetra_SerialDenseMatrix* d2sntDdDt,
-          Epetra_SerialDenseMatrix* d2sntDdDpxi, LINALG::Matrix<3, 1>* dsntdn,
-          LINALG::Matrix<3, 1>* dsntdt, LINALG::Matrix<3, 1>* dsntdpxi,
-          const std::vector<double>* temp = NULL, Epetra_SerialDenseMatrix* dsntdT = NULL,
-          Epetra_SerialDenseMatrix* d2sntDdDT = NULL) override;
+          Epetra_SerialDenseMatrix* DsntDd, Epetra_SerialDenseMatrix* D2sntDd2,
+          Epetra_SerialDenseMatrix* D2sntDdDn, Epetra_SerialDenseMatrix* D2sntDdDt,
+          Epetra_SerialDenseMatrix* D2sntDdDxi, LINALG::Matrix<3, 1>* DsntDn,
+          LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<3, 1>* DsntDxi,
+          const std::vector<double>* temp = NULL, Epetra_SerialDenseMatrix* DsntDT = NULL,
+          Epetra_SerialDenseMatrix* D2sntDdDT = NULL) override;
       //@}
 
      protected:

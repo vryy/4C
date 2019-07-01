@@ -4181,16 +4181,16 @@ void DRT::ELEMENTS::So_hex8::EvaluateFiniteDifferenceMaterialTangent(
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::GetCauchyAtXi(const LINALG::Matrix<3, 1>& xi,
     const std::vector<double>& disp, const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& t,
-    double& sigma_nt, Epetra_SerialDenseMatrix* dsntdd, Epetra_SerialDenseMatrix* d2sntdd2,
-    Epetra_SerialDenseMatrix* d2sntDdDn, Epetra_SerialDenseMatrix* d2sntDdDt,
-    Epetra_SerialDenseMatrix* d2sntDdDpxi, LINALG::Matrix<3, 1>* dsntdn,
-    LINALG::Matrix<3, 1>* dsntdt, LINALG::Matrix<3, 1>* dsntdpxi, const std::vector<double>* temp,
-    Epetra_SerialDenseMatrix* dsntdT, Epetra_SerialDenseMatrix* d2sntDdDT)
+    double& sigma_nt, Epetra_SerialDenseMatrix* DsntDd, Epetra_SerialDenseMatrix* D2sntDd2,
+    Epetra_SerialDenseMatrix* D2sntDdDn, Epetra_SerialDenseMatrix* D2sntDdDt,
+    Epetra_SerialDenseMatrix* D2sntDdDxi, LINALG::Matrix<3, 1>* DsntDn,
+    LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<3, 1>* DsntDxi, const std::vector<double>* temp,
+    Epetra_SerialDenseMatrix* DsntDT, Epetra_SerialDenseMatrix* D2sntDdDT)
 {
-  if (temp || dsntdT || d2sntDdDT)
+  if (temp || DsntDT || D2sntDdDT)
     dserror("Thermo-elastic Nitsche contact not yet implemented in so hex8");
 
-  sigma_nt = 0.;
+  sigma_nt = 0.0;
 
   static LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe(true);  // reference coord. of element
   static LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr(true);  // current  coord. of element
@@ -4220,67 +4220,67 @@ void DRT::ELEMENTS::So_hex8::GetCauchyAtXi(const LINALG::Matrix<3, 1>& xi,
   static LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrd(true);
   defgrd.MultiplyTT(1.0, xcurr, N_XYZ, 0.0);
 
-  static LINALG::Matrix<9, NUMDOF_SOH8> dFdd(true);  // linearization of F w.r.t. displacements
-  dFdd.Clear();
-  if (dsntdd || d2sntDdDn || d2sntDdDt || d2sntdd2 || d2sntDdDpxi)
+  static LINALG::Matrix<9, NUMDOF_SOH8> DFDd(true);  // linearization of F w.r.t. displacements
+  DFDd.Clear();
+  if (DsntDd || D2sntDdDn || D2sntDdDt || D2sntDd2 || D2sntDdDxi)
   {
     for (int i = 0; i < NUMNOD_SOH8; ++i)
     {
-      dFdd(0, NODDOF_SOH8 * i + 0) = N_XYZ(0, i);
-      dFdd(1, NODDOF_SOH8 * i + 1) = N_XYZ(1, i);
-      dFdd(2, NODDOF_SOH8 * i + 2) = N_XYZ(2, i);
-      dFdd(3, NODDOF_SOH8 * i + 0) = N_XYZ(1, i);
-      dFdd(4, NODDOF_SOH8 * i + 1) = N_XYZ(2, i);
-      dFdd(5, NODDOF_SOH8 * i + 0) = N_XYZ(2, i);
-      dFdd(6, NODDOF_SOH8 * i + 1) = N_XYZ(0, i);
-      dFdd(7, NODDOF_SOH8 * i + 2) = N_XYZ(1, i);
-      dFdd(8, NODDOF_SOH8 * i + 2) = N_XYZ(0, i);
+      DFDd(0, NODDOF_SOH8 * i + 0) = N_XYZ(0, i);
+      DFDd(1, NODDOF_SOH8 * i + 1) = N_XYZ(1, i);
+      DFDd(2, NODDOF_SOH8 * i + 2) = N_XYZ(2, i);
+      DFDd(3, NODDOF_SOH8 * i + 0) = N_XYZ(1, i);
+      DFDd(4, NODDOF_SOH8 * i + 1) = N_XYZ(2, i);
+      DFDd(5, NODDOF_SOH8 * i + 0) = N_XYZ(2, i);
+      DFDd(6, NODDOF_SOH8 * i + 1) = N_XYZ(0, i);
+      DFDd(7, NODDOF_SOH8 * i + 2) = N_XYZ(1, i);
+      DFDd(8, NODDOF_SOH8 * i + 2) = N_XYZ(0, i);
     }
   }
 
-  static LINALG::Matrix<9, 1> dsntdF(true);
-  static LINALG::Matrix<9, 9> d2sntdF2(true);
-  static LINALG::Matrix<9, NUMDIM_SOH8> d2sntDFDn(true);
-  static LINALG::Matrix<9, NUMDIM_SOH8> d2sntDFDt(true);
+  static LINALG::Matrix<9, 1> DsntDF(true);
+  static LINALG::Matrix<9, 9> D2sntDF2(true);
+  static LINALG::Matrix<9, NUMDIM_SOH8> D2sntDFDn(true);
+  static LINALG::Matrix<9, NUMDIM_SOH8> D2sntDFDt(true);
 
   SolidMaterial()->EvaluateCauchy(
-      defgrd, n, t, sigma_nt, dsntdn, dsntdt, &dsntdF, &d2sntdF2, &d2sntDFDn, &d2sntDFDt, 0);
+      defgrd, n, t, sigma_nt, DsntDn, DsntDt, &DsntDF, &D2sntDF2, &D2sntDFDn, &D2sntDFDt, 0);
 
-  if (dsntdd)
+  if (DsntDd)
   {
-    dsntdd->Reshape(NUMDOF_SOH8, 1);
-    LINALG::Matrix<NUMDOF_SOH8, 1> dsntdd_m(dsntdd->A(), true);
-    dsntdd_m.MultiplyTN(1.0, dFdd, dsntdF, 0.0);
+    DsntDd->Reshape(NUMDOF_SOH8, 1);
+    LINALG::Matrix<NUMDOF_SOH8, 1> DsntDd_m(DsntDd->A(), true);
+    DsntDd_m.MultiplyTN(1.0, DFDd, DsntDF, 0.0);
   }
 
-  if (d2sntDdDn)
+  if (D2sntDdDn)
   {
-    d2sntDdDn->Reshape(NUMDOF_SOH8, NUMDIM_SOH8);
-    LINALG::Matrix<NUMDOF_SOH8, NUMDIM_SOH8> d2sntDdDn_m(d2sntDdDn->A(), true);
-    d2sntDdDn_m.MultiplyTN(1.0, dFdd, d2sntDFDn, 0.0);
+    D2sntDdDn->Reshape(NUMDOF_SOH8, NUMDIM_SOH8);
+    LINALG::Matrix<NUMDOF_SOH8, NUMDIM_SOH8> D2sntDdDn_m(D2sntDdDn->A(), true);
+    D2sntDdDn_m.MultiplyTN(1.0, DFDd, D2sntDFDn, 0.0);
   }
 
-  if (d2sntDdDt)
+  if (D2sntDdDt)
   {
-    d2sntDdDt->Reshape(NUMDOF_SOH8, NUMDIM_SOH8);
-    LINALG::Matrix<NUMDOF_SOH8, NUMDIM_SOH8> d2sntDdDt_m(d2sntDdDt->A(), true);
-    d2sntDdDt_m.MultiplyTN(1.0, dFdd, d2sntDFDt, 0.0);
+    D2sntDdDt->Reshape(NUMDOF_SOH8, NUMDIM_SOH8);
+    LINALG::Matrix<NUMDOF_SOH8, NUMDIM_SOH8> D2sntDdDt_m(D2sntDdDt->A(), true);
+    D2sntDdDt_m.MultiplyTN(1.0, DFDd, D2sntDFDt, 0.0);
   }
 
-  if (d2sntdd2)
+  if (D2sntDd2)
   {
-    d2sntdd2->Reshape(NUMDOF_SOH8, NUMDOF_SOH8);
-    LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> d2sntdd2_m(d2sntdd2->A(), true);
-    static LINALG::Matrix<9, NUMDOF_SOH8> d2sntdF2dFdd(true);
-    d2sntdF2dFdd.Multiply(1.0, d2sntdF2, dFdd, 0.0);
-    d2sntdd2_m.MultiplyTN(1.0, dFdd, d2sntdF2dFdd, 0.0);
+    D2sntDd2->Reshape(NUMDOF_SOH8, NUMDOF_SOH8);
+    LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> D2sntDd2_m(D2sntDd2->A(), true);
+    static LINALG::Matrix<9, NUMDOF_SOH8> D2sntDF2DFDd(true);
+    D2sntDF2DFDd.Multiply(1.0, D2sntDF2, DFDd, 0.0);
+    D2sntDd2_m.MultiplyTN(1.0, DFDd, D2sntDF2DFDd, 0.0);
   }
 
 
-  if (d2sntDdDpxi)
+  if (D2sntDdDxi)
   {
-    d2sntDdDpxi->Reshape(NUMDOF_SOH8, NUMDIM_SOH8);
-    LINALG::Matrix<NUMDOF_SOH8, NUMDIM_SOH8> d2sntDdDxi_m(d2sntDdDpxi->A(), true);
+    D2sntDdDxi->Reshape(NUMDOF_SOH8, NUMDIM_SOH8);
+    LINALG::Matrix<NUMDOF_SOH8, NUMDIM_SOH8> D2sntDdDxi_m(D2sntDdDxi->A(), true);
 
     const int VOIGT3X3NONSYM_[3][3] = {{0, 3, 5}, {6, 1, 4}, {8, 7, 2}};
     static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2,
@@ -4297,20 +4297,20 @@ void DRT::ELEMENTS::So_hex8::GetCauchyAtXi(const LINALG::Matrix<3, 1>& xi,
     xXF.MultiplyNT(-1.0, xrefe, defgrd, 1.0);
     xXFsec.MultiplyTT(1.0, xXF, deriv2, 0.0);
 
-    static LINALG::Matrix<9, NUMDIM_SOH8> dFdxi(true);
-    dFdxi.Clear();
+    static LINALG::Matrix<9, NUMDIM_SOH8> DFDxi(true);
+    DFDxi.Clear();
     for (int a = 0; a < NUMDIM_SOH8; ++a)
       for (int b = 0; b < NUMDIM_SOH8; ++b)
       {
-        dFdxi(VOIGT3X3NONSYM_[a][b], 0) +=
+        DFDxi(VOIGT3X3NONSYM_[a][b], 0) +=
             xXFsec(a, 0) * invJ(b, 0) + xXFsec(a, 3) * invJ(b, 1) + xXFsec(a, 4) * invJ(b, 2);
-        dFdxi(VOIGT3X3NONSYM_[a][b], 1) +=
+        DFDxi(VOIGT3X3NONSYM_[a][b], 1) +=
             xXFsec(a, 3) * invJ(b, 0) + xXFsec(a, 1) * invJ(b, 1) + xXFsec(a, 5) * invJ(b, 2);
-        dFdxi(VOIGT3X3NONSYM_[a][b], 2) +=
+        DFDxi(VOIGT3X3NONSYM_[a][b], 2) +=
             xXFsec(a, 4) * invJ(b, 0) + xXFsec(a, 5) * invJ(b, 1) + xXFsec(a, 2) * invJ(b, 2);
       }
 
-    dsntdpxi->MultiplyTN(1.0, dFdxi, dsntdF, 0.0);
+    DsntDxi->MultiplyTN(1.0, DFDxi, DsntDF, 0.0);
 
     static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2,
         NUMDIM_SOH8>
@@ -4321,35 +4321,35 @@ void DRT::ELEMENTS::So_hex8::GetCauchyAtXi(const LINALG::Matrix<3, 1>& xi,
     Xsec.Multiply(1.0, deriv2, xrefe, 0.0);
     N_XYZ_Xsec.MultiplyTT(1.0, N_XYZ, Xsec, 0.0);
 
-    static LINALG::Matrix<9, NUMDOF_SOH8> d2sntdF2dFdd(true);
-    d2sntdF2dFdd.Multiply(1.0, d2sntdF2, dFdd, 0.0);
-    d2sntDdDxi_m.MultiplyTN(1.0, d2sntdF2dFdd, dFdxi, 0.0);
+    static LINALG::Matrix<9, NUMDOF_SOH8> D2sntDF2DFDd(true);
+    D2sntDF2DFDd.Multiply(1.0, D2sntDF2, DFDd, 0.0);
+    D2sntDdDxi_m.MultiplyTN(1.0, D2sntDF2DFDd, DFDxi, 0.0);
 
-    static LINALG::Matrix<9, NUMDIM_SOH8 * NUMDOF_SOH8> d2Fdxidd(true);
-    d2Fdxidd.Clear();
+    static LINALG::Matrix<9, NUMDIM_SOH8 * NUMDOF_SOH8> D2FDxiDd(true);
+    D2FDxiDd.Clear();
     for (int m = 0; m < NUMDIM_SOH8; ++m)
       for (int n = 0; n < NUMDIM_SOH8; ++n)
         for (int k = 0; k < NUMNOD_SOH8; ++k)
         {
-          d2Fdxidd(VOIGT3X3NONSYM_[m][n], NODDOF_SOH8 * (NODDOF_SOH8 * k + m) + 0) +=
+          D2FDxiDd(VOIGT3X3NONSYM_[m][n], NODDOF_SOH8 * (NODDOF_SOH8 * k + m) + 0) +=
               deriv2(0, k) * invJ(n, 0) + deriv2(3, k) * invJ(n, 1) + deriv2(4, k) * invJ(n, 2) -
               N_XYZ_Xsec(k, 0) * invJ(n, 0) - N_XYZ_Xsec(k, 3) * invJ(n, 1) -
               N_XYZ_Xsec(k, 4) * invJ(n, 2);
 
-          d2Fdxidd(VOIGT3X3NONSYM_[m][n], NODDOF_SOH8 * (NODDOF_SOH8 * k + m) + 1) +=
+          D2FDxiDd(VOIGT3X3NONSYM_[m][n], NODDOF_SOH8 * (NODDOF_SOH8 * k + m) + 1) +=
               deriv2(3, k) * invJ(n, 0) + deriv2(1, k) * invJ(n, 1) + deriv2(5, k) * invJ(n, 2) -
               N_XYZ_Xsec(k, 3) * invJ(n, 0) - N_XYZ_Xsec(k, 1) * invJ(n, 1) -
               N_XYZ_Xsec(k, 5) * invJ(n, 2);
 
-          d2Fdxidd(VOIGT3X3NONSYM_[m][n], NODDOF_SOH8 * (NODDOF_SOH8 * k + m) + 2) +=
+          D2FDxiDd(VOIGT3X3NONSYM_[m][n], NODDOF_SOH8 * (NODDOF_SOH8 * k + m) + 2) +=
               deriv2(4, k) * invJ(n, 0) + deriv2(5, k) * invJ(n, 1) + deriv2(2, k) * invJ(n, 2) -
               N_XYZ_Xsec(k, 4) * invJ(n, 0) - N_XYZ_Xsec(k, 5) * invJ(n, 1) -
               N_XYZ_Xsec(k, 2) * invJ(n, 2);
 
           for (int l = 0; l < NUMDIM_SOH8; ++l)
-            d2sntDdDxi_m(k * 3 + m, l) +=
-                dsntdF(VOIGT3X3NONSYM_[m][n], 0) *
-                d2Fdxidd(VOIGT3X3NONSYM_[m][n], NODDOF_SOH8 * (NODDOF_SOH8 * k + m) + l);
+            D2sntDdDxi_m(k * 3 + m, l) +=
+                DsntDF(VOIGT3X3NONSYM_[m][n], 0) *
+                D2FDxiDd(VOIGT3X3NONSYM_[m][n], NODDOF_SOH8 * (NODDOF_SOH8 * k + m) + l);
         }
   }
 

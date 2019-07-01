@@ -305,16 +305,52 @@ namespace MAT
           stress, cmat, density, glstrain_m, glstrain_new, glstrain_old, rcg_new, rcg_old, eleGID);
     };
 
-    /// Evaluate Cauchy
+    /**
+     * \brief Evaluate the Cauchy stress and linearizations with given deformation gradient.
+     *
+     * Cauchy stress is evaluated within this function call. If requested, the required
+     * linearizations are calculated. A potential thermal dependency is handled if the temperature
+     * is handed in.
+     *
+     * \param[in]     defgrd    deformation gradient (\f[\bold{F}\f])
+     * \param[in]     n         vector n (\f[\bold{n}\f])
+     * \param[in]     t         vector t (\f[\bold{t}\f])
+     * \param[out]    snt       cauchy stress tensor contracted using the vectors n and t (\f[
+                                \bold{\sigma} \cdot \bold{n} \cdot \bold{t} \f])
+     * \param[out]    DsntDn    derivative of snt w.r.t. vector n (\f[ \frac{\mathrm{d}
+                                \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}{\mathrm{d} \bold{n}}
+                                \f])
+     * \param[out]    DsntDt    derivative of snt w.r.t. vector t (\f[ \frac{\mathrm{d}
+                                \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}{\mathrm{d} \bold{t}}
+                                \f])
+     * \param[out]    DsntDF    derivative of snt w.r.t. deformation gradient (\f[\frac{\mathrm{d}
+                                \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}{\mathrm{d}\bold{F}}\f])
+     * \param[out]    D2sntDF2  second derivative of snt w.r.t. deformation gradient (\f[ \frac{
+                                \mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}
+                                {\mathrm{d} \bold{F}^2} \f])
+     * \param[out]    D2sntDFDn second derivative of snt w.r.t. deformation gradient and vector n
+                                (\f[ \frac{ \mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot
+                                \bold{t}} {\mathrm{d} \bold{F} \mathrm{d} \bold{n} } \f])
+     * \param[out]    D2sntDFDt second derivative of snt w.r.t. deformation gradient and vector n
+                                (\f[ \frac{ \mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot
+                                \bold{t}} {\mathrm{d} \bold{F} \mathrm{d} \bold{n} } \f])
+     * \param[in]     eleGID    global ID of element
+     * \param[in]     temp      temperature (if thermal dependency shall be handeled)
+     * \param[out]    DsntDT    derivative of snt w.r.t. temperature (\f[ \frac{ \mathrm{d}
+                                \bold{\sigma} \cdot \bold{n} \cdot \bold{t} }{\mathrm{d} T} \f])
+     * \param[out]    D2sntDFDT second derivative of snt w.r.t. deformation gradient and temperature
+                                (\f[ \frac{ \mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{t}
+                                } {\mathrm{d} \bold{F} \mathrm{d} T } \f])
+     */
     void EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd, const LINALG::Matrix<3, 1>& n,
-        const LINALG::Matrix<3, 1>& t, double& snt, LINALG::Matrix<3, 1>* dsntdn,
-        LINALG::Matrix<3, 1>* dsntdt, LINALG::Matrix<9, 1>* dsntdF, LINALG::Matrix<9, 9>* d2sntdF2,
-        LINALG::Matrix<9, 3>* d2sntDFDn, LINALG::Matrix<9, 3>* d2sntDFDt, const int eleGID,
-        const double* temp = NULL, double* dsntdT = NULL,
-        LINALG::Matrix<9, 1>* d2sntDFDT = NULL) override
+        const LINALG::Matrix<3, 1>& t, double& snt, LINALG::Matrix<3, 1>* DsntDn,
+        LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<9, 1>* DsntDF, LINALG::Matrix<9, 9>* D2sntDF2,
+        LINALG::Matrix<9, 3>* D2sntDFDn, LINALG::Matrix<9, 3>* D2sntDFDt, const int eleGID,
+        const double* temp = NULL, double* DsntDT = NULL,
+        LINALG::Matrix<9, 1>* D2sntDFDT = NULL) override
     {
-      mat_->EvaluateCauchy(defgrd, n, t, snt, dsntdn, dsntdt, dsntdF, d2sntdF2, d2sntDFDn,
-          d2sntDFDt, eleGID, temp, dsntdT, d2sntDFDT);
+      mat_->EvaluateCauchy(defgrd, n, t, snt, DsntDn, DsntDt, DsntDF, D2sntDF2, D2sntDFDn,
+          D2sntDFDt, eleGID, temp, DsntDT, D2sntDFDT);
     }
 
     //@}

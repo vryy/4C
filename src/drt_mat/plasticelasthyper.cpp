@@ -1852,14 +1852,14 @@ void MAT::PlasticElastHyper::EvaluateCauchyPlast(const LINALG::Matrix<3, 1>& dPI
 }
 
 void MAT::PlasticElastHyper::EvaluateCauchyDerivs(const LINALG::Matrix<3, 1>& prinv,
-    const int eleGID, LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII_ordered,
+    const int eleGID, LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII,
     LINALG::Matrix<10, 1>& dddPIII, const double* temp)
 {
   for (unsigned i = 0; i < potsum_.size(); ++i)
   {
     if (isoprinc_)
     {
-      potsum_[i]->AddDerivativesPrincipal(dPI, ddPII_ordered, prinv, eleGID);
+      potsum_[i]->AddDerivativesPrincipal(dPI, ddPII, prinv, eleGID);
       potsum_[i]->AddThirdDerivativesPrincipalIso(dddPIII, prinv, eleGID);
     }
     if (isomod_ || anisomod_ || anisoprinc_)
@@ -1884,7 +1884,7 @@ void MAT::PlasticElastHyper::EvaluateCauchyDerivs(const LINALG::Matrix<3, 1>& pr
 
     const double fac = -3. * Cte() * dT;
     dPI(2) += fac * .5 / j * ddPmodII;
-    ddPII_ordered(2) += fac * (.25 / (j * j) * dddPmodIII - .25 / (j * j * j) * ddPmodII);
+    ddPII(2) += fac * (.25 / (j * j) * dddPmodIII - .25 / (j * j * j) * ddPmodII);
     dddPIII(2) +=
         fac * (+1. / (8. * j * j * j) * ddddPmodIIII - 3. / (8. * j * j * j * j) * dddPmodIII +
                   3. / (8. * j * j * j * j * j) * ddPmodII);
@@ -1892,11 +1892,11 @@ void MAT::PlasticElastHyper::EvaluateCauchyDerivs(const LINALG::Matrix<3, 1>& pr
 }
 
 void MAT::PlasticElastHyper::EvaluateCauchyTempDeriv(const LINALG::Matrix<3, 1>& prinv,
-    const double ndt, const double bdndt, const double ibdndt, const double* temp, double* dsntdT,
+    const double ndt, const double bdndt, const double ibdndt, const double* temp, double* DsntDT,
     const LINALG::Matrix<9, 1>& iFTV, const LINALG::Matrix<9, 1>& DbdndtDFV,
-    const LINALG::Matrix<9, 1>& DibdndtDFV, const LINALG::Matrix<9, 1>& dI1dF,
-    const LINALG::Matrix<9, 1>& dI2dF, const LINALG::Matrix<9, 1>& dI3dF,
-    LINALG::Matrix<9, 1>* d2sntDFDT)
+    const LINALG::Matrix<9, 1>& DibdndtDFV, const LINALG::Matrix<9, 1>& DI1DF,
+    const LINALG::Matrix<9, 1>& DI2DF, const LINALG::Matrix<9, 1>& DI3DF,
+    LINALG::Matrix<9, 1>* D2sntDFDT)
 {
   //  return ; // fixme
 
@@ -1921,27 +1921,27 @@ void MAT::PlasticElastHyper::EvaluateCauchyTempDeriv(const LINALG::Matrix<3, 1>&
   dPI(2) += fac * 0.5 / sqI3 * ddPmodII;
   ddPII(2) += fac * (0.25 / (sqI3 * sqI3) * dddPmodIII - 0.25 / (sqI3 * sqI3 * sqI3) * ddPmodII);
 
-  *dsntdT = prefac * (prinv(1) * dPI(1) * ndt + prinv(2) * dPI(2) * ndt + dPI(0) * bdndt -
+  *DsntDT = prefac * (prinv(1) * dPI(1) * ndt + prinv(2) * dPI(2) * ndt + dPI(0) * bdndt -
                          prinv(2) * dPI(1) * ibdndt);
 
-  if (d2sntDFDT)
+  if (D2sntDFDT)
   {
-    d2sntDFDT->Update(-prefac * (prinv(1) * dPI(1) * ndt + prinv(2) * dPI(2) * ndt +
+    D2sntDFDT->Update(-prefac * (prinv(1) * dPI(1) * ndt + prinv(2) * dPI(2) * ndt +
                                     dPI(0) * bdndt - prinv(2) * dPI(1) * ibdndt),
-        iFTV, 0.0);  // d2sntDFDT is cleared here
-    d2sntDFDT->Update(prefac * dPI(0), DbdndtDFV, 1.0);
-    d2sntDFDT->Update(-prefac * prinv(2) * dPI(1), DibdndtDFV, 1.0);
-    d2sntDFDT->Update(prefac * (prinv(1) * ddPII(5) * ndt + prinv(2) * ddPII(4) * ndt +
+        iFTV, 0.0);  // D2sntDFDT is cleared here
+    D2sntDFDT->Update(prefac * dPI(0), DbdndtDFV, 1.0);
+    D2sntDFDT->Update(-prefac * prinv(2) * dPI(1), DibdndtDFV, 1.0);
+    D2sntDFDT->Update(prefac * (prinv(1) * ddPII(5) * ndt + prinv(2) * ddPII(4) * ndt +
                                    ddPII(0) * bdndt - prinv(2) * ddPII(5) * ibdndt),
-        dI1dF, 1.0);
-    d2sntDFDT->Update(
+        DI1DF, 1.0);
+    D2sntDFDT->Update(
         prefac * (dPI(1) * ndt + prinv(1) * ddPII(1) * ndt + prinv(2) * ddPII(3) * ndt +
                      ddPII(5) * bdndt - prinv(2) * ddPII(1) * ibdndt),
-        dI2dF, 1.0);
-    d2sntDFDT->Update(
+        DI2DF, 1.0);
+    D2sntDFDT->Update(
         prefac * (prinv(1) * ddPII(3) * ndt + dPI(2) * ndt + prinv(2) * ddPII(2) * ndt +
                      ddPII(4) * bdndt - dPI(1) * ibdndt - prinv(2) * ddPII(3) * ibdndt),
-        dI3dF, 1.0);
+        DI3DF, 1.0);
   }
 }
 

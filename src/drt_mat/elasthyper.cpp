@@ -721,14 +721,14 @@ void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ElastHyper::EvaluateCauchyDerivs(const LINALG::Matrix<3, 1>& prinv, const int eleGID,
-    LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII_ordered, LINALG::Matrix<10, 1>& dddPIII,
+    LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII, LINALG::Matrix<10, 1>& dddPIII,
     const double* temp)
 {
   for (unsigned i = 0; i < potsum_.size(); ++i)
   {
     if (isoprinc_)
     {
-      potsum_[i]->AddDerivativesPrincipal(dPI, ddPII_ordered, prinv, eleGID);
+      potsum_[i]->AddDerivativesPrincipal(dPI, ddPII, prinv, eleGID);
       potsum_[i]->AddThirdDerivativesPrincipalIso(dddPIII, prinv, eleGID);
     }
     if (isomod_ || anisomod_ || anisoprinc_)
@@ -740,29 +740,29 @@ void MAT::ElastHyper::EvaluateCauchyDerivs(const LINALG::Matrix<3, 1>& prinv, co
 /*----------------------------------------------------------------------*/
 void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
     const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& t, double& snt,
-    LINALG::Matrix<3, 1>* dsntdn, LINALG::Matrix<3, 1>* dsntdt, LINALG::Matrix<9, 1>* dsntdF,
-    LINALG::Matrix<9, 9>* d2sntdF2, LINALG::Matrix<9, 3>* d2sntDFDn,
-    LINALG::Matrix<9, 3>* d2sntDFDt, const int eleGID, const double* temp, double* dsntdT,
-    LINALG::Matrix<9, 1>* d2sntDFDT)
+    LINALG::Matrix<3, 1>* DsntDn, LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<9, 1>* DsntDF,
+    LINALG::Matrix<9, 9>* D2sntDF2, LINALG::Matrix<9, 3>* D2sntDFDn,
+    LINALG::Matrix<9, 3>* D2sntDFDt, const int eleGID, const double* temp, double* DsntDT,
+    LINALG::Matrix<9, 1>* D2sntDFDT)
 {
-  snt = 0.;
+  snt = 0.0;
 
   const int VOIGT3X3NONSYM_[3][3] = {{0, 3, 5}, {6, 1, 4}, {8, 7, 2}};
 
   static LINALG::Matrix<3, 3> b(true);
-  b.MultiplyNT(defgrd, defgrd);
+  b.MultiplyNT(1.0, defgrd, defgrd, 0.0);
   static LINALG::Matrix<3, 1> bdn(true);
-  bdn.Multiply(b, n);
+  bdn.Multiply(1.0, b, n, 0.0);
   static LINALG::Matrix<3, 1> bdt(true);
-  bdt.Multiply(b, t);
+  bdt.Multiply(1.0, b, t, 0.0);
   const double bdndt = bdn.Dot(t);
 
   static LINALG::Matrix<3, 3> ib(true);
   ib.Invert(b);
   static LINALG::Matrix<3, 1> ibdn(true);
-  ibdn.Multiply(ib, n);
+  ibdn.Multiply(1.0, ib, n, 0.0);
   static LINALG::Matrix<3, 1> ibdt(true);
-  ibdt.Multiply(ib, t);
+  ibdt.Multiply(1.0, ib, t, 0.0);
   const double ibdndt = ibdn.Dot(t);
   const double ndt = n.Dot(t);
 
@@ -779,25 +779,25 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
   dddPIII.Clear();
   EvaluateCauchyDerivs(prinv, eleGID, dPI, ddPII, dddPIII, temp);
 
-  const double sqI3 = sqrt(prinv(2));
+  const double prefac = 2.0 / sqrt(prinv(2));
 
-  snt = 2. / sqI3 * prinv(1) * dPI(1) * ndt + 2. * sqI3 * dPI(2) * ndt +
-        2. / sqI3 * dPI(0) * bdndt - 2. * sqI3 * dPI(1) * ibdndt;
+  snt = prefac * (prinv(1) * dPI(1) * ndt + prinv(2) * dPI(2) * ndt + dPI(0) * bdndt -
+                     prinv(2) * dPI(1) * ibdndt);
 
-  if (dsntdn)
+  if (DsntDn)
   {
-    dsntdn->Clear();
-    dsntdn->Update(2. / sqI3 * prinv(1) * dPI(1) + 2. * sqI3 * dPI(2), t, 1.);
-    dsntdn->Update(2. / sqI3 * dPI(0), bdt, 1.);
-    dsntdn->Update(-2. * sqI3 * dPI(1), ibdt, 1.);
+    DsntDn->Update(prinv(1) * dPI(1) + prinv(2) * dPI(2), t, 0.0);  // clear DsntDn here
+    DsntDn->Update(dPI(0), bdt, 1.0);
+    DsntDn->Update(-prinv(2) * dPI(1), ibdt, 1.0);
+    DsntDn->Scale(prefac);
   }
 
-  if (dsntdt)
+  if (DsntDt)
   {
-    dsntdt->Clear();
-    dsntdt->Update(2. / sqI3 * prinv(1) * dPI(1) + 2. * sqI3 * dPI(2), n, 1.);
-    dsntdt->Update(2. / sqI3 * dPI(0), bdn, 1.);
-    dsntdt->Update(-2. * sqI3 * dPI(1), ibdn, 1.);
+    DsntDt->Update(prinv(1) * dPI(1) + prinv(2) * dPI(2), n, 0.0);  // clear DsntDt here
+    DsntDt->Update(dPI(0), bdn, 1.0);
+    DsntDt->Update(-prinv(2) * dPI(1), ibdn, 1.0);
+    DsntDt->Scale(prefac);
   }
 
   // calculate stuff that is needed for evaluations of derivatives w.r.t. F
@@ -810,7 +810,7 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
   static LINALG::Matrix<9, 1> iFTV(true);
   Matrix3x3to9x1(iFT, iFTV);
 
-  // calculation of \partial I_i / \partial F (Invariants of b w.r.t. deformation gradient)
+  // calculation of dI_i/dF (derivatives of invariants of b w.r.t. deformation gradient)
   static LINALG::Matrix<3, 3> bdF(true);
   bdF.Multiply(1.0, b, defgrd, 0.0);
   static LINALG::Matrix<9, 1> bdFV(true);
@@ -819,25 +819,18 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
   ibdF.Multiply(1.0, ib, defgrd, 0.0);
   static LINALG::Matrix<9, 1> ibdFV(true);
   Matrix3x3to9x1(ibdF, ibdFV);
+  static LINALG::Matrix<9, 1> DI1DF(true);
+  DI1DF.Update(2.0, FV, 0.0);
+  static LINALG::Matrix<9, 1> DI2DF(true);
+  DI2DF.Update(prinv(0), FV, 0.0);
+  DI2DF.Update(-1.0, bdFV, 1.0);
+  DI2DF.Scale(2.0);
+  static LINALG::Matrix<9, 1> DI3DF(true);
+  DI3DF.Update(2.0 * prinv(2), ibdFV, 0.0);
 
-  static LINALG::Matrix<9, 1> dI1dF(true);
-  dI1dF.Update(2.0, FV, 0.0);
-  static LINALG::Matrix<9, 1> dI2dF(true);
-  dI2dF.Update(prinv(0), FV, 0.0);
-  dI2dF.Update(-1.0, bdFV, 1.0);
-  dI2dF.Scale(2.0);
-  static LINALG::Matrix<9, 1> dI3dF(true);
-  dI3dF.Update(2.0 * prinv(2), ibdFV, 0.0);
-
-  const double prefac = 2.0 / sqI3;
-
+  // calculate d(b \cdot n \cdot t)/dF
   static LINALG::Matrix<3, 1> tempvec3x1(true);
   static LINALG::Matrix<1, 3> tempvec1x3(true);
-  static LINALG::Matrix<1, 3> temp2vec1x3(true);
-  static LINALG::Matrix<9, 1> idV9x1(true);
-  for (unsigned i = 0; i < 3; ++i) idV9x1(i) = 1.0;
-
-  // calculate \partial b \cdot n \cdot t / \partial F
   tempvec1x3.MultiplyTN(1.0, t, defgrd, 0.0);
   static LINALG::Matrix<3, 3> DbdndtDF(true);
   DbdndtDF.MultiplyNN(1.0, n, tempvec1x3, 0.0);
@@ -846,13 +839,12 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
   static LINALG::Matrix<9, 1> DbdndtDFV(true);
   Matrix3x3to9x1(DbdndtDF, DbdndtDFV);
 
-  // calculate \partial b^{-1} \cdot n \cdot t / \partial F
+  // calculate d(b^{-1} \cdot n \cdot t)/dF
   static LINALG::Matrix<1, 3> tdibdF(true);
   static LINALG::Matrix<1, 3> ndibdF(true);
   tdibdF.MultiplyTN(1.0, t, ibdF, 0.0);
   static LINALG::Matrix<3, 3> DibdndtDF(true);
   DibdndtDF.MultiplyNN(1.0, ibdn, tdibdF, 0.0);
-  // could create ndibdF here, is also needed for D2sntDF2
   ndibdF.MultiplyTN(1.0, n, ibdF, 0.0);
   DibdndtDF.MultiplyNN(1.0, ibdt, ndibdF, 1.0);
   DibdndtDF.Scale(-1.0);
@@ -860,43 +852,42 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
   Matrix3x3to9x1(DibdndtDF, DibdndtDFV);
 
   if (temp)
-    EvaluateCauchyTempDeriv(prinv, ndt, bdndt, ibdndt, temp, dsntdT, iFTV, DbdndtDFV, DibdndtDFV,
-        dI1dF, dI2dF, dI3dF, d2sntDFDT);
+    EvaluateCauchyTempDeriv(prinv, ndt, bdndt, ibdndt, temp, DsntDT, iFTV, DbdndtDFV, DibdndtDFV,
+        DI1DF, DI2DF, DI3DF, D2sntDFDT);
 
-  if (dsntdF)
+  if (DsntDF)
   {
-    // next 3 updates add partial derivative of (\sigma * n * t) w.r.t. F for constant
-    // invariants
-    // 1. part is term arising from \partial J^{-1} / \partial F
-    dsntdF->Update(-prefac * (prinv(1) * dPI(1) * ndt + prinv(2) * dPI(2) * ndt + dPI(0) * bdndt -
+    // next 3 updates add partial derivative of (\sigma * n * t) w.r.t. F for constant invariants
+    // 1. part is term arising from d(J^{-1})/dF
+    DsntDF->Update(-prefac * (prinv(1) * dPI(1) * ndt + prinv(2) * dPI(2) * ndt + dPI(0) * bdndt -
                                  prinv(2) * dPI(1) * ibdndt),
-        iFTV, 0.0);  // dsntdF is cleared here
-    // 2. part is term arising from \partial b * n * t / \partial F
-    dsntdF->Update(prefac * dPI(0), DbdndtDFV, 1.0);
-    // 3. part is term arising from \partial b_el^{-1} * n * t / \partial F
-    dsntdF->Update(-prefac * prinv(2) * dPI(1), DibdndtDFV, 1.0);
-    // add dsntdI_1 \otimes dI_1dF
-    dsntdF->Update(prefac * (prinv(1) * ddPII(5) * ndt + prinv(2) * ddPII(4) * ndt +
+        iFTV, 0.0);  // DsntDF is cleared here
+    // 2. part is term arising from d(b * n * t)/dF
+    DsntDF->Update(prefac * dPI(0), DbdndtDFV, 1.0);
+    // 3. part is term arising from d(b_el^{-1} * n * t)/dF
+    DsntDF->Update(-prefac * prinv(2) * dPI(1), DibdndtDFV, 1.0);
+    // add d(sigma * n * t)/dI1 \otimes dI1/dF
+    DsntDF->Update(prefac * (prinv(1) * ddPII(5) * ndt + prinv(2) * ddPII(4) * ndt +
                                 ddPII(0) * bdndt - prinv(2) * ddPII(5) * ibdndt),
-        dI1dF, 1.0);
-    // add dsntdI_2 \otimes dI_2dF
-    dsntdF->Update(prefac * (dPI(1) * ndt + prinv(1) * ddPII(1) * ndt + prinv(2) * ddPII(3) * ndt +
+        DI1DF, 1.0);
+    // add d(sigma * n * t)/dI2 \otimes dI2/dF
+    DsntDF->Update(prefac * (dPI(1) * ndt + prinv(1) * ddPII(1) * ndt + prinv(2) * ddPII(3) * ndt +
                                 ddPII(5) * bdndt - prinv(2) * ddPII(1) * ibdndt),
-        dI2dF, 1.0);
-    // add dsntdI_3 \otimes dI_3dF
-    dsntdF->Update(prefac * (prinv(1) * ddPII(3) * ndt + dPI(2) * ndt + prinv(2) * ddPII(2) * ndt +
+        DI2DF, 1.0);
+    // add d(sigma * n * t)/dI3 \otimes dI3/dF
+    DsntDF->Update(prefac * (prinv(1) * ddPII(3) * ndt + dPI(2) * ndt + prinv(2) * ddPII(2) * ndt +
                                 ddPII(4) * bdndt - dPI(1) * ibdndt - prinv(2) * ddPII(3) * ibdndt),
-        dI3dF, 1.0);
+        DI3DF, 1.0);
   }
 
-  if (d2sntDFDn)
+  if (D2sntDFDn)
   {
     // next three blocks add d/dn(d(\sigma * n * t)/dF) for constant invariants
     // first part is term arising from d/dn(dJ^{-1}/dF)
     tempvec3x1.Update(prinv(1) * dPI(1) + prinv(2) * dPI(2), t, 0.0);
     tempvec3x1.Update(dPI(0), bdt, 1.0);
     tempvec3x1.Update(-prinv(2) * dPI(1), ibdt, 1.0);
-    d2sntDFDn->MultiplyNT(-prefac, iFTV, tempvec3x1, 0.0);  // d2sntDFDn is cleared here
+    D2sntDFDn->MultiplyNT(-prefac, iFTV, tempvec3x1, 0.0);  // D2sntDFDn is cleared here
 
     // second part is term arising from d/dn(d(b * n * t)/dF
     const double fac = prefac * dPI(0);
@@ -904,46 +895,44 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
     for (int k = 0; k < 3; ++k)
       for (int l = 0; l < 3; ++l)
         for (int z = 0; z < 3; ++z)
-          (*d2sntDFDn)(VOIGT3X3NONSYM_[k][l], z) +=
+          (*D2sntDFDn)(VOIGT3X3NONSYM_[k][l], z) +=
               fac * (t(k, 0) * defgrd(z, l) + (k == z) * tempvec1x3(0, l));
 
     // third part is term arising from d/dn(d(b^{-1} * n * t)/dF
     const double fac2 = prefac * prinv(2) * dPI(1);
-    tempvec1x3.MultiplyTN(1.0, t, ib, 0.0);
-    temp2vec1x3.MultiplyTN(1.0, t, ibdF, 0.0);
     for (int k = 0; k < 3; ++k)
       for (int l = 0; l < 3; ++l)
         for (int z = 0; z < 3; ++z)
-          (*d2sntDFDn)(VOIGT3X3NONSYM_[k][l], z) +=
-              fac2 * (tempvec1x3(0, k) * ibdF(z, l) + ib(z, k) * temp2vec1x3(0, l));
+          (*D2sntDFDn)(VOIGT3X3NONSYM_[k][l], z) +=
+              fac2 * (ibdt(k, 0) * ibdF(z, l) + ib(z, k) * tdibdF(0, l));
 
-    // add parts originating from d/dn(dsntdI_1 \otimes dI_1dF)
+    // add parts originating from d/dn(d(sigma * n * t)/dI1 \otimes dI1/dF)
     tempvec3x1.Update(prinv(1) * ddPII(5) + prinv(2) * ddPII(4), t, 0.0);
     tempvec3x1.Update(ddPII(0), bdt, 1.0);
     tempvec3x1.Update(-prinv(2) * ddPII(5), ibdt, 1.0);
-    d2sntDFDn->MultiplyNT(prefac, dI1dF, tempvec3x1, 1.0);
+    D2sntDFDn->MultiplyNT(prefac, DI1DF, tempvec3x1, 1.0);
 
-    // add parts originating from d/dn(dsntdI_2 \otimes dI_1dF)
+    // add parts originating from d/dn(d(sigma * n * t)/dI2 \otimes dI2/dF)
     tempvec3x1.Update(dPI(1) + prinv(1) * ddPII(1) + prinv(2) * ddPII(3), t, 0.0);
     tempvec3x1.Update(ddPII(5), bdt, 1.0);
     tempvec3x1.Update(-prinv(2) * ddPII(1), ibdt, 1.0);
-    d2sntDFDn->MultiplyNT(prefac, dI2dF, tempvec3x1, 1.0);
+    D2sntDFDn->MultiplyNT(prefac, DI2DF, tempvec3x1, 1.0);
 
-    // add parts originating from d/dn(dsntdI_3 \otimes dI_1dF)
+    // add parts originating from d/dn(d(sigma * n * t)/dI3 \otimes dI3/dF)
     tempvec3x1.Update(prinv(1) * ddPII(3) + dPI(2) + prinv(2) * ddPII(2), t, 0.0);
     tempvec3x1.Update(ddPII(4), bdt, 1.0);
     tempvec3x1.Update(-dPI(1) - prinv(2) * ddPII(3), ibdt, 1.0);
-    d2sntDFDn->MultiplyNT(prefac, dI3dF, tempvec3x1, 1.0);
+    D2sntDFDn->MultiplyNT(prefac, DI3DF, tempvec3x1, 1.0);
   }
 
-  if (d2sntDFDt)
+  if (D2sntDFDt)
   {
     // next three blocks add d/dt(d(\sigma * n * t)/dF) for constant invariants
     // first part is term arising from d/dt(dJ^{-1}/dF)
     tempvec3x1.Update(prinv(1) * dPI(1) + prinv(2) * dPI(2), n, 0.0);
     tempvec3x1.Update(dPI(0), bdn, 1.0);
     tempvec3x1.Update(-prinv(2) * dPI(1), ibdn, 1.0);
-    d2sntDFDt->MultiplyNT(-prefac, iFTV, tempvec3x1, 0.0);  // d2sntDFDt is cleared here
+    D2sntDFDt->MultiplyNT(-prefac, iFTV, tempvec3x1, 0.0);  // D2sntDFDt is cleared here
 
     // second part is term arising from d/dt(d(b * n * t)/dF
     const double fac = prefac * dPI(0);
@@ -951,48 +940,46 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
     for (int k = 0; k < 3; ++k)
       for (int l = 0; l < 3; ++l)
         for (int z = 0; z < 3; ++z)
-          (*d2sntDFDt)(VOIGT3X3NONSYM_[k][l], z) +=
+          (*D2sntDFDt)(VOIGT3X3NONSYM_[k][l], z) +=
               fac * (n(k, 0) * defgrd(z, l) + (k == z) * tempvec1x3(0, l));
 
     // third part is term arising from d/dn(d(b^{-1} * n * t)/dF
     const double fac2 = prefac * prinv(2) * dPI(1);
-    tempvec1x3.MultiplyTN(1.0, n, ib, 0.0);
-    temp2vec1x3.MultiplyTN(1.0, n, ibdF, 0.0);
     for (int k = 0; k < 3; ++k)
       for (int l = 0; l < 3; ++l)
         for (int z = 0; z < 3; ++z)
-          (*d2sntDFDt)(VOIGT3X3NONSYM_[k][l], z) +=
-              fac2 * (tempvec1x3(0, k) * ibdF(z, l) + ib(z, k) * temp2vec1x3(0, l));
+          (*D2sntDFDt)(VOIGT3X3NONSYM_[k][l], z) +=
+              fac2 * (ibdn(k, 0) * ibdF(z, l) + ib(z, k) * ndibdF(0, l));
 
-    // add parts originating from d/dt(dsntdI_1 \otimes dI_1dF)
+    // add parts originating from d/dt(d(sigma * n * t)/dI1 \otimes dI1/dF)
     tempvec3x1.Update(prinv(1) * ddPII(5) + prinv(2) * ddPII(4), n, 0.0);
     tempvec3x1.Update(ddPII(0), bdn, 1.0);
     tempvec3x1.Update(-prinv(2) * ddPII(5), ibdn, 1.0);
-    d2sntDFDt->MultiplyNT(prefac, dI1dF, tempvec3x1, 1.0);
+    D2sntDFDt->MultiplyNT(prefac, DI1DF, tempvec3x1, 1.0);
 
-    // add parts originating from d/dt(dsntdI_2 \otimes dI_1dF)
+    // add parts originating from d/dt(d(sigma * n * t)/dI2 \otimes dI2/dF)
     tempvec3x1.Update(dPI(1) + prinv(1) * ddPII(1) + prinv(2) * ddPII(3), n, 0.0);
     tempvec3x1.Update(ddPII(5), bdn, 1.0);
     tempvec3x1.Update(-prinv(2) * ddPII(1), ibdn, 1.0);
-    d2sntDFDt->MultiplyNT(prefac, dI2dF, tempvec3x1, 1.0);
+    D2sntDFDt->MultiplyNT(prefac, DI2DF, tempvec3x1, 1.0);
 
-    // add parts originating from d/dt(dsntdI_3 \otimes dI_1dF)
+    // add parts originating from d/dt(d(sigma * n * t)/dI3 \otimes dI3/dF)
     tempvec3x1.Update(prinv(1) * ddPII(3) + dPI(2) + prinv(2) * ddPII(2), n, 0.0);
     tempvec3x1.Update(ddPII(4), bdn, 1.0);
     tempvec3x1.Update(-dPI(1) - prinv(2) * ddPII(3), ibdn, 1.0);
-    d2sntDFDt->MultiplyNT(prefac, dI3dF, tempvec3x1, 1.0);
+    D2sntDFDt->MultiplyNT(prefac, DI3DF, tempvec3x1, 1.0);
   }
 
-  if (d2sntdF2)
+  if (D2sntDF2)
   {
     // define and fill all tensors that can not be calculated using multiply operations first
-    static LINALG::Matrix<9, 9> diFTdF(true);
+    static LINALG::Matrix<9, 9> DiFTDF(true);
     static LINALG::Matrix<9, 9> D2bdndtDF2(true);
     static LINALG::Matrix<9, 9> D2ibdndtDF2(true);
     static LINALG::Matrix<9, 9> D2I1DF2(true);
     static LINALG::Matrix<9, 9> D2I2DF2(true);
     static LINALG::Matrix<9, 9> D2I3DF2(true);
-    diFTdF.Clear();
+    DiFTDF.Clear();
     D2bdndtDF2.Clear();
     D2ibdndtDF2.Clear();
     D2I1DF2.Clear();
@@ -1007,7 +994,7 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
         for (int m = 0; m < 3; ++m)
           for (int a = 0; a < 3; ++a)
           {
-            diFTdF(VOIGT3X3NONSYM_[k][l], VOIGT3X3NONSYM_[m][a]) = -iF(l, m) * iF(a, k);
+            DiFTDF(VOIGT3X3NONSYM_[k][l], VOIGT3X3NONSYM_[m][a]) = -iF(l, m) * iF(a, k);
             D2bdndtDF2(VOIGT3X3NONSYM_[k][l], VOIGT3X3NONSYM_[m][a]) =
                 (t(k, 0) * n(m, 0) + t(m, 0) * n(k, 0)) * (l == a);
             D2ibdndtDF2(VOIGT3X3NONSYM_[k][l], VOIGT3X3NONSYM_[m][a]) =
@@ -1022,117 +1009,110 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
                 2.0 * prinv(2) * (2.0 * ibdF(m, a) * ibdF(k, l) - ibdF(m, l) * ibdF(k, a));
           }
 
-    // now all other contributions are added
-    // part of TEST 1
-    d2sntdF2->MultiplyNT(prefac * (prinv(1) * dPI(1) * ndt + prinv(2) * dPI(2) * ndt +
+    // terms below add contributions originating from d(1st term of DsntDF)/dF
+    D2sntDF2->MultiplyNT(prefac * (prinv(1) * dPI(1) * ndt + prinv(2) * dPI(2) * ndt +
                                       dPI(0) * bdndt - prinv(2) * dPI(1) * ibdndt),
-        iFTV, iFTV, 0.0);  // d2sntdF2 is cleared here
-    d2sntdF2->Update(-prefac * (prinv(1) * dPI(1) * ndt + prinv(2) * dPI(2) * ndt + dPI(0) * bdndt -
+        iFTV, iFTV, 0.0);  // D2sntDF2 is cleared here
+    D2sntDF2->Update(-prefac * (prinv(1) * dPI(1) * ndt + prinv(2) * dPI(2) * ndt + dPI(0) * bdndt -
                                    prinv(2) * dPI(1) * ibdndt),
-        diFTdF, 1.0);
-    d2sntdF2->MultiplyNT(-prefac * dPI(0), iFTV, DbdndtDFV, 1.0);
-    d2sntdF2->MultiplyNT(prefac * prinv(2) * dPI(1), iFTV, DibdndtDFV, 1.0);
+        DiFTDF, 1.0);
+    D2sntDF2->MultiplyNT(-prefac * dPI(0), iFTV, DbdndtDFV, 1.0);
+    D2sntDF2->MultiplyNT(prefac * prinv(2) * dPI(1), iFTV, DibdndtDFV, 1.0);
 
-    d2sntdF2->MultiplyNT(-prefac * (prinv(1) * ddPII(5) * ndt + prinv(2) * ddPII(4) * ndt +
+    D2sntDF2->MultiplyNT(-prefac * (prinv(1) * ddPII(5) * ndt + prinv(2) * ddPII(4) * ndt +
                                        ddPII(0) * bdndt - prinv(2) * ddPII(5) * ibdndt),
-        iFTV, dI1dF, 1.0);
-    d2sntdF2->MultiplyNT(
+        iFTV, DI1DF, 1.0);
+    D2sntDF2->MultiplyNT(
         -prefac * (dPI(1) * ndt + prinv(1) * ddPII(1) * ndt + prinv(2) * ddPII(3) * ndt +
                       ddPII(5) * bdndt - prinv(2) * ddPII(1) * ibdndt),
-        iFTV, dI2dF, 1.0);
-    d2sntdF2->MultiplyNT(
+        iFTV, DI2DF, 1.0);
+    D2sntDF2->MultiplyNT(
         -prefac * (prinv(1) * ddPII(3) * ndt + dPI(2) * ndt + prinv(2) * ddPII(2) * ndt +
                       ddPII(4) * bdndt - dPI(1) * ibdndt - prinv(2) * ddPII(3) * ibdndt),
-        iFTV, dI3dF, 1.0);
-    // END part of TEST 1
+        iFTV, DI3DF, 1.0);
 
-    // part of TEST 2
-    d2sntdF2->MultiplyNT(-prefac * dPI(0), DbdndtDFV, iFTV, 1.0);
-    d2sntdF2->Update(prefac * dPI(0), D2bdndtDF2, 1.0);
-    d2sntdF2->MultiplyNT(prefac * ddPII(0), DbdndtDFV, dI1dF, 1.0);
-    d2sntdF2->MultiplyNT(prefac * ddPII(5), DbdndtDFV, dI2dF, 1.0);
-    d2sntdF2->MultiplyNT(prefac * ddPII(4), DbdndtDFV, dI3dF, 1.0);
-    // END part of TEST 2
+    // terms below add contributions originating from d(2nd term of DsntDF)/dF
+    D2sntDF2->MultiplyNT(-prefac * dPI(0), DbdndtDFV, iFTV, 1.0);
+    D2sntDF2->Update(prefac * dPI(0), D2bdndtDF2, 1.0);
+    D2sntDF2->MultiplyNT(prefac * ddPII(0), DbdndtDFV, DI1DF, 1.0);
+    D2sntDF2->MultiplyNT(prefac * ddPII(5), DbdndtDFV, DI2DF, 1.0);
+    D2sntDF2->MultiplyNT(prefac * ddPII(4), DbdndtDFV, DI3DF, 1.0);
 
-    // part of TEST 3
-    d2sntdF2->MultiplyNT(prefac * prinv(2) * dPI(1), DibdndtDFV, iFTV, 1.0);
-    d2sntdF2->Update(-prefac * prinv(2) * dPI(1), D2ibdndtDF2, 1.0);
-    d2sntdF2->MultiplyNT(-prefac * prinv(2) * ddPII(5), DibdndtDFV, dI1dF, 1.0);
-    d2sntdF2->MultiplyNT(-prefac * prinv(2) * ddPII(1), DibdndtDFV, dI2dF, 1.0);
-    d2sntdF2->MultiplyNT(-prefac * (dPI(1) + prinv(2) * ddPII(3)), DibdndtDFV, dI3dF, 1.0);
-    // END of TEST 3
+    // terms below add contributions originating from d(3rd term of DsntDF)/dF
+    D2sntDF2->MultiplyNT(prefac * prinv(2) * dPI(1), DibdndtDFV, iFTV, 1.0);
+    D2sntDF2->Update(-prefac * prinv(2) * dPI(1), D2ibdndtDF2, 1.0);
+    D2sntDF2->MultiplyNT(-prefac * prinv(2) * ddPII(5), DibdndtDFV, DI1DF, 1.0);
+    D2sntDF2->MultiplyNT(-prefac * prinv(2) * ddPII(1), DibdndtDFV, DI2DF, 1.0);
+    D2sntDF2->MultiplyNT(-prefac * (dPI(1) + prinv(2) * ddPII(3)), DibdndtDFV, DI3DF, 1.0);
 
-    // part of TEST 4
-    d2sntdF2->MultiplyNT(-prefac * (prinv(1) * ddPII(5) * ndt + prinv(2) * ddPII(4) * ndt +
+    // terms below add contributions originating from d(4th term of DsntDF)/dF
+    D2sntDF2->MultiplyNT(-prefac * (prinv(1) * ddPII(5) * ndt + prinv(2) * ddPII(4) * ndt +
                                        ddPII(0) * bdndt - prinv(2) * ddPII(5) * ibdndt),
-        dI1dF, iFTV, 1.0);
-    d2sntdF2->MultiplyNT(prefac * ddPII(0), dI1dF, DbdndtDFV, 1.0);
-    d2sntdF2->MultiplyNT(-prefac * prinv(2) * ddPII(5), dI1dF, DibdndtDFV, 1.0);
-    d2sntdF2->Update(prefac * (prinv(1) * ddPII(5) * ndt + prinv(2) * ddPII(4) * ndt +
+        DI1DF, iFTV, 1.0);
+    D2sntDF2->MultiplyNT(prefac * ddPII(0), DI1DF, DbdndtDFV, 1.0);
+    D2sntDF2->MultiplyNT(-prefac * prinv(2) * ddPII(5), DI1DF, DibdndtDFV, 1.0);
+    D2sntDF2->Update(prefac * (prinv(1) * ddPII(5) * ndt + prinv(2) * ddPII(4) * ndt +
                                   ddPII(0) * bdndt - prinv(2) * ddPII(5) * ibdndt),
         D2I1DF2, 1.0);
-    d2sntdF2->MultiplyNT(prefac * (prinv(1) * dddPIII(5) * ndt + prinv(2) * dddPIII(6) * ndt +
+    D2sntDF2->MultiplyNT(prefac * (prinv(1) * dddPIII(5) * ndt + prinv(2) * dddPIII(6) * ndt +
                                       dddPIII(0) * bdndt - prinv(2) * dddPIII(5) * ibdndt),
-        dI1dF, dI1dF, 1.0);
-    d2sntdF2->MultiplyNT(
+        DI1DF, DI1DF, 1.0);
+    D2sntDF2->MultiplyNT(
         prefac * (ddPII(5) * ndt + prinv(1) * dddPIII(3) * ndt + prinv(2) * dddPIII(9) * ndt +
                      dddPIII(5) * bdndt - prinv(2) * dddPIII(3) * ibdndt),
-        dI1dF, dI2dF, 1.0);
-    d2sntdF2->MultiplyNT(
+        DI1DF, DI2DF, 1.0);
+    D2sntDF2->MultiplyNT(
         prefac * (prinv(1) * dddPIII(9) * ndt + ddPII(4) * ndt + prinv(2) * dddPIII(4) * ndt +
                      dddPIII(6) * bdndt - ddPII(5) * ibdndt - prinv(2) * dddPIII(9) * ibdndt),
-        dI1dF, dI3dF, 1.0);
-    // END part of TEST 4
+        DI1DF, DI3DF, 1.0);
 
-    // part of TEST 5
-    d2sntdF2->MultiplyNT(
+    // terms below add contributions originating from d(5th term of DsntDF)/dF
+    D2sntDF2->MultiplyNT(
         -prefac * (dPI(1) * ndt + prinv(1) * ddPII(1) * ndt + prinv(2) * ddPII(3) * ndt +
                       ddPII(5) * bdndt - prinv(2) * ddPII(1) * ibdndt),
-        dI2dF, iFTV, 1.0);
-    d2sntdF2->MultiplyNT(prefac * ddPII(5), dI2dF, DbdndtDFV, 1.0);
-    d2sntdF2->MultiplyNT(-prefac * prinv(2) * ddPII(1), dI2dF, DibdndtDFV, 1.0);
-    d2sntdF2->Update(
+        DI2DF, iFTV, 1.0);
+    D2sntDF2->MultiplyNT(prefac * ddPII(5), DI2DF, DbdndtDFV, 1.0);
+    D2sntDF2->MultiplyNT(-prefac * prinv(2) * ddPII(1), DI2DF, DibdndtDFV, 1.0);
+    D2sntDF2->Update(
         prefac * (dPI(1) * ndt + prinv(1) * ddPII(1) * ndt + prinv(2) * ddPII(3) * ndt +
                      ddPII(5) * bdndt - prinv(2) * ddPII(1) * ibdndt),
         D2I2DF2, 1.0);
-    d2sntdF2->MultiplyNT(
+    D2sntDF2->MultiplyNT(
         prefac * (ddPII(5) * ndt + prinv(1) * dddPIII(3) * ndt + prinv(2) * dddPIII(9) * ndt +
                      dddPIII(5) * bdndt - prinv(2) * dddPIII(3) * ibdndt),
-        dI2dF, dI1dF, 1.0);
-    d2sntdF2->MultiplyNT(
+        DI2DF, DI1DF, 1.0);
+    D2sntDF2->MultiplyNT(
         prefac * (2.0 * ddPII(1) * ndt + prinv(1) * dddPIII(1) * ndt + prinv(2) * dddPIII(7) * ndt +
                      dddPIII(3) * bdndt - prinv(2) * dddPIII(1) * ibdndt),
-        dI2dF, dI2dF, 1.0);
-    d2sntdF2->MultiplyNT(
+        DI2DF, DI2DF, 1.0);
+    D2sntDF2->MultiplyNT(
         prefac * (2.0 * ddPII(3) * ndt + prinv(1) * dddPIII(7) * ndt + prinv(2) * dddPIII(8) * ndt +
                      dddPIII(9) * bdndt - ddPII(1) * ibdndt - prinv(2) * dddPIII(7) * ibdndt),
-        dI2dF, dI3dF, 1.0);
-    // END part of TEST 5
+        DI2DF, DI3DF, 1.0);
 
-    // part of TEST 6
-    d2sntdF2->MultiplyNT(
+    // terms below add contributions originating from d(6th term of DsntDF)/dF
+    D2sntDF2->MultiplyNT(
         -prefac * (prinv(1) * ddPII(3) * ndt + dPI(2) * ndt + prinv(2) * ddPII(2) * ndt +
                       ddPII(4) * bdndt - dPI(1) * ibdndt - prinv(2) * ddPII(3) * ibdndt),
-        dI3dF, iFTV, 1.0);
-    d2sntdF2->MultiplyNT(prefac * ddPII(4), dI3dF, DbdndtDFV, 1.0);
-    d2sntdF2->MultiplyNT(-prefac * (dPI(1) + prinv(2) * ddPII(3)), dI3dF, DibdndtDFV, 1.0);
-    d2sntdF2->Update(
+        DI3DF, iFTV, 1.0);
+    D2sntDF2->MultiplyNT(prefac * ddPII(4), DI3DF, DbdndtDFV, 1.0);
+    D2sntDF2->MultiplyNT(-prefac * (dPI(1) + prinv(2) * ddPII(3)), DI3DF, DibdndtDFV, 1.0);
+    D2sntDF2->Update(
         prefac * (prinv(1) * ddPII(3) * ndt + dPI(2) * ndt + prinv(2) * ddPII(2) * ndt +
                      ddPII(4) * bdndt - dPI(1) * ibdndt - prinv(2) * ddPII(3) * ibdndt),
         D2I3DF2, 1.0);
-    d2sntdF2->MultiplyNT(
+    D2sntDF2->MultiplyNT(
         prefac * (prinv(1) * dddPIII(9) * ndt + ddPII(4) * ndt + prinv(2) * dddPIII(4) * ndt +
                      dddPIII(6) * bdndt - ddPII(5) * ibdndt - prinv(2) * dddPIII(9) * ibdndt),
-        dI3dF, dI1dF, 1.0);
-    d2sntdF2->MultiplyNT(
+        DI3DF, DI1DF, 1.0);
+    D2sntDF2->MultiplyNT(
         prefac * (2.0 * ddPII(3) * ndt + prinv(1) * dddPIII(7) * ndt + prinv(2) * dddPIII(8) * ndt +
                      dddPIII(9) * bdndt - ddPII(1) * ibdndt - prinv(2) * dddPIII(7) * ibdndt),
-        dI3dF, dI2dF, 1.0);
-    d2sntdF2->MultiplyNT(
+        DI3DF, DI2DF, 1.0);
+    D2sntDF2->MultiplyNT(
         prefac * (prinv(1) * dddPIII(8) * ndt + 2.0 * ddPII(2) * ndt + prinv(2) * dddPIII(2) * ndt +
                      dddPIII(4) * bdndt - 2.0 * ddPII(3) * ibdndt - prinv(2) * dddPIII(8) * ibdndt),
-        dI3dF, dI3dF, 1.0);
-    // END part of TEST 6
+        DI3DF, DI3DF, 1.0);
   }
 
   return;

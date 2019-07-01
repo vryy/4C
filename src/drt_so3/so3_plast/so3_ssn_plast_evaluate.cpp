@@ -2010,19 +2010,19 @@ double DRT::ELEMENTS::So3_Plast<distype>::CalcIntEnergy(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiElast(const LINALG::Matrix<3, 1>& xi,
     const std::vector<double>& disp, const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& t,
-    double& sigma_nt, Epetra_SerialDenseMatrix* dsntdd, Epetra_SerialDenseMatrix* d2sntdd2,
-    Epetra_SerialDenseMatrix* d2sntDdDn, Epetra_SerialDenseMatrix* d2sntDdDt,
-    Epetra_SerialDenseMatrix* d2sntDdDpxi, LINALG::Matrix<3, 1>* dsntdn,
-    LINALG::Matrix<3, 1>* dsntdt, LINALG::Matrix<3, 1>* dsntdpxi, const std::vector<double>* temp,
-    Epetra_SerialDenseMatrix* dsntdT, Epetra_SerialDenseMatrix* d2sntDdDT)
+    double& sigma_nt, Epetra_SerialDenseMatrix* DsntDd, Epetra_SerialDenseMatrix* D2sntDd2,
+    Epetra_SerialDenseMatrix* D2sntDdDn, Epetra_SerialDenseMatrix* D2sntDdDt,
+    Epetra_SerialDenseMatrix* D2sntDdDxi, LINALG::Matrix<3, 1>* DsntDn,
+    LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<3, 1>* DsntDxi, const std::vector<double>* temp,
+    Epetra_SerialDenseMatrix* DsntDT, Epetra_SerialDenseMatrix* D2sntDdDT)
 {
   if (distype == DRT::Element::nurbs27) GetNurbsEleInfo();
 
   if (fbar_ || eastype_ != soh8p_easnone)
     dserror("cauchy stress not available for fbar or eas elements");
 
-  if (temp || dsntdT || d2sntDdDT)
-    if (!temp || !dsntdT || !d2sntDdDT) dserror("inconsistent temperature dependency input");
+  if (temp || DsntDT || D2sntDdDT)
+    if (!temp || !DsntDT || !D2sntDdDT) dserror("inconsistent temperature dependency input");
   if (temp && Material()->MaterialType() != INPAR::MAT::m_plelasthyper)
     dserror(
         "thermo-mechanical Nitsche contact only with PlasticElastHyper"
@@ -2056,9 +2056,9 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiElast(const LINALG::Matrix<
   EvaluateShapeDeriv(xi);
 
   const double gp_temp = ele_temp.Dot(ShapeFunction());
-  double dsntdT_gp = 0.0;
-  static LINALG::Matrix<nsd_, 1> dT_dxi(true);
-  dT_dxi.Multiply(1.0, DerivShapeFunction(), ele_temp, 0.0);
+  double DsntDT_gp = 0.0;
+  static LINALG::Matrix<nsd_, 1> DTDxi(true);
+  DTDxi.Multiply(1.0, DerivShapeFunction(), ele_temp, 0.0);
 
   static LINALG::Matrix<nsd_, nen_> N_XYZ(true);
   static LINALG::Matrix<nsd_, nsd_> invJ(true);
@@ -2068,87 +2068,87 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiElast(const LINALG::Matrix<
   static LINALG::Matrix<nsd_, nsd_> defgrd(true);
   defgrd.MultiplyTT(1.0, xcurr, N_XYZ, 0.0);
 
-  static LINALG::Matrix<9, numdofperelement_> dFdd(
+  static LINALG::Matrix<9, numdofperelement_> DFDd(
       true);  // linearization of F w.r.t. displacements
-  dFdd.Clear();
-  if (dsntdd || d2sntDdDn || d2sntDdDt || d2sntDdDpxi || d2sntDdDT)
+  DFDd.Clear();
+  if (DsntDd || D2sntDdDn || D2sntDdDt || D2sntDdDxi || D2sntDdDT)
   {
     for (int i = 0; i < nen_; ++i)
     {
-      dFdd(0, nsd_ * i + 0) = N_XYZ(0, i);
-      dFdd(1, nsd_ * i + 1) = N_XYZ(1, i);
-      dFdd(2, nsd_ * i + 2) = N_XYZ(2, i);
-      dFdd(3, nsd_ * i + 0) = N_XYZ(1, i);
-      dFdd(4, nsd_ * i + 1) = N_XYZ(2, i);
-      dFdd(5, nsd_ * i + 0) = N_XYZ(2, i);
-      dFdd(6, nsd_ * i + 1) = N_XYZ(0, i);
-      dFdd(7, nsd_ * i + 2) = N_XYZ(1, i);
-      dFdd(8, nsd_ * i + 2) = N_XYZ(0, i);
+      DFDd(0, nsd_ * i + 0) = N_XYZ(0, i);
+      DFDd(1, nsd_ * i + 1) = N_XYZ(1, i);
+      DFDd(2, nsd_ * i + 2) = N_XYZ(2, i);
+      DFDd(3, nsd_ * i + 0) = N_XYZ(1, i);
+      DFDd(4, nsd_ * i + 1) = N_XYZ(2, i);
+      DFDd(5, nsd_ * i + 0) = N_XYZ(2, i);
+      DFDd(6, nsd_ * i + 1) = N_XYZ(0, i);
+      DFDd(7, nsd_ * i + 2) = N_XYZ(1, i);
+      DFDd(8, nsd_ * i + 2) = N_XYZ(0, i);
     }
   }
 
-  static LINALG::Matrix<9, 1> dsntdF(true);
-  static LINALG::Matrix<9, 9> d2sntdF2(true);
-  static LINALG::Matrix<9, nsd_> d2sntDFDn(true);
-  static LINALG::Matrix<9, nsd_> d2sntDFDt(true);
-  static LINALG::Matrix<9, 1> d2sntDFDT(true);
+  static LINALG::Matrix<9, 1> DsntDF(true);
+  static LINALG::Matrix<9, 9> D2sntDF2(true);
+  static LINALG::Matrix<9, nsd_> D2sntDFDn(true);
+  static LINALG::Matrix<9, nsd_> D2sntDFDt(true);
+  static LINALG::Matrix<9, 1> D2sntDFDT(true);
 
   if (plmat && temp)
-    plmat->EvaluateCauchy(defgrd, n, t, sigma_nt, dsntdn, dsntdt, &dsntdF, &d2sntdF2, &d2sntDFDn,
-        &d2sntDFDt, 0, &gp_temp, &dsntdT_gp, &d2sntDFDT);
+    plmat->EvaluateCauchy(defgrd, n, t, sigma_nt, DsntDn, DsntDt, &DsntDF, &D2sntDF2, &D2sntDFDn,
+        &D2sntDFDt, 0, &gp_temp, &DsntDT_gp, &D2sntDFDT);
   else
     SolidMaterial()->EvaluateCauchy(
-        defgrd, n, t, sigma_nt, dsntdn, dsntdt, &dsntdF, &d2sntdF2, &d2sntDFDn, &d2sntDFDt, 0);
+        defgrd, n, t, sigma_nt, DsntDn, DsntDt, &DsntDF, &D2sntDF2, &D2sntDFDn, &D2sntDFDt, 0);
 
-  if (dsntdd)
+  if (DsntDd)
   {
-    dsntdd->Shape(numdofperelement_, 1);
-    LINALG::Matrix<numdofperelement_, 1> dsntdd_m(dsntdd->A(), true);
-    dsntdd_m.MultiplyTN(1.0, dFdd, dsntdF, 0.0);
+    DsntDd->Shape(numdofperelement_, 1);
+    LINALG::Matrix<numdofperelement_, 1> DsntDd_m(DsntDd->A(), true);
+    DsntDd_m.MultiplyTN(1.0, DFDd, DsntDF, 0.0);
   }
 
-  if (d2sntDdDT)
+  if (D2sntDdDT)
   {
-    d2sntDdDT->Shape(numdofperelement_, nen_);
+    D2sntDdDT->Shape(numdofperelement_, nen_);
     static LINALG::Matrix<numdofperelement_, 1> tmp(true);
-    tmp.MultiplyTN(1.0, dFdd, d2sntDFDT, 0.0);
-    LINALG::Matrix<numdofperelement_, nen_>(d2sntDdDT->A(), true).MultiplyNT(tmp, ShapeFunction());
+    tmp.MultiplyTN(1.0, DFDd, D2sntDFDT, 0.0);
+    LINALG::Matrix<numdofperelement_, nen_>(D2sntDdDT->A(), true).MultiplyNT(tmp, ShapeFunction());
   }
 
-  if (d2sntDdDn)
+  if (D2sntDdDn)
   {
-    d2sntDdDn->Shape(numdofperelement_, nsd_);
-    LINALG::Matrix<numdofperelement_, nsd_> d2sntDdDn_m(d2sntDdDn->A(), true);
-    d2sntDdDn_m.MultiplyTN(1.0, dFdd, d2sntDFDn, 0.0);
+    D2sntDdDn->Shape(numdofperelement_, nsd_);
+    LINALG::Matrix<numdofperelement_, nsd_> D2sntDdDn_m(D2sntDdDn->A(), true);
+    D2sntDdDn_m.MultiplyTN(1.0, DFDd, D2sntDFDn, 0.0);
   }
 
-  if (d2sntDdDt)
+  if (D2sntDdDt)
   {
-    d2sntDdDt->Shape(numdofperelement_, nsd_);
-    LINALG::Matrix<numdofperelement_, nsd_> d2sntDdDt_m(d2sntDdDt->A(), true);
-    d2sntDdDt_m.MultiplyTN(1.0, dFdd, d2sntDFDt, 0.0);
+    D2sntDdDt->Shape(numdofperelement_, nsd_);
+    LINALG::Matrix<numdofperelement_, nsd_> D2sntDdDt_m(D2sntDdDt->A(), true);
+    D2sntDdDt_m.MultiplyTN(1.0, DFDd, D2sntDFDt, 0.0);
   }
 
-  if (dsntdT)
+  if (DsntDT)
   {
-    dsntdT->Shape(nen_, 1);
-    LINALG::Matrix<nen_, 1>(dsntdT->A(), true).Update(dsntdT_gp, ShapeFunction(), 1.0);
+    DsntDT->Shape(nen_, 1);
+    LINALG::Matrix<nen_, 1>(DsntDT->A(), true).Update(DsntDT_gp, ShapeFunction(), 1.0);
   }
 
-  if (d2sntdd2)
+  if (D2sntDd2)
   {
-    d2sntdd2->Shape(numdofperelement_, numdofperelement_);
-    LINALG::Matrix<numdofperelement_, numdofperelement_> d2sntdd2_m(d2sntdd2->A(), true);
-    static LINALG::Matrix<9, numdofperelement_> d2sntdF2dFdd(true);
-    d2sntdF2dFdd.Multiply(1.0, d2sntdF2, dFdd, 0.0);
-    d2sntdd2_m.MultiplyTN(1.0, dFdd, d2sntdF2dFdd, 0.0);
+    D2sntDd2->Shape(numdofperelement_, numdofperelement_);
+    LINALG::Matrix<numdofperelement_, numdofperelement_> D2sntDd2_m(D2sntDd2->A(), true);
+    static LINALG::Matrix<9, numdofperelement_> D2sntDF2DFDd(true);
+    D2sntDF2DFDd.Multiply(1.0, D2sntDF2, DFDd, 0.0);
+    D2sntDd2_m.MultiplyTN(1.0, DFDd, D2sntDF2DFDd, 0.0);
   }
 
 
-  if (d2sntDdDpxi)
+  if (D2sntDdDxi)
   {
-    d2sntDdDpxi->Shape(numdofperelement_, nsd_);
-    LINALG::Matrix<numdofperelement_, nsd_> d2sntDdDxi_m(d2sntDdDpxi->A(), true);
+    D2sntDdDxi->Shape(numdofperelement_, nsd_);
+    LINALG::Matrix<numdofperelement_, nsd_> D2sntDdDxi_m(D2sntDdDxi->A(), true);
 
     const int VOIGT3X3NONSYM_[3][3] = {{0, 3, 5}, {6, 1, 4}, {8, 7, 2}};
     static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2, nen_> deriv2(true);
@@ -2165,63 +2165,63 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiElast(const LINALG::Matrix<
     xXF.MultiplyNT(-1.0, xrefe, defgrd, 1.0);
     xXFsec.MultiplyTT(1.0, xXF, deriv2, 0.0);
 
-    static LINALG::Matrix<9, nsd_> dFdxi(true);
-    dFdxi.Clear();
+    static LINALG::Matrix<9, nsd_> DFDxi(true);
+    DFDxi.Clear();
     for (int a = 0; a < nsd_; ++a)
       for (int b = 0; b < nsd_; ++b)
       {
-        dFdxi(VOIGT3X3NONSYM_[a][b], 0) +=
+        DFDxi(VOIGT3X3NONSYM_[a][b], 0) +=
             xXFsec(a, 0) * invJ(b, 0) + xXFsec(a, 3) * invJ(b, 1) + xXFsec(a, 4) * invJ(b, 2);
-        dFdxi(VOIGT3X3NONSYM_[a][b], 1) +=
+        DFDxi(VOIGT3X3NONSYM_[a][b], 1) +=
             xXFsec(a, 3) * invJ(b, 0) + xXFsec(a, 1) * invJ(b, 1) + xXFsec(a, 5) * invJ(b, 2);
-        dFdxi(VOIGT3X3NONSYM_[a][b], 2) +=
+        DFDxi(VOIGT3X3NONSYM_[a][b], 2) +=
             xXFsec(a, 4) * invJ(b, 0) + xXFsec(a, 5) * invJ(b, 1) + xXFsec(a, 2) * invJ(b, 2);
       }
 
-    dsntdpxi->MultiplyTN(1.0, dFdxi, dsntdF, 0.0);
-    if (temp) dsntdpxi->Update(dsntdT_gp, dT_dxi, 1.0);
+    DsntDxi->MultiplyTN(1.0, DFDxi, DsntDF, 0.0);
+    if (temp) DsntDxi->Update(DsntDT_gp, DTDxi, 1.0);
 
     static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2, nsd_> Xsec(true);
     static LINALG::Matrix<nen_, 6> N_XYZ_Xsec(true);
     Xsec.Multiply(1.0, deriv2, xrefe, 0.0);
     N_XYZ_Xsec.MultiplyTT(1.0, N_XYZ, Xsec, 0.0);
 
-    static LINALG::Matrix<9, numdofperelement_> d2sntdF2dFdd(true);
-    d2sntdF2dFdd.Multiply(1.0, d2sntdF2, dFdd, 0.0);
-    d2sntDdDxi_m.MultiplyTN(1.0, d2sntdF2dFdd, dFdxi, 0.0);
+    static LINALG::Matrix<9, numdofperelement_> D2sntDF2DFDd(true);
+    D2sntDF2DFDd.Multiply(1.0, D2sntDF2, DFDd, 0.0);
+    D2sntDdDxi_m.MultiplyTN(1.0, D2sntDF2DFDd, DFDxi, 0.0);
 
     if (temp)
     {
       static LINALG::Matrix<9, nsd_> tmp(true);
-      tmp.MultiplyNT(1.0, d2sntDFDT, dT_dxi, 0.0);
-      d2sntDdDxi_m.MultiplyTN(1.0, dFdd, tmp, 1.0);
+      tmp.MultiplyNT(1.0, D2sntDFDT, DTDxi, 0.0);
+      D2sntDdDxi_m.MultiplyTN(1.0, DFDd, tmp, 1.0);
     }
 
-    static LINALG::Matrix<9, nsd_ * numdofperelement_> d2Fdxidd(true);
-    d2Fdxidd.Clear();
+    static LINALG::Matrix<9, nsd_ * numdofperelement_> D2FDxiDd(true);
+    D2FDxiDd.Clear();
     for (int m = 0; m < nsd_; ++m)
       for (int n = 0; n < nsd_; ++n)
         for (int k = 0; k < nen_; ++k)
         {
-          d2Fdxidd(VOIGT3X3NONSYM_[m][n], numdofpernode_ * (numdofpernode_ * k + m) + 0) +=
+          D2FDxiDd(VOIGT3X3NONSYM_[m][n], numdofpernode_ * (numdofpernode_ * k + m) + 0) +=
               deriv2(0, k) * invJ(n, 0) + deriv2(3, k) * invJ(n, 1) + deriv2(4, k) * invJ(n, 2) -
               N_XYZ_Xsec(k, 0) * invJ(n, 0) - N_XYZ_Xsec(k, 3) * invJ(n, 1) -
               N_XYZ_Xsec(k, 4) * invJ(n, 2);
 
-          d2Fdxidd(VOIGT3X3NONSYM_[m][n], numdofpernode_ * (numdofpernode_ * k + m) + 1) +=
+          D2FDxiDd(VOIGT3X3NONSYM_[m][n], numdofpernode_ * (numdofpernode_ * k + m) + 1) +=
               deriv2(3, k) * invJ(n, 0) + deriv2(1, k) * invJ(n, 1) + deriv2(5, k) * invJ(n, 2) -
               N_XYZ_Xsec(k, 3) * invJ(n, 0) - N_XYZ_Xsec(k, 1) * invJ(n, 1) -
               N_XYZ_Xsec(k, 5) * invJ(n, 2);
 
-          d2Fdxidd(VOIGT3X3NONSYM_[m][n], numdofpernode_ * (numdofpernode_ * k + m) + 2) +=
+          D2FDxiDd(VOIGT3X3NONSYM_[m][n], numdofpernode_ * (numdofpernode_ * k + m) + 2) +=
               deriv2(4, k) * invJ(n, 0) + deriv2(5, k) * invJ(n, 1) + deriv2(2, k) * invJ(n, 2) -
               N_XYZ_Xsec(k, 4) * invJ(n, 0) - N_XYZ_Xsec(k, 5) * invJ(n, 1) -
               N_XYZ_Xsec(k, 2) * invJ(n, 2);
 
           for (int l = 0; l < nsd_; ++l)
-            d2sntDdDxi_m(k * 3 + m, l) +=
-                dsntdF(VOIGT3X3NONSYM_[m][n], 0) *
-                d2Fdxidd(VOIGT3X3NONSYM_[m][n], numdofpernode_ * (numdofpernode_ * k + m) + l);
+            D2sntDdDxi_m(k * 3 + m, l) +=
+                DsntDF(VOIGT3X3NONSYM_[m][n], 0) *
+                D2FDxiDd(VOIGT3X3NONSYM_[m][n], numdofpernode_ * (numdofpernode_ * k + m) + l);
         }
   }
   InvalidEleData();
@@ -2232,11 +2232,11 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiElast(const LINALG::Matrix<
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiPlast(const LINALG::Matrix<3, 1>& xi,
     const std::vector<double>& disp, const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& t,
-    double& sigma_nt, Epetra_SerialDenseMatrix* dsntdd, Epetra_SerialDenseMatrix* d2sntdd2,
-    Epetra_SerialDenseMatrix* d2sntDdDn, Epetra_SerialDenseMatrix* d2sntDdDt,
-    Epetra_SerialDenseMatrix* d2sntDdDpxi, LINALG::Matrix<3, 1>* dsntdn,
-    LINALG::Matrix<3, 1>* dsntdt, LINALG::Matrix<3, 1>* dsntdpxi, const std::vector<double>* temp,
-    Epetra_SerialDenseMatrix* dsntdT, Epetra_SerialDenseMatrix* d2sntDdDT)
+    double& sigma_nt, Epetra_SerialDenseMatrix* DsntDd, Epetra_SerialDenseMatrix* D2sntDd2,
+    Epetra_SerialDenseMatrix* D2sntDdDn, Epetra_SerialDenseMatrix* D2sntDdDt,
+    Epetra_SerialDenseMatrix* D2sntDdDxi, LINALG::Matrix<3, 1>* DsntDn,
+    LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<3, 1>* DsntDxi, const std::vector<double>* temp,
+    Epetra_SerialDenseMatrix* DsntDT, Epetra_SerialDenseMatrix* D2sntDdDT)
 {
   if (distype != DRT::Element::hex8 || numgpt_ != 8) dserror("only for hex8 with 8 gp");
   if (Material()->MaterialType() != INPAR::MAT::m_plelasthyper)
@@ -2245,9 +2245,9 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiPlast(const LINALG::Matrix<
     dserror("have you evaluated the cauchy stress???");
 
   sigma_nt = 0.;
-  if (dsntdpxi) dsntdpxi->Clear();
-  if (dsntdT) dsntdT->Shape(nen_, 1);
-  if (d2sntDdDT) d2sntDdDT->Shape(numdofperelement_, nen_);
+  if (DsntDxi) DsntDxi->Clear();
+  if (DsntDT) DsntDT->Shape(nen_, 1);
+  if (D2sntDdDT) D2sntDdDT->Shape(numdofperelement_, nen_);
 
   LINALG::Matrix<3, 3> nttn;
   nttn.MultiplyNT(.5, n, t, 1.);
@@ -2274,26 +2274,26 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiPlast(const LINALG::Matrix<
   {
     cauchy_expol.Update(shapefunct(gp), cauchy_.at(gp), 1.);
     cauchy_deriv_expol.Update(shapefunct(gp), cauchy_deriv_.at(gp), 1.);
-    if (dsntdpxi)
+    if (DsntDxi)
       for (int d = 0; d < nsd_; ++d)
-        (*dsntdpxi)(d) += cauchy_.at(gp).Dot(nttn_v) * deriv(d, gp) * sqrt(3.);
+        (*DsntDxi)(d) += cauchy_.at(gp).Dot(nttn_v) * deriv(d, gp) * sqrt(3.);
 
-    if (dsntdT)
-      LINALG::Matrix<nen_, 1>(dsntdT->A(), true)
+    if (DsntDT)
+      LINALG::Matrix<nen_, 1>(DsntDT->A(), true)
           .MultiplyTN(shapefunct(gp), cauchy_deriv_T_.at(gp), nttn_v, 1.);
   }
 
   sigma_nt = cauchy_expol.Dot(nttn_v);
 
-  if (dsntdd)
+  if (DsntDd)
   {
-    dsntdd->Reshape(numdofperelement_, 1);
-    LINALG::Matrix<numdofperelement_, 1>(dsntdd->A(), true).MultiplyTN(cauchy_deriv_expol, nttn_v);
+    DsntDd->Reshape(numdofperelement_, 1);
+    LINALG::Matrix<numdofperelement_, 1>(DsntDd->A(), true).MultiplyTN(cauchy_deriv_expol, nttn_v);
   }
-  if (d2sntdd2)
+  if (D2sntDd2)
   {
-    d2sntdd2->Reshape(numdofperelement_, numdofperelement_);
-    d2sntdd2->Scale(0.);
+    D2sntDd2->Reshape(numdofperelement_, numdofperelement_);
+    D2sntDd2->Scale(0.);
   }
 
   LINALG::Matrix<numstr_, nsd_> d_nttn_v_dn, d_nttn_v_dt;
@@ -2304,37 +2304,37 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiPlast(const LINALG::Matrix<
         d_nttn_v_dn(VOIGT3X3SYM_[i][j], a) += .5 * ((i == a) * t(j) + (j == a) * t(i));
         d_nttn_v_dt(VOIGT3X3SYM_[i][j], a) += .5 * ((i == a) * n(j) + (j == a) * n(i));
       }
-  if (dsntdn) dsntdn->MultiplyTN(d_nttn_v_dn, cauchy_expol);
-  if (dsntdt) dsntdt->MultiplyTN(d_nttn_v_dt, cauchy_expol);
+  if (DsntDn) DsntDn->MultiplyTN(d_nttn_v_dn, cauchy_expol);
+  if (DsntDt) DsntDt->MultiplyTN(d_nttn_v_dt, cauchy_expol);
 
-  if (d2sntDdDn)
+  if (D2sntDdDn)
   {
-    d2sntDdDn->Reshape(numdofperelement_, nsd_);
-    LINALG::Matrix<numdofperelement_, nsd_>(d2sntDdDn->A(), true)
+    D2sntDdDn->Reshape(numdofperelement_, nsd_);
+    LINALG::Matrix<numdofperelement_, nsd_>(D2sntDdDn->A(), true)
         .MultiplyTN(cauchy_deriv_expol, d_nttn_v_dn);
   }
 
-  if (d2sntDdDt)
+  if (D2sntDdDt)
   {
-    d2sntDdDt->Reshape(numdofperelement_, nsd_);
-    LINALG::Matrix<numdofperelement_, nsd_>(d2sntDdDt->A(), true)
+    D2sntDdDt->Reshape(numdofperelement_, nsd_);
+    LINALG::Matrix<numdofperelement_, nsd_>(D2sntDdDt->A(), true)
         .MultiplyTN(cauchy_deriv_expol, d_nttn_v_dt);
   }
-  if (d2sntDdDpxi)
+  if (D2sntDdDxi)
   {
-    d2sntDdDpxi->Reshape(numdofperelement_, nsd_);
-    d2sntDdDpxi->Scale(0.);
+    D2sntDdDxi->Reshape(numdofperelement_, nsd_);
+    D2sntDdDxi->Scale(0.);
   }
 }
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXi(const LINALG::Matrix<3, 1>& xi,
     const std::vector<double>& disp, const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& t,
-    double& sigma_nt, Epetra_SerialDenseMatrix* dsntdd, Epetra_SerialDenseMatrix* d2sntdd2,
-    Epetra_SerialDenseMatrix* d2sntDdDn, Epetra_SerialDenseMatrix* d2sntDdDt,
-    Epetra_SerialDenseMatrix* d2sntDdDpxi, LINALG::Matrix<3, 1>* dsntdn,
-    LINALG::Matrix<3, 1>* dsntdt, LINALG::Matrix<3, 1>* dsntdpxi, const std::vector<double>* temp,
-    Epetra_SerialDenseMatrix* dsntdT, Epetra_SerialDenseMatrix* d2sntDdDT)
+    double& sigma_nt, Epetra_SerialDenseMatrix* DsntDd, Epetra_SerialDenseMatrix* D2sntDd2,
+    Epetra_SerialDenseMatrix* D2sntDdDn, Epetra_SerialDenseMatrix* D2sntDdDt,
+    Epetra_SerialDenseMatrix* D2sntDdDxi, LINALG::Matrix<3, 1>* DsntDn,
+    LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<3, 1>* DsntDxi, const std::vector<double>* temp,
+    Epetra_SerialDenseMatrix* DsntDT, Epetra_SerialDenseMatrix* D2sntDdDT)
 {
   bool el = true;
   MAT::PlasticElastHyper* plmat = dynamic_cast<MAT::PlasticElastHyper*>(Material().get());
@@ -2344,11 +2344,11 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXi(const LINALG::Matrix<3, 1>
     el = plmat->AllElastic();
 
   if (el == false)
-    GetCauchyAtXiPlast(xi, disp, n, t, sigma_nt, dsntdd, d2sntdd2, d2sntDdDn, d2sntDdDt,
-        d2sntDdDpxi, dsntdn, dsntdt, dsntdpxi, temp, dsntdT, d2sntDdDT);
+    GetCauchyAtXiPlast(xi, disp, n, t, sigma_nt, DsntDd, D2sntDd2, D2sntDdDn, D2sntDdDt, D2sntDdDxi,
+        DsntDn, DsntDt, DsntDxi, temp, DsntDT, D2sntDdDT);
   else
-    GetCauchyAtXiElast(xi, disp, n, t, sigma_nt, dsntdd, d2sntdd2, d2sntDdDn, d2sntDdDt,
-        d2sntDdDpxi, dsntdn, dsntdt, dsntdpxi, temp, dsntdT, d2sntDdDT);
+    GetCauchyAtXiElast(xi, disp, n, t, sigma_nt, DsntDd, D2sntDd2, D2sntDdDn, D2sntDdDt, D2sntDdDxi,
+        DsntDn, DsntDt, DsntDxi, temp, DsntDT, D2sntDdDT);
 }
 
 template <DRT::Element::DiscretizationType distype>
