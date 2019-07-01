@@ -267,19 +267,19 @@ void PARTICLEINTERACTION::SPHTemperature::EnergyEquation() const
     container_i->ClearState(PARTICLEENGINE::TemperatureDot);
   }
 
-  // iterate over neighbor pairs
-  for (auto& neighborpair : neighborpairs_->GetRefToNeighborPairData())
+  // iterate over particle pairs
+  for (auto& particlepair : neighborpairs_->GetRefToParticlePairData())
   {
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
     PARTICLEENGINE::StatusEnum status_i;
     int particle_i;
-    std::tie(type_i, status_i, particle_i) = neighborpair.tuple_i_;
+    std::tie(type_i, status_i, particle_i) = particlepair.tuple_i_;
 
     PARTICLEENGINE::TypeEnum type_j;
     PARTICLEENGINE::StatusEnum status_j;
     int particle_j;
-    std::tie(type_j, status_j, particle_j) = neighborpair.tuple_j_;
+    std::tie(type_j, status_j, particle_j) = particlepair.tuple_j_;
 
     // get corresponding particle containers
     PARTICLEENGINE::ParticleContainer* container_i =
@@ -333,17 +333,17 @@ void PARTICLEINTERACTION::SPHTemperature::EnergyEquation() const
 
     // factor containing effective conductivity and temperature difference
     const double fac = (4.0 * k_i * k_j) * (temp_i[0] - temp_j[0]) /
-                       (dens_i[0] * dens_j[0] * (k_i + k_j) * neighborpair.absdist_);
+                       (dens_i[0] * dens_j[0] * (k_i + k_j) * particlepair.absdist_);
 
     // no temperature integration for boundary particles
     if (type_i != PARTICLEENGINE::BoundaryPhase)
       tempdot_i[0] +=
-          mass_j[0] * fac * neighborpair.dWdrij_ * thermomaterial_i->invThermalCapacity_;
+          mass_j[0] * fac * particlepair.dWdrij_ * thermomaterial_i->invThermalCapacity_;
 
     // no temperature integration for boundary particles
     if (type_j != PARTICLEENGINE::BoundaryPhase and status_j == PARTICLEENGINE::Owned)
       tempdot_j[0] -=
-          mass_i[0] * fac * neighborpair.dWdrji_ * thermomaterial_j->invThermalCapacity_;
+          mass_i[0] * fac * particlepair.dWdrji_ * thermomaterial_j->invThermalCapacity_;
   }
 }
 
@@ -368,19 +368,19 @@ void PARTICLEINTERACTION::SPHTemperature::TemperatureGradient() const
     container_i->ClearState(PARTICLEENGINE::TemperatureGradient);
   }
 
-  // iterate over neighbor pairs
-  for (auto& neighborpair : neighborpairs_->GetRefToNeighborPairData())
+  // iterate over particle pairs
+  for (auto& particlepair : neighborpairs_->GetRefToParticlePairData())
   {
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
     PARTICLEENGINE::StatusEnum status_i;
     int particle_i;
-    std::tie(type_i, status_i, particle_i) = neighborpair.tuple_i_;
+    std::tie(type_i, status_i, particle_i) = particlepair.tuple_i_;
 
     PARTICLEENGINE::TypeEnum type_j;
     PARTICLEENGINE::StatusEnum status_j;
     int particle_j;
-    std::tie(type_j, status_j, particle_j) = neighborpair.tuple_j_;
+    std::tie(type_j, status_j, particle_j) = particlepair.tuple_j_;
 
     // get corresponding particle containers
     PARTICLEENGINE::ParticleContainer* container_i =
@@ -434,11 +434,11 @@ void PARTICLEINTERACTION::SPHTemperature::TemperatureGradient() const
     // sum contribution of neighboring particle j
     if (type_i != PARTICLEENGINE::BoundaryPhase)
       UTILS::vec_addscale(
-          tempgrad_i, (dens_i[0] / mass_i[0]) * fac * neighborpair.dWdrij_, neighborpair.e_ij_);
+          tempgrad_i, (dens_i[0] / mass_i[0]) * fac * particlepair.dWdrij_, particlepair.e_ij_);
 
     // sum contribution of neighboring particle i
     if (type_j != PARTICLEENGINE::BoundaryPhase and status_j == PARTICLEENGINE::Owned)
       UTILS::vec_addscale(
-          tempgrad_j, -(dens_j[0] / mass_j[0]) * fac * neighborpair.dWdrji_, neighborpair.e_ij_);
+          tempgrad_j, -(dens_j[0] / mass_j[0]) * fac * particlepair.dWdrji_, particlepair.e_ij_);
   }
 }

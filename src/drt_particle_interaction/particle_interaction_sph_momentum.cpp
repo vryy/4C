@@ -191,19 +191,19 @@ void PARTICLEINTERACTION::SPHMomentum::AddAccelerationContribution() const
   // declare temp variables
   double temp(0.0);
 
-  // iterate over neighbor pairs
-  for (auto& neighborpair : neighborpairs_->GetRefToNeighborPairData())
+  // iterate over particle pairs
+  for (auto& particlepair : neighborpairs_->GetRefToParticlePairData())
   {
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
     PARTICLEENGINE::StatusEnum status_i;
     int particle_i;
-    std::tie(type_i, status_i, particle_i) = neighborpair.tuple_i_;
+    std::tie(type_i, status_i, particle_i) = particlepair.tuple_i_;
 
     PARTICLEENGINE::TypeEnum type_j;
     PARTICLEENGINE::StatusEnum status_j;
     int particle_j;
-    std::tie(type_j, status_j, particle_j) = neighborpair.tuple_j_;
+    std::tie(type_j, status_j, particle_j) = particlepair.tuple_j_;
 
     // check for boundary or rigid particles
     bool isboundaryrigid_i =
@@ -314,12 +314,12 @@ void PARTICLEINTERACTION::SPHMomentum::AddAccelerationContribution() const
     // evaluate specific coefficient
     double speccoeff_ij(0.0);
     double speccoeff_ji(0.0);
-    momentumformulation_->SpecificCoefficient(dens_i, dens_j, mass_i, mass_j, neighborpair.dWdrij_,
-        neighborpair.dWdrji_, speccoeff_ij, speccoeff_ji);
+    momentumformulation_->SpecificCoefficient(dens_i, dens_j, mass_i, mass_j, particlepair.dWdrij_,
+        particlepair.dWdrji_, speccoeff_ij, speccoeff_ji);
 
     // evaluate pressure gradient
     momentumformulation_->PressureGradient(dens_i, dens_j, press_i, press_j, speccoeff_ij,
-        speccoeff_ji, neighborpair.e_ij_, acc_i, acc_j);
+        speccoeff_ji, particlepair.e_ij_, acc_i, acc_j);
 
     // evaluate shear forces
     if (evaluateviscouscontributions)
@@ -332,8 +332,8 @@ void PARTICLEINTERACTION::SPHMomentum::AddAccelerationContribution() const
       // evaluate shear forces
       momentumformulation_->ShearForces(dens_i, dens_j, vel_i, vel_j, kernelfac,
           material_i->dynamicViscosity_, material_j->dynamicViscosity_, material_i->bulkViscosity_,
-          material_j->bulkViscosity_, neighborpair.absdist_, speccoeff_ij, speccoeff_ji,
-          neighborpair.e_ij_, acc_i, acc_j);
+          material_j->bulkViscosity_, particlepair.absdist_, speccoeff_ij, speccoeff_ji,
+          particlepair.e_ij_, acc_i, acc_j);
     }
 
     // apply transport velocity formulation
@@ -345,7 +345,7 @@ void PARTICLEINTERACTION::SPHMomentum::AddAccelerationContribution() const
         // evaluate background pressure (standard formulation)
         momentumformulation_->StandardBackgroundPressure(dens_i, dens_j,
             material_i->backgroundPressure_, material_j->backgroundPressure_, speccoeff_ij,
-            speccoeff_ji, neighborpair.e_ij_, mod_acc_i, mod_acc_j);
+            speccoeff_ji, particlepair.e_ij_, mod_acc_i, mod_acc_j);
       }
       else if (transportvelocityformulation_ ==
                INPAR::PARTICLE::TransportVelocityFormulation::GeneralizedTransportVelocity)
@@ -353,7 +353,7 @@ void PARTICLEINTERACTION::SPHMomentum::AddAccelerationContribution() const
         // modified support radius and first derivative of kernel
         const double mod_rad_i = (mod_acc_i) ? kernel_->SmoothingLength(rad_i[0]) : 0.0;
         const double mod_dWdrij =
-            (mod_acc_i) ? kernel_->dWdrij(neighborpair.absdist_, mod_rad_i) : 0.0;
+            (mod_acc_i) ? kernel_->dWdrij(particlepair.absdist_, mod_rad_i) : 0.0;
 
         double mod_rad_j = 0.0;
         double mod_dWdrji = 0.0;
@@ -365,7 +365,7 @@ void PARTICLEINTERACTION::SPHMomentum::AddAccelerationContribution() const
         else if (mod_acc_j)
         {
           mod_rad_j = kernel_->SmoothingLength(rad_j[0]);
-          mod_dWdrji = kernel_->dWdrij(neighborpair.absdist_, mod_rad_j);
+          mod_dWdrji = kernel_->dWdrij(particlepair.absdist_, mod_rad_j);
         }
 
         // modified background pressure
@@ -378,7 +378,7 @@ void PARTICLEINTERACTION::SPHMomentum::AddAccelerationContribution() const
 
         // evaluate background pressure (generalized formulation)
         momentumformulation_->GeneralizedBackgroundPressure(dens_i, dens_j, mass_i, mass_j,
-            mod_bg_press_i, mod_bg_press_j, mod_dWdrij, mod_dWdrji, neighborpair.e_ij_, mod_acc_i,
+            mod_bg_press_i, mod_bg_press_j, mod_dWdrij, mod_dWdrji, particlepair.e_ij_, mod_acc_i,
             mod_acc_j);
       }
 
@@ -387,7 +387,7 @@ void PARTICLEINTERACTION::SPHMomentum::AddAccelerationContribution() const
       {
         // evaluate modified velocity contribution
         momentumformulation_->ModifiedVelocityContribution(dens_i, dens_j, vel_i, vel_j, mod_vel_i,
-            mod_vel_j, speccoeff_ij, speccoeff_ji, neighborpair.e_ij_, acc_i, acc_j);
+            mod_vel_j, speccoeff_ij, speccoeff_ji, particlepair.e_ij_, acc_i, acc_j);
       }
     }
 
@@ -414,8 +414,8 @@ void PARTICLEINTERACTION::SPHMomentum::AddAccelerationContribution() const
 
       // evaluate artificial viscosity
       artificialviscosity_->ArtificialViscosity(vel_i, vel_j, mass_i, mass_j,
-          material_i->artificialViscosity_, material_j->artificialViscosity_, neighborpair.dWdrij_,
-          neighborpair.dWdrji_, dens_ij, h_ij, c_ij, neighborpair.absdist_, neighborpair.e_ij_,
+          material_i->artificialViscosity_, material_j->artificialViscosity_, particlepair.dWdrij_,
+          particlepair.dWdrji_, dens_ij, h_ij, c_ij, particlepair.absdist_, particlepair.e_ij_,
           acc_i, acc_j);
     }
   }

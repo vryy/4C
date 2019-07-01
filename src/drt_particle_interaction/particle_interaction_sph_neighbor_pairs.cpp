@@ -59,8 +59,8 @@ void PARTICLEINTERACTION::SPHNeighborPairs::Setup(
   // determine size of vectors indexed by particle types
   const int typevectorsize = *(--particlecontainerbundle_->GetParticleTypes().end()) + 1;
 
-  // allocate memory to hold index of neighbor pairs for each type
-  indexofneighborpairs_.resize(typevectorsize);
+  // allocate memory to hold index of particle pairs for each type
+  indexofparticlepairs_.resize(typevectorsize);
 }
 
 /*---------------------------------------------------------------------------*
@@ -81,21 +81,49 @@ void PARTICLEINTERACTION::SPHNeighborPairs::ReadRestart(
 }
 
 /*---------------------------------------------------------------------------*
- | evaluate neighbor pairs                                    sfuchs 08/2018 |
+ | get relevant particle pair indices for particle types      sfuchs 04/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::SPHNeighborPairs::GetRelevantParticlePairIndices(
+    const std::set<PARTICLEENGINE::TypeEnum>& reltypes, std::vector<int>& relindices) const
+{
+  // iterate over particle types to consider
+  for (const auto& type_i : reltypes)
+    relindices.insert(relindices.end(), indexofparticlepairs_[type_i].begin(),
+        indexofparticlepairs_[type_i].end());
+
+  // sort and erase duplicate indices of relevant particle pairs
+  if (reltypes.size() > 1)
+  {
+    std::sort(relindices.begin(), relindices.end());
+    relindices.erase(std::unique(relindices.begin(), relindices.end()), relindices.end());
+  }
+}
+
+/*---------------------------------------------------------------------------*
+ | evaluate neighbor pairs                                    sfuchs 06/2019 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateNeighborPairs()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHNeighborPairs::EvaluateNeighborPairs");
+  // evaluate particle pairs
+  EvaluateParticlePairs();
+}
 
-  // clear neighbor pair data
-  neighborpairdata_.clear();
+/*---------------------------------------------------------------------------*
+ | evaluate particle pairs                                    sfuchs 08/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateParticlePairs()
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHNeighborPairs::EvaluateParticlePairs");
 
-  // clear index of neighbor pairs for each type
+  // clear particle pair data
+  particlepairdata_.clear();
+
+  // clear index of particle pairs for each type
   for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
-    indexofneighborpairs_[type_i].clear();
+    indexofparticlepairs_[type_i].clear();
 
-  // index of neighbor pairs
-  int neighborpairindex = 0;
+  // index of particle pairs
+  int particlepairindex = 0;
 
   // iterate over potential particle neighbors
   for (auto& potentialneighbors : particleengineinterface_->GetPotentialParticleNeighbors())
@@ -143,37 +171,37 @@ void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateNeighborPairs()
 
     if (absdist < rad_i[0] or (absdist < rad_j[0] and status_j == PARTICLEENGINE::Owned))
     {
-      // initialize neighbor pair
-      neighborpairdata_.push_back(SPHNeighborPair());
+      // initialize particle pair
+      particlepairdata_.push_back(SPHParticlePair());
 
-      // get reference to current neighbor pair
-      SPHNeighborPair& neighborpair = neighborpairdata_[neighborpairindex];
+      // get reference to current particle pair
+      SPHParticlePair& particlepair = particlepairdata_[particlepairindex];
 
-      // store index of neighbor pairs for each type (owned and ghosted status)
-      indexofneighborpairs_[type_i].push_back(neighborpairindex);
-      if (type_i != type_j) indexofneighborpairs_[type_j].push_back(neighborpairindex);
+      // store index of particle pairs for each type (owned and ghosted status)
+      indexofparticlepairs_[type_i].push_back(particlepairindex);
+      if (type_i != type_j) indexofparticlepairs_[type_j].push_back(particlepairindex);
 
       // increase index
-      ++neighborpairindex;
+      ++particlepairindex;
 
       // set local index tuple of particles i and j
-      neighborpair.tuple_i_ = potentialneighbors.first;
-      neighborpair.tuple_j_ = potentialneighbors.second;
+      particlepair.tuple_i_ = potentialneighbors.first;
+      particlepair.tuple_j_ = potentialneighbors.second;
 
       // set absolute distance between particles
-      neighborpair.absdist_ = absdist;
+      particlepair.absdist_ = absdist;
 
       // versor from particle j to i
-      UTILS::vec_setscale(neighborpair.e_ij_, -1.0 / absdist, r_ji);
+      UTILS::vec_setscale(particlepair.e_ij_, -1.0 / absdist, r_ji);
 
       // particle j within support radius of particle i
       if (absdist < rad_i[0])
       {
         // evaluate kernel
-        neighborpair.Wij_ = kernel_->W(absdist, rad_i[0]);
+        particlepair.Wij_ = kernel_->W(absdist, rad_i[0]);
 
         // evaluate first derivative of kernel
-        neighborpair.dWdrij_ = kernel_->dWdrij(absdist, rad_i[0]);
+        particlepair.dWdrij_ = kernel_->dWdrij(absdist, rad_i[0]);
       }
 
       // particle i within support radius of owned particle j
@@ -183,39 +211,20 @@ void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateNeighborPairs()
         if (rad_i[0] == rad_j[0])
         {
           // evaluate kernel
-          neighborpair.Wji_ = neighborpair.Wij_;
+          particlepair.Wji_ = particlepair.Wij_;
 
           // evaluate first derivative of kernel
-          neighborpair.dWdrji_ = neighborpair.dWdrij_;
+          particlepair.dWdrji_ = particlepair.dWdrij_;
         }
         else
         {
           // evaluate kernel
-          neighborpair.Wji_ = kernel_->W(absdist, rad_j[0]);
+          particlepair.Wji_ = kernel_->W(absdist, rad_j[0]);
 
           // evaluate first derivative of kernel
-          neighborpair.dWdrji_ = kernel_->dWdrij(absdist, rad_j[0]);
+          particlepair.dWdrji_ = kernel_->dWdrij(absdist, rad_j[0]);
         }
       }
     }
-  }
-}
-
-/*---------------------------------------------------------------------------*
- | get relevant neighbor pair indices for particle types      sfuchs 04/2019 |
- *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHNeighborPairs::GetRelevantNeighborPairIndices(
-    const std::set<PARTICLEENGINE::TypeEnum>& reltypes, std::vector<int>& relindices) const
-{
-  // iterate over particle types to consider
-  for (const auto& type_i : reltypes)
-    relindices.insert(relindices.end(), indexofneighborpairs_[type_i].begin(),
-        indexofneighborpairs_[type_i].end());
-
-  // sort and erase duplicate indices of relevant neighbor pairs
-  if (reltypes.size() > 1)
-  {
-    std::sort(relindices.begin(), relindices.end());
-    relindices.erase(std::unique(relindices.begin(), relindices.end()), relindices.end());
   }
 }

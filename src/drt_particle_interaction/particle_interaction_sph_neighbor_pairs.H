@@ -46,9 +46,8 @@ namespace PARTICLEINTERACTION
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  typedef std::vector<PARTICLEINTERACTION::SPHNeighborPair> SPHNeighborPairData;
-
-  typedef std::vector<std::vector<int>> SPHIndexOfNeighborPairs;
+  typedef std::vector<PARTICLEINTERACTION::SPHParticlePair> SPHParticlePairData;
+  typedef std::vector<std::vector<int>> SPHIndexOfParticlePairs;
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*
@@ -79,31 +78,28 @@ namespace PARTICLEINTERACTION
     //! read restart of neighbor pair handler
     void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
-    //! get reference to neighbor pair data
-    inline const SPHNeighborPairData& GetRefToNeighborPairData() const
+    //! get reference to particle pair data
+    inline const SPHParticlePairData& GetRefToParticlePairData() const
     {
-      return neighborpairdata_;
+      return particlepairdata_;
     };
 
-    //! get reference to index of neighbor pairs for each type
-    inline const SPHIndexOfNeighborPairs& GetRefToIndexOfNeighborPairs() const
-    {
-      return indexofneighborpairs_;
-    };
+    //! get relevant particle pair indices for particle types
+    void GetRelevantParticlePairIndices(
+        const std::set<PARTICLEENGINE::TypeEnum>& reltypes, std::vector<int>& relindices) const;
 
     //! evaluate neighbor pairs
     void EvaluateNeighborPairs();
 
-    //! get relevant neighbor pair indices for particle types
-    void GetRelevantNeighborPairIndices(
-        const std::set<PARTICLEENGINE::TypeEnum>& reltypes, std::vector<int>& relindices) const;
-
    private:
-    //! neighbor pair data with evaluated quantities
-    SPHNeighborPairData neighborpairdata_;
+    //! evaluate particle pairs
+    void EvaluateParticlePairs();
 
-    //! index of neighbor pairs for each type
-    SPHIndexOfNeighborPairs indexofneighborpairs_;
+    //! particle pair data with evaluated quantities
+    SPHParticlePairData particlepairdata_;
+
+    //! index of particle pairs for each type
+    SPHIndexOfParticlePairs indexofparticlepairs_;
 
     //! interface to particle engine
     std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface_;

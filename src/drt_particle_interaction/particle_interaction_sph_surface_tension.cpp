@@ -247,9 +247,9 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::AddAcceleratio
 
   if (haveboundaryorrigidparticles_)
   {
-    // get relevant neighbor pair indices for particle types
+    // get relevant particle pair indices for particle types
     std::vector<int> relindices;
-    neighborpairs_->GetRelevantNeighborPairIndices(boundarytypes_, relindices);
+    neighborpairs_->GetRelevantParticlePairIndices(boundarytypes_, relindices);
 
     // compute unit wall normal
     ComputeUnitWallNormal(relindices);
@@ -305,19 +305,19 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeColorfi
     container_i->ClearState(PARTICLEENGINE::ColorfieldGradient);
   }
 
-  // iterate over neighbor pairs
-  for (auto& neighborpair : neighborpairs_->GetRefToNeighborPairData())
+  // iterate over particle pairs
+  for (auto& particlepair : neighborpairs_->GetRefToParticlePairData())
   {
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
     PARTICLEENGINE::StatusEnum status_i;
     int particle_i;
-    std::tie(type_i, status_i, particle_i) = neighborpair.tuple_i_;
+    std::tie(type_i, status_i, particle_i) = particlepair.tuple_i_;
 
     PARTICLEENGINE::TypeEnum type_j;
     PARTICLEENGINE::StatusEnum status_j;
     int particle_j;
-    std::tie(type_j, status_j, particle_j) = neighborpair.tuple_j_;
+    std::tie(type_j, status_j, particle_j) = particlepair.tuple_j_;
 
     // no evaluation for particles of same type
     if (type_i == type_j) continue;
@@ -360,12 +360,12 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeColorfi
 
     // sum contribution of neighboring particle j
     UTILS::vec_addscale(colorfieldgrad_i,
-        fac * UTILS::pow<2>(dens_i[0]) / mass_i[0] * neighborpair.dWdrij_, neighborpair.e_ij_);
+        fac * UTILS::pow<2>(dens_i[0]) / mass_i[0] * particlepair.dWdrij_, particlepair.e_ij_);
 
     // sum contribution of neighboring particle i
     if (status_j == PARTICLEENGINE::Owned)
       UTILS::vec_addscale(colorfieldgrad_j,
-          -fac * UTILS::pow<2>(dens_j[0]) / mass_j[0] * neighborpair.dWdrji_, neighborpair.e_ij_);
+          -fac * UTILS::pow<2>(dens_j[0]) / mass_j[0] * particlepair.dWdrji_, particlepair.e_ij_);
   }
 }
 
@@ -389,22 +389,22 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeUnitWal
     container_i->ClearState(PARTICLEENGINE::UnitWallNormal);
   }
 
-  // iterate over relevant neighbor pairs
-  for (const int neighborpairindex : relwallindices)
+  // iterate over relevant particle pairs
+  for (const int particlepairindex : relwallindices)
   {
-    const SPHNeighborPair& neighborpair =
-        neighborpairs_->GetRefToNeighborPairData()[neighborpairindex];
+    const SPHParticlePair& particlepair =
+        neighborpairs_->GetRefToParticlePairData()[particlepairindex];
 
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
     PARTICLEENGINE::StatusEnum status_i;
     int particle_i;
-    std::tie(type_i, status_i, particle_i) = neighborpair.tuple_i_;
+    std::tie(type_i, status_i, particle_i) = particlepair.tuple_i_;
 
     PARTICLEENGINE::TypeEnum type_j;
     PARTICLEENGINE::StatusEnum status_j;
     int particle_j;
-    std::tie(type_j, status_j, particle_j) = neighborpair.tuple_j_;
+    std::tie(type_j, status_j, particle_j) = particlepair.tuple_j_;
 
     // check for boundary or rigid particles
     bool isboundaryrigid_i = boundarytypes_.count(type_i);
@@ -438,7 +438,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeUnitWal
 
       // sum contribution of neighboring boundary particle j
       UTILS::vec_addscale(
-          wallnormal_i, -UTILS::pow<2>(V_j) * inv_V_i * neighborpair.dWdrij_, neighborpair.e_ij_);
+          wallnormal_i, -UTILS::pow<2>(V_j) * inv_V_i * particlepair.dWdrij_, particlepair.e_ij_);
     }
 
     // evaluate contribution of neighboring boundary particle i
@@ -469,7 +469,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeUnitWal
 
       // sum contribution of neighboring boundary particle i
       UTILS::vec_addscale(
-          wallnormal_j, UTILS::pow<2>(V_i) * inv_V_j * neighborpair.dWdrji_, neighborpair.e_ij_);
+          wallnormal_j, UTILS::pow<2>(V_i) * inv_V_j * particlepair.dWdrji_, particlepair.e_ij_);
     }
   }
 
@@ -524,22 +524,22 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallDis
     container_i->UpdateState(0.0, PARTICLEENGINE::WallDistance, 1.0, PARTICLEENGINE::Radius);
   }
 
-  // iterate over relevant neighbor pairs
-  for (const int neighborpairindex : relwallindices)
+  // iterate over relevant particle pairs
+  for (const int particlepairindex : relwallindices)
   {
-    const SPHNeighborPair& neighborpair =
-        neighborpairs_->GetRefToNeighborPairData()[neighborpairindex];
+    const SPHParticlePair& particlepair =
+        neighborpairs_->GetRefToParticlePairData()[particlepairindex];
 
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
     PARTICLEENGINE::StatusEnum status_i;
     int particle_i;
-    std::tie(type_i, status_i, particle_i) = neighborpair.tuple_i_;
+    std::tie(type_i, status_i, particle_i) = particlepair.tuple_i_;
 
     PARTICLEENGINE::TypeEnum type_j;
     PARTICLEENGINE::StatusEnum status_j;
     int particle_j;
-    std::tie(type_j, status_j, particle_j) = neighborpair.tuple_j_;
+    std::tie(type_j, status_j, particle_j) = particlepair.tuple_j_;
 
     // check for boundary or rigid particles
     bool isboundaryrigid_i = boundarytypes_.count(type_i);
@@ -565,7 +565,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallDis
 
       // distance of particle i to neighboring boundary particle j
       const double currentwalldistance =
-          neighborpair.absdist_ * UTILS::vec_dot(wallnormal_i, neighborpair.e_ij_);
+          particlepair.absdist_ * UTILS::vec_dot(wallnormal_i, particlepair.e_ij_);
 
       // update wall distance of particle i
       walldistance_i[0] = std::min(walldistance_i[0], currentwalldistance);
@@ -591,7 +591,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallDis
 
       // distance of particle j to neighboring boundary particle i
       const double currentwalldistance =
-          -neighborpair.absdist_ * UTILS::vec_dot(wallnormal_j, neighborpair.e_ij_);
+          -particlepair.absdist_ * UTILS::vec_dot(wallnormal_j, particlepair.e_ij_);
 
       // update wall distance of particle j
       walldistance_j[0] = std::min(walldistance_j[0], currentwalldistance);
@@ -693,19 +693,19 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     sumj_fj_Vj_Wij_CFGj[type_i].assign(particlestored, std::vector<double>(3, 0.0));
   }
 
-  // iterate over neighbor pairs
-  for (auto& neighborpair : neighborpairs_->GetRefToNeighborPairData())
+  // iterate over particle pairs
+  for (auto& particlepair : neighborpairs_->GetRefToParticlePairData())
   {
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
     PARTICLEENGINE::StatusEnum status_i;
     int particle_i;
-    std::tie(type_i, status_i, particle_i) = neighborpair.tuple_i_;
+    std::tie(type_i, status_i, particle_i) = particlepair.tuple_i_;
 
     PARTICLEENGINE::TypeEnum type_j;
     PARTICLEENGINE::StatusEnum status_j;
     int particle_j;
-    std::tie(type_j, status_j, particle_j) = neighborpair.tuple_j_;
+    std::tie(type_j, status_j, particle_j) = particlepair.tuple_j_;
 
     // check for boundary or rigid particles
     bool isboundaryrigid_i = boundarytypes_.count(type_i);
@@ -752,7 +752,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     if (walldistance_i[0] < rad_i[0] and f_i < 1.0 and f_j > 0.0 and
         UTILS::vec_norm2(colorfieldgrad_i) > 0.0)
     {
-      const double fac = f_j * mass_j[0] / dens_j[0] * neighborpair.Wij_;
+      const double fac = f_j * mass_j[0] / dens_j[0] * particlepair.Wij_;
 
       // initial estimate
       UTILS::vec_addscale(
@@ -766,7 +766,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     if (walldistance_j[0] < rad_j[0] and f_j < 1.0 and f_i > 0.0 and
         status_j == PARTICLEENGINE::Owned and UTILS::vec_norm2(colorfieldgrad_j) > 0.0)
     {
-      const double fac = f_i * mass_i[0] / dens_i[0] * neighborpair.Wji_;
+      const double fac = f_i * mass_i[0] / dens_i[0] * particlepair.Wji_;
 
       // initial estimate
       UTILS::vec_addscale(
@@ -992,19 +992,19 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     }
   }
 
-  // iterate over neighbor pairs
-  for (auto& neighborpair : neighborpairs_->GetRefToNeighborPairData())
+  // iterate over particle pairs
+  for (auto& particlepair : neighborpairs_->GetRefToParticlePairData())
   {
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
     PARTICLEENGINE::StatusEnum status_i;
     int particle_i;
-    std::tie(type_i, status_i, particle_i) = neighborpair.tuple_i_;
+    std::tie(type_i, status_i, particle_i) = particlepair.tuple_i_;
 
     PARTICLEENGINE::TypeEnum type_j;
     PARTICLEENGINE::StatusEnum status_j;
     int particle_j;
-    std::tie(type_j, status_j, particle_j) = neighborpair.tuple_j_;
+    std::tie(type_j, status_j, particle_j) = particlepair.tuple_j_;
 
     // check for boundary or rigid particles
     bool isboundaryrigid_i = boundarytypes_.count(type_i);
@@ -1050,18 +1050,18 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     UTILS::vec_set(n_ij, interfacenormal_i);
     UTILS::vec_addscale(n_ij, -signfac, interfacenormal_j);
 
-    const double fac = UTILS::vec_dot(n_ij, neighborpair.e_ij_);
+    const double fac = UTILS::vec_dot(n_ij, particlepair.e_ij_);
 
     // initial curvature estimate and correction factor
     const double V_j = mass_j[0] / dens_j[0];
-    sumj_nij_Vj_eij_dWij[type_i][particle_i] += fac * V_j * neighborpair.dWdrij_;
-    sumj_Vj_Wij[type_i][particle_i] += V_j * neighborpair.Wij_;
+    sumj_nij_Vj_eij_dWij[type_i][particle_i] += fac * V_j * particlepair.dWdrij_;
+    sumj_Vj_Wij[type_i][particle_i] += V_j * particlepair.Wij_;
 
     if (status_j == PARTICLEENGINE::Owned)
     {
       const double V_i = mass_i[0] / dens_i[0];
-      sumj_nij_Vj_eij_dWij[type_j][particle_j] += signfac * fac * V_i * neighborpair.dWdrji_;
-      sumj_Vj_Wij[type_j][particle_j] += V_i * neighborpair.Wji_;
+      sumj_nij_Vj_eij_dWij[type_j][particle_j] += signfac * fac * V_i * particlepair.dWdrji_;
+      sumj_Vj_Wij[type_j][particle_j] += V_i * particlepair.Wji_;
     }
   }
 

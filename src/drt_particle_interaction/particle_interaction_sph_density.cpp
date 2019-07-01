@@ -161,19 +161,19 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassAndColorfield() const
     }
   }
 
-  // iterate over neighbor pairs
-  for (auto& neighborpair : neighborpairs_->GetRefToNeighborPairData())
+  // iterate over particle pairs
+  for (auto& particlepair : neighborpairs_->GetRefToParticlePairData())
   {
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
     PARTICLEENGINE::StatusEnum status_i;
     int particle_i;
-    std::tie(type_i, status_i, particle_i) = neighborpair.tuple_i_;
+    std::tie(type_i, status_i, particle_i) = particlepair.tuple_i_;
 
     PARTICLEENGINE::TypeEnum type_j;
     PARTICLEENGINE::StatusEnum status_j;
     int particle_j;
-    std::tie(type_j, status_j, particle_j) = neighborpair.tuple_j_;
+    std::tie(type_j, status_j, particle_j) = particlepair.tuple_j_;
 
     // get corresponding particle containers
     PARTICLEENGINE::ParticleContainer* container_i =
@@ -226,16 +226,16 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassAndColorfield() const
     // no density summation for boundary or rigid particles
     if (type_i != PARTICLEENGINE::BoundaryPhase and type_i != PARTICLEENGINE::RigidPhase)
     {
-      denssum_i[0] += neighborpair.Wij_ * mass_i[0];
-      if (computecolorfield_) colorfield_i[0] += (neighborpair.Wij_ / dens_j[0]) * mass_j[0];
+      denssum_i[0] += particlepair.Wij_ * mass_i[0];
+      if (computecolorfield_) colorfield_i[0] += (particlepair.Wij_ / dens_j[0]) * mass_j[0];
     }
 
     // no density summation for boundary or rigid particles
     if (type_j != PARTICLEENGINE::BoundaryPhase and type_j != PARTICLEENGINE::RigidPhase and
         status_j == PARTICLEENGINE::Owned)
     {
-      denssum_j[0] += neighborpair.Wji_ * mass_j[0];
-      if (computecolorfield_) colorfield_j[0] += (neighborpair.Wji_ / dens_i[0]) * mass_i[0];
+      denssum_j[0] += particlepair.Wji_ * mass_j[0];
+      if (computecolorfield_) colorfield_j[0] += (particlepair.Wji_ / dens_i[0]) * mass_i[0];
     }
   }
 }
@@ -259,19 +259,19 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquation() const
     container_i->ClearState(PARTICLEENGINE::DensityDot);
   }
 
-  // iterate over neighbor pairs
-  for (auto& neighborpair : neighborpairs_->GetRefToNeighborPairData())
+  // iterate over particle pairs
+  for (auto& particlepair : neighborpairs_->GetRefToParticlePairData())
   {
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
     PARTICLEENGINE::StatusEnum status_i;
     int particle_i;
-    std::tie(type_i, status_i, particle_i) = neighborpair.tuple_i_;
+    std::tie(type_i, status_i, particle_i) = particlepair.tuple_i_;
 
     PARTICLEENGINE::TypeEnum type_j;
     PARTICLEENGINE::StatusEnum status_j;
     int particle_j;
-    std::tie(type_j, status_j, particle_j) = neighborpair.tuple_j_;
+    std::tie(type_j, status_j, particle_j) = particlepair.tuple_j_;
 
     // get corresponding particle containers
     PARTICLEENGINE::ParticleContainer* container_i =
@@ -338,12 +338,12 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquation() const
     UTILS::vec_set(vel_ij, vel_i);
     UTILS::vec_sub(vel_ij, vel_j);
 
-    const double e_ij_vel_ij = UTILS::vec_dot(neighborpair.e_ij_, vel_ij);
+    const double e_ij_vel_ij = UTILS::vec_dot(particlepair.e_ij_, vel_ij);
 
     // no density integration for boundary or rigid particles
     if (type_i != PARTICLEENGINE::BoundaryPhase and type_i != PARTICLEENGINE::RigidPhase)
     {
-      densdot_i[0] += dens_i[0] * (mass_j[0] / dens_j[0]) * neighborpair.dWdrij_ * e_ij_vel_ij;
+      densdot_i[0] += dens_i[0] * (mass_j[0] / dens_j[0]) * particlepair.dWdrij_ * e_ij_vel_ij;
     }
 
     // no density summation for boundary or rigid particles
@@ -351,7 +351,7 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquation() const
         status_j == PARTICLEENGINE::Owned)
     {
       // note: the signs in e_ij_ and vel_ij cancel out
-      densdot_j[0] += dens_j[0] * (mass_i[0] / dens_i[0]) * neighborpair.dWdrji_ * e_ij_vel_ij;
+      densdot_j[0] += dens_j[0] * (mass_i[0] / dens_i[0]) * particlepair.dWdrji_ * e_ij_vel_ij;
     }
   }
 }

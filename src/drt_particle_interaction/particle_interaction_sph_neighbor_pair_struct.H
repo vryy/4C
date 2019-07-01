@@ -20,7 +20,7 @@
 namespace PARTICLEINTERACTION
 {
   //! struct to store quantities of interacting particles
-  struct SPHNeighborPair
+  struct SPHParticlePair
   {
     //! local index tuple of particles i and j
     PARTICLEENGINE::LocalIndexTuple tuple_i_;

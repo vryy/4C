@@ -119,7 +119,7 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::Setup(
   // determine size of vectors indexed by particle types
   const int typevectorsize = *(--boundarytypes_.end()) + 1;
 
-  // allocate memory to hold neighbor pairs
+  // allocate memory to hold contributions of neighboring particles
   sumj_Wij_.resize(typevectorsize);
   sumj_press_j_Wij_.resize(typevectorsize);
   sumj_dens_j_r_ij_Wij_.resize(typevectorsize);
@@ -151,26 +151,26 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticles(
     sumj_vel_j_Wij_[type_i].assign(particlestored, std::vector<double>(3, 0.0));
   }
 
-  // get relevant neighbor pair indices for particle types
+  // get relevant particle pair indices for particle types
   std::vector<int> relindices;
-  neighborpairs_->GetRelevantNeighborPairIndices(boundarytypes_, relindices);
+  neighborpairs_->GetRelevantParticlePairIndices(boundarytypes_, relindices);
 
-  // iterate over relevant neighbor pairs
-  for (const int neighborpairindex : relindices)
+  // iterate over relevant particle pairs
+  for (const int particlepairindex : relindices)
   {
-    const SPHNeighborPair& neighborpair =
-        neighborpairs_->GetRefToNeighborPairData()[neighborpairindex];
+    const SPHParticlePair& particlepair =
+        neighborpairs_->GetRefToParticlePairData()[particlepairindex];
 
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
     PARTICLEENGINE::StatusEnum status_i;
     int particle_i;
-    std::tie(type_i, status_i, particle_i) = neighborpair.tuple_i_;
+    std::tie(type_i, status_i, particle_i) = particlepair.tuple_i_;
 
     PARTICLEENGINE::TypeEnum type_j;
     PARTICLEENGINE::StatusEnum status_j;
     int particle_j;
-    std::tie(type_j, status_j, particle_j) = neighborpair.tuple_j_;
+    std::tie(type_j, status_j, particle_j) = particlepair.tuple_j_;
 
     // check for boundary or rigid particles
     bool isboundaryrigid_i = boundarytypes_.count(type_i);
@@ -195,13 +195,13 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticles(
       press_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Pressure, particle_j);
 
       // sum contribution of neighboring particle j
-      sumj_Wij_[type_i][particle_i] += neighborpair.Wij_;
-      sumj_press_j_Wij_[type_i][particle_i] += press_j[0] * neighborpair.Wij_;
+      sumj_Wij_[type_i][particle_i] += particlepair.Wij_;
+      sumj_press_j_Wij_[type_i][particle_i] += press_j[0] * particlepair.Wij_;
 
-      const double fac = dens_j[0] * neighborpair.absdist_ * neighborpair.Wij_;
-      UTILS::vec_addscale(&sumj_dens_j_r_ij_Wij_[type_i][particle_i][0], fac, neighborpair.e_ij_);
+      const double fac = dens_j[0] * particlepair.absdist_ * particlepair.Wij_;
+      UTILS::vec_addscale(&sumj_dens_j_r_ij_Wij_[type_i][particle_i][0], fac, particlepair.e_ij_);
 
-      UTILS::vec_addscale(&sumj_vel_j_Wij_[type_i][particle_i][0], neighborpair.Wij_, vel_j);
+      UTILS::vec_addscale(&sumj_vel_j_Wij_[type_i][particle_i][0], particlepair.Wij_, vel_j);
     }
 
     // evaluate contribution of neighboring particle i
@@ -220,13 +220,13 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticles(
       press_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Pressure, particle_i);
 
       // sum contribution of neighboring particle i
-      sumj_Wij_[type_j][particle_j] += neighborpair.Wji_;
-      sumj_press_j_Wij_[type_j][particle_j] += press_i[0] * neighborpair.Wji_;
+      sumj_Wij_[type_j][particle_j] += particlepair.Wji_;
+      sumj_press_j_Wij_[type_j][particle_j] += press_i[0] * particlepair.Wji_;
 
-      const double fac = -dens_i[0] * neighborpair.absdist_ * neighborpair.Wji_;
-      UTILS::vec_addscale(&sumj_dens_j_r_ij_Wij_[type_j][particle_j][0], fac, neighborpair.e_ij_);
+      const double fac = -dens_i[0] * particlepair.absdist_ * particlepair.Wji_;
+      UTILS::vec_addscale(&sumj_dens_j_r_ij_Wij_[type_j][particle_j][0], fac, particlepair.e_ij_);
 
-      UTILS::vec_addscale(&sumj_vel_j_Wij_[type_j][particle_j][0], neighborpair.Wji_, vel_i);
+      UTILS::vec_addscale(&sumj_vel_j_Wij_[type_j][particle_j][0], particlepair.Wji_, vel_i);
     }
   }
 
