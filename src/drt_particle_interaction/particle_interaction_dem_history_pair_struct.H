@@ -28,7 +28,7 @@ namespace PARTICLEINTERACTION
   struct DEMHistoryPairTangential
   {
     //! tangential stick flag
-    bool stick_ = false;
+    bool stick_ = true;
 
     //! tangential gap
     double gap_t_[3] = {0.0};

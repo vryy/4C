@@ -116,7 +116,7 @@ void PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::Setup(const doub
   // tangential contact stiffness
   k_tangential_ = kappa * k_normal;
 
-  // determine normal contact damping factor
+  // determine tangential contact damping factor
   if (e_ > 0.0)
   {
     const double lne = std::log(e_);
