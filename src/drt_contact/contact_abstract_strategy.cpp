@@ -1109,21 +1109,9 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface(
     inttime_ += Interfaces()[i]->Inttime();
 
     /************************************************************
-     *  Round Robin loop with evaluations after each iteration  *
-     ************************************************************/
-    if (strat == INPAR::MORTAR::roundrobinevaluate)
-    {
-      // check redundant input
-      if (redundant != INPAR::MORTAR::redundant_none)
-        dserror("Round-Robin-Loop only for none-redundant storage of interface!");
-
-      // this contains the evaluation as well as the rr loop
-      Interfaces()[i]->RoundRobinEvaluate();
-    }
-    /************************************************************
      *  Round Robin loop only for ghosting                      *
      ************************************************************/
-    else if (strat == INPAR::MORTAR::roundrobinghost)
+    if (strat == INPAR::MORTAR::roundrobinghost)
     {
       // check redundant input
       if (redundant != INPAR::MORTAR::redundant_none)

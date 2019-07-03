@@ -89,7 +89,6 @@ namespace INPAR
     enum ParallelStrategy
     {
       ghosting_redundant,  ///< redundant storage of master or master&slave surfaces
-      roundrobinevaluate,  ///< round robin loop for entire interface evaluation
       roundrobinghost,     ///< round robin loop for setup of ghosting only
       binningstrategy      ///< binning strategy
     };

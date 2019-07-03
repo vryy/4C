@@ -89,12 +89,10 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   setStringToIntegralParameter<int>("PARALLEL_STRATEGY", "redundant_ghosting",
       "Type of parallel interface evaluation",
-      tuple<std::string>("rg", "redundant_ghosting", "ghosting", "rre", "roundrobinevaluate",
-          "RoundRobinEvaluate", "rrg", "roundrobinghost", "RoundRobinGhost", "bs",
-          "binningstrategy", "binning"),
-      tuple<int>(ghosting_redundant, ghosting_redundant, ghosting_redundant, roundrobinevaluate,
-          roundrobinevaluate, roundrobinevaluate, roundrobinghost, roundrobinghost, roundrobinghost,
-          binningstrategy, binningstrategy, binningstrategy),
+      tuple<std::string>("rg", "redundant_ghosting", "ghosting", "rrg", "roundrobinghost",
+          "RoundRobinGhost", "bs", "binningstrategy", "binning"),
+      tuple<int>(ghosting_redundant, ghosting_redundant, ghosting_redundant, roundrobinghost,
+          roundrobinghost, roundrobinghost, binningstrategy, binningstrategy, binningstrategy),
       &mortar);
 
   setStringToIntegralParameter<int>("PARALLEL_REDIST", "Static", "Type of redistribution algorithm",

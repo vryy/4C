@@ -609,8 +609,6 @@ namespace CONTACT
     */
     bool Redistribute(int index);
 
-    void RoundRobinEvaluate();
-
     void RoundRobinChangeOwnership();
 
     void RoundRobinDetectGhosting();

@@ -100,9 +100,7 @@ void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& para
         "redundant_ghosting !");
 
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(mortar, "PARALLEL_STRATEGY") ==
-          INPAR::MORTAR::roundrobinevaluate or
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(mortar, "PARALLEL_STRATEGY") ==
-          INPAR::MORTAR::roundrobinghost)
+      INPAR::MORTAR::roundrobinghost)
     dserror("ERROR: Round-Robin strategies not for mortar meshtying!");
 
   // *********************************************************************

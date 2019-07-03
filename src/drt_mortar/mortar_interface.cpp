@@ -1639,8 +1639,6 @@ void MORTAR::MortarInterface::CreateSearchTree()
     Teuchos::RCP<Epetra_Map> melefullmap = Teuchos::null;
     if (strat == INPAR::MORTAR::roundrobinghost || strat == INPAR::MORTAR::binningstrategy)
       melefullmap = melecolmap_;
-    else if (strat == INPAR::MORTAR::roundrobinevaluate)
-      melefullmap = melerowmap_;
     else if (strat == INPAR::MORTAR::ghosting_redundant)
       melefullmap = LINALG::AllreduceEMap(*melerowmap_);
     else
@@ -2885,7 +2883,7 @@ void MORTAR::MortarInterface::EvaluateSearchBruteForce(const double& eps)
 
   if (strat == INPAR::MORTAR::ghosting_redundant)
     melefullmap = LINALG::AllreduceEMap(*melerowmap_);
-  else if (strat == INPAR::MORTAR::roundrobinevaluate || strat == INPAR::MORTAR::roundrobinghost)
+  else if (strat == INPAR::MORTAR::roundrobinghost)
     melefullmap = melerowmap_;
   else if (strat == INPAR::MORTAR::binningstrategy)
     melefullmap = melecolmap_;
