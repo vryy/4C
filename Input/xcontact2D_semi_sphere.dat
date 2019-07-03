@@ -26,7 +26,7 @@ RESULTSEVRY                     1
 TIMESTEP                        0.1
 MAXTIME                         1.0
 NUMSTEP                         1000000
-CONVTOL                         1.0e-6                                          // convergence tolerance of the outer iteration scheme
+CONVTOL                         1.0e-6
 COUPL_ALGO                      Partitioned
 -------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
@@ -79,15 +79,12 @@ Test Details                    = No
 Debug                           = No
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
 CONVFORM                        convective
-//INITFUNCNO                      1
-//INITIALFIELD                    field_by_function
 LINEAR_SOLVER                   3
 MATID                           5
 OUTPUT_GMSH                     No
 SOLVERTYPE                      nonlinear
 THETA                           0.5
 TIMEINTEGR                      One_Step_Theta
-//VELOCITYFIELD                   Navier_Stokes
 L2_PROJ_LINEAR_SOLVER           4
 ---------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ADAPTCONV                       yes
@@ -101,15 +98,15 @@ EVALUATION_MAT                  integration_point //element_center
 EVALUATION_TAU                  integration_point //element_center
 STABTYPE                        SUPG
 ---------------------------------LEVEL-SET CONTROL/REINITIALIZATION
-REINITIALIZATION                EllipticEq                                  // -> use of an elliptical potential equation
-PENALTY_PARA                    1.0e4                                       // -> penalty parameter for the elliptical potential
-REINITINTERVAL                  1                                           // -> Reinitialization has to be performed each step
-REINIT_INITIAL                  no                                          // -> never done initially for xcontact problems
-REINITBAND                      no                                          // -> use entire domain
-REINITBANDWIDTH                 1.0                                         // -> currently unsupported
+REINITIALIZATION                EllipticEq
+PENALTY_PARA                    1.0e4
+REINITINTERVAL                  1
+REINIT_INITIAL                  no
+REINITBAND                      no
+REINITBANDWIDTH                 1.0
 DIFF_FUNC                       hyperbolic
 NUMSTEPSREINIT                  10
-PROJECTION                      no // yes
+PROJECTION                      no
 LUMPING                         no
 CONVTOL_REINIT                  1.0e-8
 -------------------------------------------------------XFEM GENERAL
@@ -128,37 +125,37 @@ NAME                            ScaTra_Solver
 SOLVER                          UMFPACK
 -----------------------------------------------------------SOLVER 4
 NAME                            L2-projection solver for levelset gradients
-SOLVER                          Belos                         // Aztec_MSR SPOOLES_nonsym Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        1                             // output every so often, 0 no output
-AZSOLVE                         CG                            // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ILU                           // ML // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann
-AZREUSE                         8                             // how often to recompute some preconditioners
-AZDROP                          0.0                           // drop tolerance for ILUT
-IFPACKFILL                      1.0                           // fill-in for ILUT
-IFPACKGFILL                     0                             // graph fill for ILU
-AZTOL                           1.0E-6                        // tolerance in unscaled residual
-AZITER                          60                            // max iterations
-AZSUB                           25                            // size of krylov space for gmres
-AZOMEGA                         1.0                           // unused
-AZGRAPH                         1                             // unused
-AZPOLY                          5                             // polynomial order for Neumann
-IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
-AZSCAL                          none                          // none sym infnorm scaling of the system
-AZCONV                          AZ_r0                         // AZ_r0 AZ_noscaled AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZTECOO_conv_test AZ_inf_noscaled
-ML_PRINT                        0                             // ML print-out level (0-10)
-ML_MAXCOARSESIZE                5000                          // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL                     3                             // ML max number of levels
-ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  1.33                          // damping factor for prolongator smoother (usually 1.33 or 0.0)
-ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 SGS                           // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  SGS                           // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               KLU                           // SGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES                     2 3 1                         // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     0.89                          // damping fine grid
-ML_DAMPMED                      1.0                           // damping med grids
-ML_DAMPCOARSE                   1.0                           // damping coarse grid
+SOLVER                          Belos
+AZOUTPUT                        1
+AZSOLVE                         CG
+AZPREC                          ILU
+AZREUSE                         8
+AZDROP                          0.0
+IFPACKFILL                      1.0
+IFPACKGFILL                     0
+AZTOL                           1.0E-6
+AZITER                          60
+AZSUB                           25
+AZOMEGA                         1.0
+AZGRAPH                         1
+AZPOLY                          5
+IFPACKOVERLAP                   0
+AZSCAL                          none
+AZCONV                          AZ_r0
+ML_PRINT                        0
+ML_MAXCOARSESIZE                5000
+ML_MAXLEVEL                     3
+ML_COARSEN                      UC
+ML_AGG_SIZE                     27
+ML_PROLONG_SMO                  1.33
+ML_PROLONG_THRES                0.0
+ML_SMOOTHERFINE                 SGS
+ML_SMOOTHERMED                  SGS
+ML_SMOOTHERCOARSE               KLU
+ML_SMOTIMES                     2 3 1
+ML_DAMPFINE                     0.89
+ML_DAMPMED                      1.0
+ML_DAMPCOARSE                   1.0
 ----------------------------------------------------------MATERIALS
 MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 0.1                          // --> SLAVE body material definition
 MAT 2   ELAST_CoupNeoHooke YOUNG 2500 NUE 0.25

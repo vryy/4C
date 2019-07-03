@@ -21,18 +21,18 @@ INT_STRATEGY                    Standard
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
-DYNAMICTYP                      Statics//OneStepTheta  // ExplicitEuler,Centr_Diff,Gen_EMM,Gen_Alfa,Static,Statics,GenAlpha,GEMM,AdamsBashforth2,EulerMaruyama,EulerImpStoch
+DYNAMICTYP                      Statics
 ITERNORM                        L2
 LINEAR_SOLVER                   3
 MAXITER                         50
 MAXTIME                         5
 MINITER                         0
-NLNSOL                          fullnewton  // vague,fullnewton,lsnewton,oppnewton,modnewton,nlncg,ptc,newtonlinuzawa,augmentedlagrange,NoxNewtonLineSearch,noxgeneral
+NLNSOL                          fullnewton
 NORMCOMBI_RESFDISP              And
 NORM_DISP                       Abs
-NORM_RESF                       Abs  // Abs,Rel,Mix
+NORM_RESF                       Abs
 NUMSTEP                         200
-PREDICT                         ConstDis  // Vague,ConstDis,ConstDisVelAcc,TangDis,ConstDisPres,ConstDisVelAccPres
+PREDICT                         ConstDis
 RESTARTEVRY                     1
 RESULTSEVRY                     1
 TIMESTEP                        0.05
@@ -44,20 +44,20 @@ THETA                           0.5
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
-DYNAMICTYP                      Statics//OneStepTheta  // ExplicitEuler,Statics
-INITFUNCNO                      2  // use FUNCT 1
-INITIALFIELD                    field_by_function  // zero_field,field_by_function,field_by_condition
+DYNAMICTYP                      Statics
+INITFUNCNO                      2
+INITIALFIELD                    field_by_function
 ITERNORM                        L2
 LINEAR_SOLVER                   2
 MAXITER                         50
 MAXTIME                         5
 MINITER                         0
-NLNSOL                          fullnewton  // vague,fullnewton
-NORMCOMBI_RESFTEMP              Or//And
+NLNSOL                          fullnewton
+NORMCOMBI_RESFTEMP              Or
 NORM_RESF                       Rel
 NORM_TEMP                       Abs
 NUMSTEP                         200
-PREDICT                         ConstTemp  // Vague,ConstTemp,ConstTempRate,TangTemp
+PREDICT                         ConstTemp
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 RESEVRYERGY                     1
@@ -68,7 +68,7 @@ CALCERROR                       byfunct
 CALCERRORFUNCNO                 1
 -------------------------------------------------------------CONTACT DYNAMIC
 STRATEGY                        Lagrange
-SYSTEM                          sp//condensed
+SYSTEM                          sp
 FRICTION                        None
 SEMI_SMOOTH_NEWTON              No
 LINEAR_SOLVER                   4
@@ -80,17 +80,17 @@ LM_QUAD                         quad
 ------------------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 -----------------------------------------------------------------TSI DYNAMIC
-COUPALGO                        tsi_iterstagg_aitken  //tsi_iterstagg(_irons,_fixedrelax,_sequstagg,_oneway,_monolithic)
+COUPALGO                        tsi_iterstagg_aitken
 ITEMAX                          100
 MAXTIME                         1.0
 NUMSTEP                         1
 RESTARTEVRY                     1
 TIMESTEP                        1.0
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 MATCHINGGRID                    no
 -----------------------------------------------------TSI DYNAMIC/PARTITIONED
 CONVTOL                         1e-06
-COUPVARIABLE                    Displacement  // Displacement,TemperatureDisplacement
+COUPVARIABLE                    Displacement
 MAXOMEGA                        2.0
 ----------------------------------------------------------VOLMORTAR COUPLING
 COUPLINGTYPE                    consint
@@ -100,22 +100,22 @@ MESH_INIT                       no
 --------------------------------------------------------------------SOLVER 1
 NAME                            TSI_MONOLITHIC_SOLVER
 AZBDIAG                         0
-AZCONV                          AZ_r0  // AZ_r0,AZ_rhs,AZ_Anorm,AZ_noscaled,AZ_sol,AZ_weighted,AZ_expected_values,AZTECOO_conv_test,AZ_inf_noscaled
+AZCONV                          AZ_r0
 AZDROP                          0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
 AZPOLY                          3
-AZPREC                          BGS2x2  // none,ILU,ILUT,Jacobi,SymmGaussSeidel,Least_Squares,Neumann,ICC,LU,RILU,BILU,ML,MLFLUID,MLFLUID2,MLAPI,GaussSeidel,DownwindGaussSeidel,AMG(Braess-Sarazin),AMG,BGS2x2
+AZPREC                          BGS2x2
 AZREUSE                         0
-AZSCAL                          none   // none,sym,infnorm
-AZSOLVE                         GMRES  // CG,GMRES,GMRESR,CGS,TFQMR,BiCGSTAB,LU
+AZSCAL                          none
+AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-08
 DWINDTAU                        1.5
 BGS2X2_FLIPORDER                block1_block0_order
-IFPACKCOMBINE                   Add  // Add,Insert,Zero
+IFPACKCOMBINE                   Add
 IFPACKFILL                      1
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
@@ -133,7 +133,7 @@ ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
-SOLVER                          Aztec_MSR  // UMFPACK,Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          Aztec_MSR
 --------------------------------------------------------------------SOLVER 2
 NAME                            THERMAL_SOLVER
 AZBDIAG                         0
@@ -144,7 +144,7 @@ AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
 AZPOLY                          3
-AZPREC                          MLFLUID2  // ML,ILU
+AZPREC                          MLFLUID2
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
@@ -160,8 +160,8 @@ ML_COARSEN                      UC
 ML_DAMPCOARSE                   1
 ML_DAMPFINE                     1
 ML_DAMPMED                      1
-ML_MAXCOARSESIZE                1  // 5000
-ML_MAXLEVEL                     3  // 5
+ML_MAXCOARSESIZE                1
+ML_MAXLEVEL                     3
 ML_PRINT                        0
 ML_PROLONG_SMO                  0
 ML_PROLONG_THRES                0
@@ -169,7 +169,7 @@ ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
-SOLVER                          Aztec_MSR  // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          Aztec_MSR
 --------------------------------------------------------------------SOLVER 3
 NAME                            STRUCTURAL_SOLVER
 AZBDIAG                         0
@@ -180,7 +180,7 @@ AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
 AZPOLY                          3
-AZPREC                          MLFLUID2  // none,ILU,ILUT,Jacobi,SymmGaussSeidel,Least_Squares,Neumann,ICC,LU,RILU,BILU,ML,MLFLUID,MLFLUID2,MLAPI,GaussSeidel,DownwindGaussSeidel,AMG(Braess-Sarazin),AMG,BGS2x2
+AZPREC                          MLFLUID2
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
@@ -196,8 +196,8 @@ ML_COARSEN                      UC
 ML_DAMPCOARSE                   1
 ML_DAMPFINE                     1
 ML_DAMPMED                      1
-ML_MAXCOARSESIZE                1  // 5000
-ML_MAXLEVEL                     3  // 5
+ML_MAXCOARSESIZE                1
+ML_MAXLEVEL                     3
 ML_PRINT                        0
 ML_PROLONG_SMO                  0
 ML_PROLONG_THRES                0
@@ -205,7 +205,7 @@ ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
-SOLVER                          Aztec_MSR  // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          Aztec_MSR
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 2.1e05 NUE 0.0 DENS 7.85e-06 THEXPANS 1.1e-05 CAPA 0.0 CONDUCT 1030.0 INITTEMP 273.15
 MAT 2 THERM_FourierIso CAPA 1.0 CONDUCT 1030.0
