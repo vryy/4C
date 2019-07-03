@@ -85,7 +85,7 @@ namespace INPAR
     };
 
     /// Type of parallel interface evaluation
-    /// (this enum represents the input file parameter PARALLEL_STRATEGY)
+    /// (this enum represents the input file parameter GHOSTING_STRATEGY)
     enum ParallelStrategy
     {
       ghosting_redundant,  ///< redundant storage of master or master&slave surfaces

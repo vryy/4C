@@ -1051,7 +1051,7 @@ void STR::TimInt::PrepareStepContact()
           DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
       INPAR::MORTAR::ParallelStrategy strat =
           DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(
-              parallelParamsMortar, "PARALLEL_STRATEGY");
+              parallelParamsMortar, "GHOSTING_STRATEGY");
 
       // prepare binstrategy for timestep
       if (strat == INPAR::MORTAR::binningstrategy)

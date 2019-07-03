@@ -77,7 +77,7 @@ SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.3
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 REDUNDANT_STORAGE               none
-PARALLEL_STRATEGY               binningstrategy
+GHOSTING_STRATEGY               binningstrategy
 PARALLEL_REDIST                 dynamic
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver

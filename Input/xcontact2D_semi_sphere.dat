@@ -50,7 +50,7 @@ INTTYPE                         Elements
 NUMGP_PER_DIM                   3
 ----------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 REDUNDANT_STORAGE               Master
-PARALLEL_STRATEGY               redundant_ghosting
+GHOSTING_STRATEGY               redundant_ghosting
 PARALLEL_REDIST                 None
 ----------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2

@@ -87,7 +87,7 @@ NUMGP_PER_DIM                   10
 TRIANGULATION                   Delaunay
 ----------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 REDUNDANT_STORAGE               Master
-PARALLEL_STRATEGY               redundant_ghosting
+GHOSTING_STRATEGY               redundant_ghosting
 PARALLEL_REDIST                 Static
 MAX_BALANCE                     2
 MIN_ELEPROC                     0

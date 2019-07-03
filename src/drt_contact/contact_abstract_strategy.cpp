@@ -1057,7 +1057,7 @@ void CONTACT::CoAbstractStrategy::InitBinStrategyforTimestep(Teuchos::RCP<const 
 {
   INPAR::MORTAR::ParallelStrategy strat =
       DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(
-          Params().sublist("PARALLEL REDISTRIBUTION"), "PARALLEL_STRATEGY");
+          Params().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
 
   if (strat != INPAR::MORTAR::binningstrategy) return;
 
@@ -1099,7 +1099,7 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface(
       Params().sublist("PARALLEL REDISTRIBUTION");
   INPAR::MORTAR::ParallelStrategy strat =
       DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(
-          mortarParallelRedistParams, "PARALLEL_STRATEGY");
+          mortarParallelRedistParams, "GHOSTING_STRATEGY");
   INPAR::MORTAR::RedundantStorage redundant =
       DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
           mortarParallelRedistParams, "REDUNDANT_STORAGE");

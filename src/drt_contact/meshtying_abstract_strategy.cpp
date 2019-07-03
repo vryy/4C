@@ -134,7 +134,7 @@ void CONTACT::MtAbstractStrategy::RedistributeMeshtying()
   //---------------------------------------
   INPAR::MORTAR::ParallelStrategy strat =
       DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(
-          interface_[0]->IParams().sublist("PARALLEL REDISTRIBUTION"), "PARALLEL_STRATEGY");
+          interface_[0]->IParams().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
   Teuchos::RCP<Epetra_Map> melefullmap = Teuchos::null;
   if (strat == INPAR::MORTAR::binningstrategy)
   {

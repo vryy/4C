@@ -207,7 +207,7 @@ void XCONTACT::Strategy::InitEvalInterface(Teuchos::RCP<CONTACT::ParamsInterface
   // Get type of parallel strategy
   INPAR::MORTAR::ParallelStrategy strat =
       DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(
-          Params().sublist("PARALLEL REDISTRIBUTION"), "PARALLEL_STRATEGY");
+          Params().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
 
   // Initialize and evaluate all interfaces
   for (std::vector<Teuchos::RCP<CONTACT::CoInterface>>::const_iterator cit = interface_.begin();
@@ -237,7 +237,7 @@ void XCONTACT::Strategy::InitEvalInterface(Teuchos::RCP<CONTACT::ParamsInterface
       {
         dserror(
             "XContact strategy: Only \"ghosting_redundant\" supported as "
-            "\"PARALLEL_STRATEGY\".");
+            "\"GHOSTING_STRATEGY\".");
         break;
       }
     }

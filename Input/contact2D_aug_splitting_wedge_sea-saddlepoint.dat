@@ -76,7 +76,7 @@ TRIANGULATION                   Delaunay
 RESTART_WITH_MESHTYING          No
 ----------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 REDUNDANT_STORAGE               Master
-PARALLEL_STRATEGY               redundant_ghosting
+GHOSTING_STRATEGY               redundant_ghosting
 PARALLEL_REDIST                 Dynamic
 MAX_BALANCE                     2
 MIN_ELEPROC                     0

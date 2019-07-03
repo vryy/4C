@@ -1633,7 +1633,7 @@ void MORTAR::MortarInterface::CreateSearchTree()
     // like the slave elements --> melecolmap_
     INPAR::MORTAR::ParallelStrategy strat =
         DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(
-            IParams().sublist("PARALLEL REDISTRIBUTION"), "PARALLEL_STRATEGY");
+            IParams().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
 
     // get update type of binary tree
     INPAR::MORTAR::BinaryTreeUpdateType updatetype =
@@ -2883,7 +2883,7 @@ void MORTAR::MortarInterface::EvaluateSearchBruteForce(const double& eps)
   // like the slave elements --> melecolmap_
   INPAR::MORTAR::ParallelStrategy strat =
       DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(
-          IParams().sublist("PARALLEL REDISTRIBUTION"), "PARALLEL_STRATEGY");
+          IParams().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
   Teuchos::RCP<Epetra_Map> melefullmap = Teuchos::null;
 
   if (strat == INPAR::MORTAR::ghosting_redundant)

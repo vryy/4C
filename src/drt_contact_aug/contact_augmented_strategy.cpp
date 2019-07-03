@@ -168,7 +168,7 @@ CONTACT::AUG::Strategy::Strategy(const Teuchos::RCP<CONTACT::AbstractStratDataCo
   Data().SetConstantCn(Params().get<double>("SEMI_SMOOTH_CN"));
 
   Data().SetParallelStrategy(DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(
-      Params().sublist("PARALLEL REDISTRIBUTION"), "PARALLEL_STRATEGY"));
+      Params().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY"));
 
   Data().SetVariationalApproachType(DRT::INPUT::IntegralValue<INPAR::CONTACT::VariationalApproach>(
       p_aug, "VARIATIONAL_APPROACH"));
@@ -629,7 +629,7 @@ void CONTACT::AUG::Strategy::InitEvalInterface(Teuchos::RCP<CONTACT::ParamsInter
       {
         dserror(
             "ERROR: Augmented Lagrange strategy supports only "
-            "\"ghosting_redundant\" as \"PARALLEL_STRATEGY\".");
+            "\"ghosting_redundant\" as \"GHOSTING_STRATEGY\".");
         break;
       }
     }

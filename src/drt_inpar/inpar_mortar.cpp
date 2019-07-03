@@ -119,6 +119,13 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   Teuchos::ParameterList& parallelRedist = mortar.sublist("PARALLEL REDISTRIBUTION", false,
       "Parameters to control parallel redistribution of mortar interfaces");
 
+  setStringToIntegralParameter<int>("GHOSTING_STRATEGY", "redundant_ghosting",
+      "Type of parallel interface evaluation",
+      tuple<std::string>("rg", "redundant_ghosting", "ghosting", "rrg", "roundrobinghost",
+          "RoundRobinGhost", "bs", "binningstrategy", "binning"),
+      tuple<int>(ghosting_redundant, ghosting_redundant, ghosting_redundant, roundrobinghost,
+          roundrobinghost, roundrobinghost, binningstrategy, binningstrategy, binningstrategy),
+      &parallelRedist);
 
   DoubleParameter("IMBALANCE_TOL", 1.1,
       "Max. relative imbalance of subdomain size after redistribution", &parallelRedist);
@@ -140,14 +147,6 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
       tuple<std::string>("All", "all", "Master", "master", "None", "none"),
       tuple<int>(redundant_all, redundant_all, redundant_master, redundant_master, redundant_none,
           redundant_none),
-      &parallelRedist);
-
-  setStringToIntegralParameter<int>("PARALLEL_STRATEGY", "redundant_ghosting",
-      "Type of parallel interface evaluation",
-      tuple<std::string>("rg", "redundant_ghosting", "ghosting", "rrg", "roundrobinghost",
-          "RoundRobinGhost", "bs", "binningstrategy", "binning"),
-      tuple<int>(ghosting_redundant, ghosting_redundant, ghosting_redundant, roundrobinghost,
-          roundrobinghost, roundrobinghost, binningstrategy, binningstrategy, binningstrategy),
       &parallelRedist);
 }
 

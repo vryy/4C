@@ -399,7 +399,7 @@ REDUNDANT_STORAGE               Master
 //     bs
 //     binningstrategy
 //     binning
-PARALLEL_STRATEGY               redundant_ghosting
+GHOSTING_STRATEGY               redundant_ghosting
 //
 // Type of redistribution algorithm
 //     None,none,No,no,Static,static,Dynamic,dynamic
