@@ -70,6 +70,7 @@ SEMI_SMOOTH_CT                  10
 LM_SHAPEFCN                     Dual
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 Static
 -------------------------------------------------------------WEAR
 WEARLAW                         Archard

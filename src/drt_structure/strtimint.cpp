@@ -1047,10 +1047,11 @@ void STR::TimInt::PrepareStepContact()
       cmtbridge_->GetStrategy().RedistributeContact((*dis_)(0));
 
       // get type of parallel strategy
-      const Teuchos::ParameterList& paramsmortar = DRT::Problem::Instance()->MortarCouplingParams();
+      const Teuchos::ParameterList& parallelParamsMortar =
+          DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
       INPAR::MORTAR::ParallelStrategy strat =
           DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(
-              paramsmortar, "PARALLEL_STRATEGY");
+              parallelParamsMortar, "PARALLEL_STRATEGY");
 
       // prepare binstrategy for timestep
       if (strat == INPAR::MORTAR::binningstrategy)
@@ -1471,7 +1472,8 @@ void STR::TimInt::UpdateStepContactVUM()
           Teuchos::rcp(new LINALG::SparseMatrix(*slavedofmap, 10));
       Teuchos::RCP<LINALG::SparseMatrix> D =
           Teuchos::rcp(new LINALG::SparseMatrix(*slavedofmap, 10));
-      if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(cmtbridge_->GetStrategy().Params(),
+      if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
+              cmtbridge_->GetStrategy().Params().sublist("PARALLEL REDISTRIBUTION"),
               "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
       {
         M = MORTAR::MatrixColTransform(Mmat, notredistmasterdofmap);

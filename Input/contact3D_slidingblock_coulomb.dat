@@ -65,6 +65,7 @@ SEMI_SMOOTH_CT                  10000.0
 LM_SHAPEFCN                     Dual
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    2.0
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 Dynamic
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver

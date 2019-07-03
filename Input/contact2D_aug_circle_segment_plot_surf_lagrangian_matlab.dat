@@ -63,15 +63,16 @@ LM_SHAPEFCN                     standard
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    2.0
 LM_QUAD                         undefined
-REDUNDANT_STORAGE               Master
-PARALLEL_STRATEGY               redundant_ghosting
-PARALLEL_REDIST                 Static
 ALGORITHM                       Mortar
-MAX_BALANCE                     2
-MIN_ELEPROC                     0
 INTTYPE                         Elements
 NUMGP_PER_DIM                   4
 TRIANGULATION                   Delaunay
+----------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+REDUNDANT_STORAGE               Master
+PARALLEL_STRATEGY               redundant_ghosting
+PARALLEL_REDIST                 Static
+MAX_BALANCE                     2
+MIN_ELEPROC                     0
 ----------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 STRATEGY                        StdLagrange

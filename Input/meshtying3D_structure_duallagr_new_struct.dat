@@ -54,6 +54,7 @@ STRATEGY                        Lagrange
 SYSTEM                          Condensed
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     Dual
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 Static
 MIN_ELEPROC                     0
 --------------------------------------------------------------------SOLVER 1

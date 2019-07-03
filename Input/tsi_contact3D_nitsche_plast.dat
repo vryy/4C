@@ -101,10 +101,11 @@ NITSCHE_PENALTY_ADAPTIVE    yes
 --------------------------------------------------MORTAR COUPLING
 ALGORITHM            gpts
 SEARCH_PARAM         0.3
-PARALLEL_REDIST      dynamic
 INTTYPE              Segments
 TRIANGULATION        center
 NUMGP_PER_DIM        3
+--------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+PARALLEL_REDIST      dynamic
 ---------------------------------------------------------TSI CONTACT
 HEATTRANSSLAVE                  2e1
 HEATTRANSMASTER                 2e0

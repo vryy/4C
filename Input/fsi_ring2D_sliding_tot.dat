@@ -86,8 +86,9 @@ PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
 -------------------------------------------------------------MORTAR COUPLING
-PARALLEL_REDIST                 No
 LM_SHAPEFCN                     Dual
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+PARALLEL_REDIST                 No
 REDUNDANT_STORAGE               all
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard

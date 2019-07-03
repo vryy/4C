@@ -47,9 +47,10 @@ EQUPOT                          ENC_PDE_ELIM
 ONLYPOTENTIAL                   yes
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     Dual
+MESH_RELOCATION                 no
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 no
 REDUNDANT_STORAGE               all
-MESH_RELOCATION                 no
 ----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS

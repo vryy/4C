@@ -89,8 +89,9 @@ THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
 -------------------------------------------------------------MORTAR COUPLING
-PARALLEL_REDIST                 No
 LM_SHAPEFCN                     Dual
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+PARALLEL_REDIST                 No
 REDUNDANT_STORAGE               all
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Structure_Interaction

@@ -71,6 +71,7 @@ SEMI_SMOOTH_CN                  1.0
 LM_SHAPEFCN                     Dual
 SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.3
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 REDUNDANT_STORAGE               none
 PARALLEL_STRATEGY               RoundRobinGhost
 PARALLEL_REDIST                 dynamic

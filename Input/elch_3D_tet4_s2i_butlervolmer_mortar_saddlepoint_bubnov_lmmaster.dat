@@ -42,8 +42,9 @@ EQUPOT                          divi
 COUPLINGTYPE                    SaddlePointMortar_Bubnov
 LMSIDE                          master
 -------------------------------------------------------------MORTAR COUPLING
-PARALLEL_REDIST                 no
 MESH_RELOCATION                 no
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+PARALLEL_REDIST                 no
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS

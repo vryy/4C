@@ -1208,9 +1208,12 @@ void MORTAR::MortarInterface::BinningStrategy(
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::Redistribute()
 {
+  const Teuchos::ParameterList& mortarParallelRedistParams =
+      IParams().sublist("PARALLEL REDISTRIBUTION");
+
   // make sure we are supposed to be here
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(IParams(), "PARALLEL_REDIST") ==
-      INPAR::MORTAR::parredist_none)
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
+          mortarParallelRedistParams, "PARALLEL_REDIST") == INPAR::MORTAR::parredist_none)
     dserror("ERROR: You are not supposed to be here...");
 
   // some local variables
@@ -1235,10 +1238,10 @@ void MORTAR::MortarInterface::Redistribute()
   int mproc = numproc;
 
   // minimum number of elements per proc
-  int minele = IParams().get<int>("MIN_ELEPROC");
+  int minele = mortarParallelRedistParams.get<int>("MIN_ELEPROC");
 
   // Max. relative imbalance between subdomain sizes
-  const double imbalance_tol = IParams().get<double>("IMBALANCE_TOL");
+  const double imbalance_tol = mortarParallelRedistParams.get<double>("IMBALANCE_TOL");
 
   // calculate real number of procs to be used
   if (minele > 0)
@@ -1629,7 +1632,8 @@ void MORTAR::MortarInterface::CreateSearchTree()
     // for non-redundant storage (RRloop) we handle the master elements
     // like the slave elements --> melecolmap_
     INPAR::MORTAR::ParallelStrategy strat =
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(IParams(), "PARALLEL_STRATEGY");
+        DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(
+            IParams().sublist("PARALLEL REDISTRIBUTION"), "PARALLEL_STRATEGY");
 
     // get update type of binary tree
     INPAR::MORTAR::BinaryTreeUpdateType updatetype =
@@ -2878,7 +2882,8 @@ void MORTAR::MortarInterface::EvaluateSearchBruteForce(const double& eps)
   // for non-redundant storage (RRloop) we handle the master elements
   // like the slave elements --> melecolmap_
   INPAR::MORTAR::ParallelStrategy strat =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(IParams(), "PARALLEL_STRATEGY");
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(
+          IParams().sublist("PARALLEL REDISTRIBUTION"), "PARALLEL_STRATEGY");
   Teuchos::RCP<Epetra_Map> melefullmap = Teuchos::null;
 
   if (strat == INPAR::MORTAR::ghosting_redundant)

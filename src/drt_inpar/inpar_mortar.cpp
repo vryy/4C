@@ -80,30 +80,6 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
           relocation_none, relocation_none),
       &mortar);
 
-  setStringToIntegralParameter<int>("REDUNDANT_STORAGE", "Master",
-      "Type of redundancy in interface storage",
-      tuple<std::string>("All", "all", "Master", "master", "None", "none"),
-      tuple<int>(redundant_all, redundant_all, redundant_master, redundant_master, redundant_none,
-          redundant_none),
-      &mortar);
-
-  setStringToIntegralParameter<int>("PARALLEL_STRATEGY", "redundant_ghosting",
-      "Type of parallel interface evaluation",
-      tuple<std::string>("rg", "redundant_ghosting", "ghosting", "rrg", "roundrobinghost",
-          "RoundRobinGhost", "bs", "binningstrategy", "binning"),
-      tuple<int>(ghosting_redundant, ghosting_redundant, ghosting_redundant, roundrobinghost,
-          roundrobinghost, roundrobinghost, binningstrategy, binningstrategy, binningstrategy),
-      &mortar);
-
-  setStringToIntegralParameter<int>("PARALLEL_REDIST", "Static", "Type of redistribution algorithm",
-      tuple<std::string>("None", "none", "No", "no", "Static", "static", "Dynamic", "dynamic"),
-      tuple<int>(parredist_none, parredist_none, parredist_none, parredist_none, parredist_static,
-          parredist_static, parredist_dynamic, parredist_dynamic),
-      &mortar);
-
-  DoubleParameter("IMBALANCE_TOL", 1.1,
-      "Max. relative imbalance of subdomain size after redistribution", &mortar);
-
   setStringToIntegralParameter<int>("ALGORITHM", "Mortar", "Type of meshtying/contact algorithm",
       tuple<std::string>("mortar", "Mortar", "nts", "NTS", "gpts", "GPTS", "lts", "LTS", "ltl",
           "LTL", "stl", "STL"),
@@ -111,12 +87,6 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
           algorithm_gpts, algorithm_lts, algorithm_lts, algorithm_ltl, algorithm_ltl, algorithm_stl,
           algorithm_stl),
       &mortar);
-
-  DoubleParameter("MAX_BALANCE", 2.0,
-      "Maximum value of load balance measure before parallel redistribution", &mortar);
-
-  IntParameter("MIN_ELEPROC", 0,
-      "Minimum no. of elements per processor for parallel redistribution", &mortar);
 
   setStringToIntegralParameter<int>("INTTYPE", "Segments", "Type of numerical integration scheme",
       tuple<std::string>(
@@ -143,9 +113,43 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
       "to enhance visualization. Currently, this is limited to solid meshtying and contact w/o "
       "friction.",
       &mortar);
+
+  /*--------------------------------------------------------------------*/
+  // parameters for parallel redistribution of mortar interfaces
+  Teuchos::ParameterList& parallelRedist = mortar.sublist("PARALLEL REDISTRIBUTION", false,
+      "Parameters to control parallel redistribution of mortar interfaces");
+
+
+  DoubleParameter("IMBALANCE_TOL", 1.1,
+      "Max. relative imbalance of subdomain size after redistribution", &parallelRedist);
+
+  DoubleParameter("MAX_BALANCE", 2.0,
+      "Maximum value of load balance measure before parallel redistribution", &parallelRedist);
+
+  IntParameter("MIN_ELEPROC", 0,
+      "Minimum no. of elements per processor for parallel redistribution", &parallelRedist);
+
+  setStringToIntegralParameter<int>("PARALLEL_REDIST", "Static", "Type of redistribution algorithm",
+      tuple<std::string>("None", "none", "No", "no", "Static", "static", "Dynamic", "dynamic"),
+      tuple<int>(parredist_none, parredist_none, parredist_none, parredist_none, parredist_static,
+          parredist_static, parredist_dynamic, parredist_dynamic),
+      &parallelRedist);
+
+  setStringToIntegralParameter<int>("REDUNDANT_STORAGE", "Master",
+      "Type of redundancy in interface storage",
+      tuple<std::string>("All", "all", "Master", "master", "None", "none"),
+      tuple<int>(redundant_all, redundant_all, redundant_master, redundant_master, redundant_none,
+          redundant_none),
+      &parallelRedist);
+
+  setStringToIntegralParameter<int>("PARALLEL_STRATEGY", "redundant_ghosting",
+      "Type of parallel interface evaluation",
+      tuple<std::string>("rg", "redundant_ghosting", "ghosting", "rrg", "roundrobinghost",
+          "RoundRobinGhost", "bs", "binningstrategy", "binning"),
+      tuple<int>(ghosting_redundant, ghosting_redundant, ghosting_redundant, roundrobinghost,
+          roundrobinghost, roundrobinghost, binningstrategy, binningstrategy, binningstrategy),
+      &parallelRedist);
 }
-
-
 
 void INPAR::MORTAR::SetValidConditions(
     std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist)

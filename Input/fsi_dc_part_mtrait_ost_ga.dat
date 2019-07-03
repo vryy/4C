@@ -88,8 +88,9 @@ ITEMAX                          100
 PREDICTOR                       d(n)
 RELAX                           0.825
 -------------------------------------------------------------MORTAR COUPLING
-PARALLEL_REDIST                 No
 LM_SHAPEFCN                     Dual
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+PARALLEL_REDIST                 No
 REDUNDANT_STORAGE               all
 --------------------------------------------------------------------SOLVER 1
 NAME                            Ale_Solver

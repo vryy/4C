@@ -93,7 +93,6 @@ NITSCHE_WEIGHTING               harmonic                      // slave
 NITSCHE_PENALTY_ADAPTIVE        yes
 CONSTRAINT_DIRECTIONS           xyz
 -------------------------------------------------------------MORTAR COUPLING
-PARALLEL_REDIST                 none
 INTTYPE                         Segments
 TRIANGULATION                   center
 NUMGP_PER_DIM                   3
@@ -102,6 +101,8 @@ SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.3
 LM_DUAL_CONSISTENT              none                          // all
 LM_QUAD                         const                         // quad
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+PARALLEL_REDIST                 none
 -----------------------------------------------------------------TSI CONTACT
 HEATTRANSSLAVE                  2e1
 HEATTRANSMASTER                 2e1

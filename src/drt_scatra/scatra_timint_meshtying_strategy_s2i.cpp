@@ -63,11 +63,12 @@ SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
       icoup_(Teuchos::null),
       icoupmortar_(),
       imortarcells_(),
-      imortarredistribution_(DRT::INPUT::IntegralValue<INPAR::S2I::CouplingType>(parameters,
-                                 "COUPLINGTYPE") == INPAR::S2I::coupling_mortar_standard and
-                             DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
-                                 DRT::Problem::Instance()->MortarCouplingParams(),
-                                 "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none),
+      imortarredistribution_(
+          DRT::INPUT::IntegralValue<INPAR::S2I::CouplingType>(parameters, "COUPLINGTYPE") ==
+              INPAR::S2I::coupling_mortar_standard and
+          DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
+              DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION"),
+              "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none),
       islavemap_(Teuchos::null),
       imastermap_(Teuchos::null),
       islavenodestomasterelements_(),
@@ -2176,9 +2177,12 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           // perform parallel redistribution if desired
           if (imortarredistribution_ and idiscret.Comm().NumProc() > 1)
           {
-            interface.IParams().set<std::string>("PARALLEL_REDIST",
-                DRT::Problem::Instance()->MortarCouplingParams().get<std::string>(
-                    "PARALLEL_REDIST"));
+            interface.IParams()
+                .sublist("PARALLEL REDISTRIBUTION")
+                .set<std::string>("PARALLEL_REDIST", DRT::Problem::Instance()
+                                                         ->MortarCouplingParams()
+                                                         .sublist("PARALLEL REDISTRIBUTION")
+                                                         .get<std::string>("PARALLEL_REDIST"));
             interface.Redistribute();
             interface.FillComplete();
             interface.PrintParallelDistribution(condid);

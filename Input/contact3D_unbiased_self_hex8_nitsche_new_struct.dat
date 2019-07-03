@@ -50,9 +50,10 @@ NONSMOOTH_CONTACT_SURFACE       Yes
 ----------------------------------------------------MORTAR COUPLING
 SEARCH_PARAM                    0.3
 ALGORITHM                       gpts
-PARALLEL_REDIST                 none
 NUMGP_PER_DIM                   3
 TRIANGULATION                   Center
+----------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+PARALLEL_REDIST                 none
 REDUNDANT_STORAGE               All
 -----------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver

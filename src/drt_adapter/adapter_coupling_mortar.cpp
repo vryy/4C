@@ -285,7 +285,7 @@ void ADAPTER::CouplingMortar::SetupInterface(
   // set valid parameter values
   input.set<std::string>("LM_SHAPEFCN", "dual");
   input.set<std::string>("LM_DUAL_CONSISTENT", "none");
-  input.set<std::string>("PARALLEL_REDIST", "none");
+  input.sublist("PARALLEL REDISTRIBUTION").set<std::string>("PARALLEL_REDIST", "none");
   input.set<int>("DIMENSION", DRT::Problem::Instance()->NDim());
 
   // create an empty mortar interface
@@ -293,7 +293,8 @@ void ADAPTER::CouplingMortar::SetupInterface(
   // fully redundant here in the mortar ADAPTER. This makes applications such
   // as SlidingALE much easier, whereas it would not be needed for others.)
   INPAR::MORTAR::RedundantStorage redundant =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(input, "REDUNDANT_STORAGE");
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
+          input.sublist("PARALLEL REDISTRIBUTION"), "REDUNDANT_STORAGE");
 
   interface_ =
       MORTAR::MortarInterface::Create(0, comm, DRT::Problem::Instance()->NDim(), input, redundant);
@@ -464,8 +465,8 @@ void ADAPTER::CouplingMortar::SetupInterface(
   //**********************************************************************
   // PARALLEL REDISTRIBUTION OF INTERFACE
   //**********************************************************************
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input, "PARALLEL_REDIST") !=
-          INPAR::MORTAR::parredist_none and
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input.sublist("PARALLEL REDISTRIBUTION"),
+          "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none and
       comm.NumProc() > 1)
   {
     // redistribute optimally among all procs
@@ -544,7 +545,8 @@ void ADAPTER::CouplingMortar::SetupForUQAbuseNormalCalculation(
   // fully redundant here in the mortar ADAPTER. This makes applications such
   // as SlidingALE much easier, whereas it would not be needed for others.)
   INPAR::MORTAR::RedundantStorage redundant =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(input, "REDUNDANT_STORAGE");
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
+          input.sublist("PARALLEL REDISTRIBUTION"), "REDUNDANT_STORAGE");
   // if (redundant != INPAR::MORTAR::redundant_all)
   // if(myrank== 0) dserror("Mortar coupling adapter only works for redundant slave and master
   // storage");
@@ -1290,7 +1292,8 @@ void ADAPTER::CouplingMortar::MatrixRowColTransform()
 
   // check for parallel redistribution
   bool parredist = false;
-  const Teuchos::ParameterList& input = DRT::Problem::Instance()->MortarCouplingParams();
+  const Teuchos::ParameterList& input =
+      DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input, "PARALLEL_REDIST") !=
       INPAR::MORTAR::parredist_none)
     parredist = true;

@@ -66,9 +66,10 @@ ASSEMBLE_STRATEGY               node_based
 LM_SHAPEFCN                     std
 SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.5
-PARALLEL_REDIST                 Dynamic
 INTTYPE                         Elements
 NUMGP_PER_DIM                   7
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+PARALLEL_REDIST                 Dynamic
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 RHO_INF                         0.8

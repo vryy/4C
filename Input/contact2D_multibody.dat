@@ -82,6 +82,7 @@ SYSTEM                          saddlepoint
 LM_SHAPEFCN                     Standard
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 No
 REDUNDANT_STORAGE               All
 ---------------------------------------------------------------FLUID DYNAMIC

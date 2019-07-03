@@ -34,10 +34,11 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 -------------------------------------------------------------MORTAR COUPLING
-PARALLEL_REDIST                 No
 LM_SHAPEFCN                     Dual
-REDUNDANT_STORAGE               all
 MESH_RELOCATION                 initial
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+PARALLEL_REDIST                 No
+REDUNDANT_STORAGE               all
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   2
 DYNAMICTYP                      OneStepTheta

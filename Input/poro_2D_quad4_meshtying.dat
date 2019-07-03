@@ -81,6 +81,7 @@ STRATEGY                        Lagrange
 SYSTEM                          condlm
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     Dual
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 none
 -----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK //UMFPACK Aztec_MSR

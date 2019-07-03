@@ -38,10 +38,11 @@ NITSCHE_WEIGHTING    harmonic
 --------------------------------------------------MORTAR COUPLING
 ALGORITHM            gpts
 SEARCH_PARAM         0.3
-PARALLEL_REDIST      dynamic
 INTTYPE              Segments
 TRIANGULATION        center
 NUMGP_PER_DIM        3
+--------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+PARALLEL_REDIST      dynamic
 ---------------------------------------------------------TSI CONTACT
 HEATTRANSSLAVE                  10
 HEATTRANSMASTER                 10

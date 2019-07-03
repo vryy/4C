@@ -71,11 +71,12 @@ SEARCH_ALGORITHM     Binarytree
 SEARCH_PARAM         0.2
 INTTYPE              segments
 LM_DUAL_CONSISTENT   none
-PARALLEL_REDIST      none
 ALGORITHM            mortar
 LM_QUAD              quad
 NUMGP_PER_DIM        12
 TRIANGULATION        Delaunay
+---------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+PARALLEL_REDIST      none
 ----------------------------------------------------------SOLVER 1
 NAME                 Structure_Solver
 SOLVER               Superlu

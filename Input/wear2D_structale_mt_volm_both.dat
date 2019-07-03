@@ -68,9 +68,10 @@ MESHTYING                       meshtying
 LM_SHAPEFCN                     pg//dual//std//Dual
 SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.3
-PARALLEL_REDIST                 none//dynamic
 LM_QUAD                         quad
 LM_DUAL_CONSISTENT              none
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+PARALLEL_REDIST                 none//dynamic
 ------------------------------------------------------------------------WEAR
 WEARLAW                         Archard
 WEARTYPE                        primvar

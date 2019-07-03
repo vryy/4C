@@ -64,6 +64,7 @@ SEMI_SMOOTH_CT                  1.0
 LM_SHAPEFCN                     Dual
 SEARCH_ALGORITHM                BruteForceEleBased
 SEARCH_PARAM                    0.3
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 Static
 -----------------------------------------------------------------ALE DYNAMIC
 TIMESTEP                        0.1

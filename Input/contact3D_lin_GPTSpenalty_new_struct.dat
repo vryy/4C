@@ -62,8 +62,9 @@ NITSCHE_PENALTY_ADAPTIVE        No
 LM_SHAPEFCN                     Standard
 SEARCH_PARAM                    0.3
 ALGORITHM                       gpts
-PARALLEL_REDIST                 none
 TRIANGULATION                   center
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+PARALLEL_REDIST                 none
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

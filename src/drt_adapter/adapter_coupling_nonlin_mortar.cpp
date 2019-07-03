@@ -250,7 +250,8 @@ void ADAPTER::CouplingNonLinMortar::AddMortarNodes(Teuchos::RCP<DRT::Discretizat
   // fully redundant here in the mortar ADAPTER. This makes applications such
   // as SlidingALE much easier, whereas it would not be needed for others.)
   INPAR::MORTAR::RedundantStorage redundant =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(input, "REDUNDANT_STORAGE");
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
+          input.sublist("PARALLEL REDISTRIBUTION"), "REDUNDANT_STORAGE");
 
   interface = CONTACT::CoInterface::Create(0, *comm_, dim, input, false, redundant);
 
@@ -533,7 +534,8 @@ void ADAPTER::CouplingNonLinMortar::CompleteInterface(
 
   // check for parallel redistribution
   bool parredist = false;
-  const Teuchos::ParameterList& input = DRT::Problem::Instance()->MortarCouplingParams();
+  const Teuchos::ParameterList& input =
+      DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input, "PARALLEL_REDIST") !=
       INPAR::MORTAR::parredist_none)
     parredist = true;
@@ -652,7 +654,8 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
   // fully redundant here in the mortar ADAPTER. This makes applications such
   // as SlidingALE much easier, whereas it would not be needed for others.)
   INPAR::MORTAR::RedundantStorage redundant =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(input, "REDUNDANT_STORAGE");
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
+          input.sublist("PARALLEL REDISTRIBUTION"), "REDUNDANT_STORAGE");
 
   // generate contact interface
   Teuchos::RCP<CONTACT::CoInterface> interface =
@@ -798,7 +801,8 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinD(const std::string& statename,
 
   // check for parallel redistribution
   bool parredist = false;
-  const Teuchos::ParameterList& input = DRT::Problem::Instance()->MortarCouplingParams();
+  const Teuchos::ParameterList& input =
+      DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input, "PARALLEL_REDIST") !=
       INPAR::MORTAR::parredist_none)
     parredist = true;
@@ -875,7 +879,8 @@ void ADAPTER::CouplingNonLinMortar::MatrixRowColTransform()
 
   // check for parallel redistribution
   bool parredist = false;
-  const Teuchos::ParameterList& input = DRT::Problem::Instance()->MortarCouplingParams();
+  const Teuchos::ParameterList& input =
+      DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input, "PARALLEL_REDIST") !=
       INPAR::MORTAR::parredist_none)
     parredist = true;

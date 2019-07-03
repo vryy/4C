@@ -262,6 +262,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--STAT INVERSE ANALYSIS", *list);
   reader.ReadGidSection("--MULTI LEVEL MONTE CARLO", *list);
   reader.ReadGidSection("--MORTAR COUPLING", *list);
+  reader.ReadGidSection("--MORTAR COUPLING/PARALLEL REDISTRIBUTION", *list);
   reader.ReadGidSection("--CONTACT DYNAMIC", *list);
   reader.ReadGidSection("--CONTACT DYNAMIC/AUGMENTED", *list);
   reader.ReadGidSection("--CONTACT DYNAMIC/AUGMENTED/COMBO", *list);

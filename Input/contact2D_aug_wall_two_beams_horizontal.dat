@@ -77,9 +77,10 @@ SEMI_SMOOTH_CT                  1e2
 LM_SHAPEFCN                     std
 SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.5
-PARALLEL_REDIST                 Dynamic
 INTTYPE                         Elements
 NUMGP_PER_DIM                   3
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+PARALLEL_REDIST                 Dynamic
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

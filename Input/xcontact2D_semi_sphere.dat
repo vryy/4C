@@ -46,11 +46,12 @@ YOUNG_IS_TEMP_DEPENDENT         No
 LM_SHAPEFCN                     std
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.5
+INTTYPE                         Elements
+NUMGP_PER_DIM                   3
+----------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 REDUNDANT_STORAGE               Master
 PARALLEL_STRATEGY               redundant_ghosting
 PARALLEL_REDIST                 None
-INTTYPE                         Elements
-NUMGP_PER_DIM                   3
 ----------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 FRLESS_FIRST                    No

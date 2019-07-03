@@ -34,8 +34,8 @@ ADAPTER::CouplingEhlMortar::CouplingEhlMortar()
           DRT::Problem::Instance()->ContactDynamicParams().get<double>("REGULARIZATION_STIFFNESS"))
 {
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
-          DRT::Problem::Instance()->MortarCouplingParams(), "PARALLEL_REDIST") !=
-      INPAR::MORTAR::parredist_none)
+          DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION"),
+          "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
     dserror(
         "EHL does not support parallel redistribution. Set \"PARALLEL_REDIST none\" in section "
         "\"MORTAR COUPLING\"");

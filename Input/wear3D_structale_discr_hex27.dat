@@ -67,9 +67,10 @@ ALE_TYPE                        springs_spatial
 LM_SHAPEFCN                     std
 SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.4
-PARALLEL_REDIST                 dynamic
 LM_QUAD                         quad
 LM_DUAL_CONSISTENT              none
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+PARALLEL_REDIST                 dynamic
 -------------------------------------------------------------WEAR
 WEARLAW                         Archard
 WEARCOEFF                       0.0003

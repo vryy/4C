@@ -31,12 +31,13 @@ NITSCHE_THETA                   0.0
 NITSCHE_PENALTY_ADAPTIVE        yes
 NITSCHE_WEIGHTING               harmonic
 --------------------------------------------------MORTAR COUPLING
-PARALLEL_REDIST                 No
 ALGORITHM                       gpts
 SEARCH_PARAM                    0.3
 INTTYPE                         Segments
 NUMGP_PER_DIM                   1
 TRIANGULATION                   center
+--------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+PARALLEL_REDIST                 No
 REDUNDANT_STORAGE               All
 -------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard

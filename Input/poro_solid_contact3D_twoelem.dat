@@ -81,14 +81,15 @@ SEARCH_USE_AUX_POS              Yes
 CROSSPOINTS                     No
 LM_DUAL_CONSISTENT              boundary
 MESH_RELOCATION                 Initial
+INTTYPE                         Segments
+NUMGP_PER_DIM                   16
+TRIANGULATION                   Center
+----------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 REDUNDANT_STORAGE               Master
 PARALLEL_STRATEGY               redundant_ghosting
 PARALLEL_REDIST                 none//Static//dynamic//Static
 MAX_BALANCE                     2
 MIN_ELEPROC                     0
-INTTYPE                         Segments
-NUMGP_PER_DIM                   16
-TRIANGULATION                   Center
 ----------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   4
 RESTART_WITH_CONTACT            Yes

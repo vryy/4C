@@ -43,8 +43,9 @@ COUPLINGTYPE                    StandardMortar
 MATRIXTYPE                      block_condition
 EQUILIBRATION                   rowsandcolumns_full
 -------------------------------------------------------------MORTAR COUPLING
-PARALLEL_REDIST                 no
 MESH_RELOCATION                 no
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+PARALLEL_REDIST                 no
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          Aztec_MSR
 AZPREC                          AMGnxn

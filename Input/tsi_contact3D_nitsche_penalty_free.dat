@@ -102,7 +102,6 @@ NITSCHE_PENALTY_ADAPTIVE    no
 CONSTRAINT_DIRECTIONS       xyz
 -------------------------------------------------------------MORTAR COUPLING
 ALGORITHM            gpts
-PARALLEL_REDIST      none
 INTTYPE              Segments // Elements // Segments
 TRIANGULATION        center
 NUMGP_PER_DIM        1
@@ -110,6 +109,8 @@ LM_SHAPEFCN          dual
 SEARCH_ALGORITHM     BinaryTree
 SEARCH_PARAM         0.3e2
 LM_DUAL_CONSISTENT   none //  all
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+PARALLEL_REDIST      none
 ---------------------------------------------------------TSI CONTACT
 HEATTRANSSLAVE       1
 HEATTRANSMASTER      0

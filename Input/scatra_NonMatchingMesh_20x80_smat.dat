@@ -56,9 +56,10 @@ ITEMAX                          2
 EXPLPREDICT                     Yes
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     Dual
+MESH_RELOCATION                 no
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 static
 REDUNDANT_STORAGE               all
-MESH_RELOCATION                 no
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK                         // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

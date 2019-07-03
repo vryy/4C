@@ -24,14 +24,15 @@ TOLLAGR                         1e-04
 CROSSPOINTS                     No
 INTTYPE                         Elements
 LM_DUAL_CONSISTENT              none
-MAX_BALANCE                     2
-MIN_ELEPROC                     0
 NUMGP_PER_DIM                   5
-PARALLEL_REDIST                 Dynamic
-REDUNDANT_STORAGE               Master
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.1
 LM_SHAPEFCN                     std//dual
+----------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+MAX_BALANCE                     2
+MIN_ELEPROC                     0
+PARALLEL_REDIST                 Dynamic
+REDUNDANT_STORAGE               Master
 --------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 RANDSEED                        -1

@@ -60,6 +60,7 @@ SYSTEM                          Condensed
 LM_SHAPEFCN                     Dual
 //                                                             // exemplarily test static redistribution with minimum
 //                                                             // number of elements per proc = 0 here
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 Static
 MIN_ELEPROC                     0
 --------------------------------------------------------------------SOLVER 1

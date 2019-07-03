@@ -167,8 +167,8 @@ CONTACT::AUG::Strategy::Strategy(const Teuchos::RCP<CONTACT::AbstractStratDataCo
 
   Data().SetConstantCn(Params().get<double>("SEMI_SMOOTH_CN"));
 
-  Data().SetParallelStrategy(
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(Params(), "PARALLEL_STRATEGY"));
+  Data().SetParallelStrategy(DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(
+      Params().sublist("PARALLEL REDISTRIBUTION"), "PARALLEL_STRATEGY"));
 
   Data().SetVariationalApproachType(DRT::INPUT::IntegralValue<INPAR::CONTACT::VariationalApproach>(
       p_aug, "VARIATIONAL_APPROACH"));

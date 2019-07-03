@@ -206,7 +206,8 @@ void XCONTACT::Strategy::InitEvalInterface(Teuchos::RCP<CONTACT::ParamsInterface
 
   // Get type of parallel strategy
   INPAR::MORTAR::ParallelStrategy strat =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(Params(), "PARALLEL_STRATEGY");
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(
+          Params().sublist("PARALLEL REDISTRIBUTION"), "PARALLEL_STRATEGY");
 
   // Initialize and evaluate all interfaces
   for (std::vector<Teuchos::RCP<CONTACT::CoInterface>>::const_iterator cit = interface_.begin();

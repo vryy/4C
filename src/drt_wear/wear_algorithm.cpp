@@ -307,7 +307,8 @@ void WEAR::Algorithm::CreateMaterialInterface()
     // for structural contact we currently choose redundant master storage
     // the only exception is self contact where a redundant slave is needed, too
     INPAR::MORTAR::RedundantStorage redundant =
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(icparams, "REDUNDANT_STORAGE");
+        DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
+            icparams.sublist("PARALLEL REDISTRIBUTION"), "REDUNDANT_STORAGE");
     if (isanyselfcontact == true && redundant != INPAR::MORTAR::redundant_all)
       dserror("ERROR: Self contact requires redundant slave and master storage");
 
