@@ -104,7 +104,6 @@ DRT::ParObject* MAT::PlasticElastHyperType::Create(const std::vector<char>& data
  |  initialise static arrays                                 seitz 05/14|
  *----------------------------------------------------------------------*/
 const int MAT::PlasticElastHyper::VOIGT3X3_[3][3] = {{0, 3, 5}, {3, 1, 4}, {5, 4, 2}};
-const int MAT::PlasticElastHyper::VOIGT3X3NONSYM_[3][3] = {{0, 3, 5}, {6, 1, 4}, {8, 7, 2}};
 LINALG::Matrix<3, 1> MAT::PlasticElastHyper::prinv_;
 LINALG::Matrix<9, 1> MAT::PlasticElastHyper::CFpiCei_;
 LINALG::Matrix<9, 1> MAT::PlasticElastHyper::CFpi_;
@@ -1865,7 +1864,7 @@ void MAT::PlasticElastHyper::EvaluateCauchyDerivs(const LINALG::Matrix<3, 1>& pr
     if (isomod_ || anisomod_ || anisoprinc_)
       dserror("not implemented for this form of strain energy function");
   }
-  if (temp && true)  // fixme
+  if (temp)
   {
     if (isomod_ || anisomod_ || anisoprinc_)
       dserror(
@@ -1898,8 +1897,6 @@ void MAT::PlasticElastHyper::EvaluateCauchyTempDeriv(const LINALG::Matrix<3, 1>&
     const LINALG::Matrix<9, 1>& DI2DF, const LINALG::Matrix<9, 1>& DI3DF,
     LINALG::Matrix<9, 1>* D2sntDFDT)
 {
-  //  return ; // fixme
-
   const double sqI3 = sqrt(prinv(2));
   const double prefac = 2.0 / sqI3;
   double dPmodI = 0.0;

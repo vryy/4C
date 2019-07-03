@@ -95,6 +95,7 @@ const int MAT::ElastHyper::VOIGT6COL_[6] = {0, 1, 2, 1, 2, 0};
 // Access : 3*i+j
 // 6-Voigt C-indices    0   3   5   3   1   4   5   4   2
 const int MAT::ElastHyper::VOIGT3X3SYM_[9] = {0, 3, 5, 3, 1, 4, 5, 4, 2};
+const int MAT::ElastHyper::VOIGT3X3NONSYM_[3][3] = {{0, 3, 5}, {6, 1, 4}, {8, 7, 2}};
 
 
 /*----------------------------------------------------------------------*/
@@ -746,8 +747,6 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
     LINALG::Matrix<9, 1>* D2sntDFDT)
 {
   snt = 0.0;
-
-  const int VOIGT3X3NONSYM_[3][3] = {{0, 3, 5}, {6, 1, 4}, {8, 7, 2}};
 
   static LINALG::Matrix<3, 3> b(true);
   b.MultiplyNT(1.0, defgrd, defgrd, 0.0);

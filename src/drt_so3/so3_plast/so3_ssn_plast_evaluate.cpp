@@ -2068,8 +2068,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiElast(const LINALG::Matrix<
   static LINALG::Matrix<nsd_, nsd_> defgrd(true);
   defgrd.MultiplyTT(1.0, xcurr, N_XYZ, 0.0);
 
-  static LINALG::Matrix<9, numdofperelement_> DFDd(
-      true);  // linearization of F w.r.t. displacements
+  // linearization of deformation gradient F w.r.t. displacements
+  static LINALG::Matrix<9, numdofperelement_> DFDd(true);
   DFDd.Clear();
   if (DsntDd || D2sntDdDn || D2sntDdDt || D2sntDdDxi || D2sntDdDT)
   {
@@ -2150,7 +2150,6 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiElast(const LINALG::Matrix<
     D2sntDdDxi->Shape(numdofperelement_, nsd_);
     LINALG::Matrix<numdofperelement_, nsd_> D2sntDdDxi_m(D2sntDdDxi->A(), true);
 
-    const int VOIGT3X3NONSYM_[3][3] = {{0, 3, 5}, {6, 1, 4}, {8, 7, 2}};
     static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2, nen_> deriv2(true);
     deriv2.Clear();
     if (distype == DRT::Element::nurbs27)
@@ -2966,8 +2965,6 @@ void DRT::ELEMENTS::So3_Plast<distype>::HeatFlux(const std::vector<double>& temp
 {
   if (!dq_dT || !dq_dd || !dq_dn || !dq_dpxi || !d2q_dT_dd || !d2q_dT_dn || !d2q_dT_dpxi)
     dserror("input inconsistent");
-
-  const int VOIGT3X3NONSYM_[3][3] = {{0, 3, 5}, {6, 1, 4}, {8, 7, 2}};
 
   InvalidGpData();
   InvalidEleData();

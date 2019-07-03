@@ -633,10 +633,6 @@ namespace DRT
       // algoirthmic parameters
       bool fbar_;
 
-      static const int VOIGT3X3SYM_[3][3];
-      static const int VOIGT3X3NONSYM_[3][3];
-
-
       // plasticity ********************************************
       // Kbb^-1 at each Gauss point for recovery of inner variables
       std::vector<LINALG::SerialDenseMatrix> KbbInv_;

@@ -649,6 +649,8 @@ namespace MAT
     static const int VOIGT6COL_[];    ///< 6-Voigt column index of corresponding 2-tensor
     static const int VOIGT3X3SYM_[];  ///< go from symmetric 2-tensor index pair to 6-Voigt index
                                       ///< by [3*i+j] for any i,j=0,1,2
+    static const int
+        VOIGT3X3NONSYM_[3][3];  ///< from non-symmetric 2-tensor index pair to 9-Voigt index
     //@}
 
     /// my material parameters

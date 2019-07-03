@@ -2349,7 +2349,8 @@ void DRT::ELEMENTS::So_tet4::GetCauchyAtXi(const LINALG::Matrix<3, 1>& xi,
   static LINALG::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> defgrd(true);
   defgrd.MultiplyTT(1.0, xcurr, N_XYZ, 0.0);
 
-  static LINALG::Matrix<9, NUMDOF_SOTET4> DFDd(true);  // linearization of F w.r.t. displacements
+  // linearization of deformation gradient F w.r.t. displacements
+  static LINALG::Matrix<9, NUMDOF_SOTET4> DFDd(true);
   DFDd.Clear();
   if (DsntDd || D2sntDdDn || D2sntDdDt || D2sntDd2 || D2sntDdDxi)
   {
@@ -2410,7 +2411,6 @@ void DRT::ELEMENTS::So_tet4::GetCauchyAtXi(const LINALG::Matrix<3, 1>& xi,
     D2sntDdDxi->Reshape(NUMDOF_SOTET4, NUMDIM_SOTET4);
     LINALG::Matrix<NUMDOF_SOTET4, NUMDIM_SOTET4> D2sntDdDxi_m(D2sntDdDxi->A(), true);
 
-    const int VOIGT3X3NONSYM_[3][3] = {{0, 3, 5}, {6, 1, 4}, {8, 7, 2}};
     static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::tet4>::numderiv2,
         NUMNOD_SOTET4>
         deriv2(true);

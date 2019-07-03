@@ -558,7 +558,6 @@ namespace MAT
     /// @name Voigt index arrays
     //@{
     static const int VOIGT3X3_[3][3];
-    static const int VOIGT3X3NONSYM_[3][3];
 
     //@}
 
