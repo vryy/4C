@@ -817,6 +817,24 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     }
   }
 
+  void test_CheckAndDecreaseSizeAllContainersOfSpecificStatus()
+  {
+    ParticleContainer* container = particlecontainerbundle_->GetSpecificContainer(
+        PARTICLEENGINE::Phase1, PARTICLEENGINE::Owned);
+
+    TS_ASSERT_EQUALS(container->ParticlesStored(), 3);
+    TS_ASSERT_EQUALS(container->ContainerSize(), 4);
+
+    container->RemoveParticle(0);
+    container->RemoveParticle(0);
+
+    particlecontainerbundle_->CheckAndDecreaseSizeAllContainersOfSpecificStatus(
+        PARTICLEENGINE::Owned);
+
+    TS_ASSERT_EQUALS(container->ParticlesStored(), 1);
+    TS_ASSERT_EQUALS(container->ContainerSize(), 2);
+  }
+
   void test_ClearAllContainersOfSpecificStatus()
   {
     particlecontainerbundle_->ClearAllContainersOfSpecificStatus(PARTICLEENGINE::Ghosted);

@@ -46,6 +46,20 @@ namespace PARTICLEENGINE
     //! decrease the container size
     void DecreaseContainerSize();
 
+    //! check and decrease the container size
+    inline void CheckAndDecreaseContainerSize()
+    {
+#ifdef DEBUG
+      if (particlestored_ > containersize_)
+        dserror(
+            "checking size of container not possible: particles stored %d > new container size %d!",
+            particlestored_, containersize_);
+#endif
+
+      // decrease the container size
+      if (particlestored_ < 0.45 * containersize_) DecreaseContainerSize();
+    };
+
     //! clear particle container
     inline void ClearContainer() { particlestored_ = 0; };
 

@@ -308,6 +308,10 @@ void PARTICLEENGINE::ParticleEngine::TransferParticles()
 
   // relate owned particles to bins
   RelateOwnedParticlesToBins();
+
+  // check and decrease the size of all containers of owned particles
+  particlecontainerbundle_->CheckAndDecreaseSizeAllContainersOfSpecificStatus(
+      PARTICLEENGINE::Owned);
 }
 
 /*---------------------------------------------------------------------------*
@@ -335,6 +339,10 @@ void PARTICLEENGINE::ParticleEngine::GhostParticles()
 
   // communicate and build map for direct ghosting
   CommunicateDirectGhostingMap(directghosting);
+
+  // check and decrease the size of all containers of ghosted particles
+  particlecontainerbundle_->CheckAndDecreaseSizeAllContainersOfSpecificStatus(
+      PARTICLEENGINE::Ghosted);
 }
 
 /*---------------------------------------------------------------------------*
@@ -423,6 +431,10 @@ void PARTICLEENGINE::ParticleEngine::DynamicLoadBalancing()
 
   // distribute particles to owning processor
   DistributeParticles(particlestodistribute);
+
+  // check and decrease the size of all containers of owned particles
+  particlecontainerbundle_->CheckAndDecreaseSizeAllContainersOfSpecificStatus(
+      PARTICLEENGINE::Owned);
 }
 
 /*---------------------------------------------------------------------------*
@@ -444,6 +456,10 @@ void PARTICLEENGINE::ParticleEngine::TypeChangeParticles(
 
   // insert owned particles undergoing a type change
   InsertOwnedParticles(particlestoinsert);
+
+  // check and decrease the size of all containers of owned particles
+  particlecontainerbundle_->CheckAndDecreaseSizeAllContainersOfSpecificStatus(
+      PARTICLEENGINE::Owned);
 }
 
 /*---------------------------------------------------------------------------*
