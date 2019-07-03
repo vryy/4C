@@ -26,7 +26,6 @@ MAT 0   MAT_ElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 #include "../drt_comm/comm_utils.H"              // for stat inverse analysis
 #include "../drt_inpar/inpar_statinvanalysis.H"  // for stat inverse analysis
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::ElastHyper::ElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata)
@@ -96,6 +95,7 @@ const int MAT::ElastHyper::VOIGT6COL_[6] = {0, 1, 2, 1, 2, 0};
 // Access : 3*i+j
 // 6-Voigt C-indices    0   3   5   3   1   4   5   4   2
 const int MAT::ElastHyper::VOIGT3X3SYM_[9] = {0, 3, 5, 3, 1, 4, 5, 4, 2};
+const int MAT::ElastHyper::VOIGT3X3NONSYM_[3][3] = {{0, 3, 5}, {6, 1, 4}, {8, 7, 2}};
 
 
 /*----------------------------------------------------------------------*/
@@ -722,14 +722,14 @@ void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ElastHyper::EvaluateCauchyDerivs(const LINALG::Matrix<3, 1>& prinv, const int eleGID,
-    LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII_ordered, LINALG::Matrix<10, 1>& dddPIII,
+    LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII, LINALG::Matrix<10, 1>& dddPIII,
     const double* temp)
 {
   for (unsigned i = 0; i < potsum_.size(); ++i)
   {
     if (isoprinc_)
     {
-      potsum_[i]->AddDerivativesPrincipal(dPI, ddPII_ordered, prinv, eleGID);
+      potsum_[i]->AddDerivativesPrincipal(dPI, ddPII, prinv, eleGID);
       potsum_[i]->AddThirdDerivativesPrincipalIso(dddPIII, prinv, eleGID);
     }
     if (isomod_ || anisomod_ || anisoprinc_)
@@ -739,297 +739,380 @@ void MAT::ElastHyper::EvaluateCauchyDerivs(const LINALG::Matrix<3, 1>& prinv, co
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& b, const LINALG::Matrix<3, 1>& n,
-    const LINALG::Matrix<3, 1>& t, double& snt, LINALG::Matrix<6, 1>* dsntdb,
-    LINALG::Matrix<6, 6>* d2sntdb2, LINALG::Matrix<6, 3>* d2sntDbDn,
-    LINALG::Matrix<6, 3>* d2sntDbDt, LINALG::Matrix<3, 1>* dsntdn, LINALG::Matrix<3, 1>* dsntdt,
-    const int eleGID, const double* temp, double* dsntdT, LINALG::Matrix<6, 1>* d2sntDbDT)
+void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
+    const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& t, double& snt,
+    LINALG::Matrix<3, 1>* DsntDn, LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<9, 1>* DsntDF,
+    LINALG::Matrix<9, 9>* D2sntDF2, LINALG::Matrix<9, 3>* D2sntDFDn,
+    LINALG::Matrix<9, 3>* D2sntDFDt, const int eleGID, const double* temp, double* DsntDT,
+    LINALG::Matrix<9, 1>* D2sntDFDT)
 {
-  snt = 0.;
+  snt = 0.0;
 
-  LINALG::Matrix<3, 3> id2m;
-  for (int i = 0; i < 3; ++i) id2m(i, i) = 1.;
-  LINALG::Matrix<6, 1> id2;
-  for (int i = 0; i < 3; ++i) id2(i) = 1.;
+  static LINALG::Matrix<3, 3> b(true);
+  b.MultiplyNT(1.0, defgrd, defgrd, 0.0);
+  static LINALG::Matrix<3, 1> bdn(true);
+  bdn.Multiply(1.0, b, n, 0.0);
+  static LINALG::Matrix<3, 1> bdt(true);
+  bdt.Multiply(1.0, b, t, 0.0);
+  const double bdndt = bdn.Dot(t);
 
-  const int VOIGT3X3SYM_[3][3] = {{0, 3, 5}, {3, 1, 4}, {5, 4, 2}};
-
-  LINALG::Matrix<3, 3> nt_tn;
-  nt_tn.MultiplyNT(.5, n, t, 1.);
-  nt_tn.MultiplyNT(.5, t, n, 1.);
-
-  LINALG::Matrix<6, 1> nt_tn_v;
-  for (int i = 0; i < 3; ++i) nt_tn_v(i) = nt_tn(i, i);
-  nt_tn_v(3) = nt_tn(0, 1);
-  nt_tn_v(4) = nt_tn(1, 2);
-  nt_tn_v(5) = nt_tn(0, 2);
-
-  LINALG::Matrix<3, 3> ib(b);
-  ib.Invert();
-  LINALG::Matrix<6, 1> ib_v;
-  for (int i = 0; i < 3; ++i) ib_v(i) = ib(i, i);
-  ib_v(3) = ib(0, 1);
-  ib_v(4) = ib(1, 2);
-  ib_v(5) = ib(0, 2);
-
-  LINALG::Matrix<3, 1> bn;
-  bn.Multiply(b, n);
-  LINALG::Matrix<3, 1> bt;
-  bt.Multiply(b, t);
-  const double tbn = bn.Dot(t);
-
-  LINALG::Matrix<3, 1> ibn;
-  ibn.Multiply(ib, n);
-  LINALG::Matrix<3, 1> ibt;
-  ibt.Multiply(ib, t);
-  const double tibn = ibn.Dot(t);
-
+  static LINALG::Matrix<3, 3> ib(true);
+  ib.Invert(b);
+  static LINALG::Matrix<3, 1> ibdn(true);
+  ibdn.Multiply(1.0, ib, n, 0.0);
+  static LINALG::Matrix<3, 1> ibdt(true);
+  ibdt.Multiply(1.0, ib, t, 0.0);
+  const double ibdndt = ibdn.Dot(t);
   const double ndt = n.Dot(t);
 
-  LINALG::Matrix<3, 3> ibnitb;
-  ibnitb.MultiplyNT(-.5, ibt, ibn, 0.);
-  ibnitb.MultiplyNT(-.5, ibn, ibt, 1.);
-  LINALG::Matrix<6, 1> dtibndb;
-  for (int i = 0; i < 3; ++i) dtibndb(i) = ibnitb(i, i);
-  dtibndb(3) = ibnitb(0, 1);
-  dtibndb(4) = ibnitb(2, 1);
-  dtibndb(5) = ibnitb(0, 2);
+  static LINALG::Matrix<6, 1> bV_strain(true);
+  MatrixtoStrainLikeVoigtNotation(b, bV_strain);
+  static LINALG::Matrix<3, 1> prinv(true);
+  InvariantsPrincipal(prinv, bV_strain);
 
-  LINALG::Matrix<6, 1> b_v;
-  for (int i = 0; i < 3; ++i) b_v(i) = b(i, i);
-  b_v(3) = 2. * b(0, 1);
-  b_v(4) = 2. * b(2, 1);
-  b_v(5) = 2. * b(0, 2);
-  LINALG::Matrix<3, 1> prinv;
-  InvariantsPrincipal(prinv, b_v);
-  for (int i = 3; i < 6; ++i) b_v(i) *= .5;
+  static LINALG::Matrix<3, 1> dPI(true);
+  static LINALG::Matrix<6, 1> ddPII(true);
+  static LINALG::Matrix<10, 1> dddPIII(true);
+  dPI.Clear();
+  ddPII.Clear();
+  dddPIII.Clear();
+  EvaluateCauchyDerivs(prinv, eleGID, dPI, ddPII, dddPIII, temp);
 
-  LINALG::Matrix<3, 1> dPI;
-  LINALG::Matrix<6, 1> ddPII_ordered;
-  LINALG::Matrix<10, 1> dddPIII;
+  const double prefac = 2.0 / sqrt(prinv(2));
 
-  EvaluateCauchyDerivs(prinv, eleGID, dPI, ddPII_ordered, dddPIII, temp);
+  snt = prefac * (prinv(1) * dPI(1) * ndt + prinv(2) * dPI(2) * ndt + dPI(0) * bdndt -
+                     prinv(2) * dPI(1) * ibdndt);
 
-  LINALG::Matrix<6, 1> ddPII;
-  ddPII(0) = ddPII_ordered(0);
-  ddPII(1) = ddPII_ordered(1);
-  ddPII(2) = ddPII_ordered(2);
-  ddPII(3) = ddPII_ordered(5);
-  ddPII(4) = ddPII_ordered(3);
-  ddPII(5) = ddPII_ordered(4);
-  const double sqI3 = sqrt(prinv(2));
-
-  snt = 2. / sqI3 * prinv(1) * dPI(1) * ndt + 2. * sqI3 * dPI(2) * ndt + 2. / sqI3 * dPI(0) * tbn -
-        2. * sqI3 * dPI(1) * tibn;
-
-  if (dsntdn)
+  if (DsntDn)
   {
-    dsntdn->Clear();
-    dsntdn->Update(2. / sqI3 * prinv(1) * dPI(1) + 2. * sqI3 * dPI(2), t, 1.);
-    dsntdn->Update(2. / sqI3 * dPI(0), bt, 1.);
-    dsntdn->Update(-2. * sqI3 * dPI(1), ibt, 1.);
+    DsntDn->Update(prinv(1) * dPI(1) + prinv(2) * dPI(2), t, 0.0);  // clear DsntDn here
+    DsntDn->Update(dPI(0), bdt, 1.0);
+    DsntDn->Update(-prinv(2) * dPI(1), ibdt, 1.0);
+    DsntDn->Scale(prefac);
   }
 
-  if (dsntdt)
+  if (DsntDt)
   {
-    dsntdt->Clear();
-    dsntdt->Update(2. / sqI3 * prinv(1) * dPI(1) + 2. * sqI3 * dPI(2), n, 1.);
-    dsntdt->Update(2. / sqI3 * dPI(0), bn, 1.);
-    dsntdt->Update(-2. * sqI3 * dPI(1), ibn, 1.);
+    DsntDt->Update(prinv(1) * dPI(1) + prinv(2) * dPI(2), n, 0.0);  // clear DsntDt here
+    DsntDt->Update(dPI(0), bdn, 1.0);
+    DsntDt->Update(-prinv(2) * dPI(1), ibdn, 1.0);
+    DsntDt->Scale(prefac);
   }
 
-  LINALG::Matrix<6, 1> dI1db(id2);
-  LINALG::Matrix<6, 1> dI2db(id2);
-  dI2db.Update(-1., b_v, prinv(0));
-  LINALG::Matrix<6, 1> dI3db(ib_v);
-  dI3db.Scale(prinv(2));
+  // calculate stuff that is needed for evaluations of derivatives w.r.t. F
+  static LINALG::Matrix<9, 1> FV(true);
+  Matrix3x3to9x1(defgrd, FV);
+  static LINALG::Matrix<3, 3> iF(true);
+  iF.Invert(defgrd);
+  static LINALG::Matrix<3, 3> iFT(true);
+  iFT.UpdateT(iF);
+  static LINALG::Matrix<9, 1> iFTV(true);
+  Matrix3x3to9x1(iFT, iFTV);
 
-  if (dsntdb)
-  {
-    dsntdb->Clear();
+  // calculation of dI_i/dF (derivatives of invariants of b w.r.t. deformation gradient)
+  static LINALG::Matrix<3, 3> bdF(true);
+  bdF.Multiply(1.0, b, defgrd, 0.0);
+  static LINALG::Matrix<9, 1> bdFV(true);
+  Matrix3x3to9x1(bdF, bdFV);
+  static LINALG::Matrix<3, 3> ibdF(true);
+  ibdF.Multiply(1.0, ib, defgrd, 0.0);
+  static LINALG::Matrix<9, 1> ibdFV(true);
+  Matrix3x3to9x1(ibdF, ibdFV);
+  static LINALG::Matrix<9, 1> DI1DF(true);
+  DI1DF.Update(2.0, FV, 0.0);
+  static LINALG::Matrix<9, 1> DI2DF(true);
+  DI2DF.Update(prinv(0), FV, 0.0);
+  DI2DF.Update(-1.0, bdFV, 1.0);
+  DI2DF.Scale(2.0);
+  static LINALG::Matrix<9, 1> DI3DF(true);
+  DI3DF.Update(2.0 * prinv(2), ibdFV, 0.0);
 
-    dsntdb->Update(2. / sqI3 *
-                       (prinv(1) * ddPII(3) * ndt + prinv(2) * ddPII(5) * ndt + ddPII(0) * tbn -
-                           prinv(2) * ddPII(3) * tibn),
-        dI1db, 1.);
-    dsntdb->Update(2. / sqI3 *
-                       (dPI(1) * ndt + prinv(1) * ddPII(1) * ndt + prinv(2) * ddPII(4) * ndt +
-                           ddPII(3) * tbn - prinv(2) * ddPII(1) * tibn),
-        dI2db, 1.);
-    dsntdb->Update(
-        (-2. * prinv(2) * prinv(2) * ddPII(4) * tibn + 2. * prinv(1) * prinv(2) * ddPII(4) * ndt +
-            2. * prinv(2) * prinv(2) * ddPII(2) * ndt - prinv(2) * dPI(1) * tibn +
-            2. * prinv(2) * ddPII(5) * tbn + prinv(2) * dPI(2) * ndt - prinv(1) * dPI(1) * ndt -
-            dPI(0) * tbn) /
-            (sqI3 * sqI3 * sqI3),
-        dI3db, 1.);
-    dsntdb->Update(2. / sqI3 * dPI(0), nt_tn_v, 1.);
-    dsntdb->Update(-2. * sqI3 * dPI(1), dtibndb, 1.);
-  }
+  // calculate d(b \cdot n \cdot t)/dF
+  static LINALG::Matrix<3, 1> tempvec3x1(true);
+  static LINALG::Matrix<1, 3> tempvec1x3(true);
+  tempvec1x3.MultiplyTN(1.0, t, defgrd, 0.0);
+  static LINALG::Matrix<3, 3> DbdndtDF(true);
+  DbdndtDF.MultiplyNN(1.0, n, tempvec1x3, 0.0);
+  tempvec1x3.MultiplyTN(1.0, n, defgrd, 0.0);
+  DbdndtDF.MultiplyNN(1.0, t, tempvec1x3, 1.0);
+  static LINALG::Matrix<9, 1> DbdndtDFV(true);
+  Matrix3x3to9x1(DbdndtDF, DbdndtDFV);
 
-  double fac = 0.;
-
-  if (d2sntdb2)
-  {
-    d2sntdb2->Clear();
-    d2sntdb2->MultiplyNT(2. / sqI3 *
-                             (prinv(1) * ddPII(3) * ndt + prinv(2) * ddPII(5) * ndt +
-                                 dddPIII(0) * tbn - prinv(2) * ddPII(3) * tibn),
-        dI1db, dI1db, 1.);
-
-    d2sntdb2->MultiplyNT(
-        2. / sqI3 *
-            (2. * ddPII(1) * ndt + prinv(1) * dddPIII(1) * ndt + prinv(2) * dddPIII(7) * ndt +
-                dddPIII(3) * tbn - prinv(2) * dddPIII(1) * tibn),
-        dI2db, dI2db, 1.);
-
-    d2sntdb2->MultiplyNT(
-        (-4. * pow(prinv(2), 3) * dddPIII(8) * tibn +
-            4. * prinv(1) * dddPIII(8) * prinv(2) * prinv(2) * ndt +
-            4. * pow(prinv(2), 3) * dddPIII(2) * ndt - 4. * prinv(2) * prinv(2) * ddPII(4) * tibn +
-            4. * dddPIII(4) * prinv(2) * prinv(2) * tbn -
-            4. * prinv(1) * prinv(2) * ddPII(4) * ndt + 4. * prinv(2) * prinv(2) * ddPII(2) * ndt -
-            4. * prinv(2) * ddPII(5) * tbn + prinv(2) * dPI(1) * tibn +
-            3. * prinv(1) * dPI(1) * ndt - prinv(2) * dPI(2) * ndt + 3. * dPI(0) * tbn) /
-            (2. * sqI3 * sqI3 * sqI3 * sqI3 * sqI3),
-        dI3db, dI3db, 1.);
-
-    fac = 2. / sqI3 *
-          (ddPII(3) * ndt + prinv(1) * dddPIII(3) * ndt + prinv(2) * dddPIII(9) * ndt +
-              dddPIII(5) * tbn - prinv(2) * dddPIII(3) * tibn);
-    d2sntdb2->MultiplyNT(fac, dI1db, dI2db, 1.);
-    d2sntdb2->MultiplyNT(fac, dI2db, dI1db, 1.);
-
-    fac = (-2. * prinv(2) * prinv(2) * dddPIII(7) * tibn +
-              2. * prinv(1) * dddPIII(7) * prinv(2) * ndt +
-              2. * prinv(2) * prinv(2) * dddPIII(8) * ndt - prinv(2) * ddPII(1) * tibn +
-              2. * prinv(2) * dddPIII(9) * tbn - prinv(1) * ddPII(1) * ndt +
-              3 * prinv(2) * ddPII(4) * ndt - ddPII(3) * tbn - dPI(1) * ndt) /
-          (sqI3 * sqI3 * sqI3);
-    d2sntdb2->MultiplyNT(fac, dI2db, dI3db, 1.);
-    d2sntdb2->MultiplyNT(fac, dI3db, dI2db, 1.);
-
-    fac = (-2. * prinv(2) * prinv(2) * dddPIII(9) * tibn +
-              2. * prinv(1) * prinv(2) * dddPIII(9) * ndt +
-              2. * prinv(2) * prinv(2) * dddPIII(4) * ndt + 2. * dddPIII(6) * prinv(2) * tbn -
-              prinv(2) * ddPII(3) * tibn + prinv(2) * ddPII(5) * ndt - prinv(1) * ddPII(3) * ndt -
-              ddPII(0) * tbn) /
-          (sqI3 * sqI3 * sqI3);
-    d2sntdb2->MultiplyNT(fac, dI1db, dI3db, 1.);
-    d2sntdb2->MultiplyNT(fac, dI3db, dI1db, 1.);
-
-    fac = 2. / sqI3 * ddPII(0);
-    d2sntdb2->MultiplyNT(fac, nt_tn_v, dI1db, 1.);
-    d2sntdb2->MultiplyNT(fac, dI1db, nt_tn_v, 1.);
-
-    fac = 2. / sqI3 * (-prinv(2) * ddPII(3));
-    d2sntdb2->MultiplyNT(fac, dtibndb, dI1db, 1.);
-    d2sntdb2->MultiplyNT(fac, dI1db, dtibndb, 1.);
-
-    fac = 2. / sqI3 * ddPII(3);
-    d2sntdb2->MultiplyNT(fac, nt_tn_v, dI2db, 1.);
-    d2sntdb2->MultiplyNT(fac, dI2db, nt_tn_v, 1.);
-
-    fac = -2. / sqI3 * prinv(2) * ddPII(1);
-    d2sntdb2->MultiplyNT(fac, dtibndb, dI2db, 1.);
-    d2sntdb2->MultiplyNT(fac, dI2db, dtibndb, 1.);
-
-    fac = (+2. * prinv(2) * ddPII(5) - dPI(0)) / (sqI3 * sqI3 * sqI3);
-    d2sntdb2->MultiplyNT(fac, nt_tn_v, dI3db, 1.);
-    d2sntdb2->MultiplyNT(fac, dI3db, nt_tn_v, 1.);
-
-    fac = (-2. * prinv(2) * prinv(2) * ddPII(4) - prinv(2) * dPI(1)) / (sqI3 * sqI3 * sqI3);
-    d2sntdb2->MultiplyNT(fac, dtibndb, dI3db, 1.);
-    d2sntdb2->MultiplyNT(fac, dI3db, dtibndb, 1.);
-
-    fac = 2. / sqI3 *
-          (dPI(1) * ndt + prinv(1) * ddPII(1) * ndt + prinv(2) * ddPII(4) * ndt + ddPII(3) * tbn -
-              prinv(2) * ddPII(1) * tibn);
-    AddtoCmatHolzapfelProduct(*d2sntdb2, id2, -fac);
-    d2sntdb2->MultiplyNT(fac, id2, id2, 1.);
-
-    fac = (-2. * prinv(2) * prinv(2) * ddPII(4) * tibn + 2. * prinv(1) * prinv(2) * ddPII(4) * ndt +
-              2. * prinv(2) * prinv(2) * ddPII(2) * ndt + 2. * prinv(2) * ddPII(5) * tbn -
-              prinv(2) * dPI(1) * tibn + prinv(2) * dPI(2) * ndt - prinv(1) * dPI(1) * ndt -
-              dPI(0) * tbn) /
-          (sqI3);
-    AddtoCmatHolzapfelProduct(*d2sntdb2, ib_v, -fac);
-
-    fac = (-2. * prinv(2) * prinv(2) * ddPII(4) * tibn + 2. * prinv(1) * prinv(2) * ddPII(4) * ndt +
-              2. * prinv(2) * prinv(2) * ddPII(2) * ndt + 2. * prinv(2) * ddPII(5) * tbn -
-              prinv(2) * dPI(1) * tibn + prinv(2) * dPI(2) * ndt - prinv(1) * dPI(1) * ndt -
-              dPI(0) * tbn) /
-          (sqI3 * sqI3 * sqI3 * sqI3 * sqI3);
-    d2sntdb2->MultiplyNT(fac, dI3db, dI3db, 1.);
-  }
-  fac = -2. * sqI3 * dPI(1);
-  AddSymmetricHolzapfelProduct(*d2sntdb2, ib, ibnitb, -.5 * fac);
-
-  if (d2sntDbDn)
-  {
-    d2sntDbDn->Clear();
-    d2sntDbDn->MultiplyNT(2. / sqI3 * (prinv(1) * ddPII(3) + prinv(2) * ddPII(5)), dI1db, t, 1.);
-    d2sntDbDn->MultiplyNT(
-        2. / sqI3 * (dPI(1) + prinv(1) * ddPII(1) + prinv(2) * ddPII(4)), dI2db, t, 1.);
-    d2sntDbDn->MultiplyNT(
-        (+2. * prinv(1) * prinv(2) * ddPII(4) + 2. * prinv(2) * prinv(2) * ddPII(2) +
-            prinv(2) * dPI(2) - prinv(1) * dPI(1)) /
-            (sqI3 * sqI3 * sqI3),
-        dI3db, t, 1.);
-    d2sntDbDn->MultiplyNT(2. / sqI3 * ddPII(0), dI1db, bt, 1.);
-    d2sntDbDn->MultiplyNT(-2. * sqI3 * ddPII(3), dI1db, ibt, 1.);
-    d2sntDbDn->MultiplyNT(2. / sqI3 * ddPII(3), dI2db, bt, 1.);
-    d2sntDbDn->MultiplyNT(-2. * sqI3 * ddPII(1), dI2db, ibt, 1.);
-    d2sntDbDn->MultiplyNT(2. / sqI3 * ddPII(5) - 1. / (sqI3 * sqI3 * sqI3) * dPI(0), dI3db, bt, 1.);
-    d2sntDbDn->MultiplyNT(-2. * sqI3 * ddPII(4) - 1. / (sqI3)*dPI(1), dI3db, ibt, 1.);
-    fac = 1. / sqI3 * dPI(0);
-    for (int i = 0; i < 3; ++i)
-      for (int j = 0; j < 3; ++j)
-        for (int a = 0; a < 3; ++a)
-          (*d2sntDbDn)(VOIGT3X3SYM_[i][j], a) +=
-              fac * ((i == a) * t(j) + (j == a) * t(i)) / (1. + (i != j));
-    fac = 1. * sqI3 * dPI(1);
-    for (int i = 0; i < 3; ++i)
-      for (int j = 0; j < 3; ++j)
-        for (int a = 0; a < 3; ++a)
-          (*d2sntDbDn)(VOIGT3X3SYM_[i][j], a) +=
-              fac * (ib(a, i) * ibt(j) + ib(a, j) * ibt(i)) / (1. + (i != j));
-  }
-
-  if (d2sntDbDt)
-  {
-    d2sntDbDt->Clear();
-    d2sntDbDt->MultiplyNT(2. / sqI3 * (prinv(1) * ddPII(3) + prinv(2) * ddPII(5)), dI1db, n, 1.);
-    d2sntDbDt->MultiplyNT(
-        2. / sqI3 * (dPI(1) + prinv(1) * ddPII(1) + prinv(2) * ddPII(4)), dI2db, n, 1.);
-    d2sntDbDt->MultiplyNT(
-        (+2. * prinv(1) * prinv(2) * ddPII(4) + 2. * prinv(2) * prinv(2) * ddPII(2) +
-            prinv(2) * dPI(2) - prinv(1) * dPI(1)) /
-            (sqI3 * sqI3 * sqI3),
-        dI3db, n, 1.);
-    d2sntDbDt->MultiplyNT(2. / sqI3 * ddPII(0), dI1db, bn, 1.);
-    d2sntDbDt->MultiplyNT(-2. * sqI3 * ddPII(3), dI1db, ibn, 1.);
-    d2sntDbDt->MultiplyNT(2. / sqI3 * ddPII(3), dI2db, bn, 1.);
-    d2sntDbDt->MultiplyNT(-2. * sqI3 * ddPII(1), dI2db, ibn, 1.);
-    d2sntDbDt->MultiplyNT(2. / sqI3 * ddPII(5) - 1. / (sqI3 * sqI3 * sqI3) * dPI(0), dI3db, bn, 1.);
-    d2sntDbDt->MultiplyNT(-2. * sqI3 * ddPII(4) - 1. / (sqI3)*dPI(1), dI3db, ibn, 1.);
-    fac = 1. / sqI3 * dPI(0);
-    for (int i = 0; i < 3; ++i)
-      for (int j = 0; j < 3; ++j)
-        for (int a = 0; a < 3; ++a)
-          (*d2sntDbDt)(VOIGT3X3SYM_[i][j], a) +=
-              fac * ((i == a) * n(j) + (j == a) * n(i)) / (1. + (i != j));
-    fac = 1. * sqI3 * dPI(1);
-    for (int i = 0; i < 3; ++i)
-      for (int j = 0; j < 3; ++j)
-        for (int a = 0; a < 3; ++a)
-          (*d2sntDbDt)(VOIGT3X3SYM_[i][j], a) +=
-              fac * (ib(a, i) * ibn(j) + ib(a, j) * ibn(i)) / (1. + (i != j));
-  }
+  // calculate d(b^{-1} \cdot n \cdot t)/dF
+  static LINALG::Matrix<1, 3> tdibdF(true);
+  static LINALG::Matrix<1, 3> ndibdF(true);
+  tdibdF.MultiplyTN(1.0, t, ibdF, 0.0);
+  static LINALG::Matrix<3, 3> DibdndtDF(true);
+  DibdndtDF.MultiplyNN(1.0, ibdn, tdibdF, 0.0);
+  ndibdF.MultiplyTN(1.0, n, ibdF, 0.0);
+  DibdndtDF.MultiplyNN(1.0, ibdt, ndibdF, 1.0);
+  DibdndtDF.Scale(-1.0);
+  static LINALG::Matrix<9, 1> DibdndtDFV(true);
+  Matrix3x3to9x1(DibdndtDF, DibdndtDFV);
 
   if (temp)
-    EvaluateCauchyTempDeriv(
-        prinv, ndt, tbn, tibn, dI1db, dI2db, dI3db, nt_tn_v, dtibndb, temp, dsntdT, d2sntDbDT);
+    EvaluateCauchyTempDeriv(prinv, ndt, bdndt, ibdndt, temp, DsntDT, iFTV, DbdndtDFV, DibdndtDFV,
+        DI1DF, DI2DF, DI3DF, D2sntDFDT);
+
+  if (DsntDF)
+  {
+    // next 3 updates add partial derivative of (\sigma * n * t) w.r.t. F for constant invariants
+    // 1. part is term arising from d(J^{-1})/dF
+    DsntDF->Update(-prefac * (prinv(1) * dPI(1) * ndt + prinv(2) * dPI(2) * ndt + dPI(0) * bdndt -
+                                 prinv(2) * dPI(1) * ibdndt),
+        iFTV, 0.0);  // DsntDF is cleared here
+    // 2. part is term arising from d(b * n * t)/dF
+    DsntDF->Update(prefac * dPI(0), DbdndtDFV, 1.0);
+    // 3. part is term arising from d(b_el^{-1} * n * t)/dF
+    DsntDF->Update(-prefac * prinv(2) * dPI(1), DibdndtDFV, 1.0);
+    // add d(sigma * n * t)/dI1 \otimes dI1/dF
+    DsntDF->Update(prefac * (prinv(1) * ddPII(5) * ndt + prinv(2) * ddPII(4) * ndt +
+                                ddPII(0) * bdndt - prinv(2) * ddPII(5) * ibdndt),
+        DI1DF, 1.0);
+    // add d(sigma * n * t)/dI2 \otimes dI2/dF
+    DsntDF->Update(prefac * (dPI(1) * ndt + prinv(1) * ddPII(1) * ndt + prinv(2) * ddPII(3) * ndt +
+                                ddPII(5) * bdndt - prinv(2) * ddPII(1) * ibdndt),
+        DI2DF, 1.0);
+    // add d(sigma * n * t)/dI3 \otimes dI3/dF
+    DsntDF->Update(prefac * (prinv(1) * ddPII(3) * ndt + dPI(2) * ndt + prinv(2) * ddPII(2) * ndt +
+                                ddPII(4) * bdndt - dPI(1) * ibdndt - prinv(2) * ddPII(3) * ibdndt),
+        DI3DF, 1.0);
+  }
+
+  if (D2sntDFDn)
+  {
+    // next three blocks add d/dn(d(\sigma * n * t)/dF) for constant invariants
+    // first part is term arising from d/dn(dJ^{-1}/dF)
+    tempvec3x1.Update(prinv(1) * dPI(1) + prinv(2) * dPI(2), t, 0.0);
+    tempvec3x1.Update(dPI(0), bdt, 1.0);
+    tempvec3x1.Update(-prinv(2) * dPI(1), ibdt, 1.0);
+    D2sntDFDn->MultiplyNT(-prefac, iFTV, tempvec3x1, 0.0);  // D2sntDFDn is cleared here
+
+    // second part is term arising from d/dn(d(b * n * t)/dF
+    const double fac = prefac * dPI(0);
+    tempvec1x3.MultiplyTN(1.0, t, defgrd, 0.0);
+    for (int k = 0; k < 3; ++k)
+      for (int l = 0; l < 3; ++l)
+        for (int z = 0; z < 3; ++z)
+          (*D2sntDFDn)(VOIGT3X3NONSYM_[k][l], z) +=
+              fac * (t(k, 0) * defgrd(z, l) + (k == z) * tempvec1x3(0, l));
+
+    // third part is term arising from d/dn(d(b^{-1} * n * t)/dF
+    const double fac2 = prefac * prinv(2) * dPI(1);
+    for (int k = 0; k < 3; ++k)
+      for (int l = 0; l < 3; ++l)
+        for (int z = 0; z < 3; ++z)
+          (*D2sntDFDn)(VOIGT3X3NONSYM_[k][l], z) +=
+              fac2 * (ibdt(k, 0) * ibdF(z, l) + ib(z, k) * tdibdF(0, l));
+
+    // add parts originating from d/dn(d(sigma * n * t)/dI1 \otimes dI1/dF)
+    tempvec3x1.Update(prinv(1) * ddPII(5) + prinv(2) * ddPII(4), t, 0.0);
+    tempvec3x1.Update(ddPII(0), bdt, 1.0);
+    tempvec3x1.Update(-prinv(2) * ddPII(5), ibdt, 1.0);
+    D2sntDFDn->MultiplyNT(prefac, DI1DF, tempvec3x1, 1.0);
+
+    // add parts originating from d/dn(d(sigma * n * t)/dI2 \otimes dI2/dF)
+    tempvec3x1.Update(dPI(1) + prinv(1) * ddPII(1) + prinv(2) * ddPII(3), t, 0.0);
+    tempvec3x1.Update(ddPII(5), bdt, 1.0);
+    tempvec3x1.Update(-prinv(2) * ddPII(1), ibdt, 1.0);
+    D2sntDFDn->MultiplyNT(prefac, DI2DF, tempvec3x1, 1.0);
+
+    // add parts originating from d/dn(d(sigma * n * t)/dI3 \otimes dI3/dF)
+    tempvec3x1.Update(prinv(1) * ddPII(3) + dPI(2) + prinv(2) * ddPII(2), t, 0.0);
+    tempvec3x1.Update(ddPII(4), bdt, 1.0);
+    tempvec3x1.Update(-dPI(1) - prinv(2) * ddPII(3), ibdt, 1.0);
+    D2sntDFDn->MultiplyNT(prefac, DI3DF, tempvec3x1, 1.0);
+  }
+
+  if (D2sntDFDt)
+  {
+    // next three blocks add d/dt(d(\sigma * n * t)/dF) for constant invariants
+    // first part is term arising from d/dt(dJ^{-1}/dF)
+    tempvec3x1.Update(prinv(1) * dPI(1) + prinv(2) * dPI(2), n, 0.0);
+    tempvec3x1.Update(dPI(0), bdn, 1.0);
+    tempvec3x1.Update(-prinv(2) * dPI(1), ibdn, 1.0);
+    D2sntDFDt->MultiplyNT(-prefac, iFTV, tempvec3x1, 0.0);  // D2sntDFDt is cleared here
+
+    // second part is term arising from d/dt(d(b * n * t)/dF
+    const double fac = prefac * dPI(0);
+    tempvec1x3.MultiplyTN(1.0, n, defgrd, 0.0);
+    for (int k = 0; k < 3; ++k)
+      for (int l = 0; l < 3; ++l)
+        for (int z = 0; z < 3; ++z)
+          (*D2sntDFDt)(VOIGT3X3NONSYM_[k][l], z) +=
+              fac * (n(k, 0) * defgrd(z, l) + (k == z) * tempvec1x3(0, l));
+
+    // third part is term arising from d/dn(d(b^{-1} * n * t)/dF
+    const double fac2 = prefac * prinv(2) * dPI(1);
+    for (int k = 0; k < 3; ++k)
+      for (int l = 0; l < 3; ++l)
+        for (int z = 0; z < 3; ++z)
+          (*D2sntDFDt)(VOIGT3X3NONSYM_[k][l], z) +=
+              fac2 * (ibdn(k, 0) * ibdF(z, l) + ib(z, k) * ndibdF(0, l));
+
+    // add parts originating from d/dt(d(sigma * n * t)/dI1 \otimes dI1/dF)
+    tempvec3x1.Update(prinv(1) * ddPII(5) + prinv(2) * ddPII(4), n, 0.0);
+    tempvec3x1.Update(ddPII(0), bdn, 1.0);
+    tempvec3x1.Update(-prinv(2) * ddPII(5), ibdn, 1.0);
+    D2sntDFDt->MultiplyNT(prefac, DI1DF, tempvec3x1, 1.0);
+
+    // add parts originating from d/dt(d(sigma * n * t)/dI2 \otimes dI2/dF)
+    tempvec3x1.Update(dPI(1) + prinv(1) * ddPII(1) + prinv(2) * ddPII(3), n, 0.0);
+    tempvec3x1.Update(ddPII(5), bdn, 1.0);
+    tempvec3x1.Update(-prinv(2) * ddPII(1), ibdn, 1.0);
+    D2sntDFDt->MultiplyNT(prefac, DI2DF, tempvec3x1, 1.0);
+
+    // add parts originating from d/dt(d(sigma * n * t)/dI3 \otimes dI3/dF)
+    tempvec3x1.Update(prinv(1) * ddPII(3) + dPI(2) + prinv(2) * ddPII(2), n, 0.0);
+    tempvec3x1.Update(ddPII(4), bdn, 1.0);
+    tempvec3x1.Update(-dPI(1) - prinv(2) * ddPII(3), ibdn, 1.0);
+    D2sntDFDt->MultiplyNT(prefac, DI3DF, tempvec3x1, 1.0);
+  }
+
+  if (D2sntDF2)
+  {
+    // define and fill all tensors that can not be calculated using multiply operations first
+    static LINALG::Matrix<9, 9> DiFTDF(true);
+    static LINALG::Matrix<9, 9> D2bdndtDF2(true);
+    static LINALG::Matrix<9, 9> D2ibdndtDF2(true);
+    static LINALG::Matrix<9, 9> D2I1DF2(true);
+    static LINALG::Matrix<9, 9> D2I2DF2(true);
+    static LINALG::Matrix<9, 9> D2I3DF2(true);
+    DiFTDF.Clear();
+    D2bdndtDF2.Clear();
+    D2ibdndtDF2.Clear();
+    D2I1DF2.Clear();
+    D2I2DF2.Clear();
+    D2I3DF2.Clear();
+
+    static LINALG::Matrix<3, 3> C(true);
+    C.MultiplyTN(1.0, defgrd, defgrd, 0.0);
+
+    for (int k = 0; k < 3; ++k)
+      for (int l = 0; l < 3; ++l)
+        for (int m = 0; m < 3; ++m)
+          for (int a = 0; a < 3; ++a)
+          {
+            DiFTDF(VOIGT3X3NONSYM_[k][l], VOIGT3X3NONSYM_[m][a]) = -iF(l, m) * iF(a, k);
+            D2bdndtDF2(VOIGT3X3NONSYM_[k][l], VOIGT3X3NONSYM_[m][a]) =
+                (t(k, 0) * n(m, 0) + t(m, 0) * n(k, 0)) * (l == a);
+            D2ibdndtDF2(VOIGT3X3NONSYM_[k][l], VOIGT3X3NONSYM_[m][a]) =
+                ibdF(k, a) * (ibdt(m, 0) * ndibdF(0, l) + ibdn(m, 0) * tdibdF(0, l)) +
+                ib(m, k) * (tdibdF(0, a) * ndibdF(0, l) + tdibdF(0, l) * ndibdF(0, a)) +
+                ibdF(m, l) * (ibdt(k, 0) * ndibdF(0, a) + tdibdF(0, a) * ibdn(k, 0));
+            D2I1DF2(VOIGT3X3NONSYM_[k][l], VOIGT3X3NONSYM_[m][a]) = 2.0 * (k == m) * (l == a);
+            D2I2DF2(VOIGT3X3NONSYM_[k][l], VOIGT3X3NONSYM_[m][a]) =
+                2.0 * (prinv(0) * (k == m) * (l == a) + 2.0 * defgrd(m, a) * defgrd(k, l) -
+                          (k == m) * C(a, l) - defgrd(k, a) * defgrd(m, l) - b(k, m) * (l == a));
+            D2I3DF2(VOIGT3X3NONSYM_[k][l], VOIGT3X3NONSYM_[m][a]) =
+                2.0 * prinv(2) * (2.0 * ibdF(m, a) * ibdF(k, l) - ibdF(m, l) * ibdF(k, a));
+          }
+
+    // terms below add contributions originating from d(1st term of DsntDF)/dF
+    D2sntDF2->MultiplyNT(prefac * (prinv(1) * dPI(1) * ndt + prinv(2) * dPI(2) * ndt +
+                                      dPI(0) * bdndt - prinv(2) * dPI(1) * ibdndt),
+        iFTV, iFTV, 0.0);  // D2sntDF2 is cleared here
+    D2sntDF2->Update(-prefac * (prinv(1) * dPI(1) * ndt + prinv(2) * dPI(2) * ndt + dPI(0) * bdndt -
+                                   prinv(2) * dPI(1) * ibdndt),
+        DiFTDF, 1.0);
+    D2sntDF2->MultiplyNT(-prefac * dPI(0), iFTV, DbdndtDFV, 1.0);
+    D2sntDF2->MultiplyNT(prefac * prinv(2) * dPI(1), iFTV, DibdndtDFV, 1.0);
+
+    D2sntDF2->MultiplyNT(-prefac * (prinv(1) * ddPII(5) * ndt + prinv(2) * ddPII(4) * ndt +
+                                       ddPII(0) * bdndt - prinv(2) * ddPII(5) * ibdndt),
+        iFTV, DI1DF, 1.0);
+    D2sntDF2->MultiplyNT(
+        -prefac * (dPI(1) * ndt + prinv(1) * ddPII(1) * ndt + prinv(2) * ddPII(3) * ndt +
+                      ddPII(5) * bdndt - prinv(2) * ddPII(1) * ibdndt),
+        iFTV, DI2DF, 1.0);
+    D2sntDF2->MultiplyNT(
+        -prefac * (prinv(1) * ddPII(3) * ndt + dPI(2) * ndt + prinv(2) * ddPII(2) * ndt +
+                      ddPII(4) * bdndt - dPI(1) * ibdndt - prinv(2) * ddPII(3) * ibdndt),
+        iFTV, DI3DF, 1.0);
+
+    // terms below add contributions originating from d(2nd term of DsntDF)/dF
+    D2sntDF2->MultiplyNT(-prefac * dPI(0), DbdndtDFV, iFTV, 1.0);
+    D2sntDF2->Update(prefac * dPI(0), D2bdndtDF2, 1.0);
+    D2sntDF2->MultiplyNT(prefac * ddPII(0), DbdndtDFV, DI1DF, 1.0);
+    D2sntDF2->MultiplyNT(prefac * ddPII(5), DbdndtDFV, DI2DF, 1.0);
+    D2sntDF2->MultiplyNT(prefac * ddPII(4), DbdndtDFV, DI3DF, 1.0);
+
+    // terms below add contributions originating from d(3rd term of DsntDF)/dF
+    D2sntDF2->MultiplyNT(prefac * prinv(2) * dPI(1), DibdndtDFV, iFTV, 1.0);
+    D2sntDF2->Update(-prefac * prinv(2) * dPI(1), D2ibdndtDF2, 1.0);
+    D2sntDF2->MultiplyNT(-prefac * prinv(2) * ddPII(5), DibdndtDFV, DI1DF, 1.0);
+    D2sntDF2->MultiplyNT(-prefac * prinv(2) * ddPII(1), DibdndtDFV, DI2DF, 1.0);
+    D2sntDF2->MultiplyNT(-prefac * (dPI(1) + prinv(2) * ddPII(3)), DibdndtDFV, DI3DF, 1.0);
+
+    // terms below add contributions originating from d(4th term of DsntDF)/dF
+    D2sntDF2->MultiplyNT(-prefac * (prinv(1) * ddPII(5) * ndt + prinv(2) * ddPII(4) * ndt +
+                                       ddPII(0) * bdndt - prinv(2) * ddPII(5) * ibdndt),
+        DI1DF, iFTV, 1.0);
+    D2sntDF2->MultiplyNT(prefac * ddPII(0), DI1DF, DbdndtDFV, 1.0);
+    D2sntDF2->MultiplyNT(-prefac * prinv(2) * ddPII(5), DI1DF, DibdndtDFV, 1.0);
+    D2sntDF2->Update(prefac * (prinv(1) * ddPII(5) * ndt + prinv(2) * ddPII(4) * ndt +
+                                  ddPII(0) * bdndt - prinv(2) * ddPII(5) * ibdndt),
+        D2I1DF2, 1.0);
+    D2sntDF2->MultiplyNT(prefac * (prinv(1) * dddPIII(5) * ndt + prinv(2) * dddPIII(6) * ndt +
+                                      dddPIII(0) * bdndt - prinv(2) * dddPIII(5) * ibdndt),
+        DI1DF, DI1DF, 1.0);
+    D2sntDF2->MultiplyNT(
+        prefac * (ddPII(5) * ndt + prinv(1) * dddPIII(3) * ndt + prinv(2) * dddPIII(9) * ndt +
+                     dddPIII(5) * bdndt - prinv(2) * dddPIII(3) * ibdndt),
+        DI1DF, DI2DF, 1.0);
+    D2sntDF2->MultiplyNT(
+        prefac * (prinv(1) * dddPIII(9) * ndt + ddPII(4) * ndt + prinv(2) * dddPIII(4) * ndt +
+                     dddPIII(6) * bdndt - ddPII(5) * ibdndt - prinv(2) * dddPIII(9) * ibdndt),
+        DI1DF, DI3DF, 1.0);
+
+    // terms below add contributions originating from d(5th term of DsntDF)/dF
+    D2sntDF2->MultiplyNT(
+        -prefac * (dPI(1) * ndt + prinv(1) * ddPII(1) * ndt + prinv(2) * ddPII(3) * ndt +
+                      ddPII(5) * bdndt - prinv(2) * ddPII(1) * ibdndt),
+        DI2DF, iFTV, 1.0);
+    D2sntDF2->MultiplyNT(prefac * ddPII(5), DI2DF, DbdndtDFV, 1.0);
+    D2sntDF2->MultiplyNT(-prefac * prinv(2) * ddPII(1), DI2DF, DibdndtDFV, 1.0);
+    D2sntDF2->Update(
+        prefac * (dPI(1) * ndt + prinv(1) * ddPII(1) * ndt + prinv(2) * ddPII(3) * ndt +
+                     ddPII(5) * bdndt - prinv(2) * ddPII(1) * ibdndt),
+        D2I2DF2, 1.0);
+    D2sntDF2->MultiplyNT(
+        prefac * (ddPII(5) * ndt + prinv(1) * dddPIII(3) * ndt + prinv(2) * dddPIII(9) * ndt +
+                     dddPIII(5) * bdndt - prinv(2) * dddPIII(3) * ibdndt),
+        DI2DF, DI1DF, 1.0);
+    D2sntDF2->MultiplyNT(
+        prefac * (2.0 * ddPII(1) * ndt + prinv(1) * dddPIII(1) * ndt + prinv(2) * dddPIII(7) * ndt +
+                     dddPIII(3) * bdndt - prinv(2) * dddPIII(1) * ibdndt),
+        DI2DF, DI2DF, 1.0);
+    D2sntDF2->MultiplyNT(
+        prefac * (2.0 * ddPII(3) * ndt + prinv(1) * dddPIII(7) * ndt + prinv(2) * dddPIII(8) * ndt +
+                     dddPIII(9) * bdndt - ddPII(1) * ibdndt - prinv(2) * dddPIII(7) * ibdndt),
+        DI2DF, DI3DF, 1.0);
+
+    // terms below add contributions originating from d(6th term of DsntDF)/dF
+    D2sntDF2->MultiplyNT(
+        -prefac * (prinv(1) * ddPII(3) * ndt + dPI(2) * ndt + prinv(2) * ddPII(2) * ndt +
+                      ddPII(4) * bdndt - dPI(1) * ibdndt - prinv(2) * ddPII(3) * ibdndt),
+        DI3DF, iFTV, 1.0);
+    D2sntDF2->MultiplyNT(prefac * ddPII(4), DI3DF, DbdndtDFV, 1.0);
+    D2sntDF2->MultiplyNT(-prefac * (dPI(1) + prinv(2) * ddPII(3)), DI3DF, DibdndtDFV, 1.0);
+    D2sntDF2->Update(
+        prefac * (prinv(1) * ddPII(3) * ndt + dPI(2) * ndt + prinv(2) * ddPII(2) * ndt +
+                     ddPII(4) * bdndt - dPI(1) * ibdndt - prinv(2) * ddPII(3) * ibdndt),
+        D2I3DF2, 1.0);
+    D2sntDF2->MultiplyNT(
+        prefac * (prinv(1) * dddPIII(9) * ndt + ddPII(4) * ndt + prinv(2) * dddPIII(4) * ndt +
+                     dddPIII(6) * bdndt - ddPII(5) * ibdndt - prinv(2) * dddPIII(9) * ibdndt),
+        DI3DF, DI1DF, 1.0);
+    D2sntDF2->MultiplyNT(
+        prefac * (2.0 * ddPII(3) * ndt + prinv(1) * dddPIII(7) * ndt + prinv(2) * dddPIII(8) * ndt +
+                     dddPIII(9) * bdndt - ddPII(1) * ibdndt - prinv(2) * dddPIII(7) * ibdndt),
+        DI3DF, DI2DF, 1.0);
+    D2sntDF2->MultiplyNT(
+        prefac * (prinv(1) * dddPIII(8) * ndt + 2.0 * ddPII(2) * ndt + prinv(2) * dddPIII(2) * ndt +
+                     dddPIII(4) * bdndt - 2.0 * ddPII(3) * ibdndt - prinv(2) * dddPIII(8) * ibdndt),
+        DI3DF, DI3DF, 1.0);
+  }
 
   return;
 }

@@ -243,32 +243,101 @@ namespace MAT
         LINALG::Matrix<3, 3>* rcg_old,  ///< Right Cauchy-Green tensor at t_{n}
         const int eleGID);              ///< Element GID
 
-    /// evaluate Cauchy stress with given left Cauchy--Green tensor
-    /// if requested, additional linearizations are computed
-    /// potential thermal dependency handled if temperature is given
-    virtual void EvaluateCauchy(const LINALG::Matrix<3, 3>& b, const LINALG::Matrix<3, 1>& n,
-        const LINALG::Matrix<3, 1>& t, double& snt, LINALG::Matrix<6, 1>* dsntdb,
-        LINALG::Matrix<6, 6>* d2sntdb2, LINALG::Matrix<6, 3>* d2sntDbDn,
-        LINALG::Matrix<6, 3>* d2sntDbDt, LINALG::Matrix<3, 1>* dsntdn, LINALG::Matrix<3, 1>* dsntdt,
-        const int eleGID, const double* temp = NULL, double* dsntdT = NULL,
-        LINALG::Matrix<6, 1>* d2sntDbDT = NULL);
+    /**
+     * \brief Evaluate the Cauchy stress and linearizations with given deformation gradient.
+     *
+     * Cauchy stress is evaluated within this function call. If requested, the required
+     * linearizations are calculated. A potential thermal dependency is handled if the temperature
+     * is handed in.
+     *
+     * \param[in]     defgrd    deformation gradient (\f[\bold{F}\f])
+     * \param[in]     n         vector n (\f[\bold{n}\f])
+     * \param[in]     t         vector t (\f[\bold{t}\f])
+     * \param[out]    snt       cauchy stress tensor contracted using the vectors n and t (\f[
+                                \bold{\sigma} \cdot \bold{n} \cdot \bold{t} \f])
+     * \param[out]    DsntDn    derivative of snt w.r.t. vector n (\f[ \frac{\mathrm{d}
+                                \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}{\mathrm{d} \bold{n}}
+                                \f])
+     * \param[out]    DsntDt    derivative of snt w.r.t. vector t (\f[ \frac{\mathrm{d}
+                                \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}{\mathrm{d} \bold{t}}
+                                \f])
+     * \param[out]    DsntDF    derivative of snt w.r.t. deformation gradient (\f[\frac{\mathrm{d}
+                                \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}{\mathrm{d}\bold{F}}\f])
+     * \param[out]    D2sntDF2  second derivative of snt w.r.t. deformation gradient (\f[ \frac{
+                                \mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}
+                                {\mathrm{d} \bold{F}^2} \f])
+     * \param[out]    D2sntDFDn second derivative of snt w.r.t. deformation gradient and vector n
+                                (\f[ \frac{ \mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot
+                                \bold{t}} {\mathrm{d} \bold{F} \mathrm{d} \bold{n} } \f])
+     * \param[out]    D2sntDFDt second derivative of snt w.r.t. deformation gradient and vector n
+                                (\f[ \frac{ \mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot
+                                \bold{t}} {\mathrm{d} \bold{F} \mathrm{d} \bold{n} } \f])
+     * \param[in]     eleGID    global ID of element
+     * \param[in]     temp      temperature (if thermal dependency shall be handeled)
+     * \param[out]    DsntDT    derivative of snt w.r.t. temperature (\f[ \frac{ \mathrm{d}
+                                \bold{\sigma} \cdot \bold{n} \cdot \bold{t} }{\mathrm{d} T} \f])
+     * \param[out]    D2sntDFDT second derivative of snt w.r.t. deformation gradient and temperature
+                                (\f[ \frac{ \mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{t}
+                                } {\mathrm{d} \bold{F} \mathrm{d} T } \f])
+     */
+    void EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd, const LINALG::Matrix<3, 1>& n,
+        const LINALG::Matrix<3, 1>& t, double& snt, LINALG::Matrix<3, 1>* DsntDn,
+        LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<9, 1>* DsntDF, LINALG::Matrix<9, 9>* D2sntDF2,
+        LINALG::Matrix<9, 3>* D2sntDFDn, LINALG::Matrix<9, 3>* D2sntDFDt, const int eleGID,
+        const double* temp = NULL, double* DsntDT = NULL,
+        LINALG::Matrix<9, 1>* D2sntDFDT = NULL) override;
 
-    /// calculate derivatives of SEF for calculation of Cauchy stress
-    /// can be overloaded if temperature is given
+    /**
+     * \brief The derivatives of the strain energy function w.r.t. the principle invariants are
+     * filled up to the third derivative, can be overloaded if temperature is given.
+     *
+     * \param prinv[in]       principle invariants of the tensor
+     * \param eleGID[in]      global ID of the element
+     * \param dPI[in,out]     first derivative of strain energy function w.r.t. principle invariants
+     * \param ddPII[in,out]   second derivative of strain energy function w.r.t. principle
+                              invariants
+     * \param dddPIII[in,out] third derivative of strain energy function w.r.t. principle invariants
+     * \param temp[in]        temperature
+     */
     virtual void EvaluateCauchyDerivs(const LINALG::Matrix<3, 1>& prinv, const int eleGID,
-        LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII_ordered,
-        LINALG::Matrix<10, 1>& dddPIII, const double* temp = NULL);
+        LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII, LINALG::Matrix<10, 1>& dddPIII,
+        const double* temp = NULL);
 
-    /// calculate derivatives of Cauchy stress w.r.t. temperature
-    /// to be overloaded
+    /**
+     * \brief Evaluate the thermal dependency of the linearizations of the cauchy stress, to be
+     *        overloaded
+     *
+     * \param prinv[in]      principle invariants of the tensor
+     * \param ndt[in]        dot product of vectors n and t (\f[\bold{t} \cdot \bold{t}\f])
+     * \param bdndt[in]      left Cauchy-Green tensor contracted using the vector n and t (\f[
+                             \bold{b} \cdot \bold{n} \cdot \bold{t} \f])
+     * \param ibdndt[in]     inverse of left Cauchy-Green tensor contracted using the vector n and t
+                             (\f[ \bold{b}^{-1} \cdot \bold{n} \cdot \bold{t} \f])
+     * \param temp[in]       temperature
+     * \param DsntDT[out]    derivative of cauchy stress contracted with vectors n and t w.r.t.
+                             temperature (\f[\frac{\mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot
+                             \bold{t} }{ \mathrm{d} T }\f])
+     * \param iFTV[in]       inverse transposed of the deformation gradient
+     * \param DbdndtDFV[in]  derivative of bdndt w.r.t. deformation gradient (\f[\frac{ \mathrm{d}
+                             \bold{b} \cdot \bold{n} \cdot \bold{t}}{\mathrm{d} \bold{F} }\f])
+     * \param DibdndtDFV[in] derivative of ibdndt w.r.t. deformation gradient (\f[\frac{ \mathrm{d}
+                             \bold{b}^{-1} \cdot \bold{n} \cdot \bold{t}}{\mathrm{d} \bold{F} }\f])
+     * \param DI1DF[in]      derivative of first invariant w.r.t. deformation gradient
+     * \param DI2DF[in]      derivative of second invariant w.r.t. deformation gradient
+     * \param DI3DF[in]      derivative of third invariant w.r.t. deformation gradient
+     * \param D2sntDFDT[out] second derivative of cauchy stress contracted with vectors n and t
+                             w.r.t. temperature and deformation gradient (\f[ \frac{\mathrm{d}^2
+                             \bold{\sigma} \cdot \bold{n} \cdot \bold{t}} {\mathrm{d} \bold{F}
+                             \mathrm{d} T } \f])
+     */
     virtual void EvaluateCauchyTempDeriv(const LINALG::Matrix<3, 1>& prinv, const double ndt,
-        const double tbn, const double tibn, const LINALG::Matrix<6, 1>& dI1db,
-        const LINALG::Matrix<6, 1>& dI2db, const LINALG::Matrix<6, 1>& dI3db,
-        const LINALG::Matrix<6, 1>& nt_tn_v, const LINALG::Matrix<6, 1>& dtibndb,
-        const double* temp, double* dsntdT, LINALG::Matrix<6, 1>* d2sntDbDT)
+        const double bdndt, const double ibdndt, const double* temp, double* DsntDT,
+        const LINALG::Matrix<9, 1>& iFTV, const LINALG::Matrix<9, 1>& DbdndtDFV,
+        const LINALG::Matrix<9, 1>& DibdndtDFV, const LINALG::Matrix<9, 1>& DI1DF,
+        const LINALG::Matrix<9, 1>& DI2DF, const LINALG::Matrix<9, 1>& DI3DF,
+        LINALG::Matrix<9, 1>* D2sntDFDT)
     {
     }
-
 
     /// setup
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
@@ -448,7 +517,7 @@ namespace MAT
         const LINALG::Matrix<6, 1>& icg, const LINALG::Matrix<3, 1>& prinv, const int eleGID);
 
     /// calculate principal invariants
-    virtual void InvariantsPrincipal(LINALG::Matrix<3, 1>& prinv,  ///< principal invariants
+    void InvariantsPrincipal(LINALG::Matrix<3, 1>& prinv,  ///< principal invariants
         const LINALG::Matrix<6, 1>&
             rcg  ///< symmetric Cartesian 2-tensor in strain-like 6-Voigt notation
     );
@@ -580,6 +649,8 @@ namespace MAT
     static const int VOIGT6COL_[];    ///< 6-Voigt column index of corresponding 2-tensor
     static const int VOIGT3X3SYM_[];  ///< go from symmetric 2-tensor index pair to 6-Voigt index
                                       ///< by [3*i+j] for any i,j=0,1,2
+    static const int
+        VOIGT3X3NONSYM_[3][3];  ///< from non-symmetric 2-tensor index pair to 9-Voigt index
     //@}
 
     /// my material parameters

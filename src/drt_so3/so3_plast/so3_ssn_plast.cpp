@@ -92,12 +92,6 @@ DRT::Element* DRT::ELEMENTS::So3_Plast<distype>::Clone() const
 
 
 template <DRT::Element::DiscretizationType distype>
-const int DRT::ELEMENTS::So3_Plast<distype>::VOIGT3X3SYM_[3][3] = {{0, 3, 5}, {3, 1, 4}, {5, 4, 2}};
-template <DRT::Element::DiscretizationType distype>
-const int DRT::ELEMENTS::So3_Plast<distype>::VOIGT3X3NONSYM_[3][3] = {
-    {0, 3, 5}, {6, 1, 4}, {8, 7, 2}};
-
-template <DRT::Element::DiscretizationType distype>
 std::pair<bool, LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nen_, 1>>
     DRT::ELEMENTS::So3_Plast<distype>::shapefunct_;
 template <DRT::Element::DiscretizationType distype>

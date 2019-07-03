@@ -320,37 +320,91 @@ namespace MAT
   void AddToCmatDerivTensorSquare(
       LINALG::Matrix<6, 6>& C, double ScalarDX2, LINALG::Matrix<3, 3> X, double ScalarThis);
 
-  /// in index notation this does:
-  /// X_abcd += fac*( A_ca*B_db + A_da*B_cb + A_db*B_ca + A_cb*B_da )
-  /// result has minor symmetries but no major symmetry
-  /// Symmetric w.r.t. A,B
+  /**
+   * \brief Add symmetric Holzapfel product to a 4th order tensor in matrix notation
+   *
+   * In tensor index notation this does:
+   * \f[ X_{abcd} += fac*( A_{ca}*B_{db} + A_{da}*B_{cb} + A_{db}*B_{ca} + A_{cb}*B_{da} ) \f]
+   * The result has minor symmetries, but no major symmetry, i.e. symmetric w.r.t. A and B
+   *
+   * \param X[in,out] 4th order tensor \f[X_{abcd}\f]
+   * \param A[in]     2nd order tensor \f[A_{ef}\f]
+   * \param B[in]     2nd order tensor \f[B_{gh}\f]
+   * \param fac[in]   scalar factor
+   */
   void AddSymmetricHolzapfelProduct(LINALG::Matrix<6, 6>& X, const LINALG::Matrix<3, 3>& A,
-      const LINALG::Matrix<3, 3>& B, double fac);
+      const LINALG::Matrix<3, 3>& B, const double fac);
 
-  /// in index notation this does:
-  /// out_{IJKL} += fac*( A_{IK} * B_{JL} + A_{JK} * B_{IL} )
-  /// Note that the result is symmetric within the first two indices
-  /// Thus the first two indices are stored in stress-like Voigt notation.
-  /// The 2nd index pair has no symmetries and is therefore stored as 9-vector
-  /// Be aware that this is NOT symmetric w.r.t. A and B !!!
+  /**
+   * \brief Add right non-symmetric Holzapfel product to a 4th order tensor in matrix notation
+   *
+   * In tensor index notation this does:
+   * \f[out_{IJKL} += fac*( A_{IK} * B_{JL} + A_{JK} * B_{IL} ) \f]
+   * Note that the result is symmetric within the first two indices. Thus the first two indices are
+   * stored in stress-like Voigt notation. The 2nd index pair has no symmetries and is therefore
+   * stored as 9-vector.
+   * Be aware that this is NOT symmetric w.r.t. A and B !
+   *
+   * \param out[in,out] 4th order tensor \f[out_{ABCD}\f]
+   * \param A[in]       2nd order tensor \f[A_{EF}\f]
+   * \param B[in]       2nd order tensor \f[B_{GH}\f]
+   * \param fac[in]     scalar factor
+   */
   template <typename T>
   void AddRightNonSymmetricHolzapfelProduct(LINALG::TMatrix<T, 6, 9>& out,
       LINALG::TMatrix<T, 3, 3> const& A, LINALG::TMatrix<T, 3, 3> const& B, T const fac);
 
-  /// in index notation this does:
-  /// out_{IJKL} += fac*( A_{IK} * B_{JL} + A_{IL} * B_{JK} )
-  /// Note that the result is symmetric within the second two indices
-  /// Thus the second two indices are stored in stress-like Voigt notation.
-  /// The 1st index pair has no symmetries and is therefore stored as 9-vector
-  /// Be aware that this is NOT symmetric w.r.t. A and B !!!
+  /**
+   * \brief Add right non-symmetric Holzapfel product, where the symmetric part is stored
+   * strain-like to a 4th order tensor in matrix notation
+   *
+   * In tensor index notation this does:
+   * \f[ out_{IJKL} += fac*( A_{IK} * B_{JL} + A_{JK} * B_{IL} ) \f]
+   * Note that the result is symmetric within the first two indices. The first two indices are
+   * stored in strain-like Voigt notation. The 2nd index pair has no symmetries and is therefore
+   * stored as 9-vector.
+   * Be aware that this is NOT symmetric w.r.t. A and B !
+   *
+   * \param out[in,out] 4th order tensor \f[out_{ABCD}\f]
+   * \param A[in]       2nd order tensor \f[A_{EF}\f]
+   * \param B[in]       2nd order tensor \f[B_{GH}\f]
+   * \param fac[in]     scalar factor
+   */
+  template <typename T>
+  void AddRightNonSymmetricHolzapfelProductStrainLike(LINALG::TMatrix<T, 6, 9>& out,
+      LINALG::TMatrix<T, 3, 3> const& A, LINALG::TMatrix<T, 3, 3> const& B, T const fac);
+
+  /**
+   * \brief Add left non-symmetric Holzapfel product to a 4th order tensor in matrix notation
+   *
+   * In tensor index notation this does:
+   * \f[ out_{IJKL} += fac*( A_{IK} * B_{JL} + A_{IL} * B_{JK} ) \f]
+   * Note that the result is symmetric within the second two indices. Thus the second two indices
+   * are stored in stress-like Voigt notation. The 1st index pair has no symmetries and is therefore
+   * stored as 9-vector.
+   * Be aware that this is NOT symmetric w.r.t. A and B !
+   *
+   * \param out[in,out] 4th order tensor \f[out_{ABCD}\f]
+   * \param A[in]       2nd order tensor \f[A_{EF}\f]
+   * \param B[in]       2nd order tensor \f[B_{GH}\f]
+   * \param fac[in]     scalar factor
+   */
   void AddLeftNonSymmetricHolzapfelProduct(LINALG::Matrix<9, 6>& out, LINALG::Matrix<3, 3> const& A,
       LINALG::Matrix<3, 3> const& B, double const fac);
 
-  /// This function adds the following contribution to the matrix X_ABCD (9x9)
-  /// in index notation this method does:
-  /// X_ABCD = fac*( A_AC * B_DB )
-  /// There are no symmetries and the matrix is therefore stored in a 9x9 matrix
-  /// A and B are not required to be symmetric!!!
+  /**
+   * \brief Add non-symmetric product to a 4th order tensor in matrix notation
+   *
+   * In tensor index notation this does:
+   * \f[ X_{ABCD} = fac*( A_{AC} * B_{DB} ) \f]
+   * There are no symmetries and the matrix is therefore stored in a 9x9 matrix. A and B are not
+   * required to be symmetric!!!
+   *
+   * \param fac[in]     scalar factor
+   * \param A[in]       2nd order tensor \f[A_{AB}\f]
+   * \param B[in]       2nd order tensor \f[B_{CD}\f]
+   * \param out[in,out] 4th order tensor \f[out_{EFGH}\f]
+   */
   void AddNonSymmetricProduct(double const& fac,  ///< Scalar factor
       LINALG::Matrix<3, 3> const& A,              ///< Matrix in the above mentioned equation
       LINALG::Matrix<3, 3> const& B,              ///< Matrix in the above mentioned equation
