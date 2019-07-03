@@ -26,31 +26,41 @@ namespace DRT
 namespace LINALG
 {
   class MapExtractor;
-}
+}  // namespace LINALG
 
 namespace MORTAR
 {
   class StrategyBase;
-}
+}  // namespace MORTAR
 
 namespace CONTACT
 {
-  // class CoManager;
-  // class MtManager;
+  /*!
+  \brief Bridge to enable unified access to contact and meshtying managers
 
+  This bridge wraps contact and meshtying managers, such that the structure time integration does
+  not have to distinguish between contact and meshtying operations, but has a single interface to
+  both of them. The distinction between contact and meshtying operations is hidden in here.
+  */
   class MeshtyingContactBridge
   {
    public:
-    //@}
+    /*!
+    \brief Constructor
 
+    @param dis Structure discretization
+    @param mtcond List of meshtying conditions as given in input file
+    @param ccond List of contact conditions as given in input file
+    @param timeIntegrationMidPoint Generalized mid-point of time integration scheme
+    */
     MeshtyingContactBridge(DRT::Discretization& dis, std::vector<DRT::Condition*>& mtcond,
-        std::vector<DRT::Condition*>& ccond, double alphaf, bool smoothing = false);
+        std::vector<DRT::Condition*>& ccond, double timeIntegrationMidPoint, bool smoothing = false);
 
     /*!
     \brief Destructor
 
     */
-    virtual ~MeshtyingContactBridge(){};
+    virtual ~MeshtyingContactBridge() = default;
 
     //! @name Access methods
 
@@ -178,18 +188,23 @@ namespace CONTACT
     /*!
     \brief write restart
 
+    @param[in] output Output writer to be used for writing outpu
+    @oaram[in] forcedrestart Force to write restart data
+
     */
     void WriteRestart(Teuchos::RCP<IO::DiscretizationWriter>& output, bool forcedrestart = false);
-    //@}
 
-   protected:
+   private:
     // don't want cctor (= operator impossible anyway for abstract class)
     MeshtyingContactBridge(const MeshtyingContactBridge& old) = delete;
 
     // internal variables:
 
-    Teuchos::RCP<MORTAR::ManagerBase> cman_;   //! contact manager
-    Teuchos::RCP<MORTAR::ManagerBase> mtman_;  //! meshtying manager
+    //! Contact manager
+    Teuchos::RCP<MORTAR::ManagerBase> cman_;
+
+    //! Meshtying manager
+    Teuchos::RCP<MORTAR::ManagerBase> mtman_;
     Teuchos::RCP<MORTAR::ManagerBase> sman_;   //! smoothing manager
 
   };  // class MeshtyingContactBridge
