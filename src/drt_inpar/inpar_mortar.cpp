@@ -121,10 +121,10 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   setStringToIntegralParameter<int>("GHOSTING_STRATEGY", "redundant_ghosting",
       "Type of parallel interface evaluation",
-      tuple<std::string>("rg", "redundant_ghosting", "ghosting", "rrg", "roundrobinghost",
-          "RoundRobinGhost", "bs", "binningstrategy", "binning"),
-      tuple<int>(ghosting_redundant, ghosting_redundant, ghosting_redundant, roundrobinghost,
-          roundrobinghost, roundrobinghost, binningstrategy, binningstrategy, binningstrategy),
+      tuple<std::string>(
+          "redundant_ghosting", "roundrobinghost", "RoundRobinGhost", "binningstrategy", "binning"),
+      tuple<int>(
+          ghosting_redundant, roundrobinghost, roundrobinghost, binningstrategy, binningstrategy),
       &parallelRedist);
 
   DoubleParameter("IMBALANCE_TOL", 1.1,
