@@ -805,7 +805,7 @@ void MAT::AddToCmatDerivTensorSquare(
  |                                                          seitz 09/13 |
  *----------------------------------------------------------------------*/
 void MAT::AddSymmetricHolzapfelProduct(LINALG::Matrix<6, 6>& X, const LINALG::Matrix<3, 3>& A,
-    const LINALG::Matrix<3, 3>& B, double fac)
+    const LINALG::Matrix<3, 3>& B, const double fac)
 {
   X(0, 0) += 4 * fac * A(0, 0) * B(0, 0);
   X(0, 3) += fac * (2 * A(0, 0) * B(1, 0) + 2 * A(1, 0) * B(0, 0));
