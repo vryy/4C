@@ -2325,8 +2325,6 @@ set(OBJS_DRT_CONTACT
   src/drt_contact/meshtying_penalty_strategy.cpp
   src/drt_contact/selfcontact_binarytree.cpp
   src/drt_contact/selfcontact_binarytree_unbiased.cpp
-  src/drt_contact/smoothing_strategy.cpp
-  src/drt_contact/smoothing_manager.cpp
 )
 set(OBJS_DRT_CONTACT_AUG
   src/drt_contact_aug/contact_augmented_strategy.cpp

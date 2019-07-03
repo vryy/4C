@@ -12,7 +12,6 @@
 #include "meshtying_contact_bridge.H"
 #include "../drt_contact/meshtying_manager.H"
 #include "../drt_contact/contact_manager.H"
-#include "../drt_contact/smoothing_manager.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_condition.H"
@@ -26,8 +25,8 @@
  |  ctor (public)                                            farah 06/14|
  *----------------------------------------------------------------------*/
 CONTACT::MeshtyingContactBridge::MeshtyingContactBridge(DRT::Discretization& dis,
-    std::vector<DRT::Condition*>& mtcond, std::vector<DRT::Condition*>& ccond, double alphaf,
-    bool smoothing)
+    std::vector<DRT::Condition*>& mtcond, std::vector<DRT::Condition*>& ccond,
+    double timeIntegrationMidPoint)
     : cman_(Teuchos::null), mtman_(Teuchos::null)
 {
   bool onlymeshtying = false;
@@ -41,31 +40,19 @@ CONTACT::MeshtyingContactBridge::MeshtyingContactBridge(DRT::Discretization& dis
 
   if (mtcond.size() == 0 and ccond.size() != 0) onlycontact = true;
 
-  if (smoothing and !meshtyingandcontact)
-    dserror(
-        "ERROR: Interface smoothing with additional discr. only possible with meshtying and "
-        "contact conditions!");
-
   // create meshtying and contact manager
   if (onlymeshtying)
   {
-    mtman_ = Teuchos::rcp(new CONTACT::MtManager(dis, alphaf));
+    mtman_ = Teuchos::rcp(new CONTACT::MtManager(dis, timeIntegrationMidPoint));
   }
   else if (onlycontact)
   {
-    cman_ = Teuchos::rcp(new CONTACT::CoManager(dis, alphaf));
+    cman_ = Teuchos::rcp(new CONTACT::CoManager(dis, timeIntegrationMidPoint));
   }
   else if (meshtyingandcontact)
   {
-    if (!smoothing)
-    {
-      mtman_ = Teuchos::rcp(new CONTACT::MtManager(dis, alphaf));
-      cman_ = Teuchos::rcp(new CONTACT::CoManager(dis, alphaf));
-    }
-    else
-    {
-      sman_ = Teuchos::rcp(new CONTACT::SmoothingManager(dis, alphaf));
-    }
+    mtman_ = Teuchos::rcp(new CONTACT::MtManager(dis, timeIntegrationMidPoint));
+    cman_ = Teuchos::rcp(new CONTACT::CoManager(dis, timeIntegrationMidPoint));
   }
 
   // Sanity check for writing output for each interface
@@ -89,15 +76,8 @@ CONTACT::MeshtyingContactBridge::MeshtyingContactBridge(DRT::Discretization& dis
 void CONTACT::MeshtyingContactBridge::StoreDirichletStatus(
     Teuchos::RCP<LINALG::MapExtractor> dbcmaps)
 {
-  if (HaveSmoothing())
-  {
-    SManager()->GetStrategy().StoreDirichletStatus(dbcmaps);
-  }
-  else
-  {
-    if (HaveMeshtying()) MtManager()->GetStrategy().StoreDirichletStatus(dbcmaps);
-    if (HaveContact()) ContactManager()->GetStrategy().StoreDirichletStatus(dbcmaps);
-  }
+  if (HaveMeshtying()) MtManager()->GetStrategy().StoreDirichletStatus(dbcmaps);
+  if (HaveContact()) ContactManager()->GetStrategy().StoreDirichletStatus(dbcmaps);
 
   return;
 }
@@ -107,17 +87,9 @@ void CONTACT::MeshtyingContactBridge::StoreDirichletStatus(
  *----------------------------------------------------------------------*/
 void CONTACT::MeshtyingContactBridge::SetState(Teuchos::RCP<Epetra_Vector> zeros)
 {
-  if (HaveSmoothing())
-  {
-    SManager()->GetStrategy().SetState(MORTAR::state_new_displacement, *zeros);
-  }
-  else
-  {
-    if (HaveMeshtying())
-      MtManager()->GetStrategy().SetState(MORTAR::state_new_displacement, *zeros);
-    if (HaveContact())
-      ContactManager()->GetStrategy().SetState(MORTAR::state_new_displacement, *zeros);
-  }
+  if (HaveMeshtying()) MtManager()->GetStrategy().SetState(MORTAR::state_new_displacement, *zeros);
+  if (HaveContact())
+    ContactManager()->GetStrategy().SetState(MORTAR::state_new_displacement, *zeros);
 
   return;
 }
@@ -127,19 +99,12 @@ void CONTACT::MeshtyingContactBridge::SetState(Teuchos::RCP<Epetra_Vector> zeros
  *----------------------------------------------------------------------*/
 MORTAR::StrategyBase& CONTACT::MeshtyingContactBridge::GetStrategy()
 {
-  if (HaveSmoothing())
-  {
-    return SManager()->GetStrategy();
-  }
+  // if contact is involved use contact strategy!
+  // contact conditions/strategies are dominating the algorithm!
+  if (HaveMeshtying() and !HaveContact())
+    return MtManager()->GetStrategy();
   else
-  {
-    // if contact is involved use contact strategy!
-    // contact conditions/strategies are dominating the algorithm!
-    if (HaveMeshtying() and !HaveContact())
-      return MtManager()->GetStrategy();
-    else
-      return ContactManager()->GetStrategy();
-  }
+    return ContactManager()->GetStrategy();
 }
 
 /*----------------------------------------------------------------------*
@@ -226,19 +191,11 @@ void CONTACT::MeshtyingContactBridge::WriteRestart(
  *----------------------------------------------------------------------*/
 void CONTACT::MeshtyingContactBridge::Update(Teuchos::RCP<Epetra_Vector> dis)
 {
-  if (HaveSmoothing())
-  {
-    SManager()->GetStrategy().Update(dis);
-  }
-  else
-  {
-    // contact
-    if (HaveContact()) ContactManager()->GetStrategy().Update(dis);
+  // contact
+  if (HaveContact()) ContactManager()->GetStrategy().Update(dis);
 
-    // meshtying
-    if (HaveMeshtying()) MtManager()->GetStrategy().Update(dis);
-  }
-
+  // meshtying
+  if (HaveMeshtying()) MtManager()->GetStrategy().Update(dis);
 
   return;
 }

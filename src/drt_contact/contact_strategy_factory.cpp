@@ -1860,7 +1860,6 @@ void CONTACT::STRATEGY::Factory::PrintStrategyBanner(
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(scontact, "SYSTEM");
   INPAR::MORTAR::AlgorithmType algorithm =
       DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(smortar, "ALGORITHM");
-  bool smoothing = DRT::INPUT::IntegralValue<int>(scontact, "DISCR_SMOOTHING");
   bool nonSmoothGeometries = DRT::INPUT::IntegralValue<int>(scontact, "NONSMOOTH_GEOMETRIES");
 
   if (nonSmoothGeometries)
@@ -1879,33 +1878,6 @@ void CONTACT::STRATEGY::Factory::PrintStrategyBanner(
       IO::cout << "===== Gauss-Point-To-Segment approach ==========================\n";
       IO::cout << "===== using Nitsche formulation ================================\n";
       IO::cout << "===== NONSMOOTH - GEOMETRIES ===================================\n";
-      IO::cout << "================================================================\n\n";
-    }
-    else
-      dserror("ERROR: Invalid system type for contact/meshtying interface smoothing");
-  }
-  else if (smoothing)
-  {
-    if (soltype == INPAR::CONTACT::solution_lagmult)
-    {
-      IO::cout << "================================================================\n";
-      IO::cout << "========= !!! EXPERIMENTAL VERSION  !!!     ====================\n";
-      IO::cout << "================================================================\n\n";
-      IO::cout << "================================================================\n";
-      IO::cout << "===== Interface smoothing approach with     ====================\n";
-      IO::cout << "===== Standard Lagrange multiplier strategy ====================\n";
-      IO::cout << "===== (Saddle point formulation) ===============================\n";
-      IO::cout << "================================================================\n\n";
-    }
-    else if (soltype == INPAR::CONTACT::solution_penalty)
-    {
-      IO::cout << "================================================================\n";
-      IO::cout << "========= !!! EXPERIMENTAL VERSION  !!!     ====================\n";
-      IO::cout << "================================================================\n\n";
-      IO::cout << "================================================================\n";
-      IO::cout << "===== Interface smoothing approach with     ====================\n";
-      IO::cout << "===== Standard Penalty strategy             ====================\n";
-      IO::cout << "===== (Pure displacement formulation)===========================\n";
       IO::cout << "================================================================\n\n";
     }
     else

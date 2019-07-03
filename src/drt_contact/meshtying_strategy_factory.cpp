@@ -242,7 +242,7 @@ void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& para
   // *********************************************************************
   // predefined params for meshtying and contact
   // *********************************************************************
-  if (meshtyingandcontact and !DRT::INPUT::IntegralValue<int>(meshtying, "DISCR_SMOOTHING"))
+  if (meshtyingandcontact)
   {
     // set options for mortar coupling
     params.set<std::string>("SEARCH_ALGORITHM", "Binarytree");
@@ -256,18 +256,6 @@ void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& para
     params.set<int>("NUMGP_PER_DIM", -1);
     params.set<std::string>("STRATEGY", "LagrangianMultipliers");
     params.set<std::string>("INTTYPE", "segments");
-  }
-  else if (meshtyingandcontact and DRT::INPUT::IntegralValue<int>(meshtying, "DISCR_SMOOTHING"))
-  {
-    // set options for mortar coupling
-    params.set<std::string>("SEARCH_ALGORITHM", "Binarytree");
-    params.set<double>("SEARCH_PARAM", 0.3);
-    params.set<std::string>("SEARCH_USE_AUX_POS", "no");
-    params.set<std::string>("PARALLEL_REDIST", "static");
-    params.set<std::string>("LM_SHAPEFCN", "dual");
-    params.set<std::string>("REDUNDANT_STORAGE", "Master");
-    params.set<std::string>("SYSTEM", "condensed");
-    params.set<bool>("NURBS", false);
   }
   // *********************************************************************
   // smooth interfaces

@@ -54,7 +54,7 @@ namespace CONTACT
     @param timeIntegrationMidPoint Generalized mid-point of time integration scheme
     */
     MeshtyingContactBridge(DRT::Discretization& dis, std::vector<DRT::Condition*>& mtcond,
-        std::vector<DRT::Condition*>& ccond, double timeIntegrationMidPoint, bool smoothing = false);
+        std::vector<DRT::Condition*>& ccond, double timeIntegrationMidPoint);
 
     /*!
     \brief Destructor
@@ -80,25 +80,13 @@ namespace CONTACT
     \brief Get contact manager
 
     */
-    Teuchos::RCP<MORTAR::ManagerBase> ContactManager()
-    {
-      if (sman_ != Teuchos::null)
-        return sman_;
-      else
-        return cman_;
-    }
+    Teuchos::RCP<MORTAR::ManagerBase> ContactManager() { return cman_; }
 
     /*!
     \brief Get meshtying manager
 
     */
     Teuchos::RCP<MORTAR::ManagerBase> MtManager() { return mtman_; }
-
-    /*!
-    \brief Get smoothing manager
-
-    */
-    Teuchos::RCP<MORTAR::ManagerBase> SManager() { return sman_; }
 
     /*!
     \brief Get strategy of mt/contact problem
@@ -110,25 +98,13 @@ namespace CONTACT
     \brief return bool indicating if contact is defined
 
     */
-    bool HaveContact()
-    {
-      if (sman_ != Teuchos::null)
-        return true;
-      else
-        return (cman_ != Teuchos::null);
-    }
+    bool HaveContact() { return (cman_ != Teuchos::null); }
 
     /*!
     \brief return bool indicating if meshtying is defined
 
     */
     bool HaveMeshtying() { return (mtman_ != Teuchos::null); }
-
-    /*!
-    \brief return bool indicating if smoothing is defined
-
-    */
-    bool HaveSmoothing() { return (sman_ != Teuchos::null); }
 
     /*!
     \brief Write results for visualization for meshtying/contact problems
@@ -205,7 +181,6 @@ namespace CONTACT
 
     //! Meshtying manager
     Teuchos::RCP<MORTAR::ManagerBase> mtman_;
-    Teuchos::RCP<MORTAR::ManagerBase> sman_;   //! smoothing manager
 
   };  // class MeshtyingContactBridge
 }  // namespace CONTACT
