@@ -53,6 +53,16 @@ class PARTICLEINTERACTION::UTILS::PowHelper_TestSuite : public CxxTest::TestSuit
     TS_ASSERT_DELTA(UTILS::pow<4>(3.5), 150.0625, 1.0e-14);
   }
 
+  void test_vec_clear()
+  {
+    double c[3] = {2.5, 7.5, -1.8};
+    UTILS::vec_clear(c);
+
+    TS_ASSERT_DELTA(c[0], 0.0, 1.0e-14);
+    TS_ASSERT_DELTA(c[1], 0.0, 1.0e-14);
+    TS_ASSERT_DELTA(c[2], 0.0, 1.0e-14);
+  }
+
   void test_vec_set()
   {
     const double a[3] = {1.0, -2.0, 4.25};
@@ -86,6 +96,16 @@ class PARTICLEINTERACTION::UTILS::PowHelper_TestSuite : public CxxTest::TestSuit
     TS_ASSERT_DELTA(c[2], -6.05, 1.0e-14);
   }
 
+  void test_vec_scale()
+  {
+    double c[3] = {2.5, 7.5, -1.8};
+    UTILS::vec_scale(c, 1.8);
+
+    TS_ASSERT_DELTA(c[0], 4.5, 1.0e-14);
+    TS_ASSERT_DELTA(c[1], 13.5, 1.0e-14);
+    TS_ASSERT_DELTA(c[2], -3.24, 1.0e-14);
+  }
+
   void test_vec_setscale()
   {
     const double a[3] = {1.0, -2.0, 4.25};
@@ -106,6 +126,18 @@ class PARTICLEINTERACTION::UTILS::PowHelper_TestSuite : public CxxTest::TestSuit
     TS_ASSERT_DELTA(c[0], 4.3, 1.0e-14);
     TS_ASSERT_DELTA(c[1], 3.9, 1.0e-14);
     TS_ASSERT_DELTA(c[2], 5.85, 1.0e-14);
+  }
+
+  void test_vec_setcross()
+  {
+    const double a[3] = {1.0, -2.0, 4.25};
+    const double b[3] = {-0.5, -3.5, 0.2};
+    double c[3] = {2.5, 7.5, -1.8};
+    UTILS::vec_setcross(c, a, b);
+
+    TS_ASSERT_DELTA(c[0], 14.4750, 1.0e-14);
+    TS_ASSERT_DELTA(c[1], -2.325, 1.0e-14);
+    TS_ASSERT_DELTA(c[2], -4.5, 1.0e-14);
   }
 
   void test_vec_addcross()
