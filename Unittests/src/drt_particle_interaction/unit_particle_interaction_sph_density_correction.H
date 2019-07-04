@@ -1,15 +1,10 @@
 /*---------------------------------------------------------------------------*/
 /*!
-
 \brief unittests for density correction handler in smoothed particle hydrodynamics (SPH)
 
 \level 3
 
 \maintainer  Sebastian Fuchs
-             fuchs@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15262
-
 */
 /*---------------------------------------------------------------------------*/
 
