@@ -432,23 +432,6 @@ void DRT::UTILS::MatchingOctree::FindMatch(const DRT::Discretization& slavedis,
   if (slavedis.Comm().NumProc() != numprocs)
     dserror("compared discretizations must live on same procs");
 
-  //------
-  // For XFEM based FSI problems, explicit node-matching procedure is not necessary
-  // FSI (boundary) discretization is created from soliddis by considering the nodes
-  // that belongs to FSICoupling conditions. All the nodes in the FSI interface
-  // is contained in soliddis and they have same node numbers
-  //------
-  if (DRT::Problem::Instance()->ProblemType() == prb_fsi_xfem)
-  {
-    for (unsigned node = 0; node < slavenodeids.size(); node++)
-    {
-      const int slaid = slavenodeids[node];
-      coupling[slaid] = std::make_pair(slaid, 0.0);
-    }
-
-    return;
-  }
-
   // 1) each proc generates a list of his slavenodes
   //
   // 2) the list is communicated in a round robin pattern to all the

@@ -231,6 +231,8 @@ namespace XFEM
       // else
       DRT::FaceElement* fele = dynamic_cast<DRT::FaceElement*>(cutter_dis_->gElement(sid));
       if (!fele) dserror("Cast to FaceElement failed!");
+      fele->SetParentMasterElement(
+          coupl_dis_->gElement(fele->ParentElementId()), fele->FaceParentNumber());
       return fele->ParentElement();
     }
 

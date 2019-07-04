@@ -11,81 +11,79 @@
  *------------------------------------------------------------------------------------------------*/
 
 #include "cut_meshhandle.H"
+#include "cut_options.H"
 
 
 /*-----------------------------------------------------------------------------------------*
  * create a new side (sidehandle) of the cutter discretization and return the sidehandle
  * non-tri3 sides will be subdivided into tri3 subsides
  *-----------------------------------------------------------------------------------------*/
-GEO::CUT::SideHandle* GEO::CUT::MeshHandle::CreateSide(
-    int sid, const std::vector<int>& nids, DRT::Element::DiscretizationType distype)
+GEO::CUT::SideHandle* GEO::CUT::MeshHandle::CreateSide(int sid, const std::vector<int>& nids,
+    DRT::Element::DiscretizationType distype, GEO::CUT::Options& options)
 {
 #ifdef DRT_CUT_DUMPCREATION
   std::cout << "CreateSide( " << sid << ", ";
   std::copy(nids.begin(), nids.end(), std::ostream_iterator<int>(std::cout, ", "));
   std::cout << distype << " );\n";
 #endif
-  switch (distype)
+  if (distype == DRT::Element::tri3 || (distype == DRT::Element::quad4 && !options.SplitCutSides()))
   {
-      //  case DRT::Element::quad4:
-    case DRT::Element::tri3:
+    std::map<int, LinearSideHandle>::iterator i = linearsides_.find(sid);
+    if (i != linearsides_.end())
     {
-      std::map<int, LinearSideHandle>::iterator i = linearsides_.find(sid);
-      if (i != linearsides_.end())
-      {
-        return &i->second;
-      }
-
-      Side* s = mesh_.CreateSide(sid, nids, distype);
-      LinearSideHandle& lsh = linearsides_[sid];
-      lsh = LinearSideHandle(s);
-      return &lsh;
+      return &i->second;
     }
-    case DRT::Element::quad4:  // each non-tri3 side will be subdivided into tri3-subsides carrying
-                               // the same side id as the parent side
-    case DRT::Element::quad8:
-    case DRT::Element::quad9:
-    case DRT::Element::tri6:
+
+    Side* s = mesh_.CreateSide(sid, nids, distype);
+    LinearSideHandle& lsh = linearsides_[sid];
+    lsh = LinearSideHandle(s);
+    return &lsh;
+  }
+  else if (distype == DRT::Element::quad4 || distype == DRT::Element::quad8 ||
+           distype == DRT::Element::quad9 || distype == DRT::Element::tri6)
+  {
+    // each non-tri3 side will be subdivided into tri3-subsides carrying the same side id as the
+    // parent side
+    std::map<int, Teuchos::RCP<QuadraticSideHandle>>::iterator i = quadraticsides_.find(sid);
+    if (i != quadraticsides_.end())
     {
-      std::map<int, Teuchos::RCP<QuadraticSideHandle>>::iterator i = quadraticsides_.find(sid);
-      if (i != quadraticsides_.end())
-      {
-        return &*i->second;
-      }
-
-      QuadraticSideHandle* qsh = NULL;
-      switch (distype)
-      {
-        case DRT::Element::quad4:
-        {
-          qsh = new Quad4SideHandle(mesh_, sid, nids);
-          break;
-        }
-        case DRT::Element::quad8:
-        {
-          qsh = new Quad8SideHandle(mesh_, sid, nids);
-          break;
-        }
-        case DRT::Element::quad9:
-        {
-          qsh = new Quad9SideHandle(mesh_, sid, nids);
-          break;
-        }
-        case DRT::Element::tri6:
-        {
-          qsh = new Tri6SideHandle(mesh_, sid, nids);
-          break;
-        }
-        default:
-          dserror("unsupported distype ( distype = %s )", DRT::DistypeToString(distype).c_str());
-          exit(EXIT_FAILURE);
-      }
-      quadraticsides_[sid] = Teuchos::rcp(qsh);
-      return qsh;
+      return &*i->second;
     }
-    default:
-      dserror("unsupported distype ( distype = %s )", DRT::DistypeToString(distype).c_str());
-      exit(EXIT_FAILURE);
+
+    QuadraticSideHandle* qsh = NULL;
+    switch (distype)
+    {
+      case DRT::Element::quad4:
+      {
+        qsh = new Quad4SideHandle(mesh_, sid, nids);
+        break;
+      }
+      case DRT::Element::quad8:
+      {
+        qsh = new Quad8SideHandle(mesh_, sid, nids);
+        break;
+      }
+      case DRT::Element::quad9:
+      {
+        qsh = new Quad9SideHandle(mesh_, sid, nids);
+        break;
+      }
+      case DRT::Element::tri6:
+      {
+        qsh = new Tri6SideHandle(mesh_, sid, nids);
+        break;
+      }
+      default:
+        dserror("unsupported distype ( distype = %s )", DRT::DistypeToString(distype).c_str());
+        exit(EXIT_FAILURE);
+    }
+    quadraticsides_[sid] = Teuchos::rcp(qsh);
+    return qsh;
+  }
+  else
+  {
+    dserror("unsupported distype ( distype = %s )", DRT::DistypeToString(distype).c_str());
+    exit(EXIT_FAILURE);
   }
 }
 

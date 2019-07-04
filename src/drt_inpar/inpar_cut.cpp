@@ -65,4 +65,8 @@ void INPAR::CUT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           INPAR::CUT::DirDiv_refplane_facet, INPAR::CUT::DirDiv_refplane_diagonal,
           INPAR::CUT::DirDiv_refplane_side, INPAR::CUT::DirDiv_refplane_none),
       &cut_general);
+
+  // Specifiy is Cutsides are triangulated
+  BoolParameter(
+      "SPLIT_CUTSIDES", "Yes", "Split Quad4 CutSides into Tri3-Subtriangles?", &cut_general);
 }

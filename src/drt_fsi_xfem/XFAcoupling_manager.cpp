@@ -17,9 +17,6 @@
 #include "../drt_adapter/ad_str_structure.H"
 #include "../linalg/linalg_mapextractor.H"
 
-//#include "../drt_lib/drt_globalproblem.H"
-//#include "../drt_io/io.H"
-
 /*-----------------------------------------------------------------------------------------*
 | Constructor                                                                 ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
@@ -36,7 +33,23 @@ XFEM::XFACoupling_Manager::XFACoupling_Manager(Teuchos::RCP<FLD::XFluid> xfluid,
     dserror("XFACoupling_Manager required (two + num coupled block) ( %d != %d)",
         (2 + (structure_ != Teuchos::null)), idx_.size());
 
-  // TODO: Ale_Struct_coupling_
+  Ale_Struct_coupling_ == Teuchos::null;
+  if (structure_ != Teuchos::null)
+  {
+    if (ale_->Discretization()->GetCondition("StructAleCoupling") != NULL &&
+        structure_->Discretization()->GetCondition("StructAleCoupling") != NULL)
+    {
+      if (ale_->Discretization()->GetCondition("StructAleCoupling")->Nodes()->size() !=
+          structure_->Discretization()->GetCondition("StructAleCoupling")->Nodes()->size())
+        dserror("XFACoupling_Manager: For StructAleCoupling NumNodes not equal! (%d != %d)",
+            ale_->Discretization()->GetCondition("StructAleCoupling")->Nodes()->size(),
+            structure_->Discretization()->GetCondition("StructAleCoupling")->Nodes()->size());
+
+      std::cout << "|== XFACoupling_Manager: Setup of Ale Structure Coupling! ==|" << std::endl;
+      Ale_Struct_coupling_ = Teuchos::rcp(new XFEM::Coupling_Comm_Manager(
+          ale_->Discretization(), structure_->Discretization(), "StructAleCoupling"));
+    }
+  }
 }
 
 void XFEM::XFACoupling_Manager::PredictCouplingStates()
@@ -69,15 +82,16 @@ void XFEM::XFACoupling_Manager::PredictCouplingStates()
     }
   */
 }
-
 /*-----------------------------------------------------------------------------------------*
 | Set required displacement & velocity states in the coupling object          ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
 void XFEM::XFACoupling_Manager::SetCouplingStates()
 {
   // 1 Sets structural conditioned Dispnp onto Ale
-  // --> this will be done in one of the following commits!
-  // Ale_Struct_coupling_->InsertVector(1,StructureField()->Dispnp(),0,AleField()->WriteAccessDispnp(),XFEM::Coupling_Comm_Manager::full_to_full);
+  if (Ale_Struct_coupling_ != Teuchos::null)
+    Ale_Struct_coupling_->InsertVector(1, structure_->Dispnp(), 0, ale_->WriteAccessDispnp(),
+        XFEM::Coupling_Comm_Manager::full_to_full);
+
   // 2 Get AleDisplacements
   Teuchos::RCP<Epetra_Vector> aledisplacements =
       Teuchos::rcp(new Epetra_Vector(*GetMapExtractor(0)->Map(1), true));
@@ -90,16 +104,6 @@ void XFEM::XFACoupling_Manager::SetCouplingStates()
 
   // update also ALE vectors w.r.t. current state
   xfluid_->UpdateALEStateVectors();
-
-  //  double max = 0.0;
-  //  ale_->WriteAccessDispnp()->MaxValue(&max);
-  //  std::cout << "ale_->WriteAccessDispnp() now " << max << std::endl;
-  //
-  //
-  //  xfluid_->WriteAccessDispnp()->MaxValue(&max);
-  //  std::cout << "xfluid_->WriteAccessDispnp() now " << max << std::endl;
-
-
 
   return;
 }
@@ -119,7 +123,13 @@ void XFEM::XFACoupling_Manager::AddCouplingMatrix(
 
   systemmatrix.Assign(idx_[1], idx_[1], LINALG::View, aii);
 
-  // TODO: Ale_Struct_coupling_
+  if (Ale_Struct_coupling_ != Teuchos::null)
+  {
+    const int& aidx_as = ALE::UTILS::MapExtractor::cond_lung_asi;
+    LINALG::SparseMatrix& ai_gau = a->Matrix(aidx_other, aidx_as);
+    Ale_Struct_coupling_->InsertMatrix(0, 0, ai_gau, 1, systemmatrix.Matrix(idx_[1], idx_[2]),
+        XFEM::Coupling_Comm_Manager::col, 1.0, true, false);
+  }
 
   //  //////////////////////////////////////////////
   //  //////                                  //////

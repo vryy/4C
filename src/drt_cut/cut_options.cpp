@@ -39,6 +39,7 @@ void GEO::CUT::Options::Init_by_Paramlist(const Teuchos::ParameterList& cutparam
           cutparams, "DIRECT_DIVERGENCE_REFPLANE");
   GEO::CUT::PositionFactory::SpecifyGeneralDistFloattype(general_position_dist_floattype_);
   GEO::CUT::PositionFactory::SpecifyGeneralPosFloattype(general_position_pos_floattype_);
+  split_cutsides_ = DRT::INPUT::IntegralValue<bool>(cutparams, "SPLIT_CUTSIDES");
 }
 
 /// Initializes Cut Parameters for Cuttests (use full cln) -- slowest option
@@ -51,4 +52,5 @@ void GEO::CUT::Options::Init_for_Cuttests()
   direct_divergence_refplane_ = INPAR::CUT::DirDiv_refplane_all;
   GEO::CUT::PositionFactory::SpecifyGeneralDistFloattype(general_position_dist_floattype_);
   GEO::CUT::PositionFactory::SpecifyGeneralPosFloattype(general_position_pos_floattype_);
+  split_cutsides_ = true;
 }

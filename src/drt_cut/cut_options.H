@@ -43,7 +43,8 @@ namespace GEO
             genhex8_(genhex8),
             genwedge6_(genwedge6),
             genpyramid5_(genpyramid5),
-            gen_bcell_position_(INPAR::CUT::bcells_on_cut_side)
+            gen_bcell_position_(INPAR::CUT::bcells_on_cut_side),
+            split_cutsides_(true)
       {
       }
 
@@ -120,6 +121,9 @@ namespace GEO
        *  (TRUE: PYRAMID5, FALSE: TRI4's are used) */
       bool GenPyramid5() const { return genpyramid5_; }
 
+      /** \brief Indicator if quad4 cutsides are split into tri3 cutsides */
+      bool SplitCutSides() const { return split_cutsides_; }
+
      private:
       /** \brief Float_type for geometric intersection computation */
       INPAR::CUT::CUT_Floattype geomintersect_floattype_;
@@ -166,9 +170,11 @@ namespace GEO
        *  PYRAMID5 is splitted into 2 TRI4 elements. */
       bool genpyramid5_;
 
-
-
+      /** \brief Where to create boundary cells */
       enum INPAR::CUT::BoundaryCellPosition gen_bcell_position_;
+
+      /** \brief Indicator if quad4 cutsides are split into tri3 cutsides */
+      bool split_cutsides_;
     };
 
   }  // namespace CUT

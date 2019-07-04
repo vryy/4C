@@ -86,6 +86,9 @@ namespace XFEM
 
     //! Structural Object (just set if Ale is coupled to a structure)
     Teuchos::RCP<ADAPTER::Structure> structure_;
+
+    //! ALE-Structure coupling object on the matching interface
+    Teuchos::RCP<XFEM::Coupling_Comm_Manager> Ale_Struct_coupling_;
   };
 }  // namespace XFEM
 #endif
