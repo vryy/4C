@@ -35,6 +35,12 @@ void INPAR::FBI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   Teuchos::ParameterList& beam_to_fluid_meshtying =
       fbi.sublist("BEAM TO FLUID MESHTYING", false, "");
 
+  setStringToIntegralParameter<int>("COUPLING", "two-way", "Type of coupling for FBI",
+      tuple<std::string>("two-way", "fluid", "solid"),
+      tuple<int>(
+          BeamToFluidCoupling::twoway, BeamToFluidCoupling::fluid, BeamToFluidCoupling::solid),
+      &fbi);
+
   setStringToIntegralParameter<BeamToFluidDiscretization>("MESHTYING_DISCRETIZATION", "none",
       "Type of employed contact discretization",
       tuple<std::string>("none", "gauss_point_to_segment"),

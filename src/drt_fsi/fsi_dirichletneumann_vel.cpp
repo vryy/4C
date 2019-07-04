@@ -17,6 +17,7 @@
 #include "../drt_lib/drt_dserror.H"
 
 #include "../drt_inpar/inpar_fsi.H"
+#include "../drt_inpar/inpar_fbi.H"
 
 #include "../drt_fbi/constraintenforcer_fbi.H"
 #include "../drt_fbi/constraintenforcer_fbi_factory.H"
@@ -90,12 +91,17 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::StructOp(
   FSI::Partitioned::StructOp(iforce, fillFlag);
 
   // normal structure solve
-  if (not use_old_structure_)
-    StructureField()->ApplyInterfaceForces(iforce);
-  else
-    dserror(
-        "Fluid beam interaction is not tested with the old structure time. You should not be "
-        "here! Change the IntStrategy in your Input file to Standard.\n");
+
+  const Teuchos::ParameterList& fbi = DRT::Problem::Instance()->FBIParams();
+  if (!(DRT::INPUT::IntegralValue<int>(fbi, "COUPLING") == INPAR::FBI::BeamToFluidCoupling::fluid))
+  {
+    if (not use_old_structure_)
+      StructureField()->ApplyInterfaceForces(iforce);
+    else
+      dserror(
+          "Fluid beam interaction is not tested with the old structure time. You should not be "
+          "here! Change the IntStrategy in your Input file to Standard.\n");
+  }
 
   StructureField()->Solve();
   StructureField()->writeGmshStrucOutputStep();

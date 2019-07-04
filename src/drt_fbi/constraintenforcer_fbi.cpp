@@ -11,6 +11,7 @@
 
 #include "constraintenforcer_fbi.H"
 #include "ad_fbi_constraintbridge.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_geometry_pair/geometry_pair.H"
 #include "../drt_lib/drt_discret.H"
@@ -23,6 +24,7 @@
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_beaminteraction/beaminteraction_calc_utils.H"  // todo put this into bridge to keep everything beam specific in there
+#include "../drt_inpar/inpar_fbi.H"
 
 ADAPTER::FBIConstraintenforcer::FBIConstraintenforcer(
     Teuchos::RCP<ADAPTER::FBIConstraintBridge> bridge)
@@ -116,9 +118,14 @@ void ADAPTER::FBIConstraintenforcer::Evaluate()
 
 Teuchos::RCP<Epetra_Vector> ADAPTER::FBIConstraintenforcer::MasterToSlave()
 {
-  //  Teuchos::rcp_dynamic_cast<ADAPTER::FluidBeamImmersed>(fluid_, true)
-  //      ->SetCouplingContributions(AssembleMasterStiffness());
-  //  fluid_->ApplyInterfaceValues(AssembleMasterForce());
+  const Teuchos::ParameterList& fbi = DRT::Problem::Instance()->FBIParams();
+  if (DRT::INPUT::IntegralValue<int>(fbi, "COUPLING") != INPAR::FBI::BeamToFluidCoupling::solid)
+  {
+    Teuchos::rcp_dynamic_cast<ADAPTER::FluidBeamImmersed>(fluid_, true)
+        ->SetCouplingContributions(AssembleMasterStiffness());
+    fluid_->ApplyInterfaceValues(AssembleMasterForce());
+  }
+
   return Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(structure_, true)
       ->ExtractInterfaceVelnp();
 };

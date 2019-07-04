@@ -34,6 +34,13 @@ namespace INPAR
 {
   namespace FBI
   {
+    /// Coupling of the Fluid and the beam problems
+    enum BeamToFluidCoupling
+    {
+      fluid,
+      solid,
+      twoway
+    };
     /// Constraint enforcement for beam to fluid meshtying.
     enum class BeamToFluidConstraintEnforcement
     {
