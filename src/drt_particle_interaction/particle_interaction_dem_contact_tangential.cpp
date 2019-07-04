@@ -94,7 +94,7 @@ void PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::Init()
   // call base class init
   DEMContactTangentialBase::Init();
 
-  // safety checks  for particle-particle contact parameters
+  // safety checks for particle-particle contact parameters
   if (nue_ <= -1.0 or nue_ > 0.5)
     dserror("invalid input parameter POISSON_RATIO (expected in range ]-1.0; 0.5])!");
 

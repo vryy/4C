@@ -184,6 +184,14 @@ namespace INPAR
       TangentialLinSpringDamp
     };
 
+    //! type of rolling contact law
+    enum RollingContact
+    {
+      NoRollingContact,
+      RollingViscous,
+      RollingCoulomb
+    };
+
     //! type of (random) particle radius distribution
     enum RadiusDistribution
     {

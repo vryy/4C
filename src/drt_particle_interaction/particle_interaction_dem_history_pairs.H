@@ -47,6 +47,10 @@ namespace PARTICLEINTERACTION
       TouchedDEMHistoryPairTangential;
   typedef std::unordered_map<int, std::unordered_map<int, TouchedDEMHistoryPairTangential>>
       DEMHistoryPairTangentialData;
+
+  typedef std::pair<bool, PARTICLEINTERACTION::DEMHistoryPairRolling> TouchedDEMHistoryPairRolling;
+  typedef std::unordered_map<int, std::unordered_map<int, TouchedDEMHistoryPairRolling>>
+      DEMHistoryPairRollingData;
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*
@@ -86,6 +90,18 @@ namespace PARTICLEINTERACTION
     inline DEMHistoryPairTangentialData& GetRefToParticleWallTangentialHistoryData()
     {
       return particlewalltangentialhistorydata_;
+    };
+
+    //! get reference to particle rolling history pair data
+    inline DEMHistoryPairRollingData& GetRefToParticleRollingHistoryData()
+    {
+      return particlerollinghistorydata_;
+    };
+
+    //! get reference to particle-wall rolling history pair data
+    inline DEMHistoryPairRollingData& GetRefToParticleWallRollingHistoryData()
+    {
+      return particlewallrollinghistorydata_;
     };
 
     //! distribute history pairs
@@ -135,6 +151,12 @@ namespace PARTICLEINTERACTION
 
     //! particle-wall tangential history pair data
     DEMHistoryPairTangentialData particlewalltangentialhistorydata_;
+
+    //! particle rolling history pair data
+    DEMHistoryPairRollingData particlerollinghistorydata_;
+
+    //! particle-wall rolling history pair data
+    DEMHistoryPairRollingData particlewallrollinghistorydata_;
 
     //! interface to particle engine
     std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface_;

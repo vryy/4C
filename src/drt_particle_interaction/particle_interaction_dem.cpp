@@ -429,7 +429,8 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::ClearForceAndMomentStates() co
     container->ClearState(PARTICLEENGINE::Force);
 
     // clear moment of all particles
-    if (contact_->HaveTangentialContact()) container->ClearState({PARTICLEENGINE::Moment});
+    if (contact_->HaveTangentialContact() or contact_->HaveRollingContact())
+      container->ClearState({PARTICLEENGINE::Moment});
   }
 }
 
@@ -465,7 +466,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::ComputeAcceleration() const
     force = container->GetPtrToParticleState(PARTICLEENGINE::Force, 0);
     acc = container->GetPtrToParticleState(PARTICLEENGINE::Acceleration, 0);
 
-    if (contact_->HaveTangentialContact())
+    if (contact_->HaveTangentialContact() or contact_->HaveRollingContact())
     {
       radius = container->GetPtrToParticleState(PARTICLEENGINE::Radius, 0);
       moment = container->GetPtrToParticleState(PARTICLEENGINE::Moment, 0);
@@ -477,7 +478,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::ComputeAcceleration() const
       UTILS::vec_addscale(&acc[statedim * i], (1.0 / mass[i]), &force[statedim * i]);
 
     // compute angular acceleration
-    if (contact_->HaveTangentialContact())
+    if (contact_->HaveTangentialContact() or contact_->HaveRollingContact())
       for (int i = 0; i < particlestored; ++i)
         UTILS::vec_addscale(&angacc[statedim * i],
             (5.0 / (2.0 * mass[i] * UTILS::pow<2>(radius[i]))), &moment[statedim * i]);

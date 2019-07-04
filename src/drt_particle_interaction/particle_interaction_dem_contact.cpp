@@ -20,6 +20,7 @@
 #include "particle_interaction_dem_history_pairs.H"
 #include "particle_interaction_dem_contact_normal.H"
 #include "particle_interaction_dem_contact_tangential.H"
+#include "particle_interaction_dem_contact_rolling.H"
 
 #include "../drt_particle_algorithm/particle_wall_interface.H"
 #include "../drt_particle_algorithm/particle_wall_datastate.H"
@@ -63,6 +64,9 @@ void PARTICLEINTERACTION::DEMContact::Init()
 
   // init tangential contact handler
   InitTangentialContactHandler();
+
+  // init rolling contact handler
+  InitRollingContactHandler();
 }
 
 /*---------------------------------------------------------------------------*
@@ -102,6 +106,9 @@ void PARTICLEINTERACTION::DEMContact::Setup(
   // setup tangential contact handler
   if (contacttangential_) contacttangential_->Setup(contactnormal_->GetNormalContactStiffness());
 
+  // setup rolling contact handler
+  if (contactrolling_) contactrolling_->Setup(contactnormal_->GetNormalContactStiffness());
+
   // safety check
   if (contacttangential_)
   {
@@ -125,6 +132,9 @@ void PARTICLEINTERACTION::DEMContact::WriteRestart(const int step, const double 
 
   // write restart of tangential contact handler
   if (contacttangential_) contacttangential_->WriteRestart(step, time);
+
+  // write restart of rolling contact handler
+  if (contactrolling_) contactrolling_->WriteRestart(step, time);
 }
 
 /*---------------------------------------------------------------------------*
@@ -138,6 +148,9 @@ void PARTICLEINTERACTION::DEMContact::ReadRestart(
 
   // read restart of tangential contact handler
   if (contacttangential_) contacttangential_->ReadRestart(reader);
+
+  // read restart of rolling contact handler
+  if (contactrolling_) contactrolling_->ReadRestart(reader);
 }
 
 /*---------------------------------------------------------------------------*
@@ -149,6 +162,9 @@ void PARTICLEINTERACTION::DEMContact::SetCurrentStepSize(const double currentste
 
   // set current step size
   if (contacttangential_) contacttangential_->SetCurrentStepSize(currentstepsize);
+
+  // set current step size
+  if (contactrolling_) contactrolling_->SetCurrentStepSize(currentstepsize);
 }
 
 /*---------------------------------------------------------------------------*
@@ -164,8 +180,8 @@ void PARTICLEINTERACTION::DEMContact::InsertParticleStatesOfParticleTypes(
     // set of particle states for current particle type
     std::set<PARTICLEENGINE::StateEnum>& particlestates = typeIt.second;
 
-    // states for tangential contact evaluation scheme
-    if (contacttangential_)
+    // states for tangential and rolling contact evaluation scheme
+    if (contacttangential_ or contactrolling_)
       particlestates.insert({PARTICLEENGINE::Moment, PARTICLEENGINE::AngularVelocity,
           PARTICLEENGINE::AngularAcceleration});
   }
@@ -315,6 +331,46 @@ void PARTICLEINTERACTION::DEMContact::InitTangentialContactHandler()
 }
 
 /*---------------------------------------------------------------------------*
+ | init rolling contact handler                               sfuchs 07/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::DEMContact::InitRollingContactHandler()
+{
+  // get type of rolling contact law
+  INPAR::PARTICLE::RollingContact rollingcontacttype =
+      DRT::INPUT::IntegralValue<INPAR::PARTICLE::RollingContact>(params_dem_, "ROLLINGCONTACTLAW");
+
+  // create rolling contact handler
+  switch (rollingcontacttype)
+  {
+    case INPAR::PARTICLE::NoRollingContact:
+    {
+      contactrolling_ = std::unique_ptr<PARTICLEINTERACTION::DEMContactRollingBase>(nullptr);
+      break;
+    }
+    case INPAR::PARTICLE::RollingViscous:
+    {
+      contactrolling_ = std::unique_ptr<PARTICLEINTERACTION::DEMContactRollingViscous>(
+          new PARTICLEINTERACTION::DEMContactRollingViscous(params_dem_));
+      break;
+    }
+    case INPAR::PARTICLE::RollingCoulomb:
+    {
+      contactrolling_ = std::unique_ptr<PARTICLEINTERACTION::DEMContactRollingCoulomb>(
+          new PARTICLEINTERACTION::DEMContactRollingCoulomb(params_dem_));
+      break;
+    }
+    default:
+    {
+      dserror("unknown rolling contact law type!");
+      break;
+    }
+  }
+
+  // init rolling contact handler
+  if (contactrolling_) contactrolling_->Init();
+}
+
+/*---------------------------------------------------------------------------*
  | get maximum density of all materials                       sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::DEMContact::GetMaxDensityOfAllMaterials() const
@@ -346,6 +402,10 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleContact()
   // get reference to particle tangential history pair data
   DEMHistoryPairTangentialData& tangentialhistorydata =
       historypairs_->GetRefToParticleTangentialHistoryData();
+
+  // get reference to particle rolling history pair data
+  DEMHistoryPairRollingData& rollinghistorydata =
+      historypairs_->GetRefToParticleRollingHistoryData();
 
   // iterate over particle pairs
   for (const auto& particlepair : neighborpairs_->GetRefToParticlePairData())
@@ -388,7 +448,7 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleContact()
     rad_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_j);
     force_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Force, particle_j);
 
-    if (contacttangential_)
+    if (contacttangential_ or contactrolling_)
     {
       angvel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::AngularVelocity, particle_i);
       moment_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Moment, particle_i);
@@ -479,6 +539,57 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleContact()
       if (status_j == PARTICLEENGINE::Owned)
         UTILS::vec_addcross(moment_j, tangentialcontactforce, r_cj);
     }
+
+    // calculation of rolling contact moment
+    if (contactrolling_)
+    {
+      // get reference to touched rolling history
+      TouchedDEMHistoryPairRolling& touchedrollinghistory_ij =
+          rollinghistorydata[globalid_i[0]][globalid_j[0]];
+
+      // mark rolling history as touched
+      touchedrollinghistory_ij.first = true;
+
+      // get reference to rolling history
+      DEMHistoryPairRolling& rollinghistory_ij = touchedrollinghistory_ij.second;
+
+      // calculate effective radius
+      double r_eff;
+      contactrolling_->EffectiveRadiusParticle(rad_i, rad_j, particlepair.gap_, r_eff);
+
+      // calculate relative rolling velocity
+      double vel_rel_rolling[3];
+      contactrolling_->RelativeRollingVelocity(
+          r_eff, particlepair.e_ji_, angvel_i, angvel_j, vel_rel_rolling);
+
+      // calculate rolling contact moment
+      double rollingcontactmoment[3];
+      contactrolling_->RollingContactMoment(rollinghistory_ij.gap_r_, rollinghistory_ij.stick_,
+          particlepair.e_ji_, vel_rel_rolling, particlepair.m_eff_, r_eff, normalcontactforce,
+          rollingcontactmoment);
+
+      // copy history from interaction pair ij to ji
+      if (status_j == PARTICLEENGINE::Owned)
+      {
+        // get reference to touched rolling history
+        TouchedDEMHistoryPairRolling& touchedrollinghistory_ji =
+            rollinghistorydata[globalid_j[0]][globalid_i[0]];
+
+        // mark rolling history as touched
+        touchedrollinghistory_ji.first = true;
+
+        // get reference to rolling history
+        DEMHistoryPairRolling& rollinghistory_ji = touchedrollinghistory_ji.second;
+
+        // set rolling gap and rolling stick flag
+        UTILS::vec_setscale(rollinghistory_ji.gap_r_, -1.0, rollinghistory_ij.gap_r_);
+        rollinghistory_ji.stick_ = rollinghistory_ij.stick_;
+      }
+
+      // add rolling contact moment contribution
+      UTILS::vec_add(moment_i, rollingcontactmoment);
+      if (status_j == PARTICLEENGINE::Owned) UTILS::vec_sub(moment_j, rollingcontactmoment);
+    }
   }
 }
 
@@ -496,6 +607,10 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
   // get reference to particle-wall tangential history pair data
   DEMHistoryPairTangentialData& tangentialhistorydata =
       historypairs_->GetRefToParticleWallTangentialHistoryData();
+
+  // get reference to particle-wall rolling history pair data
+  DEMHistoryPairRollingData& rollinghistorydata =
+      historypairs_->GetRefToParticleWallRollingHistoryData();
 
   // iterate over particle-wall pairs
   for (const auto& particlewallpair : neighborpairs_->GetRefToParticleWallPairData())
@@ -566,7 +681,7 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
 
     // compute vector from particle i to wall contact point j
     double r_ji[3];
-    if (contacttangential_)
+    if (contacttangential_ or contactrolling_)
       UTILS::vec_setscale(r_ji, (rad_i[0] + particlewallpair.gap_), particlewallpair.e_ji_);
 
     // relative velocity in wall contact point j
@@ -619,6 +734,42 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
       // copy history to relevant wall elements in penetration volume
       for (int histele : particlewallpair.histeles_)
         tangentialhistorydata[globalid_i[0]][histele] = touchedtangentialhistory_ij;
+    }
+
+    // calculation of rolling contact moment
+    double rollingcontactmoment[3] = {0.0};
+    if (contactrolling_)
+    {
+      // get reference to touched rolling history
+      TouchedDEMHistoryPairRolling& touchedrollinghistory_ij =
+          rollinghistorydata[globalid_i[0]][ele->Id()];
+
+      // mark rolling history as touched
+      touchedrollinghistory_ij.first = true;
+
+      // get reference to rolling history
+      DEMHistoryPairRolling& rollinghistory_ij = touchedrollinghistory_ij.second;
+
+      // calculate effective radius
+      double r_eff;
+      contactrolling_->EffectiveRadiusParticle(rad_i, nullptr, particlewallpair.gap_, r_eff);
+
+      // calculate relative rolling velocity
+      double vel_rel_rolling[3];
+      contactrolling_->RelativeRollingVelocity(
+          r_eff, particlewallpair.e_ji_, angvel_i, nullptr, vel_rel_rolling);
+
+      // calculate rolling contact moment
+      contactrolling_->RollingContactMoment(rollinghistory_ij.gap_r_, rollinghistory_ij.stick_,
+          particlewallpair.e_ji_, vel_rel_rolling, mass_i[0], r_eff, normalcontactforce,
+          rollingcontactmoment);
+
+      // add rolling contact moment contribution
+      UTILS::vec_add(moment_i, rollingcontactmoment);
+
+      // copy history to relevant wall elements in penetration volume
+      for (int histele : particlewallpair.histeles_)
+        rollinghistorydata[globalid_i[0]][histele] = touchedrollinghistory_ij;
     }
 
     // assemble contact force acting on wall element
