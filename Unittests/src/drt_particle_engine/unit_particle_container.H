@@ -137,6 +137,13 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_EQUALS(container_->ContainerSize(), 3);
   }
 
+  void test_CheckAndDecreaseContainerSize()
+  {
+    container_->CheckAndDecreaseContainerSize();
+    TS_ASSERT_EQUALS(container_->ParticlesStored(), 3);
+    TS_ASSERT_EQUALS(container_->ContainerSize(), 3);
+  }
+
   void test_ClearContainer()
   {
     container_->ClearContainer();

@@ -248,9 +248,6 @@ void PARTICLEENGINE::ParticleContainer::RemoveParticle(int index)
       (states_[stateEnum])[index * statedim_[stateEnum] + dim] =
           (states_[stateEnum])[particlestored_ * statedim_[stateEnum] + dim];
   }
-
-  // decrease size of container
-  if (particlestored_ < 0.45 * containersize_) DecreaseContainerSize();
 }
 
 /*---------------------------------------------------------------------------*

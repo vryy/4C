@@ -149,6 +149,13 @@ namespace PARTICLEENGINE
         ((containers_[typeEnum])[PARTICLEENGINE::Owned])->ClearState(stateEnum);
     };
 
+    //! check and decrease the size of all containers of specific status
+    inline void CheckAndDecreaseSizeAllContainersOfSpecificStatus(StatusEnum statusEnum) const
+    {
+      for (auto& typeEnum : storedtypes_)
+        ((containers_[typeEnum])[statusEnum])->CheckAndDecreaseContainerSize();
+    }
+
     //! clear all containers of specific status
     inline void ClearAllContainersOfSpecificStatus(StatusEnum statusEnum) const
     {
