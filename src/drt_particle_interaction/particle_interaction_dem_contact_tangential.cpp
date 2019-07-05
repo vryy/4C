@@ -94,7 +94,7 @@ void PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::Init()
   // call base class init
   DEMContactTangentialBase::Init();
 
-  // safety checks  for particle-particle contact parameters
+  // safety checks for particle-particle contact parameters
   if (nue_ <= -1.0 or nue_ > 0.5)
     dserror("invalid input parameter POISSON_RATIO (expected in range ]-1.0; 0.5])!");
 
@@ -116,7 +116,7 @@ void PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::Setup(const doub
   // tangential contact stiffness
   k_tangential_ = kappa * k_normal;
 
-  // determine normal contact damping factor
+  // determine tangential contact damping factor
   if (e_ > 0.0)
   {
     const double lne = std::log(e_);

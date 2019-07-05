@@ -285,6 +285,14 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       tuple<int>(INPAR::PARTICLE::NoTangentialContact, INPAR::PARTICLE::TangentialLinSpringDamp),
       &particledyndem);
 
+  // type of rolling contact law
+  setStringToIntegralParameter<int>("ROLLINGCONTACTLAW", "NoRollingContact",
+      "rolling contact law for particles",
+      tuple<std::string>("NoRollingContact", "RollingViscous", "RollingCoulomb"),
+      tuple<int>(INPAR::PARTICLE::NoRollingContact, INPAR::PARTICLE::RollingViscous,
+          INPAR::PARTICLE::RollingCoulomb),
+      &particledyndem);
+
   DoubleParameter("MIN_RADIUS", -1.0, "minimum expected particle radius", &particledyndem);
   DoubleParameter("MAX_RADIUS", -1.0, "maximum expected particle radius", &particledyndem);
   DoubleParameter("MAX_VELOCITY", -1.0, "maximum expected particle velocity", &particledyndem);
@@ -315,7 +323,10 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   BoolParameter("TENSION_CUTOFF", "no", "switch on/off tension cutoff", &particledyndem);
 
   DoubleParameter("POISSON_RATIO", -1.0, "poisson ratio", &particledyndem);
+  DoubleParameter("YOUNG_MODULUS", -1.0, "young's modulus", &particledyndem);
 
   DoubleParameter("FRICT_COEFF_TANG", -1.0,
       "dynamic friction coefficient for tangential contact (particle-particle)", &particledyndem);
+  DoubleParameter("FRICT_COEFF_ROLL", -1.0,
+      "dynamic friction coefficient for rolling contact (particle-particle)", &particledyndem);
 }

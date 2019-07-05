@@ -48,6 +48,7 @@ namespace PARTICLEINTERACTION
   class DEMHistoryPairs;
   class DEMContactNormalBase;
   class DEMContactTangentialBase;
+  class DEMContactRollingBase;
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*
@@ -92,6 +93,9 @@ namespace PARTICLEINTERACTION
     //! have tangential contact
     virtual bool HaveTangentialContact() const { return contacttangential_ ? true : false; };
 
+    //! have rolling contact
+    virtual bool HaveRollingContact() const { return contactrolling_ ? true : false; };
+
     //! check critical time step (on this processor)
     virtual void CheckCriticalTimeStep() const;
 
@@ -104,6 +108,9 @@ namespace PARTICLEINTERACTION
 
     //! init tangential contact handler
     virtual void InitTangentialContactHandler();
+
+    //! init rolling contact handler
+    virtual void InitRollingContactHandler();
 
     //! get maximum density of all materials
     virtual double GetMaxDensityOfAllMaterials() const final;
@@ -140,6 +147,9 @@ namespace PARTICLEINTERACTION
 
     //! tangential contact handler
     std::unique_ptr<PARTICLEINTERACTION::DEMContactTangentialBase> contacttangential_;
+
+    //! rolling contact handler
+    std::unique_ptr<PARTICLEINTERACTION::DEMContactRollingBase> contactrolling_;
 
     //! time step size
     double dt_;

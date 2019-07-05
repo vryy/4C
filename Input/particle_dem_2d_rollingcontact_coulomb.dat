@@ -1,0 +1,92 @@
+//
+// Maintainer: Sebastian Fuchs
+//
+==================================================================
+                  General Data File BACI
+==================================================================
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Particle
+SHAPEFCT                        Meshfree
+RESTART                         0
+--------------------------------------------------------------------------IO
+STDOUTEVRY                      200
+VERBOSITY                       standard
+------------------------------------------------------------BINNING STRATEGY
+CUTOFF_RADIUS                   0.02
+PERIODICONOFF                   0 0 0
+BOUNDINGBOX                     -0.08 -0.05 -0.02 0.02 0.05 0.08
+WRITEBINS                       none
+------------------------------------------------------------PARTICLE DYNAMIC
+DYNAMICTYP                      VelocityVerlet
+INTERACTION                     DEM
+RESULTSEVRY                     10
+RESTARTEVRY                     50
+OUTPUT_DATA_FORMAT              Binary
+WRITE_GHOSTED_PARTICLES         no
+TIMESTEP                        0.001
+NUMSTEP                         1000
+MAXTIME                         1
+TRANSFER_EVERY                  no
+PHASE_TO_DYNLOADBALFAC          phase1 1.0
+PHASE_TO_MATERIAL_ID            phase1 1
+PARTICLE_WALL_SOURCE            DiscretCondition
+----------------------------PARTICLE DYNAMIC/INITIAL AND BOUNDARY CONDITIONS
+INITIAL_VELOCITY_FIELD          phase1 1
+--------------------------------------------------------PARTICLE DYNAMIC/DEM
+NORMALCONTACTLAW                NormalLinearSpringDamp
+TANGENTIALCONTACTLAW            TangentialLinSpringDamp
+ROLLINGCONTACTLAW               RollingCoulomb
+MIN_RADIUS                      0.01
+MAX_RADIUS                      0.01
+MAX_VELOCITY                    3.1e-2
+REL_PENETRATION                 0.055
+COEFF_RESTITUTION               0.8
+TENSION_CUTOFF                  Yes
+POISSON_RATIO                   0.3
+FRICT_COEFF_TANG                0.8
+FRICT_COEFF_ROLL                0.5
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION 0.01
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION -0.01
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_ParticleDEM INITRADIUS 0.01 INITDENSITY 4.43e-3
+MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 210.0e3 NUE 0.3 DENS 1.0
+----------------------------------------------------------RESULT DESCRIPTION
+PARTICLE ID 0 QUANTITY posx VALUE -2.70333633091674359e-02 TOLERANCE 1.0e-10
+PARTICLE ID 0 QUANTITY posz VALUE 1.06036937722118561e-02 TOLERANCE 1.0e-10
+PARTICLE ID 0 QUANTITY velx VALUE -7.24209210121638542e-03 TOLERANCE 1.0e-10
+PARTICLE ID 0 QUANTITY velz VALUE -8.88222021330122301e-05 TOLERANCE 1.0e-10
+PARTICLE ID 0 QUANTITY angvely VALUE -1.21591785334287036e-01 TOLERANCE 1.0e-10
+PARTICLE ID 1 QUANTITY posx VALUE -1.06036937722118561e-02 TOLERANCE 1.0e-10
+PARTICLE ID 1 QUANTITY posz VALUE 2.70333633091674359e-02 TOLERANCE 1.0e-10
+PARTICLE ID 1 QUANTITY velx VALUE 8.88222021330122301e-05 TOLERANCE 1.0e-10
+PARTICLE ID 1 QUANTITY velz VALUE 7.24209210121638542e-03 TOLERANCE 1.0e-10
+PARTICLE ID 1 QUANTITY angvely VALUE 1.21591785334287036e-01 TOLERANCE 1.0e-10
+-------------------------------------------------------------------PARTICLES
+TYPE phase1 POS -0.03 0.0 0.015
+TYPE phase1 POS -0.015 0.0 0.03
+------------------------------------------------DESIGN DESCRIPTION
+NDSURF     1
+--------------------------------------DESIGN SURFACE PARTICLE WALL
+DSURF  1
+E 1 - 1
+-----------------------------------------------DSURF-NODE TOPOLOGY
+NODE 3 DSURFACE 1
+NODE 4 DSURFACE 1
+NODE 5 DSURFACE 1
+NODE 6 DSURFACE 1
+NODE 7 DSURFACE 1
+NODE 8 DSURFACE 1
+-------------------------------------------------------NODE COORDS
+NODE 1 COORD -0.05 -0.025 0.05
+NODE 2 COORD -0.05 0.025 0.05
+NODE 3 COORD 0.0 0.025 0.05
+NODE 4 COORD 0.0 -0.025 0.05
+NODE 5 COORD -0.05 -0.025 0.0
+NODE 6 COORD -0.05 0.025 0.0
+NODE 7 COORD 0.0 0.025 0.0
+NODE 8 COORD 0.0 -0.025 0.0
+----------------------------------------------------------STRUCTURE ELEMENTS
+1 SOLIDH8 HEX8 1 2 3 4 5 6 7 8 MAT 2 KINEM nonlinear EAS none
+-------------------------------------------------------------------------END

@@ -60,6 +60,17 @@ namespace PARTICLEINTERACTION
     //@{
 
     /**
+     *  \brief clear vector c
+     */
+    template <class T>
+    inline void vec_clear(T* c)
+    {
+      c[0] = 0.0;
+      c[1] = 0.0;
+      c[2] = 0.0;
+    }
+
+    /**
      *  \brief set vector a to vector c
      */
     template <class T>
@@ -93,6 +104,17 @@ namespace PARTICLEINTERACTION
     }
 
     /**
+     *  \brief scale vector c
+     */
+    template <class T>
+    inline void vec_scale(T* c, const T fac)
+    {
+      c[0] *= fac;
+      c[1] *= fac;
+      c[2] *= fac;
+    }
+
+    /**
      *  \brief scale vector a and set to vector c
      */
     template <class T>
@@ -112,6 +134,17 @@ namespace PARTICLEINTERACTION
       c[0] += fac * a[0];
       c[1] += fac * a[1];
       c[2] += fac * a[2];
+    }
+
+    /**
+     *  \brief set cross product of vector a and vector b to vector c
+     */
+    template <class T>
+    inline void vec_setcross(T* c, const T* a, const T* b)
+    {
+      c[0] = a[1] * b[2] - a[2] * b[1];
+      c[1] = a[2] * b[0] - a[0] * b[2];
+      c[2] = a[0] * b[1] - a[1] * b[0];
     }
 
     /**
