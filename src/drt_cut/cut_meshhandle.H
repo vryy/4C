@@ -53,9 +53,9 @@ namespace GEO
       /*========================================================================*/
 
       /// create a new side (sidehandle) of the cutter discretization and return the sidehandle,
-      /// non-tri3 sides will be subdivided into tri3 subsides
-      SideHandle* CreateSide(
-          int sid, const std::vector<int>& nids, DRT::Element::DiscretizationType distype);
+      /// non-tri3 sides will be subdivided into tri3 subsides depending on the options
+      SideHandle* CreateSide(int sid, const std::vector<int>& nids,
+          DRT::Element::DiscretizationType distype, GEO::CUT::Options& options);
 
       /// create a new element (elementhandle) of the background discretization and return the
       /// elementhandle, quadratic elements will create linear shadow elements

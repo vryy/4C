@@ -63,7 +63,7 @@ GEO::CUT::SideHandle* GEO::CUT::MeshIntersection::AddCutSide(
     int sid, const std::vector<int>& nids, DRT::Element::DiscretizationType distype, int mi)
 {
   // create side
-  return cut_mesh_[mi]->CreateSide(sid, nids, distype);
+  return cut_mesh_[mi]->CreateSide(sid, nids, distype, options_);
 }
 
 /*----------------------------------------------------------------------------*
@@ -101,7 +101,7 @@ GEO::CUT::SideHandle* GEO::CUT::MeshIntersection::AddCutSide(int sid, const std:
   //     return;
 
   // create side
-  return cut_mesh_[mi]->CreateSide(sid, nids, distype);
+  return cut_mesh_[mi]->CreateSide(sid, nids, distype, options_);
 }
 
 /*------------------------------------------------------------------------------------------------*
