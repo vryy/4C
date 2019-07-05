@@ -55,6 +55,22 @@ namespace INPAR
     {
       none,                    //< Default value
       gauss_point_to_segment,  //< Gauss point to segment approach
+      mortar                   //< mortar-type segment to segment approach
+    };
+
+    /**
+     * \brief Shape function for the mortar Lagrange-multiplicators
+     */
+    enum class BeamToFluidMeshtingMortarShapefunctions
+    {
+      //! Default value.
+      none,
+      //! Linear.
+      line2,
+      //! Quadratic.
+      line3,
+      //! Cubic.
+      line4
     };
 
     /// set the beam interaction parameters

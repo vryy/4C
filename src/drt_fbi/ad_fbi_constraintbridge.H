@@ -17,7 +17,7 @@ enforcement technique with a discretization approach for Fluid-beam interaction.
 #include <Epetra_Map.h>
 #include <vector>
 
-// Forward decleration
+// Forward declaration
 
 namespace DRT
 {
@@ -34,6 +34,8 @@ namespace GEOMETRYPAIR
 {
   class LineTo3DEvaluationData;
 }
+
+class Epetra_Vector;
 
 namespace FBI
 {
@@ -73,8 +75,10 @@ namespace ADAPTER
      * other.
      *
      */
-    virtual void Evaluate(
-        const DRT::Discretization& discretization1, const DRT::Discretization& discretization2) = 0;
+    virtual void Evaluate(Teuchos::RCP<const DRT::Discretization> discretization1,
+        Teuchos::RCP<const DRT::Discretization> discretization2,
+        Teuchos::RCP<const Epetra_Vector> fluid_vel,
+        Teuchos::RCP<const Epetra_Vector> beam_vel) = 0;
 
     /**
      * \brief Wraps the ResetState function of the pair
