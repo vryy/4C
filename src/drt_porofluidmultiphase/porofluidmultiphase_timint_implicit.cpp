@@ -1352,7 +1352,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::EvaluateDomainIntegrals()
 
       // open file and write header
       file.open(filename, std::fstream::trunc);
-      file << "Time,Step";
+      file << "Step,Time";
       for (int i = 0; i < num_domainint_funct_; i++)
       {
         file << ",Function " << domainint_funct_[i];
