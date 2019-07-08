@@ -1053,7 +1053,7 @@ void STR::TimInt::PrepareStepContact()
           DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
               parallelParamsMortar, "GHOSTING_STRATEGY");
 
-      // prepare binstrategy for timestep
+      // prepare binning strategy for this time step
       if (strat == INPAR::MORTAR::binningstrategy)
         cmtbridge_->GetStrategy().InitBinStrategyforTimestep((*vel_)(0));
     }
