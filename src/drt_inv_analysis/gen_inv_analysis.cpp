@@ -83,8 +83,6 @@
 #include "../drt_structure/stru_aux.H"
 
 #include "../drt_fsi/fsi_monolithic.H"
-//#include "../drt_adapter/adapter_coupling.H"
-//#include "../drt_adapter/ad_str_wrapper.H"
 
 #include "../drt_ale/ale_utils_clonestrategy.H"
 #include "../drt_lib/drt_utils_createdis.H"
@@ -111,7 +109,6 @@
 #include "../drt_binstrategy/binning_strategy.H"
 
 #include "../drt_structure/stru_resulttest.H"
-//#include "../linalg/linalg_mapextractor.H"
 
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 
@@ -192,18 +189,18 @@ STR::GenInvAnalysis::GenInvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
   }
 
   // special inverse analysis types
-  spec_inv_ana_mult_ = 0;
-  spec_inv_ana_coup_ = 0;
-  switch (DRT::INPUT::IntegralValue<int>(iap, "SPECIAL_INV_ANALYSIS"))
+  spec_inv_ana_mult_ = false;
+  spec_inv_ana_coup_ = false;
+  switch (DRT::INPUT::IntegralValue<INPAR::STR::SpecInvAnalysisType>(iap, "SPECIAL_INV_ANALYSIS"))
   {
     case INPAR::STR::spec_inv_mult:
     {
-      spec_inv_ana_mult_ = 1;
+      spec_inv_ana_mult_ = true;
     }
     break;
     case INPAR::STR::spec_inv_coup:
     {
-      spec_inv_ana_coup_ = 1;
+      spec_inv_ana_coup_ = true;
     }
     break;
     default:  // normal inverse analysis --> do nothing
@@ -292,7 +289,7 @@ void STR::GenInvAnalysis::Integrate()
 {
   const int myrank = discret_->Comm().MyPID();
   const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
-  int max_itter = iap.get<int>("INV_ANA_MAX_RUN");
+  const int max_iter = iap.get<int>("INV_ANA_MAX_RUN");
   int newfiles = DRT::INPUT::IntegralValue<int>(iap, "NEW_FILES");
 
   // multiple inverse analysis is just implemented for parallel use
@@ -304,16 +301,17 @@ void STR::GenInvAnalysis::Integrate()
   {
     if (!myrank)
     {
-      std::cout << "#################################################################" << std::endl;
-      std::cout << "########################### making Jacobian matrix ##############" << std::endl;
-      std::cout << "#################################################################" << std::endl;
-      printf("Measured points nmp_= %d # parameters to fit np_= %d\n", nmp_, np_);
+      std::cout << "#################################################################\n"
+                << "########################### making Jacobian matrix ##############\n"
+                << "#################################################################\n"
+                << "No. of measured points: nmp_= " << nmp_
+                << " # no. of parameters to fit: np_= " << np_ << std::endl;
     }
 
     // perturbation of material parameter (should be relative to the value that is perturbed)
     std::vector<double> perturb(np_, 0.0);
-    double alpha = iap.get<double>("INV_ALPHA");
-    double beta = iap.get<double>("INV_BETA");
+    const double alpha = iap.get<double>("INV_ALPHA");
+    const double beta = iap.get<double>("INV_BETA");
 
     for (int i = 0; i < np_; ++i)
     {
@@ -321,7 +319,7 @@ void STR::GenInvAnalysis::Integrate()
       if (!myrank) printf("perturbation[%d] %15.10e\n", i, perturb[i]);
     }
 
-    // as the actual inv analysis is on proc 0 only, do only provide storage on proc 0
+    // as the actual inverse analysis is on proc 0 only, do only provide storage on proc 0
     Epetra_SerialDenseMatrix cmatrix;
     if (!myrank) cmatrix.Shape(nmp_, np_ + 1);
 
@@ -363,8 +361,7 @@ void STR::GenInvAnalysis::Integrate()
 
       SetParameters(p_cur);
 
-      // compute nonlinear problem and obtain computed displacements
-      // output at the last step
+      // Solve forward problem and obtain computed displacements output at the last step
       Epetra_SerialDenseVector cvector;
 
       switch (forward_prb_type_)
@@ -418,7 +415,7 @@ void STR::GenInvAnalysis::Integrate()
       error_i_ = error_;
 
 
-  } while (error_i_ > tol_ && numb_run_ < max_itter && !nodescentdirection_);
+  } while (error_i_ > tol_ && numb_run_ < max_iter && !nodescentdirection_);
 
 
   // print results to file
@@ -802,7 +799,7 @@ void STR::GenInvAnalysis::CalcNewParameters(
     Epetra_SerialDenseMatrix& cmatrix, std::vector<double>& perturb)
 {
   // in case of multiple inverse analysis: use measured dofs of all experiments
-  double nmp;
+  int nmp = 0.0;
   Epetra_SerialDenseVector mcurve;
   if (spec_inv_ana_mult_)
   {
@@ -816,12 +813,25 @@ void STR::GenInvAnalysis::CalcNewParameters(
     mcurve = mcurve_;
   }
 
-  // initalization of the Jacobian and other storage
+  // --------------------------------------------------------------------
+  // initialization of the Jacobian and other storage
+  // --------------------------------------------------------------------
+  // matrix to be inverted in each LVM iteration
   Epetra_SerialDenseMatrix sto(np_, np_);
+
+  // parameter increment (to be solved for)
   Epetra_SerialDenseVector delta_p(np_);
-  Epetra_SerialDenseVector tmp(np_);
+
+  // right hand side for LVM iteration
+  Epetra_SerialDenseVector rightHandSide(np_);
+
+  // residuum (i.e. deviation of measurements and simulation results)
   Epetra_SerialDenseVector rcurve(nmp);
+
+  // Simulation results
   Epetra_SerialDenseVector ccurve(nmp);
+
+  // --------------------------------------------------------------------
 
   // copy column with unperturbed values to extra vector
   for (int i = 0; i < nmp; i++) ccurve[i] = cmatrix(i, np_);
@@ -844,7 +854,7 @@ void STR::GenInvAnalysis::CalcNewParameters(
     // of volume-pressure-change experiment
 
     // number of data points of pressure-volume-change experiment
-    nmp_volexp_ = 287;
+    nmp_volexp_ = 287;  // ToDo Why is this value hard-coded? This seems to be dangerous!
     // initialization of measured pressure and volume-change values
     std::vector<double> volexp_deltap(nmp_volexp_, 0.0);
     std::vector<double> volexp_deltaV(nmp_volexp_, 0.0);
@@ -888,18 +898,19 @@ void STR::GenInvAnalysis::CalcNewParameters(
       min_zug = std::min(min_zug, mcurve(n));
       max_zug = std::max(max_zug, mcurve(n));
     }
-    double fac_norm = sqrt(nmp) * (max_zug - min_zug);
+    double fac_norm = sqrt((double)nmp) * (max_zug - min_zug);
 
-    //
     // calculating Jacobi-Matrix J(p)
     // tensile test data
     for (int i = 0; i < nmp; i++)
+    {
       for (int j = 0; j < np_; j++)
       {
         J(i, j) -= ccurve[i];
         J(i, j) /= perturb[j];
         J(i, j) /= fac_norm;  // normalize J
       }
+    }
     // add data of pressure-volume-change experiment
     J.Reshape(nmp + nmp_volexp_, np_);
     for (int i = 0; i < nmp_volexp_; i++)
@@ -968,10 +979,10 @@ void STR::GenInvAnalysis::CalcNewParameters(
   for (int i = 0; i < np_; i++) sto(i, i) += mu_ * sto(i, i);
 
   // delta_p = (J.T*J+mu*diag(J.T*J))^{-1} * J.T*R
-  tmp.Multiply('T', 'N', -1.0, J, rcurve, 0.0);  // sign of update rule
+  rightHandSide.Multiply('T', 'N', -1.0, J, rcurve, 0.0);  // sign of update rule
   Epetra_SerialDenseSolver solver;
   solver.SetMatrix(sto);
-  solver.SetVectors(delta_p, tmp);
+  solver.SetVectors(delta_p, rightHandSide);
   solver.SolveToRefinedSolution(true);
   solver.Solve();
 
@@ -985,7 +996,7 @@ void STR::GenInvAnalysis::CalcNewParameters(
   if ((spec_inv_ana_coup_) || (spec_inv_ana_mult_))
     error_ = rcurve.Norm2();  // already normalized
   else
-    error_ = rcurve.Norm2() / sqrt(nmp);
+    error_ = rcurve.Norm2() / sqrt((double)nmp);
 
   // get jacobian:
   Epetra_SerialDenseVector Ji(np_);
@@ -1001,6 +1012,9 @@ void STR::GenInvAnalysis::CalcNewParameters(
   // Gradient based update of mu based on
   // Kelley, C. T., Liao, L. Z., Qi, L., Chu, M. T., Reese, J. P., & Winton, C. (2009)
   // Projected pseudotransient continuation. SIAM Journal on Numerical Analysis, 46(6), 3071.
+  /* ToDo Which of the updates formulas in this paper is used here? The paper presents three
+   * distinct update formulas, denoted as SER-A, SER-B, and TTE.
+   */
   if (reg_update_ == grad_based)
   {
     if (error_ < error_o_)
@@ -1835,6 +1849,9 @@ void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseVector delta_p)
   // This routine runs just for material coupexppol (birzle 08/2014)
   // Recalculates the material parameters b and c for (and just for) printout
   // Inverse Analysis is done with ln(b) and ln(c) --> print exp(b) and exp(c)
+  /* ToDo is the above comment really true? I don't see any guard that prevents this routine to run
+   * also in other cases than for material coupexppol.
+   */
   for (unsigned prob = 0; prob < DRT::Problem::NumInstances(); ++prob)
   {
     const std::map<int, Teuchos::RCP<MAT::PAR::Material>>& mats =
@@ -1912,7 +1929,7 @@ void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseVector delta_p)
       printf("\tGrad_error: ");
       printf("%10.3e", error_grad_s_(i));
       printf("\tParameter: ");
-      for (int j = 0; j < delta_p.Length(); j++) printf("%10.3e", p_s_(i, j));
+      for (int j = 0; j < delta_p.Length(); j++) printf("%10.3e\t", p_s_(i, j));
       // printf("\tDelta_p: ");
       // for (int j=0; j < delta_p.Length(); j++)
       //  printf("%10.3e", delta_p_s_(i, j));
@@ -1930,54 +1947,9 @@ void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseVector delta_p)
     printf("\tGrad_error: ");
     printf("%10.3e", error_grad_s_(i));
     printf("\tParameter: ");
-    for (int j = 0; j < delta_p.Length(); j++) printf("%10.3e", p_s_(i, j));
+    for (int j = 0; j < delta_p.Length(); j++) printf("%10.3e\t", p_s_(i, j));
     printf("\n");
 
-    // I don't like this printout, there is no legend. Also, its sorted in x and y
-    // which is absolutely not guaranteed to be true upon input. So its potentially mixed!
-    // I just leave it here because somebody might need it?
-    // I commented this out becauses it yields columns of zeros only anyway
-    // mwgee
-#if 0
-    printf("\n");
-    for (int i=0; i < nmp_/2.; i++)
-    {
-      printf(" %10.5f ",  mcurve_(i*2));
-      if (numb_run_<15)
-      {
-        for (int j=0; j<numb_run_+1; j++)
-          printf(" %10.5f ",  ccurve_s_((i)*2, j));
-      }
-      else
-      {
-        for (int j=numb_run_-14; j<numb_run_+1; j++)
-          printf(" %10.5f ",  ccurve_s_((i)*2, j));
-      }
-      printf("\n");
-    }
-
-    printf("\n");
-
-    for (int i=0; i < nmp_/2.; i++)
-    {
-      printf(" %10.5f ",  mcurve_((i)*2+1));
-      if (numb_run_<15)
-      {
-        for (int j=0; j<numb_run_+1; j++)
-          printf(" %10.5f ",  ccurve_s_((i)*2+1, j));
-      }
-      else
-      {
-        for (int j=numb_run_-14; j<numb_run_+1; j++)
-          printf(" %10.5f ",  ccurve_s_((i)*2+1, j));
-      }
-      printf("\n");
-    }
-
-    printf("################################################");
-    printf("##############################################\n");
-    std::cout << std::endl;
-#endif
     printf("\n");
     fflush(stdout);
   }

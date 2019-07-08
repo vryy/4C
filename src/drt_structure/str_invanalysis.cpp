@@ -88,7 +88,6 @@ void STR::invanalysis()
 
   switch (DRT::INPUT::IntegralValue<INPAR::STR::InvAnalysisType>(iap, "INV_ANALYSIS"))
   {
-      // lung inverse analysis deleted (birzle 12/2016)
     case INPAR::STR::inv_generalized:
     {
       int ngroup = DRT::Problem::Instance()->GetNPGroup()->NumGroups();
