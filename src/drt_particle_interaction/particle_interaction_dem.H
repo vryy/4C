@@ -29,6 +29,7 @@ namespace PARTICLEINTERACTION
   class DEMNeighborPairs;
   class DEMHistoryPairs;
   class DEMContact;
+  class DEMAdhesion;
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*
@@ -92,6 +93,9 @@ namespace PARTICLEINTERACTION
     //! init contact handler
     virtual void InitContactHandler();
 
+    //! init adhesion handler
+    virtual void InitAdhesionHandler();
+
     //! set initial radius
     virtual void SetInitialRadius();
 
@@ -115,6 +119,9 @@ namespace PARTICLEINTERACTION
 
     //! contact handler
     std::unique_ptr<PARTICLEINTERACTION::DEMContact> contact_;
+
+    //! adhesion handler
+    std::unique_ptr<PARTICLEINTERACTION::DEMAdhesion> adhesion_;
   };
 
 }  // namespace PARTICLEINTERACTION

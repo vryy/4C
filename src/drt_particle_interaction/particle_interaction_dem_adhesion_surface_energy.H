@@ -1,0 +1,147 @@
+/*---------------------------------------------------------------------------*/
+/*!
+\brief adhesion surface energy handler for discrete element method (DEM) interactions
+
+\level 3
+
+\maintainer  Sebastian Fuchs
+*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*
+ | definitions                                                sfuchs 07/2019 |
+ *---------------------------------------------------------------------------*/
+#ifndef PARTICLE_INTERACTION_DEM_ADHESION_SURFACE_ENERGY_H
+#define PARTICLE_INTERACTION_DEM_ADHESION_SURFACE_ENERGY_H
+
+/*---------------------------------------------------------------------------*
+ | headers                                                    sfuchs 07/2019 |
+ *---------------------------------------------------------------------------*/
+#include <Teuchos_ParameterList.hpp>
+
+/*---------------------------------------------------------------------------*
+ | forward declarations                                       sfuchs 07/2019 |
+ *---------------------------------------------------------------------------*/
+namespace IO
+{
+  class DiscretizationReader;
+}
+
+/*---------------------------------------------------------------------------*
+ | class definitions                                          sfuchs 07/2019 |
+ *---------------------------------------------------------------------------*/
+namespace PARTICLEINTERACTION
+{
+  class DEMAdhesionSurfaceEnergyBase
+  {
+   public:
+    //! constructor
+    explicit DEMAdhesionSurfaceEnergyBase(const Teuchos::ParameterList& params);
+
+    //! virtual destructor
+    virtual ~DEMAdhesionSurfaceEnergyBase(){};
+
+    //! init adhesion surface energy handler
+    virtual void Init();
+
+    //! setup adhesion surface energy handler
+    virtual void Setup();
+
+    //! write restart of adhesion surface energy handler
+    virtual void WriteRestart(const int step, const double time) const;
+
+    //! read restart of adhesion surface energy handler
+    virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
+
+    //! calculate adhesion surface energy
+    virtual void AdhesionSurfaceEnergy(double& adhesion_surface_energy) const = 0;
+
+   protected:
+    //! discrete element method parameter list
+    const Teuchos::ParameterList& params_dem_;
+
+    //! adhesion surface energy
+    const double adhesion_surface_energy_;
+  };
+
+  class DEMAdhesionSurfaceEnergyConstant : public DEMAdhesionSurfaceEnergyBase
+  {
+   public:
+    //! constructor
+    explicit DEMAdhesionSurfaceEnergyConstant(const Teuchos::ParameterList& params);
+
+    //! destructor
+    ~DEMAdhesionSurfaceEnergyConstant(){};
+
+    //! get adhesion surface energy
+    void AdhesionSurfaceEnergy(double& adhesion_surface_energy) const override
+    {
+      adhesion_surface_energy = adhesion_surface_energy_;
+    };
+  };
+
+  class DEMAdhesionSurfaceEnergyDistributionBase : public DEMAdhesionSurfaceEnergyBase
+  {
+   public:
+    //! constructor
+    explicit DEMAdhesionSurfaceEnergyDistributionBase(const Teuchos::ParameterList& params);
+
+    //! virtual destructor
+    virtual ~DEMAdhesionSurfaceEnergyDistributionBase(){};
+
+    //! setup adhesion surface energy handler
+    virtual void Setup();
+
+    //! get adhesion surface energy
+    virtual void AdhesionSurfaceEnergy(double& adhesion_surface_energy) const override = 0;
+
+   protected:
+    //! variance of adhesion surface energy distribution
+    const double variance_;
+
+    //! minimum value of adhesion surface energy
+    const double adhesion_surface_energy_min_;
+
+    //! maximum value of adhesion surface energy
+    const double adhesion_surface_energy_max_;
+  };
+
+  class DEMAdhesionSurfaceEnergyDistributionNormal : public DEMAdhesionSurfaceEnergyDistributionBase
+  {
+   public:
+    //! constructor
+    explicit DEMAdhesionSurfaceEnergyDistributionNormal(const Teuchos::ParameterList& params);
+
+    //! destructor
+    ~DEMAdhesionSurfaceEnergyDistributionNormal(){};
+
+    //! get adhesion surface energy
+    void AdhesionSurfaceEnergy(double& adhesion_surface_energy) const override;
+
+   private:
+    //! mean of adhesion surface energy distribution
+    const double mean_;
+  };
+
+  class DEMAdhesionSurfaceEnergyDistributionLogNormal
+      : public DEMAdhesionSurfaceEnergyDistributionBase
+  {
+   public:
+    //! constructor
+    explicit DEMAdhesionSurfaceEnergyDistributionLogNormal(const Teuchos::ParameterList& params);
+
+    //! destructor
+    ~DEMAdhesionSurfaceEnergyDistributionLogNormal(){};
+
+    //! get adhesion surface energy
+    void AdhesionSurfaceEnergy(double& adhesion_surface_energy) const override;
+
+   private:
+    //! mean of adhesion surface energy distribution
+    const double mean_;
+  };
+
+}  // namespace PARTICLEINTERACTION
+
+/*---------------------------------------------------------------------------*/
+#endif

@@ -293,6 +293,24 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
           INPAR::PARTICLE::RollingCoulomb),
       &particledyndem);
 
+  // type of normal adhesion law
+  setStringToIntegralParameter<int>("ADHESIONLAW", "NoAdhesion",
+      "type of adhesion law for particles",
+      tuple<std::string>("NoAdhesion", "AdhesionVdWDMT", "AdhesionRegDMT"),
+      tuple<int>(INPAR::PARTICLE::NoAdhesion, INPAR::PARTICLE::AdhesionVdWDMT,
+          INPAR::PARTICLE::AdhesionRegDMT),
+      &particledyndem);
+
+  // type of (random) surface energy distribution
+  setStringToIntegralParameter<int>("ADHESION_SURFACE_ENERGY_DISTRIBUTION", "ConstantSurfaceEnergy",
+      "type of (random) surface energy distribution",
+      tuple<std::string>("ConstantSurfaceEnergy", "NormalSurfaceEnergyDistribution",
+          "LogNormalSurfaceEnergyDistribution"),
+      tuple<int>(INPAR::PARTICLE::ConstantSurfaceEnergy,
+          INPAR::PARTICLE::NormalSurfaceEnergyDistribution,
+          INPAR::PARTICLE::LogNormalSurfaceEnergyDistribution),
+      &particledyndem);
+
   DoubleParameter("MIN_RADIUS", -1.0, "minimum expected particle radius", &particledyndem);
   DoubleParameter("MAX_RADIUS", -1.0, "maximum expected particle radius", &particledyndem);
   DoubleParameter("MAX_VELOCITY", -1.0, "maximum expected particle velocity", &particledyndem);
@@ -329,4 +347,29 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "dynamic friction coefficient for tangential contact (particle-particle)", &particledyndem);
   DoubleParameter("FRICT_COEFF_ROLL", -1.0,
       "dynamic friction coefficient for rolling contact (particle-particle)", &particledyndem);
+
+  DoubleParameter(
+      "ADHESION_DISTANCE", -1.0, "adhesion distance between interacting surfaces", &particledyndem);
+
+  DoubleParameter(
+      "ADHESION_MAX_CONTACT_PRESSURE", 0.0, "adhesion maximum contact pressure", &particledyndem);
+  DoubleParameter(
+      "ADHESION_MAX_CONTACT_FORCE", 0.0, "adhesion maximum contact force", &particledyndem);
+  BoolParameter("ADHESION_USE_MAX_CONTACT_FORCE", "no",
+      "use maximum contact force instead of maximum contact pressure", &particledyndem);
+
+  BoolParameter(
+      "ADHESION_VDW_CURVE_SHIFT", "no", "shifts van-der-Waals-curve to g = 0", &particledyndem);
+
+  DoubleParameter("ADHESION_NORMAL_EPS", -1.0, "depth of Lennard-Jones adhesion potential well",
+      &particledyndem);
+
+  DoubleParameter("ADHESION_SURFACE_ENERGY", -1.0,
+      "adhesion surface energy for the calculation of the pull-out force", &particledyndem);
+  DoubleParameter("ADHESION_SURFACE_ENERGY_DISTRIBUTION_VAR", -1.0,
+      "variance of adhesion surface energy distribution", &particledyndem);
+  DoubleParameter("ADHESION_SURFACE_ENERGY_DISTRIBUTION_CUTOFF_FACTOR", -1.0,
+      "adhesion surface energy distribution limited by multiple of variance", &particledyndem);
+  DoubleParameter("ADHESION_SURFACE_ENERGY_FACTOR", 1.0,
+      "factor to calculate minimum adhesion surface energy", &particledyndem);
 }

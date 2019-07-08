@@ -98,6 +98,26 @@ void PARTICLEINTERACTION::DEMHistoryPairs::WriteRestart(const int step, const do
 
     binwriter->WriteCharVector("ParticleWallRollingHistoryData", buffer);
   }
+
+  // particle adhesion history data
+  {
+    buffer = Teuchos::rcp(new std::vector<char>);
+
+    if (not particleadhesionhistorydata_.empty())
+      PackAllHistoryPairs(*buffer, particleadhesionhistorydata_);
+
+    binwriter->WriteCharVector("ParticleAdhesionHistoryData", buffer);
+  }
+
+  // particle-wall adhesion history pair data
+  {
+    buffer = Teuchos::rcp(new std::vector<char>);
+
+    if (not particlewalladhesionhistorydata_.empty())
+      PackAllHistoryPairs(*buffer, particlewalladhesionhistorydata_);
+
+    binwriter->WriteCharVector("ParticleWallAdhesionHistoryData", buffer);
+  }
 }
 
 /*---------------------------------------------------------------------------*
@@ -144,6 +164,24 @@ void PARTICLEINTERACTION::DEMHistoryPairs::ReadRestart(
 
     if (buffer->size() > 0) UnpackHistoryPairs(*buffer, particlewallrollinghistorydata_);
   }
+
+  // particle adhesion history data
+  {
+    buffer = Teuchos::rcp(new std::vector<char>);
+
+    reader->ReadCharVector(buffer, "ParticleAdhesionHistoryData");
+
+    if (buffer->size() > 0) UnpackHistoryPairs(*buffer, particleadhesionhistorydata_);
+  }
+
+  // particle-wall adhesion history pair data
+  {
+    buffer = Teuchos::rcp(new std::vector<char>);
+
+    reader->ReadCharVector(buffer, "ParticleWallAdhesionHistoryData");
+
+    if (buffer->size() > 0) UnpackHistoryPairs(*buffer, particlewalladhesionhistorydata_);
+  }
 }
 
 /*---------------------------------------------------------------------------*
@@ -183,6 +221,9 @@ void PARTICLEINTERACTION::DEMHistoryPairs::DistributeHistoryPairs()
 
   CommunicateSpecificHistoryPairs(particletargets, particlerollinghistorydata_);
   CommunicateSpecificHistoryPairs(particletargets, particlewallrollinghistorydata_);
+
+  CommunicateSpecificHistoryPairs(particletargets, particleadhesionhistorydata_);
+  CommunicateSpecificHistoryPairs(particletargets, particlewalladhesionhistorydata_);
 }
 
 /*---------------------------------------------------------------------------*
@@ -202,6 +243,9 @@ void PARTICLEINTERACTION::DEMHistoryPairs::CommunicateHistoryPairs()
 
   CommunicateSpecificHistoryPairs(particletargets, particlerollinghistorydata_);
   CommunicateSpecificHistoryPairs(particletargets, particlewallrollinghistorydata_);
+
+  CommunicateSpecificHistoryPairs(particletargets, particleadhesionhistorydata_);
+  CommunicateSpecificHistoryPairs(particletargets, particlewalladhesionhistorydata_);
 }
 
 /*---------------------------------------------------------------------------*
@@ -223,6 +267,12 @@ void PARTICLEINTERACTION::DEMHistoryPairs::UpdateHistoryPairs()
 
   if (not particlewallrollinghistorydata_.empty())
     EraseUntouchedHistoryPairs(particlewallrollinghistorydata_);
+
+  if (not particleadhesionhistorydata_.empty())
+    EraseUntouchedHistoryPairs(particleadhesionhistorydata_);
+
+  if (not particlewalladhesionhistorydata_.empty())
+    EraseUntouchedHistoryPairs(particlewalladhesionhistorydata_);
 }
 
 /*---------------------------------------------------------------------------*
@@ -371,11 +421,18 @@ template void PARTICLEINTERACTION::DEMHistoryPairs::CommunicateSpecificHistoryPa
     PARTICLEINTERACTION::DEMHistoryPairRolling>(
     const std::vector<std::vector<int>>&, DEMHistoryPairRollingData&);
 
+template void PARTICLEINTERACTION::DEMHistoryPairs::CommunicateSpecificHistoryPairs<
+    PARTICLEINTERACTION::DEMHistoryPairAdhesion>(
+    const std::vector<std::vector<int>>&, DEMHistoryPairAdhesionData&);
+
 template void PARTICLEINTERACTION::DEMHistoryPairs::EraseUntouchedHistoryPairs<
     PARTICLEINTERACTION::DEMHistoryPairTangential>(DEMHistoryPairTangentialData&);
 
 template void PARTICLEINTERACTION::DEMHistoryPairs::EraseUntouchedHistoryPairs<
     PARTICLEINTERACTION::DEMHistoryPairRolling>(DEMHistoryPairRollingData&);
+
+template void PARTICLEINTERACTION::DEMHistoryPairs::EraseUntouchedHistoryPairs<
+    PARTICLEINTERACTION::DEMHistoryPairAdhesion>(DEMHistoryPairAdhesionData&);
 
 template void PARTICLEINTERACTION::DEMHistoryPairs::PackAllHistoryPairs<
     PARTICLEINTERACTION::DEMHistoryPairTangential>(
@@ -385,6 +442,10 @@ template void PARTICLEINTERACTION::DEMHistoryPairs::PackAllHistoryPairs<
     PARTICLEINTERACTION::DEMHistoryPairRolling>(
     std::vector<char>&, const DEMHistoryPairRollingData&) const;
 
+template void PARTICLEINTERACTION::DEMHistoryPairs::PackAllHistoryPairs<
+    PARTICLEINTERACTION::DEMHistoryPairAdhesion>(
+    std::vector<char>&, const DEMHistoryPairAdhesionData&) const;
+
 template void PARTICLEINTERACTION::DEMHistoryPairs::UnpackHistoryPairs<
     PARTICLEINTERACTION::DEMHistoryPairTangential>(
     const std::vector<char>&, DEMHistoryPairTangentialData&);
@@ -393,6 +454,10 @@ template void PARTICLEINTERACTION::DEMHistoryPairs::UnpackHistoryPairs<
     PARTICLEINTERACTION::DEMHistoryPairRolling>(
     const std::vector<char>&, DEMHistoryPairRollingData&);
 
+template void PARTICLEINTERACTION::DEMHistoryPairs::UnpackHistoryPairs<
+    PARTICLEINTERACTION::DEMHistoryPairAdhesion>(
+    const std::vector<char>&, DEMHistoryPairAdhesionData&);
+
 template void PARTICLEINTERACTION::DEMHistoryPairs::AddHistoryPairToBuffer<
     PARTICLEINTERACTION::DEMHistoryPairTangential>(
     std::vector<char>&, int, int, const PARTICLEINTERACTION::DEMHistoryPairTangential&) const;
@@ -400,3 +465,7 @@ template void PARTICLEINTERACTION::DEMHistoryPairs::AddHistoryPairToBuffer<
 template void PARTICLEINTERACTION::DEMHistoryPairs::AddHistoryPairToBuffer<
     PARTICLEINTERACTION::DEMHistoryPairRolling>(
     std::vector<char>&, int, int, const PARTICLEINTERACTION::DEMHistoryPairRolling&) const;
+
+template void PARTICLEINTERACTION::DEMHistoryPairs::AddHistoryPairToBuffer<
+    PARTICLEINTERACTION::DEMHistoryPairAdhesion>(
+    std::vector<char>&, int, int, const PARTICLEINTERACTION::DEMHistoryPairAdhesion&) const;

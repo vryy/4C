@@ -75,6 +75,32 @@ namespace PARTICLEINTERACTION
       for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, data, gap_r_[i]);
     }
   };
+
+  //! struct to store adhesion history of interacting particles
+  struct DEMHistoryPairAdhesion
+  {
+    //! surface energy
+    double surface_energy_ = 0.0;
+
+    //! adhesion force
+    double adhesion_force_ = 0.0;
+
+    //! pack history pair data
+    void Pack(DRT::PackBuffer& data) const
+    {
+      data.AddtoPack(surface_energy_);
+
+      data.AddtoPack(adhesion_force_);
+    }
+
+    //! unpack history pair data
+    void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data)
+    {
+      DRT::ParObject::ExtractfromPack(position, data, surface_energy_);
+
+      DRT::ParObject::ExtractfromPack(position, data, adhesion_force_);
+    }
+  };
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*/
