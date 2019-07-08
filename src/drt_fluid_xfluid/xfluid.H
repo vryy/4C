@@ -351,6 +351,9 @@ namespace FLD
 
     Teuchos::RCP<XFEM::ConditionManager> GetConditionManager() { return condition_manager_; }
 
+    /// evaluate the CUT for in the next fluid evaluate
+    void Set_EvaluateCut(bool evaluate_cut) { evaluate_cut_ = evaluate_cut; }
+
    protected:
     /// (pseudo-)timeloop finished?
     bool NotFinished();
@@ -775,6 +778,12 @@ namespace FLD
     Teuchos::RCP<FLD::XFluidState> state_;
 
    protected:
+    /// state object of previous time step
+    Teuchos::RCP<FLD::XFluidState> staten_;
+
+    /// evaluate the CUT for in the next fluid evaluate
+    bool evaluate_cut_;
+
     /// counter how often a state class has been created during one time-step
     int state_it_;
 

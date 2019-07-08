@@ -83,7 +83,8 @@ FLD::XFluid::XFluid(const Teuchos::RCP<DRT::Discretization>& actdis,
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
       xdiscret_(Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(actdis, true)),
       edgestab_(Teuchos::rcp(new XFEM::XFEM_EdgeStab())),
-      turbmodel_(INPAR::FLUID::dynamic_smagorinsky)
+      turbmodel_(INPAR::FLUID::dynamic_smagorinsky),
+      evaluate_cut_(true)
 {
   // TODO the initialization of coupling objects, dofsets, and so on is not that clear so far,
   // however, strongly
@@ -594,10 +595,19 @@ void FLD::XFluid::CreateState()
 
   // ---------------------------------------------------------------------
   // create a new state class
-  DestroyState();
 
   // create new state object
-  state_ = GetNewState();
+  if (evaluate_cut_)
+  {
+    staten_ = Teuchos::null;
+    DestroyState();
+    state_ = GetNewState();
+  }
+  else
+  {
+    state_ = staten_;
+  }
+  staten_ = state_;
 
   //--------------------------------------------------------------------------------------
   // initialize the KrylovSpaceProjection
