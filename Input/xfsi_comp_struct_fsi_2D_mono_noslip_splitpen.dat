@@ -6,6 +6,7 @@
 //
 // compressible structure, solved monolithically via XFEM, tests the general monolithic process
 // full slip interface condition
+// additionally tests the adaptive evaluation of the CUT
 ==================================================================
 General Data File BACI
 ==================================================================
@@ -182,6 +183,9 @@ GHOST_PENALTY_FAC               0.05                          // in [0.1;0.5]
 GHOST_PENALTY_TRANSIENT_STAB    no
 GHOST_PENALTY_TRANSIENT_FAC     0.005                         // in [0.001;0.005]
 GHOST_PENALTY_2nd_STAB          no
+------------------------------------------------------XFLUID DYNAMIC/XFPSI MONOLITHIC
+CUT_EVALUATE_MINTOL 1e-10
+CUT_EVALUATE_MINITER 2
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 50.0 NUE 0.0 DENS 1.0

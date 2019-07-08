@@ -65,9 +65,7 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
       solveradaptolbetter_(fsimono_.get<double>("ADAPTIVEDIST")),  // adaptive distance
       merge_fsi_blockmatrix_(false),
       scaling_infnorm_((bool)DRT::INPUT::IntegralValue<int>(fsimono_, "INFNORMSCALING")),
-      //  erroraction_(erroraction_stop),
       log_(Teuchos::null),
-      //  logada_(Teuchos::null)
       /// tolerance and for linear solver
       tolrhs_(fsimono_.get<double>(
           "BASETOL")),  // absolute tolerance for full residual for adapting the linear solver
@@ -106,7 +104,12 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
       nd_increase_fac_((1 - (1 - nd_reduction_fac_) * 0.5)),
       nd_normrhs_old_(std::vector<double>(nd_levels_, 1e200)),
       nd_maxscaling_(1.0),
-      nd_max_incnorm_(std::vector<double>(5, -1.0))
+      nd_max_incnorm_(std::vector<double>(5, -1.0)),
+      nd_act_scaling_(1.0),
+      nd_inc_scaling_(1.0),
+      cut_evaluate_mintol_(xfpsimono_.get<double>("CUT_EVALUATE_MINTOL")),
+      cut_evaluate_miniter_(xfpsimono_.get<int>("CUT_EVALUATE_MINITER")),
+      cut_evaluate_dynamic_(cut_evaluate_mintol_ > 1e-16)
 {
   if (nd_newton_damping_)
   {
@@ -1325,8 +1328,9 @@ void FSI::MonolithicXFEM::BuildCovergenceNorms()
   iterinc_->Norm2(&norminc_);
 
   // structural Dofs
-  Extractor_MergedPoro().ExtractVector(iterinc_, 0)->Norm2(&normstrincL2_);
-  Extractor_MergedPoro().ExtractVector(iterinc_, 0)->NormInf(&normstrincInf_);
+  Extractor_MergedPoro().ExtractVector(iterinc_, structp_block_)->Norm2(&normstrincL2_);
+  Extractor_MergedPoro().ExtractVector(iterinc_, structp_block_)->NormInf(&normstrincInf_);
+  Extractor().ExtractVector(iterinc_, structp_block_)->NormInf(&normstrincdispInf_);
 
   // fluid velocity Dofs
   fluidvelpresextract.ExtractVector(Extractor().ExtractVector(iterinc_, fluid_block_), 0)
@@ -1537,6 +1541,25 @@ bool FSI::MonolithicXFEM::Evaluate()
     // For the first call of a time-step, call Evaluate with a null-pointer
     // note: call the fluid with the permuted step-increment vector as the fluid-dofsets can permute
     // during the Newton whereas the x_sum_ has to preserve the order of dofs during the Newton
+
+    // Specify if the CUT should be evaluated for this iteration
+
+    if (cut_evaluate_dynamic_)
+    {
+      if (normstrincdispInf_ / std::min(nd_act_scaling_, nd_inc_scaling_) < cut_evaluate_mintol_ &&
+          (iter_ > cut_evaluate_miniter_ || iter_outer_ > cut_evaluate_miniter_))
+      {
+        FluidField()->Set_EvaluateCut(false);
+
+        if (Comm().MyPID() == 0)
+          IO::cout << "==| Do not evaluate CUT for this iteration as disp_inc: "
+                   << normstrincdispInf_ / std::min(nd_act_scaling_, nd_inc_scaling_) << " < "
+                   << cut_evaluate_mintol_ << " |==" << IO::endl;
+      }
+      else
+        FluidField()->Set_EvaluateCut(true);
+    }
+
     FluidField()->Evaluate();
 
 

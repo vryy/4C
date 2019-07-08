@@ -364,6 +364,13 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   DoubleParameter("ND_MAX_PPRES_ITERINC", -1.0,
       "Maximal porofluid pressure increment to apply full newton --> otherwise damp newton",
       &xfsi_monolithic);
+  DoubleParameter("CUT_EVALUATE_MINTOL", 0.0,
+      "Minimal value of the maximal strucutral displacement for which the CUT is evaluate in this "
+      "iteration!",
+      &xfsi_monolithic);
+  IntParameter("CUT_EVALUATE_MINITER", 0,
+      "Minimal number of nonlinear iterations, before the CUT is potentially not evaluated",
+      &xfsi_monolithic);
 }
 
 

@@ -431,6 +431,7 @@ namespace FSI
 
     //--------------------------------------------------------------------------//
     double normstrincInf_;      //!< Inf-norm of structural increment
+    double normstrincdispInf_;  //!< Inf-norm of structural displacement increment
     double normflvelincInf_;    //!< Inf-norm of fluid velocity increment
     double normflpresincInf_;   //!< Inf-norm of fluid pressure increment
     double normpflvelincInf_;   //!< Inf-norm of poro fluid velocity residual
@@ -488,11 +489,20 @@ namespace FSI
     double nd_increase_fac_;
     std::vector<double> nd_normrhs_old_;
     double nd_maxscaling_;
-    // limiting value for maximal increment
+    /// limiting value for maximal increment
     std::vector<double> nd_max_incnorm_;
-    // scaling members
+    /// scaling member: residual based actual scaling
     double nd_act_scaling_;
+    /// scaling member: incremental based scaling
     double nd_inc_scaling_;
+
+    /// Minimal tolerance compared to max. structural displacement increment for evaluation of the
+    /// cut
+    double cut_evaluate_mintol_;
+    /// Minimal number of iteration before evaluation of the CUT is stopped
+    int cut_evaluate_miniter_;
+    /// Specify CUT evaluate dynamic
+    bool cut_evaluate_dynamic_;
     //@}
 
     // Map of Coupling Object for FS, FP, FA coupling, ...(Fluid, Structure, Poro, Ale)
