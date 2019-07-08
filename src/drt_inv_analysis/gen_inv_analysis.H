@@ -419,13 +419,13 @@ namespace STR
     This implements the update of the parameters based on the Levenberg-Marquardt algorithm. At its
     core, we solve
     \[
-    \left(J^T J + \lambda \diag\left(j^T J\right)\right)\delta
+    \left(J^T J + \mu \diag\left(j^T J\right)\right)\delta p
     = J^T r
     \]
     with the residual \f$r\f$ denoting the deviation of measurements and simulation results and its
     derivative \f$J\f$. The derivative \f$J\f$ is approximated via finite differencing.
 
-    \note Since the number of parameters to be fitted, i.e. the size of \f$\delta\f$, is low, this
+    \note Since the number of parameters to be fitted, i.e. the size of \f$\delta p\f$, is low, this
     can be implemented with serial data structures and can be solved with a direct solver.
 
     @param cmatrix
