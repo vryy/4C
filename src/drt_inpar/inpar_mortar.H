@@ -3,7 +3,7 @@
 
 \brief input parameters for mortar methods
 
-\level 2
+\level 1
 
 \maintainer Matthias Mayr
 
@@ -121,7 +121,7 @@ namespace INPAR
     {
       inttype_segments,    ///< segmentation of mortar interface
       inttype_elements,    ///< fast, elementwise integration
-      inttype_elements_BS  ///< fast, elementwise intgration with boundary segmentation
+      inttype_elements_BS  ///< fast, elementwise integration with boundary segmentation
     };
 
     /// Type of triangulation for segment-base d integration
@@ -140,10 +140,11 @@ namespace INPAR
       consistent_all,       ///< use triangulation GPs for all elements
     };
 
+    /// Enum to encode handling of Dirichlet boundary conditions at contact interfaces
     enum class DBCHandling : int
     {
       do_nothing,
-      remove_dbc_nodes_from_slave_side
+      remove_dbc_nodes_from_slave_side  // ToDo (mayr.mt) Remove? Do not change DBCs at runtime!
     };
 
     /// set the mortar parameters
