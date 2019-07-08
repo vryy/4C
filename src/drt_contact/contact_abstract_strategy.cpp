@@ -1055,8 +1055,8 @@ void CONTACT::CoAbstractStrategy::CalcMeanVelforBinning(Teuchos::RCP<const Epetr
  *----------------------------------------------------------------------*/
 void CONTACT::CoAbstractStrategy::InitBinStrategyforTimestep(Teuchos::RCP<const Epetra_Vector> vel)
 {
-  INPAR::MORTAR::ParallelStrategy strat =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(
+  INPAR::MORTAR::GhostingStrategy strat =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
           Params().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
 
   if (strat != INPAR::MORTAR::binningstrategy) return;
@@ -1097,8 +1097,8 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface(
   // get type of parallel strategy
   const Teuchos::ParameterList& mortarParallelRedistParams =
       Params().sublist("PARALLEL REDISTRIBUTION");
-  INPAR::MORTAR::ParallelStrategy strat =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(
+  INPAR::MORTAR::GhostingStrategy strat =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
           mortarParallelRedistParams, "GHOSTING_STRATEGY");
   INPAR::MORTAR::RedundantStorage redundant =
       DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(

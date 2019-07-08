@@ -84,13 +84,13 @@ namespace INPAR
       redundant_none     ///< no redundant storage
     };
 
-    /// Type of parallel interface evaluation
+    /// Type of ghosting of interface values
     /// (this enum represents the input file parameter GHOSTING_STRATEGY)
-    enum ParallelStrategy
+    enum GhostingStrategy
     {
       ghosting_redundant,  ///< redundant storage of master or master&slave surfaces
-      roundrobinghost,     ///< round robin loop for setup of ghosting only
-      binningstrategy      ///< binning strategy
+      roundrobinghost,     ///< round robin loop to setup of ghosting
+      binningstrategy      ///< binning strategy to setup of ghosting
     };
 
     /// Type of meshtying/contact algorithm

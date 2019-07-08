@@ -51,7 +51,7 @@ CONTACT::AUG::DataContainer::DataContainer()
       vector_maps_valid_(false),
       cn_(-1.0),
       eval_state_(MORTAR::eval_none),
-      parallel_strategy_(INPAR::MORTAR::ghosting_redundant),
+      ghosting_strategy_(INPAR::MORTAR::ghosting_redundant),
       var_type_(INPAR::CONTACT::var_unknown),
       fd_check_type_(INPAR::CONTACT::FDCheck::off),
       potentialPtr_(Teuchos::null),
@@ -167,7 +167,7 @@ CONTACT::AUG::Strategy::Strategy(const Teuchos::RCP<CONTACT::AbstractStratDataCo
 
   Data().SetConstantCn(Params().get<double>("SEMI_SMOOTH_CN"));
 
-  Data().SetParallelStrategy(DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(
+  Data().SetGhostingStrategy(DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
       Params().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY"));
 
   Data().SetVariationalApproachType(DRT::INPUT::IntegralValue<INPAR::CONTACT::VariationalApproach>(
@@ -602,7 +602,7 @@ void CONTACT::AUG::Strategy::InitEvalInterface(Teuchos::RCP<CONTACT::ParamsInter
   Data().PDController().setup(*cparams_ptr);
 
   // get type of parallel strategy
-  INPAR::MORTAR::ParallelStrategy strat = Data().ParallelStrategy();
+  INPAR::MORTAR::GhostingStrategy strat = Data().GhostingStrategy();
 
   // Evaluation for all interfaces
   for (plain_interface_set::const_iterator cit = interface_.begin(); cit != interface_.end(); ++cit)

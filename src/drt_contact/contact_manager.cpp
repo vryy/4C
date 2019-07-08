@@ -670,7 +670,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
       mortar.sublist("PARALLEL REDISTRIBUTION");
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
           mortarParallelRedistParams, "REDUNDANT_STORAGE") == INPAR::MORTAR::redundant_master and
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
           mortarParallelRedistParams, "GHOSTING_STRATEGY") != INPAR::MORTAR::ghosting_redundant)
     dserror(
         "ERROR: Redundant storage only reasonable in combination with parallel strategy: "
@@ -678,15 +678,15 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
           mortarParallelRedistParams, "REDUNDANT_STORAGE") == INPAR::MORTAR::redundant_all and
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
           mortarParallelRedistParams, "GHOSTING_STRATEGY") != INPAR::MORTAR::ghosting_redundant)
     dserror(
         "ERROR: Redundant storage only reasonable in combination with parallel strategy: "
         "ghosting_redundant !");
 
-  if ((DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(
+  if ((DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
            mortarParallelRedistParams, "GHOSTING_STRATEGY") == INPAR::MORTAR::binningstrategy or
-          DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(mortarParallelRedistParams,
+          DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(mortarParallelRedistParams,
               "GHOSTING_STRATEGY") == INPAR::MORTAR::roundrobinghost) and
       DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
           mortarParallelRedistParams, "REDUNDANT_STORAGE") != INPAR::MORTAR::redundant_none)

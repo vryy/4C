@@ -132,8 +132,8 @@ void CONTACT::MtAbstractStrategy::RedistributeMeshtying()
   //---------------------------------------
   // Extend ghosting withi binning
   //---------------------------------------
-  INPAR::MORTAR::ParallelStrategy strat =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(
+  INPAR::MORTAR::GhostingStrategy strat =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
           interface_[0]->IParams().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
   Teuchos::RCP<Epetra_Map> melefullmap = Teuchos::null;
   if (strat == INPAR::MORTAR::binningstrategy)

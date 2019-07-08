@@ -143,13 +143,13 @@ namespace CONTACT
       MORTAR::ActionType GetCurrentEvalState() const { return eval_state_; }
 
       //! get the parallel strategy enumerator
-      void SetParallelStrategy(INPAR::MORTAR::ParallelStrategy parallel_strat)
+      void SetGhostingStrategy(INPAR::MORTAR::GhostingStrategy ghosting_strategy)
       {
-        parallel_strategy_ = parallel_strat;
+        ghosting_strategy_ = ghosting_strategy;
       }
 
       //! get the parallel strategy enumerator
-      INPAR::MORTAR::ParallelStrategy ParallelStrategy() const { return parallel_strategy_; }
+      INPAR::MORTAR::GhostingStrategy GhostingStrategy() const { return ghosting_strategy_; }
 
       void SetVariationalApproachType(const enum INPAR::CONTACT::VariationalApproach var_type)
       {
@@ -571,8 +571,8 @@ namespace CONTACT
       /// access the current evaluation state of the contact strategy
       enum MORTAR::ActionType eval_state_;
 
-      /// defines the type of the parallel evaluation strategy
-      enum INPAR::MORTAR::ParallelStrategy parallel_strategy_;
+      /// defines the type of the ghosting strategy
+      enum INPAR::MORTAR::GhostingStrategy ghosting_strategy_;
 
       /// which variational approach shall be followed? (complete, incomplete, ...)
       enum INPAR::CONTACT::VariationalApproach var_type_;

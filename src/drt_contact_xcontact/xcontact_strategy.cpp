@@ -205,8 +205,8 @@ void XCONTACT::Strategy::InitEvalInterface(Teuchos::RCP<CONTACT::ParamsInterface
   const double t_start = Teuchos::Time::wallTime();
 
   // Get type of parallel strategy
-  INPAR::MORTAR::ParallelStrategy strat =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(
+  INPAR::MORTAR::GhostingStrategy strat =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
           Params().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
 
   // Initialize and evaluate all interfaces

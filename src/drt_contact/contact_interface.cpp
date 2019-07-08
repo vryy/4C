@@ -1335,8 +1335,8 @@ void CONTACT::CoInterface::CreateSearchTree()
       // create fully overlapping map of all master elements
       // for non-redundant storage (RRloop) we handle the master elements
       // like the slave elements --> melecolmap_
-      INPAR::MORTAR::ParallelStrategy strat =
-          DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(
+      INPAR::MORTAR::GhostingStrategy strat =
+          DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
               IParams().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
 
       // get update type of binary tree

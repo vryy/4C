@@ -1049,8 +1049,8 @@ void STR::TimInt::PrepareStepContact()
       // get type of parallel strategy
       const Teuchos::ParameterList& parallelParamsMortar =
           DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
-      INPAR::MORTAR::ParallelStrategy strat =
-          DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(
+      INPAR::MORTAR::GhostingStrategy strat =
+          DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
               parallelParamsMortar, "GHOSTING_STRATEGY");
 
       // prepare binstrategy for timestep
