@@ -9,6 +9,9 @@
 /*----------------------------------------------------------------------*/
 
 #include <string>
+
+#include <Epetra_Vector.h>
+
 #include "stru_resulttest.H"
 #include "strtimint.H"
 #include "../drt_lib/drt_linedefinition.H"

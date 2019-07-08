@@ -11,7 +11,6 @@
 #ifndef STRURESULTTEST_H
 #define STRURESULTTEST_H
 
-#include <Epetra_Vector.h>
 #include "../drt_lib/drt_resulttest.H"
 
 
@@ -35,6 +34,8 @@ namespace STR
 {
   class TimInt;
 }
+
+class Epetra_Vector;
 
 /*!
   \brief Structure specific result test class
