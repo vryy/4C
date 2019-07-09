@@ -192,6 +192,22 @@ namespace INPAR
       RollingCoulomb
     };
 
+    //! type of adhesion law
+    enum AdhesionLaw
+    {
+      NoAdhesion,
+      AdhesionVdWDMT,
+      AdhesionRegDMT
+    };
+
+    //! type of (random) surface energy distribution
+    enum SurfaceEnergyDistribution
+    {
+      ConstantSurfaceEnergy,
+      NormalSurfaceEnergyDistribution,
+      LogNormalSurfaceEnergyDistribution
+    };
+
     //! type of (random) particle radius distribution
     enum RadiusDistribution
     {

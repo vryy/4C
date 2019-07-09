@@ -188,6 +188,14 @@ void PARTICLEINTERACTION::DEMContact::InsertParticleStatesOfParticleTypes(
 }
 
 /*---------------------------------------------------------------------------*
+ | get normal contact stiffness                               sfuchs 07/2019 |
+ *---------------------------------------------------------------------------*/
+double PARTICLEINTERACTION::DEMContact::GetNormalContactStiffness() const
+{
+  return contactnormal_->GetNormalContactStiffness();
+}
+
+/*---------------------------------------------------------------------------*
  | check critical time step (on this processor)               sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContact::CheckCriticalTimeStep() const

@@ -19,6 +19,7 @@
 #include "particle_interaction_dem_neighbor_pairs.H"
 #include "particle_interaction_dem_history_pairs.H"
 #include "particle_interaction_dem_contact.H"
+#include "particle_interaction_dem_adhesion.H"
 
 #include "../drt_particle_algorithm/particle_wall_interface.H"
 
@@ -64,6 +65,9 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::Init()
 
   // init contact handler
   InitContactHandler();
+
+  // init adhesion handler
+  InitAdhesionHandler();
 }
 
 /*---------------------------------------------------------------------------*
@@ -85,6 +89,11 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::Setup(
   // setup contact handler
   contact_->Setup(particleengineinterface, particlewallinterface, particlematerial_, neighborpairs_,
       historypairs_);
+
+  // setup adhesion handler
+  if (adhesion_)
+    adhesion_->Setup(particleengineinterface, particlewallinterface, neighborpairs_, historypairs_,
+        contact_->GetNormalContactStiffness());
 }
 
 /*---------------------------------------------------------------------------*
@@ -104,6 +113,9 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::WriteRestart(
 
   // write restart of contact handler
   contact_->WriteRestart(step, time);
+
+  // write restart of adhesion handler
+  if (adhesion_) adhesion_->WriteRestart(step, time);
 }
 
 /*---------------------------------------------------------------------------*
@@ -123,6 +135,9 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::ReadRestart(
 
   // read restart of contact handler
   contact_->ReadRestart(reader);
+
+  // read restart of adhesion handler
+  if (adhesion_) adhesion_->ReadRestart(reader);
 }
 
 /*---------------------------------------------------------------------------*
@@ -170,11 +185,17 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateInteractions()
   // evaluate neighbor pairs
   neighborpairs_->EvaluateNeighborPairs();
 
+  // evaluate adhesion neighbor pairs
+  if (adhesion_) neighborpairs_->EvaluateNeighborPairsAdhesion(adhesion_->GetAdhesionDistance());
+
   // check critical time step
   contact_->CheckCriticalTimeStep();
 
   // add contact contribution to force and moment field
   contact_->AddForceAndMomentContribution();
+
+  // add adhesion contribution to force field
+  if (adhesion_) adhesion_->AddForceContribution();
 
   // compute acceleration from force and moment
   ComputeAcceleration();
@@ -188,7 +209,13 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateInteractions()
  *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::ParticleInteractionDEM::MaxInteractionDistance() const
 {
-  return (2.0 * MaxParticleRadius());
+  // particle contact interaction distance
+  double interactiondistance = 2.0 * MaxParticleRadius();
+
+  // add adhesion distance
+  if (adhesion_) interactiondistance += adhesion_->GetAdhesionDistance();
+
+  return interactiondistance;
 }
 
 /*---------------------------------------------------------------------------*
@@ -256,6 +283,24 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::InitContactHandler()
 
   // init contact handler
   contact_->Init();
+}
+
+/*---------------------------------------------------------------------------*
+ | init adhesion handler                                      sfuchs 07/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::ParticleInteractionDEM::InitAdhesionHandler()
+{
+  // get type of adhesion law
+  INPAR::PARTICLE::AdhesionLaw adhesionlaw =
+      DRT::INPUT::IntegralValue<INPAR::PARTICLE::AdhesionLaw>(params_dem_, "ADHESIONLAW");
+
+  // create adhesion handler
+  if (adhesionlaw != INPAR::PARTICLE::NoAdhesion)
+    adhesion_ = std::unique_ptr<PARTICLEINTERACTION::DEMAdhesion>(
+        new PARTICLEINTERACTION::DEMAdhesion(params_dem_));
+
+  // init adhesion handler
+  if (adhesion_) adhesion_->Init();
 }
 
 /*---------------------------------------------------------------------------*

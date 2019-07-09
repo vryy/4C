@@ -51,6 +51,11 @@ namespace PARTICLEINTERACTION
   typedef std::pair<bool, PARTICLEINTERACTION::DEMHistoryPairRolling> TouchedDEMHistoryPairRolling;
   typedef std::unordered_map<int, std::unordered_map<int, TouchedDEMHistoryPairRolling>>
       DEMHistoryPairRollingData;
+
+  typedef std::pair<bool, PARTICLEINTERACTION::DEMHistoryPairAdhesion>
+      TouchedDEMHistoryPairAdhesion;
+  typedef std::unordered_map<int, std::unordered_map<int, TouchedDEMHistoryPairAdhesion>>
+      DEMHistoryPairAdhesionData;
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*
@@ -102,6 +107,18 @@ namespace PARTICLEINTERACTION
     inline DEMHistoryPairRollingData& GetRefToParticleWallRollingHistoryData()
     {
       return particlewallrollinghistorydata_;
+    };
+
+    //! get reference to particle adhesion history pair data
+    inline DEMHistoryPairAdhesionData& GetRefToParticleAdhesionHistoryData()
+    {
+      return particleadhesionhistorydata_;
+    };
+
+    //! get reference to particle-wall adhesion history pair data
+    inline DEMHistoryPairAdhesionData& GetRefToParticleWallAdhesionHistoryData()
+    {
+      return particlewalladhesionhistorydata_;
     };
 
     //! distribute history pairs
@@ -157,6 +174,12 @@ namespace PARTICLEINTERACTION
 
     //! particle-wall rolling history pair data
     DEMHistoryPairRollingData particlewallrollinghistorydata_;
+
+    //! particle adhesion history pair data
+    DEMHistoryPairAdhesionData particleadhesionhistorydata_;
+
+    //! particle-wall adhesion history pair data
+    DEMHistoryPairAdhesionData particlewalladhesionhistorydata_;
 
     //! interface to particle engine
     std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface_;

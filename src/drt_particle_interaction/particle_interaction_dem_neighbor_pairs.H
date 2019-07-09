@@ -90,8 +90,23 @@ namespace PARTICLEINTERACTION
       return particlewallpairdata_;
     };
 
+    //! get reference to adhesion particle pair data
+    inline const DEMParticlePairData& GetRefToParticlePairAdhesionData() const
+    {
+      return particlepairadhesiondata_;
+    };
+
+    //! get reference to adhesion particle-wall pair data
+    inline const DEMParticleWallPairData& GetRefToParticleWallPairAdhesionData() const
+    {
+      return particlewallpairadhesiondata_;
+    };
+
     //! evaluate neighbor pairs
     void EvaluateNeighborPairs();
+
+    //! evaluate adhesion neighbor pairs
+    void EvaluateNeighborPairsAdhesion(const double& adhesion_distance);
 
    private:
     //! evaluate particle pairs
@@ -100,11 +115,23 @@ namespace PARTICLEINTERACTION
     //! evaluate particle-wall pairs
     void EvaluateParticleWallPairs();
 
+    //! evaluate adhesion particle pairs
+    void EvaluateParticlePairsAdhesion(const double& adhesion_distance);
+
+    //! evaluate adhesion particle-wall pairs
+    void EvaluateParticleWallPairsAdhesion(const double& adhesion_distance);
+
     //! particle pair data with evaluated quantities
     DEMParticlePairData particlepairdata_;
 
     //! particle-wall pair data with evaluated quantities
     DEMParticleWallPairData particlewallpairdata_;
+
+    //! adhesion particle pair data with evaluated quantities
+    DEMParticlePairData particlepairadhesiondata_;
+
+    //! adhesion particle-wall pair data with evaluated quantities
+    DEMParticleWallPairData particlewallpairadhesiondata_;
 
     //! interface to particle engine
     std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface_;

@@ -90,6 +90,9 @@ namespace PARTICLEINTERACTION
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) const;
 
+    //! get normal contact stiffness
+    virtual double GetNormalContactStiffness() const;
+
     //! have tangential contact
     virtual bool HaveTangentialContact() const { return contacttangential_ ? true : false; };
 
