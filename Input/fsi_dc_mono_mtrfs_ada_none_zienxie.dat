@@ -95,6 +95,7 @@ TOL_VEL_INC_L2                  1e-11
 TOL_VEL_RES_INF                 1e-11
 TOL_VEL_RES_L2                  1e-11
 -------------------------------------------------------------MORTAR COUPLING
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 REDUNDANT_STORAGE               all
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK

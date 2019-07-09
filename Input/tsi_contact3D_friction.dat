@@ -33,6 +33,7 @@ SEMI_SMOOTH_CT       1e6
 LINEAR_SOLVER        1
 --------------------------------------------------MORTAR COUPLING
 SEARCH_PARAM         0.3
+--------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST      No
 ---------------------------------------------------------TSI CONTACT
 HEATTRANSSLAVE       2e0

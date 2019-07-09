@@ -71,6 +71,7 @@ EVALUATION_TAU  integration_point
 LM_SHAPEFCN             Dual
 LM_QUAD                 quad
 CROSSPOINTS             no
+--------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST         static
 REDUNDANT_STORAGE       all
 --------------------------------------------------CONTACT DYNAMIC

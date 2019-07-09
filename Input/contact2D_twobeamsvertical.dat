@@ -68,6 +68,7 @@ SEMI_SMOOTH_CT                  100
 LM_SHAPEFCN                     Dual
 SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.3
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 Dynamic
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver

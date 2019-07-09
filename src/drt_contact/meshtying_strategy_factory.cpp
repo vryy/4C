@@ -83,26 +83,26 @@ void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& para
   // *********************************************************************
   // invalid parallel strategies
   // *********************************************************************
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(mortar, "REDUNDANT_STORAGE") ==
-          INPAR::MORTAR::redundant_master and
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(mortar, "PARALLEL_STRATEGY") !=
-          INPAR::MORTAR::ghosting_redundant)
+  const Teuchos::ParameterList& mortarParallelRedistParams =
+      mortar.sublist("PARALLEL REDISTRIBUTION");
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
+          mortarParallelRedistParams, "REDUNDANT_STORAGE") == INPAR::MORTAR::redundant_master and
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
+          mortarParallelRedistParams, "GHOSTING_STRATEGY") != INPAR::MORTAR::ghosting_redundant)
     dserror(
         "ERROR: Redundant storage only reasonable in combination with parallel strategy: "
         "ghosting_redundant !");
 
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(mortar, "REDUNDANT_STORAGE") ==
-          INPAR::MORTAR::redundant_all and
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(mortar, "PARALLEL_STRATEGY") !=
-          INPAR::MORTAR::ghosting_redundant)
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
+          mortarParallelRedistParams, "REDUNDANT_STORAGE") == INPAR::MORTAR::redundant_all and
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
+          mortarParallelRedistParams, "GHOSTING_STRATEGY") != INPAR::MORTAR::ghosting_redundant)
     dserror(
         "ERROR: Redundant storage only reasonable in combination with parallel strategy: "
         "redundant_ghosting !");
 
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(mortar, "PARALLEL_STRATEGY") ==
-          INPAR::MORTAR::roundrobinevaluate or
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(mortar, "PARALLEL_STRATEGY") ==
-          INPAR::MORTAR::roundrobinghost)
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
+          mortarParallelRedistParams, "GHOSTING_STRATEGY") == INPAR::MORTAR::roundrobinghost)
     dserror("ERROR: Round-Robin strategies not for mortar meshtying!");
 
   // *********************************************************************
@@ -142,14 +142,14 @@ void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& para
               INPAR::CONTACT::system_condensed_lagmult))
     dserror("ERROR: Condensation of linear system only possible for dual Lagrange multipliers");
 
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar, "PARALLEL_REDIST") ==
-          INPAR::MORTAR::parredist_dynamic and
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
+          mortarParallelRedistParams, "PARALLEL_REDIST") == INPAR::MORTAR::parredist_dynamic and
       onlymeshtying)
     dserror("ERROR: Dynamic parallel redistribution not possible for meshtying");
 
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar, "PARALLEL_REDIST") !=
-          INPAR::MORTAR::parredist_none &&
-      mortar.get<int>("MIN_ELEPROC") < 0)
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
+          mortarParallelRedistParams, "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none &&
+      mortarParallelRedistParams.get<int>("MIN_ELEPROC") < 0)
     dserror(
         "ERROR: Minimum number of elements per processor for parallel redistribution must be >= 0");
 
@@ -184,8 +184,8 @@ void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& para
     dserror("ERROR: Crosspoints and linear LM interpolation for quadratic FE not yet compatible");
 
   if (DRT::INPUT::IntegralValue<int>(mortar, "CROSSPOINTS") == true &&
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar, "PARALLEL_REDIST") !=
-          INPAR::MORTAR::parredist_none)
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
+          mortarParallelRedistParams, "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
     dserror("ERROR: Crosspoints and parallel redistribution not yet compatible");
 
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
@@ -242,32 +242,20 @@ void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& para
   // *********************************************************************
   // predefined params for meshtying and contact
   // *********************************************************************
-  if (meshtyingandcontact and !DRT::INPUT::IntegralValue<int>(meshtying, "DISCR_SMOOTHING"))
+  if (meshtyingandcontact)
   {
     // set options for mortar coupling
     params.set<std::string>("SEARCH_ALGORITHM", "Binarytree");
     params.set<double>("SEARCH_PARAM", 0.3);
     params.set<std::string>("SEARCH_USE_AUX_POS", "no");
-    params.set<std::string>("PARALLEL_REDIST", "static");
     params.set<std::string>("LM_SHAPEFCN", "dual");
-    params.set<std::string>("REDUNDANT_STORAGE", "Master");
     params.set<std::string>("SYSTEM", "condensed");
     params.set<bool>("NURBS", false);
     params.set<int>("NUMGP_PER_DIM", -1);
     params.set<std::string>("STRATEGY", "LagrangianMultipliers");
     params.set<std::string>("INTTYPE", "segments");
-  }
-  else if (meshtyingandcontact and DRT::INPUT::IntegralValue<int>(meshtying, "DISCR_SMOOTHING"))
-  {
-    // set options for mortar coupling
-    params.set<std::string>("SEARCH_ALGORITHM", "Binarytree");
-    params.set<double>("SEARCH_PARAM", 0.3);
-    params.set<std::string>("SEARCH_USE_AUX_POS", "no");
-    params.set<std::string>("PARALLEL_REDIST", "static");
-    params.set<std::string>("LM_SHAPEFCN", "dual");
-    params.set<std::string>("REDUNDANT_STORAGE", "Master");
-    params.set<std::string>("SYSTEM", "condensed");
-    params.set<bool>("NURBS", false);
+    params.sublist("PARALLEL REDISTRIBUTION").set<std::string>("REDUNDANT_STORAGE", "Master");
+    params.sublist("PARALLEL REDISTRIBUTION").set<std::string>("PARALLEL_REDIST", "static");
   }
   // *********************************************************************
   // smooth interfaces
@@ -289,8 +277,8 @@ void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& para
     dserror("POROCONTACT: Only dual and petrovgalerkin shape functions implemented yet!");
 
   if ((problemtype == prb_poroelast || problemtype == prb_fpsi || problemtype == prb_fpsi_xfem) &&
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar, "PARALLEL_REDIST") !=
-          INPAR::MORTAR::parredist_none)
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
+          mortarParallelRedistParams, "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
     dserror(
         "POROCONTACT: Parallel Redistribution not implemented yet!");  // Since we use Pointers to
                                                                        // Parent Elements, which are
@@ -317,7 +305,8 @@ void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& para
   params.setName("CONTACT DYNAMIC / MORTAR COUPLING");
 
   // no parallel redistribution in the serial case
-  if (Comm().NumProc() == 1) params.set<std::string>("PARALLEL_REDIST", "None");
+  if (Comm().NumProc() == 1)
+    params.sublist("PARALLEL REDISTRIBUTION").set<std::string>("PARALLEL_REDIST", "None");
 
   return;
 }
@@ -465,7 +454,8 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
     // create an empty meshtying interface and store it in this Manager
     // (for structural meshtying we currently choose redundant master storage)
     INPAR::MORTAR::RedundantStorage redundant =
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(mtparams, "REDUNDANT_STORAGE");
+        DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
+            mtparams.sublist("PARALLEL REDISTRIBUTION"), "REDUNDANT_STORAGE");
     //    if (redundant != INPAR::MORTAR::redundant_master)
     //      dserror("ERROR: MtManager: Meshtying requires redundant master storage");
     interfaces.push_back(

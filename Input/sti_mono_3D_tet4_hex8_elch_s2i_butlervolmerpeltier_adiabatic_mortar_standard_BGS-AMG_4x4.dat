@@ -30,8 +30,9 @@ INITIALFIELD                    field_by_condition
 CALCFLUX_BOUNDARY               total
 LINEAR_SOLVER                   2
 ---------------------------------------------------MORTAR COUPLING
-PARALLEL_REDIST                 no
 MESH_RELOCATION                 no
+---------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+PARALLEL_REDIST                 no
 --------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ITEMAX                          2
 ----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION

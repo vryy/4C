@@ -70,8 +70,9 @@ LM_SHAPEFCN                     Standard
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    2.0
 LM_QUAD                         pwlin
-PARALLEL_REDIST                 Dynamic
 LM_DUAL_CONSISTENT              none
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+PARALLEL_REDIST                 Dynamic
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

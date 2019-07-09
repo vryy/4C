@@ -53,9 +53,10 @@ NITSCHE_PENALTY_ADAPTIVE  yes
 ALGORITHM            gpts
 SEARCH_PARAM         0.3e1
 NUMGP_PER_DIM        2
-PARALLEL_REDIST      none
 LM_SHAPEFCN          std
 INTTYPE              Elements
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+PARALLEL_REDIST      none
 ----------------------------------------------------------SOLVER 1
 SOLVER                         UMFPACK
 AZPREC  ML

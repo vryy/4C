@@ -27,11 +27,12 @@ RESTART                         0
 SHAPEFCT                        Nurbs
 -------------------------------------------------------------MORTAR COUPLING
 SEARCH_PARAM         0.3
-PARALLEL_REDIST      No
 INTTYPE              Segments
 MESH_RELOCATION      no
 LM_QUAD              quad
 // REDUNDANT_STORAGE    master
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+PARALLEL_REDIST      No
 ----------------------------------------------------THERMAL DYNAMIC
 ADAPTCONV                       No
 DIVERCONT                       continue

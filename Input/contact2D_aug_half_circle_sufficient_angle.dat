@@ -56,13 +56,14 @@ LM_SHAPEFCN                     std
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    4.0
 SEARCH_USE_AUX_POS              Yes
+INTTYPE                         Elements
+NUMGP_PER_DIM                   3
+----------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 REDUNDANT_STORAGE               Master
-PARALLEL_STRATEGY               redundant_ghosting
+GHOSTING_STRATEGY               redundant_ghosting
 PARALLEL_REDIST                 Dynamic
 MAX_BALANCE                     2
 MIN_ELEPROC                     0
-INTTYPE                         Elements
-NUMGP_PER_DIM                   3
 ---------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 STRATEGY                        SteepestAscent

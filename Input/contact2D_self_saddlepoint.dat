@@ -90,6 +90,7 @@ SEMI_SMOOTH_CN                  1.0
 LM_SHAPEFCN                     Dual // Dual
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.5
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 No
 REDUNDANT_STORAGE               All
 --------------------------------------------------------------------SOLVER 1

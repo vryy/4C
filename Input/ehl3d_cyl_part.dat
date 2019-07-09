@@ -66,6 +66,7 @@ SEARCH_PARAM                    5
 INTTYPE                         Elements
 NUMGP_PER_DIM                   2
 TRIANGULATION                   Center
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 none
 ---------------------------------------------------LUBRICATION DYNAMIC
 MAXTIME                         1.0

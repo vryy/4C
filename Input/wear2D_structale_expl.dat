@@ -67,8 +67,9 @@ MAXITER                         1
 LM_SHAPEFCN                     Dual
 SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.4
-PARALLEL_REDIST                 static // switch this to static for now, as dynamic is suspected to have bugs // dynamic
 //LM_DUAL_CONSISTENT              no
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+PARALLEL_REDIST                 static // switch this to static for now, as dynamic is suspected to have bugs // dynamic
 ------------------------------------------------------------------------WEAR
 WEARLAW                         Archard
 WEARTYPE                        is

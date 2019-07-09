@@ -55,8 +55,9 @@ NITSCHE_PENALTY_ADAPTIVE no
 ALGORITHM            gpts
 SEARCH_PARAM         0.3e1
 NUMGP_PER_DIM        3
-PARALLEL_REDIST      none
 LM_SHAPEFCN          std
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+PARALLEL_REDIST      none
 -------------------------------------STRUCT NOX/Printing
 Inner Iteration = no
 Outer Iteration = yes

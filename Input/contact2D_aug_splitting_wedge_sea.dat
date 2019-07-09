@@ -71,16 +71,17 @@ LM_QUAD                         undefined
 CROSSPOINTS                     No
 LM_DUAL_CONSISTENT              none
 MESH_RELOCATION                 Initial
-REDUNDANT_STORAGE               Master
-PARALLEL_STRATEGY               redundant_ghosting
-PARALLEL_REDIST                 Dynamic
 ALGORITHM                       Mortar
-MAX_BALANCE                     2
-MIN_ELEPROC                     0
 INTTYPE                         Elements
 NUMGP_PER_DIM                   7
 TRIANGULATION                   Delaunay
 RESTART_WITH_MESHTYING          No
+----------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+REDUNDANT_STORAGE               Master
+GHOSTING_STRATEGY               redundant_ghosting
+PARALLEL_REDIST                 Dynamic
+MAX_BALANCE                     2
+MIN_ELEPROC                     0
 ----------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   1
 RESTART_WITH_CONTACT            No

@@ -82,6 +82,7 @@ TOLRES_PORO                     1e-10
 VECTORNORM_RESF                 L2
 VECTORNORM_INC                  L2
 -------------------------------------------------------------MORTAR COUPLING
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 no
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1

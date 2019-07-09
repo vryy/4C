@@ -898,86 +898,16 @@ void CONTACT::CoInterface::RoundRobinDetectGhosting()
 }
 
 /*----------------------------------------------------------------------*
- |  change master ownership clockwise for contact            farah 10/13|
- |  interface and evaluate within each iteration                        |
- *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::RoundRobinEvaluate()
-{
-  // first evaluation with init. parallel redistr.
-  Evaluate(0);
-
-  // first ghosting for std. distribution
-  RoundRobinExtendGhosting(true);
-
-  // Init Maps
-  // TODO: use initial_ele_colmap from abstract_strategy.H !!!
-  Teuchos::RCP<Epetra_Map> Init_SCN = Teuchos::rcp(new Epetra_Map(*SlaveColNodes()));
-  Teuchos::RCP<Epetra_Map> Init_SCE = Teuchos::rcp(new Epetra_Map(*SlaveColElements()));
-  Teuchos::RCP<Epetra_Map> Init_MCN = Teuchos::rcp(new Epetra_Map(*MasterColNodes()));
-  Teuchos::RCP<Epetra_Map> Init_MCE = Teuchos::rcp(new Epetra_Map(*MasterColElements()));
-
-  // *************************************
-  // start RR loop for current interface
-  // *************************************
-  // loop over all procs
-  if (Comm().NumProc() > 1)
-    for (int j = 0; j < (int)(Comm().NumProc()); ++j)
-    {
-      // status output
-      if (Comm().MyPID() == 0 && j == 0) std::cout << "Round-Robin-Iteration #" << j;
-      if (Comm().MyPID() == 0 && j > 0) std::cout << " #" << j;
-
-      // perform the ownership change
-      RoundRobinChangeOwnership();
-
-      // build new search tree or do nothing for bruteforce
-      if (SearchAlg() == INPAR::MORTAR::search_binarytree)
-        CreateSearchTree();
-      else if (SearchAlg() != INPAR::MORTAR::search_bfele)
-        dserror("ERROR: Invalid search algorithm");
-
-      // evaluate interfaces
-      if (j < (int)(Comm().NumProc() - 1))
-      {
-        Evaluate(j + 1);
-
-        // other ghostings per iter
-        RoundRobinExtendGhosting(false);
-      }
-      else
-      {
-        // do nothing -- just switch
-      }
-    }  // end RR
-
-  eextendedghosting_ = LINALG::MergeMap(eextendedghosting_, Init_SCE, true);
-  nextendedghosting_ = LINALG::MergeMap(nextendedghosting_, Init_SCN, true);
-  eextendedghosting_ = LINALG::MergeMap(eextendedghosting_, Init_MCE, true);
-  nextendedghosting_ = LINALG::MergeMap(nextendedghosting_, Init_MCN, true);
-
-  // finally extend ghosting
-  Discret().ExportColumnElements(*eextendedghosting_);
-  Discret().ExportColumnNodes(*nextendedghosting_);
-  FillComplete();
-
-  // reset extended ghosting maps
-  eextendedghosting_ = Teuchos::null;
-  nextendedghosting_ = Teuchos::null;
-
-  // final output for loop
-  if (Comm().MyPID() == 0) std::cout << " RRL done!" << std::endl;
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  |  redistribute contact interface (public)                   popp 08/10|
  *----------------------------------------------------------------------*/
 bool CONTACT::CoInterface::Redistribute(int index)
 {
+  const Teuchos::ParameterList& mortarParallelRedistParams =
+      IParams().sublist("PARALLEL REDISTRIBUTION");
+
   // make sure we are supposed to be here
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(IParams(), "PARALLEL_REDIST") ==
-      INPAR::MORTAR::parredist_none)
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
+          mortarParallelRedistParams, "PARALLEL_REDIST") == INPAR::MORTAR::parredist_none)
     dserror(
         "ERROR: You are not supposed to be here since you did not enable PARALLEL_REDIST in the "
         "input file. ");
@@ -1068,10 +998,10 @@ bool CONTACT::CoInterface::Redistribute(int index)
   int mproc = numproc;
 
   // minimum number of elements per proc
-  int minele = IParams().get<int>("MIN_ELEPROC");
+  const int minele = mortarParallelRedistParams.get<int>("MIN_ELEPROC");
 
   // Max. relative imbalance between subdomain sizes
-  const double imbalance_tol = IParams().get<double>("IMBALANCE_TOL");
+  const double imbalance_tol = mortarParallelRedistParams.get<double>("IMBALANCE_TOL");
 
   // calculate real number of procs to be used
   if (minele > 0)
@@ -1405,9 +1335,9 @@ void CONTACT::CoInterface::CreateSearchTree()
       // create fully overlapping map of all master elements
       // for non-redundant storage (RRloop) we handle the master elements
       // like the slave elements --> melecolmap_
-      INPAR::MORTAR::ParallelStrategy strat =
-          DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(
-              IParams(), "PARALLEL_STRATEGY");
+      INPAR::MORTAR::GhostingStrategy strat =
+          DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
+              IParams().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
 
       // get update type of binary tree
       INPAR::MORTAR::BinaryTreeUpdateType updatetype =
@@ -1418,10 +1348,6 @@ void CONTACT::CoInterface::CreateSearchTree()
       if (strat == INPAR::MORTAR::roundrobinghost || strat == INPAR::MORTAR::binningstrategy)
       {
         melefullmap = melecolmap_;
-      }
-      else if (strat == INPAR::MORTAR::roundrobinevaluate)
-      {
-        melefullmap = melerowmap_;
       }
       else if (strat == INPAR::MORTAR::ghosting_redundant)
       {

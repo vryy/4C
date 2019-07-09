@@ -81,6 +81,7 @@ LINEAR_SOLVER                   2
 LM_SHAPEFCN                     Dual
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 static
 REDUNDANT_STORAGE               all
 --------------------------------------------------------------------SOLVER 1

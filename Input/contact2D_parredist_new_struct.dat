@@ -56,6 +56,7 @@ SEMI_SMOOTH_CT                  1.0
 LM_SHAPEFCN                     Dual
 //                                                             // exemplarily test dynamic redistribution with minimum
 //                                                             // number of elements per proc = 0 and time limit = 1.5 here
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 Dynamic
 MIN_ELEPROC                     0
 MAX_BALANCE                     1.5

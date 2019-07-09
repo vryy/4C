@@ -26,31 +26,41 @@ namespace DRT
 namespace LINALG
 {
   class MapExtractor;
-}
+}  // namespace LINALG
 
 namespace MORTAR
 {
   class StrategyBase;
-}
+}  // namespace MORTAR
 
 namespace CONTACT
 {
-  // class CoManager;
-  // class MtManager;
+  /*!
+  \brief Bridge to enable unified access to contact and meshtying managers
 
+  This bridge wraps contact and meshtying managers, such that the structure time integration does
+  not have to distinguish between contact and meshtying operations, but has a single interface to
+  both of them. The distinction between contact and meshtying operations is hidden in here.
+  */
   class MeshtyingContactBridge
   {
    public:
-    //@}
+    /*!
+    \brief Constructor
 
+    @param dis Structure discretization
+    @param mtcond List of meshtying conditions as given in input file
+    @param ccond List of contact conditions as given in input file
+    @param timeIntegrationMidPoint Generalized mid-point of time integration scheme
+    */
     MeshtyingContactBridge(DRT::Discretization& dis, std::vector<DRT::Condition*>& mtcond,
-        std::vector<DRT::Condition*>& ccond, double alphaf, bool smoothing = false);
+        std::vector<DRT::Condition*>& ccond, double timeIntegrationMidPoint);
 
     /*!
     \brief Destructor
 
     */
-    virtual ~MeshtyingContactBridge(){};
+    virtual ~MeshtyingContactBridge() = default;
 
     //! @name Access methods
 
@@ -70,25 +80,13 @@ namespace CONTACT
     \brief Get contact manager
 
     */
-    Teuchos::RCP<MORTAR::ManagerBase> ContactManager()
-    {
-      if (sman_ != Teuchos::null)
-        return sman_;
-      else
-        return cman_;
-    }
+    Teuchos::RCP<MORTAR::ManagerBase> ContactManager() { return cman_; }
 
     /*!
     \brief Get meshtying manager
 
     */
     Teuchos::RCP<MORTAR::ManagerBase> MtManager() { return mtman_; }
-
-    /*!
-    \brief Get smoothing manager
-
-    */
-    Teuchos::RCP<MORTAR::ManagerBase> SManager() { return sman_; }
 
     /*!
     \brief Get strategy of mt/contact problem
@@ -100,25 +98,13 @@ namespace CONTACT
     \brief return bool indicating if contact is defined
 
     */
-    bool HaveContact()
-    {
-      if (sman_ != Teuchos::null)
-        return true;
-      else
-        return (cman_ != Teuchos::null);
-    }
+    bool HaveContact() { return (cman_ != Teuchos::null); }
 
     /*!
     \brief return bool indicating if meshtying is defined
 
     */
     bool HaveMeshtying() { return (mtman_ != Teuchos::null); }
-
-    /*!
-    \brief return bool indicating if smoothing is defined
-
-    */
-    bool HaveSmoothing() { return (sman_ != Teuchos::null); }
 
     /*!
     \brief Write results for visualization for meshtying/contact problems
@@ -178,19 +164,23 @@ namespace CONTACT
     /*!
     \brief write restart
 
+    @param[in] output Output writer to be used for writing outpu
+    @oaram[in] forcedrestart Force to write restart data
+
     */
     void WriteRestart(Teuchos::RCP<IO::DiscretizationWriter>& output, bool forcedrestart = false);
-    //@}
 
-   protected:
+   private:
     // don't want cctor (= operator impossible anyway for abstract class)
     MeshtyingContactBridge(const MeshtyingContactBridge& old) = delete;
 
     // internal variables:
 
-    Teuchos::RCP<MORTAR::ManagerBase> cman_;   //! contact manager
-    Teuchos::RCP<MORTAR::ManagerBase> mtman_;  //! meshtying manager
-    Teuchos::RCP<MORTAR::ManagerBase> sman_;   //! smoothing manager
+    //! Contact manager
+    Teuchos::RCP<MORTAR::ManagerBase> cman_;
+
+    //! Meshtying manager
+    Teuchos::RCP<MORTAR::ManagerBase> mtman_;
 
   };  // class MeshtyingContactBridge
 }  // namespace CONTACT

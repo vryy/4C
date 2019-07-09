@@ -283,7 +283,8 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
     // (for structural contact we currently choose redundant master storage)
     // (the only exception is self contact where a redundant slave is needed, too)
     INPAR::MORTAR::RedundantStorage redundant =
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(icparams, "REDUNDANT_STORAGE");
+        DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
+            icparams.sublist("PARALLEL REDISTRIBUTION"), "REDUNDANT_STORAGE");
     if (isanyselfcontact == true && redundant != INPAR::MORTAR::redundant_all)
       dserror("ERROR: CoManager: Self contact requires redundant slave and master storage");
 
@@ -665,47 +666,48 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // *********************************************************************
   // invalid parallel strategies
   // *********************************************************************
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(mortar, "REDUNDANT_STORAGE") ==
-          INPAR::MORTAR::redundant_master and
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(mortar, "PARALLEL_STRATEGY") !=
-          INPAR::MORTAR::ghosting_redundant)
+  const Teuchos::ParameterList& mortarParallelRedistParams =
+      mortar.sublist("PARALLEL REDISTRIBUTION");
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
+          mortarParallelRedistParams, "REDUNDANT_STORAGE") == INPAR::MORTAR::redundant_master and
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
+          mortarParallelRedistParams, "GHOSTING_STRATEGY") != INPAR::MORTAR::ghosting_redundant)
     dserror(
         "ERROR: Redundant storage only reasonable in combination with parallel strategy: "
         "ghosting_redundant !");
 
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(mortar, "REDUNDANT_STORAGE") ==
-          INPAR::MORTAR::redundant_all and
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(mortar, "PARALLEL_STRATEGY") !=
-          INPAR::MORTAR::ghosting_redundant)
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
+          mortarParallelRedistParams, "REDUNDANT_STORAGE") == INPAR::MORTAR::redundant_all and
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
+          mortarParallelRedistParams, "GHOSTING_STRATEGY") != INPAR::MORTAR::ghosting_redundant)
     dserror(
         "ERROR: Redundant storage only reasonable in combination with parallel strategy: "
         "ghosting_redundant !");
 
-  if ((DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(mortar, "PARALLEL_STRATEGY") ==
-              INPAR::MORTAR::binningstrategy or
-          DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(mortar, "PARALLEL_STRATEGY") ==
-              INPAR::MORTAR::roundrobinevaluate or
-          DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(mortar, "PARALLEL_STRATEGY") ==
-              INPAR::MORTAR::roundrobinghost) and
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(mortar, "REDUNDANT_STORAGE") !=
-          INPAR::MORTAR::redundant_none)
+  if ((DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
+           mortarParallelRedistParams, "GHOSTING_STRATEGY") == INPAR::MORTAR::binningstrategy or
+          DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(mortarParallelRedistParams,
+              "GHOSTING_STRATEGY") == INPAR::MORTAR::roundrobinghost) and
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
+          mortarParallelRedistParams, "REDUNDANT_STORAGE") != INPAR::MORTAR::redundant_none)
     dserror("ERROR: Parallel strategies only for none-redundant ghosting!");
 
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar, "PARALLEL_REDIST") !=
-          INPAR::MORTAR::parredist_none &&
-      mortar.get<int>("MIN_ELEPROC") < 0)
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
+          mortarParallelRedistParams, "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none &&
+      mortarParallelRedistParams.get<int>("MIN_ELEPROC") < 0)
     dserror(
         "ERROR: Minimum number of elements per processor for parallel redistribution must be >= 0");
 
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar, "PARALLEL_REDIST") ==
-          INPAR::MORTAR::parredist_dynamic &&
-      mortar.get<double>("MAX_BALANCE") < 1.0)
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
+          mortarParallelRedistParams, "PARALLEL_REDIST") == INPAR::MORTAR::parredist_dynamic &&
+      mortarParallelRedistParams.get<double>("MAX_BALANCE") < 1.0)
     dserror(
         "ERROR: Maximum allowed value of load balance for dynamic parallel redistribution must be "
         ">= 1.0");
 
-  if (problemtype == prb_tsi && DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
-                                    mortar, "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
+  if (problemtype == prb_tsi &&
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
+          mortarParallelRedistParams, "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
     dserror("ERROR: Parallel redistribution not yet implemented for TSI problems");
 
   // *********************************************************************
@@ -909,8 +911,9 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
       if (*side == "Selfcontact") self = true;
     }
 
-    if (self == true && DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
-                            mortar, "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
+    if (self == true &&
+        DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
+            mortarParallelRedistParams, "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
       dserror("ERROR: Self contact and parallel redistribution not yet compatible");
 
     if (DRT::INPUT::IntegralValue<int>(contact, "INITCONTACTBYGAP") == true &&
@@ -1017,8 +1020,8 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
               INPAR::CONTACT::solution_lagmult)
         dserror("POROCONTACT: Only dual and petrovgalerkin shape functions implemented yet!");
 
-      if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar, "PARALLEL_REDIST") !=
-              INPAR::MORTAR::parredist_none &&
+      if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
+              mortarParallelRedistParams, "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none &&
           DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
               INPAR::CONTACT::solution_lagmult)
         dserror(
@@ -1172,7 +1175,8 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   }
 
   // no parallel redistribution in the serial case
-  if (Comm().NumProc() == 1) cparams.set<std::string>("PARALLEL_REDIST", "None");
+  if (Comm().NumProc() == 1)
+    cparams.sublist("PARALLEL REDISTRIBUTION").set<std::string>("PARALLEL_REDIST", "None");
 
   // set dimension
   cparams.set<int>("DIMENSION", dim);

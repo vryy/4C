@@ -192,8 +192,8 @@ CONTACT::CoAbstractStrategy::CoAbstractStrategy(
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params, "STRATEGY");
   data_ptr_->ConstrDirection() = DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>(
       params, "CONSTRAINT_DIRECTIONS");
-  data_ptr_->ParType() =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(params, "PARALLEL_REDIST");
+  data_ptr_->ParType() = DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
+      params.sublist("PARALLEL REDISTRIBUTION"), "PARALLEL_REDIST");
 
   INPAR::CONTACT::FrictionType ftype =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(Params(), "FRICTION");
@@ -242,7 +242,7 @@ bool CONTACT::CoAbstractStrategy::RedistributeContact(Teuchos::RCP<const Epetra_
   double taverage = 0.0;
   double eaverage = 0.0;
   bool doredist = false;
-  double max_balance = Params().get<double>("MAX_BALANCE");
+  const double max_balance = Params().sublist("PARALLEL REDISTRIBUTION").get<double>("MAX_BALANCE");
 
   //**********************************************************************
   // (1) static redistribution: ONLY at time t=0 or after restart
@@ -1055,8 +1055,9 @@ void CONTACT::CoAbstractStrategy::CalcMeanVelforBinning(Teuchos::RCP<const Epetr
  *----------------------------------------------------------------------*/
 void CONTACT::CoAbstractStrategy::InitBinStrategyforTimestep(Teuchos::RCP<const Epetra_Vector> vel)
 {
-  INPAR::MORTAR::ParallelStrategy strat =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(Params(), "PARALLEL_STRATEGY");
+  INPAR::MORTAR::GhostingStrategy strat =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
+          Params().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
 
   if (strat != INPAR::MORTAR::binningstrategy) return;
 
@@ -1094,10 +1095,14 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface(
   const double t_start = Teuchos::Time::wallTime();
 
   // get type of parallel strategy
-  INPAR::MORTAR::ParallelStrategy strat =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(Params(), "PARALLEL_STRATEGY");
+  const Teuchos::ParameterList& mortarParallelRedistParams =
+      Params().sublist("PARALLEL REDISTRIBUTION");
+  INPAR::MORTAR::GhostingStrategy strat =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
+          mortarParallelRedistParams, "GHOSTING_STRATEGY");
   INPAR::MORTAR::RedundantStorage redundant =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(Params(), "REDUNDANT_STORAGE");
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(
+          mortarParallelRedistParams, "REDUNDANT_STORAGE");
 
   // Evaluation for all interfaces
   for (int i = 0; i < (int)Interfaces().size(); ++i)
@@ -1109,21 +1114,9 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface(
     inttime_ += Interfaces()[i]->Inttime();
 
     /************************************************************
-     *  Round Robin loop with evaluations after each iteration  *
-     ************************************************************/
-    if (strat == INPAR::MORTAR::roundrobinevaluate)
-    {
-      // check redundant input
-      if (redundant != INPAR::MORTAR::redundant_none)
-        dserror("Round-Robin-Loop only for none-redundant storage of interface!");
-
-      // this contains the evaluation as well as the rr loop
-      Interfaces()[i]->RoundRobinEvaluate();
-    }
-    /************************************************************
      *  Round Robin loop only for ghosting                      *
      ************************************************************/
-    else if (strat == INPAR::MORTAR::roundrobinghost)
+    if (strat == INPAR::MORTAR::roundrobinghost)
     {
       // check redundant input
       if (redundant != INPAR::MORTAR::redundant_none)
@@ -1282,7 +1275,7 @@ void CONTACT::CoAbstractStrategy::UpdateParallelDistributionStatus(const double&
     Comm().SumAll(&lhascrowele, &ghascrowele, 1);
 
     // minimum number of elements per proc
-    int minele = Params().get<int>("MIN_ELEPROC");
+    int minele = Params().sublist("PARALLEL REDISTRIBUTION").get<int>("MIN_ELEPROC");
     int numproc = Comm().NumProc();
 
     //--------------------------------------------------------------------

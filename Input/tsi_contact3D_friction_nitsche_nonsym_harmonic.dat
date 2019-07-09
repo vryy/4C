@@ -37,9 +37,10 @@ NITSCHE_WEIGHTING    slave // <-- since master side is rigid
 --------------------------------------------------MORTAR COUPLING
 ALGORITHM            gpts
 SEARCH_PARAM         0.3
-PARALLEL_REDIST      dynamic
 INTTYPE              Segments
 NUMGP_PER_DIM        3
+--------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+PARALLEL_REDIST      dynamic
 ---------------------------------------------------------TSI CONTACT
 HEATTRANSSLAVE       2e0
 HEATTRANSMASTER      2e-1 // 1.0e-3

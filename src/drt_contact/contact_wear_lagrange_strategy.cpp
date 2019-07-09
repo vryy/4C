@@ -4528,7 +4528,7 @@ bool WEAR::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<const Epetra_V
   double taverage = 0.0;
   double eaverage = 0;
   bool doredist = false;
-  double max_balance = Params().get<double>("MAX_BALANCE");
+  const double max_balance = Params().sublist("PARALLEL REDISTRIBUTION").get<double>("MAX_BALANCE");
 
   //**********************************************************************
   // (1) static redistribution: ONLY at time t=0 or after restart

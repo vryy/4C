@@ -362,38 +362,9 @@ LM_DUAL_CONSISTENT              boundary
 //     Initial,initial,Every_Timestep,every_timestep,No,no
 MESH_RELOCATION                 Initial
 //
-// Type of redundancy in interface storage
-//     All,all,Master,master,None,none
-REDUNDANT_STORAGE               Master
-//
-// Type of parallel interface evaluation
-//     rg
-//     redundant_ghosting
-//     ghosting
-//     rre
-//     roundrobinevaluate
-//     RoundRobinEvaluate
-//     rrg
-//     roundrobinghost
-//     RoundRobinGhost
-//     bs
-//     binningstrategy
-//     binning
-PARALLEL_STRATEGY               redundant_ghosting
-//
-// Type of redistribution algorithm
-//     None,none,No,no,Static,static,Dynamic,dynamic
-PARALLEL_REDIST                 Static
-//
 // Type of meshtying/contact algorithm
 //     mortar,Mortar,nts,NTS
 ALGORITHM                       Mortar
-//
-// Maximum value of load balance measure before parallel redistribution
-MAX_BALANCE                     2
-//
-// Minimum no. of elements per processor for parallel redistribution
-MIN_ELEPROC                     0
 //
 // Type of numerical integration scheme
 //     Segments,segments,Elements,elements,Elements_BS,elements_BS
@@ -405,6 +376,34 @@ NUMGP_PER_DIM                   0
 // Type of triangulation for segment-based integration
 //     Delaunay,delaunay,Center,center
 TRIANGULATION                   Delaunay
+//
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+//
+// Maximum value of load balance measure before parallel redistribution
+MAX_BALANCE                     2
+//
+// Minimum no. of elements per processor for parallel redistribution
+MIN_ELEPROC                     0
+//
+// Type of redundancy in interface storage
+//     All,all,Master,master,None,none
+REDUNDANT_STORAGE               Master
+//
+// Type of parallel interface evaluation
+//     rg
+//     redundant_ghosting
+//     ghosting
+//     rrg
+//     roundrobinghost
+//     RoundRobinGhost
+//     bs
+//     binningstrategy
+//     binning
+GHOSTING_STRATEGY               redundant_ghosting
+//
+// Type of redistribution algorithm
+//     None,none,No,no,Static,static,Dynamic,dynamic
+PARALLEL_REDIST                 Static
 //
 ------------------------------------------------------FLUID DYNAMIC
 //

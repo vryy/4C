@@ -157,8 +157,8 @@ namespace CONTACT
     */
     bool ParRedist() const
     {
-      INPAR::MORTAR::ParRedist partype =
-          DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(Params(), "PARALLEL_REDIST");
+      INPAR::MORTAR::ParRedist partype = DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
+          Params().sublist("PARALLEL REDISTRIBUTION"), "PARALLEL_REDIST");
       if (partype != INPAR::MORTAR::parredist_none)
         return true;
       else

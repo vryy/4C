@@ -62,7 +62,6 @@ NITSCHE_WEIGHTING           slave
 NITSCHE_PENALTY_ADAPTIVE    no
 -------------------------------------------------------------MORTAR COUPLING
 ALGORITHM            gpts
-PARALLEL_REDIST      none
 INTTYPE              Segments
 TRIANGULATION        center
 NUMGP_PER_DIM        3
@@ -70,6 +69,8 @@ LM_SHAPEFCN          dual
 SEARCH_ALGORITHM     BinaryTree
 SEARCH_PARAM         0.3e2
 LM_DUAL_CONSISTENT   none
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+PARALLEL_REDIST      none
 --------------------------------------------------------------------SOLVER 1
 NAME                 Structure_Solver
 SOLVER               Superlu

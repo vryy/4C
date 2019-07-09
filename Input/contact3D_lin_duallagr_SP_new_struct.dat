@@ -52,6 +52,7 @@ NORMCOMBI_RESFCONTCONSTR And
 NORMCOMBI_DISPLAGR   And
 ---------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN          Dual
+---------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST      None
 ----------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver

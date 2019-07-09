@@ -36,6 +36,7 @@ COUPLINGTYPE                    StandardNodeToSegment
 NTSPROJTOL                      4.e-3
 ----------------------------------------------------MORTAR COUPLING
 MESH_RELOCATION                 No
+----------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 none
 -----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK

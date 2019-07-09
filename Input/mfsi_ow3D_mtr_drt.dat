@@ -99,8 +99,9 @@ BETA                            0.25
 GAMMA                           0.5
 GENAVG                          TrLike
 -------------------------------------------------------------MORTAR COUPLING
-PARALLEL_REDIST                 No
 LM_SHAPEFCN                     Dual
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+PARALLEL_REDIST                 No
 REDUNDANT_STORAGE               all
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK

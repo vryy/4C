@@ -641,22 +641,8 @@ INTTYPE                         Segments
 //                              linear_linear
 LM_QUAD                         undefined
 //
-// Maximum value of load balance measure before parallel redistribution
-MAX_BALANCE                     2
-//
-// Minimum no. of elements per processor for parallel redistribution
-MIN_ELEPROC                     0
-//
 // Number of employed integration points per dimension
 NUMGP_PER_DIM                   0
-//
-// Type of redistribution algorithm
-//                              None,none,No,no,Static,static,Dynamic,dynamic
-PARALLEL_REDIST                 Static
-//
-// Type of redundancy in interface storage
-//                              All,all,Master,master,None,none
-REDUNDANT_STORAGE               Master
 //
 // Type of contact search
 //                              BruteForce
@@ -674,6 +660,21 @@ SEARCH_PARAM                    0.3
 // Type of employed set of shape functions
 //                              Dual,dual,Standard,standard,std,PetrovGalerkin,petrovgalerkin,pg
 LM_SHAPEFCN                     Dual
+//
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+// Type of redistribution algorithm
+//                              None,none,No,no,Static,static,Dynamic,dynamic
+PARALLEL_REDIST                 Static
+//
+// Type of redundancy in interface storage
+//                              All,all,Master,master,None,none
+REDUNDANT_STORAGE               Master
+//
+// Maximum value of load balance measure before parallel redistribution
+MAX_BALANCE                     2
+//
+// Minimum no. of elements per processor for parallel redistribution
+MIN_ELEPROC                     0
 //
 -----------------------------------------------------------------PROBLEM TYP
 //

@@ -39,10 +39,6 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
       tuple<std::string>("None", "none", "bounded", "b"),
       tuple<int>(adhesion_none, adhesion_none, adhesion_bound, adhesion_bound), &scontact);
 
-  setStringToIntegralParameter<int>("DISCR_SMOOTHING", "No",
-      "If chosen, interface smoothing with additional interface discr. is activated", yesnotuple,
-      yesnovalue, &scontact);
-
   setStringToIntegralParameter<int>("FRICTION", "None", "Type of friction law",
       tuple<std::string>("None", "Stick", "Tresca", "Coulomb"),
       tuple<int>(friction_none, friction_stick, friction_tresca, friction_coulomb), &scontact);

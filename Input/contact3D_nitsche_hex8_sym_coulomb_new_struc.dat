@@ -59,6 +59,7 @@ ALGORITHM                 gpts
 NUMGP_PER_DIM             7
 SEARCH_PARAM              0.3
 LM_DUAL_CONSISTENT        none
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST           dynamic
 ----------------------------------------------------------SOLVER 1
 NAME                 Structure_Solver

@@ -55,8 +55,9 @@ LM_SHAPEFCN                     pg
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.2
 LM_DUAL_CONSISTENT              all
-PARALLEL_REDIST                 None
 ALGORITHM                       Mortar
+----------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+PARALLEL_REDIST                 None
 ----------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   1
 STRATEGY                        LagrangianMultipliers

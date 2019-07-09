@@ -36,6 +36,7 @@ COUPLINGTYPE                    SaddlePointMortar_Petrov
 LMSIDE                          master
 ----------------------------------------------------MORTAR COUPLING
 MESH_RELOCATION                 No
+----------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 none
 -----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK

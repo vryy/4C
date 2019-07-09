@@ -66,9 +66,10 @@ MAXITER                         5
 LM_SHAPEFCN                     standard
 SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.5
-PARALLEL_REDIST                 dynamic//dynamic
 LM_QUAD                         quad
 LM_DUAL_CONSISTENT              none
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+PARALLEL_REDIST                 dynamic//dynamic
 -------------------------------------------------------------WEAR
 WEARLAW                         Archard
 WEARTYPE                        primvar

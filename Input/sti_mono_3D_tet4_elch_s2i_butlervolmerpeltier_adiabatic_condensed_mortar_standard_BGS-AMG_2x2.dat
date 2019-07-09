@@ -42,8 +42,9 @@ EQUPOT                          divi
 -----------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    StandardMortar
 ---------------------------------------------------MORTAR COUPLING
-PARALLEL_REDIST                 no
 MESH_RELOCATION                 no
+---------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+PARALLEL_REDIST                 no
 -------------------------------------------------------STI DYNAMIC
 SCATRATIMINTTYPE                Elch
 THERMO_INITIALFIELD             field_by_function

@@ -55,13 +55,14 @@ LM_QUAD                         undefined
 CROSSPOINTS                     No
 LM_DUAL_CONSISTENT              boundary
 MESH_RELOCATION                 Initial
+INTTYPE                         Segments
+NUMGP_PER_DIM                   0
+----------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 REDUNDANT_STORAGE               Master
-PARALLEL_STRATEGY               redundant_ghosting
+GHOSTING_STRATEGY               redundant_ghosting
 PARALLEL_REDIST                 none//dynamic//Static
 MAX_BALANCE                     2
 MIN_ELEPROC                     0
-INTTYPE                         Segments
-NUMGP_PER_DIM                   0
 ----------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 RESTART_WITH_CONTACT            No

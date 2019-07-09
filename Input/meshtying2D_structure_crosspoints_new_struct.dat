@@ -58,6 +58,7 @@ INT_STRATEGY                    Standard
 LINEAR_SOLVER                   2
 -------------------------------------------------------------MORTAR COUPLING
 CROSSPOINTS                     Yes
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 No
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
