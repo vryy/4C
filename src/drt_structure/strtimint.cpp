@@ -572,6 +572,20 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   cmtbridge_->StoreDirichletStatus(dbcmaps_);
   cmtbridge_->SetState(zeros_);
 
+  // Setup ghosting in case of binning
+  {
+    // get type of parallel strategy
+    const Teuchos::ParameterList& parallelParamsMortar =
+        DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
+    INPAR::MORTAR::GhostingStrategy strat =
+        DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
+            parallelParamsMortar, "GHOSTING_STRATEGY");
+
+    // prepare binning strategy for the first time step
+    if (strat == INPAR::MORTAR::binningstrategy)
+      cmtbridge_->GetStrategy().InitBinStrategyforTimestep((*vel_)(0));
+  }
+
   // contact and constraints together not yet implemented
   if (conman_->HaveConstraint())
     dserror("ERROR: Constraints and contact cannot be treated at the same time yet");
@@ -1053,7 +1067,7 @@ void STR::TimInt::PrepareStepContact()
           DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
               parallelParamsMortar, "GHOSTING_STRATEGY");
 
-      // prepare binstrategy for timestep
+      // prepare binning strategy for this time step
       if (strat == INPAR::MORTAR::binningstrategy)
         cmtbridge_->GetStrategy().InitBinStrategyforTimestep((*vel_)(0));
     }
