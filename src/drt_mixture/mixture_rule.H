@@ -135,7 +135,7 @@ namespace MIXTURE
      * on a different processor. The first entry in data hast to be an integer which is the unique
      * parobject id defined at the top of the file and delivered by UniqueParObjectId().
      *
-     * @param data (in/put) : vector storing all data to be packed into this instance.
+     * @param data (in/out) : vector storing all data to be packed into this instance.
      */
     void PackMixtureLaw(DRT::PackBuffer& data) const;
 
@@ -155,14 +155,15 @@ namespace MIXTURE
      * Initialize the mixture law with the element parameters of the input line
      *
      * @param numgp (in) Number of Gauß-points
-     * @param params (in/out) Parameter list for exchange of parameters
+     * @param params (in/out) : Parameter list for exchange of parameters
      */
     void ReadElement(int numgp, DRT::INPUT::LineDefinition* linedef);
 
     /*!
      * This method should be called after ReadElement and stores the ParameterList internally
      *
-     * @param params Parameter list containing different parameters
+     * @param params (in/out) : Parameter list containing different parameters
+     * @param constituents (in) List of constituents
      */
     void Init(Teuchos::ParameterList& params,
         const Teuchos::RCP<std::vector<Teuchos::RCP<MIXTURE::MixtureConstituent>>>& constituents);
@@ -178,7 +179,8 @@ namespace MIXTURE
      *
      * This method is called once for each element. The constituent should setup all his internal
      * variables and materials.
-     * @param numgp Number of Gauß points
+     * @param gp (in) : Gauß point
+     * @param params (in/out) : Container for additional information
      */
     virtual void Setup(int gp, Teuchos::ParameterList& params);
 
@@ -187,9 +189,9 @@ namespace MIXTURE
      *
      * This simple mixture rule does not need to update anything, so this method is kept empty
      *
-     * @param defgrd Deformation gradient
-     * @param params Container for additional information
-     * @param gp Gauß points
+     * @param defgrd (in) : Deformation gradient
+     * @param params (in/out) : Container for additional information
+     * @param gp (in) : Gauß point
      */
     virtual void Update(
         LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, const int gp)
@@ -201,9 +203,9 @@ namespace MIXTURE
      * Evaluates the constituents. Needs to compute the stress contribution of the constituent out
      * of the displacements. Will be called for each Gauß point
      *
-     * @param defgrd Deformation gradient
-     * @param stress 2nd Piola Kirchhoff stress tensor in stress like Voigt-notation
-     * @param cmat Constitutive tensor in Voigt notation
+     * @param defgrd (in) : Deformation gradient
+     * @param stress (out) :  2nd Piola Kirchhoff stress tensor in stress like Voigt-notation
+     * @param cmat (out) : Constitutive tensor in Voigt notation
      */
     virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
         Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
@@ -212,16 +214,16 @@ namespace MIXTURE
     /*!
      * \brief Get the names and dimension of the quantities to visualize
      *
-     * @param names (out) Tuple of names and the corresponding dimension of the quantity
+     * @param names (out) : Tuple of names and the corresponding dimension of the quantity
      */
     virtual void VisNames(std::map<std::string, int>& names) {}
 
     /*!
      * \brief
-     * @param name (in) Name of the quantity
-     * @param data (out) Values of the quantity
-     * @param numgp (in) number of Gauß points
-     * @param eleGID (in) element id
+     * @param name (in) : Name of the quantity
+     * @param data (out) : Values of the quantity
+     * @param numgp (in) : number of Gauß points
+     * @param eleGID (in) : element id
      */
     virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleGID)
     {

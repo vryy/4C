@@ -1442,6 +1442,15 @@ namespace MAT
   }  // namespace ScatraMatMultiPoro
 }  // namespace MAT
 
+/*!
+ * \brief Mixture framework for solids
+ *
+ * A framework for mixtures of solids with homogenized stress response.
+ */
+namespace MIXTURE
+{
+}  // namespace MIXTURE
+
 /*! \brief Mortar coupling algorithms
  *
  */

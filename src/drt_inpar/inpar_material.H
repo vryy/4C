@@ -147,7 +147,7 @@ namespace INPAR
       m_matlist_chemoreac,  ///< collection of single materials (used for scalar transport problems)
                             ///< and collection of chemotactic pairs AND reactions
       m_mixfrac,            ///< material according to mixture-fraction approach
-      m_mixture_elasthyper,  ///< general material for mixtures
+      m_mixture_elasthyper,  ///< material for solid mixtures with homogenized stress response
       m_modpowerlaw,         ///< fluid with nonlinear viscosity according to a modified power law
       m_multiplicative_split_defgrad_elasthyper,  ///< deformation gradient is split
                                                   ///< multiplicatively in elastic and inelastic

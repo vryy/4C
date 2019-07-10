@@ -18,32 +18,32 @@
 #include "../drt_mat/matpar_bundle.H"
 #include "mixture_constituent_elasthyper.H"
 
-/// Constructor of the mixture constituent parameters
+// Constructor of the mixture constituent parameters
 MIXTURE::PAR::MixtureConstituent::MixtureConstituent(
     const Teuchos::RCP<MAT::PAR::Material>& matdata, const double ref_mass_fraction)
     : MAT::PAR::Parameter(matdata), ref_mass_fraction_(ref_mass_fraction)
 {
 }
 
-/// Create instance of the constituent from the parameters
+// Create instance of the constituent from the parameters
 Teuchos::RCP<MAT::Material> MIXTURE::PAR::MixtureConstituent::CreateMaterial()
 {
   dserror("Cannot create mixture constituent from this method. Use CreateConstituent() instead.");
   return Teuchos::null;
 }
 
-/// Create the parameters of the constituents from the material number and the reference mass
-/// fraction
+// Create the parameters of the constituents from the material number and the reference mass
+// fraction
 MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(
     int matnum, const double ref_mass_fraction)
 {
   // for the sake of safety
   if (DRT::Problem::Instance()->Materials() == Teuchos::null)
-    dserror("Sorry dude, cannot work out problem instance.");
+    dserror("List of materials cannot be access in the global problem instance..");
 
   // yet another safety check
   if (DRT::Problem::Instance()->Materials()->Num() == 0)
-    dserror("Sorry dude, no materials defined.");
+    dserror("List of materials in the global problem instance is empty..");
 
   // retrieve problem instance to read from
   const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
@@ -69,10 +69,10 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(
   return 0;
 }
 
-/// Empty constructor
+// Empty constructor
 MIXTURE::MixtureConstituent::MixtureConstituent() : numgp_(0), is_init_(false), is_setup_(0) {}
 
-///! Init is called once at the beginning to setup the number of GPs and the Parameter List
+//! Init is called once at the beginning to setup the number of GPs and the Parameter List
 void MIXTURE::MixtureConstituent::ReadElement(const int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   // Init must only be called once
@@ -81,7 +81,7 @@ void MIXTURE::MixtureConstituent::ReadElement(const int numgp, DRT::INPUT::LineD
   numgp_ = numgp;
 }
 
-/// Initialize the parameter list
+// Initialize the parameter list
 void MIXTURE::MixtureConstituent::Init(Teuchos::ParameterList& params)
 {
   if (is_setup_.empty()) dserror("ReadConstituent() must be called before Init()");
@@ -89,7 +89,7 @@ void MIXTURE::MixtureConstituent::Init(Teuchos::ParameterList& params)
   is_init_ = true;
 }
 
-/// Setup of the mixture constituents and all its subparts
+// Setup of the mixture constituents and all its subparts
 void MIXTURE::MixtureConstituent::Setup(const int gp, Teuchos::ParameterList& params)
 {
   // Setup must be called after Init()
@@ -100,7 +100,7 @@ void MIXTURE::MixtureConstituent::Setup(const int gp, Teuchos::ParameterList& pa
   is_setup_[gp] = 1;
 }
 
-/// Pack everything for distribution to other processors
+// Pack everything for distribution to other processors
 void MIXTURE::MixtureConstituent::PackConstituent(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm(data);
@@ -115,7 +115,7 @@ void MIXTURE::MixtureConstituent::PackConstituent(DRT::PackBuffer& data) const
   AddtoPack(data, is_setup_);
 }
 
-/// Unpack base constituent data, need to be called by every derived class
+// Unpack base constituent data, need to be called by every derived class
 void MIXTURE::MixtureConstituent::UnpackConstituent(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
@@ -129,7 +129,7 @@ void MIXTURE::MixtureConstituent::UnpackConstituent(
   ExtractfromPack(position, data, is_setup_);
 }
 
-/// Unpack data from other processor
+// Unpack data from other processor
 void MIXTURE::MixtureConstituent::Unpack(const std::vector<char>& data)
 {
   // std::vector<char>::size_type position = 0;
@@ -140,7 +140,7 @@ void MIXTURE::MixtureConstituent::Unpack(const std::vector<char>& data)
       "(without mixture_elasthyper)?");
 }
 
-/// Independently pack for other processor
+// Independently pack for other processor
 void MIXTURE::MixtureConstituent::Pack(DRT::PackBuffer& data) const
 {
   dserror(

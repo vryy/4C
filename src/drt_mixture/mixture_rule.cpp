@@ -15,28 +15,28 @@
 #include "../drt_mat/matpar_material.H"
 #include "../drt_mat/matpar_bundle.H"
 
-/// Constructor of the material parameters
+// Constructor of the material parameters
 MIXTURE::PAR::MixtureRule::MixtureRule(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata)
 {
 }
 
-/// Create rule from the material parameters
+// Create rule from the material parameters
 Teuchos::RCP<MIXTURE::MixtureRule> MIXTURE::PAR::MixtureRule::CreateRule()
 {
   return Teuchos::rcp(new MIXTURE::MixtureRule(this));
 }
 
-/// Mixture rule factory generates the mixturerule parameters for a specific material id
+// Mixture rule factory generates the mixturerule parameters for a specific material id
 MIXTURE::PAR::MixtureRule* MIXTURE::PAR::MixtureRule::Factory(int matid)
 {
   // for the sake of safety
   if (DRT::Problem::Instance()->Materials() == Teuchos::null)
-    dserror("Sorry dude, cannot work out problem instance.");
+    dserror("List of materials cannot be access in the global problem instance.");
 
   // yet another safety check
   if (DRT::Problem::Instance()->Materials()->Num() == 0)
-    dserror("Sorry dude, no materials defined.");
+    dserror("List of materials in the global problem instance is empty.");
 
   // retrieve problem instance to read from
   const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
@@ -59,7 +59,7 @@ MIXTURE::PAR::MixtureRule* MIXTURE::PAR::MixtureRule::Factory(int matid)
   return 0;
 }
 
-/// Create a mixtureRule from packed data
+// Create a mixtureRule from packed data
 DRT::ParObject* MIXTURE::MixtureRuleType::Create(const std::vector<char>& data)
 {
   auto* mix_elhy = new MIXTURE::MixtureRule();
@@ -70,19 +70,19 @@ DRT::ParObject* MIXTURE::MixtureRuleType::Create(const std::vector<char>& data)
 
 MIXTURE::MixtureRuleType MIXTURE::MixtureRuleType::instance_;
 
-/// Empty constructor
+// Empty constructor
 MIXTURE::MixtureRule::MixtureRule()
     : constituents_(Teuchos::null), numgp_(0), is_init_(false), is_setup_(0)
 {
 }
 
-/// Constructor with parameters
+// Constructor with parameters
 MIXTURE::MixtureRule::MixtureRule(MIXTURE::PAR::MixtureRule* params)
     : constituents_(Teuchos::null), numgp_(0), is_init_(false), is_setup_(0)
 {
 }
 
-/// Pack -> Do not pack this class directly, it should only be packed with MAT::Mixture_ElastHyper
+// Pack -> Do not pack this class directly, it should only be packed with MAT::Mixture_ElastHyper
 void MIXTURE::MixtureRule::Pack(DRT::PackBuffer& data) const
 {
   dserror(
@@ -90,8 +90,8 @@ void MIXTURE::MixtureRule::Pack(DRT::PackBuffer& data) const
       "of a Mixture_ElastHyper material");
 }
 
-/// Unpack -> Do not unpack this class directly, it should only be unpacked with
-/// MAT::Mixture_ElastHyper
+// Unpack -> Do not unpack this class directly, it should only be unpacked with
+// MAT::Mixture_ElastHyper
 void MIXTURE::MixtureRule::Unpack(const std::vector<char>& data)
 {
   dserror(
@@ -99,7 +99,7 @@ void MIXTURE::MixtureRule::Unpack(const std::vector<char>& data)
       "of a Mixture_ElastHyper material");
 }
 
-/// Pack the mixture law
+// Pack the mixture law
 void MIXTURE::MixtureRule::PackMixtureLaw(DRT::PackBuffer& data) const
 {
   // Add flag whether it is initialized
@@ -109,7 +109,7 @@ void MIXTURE::MixtureRule::PackMixtureLaw(DRT::PackBuffer& data) const
   AddtoPack(data, is_setup_);
 }
 
-/// Unpack the mixture rule
+// Unpack the mixture rule
 void MIXTURE::MixtureRule::UnpackMixtureLaw(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
@@ -120,7 +120,7 @@ void MIXTURE::MixtureRule::UnpackMixtureLaw(
   ExtractfromPack(position, data, is_setup_);
 }
 
-/// reads the element definition and set up all quantities
+// reads the element definition and set up all quantities
 void MIXTURE::MixtureRule::ReadElement(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   // Init must only be called once
@@ -130,7 +130,7 @@ void MIXTURE::MixtureRule::ReadElement(int numgp, DRT::INPUT::LineDefinition* li
   is_setup_.resize(numgp, 0);
 }
 
-/// Initialize the material rule with the constituents - Called once per element
+// Initialize the material rule with the constituents - Called once per element
 void MIXTURE::MixtureRule::Init(Teuchos::ParameterList& params,
     const Teuchos::RCP<std::vector<Teuchos::RCP<MIXTURE::MixtureConstituent>>>& constituents)
 {
@@ -141,7 +141,7 @@ void MIXTURE::MixtureRule::Init(Teuchos::ParameterList& params,
   is_init_ = true;
 }
 
-/// Setup the mixture rule - Called once per gp
+// Setup the mixture rule - Called once per gp
 void MIXTURE::MixtureRule::Setup(int gp, Teuchos::ParameterList& params)
 {
   // Setup must be called after Init()
@@ -152,7 +152,7 @@ void MIXTURE::MixtureRule::Setup(int gp, Teuchos::ParameterList& params)
   is_setup_[gp] = 1;
 }
 
-/// Evaluates the stresses of the mixture
+// Evaluates the stresses of the mixture
 void MIXTURE::MixtureRule::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)

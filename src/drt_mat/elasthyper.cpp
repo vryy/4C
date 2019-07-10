@@ -1614,15 +1614,7 @@ void MAT::ElastHyper::CheckPolyconvexity(const LINALG::Matrix<3, 3>& defgrd,
   // defgrd = F (i)
   // dfgrd = F in Voigt - Notation
   static LINALG::Matrix<9, 1> dfgrd(true);
-  dfgrd(0, 0) = defgrd(0, 0);
-  dfgrd(1, 0) = defgrd(1, 1);
-  dfgrd(2, 0) = defgrd(2, 2);
-  dfgrd(3, 0) = defgrd(0, 1);
-  dfgrd(4, 0) = defgrd(1, 2);
-  dfgrd(5, 0) = defgrd(0, 2);
-  dfgrd(6, 0) = defgrd(1, 0);
-  dfgrd(7, 0) = defgrd(2, 1);
-  dfgrd(8, 0) = defgrd(2, 0);
+  Matrix3x3to9x1(defgrd, dfgrd);
 
   // Cof(F) = J*F^(-T)
   static LINALG::Matrix<3, 3> CoFacF(true);  // Cof(F) in Matrix-Notation
@@ -1630,15 +1622,7 @@ void MAT::ElastHyper::CheckPolyconvexity(const LINALG::Matrix<3, 3>& defgrd,
   CoFacF.Invert(defgrd);
   CoFacF.Scale(J);
   // sort in Voigt-Notation and invert!
-  CofF(0, 0) = CoFacF(0, 0);
-  CofF(1, 0) = CoFacF(1, 1);
-  CofF(2, 0) = CoFacF(2, 2);
-  CofF(6, 0) = CoFacF(0, 1);
-  CofF(7, 0) = CoFacF(1, 2);
-  CofF(8, 0) = CoFacF(0, 2);
-  CofF(3, 0) = CoFacF(1, 0);
-  CofF(4, 0) = CoFacF(2, 1);
-  CofF(5, 0) = CoFacF(2, 0);
+  Matrix3x3to9x1(CoFacF, CofF);
 
   // id4 (9x9)
   static LINALG::Matrix<9, 9> ID4(true);

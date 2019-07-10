@@ -16,7 +16,7 @@
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/elasthyper.H"
 
-/// Constructor for the parameter class
+// Constructor for the parameter class
 MIXTURE::PAR::MixtureConstituent_ElastHyper::MixtureConstituent_ElastHyper(
     const Teuchos::RCP<MAT::PAR::Material>& matdata, const double ref_mass_fraction)
     : MixtureConstituent(matdata, ref_mass_fraction),
@@ -31,7 +31,7 @@ MIXTURE::PAR::MixtureConstituent_ElastHyper::MixtureConstituent_ElastHyper(
         nummat_, matids_->size());
 }
 
-/// Create an instance of MIXTURE::MixtureConstituent_ElastHyper from the parameters
+// Create an instance of MIXTURE::MixtureConstituent_ElastHyper from the parameters
 Teuchos::RCP<MIXTURE::MixtureConstituent>
 MIXTURE::PAR::MixtureConstituent_ElastHyper::CreateConstituent()
 {
@@ -40,7 +40,7 @@ MIXTURE::PAR::MixtureConstituent_ElastHyper::CreateConstituent()
 
 MIXTURE::MixtureConstituent_ElastHyperType MIXTURE::MixtureConstituent_ElastHyperType::instance_;
 
-/// Creates an instance of MIXTURE::MixtureConstituent_ElastHyper from packed data
+// Creates an instance of MIXTURE::MixtureConstituent_ElastHyper from packed data
 DRT::ParObject* MIXTURE::MixtureConstituent_ElastHyperType::Create(const std::vector<char>& data)
 {
   auto* elhy = new MIXTURE::MixtureConstituent_ElastHyper();
@@ -49,7 +49,7 @@ DRT::ParObject* MIXTURE::MixtureConstituent_ElastHyperType::Create(const std::ve
   return elhy;
 }
 
-/// Empty constructor of the constituent
+// Empty constructor of the constituent
 MIXTURE::MixtureConstituent_ElastHyper::MixtureConstituent_ElastHyper()
     : MixtureConstituent(),
       isoprinc_(false),
@@ -62,7 +62,7 @@ MIXTURE::MixtureConstituent_ElastHyper::MixtureConstituent_ElastHyper()
   // empty constructor
 }
 
-/// Constructor of the constituent holding the material parameters
+// Constructor of the constituent holding the material parameters
 MIXTURE::MixtureConstituent_ElastHyper::MixtureConstituent_ElastHyper(
     MIXTURE::PAR::MixtureConstituent_ElastHyper* params)
     : MixtureConstituent(),
@@ -85,7 +85,7 @@ MIXTURE::MixtureConstituent_ElastHyper::MixtureConstituent_ElastHyper(
   }
 }
 
-/// Pack the constituent
+// Pack the constituent
 void MIXTURE::MixtureConstituent_ElastHyper::PackConstituent(DRT::PackBuffer& data) const
 {
   MixtureConstituent::PackConstituent(data);
@@ -110,7 +110,7 @@ void MIXTURE::MixtureConstituent_ElastHyper::PackConstituent(DRT::PackBuffer& da
   }
 }
 
-/// Unpack the constituent
+// Unpack the constituent
 void MIXTURE::MixtureConstituent_ElastHyper::UnpackConstituent(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
@@ -171,13 +171,13 @@ void MIXTURE::MixtureConstituent_ElastHyper::UnpackConstituent(
   }
 }
 
-/// Returns the material type
+// Returns the material type
 INPAR::MAT::MaterialType MIXTURE::MixtureConstituent_ElastHyper::MaterialType() const
 {
   return INPAR::MAT::mix_elasthyper;
 }
 
-/// Reads the element from the input file
+// Reads the element from the input file
 void MIXTURE::MixtureConstituent_ElastHyper::ReadElement(
     int numgp, DRT::INPUT::LineDefinition* linedef)
 {
@@ -200,7 +200,7 @@ void MIXTURE::MixtureConstituent_ElastHyper::ReadElement(
   if (viscogeneral) dserror("Never use viscoelastic materials in Elasthyper-Toolbox.");
 }
 
-/// Evaluates the stress of the constituent
+// Evaluates the stress of the constituent
 void MIXTURE::MixtureConstituent_ElastHyper::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
@@ -210,13 +210,13 @@ void MIXTURE::MixtureConstituent_ElastHyper::Evaluate(const LINALG::Matrix<3, 3>
       isoprinc_, isomod_, anisoprinc_, anisomod_, false);
 }
 
-/// Returns the reference mass fraction of the constituent
+// Returns the reference mass fraction of the constituent
 double MIXTURE::MixtureConstituent_ElastHyper::RefMassFraction() const
 {
   return params_->RefMassFraction();
 }
 
-/// Updates all summands
+// Updates all summands
 void MIXTURE::MixtureConstituent_ElastHyper::Update(
     LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, const int gp)
 {
@@ -226,7 +226,7 @@ void MIXTURE::MixtureConstituent_ElastHyper::Update(
   for (auto& summand : potsum_) summand->Update();
 }
 
-/// Add names for each summand for the quantities for post processing
+// Add names for each summand for the quantities for post processing
 void MIXTURE::MixtureConstituent_ElastHyper::VisNames(std::map<std::string, int>& names)
 {
   MixtureConstituent::VisNames(names);
@@ -235,7 +235,7 @@ void MIXTURE::MixtureConstituent_ElastHyper::VisNames(std::map<std::string, int>
   for (auto& summand : potsum_) summand->VisNames(names);
 }
 
-/// Add values for each summand of the quantities for post processing
+// Add values for each summand of the quantities for post processing
 bool MIXTURE::MixtureConstituent_ElastHyper::VisData(
     const std::string& name, std::vector<double>& data, int numgp, int eleGID)
 {
