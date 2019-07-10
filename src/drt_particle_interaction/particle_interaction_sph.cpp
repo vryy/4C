@@ -344,8 +344,8 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::EvaluateInteractions()
   // compute temperature field
   if (temperature_) temperature_->ComputeTemperature();
 
-  // init boundary particles
-  if (boundaryparticle_) boundaryparticle_->InitBoundaryParticles(gravity_);
+  // init boundary particle states
+  if (boundaryparticle_) boundaryparticle_->InitBoundaryParticleStates(gravity_);
 
   // add momentum contribution to acceleration field
   momentum_->AddAccelerationContribution();

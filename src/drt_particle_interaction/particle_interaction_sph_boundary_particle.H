@@ -69,8 +69,8 @@ namespace PARTICLEINTERACTION
     //! read restart of boundary particle handler
     virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
-    //! init boundary particles
-    virtual void InitBoundaryParticles(std::vector<double>& gravity) = 0;
+    //! init boundary particle states
+    virtual void InitBoundaryParticleStates(std::vector<double>& gravity) = 0;
 
    protected:
     //! smoothed particle hydrodynamics specific parameter list
@@ -95,16 +95,16 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit SPHBoundaryParticleAdami(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~SPHBoundaryParticleAdami(){};
+    //! destructor
+    ~SPHBoundaryParticleAdami(){};
 
     //! setup boundary particle handler
-    virtual void Setup(
+    void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
 
-    //! init boundary particles
-    virtual void InitBoundaryParticles(std::vector<double>& gravity) override;
+    //! init boundary particle states
+    void InitBoundaryParticleStates(std::vector<double>& gravity) override;
 
    private:
     //! modified states of ghosted boundary particles to refresh
