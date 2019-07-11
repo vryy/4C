@@ -18,6 +18,7 @@
 #include "../drt_mat/matpar_bundle.H"
 #include "mixture_constituent.H"
 #include "../drt_matelast/elast_summand.H"
+#include "../drt_mat/elasthyper_service.H"
 
 namespace MIXTURE
 {
@@ -178,10 +179,7 @@ namespace MIXTURE
    private:
     /// @name Flags to specify the elastic formulations (initialize with false)
     //@{
-    bool isoprinc_;    ///< global indicator for isotropic principal formulation
-    bool isomod_;      ///< global indicator for isotropic splitted formulation
-    bool anisoprinc_;  ///< global indicator for anisotropic principal formulation
-    bool anisomod_;    ///< global indicator for anisotropic splitted formulation
+    MAT::SummandProperties summandProperties_;  ///< holder for formulation specification
     //@}
 
     /// my material parameters

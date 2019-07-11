@@ -25,6 +25,7 @@ GROWTHTYPE 1 LOCTIMEINT 1 MEMBRANE 0
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_matelast/elast_isoneohooke.H"
 #include "../drt_matelast/elast_volsussmanbathe.H"
+#include "elasthyper_service.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -1279,33 +1280,6 @@ void MAT::GrowthRemodel_ElastHyper::ConvertModToPrinc(LINALG::Matrix<3, 1> const
               0.5 * std::pow(prinv(2), -5. / 6.) * ddPmodII(4) -
               (1. / 3.) * std::pow(prinv(2), -4. / 3.) * dPmodI(0);
   ddPII(5) += std::pow(prinv(2), -1.) * ddPmodII(5);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- * Calculate the coefficients gamma and delta from the partial          *
- * derivatives w.r.t. invariants                                        *
- *----------------------------------------------------------------------*/
-void MAT::GrowthRemodel_ElastHyper::CalculateGammaDelta(LINALG::Matrix<3, 1>& gamma,
-    LINALG::Matrix<8, 1>& delta, LINALG::Matrix<3, 1> const& prinv, LINALG::Matrix<3, 1> const& dPI,
-    LINALG::Matrix<6, 1> const& ddPII) const
-{
-  // according to Holzapfel-Nonlinear Solid Mechanics p. 216
-  gamma(0) = 2. * (dPI(0) + prinv(0) * dPI(1));
-  gamma(1) = -2. * dPI(1);
-  gamma(2) = 2. * prinv(2) * dPI(2);
-
-  // according to Holzapfel-Nonlinear Solid Mechanics p. 261
-  delta(0) = 4. * (ddPII(0) + 2. * prinv(0) * ddPII(5) + dPI(1) + prinv(0) * prinv(0) * ddPII(1));
-  delta(1) = -4. * (ddPII(5) + prinv(0) * ddPII(1));
-  delta(2) = 4. * (prinv(2) * ddPII(4) + prinv(0) * prinv(2) * ddPII(3));
-  delta(3) = 4. * ddPII(1);
-  delta(4) = -4. * prinv(2) * ddPII(3);
-  delta(5) = 4. * (prinv(2) * dPI(2) + prinv(2) * prinv(2) * ddPII(2));
-  delta(6) = -4. * prinv(2) * dPI(2);
-  delta(7) = -4. * dPI(1);
 
   return;
 }

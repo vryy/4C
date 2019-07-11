@@ -1272,6 +1272,30 @@ void MAT::StretchesModified(LINALG::Matrix<3, 1>& modstr, const LINALG::Matrix<3
   return;
 }
 
+void MAT::IdentityMatrix(LINALG::Matrix<6, 1>& id)
+{
+  id.Clear();
+  for (unsigned i = 0; i < 3; ++i) id(i) = 1.0;
+}
+
+template <unsigned int N>
+void MAT::IdentityMatrix(LINALG::Matrix<N, N>& id)
+{
+  id.Clear();
+  for (unsigned i = 0; i < N; ++i) id(i, i) = 1.0;
+}
+
+template <MAT::VoigtNotation rows_notation, MAT::VoigtNotation cols_notation>
+void MAT::FourthOrderIdentityMatrix(LINALG::Matrix<6, 6>& id)
+{
+  id.Clear();
+
+  for (unsigned int i = 0; i < 3; ++i) id(i, i) = 1.0;
+
+  for (unsigned int i = 3; i < 6; ++i)
+    id(i, i) = 0.5 * ScaleFactor<rows_notation>(i) * ScaleFactor<cols_notation>(i);
+}
+
 /*----------------------------------------------------------------------------*/
 // initialization of const static members has to be done in the cpp file since
 // GCC complains otherwise
@@ -1358,25 +1382,27 @@ void MAT::VoigtUtils<type>::PowerOfSymmetricTensor(
  *----------------------------------------------------------------------------*/
 template <MAT::VoigtNotation type>
 void MAT::VoigtUtils<type>::InverseTensor(
-    const LINALG::Matrix<6, 1>& strain, LINALG::Matrix<6, 1>& strain_inv)
+    const LINALG::Matrix<6, 1>& tens, LINALG::Matrix<6, 1>& tens_inv)
 {
-  LINALG::Matrix<3, 3> strain_mat_inv(false);
-
-  for (unsigned i = 0; i < 3; ++i)
-    for (unsigned j = 0; j < 3; ++j)
-    {
-      const double fac = UnscaleFactor<type>(IMap::second_[i][j]);
-      strain_mat_inv(i, j) = fac * strain(IMap::second_[i][j]);
-    }
-
-  strain_mat_inv.Invert();
-
-  for (unsigned i = 0; i < 3; ++i)
-    for (unsigned j = i; j < 3; ++j)
-    {
-      const double fac = ScaleFactor<type>(IMap::second_[i][j]);
-      strain_inv(IMap::second_[i][j]) = fac * strain_mat_inv(i, j);
-    }
+  double det = MAT::VoigtUtils<type>::Determinant(tens);
+  tens_inv(0) = (tens(1) * tens(2) -
+                    MAT::UnscaleFactor<type>(4) * MAT::UnscaleFactor<type>(4) * tens(4) * tens(4)) /
+                det * MAT::ScaleFactor<type>(0);
+  tens_inv(1) = (tens(0) * tens(2) -
+                    MAT::UnscaleFactor<type>(5) * MAT::UnscaleFactor<type>(5) * tens(5) * tens(5)) /
+                det * MAT::ScaleFactor<type>(1);
+  tens_inv(2) = (tens(0) * tens(1) -
+                    MAT::UnscaleFactor<type>(3) * MAT::UnscaleFactor<type>(3) * tens(3) * tens(3)) /
+                det * MAT::ScaleFactor<type>(2);
+  tens_inv(3) = (MAT::UnscaleFactor<type>(5) * MAT::UnscaleFactor<type>(4) * tens(5) * tens(4) -
+                    MAT::UnscaleFactor<type>(3) * MAT::UnscaleFactor<type>(2) * tens(3) * tens(2)) /
+                det * MAT::ScaleFactor<type>(3);
+  tens_inv(4) = (MAT::UnscaleFactor<type>(3) * MAT::UnscaleFactor<type>(5) * tens(3) * tens(5) -
+                    MAT::UnscaleFactor<type>(0) * MAT::UnscaleFactor<type>(4) * tens(0) * tens(4)) /
+                det * MAT::ScaleFactor<type>(4);
+  tens_inv(5) = (MAT::UnscaleFactor<type>(3) * MAT::UnscaleFactor<type>(4) * tens(3) * tens(4) -
+                    MAT::UnscaleFactor<type>(5) * MAT::UnscaleFactor<type>(1) * tens(5) * tens(1)) /
+                det * MAT::ScaleFactor<type>(5);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1393,6 +1419,22 @@ template <MAT::VoigtNotation type>
 void MAT::VoigtUtils<type>::UnscaleOffDiagonalVals(LINALG::Matrix<6, 1>& strain)
 {
   for (unsigned i = 3; i < 6; ++i) strain(i, 0) *= UnscaleFactor<type>(i);
+}
+
+template <MAT::VoigtNotation type>
+void MAT::VoigtUtils<type>::ToStressLike(
+    const LINALG::Matrix<6, 1>& vtensor_in, LINALG::Matrix<6, 1>& vtensor_out)
+{
+  for (unsigned i = 0; i < 6; ++i) vtensor_out(i) = MAT::UnscaleFactor<type>(i) * vtensor_in(i);
+}
+
+template <MAT::VoigtNotation type>
+void MAT::VoigtUtils<type>::ToStrainLike(
+    const LINALG::Matrix<6, 1>& vtensor_in, LINALG::Matrix<6, 1>& vtensor_out)
+{
+  for (unsigned i = 0; i < 6; ++i)
+    vtensor_out(i) =
+        MAT::UnscaleFactor<type>(i) * vtensor_in(i) * MAT::ScaleFactor<VoigtNotation::strain>(i);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1418,3 +1460,9 @@ template void MAT::MatrixtoStressLikeVoigtNotation<FAD>(
 
 template class MAT::VoigtUtils<MAT::VoigtNotation::strain>;
 template class MAT::VoigtUtils<MAT::VoigtNotation::stress>;
+
+template void MAT::IdentityMatrix<6>(LINALG::Matrix<6, 6>& id);
+template void MAT::FourthOrderIdentityMatrix<MAT::VoigtNotation::stress,
+    MAT::VoigtNotation::stress>(LINALG::Matrix<6, 6>& id);
+template void MAT::FourthOrderIdentityMatrix<MAT::VoigtNotation::stress,
+    MAT::VoigtNotation::strain>(LINALG::Matrix<6, 6>& id);

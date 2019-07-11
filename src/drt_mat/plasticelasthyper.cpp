@@ -179,10 +179,7 @@ void MAT::PlasticElastHyper::Pack(DRT::PackBuffer& data) const
   int matid = -1;
   if (MatParams() != NULL) matid = MatParams()->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
-  AddtoPack(data, (int)isoprinc_);
-  AddtoPack(data, (int)isomod_);
-  AddtoPack(data, (int)anisoprinc_);
-  AddtoPack(data, (int)anisomod_);
+  summandProperties_.Pack(data);
 
   // plastic anisotropy
   AddtoPack(data, PlAniso_full_);
@@ -257,10 +254,7 @@ void MAT::PlasticElastHyper::Unpack(const std::vector<char>& data)
     }
   }
 
-  isoprinc_ = (bool)ExtractInt(position, data);
-  isomod_ = (bool)ExtractInt(position, data);
-  anisoprinc_ = (bool)ExtractInt(position, data);
-  anisomod_ = (bool)ExtractInt(position, data);
+  summandProperties_.Unpack(position, data);
 
   // plastic anisotropy
   ExtractfromPack(position, data, PlAniso_full_);
@@ -347,22 +341,17 @@ void MAT::PlasticElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linede
 
   // find out which formulations are used
 
-  isoprinc_ = false;
-  isomod_ = false;
-  anisoprinc_ = false;
-  anisomod_ = false;
-  bool viscogeneral = false;
+  summandProperties_.Clear();
 
-  for (unsigned int p = 0; p < potsum_.size(); ++p)
-    potsum_[p]->SpecifyFormulation(isoprinc_, isomod_, anisoprinc_, anisomod_, viscogeneral);
+  ElastHyperProperties(potsum_, summandProperties_);
 
   // in this case the mandel stress become non-symmetric and the
   // calculated derivatives have to be extended.
-  if (anisomod_ == true || anisoprinc_ == true)
+  if (summandProperties_.anisomod == true || summandProperties_.anisoprinc == true)
     dserror("PlasticElastHyper only for isotropic elastic material!");
 
   // no visco-elasticity (yet?)
-  if (viscogeneral) dserror("no visco-elasticity in PlasticElastHyper...yet(?)");
+  if (summandProperties_.viscoGeneral) dserror("no visco-elasticity in PlasticElastHyper...yet(?)");
 
   // check if either zero or three fiber directions are given
   if (linedef->HaveNamed("FIBER1") || linedef->HaveNamed("FIBER2") || linedef->HaveNamed("FIBER3"))
@@ -592,7 +581,7 @@ void MAT::PlasticElastHyper::EvaluateElast(const LINALG::Matrix<3, 3>* defgrd,
   LINALG::Matrix<6, 1> ddPII(true);
 
   EvaluateKinQuantElast(defgrd, deltaLp, gp);
-  EvaluateInvariantDerivatives(prinv_, dPI, ddPII, eleGID, potsum_, isoprinc_, isomod_);
+  ElastHyperEvaluateInvariantDerivatives(prinv_, dPI, ddPII, potsum_, summandProperties_, eleGID);
 
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
@@ -602,7 +591,7 @@ void MAT::PlasticElastHyper::EvaluateElast(const LINALG::Matrix<3, 3>* defgrd,
   // isotropic elasticity in coupled strain energy format
   // isotropic elasticity in decoupled ("mod") format go here as well
   // as the modified gammas and deltas have been converted
-  if (isoprinc_ || isomod_)
+  if (summandProperties_.isoprinc || summandProperties_.isomod)
     EvaluateIsotropicPrincElast(*pk2, *cmat, dPI, ddPII);
   else
     dserror("only isotropic hyperelastic materials");
@@ -661,7 +650,7 @@ void MAT::PlasticElastHyper::EvaluateThermalStress(const LINALG::Matrix<3, 3>* d
   // do TSI only for decoupled isotropic materials. By doing so, the stresses
   // due to thermal expansion can be easily calculated by the volumetric
   // part of the strain energy function
-  if (anisomod_ || anisoprinc_)
+  if (summandProperties_.anisomod || summandProperties_.anisoprinc)
     dserror(
         "TSI with semi-Smooth Newton type plasticity algorithm only "
         "with isotropic strain energy functions");
@@ -715,7 +704,7 @@ void MAT::PlasticElastHyper::EvaluateCTvol(const LINALG::Matrix<3, 3>* defgrd,
   // do TSI only for decoupled isotropic materials. By doing so, the stresses
   // due to thermal expansion can be easily calculated by the volumetric
   // part of the strain energy function
-  if (anisomod_ || anisoprinc_)
+  if (summandProperties_.anisomod || summandProperties_.anisoprinc)
     dserror(
         "TSI with semi-Smooth Newton type plasticity algorithm only "
         "with isotropic strain energy functions");
@@ -811,7 +800,7 @@ void MAT::PlasticElastHyper::EvaluatePlast(const LINALG::Matrix<3, 3>* defgrd,
   LINALG::Matrix<8, 1> delta(true);
 
   if (EvaluateKinQuantPlast(defgrd, deltaDp, gp, params)) return;
-  EvaluateInvariantDerivatives(prinv_, dPI, ddPII, eleGID, potsum_, isoprinc_, isomod_);
+  ElastHyperEvaluateInvariantDerivatives(prinv_, dPI, ddPII, potsum_, summandProperties_, eleGID);
   if (temp && cauchy) AddThermalExpansionDerivs(prinv_, dPI, ddPII, eleGID, *temp);
   CalculateGammaDelta(gamma, delta, prinv_, dPI, ddPII);
 
@@ -834,7 +823,7 @@ void MAT::PlasticElastHyper::EvaluatePlast(const LINALG::Matrix<3, 3>* defgrd,
   // isotropic elasticity in coupled strain energy format
   // isotropic elasticity in decoupled ("mod") format go here as well
   // as the modified gammas and deltas have been converted
-  if (isoprinc_ || isomod_)
+  if (summandProperties_.isoprinc || summandProperties_.isomod)
     EvaluateIsotropicPrincPlast(dPK2dFpinv, mStr, dMdC, dMdFpinv, gamma, delta);
   else
     dserror("only isotropic hypereleastic materials");
@@ -1330,7 +1319,7 @@ void MAT::PlasticElastHyper::EvaluatePlast(const LINALG::Matrix<3, 3>* defgrd,
 
   if (EvaluateKinQuantPlast(defgrd, deltaLp, gp, params)) return;
 
-  EvaluateInvariantDerivatives(prinv_, dPI, ddPII, eleGID, potsum_, isoprinc_, isomod_);
+  ElastHyperEvaluateInvariantDerivatives(prinv_, dPI, ddPII, potsum_, summandProperties_, eleGID);
   CalculateGammaDelta(gamma, delta, prinv_, dPI, ddPII);
 
   // blank resulting quantities
@@ -1352,7 +1341,7 @@ void MAT::PlasticElastHyper::EvaluatePlast(const LINALG::Matrix<3, 3>* defgrd,
   // isotropic elasticity in coupled strain energy format
   // isotropic elasticity in decoupled ("mod") format go here as well
   // as the modified gammas and deltas have been converted
-  if (isoprinc_ || isomod_)
+  if (summandProperties_.isoprinc || summandProperties_.isomod)
   {
     EvaluateIsotropicPrincPlast(dPK2dFpinv, mStr, dMdC, dMdFpinv, gamma, delta);
   }
@@ -1838,7 +1827,7 @@ void MAT::PlasticElastHyper::EvaluateCauchyPlast(const LINALG::Matrix<3, 1>& dPI
 
     const double j = sqrt(prinv_(2));
     double d_dPI2_dT = 0.;
-    if (isomod_) dserror("only coupled SEF are supposed to end up here");
+    if (summandProperties_.isomod) dserror("only coupled SEF are supposed to end up here");
     for (unsigned int p = 0; p < potsum_.size(); ++p)
       potsum_[p]->AddCoupDerivVol(j, NULL, &d_dPI2_dT, NULL, NULL);
 
@@ -1856,17 +1845,17 @@ void MAT::PlasticElastHyper::EvaluateCauchyDerivs(const LINALG::Matrix<3, 1>& pr
 {
   for (unsigned i = 0; i < potsum_.size(); ++i)
   {
-    if (isoprinc_)
+    if (summandProperties_.isoprinc)
     {
       potsum_[i]->AddDerivativesPrincipal(dPI, ddPII, prinv, eleGID);
       potsum_[i]->AddThirdDerivativesPrincipalIso(dddPIII, prinv, eleGID);
     }
-    if (isomod_ || anisomod_ || anisoprinc_)
+    if (summandProperties_.isomod || summandProperties_.anisomod || summandProperties_.anisoprinc)
       dserror("not implemented for this form of strain energy function");
   }
   if (temp)
   {
-    if (isomod_ || anisomod_ || anisoprinc_)
+    if (summandProperties_.isomod || summandProperties_.anisomod || summandProperties_.anisoprinc)
       dserror(
           "thermo-elastic Nitsche contact only with strain energies"
           "\ndepending on unmodified invariants");

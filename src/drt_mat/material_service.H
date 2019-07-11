@@ -30,6 +30,21 @@ namespace MAT
     strain
   };
 
+  /// @name Voigt index arrays
+  //@{
+
+  /// 6-Voigt row index of corresponding 2-tensor
+  constexpr int VOIGT6ROW_[] = {0, 1, 2, 0, 1, 2};
+
+  /// 6-Voigt column index of corresponding 2-tensor
+  constexpr int VOIGT6COL_[] = {0, 1, 2, 1, 2, 0};
+  /// go from symmetric 2-tensor index pair to 6-Voigt index by [3*i+j] for any i,j=0,1,2
+  constexpr int VOIGT3X3SYM_[] = {0, 3, 5, 3, 1, 4, 5, 4, 2};
+
+  /// from non-symmetric 2-tensor index pair to 9-Voigt index
+  constexpr int VOIGT3X3NONSYM_[3][3] = {{0, 3, 5}, {6, 1, 4}, {8, 7, 2}};
+  //@}
+
   /*! \brief Multiply two 2nd order tensors A x B and add the result to a
    *         4th order symmetric material tensor in matrix notation
    *
@@ -503,8 +518,30 @@ namespace MAT
    */
   void StretchesModified(LINALG::Matrix<3, 1>& modstr, const LINALG::Matrix<3, 1>& prstr);
 
-  /*--------------------------------------------------------------------------*/
+  /**
+   * \brief Identity matrix in stress/strain-like Voigt notation
+   * @param id (out) : 2nd order identity tensor in stress/strain-like Voigt notation
+   */
+  void IdentityMatrix(LINALG::Matrix<6, 1>& id);
 
+  /**
+   * \brief Identity matrix in matrix notation
+   * @param id (out) : 2nd order identity tensor in matrix notation
+   */
+  template <unsigned N>
+  void IdentityMatrix(LINALG::Matrix<N, N>& id);
+
+  /*!
+   * \brief Returns a 4th order identity matrix with rows in <rows_notation>-type Voigt notation and
+   * columns in <cols_notation>-type Voigt notation
+   * @tparam rows_notation Voigt notation used for the rows
+   * @tparam cols_notation  Voigt notation used for the columns
+   * @param id (out) : Voigt-Matrix
+   */
+  template <VoigtNotation rows_notation, VoigtNotation cols_notation>
+  void FourthOrderIdentityMatrix(LINALG::Matrix<6, 6>& id);
+
+  /*--------------------------------------------------------------------------*/
   /*--------------------------------------------------------------------------*/
   /// Index maps
   struct IMap
@@ -587,6 +624,22 @@ namespace MAT
      *  \author hiermeier \date 09/17 */
     static void SymmetricOuterProduct(const LINALG::Matrix<3, 1>& vec_a,
         const LINALG::Matrix<3, 1>& vec_b, LINALG::Matrix<6, 1>& ab_ba);
+
+    /*!
+     * Converts a <type>-like tensor to stress-like Voigt notation
+     * @param vtensor_in tensor in <type>-like Voigt notation
+     * @param vtensor_out tensor in stress-like Voigt notation
+     */
+    static void ToStressLike(
+        const LINALG::Matrix<6, 1>& vtensor_in, LINALG::Matrix<6, 1>& vtensor_out);
+
+    /*!
+     * Converts a <type>-like tensor to strain-like Voigt notation
+     * @param vtensor_in tensor in <type>-like Voigt notation
+     * @param vtensor_out tensor in strain-like Voigt notation
+     */
+    static void ToStrainLike(
+        const LINALG::Matrix<6, 1>& vtensor_in, LINALG::Matrix<6, 1>& vtensor_out);
 
     /** \brief scale off diagonal values
      *

@@ -18,6 +18,7 @@ multiplicatively into elastic and inelastic parts
 #include "../drt_matelast/elast_summand.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_ssi.H"
+#include "elasthyper_service.H"
 
 
 /*--------------------------------------------------------------------*
@@ -257,7 +258,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Evaluate(
   // constitutive tensor factors (according to Holzapfel-Nonlinear Solid Mechanics p. 261)
   static LINALG::Matrix<8, 1> delta(true);
   // compose coefficients
-  CalculateGammaDelta(prinv, dPIe, ddPIIe, gamma, delta);
+  CalculateGammaDelta(gamma, delta, prinv, dPIe, ddPIIe);
 
   // evaluate dSdiFin
   EvaluatedSdiFin(gamma, delta, iFinM, iCinCM, iCinV, CiFin9x1, CiFinCe9x1, iCinCiCinV, CiFiniCe9x1,
@@ -420,36 +421,6 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateInvariantDerivatives(
   {
     potsumel_[p]->AddDerivativesPrincipal(dPI, ddPII, prinv, eleGID);
   }
-
-  return;
-}
-
-
-/*--------------------------------------------------------------------*
- | calculate factors for stress and cmat calculation    schmidt 03/18 |
- *--------------------------------------------------------------------*/
-void MAT::MultiplicativeSplitDefgrad_ElastHyper::CalculateGammaDelta(
-    const LINALG::Matrix<3, 1>&
-        prinv,  ///< principal invariants of the elastic right Cauchy-Green tensor
-    const LINALG::Matrix<3, 1>& dPI,    ///< first derivative with respect to invariants
-    const LINALG::Matrix<6, 1>& ddPII,  ///< second derivative with respect to invariants
-    LINALG::Matrix<3, 1>& gamma,        ///< factors for stress calculation
-    LINALG::Matrix<8, 1>& delta) const  ///< factors for elasticity tensor calculation
-{
-  // according to Holzapfel-Nonlinear Solid Mechanics p. 216 and p. 248
-  gamma(0) = 2. * (dPI(0) + prinv(0) * dPI(1));
-  gamma(1) = -2. * dPI(1);
-  gamma(2) = 2. * prinv(2) * dPI(2);
-
-  // according to Holzapfel-Nonlinear Solid Mechanics p. 261
-  delta(0) = 4. * (ddPII(0) + 2.0 * prinv(0) * ddPII(5) + dPI(1) + prinv(0) * prinv(0) * ddPII(1));
-  delta(1) = -4. * (ddPII(5) + prinv(0) * ddPII(1));
-  delta(2) = 4. * (prinv(2) * ddPII(4) + prinv(0) * prinv(2) * ddPII(3));
-  delta(3) = 4. * ddPII(1);
-  delta(4) = -4. * prinv(2) * ddPII(3);
-  delta(5) = 4. * (prinv(2) * dPI(2) + prinv(2) * prinv(2) * ddPII(2));
-  delta(6) = -4. * prinv(2) * dPI(2);
-  delta(7) = -4. * dPI(1);
 
   return;
 }

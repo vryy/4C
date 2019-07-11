@@ -51,13 +51,7 @@ DRT::ParObject* MIXTURE::MixtureConstituent_ElastHyperType::Create(const std::ve
 
 // Empty constructor of the constituent
 MIXTURE::MixtureConstituent_ElastHyper::MixtureConstituent_ElastHyper()
-    : MixtureConstituent(),
-      isoprinc_(false),
-      isomod_(false),
-      anisoprinc_(false),
-      anisomod_(false),
-      params_(nullptr),
-      potsum_(0)
+    : MixtureConstituent(), summandProperties_(), params_(nullptr), potsum_(0)
 {
   // empty constructor
 }
@@ -65,13 +59,7 @@ MIXTURE::MixtureConstituent_ElastHyper::MixtureConstituent_ElastHyper()
 // Constructor of the constituent holding the material parameters
 MIXTURE::MixtureConstituent_ElastHyper::MixtureConstituent_ElastHyper(
     MIXTURE::PAR::MixtureConstituent_ElastHyper* params)
-    : MixtureConstituent(),
-      isoprinc_(false),
-      isomod_(false),
-      anisoprinc_(false),
-      anisomod_(false),
-      params_(params),
-      potsum_(0)
+    : MixtureConstituent(), summandProperties_(), params_(params), potsum_(0)
 {
   std::vector<int>::const_iterator m;
 
@@ -98,10 +86,7 @@ void MIXTURE::MixtureConstituent_ElastHyper::PackConstituent(DRT::PackBuffer& da
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
-  AddtoPack(data, isoprinc_);
-  AddtoPack(data, isomod_);
-  AddtoPack(data, anisoprinc_);
-  AddtoPack(data, anisomod_);
+  summandProperties_.Pack(data);
 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
@@ -119,11 +104,6 @@ void MIXTURE::MixtureConstituent_ElastHyper::UnpackConstituent(
   // make sure we have a pristine material
   params_ = nullptr;
   potsum_.clear();
-
-  isoprinc_ = false;
-  isomod_ = false;
-  anisoprinc_ = false;
-  anisomod_ = false;
 
   // extract type
   int type = 0;
@@ -149,10 +129,7 @@ void MIXTURE::MixtureConstituent_ElastHyper::UnpackConstituent(
     }
   }
 
-  isoprinc_ = (bool)ExtractInt(position, data);
-  isomod_ = (bool)ExtractInt(position, data);
-  anisoprinc_ = (bool)ExtractInt(position, data);
-  anisomod_ = (bool)ExtractInt(position, data);
+  summandProperties_.Unpack(position, data);
 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
@@ -188,16 +165,10 @@ void MIXTURE::MixtureConstituent_ElastHyper::ReadElement(
   for (const auto& summand : potsum_) summand->Setup(linedef);
 
   // find out which formulations are used
-  isoprinc_ = false;
-  isomod_ = false;
-  anisoprinc_ = false;
-  anisomod_ = false;
-  bool viscogeneral = false;
+  MAT::ElastHyperProperties(potsum_, summandProperties_);
 
-  for (auto& summand : potsum_)
-    summand->SpecifyFormulation(isoprinc_, isomod_, anisoprinc_, anisomod_, viscogeneral);
-
-  if (viscogeneral) dserror("Never use viscoelastic materials in Elasthyper-Toolbox.");
+  if (summandProperties_.viscoGeneral)
+    dserror("Never use viscoelastic materials in Elasthyper-Toolbox.");
 }
 
 // Evaluates the stress of the constituent
@@ -206,8 +177,8 @@ void MIXTURE::MixtureConstituent_ElastHyper::Evaluate(const LINALG::Matrix<3, 3>
     LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
 {
   // Evaluate stresses using the original ElastHyper method
-  MAT::ElastHyper::EvaluateStressCmatStatic(defgrd, glstrain, params, stress, cmat, eleGID, potsum_,
-      isoprinc_, isomod_, anisoprinc_, anisomod_, false);
+  MAT::ElastHyperEvaluate(
+      defgrd, glstrain, params, stress, cmat, eleGID, potsum_, summandProperties_, false);
 }
 
 // Returns the reference mass fraction of the constituent
