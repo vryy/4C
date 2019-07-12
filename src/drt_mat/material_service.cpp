@@ -13,10 +13,18 @@
 #include "material_service.H"
 #include "matpar_parameter.H"
 #include "matpar_bundle.H"
+#include "../linalg/linalg_utils.H"
 
 #include <Sacado.hpp>
 
 typedef Sacado::Fad::DFad<double> FAD;
+
+// forward declaration of template specializations
+template <>
+double MAT::VoigtUtils<MAT::Notation::stress>::Determinant(const LINALG::Matrix<6, 1>& vtensor);
+
+template <>
+double MAT::VoigtUtils<MAT::Notation::strain>::Determinant(const LINALG::Matrix<6, 1>& vtensor);
 
 /*----------------------------------------------------------------------*
  |  Add 'Holzapfel product' contribution to constitutive tensor         |
@@ -1218,6 +1226,105 @@ void MAT::Matrix3x3to9x1(LINALG::Matrix<3, 3> const& in, LINALG::Matrix<9, 1>& o
   return;
 }
 
+void MAT::InvariantsPrincipal(LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<3, 3>& tens)
+{
+  // 1st invariant, trace tens
+  prinv(0) = tens(0, 0) + tens(1, 1) + tens(2, 2);
+
+  // 2nd invariant, 0.5( (trace(tens))^2 - trace(tens^2))
+  prinv(1) = tens(0, 0) * tens(1, 1) + tens(1, 1) * tens(2, 2) + tens(0, 0) * tens(2, 2) -
+             tens(0, 1) * tens(1, 0) - tens(1, 2) * tens(2, 1) - tens(0, 2) * tens(2, 0);
+
+  // 3rd invariant, determinant tens
+  prinv(2) = tens.Determinant();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+template <>
+void MAT::InvariantsPrincipal<MAT::Notation::strain>(
+    LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<6, 1>& tens)
+{
+  // 1st invariant, trace tens
+  prinv(0) = tens(0) + tens(1) + tens(2);
+  // 2nd invariant, 0.5( (trace(tens))^2 - trace(tens^2))
+  prinv(1) =
+      0.5 * (prinv(0) * prinv(0) - tens(0) * tens(0) - tens(1) * tens(1) - tens(2) * tens(2) -
+                .5 * tens(3) * tens(3) - .5 * tens(4) * tens(4) - .5 * tens(5) * tens(5));
+  // 3rd invariant, determinant tens
+  prinv(2) = VStrainUtils::Determinant(tens);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+template <>
+void MAT::InvariantsPrincipal<MAT::Notation::stress>(
+    LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<6, 1>& tens)
+{
+  // 1st invariant, trace tens
+  prinv(0) = tens(0) + tens(1) + tens(2);
+  // 2nd invariant, 0.5( (trace(tens))^2 - trace(tens^2))
+  prinv(1) =
+      0.5 * (prinv(0) * prinv(0) - tens(0) * tens(0) - tens(1) * tens(1) - tens(2) * tens(2)) -
+      tens(3) * tens(3) - tens(4) * tens(4) - tens(5) * tens(5);
+  // 3rd invariant, determinant tens
+  prinv(2) = VStressUtils::Determinant(tens);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::InvariantsModified(LINALG::Matrix<3, 1>& modinv,  ///< modified invariants
+    const LINALG::Matrix<3, 1>& prinv                       ///< principal invariants
+)
+{
+  // 1st invariant, trace
+  modinv(0) = prinv(0) * std::pow(prinv(2), -1. / 3.);
+  // 2nd invariant
+  modinv(1) = prinv(1) * std::pow(prinv(2), -2. / 3.);
+  // J
+  modinv(2) = std::pow(prinv(2), 1. / 2.);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::StretchesPrincipal(
+    LINALG::Matrix<3, 1>& prstr, LINALG::Matrix<3, 3>& prdir, const LINALG::Matrix<6, 1>& rcg)
+{
+  // create right Cauchy-Green 2-tensor
+  LINALG::Matrix<3, 3> rcgt(false);
+  rcgt(0, 0) = rcg(0);
+  rcgt(1, 1) = rcg(1);
+  rcgt(2, 2) = rcg(2);
+  rcgt(0, 1) = rcgt(1, 0) = 0.5 * rcg(3);
+  rcgt(1, 2) = rcgt(2, 1) = 0.5 * rcg(4);
+  rcgt(2, 0) = rcgt(0, 2) = 0.5 * rcg(5);
+
+  // eigenvalue decomposition
+  LINALG::Matrix<3, 3> prstr2;  // squared principal stretches
+  LINALG::SYEV(rcgt, prstr2, prdir);
+
+  // THE principal stretches
+  for (int al = 0; al < 3; ++al) prstr(al) = std::sqrt(prstr2(al, al));
+
+  // bye
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::StretchesModified(LINALG::Matrix<3, 1>& modstr, const LINALG::Matrix<3, 1>& prstr)
+{
+  // determinant of deformation gradient
+  const double detdefgrad = prstr(0) * prstr(1) * prstr(2);
+
+  // determine modified principal stretches
+  modstr.Update(std::pow(detdefgrad, -1.0 / 3.0), prstr);
+
+  return;
+}
+
 /*----------------------------------------------------------------------------*/
 // initialization of const static members has to be done in the cpp file since
 // GCC complains otherwise
@@ -1339,6 +1446,26 @@ template <MAT::Notation type>
 void MAT::VoigtUtils<type>::UnscaleOffDiagonalVals(LINALG::Matrix<6, 1>& strain)
 {
   for (unsigned i = 3; i < 6; ++i) strain(i, 0) *= UnscaleFactor<type>(i);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template <>
+double MAT::VoigtUtils<MAT::Notation::strain>::Determinant(const LINALG::Matrix<6, 1>& vtensor)
+{
+  return vtensor(0) * vtensor(1) * vtensor(2) + 0.25 * vtensor(3) * vtensor(4) * vtensor(5) -
+         0.25 * vtensor(1) * vtensor(5) * vtensor(5) - 0.25 * vtensor(2) * vtensor(3) * vtensor(3) -
+         0.25 * vtensor(0) * vtensor(4) * vtensor(4);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template <>
+double MAT::VoigtUtils<MAT::Notation::stress>::Determinant(const LINALG::Matrix<6, 1>& vtensor)
+{
+  return vtensor(0) * vtensor(1) * vtensor(2) + 2 * vtensor(3) * vtensor(4) * vtensor(5) -
+         vtensor(1) * vtensor(5) * vtensor(5) - vtensor(2) * vtensor(3) * vtensor(3) -
+         vtensor(0) * vtensor(4) * vtensor(4);
 }
 
 /*----------------------------------------------------------------------------*/

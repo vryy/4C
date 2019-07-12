@@ -21,6 +21,13 @@
 /// MAT: materials
 namespace MAT
 {
+  /// Voigt notation types
+  enum class Notation
+  {
+    stress,
+    strain
+  };
+
   /*! \brief Multiply two 2nd order tensors A x B and add the result to a
    *         4th order symmetric material tensor in matrix notation
    *
@@ -447,13 +454,61 @@ namespace MAT
   /// V_7 = A_21; V_8 = A_20
   void Matrix3x3to9x1(LINALG::Matrix<3, 3> const& in, LINALG::Matrix<9, 1>& out);
 
+  /*!
+   * \brief Evaluates the principal invariants of any symmetric tensor
+   *
+   * @param prinv (out) : Principal invariants of the tensor
+   * @param tens (in) : Tensor
+   */
+  void InvariantsPrincipal(LINALG::Matrix<3, 1>& prinv,  ///< principal invariants
+      const LINALG::Matrix<3, 3>& tens                   ///< symmetric Cartesian 2-tensor
+  );
+
+  /*!
+   * \brief Evaluates the principal invariants of any symmetric tensor in <type>-like Voigt notation
+   *
+   * @param prinv (out) : Principal invariants of the tensor
+   * @param tens (in) : Tensor in <type>-like Voigt notation
+   */
+  template <Notation type>
+  void InvariantsPrincipal(LINALG::Matrix<3, 1>& prinv,  ///< principal invariants
+      const LINALG::Matrix<6, 1>&
+          tens  ///< symmetric Cartesian 2-tensor in <type>-like 6-Voigt notation
+  );
+
+  /*!
+   * \brief Converts the principal invariants to the modified principal invariants.
+   *
+   * @param modinv (out) : Modified principal invariants of the Right Cauchy-Green strain tensor
+   * @param prinv (in) : Principal invariants of the Right Cauchy-Green strain tensor
+   */
+  void InvariantsModified(LINALG::Matrix<3, 1>& modinv,  ///< modified principal invariants
+      const LINALG::Matrix<3, 1>& prinv                  ///< principal invariants
+  );
+
+  /*!
+   * \brief Evaluates principal stretches \f$\lambda_\alpha\f$ and material principal directions
+   *
+   * @param prstr (out) : Principal stretches
+   * @param prdir (out) : Principal directions
+   * @param rcg (in) : Right Cauchy-Green strain tensor in strain-like Voigt notation
+   */
+  void StretchesPrincipal(LINALG::Matrix<3, 1>& prstr,  ///< principal stretches
+      LINALG::Matrix<3, 3>& prdir,                      ///< principal directions, stored col-by-col
+      const LINALG::Matrix<6, 1>&
+          rcg);  ///< symmetric Cartesian 2-tensor in strain-like 6-Voigt notation
+
+  /*!
+   * \brief Evaluates the modified principal stretches \f$\bar{\lambda}_\alpha\f$
+   *
+   * @param modstr (out) : Modified principal stretches
+   * @param prstr (in) : Principal stretches
+   */
+  void StretchesModified(LINALG::Matrix<3, 1>& modstr,  ///< modified principal stretches
+      const LINALG::Matrix<3, 1>& prstr                 ///< principal stretches
+  );
+
   /*--------------------------------------------------------------------------*/
-  /// Voigt notation types
-  enum class Notation
-  {
-    stress,
-    strain
-  };
 
   /*--------------------------------------------------------------------------*/
   /// Index maps
@@ -505,6 +560,13 @@ namespace MAT
      *  \author hiermeier \date 09/17 */
     static void InverseTensor(
         const LINALG::Matrix<6, 1>& vtensor, LINALG::Matrix<6, 1>& vtensor_inv);
+
+    /**
+     * \brief Compute the determinant of a matrix in Voigt <type> notation
+     *
+     * @param vtensor Tensor in Voigt <type> notation
+     */
+    static double Determinant(const LINALG::Matrix<6, 1>& vtensor);
 
     /** \brief Compute the product of a tensor in perturbed Voigt notation
      *  and a vector

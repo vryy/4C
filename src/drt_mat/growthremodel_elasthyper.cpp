@@ -1145,7 +1145,7 @@ void MAT::GrowthRemodel_ElastHyper::EvaluateKinQuantElast(LINALG::Matrix<3, 3> c
   MatrixtoStrainLikeVoigtNotation(CeM, Ce_strain);
 
   // principal invariants of elastic right Cauchy-Green strain
-  InvariantsPrincipal(prinv, Ce_strain);
+  InvariantsPrincipal<MAT::Notation::strain>(prinv, Ce_strain);
 
   // C_{in}^{-1} * C
   iCinCM.MultiplyNN(1.0, iCinM, CM, 0.0);
@@ -1171,28 +1171,6 @@ void MAT::GrowthRemodel_ElastHyper::EvaluateKinQuantElast(LINALG::Matrix<3, 3> c
   tmp.MultiplyNN(1.0, CM, iFinM, 0.0);
   CiFiniCeM.MultiplyNN(1.0, tmp, iCeM, 0.0);
   Matrix3x3to9x1(CiFiniCeM, CiFiniCe9x1);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MAT::GrowthRemodel_ElastHyper::InvariantsPrincipal(
-    LINALG::Matrix<3, 1>& prinv, LINALG::Matrix<6, 1> const& C_strain) const
-{
-  // 1st invariant, trace
-  prinv(0) = C_strain(0) + C_strain(1) + C_strain(2);
-  // 2nd invariant
-  prinv(1) = 0.5 * (prinv(0) * prinv(0) - C_strain(0) * C_strain(0) - C_strain(1) * C_strain(1) -
-                       C_strain(2) * C_strain(2) - .5 * C_strain(3) * C_strain(3) -
-                       .5 * C_strain(4) * C_strain(4) - .5 * C_strain(5) * C_strain(5));
-  // 3rd invariant, determinant
-  prinv(2) = C_strain(0) * C_strain(1) * C_strain(2) +
-             0.25 * C_strain(3) * C_strain(4) * C_strain(5) -
-             0.25 * C_strain(1) * C_strain(5) * C_strain(5) -
-             0.25 * C_strain(2) * C_strain(3) * C_strain(3) -
-             0.25 * C_strain(0) * C_strain(4) * C_strain(4);
 
   return;
 }

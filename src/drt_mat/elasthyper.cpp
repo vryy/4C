@@ -388,22 +388,6 @@ void MAT::ElastHyper::EvaluateFiberVecs(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::InvariantsPrincipal(
-    LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<6, 1>& rcg)
-{
-  // 1st invariant, trace
-  prinv(0) = rcg(0) + rcg(1) + rcg(2);
-  // 2nd invariant
-  prinv(1) = 0.5 * (prinv(0) * prinv(0) - rcg(0) * rcg(0) - rcg(1) * rcg(1) - rcg(2) * rcg(2) -
-                       .5 * rcg(3) * rcg(3) - .5 * rcg(4) * rcg(4) - .5 * rcg(5) * rcg(5));
-  // 3rd invariant, determinant
-  prinv(2) = rcg(0) * rcg(1) * rcg(2) + 0.25 * rcg(3) * rcg(4) * rcg(5) -
-             0.25 * rcg(1) * rcg(5) * rcg(5) - 0.25 * rcg(2) * rcg(3) * rcg(3) -
-             0.25 * rcg(0) * rcg(4) * rcg(4);
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ElastHyper::InvariantsModified(LINALG::Matrix<3, 1>& modinv,  ///< modified invariants
     const LINALG::Matrix<3, 1>& prinv                                   ///< principal invariants
 )
@@ -415,31 +399,6 @@ void MAT::ElastHyper::InvariantsModified(LINALG::Matrix<3, 1>& modinv,  ///< mod
   // J
   modinv(2) = std::pow(prinv(2), 1. / 2.);
 
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MAT::ElastHyper::StretchesPrincipal(
-    LINALG::Matrix<3, 1>& prstr, LINALG::Matrix<3, 3>& prdir, const LINALG::Matrix<6, 1>& rcg)
-{
-  // create right Cauchy-Green 2-tensor
-  LINALG::Matrix<3, 3> rcgt(false);
-  rcgt(0, 0) = rcg(0);
-  rcgt(1, 1) = rcg(1);
-  rcgt(2, 2) = rcg(2);
-  rcgt(0, 1) = rcgt(1, 0) = 0.5 * rcg(3);
-  rcgt(1, 2) = rcgt(2, 1) = 0.5 * rcg(4);
-  rcgt(2, 0) = rcgt(0, 2) = 0.5 * rcg(5);
-
-  // eigenvalue decomposition
-  LINALG::Matrix<3, 3> prstr2;  // squared principal stretches
-  LINALG::SYEV(rcgt, prstr2, prdir);
-
-  // THE principal stretches
-  for (int al = 0; al < 3; ++al) prstr(al) = std::sqrt(prstr2(al, al));
-
-  // bye
   return;
 }
 
@@ -768,7 +727,7 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
   static LINALG::Matrix<6, 1> bV_strain(true);
   MatrixtoStrainLikeVoigtNotation(b, bV_strain);
   static LINALG::Matrix<3, 1> prinv(true);
-  InvariantsPrincipal(prinv, bV_strain);
+  InvariantsPrincipal<MAT::Notation::strain>(prinv, bV_strain);
 
   static LINALG::Matrix<3, 1> dPI(true);
   static LINALG::Matrix<6, 1> ddPII(true);
@@ -1138,7 +1097,7 @@ void MAT::ElastHyper::EvaluateKinQuant(const LINALG::Matrix<6, 1>& glstrain,
   for (int i = 3; i < 6; i++) scg(i) *= 0.5;
 
   // principal invariants of right Cauchy-Green strain
-  InvariantsPrincipal(prinv, rcg);
+  InvariantsPrincipal<MAT::Notation::strain>(prinv, rcg);
 
   // invert right Cauchy-Green tensor
   // REMARK: stress-like 6-Voigt vector
