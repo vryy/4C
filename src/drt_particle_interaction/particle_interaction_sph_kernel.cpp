@@ -21,7 +21,7 @@
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHKernelBase::SPHKernelBase(const Teuchos::ParameterList& params)
     : kernelspacedim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::KernelSpaceDimension>(
-          params.sublist("SPH"), "KERNEL_SPACE_DIM"))
+          params, "KERNEL_SPACE_DIM"))
 {
   // empty constructor
 }

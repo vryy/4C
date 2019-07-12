@@ -425,12 +425,12 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitKernelHandler()
   {
     case INPAR::PARTICLE::CubicSpline:
     {
-      kernel_ = std::make_shared<PARTICLEINTERACTION::SPHKernelCubicSpline>(params_);
+      kernel_ = std::make_shared<PARTICLEINTERACTION::SPHKernelCubicSpline>(params_sph_);
       break;
     }
     case INPAR::PARTICLE::QuinticSpline:
     {
-      kernel_ = std::make_shared<PARTICLEINTERACTION::SPHKernelQuinticSpline>(params_);
+      kernel_ = std::make_shared<PARTICLEINTERACTION::SPHKernelQuinticSpline>(params_sph_);
       break;
     }
     default:
@@ -450,7 +450,8 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitKernelHandler()
 void PARTICLEINTERACTION::ParticleInteractionSPH::InitEquationOfStateBundle()
 {
   // create equation of state bundle
-  equationofstatebundle_ = std::make_shared<PARTICLEINTERACTION::SPHEquationOfStateBundle>(params_);
+  equationofstatebundle_ =
+      std::make_shared<PARTICLEINTERACTION::SPHEquationOfStateBundle>(params_sph_);
 
   // init equation of state bundle
   equationofstatebundle_->Init(particlematerial_);

@@ -48,41 +48,35 @@ class PARTICLEINTERACTION::SPHKernelCubicSpline_TestSuite : public CxxTest::Test
   void setUp()
   {
     // create a parameter list
-    Teuchos::ParameterList params_1D;
-    Teuchos::ParameterList& params_1D_sph = params_1D.sublist("SPH");
-
+    Teuchos::ParameterList params_sph_1D;
     Teuchos::setStringToIntegralParameter<int>("KERNEL_SPACE_DIM", "Kernel1D",
         "kernel space dimension number", Teuchos::tuple<std::string>("Kernel1D"),
-        Teuchos::tuple<int>(INPAR::PARTICLE::Kernel1D), &params_1D_sph);
+        Teuchos::tuple<int>(INPAR::PARTICLE::Kernel1D), &params_sph_1D);
 
-    Teuchos::ParameterList params_2D;
-    Teuchos::ParameterList& params_2D_sph = params_2D.sublist("SPH");
-
+    Teuchos::ParameterList params_sph_2D;
     Teuchos::setStringToIntegralParameter<int>("KERNEL_SPACE_DIM", "Kernel2D",
         "kernel space dimension number", Teuchos::tuple<std::string>("Kernel2D"),
-        Teuchos::tuple<int>(INPAR::PARTICLE::Kernel2D), &params_2D_sph);
+        Teuchos::tuple<int>(INPAR::PARTICLE::Kernel2D), &params_sph_2D);
 
-    Teuchos::ParameterList params_3D;
-    Teuchos::ParameterList& params_3D_sph = params_3D.sublist("SPH");
-
+    Teuchos::ParameterList params_sph_3D;
     Teuchos::setStringToIntegralParameter<int>("KERNEL_SPACE_DIM", "Kernel3D",
         "kernel space dimension number", Teuchos::tuple<std::string>("Kernel3D"),
-        Teuchos::tuple<int>(INPAR::PARTICLE::Kernel3D), &params_3D_sph);
+        Teuchos::tuple<int>(INPAR::PARTICLE::Kernel3D), &params_sph_3D);
 
-    // create contact law handler
+    // create kernel handler
     kernel_1D_ = std::unique_ptr<PARTICLEINTERACTION::SPHKernelCubicSpline>(
-        new PARTICLEINTERACTION::SPHKernelCubicSpline(params_1D));
+        new PARTICLEINTERACTION::SPHKernelCubicSpline(params_sph_1D));
     kernel_2D_ = std::unique_ptr<PARTICLEINTERACTION::SPHKernelCubicSpline>(
-        new PARTICLEINTERACTION::SPHKernelCubicSpline(params_2D));
+        new PARTICLEINTERACTION::SPHKernelCubicSpline(params_sph_2D));
     kernel_3D_ = std::unique_ptr<PARTICLEINTERACTION::SPHKernelCubicSpline>(
-        new PARTICLEINTERACTION::SPHKernelCubicSpline(params_3D));
+        new PARTICLEINTERACTION::SPHKernelCubicSpline(params_sph_3D));
 
-    // init contact law handler
+    // init kernel handler
     kernel_1D_->Init();
     kernel_2D_->Init();
     kernel_3D_->Init();
 
-    // setup contact law handler
+    // setup kernel handler
     kernel_1D_->Setup();
     kernel_2D_->Setup();
     kernel_3D_->Setup();
@@ -96,8 +90,7 @@ class PARTICLEINTERACTION::SPHKernelCubicSpline_TestSuite : public CxxTest::Test
   }
 
   // note: the public functions Init() and Setup() of class SPHKernelCubicSpline are called in
-  // setUp()
-  //       and thus implicitly tested by all following unittests
+  // setUp() and thus implicitly tested by all following unittests
 
   void test_KernelSpaceDimension()
   {
@@ -339,41 +332,35 @@ class PARTICLEINTERACTION::SPHKernelQuinticSpline_TestSuite : public CxxTest::Te
   void setUp()
   {
     // create a parameter list
-    Teuchos::ParameterList params_1D;
-    Teuchos::ParameterList& params_1D_sph = params_1D.sublist("SPH");
-
+    Teuchos::ParameterList params_sph_1D;
     Teuchos::setStringToIntegralParameter<int>("KERNEL_SPACE_DIM", "Kernel1D",
         "kernel space dimension number", Teuchos::tuple<std::string>("Kernel1D"),
-        Teuchos::tuple<int>(INPAR::PARTICLE::Kernel1D), &params_1D_sph);
+        Teuchos::tuple<int>(INPAR::PARTICLE::Kernel1D), &params_sph_1D);
 
-    Teuchos::ParameterList params_2D;
-    Teuchos::ParameterList& params_2D_sph = params_2D.sublist("SPH");
-
+    Teuchos::ParameterList params_sph_2D;
     Teuchos::setStringToIntegralParameter<int>("KERNEL_SPACE_DIM", "Kernel2D",
         "kernel space dimension number", Teuchos::tuple<std::string>("Kernel2D"),
-        Teuchos::tuple<int>(INPAR::PARTICLE::Kernel2D), &params_2D_sph);
+        Teuchos::tuple<int>(INPAR::PARTICLE::Kernel2D), &params_sph_2D);
 
-    Teuchos::ParameterList params_3D;
-    Teuchos::ParameterList& params_3D_sph = params_3D.sublist("SPH");
-
+    Teuchos::ParameterList params_sph_3D;
     Teuchos::setStringToIntegralParameter<int>("KERNEL_SPACE_DIM", "Kernel3D",
         "kernel space dimension number", Teuchos::tuple<std::string>("Kernel3D"),
-        Teuchos::tuple<int>(INPAR::PARTICLE::Kernel3D), &params_3D_sph);
+        Teuchos::tuple<int>(INPAR::PARTICLE::Kernel3D), &params_sph_3D);
 
-    // create contact law handler
+    // create kernel handler
     kernel_1D_ = std::unique_ptr<PARTICLEINTERACTION::SPHKernelQuinticSpline>(
-        new PARTICLEINTERACTION::SPHKernelQuinticSpline(params_1D));
+        new PARTICLEINTERACTION::SPHKernelQuinticSpline(params_sph_1D));
     kernel_2D_ = std::unique_ptr<PARTICLEINTERACTION::SPHKernelQuinticSpline>(
-        new PARTICLEINTERACTION::SPHKernelQuinticSpline(params_2D));
+        new PARTICLEINTERACTION::SPHKernelQuinticSpline(params_sph_2D));
     kernel_3D_ = std::unique_ptr<PARTICLEINTERACTION::SPHKernelQuinticSpline>(
-        new PARTICLEINTERACTION::SPHKernelQuinticSpline(params_3D));
+        new PARTICLEINTERACTION::SPHKernelQuinticSpline(params_sph_3D));
 
-    // init contact law handler
+    // init kernel handler
     kernel_1D_->Init();
     kernel_2D_->Init();
     kernel_3D_->Init();
 
-    // setup contact law handler
+    // setup kernel handler
     kernel_1D_->Setup();
     kernel_2D_->Setup();
     kernel_3D_->Setup();
@@ -387,8 +374,7 @@ class PARTICLEINTERACTION::SPHKernelQuinticSpline_TestSuite : public CxxTest::Te
   }
 
   // note: the public functions Init() and Setup() of class SPHKernelQuinticSpline are called in
-  // setUp()
-  //       and thus implicitly tested by all following unittests
+  // setUp() and thus implicitly tested by all following unittests
 
   void test_KernelSpaceDimension()
   {

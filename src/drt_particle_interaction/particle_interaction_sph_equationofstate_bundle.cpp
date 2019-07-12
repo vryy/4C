@@ -25,7 +25,7 @@
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHEquationOfStateBundle::SPHEquationOfStateBundle(
     const Teuchos::ParameterList& params)
-    : params_sph_(params.sublist("SPH"))
+    : params_sph_(params)
 {
   // empty constructor
 }
