@@ -242,7 +242,6 @@ UZAWAALGO                       direct
 UZAWAMAXITER                    50
 UZAWAPARAM                      1.000e+00
 UZAWATOL                        1.000e-08
-YOUNG_IS_TEMP_DEPENDENT         No
 ---------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 BETA                            0.5

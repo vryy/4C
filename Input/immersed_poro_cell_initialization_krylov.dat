@@ -97,7 +97,6 @@ ADAPTCONV                       No
 ADAPTCONV_BETTER                1.000e-01
 LUMPMASS                        No
 MODIFIEDEXPLEULER               Yes
-YOUNG_IS_TEMP_DEPENDENT         No
 GEOMETRY                        full
 ------------------------CELL DYNAMIC/STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
@@ -162,7 +161,6 @@ ADAPTCONV                       No
 ADAPTCONV_BETTER                1.000e-01
 LUMPMASS                        No
 MODIFIEDEXPLEULER               Yes
-YOUNG_IS_TEMP_DEPENDENT         No
 GEOMETRY                        full
 ------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0

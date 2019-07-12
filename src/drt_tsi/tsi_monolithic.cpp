@@ -2016,10 +2016,6 @@ void TSI::Monolithic::ApplyStrCouplMatrix(
   StructureField()->Discretization()->ClearState(true);
   StructureField()->Discretization()->SetState(0, "displacement", StructureField()->Dispnp());
 
-  // in case of temperature-dependent material parameters, here E(T), T_{n+1} is required in STR
-  sparams.set<int>(
-      "young_temp", (DRT::INPUT::IntegralValue<int>(sdyn_, "YOUNG_IS_TEMP_DEPENDENT")));
-
   ApplyThermoCouplingState(ThermoField()->Tempnp());
 
   // build specific assemble strategy for mechanical-thermal system matrix
@@ -2097,8 +2093,6 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
   // other parameters that might be needed by the elements
   tparams.set("delta time", Dt());
   tparams.set("total time", Time());
-  tparams.set<int>(
-      "young_temp", (DRT::INPUT::IntegralValue<int>(sdyn_, "YOUNG_IS_TEMP_DEPENDENT")));
 
   // create specific time integrator
   const Teuchos::ParameterList& tdyn = DRT::Problem::Instance()->ThermalDynamicParams();

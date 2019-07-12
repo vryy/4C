@@ -893,7 +893,6 @@ void STR::TimIntImpl::ApplyForceStiffInternal(const double time, const double dt
   params.set("total time", time);
   params.set("delta time", dt);
   params.set("damping", damping_);
-  params.set<int>("young_temp", young_temp_);
   if (pressure_ != Teuchos::null) params.set("volume", 0.0);
 
   // compute new inner radius

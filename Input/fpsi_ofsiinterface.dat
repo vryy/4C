@@ -94,7 +94,6 @@ ADAPTCONV_BETTER                0.1
 LUMPMASS                        No
 MODIFIEDEXPLEULER               Yes
 LINEAR_SOLVER                   2
-YOUNG_IS_TEMP_DEPENDENT         No
 ------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.66
 ---------------------------------------------POROELASTICITY DYNAMIC

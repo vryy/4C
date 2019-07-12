@@ -85,7 +85,6 @@ ADAPTCONV_BETTER                0.1
 LUMPMASS                        No
 MODIFIEDEXPLEULER               Yes
 LINEAR_SOLVER                   1
-YOUNG_IS_TEMP_DEPENDENT         No
 GEOMETRY                        full
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
