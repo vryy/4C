@@ -1,11 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
- \brief calculation classes for evaluation of constitutive relation for (mircroscopic) density in
+ \brief calculation classes for evaluation of constitutive relation for (microscopic) density in
  porous media
 
    \level 3
 
-   \maintainer  Martin Kronbichler
+   \maintainer  Johannes Kremheller
  *----------------------------------------------------------------------*/
 
 
