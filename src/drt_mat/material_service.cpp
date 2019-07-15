@@ -19,14 +19,6 @@
 
 typedef Sacado::Fad::DFad<double> FAD;
 
-// forward declaration of template specializations
-template <>
-double MAT::VoigtUtils<MAT::VoigtNotation::stress>::Determinant(
-    const LINALG::Matrix<6, 1>& vtensor);
-
-template <>
-double MAT::VoigtUtils<MAT::VoigtNotation::strain>::Determinant(
-    const LINALG::Matrix<6, 1>& vtensor);
 
 /*----------------------------------------------------------------------*
  |  Add 'Holzapfel product' contribution to constitutive tensor         |
@@ -1228,51 +1220,6 @@ void MAT::Matrix3x3to9x1(LINALG::Matrix<3, 3> const& in, LINALG::Matrix<9, 1>& o
   return;
 }
 
-void MAT::InvariantsPrincipal(LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<3, 3>& tens)
-{
-  // 1st invariant, trace tens
-  prinv(0) = tens(0, 0) + tens(1, 1) + tens(2, 2);
-
-  // 2nd invariant, 0.5( (trace(tens))^2 - trace(tens^2))
-  prinv(1) = tens(0, 0) * tens(1, 1) + tens(1, 1) * tens(2, 2) + tens(0, 0) * tens(2, 2) -
-             tens(0, 1) * tens(1, 0) - tens(1, 2) * tens(2, 1) - tens(0, 2) * tens(2, 0);
-
-  // 3rd invariant, determinant tens
-  prinv(2) = tens.Determinant();
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-template <>
-void MAT::InvariantsPrincipal<MAT::VoigtNotation::strain>(
-    LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<6, 1>& tens)
-{
-  // 1st invariant, trace tens
-  prinv(0) = tens(0) + tens(1) + tens(2);
-  // 2nd invariant, 0.5( (trace(tens))^2 - trace(tens^2))
-  prinv(1) =
-      0.5 * (prinv(0) * prinv(0) - tens(0) * tens(0) - tens(1) * tens(1) - tens(2) * tens(2) -
-                .5 * tens(3) * tens(3) - .5 * tens(4) * tens(4) - .5 * tens(5) * tens(5));
-  // 3rd invariant, determinant tens
-  prinv(2) = VStrainUtils::Determinant(tens);
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-template <>
-void MAT::InvariantsPrincipal<MAT::VoigtNotation::stress>(
-    LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<6, 1>& tens)
-{
-  // 1st invariant, trace tens
-  prinv(0) = tens(0) + tens(1) + tens(2);
-  // 2nd invariant, 0.5( (trace(tens))^2 - trace(tens^2))
-  prinv(1) =
-      0.5 * (prinv(0) * prinv(0) - tens(0) * tens(0) - tens(1) * tens(1) - tens(2) * tens(2)) -
-      tens(3) * tens(3) - tens(4) * tens(4) - tens(5) * tens(5);
-  // 3rd invariant, determinant tens
-  prinv(2) = VStressUtils::Determinant(tens);
-}
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::InvariantsModified(LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<3, 1>& prinv)
@@ -1448,26 +1395,6 @@ void MAT::VoigtUtils<type>::UnscaleOffDiagonalVals(LINALG::Matrix<6, 1>& strain)
   for (unsigned i = 3; i < 6; ++i) strain(i, 0) *= UnscaleFactor<type>(i);
 }
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-template <>
-double MAT::VoigtUtils<MAT::VoigtNotation::strain>::Determinant(const LINALG::Matrix<6, 1>& vtensor)
-{
-  return vtensor(0) * vtensor(1) * vtensor(2) + 0.25 * vtensor(3) * vtensor(4) * vtensor(5) -
-         0.25 * vtensor(1) * vtensor(5) * vtensor(5) - 0.25 * vtensor(2) * vtensor(3) * vtensor(3) -
-         0.25 * vtensor(0) * vtensor(4) * vtensor(4);
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-template <>
-double MAT::VoigtUtils<MAT::VoigtNotation::stress>::Determinant(const LINALG::Matrix<6, 1>& vtensor)
-{
-  return vtensor(0) * vtensor(1) * vtensor(2) + 2 * vtensor(3) * vtensor(4) * vtensor(5) -
-         vtensor(1) * vtensor(5) * vtensor(5) - vtensor(2) * vtensor(3) * vtensor(3) -
-         vtensor(0) * vtensor(4) * vtensor(4);
-}
-
 /*----------------------------------------------------------------------------*/
 // explicit instantiation of template functions
 template void MAT::AddRightNonSymmetricHolzapfelProduct<double>(LINALG::TMatrix<double, 6, 9>&,
@@ -1491,15 +1418,3 @@ template void MAT::MatrixtoStressLikeVoigtNotation<FAD>(
 
 template class MAT::VoigtUtils<MAT::VoigtNotation::strain>;
 template class MAT::VoigtUtils<MAT::VoigtNotation::stress>;
-
-template double MAT::VoigtUtils<MAT::VoigtNotation::stress>::Determinant(
-    const LINALG::Matrix<6, 1>& vtensor);
-
-template double MAT::VoigtUtils<MAT::VoigtNotation::strain>::Determinant(
-    const LINALG::Matrix<6, 1>& vtensor);
-
-template void MAT::InvariantsPrincipal<MAT::VoigtNotation::strain>(
-    LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<6, 1>& tens);
-
-template void MAT::InvariantsPrincipal<MAT::VoigtNotation::stress>(
-    LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<6, 1>& tens);
