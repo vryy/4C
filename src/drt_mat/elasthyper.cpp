@@ -727,7 +727,7 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
   static LINALG::Matrix<6, 1> bV_strain(true);
   MatrixtoStrainLikeVoigtNotation(b, bV_strain);
   static LINALG::Matrix<3, 1> prinv(true);
-  InvariantsPrincipal<MAT::Notation::strain>(prinv, bV_strain);
+  InvariantsPrincipal<MAT::VoigtNotation::strain>(prinv, bV_strain);
 
   static LINALG::Matrix<3, 1> dPI(true);
   static LINALG::Matrix<6, 1> ddPII(true);
@@ -1097,7 +1097,7 @@ void MAT::ElastHyper::EvaluateKinQuant(const LINALG::Matrix<6, 1>& glstrain,
   for (int i = 3; i < 6; i++) scg(i) *= 0.5;
 
   // principal invariants of right Cauchy-Green strain
-  InvariantsPrincipal<MAT::Notation::strain>(prinv, rcg);
+  InvariantsPrincipal<MAT::VoigtNotation::strain>(prinv, rcg);
 
   // invert right Cauchy-Green tensor
   // REMARK: stress-like 6-Voigt vector

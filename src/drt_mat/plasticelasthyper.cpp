@@ -628,7 +628,7 @@ double MAT::PlasticElastHyper::StrainEnergyTSI(
   elRCGv(4) = elRCG(2, 1) + elRCG(1, 2);
   elRCGv(5) = elRCG(0, 2) + elRCG(2, 0);
   LINALG::Matrix<3, 1> prinv;
-  InvariantsPrincipal<MAT::Notation::strain>(prinv, elRCGv);
+  InvariantsPrincipal<MAT::VoigtNotation::strain>(prinv, elRCGv);
   LINALG::Matrix<3, 1> modinv;
   InvariantsModified(modinv, prinv);
 
@@ -2041,7 +2041,7 @@ void MAT::PlasticElastHyper::EvaluateKinQuantElast(
   elasticRCGv(5) = (CeM(0, 2) + CeM(2, 0));
 
   // principal invariants of elastic Cauchy-Green strain
-  InvariantsPrincipal<MAT::Notation::strain>(prinv_, elasticRCGv);
+  InvariantsPrincipal<MAT::VoigtNotation::strain>(prinv_, elasticRCGv);
 
   return;
 }
@@ -2104,7 +2104,7 @@ int MAT::PlasticElastHyper::EvaluateKinQuantPlast(const LINALG::Matrix<3, 3>* de
   Ce2_(5) = (tmp(0, 2) + tmp(2, 0)) / 2.;
 
   // principal invariants of elastic Cauchy-Green strain
-  InvariantsPrincipal<MAT::Notation::strain>(prinv_, elasticRCGv);
+  InvariantsPrincipal<MAT::VoigtNotation::strain>(prinv_, elasticRCGv);
 
   // inverse plastic right Cauchy-Green
   LINALG::Matrix<3, 3> CpiM;

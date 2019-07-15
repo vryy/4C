@@ -1145,7 +1145,7 @@ void MAT::GrowthRemodel_ElastHyper::EvaluateKinQuantElast(LINALG::Matrix<3, 3> c
   MatrixtoStrainLikeVoigtNotation(CeM, Ce_strain);
 
   // principal invariants of elastic right Cauchy-Green strain
-  InvariantsPrincipal<MAT::Notation::strain>(prinv, Ce_strain);
+  InvariantsPrincipal<MAT::VoigtNotation::strain>(prinv, Ce_strain);
 
   // C_{in}^{-1} * C
   iCinCM.MultiplyNN(1.0, iCinM, CM, 0.0);

@@ -17,7 +17,6 @@
 #include <src/linalg/linalg_fixedsizematrix.H>
 #include <Teuchos_RCPDecl.hpp>
 #include "src/drt_mat/material_service.H"
-#include "../../../src/drt_mat/material_service.H"
 
 namespace MAT
 {
@@ -98,7 +97,7 @@ class MAT::MaterialService_TestSuite : public CxxTest::TestSuite
   void test_invariants_principal_stress()
   {
     LINALG::Matrix<3, 1> prinv(false);
-    MAT::InvariantsPrincipal<MAT::Notation::stress>(prinv, *tens_stress);
+    MAT::InvariantsPrincipal<MAT::VoigtNotation::stress>(prinv, *tens_stress);
     TS_ASSERT_DELTA(prinv(0), 3.5999999999999996, 1e-10);
     TS_ASSERT_DELTA(prinv(1), 4.3085999999999984, 1e-10);
     TS_ASSERT_DELTA(prinv(2), 1.7143620000000002, 1e-10);
@@ -107,7 +106,7 @@ class MAT::MaterialService_TestSuite : public CxxTest::TestSuite
   void test_invariants_principal_strain()
   {
     LINALG::Matrix<3, 1> prinv(false);
-    MAT::InvariantsPrincipal<MAT::Notation::strain>(prinv, *tens_strain);
+    MAT::InvariantsPrincipal<MAT::VoigtNotation::strain>(prinv, *tens_strain);
     TS_ASSERT_DELTA(prinv(0), 3.5999999999999996, 1e-10);
     TS_ASSERT_DELTA(prinv(1), 4.3085999999999984, 1e-10);
     TS_ASSERT_DELTA(prinv(2), 1.7143620000000002, 1e-10);

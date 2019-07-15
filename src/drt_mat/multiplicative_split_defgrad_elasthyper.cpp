@@ -370,7 +370,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateKinQuantElast(
   MatrixtoStrainLikeVoigtNotation(CeM, CeV_strain);
 
   // principal invariants of elastic right Cauchy-Green strain
-  InvariantsPrincipal<MAT::Notation::strain>(prinv, CeV_strain);
+  InvariantsPrincipal<MAT::VoigtNotation::strain>(prinv, CeV_strain);
 
   // C_{in}^{-1} * C
   iCinCM.MultiplyNN(1.0, iCinM, CM, 0.0);

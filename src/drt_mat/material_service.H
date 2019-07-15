@@ -22,9 +22,11 @@
 namespace MAT
 {
   /// Voigt notation types
-  enum class Notation
+  enum class VoigtNotation
   {
+    /// Stress-like Voigt notation
     stress,
+    /// Strain-like Voigt notation
     strain
   };
 
@@ -467,14 +469,12 @@ namespace MAT
   /*!
    * \brief Evaluates the principal invariants of any symmetric tensor in <type>-like Voigt notation
    *
+   * @tparam type : Voigt notation type (stress or strain-like)
    * @param prinv (out) : Principal invariants of the tensor
    * @param tens (in) : Tensor in <type>-like Voigt notation
    */
-  template <Notation type>
-  void InvariantsPrincipal(LINALG::Matrix<3, 1>& prinv,  ///< principal invariants
-      const LINALG::Matrix<6, 1>&
-          tens  ///< symmetric Cartesian 2-tensor in <type>-like 6-Voigt notation
-  );
+  template <VoigtNotation type>
+  void InvariantsPrincipal(LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<6, 1>& tens);
 
   /*!
    * \brief Converts the principal invariants to the modified principal invariants.
@@ -482,9 +482,7 @@ namespace MAT
    * @param modinv (out) : Modified principal invariants of the Right Cauchy-Green strain tensor
    * @param prinv (in) : Principal invariants of the Right Cauchy-Green strain tensor
    */
-  void InvariantsModified(LINALG::Matrix<3, 1>& modinv,  ///< modified principal invariants
-      const LINALG::Matrix<3, 1>& prinv                  ///< principal invariants
-  );
+  void InvariantsModified(LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<3, 1>& prinv);
 
   /*!
    * \brief Evaluates principal stretches \f$\lambda_\alpha\f$ and material principal directions
@@ -493,10 +491,8 @@ namespace MAT
    * @param prdir (out) : Principal directions
    * @param rcg (in) : Right Cauchy-Green strain tensor in strain-like Voigt notation
    */
-  void StretchesPrincipal(LINALG::Matrix<3, 1>& prstr,  ///< principal stretches
-      LINALG::Matrix<3, 3>& prdir,                      ///< principal directions, stored col-by-col
-      const LINALG::Matrix<6, 1>&
-          rcg);  ///< symmetric Cartesian 2-tensor in strain-like 6-Voigt notation
+  void StretchesPrincipal(
+      LINALG::Matrix<3, 1>& prstr, LINALG::Matrix<3, 3>& prdir, const LINALG::Matrix<6, 1>& rcg);
 
   /*!
    * \brief Evaluates the modified principal stretches \f$\bar{\lambda}_\alpha\f$
@@ -504,9 +500,7 @@ namespace MAT
    * @param modstr (out) : Modified principal stretches
    * @param prstr (in) : Principal stretches
    */
-  void StretchesModified(LINALG::Matrix<3, 1>& modstr,  ///< modified principal stretches
-      const LINALG::Matrix<3, 1>& prstr                 ///< principal stretches
-  );
+  void StretchesModified(LINALG::Matrix<3, 1>& modstr, const LINALG::Matrix<3, 1>& prstr);
 
   /*--------------------------------------------------------------------------*/
 
@@ -528,7 +522,7 @@ namespace MAT
   /** \brief Utility routines for the perturbed Voigt tensor notation
    *
    *  \author hiermeier \date 09/17 */
-  template <Notation type>
+  template <VoigtNotation type>
   class VoigtUtils
   {
    public:
@@ -626,37 +620,37 @@ namespace MAT
   /// @{
 
   /// Utility class for the perturbed Voigt stress notation
-  typedef VoigtUtils<Notation::stress> VStressUtils;
+  typedef VoigtUtils<VoigtNotation::stress> VStressUtils;
 
   /// Utility class for the perturbed Voigt strain notation
-  typedef VoigtUtils<Notation::strain> VStrainUtils;
+  typedef VoigtUtils<VoigtNotation::strain> VStrainUtils;
 
   /// @}
 
   /// access scaling factors
-  template <Notation type>
+  template <VoigtNotation type>
   inline double ScaleFactor(unsigned i);
   template <>
-  inline double ScaleFactor<Notation::stress>(unsigned i)
+  inline double ScaleFactor<VoigtNotation::stress>(unsigned i)
   {
     return 1.0;
   };
   template <>
-  inline double ScaleFactor<Notation::strain>(unsigned i)
+  inline double ScaleFactor<VoigtNotation::strain>(unsigned i)
   {
     return VStrainUtils::scale_fac_[i];
   };
 
   /// access unscaling factors
-  template <Notation type>
+  template <VoigtNotation type>
   inline double UnscaleFactor(unsigned i);
   template <>
-  inline double UnscaleFactor<Notation::stress>(unsigned i)
+  inline double UnscaleFactor<VoigtNotation::stress>(unsigned i)
   {
     return 1.0;
   };
   template <>
-  inline double UnscaleFactor<Notation::strain>(unsigned i)
+  inline double UnscaleFactor<VoigtNotation::strain>(unsigned i)
   {
     return VStrainUtils::unscale_fac_[i];
   };
