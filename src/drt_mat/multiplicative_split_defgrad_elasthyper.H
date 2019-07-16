@@ -374,13 +374,6 @@ namespace MAT
         LINALG::Matrix<3, 1>& dPI,           ///< First derivative with respect to invariants
         LINALG::Matrix<6, 1>& ddPII) const;  ///< Second derivative with respect to invariants
 
-
-    /// calculate principal invariants
-    void InvariantsPrincipal(
-        const LINALG::Matrix<6, 1>&
-            C_strain,  ///< symmetric Cartesian 2-tensor in strain-like 6-Voigt notation
-        LINALG::Matrix<3, 1>& prinv) const;  ///< principal invariants
-
     /// pre-evaluation, intended to be used for stuff that have to be done only once
     void PreEvaluate(
         Teuchos::ParameterList& params) const;  ///< parameter list as handed in from the element

@@ -21,6 +21,15 @@
 /// MAT: materials
 namespace MAT
 {
+  /// Voigt notation types
+  enum class VoigtNotation
+  {
+    /// Stress-like Voigt notation
+    stress,
+    /// Strain-like Voigt notation
+    strain
+  };
+
   /*! \brief Multiply two 2nd order tensors A x B and add the result to a
    *         4th order symmetric material tensor in matrix notation
    *
@@ -447,13 +456,53 @@ namespace MAT
   /// V_7 = A_21; V_8 = A_20
   void Matrix3x3to9x1(LINALG::Matrix<3, 3> const& in, LINALG::Matrix<9, 1>& out);
 
+  /*!
+   * \brief Evaluates the principal invariants of any symmetric tensor
+   *
+   * @param prinv (out) : Principal invariants of the tensor
+   * @param tens (in) : Tensor
+   */
+  void InvariantsPrincipal(LINALG::Matrix<3, 1>& prinv,  ///< principal invariants
+      const LINALG::Matrix<3, 3>& tens                   ///< symmetric Cartesian 2-tensor
+  );
+
+  /*!
+   * \brief Evaluates the principal invariants of any symmetric tensor in <type>-like Voigt notation
+   *
+   * @tparam type : Voigt notation type (stress or strain-like)
+   * @param prinv (out) : Principal invariants of the tensor
+   * @param tens (in) : Tensor in <type>-like Voigt notation
+   */
+  template <VoigtNotation type>
+  void InvariantsPrincipal(LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<6, 1>& tens);
+
+  /*!
+   * \brief Converts the principal invariants to the modified principal invariants.
+   *
+   * @param modinv (out) : Modified principal invariants of the Right Cauchy-Green strain tensor
+   * @param prinv (in) : Principal invariants of the Right Cauchy-Green strain tensor
+   */
+  void InvariantsModified(LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<3, 1>& prinv);
+
+  /*!
+   * \brief Evaluates principal stretches \f$\lambda_\alpha\f$ and material principal directions
+   *
+   * @param prstr (out) : Principal stretches
+   * @param prdir (out) : Principal directions
+   * @param rcg (in) : Right Cauchy-Green strain tensor in strain-like Voigt notation
+   */
+  void StretchesPrincipal(
+      LINALG::Matrix<3, 1>& prstr, LINALG::Matrix<3, 3>& prdir, const LINALG::Matrix<6, 1>& rcg);
+
+  /*!
+   * \brief Evaluates the modified principal stretches \f$\bar{\lambda}_\alpha\f$
+   *
+   * @param modstr (out) : Modified principal stretches
+   * @param prstr (in) : Principal stretches
+   */
+  void StretchesModified(LINALG::Matrix<3, 1>& modstr, const LINALG::Matrix<3, 1>& prstr);
+
   /*--------------------------------------------------------------------------*/
-  /// Voigt notation types
-  enum class Notation
-  {
-    stress,
-    strain
-  };
 
   /*--------------------------------------------------------------------------*/
   /// Index maps
@@ -473,7 +522,7 @@ namespace MAT
   /** \brief Utility routines for the perturbed Voigt tensor notation
    *
    *  \author hiermeier \date 09/17 */
-  template <Notation type>
+  template <VoigtNotation type>
   class VoigtUtils
   {
    public:
@@ -505,6 +554,13 @@ namespace MAT
      *  \author hiermeier \date 09/17 */
     static void InverseTensor(
         const LINALG::Matrix<6, 1>& vtensor, LINALG::Matrix<6, 1>& vtensor_inv);
+
+    /**
+     * \brief Compute the determinant of a matrix in Voigt <type> notation
+     *
+     * @param vtensor Tensor in Voigt <type> notation
+     */
+    static double Determinant(const LINALG::Matrix<6, 1>& vtensor);
 
     /** \brief Compute the product of a tensor in perturbed Voigt notation
      *  and a vector
@@ -560,41 +616,62 @@ namespace MAT
     static const double scale_fac_[6];
   };
 
+  /*----------------------------------------------------------------------------*
+   *----------------------------------------------------------------------------*/
+  template <>
+  inline double VoigtUtils<VoigtNotation::strain>::Determinant(const LINALG::Matrix<6, 1>& vtensor)
+  {
+    return vtensor(0) * vtensor(1) * vtensor(2) + 0.25 * vtensor(3) * vtensor(4) * vtensor(5) -
+           0.25 * vtensor(1) * vtensor(5) * vtensor(5) -
+           0.25 * vtensor(2) * vtensor(3) * vtensor(3) -
+           0.25 * vtensor(0) * vtensor(4) * vtensor(4);
+  }
+
+  /*----------------------------------------------------------------------------*
+   *----------------------------------------------------------------------------*/
+  template <>
+  inline double VoigtUtils<VoigtNotation::stress>::Determinant(const LINALG::Matrix<6, 1>& vtensor)
+  {
+    return vtensor(0) * vtensor(1) * vtensor(2) + 2 * vtensor(3) * vtensor(4) * vtensor(5) -
+           vtensor(1) * vtensor(5) * vtensor(5) - vtensor(2) * vtensor(3) * vtensor(3) -
+           vtensor(0) * vtensor(4) * vtensor(4);
+  }
+
   /// @name type defs for easier use
   /// @{
 
   /// Utility class for the perturbed Voigt stress notation
-  typedef VoigtUtils<Notation::stress> VStressUtils;
+  typedef VoigtUtils<VoigtNotation::stress> VStressUtils;
 
   /// Utility class for the perturbed Voigt strain notation
-  typedef VoigtUtils<Notation::strain> VStrainUtils;
+  typedef VoigtUtils<VoigtNotation::strain> VStrainUtils;
 
   /// @}
 
   /// access scaling factors
-  template <Notation type>
+  template <VoigtNotation type>
   inline double ScaleFactor(unsigned i);
   template <>
-  inline double ScaleFactor<Notation::stress>(unsigned i)
+  inline double ScaleFactor<VoigtNotation::stress>(unsigned i)
   {
     return 1.0;
   };
   template <>
-  inline double ScaleFactor<Notation::strain>(unsigned i)
+  inline double ScaleFactor<VoigtNotation::strain>(unsigned i)
   {
     return VStrainUtils::scale_fac_[i];
   };
 
   /// access unscaling factors
-  template <Notation type>
+  template <VoigtNotation type>
   inline double UnscaleFactor(unsigned i);
   template <>
-  inline double UnscaleFactor<Notation::stress>(unsigned i)
+  inline double UnscaleFactor<VoigtNotation::stress>(unsigned i)
   {
     return 1.0;
   };
   template <>
-  inline double UnscaleFactor<Notation::strain>(unsigned i)
+  inline double UnscaleFactor<VoigtNotation::strain>(unsigned i)
   {
     return VStrainUtils::unscale_fac_[i];
   };
@@ -615,6 +692,50 @@ namespace MAT
   inline void ConvertStressToStrainNotation(LINALG::Matrix<6, 1>& strain)
   {
     VStrainUtils::ScaleOffDiagonalVals(strain);
+  }
+
+  inline void InvariantsPrincipal(LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<3, 3>& tens)
+  {
+    // 1st invariant, trace tens
+    prinv(0) = tens(0, 0) + tens(1, 1) + tens(2, 2);
+
+    // 2nd invariant, 0.5( (trace(tens))^2 - trace(tens^2))
+    prinv(1) = tens(0, 0) * tens(1, 1) + tens(1, 1) * tens(2, 2) + tens(0, 0) * tens(2, 2) -
+               tens(0, 1) * tens(1, 0) - tens(1, 2) * tens(2, 1) - tens(0, 2) * tens(2, 0);
+
+    // 3rd invariant, determinant tens
+    prinv(2) = tens.Determinant();
+  }
+  /*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
+  template <>
+  inline void InvariantsPrincipal<VoigtNotation::strain>(
+      LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<6, 1>& tens)
+  {
+    // 1st invariant, trace tens
+    prinv(0) = tens(0) + tens(1) + tens(2);
+    // 2nd invariant, 0.5( (trace(tens))^2 - trace(tens^2))
+    prinv(1) =
+        0.5 * (prinv(0) * prinv(0) - tens(0) * tens(0) - tens(1) * tens(1) - tens(2) * tens(2) -
+                  .5 * tens(3) * tens(3) - .5 * tens(4) * tens(4) - .5 * tens(5) * tens(5));
+    // 3rd invariant, determinant tens
+    prinv(2) = VStrainUtils::Determinant(tens);
+  }
+
+  /*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
+  template <>
+  inline void InvariantsPrincipal<VoigtNotation::stress>(
+      LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<6, 1>& tens)
+  {
+    // 1st invariant, trace tens
+    prinv(0) = tens(0) + tens(1) + tens(2);
+    // 2nd invariant, 0.5( (trace(tens))^2 - trace(tens^2))
+    prinv(1) =
+        0.5 * (prinv(0) * prinv(0) - tens(0) * tens(0) - tens(1) * tens(1) - tens(2) * tens(2)) -
+        tens(3) * tens(3) - tens(4) * tens(4) - tens(5) * tens(5);
+    // 3rd invariant, determinant tens
+    prinv(2) = VStressUtils::Determinant(tens);
   }
 }  // namespace MAT
 

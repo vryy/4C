@@ -320,11 +320,6 @@ namespace MAT
         LINALG::Matrix<3, 1>& prinv,  ///< Principal invariants of elastic right Cauchy-Green tensor
         int const gp) const;          ///< Current Gauß-Point
 
-    /// calculate principal invariants
-    void InvariantsPrincipal(LINALG::Matrix<3, 1>& prinv,  ///< principal invariants
-        LINALG::Matrix<6, 1> const& C_strain)
-        const;  ///< symmetric Cartesian 2-tensor in strain-like 6-Voigt notation
-
     /// calculate modified invariants
     void InvariantsModified(LINALG::Matrix<3, 1>& modinv,  ///< modified invariants
         LINALG::Matrix<3, 1> const& prinv) const;          ///< principal invariants

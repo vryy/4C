@@ -13,10 +13,12 @@
 #include "material_service.H"
 #include "matpar_parameter.H"
 #include "matpar_bundle.H"
+#include "../linalg/linalg_utils.H"
 
 #include <Sacado.hpp>
 
 typedef Sacado::Fad::DFad<double> FAD;
+
 
 /*----------------------------------------------------------------------*
  |  Add 'Holzapfel product' contribution to constitutive tensor         |
@@ -1218,6 +1220,58 @@ void MAT::Matrix3x3to9x1(LINALG::Matrix<3, 3> const& in, LINALG::Matrix<9, 1>& o
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::InvariantsModified(LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<3, 1>& prinv)
+{
+  // 1st invariant, trace
+  modinv(0) = prinv(0) * std::pow(prinv(2), -1. / 3.);
+  // 2nd invariant
+  modinv(1) = prinv(1) * std::pow(prinv(2), -2. / 3.);
+  // J
+  modinv(2) = std::pow(prinv(2), 1. / 2.);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::StretchesPrincipal(
+    LINALG::Matrix<3, 1>& prstr, LINALG::Matrix<3, 3>& prdir, const LINALG::Matrix<6, 1>& rcg)
+{
+  // create right Cauchy-Green 2-tensor
+  LINALG::Matrix<3, 3> rcgt(false);
+  rcgt(0, 0) = rcg(0);
+  rcgt(1, 1) = rcg(1);
+  rcgt(2, 2) = rcg(2);
+  rcgt(0, 1) = rcgt(1, 0) = 0.5 * rcg(3);
+  rcgt(1, 2) = rcgt(2, 1) = 0.5 * rcg(4);
+  rcgt(2, 0) = rcgt(0, 2) = 0.5 * rcg(5);
+
+  // eigenvalue decomposition
+  LINALG::Matrix<3, 3> prstr2;  // squared principal stretches
+  LINALG::SYEV(rcgt, prstr2, prdir);
+
+  // THE principal stretches
+  for (int al = 0; al < 3; ++al) prstr(al) = std::sqrt(prstr2(al, al));
+
+  // bye
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::StretchesModified(LINALG::Matrix<3, 1>& modstr, const LINALG::Matrix<3, 1>& prstr)
+{
+  // determinant of deformation gradient
+  const double detdefgrad = prstr(0) * prstr(1) * prstr(2);
+
+  // determine modified principal stretches
+  modstr.Update(std::pow(detdefgrad, -1.0 / 3.0), prstr);
+
+  return;
+}
+
 /*----------------------------------------------------------------------------*/
 // initialization of const static members has to be done in the cpp file since
 // GCC complains otherwise
@@ -1229,14 +1283,14 @@ const unsigned MAT::IMap::fourth_[6][6][4] = {
     {{0, 1, 0, 0}, {0, 1, 1, 1}, {0, 1, 2, 2}, {0, 1, 0, 1}, {0, 1, 1, 2}, {0, 1, 0, 2}},
     {{1, 2, 0, 0}, {1, 2, 1, 1}, {1, 2, 2, 2}, {1, 2, 0, 1}, {1, 2, 1, 2}, {1, 2, 0, 2}},
     {{0, 2, 0, 0}, {0, 2, 1, 1}, {0, 2, 2, 2}, {0, 2, 0, 1}, {0, 2, 1, 2}, {0, 2, 0, 2}}};
-template <MAT::Notation type>
+template <MAT::VoigtNotation type>
 const double MAT::VoigtUtils<type>::unscale_fac_[6] = {1.0, 1.0, 1.0, 0.5, 0.5, 0.5};
-template <MAT::Notation type>
+template <MAT::VoigtNotation type>
 const double MAT::VoigtUtils<type>::scale_fac_[6] = {1.0, 1.0, 1.0, 2.0, 2.0, 2.0};
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <MAT::Notation type>
+template <MAT::VoigtNotation type>
 void MAT::VoigtUtils<type>::SymmetricOuterProduct(const LINALG::Matrix<3, 1>& vec_a,
     const LINALG::Matrix<3, 1>& vec_b, LINALG::Matrix<6, 1>& ab_ba)
 {
@@ -1255,7 +1309,7 @@ void MAT::VoigtUtils<type>::SymmetricOuterProduct(const LINALG::Matrix<3, 1>& ve
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <MAT::Notation type>
+template <MAT::VoigtNotation type>
 void MAT::VoigtUtils<type>::MultiplyTensorVector(
     const LINALG::Matrix<6, 1>& strain, const LINALG::Matrix<3, 1>& vec, LINALG::Matrix<3, 1>& res)
 {
@@ -1269,7 +1323,7 @@ void MAT::VoigtUtils<type>::MultiplyTensorVector(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <MAT::Notation type>
+template <MAT::VoigtNotation type>
 void MAT::VoigtUtils<type>::PowerOfSymmetricTensor(
     const unsigned pow, const LINALG::Matrix<6, 1>& strain, LINALG::Matrix<6, 1>& strain_pow)
 {
@@ -1302,7 +1356,7 @@ void MAT::VoigtUtils<type>::PowerOfSymmetricTensor(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <MAT::Notation type>
+template <MAT::VoigtNotation type>
 void MAT::VoigtUtils<type>::InverseTensor(
     const LINALG::Matrix<6, 1>& strain, LINALG::Matrix<6, 1>& strain_inv)
 {
@@ -1327,7 +1381,7 @@ void MAT::VoigtUtils<type>::InverseTensor(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <MAT::Notation type>
+template <MAT::VoigtNotation type>
 void MAT::VoigtUtils<type>::ScaleOffDiagonalVals(LINALG::Matrix<6, 1>& strain)
 {
   for (unsigned i = 3; i < 6; ++i) strain(i, 0) *= ScaleFactor<type>(i);
@@ -1335,7 +1389,7 @@ void MAT::VoigtUtils<type>::ScaleOffDiagonalVals(LINALG::Matrix<6, 1>& strain)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <MAT::Notation type>
+template <MAT::VoigtNotation type>
 void MAT::VoigtUtils<type>::UnscaleOffDiagonalVals(LINALG::Matrix<6, 1>& strain)
 {
   for (unsigned i = 3; i < 6; ++i) strain(i, 0) *= UnscaleFactor<type>(i);
@@ -1362,5 +1416,5 @@ template void MAT::MatrixtoStressLikeVoigtNotation<double>(
 template void MAT::MatrixtoStressLikeVoigtNotation<FAD>(
     LINALG::TMatrix<FAD, 3, 3> const& in, LINALG::TMatrix<FAD, 6, 1>& out);
 
-template class MAT::VoigtUtils<MAT::Notation::strain>;
-template class MAT::VoigtUtils<MAT::Notation::stress>;
+template class MAT::VoigtUtils<MAT::VoigtNotation::strain>;
+template class MAT::VoigtUtils<MAT::VoigtNotation::stress>;

@@ -516,23 +516,10 @@ namespace MAT
         LINALG::Matrix<6, 6>& cmatanisoprinc, const LINALG::Matrix<6, 1>& rcg,
         const LINALG::Matrix<6, 1>& icg, const LINALG::Matrix<3, 1>& prinv, const int eleGID);
 
-    /// calculate principal invariants
-    void InvariantsPrincipal(LINALG::Matrix<3, 1>& prinv,  ///< principal invariants
-        const LINALG::Matrix<6, 1>&
-            rcg  ///< symmetric Cartesian 2-tensor in strain-like 6-Voigt notation
-    );
-
     /// calculate modified invariants
     virtual void InvariantsModified(LINALG::Matrix<3, 1>& modinv,  ///< modified invariants
         const LINALG::Matrix<3, 1>& prinv                          ///< principal invariants
     );
-
-    /// calculate principal stretches \f$\lambda_\alpha\f$ and material principal directions
-    void StretchesPrincipal(LINALG::Matrix<3, 1>& prstr,  ///< principal stretches
-        LINALG::Matrix<3, 3>& prdir,  ///< principal directions, stored col-by-col
-        const LINALG::Matrix<6, 1>&
-            rcg);  ///< symmetric Cartesian 2-tensor in strain-like 6-Voigt notation
-
 
     /// calculate modified principal stretches \f$\bar{\lambda}_\alpha\f$
     void StretchesModified(LINALG::Matrix<3, 1>& modstr,  ///< modified principal stretches
