@@ -397,7 +397,7 @@ if (AMDLIBM_FOUND)
 endif()
 
 
-find_package(CLN)
+find_package(CLN REQUIRED)
 if (CLN_FOUND)
   include_directories(SYSTEM ${CLN_INCLUDE_DIRS})
   set(LIBRARIES ${CLN_LIBRARIES} ${LIBRARIES}  )
