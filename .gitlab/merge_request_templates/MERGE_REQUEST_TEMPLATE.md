@@ -60,7 +60,7 @@ Go over all the following points, and put an `x` in all the boxes that apply. If
 
 ## Interested Parties
 <!---
-If there's anyone you think should be looped in on this pull request, feel free to @mention them here. In particular, @mention possible reviewers as well as the maintainers of all the files you've touched.
+If there's anyone you think should be looped in on this merge request, feel free to @mention them here. In particular, @mention possible reviewers as well as the maintainers of all the files you've touched.
 -->
 
 Possible reviewers:
