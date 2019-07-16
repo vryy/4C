@@ -41,12 +41,9 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
  public:
   void setUp()
   {
-    // set dummy rank
-    int dummyrank = 0;
-
     // create and init particle container bundle
     particlecontainerbundle_ = std::unique_ptr<PARTICLEENGINE::ParticleContainerBundle>(
-        new PARTICLEENGINE::ParticleContainerBundle(dummyrank));
+        new PARTICLEENGINE::ParticleContainerBundle());
     particlecontainerbundle_->Init();
 
     // init two phases with different particle states

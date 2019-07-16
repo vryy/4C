@@ -18,7 +18,7 @@
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
-PARTICLEENGINE::ParticleContainerBundle::ParticleContainerBundle(const int myrank) : myrank_(myrank)
+PARTICLEENGINE::ParticleContainerBundle::ParticleContainerBundle()
 {
   // empty constructor
 }

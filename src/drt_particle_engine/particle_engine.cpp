@@ -986,7 +986,7 @@ void PARTICLEENGINE::ParticleEngine::SetupBinGhosting()
 void PARTICLEENGINE::ParticleEngine::InitParticleContainerBundle()
 {
   // create and init particle container bundle
-  particlecontainerbundle_ = std::make_shared<PARTICLEENGINE::ParticleContainerBundle>(myrank_);
+  particlecontainerbundle_ = std::make_shared<PARTICLEENGINE::ParticleContainerBundle>();
   particlecontainerbundle_->Init();
 }
 

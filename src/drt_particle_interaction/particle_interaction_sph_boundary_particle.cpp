@@ -127,12 +127,13 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::Setup(
 }
 
 /*---------------------------------------------------------------------------*
- | initialize modified boundary particle states               sfuchs 06/2018 |
+ | init boundary particle states                              sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticles(
+void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticleStates(
     std::vector<double>& gravity)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticles");
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticleStates");
 
   // iterate over boundary particle types
   for (const auto& type_i : boundarytypes_)

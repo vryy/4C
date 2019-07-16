@@ -41,7 +41,7 @@ namespace PARTICLEENGINE
   {
    public:
     //! constructor
-    explicit ParticleContainerBundle(const int myrank);
+    explicit ParticleContainerBundle();
 
     //! destructor
     ~ParticleContainerBundle(){};
@@ -170,9 +170,6 @@ namespace PARTICLEENGINE
         std::vector<ParticleObjShrdPtr>& particlesstored) const;
 
    private:
-    //! processor id
-    const int myrank_;
-
     //! set of particle types of stored containers
     std::set<TypeEnum> storedtypes_;
 
