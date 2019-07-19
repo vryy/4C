@@ -34,8 +34,13 @@ If applicable, let us know how this merge request is related to any other open i
 
 ## How Has This Been Tested?
 <!--
-Please describe in detail how you tested your changes.  Include details of your testing environment and the tests you ran to see how your change affects other areas of the code. Consider including configure, build, and test log files.
+Choose from these suggestions if applicable and fill the missing options.
+Fill free to provide further information if necessary.
 -->
+- [ ] I ran `ctest -L minimal` on my workstation.
+- [ ] I ran `ctest -R {...}` / `ctest -E {...}` / `ctest -E {...} -R {...}` on my workstation.
+- [ ] I ran a full release pipeline on GitLab.
+- [ ] I ran the following specialised pipelines (if applicable and necessary): {...}
 
 ## Checklist
 <!--
