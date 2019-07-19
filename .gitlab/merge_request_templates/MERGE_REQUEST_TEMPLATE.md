@@ -35,7 +35,7 @@ If applicable, let us know how this merge request is related to any other open i
 ## How Has This Been Tested?
 <!--
 Choose from these suggestions if applicable and fill the missing options.
-Fill free to provide further information if necessary.
+Feel free to provide further information if useful or necessary.
 -->
 - [ ] I ran `ctest -L minimal` on my workstation.
 - [ ] I ran `ctest -R {...}` / `ctest -E {...}` / `ctest -E {...} -R {...}` on my workstation.
