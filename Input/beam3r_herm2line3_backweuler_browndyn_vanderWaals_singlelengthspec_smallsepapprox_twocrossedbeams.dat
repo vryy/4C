@@ -68,8 +68,8 @@ KT                              0.0
 --------------------------------------------------------------BEAM INTERACTION
 REPARTITIONSTRATEGY             Everydt
 --------------------------------------------------------------BEAM POTENTIAL
-POT_LAW_PREFACTOR               -3e-5
-POT_LAW_EXPONENT                6.0
+POT_LAW_PREFACTOR               -7.0685834705770340e-5 0.0
+POT_LAW_EXPONENT                6.0 6.0
 BEAMPOTENTIAL_TYPE              Volume
 STRATEGY                        SingleLengthSpecific_SmallSepApprox
 NUM_GAUSSPOINTS                 32

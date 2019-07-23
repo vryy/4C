@@ -1167,15 +1167,15 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
 
   // constant prefactor of the disk-cylinder interaction potential
-  double prefactor = k_ * M_PI * M_PI * M_PI;
+  double prefactor = k_ * M_PI * M_PI;
 
   switch ((int)m_)
   {
     case 6:
-      prefactor *= 0.25;
+      prefactor /= 3.0;
       break;
     case 12:
-      prefactor *= 3003 / 128;
+      prefactor *= 286.0 / 15.0;
       break;
     default:
       dserror(
