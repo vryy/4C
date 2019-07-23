@@ -130,7 +130,7 @@ void CONTACT::MtAbstractStrategy::RedistributeMeshtying()
   }
 
   //---------------------------------------
-  // Extend ghosting withi binning
+  // Extend ghosting with binning
   //---------------------------------------
   INPAR::MORTAR::GhostingStrategy strat =
       DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
@@ -201,7 +201,7 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
   }
 
   // setup global non-slave-or-master dof map
-  // (this is done by splitting from the dicretization dof map)
+  // (this is done by splitting from the discretization dof map)
   // (no need to rebuild this map after redistribution)
   if (!redistributed)
   {
@@ -1259,9 +1259,9 @@ void CONTACT::MtAbstractStrategy::AssembleCoords(
   // NOTE:
   // An alternative way of doing this would be to loop over
   // all interfaces and to assemble the coordinates there.
-  // In thast case, one would have to be very careful with
+  // In that case, one would have to be very careful with
   // edge nodes / crosspoints, which must not be assembled
-  // twice. The solution would be to overwrite the corresp.
+  // twice. The solution would be to overwrite the corresponding
   // entries in the Epetra_Vector instead of using Assemble().
 
   // decide which side (slave or master)
