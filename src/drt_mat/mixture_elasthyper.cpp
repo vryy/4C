@@ -91,13 +91,15 @@ MAT::Mixture_ElastHyper::Mixture_ElastHyper(MAT::PAR::Mixture_ElastHyper* params
   // create instances of constituents
   for (auto const& constituent : params_->constituents_)
   {
-    constituents_->emplace_back(
-        Teuchos::rcp_static_cast<MIXTURE::MixtureConstituent>(constituent->CreateConstituent()));
+    Teuchos::RCP<MIXTURE::MixtureConstituent> c = constituent->CreateConstituent();
+    constituents_->emplace_back(Teuchos::rcp_static_cast<MIXTURE::MixtureConstituent>(c));
+    c->SetInitialReferenceDensity(params_->density_);
   }
 
   // create instance of mixture rule
   mixture_rule_ =
       Teuchos::rcp_static_cast<MIXTURE::MixtureRule>(params->mixture_rule_->CreateRule());
+  mixture_rule_->SetConstituents(constituents_);
 }
 
 // Pack data
@@ -164,9 +166,7 @@ void MAT::Mixture_ElastHyper::Unpack(const std::vector<char>& data)
     // Extract setup flag
     ExtractfromPack(position, data, setup_);
 
-    // Extract init flag
-    ExtractfromPack(position, data, constituent_init_);
-
+    constituent_init_ = (bool)ExtractInt(position, data);
     // extract constituents
     // constituents are not accessible during post processing
     if (params_ != nullptr)
@@ -174,8 +174,9 @@ void MAT::Mixture_ElastHyper::Unpack(const std::vector<char>& data)
       // create instances of constituents
       for (auto const& constituent : params_->constituents_)
       {
-        constituents_->emplace_back(Teuchos::rcp_static_cast<MIXTURE::MixtureConstituent>(
-            constituent->CreateConstituent()));
+        Teuchos::RCP<MIXTURE::MixtureConstituent> c = constituent->CreateConstituent();
+        c->SetInitialReferenceDensity(params_->density_);
+        constituents_->emplace_back(c);
       }
 
       // create instance of mixture rule
@@ -190,6 +191,7 @@ void MAT::Mixture_ElastHyper::Unpack(const std::vector<char>& data)
 
       // unpack mixture law
       mixture_rule_->UnpackMixtureLaw(position, data);
+      mixture_rule_->SetConstituents(constituents_);
     }
   }
 }
@@ -238,7 +240,7 @@ void MAT::Mixture_ElastHyper::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     {
       constituent->Init(params);
     }
-    mixture_rule_->Init(params, constituents_);
+    mixture_rule_->Init(params);
     constituent_init_ = true;
   }
 
@@ -257,7 +259,7 @@ void MAT::Mixture_ElastHyper::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   }
 
   // Evaluate mixture law
-  mixture_rule_->Evaluate(defgrd, glstrain, params, stress, cmat, gp, eleGID);
+  mixture_rule_->Evaluate(*defgrd, *glstrain, params, *stress, *cmat, gp, eleGID);
 }
 
 // Returns the names of the quantities written during post-processing

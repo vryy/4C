@@ -260,7 +260,6 @@ namespace MAT
    * \param scalar (in)  : scalar, corresponding to \f$\delta_7\f$ in Holzapfel [1], p.261
    */
   template <typename T>
-
   void AddtoCmatHolzapfelProduct(
       LINALG::TMatrix<T, 6, 6>& cmat, const LINALG::TMatrix<T, 6, 1>& invc, const T scalar);
 

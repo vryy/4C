@@ -38,17 +38,6 @@ MIXTURE::PAR::MixtureConstituent_ElastHyper::CreateConstituent()
   return Teuchos::rcp(new MIXTURE::MixtureConstituent_ElastHyper(this));
 }
 
-MIXTURE::MixtureConstituent_ElastHyperType MIXTURE::MixtureConstituent_ElastHyperType::instance_;
-
-// Creates an instance of MIXTURE::MixtureConstituent_ElastHyper from packed data
-DRT::ParObject* MIXTURE::MixtureConstituent_ElastHyperType::Create(const std::vector<char>& data)
-{
-  auto* elhy = new MIXTURE::MixtureConstituent_ElastHyper();
-  elhy->Unpack(data);
-
-  return elhy;
-}
-
 // Empty constructor of the constituent
 MIXTURE::MixtureConstituent_ElastHyper::MixtureConstituent_ElastHyper()
     : MixtureConstituent(), summandProperties_(), params_(nullptr), potsum_(0)
@@ -78,14 +67,10 @@ void MIXTURE::MixtureConstituent_ElastHyper::PackConstituent(DRT::PackBuffer& da
 {
   MixtureConstituent::PackConstituent(data);
 
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data, type);
-
   // matid
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data, matid);
+  DRT::ParObject::AddtoPack(data, matid);
   summandProperties_.Pack(data);
 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
@@ -105,14 +90,9 @@ void MIXTURE::MixtureConstituent_ElastHyper::UnpackConstituent(
   params_ = nullptr;
   potsum_.clear();
 
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-
   // matid and recover params_
   int matid;
-  ExtractfromPack(position, data, matid);
+  DRT::ParObject::ExtractfromPack(position, data, matid);
 
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
   {
@@ -172,19 +152,28 @@ void MIXTURE::MixtureConstituent_ElastHyper::ReadElement(
 }
 
 // Evaluates the stress of the constituent
-void MIXTURE::MixtureConstituent_ElastHyper::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
-    const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
+void MIXTURE::MixtureConstituent_ElastHyper::Evaluate(const LINALG::Matrix<3, 3>& F,
+    const LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
+    LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat, const int gp, const int eleGID)
 {
-  // Evaluate stresses using the original ElastHyper method
+  // 2nd Piola-Kirchhoff stress tensor in stress-like Voigt notation of the constituent
+  static LINALG::Matrix<6, 1> Sc_stress(false);
+  Sc_stress.Clear();
+  // Constitutive tensor of constituent
+  static LINALG::Matrix<6, 6> ccmat(false);
+  ccmat.Clear();
+  // Evaluate stresses using ElastHyper service functions
   MAT::ElastHyperEvaluate(
-      defgrd, glstrain, params, stress, cmat, eleGID, potsum_, summandProperties_, false);
+      F, E_strain, params, Sc_stress, ccmat, eleGID, potsum_, summandProperties_, false);
+
+  S_stress.Update(CurrentRefDensity(), Sc_stress, 1.0);
+  cmat.Update(CurrentRefDensity(), ccmat, 1.0);
 }
 
 // Returns the reference mass fraction of the constituent
-double MIXTURE::MixtureConstituent_ElastHyper::RefMassFraction() const
+double MIXTURE::MixtureConstituent_ElastHyper::CurrentRefDensity() const
 {
-  return params_->RefMassFraction();
+  return params_->RefMassFraction() * InitialRefDensity();
 }
 
 // Updates all summands

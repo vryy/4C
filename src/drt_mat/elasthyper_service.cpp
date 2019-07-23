@@ -14,9 +14,9 @@
 #include "material_service.H"
 #include "../headers/definitions.h"
 
-void MAT::ElastHyperEvaluate(const LINALG::Matrix<3, 3>* defgrd,
-    const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, int eleGID,
+void MAT::ElastHyperEvaluate(const LINALG::Matrix<3, 3>& defgrd,
+    const LINALG::Matrix<6, 1>& glstrain, Teuchos::ParameterList& params,
+    LINALG::Matrix<6, 1>& stress, LINALG::Matrix<6, 6>& cmat, int eleGID,
     const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum,
     MAT::SummandProperties& properties, bool checkpolyconvexity)
 {
@@ -37,7 +37,7 @@ void MAT::ElastHyperEvaluate(const LINALG::Matrix<3, 3>* defgrd,
   IdentityMatrix(id2);
 
   // Evalutate Right Cauchy-Green strain tensor in strain-like Voigt notation
-  EvaluateRightCauchyGreenStrainLikeVoigt(*glstrain, C_strain);
+  EvaluateRightCauchyGreenStrainLikeVoigt(glstrain, C_strain);
 
   // Invert Right Cauchy Green Strain tensor
   VStrainUtils::InverseTensor(C_strain, iC_strain);
@@ -50,28 +50,28 @@ void MAT::ElastHyperEvaluate(const LINALG::Matrix<3, 3>* defgrd,
 
   // check if system is polyconvex (set "POLYCONVEX 1" in material input-line)
   if (checkpolyconvexity)
-    ElastHyperCheckPolyconvexity(*defgrd, prinv, dPI, ddPII, params, eleGID, properties);
+    ElastHyperCheckPolyconvexity(defgrd, prinv, dPI, ddPII, params, eleGID, properties);
 
 
   // clear stress and cmat (for safety reasons)
-  stress->Clear();
-  cmat->Clear();
+  stress.Clear();
+  cmat.Clear();
 
   // Evaluate isotropic stress response
-  ElastHyperAddIsotropicStressCmat(*stress, *cmat, C_strain, iC_strain, prinv, dPI, ddPII);
+  ElastHyperAddIsotropicStressCmat(stress, cmat, C_strain, iC_strain, prinv, dPI, ddPII);
 
   if (properties.coeffStretchesPrinc || properties.coeffStretchesMod)
   {
-    ElastHyperAddResponseStretches(*cmat, *stress, C_strain, potsum, properties, eleGID);
+    ElastHyperAddResponseStretches(cmat, stress, C_strain, potsum, properties, eleGID);
   }
 
   // Evaluate anisotropic stress response from summands with principle invariants formulation
   if (properties.anisoprinc)
-    ElastHyperAddAnisotropicPrinc(*stress, *cmat, C_strain, params, eleGID, potsum);
+    ElastHyperAddAnisotropicPrinc(stress, cmat, C_strain, params, eleGID, potsum);
 
   // Evaluate anisotropic stress response from summands with modified invariants formulation
   if (properties.anisomod)
-    ElastHyperAddAnisotropicMod(*stress, *cmat, C_strain, iC_strain, prinv, eleGID, potsum);
+    ElastHyperAddAnisotropicMod(stress, cmat, C_strain, iC_strain, prinv, eleGID, potsum);
 }
 
 void MAT::EvaluateRightCauchyGreenStrainLikeVoigt(

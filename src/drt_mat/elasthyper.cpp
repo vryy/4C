@@ -500,8 +500,9 @@ void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int eleGID)
 {
   bool checkpolyconvexity = (params_ != nullptr and params_->polyconvex_);
-  ElastHyperEvaluate(defgrd, glstrain, params, stress, cmat, eleGID, potsum_, summandProperties_,
-      checkpolyconvexity);
+
+  ElastHyperEvaluate(*defgrd, *glstrain, params, *stress, *cmat, eleGID, potsum_,
+      summandProperties_, checkpolyconvexity);
 }
 
 /*----------------------------------------------------------------------*/

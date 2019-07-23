@@ -59,17 +59,6 @@ MIXTURE::PAR::MixtureRule* MIXTURE::PAR::MixtureRule::Factory(int matid)
   return 0;
 }
 
-// Create a mixtureRule from packed data
-DRT::ParObject* MIXTURE::MixtureRuleType::Create(const std::vector<char>& data)
-{
-  auto* mix_elhy = new MIXTURE::MixtureRule();
-  mix_elhy->Unpack(data);
-
-  return mix_elhy;
-}
-
-MIXTURE::MixtureRuleType MIXTURE::MixtureRuleType::instance_;
-
 // Empty constructor
 MIXTURE::MixtureRule::MixtureRule()
     : constituents_(Teuchos::null), numgp_(0), is_init_(false), is_setup_(0)
@@ -82,31 +71,16 @@ MIXTURE::MixtureRule::MixtureRule(MIXTURE::PAR::MixtureRule* params)
 {
 }
 
-// Pack -> Do not pack this class directly, it should only be packed with MAT::Mixture_ElastHyper
-void MIXTURE::MixtureRule::Pack(DRT::PackBuffer& data) const
-{
-  dserror(
-      "This class should not be packed independently. It should only be used in the context "
-      "of a Mixture_ElastHyper material");
-}
-
-// Unpack -> Do not unpack this class directly, it should only be unpacked with
-// MAT::Mixture_ElastHyper
-void MIXTURE::MixtureRule::Unpack(const std::vector<char>& data)
-{
-  dserror(
-      "This class should not be unpacked independently. It should only be used in the context "
-      "of a Mixture_ElastHyper material");
-}
-
 // Pack the mixture law
 void MIXTURE::MixtureRule::PackMixtureLaw(DRT::PackBuffer& data) const
 {
+  // Add number of Gaußpoints
+  DRT::ParObject::AddtoPack(data, numgp_);
   // Add flag whether it is initialized
-  AddtoPack(data, is_init_);
+  DRT::ParObject::AddtoPack(data, is_init_);
 
   // Add flags whether it is setup
-  AddtoPack(data, is_setup_);
+  DRT::ParObject::AddtoPack(data, is_setup_);
 }
 
 // Unpack the mixture rule
@@ -114,10 +88,13 @@ void MIXTURE::MixtureRule::UnpackMixtureLaw(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // Read initialized flag
-  ExtractfromPack(position, data, is_init_);
+  numgp_ = DRT::ParObject::ExtractInt(position, data);
+
+  // Read initialized flag
+  is_init_ = (bool)DRT::ParObject::ExtractInt(position, data);
 
   // Read is setup flag
-  ExtractfromPack(position, data, is_setup_);
+  DRT::ParObject::ExtractfromPack(position, data, is_setup_);
 }
 
 // reads the element definition and set up all quantities
@@ -131,12 +108,10 @@ void MIXTURE::MixtureRule::ReadElement(int numgp, DRT::INPUT::LineDefinition* li
 }
 
 // Initialize the material rule with the constituents - Called once per element
-void MIXTURE::MixtureRule::Init(Teuchos::ParameterList& params,
-    const Teuchos::RCP<std::vector<Teuchos::RCP<MIXTURE::MixtureConstituent>>>& constituents)
+void MIXTURE::MixtureRule::Init(Teuchos::ParameterList& params)
 {
   if (is_setup_.empty()) dserror("ReadElement() must be called before Init()");
   if (is_init_) dserror("Init() is called more than once. Just once allowed.");
-  constituents_ = constituents;
 
   is_init_ = true;
 }
@@ -153,9 +128,9 @@ void MIXTURE::MixtureRule::Setup(int gp, Teuchos::ParameterList& params)
 }
 
 // Evaluates the stresses of the mixture
-void MIXTURE::MixtureRule::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
-    const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
+void MIXTURE::MixtureRule::Evaluate(const LINALG::Matrix<3, 3>& F,
+    const LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
+    LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat, const int gp, const int eleGID)
 {
   // define temporary matrices
   static LINALG::Matrix<6, 1> cstress;
@@ -167,11 +142,11 @@ void MIXTURE::MixtureRule::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   {
     cstress.Clear();
     ccmat.Clear();
-    constituent->Evaluate(defgrd, glstrain, params, &cstress, &ccmat, gp, eleGID);
+    constituent->Evaluate(F, E_strain, params, cstress, ccmat, gp, eleGID);
 
     // Add stress contribution to global stress
     // In this basic mixture law, the mass fractions do not change
-    stress->Update(constituent->RefMassFraction(), cstress, 1.0);
-    cmat->Update(constituent->RefMassFraction(), ccmat, 1.0);
+    S_stress.Update(1.0, cstress, 1.0);
+    cmat.Update(1.0, ccmat, 1.0);
   }
 }

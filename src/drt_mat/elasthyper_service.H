@@ -36,11 +36,11 @@ namespace MAT
    * @param properties    (in)      : Data class with flags of the type of the summands
    * @param checkpolyconvexity (in) : Flag, whether to check the polyconvexity
    */
-  void ElastHyperEvaluate(const LINALG::Matrix<3, 3>* defgrd,  ///< Deformation gradient
-      const LINALG::Matrix<6, 1>* glstrain,                    ///< Green-Lagrange strain
+  void ElastHyperEvaluate(const LINALG::Matrix<3, 3>& defgrd,  ///< Deformation gradient
+      const LINALG::Matrix<6, 1>& glstrain,                    ///< Green-Lagrange strain
       Teuchos::ParameterList& params,                          ///< Holder for additional parameters
-      LINALG::Matrix<6, 1>* stress,                            ///< 2nd Piola-Kirchhoff stresses
-      LINALG::Matrix<6, 6>* cmat,                              ///< Constitutive matrix
+      LINALG::Matrix<6, 1>& stress,                            ///< 2nd Piola-Kirchhoff stresses
+      LINALG::Matrix<6, 6>& cmat,                              ///< Constitutive matrix
       int eleGID,                                              ///< Element GID
       const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>&
           potsum,                      ///< Map to material/potential summands

@@ -58,44 +58,24 @@ namespace MIXTURE
    *
    * This abstract class defines the interface that a constituents needs to implement. It has to be
    * paired with MAT::Mixture_ElastHyper and MIXTURE::MixtureRule.
+   *
+   * Example input lines:
+   * MAT 1 MAT_MixtureElastHyper NUMCONST 2 MATIDSCONST 11 12 MASSFRAC 0.4 0.6 MATIDMIXTURELAW 10
+   *  DENS 0.1
+   * MAT 10 MIX_Rule_Base
+   * MAT 11 MIX_Constituent_ElastHyper NUMMAT 1 MATIDS 101 MAT 12
+   * MIX_Constituent_ElastHyper NUMMAT 1 MATIDS 102
+   * MAT 101 ELAST_CoupLogNeoHooke MODE YN C1 2.5e4 C2 0.27
+   * MAT 102 ELAST_CoupAnisoExpo K1 1.666666666666e4 K2 10.0 GAMMA 0.0 K1COMP
+   *  0.833333333333e4 K2COMP 10.0 ADAPT_ANGLE No INIT 0 STR_TENS_ID 1000
+   * MAT 1000 ELAST_StructuralTensor STRATEGY Standard
+   *
    */
-  class MixtureConstituent : public DRT::ParObject
+  class MixtureConstituent
   {
    public:
     MixtureConstituent();
 
-    /*!
-     * \brief Return unique ParObject id
-     *
-     * Every class implementing ParObject needs a unique id defined at the top of drt_parobject.H
-     * and should return it in this method.
-     *
-     * @return Return unique ParObject id
-     */
-    int UniqueParObjectId() const override = 0;
-
-
-    /*!
-     * \brief Pack this class so it can be communicated
-     *
-     * Resizes the vector data and stores all infromation of a class in it. The first information
-     * to be stored in the data has to be unique parobect id delivered by UniqueParObjectId() which
-     * will then identify the exact class on the receiving processor.
-     *
-     * @param data (in/out) : char vector to store class information
-     */
-    void Pack(DRT::PackBuffer& data) const override;
-
-    /*!
-     * \brief Unpack data from a char vector into this class
-     *
-     * The vector data contains all information to rebuild the exact copy of an instance of a class
-     * on a different processor. The first entry in data hast to be an integer which is the unique
-     * parobject id defined at the top of the file and delivered by UniqueParObjectId().
-     *
-     * @param data (in) : vector storing all data to be unpacked into this instance.
-     */
-    void Unpack(const std::vector<char>& data) override;
 
     /*!
      * \brief Pack data into a char vector from this class
@@ -131,6 +111,15 @@ namespace MIXTURE
      * @param params (in/out) Parameter list for exchange of parameters
      */
     virtual void ReadElement(int numgp, DRT::INPUT::LineDefinition* linedef);
+
+    /*!
+     * Set the mixture parameters
+     * @param mixtureParams parameter of the mixture
+     */
+    void SetInitialReferenceDensity(const double initialReferenceDensity)
+    {
+      initialReferenceDensity_ = initialReferenceDensity;
+    }
 
     /*!
      * This method should be called after ReadElement to initialize all quantities. It is called
@@ -174,18 +163,20 @@ namespace MIXTURE
      * Evaluates the constituents. Needs to compute the stress contribution of the constituent out
      * of the displacements. Will be called for each Gauß point
      *
-     * @param defgrd Deformation gradient
-     * @param glstrain Green-Lagrange strain in strain-like Voigt notation
+     * @param F (in) : Deformation gradient
+     * @param E_strain (in) : Green-Lagrange strain in strain-like Voigt notation
      * @param params Container for additional information
-     * @param stress 2nd Piola Kirchhoff stress tensor in stress like Voigt-notation
+     * @param S_stress (out) : 2nd Piola Kirchhoff stress tensor in stress like Voigt-notation
      * @param cmat Constitutive tensor in Voigt notation
+     * @param gp (in) : Number of Gauß point
+     * @param eleGID (in) : Element id
      */
-    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
-        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
+    virtual void Evaluate(const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<6, 1>& E_strain,
+        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
         int gp, int eleGID) = 0;
 
-    /// Returns the refenrece mass fraction. Needs to be implemented by the deriving class.
-    virtual double RefMassFraction() const = 0;
+    /// Returns the refenrece mass density. Needs to be implemented by the deriving class.
+    virtual double CurrentRefDensity() const = 0;
 
     /*!
      * \brief Get the names and dimension of the quantities to visualize
@@ -214,7 +205,16 @@ namespace MIXTURE
      */
     int NumGP() const { return numgp_; }
 
+    /*!
+     * Returns the initial reference density of the consitituent
+     * @return
+     */
+    double InitialRefDensity() const { return initialReferenceDensity_; }
+
    private:
+    ///! Mixture parameters
+    double initialReferenceDensity_;
+
     ///! Number of Gauß points
     int numgp_;
 

@@ -5,7 +5,7 @@
 
 \level 2
 
-\maintainer Amadeus Gebauer
+\maintainer Fabian Braeu
 
 */
 /*----------------------------------------------------------------------*/
@@ -36,6 +36,7 @@ class MAT::ElastHyperService_TestSuite : public CxxTest::TestSuite
   void setUp() override
   {
     E_strain_ = Teuchos::rcp(new LINALG::Matrix<6, 1>);
+    C_strain_ = Teuchos::rcp(new LINALG::Matrix<6, 1>);
 
     // create dummy Right Cauchy-Green tensor for testing of the other methods
     (*E_strain_)(0, 0) = 0.1;
@@ -45,10 +46,17 @@ class MAT::ElastHyperService_TestSuite : public CxxTest::TestSuite
     (*E_strain_)(4, 0) = 0.02;
     (*E_strain_)(5, 0) = 0.03;
 
+    (*C_strain_)(0) = 1.2;
+    (*C_strain_)(1) = 1.4;
+    (*C_strain_)(2) = 1.6;
+    (*C_strain_)(3) = 0.02;
+    (*C_strain_)(4) = 0.04;
+    (*C_strain_)(5) = 0.06;
+
     // Create potsum
     // ToDo: Here we need more summands to actually test everything. Unfortunately this is not
     //  easy since for anisotropic materials, the global problem is needed, to create the
-    //  structural Tensor strategy.
+    //  structural tensor strategy.
     potsum_.clear();
     Teuchos::RCP<MAT::PAR::Material> isoNeoHookeParams = Teuchos::rcp(new MAT::PAR::Material());
     isoNeoHookeParams->Add("MUE", 1.3);
@@ -97,53 +105,20 @@ class MAT::ElastHyperService_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(ddPII_new(5), 0., 1e-4);
   }
 
-  void test_Comparison()
+  void test_InvariantsPrincipal()
   {
-    const int eleGID = 0;
+    LINALG::Matrix<3, 1> prinv;
+    InvariantsPrincipal<VoigtNotation::strain>(prinv, *C_strain_);
 
-    LINALG::Matrix<6, 1> id2_new(false);
-    id2_new.Clear();
-    LINALG::Matrix<6, 1> C_strain_new(false);
-    C_strain_new.Clear();
-    LINALG::Matrix<6, 1> iC_strain_new(false);
-    iC_strain_new.Clear();
-    LINALG::Matrix<6, 1> iC_stress_new(false);
-    iC_stress_new.Clear();
-    LINALG::Matrix<3, 1> prinv_new(false);
-    prinv_new.Clear();
-    LINALG::Matrix<3, 1> dPI_new(false);
-    dPI_new.Clear();
-    LINALG::Matrix<6, 1> ddPII_new(false);
-    ddPII_new.Clear();
 
-    LINALG::Matrix<NUM_STRESS_3D, 1> stressiso_new(true);
-    stressiso_new.Clear();
-    LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatiso_new(true);
-    cmatiso_new.Clear();
-
-    // Evaluate identity tensor
-    IdentityMatrix(id2_new);
-
-    // Evalutate Right Cauchy-Green strain tensor in strain-like Voigt notation
-    EvaluateRightCauchyGreenStrainLikeVoigt(*E_strain_, C_strain_new);
-
-    // Invert Right Cauchy Green Strain tensor
-    VStrainUtils::InverseTensor(C_strain_new, iC_strain_new);
-    VStrainUtils::ToStressLike(iC_strain_new, iC_stress_new);
-
-    // Evaluate principle invariants
-    InvariantsPrincipal<MAT::VoigtNotation::strain>(prinv_new, C_strain_new);
-
-    // Evaluate derivatives of potsum w.r.t the principal invariants
-    ElastHyperEvaluateInvariantDerivatives(
-        prinv_new, dPI_new, ddPII_new, potsum_, properties, eleGID);
-
-    ElastHyperAddIsotropicStressCmat(
-        stressiso_new, cmatiso_new, C_strain_new, iC_strain_new, prinv_new, dPI_new, ddPII_new);
+    TS_ASSERT_DELTA(prinv(0), 4.1999999999999993, 1e-10)
+    TS_ASSERT_DELTA(prinv(1), 5.8386000000000005, 1e-10)
+    TS_ASSERT_DELTA(prinv(2), 2.6861119999999996, 1e-10)
   }
 
  private:
   Teuchos::RCP<LINALG::Matrix<6, 1>> E_strain_;
+  Teuchos::RCP<LINALG::Matrix<6, 1>> C_strain_;
   std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>> potsum_;
   SummandProperties properties;
 };

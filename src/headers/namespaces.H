@@ -1449,6 +1449,12 @@ namespace MAT
  */
 namespace MIXTURE
 {
+  /*!
+   * \brief Input data parameters for mixture constituents and mixture laws
+   */
+  namespace PAR
+  {
+  }
 }  // namespace MIXTURE
 
 /*! \brief Mortar coupling algorithms

@@ -234,54 +234,13 @@ namespace MAT
         ) override;
 
     /// hyperelastic stress response plus elasticity tensor
-    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd,  ///< Deformation gradient
-        const LINALG::Matrix<6, 1>* glstrain,                  ///< Green-Lagrange strain
-        Teuchos::ParameterList& params,  ///< Container for additional information
-        LINALG::Matrix<6, 1>* stress,    ///< 2nd Piola-Kirchhoff stresses
-        LINALG::Matrix<6, 6>* cmat,      ///< Constitutive matrix
-        const int eleGID                 ///< Element GID
-    );
-
-    /*!
-     * \brief Evaluate the stress response and the elasticity tensor
-     *
-     * This static method evaluates the 2nd Piola-Kirchhoff stress tensor and its linearization with
-     * respect to the Green-Lagrange strain.
-     *
-     * @param defgrd      (in)      : deformation gradient
-     * @param glstrain    (in)      : Green lagrange strain in strain-like Voigt notation
-     * @param params      (in/out)  : Container for additional information
-     * @param stress      (out)     : 2nd Piola Kirchhoff stress
-     * @param cmat        (out)     : Elasticity tensor
-     * @param eleGID      (in)      : Element id
-     * @param potsum      (in)      : Summands of the Free-energy function
-     * @param isoprinc    (in)      : Flag, whether at least one summand is formulated in the
-     * isotropic principal invariants
-     * @param isomod      (in)      : Flag, whether at least one summand is formulated in the
-     * isotropic modified principal invariants
-     * @param anisoprinc  (in)      : Flag, whether at least one summand is formulated in the
-     * anisotropic principal invariants
-     * @param anisomod    (in)      : Flag, whether at least one summand is formulated in the
-     * anisotropic modified principal invariants
-     * @param checkpolyconvexity (in) : Flag, whether to check the polyconvexity
-     */
-    static void EvaluateStressCmatStatic(
-        const LINALG::Matrix<3, 3>* defgrd,    ///< Deformation gradient
-        const LINALG::Matrix<6, 1>* glstrain,  ///< Green-Lagrange strain
-        Teuchos::ParameterList& params,        ///< Holder for additional parameters
-        LINALG::Matrix<6, 1>* stress,          ///< 2nd Piola-Kirchhoff stresses
-        LINALG::Matrix<6, 6>* cmat,            ///< Constitutive matrix
-        int eleGID,                            ///< Element GID
-        const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>&
-            potsum,     ///< Map to material/potential summands
-        bool isoprinc,  ///< flag, whether material uses principal invariants (isotropic case)
-        bool
-            isomod,  ///< flag, whether material uses modified principal invariants (isotropic case)
-        bool anisoprinc,  ///< flag, whether material uses principal invariants (anisotropic case)
-        bool anisomod,  ///< flag, whether material uses modified principal invariants (anisotropic
-                        ///< case)
-        bool checkpolyconvexity  ///< flag, whether polyconvexity should be checked
-    );
+    void Evaluate(const LINALG::Matrix<3, 3>* defgrd,  ///< Deformation gradient
+        const LINALG::Matrix<6, 1>* glstrain,          ///< Green-Lagrange strain
+        Teuchos::ParameterList& params,                ///< Container for additional information
+        LINALG::Matrix<6, 1>* stress,                  ///< 2nd Piola-Kirchhoff stresses
+        LINALG::Matrix<6, 6>* cmat,                    ///< Constitutive matrix
+        const int eleGID                               ///< Element GID
+        ) override;
 
     /// evaluate for GEMM
     void EvaluateGEMM(LINALG::Matrix<6, 1>* stress,  ///< 2nd Piola-Kirchhoff stresses

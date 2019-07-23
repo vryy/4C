@@ -79,19 +79,6 @@ namespace MIXTURE
     explicit MixtureConstituent_ElastHyper(MIXTURE::PAR::MixtureConstituent_ElastHyper* params);
 
     /*!
-     * \brief Return unique ParObject id
-     *
-     * Every class implementing ParObject needs a unique id defined at the top of drt_parobject.H
-     * and should return it in this method.
-     *
-     * @return Return unique ParObject id
-     */
-    int UniqueParObjectId() const override
-    {
-      return MixtureConstituent_ElastHyperType::Instance().UniqueParObjectId();
-    }
-
-    /*!
      * \brief Pack data into a char vector from this class
      *
      * The vector data contains all information to rebuild the exact copy of an instance of a class
@@ -131,14 +118,14 @@ namespace MIXTURE
      * Evaluates the constituents. Needs to compute the stress contribution of the constituent out
      * of the displacements. Will be called for each Gauß point
      *
-     * @param defgrd Deformation gradient
-     * @param glstrain Green-Lagrange strain in strain-like Voigt notation
+     * @param F Deformation gradient
+     * @param E_strain Green-Lagrange strain in strain-like Voigt notation
      * @param params Container for additional information
-     * @param stress 2nd Piola Kirchhoff stress tensor in stress like Voigt-notation
+     * @param S_stress 2nd Piola Kirchhoff stress tensor in stress like Voigt-notation
      * @param cmat Constitutive tensor in Voigt notation
      */
-    void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
-        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
+    void Evaluate(const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<6, 1>& E_strain,
+        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
         int gp, int eleGID) override;
 
     /*!
@@ -154,10 +141,10 @@ namespace MIXTURE
         LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, int gp) override;
 
     /*!
-     * \brief Returns the current mass fraction of the constituent
+     * \brief Returns the current reference mass density of the constituent
      * @return
      */
-    double RefMassFraction() const override;
+    double CurrentRefDensity() const override;
 
     /*!
      * \brief Get the names and dimension of the quantities to visualize

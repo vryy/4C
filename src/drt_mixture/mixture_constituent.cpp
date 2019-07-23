@@ -70,7 +70,10 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(
 }
 
 // Empty constructor
-MIXTURE::MixtureConstituent::MixtureConstituent() : numgp_(0), is_init_(false), is_setup_(0) {}
+MIXTURE::MixtureConstituent::MixtureConstituent()
+    : initialReferenceDensity_(0.0), numgp_(0), is_init_(false), is_setup_(0)
+{
+}
 
 //! Init is called once at the beginning to setup the number of GPs and the Parameter List
 void MIXTURE::MixtureConstituent::ReadElement(const int numgp, DRT::INPUT::LineDefinition* linedef)
@@ -103,16 +106,9 @@ void MIXTURE::MixtureConstituent::Setup(const int gp, Teuchos::ParameterList& pa
 // Pack everything for distribution to other processors
 void MIXTURE::MixtureConstituent::PackConstituent(DRT::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data, type);
-
-  AddtoPack(data, is_init_);
-  AddtoPack(data, numgp_);
-  AddtoPack(data, is_setup_);
+  DRT::ParObject::AddtoPack(data, is_init_);
+  DRT::ParObject::AddtoPack(data, numgp_);
+  DRT::ParObject::AddtoPack(data, is_setup_);
 }
 
 // Unpack base constituent data, need to be called by every derived class
@@ -124,26 +120,9 @@ void MIXTURE::MixtureConstituent::UnpackConstituent(
   numgp_ = false;
   is_setup_.clear();
 
-  ExtractfromPack(position, data, is_init_);
-  ExtractfromPack(position, data, numgp_);
-  ExtractfromPack(position, data, is_setup_);
-}
+  is_init_ = (bool)DRT::ParObject::ExtractInt(position, data);
 
-// Unpack data from other processor
-void MIXTURE::MixtureConstituent::Unpack(const std::vector<char>& data)
-{
-  // std::vector<char>::size_type position = 0;
-  // UnpackConstituent(data, position);
+  DRT::ParObject::ExtractfromPack(position, data, numgp_);
 
-  dserror(
-      "Should this mixture constiuent be really unpacked idependently "
-      "(without mixture_elasthyper)?");
-}
-
-// Independently pack for other processor
-void MIXTURE::MixtureConstituent::Pack(DRT::PackBuffer& data) const
-{
-  dserror(
-      "Should this mixture constiuent be really packed idependently "
-      "(without mixture_elasthyper)?");
+  DRT::ParObject::ExtractfromPack(position, data, is_setup_);
 }

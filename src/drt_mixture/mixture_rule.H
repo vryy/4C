@@ -56,24 +56,11 @@ namespace MIXTURE
        */
       static MIXTURE::PAR::MixtureRule* Factory(int matid);
 
-      /// @name material parameters
+      /// @name parameters of the mixture rule
       /// @{
       /// @}
     };
   }  // namespace PAR
-
-  class MixtureRuleType : public DRT::ParObjectType
-  {
-   public:
-    std::string Name() const override { return "MixtureRuleType"; }
-
-    static MixtureRuleType& Instance() { return instance_; }
-
-    DRT::ParObject* Create(const std::vector<char>& data) override;
-
-   private:
-    static MixtureRuleType instance_;
-  };
 
   /*!
    * \brief Mixture rule containing the physics behind the mixture
@@ -82,8 +69,20 @@ namespace MIXTURE
    * contains the whole physics. This is the base class defining the simplest possible physics,
    * i.e. constituents all deforming with the same deformation gradient and a homogenized stress
    * response using the mass density of each constituent.
+   *
+   * Example input lines:
+   * MAT 1 MAT_MixtureElastHyper NUMCONST 2 MATIDSCONST 11 12 MASSFRAC 0.4 0.6 MATIDMIXTURELAW 10
+   *  DENS 0.1
+   * MAT 10 MIX_Rule_Base
+   * MAT 11 MIX_Constituent_ElastHyper NUMMAT 1 MATIDS 101 MAT 12
+   * MIX_Constituent_ElastHyper NUMMAT 1 MATIDS 102
+   * MAT 101 ELAST_CoupLogNeoHooke MODE YN C1 2.5e4 C2 0.27
+   * MAT 102 ELAST_CoupAnisoExpo K1 1.666666666666e4 K2 10.0 GAMMA 0.0 K1COMP
+   *  0.833333333333e4 K2COMP 10.0 ADAPT_ANGLE No INIT 0 STR_TENS_ID 1000
+   * MAT 1000 ELAST_StructuralTensor STRATEGY Standard
+   *
    */
-  class MixtureRule : public DRT::ParObject
+  class MixtureRule
   {
    public:
     /// Constructor for an empty material object
@@ -92,51 +91,6 @@ namespace MIXTURE
     /// Constructor for the materiak given the material parameters
     explicit MixtureRule(MIXTURE::PAR::MixtureRule* params);
 
-    /*!
-     * \brief Return unique ParObject id
-     *
-     * Every class implementing ParObject needs a unique id defined at the top of drt_parobject.H
-     * and should return it in this method.
-     *
-     * @return Return unique ParObject id
-     */
-    int UniqueParObjectId() const override
-    {
-      return MixtureRuleType::Instance().UniqueParObjectId();
-    }
-
-
-    /*!
-     * \brief Pack this class so it can be communicated
-     *
-     * Resizes the vector data and stores all infromation of a class in it. The first information
-     * to be stored in the data has to be unique parobect id delivered by UniqueParObjectId() which
-     * will then identify the exact class on the receiving processor.
-     *
-     * @param data (in/out) : char vector to store class information
-     */
-    void Pack(DRT::PackBuffer& data) const override;
-
-    /*!
-     * \brief Unpack data from a char vector into this class
-     *
-     * The vector data contains all information to rebuild the exact copy of an instance of a class
-     * on a different processor. The first entry in data hast to be an integer which is the unique
-     * parobject id defined at the top of the file and delivered by UniqueParObjectId().
-     *
-     * @param data (in) : vector storing all data to be unpacked into this instance.
-     */
-    void Unpack(const std::vector<char>& data) override;
-
-    /*!
-     * \brief Pack data into a char vector from this class
-     *
-     * The vector data contains all information to rebuild the exact copy of an instance of a class
-     * on a different processor. The first entry in data hast to be an integer which is the unique
-     * parobject id defined at the top of the file and delivered by UniqueParObjectId().
-     *
-     * @param data (in/out) : vector storing all data to be packed into this instance.
-     */
     void PackMixtureLaw(DRT::PackBuffer& data) const;
 
     /*!
@@ -152,6 +106,17 @@ namespace MIXTURE
     void UnpackMixtureLaw(std::vector<char>::size_type& position, const std::vector<char>& data);
 
     /*!
+     * This method should be called after creation of the constituents
+     *
+     * @param constituents (in) List of constituents
+     */
+    void SetConstituents(
+        const Teuchos::RCP<std::vector<Teuchos::RCP<MIXTURE::MixtureConstituent>>>& constituents)
+    {
+      constituents_ = constituents;
+    }
+
+    /*!
      * Initialize the mixture law with the element parameters of the input line
      *
      * @param numgp (in) Number of Gauß-points
@@ -163,10 +128,8 @@ namespace MIXTURE
      * This method should be called after ReadElement and stores the ParameterList internally
      *
      * @param params (in/out) : Parameter list containing different parameters
-     * @param constituents (in) List of constituents
      */
-    void Init(Teuchos::ParameterList& params,
-        const Teuchos::RCP<std::vector<Teuchos::RCP<MIXTURE::MixtureConstituent>>>& constituents);
+    void Init(Teuchos::ParameterList& params);
 
     /*!
      * Returns whether the constituent is already initialized
@@ -189,12 +152,11 @@ namespace MIXTURE
      *
      * This simple mixture rule does not need to update anything, so this method is kept empty
      *
-     * @param defgrd (in) : Deformation gradient
+     * @param F (in) : Deformation gradient
      * @param params (in/out) : Container for additional information
      * @param gp (in) : Gauß point
      */
-    virtual void Update(
-        LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, const int gp)
+    virtual void Update(LINALG::Matrix<3, 3> const& F, Teuchos::ParameterList& params, const int gp)
     {
       // Nothing needs to be updated in this simple mixture law
     }
@@ -203,12 +165,16 @@ namespace MIXTURE
      * Evaluates the constituents. Needs to compute the stress contribution of the constituent out
      * of the displacements. Will be called for each Gauß point
      *
-     * @param defgrd (in) : Deformation gradient
-     * @param stress (out) :  2nd Piola Kirchhoff stress tensor in stress like Voigt-notation
+     * @param F (in) : Deformation gradient
+     * @param E_strain (in) : Green-Lagrange strain tensor in strain-like Voigt notation
+     * @param params (in/out) : Container for additional parameters
+     * @param S_stress (out) : 2nd Piola Kirchhoff stress tensor in stress like Voigt-notation
      * @param cmat (out) : Constitutive tensor in Voigt notation
+     * @param gp (in) : Gauß point
+     * @param eleGID (in) : Element id
      */
-    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
-        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
+    virtual void Evaluate(const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<6, 1>& E_strain,
+        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
         int gp, int eleGID);
 
     /*!
