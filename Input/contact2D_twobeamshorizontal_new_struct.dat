@@ -56,6 +56,7 @@ SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.5
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 Dynamic
+EXPLOIT_PROXIMITY               No
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

@@ -1225,24 +1225,46 @@ bool CONTACT::CoInterface::Redistribute(int index)
 void CONTACT::CoInterface::SplitIntoFarAndCloseSets(std::vector<int>& closeele,
     std::vector<int>& noncloseele, std::vector<int>& localcns, std::vector<int>& localfns) const
 {
-  // loop over all row elements to gather the local information
-  for (int i = 0; i < SlaveRowElements()->NumMyElements(); ++i)
-  {
-    // get element
-    int gid = SlaveRowElements()->GID(i);
-    DRT::Element* ele = Discret().gElement(gid);
-    if (!ele) dserror("ERROR: Cannot find element with gid %", gid);
-    MORTAR::MortarElement* cele = dynamic_cast<MORTAR::MortarElement*>(ele);
+  const bool performSplitting = DRT::INPUT::IntegralValue<bool>(
+      IParams().sublist("PARALLEL REDISTRIBUTION"), "EXPLOIT_PROXIMITY");
 
-    // store element id and adjacent node ids
-    int close = cele->MoData().NumSearchElements();
-    if (close > 0)
+  if (performSplitting)
+  {
+    // loop over all row elements to gather the local information
+    for (int i = 0; i < SlaveRowElements()->NumMyElements(); ++i)
     {
-      closeele.push_back(gid);
-      for (int k = 0; k < cele->NumNode(); ++k) localcns.push_back(cele->NodeIds()[k]);
+      // get element
+      int gid = SlaveRowElements()->GID(i);
+      DRT::Element* ele = Discret().gElement(gid);
+      if (!ele) dserror("ERROR: Cannot find element with gid %", gid);
+      MORTAR::MortarElement* cele = dynamic_cast<MORTAR::MortarElement*>(ele);
+
+      // store element id and adjacent node ids
+      int close = cele->MoData().NumSearchElements();
+      if (close > 0)
+      {
+        closeele.push_back(gid);
+        for (int k = 0; k < cele->NumNode(); ++k) localcns.push_back(cele->NodeIds()[k]);
+      }
+      else
+      {
+        noncloseele.push_back(gid);
+        for (int k = 0; k < cele->NumNode(); ++k) localfns.push_back(cele->NodeIds()[k]);
+      }
     }
-    else
+  }
+  else
+  {
+    // loop over all row elements to gather the local information
+    for (int i = 0; i < SlaveRowElements()->NumMyElements(); ++i)
     {
+      // get element
+      int gid = SlaveRowElements()->GID(i);
+      DRT::Element* ele = Discret().gElement(gid);
+      if (!ele) dserror("ERROR: Cannot find element with gid %", gid);
+      MORTAR::MortarElement* cele = dynamic_cast<MORTAR::MortarElement*>(ele);
+
+      // store element id and adjacent node ids
       noncloseele.push_back(gid);
       for (int k = 0; k < cele->NumNode(); ++k) localfns.push_back(cele->NodeIds()[k]);
     }

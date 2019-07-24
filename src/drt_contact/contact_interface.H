@@ -1261,6 +1261,10 @@ namespace CONTACT
      *  \note The here collected information mainly decides over the
      *  distribution after the parallel redistribution.
      *
+     *  \note Splitting into close/non-close elements/nodes can be suppressed via the input file. If
+     *  done so, then all elements/nodes are considered to be far nodes. The list of close
+     *  element/nodes is left emtpy.
+     *
      *  \param closeele (out)     (slave) interface element GIDs of the close set
      *  \param noncloseele (out)  (slave) interface element GIDs of the far set
      *  \param localcns (out)     (slave) node GIDs of the elements in the close set

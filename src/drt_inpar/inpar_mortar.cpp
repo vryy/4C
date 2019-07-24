@@ -148,6 +148,11 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
       tuple<int>(redundant_all, redundant_all, redundant_master, redundant_master, redundant_none,
           redundant_none),
       &parallelRedist);
+
+  BoolParameter("EXPLOIT_PROXIMITY", "Yes",
+      "Exploit information on geometric proximity to split slave interface into close and "
+      "non-close parts and redistribute them independently. [Contact only]",
+      &parallelRedist);
 }
 
 void INPAR::MORTAR::SetValidConditions(
