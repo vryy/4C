@@ -83,7 +83,7 @@ namespace STR
 
   In this approach, the material parameters are updated according to
   \f[
-  \Delta \mathbf{p} = [\mathbf{J}^T(\mathbf {p})\mathbf{J}(\mathbf {p}) +
+  \Delta \mathbf{p} = - [\mathbf{J}^T(\mathbf {p})\mathbf{J}(\mathbf {p}) +
   \mu ~ diag(\mathbf{J}^T(\mathbf{p})\mathbf{J}(\mathbf{p}))]^{-1}\mathbf{J}^T(\mathbf{p})\mathbf{R}
   \f]
 

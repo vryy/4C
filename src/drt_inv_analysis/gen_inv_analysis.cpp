@@ -993,7 +993,7 @@ void STR::GenInvAnalysis::CalcNewParameters(
   mu_o_ = mu_;
   p_o_ = p_;
 
-  //  // update res based error
+  // update res based error
   if ((spec_inv_ana_coup_) || (spec_inv_ana_mult_))
     error_ = rcurve.Norm2();  // already normalized
   else
