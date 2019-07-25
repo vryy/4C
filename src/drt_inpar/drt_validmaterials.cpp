@@ -3598,7 +3598,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
-  // Mixture constituent for ElastHyper toolbox
+  // Base mixture rule for solid mixtures
   {
     Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(
         new MaterialDefinition("MIX_Rule_Base", "Base mixture rule", INPAR::MAT::mix_rule_base));
