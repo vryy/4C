@@ -2303,6 +2303,74 @@ void LINALG::AllToAllCommunication(const Epetra_Comm& comm,
       recv.push_back(std::vector<int>(&recvbuf[rdispls[proc]], &recvbuf[rdispls[proc + 1]]));
     }
   }
-
 #endif  // PARALLEL
+}
+/*----------------------------------------------------------------------*
+ |  Send and receive lists of ints.  (heiner 09/07)                     |
+ *----------------------------------------------------------------------*/
+void LINALG::AllToAllCommunication(
+    const Epetra_Comm& comm, const std::vector<std::vector<int>>& send, std::vector<int>& recv)
+{
+  if (comm.NumProc() == 1)
+  {
+    dsassert(send.size() == 1, "there has to be just one entry for sending");
+
+    // make a copy
+    recv.clear();
+    recv = send[0];
+  }
+  else
+  {
+    const Epetra_MpiComm& mpicomm = dynamic_cast<const Epetra_MpiComm&>(comm);
+
+    std::vector<int> sendbuf;
+    std::vector<int> sendcounts;
+    sendcounts.reserve(comm.NumProc());
+    std::vector<int> sdispls;
+    sdispls.reserve(comm.NumProc());
+
+    int displacement = 0;
+    sdispls.push_back(0);
+    for (std::vector<std::vector<int>>::const_iterator iter = send.begin(); iter != send.end();
+         ++iter)
+    {
+      sendbuf.insert(sendbuf.end(), iter->begin(), iter->end());
+      sendcounts.push_back(iter->size());
+      displacement += iter->size();
+      sdispls.push_back(displacement);
+    }
+
+    std::vector<int> recvcounts(comm.NumProc());
+
+    // initial communication: Request. Send and receive the number of
+    // ints we communicate with each process.
+
+    int status =
+        MPI_Alltoall(&sendcounts[0], 1, MPI_INT, &recvcounts[0], 1, MPI_INT, mpicomm.GetMpiComm());
+
+    if (status != MPI_SUCCESS) dserror("MPI_Alltoall returned status=%d", status);
+
+    std::vector<int> rdispls;
+    rdispls.reserve(comm.NumProc());
+
+    displacement = 0;
+    rdispls.push_back(0);
+    for (std::vector<int>::const_iterator iter = recvcounts.begin(); iter != recvcounts.end();
+         ++iter)
+    {
+      displacement += *iter;
+      rdispls.push_back(displacement);
+    }
+
+    std::vector<int> recvbuf(rdispls.back());
+
+    // transmit communication: Send and get the data.
+
+    recv.clear();
+    recv.resize(rdispls.back());
+
+    status = MPI_Alltoallv(&sendbuf[0], &sendcounts[0], &sdispls[0], MPI_INT, &recv[0],
+        &recvcounts[0], &rdispls[0], MPI_INT, mpicomm.GetMpiComm());
+    if (status != MPI_SUCCESS) dserror("MPI_Alltoallv returned status=%d", status);
+  }
 }

@@ -110,3 +110,9 @@ void ADAPTER::FBIStructureWrapper::ApplyInterfaceForces(Teuchos::RCP<Epetra_Vect
       1.0, *iforce, 0.0);  // todo This has to be changed for mixed structure. Need a mapextractor.
   return;
 }
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FBIStructureWrapper::SetupMultiMapExtractor()
+{
+  FSIModelEvaluator()->SetupMultiMapExtractor();
+}

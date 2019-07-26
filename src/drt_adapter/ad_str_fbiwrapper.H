@@ -74,6 +74,8 @@ namespace ADAPTER
     /// rebuild FSI interface from structure side
     virtual void RebuildInterface() override;
 
+    virtual void SetupMultiMapExtractor();
+
    private:
     /// Map extractor seperating the beam elements from the structure elements
     Teuchos::RCP<LINALG::MultiMapExtractor> eletypeextractor_;

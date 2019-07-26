@@ -151,6 +151,8 @@ namespace STR
       Teuchos::RCP<const Epetra_Vector> SolveRelaxationLinear(
           Teuchos::RCP<ADAPTER::Structure> structure);
 
+      virtual void SetupMultiMapExtractor();
+
       //! set flag true if in order to request a relaxation solve
       void SetIsRelaxationSolve(bool trueorfalse) { is_relaxationsolve = trueorfalse; };
 

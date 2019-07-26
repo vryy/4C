@@ -67,6 +67,12 @@ namespace ADAPTER
      * \returns f residuum vector
      */
 
+    virtual void ExtendBeamGhosting();
+
+    virtual void PreparePairCreation(std::map<int, std::vector<int>>& pairids);
+
+    virtual void CreatePairs(std::map<int, std::vector<int>> pairids);
+
     virtual Teuchos::RCP<Epetra_Vector> SlaveToMaster();
 
     /**
@@ -238,6 +244,13 @@ namespace ADAPTER
      * (GPTS, Mortar, ...)
      */
     Teuchos::RCP<ADAPTER::FBIConstraintBridge> bridge_;
+
+    /// Flag determining the fluid stabilization type
+    bool edgebased_fluidstabilization;
+
+    Teuchos::RCP<const Epetra_Vector> column_structure_displacement_;
+    Teuchos::RCP<const Epetra_Vector> column_structure_velocity_;
+    Teuchos::RCP<const Epetra_Vector> column_fluid_velocity_;
   };
 }  // namespace ADAPTER
 #endif

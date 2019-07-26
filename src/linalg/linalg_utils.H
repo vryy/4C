@@ -1936,6 +1936,8 @@ void SymmetricEigenProblem(IO::DiscretizationWriter& output,
    */
   void AllToAllCommunication(const Epetra_Comm& comm, const std::vector<std::vector<int>>& send,
       std::vector<std::vector<int>>& recv);
+  void AllToAllCommunication(
+      const Epetra_Comm& comm, const std::vector<std::vector<int>>& send, std::vector<int>& recv);
 
   /// return the first slot of a pair
   /*!

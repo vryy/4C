@@ -18,6 +18,7 @@
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/ad_str_structure_new.H"
 #include "../drt_adapter/ad_str_factory.H"
+#include "../drt_io/io.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -171,6 +172,8 @@ void FSI::Algorithm::Output()
   // Discretizations.
   StructureField()->Output();
   MBFluidField()->Output();
+  StructureField()->Discretization()->Writer()->ClearMapCache();
+  MBFluidField()->Discretization()->Writer()->ClearMapCache();
 }
 
 
