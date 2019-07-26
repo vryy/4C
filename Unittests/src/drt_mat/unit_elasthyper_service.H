@@ -23,6 +23,8 @@
 #include <src/drt_matelast/elast_coupneohooke.H>
 #include <src/drt_matelast/elast_coupanisoexpo.H>
 #include <src/drt_matelast/elast_coupanisoneohooke.H>
+#include <src/drt_mat/matpar_material.H>
+#include <src/drt_mat/material_service.H>
 namespace MAT
 {
   class ElastHyperService_TestSuite;
