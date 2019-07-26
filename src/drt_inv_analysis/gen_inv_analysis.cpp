@@ -55,6 +55,7 @@
 #include "../drt_matelast/visco_isoratedep.H"
 #include "../drt_matelast/visco_genmax.H"
 #include "../drt_matelast/visco_fract.H"
+#include "../drt_mat/stvenantkirchhoff.H"
 
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 
@@ -978,7 +979,7 @@ void STR::GenInvAnalysis::CalcNewParameters(
   // do regularization by adding artificial mass on the main diagonal
   for (int i = 0; i < np_; i++) sto(i, i) += mu_ * sto(i, i);
 
-  // delta_p = (J.T*J+mu*diag(J.T*J))^{-1} * J.T*R
+  // delta_p = - (J.T*J+mu*diag(J.T*J))^{-1} * J.T*R
   rightHandSide.Multiply('T', 'N', -1.0, J, rcurve, 0.0);  // sign of update rule
   Epetra_SerialDenseSolver solver;
   solver.SetMatrix(sto);
@@ -992,7 +993,7 @@ void STR::GenInvAnalysis::CalcNewParameters(
   mu_o_ = mu_;
   p_o_ = p_;
 
-  //  // update res based error
+  // update res based error
   if ((spec_inv_ana_coup_) || (spec_inv_ana_mult_))
     error_ = rcurve.Norm2();  // already normalized
   else
@@ -2084,6 +2085,20 @@ void STR::GenInvAnalysis::ReadInParameters()
           }
         }
         break;
+        case INPAR::MAT::m_stvenant:
+        {
+          if (mymatset.size() == 0 or mymatset.find(actmat->Id()) != mymatset.end())
+          {
+            MAT::PAR::StVenantKirchhoff* params =
+                dynamic_cast<MAT::PAR::StVenantKirchhoff*>(actmat->Parameter());
+            if (!params) dserror("Cannot cast material parameters");
+            const int j = p_.Length();
+            p_.Resize(j + 2);
+            p_(j) = params->youngs_;
+            p_(j + 1) = params->poissonratio_;
+          }
+        }
+        break;
         case INPAR::MAT::m_constraintmixture:
         {
           materialhashistory_ = true;
@@ -2197,16 +2212,28 @@ void STR::GenInvAnalysis::ReadInParameters()
                   break;
                 }
                 case INPAR::MAT::mes_coupSVK:
-                {
-                  filename_ = filename_ + "_coupsaintvenantkirchhoff";
+                {  // Formulation with lambda and mue
+                  /*
+                filename_ = filename_ + "_coupsaintvenantkirchhoff";
+                const MAT::ELASTIC::PAR::CoupSVK* params2 =
+                    dynamic_cast<const MAT::ELASTIC::PAR::CoupSVK*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j + 2);
+                p_[j] = params2->lambda_;
+                p_[j + 1] = params2->mue_;*/
+
+                  // Formulation with youngs and nue
+                  filename_ = filename_ + "_coupSVK";
                   const MAT::ELASTIC::PAR::CoupSVK* params2 =
                       dynamic_cast<const MAT::ELASTIC::PAR::CoupSVK*>(actelastmat->Parameter());
                   int j = p_.Length();
                   p_.Resize(j + 2);
-                  p_[j] = params2->lambda_;
-                  p_[j + 1] = params2->mue_;
+                  p_[j] = params2->mue_ * (3 * params2->lambda_ + 2 * params2->mue_) /
+                          (params2->lambda_ + params2->mue_);
+                  p_[j + 1] = params2->lambda_ / (2 * params2->mue_ + 2 * params2->lambda_);
                   break;
                 }
+
                 case INPAR::MAT::mes_isoneohooke:
                 {
                   filename_ = filename_ + "_isoneohooke";
@@ -2912,6 +2939,23 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
         }
       }
       break;
+      case INPAR::MAT::m_stvenant:
+      {
+        if (mymatset.size() == 0 or mymatset.find(actmat->Id()) != mymatset.end())
+        {
+          MAT::PAR::StVenantKirchhoff* params =
+              dynamic_cast<MAT::PAR::StVenantKirchhoff*>(actmat->Parameter());
+          if (!params) dserror("Cannot cast material parameters");
+          // This is a tiny little bit brutal!!!
+          const_cast<double&>(params->youngs_) = p_cur[j];
+          const_cast<double&>(params->poissonratio_) = p_cur[j + 1];
+          if (lmyrank == 0)
+            printf("MAT::PAR::StVenantKirchhoff %20.15e %20.15e\n", params->youngs_,
+                params->poissonratio_);
+          j += 2;
+        }
+      }
+      break;
       case INPAR::MAT::m_elasthyper:
       {
         MAT::PAR::ElastHyper* params = dynamic_cast<MAT::PAR::ElastHyper*>(actmat->Parameter());
@@ -2974,12 +3018,22 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
                 break;
               }
               case INPAR::MAT::mes_coupSVK:
-              {
+              {  // formulation with lambda and mue
+                /*
+                  MAT::ELASTIC::PAR::CoupSVK* params2 =
+                      dynamic_cast<MAT::ELASTIC::PAR::CoupSVK*>(actelastmat->Parameter());
+                  params2->SetLambda(abs(p_cur(j)));
+                  params2->SetMue(abs(p_cur(j + 1)));
+                  j = j + 2;
+                  */
+                // Formulation with youngs and nue
                 MAT::ELASTIC::PAR::CoupSVK* params2 =
                     dynamic_cast<MAT::ELASTIC::PAR::CoupSVK*>(actelastmat->Parameter());
-                params2->SetLambda(abs(p_cur(j)));
-                params2->SetMue(abs(p_cur(j + 1)));
+                params2->SetLambda(
+                    (p_cur(j) * p_cur(j + 1)) / ((1 + p_cur(j + 1)) * (1 - 2 * p_cur(j + 1))));
+                params2->SetMue((p_cur(j)) / (2 * (1 + p_cur(j + 1))));
                 j = j + 2;
+
                 break;
               }
               case INPAR::MAT::mes_isoneohooke:
@@ -4262,6 +4316,8 @@ void STR::GenInvAnalysis::ConstrainAlpha()
 
 void STR::GenInvAnalysis::ReadMonitorDofBased(int myrank)
 {
+  // old comment is destroyed by clang format: please consult *.monitor files in /Input folder
+
   /* this is how a dof based monitor file should look like:
 
 steps 25 nnodes 5
@@ -4422,10 +4478,21 @@ steps 2 npoints 5
 2 0 1
 2 0 1
 # any number of comment lines, but only at this position
-# x and y coords at 5 points, x and y coords at corresponding point in measurement direction
-(towards interface) # time point x y x' y', x y x' y', x y x' y', x y x' y', x y x' y' # for example
-with measurement downwards in vertical (y)-direction 2.000000e-02 4.000000e-02
+# x and y coords at 5 points, x and y coords at corresponding points (x' y') in measurement
+# direction (towards interface)
+(first time point) x1 y1 x1' y1' x2 y2 x2' y2' x3 y3 x3' y3' x4 y4 x4' y4' x5 y5 x5' y5'
+(second time point) x1 y1 x1' y1' x2 y2 x2' y2' x3 y3 x3' y3' x4 y4 x4' y4' x5 y5 x5' y5'
 */
+
+  // the following is a minimal example, mind that Levenberg Marquardt needs
+  // steps*npoints > number of parameters to fit
+  /*
+  steps 1 npoints 1
+  2 0 1
+  # for example with measurement downwards in vertical (y)-direction for
+  # one point (npoints 1) in 2D at time t=1.0 (steps 1)
+  1.0 2.000000e-02 4.000000e-02 2.000000e-02 3.000000e-02
+  */
   ndofs_ = 0;
 
   // input parameters inverse analysis
