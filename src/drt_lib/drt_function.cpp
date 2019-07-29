@@ -21,6 +21,7 @@
 #include "../drt_fluid_xfluid/xfluid_functions.H"
 #include "../drt_fluid_xfluid/xfluid_functions_combust.H"
 #include "../drt_io/io.H"
+#include "drt_slmfunction.H"
 
 /*----------------------------------------------------------------------*/
 //! Print function
@@ -208,6 +209,11 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   fastpolynomial_funct.AddTag("FASTPOLYNOMIAL")
       .AddNamedInt("NUMCOEFF")
       .AddNamedDoubleVector("COEFF", "NUMCOEFF");
+
+  DRT::INPUT::LineDefinition translatedfunction_funct;
+  translatedfunction_funct.AddTag("TRANSLATEDFUNCTION").AddNamedInt("ORIGIN").AddNamedInt("LOCAL");
+
+  lines->Add(translatedfunction_funct);
 
   lines->Add(varfunct);
   lines->Add(linelin);
@@ -553,6 +559,28 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         function->ExtractDoubleVector("COEFF", coefficients);
 
         functions_.push_back(Teuchos::rcp(new FastPolynomialFunction(&coefficients)));
+      }
+      else if (function->HaveNamed("TRANSLATEDFUNCTION"))
+      {
+        int origin, local;
+        function->ExtractInt("ORIGIN", origin);
+        function->ExtractInt("LOCAL", local);
+
+        if (origin <= 0 or origin >= i)
+          dserror(
+              "ORIGIN function ID (currently %d) must be positive and smaller than "
+              "TRANSLATEDFUNCTION (currently %d).",
+              origin, i);
+        if (local <= 0 or local >= i)
+          dserror(
+              "LOCAL function ID (currently %d) must be positive and smaller than "
+              "TRANSLATEDFUNCTION (currently %d).",
+              local, i);
+
+        Teuchos::RCP<Function> origin_funct = Teuchos::rcpFromRef(Funct(origin - 1));
+        Teuchos::RCP<Function> local_funct = Teuchos::rcpFromRef(Funct(local - 1));
+
+        functions_.push_back(Teuchos::rcp(new TranslatedFunction(origin_funct, local_funct)));
       }
       else if (function->HaveNamed("VARFUNCTION"))
       {
