@@ -19,7 +19,6 @@ Elements:
 - TET10
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
-RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMSTRUCDIS                     1
 --------------------------------------------------------------------------IO
@@ -37,8 +36,6 @@ TIMESTEP                        0.1
 NUMSTEP                         30
 MAXTIME                         3
 DAMPING                         No
-M_DAMP                          -1
-K_DAMP                          -1
 TOLDISP                         1e-9
 NORM_DISP                       Abs
 TOLRES                          1e-9

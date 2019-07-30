@@ -142,7 +142,9 @@ namespace MAT
     void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
       if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
-        dserror("element and material kinematics are not compatible");
+        dserror(
+            "element and material kinematics are not compatible. Use Nonlinear total lagrangian"
+            "kinematics (KINEM nonlinear) in your element definition.");
     }
 
     /// Return material type
@@ -191,12 +193,10 @@ namespace MAT
      * @param defgrd Deformation gradient
      * @param gp Gauß point
      * @param params Container for additional information
-     * @param eleGID Element id
+     * @param eleGID Global element id
      */
-    void Update(LINALG::Matrix<3, 3> const& defgrd,  ///< Deformation gradient
-        int gp,                                      ///< Current Gauß point
-        Teuchos::ParameterList& params,              ///< Container for additional information
-        int eleGID) override;                        ///< Element id
+    void Update(LINALG::Matrix<3, 3> const& defgrd, int gp, Teuchos::ParameterList& params,
+        int eleGID) override;
 
     /// \brief This material law uses the extended update method
     bool UsesExtendedUpdate() override { return true; }
@@ -211,7 +211,7 @@ namespace MAT
      * @param params (in/out) Parameter list for additional information
      * @param stress (out) 2nd Piola-Kirchhoff stress tensor in stress-like Voigt notation
      * @param cmat (out) Linearization of the material law in Voigt notation
-     * @param eleGID (in) Element id
+     * @param eleGID (in) Global element id
      */
     void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
         Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
@@ -229,7 +229,7 @@ namespace MAT
      * @param name (in) Name of the quantity
      * @param data (out) Values of the quantity
      * @param numgp (in) number of Gauß points
-     * @param eleGID (in) element id
+     * @param eleGID (in) Global element id
      */
     bool VisData(
         const std::string& name, std::vector<double>& data, int numgp, int eleGID) override;

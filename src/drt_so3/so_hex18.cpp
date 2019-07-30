@@ -283,6 +283,10 @@ bool DRT::ELEMENTS::So_hex18::ReadElement(
   // check if material kinematics is compatible to element kinematics
   SolidMaterial()->ValidKinematics(kintype_);
 
+  // Validate that materials doesn't use extended update call.
+  if (SolidMaterial()->UsesExtendedUpdate())
+    dserror("This element currently does not support the extended update call.");
+
   return true;
 }
 
@@ -531,10 +535,6 @@ int DRT::ELEMENTS::So_hex18::Evaluate(Teuchos::ParameterList& params,
     //==================================================================================
     case calc_struct_update_istep:
     {
-      if (SolidMaterial()->UsesExtendedUpdate())
-      {
-        dserror("This element currently does not support the extended update call.");
-      }
       SolidMaterial()->Update();
       Update();
     }

@@ -169,7 +169,7 @@ namespace MIXTURE
      * @param S_stress (out) : 2nd Piola Kirchhoff stress tensor in stress like Voigt-notation
      * @param cmat Constitutive tensor in Voigt notation
      * @param gp (in) : Number of Gauß point
-     * @param eleGID (in) : Element id
+     * @param eleGID (in) : Global element id
      */
     virtual void Evaluate(const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<6, 1>& E_strain,
         Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
@@ -190,7 +190,7 @@ namespace MIXTURE
      * @param name (in) Name of the quantity
      * @param data (out) Values of the quantity
      * @param numgp (in) number of Gauß points
-     * @param eleGID (in) element id
+     * @param eleGID (in) Global element id
      */
     virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleGID)
     {

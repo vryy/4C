@@ -1923,8 +1923,6 @@ void DRT::ELEMENTS::So3_Plast<distype>::UpdatePlasticDeformation_nln(PlSpinType 
   }
   else
   {
-    if (SolidMaterial()->UsesExtendedUpdate())
-      dserror("This element currently does not support the extended update call.");
     SolidMaterial()->Update();
   }
 

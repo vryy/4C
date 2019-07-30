@@ -18,6 +18,7 @@
 #include "../drt_matelast/elast_summand.H"
 namespace MAT
 {
+  // Forward declaration
   class SummandProperties;
 
   /*!
@@ -36,17 +37,10 @@ namespace MAT
    * @param properties    (in)      : Data class with flags of the type of the summands
    * @param checkpolyconvexity (in) : Flag, whether to check the polyconvexity
    */
-  void ElastHyperEvaluate(const LINALG::Matrix<3, 3>& defgrd,  ///< Deformation gradient
-      const LINALG::Matrix<6, 1>& glstrain,                    ///< Green-Lagrange strain
-      Teuchos::ParameterList& params,                          ///< Holder for additional parameters
-      LINALG::Matrix<6, 1>& stress,                            ///< 2nd Piola-Kirchhoff stresses
-      LINALG::Matrix<6, 6>& cmat,                              ///< Constitutive matrix
-      int eleGID,                                              ///< Element GID
-      const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>&
-          potsum,                      ///< Map to material/potential summands
-      SummandProperties& properties,   ///< Holds the flags with the type of summands used
-      bool checkpolyconvexity = false  ///< flag, whether polyconvexity should be checked
-  );
+  void ElastHyperEvaluate(const LINALG::Matrix<3, 3>& defgrd, const LINALG::Matrix<6, 1>& glstrain,
+      Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& stress, LINALG::Matrix<6, 6>& cmat,
+      int eleGID, const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum,
+      SummandProperties& properties, bool checkpolyconvexity = false);
 
   /*!
    * Evaluates the Right Cauchy-Green strain tensor in strain like Voigt notation
@@ -67,7 +61,7 @@ namespace MAT
    * @param ddPII Second derivative of potsum
    * @param potsum List of summands
    * @param properties Properties of the summands
-   * @param eleGID Element id
+   * @param eleGID Global element id
    */
   void ElastHyperEvaluateInvariantDerivatives(const LINALG::Matrix<3, 1>& prinv,
       LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII,
@@ -125,6 +119,7 @@ namespace MAT
    * \brief Determine PK2 stress response and material elasticity tensor
    *  due to energy densities (MAT::ELASTIC::Summand) described
    *  in (modified) principal stretches.
+   *
    *  The stress response is achieved by collecting the coefficients
    *  \f$\gamma_\alpha\f$ and \f$\delta_{\alpha\beta}\f$ due to
    *  MAT::ELASTIC::Summand::AddCoefficientsStretchesPrincipal()
@@ -192,7 +187,7 @@ namespace MAT
    * @param C_strain (in) : Right Cauchy-Green strain tensor in strain-like Voigt notation
    * @param potsum (in) : Summands of the Free-energy function
    * @param properties (in) : Properties of the summands
-   * @param eleGID (in) : Element id
+   * @param eleGID (in) : Global element id
    */
   void ElastHyperAddResponseStretches(LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& S_stress,
       const LINALG::Matrix<6, 1>& C_strain,
@@ -207,7 +202,7 @@ namespace MAT
    * @param cmat Elasticity tensor in stress-like Voigt notation (rows and columns)
    * @param C_strain Right Cauchy-Green deformation tensor in strain like Voigt notation
    * @param params Container for additional information
-   * @param eleGID Element id
+   * @param eleGID Global element id
    * @param potsum Summands of the Free-energy function
    */
   void ElastHyperAddAnisotropicPrinc(LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
@@ -223,7 +218,7 @@ namespace MAT
    * @param C_strain Right Cauchy-Green deformation tensor in strain like Voigt notation
    * @param iC_strain Inverse Right Cauchy-Green deformation tensor in strain like Voigt notation
    * @param prinv Principal invariants of the Right Cauchy-Green strain tensor
-   * @param eleGID Element id
+   * @param eleGID Global element id
    * @param potsum Summands of the Free-energy function
    */
   void ElastHyperAddAnisotropicMod(LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
@@ -323,6 +318,7 @@ namespace MAT
 
   /**
    * \brief Evaluates the properties if the summands
+   *
    * @param potsum List of the summands
    * @param properties Class holding the properties of the formulation of the summands
    */
@@ -346,7 +342,7 @@ namespace MAT
    * @param ddPII (in) : Second derivative of the Free-energy function with respect to the
    * principal invariants
    * @param params (in/out) : Container for additional information
-   * @param eleGID : Element id
+   * @param eleGID : Global element id
    * @param properties (in) : Class holding the properties of the formulation of the summands
    */
   void ElastHyperCheckPolyconvexity(const LINALG::Matrix<3, 3>& defgrd,
@@ -354,19 +350,34 @@ namespace MAT
       const LINALG::Matrix<6, 1>& ddPII, Teuchos::ParameterList& params, int eleGID,
       const SummandProperties& properties);
 
+  /**
+   * \brief Class for holding the summand formulation properties
+   */
   class SummandProperties
   {
    public:
     /// @name Flags to specify the elastic formulations (initialize with false)
     //@{
-    bool isoprinc = false;    ///< Indicator for isotropic principal formulation
-    bool isomod = false;      ///< Indicator for isotropic splitted formulation
-    bool anisoprinc = false;  ///< Indicator for anisotropic principal formulation
-    bool anisomod = false;    ///< Indicator for anisotropic splitted formulation
-    bool coeffStretchesPrinc =
-        false;                       ///< Indicator for coefficient stretches principal formulation
-    bool coeffStretchesMod = false;  ///< Indicator for coefficient stretches splitted formulation
-    bool viscoGeneral = false;       ///< Indicator for general viscoelastic behavior
+    ///< Indicator for isotropic principal formulation
+    bool isoprinc = false;
+
+    ///< Indicator for isotropic splitted formulation
+    bool isomod = false;
+
+    ///< Indicator for anisotropic principal formulation
+    bool anisoprinc = false;
+
+    ///< Indicator for anisotropic splitted formulation
+    bool anisomod = false;
+
+    ///< Indicator for coefficient stretches principal formulation
+    bool coeffStretchesPrinc = false;
+
+    ///< Indicator for coefficient stretches splitted formulation
+    bool coeffStretchesMod = false;
+
+    ///< Indicator for general viscoelastic behavior
+    bool viscoGeneral = false;
     //@}
 
     /**

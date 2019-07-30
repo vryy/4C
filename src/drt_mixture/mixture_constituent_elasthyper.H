@@ -158,7 +158,7 @@ namespace MIXTURE
      * @param name (in) Name of the quantity
      * @param data (out) Values of the quantity
      * @param numgp (in) number of Gauß points
-     * @param eleGID (in) element id
+     * @param eleGID (in) Global element id
      */
     bool VisData(
         const std::string& name, std::vector<double>& data, int numgp, int eleGID) override;

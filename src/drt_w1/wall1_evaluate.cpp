@@ -317,8 +317,6 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
         Epetra_BLAS blas;                                          // BLAS front-end dummy
         blas.COPY((*alphao).M() * (*alphao).N(), (*alpha).A(), (*alphao).A());  // alphao := alpha
       }
-      if (SolidMaterial()->UsesExtendedUpdate())
-        dserror("This element currently does not support the extended update call.");
       SolidMaterial()->Update();
       break;
     }

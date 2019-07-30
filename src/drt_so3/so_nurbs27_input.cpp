@@ -37,5 +37,9 @@ bool DRT::ELEMENTS::NURBS::So_nurbs27::ReadElement(
   // check if material kinematics is compatible to element kinematics
   SolidMaterial()->ValidKinematics(kintype_);
 
+  // Validate that materials doesn't use extended update call.
+  if (SolidMaterial()->UsesExtendedUpdate())
+    dserror("This element currently does not support the extended update call.");
+
   return true;
 }
