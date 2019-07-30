@@ -446,12 +446,6 @@ namespace STR
     void LsPrintLsIterHeader(FILE* ofile  //!< output file handle
     );
 
-    /*! \brief Use nonlinear solver package NLNSOL
-     *
-     *  \author mayr.mt \date 06/2014
-     */
-    int NlnSolver();
-
     //! Do classical augmented lagrange for volume constraint
     //!
     //! Potential is linearized wrt displacements

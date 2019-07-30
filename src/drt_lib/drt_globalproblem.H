@@ -543,10 +543,6 @@ namespace DRT
     {
       return getParameterList()->sublist("VOLMORTAR COUPLING");
     }
-    const Teuchos::ParameterList& NonlinearSolverParams() const
-    {
-      return getParameterList()()->sublist("NONLINEAR SOLVER");
-    }
     const Teuchos::ParameterList& TutorialParams() const
     {
       return getParameterList()()->sublist("TUTORIAL DYNAMIC");

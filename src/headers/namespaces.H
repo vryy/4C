@@ -1462,45 +1462,6 @@ namespace MORTAR
   }  // namespace UTILS
 }  // namespace MORTAR
 
-/*! \brief A nonlinear solver tool box
- *
- *  A collection of nonlinear solver routines and methods to build a
- *  user-configured nonlinear solver. Configuration works via a xml-file.
- *
- *  <h3> Major algorithmic parts </h3>
- *  <ul>
- *  <li> Nonlinear solvers/operators inherit from NLNSOL::NlnOperatorBase. </li>
- *  <li> Possible line search strategies are derived from
- *       NLNSOL::LineSearchBase. </li>
- *  <li> An interface to the nonlinear problem to be solved is provided by
- *       NLNSOL::NlnProblemBase. </li>
- *  <li> A collection of helpful utilities can be found in NLNSOL::UTILS. </li>
- *  </ul>
- *
- *  \warning This is highly experimental.
- *
- *  \author mayr.mt \date 05/2014
- */
-namespace NLNSOL
-{
-  /*! \brief A Full Approximation Scheme (FAS) multigrid within the NLNSOL framework
-   *
-   * A full approximation scheme (FAS) is implemented to allow multigrid treatment of
-   * nonlinear problems. Hierarchy construction, i.e. calculation of transfer operators
-   * etc., is done by calling Trilinos'  MueLu package.
-   */
-  namespace FAS
-  {
-  }  // namespace FAS
-
-  /*! \brief Utilities for nonlinear solver NLNSOL
-   *
-   */
-  namespace UTILS
-  {
-  }  // namespace UTILS
-}  // namespace NLNSOL
-
 /*! \brief NOX: the nonlinear object solver from trilinos with local extensions
  *
  */
