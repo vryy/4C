@@ -31,6 +31,7 @@
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/fluid_murnaghantait.H"
+#include "../drt_mat/fluid_weakly_compressible.H"
 
 
 DRT::DiscretizationHDG::DiscretizationHDG(const std::string name, Teuchos::RCP<Epetra_Comm> comm)

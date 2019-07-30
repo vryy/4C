@@ -62,6 +62,7 @@
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/fluid_linear_density_viscosity.H"
 #include "../drt_mat/fluid_murnaghantait.H"
+#include "../drt_mat/fluid_weakly_compressible.H"
 #include "fluidimpedancecondition.H"
 #include "../drt_inpar/inpar_xfem.H"  //for enums only
 

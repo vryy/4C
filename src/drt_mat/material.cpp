@@ -89,6 +89,7 @@
 #include "optimization_density.H"
 #include "fluid_murnaghantait.H"
 #include "fluid_linear_density_viscosity.H"
+#include "fluid_weakly_compressible.H"
 #include "fluidporo.H"
 #include "fluidporo_singlephase.H"
 #include "fluidporo_multiphase.H"
@@ -173,6 +174,14 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
           static_cast<MAT::PAR::LinearDensityViscosity*>(curmat->Parameter());
       return params->CreateMaterial();
     }
+    case INPAR::MAT::m_fluid_weakly_compressible:
+        {
+          if (curmat->Parameter() == NULL)
+            curmat->SetParameter(new MAT::PAR::WeaklyCompressibleFluid(curmat));
+          MAT::PAR::WeaklyCompressibleFluid* params =
+              static_cast<MAT::PAR::WeaklyCompressibleFluid*>(curmat->Parameter());
+          return params->CreateMaterial();
+        }
     case INPAR::MAT::m_stvenant:
     {
       if (curmat->Parameter() == NULL)

@@ -7,8 +7,8 @@
 \maintainer Andrea La Spina
 */
 /*----------------------------------------------------------------------*/
-#ifndef MURNAGHANTAITFLUID_H
-#define MURNAGHANTAITFLUID_H
+#ifndef WEAKLYCOMPRESSIBLEFLUID_H
+#define WEAKLYCOMPRESSIBLEFLUID_H
 
 
 
@@ -21,17 +21,17 @@ namespace MAT
   namespace PAR
   {
     /*----------------------------------------------------------------------*/
-    /// material parameters for weakly compressible fluid according to Murnaghan-Tait
+    /// material parameters for weakly compressible fluid
     ///
-    /// This object exists only once for each read Murnaghan-Tait fluid.
-    class MurnaghanTaitFluid : public Parameter
+    /// This object exists only once for each read fluid.
+    class WeaklyCompressibleFluid : public Parameter
     {
      public:
       /// standard constructor
-      MurnaghanTaitFluid(Teuchos::RCP<MAT::PAR::Material> matdata);
+    	WeaklyCompressibleFluid(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~MurnaghanTaitFluid() { ; }
+      virtual ~WeaklyCompressibleFluid() { ; }
 
       /// @name material parameters
       //@{
@@ -42,47 +42,43 @@ namespace MAT
       const double refdensity_;
       /// reference pressure
       const double refpressure_;
-      /// reference reference bulk modulus
-      const double refbulkmodulus_;
-      /// material parameter according to Murnaghan-Tait
-      const double matparameter_;
-      /// surface tension coefficient
-      const double gamma_;
+      /// compressibility coefficient
+      const double comprcoeff_;
 
       //@}
 
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
-    };  // class MurnaghanTaitFluid
+    };  // class WeaklyCompressibleFluid
 
   }  // namespace PAR
 
-  class MurnaghanTaitFluidType : public DRT::ParObjectType
+  class WeaklyCompressibleFluidType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "MurnaghanTaitFluidType"; }
+    std::string Name() const { return "WeaklyCompressibleFluidType"; }
 
-    static MurnaghanTaitFluidType& Instance() { return instance_; };
+    static WeaklyCompressibleFluidType& Instance() { return instance_; };
 
     virtual DRT::ParObject* Create(const std::vector<char>& data);
 
    private:
-    static MurnaghanTaitFluidType instance_;
+    static WeaklyCompressibleFluidType instance_;
   };
 
   /*----------------------------------------------------------------------*/
-  /// Wrapper for Murnaghan-Tait fluid material
+  /// Wrapper for weakly compressible fluid
   ///
   /// This object exists (several times) at every element
-  class MurnaghanTaitFluid : public Material
+  class WeaklyCompressibleFluid : public Material
   {
    public:
     /// construct empty material object
-    MurnaghanTaitFluid();
+	  WeaklyCompressibleFluid();
 
     /// construct the material object given material parameters
-    explicit MurnaghanTaitFluid(MAT::PAR::MurnaghanTaitFluid* params);
+    explicit WeaklyCompressibleFluid(MAT::PAR::WeaklyCompressibleFluid* params);
 
     //! @name Packing and Unpacking
 
@@ -94,7 +90,7 @@ namespace MAT
     */
     virtual int UniqueParObjectId() const
     {
-      return MurnaghanTaitFluidType::Instance().UniqueParObjectId();
+      return WeaklyCompressibleFluidType::Instance().UniqueParObjectId();
     }
 
     /*!
@@ -128,17 +124,20 @@ namespace MAT
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const
     {
-      return INPAR::MAT::m_fluid_murnaghantait;
+      return INPAR::MAT::m_fluid_weakly_compressible;
     }
 
     /// return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const
     {
-      return Teuchos::rcp(new MurnaghanTaitFluid(*this));
+      return Teuchos::rcp(new WeaklyCompressibleFluid(*this));
     }
 
     /// compute density
     double ComputeDensity(const double press) const;
+
+    /// compute pressure
+    double ComputePressure(const double dens) const;
 
     /// return material parameters for element calculation
     //@{
@@ -152,21 +151,15 @@ namespace MAT
     /// return reference pressure
     double RefPressure() const { return params_->refpressure_; }
 
-    /// return reference bulk modulus
-    double RefBulkModulus() const { return params_->refbulkmodulus_; }
-
-    /// return material parameter according to Murnaghan-Tait
-    double MatParameter() const { return params_->matparameter_; }
-
-    /// return surface tension coefficient
-    double Gamma() const { return params_->gamma_; }
+    /// return compressibility coefficient
+    double CoeffDensity() const { return params_->comprcoeff_; }
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
    private:
     /// my material parameters
-    MAT::PAR::MurnaghanTaitFluid* params_;
+    MAT::PAR::WeaklyCompressibleFluid* params_;
   };
 
 }  // namespace MAT

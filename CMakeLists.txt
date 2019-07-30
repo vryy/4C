@@ -513,6 +513,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/ferech_pv.cpp
   src/drt_mat/fluid_linear_density_viscosity.cpp 
   src/drt_mat/fluid_murnaghantait.cpp
+  src/drt_mat/fluid_weakly_compressible.cpp
   src/drt_mat/fluidporo.cpp
   src/drt_mat/fluidporo_singlephase.cpp
   src/drt_mat/fluidporo_singlephaseDof.cpp
