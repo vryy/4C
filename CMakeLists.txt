@@ -2941,7 +2941,6 @@ add_library(nlnsolver_nox ${OBJS_SOLVER_NONLIN_NOX})
 
 string(TOLOWER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
 set(baciname baci-${BUILD_TYPE})
-#set(baciname baci)
 
 # the baci executable
 add_executable (${baciname} ${OBJS_BACI_MAIN})
