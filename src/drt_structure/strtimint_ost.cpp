@@ -2,7 +2,7 @@
 /*!
 \brief Structural time integration with one-step-theta
 \level 1
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 */
 
 /*----------------------------------------------------------------------*/

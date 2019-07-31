@@ -2,7 +2,7 @@
 /*!
 \brief A set of preprocessor defines for meshtying methods
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 
 \level 1
 */

@@ -2,10 +2,7 @@
 \brief Class containing Uzawa algorithm to solve linear system.
 \level 2
 
-\maintainer Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
+\maintainer Matthias Mayr
 
 *----------------------------------------------------------------------*/
 

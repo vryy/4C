@@ -4,7 +4,7 @@
 
 \level 1
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 */
 /*-----------------------------------------------------------------------*/
 
