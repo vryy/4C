@@ -13,10 +13,11 @@
 #ifndef BACI_MIXTURE_RULE_H
 #define BACI_MIXTURE_RULE_H
 
-#include "../drt_lib/drt_parobject.H"
+#include "../drt_mat/matpar_parameter.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "mixture_constituent.H"
 #include "../drt_mat/matpar_parameter.H"
+
 namespace MIXTURE
 {
   // forward declaration

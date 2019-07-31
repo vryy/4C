@@ -13,11 +13,8 @@
 #ifndef BACI_MIXTURE_CONSTITUENT_ELASTHYPER_H
 #define BACI_MIXTURE_CONSTITUENT_ELASTHYPER_H
 
-#include "../drt_mat/material_service.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
+#include "../drt_mat/matpar_parameter.H"
 #include "mixture_constituent.H"
-#include "../drt_matelast/elast_summand.H"
 #include "../drt_mat/elasthyper_service.H"
 
 namespace MIXTURE

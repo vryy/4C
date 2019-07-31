@@ -12,11 +12,12 @@
 
 #ifndef BACI_MIXTURE_CONSTITUENT_H
 #define BACI_MIXTURE_CONSTITUENT_H
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_parobject.H"
-#include "../drt_lib/drt_parobjectfactory.H"
-#include "../drt_inpar/inpar_material.H"
+
 #include "../drt_mat/matpar_parameter.H"
+#include "../linalg/linalg_fixedsizematrix.H"
+#include "../drt_lib/drt_pack_buffer.H"
+#include "../drt_lib/drt_linedefinition.H"
+
 
 /*!
  * \brief The mixture namespace holds all mixture specific classes.

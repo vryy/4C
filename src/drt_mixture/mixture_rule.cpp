@@ -32,7 +32,7 @@ MIXTURE::PAR::MixtureRule* MIXTURE::PAR::MixtureRule::Factory(int matid)
 {
   // for the sake of safety
   if (DRT::Problem::Instance()->Materials() == Teuchos::null)
-    dserror("List of materials cannot be access in the global problem instance.");
+    dserror("List of materials cannot be accessed in the global problem instance.");
 
   // yet another safety check
   if (DRT::Problem::Instance()->Materials()->Num() == 0)
@@ -56,7 +56,7 @@ MIXTURE::PAR::MixtureRule* MIXTURE::PAR::MixtureRule::Factory(int matid)
     default:
       dserror("The referenced material with id %d is not registered as a Mixture Law!", matid);
   }
-  return 0;
+  return nullptr;
 }
 
 // Empty constructor

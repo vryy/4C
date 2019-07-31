@@ -37,11 +37,11 @@ Teuchos::RCP<MAT::InelasticDefgradFactors> MAT::InelasticDefgradFactors::Factory
 {
   // for the sake of safety
   if (DRT::Problem::Instance()->Materials() == Teuchos::null)
-    dserror("List of materials cannot be access in the global problem instance..");
+    dserror("List of materials cannot be accessed in the global problem instance.");
 
   // another safety check
   if (DRT::Problem::Instance()->Materials()->Num() == 0)
-    dserror("List of materials in the global problem instance is empty..");
+    dserror("List of materials in the global problem instance is empty.");
 
   // retrieve problem instance to read from
   const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
