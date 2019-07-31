@@ -373,8 +373,7 @@ namespace INPAR
       soltech_noxnewtonlinesearch,  ///< Line search Newton
                                     ///< utilizing NOX
       soltech_noxgeneral,           ///< non-linear solution with NOX
-      soltech_nox_nln,              ///< non-linear solution with NOX (new)
-      soltech_nlnsol                ///< nonlinear solver toolbox
+      soltech_nox_nln               ///< non-linear solution with NOX (new)
     };
 
     /// Map solution technique enum to std::string
@@ -416,9 +415,6 @@ namespace INPAR
           break;
         case soltech_ptc:
           return "ptc";
-          break;
-        case soltech_nlnsol:
-          return "NLNSOL";
           break;
         default:
           dserror("Cannot make std::string for solution technique %d", name);

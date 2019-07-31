@@ -2022,35 +2022,6 @@ set(OBJS_SOLVER
   src/solver/solver_aztecoo_conditionnumber.cpp
 )
 
-set(OBJS_SOLVER_NONLIN
-  src/solver_nonlin/fas_hierarchy.cpp
-  src/solver_nonlin/fas_nlnlevel.cpp
-  src/solver_nonlin/linesearch_backtracking.cpp
-  src/solver_nonlin/linesearch_base.cpp
-  src/solver_nonlin/linesearch_bruteforce.cpp
-  src/solver_nonlin/linesearch_factory.cpp
-  src/solver_nonlin/linesearch_fullstep.cpp
-  src/solver_nonlin/linesearch_linear.cpp
-  src/solver_nonlin/linesearch_polynomial.cpp
-  src/solver_nonlin/muelu_utils.cpp
-  src/solver_nonlin/nln_operator_base.cpp
-  src/solver_nonlin/nln_operator_dinverse.cpp
-  src/solver_nonlin/nln_operator_factory.cpp
-  src/solver_nonlin/nln_operator_fas.cpp
-  src/solver_nonlin/nln_operator_linprec.cpp
-  src/solver_nonlin/nln_operator_ngmres.cpp
-  src/solver_nonlin/nln_operator_newton.cpp
-  src/solver_nonlin/nln_operator_nonlincg.cpp
-  src/solver_nonlin/nln_operator_richardson.cpp
-  src/solver_nonlin/nln_operator_sd.cpp
-  src/solver_nonlin/nln_problem.cpp
-  src/solver_nonlin/nln_problem_base.cpp
-  src/solver_nonlin/nln_problem_coarselevel.cpp
-  src/solver_nonlin/nln_problem_nox.cpp
-  src/solver_nonlin/nln_utils.cpp
-  src/solver_nonlin/nln_utils_debugwriter.cpp
-)
-
 set(OBJS_SOLVER_NONLIN_NOX
   src/solver_nonlin_nox/nox_nln_aux.cpp
   src/solver_nonlin_nox/nox_nln_floating_point_exception.cpp
@@ -2936,12 +2907,10 @@ add_library(libsolver ${OBJS_SOLVER})
 add_library(locacontinuation ${OBJS_LOCA_CONTINUATION})
 
 # nonlinear solver objects
-add_library(nlnsolver ${OBJS_SOLVER_NONLIN})
 add_library(nlnsolver_nox ${OBJS_SOLVER_NONLIN_NOX})
 
 string(TOLOWER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
 set(baciname baci-${BUILD_TYPE})
-#set(baciname baci)
 
 # the baci executable
 add_executable (${baciname} ${OBJS_BACI_MAIN})
@@ -2970,7 +2939,6 @@ set(BACI_LIBRARIES
   drt_mat
   drt_lib_utils
   locacontinuation
-  nlnsolver
   nlnsolver_nox
   libsolver
   linalg
