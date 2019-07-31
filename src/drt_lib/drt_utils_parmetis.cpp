@@ -236,7 +236,7 @@ void DRT::UTILS::RedistributeDiscretizationUsingWeights(Teuchos::RCP<DRT::Discre
   }
 
   // create nodal graph of existing problem
-  Teuchos::RCP<Epetra_CrsGraph> initgraph = dis->BuildNodeGraph();
+  Teuchos::RCP<const Epetra_CrsGraph> initgraph = dis->BuildNodeGraph();
 
   const Epetra_Map* oldnoderowmap = dis->NodeRowMap();
   // Now we're going to create a Epetra_Vector with vertex weights and a Epetra_CrsMatrix
@@ -281,8 +281,7 @@ void DRT::UTILS::RedistributeDiscretizationUsingWeights(Teuchos::RCP<DRT::Discre
 
   // Now create the partitioner object
   Teuchos::RCP<Isorropia::Epetra::Partitioner> partitioner =
-      Teuchos::rcp(new Isorropia::Epetra::Partitioner(
-          Teuchos::rcp_const_cast<const Epetra_CrsGraph>(initgraph), costs, paramlist));
+      Teuchos::rcp(new Isorropia::Epetra::Partitioner(initgraph, costs, paramlist));
 
   Isorropia::Epetra::Redistributor rd(partitioner);
 
