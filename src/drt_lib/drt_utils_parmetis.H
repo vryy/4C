@@ -63,7 +63,7 @@ namespace DRT
     package.
     */
     void RedistributeDiscretizationUsingWeights(Teuchos::RCP<DRT::Discretization> dis,
-        Teuchos::RCP<Epetra_Map>& rownodes, Teuchos::RCP<Epetra_Map>& colnodes, bool outflag);
+        Teuchos::RCP<Epetra_Map>& rownodes, Teuchos::RCP<Epetra_Map>& colnodes, const bool outflag);
 
     Teuchos::RCP<const Epetra_CrsGraph> BuildGraph(Teuchos::RCP<DRT::Discretization> dis,
         Teuchos::RCP<Epetra_Map> roweles, Teuchos::RCP<Epetra_Map>& rownodes,
@@ -85,8 +85,8 @@ namespace DRT
     \sa DRT::Discretization::FillComplete()
     */
     void RedistributeAndFillCompleteDiscretizationUsingWeights(
-        Teuchos::RCP<DRT::Discretization> dis, bool assigndegreesoffreedom, bool initelements,
-        bool doboundaryconditions);
+        Teuchos::RCP<DRT::Discretization> dis, const bool assigndegreesoffreedom,
+        const bool initelements, const bool doboundaryconditions);
 
   }  // namespace UTILS
 }  // namespace DRT

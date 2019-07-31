@@ -224,7 +224,7 @@ void DRT::UTILS::PartUsingParMetis(Teuchos::RCP<DRT::Discretization> dis,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::RedistributeDiscretizationUsingWeights(Teuchos::RCP<DRT::Discretization> dis,
-    Teuchos::RCP<Epetra_Map>& rownodes, Teuchos::RCP<Epetra_Map>& colnodes, bool outflag)
+    Teuchos::RCP<Epetra_Map>& rownodes, Teuchos::RCP<Epetra_Map>& colnodes, const bool outflag)
 {
   const int myrank = dis->Comm().MyPID();
   Epetra_Time timer(dis->Comm());
@@ -496,8 +496,8 @@ Teuchos::RCP<const Epetra_CrsGraph> DRT::UTILS::BuildGraph(Teuchos::RCP<DRT::Dis
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::RedistributeAndFillCompleteDiscretizationUsingWeights(
-    Teuchos::RCP<DRT::Discretization> dis, bool assigndegreesoffreedom, bool initelements,
-    bool doboundaryconditions)
+    Teuchos::RCP<DRT::Discretization> dis, const bool assigndegreesoffreedom,
+    const bool initelements, const bool doboundaryconditions)
 {
   // maps to be filled with final distributed node maps
   Teuchos::RCP<Epetra_Map> rownodes;
