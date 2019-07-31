@@ -2464,7 +2464,7 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
 
   // repartition macro problem for a good distribution of elements with micro material
   if (macro_dis_name == "structure")
-    DRT::UTILS::WeightedRepartitioning(macro_dis, true, true, true);
+    DRT::UTILS::RedistributeAndFillCompleteDiscretizationUsingWeights(macro_dis, true, true, true);
 
   // make sure that we read the micro discretizations only on the processors on
   // which elements with the corresponding micro material are evaluated

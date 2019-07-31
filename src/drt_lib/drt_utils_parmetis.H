@@ -48,15 +48,45 @@ namespace DRT
         Teuchos::RCP<Epetra_Comm> comm, const bool outflag, const int parts = -1,
         const double imbalance = -1.0);
 
-    void PartUsingZoltanWithWeights(Teuchos::RCP<DRT::Discretization> dis,
+    /*!
+    \brief Redistribute a discretization to a new partitioning using weights to model costs
+
+    Use Zoltan to compute a new partitioning that takes a cost model based on the graph's edge and
+    vertex weights into account. Then, redistribute the discretization to the new partitioning.
+
+    @param[in/out] dis Discretization to be partitioned
+    @param[out] rownodes Node row map after repartitioning
+    @param[out] colnodes Node column map after repartitioning
+    @param[in] outflag Flag to switch screen output on/off
+
+    \note We do not perform the partitioning ourselves, but call Zoltan through Trilinos's Isorropia
+    package.
+    */
+    void RedistributeDiscretizationUsingWeights(Teuchos::RCP<DRT::Discretization> dis,
         Teuchos::RCP<Epetra_Map>& rownodes, Teuchos::RCP<Epetra_Map>& colnodes, bool outflag);
 
     Teuchos::RCP<const Epetra_CrsGraph> BuildGraph(Teuchos::RCP<DRT::Discretization> dis,
         Teuchos::RCP<Epetra_Map> roweles, Teuchos::RCP<Epetra_Map>& rownodes,
         Teuchos::RCP<Epetra_Comm> comm, bool outflag);
 
-    void WeightedRepartitioning(Teuchos::RCP<DRT::Discretization> dis, bool assigndegreesoffreedom,
-        bool initelements, bool doboundaryconditions);
+    /*!
+    \brief Redistribute and FillComplete() a discretization to a new partitioning using weights to
+    model costs
+
+    First, call DRT::UTILS::RedistributeDiscretizationUsingWeights() to compute the new partitioning
+    and to perform the redistribution. Then, call FillComplete() on the discretization.
+
+    @param[in/out] dis Discretization to be repartitioned
+    @param[in] assigndegreesoffreedom Flag forwarded to DRT::Discretization::FillComplete()
+    @param[in] initelements Flag forwarded to DRT::Discretization::FillComplete()
+    @param[in] doboundaryconditions Flag forwarded to DRT::Discretization::FillComplete()
+
+    \sa DRT::UTILS::RedistributeDiscretizationUsingWeights()
+    \sa DRT::Discretization::FillComplete()
+    */
+    void RedistributeAndFillCompleteDiscretizationUsingWeights(
+        Teuchos::RCP<DRT::Discretization> dis, bool assigndegreesoffreedom, bool initelements,
+        bool doboundaryconditions);
 
   }  // namespace UTILS
 }  // namespace DRT

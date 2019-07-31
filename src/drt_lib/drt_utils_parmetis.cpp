@@ -223,7 +223,7 @@ void DRT::UTILS::PartUsingParMetis(Teuchos::RCP<DRT::Discretization> dis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::PartUsingZoltanWithWeights(Teuchos::RCP<DRT::Discretization> dis,
+void DRT::UTILS::RedistributeDiscretizationUsingWeights(Teuchos::RCP<DRT::Discretization> dis,
     Teuchos::RCP<Epetra_Map>& rownodes, Teuchos::RCP<Epetra_Map>& colnodes, bool outflag)
 {
   const int myrank = dis->Comm().MyPID();
@@ -496,16 +496,18 @@ Teuchos::RCP<const Epetra_CrsGraph> DRT::UTILS::BuildGraph(Teuchos::RCP<DRT::Dis
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::WeightedRepartitioning(Teuchos::RCP<DRT::Discretization> dis,
-    bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions)
+void DRT::UTILS::RedistributeAndFillCompleteDiscretizationUsingWeights(
+    Teuchos::RCP<DRT::Discretization> dis, bool assigndegreesoffreedom, bool initelements,
+    bool doboundaryconditions)
 {
   // maps to be filled with final distributed node maps
   Teuchos::RCP<Epetra_Map> rownodes;
   Teuchos::RCP<Epetra_Map> colnodes;
-  // do weighted repartitioning
-  DRT::UTILS::PartUsingZoltanWithWeights(dis, rownodes, colnodes, true);
 
-  // rebuild of the system with new maps
+  // do weighted repartitioning to obtain new row/column maps
+  DRT::UTILS::RedistributeDiscretizationUsingWeights(dis, rownodes, colnodes, true);
+
+  // rebuild the discretization with new maps
   Teuchos::RCP<Epetra_Map> roweles;
   Teuchos::RCP<Epetra_Map> coleles;
   dis->BuildElementRowColumn(*rownodes, *colnodes, roweles, coleles);
