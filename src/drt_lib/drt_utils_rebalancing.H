@@ -10,8 +10,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef UTILS_PARMETIS_H
-#define UTILS_PARMETIS_H
+#ifndef DRT_UTILS_REBALANCING_H
+#define DRT_UTILS_REBALANCING_H
 
 #include "Epetra_Comm.h"
 #include "Epetra_CrsGraph.h"
@@ -109,5 +109,4 @@ namespace DRT
   }  // namespace UTILS
 }  // namespace DRT
 
-
-#endif  // #ifndef UTILS_PARMETIS_H
+#endif  // #ifndef DRT_UTILS_REBALANCING_H
