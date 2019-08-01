@@ -385,8 +385,8 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
 
     // Starting from the current partitioning of the discretization, compute nodal maps with a
     // hopefully better partitioning
-    DRT::UTILS::ComputeRebalancedNodeMaps(childdiscret_, sepcondelenodesmap, sepcondrownodes,
-        sepcondcolnodes, comm, false, comm->NumProc());
+    DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(childdiscret_, sepcondelenodesmap,
+        sepcondrownodes, sepcondcolnodes, comm, false, comm->NumProc());
 
 #else
 #if defined(PARALLEL)

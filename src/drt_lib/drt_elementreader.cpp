@@ -385,8 +385,8 @@ namespace DRT
         rownodes_ = Teuchos::null;
         colnodes_ = Teuchos::null;
         nids.clear();
-        DRT::UTILS::ComputeRebalancedNodeMaps(dis_, roweles_, rownodes_, colnodes_, comm_,
-            !reader_.MyOutputFlag(), comm_->NumProc(), imbalance_tol);
+        DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(dis_, roweles_, rownodes_, colnodes_,
+            comm_, !reader_.MyOutputFlag(), comm_->NumProc(), imbalance_tol);
 
 #else
         nids.clear();

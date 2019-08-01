@@ -30,10 +30,11 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::ComputeRebalancedNodeMaps(Teuchos::RCP<DRT::Discretization> discretization,
-    Teuchos::RCP<const Epetra_Map> elementRowMap, Teuchos::RCP<Epetra_Map>& nodeRowMap,
-    Teuchos::RCP<Epetra_Map>& nodeColumnMap, Teuchos::RCP<const Epetra_Comm> comm,
-    const bool outflag, const int numPartitions, const double imbalanceTol)
+void DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
+    Teuchos::RCP<DRT::Discretization> discretization, Teuchos::RCP<const Epetra_Map> elementRowMap,
+    Teuchos::RCP<Epetra_Map>& nodeRowMap, Teuchos::RCP<Epetra_Map>& nodeColumnMap,
+    Teuchos::RCP<const Epetra_Comm> comm, const bool outflag, const int numPartitions,
+    const double imbalanceTol)
 {
   const int myrank = discretization->Comm().MyPID();
   const Epetra_Time timer(*comm);
@@ -44,7 +45,7 @@ void DRT::UTILS::ComputeRebalancedNodeMaps(Teuchos::RCP<DRT::Discretization> dis
 
   // create nodal graph of existing problem
   Teuchos::RCP<const Epetra_CrsGraph> initialGraph =
-      DRT::UTILS::BuildGraph(discretization, elementRowMap, nodeRowMap, comm, outflag);
+      DRT::UTILS::REBALANCING::BuildGraph(discretization, elementRowMap, nodeRowMap, comm, outflag);
 
   // Create parameter list with rebalancing options
   Teuchos::RCP<Teuchos::ParameterList> rebalanceParams =
@@ -52,7 +53,7 @@ void DRT::UTILS::ComputeRebalancedNodeMaps(Teuchos::RCP<DRT::Discretization> dis
 
   // Compute rebalanced graph
   Teuchos::RCP<Epetra_CrsGraph> balancedGraph =
-      DRT::UTILS::RebalanceGraph(initialGraph, *rebalanceParams);
+      DRT::UTILS::REBALANCING::RebalanceGraph(initialGraph, *rebalanceParams);
 
   // Extract rebalanced maps
   nodeRowMap = Teuchos::rcp(new Epetra_Map(-1, balancedGraph->RowMap().NumMyElements(),
@@ -68,8 +69,9 @@ void DRT::UTILS::ComputeRebalancedNodeMaps(Teuchos::RCP<DRT::Discretization> dis
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::ComputeRebalancedNodeMapsUsingWeights(Teuchos::RCP<DRT::Discretization> dis,
-    Teuchos::RCP<Epetra_Map>& rownodes, Teuchos::RCP<Epetra_Map>& colnodes, const bool outflag)
+void DRT::UTILS::REBALANCING::ComputeRebalancedNodeMapsUsingWeights(
+    Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Map>& rownodes,
+    Teuchos::RCP<Epetra_Map>& colnodes, const bool outflag)
 {
   const int myrank = dis->Comm().MyPID();
   Epetra_Time timer(dis->Comm());
@@ -90,7 +92,7 @@ void DRT::UTILS::ComputeRebalancedNodeMapsUsingWeights(Teuchos::RCP<DRT::Discret
 
   // Compute rebalanced graph
   Teuchos::RCP<Epetra_CrsGraph> balanced_graph =
-      DRT::UTILS::RebalanceGraph(initgraph, costs, paramlist);
+      DRT::UTILS::REBALANCING::RebalanceGraph(initgraph, costs, paramlist);
 
   // extract repartitioned maps
   rownodes = Teuchos::rcp(new Epetra_Map(-1, balanced_graph->RowMap().NumMyElements(),
@@ -108,7 +110,7 @@ void DRT::UTILS::ComputeRebalancedNodeMapsUsingWeights(Teuchos::RCP<DRT::Discret
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Isorropia::Epetra::CostDescriber> DRT::UTILS::SetupCostDescriber(
+Teuchos::RCP<Isorropia::Epetra::CostDescriber> DRT::UTILS::REBALANCING::SetupCostDescriber(
     const DRT::Discretization& discretization)
 {
   const Epetra_Map* oldnoderowmap = discretization.NodeRowMap();
@@ -153,9 +155,9 @@ Teuchos::RCP<Isorropia::Epetra::CostDescriber> DRT::UTILS::SetupCostDescriber(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_CrsGraph> DRT::UTILS::BuildGraph(Teuchos::RCP<DRT::Discretization> dis,
-    Teuchos::RCP<const Epetra_Map> roweles, Teuchos::RCP<Epetra_Map>& rownodes,
-    Teuchos::RCP<const Epetra_Comm> comm, bool outflag)
+Teuchos::RCP<const Epetra_CrsGraph> DRT::UTILS::REBALANCING::BuildGraph(
+    Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<const Epetra_Map> roweles,
+    Teuchos::RCP<Epetra_Map>& rownodes, Teuchos::RCP<const Epetra_Comm> comm, bool outflag)
 {
   const int myrank = comm->MyPID();
   const int numproc = comm->NumProc();
@@ -339,9 +341,9 @@ Teuchos::RCP<const Epetra_CrsGraph> DRT::UTILS::BuildGraph(Teuchos::RCP<DRT::Dis
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::ExportAndFillCompleteDiscretization(DRT::Discretization& discretization,
-    const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap, const bool assigndegreesoffreedom,
-    const bool initelements, const bool doboundaryconditions)
+void DRT::UTILS::REBALANCING::ExportAndFillCompleteDiscretization(
+    DRT::Discretization& discretization, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
+    const bool assigndegreesoffreedom, const bool initelements, const bool doboundaryconditions)
 {
   // Export nodes
   discretization.ExportRowNodes(noderowmap);
@@ -359,7 +361,7 @@ void DRT::UTILS::ExportAndFillCompleteDiscretization(DRT::Discretization& discre
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::RedistributeAndFillCompleteDiscretizationUsingWeights(
+void DRT::UTILS::REBALANCING::RedistributeAndFillCompleteDiscretizationUsingWeights(
     Teuchos::RCP<DRT::Discretization> discretization, const bool assigndegreesoffreedom,
     const bool initelements, const bool doboundaryconditions)
 {
@@ -368,18 +370,19 @@ void DRT::UTILS::RedistributeAndFillCompleteDiscretizationUsingWeights(
   Teuchos::RCP<Epetra_Map> colnodes = Teuchos::null;
 
   // do weighted repartitioning to obtain new row/column maps
-  DRT::UTILS::ComputeRebalancedNodeMapsUsingWeights(discretization, rownodes, colnodes, true);
+  DRT::UTILS::REBALANCING::ComputeRebalancedNodeMapsUsingWeights(
+      discretization, rownodes, colnodes, true);
 
   // rebuild the discretization with new maps
-  DRT::UTILS::ExportAndFillCompleteDiscretization(*discretization, *rownodes, *colnodes,
-      assigndegreesoffreedom, initelements, doboundaryconditions);
+  DRT::UTILS::REBALANCING::ExportAndFillCompleteDiscretization(*discretization, *rownodes,
+      *colnodes, assigndegreesoffreedom, initelements, doboundaryconditions);
 
   return;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::RebalanceGraph(
+Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::REBALANCING::RebalanceGraph(
     Teuchos::RCP<const Epetra_CrsGraph> initialGraph, const Teuchos::ParameterList& rebalanceParams)
 {
   Epetra_CrsGraph* balancedGraph = NULL;
@@ -403,7 +406,7 @@ Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::RebalanceGraph(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::RebalanceGraph(
+Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::REBALANCING::RebalanceGraph(
     Teuchos::RCP<const Epetra_CrsGraph> initialGraph,
     Teuchos::RCP<Isorropia::Epetra::CostDescriber> costs,
     const Teuchos::ParameterList& rebalanceParams)
@@ -429,7 +432,7 @@ Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::RebalanceGraph(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Teuchos::ParameterList> DRT::UTILS::CreateRebalancingParameterList(
+Teuchos::RCP<Teuchos::ParameterList> DRT::UTILS::REBALANCING::CreateRebalancingParameterList(
     const int numPartitions, const double imbalanceTol)
 {
   Teuchos::RCP<Teuchos::ParameterList> rebalancingParams =
