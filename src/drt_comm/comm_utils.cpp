@@ -17,7 +17,7 @@
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_parobject.H"
-#include "../drt_lib/drt_utils_parmetis.H"
+#include "../drt_lib/drt_utils_rebalancing.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
 #include "../linalg/linalg_utils.H"

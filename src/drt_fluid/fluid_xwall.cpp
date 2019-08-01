@@ -19,7 +19,7 @@
 #include "../drt_lib/drt_element.H"
 
 #include "../drt_lib/drt_dofset_transparent.H"
-#include "../drt_lib/drt_utils_parmetis.H"
+#include "../drt_lib/drt_utils_rebalancing.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../drt_lib/drt_globalproblem.H"

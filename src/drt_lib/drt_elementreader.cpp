@@ -15,7 +15,7 @@
 #include "standardtypes_cpp.H"
 #include "drt_elementdefinition.H"
 #include "drt_globalproblem.H"
-#include "drt_utils_parmetis.H"
+#include "drt_utils_rebalancing.H"
 #include "drt_utils_factory.H"
 #include "drt_utils_parallel.H"
 

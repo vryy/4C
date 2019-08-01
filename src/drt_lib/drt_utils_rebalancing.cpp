@@ -10,7 +10,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "drt_utils_parmetis.H"
+#include "drt_utils_rebalancing.H"
 
 #include "../linalg/linalg_utils.H"
 

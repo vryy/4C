@@ -29,7 +29,7 @@
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 
-#include "../drt_lib/drt_utils_parmetis.H"
+#include "../drt_lib/drt_utils_rebalancing.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_parallel.H"

@@ -31,8 +31,7 @@
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_inpar/inpar_contact.H"
 
-#include "../drt_lib/drt_utils_parmetis.H"
-
+#include "../drt_lib/drt_utils_rebalancing.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_sparsematrix.H"

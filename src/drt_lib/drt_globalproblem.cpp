@@ -47,7 +47,7 @@
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mat/newman_multiscale.H"
 #include "../drt_mat/scatra_mat_multiscale.H"
-#include "../drt_lib/drt_utils_parmetis.H"
+#include "../drt_lib/drt_utils_rebalancing.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_comm/comm_utils.H"
 #include "../drt_immersed_problem/immersed_discretization.H"
