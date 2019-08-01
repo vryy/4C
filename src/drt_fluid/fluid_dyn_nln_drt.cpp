@@ -27,9 +27,6 @@
 #include "../drt_fluid_turbulence/turbulent_flow_algorithm.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../linalg/linalg_utils.H"
-#include "../drt_lib/drt_dofset_fixed_size.H"
-#include "../drt_lib/drt_utils_rebalancing.H"
-#include "../drt_lib/drt_discret_xfem.H"
 
 /*----------------------------------------------------------------------*
  * Main control routine for fluid including various solvers:
