@@ -279,7 +279,7 @@ namespace INPAR
                            ///< linear function of the scalar (in material configuration) that
                            ///< causes the volume change
       mix_rule_base,       ///< Base rule for the mixture model
-      mix_elasthyper,       ///< Elast Hyper toolbox for Constituents
+      mix_elasthyper,      ///< Elast Hyper toolbox for Constituents
       mfi_poly_scalar_aniso,  ///< volume change due to (anisotropic) inelastic deformation gradient
                               ///< is a polynomial function of the scalar (in material
                               ///< configuration) that causes the volume change
