@@ -21,7 +21,6 @@
 #include "particle_container_bundle.H"
 
 #include "Epetra_Comm.h"
-#include "../drt_io/io_control.H"
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                       sfuchs 03/2018 |
