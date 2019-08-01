@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \level 2
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 
 \brief Bridge for accessing meshtying & contact from STR time integration
 */

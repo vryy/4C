@@ -2,7 +2,7 @@
 /*!
 \brief Creation of structural time integrators in accordance with user's wishes
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 
 \level 1
 */

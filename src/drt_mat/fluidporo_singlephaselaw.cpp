@@ -34,10 +34,10 @@ MAT::PAR::FluidPoroPhaseLaw* MAT::PAR::FluidPoroPhaseLaw::CreatePhaseLaw(int pha
 
   // for the sake of safety
   if (DRT::Problem::Instance(probinst)->Materials() == Teuchos::null)
-    dserror("Sorry dude, cannot work out problem instance.");
+    dserror("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
   if (DRT::Problem::Instance(probinst)->Materials()->Num() == 0)
-    dserror("Sorry dude, no materials defined.");
+    dserror("List of materials in the global problem instance is empty.");
 
   // retrieve validated input line of material ID in question
   Teuchos::RCP<MAT::PAR::Material> curmat =

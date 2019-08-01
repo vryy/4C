@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \brief Basic constraint class, dealing with constraints living on boundaries
 \level 2
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 *----------------------------------------------------------------------*/
 
 #ifndef MONITOR_H

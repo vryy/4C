@@ -3,7 +3,7 @@
 \brief Zienkiewicz-Xie time step indicator for time adaptivity
 \level 1
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 */
 
 /*----------------------------------------------------------------------*/

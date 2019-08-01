@@ -5,7 +5,7 @@
 
 \level 1
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 #ifndef SOH8FBAR_H

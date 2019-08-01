@@ -334,8 +334,11 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
 
     case calc_struct_update_istep:
     {
-      // Update of history for materials
-      SolidMaterial()->Update();
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+      Update_element(mydisp, params, Material());
     }
     break;
 
@@ -1397,11 +1400,6 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  // lo
         LINALG::Matrix<MAT::NUM_STRESS_3D, 1> linmass_vel(true);
         LINALG::Matrix<MAT::NUM_STRESS_3D, 1> linmass(true);
 
-        /*----------------------------------------------------------------------*
-           the B-operator used is equivalent to the one used in hex8, this needs
-           to be checked if it is ok, but from the mathematics point of view, the only
-           thing that needed to be changed is the NUMDOF
-           ----------------------------------------------------------------------*/
         /*
         ** B = F . Bl *
         **
@@ -1777,4 +1775,100 @@ void DRT::ELEMENTS::So_tet10::UpdateJacobianMapping(
   }  // for (int gp=0; gp<NUMGPT_SOTET10; ++gp)
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Update material                                                     |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_tet10::Update_element(
+    std::vector<double>& disp, Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material> mat)
+{
+  if (SolidMaterial()->UsesExtendedUpdate())
+  {
+    // in a first step ommit everything with prestress and EAS!!
+    /* ============================================================================*
+    ** CONST DERIVATIVES of shape functions for TET_10 with 4 GAUSS POINTS*
+    ** ============================================================================*/
+    const static std::vector<LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10>> derivs =
+        so_tet10_4gp_derivs();
+
+    // update element geometry
+    LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xcurr;  // current  coord. of element
+    LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xdisp;
+    DRT::Node** nodes = Nodes();
+    for (int i = 0; i < NUMNOD_SOTET10; ++i)
+    {
+      const double* x = nodes[i]->X();
+      xcurr(i, 0) = x[0] + disp[i * NODDOF_SOTET10 + 0];
+      xcurr(i, 1) = x[1] + disp[i * NODDOF_SOTET10 + 1];
+      xcurr(i, 2) = x[2] + disp[i * NODDOF_SOTET10 + 2];
+
+      if (pstype_ == INPAR::STR::prestress_mulf)
+      {
+        xdisp(i, 0) = disp[i * NODDOF_SOTET10 + 0];
+        xdisp(i, 1) = disp[i * NODDOF_SOTET10 + 1];
+        xdisp(i, 2) = disp[i * NODDOF_SOTET10 + 2];
+      }
+    }
+    /* =========================================================================*/
+    /* ================================================= Loop over Gauss Points */
+    /* =========================================================================*/
+    LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10> N_XYZ;
+    // interpolated values of stress and defgrd for remodeling
+    LINALG::Matrix<3, 3> avg_stress(true);
+    LINALG::Matrix<3, 3> avg_defgrd(true);
+
+    // build deformation gradient wrt to material configuration
+    LINALG::Matrix<NUMDIM_SOTET10, NUMDIM_SOTET10> defgrd(false);
+    params.set<int>("numgp", static_cast<int>(NUMGPT_SOTET10));
+    for (unsigned gp = 0; gp < NUMGPT_SOTET10; ++gp)
+    {
+      /* get the inverse of the Jacobian matrix which looks like:
+       **            [ x_,r  y_,r  z_,r ]^-1
+       **     J^-1 = [ x_,s  y_,s  z_,s ]
+       **            [ x_,t  y_,t  z_,t ]
+       */
+      // compute derivatives N_XYZ at gp w.r.t. material coordinates
+      // by N_XYZ = J^-1 * N_rst
+      N_XYZ.Multiply(invJ_[gp], derivs[gp]);
+
+      if (pstype_ == INPAR::STR::prestress_mulf)
+      {
+        // get Jacobian mapping wrt to the stored configuration
+        LINALG::Matrix<3, 3> invJdef;
+        prestress_->StoragetoMatrix(gp, invJdef, prestress_->JHistory());
+        // get derivatives wrt to last spatial configuration
+        LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10> N_xyz;
+        N_xyz.Multiply(invJdef, derivs[gp]);
+
+        // build multiplicative incremental defgrd
+        defgrd.MultiplyTT(xdisp, N_xyz);
+        defgrd(0, 0) += 1.0;
+        defgrd(1, 1) += 1.0;
+        defgrd(2, 2) += 1.0;
+
+        // get stored old incremental F
+        LINALG::Matrix<3, 3> Fhist;
+        prestress_->StoragetoMatrix(gp, Fhist, prestress_->FHistory());
+
+        // build total defgrd = delta F * F_old
+        LINALG::Matrix<3, 3> Fnew;
+        Fnew.Multiply(defgrd, Fhist);
+        defgrd = Fnew;
+      }
+      else
+        // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
+        defgrd.MultiplyTT(xcurr, N_XYZ);
+
+
+      // call material update if material = m_growthremodel_elasthyper (calculate and update
+      // inelastic deformation gradient)
+      if (SolidMaterial()->UsesExtendedUpdate())
+      {
+        SolidMaterial()->Update(defgrd, gp, params, Id());
+      }
+    }
+  }
+  // Update of history for materials
+  SolidMaterial()->Update();
 }

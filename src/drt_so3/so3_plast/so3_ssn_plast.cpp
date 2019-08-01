@@ -642,6 +642,12 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
   Teuchos::RCP<MAT::So3Material> so3mat = SolidMaterial();
   so3mat->Setup(numgpt_, linedef);
   so3mat->ValidKinematics(INPAR::STR::kinem_nonlinearTotLag);
+
+
+  // Validate that materials doesn't use extended update call.
+  if (SolidMaterial()->UsesExtendedUpdate())
+    dserror("This element currently does not support the extended update call.");
+
   if (so3mat->MaterialType() != INPAR::MAT::m_plelasthyper)
     std::cout << "*** warning *** so3plast used w/o PlasticElastHyper material. Better use "
                  "standard solid element!\n";

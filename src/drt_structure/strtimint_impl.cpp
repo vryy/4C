@@ -4,7 +4,7 @@
 
 \level 1
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 
@@ -54,12 +54,6 @@
 #include "../drt_so3/so_shw6.H"
 #include "../drt_so3/so_sh8p8.H"
 #include "../drt_discsh3/discsh3.H"
-#include "../solver_nonlin/nln_operator_base.H"
-#include "../solver_nonlin/nln_operator_factory.H"
-#include "../solver_nonlin/nln_problem.H"
-#include "../solver_nonlin/nln_problem_base.H"
-#include "../solver_nonlin/nln_problem_nox.H"
-#include "../solver_nonlin/nln_utils.H"
 #include "../drt_mor/mor_pod.H"
 #include "strtimint_noxgroup.H"
 
@@ -1484,9 +1478,6 @@ INPAR::STR::ConvergenceStatus STR::TimIntImpl::Solve()
       case INPAR::STR::soltech_ptc:
         nonlin_error = PTC();
         break;
-      case INPAR::STR::soltech_nlnsol:
-        nonlin_error = NlnSolver();
-        break;
       // catch problems
       default:
         dserror("Solution technique \"%s\" is not implemented.",
@@ -2432,92 +2423,6 @@ int STR::TimIntImpl::UzawaNonLinearNewtonFull()
   // for output
   iter_ = uziter + 1;
   return 0;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-int STR::TimIntImpl::NlnSolver()
-{
-  // Note: fres_ has already been evaluated and comes as 'positive' residual
-
-  // check whether we have a sanely filled stiffness matrix
-  if (not stiff_->Filled()) dserror("Effective stiffness matrix must be filled here");
-
-  // take care of Dirichlet boundary conditions
-  ApplyDirichletBC(timen_, disn_, veln_, accn_, true);
-  LINALG::ApplyDirichlettoSystem(
-      stiff_, disi_, fres_, GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
-
-  // ---------------------------------------------------------------------------
-  // Create / read parameter list for configuration of nonlinear solver
-  // ---------------------------------------------------------------------------
-  std::string filename =
-      DRT::Problem::Instance()->NonlinearSolverParams().get<std::string>("XML_FILE");
-
-  // check for reasonable xml file
-  if (filename == "none")
-  {
-    dserror(
-        "Seems like you forgot to set the XML file for configuration of "
-        "the nonlinear solver.");
-  }
-
-  Teuchos::RCP<NLNSOL::UTILS::NlnConfig> nlnconfig = Teuchos::rcp(new NLNSOL::UTILS::NlnConfig());
-  nlnconfig->Setup(filename);
-
-  // ---------------------------------------------------------------------------
-  // Create NOX group
-  // ---------------------------------------------------------------------------
-  // create initial guess vector of predictor result as CreateCopy to avoid
-  // direct access to disn_
-  NOX::Epetra::Vector noxSoln(disn_, NOX::Epetra::Vector::CreateCopy);
-
-  // create NOX linear system to provide access to Jacobian
-  Teuchos::RCP<NOX::Epetra::LinearSystem> linSys =
-      NoxCreateLinearSystem(*nlnconfig->GetAllNonConstRcp(), noxSoln, noxutils_);
-
-  /* use NOX::STR::Group to enable access to time integration
-   * Note: NOX::Epetra::Group would be sufficient. */
-  Teuchos::RCP<NOX::STR::Group> noxgrp =
-      Teuchos::rcp(new NOX::STR::Group(*this, nlnconfig->GetSubListNonConst("Nonlinear Problem"),
-          Teuchos::rcp(this, false), noxSoln, linSys));
-
-  // ---------------------------------------------------------------------------
-  // Create interface to nonlinear problem
-  // ---------------------------------------------------------------------------
-  Teuchos::RCP<Teuchos::ParameterList> probparams = Teuchos::rcp(new Teuchos::ParameterList());
-  probparams->set("NOX Group", Teuchos::rcp_dynamic_cast<NOX::Abstract::Group>(noxgrp, true));
-  probparams->set("Jacobian Operator", Teuchos::rcp_dynamic_cast<LINALG::SparseOperator>(stiff_));
-
-  Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem = Teuchos::rcp(new NLNSOL::NlnProblemNox());
-  nlnproblem->Init(Discretization()->Comm(), nlnconfig, "Nonlinear Problem", *probparams,
-      DofRowMap(), Teuchos::null);
-  nlnproblem->Setup();
-
-  /* Evaluate once more to guarantee valid quantities inside of the
-   * NOX::STR::Group() */
-  nlnproblem->ComputeF(*disn_, *fres_);
-  nlnproblem->ComputeJacobian();
-
-  // ---------------------------------------------------------------------------
-  // Create the nonlinear operator to solve the nonlinear problem
-  // ---------------------------------------------------------------------------
-  // use factory to create the nonlinear operator
-  const std::string nlnopname = nlnconfig->GetParameter<std::string>("outer nonlinear operator");
-
-  NLNSOL::NlnOperatorFactory opfactory;
-  Teuchos::RCP<NLNSOL::NlnOperatorBase> nlnoperator = opfactory.Create(nlnconfig, nlnopname);
-  nlnoperator->Init(Discretization()->Comm(), nlnconfig, nlnopname, nlnproblem, solver_, 0);
-  nlnoperator->Setup();
-
-  // ---------------------------------------------------------------------------
-  // Apply the nonlinear operator
-  // ---------------------------------------------------------------------------
-  /* use local copy of #fres_ for ApplyInverse() to not mess with the member
-   * variable #fres_ in the Evaluate call */
-  Teuchos::RCP<Epetra_Vector> fres = Teuchos::rcp(new Epetra_Vector(*fres_));
-
-  return nlnoperator->ApplyInverse(*fres, noxSoln.getEpetraVector());
 }
 
 /*----------------------------------------------------------------------*/

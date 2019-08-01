@@ -2,7 +2,7 @@
 /*!
 \brief testing of structure calculation results
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 
 \level 1
 */

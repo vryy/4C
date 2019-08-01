@@ -2,7 +2,7 @@
 /*!
 \brief solid shell8 element formulation
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 
 \level 1
 */

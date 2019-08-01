@@ -397,7 +397,6 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--ACOUSTIC DYNAMIC/PA IMAGE RECONSTRUCTION", *list);
   reader.ReadGidSection("--ELECTROMAGNETIC DYNAMIC", *list);
   reader.ReadGidSection("--VOLMORTAR COUPLING", *list);
-  reader.ReadGidSection("--NONLINEAR SOLVER", *list);
   reader.ReadGidSection("--TUTORIAL DYNAMIC", *list);
   reader.ReadGidSection("--TUTORIAL DYNAMIC/NONLINEAR TRUSS", *list);
   reader.ReadGidSection("--TUTORIAL DYNAMIC/FIXED POINT SCHEME", *list);

@@ -3,7 +3,7 @@
 
 \level 3
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 *----------------------------------------------------------------------*/
 #ifndef SPRING_H
 #define SPRING_H
