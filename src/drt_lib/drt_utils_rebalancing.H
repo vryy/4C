@@ -32,19 +32,6 @@ namespace DRT
     partitioning
 
     @param[in] discretization Discretization whose graph shall be redistributed
-    @param[in] outflag Flag to switch screen output on/off
-    @param[in] numPartitions Desired number of partitions
-    @param[in] imbalanceTol Max. relative imbalance of subdomain size
-    */
-    void RedistributeGraphOfDiscretization(Teuchos::RCP<DRT::Discretization> discretization,
-        Teuchos::RCP<const Epetra_Map> elementRowMap, Teuchos::RCP<const Epetra_Comm> comm,
-        const bool outflag, const int numPartitions, const double imbalanceTol = 1.1);
-
-    /*!
-    \brief Redistribute the underlying graph of a discretization to a new and more balanced
-    partitioning
-
-    @param[in] discretization Discretization whose graph shall be redistributed
     @param[out] nodeRowMap Node row map after redistribution
     @param[out] nodeColumnMap Node column map after redistribution
     @param[in] outflag Flag to switch screen output on/off
@@ -59,6 +46,8 @@ namespace DRT
     /*!
     \brief Redistribute the underlying graph of a discretization to a new and more balanced
     partitioning while considering weight to model costs
+
+    \pre Input discretization has to be FillComplete().
 
     @param[in/out] dis Discretization to be partitioned
     @param[out] rownodes Node row map after repartitioning

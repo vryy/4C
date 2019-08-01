@@ -31,18 +31,6 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::RedistributeGraphOfDiscretization(Teuchos::RCP<DRT::Discretization> discretization,
-    Teuchos::RCP<const Epetra_Map> elementRowMap, Teuchos::RCP<const Epetra_Comm> comm,
-    const bool outflag, const int numPartitions, const double imbalanceTol)
-{
-  Teuchos::RCP<Epetra_Map> nodeRowMap = Teuchos::null;
-  Teuchos::RCP<Epetra_Map> nodeColumnMap = Teuchos::null;
-  DRT::UTILS::RedistributeGraphOfDiscretization(discretization, elementRowMap, nodeRowMap,
-      nodeColumnMap, comm, outflag, numPartitions, imbalanceTol);
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::UTILS::RedistributeGraphOfDiscretization(Teuchos::RCP<DRT::Discretization> discretization,
     Teuchos::RCP<const Epetra_Map> elementRowMap, Teuchos::RCP<Epetra_Map>& nodeRowMap,
     Teuchos::RCP<Epetra_Map>& nodeColumnMap, Teuchos::RCP<const Epetra_Comm> comm,
     const bool outflag, const int numPartitions, const double imbalanceTol)
