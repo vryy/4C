@@ -187,10 +187,12 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
       // get particle states stored in container
       const std::set<StateEnum>& particlestates = container->GetStoredStates();
 
+#ifdef DEBUG
       // safety check
       if (not particlestates.count(PARTICLEENGINE::Position))
         dserror("particle state '%s' not found!",
             PARTICLEENGINE::EnumToStateName(PARTICLEENGINE::Position).c_str());
+#endif
 
       // iterate over particle states
       for (auto& particleState : particlestates)
@@ -218,10 +220,12 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
             for (int i = 0; i < (statedim * particlestored); ++i)
               positiondata.push_back(state_ptr[i]);
 
+#ifdef DEBUG
           // safety check
           if ((int)positiondata.size() != statedim * particlestored)
             dserror("ParticleRuntimeVtpWriter expected %d coordinate values, but got %d!",
                 statedim * particlestored, positiondata.size());
+#endif
         }
         else if (not blackliststates_.count(particleState))
         {
