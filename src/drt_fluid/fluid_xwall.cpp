@@ -636,7 +636,8 @@ void FLD::XWall::SetupXWallDis()
     Teuchos::RCP<Epetra_Map> rownodes;
     Teuchos::RCP<Epetra_Map> colnodes;
     Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(discret_->Comm().Clone());
-    DRT::UTILS::PartUsingParMetis(xwdiscret_, elemap, rownodes, colnodes, comm, true);
+    DRT::UTILS::RedistributeGraphOfDiscretization(
+        xwdiscret_, elemap, rownodes, colnodes, comm, true, comm->NumProc());
     // rebuild of the system with new maps
     xwdiscret_->Redistribute(*rownodes, *colnodes, false, false);
 

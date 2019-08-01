@@ -385,8 +385,8 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
 
     // ParMetis gets the current distribution (sepcondelenodesmap) and returns a better one
     // (sepcondrownodes, sepcondcolnodes) hopefully the optimal one
-    DRT::UTILS::PartUsingParMetis(
-        childdiscret_, sepcondelenodesmap, sepcondrownodes, sepcondcolnodes, comm, false);
+    DRT::UTILS::RedistributeGraphOfDiscretization(childdiscret_, sepcondelenodesmap,
+        sepcondrownodes, sepcondcolnodes, comm, false, comm->NumProc());
 
 #else
 #if defined(PARALLEL)

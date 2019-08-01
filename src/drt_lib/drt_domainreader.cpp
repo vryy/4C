@@ -389,8 +389,8 @@ namespace DRT
 #if defined(HAVE_PARMETIS)
         rownodes_ = Teuchos::null;
         colnodes_ = Teuchos::null;
-        DRT::UTILS::PartUsingParMetis(
-            dis_, roweles_, rownodes_, colnodes_, comm_, !reader_.MyOutputFlag());
+        DRT::UTILS::RedistributeGraphOfDiscretization(
+            dis_, roweles_, rownodes_, colnodes_, comm_, !reader_.MyOutputFlag(), comm_->NumProc());
 #else
         dserror("We need parmetis.");
 #endif

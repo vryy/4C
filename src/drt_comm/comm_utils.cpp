@@ -754,7 +754,8 @@ void COMM_UTILS::NPDuplicateDiscretization(const int sgroup, const int rgroup,
     Teuchos::RCP<Epetra_Map> coleles;
     Teuchos::RCP<Epetra_Map> rownodes;
     Teuchos::RCP<Epetra_Map> colnodes;
-    DRT::UTILS::PartUsingParMetis(commondis, roweles, rownodes, colnodes, icomm, false);
+    DRT::UTILS::RedistributeGraphOfDiscretization(
+        commondis, roweles, rownodes, colnodes, lcomm, false, lcomm->NumProc());
     commondis->BuildElementRowColumn(*rownodes, *colnodes, roweles, coleles);
     commondis->ExportRowNodes(*rownodes);
     commondis->ExportRowElements(*roweles);
@@ -897,7 +898,8 @@ void COMM_UTILS::NPDuplicateDiscretization(const int sgroup, const int rgroup,
     Teuchos::RCP<Epetra_Map> coleles;
     Teuchos::RCP<Epetra_Map> rownodes;
     Teuchos::RCP<Epetra_Map> colnodes;
-    DRT::UTILS::PartUsingParMetis(dis, roweles, rownodes, colnodes, lcomm, false);
+    DRT::UTILS::RedistributeGraphOfDiscretization(
+        dis, roweles, rownodes, colnodes, lcomm, false, lcomm->NumProc());
     dis->BuildElementRowColumn(*rownodes, *colnodes, roweles, coleles);
     dis->ExportRowNodes(*rownodes);
     dis->ExportRowElements(*roweles);

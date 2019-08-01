@@ -1083,7 +1083,7 @@ bool CONTACT::CoInterface::Redistribute(int index)
 
   //**********************************************************************
   // call ZOLTAN for parallel redistribution
-  DRT::UTILS::PartUsingParMetis(
+  DRT::UTILS::RedistributeGraphOfDiscretization(
       idiscret_, scroweles, scrownodes, sccolnodes, comm, false, scproc, imbalance_tol);
   //**********************************************************************
 
@@ -1105,7 +1105,7 @@ bool CONTACT::CoInterface::Redistribute(int index)
 
   //**********************************************************************
   // call ZOLTAN for parallel redistribution
-  DRT::UTILS::PartUsingParMetis(
+  DRT::UTILS::RedistributeGraphOfDiscretization(
       idiscret_, sncroweles, sncrownodes, snccolnodes, comm, false, sncproc, imbalance_tol);
   //**********************************************************************
 

@@ -17,6 +17,7 @@
 #include "Epetra_CrsGraph.h"
 #include "Epetra_Map.h"
 
+#include "Teuchos_ParameterList.hpp"
 #include "Teuchos_RCP.hpp"
 
 namespace DRT
@@ -27,47 +28,45 @@ namespace DRT
   namespace UTILS
   {
     /*!
-    \brief Redistribute a discretization using Zoltan
+    \brief Redistribute the underlying graph of a discretization to a new and more balanced
+    partitioning
 
-    Actually, only the \p rownodes and \p colnodes maps are created.
-
-    \param[in] dis Discretization to be redistributed
-    \param[in] roweles Map of row elements
-    \param[in] rownodes Map of row nodes
-    \param[in] colnodes Map of column nodes
-    \param[in] comm Communicator object
-    \param[in] outflag
-    \param[in] parts Number of subdomains to be created
-    \param[in] imbalance Max. relative imbalance of subdomain size
-
-    \note For historic reasons, this routine is still named after the partitioning tool ParMetis.
-    \todo ToDo Rename this routine to reflect that we don't use ParMetis anymore.
+    @param[in] discretization Discretization whose graph shall be redistributed
+    @param[in] outflag Flag to switch screen output on/off
+    @param[in] numPartitions Desired number of partitions
+    @param[in] imbalanceTol Max. relative imbalance of subdomain size
     */
-    void PartUsingParMetis(Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Map> roweles,
-        Teuchos::RCP<Epetra_Map>& rownodes, Teuchos::RCP<Epetra_Map>& colnodes,
-        Teuchos::RCP<Epetra_Comm> comm, const bool outflag, const int parts = -1,
-        const double imbalance = -1.0);
+    void RedistributeGraphOfDiscretization(Teuchos::RCP<DRT::Discretization> discretization,
+        Teuchos::RCP<const Epetra_Map> elementRowMap, Teuchos::RCP<const Epetra_Comm> comm,
+        const bool outflag, const int numPartitions, const double imbalanceTol = 1.1);
 
     /*!
-    \brief Redistribute a discretization to a new partitioning using weights to model costs
+    \brief Redistribute the underlying graph of a discretization to a new and more balanced
+    partitioning
 
-    Use Zoltan to compute a new partitioning that takes a cost model based on the graph's edge and
-    vertex weights into account. Then, redistribute the discretization to the new partitioning.
+    @param[in] discretization Discretization whose graph shall be redistributed
+    @param[out] nodeRowMap Node row map after redistribution
+    @param[out] nodeColumnMap Node column map after redistribution
+    @param[in] outflag Flag to switch screen output on/off
+    @param[in] numPartitions Desired number of partitions
+    @param[in] imbalanceTol Max. relative imbalance of subdomain size
+    */
+    void RedistributeGraphOfDiscretization(Teuchos::RCP<DRT::Discretization> discretization,
+        Teuchos::RCP<const Epetra_Map> elementRowMap, Teuchos::RCP<Epetra_Map>& nodeRowMap,
+        Teuchos::RCP<Epetra_Map>& nodeColumnMap, Teuchos::RCP<const Epetra_Comm> comm,
+        const bool outflag, const int numPartitions, const double imbalanceTol = 1.1);
+
+    /*!
+    \brief Redistribute the underlying graph of a discretization to a new and more balanced
+    partitioning while considering weight to model costs
 
     @param[in/out] dis Discretization to be partitioned
     @param[out] rownodes Node row map after repartitioning
     @param[out] colnodes Node column map after repartitioning
     @param[in] outflag Flag to switch screen output on/off
-
-    \note We do not perform the partitioning ourselves, but call Zoltan through Trilinos's Isorropia
-    package.
     */
-    void RedistributeDiscretizationUsingWeights(Teuchos::RCP<DRT::Discretization> dis,
+    void RedistributeGraphOfDiscretizationUsingWeights(Teuchos::RCP<DRT::Discretization> dis,
         Teuchos::RCP<Epetra_Map>& rownodes, Teuchos::RCP<Epetra_Map>& colnodes, const bool outflag);
-
-    Teuchos::RCP<const Epetra_CrsGraph> BuildGraph(Teuchos::RCP<DRT::Discretization> dis,
-        Teuchos::RCP<Epetra_Map> roweles, Teuchos::RCP<Epetra_Map>& rownodes,
-        Teuchos::RCP<Epetra_Comm> comm, bool outflag);
 
     /*!
     \brief Redistribute and FillComplete() a discretization to a new partitioning using weights to
@@ -81,12 +80,42 @@ namespace DRT
     @param[in] initelements Flag forwarded to DRT::Discretization::FillComplete()
     @param[in] doboundaryconditions Flag forwarded to DRT::Discretization::FillComplete()
 
-    \sa DRT::UTILS::RedistributeDiscretizationUsingWeights()
+    \sa DRT::UTILS::RedistributeGraphOfDiscretizationUsingWeights()
     \sa DRT::Discretization::FillComplete()
     */
     void RedistributeAndFillCompleteDiscretizationUsingWeights(
         Teuchos::RCP<DRT::Discretization> dis, const bool assigndegreesoffreedom,
         const bool initelements, const bool doboundaryconditions);
+
+    /*!
+    \brief Build graph of a given  discretization
+
+    @param[in] dis Discretization whose graph will be build
+    @param[in] roweles Element row map of this discretization
+    @param[out] rownodes Node row map
+    @param[in] outflag Flag to switch screen output on/off
+
+    @return Uncompleted graph of input discretization
+    */
+    Teuchos::RCP<const Epetra_CrsGraph> BuildGraph(Teuchos::RCP<DRT::Discretization> dis,
+        Teuchos::RCP<const Epetra_Map> roweles, Teuchos::RCP<Epetra_Map>& rownodes,
+        Teuchos::RCP<const Epetra_Comm> comm, const bool outflag);
+
+    /*!
+    \brief Rebalance graph
+
+    Use Isorropia package to access Zoltan. By default, Isorropia will use Zoltan hypergraph
+    partitioning, treating the graph columns as hyper-edges and the graph rows as vertices.
+
+    \note The rebalanced graph will NOT be FillComplete().
+
+    @param[in] initialGraph Initial graph to be rebalanced
+    @param[in] rebalanceParams Parameter list with rebalancing options
+
+    @return Rebalanced graph
+    */
+    Teuchos::RCP<Epetra_CrsGraph> RebalanceGraph(Teuchos::RCP<const Epetra_CrsGraph> initialGraph,
+        const Teuchos::ParameterList& rebalanceParams);
 
   }  // namespace UTILS
 }  // namespace DRT
