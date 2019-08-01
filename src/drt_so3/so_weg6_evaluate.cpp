@@ -461,7 +461,6 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
         DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
         sow6_remodel(lm, mydisp, params, Material());
       }
-      // Update of history for materials
       SolidMaterial()->Update();
     }
     break;

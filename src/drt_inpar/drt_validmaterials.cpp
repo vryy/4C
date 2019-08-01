@@ -3568,6 +3568,44 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AppendMaterialDefinition(matlist, m);
   }
 
+  /*----------------------------------------------------------------------*/
+  // General mixture models (used for prestretching and for homogenized constrained mixture models)
+  {
+    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+        "MAT_MixtureElastHyper", "General mixture model", INPAR::MAT::m_mixture_elasthyper));
+
+    AddNamedReal(m, "DENS", "");
+    AddNamedInt(m, "NUMCONST", "number of mixture constituents");
+    AddNamedIntVector(
+        m, "MATIDSCONST", "list material IDs of the mixture constituents", "NUMCONST");
+    AddNamedRealVector(
+        m, "MASSFRAC", "list mass fractions of the mixture constituents", "NUMCONST");
+    AddNamedInt(m, "MATIDMIXTURELAW", "material id of the mixture law");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // Mixture constituent for ElastHyper toolbox
+  {
+    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+        "MIX_Constituent_ElastHyper", "ElastHyper toolbox", INPAR::MAT::mix_elasthyper));
+
+    AddNamedInt(m, "NUMMAT", "number of summands");
+    AddNamedIntVector(m, "MATIDS", "list material IDs of the summands", "NUMMAT");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // Base mixture rule for solid mixtures
+  {
+    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(
+        new MaterialDefinition("MIX_Rule_Base", "Base mixture rule", INPAR::MAT::mix_rule_base));
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
   // deliver
   return vm;
 }

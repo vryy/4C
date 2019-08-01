@@ -92,10 +92,7 @@ void MAT::PlasticElastHyperVCU::Pack(DRT::PackBuffer& data) const
   int matid = -1;
   if (MatParams() != NULL) matid = MatParams()->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
-  AddtoPack(data, (int)isoprinc_);
-  AddtoPack(data, (int)isomod_);
-  AddtoPack(data, (int)anisoprinc_);
-  AddtoPack(data, (int)anisomod_);
+  summandProperties_.Pack(data);
 
   if (MatParams() != NULL)  // summands are not accessible in postprocessing mode
   {
@@ -146,10 +143,7 @@ void MAT::PlasticElastHyperVCU::Unpack(const std::vector<char>& data)
     }
   }
 
-  isoprinc_ = (bool)ExtractInt(position, data);
-  isomod_ = (bool)ExtractInt(position, data);
-  anisoprinc_ = (bool)ExtractInt(position, data);
-  anisomod_ = (bool)ExtractInt(position, data);
+  summandProperties_.Unpack(position, data);
 
   if (MatParams() != NULL)  // summands are not accessible in postprocessing mode
   {
@@ -1059,7 +1053,7 @@ void MAT::PlasticElastHyperVCU::EvaluateKinQuantPlast(const int eleGID,
 
   LINALG::Matrix<3, 1> dPI;
   LINALG::Matrix<6, 1> ddPII;
-  EvaluateInvariantDerivatives(prinv, dPI, ddPII, eleGID, potsum_);
+  ElastHyperEvaluateInvariantDerivatives(prinv, dPI, ddPII, potsum_, summandProperties_, eleGID);
   CalculateGammaDelta(gamma, delta, prinv, dPI, ddPII);
 
   // inverse plastic right Cauchy-Green

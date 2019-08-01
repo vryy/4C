@@ -505,6 +505,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/constraintmixture_history.cpp
   src/drt_mat/damage.cpp
   src/drt_mat/elasthyper.cpp
+  src/drt_mat/elasthyper_service.cpp
   src/drt_mat/elchmat.cpp
   src/drt_mat/elchphase.cpp
   src/drt_mat/elchsinglemat.cpp
@@ -661,7 +662,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/biochemo_mechano_cell_activefiber.cpp
   src/drt_mat/biochemo_mechano_cell_passivefiber.cpp
   src/drt_matelast/visco_generalizedgenmax.cpp
-)
+  src/drt_mat/mixture_elasthyper.cpp)
 
 set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_algorithmbase.cpp
@@ -2624,6 +2625,11 @@ src/drt_geometry_pair/geometry_pair_line_to_volume_gauss_point_projection.cpp
 src/drt_geometry_pair/geometry_pair_line_to_volume_gauss_point_projection_cross_section.cpp
 src/drt_geometry_pair/geometry_pair_line_to_volume_segmentation.cpp
 )
+set(OBJS_DRT_MIXTURE
+  src/drt_mixture/mixture_constituent.cpp
+  src/drt_mixture/mixture_rule.cpp
+  src/drt_mixture/mixture_constituent_elasthyper.cpp)
+
 
 ###------------------------------------------------------------------ Element flags
 
@@ -2829,7 +2835,7 @@ add_library(drt_volmortar ${OBJS_DRT_VOLMORTAR})
 add_library(drt_mor ${OBJS_DRT_MOR})
 
 # material definitions
-add_library(drt_mat ${OBJS_DRT_MAT_LIB})
+add_library(drt_mat ${OBJS_DRT_MAT_LIB} ${OBJS_DRT_MIXTURE})
 add_library(drt_micromat ${OBJS_DRT_MAT} ${OBJS_DRT_STRU_MULTI})
 add_library(drt_scatra_multi ${OBJS_DRT_MAT_SCATRA_MULTI})
 

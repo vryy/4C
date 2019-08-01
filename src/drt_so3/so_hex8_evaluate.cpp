@@ -1419,8 +1419,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       UpdateJacobianMapping(mydisp, *prestress_);
 
       // Update constraintmixture material
-      if ((Material()->MaterialType() == INPAR::MAT::m_constraintmixture) ||
-          (Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper))
+      if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
       {
         SolidMaterial()->Update();
       }
@@ -3547,7 +3546,8 @@ void DRT::ELEMENTS::So_hex8::Update_element(
   // Calculate current deformation gradient
   if ((mat->MaterialType() == INPAR::MAT::m_constraintmixture) ||
       (mat->MaterialType() == INPAR::MAT::m_elasthyper) ||
-      (mat->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper))
+      (mat->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper) ||
+      (SolidMaterial()->UsesExtendedUpdate()))
   {
     // in a first step ommit everything with prestress and EAS!!
 
@@ -3624,9 +3624,9 @@ void DRT::ELEMENTS::So_hex8::Update_element(
 
       // call material update if material = m_growthremodel_elasthyper (calculate and update
       // inelastic deformation gradient)
-      if (mat->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
+      if (SolidMaterial()->UsesExtendedUpdate())
       {
-        static_cast<MAT::GrowthRemodel_ElastHyper*>(mat.get())->Update(defgrd, gp, params, Id());
+        SolidMaterial()->Update(defgrd, gp, params, Id());
       }
 
       // determine new fiber directions
