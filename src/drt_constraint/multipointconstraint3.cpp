@@ -2,10 +2,7 @@
 \brief Basic constraint class, dealing with multi point constraints
 \level 2
 
-\maintainer Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
+\maintainer Matthias Mayr
 
 *----------------------------------------------------------------------*/
 

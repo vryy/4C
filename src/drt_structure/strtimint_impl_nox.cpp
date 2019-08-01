@@ -2,7 +2,7 @@
 /*!
 \brief Interface of solid time integration to NOX solver package
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 
 \level 3
 */

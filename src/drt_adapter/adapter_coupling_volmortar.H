@@ -4,7 +4,7 @@
 
 \level 2
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 
 *----------------------------------------------------------------------*/
 #ifndef ADAPTER_COUPLING_VOLMORTAR_H_

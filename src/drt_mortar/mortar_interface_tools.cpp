@@ -2,7 +2,7 @@
 /*!
 \brief Tools for the mortar interface
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 
 \level 1
 */

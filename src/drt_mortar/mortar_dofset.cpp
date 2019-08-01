@@ -2,7 +2,7 @@
 /*!
 \brief A set of degrees of freedom special for mortar coupling
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 
 \level 1
 */

@@ -2,10 +2,7 @@
 /**
 \brief Service functionality for the solid shell8 elements
 
-\maintainer Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
+\maintainer Matthias Mayr
 \level 1
 */
 /*----------------------------------------------------------------------*/

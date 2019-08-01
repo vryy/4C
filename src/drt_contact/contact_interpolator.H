@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 
 \level 2
 

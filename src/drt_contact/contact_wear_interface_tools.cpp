@@ -2,7 +2,7 @@
 /*!
 \level 2
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 
 \brief Some tools for wear problems
 */

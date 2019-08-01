@@ -2,7 +2,7 @@
 /*!
 \brief Creation of structural time integrators in accordance with user's wishes
 \level 1
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 */
 
 #ifndef STRTIMINT_CREATE_H

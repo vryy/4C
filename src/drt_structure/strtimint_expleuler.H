@@ -2,7 +2,7 @@
 /*!
 \brief Structural time integration with forward Euler (explicit)
 \level 2
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 */
 
 /*----------------------------------------------------------------------*/

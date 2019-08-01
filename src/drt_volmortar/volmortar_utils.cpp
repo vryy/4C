@@ -5,7 +5,7 @@
 
 \level 2
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
  *----------------------------------------------------------------------*/
 
 #include "volmortar_coupling.H"
