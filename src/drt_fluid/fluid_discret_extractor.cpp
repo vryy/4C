@@ -383,10 +383,10 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     Epetra_Time time(parentdiscret_->Comm());
     Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(parentdiscret_->Comm().Clone());
 
-    // ParMetis gets the current distribution (sepcondelenodesmap) and returns a better one
-    // (sepcondrownodes, sepcondcolnodes) hopefully the optimal one
-    DRT::UTILS::RedistributeGraphOfDiscretization(childdiscret_, sepcondelenodesmap,
-        sepcondrownodes, sepcondcolnodes, comm, false, comm->NumProc());
+    // Starting from the current partitioning of the discretization, compute nodal maps with a
+    // hopefully better partitioning
+    DRT::UTILS::ComputeRebalancedNodeMaps(childdiscret_, sepcondelenodesmap, sepcondrownodes,
+        sepcondcolnodes, comm, false, comm->NumProc());
 
 #else
 #if defined(PARALLEL)

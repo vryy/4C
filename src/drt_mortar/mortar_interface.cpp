@@ -1277,7 +1277,7 @@ void MORTAR::MortarInterface::Redistribute()
 
   //**********************************************************************
   // call ZOLTAN for parallel redistribution
-  DRT::UTILS::RedistributeGraphOfDiscretization(
+  DRT::UTILS::ComputeRebalancedNodeMaps(
       idiscret_, sroweles, srownodes, scolnodes, comm, false, sproc, imbalance_tol);
   //**********************************************************************
 
@@ -1325,7 +1325,7 @@ void MORTAR::MortarInterface::RedistributeMasterSide(Teuchos::RCP<Epetra_Map>& r
   if (not HasMaSharingRefInterface())
   {
     // call ZOLTAN for parallel redistribution
-    DRT::UTILS::RedistributeGraphOfDiscretization(
+    DRT::UTILS::ComputeRebalancedNodeMaps(
         idiscret_, roweles, rownodes, colnodes, comm, false, parts, imbalance);
   }
   else

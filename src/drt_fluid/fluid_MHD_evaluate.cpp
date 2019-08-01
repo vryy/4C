@@ -343,7 +343,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(Teuchos::RCP<DRT::Discretization> actdis
     Epetra_Time time(pdiscret_->Comm());
     Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(pdiscret_->Comm().Clone());
 
-    DRT::UTILS::RedistributeGraphOfDiscretization(
+    DRT::UTILS::ComputeRebalancedNodeMaps(
         bnd_discret_, belemap, bndrownodes, bndcolnodes, comm, false, comm->NumProc());
 
 #else
