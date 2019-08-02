@@ -31,7 +31,7 @@ namespace DRT
 /*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 05/2019 |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEALGORITHM
+namespace PARTICLEWALL
 {
   class WallDataState
   {
@@ -133,7 +133,7 @@ namespace PARTICLEALGORITHM
     Teuchos::RCP<Epetra_Vector> force_col_;
   };
 
-}  // namespace PARTICLEALGORITHM
+}  // namespace PARTICLEWALL
 
 /*---------------------------------------------------------------------------*/
 #endif

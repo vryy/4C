@@ -20,7 +20,7 @@
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 05/2019 |
  *---------------------------------------------------------------------------*/
-PARTICLEALGORITHM::WallDataState::WallDataState()
+PARTICLEWALL::WallDataState::WallDataState()
 {
   // empty constructor
 }
@@ -28,7 +28,7 @@ PARTICLEALGORITHM::WallDataState::WallDataState()
 /*---------------------------------------------------------------------------*
  | init wall data state container                             sfuchs 05/2019 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallDataState::Init()
+void PARTICLEWALL::WallDataState::Init()
 {
   // nothing to do
 }
@@ -36,7 +36,7 @@ void PARTICLEALGORITHM::WallDataState::Init()
 /*---------------------------------------------------------------------------*
  | setup wall data state container                            sfuchs 05/2019 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallDataState::Setup(
+void PARTICLEWALL::WallDataState::Setup(
     Teuchos::RCP<const DRT::Discretization> const& walldiscretization, bool ismoving, bool isloaded)
 {
   // set current dof row and column map
@@ -62,7 +62,7 @@ void PARTICLEALGORITHM::WallDataState::Setup(
 /*---------------------------------------------------------------------------*
  | check for correct maps                                     sfuchs 05/2019 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallDataState::CheckForCorrectMaps(
+void PARTICLEWALL::WallDataState::CheckForCorrectMaps(
     Teuchos::RCP<const DRT::Discretization> const& walldiscretization)
 {
   if (disp_row_ != Teuchos::null)
@@ -93,7 +93,7 @@ void PARTICLEALGORITHM::WallDataState::CheckForCorrectMaps(
 /*---------------------------------------------------------------------------*
  | update maps of state vectors                               sfuchs 05/2019 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallDataState::UpdateMapsOfStateVectors(
+void PARTICLEWALL::WallDataState::UpdateMapsOfStateVectors(
     Teuchos::RCP<const DRT::Discretization> const& walldiscretization)
 {
   if (disp_row_ != Teuchos::null and disp_col_ != Teuchos::null)

@@ -13,8 +13,9 @@
  *---------------------------------------------------------------------------*/
 #include "particle_runtime_vtp_writer.H"
 
-#include "../drt_io/runtime_vtp_writer.H"
 #include "../drt_io/io.H"
+#include "../drt_io/io_control.H"
+#include "../drt_io/runtime_vtp_writer.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_dserror.H"
@@ -101,17 +102,16 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::Setup(
       // construct vtp writer object for current particle type and status
       runtime_vtpwriter = std::make_shared<RuntimeVtpWriter>();
 
-      // particle field name
-      std::ostringstream particlefieldname;
-      particlefieldname << "particle-" << PARTICLEENGINE::EnumToTypeName(typeEnum) << "-"
-                        << PARTICLEENGINE::EnumToStatusName(statusEnum);
+      std::ostringstream fieldname;
+      fieldname << "particle-" << PARTICLEENGINE::EnumToTypeName(typeEnum) << "-"
+                << PARTICLEENGINE::EnumToStatusName(statusEnum);
 
-      // initialize vtp writer object
+      // initialize the writer object
       runtime_vtpwriter->Initialize(comm_.MyPID(), comm_.NumProc(),
           max_number_timesteps_to_be_written, output_directory_path,
-          DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix(),
-          particlefieldname.str(), DRT::Problem::Instance()->OutputControlFile()->RestartName(),
-          setuptime_, write_binary_output);
+          DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix(), fieldname.str(),
+          DRT::Problem::Instance()->OutputControlFile()->RestartName(), setuptime_,
+          write_binary_output);
 
       // insert into data structure holding all vtp writer objects for each particle type and status
       (runtime_vtpwriters_[typeEnum])[statusEnum] = runtime_vtpwriter;
@@ -187,10 +187,12 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
       // get particle states stored in container
       const std::set<StateEnum>& particlestates = container->GetStoredStates();
 
+#ifdef DEBUG
       // safety check
       if (not particlestates.count(PARTICLEENGINE::Position))
         dserror("particle state '%s' not found!",
             PARTICLEENGINE::EnumToStateName(PARTICLEENGINE::Position).c_str());
+#endif
 
       // iterate over particle states
       for (auto& particleState : particlestates)
@@ -218,10 +220,12 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
             for (int i = 0; i < (statedim * particlestored); ++i)
               positiondata.push_back(state_ptr[i]);
 
+#ifdef DEBUG
           // safety check
           if ((int)positiondata.size() != statedim * particlestored)
             dserror("ParticleRuntimeVtpWriter expected %d coordinate values, but got %d!",
                 statedim * particlestored, positiondata.size());
+#endif
         }
         else if (not blackliststates_.count(particleState))
         {

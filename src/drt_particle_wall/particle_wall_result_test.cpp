@@ -22,7 +22,7 @@
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 03/2019 |
  *---------------------------------------------------------------------------*/
-PARTICLEALGORITHM::WallResultTest::WallResultTest() : DRT::ResultTest("PARTICLEWALL")
+PARTICLEWALL::WallResultTest::WallResultTest() : DRT::ResultTest("PARTICLEWALL")
 {
   // empty constructor
 }
@@ -30,7 +30,7 @@ PARTICLEALGORITHM::WallResultTest::WallResultTest() : DRT::ResultTest("PARTICLEW
 /*---------------------------------------------------------------------------*
  | init wall result test                                      sfuchs 03/2019 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallResultTest::Init()
+void PARTICLEWALL::WallResultTest::Init()
 {
   // nothing to do
 }
@@ -38,8 +38,8 @@ void PARTICLEALGORITHM::WallResultTest::Init()
 /*---------------------------------------------------------------------------*
  | setup wall result test                                     sfuchs 03/2019 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallResultTest::Setup(
-    const std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface)
+void PARTICLEWALL::WallResultTest::Setup(
+    const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface)
 {
   // set interface to particle wall handler
   particlewallinterface_ = particlewallinterface;
@@ -51,7 +51,7 @@ void PARTICLEALGORITHM::WallResultTest::Setup(
 /*---------------------------------------------------------------------------*
  | test node value                                            sfuchs 03/2019 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallResultTest::TestNode(
+void PARTICLEWALL::WallResultTest::TestNode(
     DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // extract and check discretization name
@@ -82,7 +82,7 @@ void PARTICLEALGORITHM::WallResultTest::TestNode(
     if (actnode->Owner() != walldiscretization_->Comm().MyPID()) return;
 
     // get wall data state container
-    std::shared_ptr<PARTICLEALGORITHM::WallDataState> walldatastate =
+    std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
         particlewallinterface_->GetWallDataState();
 
     // extract test quantity
@@ -160,7 +160,7 @@ void PARTICLEALGORITHM::WallResultTest::TestNode(
 /*---------------------------------------------------------------------------*
  | test special quantity                                      sfuchs 03/2019 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallResultTest::TestSpecial(
+void PARTICLEWALL::WallResultTest::TestSpecial(
     DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // check results only for processor 0

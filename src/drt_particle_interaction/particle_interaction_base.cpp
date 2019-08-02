@@ -42,7 +42,7 @@ void PARTICLEINTERACTION::ParticleInteractionBase::Init()
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionBase::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-    const std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface)
+    const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface)
 {
   // set interface to particle engine
   particleengineinterface_ = particleengineinterface;

@@ -35,7 +35,7 @@ namespace IO
   class DiscretizationReader;
 }
 
-namespace PARTICLEALGORITHM
+namespace PARTICLEWALL
 {
   class WallDataState;
 }
@@ -59,7 +59,7 @@ namespace DRT
 /*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 10/2018 |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEALGORITHM
+namespace PARTICLEWALL
 {
   class WallHandlerBase : public WallHandlerInterface
   {
@@ -119,8 +119,7 @@ namespace PARTICLEALGORITHM
     };
 
     //! get wall data state container
-    virtual std::shared_ptr<PARTICLEALGORITHM::WallDataState> GetWallDataState()
-        const override final
+    virtual std::shared_ptr<PARTICLEWALL::WallDataState> GetWallDataState() const override final
     {
       return walldatastate_;
     }
@@ -187,7 +186,7 @@ namespace PARTICLEALGORITHM
     Teuchos::RCP<DRT::Discretization> walldiscretization_;
 
     //! wall data state container
-    std::shared_ptr<PARTICLEALGORITHM::WallDataState> walldatastate_;
+    std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate_;
 
     //! wall discretization runtime vtu writer
     std::unique_ptr<DiscretizationRuntimeVtuWriter> wallvtuwriter_;
@@ -243,7 +242,7 @@ namespace PARTICLEALGORITHM
     virtual void SetupWallDiscretization() const override;
   };
 
-}  // namespace PARTICLEALGORITHM
+}  // namespace PARTICLEWALL
 
 /*---------------------------------------------------------------------------*/
 #endif

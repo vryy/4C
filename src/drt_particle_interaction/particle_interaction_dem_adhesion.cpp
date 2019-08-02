@@ -20,11 +20,11 @@
 #include "particle_interaction_dem_adhesion_law.H"
 #include "particle_interaction_dem_adhesion_surface_energy.H"
 
-#include "../drt_particle_algorithm/particle_wall_interface.H"
-#include "../drt_particle_algorithm/particle_wall_datastate.H"
-
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_container.H"
+
+#include "../drt_particle_wall/particle_wall_interface.H"
+#include "../drt_particle_wall/particle_wall_datastate.H"
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
@@ -69,7 +69,7 @@ void PARTICLEINTERACTION::DEMAdhesion::Init()
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMAdhesion::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-    const std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface,
+    const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
     const std::shared_ptr<PARTICLEINTERACTION::DEMNeighborPairs> neighborpairs,
     const std::shared_ptr<PARTICLEINTERACTION::DEMHistoryPairs> historypairs,
     const double& k_normal)
@@ -330,7 +330,7 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion()
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion");
 
   // get wall data state container
-  std::shared_ptr<PARTICLEALGORITHM::WallDataState> walldatastate =
+  std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
       particlewallinterface_->GetWallDataState();
 
   // get reference to particle-wall adhesion history pair data
