@@ -414,7 +414,8 @@ namespace FLD
     \brief convergence check
 
     */
-    bool ConvergenceCheck(int itnum, int itemax, const double ittol);
+    virtual bool ConvergenceCheck(int itnum, int itemax, const double velrestol,
+        const double velinctol, const double presrestol, const double presinctol) override;
 
     /// Update velocity and pressure by increment
     virtual void UpdateByIncrement();

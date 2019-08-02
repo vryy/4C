@@ -776,7 +776,12 @@ void FLD::FluidImplicitTimeInt::Solve()
   // -------------------------------------------------------------------
   int itnum = 0;
   int itmax = 0;
-  const double ittol = params_->get<double>("tolerance for nonlin iter");
+  const double velrestol = params_->get<double>("velocity residual tolerance");
+  const double velinctol = params_->get<double>("velocity increment tolerance");
+  const double presrestol = params_->get<double>("pressure residual tolerance");
+  const double presinctol = params_->get<double>("pressure increment tolerance");
+  const double ittol = std::min(std::min(std::min(velrestol, presrestol), velinctol), presinctol);
+
   bool stopnonliniter = false;
 
   // -------------------------------------------------------------------
@@ -817,7 +822,7 @@ void FLD::FluidImplicitTimeInt::Solve()
         "+------------+-------------------+--------------+--------------+--------------+-----------"
         "---+\n");
     printf(
-        "|- step/max -|- tol      [norm] -|-- vel-res ---|-- pre-res ---|-- vel-inc ---|-- pre-inc "
+        "|- step/max -|-- vel-res ---|-- pre-res ---|-- vel-inc ---|-- pre-inc "
         "---|\n");
   }
 
@@ -900,7 +905,7 @@ void FLD::FluidImplicitTimeInt::Solve()
     // -------------------------------------------------------------------
     // convergence check
     // -------------------------------------------------------------------
-    stopnonliniter = ConvergenceCheck(itnum, itmax, ittol);
+    stopnonliniter = ConvergenceCheck(itnum, itmax, velrestol, velinctol, presrestol, presinctol);
 
     // -------------------------------------------------------------------
     // Do the free surface flow Ale update
@@ -933,7 +938,7 @@ void FLD::FluidImplicitTimeInt::Solve()
       meshtying_->PrepareMeshtyingSystem(sysmat_, residual_, velnp_);
 
     // print to screen
-    ConvergenceCheck(0, itmax, ittol);
+    ConvergenceCheck(0, itmax, velrestol, velinctol, presrestol, presinctol);
   }
 }  // FluidImplicitTimeInt::Solve
 
@@ -2209,7 +2214,8 @@ void FLD::FluidImplicitTimeInt::IterUpdate(const Teuchos::RCP<const Epetra_Vecto
 /*----------------------------------------------------------------------*
  | convergence check                                           vg 09/11 |
  *----------------------------------------------------------------------*/
-bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int itnum, int itmax, const double ittol)
+bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int itnum, int itmax, const double velrestol,
+    const double velinctol, const double presrestol, const double presinctol)
 {
   // -------------------------------------------------------------------
   // calculate and print out norms for convergence check
@@ -2283,17 +2289,16 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int itnum, int itmax, const dou
   {
     if (itnum > 0)
     {
-      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |", itnum,
-          itmax, ittol, vresnorm_, presnorm_, incvelnorm_L2_ / velnorm_L2_,
-          incprenorm_L2_ / prenorm_L2_);
+      printf("|  %3d/%3d   | %10.3E   | %10.3E   | %10.3E   | %10.3E   |", itnum, itmax, vresnorm_,
+          presnorm_, incvelnorm_L2_ / velnorm_L2_, incprenorm_L2_ / prenorm_L2_);
       printf(" (ts=%10.3E,te=%10.3E", dtsolve_, dtele_);
       if (turbmodel_ == INPAR::FLUID::dynamic_smagorinsky) printf(",tf=%10.3E", dtfilter_);
       printf(")\n");
     }
     else
     {
-      printf("|   --/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |      --      |      --      |",
-          itmax, ittol, vresnorm_, presnorm_);
+      printf("|   --/%3d   |  %10.3E   | %10.3E   |      --      |      --      |", itmax,
+          vresnorm_, presnorm_);
       printf(" (      --     ,te=%10.3E", dtele_);
       if (turbmodel_ == INPAR::FLUID::dynamic_smagorinsky) printf(",tf=%10.3E", dtfilter_);
       printf(")\n");
@@ -2306,8 +2311,8 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int itnum, int itmax, const dou
   // - warn if itemax is reached without convergence, but proceed to
   //   next timestep
   // -------------------------------------------------------------------
-  if (vresnorm_ <= ittol and presnorm_ <= ittol and incvelnorm_L2_ / velnorm_L2_ <= ittol and
-      incprenorm_L2_ / prenorm_L2_ <= ittol)
+  if (vresnorm_ <= velrestol and presnorm_ <= presrestol and
+      incvelnorm_L2_ / velnorm_L2_ <= velinctol and incprenorm_L2_ / prenorm_L2_ <= presinctol)
   {
     if (myrank_ == 0 and (inconsistent_ or (not inconsistent_ and itnum == 0)))
     {
@@ -2318,9 +2323,9 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int itnum, int itmax, const dou
       if (errfile != NULL)
       {
         fprintf(errfile,
-            "fluid solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  "
+            "fluid solve:   %3d/%3d vres=%10.3E  pres=%10.3E  vinc=%10.3E  "
             "pinc=%10.3E\n",
-            itnum, itmax, ittol, vresnorm_, presnorm_, incvelnorm_L2_ / velnorm_L2_,
+            itnum, itmax, vresnorm_, presnorm_, incvelnorm_L2_ / velnorm_L2_,
             incprenorm_L2_ / prenorm_L2_);
       }
     }
@@ -2341,9 +2346,9 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int itnum, int itmax, const dou
         if (errfile != NULL)
         {
           fprintf(errfile,
-              "fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  "
+              "fluid unconverged solve:   %3d/%3d  vres=%10.3E  pres=%10.3E  "
               "vinc=%10.3E  pinc=%10.3E\n",
-              itnum, itmax, ittol, vresnorm_, presnorm_, incvelnorm_L2_ / velnorm_L2_,
+              itnum, itmax, vresnorm_, presnorm_, incvelnorm_L2_ / velnorm_L2_,
               incprenorm_L2_ / prenorm_L2_);
         }
       }

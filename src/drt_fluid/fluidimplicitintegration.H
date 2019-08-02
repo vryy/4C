@@ -413,7 +413,8 @@ namespace FLD
    \brief convergence check
 
     */
-    virtual bool ConvergenceCheck(int itnum, int itmax, const double ittol);
+    virtual bool ConvergenceCheck(int itnum, int itmax, const double velrestol,
+        const double velinctol, const double presrestol, const double presinctol) override;
 
     /*!
       \brief build linear system matrix and rhs

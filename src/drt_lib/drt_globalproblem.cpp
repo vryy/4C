@@ -318,6 +318,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--FLUID DYNAMIC/TIMEADAPTIVITY", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/MULTIFRACTAL SUBGRID SCALES", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/TURBULENT INFLOW", *list);
+  reader.ReadGidSection("--FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES", *list);
   reader.ReadGidSection("--TWO PHASE FLOW", *list);
   reader.ReadGidSection("--TWO PHASE FLOW/SURFACE TENSION", *list);
   reader.ReadGidSection("--TWO PHASE FLOW/SMEARED", *list);
