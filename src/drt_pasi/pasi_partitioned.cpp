@@ -18,8 +18,9 @@
 #include "../drt_adapter/ad_str_pasiwrapper.H"
 
 #include "../drt_particle_algorithm/particle_algorithm.H"
-#include "../drt_particle_algorithm/particle_wall_interface.H"
-#include "../drt_particle_algorithm/particle_wall_datastate.H"
+
+#include "../drt_particle_wall/particle_wall_interface.H"
+#include "../drt_particle_wall/particle_wall_datastate.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
@@ -170,11 +171,11 @@ void PASI::PartitionedAlgo::SetStructStates()
   TEUCHOS_FUNC_TIME_MONITOR("PASI::PartitionedAlgo::SetStructStates");
 
   // get interface to particle wall handler
-  std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface =
+  std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface =
       particlealgorithm_->GetParticleWallHandlerInterface();
 
   // get wall data state container
-  std::shared_ptr<PARTICLEALGORITHM::WallDataState> walldatastate =
+  std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
       particlewallinterface->GetWallDataState();
 
 #ifdef DEBUG

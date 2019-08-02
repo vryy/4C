@@ -27,10 +27,10 @@
 #include "particle_interaction_sph_boundary_particle.H"
 #include "particle_interaction_sph_phase_change.H"
 
-#include "../drt_particle_algorithm/particle_wall_interface.H"
-
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_container.H"
+
+#include "../drt_particle_wall/particle_wall_interface.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -97,7 +97,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Init()
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionSPH::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-    const std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface)
+    const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface)
 {
   // call base class setup
   ParticleInteractionBase::Setup(particleengineinterface, particlewallinterface);

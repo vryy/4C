@@ -30,16 +30,16 @@ namespace IO
   class DiscretizationReader;
 }
 
-namespace PARTICLEALGORITHM
-{
-  class WallHandlerInterface;
-}
-
 namespace PARTICLEENGINE
 {
   class ParticleEngineInterface;
   class ParticleContainerBundle;
 }  // namespace PARTICLEENGINE
+
+namespace PARTICLEWALL
+{
+  class WallHandlerInterface;
+}
 
 /*---------------------------------------------------------------------------*
  | type definitions                                           sfuchs 01/2019 |
@@ -70,7 +70,7 @@ namespace PARTICLEINTERACTION
     //! setup neighbor pair handler
     void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-        const std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface);
+        const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface);
 
     //! write restart of neighbor pair handler
     void WriteRestart(const int step, const double time) const;
@@ -140,7 +140,7 @@ namespace PARTICLEINTERACTION
     PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle_;
 
     //! interface to particle wall handler
-    std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface_;
+    std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface_;
   };
 
 }  // namespace PARTICLEINTERACTION

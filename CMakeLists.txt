@@ -1875,9 +1875,6 @@ set(OBJS_DRT_PARTICLE_ALGORITHM
   src/drt_particle_algorithm/particle_temperature_bc.cpp
   src/drt_particle_algorithm/particle_initial_field.cpp
   src/drt_particle_algorithm/particle_result_test.cpp
-  src/drt_particle_algorithm/particle_wall.cpp
-  src/drt_particle_algorithm/particle_wall_datastate.cpp
-  src/drt_particle_algorithm/particle_wall_result_test.cpp
   src/drt_particle_algorithm/particle_algorithm_utils.cpp
 )
 set(OBJS_DRT_PARTICLE_INTERACTION
@@ -1920,6 +1917,11 @@ set(OBJS_DRT_PARTICLE_ENGINE
 set(OBJS_DRT_PARTICLE_ENGINE_LIB
   src/drt_particle_engine/particle_enums.cpp
   src/drt_particle_engine/particle_object.cpp
+)
+set(OBJS_DRT_PARTICLE_WALL
+  src/drt_particle_wall/particle_wall.cpp
+  src/drt_particle_wall/particle_wall_datastate.cpp
+  src/drt_particle_wall/particle_wall_result_test.cpp
 )
 set(OBJS_DRT_ACOU
   src/drt_acou/acou_dyn.cpp
@@ -2791,6 +2793,7 @@ add_library(alg_particle ${OBJS_DRT_PARTICLE})
 add_library(alg_particle_algorithm ${OBJS_DRT_PARTICLE_ALGORITHM})
 add_library(alg_particle_interaction ${OBJS_DRT_PARTICLE_INTERACTION})
 add_library(alg_particle_engine ${OBJS_DRT_PARTICLE_ENGINE})
+add_library(alg_particle_wall ${OBJS_DRT_PARTICLE_WALL})
 add_library(alg_acou ${OBJS_DRT_ACOU})
 add_library(alg_elemag ${OBJS_DRT_ELEMAG})
 add_library(alg_tutorial ${OBJS_DRT_TUTORIAL})
@@ -2820,6 +2823,7 @@ set(SINGLEFIELD_LIBRARIES
   alg_particle_algorithm
   alg_particle_interaction
   alg_particle_engine
+  alg_particle_wall
   alg_acou
   alg_elemag
   alg_tutorial

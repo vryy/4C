@@ -33,7 +33,7 @@ namespace DRT
   class Discretization;
 }
 
-namespace PARTICLEALGORITHM
+namespace PARTICLEWALL
 {
   class WallDataState;
 }
@@ -41,7 +41,7 @@ namespace PARTICLEALGORITHM
 /*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEALGORITHM
+namespace PARTICLEWALL
 {
   class WallHandlerInterface
   {
@@ -53,7 +53,7 @@ namespace PARTICLEALGORITHM
     virtual Teuchos::RCP<const DRT::Discretization> GetWallDiscretization() const = 0;
 
     //! get wall data state container
-    virtual std::shared_ptr<PARTICLEALGORITHM::WallDataState> GetWallDataState() const = 0;
+    virtual std::shared_ptr<PARTICLEWALL::WallDataState> GetWallDataState() const = 0;
 
     //! get reference to potential wall neighbors
     virtual const PARTICLEENGINE::PotentialWallNeighbors& GetPotentialWallNeighbors() const = 0;
@@ -63,7 +63,7 @@ namespace PARTICLEALGORITHM
         DRT::Element* ele, std::map<int, LINALG::Matrix<3, 1>>& colelenodalpos) const = 0;
   };
 
-}  // namespace PARTICLEALGORITHM
+}  // namespace PARTICLEWALL
 
 /*---------------------------------------------------------------------------*/
 #endif
