@@ -278,7 +278,7 @@ void MORTAR::MortarInterface::CreateInterfaceDiscretization()
 void MORTAR::MortarInterface::SetShapeFunctionType()
 {
   INPAR::MORTAR::ShapeFcn shapefcn =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(IParams(), "LM_SHAPEFCN");
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(InterfaceParams(), "LM_SHAPEFCN");
   switch (shapefcn)
   {
     case INPAR::MORTAR::shape_dual:
@@ -702,8 +702,8 @@ void MORTAR::MortarInterface::InitializeCornerEdge()
 {
   // if linear LM for quad displacements return!
   // TODO: this case needs a special treatment
-  bool lagmultlin = (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(IParams(), "LM_QUAD") ==
-                     INPAR::MORTAR::lagmult_lin);
+  bool lagmultlin = (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(
+                         InterfaceParams(), "LM_QUAD") == INPAR::MORTAR::lagmult_lin);
 
   if (lagmultlin) return;
 
@@ -736,7 +736,7 @@ void MORTAR::MortarInterface::InitializeCornerEdge()
 void MORTAR::MortarInterface::InitializeCrossPoints()
 {
   // check whether crosspoints / edge nodes shall be considered or not
-  bool crosspoints = DRT::INPUT::IntegralValue<int>(IParams(), "CROSSPOINTS");
+  bool crosspoints = DRT::INPUT::IntegralValue<int>(InterfaceParams(), "CROSSPOINTS");
 
   // modify crosspoints / edge nodes
   if (crosspoints)
@@ -802,8 +802,8 @@ void MORTAR::MortarInterface::InitializeCrossPoints()
 void MORTAR::MortarInterface::InitializeLagMultLin()
 {
   // check for linear interpolation of 2D/3D quadratic Lagrange multipliers
-  bool lagmultlin = (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(IParams(), "LM_QUAD") ==
-                     INPAR::MORTAR::lagmult_lin);
+  bool lagmultlin = (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(
+                         InterfaceParams(), "LM_QUAD") == INPAR::MORTAR::lagmult_lin);
 
   // modify nodes accordingly
   if (lagmultlin)
@@ -936,7 +936,7 @@ void MORTAR::MortarInterface::InitializeLagMultLin()
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::InitializeLagMultConst()
 {
-  if ((DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(IParams(), "LM_QUAD") ==
+  if ((DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(InterfaceParams(), "LM_QUAD") ==
           INPAR::MORTAR::lagmult_const))
   {
     // modified treatment slave side nodes:
@@ -1077,8 +1077,8 @@ void MORTAR::MortarInterface::InitializeDataContainer()
     }
   }
 
-  if (IParams().isParameter("ALGORITHM"))
-    if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(IParams(), "ALGORITHM") ==
+  if (InterfaceParams().isParameter("ALGORITHM"))
+    if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(InterfaceParams(), "ALGORITHM") ==
         INPAR::MORTAR::algorithm_gpts)
       for (int i = 0; i < MasterColElements()->NumMyElements(); ++i)
         dynamic_cast<MortarElement*>(Discret().gElement(MasterColElements()->GID(i)))
@@ -1150,7 +1150,7 @@ void MORTAR::MortarInterface::BinningStrategy(
   // --> only for contact problems
   if (vel >= 1e-12)
   {
-    double dt = IParams().get<double>("TIMESTEP");
+    double dt = InterfaceParams().get<double>("TIMESTEP");
     cutoff = cutoff + 2 * dt * vel;
   }
 
@@ -1209,7 +1209,7 @@ void MORTAR::MortarInterface::BinningStrategy(
 void MORTAR::MortarInterface::Redistribute()
 {
   const Teuchos::ParameterList& mortarParallelRedistParams =
-      IParams().sublist("PARALLEL REDISTRIBUTION");
+      InterfaceParams().sublist("PARALLEL REDISTRIBUTION");
 
   // make sure we are supposed to be here
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
@@ -1633,12 +1633,12 @@ void MORTAR::MortarInterface::CreateSearchTree()
     // like the slave elements --> melecolmap_
     INPAR::MORTAR::GhostingStrategy strat =
         DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
-            IParams().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
+            InterfaceParams().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
 
     // get update type of binary tree
     INPAR::MORTAR::BinaryTreeUpdateType updatetype =
         DRT::INPUT::IntegralValue<INPAR::MORTAR::BinaryTreeUpdateType>(
-            IParams(), "BINARYTREE_UPDATETYPE");
+            InterfaceParams(), "BINARYTREE_UPDATETYPE");
 
     Teuchos::RCP<Epetra_Map> melefullmap = Teuchos::null;
     if (strat == INPAR::MORTAR::roundrobinghost || strat == INPAR::MORTAR::binningstrategy)
@@ -2883,7 +2883,7 @@ void MORTAR::MortarInterface::EvaluateSearchBruteForce(const double& eps)
   // like the slave elements --> melecolmap_
   INPAR::MORTAR::GhostingStrategy strat =
       DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
-          IParams().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
+          InterfaceParams().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
   Teuchos::RCP<Epetra_Map> melefullmap = Teuchos::null;
 
   if (strat == INPAR::MORTAR::ghosting_redundant)
@@ -3190,7 +3190,7 @@ bool MORTAR::MortarInterface::MortarCoupling(MORTAR::MortarElement* sele,
     // interpolation need any special treatment in the 2d case
 
     // create Coupling2dManager and evaluate
-    MORTAR::Coupling2dManager(Discret(), Dim(), quadratic, IParams(), sele, mele)
+    MORTAR::Coupling2dManager(Discret(), Dim(), quadratic, InterfaceParams(), sele, mele)
         .EvaluateCoupling(mparams_ptr);
   }
   // ************************************************************** 3D ***
@@ -3200,7 +3200,7 @@ bool MORTAR::MortarInterface::MortarCoupling(MORTAR::MortarElement* sele,
     if (!quadratic)
     {
       // create Coupling3dManager and evaluate
-      MORTAR::Coupling3dManager(Discret(), Dim(), false, IParams(), sele, mele)
+      MORTAR::Coupling3dManager(Discret(), Dim(), false, InterfaceParams(), sele, mele)
           .EvaluateCoupling(mparams_ptr);
     }
 
@@ -3208,7 +3208,7 @@ bool MORTAR::MortarInterface::MortarCoupling(MORTAR::MortarElement* sele,
     else
     {
       // create Coupling3dQuadManager and evaluate
-      MORTAR::Coupling3dQuadManager(Discret(), Dim(), false, IParams(), sele, mele)
+      MORTAR::Coupling3dQuadManager(Discret(), Dim(), false, InterfaceParams(), sele, mele)
           .EvaluateCoupling(mparams_ptr);
     }  // quadratic
   }    // 3D
@@ -3518,9 +3518,9 @@ void MORTAR::MortarInterface::AssembleLM(Epetra_Vector& zglobal)
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::AssembleD(LINALG::SparseMatrix& dglobal)
 {
-  const bool nonsmooth = DRT::INPUT::IntegralValue<int>(IParams(), "NONSMOOTH_GEOMETRIES");
+  const bool nonsmooth = DRT::INPUT::IntegralValue<int>(InterfaceParams(), "NONSMOOTH_GEOMETRIES");
   const bool lagmultlin = (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(
-                               IParams(), "LM_QUAD") == INPAR::MORTAR::lagmult_lin);
+                               InterfaceParams(), "LM_QUAD") == INPAR::MORTAR::lagmult_lin);
 
   // get out of here if not participating in interface
   if (!lComm()) return;
@@ -3754,7 +3754,7 @@ void MORTAR::MortarInterface::AssembleTrafo(
 
   // check whether locally linear LM interpolation is used
   const bool lagmultlin = (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(
-                               IParams(), "LM_QUAD") == INPAR::MORTAR::lagmult_lin);
+                               InterfaceParams(), "LM_QUAD") == INPAR::MORTAR::lagmult_lin);
 
   //********************************************************************
   //********************************************************************
@@ -4316,8 +4316,8 @@ void MORTAR::MortarInterface::DetectTiedSlaveNodes(int& founduntied)
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::CreateVolumeGhosting()
 {
-  INPAR::CONTACT::Problemtype prb =
-      (INPAR::CONTACT::Problemtype)IParams().get<int>("PROBTYPE", (int)INPAR::CONTACT::other);
+  INPAR::CONTACT::Problemtype prb = (INPAR::CONTACT::Problemtype)InterfaceParams().get<int>(
+      "PROBTYPE", (int)INPAR::CONTACT::other);
 
   switch (prb)
   {

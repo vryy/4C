@@ -354,7 +354,8 @@ void CONTACT::AUG::Interface::RedEvaluate(const Teuchos::RCP<MORTAR::ParamsInter
      *    Integrate all remaining quantities only over the slave interface    *
      **************************************************************************/
     // create a Augmented Lagrangian integrator instance with correct NumGP and Dim
-    CONTACT::AUG::IntegrationWrapper augIntegrationWrapper(IParams(), selement->Shape(), Comm());
+    CONTACT::AUG::IntegrationWrapper augIntegrationWrapper(
+        InterfaceParams(), selement->Shape(), Comm());
     switch (Dim())
     {
       case 2:
@@ -785,7 +786,7 @@ void CONTACT::AUG::Interface::AssembleLmNVector(Epetra_Vector& lmNVec) const
   if (not lComm()) return;
 
   // get cn
-  //  const double cn = IParams().get<double>("SEMI_SMOOTH_CN");
+  //  const double cn = InterfaceParams().get<double>("SEMI_SMOOTH_CN");
 
   // loop over proc's active slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
@@ -898,7 +899,7 @@ void CONTACT::AUG::Interface::AssembleAugInactiveRhs(
   Teuchos::RCP<Epetra_Map> augInactiveSlaveNodes = LINALG::SplitMap(*snoderowmap_, *activenodes_);
 
   // get ct and invert it
-  double ct_inv = IParams().get<double>("SEMI_SMOOTH_CT");
+  double ct_inv = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
   ct_inv = 1 / ct_inv;
 
   const int nummynodes = augInactiveSlaveNodes->NumMyElements();
@@ -948,7 +949,7 @@ void CONTACT::AUG::Interface::AssembleDLmTLmTRhs(Epetra_Vector& dLmTLmTRhs) cons
   if (not lComm()) return;
 
   // get ct and invert it
-  double ct_inv = IParams().get<double>("SEMI_SMOOTH_CT");
+  double ct_inv = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
   ct_inv = 1 / ct_inv;
 
   // loop over proc's active slave nodes of the interface for assembly
@@ -1021,7 +1022,7 @@ void CONTACT::AUG::Interface::AssembleDLmTLmTMatrix(LINALG::SparseMatrix& dLmTLm
   if (not lComm()) return;
 
   // get ct and invert it
-  double ct_inv = IParams().get<double>("SEMI_SMOOTH_CT");
+  double ct_inv = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
   ct_inv = 1 / ct_inv;
 
   // loop over proc's slave nodes of the interface for assembly
@@ -1072,7 +1073,7 @@ void CONTACT::AUG::Interface::AssembleDLmTLmTLinMatrix(LINALG::SparseMatrix& dLm
   if (not lComm()) return;
 
   // get ct and invert it
-  double ct_inv = IParams().get<double>("SEMI_SMOOTH_CT");
+  double ct_inv = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
   ct_inv = 1 / ct_inv;
 
   // loop over proc's slave nodes of the interface for assembly
@@ -1122,7 +1123,7 @@ void CONTACT::AUG::Interface::AssembleAugInactiveDiagMatrix(Epetra_Vector& augIn
   Teuchos::RCP<Epetra_Map> augInactiveSlaveNodes = LINALG::SplitMap(*snoderowmap_, *activenodes_);
 
   // get ct and invert it
-  double ct_inv = IParams().get<double>("SEMI_SMOOTH_CT");
+  double ct_inv = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
   ct_inv = 1 / ct_inv;
 
   const int nummynodes = augInactiveSlaveNodes->NumMyElements();
@@ -1188,7 +1189,7 @@ void CONTACT::AUG::Interface::AssembleAugInactiveLinMatrix(
   if (!lComm()) return;
 
   // get ct and invert it
-  double ct_inv = IParams().get<double>("SEMI_SMOOTH_CT");
+  double ct_inv = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
   ct_inv = 1 / ct_inv;
 
   const int nummynodes = inactivenodes_->NumMyElements();
@@ -1375,7 +1376,7 @@ bool CONTACT::AUG::Interface::SetNodeInitiallyActive(
     const CONTACT::ParamsInterface& cparams, CONTACT::CoNode& cnode) const
 {
   static const bool init_contact_by_gap =
-      DRT::INPUT::IntegralValue<int>(IParams(), "INITCONTACTBYGAP");
+      DRT::INPUT::IntegralValue<int>(InterfaceParams(), "INITCONTACTBYGAP");
 
   const bool node_init_active = cnode.IsInitActive();
 
@@ -1406,7 +1407,7 @@ bool CONTACT::AUG::Interface::SetNodeInitiallyActive(
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::SetNodeInitiallyActiveByGap(CONTACT::CoNode& cnode) const
 {
-  static const double initcontactval = IParams().get<double>("INITCONTACTGAPVALUE");
+  static const double initcontactval = InterfaceParams().get<double>("INITCONTACTGAPVALUE");
 
   if (cnode.AugData().GetWGap() < initcontactval) cnode.Active() = true;
 }

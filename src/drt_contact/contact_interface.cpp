@@ -286,8 +286,8 @@ void CONTACT::CoInterface::UpdateMasterSlaveSets()
 void CONTACT::CoInterface::SetCnCtValues(const int& iter)
 {
   // get cn from the input file
-  const double cn = IParams().get<double>("SEMI_SMOOTH_CN");
-  const double ct = IParams().get<double>("SEMI_SMOOTH_CT");
+  const double cn = InterfaceParams().get<double>("SEMI_SMOOTH_CN");
+  const double ct = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
 
   // set all nodal cn-values to the input value
   GetCn() = LINALG::CreateVector(*SlaveRowNodes(), true);
@@ -466,7 +466,7 @@ void CONTACT::CoInterface::RoundRobinChangeOwnership()
 
   // get friction type
   INPAR::CONTACT::FrictionType ftype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(), "FRICTION");
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
 
   // change master-side proc ownership
   // some local variables
@@ -904,7 +904,7 @@ void CONTACT::CoInterface::RoundRobinDetectGhosting()
 bool CONTACT::CoInterface::Redistribute(int index)
 {
   const Teuchos::ParameterList& mortarParallelRedistParams =
-      IParams().sublist("PARALLEL REDISTRIBUTION");
+      InterfaceParams().sublist("PARALLEL REDISTRIBUTION");
 
   // make sure we are supposed to be here
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
@@ -1227,7 +1227,7 @@ void CONTACT::CoInterface::SplitIntoFarAndCloseSets(std::vector<int>& closeele,
     std::vector<int>& noncloseele, std::vector<int>& localcns, std::vector<int>& localfns) const
 {
   const bool performSplitting = DRT::INPUT::IntegralValue<bool>(
-      IParams().sublist("PARALLEL REDISTRIBUTION"), "EXPLOIT_PROXIMITY");
+      InterfaceParams().sublist("PARALLEL REDISTRIBUTION"), "EXPLOIT_PROXIMITY");
 
   if (performSplitting)
   {
@@ -1337,14 +1337,14 @@ void CONTACT::CoInterface::CreateSearchTree()
       {
         // (NOTE THAT SELF CONTACT SEARCH IS NOT YET FULLY PARALLELIZED!)
         binarytreeself_ = Teuchos::rcp(new CONTACT::SelfBinaryTree(
-            Discret(), lComm(), IParams(), elefullmap, Dim(), SearchParam()));
+            Discret(), lComm(), InterfaceParams(), elefullmap, Dim(), SearchParam()));
       }
       else
       {
         // if we use the two half pass algorithm, we use the unbiased self binary tree
         // implementation
         binarytreeself_ = Teuchos::rcp(new CONTACT::UnbiasedSelfBinaryTree(
-            Discret(), lComm(), IParams(), elefullmap, Dim(), SearchParam()));
+            Discret(), lComm(), InterfaceParams(), elefullmap, Dim(), SearchParam()));
       }
       // initialize the self binary tree
       binarytreeself_->Init();
@@ -1360,12 +1360,12 @@ void CONTACT::CoInterface::CreateSearchTree()
       // like the slave elements --> melecolmap_
       INPAR::MORTAR::GhostingStrategy strat =
           DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
-              IParams().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
+              InterfaceParams().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
 
       // get update type of binary tree
       INPAR::MORTAR::BinaryTreeUpdateType updatetype =
           DRT::INPUT::IntegralValue<INPAR::MORTAR::BinaryTreeUpdateType>(
-              IParams(), "BINARYTREE_UPDATETYPE");
+              InterfaceParams(), "BINARYTREE_UPDATETYPE");
 
       Teuchos::RCP<Epetra_Map> melefullmap = Teuchos::null;
       if (strat == INPAR::MORTAR::roundrobinghost || strat == INPAR::MORTAR::binningstrategy)
@@ -1410,7 +1410,7 @@ void CONTACT::CoInterface::InitializeDataContainer()
   // we need this master node data container to create an averaged
   // nodal normal field on the master side for the smoothed cpp
   // normal field!
-  if (DRT::INPUT::IntegralValue<int>(IParams(), "CPP_NORMALS") || nonSmoothContact_)
+  if (DRT::INPUT::IntegralValue<int>(InterfaceParams(), "CPP_NORMALS") || nonSmoothContact_)
   {
     const Teuchos::RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(*(MasterRowNodes()));
 
@@ -1449,7 +1449,7 @@ void CONTACT::CoInterface::Initialize()
   }
 
   // init normal data in master node data container for cpp calculation
-  if (DRT::INPUT::IntegralValue<int>(IParams(), "CPP_NORMALS"))
+  if (DRT::INPUT::IntegralValue<int>(InterfaceParams(), "CPP_NORMALS"))
   {
     for (int i = 0; i < MasterColNodes()->NumMyElements(); ++i)
     {
@@ -1563,7 +1563,7 @@ void CONTACT::CoInterface::Initialize()
       frinode->FriData().GetMNodes().clear();
 
       // for gp slip
-      if (DRT::INPUT::IntegralValue<int>(IParams(), "GP_SLIP_INCR") == true)
+      if (DRT::INPUT::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
       {
         // reset jump deriv.
         for (int j = 0; j < (int)((frinode->FriData().GetDerivVarJump()).size()); ++j)
@@ -1661,7 +1661,7 @@ void CONTACT::CoInterface::SetElementAreas()
   // same time we initialize the element data containers for self contact.
   // This is due to the fact that self contact search is NOT parallelized.
   //**********************************************************************
-  if (SelfContact() or DRT::INPUT::IntegralValue<int>(IParams(), "CPP_NORMALS") or
+  if (SelfContact() or DRT::INPUT::IntegralValue<int>(InterfaceParams(), "CPP_NORMALS") or
       nonSmoothContact_)
   {
     // loop over all elements to set current element length / area
@@ -1718,7 +1718,7 @@ void CONTACT::CoInterface::PreEvaluate(const int& step, const int& iter)
   SetCnCtValues(iter);
 
   // cpp normals or averaged normal field?
-  if (DRT::INPUT::IntegralValue<int>(IParams(), "CPP_NORMALS"))
+  if (DRT::INPUT::IntegralValue<int>(InterfaceParams(), "CPP_NORMALS"))
   {
     // evaluate cpp nodal normals on slave side
     EvaluateCPPNormals();
@@ -2124,9 +2124,9 @@ void CONTACT::CoInterface::AddLTLforcesFric(Teuchos::RCP<Epetra_FEVector> feff)
   double slaveforce = 0.0;
   double masterforce = 0.0;
 
-  const double penalty = IParams().get<double>("PENALTYPARAM");
-  const double penaltytan = IParams().get<double>("PENALTYPARAMTAN");
-  const double frcoeff = IParams().get<double>("FRCOEFF");
+  const double penalty = InterfaceParams().get<double>("PENALTYPARAM");
+  const double penaltytan = InterfaceParams().get<double>("PENALTYPARAMTAN");
+  const double frcoeff = InterfaceParams().get<double>("FRCOEFF");
 
   double oldtraction[3] = {0.0, 0.0, 0.0};
 
@@ -2277,9 +2277,9 @@ void CONTACT::CoInterface::AddLTLforcesFric(Teuchos::RCP<Epetra_FEVector> feff)
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix> kteff)
 {
-  const double penalty = IParams().get<double>("PENALTYPARAM");
-  const double penaltytan = IParams().get<double>("PENALTYPARAMTAN");
-  const double frcoeff = IParams().get<double>("FRCOEFF");
+  const double penalty = InterfaceParams().get<double>("PENALTYPARAM");
+  const double penaltytan = InterfaceParams().get<double>("PENALTYPARAMTAN");
+  const double frcoeff = InterfaceParams().get<double>("FRCOEFF");
 
   typedef GEN::pairedvector<int, double>::const_iterator CI;
   typedef std::map<int, double>::const_iterator CImap;
@@ -2689,7 +2689,7 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AddNTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff)
 {
-  const double penalty = IParams().get<double>("PENALTYPARAM");
+  const double penalty = InterfaceParams().get<double>("PENALTYPARAM");
 
   typedef GEN::pairedvector<int, double>::const_iterator CI;
   typedef std::map<int, double>::const_iterator CImap;
@@ -2773,7 +2773,7 @@ void CONTACT::CoInterface::AddNTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AddLTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff)
 {
-  const double penalty = IParams().get<double>("PENALTYPARAM");
+  const double penalty = InterfaceParams().get<double>("PENALTYPARAM");
 
   typedef GEN::pairedvector<int, double>::const_iterator CI;
   typedef std::map<int, double>::const_iterator CImap;
@@ -2866,7 +2866,7 @@ void CONTACT::CoInterface::AddLTLforces(Teuchos::RCP<Epetra_FEVector> feff)
 
   // gap = g_n * n
   // D/M = sval/mval
-  const double penalty = IParams().get<double>("PENALTYPARAM");
+  const double penalty = InterfaceParams().get<double>("PENALTYPARAM");
 
   typedef GEN::pairedvector<int, double>::const_iterator CI;
   typedef std::map<int, double>::const_iterator CImap;
@@ -2953,7 +2953,7 @@ void CONTACT::CoInterface::AddLTLforces(Teuchos::RCP<Epetra_FEVector> feff)
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AddLTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatrix> kteff)
 {
-  const double penalty = IParams().get<double>("PENALTYPARAM");
+  const double penalty = InterfaceParams().get<double>("PENALTYPARAM");
 
   typedef GEN::pairedvector<int, double>::const_iterator CI;
   typedef std::map<int, double>::const_iterator CImap;
@@ -3154,7 +3154,7 @@ void CONTACT::CoInterface::AddLTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatr
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AddNTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatrix> kteff)
 {
-  const double penalty = IParams().get<double>("PENALTYPARAM");
+  const double penalty = InterfaceParams().get<double>("PENALTYPARAM");
 
   typedef GEN::pairedvector<int, double>::const_iterator CI;
   typedef std::map<int, double>::const_iterator CImap;
@@ -3304,7 +3304,7 @@ void CONTACT::CoInterface::AddNTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatr
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AddLTLstiffness(Teuchos::RCP<LINALG::SparseMatrix> kteff)
 {
-  const double penalty = IParams().get<double>("PENALTYPARAM");
+  const double penalty = InterfaceParams().get<double>("PENALTYPARAM");
 
   typedef GEN::pairedvector<int, double>::const_iterator CI;
   typedef std::map<int, double>::const_iterator CImap;
@@ -5017,8 +5017,8 @@ void CONTACT::CoInterface::ComputeScalingLTL()
   typedef GEN::pairedvector<int, double>::const_iterator CI;
 
   // angle in degree
-  const double minAngle = IParams().get<double>("HYBRID_ANGLE_MIN");
-  const double maxAngle = IParams().get<double>("HYBRID_ANGLE_MAX");
+  const double minAngle = InterfaceParams().get<double>("HYBRID_ANGLE_MIN");
+  const double maxAngle = InterfaceParams().get<double>("HYBRID_ANGLE_MAX");
 
   // check
   if (minAngle < 0.0 or maxAngle < 0.0) dserror("ERROR: invalid hybrid angle!");
@@ -5236,7 +5236,7 @@ void CONTACT::CoInterface::ComputeScalingLTL()
       {
         // 1. search slave master pair with cpp point
         LineToLineCouplingPoint3d coup(
-            *idiscret_, 3, IParams(), lineElementsS[s], lineElementsM[m]);
+            *idiscret_, 3, InterfaceParams(), lineElementsS[s], lineElementsM[m]);
 
         parallel = coup.CheckParallelity();
         if (parallel)
@@ -7044,8 +7044,8 @@ void CONTACT::CoInterface::EvaluateSTL()
             seleElements.push_back(selement);
 
             // create coupling object
-            LineToSurfaceCoupling3d coup(*idiscret_, 3, IParams(), *melement, lineEle, seleElements,
-                LineToSurfaceCoupling3d::stl);
+            LineToSurfaceCoupling3d coup(*idiscret_, 3, InterfaceParams(), *melement, lineEle,
+                seleElements, LineToSurfaceCoupling3d::stl);
 
             // perform evaluate!
             coup.EvaluateCoupling();
@@ -7071,7 +7071,7 @@ void CONTACT::CoInterface::EvaluateNTSMaster()
 {
   // create one interpolator instance which is valid for all nodes!
   Teuchos::RCP<NTS::CoInterpolator> interpolator =
-      Teuchos::rcp(new NTS::CoInterpolator(IParams(), Dim()));
+      Teuchos::rcp(new NTS::CoInterpolator(InterfaceParams(), Dim()));
 
   // guarantee uniquness
   std::set<int> donebefore;
@@ -7339,8 +7339,8 @@ void CONTACT::CoInterface::EvaluateLTSMaster()
           dummy.push_back(selement);
 
           // create coupling object
-          LineToSurfaceCoupling3d coup(*idiscret_, 3, IParams(), *meleElements[m], lineEle, dummy,
-              LineToSurfaceCoupling3d::lts);
+          LineToSurfaceCoupling3d coup(*idiscret_, 3, InterfaceParams(), *meleElements[m], lineEle,
+              dummy, LineToSurfaceCoupling3d::lts);
 
 
           // perform evaluate!
@@ -7360,7 +7360,7 @@ void CONTACT::CoInterface::EvaluateLTSMaster()
     //      LineToSurfaceCoupling3d coup(
     //          *idiscret_,
     //          3,
-    //          IParams(),
+    //          InterfaceParams(),
     //          *selement,
     //          lineElements[l],
     //          meleElements,
@@ -7590,7 +7590,7 @@ void CONTACT::CoInterface::EvaluateLTS()
     for (int l = 0; l < (int)lineElements.size(); ++l)
     {
       // create coupling object
-      LineToSurfaceCoupling3d coup(*idiscret_, 3, IParams(), *selement, lineElements[l],
+      LineToSurfaceCoupling3d coup(*idiscret_, 3, InterfaceParams(), *selement, lineElements[l],
           meleElements, LineToSurfaceCoupling3d::lts);
 
       // perform evaluate!
@@ -7954,7 +7954,7 @@ void CONTACT::CoInterface::EvaluateLTL()
       {
         // create coupling object
         LineToLineCouplingPoint3d coup(
-            *idiscret_, 3, IParams(), lineElementsS[s], lineElementsM[m]);
+            *idiscret_, 3, InterfaceParams(), lineElementsS[s], lineElementsM[m]);
 
         // perform evaluate!
         coup.EvaluateCoupling();
@@ -7974,7 +7974,7 @@ void CONTACT::CoInterface::EvaluateNTS()
 {
   // create one interpolator instance which is valid for all nodes!
   Teuchos::RCP<NTS::CoInterpolator> interpolator =
-      Teuchos::rcp(new NTS::CoInterpolator(IParams(), Dim()));
+      Teuchos::rcp(new NTS::CoInterpolator(InterfaceParams(), Dim()));
 
   // loop over slave nodes
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
@@ -8037,7 +8037,7 @@ bool CONTACT::CoInterface::MortarCoupling(MORTAR::MortarElement* sele,
     // interpolation need any special treatment in the 2d case
 
     // create CoCoupling2dManager
-    CONTACT::CoCoupling2dManager coup(Discret(), Dim(), quadratic, IParams(), sele, mele);
+    CONTACT::CoCoupling2dManager coup(Discret(), Dim(), quadratic, InterfaceParams(), sele, mele);
     // evaluate
     coup.EvaluateCoupling(mparams_ptr);
 
@@ -8052,7 +8052,7 @@ bool CONTACT::CoInterface::MortarCoupling(MORTAR::MortarElement* sele,
     if (!quadratic)
     {
       // create CoCoupling3dManager
-      CONTACT::CoCoupling3dManager coup(Discret(), Dim(), quadratic, IParams(), sele, mele);
+      CONTACT::CoCoupling3dManager coup(Discret(), Dim(), quadratic, InterfaceParams(), sele, mele);
       // evaluate
       coup.EvaluateCoupling(mparams_ptr);
 
@@ -8065,7 +8065,8 @@ bool CONTACT::CoInterface::MortarCoupling(MORTAR::MortarElement* sele,
     else
     {
       // create Coupling3dQuadManager
-      CONTACT::CoCoupling3dQuadManager coup(Discret(), Dim(), quadratic, IParams(), sele, mele);
+      CONTACT::CoCoupling3dQuadManager coup(
+          Discret(), Dim(), quadratic, InterfaceParams(), sele, mele);
       // evaluate
       coup.EvaluateCoupling(mparams_ptr);
     }  // quadratic
@@ -8108,7 +8109,7 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
   {
     // get LM interpolation and testing type
     INPAR::MORTAR::LagMultQuad lmtype =
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(IParams(), "LM_QUAD");
+        DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(InterfaceParams(), "LM_QUAD");
 
     // build linear integration elements from quadratic CElements
     std::vector<Teuchos::RCP<MORTAR::IntElement>> sauxelements(0);
@@ -8187,7 +8188,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
     dserror("Error in CoInterface::EvaluateRelMov(): Only evaluated for frictional contact");
 
   // parameters
-  double pp = IParams().get<double>("PENALTYPARAM");
+  double pp = InterfaceParams().get<double>("PENALTYPARAM");
 
   // loop over all slave row nodes on the current interface
   for (int i = 0; i < SlaveRowNodes()->NumMyElements(); ++i)
@@ -8220,25 +8221,25 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
     // this value isn't needed.
     bool activeinfuture = false;
 
-    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(IParams(), "STRATEGY") ==
+    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(InterfaceParams(), "STRATEGY") ==
         INPAR::CONTACT::solution_penalty)
     {
       if (-gap >= 0) activeinfuture = true;
     }
-    else if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(IParams(), "STRATEGY") ==
-                 INPAR::CONTACT::solution_lagmult and
-             DRT::INPUT::IntegralValue<int>(IParams(), "SEMI_SMOOTH_NEWTON") != 1)
+    else if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+                 InterfaceParams(), "STRATEGY") == INPAR::CONTACT::solution_lagmult and
+             DRT::INPUT::IntegralValue<int>(InterfaceParams(), "SEMI_SMOOTH_NEWTON") != 1)
     {
       if (-gap >= 0) activeinfuture = true;
     }
-    else if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(IParams(), "STRATEGY") ==
-                 INPAR::CONTACT::solution_lagmult and
-             DRT::INPUT::IntegralValue<int>(IParams(), "SEMI_SMOOTH_NEWTON") == 1)
+    else if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+                 InterfaceParams(), "STRATEGY") == INPAR::CONTACT::solution_lagmult and
+             DRT::INPUT::IntegralValue<int>(InterfaceParams(), "SEMI_SMOOTH_NEWTON") == 1)
     {
       if ((nz - cn * gap > 0) or cnode->Active()) activeinfuture = true;
     }
-    else if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(IParams(), "STRATEGY") ==
-             INPAR::CONTACT::solution_uzawa)
+    else if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+                 InterfaceParams(), "STRATEGY") == INPAR::CONTACT::solution_uzawa)
     {
       if (lmuzawan - kappa * pp * gap >= 0) activeinfuture = true;
     }
@@ -8819,7 +8820,7 @@ void CONTACT::CoInterface::EvaluateDistances(const Teuchos::RCP<const Epetra_Vec
 void CONTACT::CoInterface::EvaluateTangentNorm(double& cnormtan)
 {
   // friction coefficient
-  double frcoeff = IParams().get<double>("FRCOEFF");
+  double frcoeff = InterfaceParams().get<double>("FRCOEFF");
 
   // loop over all slave row nodes on the current interface
   for (int i = 0; i < SlaveRowNodes()->NumMyElements(); ++i)
@@ -8915,7 +8916,7 @@ void CONTACT::CoInterface::AssembleRegNormalForces(
   if (!lComm()) return;
 
   // penalty parameter
-  double pp = IParams().get<double>("PENALTYPARAM");
+  double pp = InterfaceParams().get<double>("PENALTYPARAM");
 
   // loop over all slave row nodes on the current interface
   for (int i = 0; i < SlaveRowNodes()->NumMyElements(); ++i)
@@ -9052,12 +9053,12 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
   if (!lComm()) return;
 
   // penalty parameter in tangential direction
-  double ppnor = IParams().get<double>("PENALTYPARAM");
-  double pptan = IParams().get<double>("PENALTYPARAMTAN");
-  double frcoeff = IParams().get<double>("FRCOEFF");
+  double ppnor = InterfaceParams().get<double>("PENALTYPARAM");
+  double pptan = InterfaceParams().get<double>("PENALTYPARAMTAN");
+  double frcoeff = InterfaceParams().get<double>("FRCOEFF");
 
   INPAR::CONTACT::FrictionType ftype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(), "FRICTION");
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
 
   // loop over all slave row nodes on the current interface
   for (int i = 0; i < SlaveRowNodes()->NumMyElements(); ++i)
@@ -9411,12 +9412,12 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
   if (!lComm()) return;
 
   // penalty parameter in tangential direction
-  double ppnor = IParams().get<double>("PENALTYPARAM");
-  double pptan = IParams().get<double>("PENALTYPARAMTAN");
-  double frcoeff = IParams().get<double>("FRCOEFF");
+  double ppnor = InterfaceParams().get<double>("PENALTYPARAM");
+  double pptan = InterfaceParams().get<double>("PENALTYPARAMTAN");
+  double frcoeff = InterfaceParams().get<double>("FRCOEFF");
 
   INPAR::CONTACT::FrictionType ftype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(), "FRICTION");
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
 
   // loop over all slave row nodes on the current interface
   for (int i = 0; i < SlaveRowNodes()->NumMyElements(); ++i)
@@ -10641,10 +10642,11 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 
   // information from interface contact parameter list
   INPAR::CONTACT::FrictionType ftype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(), "FRICTION");
-  double frcoeff_in = IParams().get<double>("FRCOEFF");  // the friction coefficient from the input
-  bool gp_slip = DRT::INPUT::IntegralValue<int>(IParams(), "GP_SLIP_INCR");
-  bool frilessfirst = DRT::INPUT::IntegralValue<int>(IParams(), "FRLESS_FIRST");
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
+  double frcoeff_in =
+      InterfaceParams().get<double>("FRCOEFF");  // the friction coefficient from the input
+  bool gp_slip = DRT::INPUT::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR");
+  bool frilessfirst = DRT::INPUT::IntegralValue<int>(InterfaceParams(), "FRLESS_FIRST");
 
   double frcoeff = 0.;  // the friction coefficient actually used
   bool consistent = false;
@@ -10658,7 +10660,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
   consistent = true;
 #endif
 
-  if (consistent && DRT::INPUT::IntegralValue<int>(IParams(), "REGULARIZED_NORMAL_CONTACT"))
+  if (consistent && DRT::INPUT::IntegralValue<int>(InterfaceParams(), "REGULARIZED_NORMAL_CONTACT"))
     dserror("no consistent stick for regularized contact");
 
   // loop over all stick nodes of the interface
@@ -11464,11 +11466,12 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
 
   // information from interface contact parameter list
   INPAR::CONTACT::FrictionType ftype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(), "FRICTION");
-  double frbound = IParams().get<double>("FRBOUND");
-  double frcoeff_in = IParams().get<double>("FRCOEFF");  // the friction coefficient from the input
-  bool gp_slip = DRT::INPUT::IntegralValue<int>(IParams(), "GP_SLIP_INCR");
-  bool frilessfirst = DRT::INPUT::IntegralValue<int>(IParams(), "FRLESS_FIRST");
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
+  double frbound = InterfaceParams().get<double>("FRBOUND");
+  double frcoeff_in =
+      InterfaceParams().get<double>("FRCOEFF");  // the friction coefficient from the input
+  bool gp_slip = DRT::INPUT::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR");
+  bool frilessfirst = DRT::INPUT::IntegralValue<int>(InterfaceParams(), "FRLESS_FIRST");
 
   // the friction coefficient adapted by every node (eg depending on the local temperature)
   double frcoeff = 0.;
@@ -13144,14 +13147,14 @@ void CONTACT::CoInterface::AssembleNormalContactRegularization(
     LINALG::SparseMatrix& d_disp, LINALG::SparseMatrix& d_lm, Epetra_Vector& f)
 {
   const bool regularization =
-      DRT::INPUT::IntegralValue<int>(IParams(), "REGULARIZED_NORMAL_CONTACT");
+      DRT::INPUT::IntegralValue<int>(InterfaceParams(), "REGULARIZED_NORMAL_CONTACT");
   if (!regularization) dserror("you should not be here");
-  const double k = 1. / IParams().get<double>("REGULARIZATION_STIFFNESS");
-  const double gmax = IParams().get<double>("REGULARIZATION_THICKNESS");
+  const double k = 1. / InterfaceParams().get<double>("REGULARIZATION_STIFFNESS");
+  const double gmax = InterfaceParams().get<double>("REGULARIZATION_THICKNESS");
   const int dim = Dim();
   static const INPAR::CONTACT::ConstraintDirection constr_direction =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>(
-          IParams(), "CONSTRAINT_DIRECTIONS");
+          InterfaceParams(), "CONSTRAINT_DIRECTIONS");
 
   for (int i = 0; i < ActiveNodes()->NumMyElements(); ++i)
   {
@@ -13226,11 +13229,12 @@ void CONTACT::CoInterface::AssembleLinSlipNormalRegularization(
 
   // information from interface contact parameter list
   INPAR::CONTACT::FrictionType ftype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(), "FRICTION");
-  double frcoeff_in = IParams().get<double>("FRCOEFF");  // the friction coefficient from the input
-  bool gp_slip = DRT::INPUT::IntegralValue<int>(IParams(), "GP_SLIP_INCR");
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
+  double frcoeff_in =
+      InterfaceParams().get<double>("FRCOEFF");  // the friction coefficient from the input
+  bool gp_slip = DRT::INPUT::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR");
   if (gp_slip) dserror("not implemented");
-  bool frilessfirst = DRT::INPUT::IntegralValue<int>(IParams(), "FRLESS_FIRST");
+  bool frilessfirst = DRT::INPUT::IntegralValue<int>(InterfaceParams(), "FRLESS_FIRST");
 
   // the friction coefficient adapted by every node (eg depending on the local temperature)
   double frcoeff = 0.;
@@ -13328,10 +13332,10 @@ void CONTACT::CoInterface::AssembleLinSlipNormalRegularization(
 
       // setup regularization
       static const bool regularization =
-          DRT::INPUT::IntegralValue<int>(IParams(), "REGULARIZED_NORMAL_CONTACT");
+          DRT::INPUT::IntegralValue<int>(InterfaceParams(), "REGULARIZED_NORMAL_CONTACT");
       if (!regularization) dserror("you should not be here");
-      static const double k = 1. / IParams().get<double>("REGULARIZATION_STIFFNESS");
-      static const double gmax = IParams().get<double>("REGULARIZATION_THICKNESS");
+      static const double k = 1. / InterfaceParams().get<double>("REGULARIZATION_STIFFNESS");
+      static const double gmax = InterfaceParams().get<double>("REGULARIZATION_THICKNESS");
       if (cnode->MoData().GetD().size() != 1)
         dserror(
             "we need to have a D-value for active contact nodes\nAnd exactly one due to "
@@ -14032,7 +14036,7 @@ bool CONTACT::CoInterface::UpdateActiveSetSemiSmooth()
 {
   // get input parameter ftype
   INPAR::CONTACT::FrictionType ftype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(), "FRICTION");
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
 
   // this is the complementarity parameter we use for the decision.
   // it might be scaled with a mesh-size dependent factor
@@ -14082,14 +14086,14 @@ bool CONTACT::CoInterface::UpdateActiveSetSemiSmooth()
         tz[0] += frinode->CoData().txi()[i] * frinode->MoData().lm()[i];
         if (Dim() == 3) tz[1] += frinode->CoData().teta()[i] * frinode->MoData().lm()[i];
 
-        if (DRT::INPUT::IntegralValue<int>(IParams(), "GP_SLIP_INCR") == false)
+        if (DRT::INPUT::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == false)
         {
           tjump[0] += frinode->CoData().txi()[i] * frinode->FriData().jump()[i];
           if (Dim() == 3) tjump[1] += frinode->CoData().teta()[i] * frinode->FriData().jump()[i];
         }
       }
 
-      if (DRT::INPUT::IntegralValue<int>(IParams(), "GP_SLIP_INCR") == true)
+      if (DRT::INPUT::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
       {
         tjump[0] = frinode->FriData().jump_var()[0];
         if (Dim() == 3) tjump[1] = frinode->FriData().jump_var()[1];
@@ -14105,9 +14109,9 @@ bool CONTACT::CoInterface::UpdateActiveSetSemiSmooth()
 
     // adhesion
     double adhbound = 0.0;
-    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::AdhesionType>(IParams(), "ADHESION") ==
+    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::AdhesionType>(InterfaceParams(), "ADHESION") ==
         INPAR::CONTACT::adhesion_bound)
-      adhbound = IParams().get<double>("ADHESION_BOUND");
+      adhbound = InterfaceParams().get<double>("ADHESION_BOUND");
 
     // check nodes of inactive set *************************************
     if (cnode->Active() == false)
@@ -14156,7 +14160,7 @@ bool CONTACT::CoInterface::UpdateActiveSetSemiSmooth()
           FriNode* frinode = dynamic_cast<FriNode*>(cnode);
 
           // CAREFUL: friction bound is now interface-local (popp 08/2012)
-          double frbound = IParams().get<double>("FRBOUND");
+          double frbound = InterfaceParams().get<double>("FRBOUND");
 
           if (frinode->FriData().Slip() == false)
           {
@@ -14192,16 +14196,16 @@ bool CONTACT::CoInterface::UpdateActiveSetSemiSmooth()
           FriNode* frinode = dynamic_cast<FriNode*>(cnode);
 
           // CAREFUL: friction coefficient is now interface-local (popp 08/2012)
-          double frcoeff = frinode->FrCoeff(IParams().get<double>("FRCOEFF"));
+          double frcoeff = frinode->FrCoeff(InterfaceParams().get<double>("FRCOEFF"));
           double frbound;
           static const bool regularization =
-              DRT::INPUT::IntegralValue<int>(IParams(), "REGULARIZED_NORMAL_CONTACT");
+              DRT::INPUT::IntegralValue<int>(InterfaceParams(), "REGULARIZED_NORMAL_CONTACT");
           if (!regularization)
             frbound = frcoeff * (nz - cn * wgap);
           else
           {
-            static const double k = 1. / IParams().get<double>("REGULARIZATION_STIFFNESS");
-            static const double gmax = IParams().get<double>("REGULARIZATION_THICKNESS");
+            static const double k = 1. / InterfaceParams().get<double>("REGULARIZATION_STIFFNESS");
+            static const double gmax = InterfaceParams().get<double>("REGULARIZATION_THICKNESS");
             if (cnode->MoData().GetD().size() != 1)
               dserror(
                   "we need to have a D-value for active contact nodes\nAnd exactly one due to "
@@ -14308,9 +14312,9 @@ bool CONTACT::CoInterface::BuildActiveSet(bool init)
     if (init)
     {
       // flag for initialization of init active nodes with nodal gaps
-      bool initcontactbygap = DRT::INPUT::IntegralValue<int>(IParams(), "INITCONTACTBYGAP");
+      bool initcontactbygap = DRT::INPUT::IntegralValue<int>(InterfaceParams(), "INITCONTACTBYGAP");
       // value
-      double initcontactval = IParams().get<double>("INITCONTACTGAPVALUE");
+      double initcontactval = InterfaceParams().get<double>("INITCONTACTGAPVALUE");
 
       // Either init contact by definition or by gap
       if (cnode->IsInitActive() and initcontactbygap)
@@ -14344,7 +14348,7 @@ bool CONTACT::CoInterface::BuildActiveSet(bool init)
            to zero. Hence,
               // we treat these nodes as frictionless nodes! (see AssembleLinSlip)
               INPAR::CONTACT::FrictionType ftype =
-                  DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(),"FRICTION");
+                  DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(),"FRICTION");
               if (ftype == INPAR::CONTACT::friction_coulomb)
               {
               dynamic_cast<FriNode*>(cnode)->FriData().InconInit() = true;
@@ -15051,7 +15055,7 @@ void CONTACT::CoInterface::UpdateSelfContactLagMultSet(
 void CONTACT::CoInterface::SetNodeInitiallyActive(CONTACT::CoNode& cnode) const
 {
   static const bool init_contact_by_gap =
-      DRT::INPUT::IntegralValue<int>(IParams(), "INITCONTACTBYGAP");
+      DRT::INPUT::IntegralValue<int>(InterfaceParams(), "INITCONTACTBYGAP");
 
   const bool node_init_active = cnode.IsInitActive();
 
@@ -15078,7 +15082,7 @@ void CONTACT::CoInterface::SetNodeInitiallyActive(CONTACT::CoNode& cnode) const
  *----------------------------------------------------------------------------*/
 void CONTACT::CoInterface::SetNodeInitiallyActiveByGap(CONTACT::CoNode& cnode) const
 {
-  static const double initcontactval = IParams().get<double>("INITCONTACTGAPVALUE");
+  static const double initcontactval = InterfaceParams().get<double>("INITCONTACTGAPVALUE");
 
   if (cnode.CoData().Getg() < initcontactval) cnode.Active() = true;
 

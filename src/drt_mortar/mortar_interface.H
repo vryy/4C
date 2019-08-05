@@ -633,8 +633,8 @@ namespace MORTAR
     /*!
     \brief Get interface contact parameter list
     */
-    virtual Teuchos::ParameterList& IParams() { return imortar_; };
-    const Teuchos::ParameterList& IParams() const { return imortar_; };
+    virtual Teuchos::ParameterList& InterfaceParams() { return imortar_; };
+    const Teuchos::ParameterList& InterfaceParams() const { return imortar_; };
 
     /*!
     \brief binning strategy for efficient ghosting
