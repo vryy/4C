@@ -18,8 +18,8 @@
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::STEEPESTASCENT::Interface::Interface(
-    const Teuchos::RCP<CONTACT::AUG::IDataContainer>& idata_ptr)
-    : ::CONTACT::AUG::Interface(idata_ptr)
+    const Teuchos::RCP<CONTACT::AUG::InterfaceDataContainer>& interfaceData_ptr)
+    : ::CONTACT::AUG::Interface(interfaceData_ptr)
 {
   /* do nothing */
 }

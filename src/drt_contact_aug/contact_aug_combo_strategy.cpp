@@ -87,9 +87,9 @@ void CONTACT::AUG::ComboStrategy::CreateStrategyInterfaces(
   {
     const CONTACT::AUG::Interface& ref_interface = dynamic_cast<CONTACT::AUG::Interface&>(**cit);
 
-    const Teuchos::RCP<CONTACT::AUG::IDataContainer> idata_ptr =
+    const Teuchos::RCP<CONTACT::AUG::InterfaceDataContainer> idata_ptr =
         ref_interface.SharedInterfaceDataPtr();
-    CONTACT::AUG::IDataContainer& idata = *idata_ptr;
+    CONTACT::AUG::InterfaceDataContainer& idata = *idata_ptr;
 
     /* create a new interface by copying the data pointer from the reference
      * interface */

@@ -15,7 +15,7 @@
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::LAGRANGE::Interface::Interface(
-    const Teuchos::RCP<CONTACT::AUG::IDataContainer>& idata_ptr)
+    const Teuchos::RCP<CONTACT::AUG::InterfaceDataContainer>& idata_ptr)
     : ::CONTACT::AUG::Interface(idata_ptr)
 {
   /* do nothing */

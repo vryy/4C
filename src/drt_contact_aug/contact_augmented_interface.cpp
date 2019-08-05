@@ -32,7 +32,7 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::IDataContainer::IDataContainer()
+CONTACT::AUG::InterfaceDataContainer::InterfaceDataContainer()
     : penBound_(-1.0),
       ct_(-1.0),
       slMaElementAreaRatio_(0),
@@ -48,28 +48,34 @@ CONTACT::AUG::IDataContainer::IDataContainer()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::Interface::Interface(const Teuchos::RCP<CONTACT::AUG::IDataContainer>& idata_ptr)
-    : ::CONTACT::CoInterface(idata_ptr), idata_ptr_(idata_ptr), idata_(*idata_ptr_)
+CONTACT::AUG::Interface::Interface(
+    const Teuchos::RCP<CONTACT::AUG::InterfaceDataContainer>& interfaceData_ptr)
+    : ::CONTACT::CoInterface(interfaceData_ptr),
+      interfaceData_ptr_(interfaceData_ptr),
+      interfaceData_(*interfaceData_ptr_)
 {
   /* do nothing */
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::Interface::Interface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& idata_ptr,
-    int id, const Epetra_Comm& comm, int dim, const Teuchos::ParameterList& icontact,
-    bool selfcontact, INPAR::MORTAR::RedundantStorage redundant)
-    : CONTACT::CoInterface(idata_ptr, id, comm, dim, icontact, selfcontact, redundant),
-      idata_ptr_(Teuchos::rcp_dynamic_cast<AUG::IDataContainer>(idata_ptr, true)),
-      idata_(*idata_ptr_)
+CONTACT::AUG::Interface::Interface(
+    const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr, int id,
+    const Epetra_Comm& comm, int dim, const Teuchos::ParameterList& icontact, bool selfcontact,
+    INPAR::MORTAR::RedundantStorage redundant)
+    : CONTACT::CoInterface(interfaceData_ptr, id, comm, dim, icontact, selfcontact, redundant),
+      interfaceData_ptr_(
+          Teuchos::rcp_dynamic_cast<AUG::InterfaceDataContainer>(interfaceData_ptr, true)),
+      interfaceData_(*interfaceData_ptr_)
 {
   const Teuchos::ParameterList& p_aug = icontact.sublist("AUGMENTED");
 
-  idata_.SetAssembleStratType(
+  interfaceData_.SetAssembleStratType(
       DRT::INPUT::IntegralValue<INPAR::CONTACT::AssembleStrategy>(p_aug, "ASSEMBLE_STRATEGY"));
 
-  idata_.SetVariationalApproachType(DRT::INPUT::IntegralValue<INPAR::CONTACT::VariationalApproach>(
-      p_aug, "VARIATIONAL_APPROACH"));
+  interfaceData_.SetVariationalApproachType(
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::VariationalApproach>(
+          p_aug, "VARIATIONAL_APPROACH"));
 
   // empty constructor body
   return;
@@ -87,7 +93,7 @@ void CONTACT::AUG::Interface::FillComplete(int maxdof, bool newghosting)
  *----------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::Setup()
 {
-  if (idata_.IsSetup()) return;
+  if (interfaceData_.IsSetup()) return;
 
   // find smallest interface element edge length
   double myMinEdgeLength = 1.0e12;
@@ -155,7 +161,7 @@ void CONTACT::AUG::Interface::Setup()
 
   // set penetration bound to 50% of the minimal interface element edge length,
   // if no user defined value is provided.
-  if (idata_.PenBound() < 0.0) idata_.PenBound() = 0.5 * gMins[0];
+  if (interfaceData_.PenBound() < 0.0) interfaceData_.PenBound() = 0.5 * gMins[0];
 
   if (gMins[1] == 1.0e12 or gMins[1] < 0.0)
     dserror(
@@ -176,10 +182,10 @@ void CONTACT::AUG::Interface::Setup()
 
   const int slMaElementAreaRatio = std::ceil(gMaxAreaSl / gMinAreaMa);
 
-  idata_.SetSlMaElementAreaRatio(slMaElementAreaRatio);
-  idata_.SetIsTriangleOnMaster(isTriangleOnMaster);
+  interfaceData_.SetSlMaElementAreaRatio(slMaElementAreaRatio);
+  interfaceData_.SetIsTriangleOnMaster(isTriangleOnMaster);
 
-  idata_.IsSetup() = true;
+  interfaceData_.IsSetup() = true;
 
   // ------------------------------------------------------------------------
   // Setup assemble strategy
@@ -190,14 +196,14 @@ void CONTACT::AUG::Interface::Setup()
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::SetupAssembleStrategy()
 {
-  const enum INPAR::CONTACT::AssembleStrategy type = idata_.AssembleStratType();
+  const enum INPAR::CONTACT::AssembleStrategy type = interfaceData_.AssembleStratType();
   switch (type)
   {
     case INPAR::CONTACT::assemble_node_based:
     {
       Teuchos::RCP<INTERFACE::AssembleStrategy> assemble_strategy =
           CreateNodeBasedAssembleStrategy();
-      idata_.SetAssembleStrategy(assemble_strategy);
+      interfaceData_.SetAssembleStrategy(assemble_strategy);
 
       break;
     }
@@ -214,7 +220,8 @@ void CONTACT::AUG::Interface::SetupAssembleStrategy()
 Teuchos::RCP<CONTACT::AUG::INTERFACE::AssembleStrategy>
 CONTACT::AUG::Interface::CreateNodeBasedAssembleStrategy()
 {
-  const enum INPAR::CONTACT::VariationalApproach var_type = idata_.VariationalApproachType();
+  const enum INPAR::CONTACT::VariationalApproach var_type =
+      interfaceData_.VariationalApproachType();
 
   switch (var_type)
   {
@@ -266,7 +273,8 @@ void CONTACT::AUG::Interface::Initialize()
     CoNode* cnode = dynamic_cast<CoNode*>(node);
     if (not cnode) dserror("Dynamic cast for node gid %d failed!", gid);
 
-    cnode->InitializeAugDataContainer(idata_.SlMaElementAreaRatio(), idata_.IsTriangleOnMaster());
+    cnode->InitializeAugDataContainer(
+        interfaceData_.SlMaElementAreaRatio(), interfaceData_.IsTriangleOnMaster());
 
     // reset nodal weighted gap
     cnode->AugData().GetWGap() = 1.0e12;
@@ -445,7 +453,7 @@ void CONTACT::AUG::Interface::ExportNodalNormalsOnly() const
 
   /*--------------------------------------------------------------------------*/
   // (1) Export normals
-  DRT::Exporter& ex = idata_.Exporter();
+  DRT::Exporter& ex = interfaceData_.Exporter();
   ex.Export(normals);
 
   /*--------------------------------------------------------------------------*/
@@ -507,7 +515,7 @@ void CONTACT::AUG::Interface::ExportDeriv1stNodalNormals() const
             << std::scientific << send_size / 1.0e6 << " MByte)...";
 #endif
 
-  DRT::Exporter& ex = idata_.Exporter();
+  DRT::Exporter& ex = interfaceData_.Exporter();
   ex.Export(export_d_normals);
 
 #ifdef DEBUG
@@ -569,7 +577,7 @@ void CONTACT::AUG::Interface::ExportDeriv2ndNodalNormals() const
             << std::scientific << send_size / 1.0e6 << " MByte)...";
 #endif
 
-  DRT::Exporter& ex = idata_.Exporter();
+  DRT::Exporter& ex = interfaceData_.Exporter();
   ex.Export(export_dd_normals);
 
 #ifdef DEBUG
@@ -614,7 +622,7 @@ void CONTACT::AUG::Interface::EvalActiveContributions(
   // set active slave node map of this interface and start the
   // coupling evaluation
   cparams_ptr->Set<Epetra_Map>(activenodes_.get(), 1);
-  EvaluateCoupling(*idata_.SActiveEleColMap(), NULL, cparams_ptr);
+  EvaluateCoupling(*interfaceData_.SActiveEleColMap(), NULL, cparams_ptr);
   cparams_ptr->ClearEntry(GEN::AnyDataContainer::DataType::any, 1);
 }
 
@@ -622,14 +630,14 @@ void CONTACT::AUG::Interface::EvalActiveContributions(
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::AssembleBMatrix(LINALG::SparseMatrix& BMatrix) const
 {
-  idata_.AssembleStrategy().AssembleBMatrix(BMatrix);
+  interfaceData_.AssembleStrategy().AssembleBMatrix(BMatrix);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::AssembleDGLmLinMatrix(LINALG::SparseMatrix& dGLmLinMatrix) const
 {
-  idata_.AssembleStrategy().AssembleDGLmLinMatrix(dGLmLinMatrix);
+  interfaceData_.AssembleStrategy().AssembleDGLmLinMatrix(dGLmLinMatrix);
 }
 
 /*----------------------------------------------------------------------------*
@@ -637,7 +645,7 @@ void CONTACT::AUG::Interface::AssembleDGLmLinMatrix(LINALG::SparseMatrix& dGLmLi
 void CONTACT::AUG::Interface::AssembleDGGLinMatrix(
     LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const
 {
-  idata_.AssembleStrategy().AssembleDGGLinMatrix(dGGLinMatrix, cnVec);
+  interfaceData_.AssembleStrategy().AssembleDGGLinMatrix(dGGLinMatrix, cnVec);
 }
 
 /*----------------------------------------------------------------------------*
@@ -645,7 +653,7 @@ void CONTACT::AUG::Interface::AssembleDGGLinMatrix(
 void CONTACT::AUG::Interface::Add_Var_A_GG(
     Epetra_Vector& sl_force_g, const Epetra_Vector& cnVec) const
 {
-  idata_.AssembleStrategy().Add_Var_A_GG(sl_force_g, cnVec);
+  interfaceData_.AssembleStrategy().Add_Var_A_GG(sl_force_g, cnVec);
 }
 
 /*----------------------------------------------------------------------------*
@@ -653,7 +661,8 @@ void CONTACT::AUG::Interface::Add_Var_A_GG(
 void CONTACT::AUG::Interface::Assemble_SlForceLmInactive(Epetra_Vector& sl_force_lm_inactive,
     const Epetra_Vector& cnVec, const double inactive_scale) const
 {
-  idata_.AssembleStrategy().Assemble_SlForceLmInactive(sl_force_lm_inactive, cnVec, inactive_scale);
+  interfaceData_.AssembleStrategy().Assemble_SlForceLmInactive(
+      sl_force_lm_inactive, cnVec, inactive_scale);
 }
 
 /*----------------------------------------------------------------------------*
@@ -661,7 +670,8 @@ void CONTACT::AUG::Interface::Assemble_SlForceLmInactive(Epetra_Vector& sl_force
 void CONTACT::AUG::Interface::AssembleInactiveDDMatrix(LINALG::SparseMatrix& inactive_dd_matrix,
     const Epetra_Vector& cnVec, const double inactive_scale) const
 {
-  idata_.AssembleStrategy().AssembleInactiveDDMatrix(inactive_dd_matrix, cnVec, inactive_scale);
+  interfaceData_.AssembleStrategy().AssembleInactiveDDMatrix(
+      inactive_dd_matrix, cnVec, inactive_scale);
 }
 
 /*----------------------------------------------------------------------------*
@@ -669,7 +679,7 @@ void CONTACT::AUG::Interface::AssembleInactiveDDMatrix(LINALG::SparseMatrix& ina
 void CONTACT::AUG::Interface::AssembleDLmNWGapLinMatrix(
     LINALG::SparseMatrix& dLmNWGapLinMatrix, const enum MapType map_type) const
 {
-  idata_.AssembleStrategy().AssembleDLmNWGapLinMatrix(dLmNWGapLinMatrix, map_type);
+  interfaceData_.AssembleStrategy().AssembleDLmNWGapLinMatrix(dLmNWGapLinMatrix, map_type);
 }
 
 /*----------------------------------------------------------------------------*
@@ -743,8 +753,8 @@ void CONTACT::AUG::Interface::AssembleGapVectorOfAllSlNodes(Epetra_Vector& wGapA
   const int nummynodes = snoderowmap_->NumMyElements();
   const int* mynodegids = snoderowmap_->MyGlobalElements();
 
-  int* myslndof_gids = idata_.SNDofRowMap()->MyGlobalElements();
-  if (nummynodes != idata_.SNDofRowMap()->NumMyElements()) dserror("Dimension mismatch!");
+  int* myslndof_gids = interfaceData_.SNDofRowMap()->MyGlobalElements();
+  if (nummynodes != interfaceData_.SNDofRowMap()->NumMyElements()) dserror("Dimension mismatch!");
 
   double* wGapAllVec_vals = wGapAllSlNodesVec.Values();
 
@@ -1229,7 +1239,7 @@ void CONTACT::AUG::Interface::AssembleContactPotentialTerms(
   // get out of here if not participating in interface
   if (!lComm()) return;
 
-  double ct_inv = 1.0 / idata_.Ct();
+  double ct_inv = 1.0 / interfaceData_.Ct();
 
   // *** Active part *************************************************
   // loop over proc's active slave nodes of the interface for assembly
@@ -1473,8 +1483,8 @@ void CONTACT::AUG::Interface::SplitSlaveDofs()
   // get out of here if augmented active set is empty
   if (snoderowmap_ == Teuchos::null or snoderowmap_->NumGlobalElements() == 0)
   {
-    idata_.SNDofRowMap() = Teuchos::rcp(new Epetra_Map(0, 0, Comm()));
-    idata_.STDofRowMap() = Teuchos::rcp(new Epetra_Map(0, 0, Comm()));
+    interfaceData_.SNDofRowMap() = Teuchos::rcp(new Epetra_Map(0, 0, Comm()));
+    interfaceData_.STDofRowMap() = Teuchos::rcp(new Epetra_Map(0, 0, Comm()));
     return;
   }
 
@@ -1524,8 +1534,10 @@ void CONTACT::AUG::Interface::SplitSlaveDofs()
     dserror("ERROR: SplitSlaveDofs: Splitting went wrong!");
 
   // create Nmap and Tmap objects
-  idata_.SNDofRowMap() = Teuchos::rcp(new Epetra_Map(gCountN, countN, &myNGids[0], 0, Comm()));
-  idata_.STDofRowMap() = Teuchos::rcp(new Epetra_Map(gCountT, countT, &myTGids[0], 0, Comm()));
+  interfaceData_.SNDofRowMap() =
+      Teuchos::rcp(new Epetra_Map(gCountN, countN, &myNGids[0], 0, Comm()));
+  interfaceData_.STDofRowMap() =
+      Teuchos::rcp(new Epetra_Map(gCountT, countT, &myTGids[0], 0, Comm()));
 
   return;
 }
@@ -1570,12 +1582,12 @@ void CONTACT::AUG::Interface::BuildActiveColMaps()
       if (acol_node_vals[i] == 1) acol_gids.push_back(sl_col_node_gids[i]);
     }
 
-    idata_.SActiveNodeColMap() = Teuchos::null;
-    idata_.SActiveNodeColMap() = Teuchos::rcp(
+    interfaceData_.SActiveNodeColMap() = Teuchos::null;
+    interfaceData_.SActiveNodeColMap() = Teuchos::rcp(
         new Epetra_Map(-1, (int)acol_gids.size(), acol_gids.data(), 0, idiscret_->Comm()));
   }
 
-  BuildActiveSlaveElementColMap(*idata_.SActiveNodeColMap());
+  BuildActiveSlaveElementColMap(*interfaceData_.SActiveNodeColMap());
 }
 
 /*----------------------------------------------------------------------------*
@@ -1603,8 +1615,8 @@ void CONTACT::AUG::Interface::BuildActiveSlaveElementColMap(const Epetra_Map& sa
   }
 
   std::vector<int> col_ele_gid_vec(col_ele_gid_set.begin(), col_ele_gid_set.end());
-  idata_.SActiveEleColMap() = Teuchos::null;
-  idata_.SActiveEleColMap() = Teuchos::rcp(new Epetra_Map(
+  interfaceData_.SActiveEleColMap() = Teuchos::null;
+  interfaceData_.SActiveEleColMap() = Teuchos::rcp(new Epetra_Map(
       -1, (int)col_ele_gid_vec.size(), col_ele_gid_vec.data(), 0, idiscret_->Comm()));
 }
 
@@ -2022,7 +2034,7 @@ double CONTACT::AUG::Interface::MyCharacteristicElementLength(
   // get out of here if not participating in interface
   if (!lComm()) return -1.0;
 
-  Teuchos::RCP<const Epetra_Map> ele_map_ptr = idata_.ElementRowMapPtr(stype);
+  Teuchos::RCP<const Epetra_Map> ele_map_ptr = interfaceData_.ElementRowMapPtr(stype);
   const int num_my_entries = ele_map_ptr->NumMyElements();
   const int* my_gids = ele_map_ptr->MyGlobalElements();
 
@@ -2065,8 +2077,8 @@ double CONTACT::AUG::Interface::MyCharacteristicElementLength(
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::StoreSeleEvalTimes(const Epetra_Vector& gseleevaltimes)
 {
-  Teuchos::RCP<Epetra_Vector>& et_selerow = idata_.ElementEvalTimes().sele_row_;
-  Teuchos::RCP<Epetra_Vector>& et_selecol = idata_.ElementEvalTimes().sele_col_;
+  Teuchos::RCP<Epetra_Vector>& et_selerow = interfaceData_.ElementEvalTimes().sele_row_;
+  Teuchos::RCP<Epetra_Vector>& et_selecol = interfaceData_.ElementEvalTimes().sele_col_;
 
   et_selerow = Teuchos::rcp(new Epetra_Vector(*SlaveRowElements(), true));
   et_selecol = Teuchos::rcp(new Epetra_Vector(*SlaveColElements(), true));
@@ -2096,7 +2108,8 @@ void CONTACT::AUG::Interface::SplitIntoFarAndCloseSets(std::vector<int>& close_s
     std::vector<int>& far_sele, std::vector<int>& local_close_nodes,
     std::vector<int>& local_far_nodes) const
 {
-  const Teuchos::RCP<const Epetra_Vector>& et_selerow_ptr = idata_.ElementEvalTimes().sele_row_;
+  const Teuchos::RCP<const Epetra_Vector>& et_selerow_ptr =
+      interfaceData_.ElementEvalTimes().sele_row_;
 
   if (!et_selerow_ptr.is_null())
   {
@@ -2186,7 +2199,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::Interface::CollectRowNodeOwners(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> CONTACT::AUG::IDataContainer::ElementRowMapPtr(
+Teuchos::RCP<const Epetra_Map> CONTACT::AUG::InterfaceDataContainer::ElementRowMapPtr(
     const enum SideType stype) const
 {
   switch (stype)
@@ -2207,7 +2220,7 @@ Teuchos::RCP<const Epetra_Map> CONTACT::AUG::IDataContainer::ElementRowMapPtr(
  *----------------------------------------------------------------------------*/
 template <>
 Teuchos::RCP<const Epetra_Map>
-CONTACT::AUG::IDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::master>() const
+CONTACT::AUG::InterfaceDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::master>() const
 {
   if (MEleRowMap().is_null()) dserror("Master element row map ptr is NULL.");
 
@@ -2218,7 +2231,7 @@ CONTACT::AUG::IDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::master>()
  *----------------------------------------------------------------------------*/
 template <>
 Teuchos::RCP<const Epetra_Map>
-CONTACT::AUG::IDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::slave>() const
+CONTACT::AUG::InterfaceDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::slave>() const
 {
   if (SEleRowMap().is_null()) dserror("Slave element row map ptr is NULL.");
 
@@ -2229,7 +2242,7 @@ CONTACT::AUG::IDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::slave>() 
  *----------------------------------------------------------------------------*/
 template <>
 Teuchos::RCP<const Epetra_Map>
-CONTACT::AUG::IDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::slave_master>() const
+CONTACT::AUG::InterfaceDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::slave_master>() const
 {
   Teuchos::RCP<const Epetra_Map> slelerowmap = ElementRowMapPtr<SideType::slave>();
   Teuchos::RCP<const Epetra_Map> maelerowmap = ElementRowMapPtr<SideType::master>();
@@ -2241,11 +2254,11 @@ CONTACT::AUG::IDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::slave_mas
 // explicit template instantiations
 
 template Teuchos::RCP<const Epetra_Map>
-CONTACT::AUG::IDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::slave>() const;
+CONTACT::AUG::InterfaceDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::slave>() const;
 template Teuchos::RCP<const Epetra_Map>
-CONTACT::AUG::IDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::master>() const;
-template Teuchos::RCP<const Epetra_Map>
-CONTACT::AUG::IDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::slave_master>() const;
+CONTACT::AUG::InterfaceDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::master>() const;
+template Teuchos::RCP<const Epetra_Map> CONTACT::AUG::InterfaceDataContainer::ElementRowMapPtr<
+    CONTACT::AUG::SideType::slave_master>() const;
 
 template void CONTACT::AUG::AssembleMapIntoMatrix<CONTACT::AUG::Deriv1stMap>(
     int row, double scal, const Deriv1stMap& values, LINALG::SparseMatrix& mat, double threshold);

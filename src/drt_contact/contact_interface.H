@@ -50,14 +50,14 @@ namespace CONTACT
    *  data between different interface objects w/o the need of copying them.
    *
    *  \author hiermeier \date 03/17 */
-  class IDataContainer : public MORTAR::InterfaceDataContainer
+  class InterfaceDataContainer : public MORTAR::InterfaceDataContainer
   {
    public:
     /// constructor
-    IDataContainer();
+    InterfaceDataContainer();
 
     /// destructor
-    virtual ~IDataContainer(){};
+    virtual ~InterfaceDataContainer(){};
 
     /// @name Accessors
     /// @{
@@ -230,7 +230,7 @@ namespace CONTACT
     int smpairs_;     ///< proc local number of slave/master pairs
     int smintpairs_;  ///< proc local number of slave/master integration pairs
     int intcells_;    ///< proc local number of integration cells
-  };                  // class CONTACT::IDataContainer
+  };                  // class CONTACT::InterfaceDataContainer
 
   /*----------------------------------------------------------------------------*/
   /*!
@@ -242,7 +242,7 @@ namespace CONTACT
   {
    protected:
     /// constructor ( only for derived classes )
-    CoInterface(const Teuchos::RCP<CONTACT::IDataContainer>& idata_ptr);
+    CoInterface(const Teuchos::RCP<CONTACT::InterfaceDataContainer>& interfaceData_ptr);
 
    public:
     /** \brief Create a new contact interface object
@@ -269,7 +269,7 @@ namespace CONTACT
     to a specific setting. Throughout the evaluation process, this set will be employed
     for the field of Lagrange multipliers.
 
-    \param idata_ptr (in): data container
+    \param interfaceData_ptr (in): data container
     \param id (in): Unique interface id
     \param comm (in): A communicator object
     \param spatialDim (in): spatial dimension of the problem
@@ -278,7 +278,7 @@ namespace CONTACT
     \param redundant (in): type of redundancy in interface storage
 
     */
-    CoInterface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& idata_ptr, const int id,
+    CoInterface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr, const int id,
         const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& icontact,
         bool selfcontact, INPAR::MORTAR::RedundantStorage redundant);
 
@@ -1493,10 +1493,10 @@ namespace CONTACT
     void SetNodeInitiallyActiveByGap(CoNode& cnode) const;
 
     /// pointer to the interface data object
-    Teuchos::RCP<CONTACT::IDataContainer> idata_ptr_;
+    Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr_;
 
     /// reference to the interface data object
-    CONTACT::IDataContainer& idata_;
+    CONTACT::InterfaceDataContainer& interfaceData_;
 
    protected:
     // don't want = operator and cctor
