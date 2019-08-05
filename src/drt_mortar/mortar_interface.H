@@ -572,15 +572,24 @@ namespace MORTAR
     */
     virtual ~MortarInterface() = default;
 
+    /*!
+    \brief Get unique ID of this interface
+
+    @return Unique interface ID
+    */
     inline int Id() const { return id_; }
 
     /*!
     \brief Print this Interface
+
+    \param[in] os Output stream used for printing
     */
     virtual void Print(std::ostream& os) const;
 
     /*!
     \brief Check whether interface was called FillComplete
+
+    @return Boolean flag to indicate if FillComplete has been called
     */
     virtual bool Filled() const;
 
