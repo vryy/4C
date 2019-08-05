@@ -212,7 +212,7 @@ namespace CONTACT
       Interface(const Teuchos::RCP<CONTACT::AUG::IDataContainer>& idata_ptr);
 
       //! Constructor
-      Interface(const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr, int id,
+      Interface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& idata_ptr, int id,
           const Epetra_Comm& comm, int dim, const Teuchos::ParameterList& icontact,
           bool selfcontact, INPAR::MORTAR::RedundantStorage redundant);
 

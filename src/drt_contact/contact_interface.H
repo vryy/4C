@@ -50,7 +50,7 @@ namespace CONTACT
    *  data between different interface objects w/o the need of copying them.
    *
    *  \author hiermeier \date 03/17 */
-  class IDataContainer : public MORTAR::IDataContainer
+  class IDataContainer : public MORTAR::InterfaceDataContainer
   {
    public:
     /// constructor
@@ -278,7 +278,7 @@ namespace CONTACT
     \param redundant (in): type of redundancy in interface storage
 
     */
-    CoInterface(const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr, const int id,
+    CoInterface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& idata_ptr, const int id,
         const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& icontact,
         bool selfcontact, INPAR::MORTAR::RedundantStorage redundant);
 

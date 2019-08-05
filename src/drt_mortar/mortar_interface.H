@@ -140,14 +140,14 @@ namespace MORTAR
    *  data between different interface objects w/o the need of copying them.
    *
    *  \author hiermeier \date 03/17 */
-  class IDataContainer
+  class InterfaceDataContainer
   {
    public:
     /// constructor
-    IDataContainer();
+    InterfaceDataContainer();
 
     /// destructor
-    virtual ~IDataContainer() = default;
+    virtual ~InterfaceDataContainer() = default;
 
     /// @name accessors
     /// @{
@@ -428,7 +428,7 @@ namespace MORTAR
 
    private:
     bool isinit_;  ///< Is this data container object initialized?
-  };               // class IDataContainer
+  };               // class InterfaceDataContainer
 
   /*----------------------------------------------------------------------------*/
   /*!
@@ -442,9 +442,9 @@ namespace MORTAR
     /*!
     \brief Constructor (only for derived classes)
 
-    @param[in] idata_ptr Interface data container
+    @param[in] interfaceData_ptr Interface data container
     */
-    MortarInterface(const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr);
+    MortarInterface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr);
 
    public:
     /** \brief Create a new Mortar interface object
@@ -466,14 +466,14 @@ namespace MORTAR
     /*!
     \brief Standard constructor creating empty mortar interface
 
-    \param idata_ptr (in): Interface data container
+    \param interfaceData_ptr (in): Interface data container
     \param id (in): Unique interface id
     \param comm (in): A communicator object
     \param spatialDim (in): Global problem dimension
     \param imortar (in): Global contact parameter list
     \param redundant (in): type of redundancy in interface storage
     */
-    MortarInterface(const Teuchos::RCP<IDataContainer>& idata_ptr, const int id,
+    MortarInterface(const Teuchos::RCP<InterfaceDataContainer>& interfaceData_ptr, const int id,
         const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& imortar,
         INPAR::MORTAR::RedundantStorage redundant);
 
@@ -621,7 +621,7 @@ namespace MORTAR
     {
       if (not Filled()) dserror("MORTAR::MortarInterface::FillComplete was not called");
 
-      return idata_.PSNodeRowMap();
+      return interfaceData_.PSNodeRowMap();
     }
 
     /*!
@@ -645,7 +645,7 @@ namespace MORTAR
     {
       if (not Filled()) dserror("MORTAR::MortarInterface::FillComplete was not called");
 
-      return idata_.PMNodeRowMap();
+      return interfaceData_.PMNodeRowMap();
     }
 
     /*!
@@ -801,7 +801,7 @@ namespace MORTAR
     {
       if (not Filled()) dserror("MORTAR::MortarInterface::FillComplete was not called");
 
-      return idata_.PSDofRowMap();
+      return interfaceData_.PSDofRowMap();
     }
 
     /*!
@@ -837,7 +837,7 @@ namespace MORTAR
     {
       if (not Filled()) dserror("MORTAR::MortarInterface::FillComplete was not called");
 
-      return idata_.PMDofRowMap();
+      return interfaceData_.PMDofRowMap();
     }
 
     /*!
@@ -1435,10 +1435,10 @@ namespace MORTAR
     void SetShapeFunctionType();
 
     /// pointer to the interface data object
-    Teuchos::RCP<IDataContainer> idata_ptr_;
+    Teuchos::RCP<InterfaceDataContainer> interfaceData_ptr_;
 
     /// reference to the interface data object
-    IDataContainer& idata_;
+    InterfaceDataContainer& interfaceData_;
 
    protected:
     // don't want = operator and cctor

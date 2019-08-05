@@ -81,7 +81,8 @@ Teuchos::RCP<CONTACT::CoInterface> CONTACT::CoInterface::Create(const int id,
     const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& icontact,
     const bool selfcontact, INPAR::MORTAR::RedundantStorage redundant)
 {
-  Teuchos::RCP<MORTAR::IDataContainer> idata_ptr = Teuchos::rcp(new CONTACT::IDataContainer());
+  Teuchos::RCP<MORTAR::InterfaceDataContainer> idata_ptr =
+      Teuchos::rcp(new CONTACT::IDataContainer());
   return Teuchos::rcp(
       new CoInterface(idata_ptr, id, comm, spatialDim, icontact, selfcontact, redundant));
 }
@@ -129,7 +130,7 @@ CONTACT::CoInterface::CoInterface(const Teuchos::RCP<CONTACT::IDataContainer>& i
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
-CONTACT::CoInterface::CoInterface(const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr,
+CONTACT::CoInterface::CoInterface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& idata_ptr,
     const int id, const Epetra_Comm& comm, const int spatialDim,
     const Teuchos::ParameterList& icontact, bool selfcontact,
     INPAR::MORTAR::RedundantStorage redundant)

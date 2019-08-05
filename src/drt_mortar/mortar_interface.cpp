@@ -49,7 +49,7 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-MORTAR::IDataContainer::IDataContainer()
+MORTAR::InterfaceDataContainer::InterfaceDataContainer()
     : id_(-1),
       comm_(NULL),
       lcomm_(Teuchos::null),
@@ -96,52 +96,53 @@ MORTAR::IDataContainer::IDataContainer()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-MORTAR::MortarInterface::MortarInterface(const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr)
-    : idata_ptr_(idata_ptr),
-      idata_(*idata_ptr_),
-      id_(idata_.Id()),
-      comm_(idata_.CommPtr()),
-      lcomm_(idata_.lComm()),
-      procmap_(idata_.ProcMap()),
-      redistributed_(idata_.IsRedistributed()),
-      idiscret_(idata_.IDiscret()),
-      dim_(idata_.Dim()),
-      imortar_(idata_.IMortar()),
-      shapefcn_(idata_.ShapeFcn()),
-      quadslave_(idata_.IsQuadSlave()),
-      redundant_(idata_.RedundantStorage()),
-      oldnodecolmap_(idata_.OldNodeColMap()),
-      oldelecolmap_(idata_.OldEleColMap()),
-      snoderowmap_(idata_.SNodeRowMap()),
-      snodecolmap_(idata_.SNodeColMap()),
-      mnoderowmap_(idata_.MNodeRowMap()),
-      mnodecolmap_(idata_.MNodeColMap()),
-      snoderowmapbound_(idata_.SNodeRowMapBound()),
-      snodecolmapbound_(idata_.SNodeColMapBound()),
-      mnoderowmapnobound_(idata_.MNodeRowMapNoBound()),
-      mnodecolmapnobound_(idata_.MNodeColMapNoBound()),
-      selerowmap_(idata_.SEleRowMap()),
-      selecolmap_(idata_.SEleColMap()),
-      melerowmap_(idata_.MEleRowMap()),
-      melecolmap_(idata_.MEleColMap()),
-      sdofrowmap_(idata_.SDofRowMap()),
-      sdofcolmap_(idata_.SDofColMap()),
-      mdofrowmap_(idata_.MDofRowMap()),
-      mdofcolmap_(idata_.MDofColMap()),
-      psdofrowmap_(idata_.PSDofRowMap()),
-      plmdofmap_(idata_.PLmDofRowMap()),
-      lmdofmap_(idata_.LmDofRowMap()),
-      maxdofglobal_(idata_.MaxDofGlobal()),
-      searchalgo_(idata_.SearchAlgorithm()),
-      binarytree_(idata_.BinaryTree()),
-      searchparam_(idata_.SearchParam()),
-      searchuseauxpos_(idata_.SearchUseAuxPos()),
-      inttime_interface_(idata_.IntTimeInterface()),
-      nurbs_(idata_.IsNurbs()),
-      poro_(idata_.IsPoro()),
-      ehl_(idata_.IsEhl())
+MORTAR::MortarInterface::MortarInterface(
+    const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr)
+    : interfaceData_ptr_(interfaceData_ptr),
+      interfaceData_(*interfaceData_ptr_),
+      id_(interfaceData_.Id()),
+      comm_(interfaceData_.CommPtr()),
+      lcomm_(interfaceData_.lComm()),
+      procmap_(interfaceData_.ProcMap()),
+      redistributed_(interfaceData_.IsRedistributed()),
+      idiscret_(interfaceData_.IDiscret()),
+      dim_(interfaceData_.Dim()),
+      imortar_(interfaceData_.IMortar()),
+      shapefcn_(interfaceData_.ShapeFcn()),
+      quadslave_(interfaceData_.IsQuadSlave()),
+      redundant_(interfaceData_.RedundantStorage()),
+      oldnodecolmap_(interfaceData_.OldNodeColMap()),
+      oldelecolmap_(interfaceData_.OldEleColMap()),
+      snoderowmap_(interfaceData_.SNodeRowMap()),
+      snodecolmap_(interfaceData_.SNodeColMap()),
+      mnoderowmap_(interfaceData_.MNodeRowMap()),
+      mnodecolmap_(interfaceData_.MNodeColMap()),
+      snoderowmapbound_(interfaceData_.SNodeRowMapBound()),
+      snodecolmapbound_(interfaceData_.SNodeColMapBound()),
+      mnoderowmapnobound_(interfaceData_.MNodeRowMapNoBound()),
+      mnodecolmapnobound_(interfaceData_.MNodeColMapNoBound()),
+      selerowmap_(interfaceData_.SEleRowMap()),
+      selecolmap_(interfaceData_.SEleColMap()),
+      melerowmap_(interfaceData_.MEleRowMap()),
+      melecolmap_(interfaceData_.MEleColMap()),
+      sdofrowmap_(interfaceData_.SDofRowMap()),
+      sdofcolmap_(interfaceData_.SDofColMap()),
+      mdofrowmap_(interfaceData_.MDofRowMap()),
+      mdofcolmap_(interfaceData_.MDofColMap()),
+      psdofrowmap_(interfaceData_.PSDofRowMap()),
+      plmdofmap_(interfaceData_.PLmDofRowMap()),
+      lmdofmap_(interfaceData_.LmDofRowMap()),
+      maxdofglobal_(interfaceData_.MaxDofGlobal()),
+      searchalgo_(interfaceData_.SearchAlgorithm()),
+      binarytree_(interfaceData_.BinaryTree()),
+      searchparam_(interfaceData_.SearchParam()),
+      searchuseauxpos_(interfaceData_.SearchUseAuxPos()),
+      inttime_interface_(interfaceData_.IntTimeInterface()),
+      nurbs_(interfaceData_.IsNurbs()),
+      poro_(interfaceData_.IsPoro()),
+      ehl_(interfaceData_.IsEhl())
 {
-  if (not idata_.IsInit())
+  if (not interfaceData_.IsInit())
     dserror(
         "This constructor is only allowed for already initialized "
         "interface data containers!");
@@ -154,63 +155,65 @@ Teuchos::RCP<MORTAR::MortarInterface> MORTAR::MortarInterface::Create(const int 
     const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& imortar,
     INPAR::MORTAR::RedundantStorage redundant)
 {
-  Teuchos::RCP<MORTAR::IDataContainer> idata_ptr = Teuchos::rcp(new MORTAR::IDataContainer());
+  Teuchos::RCP<MORTAR::InterfaceDataContainer> interfaceData_ptr =
+      Teuchos::rcp(new MORTAR::InterfaceDataContainer());
 
   return Teuchos::rcp(
-      new MORTAR::MortarInterface(idata_ptr, id, comm, spatialDim, imortar, redundant));
+      new MORTAR::MortarInterface(interfaceData_ptr, id, comm, spatialDim, imortar, redundant));
 }
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
-MORTAR::MortarInterface::MortarInterface(const Teuchos::RCP<IDataContainer>& idata_ptr,
-    const int id, const Epetra_Comm& comm, const int spatialDim,
-    const Teuchos::ParameterList& imortar, INPAR::MORTAR::RedundantStorage redundant)
-    : idata_ptr_(idata_ptr),
-      idata_(*idata_ptr_),
-      id_(idata_.Id()),
-      comm_(idata_.CommPtr()),
-      lcomm_(idata_.lComm()),
-      procmap_(idata_.ProcMap()),
-      redistributed_(idata_.IsRedistributed()),
-      idiscret_(idata_.IDiscret()),
-      dim_(idata_.Dim()),
-      imortar_(idata_.IMortar()),
-      shapefcn_(idata_.ShapeFcn()),
-      quadslave_(idata_.IsQuadSlave()),
-      redundant_(idata_.RedundantStorage()),
-      oldnodecolmap_(idata_.OldNodeColMap()),
-      oldelecolmap_(idata_.OldEleColMap()),
-      snoderowmap_(idata_.SNodeRowMap()),
-      snodecolmap_(idata_.SNodeColMap()),
-      mnoderowmap_(idata_.MNodeRowMap()),
-      mnodecolmap_(idata_.MNodeColMap()),
-      snoderowmapbound_(idata_.SNodeRowMapBound()),
-      snodecolmapbound_(idata_.SNodeColMapBound()),
-      mnoderowmapnobound_(idata_.MNodeRowMapNoBound()),
-      mnodecolmapnobound_(idata_.MNodeColMapNoBound()),
-      selerowmap_(idata_.SEleRowMap()),
-      selecolmap_(idata_.SEleColMap()),
-      melerowmap_(idata_.MEleRowMap()),
-      melecolmap_(idata_.MEleColMap()),
-      sdofrowmap_(idata_.SDofRowMap()),
-      sdofcolmap_(idata_.SDofColMap()),
-      mdofrowmap_(idata_.MDofRowMap()),
-      mdofcolmap_(idata_.MDofColMap()),
-      psdofrowmap_(idata_.PSDofRowMap()),
-      plmdofmap_(idata_.PLmDofRowMap()),
-      lmdofmap_(idata_.LmDofRowMap()),
-      maxdofglobal_(idata_.MaxDofGlobal()),
-      searchalgo_(idata_.SearchAlgorithm()),
-      binarytree_(idata_.BinaryTree()),
-      searchparam_(idata_.SearchParam()),
-      searchuseauxpos_(idata_.SearchUseAuxPos()),
-      inttime_interface_(idata_.IntTimeInterface()),
-      nurbs_(idata_.IsNurbs()),
-      poro_(idata_.IsPoro()),
-      ehl_(idata_.IsEhl())
+MORTAR::MortarInterface::MortarInterface(
+    const Teuchos::RCP<InterfaceDataContainer>& interfaceData_ptr, const int id,
+    const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& imortar,
+    INPAR::MORTAR::RedundantStorage redundant)
+    : interfaceData_ptr_(interfaceData_ptr),
+      interfaceData_(*interfaceData_ptr_),
+      id_(interfaceData_.Id()),
+      comm_(interfaceData_.CommPtr()),
+      lcomm_(interfaceData_.lComm()),
+      procmap_(interfaceData_.ProcMap()),
+      redistributed_(interfaceData_.IsRedistributed()),
+      idiscret_(interfaceData_.IDiscret()),
+      dim_(interfaceData_.Dim()),
+      imortar_(interfaceData_.IMortar()),
+      shapefcn_(interfaceData_.ShapeFcn()),
+      quadslave_(interfaceData_.IsQuadSlave()),
+      redundant_(interfaceData_.RedundantStorage()),
+      oldnodecolmap_(interfaceData_.OldNodeColMap()),
+      oldelecolmap_(interfaceData_.OldEleColMap()),
+      snoderowmap_(interfaceData_.SNodeRowMap()),
+      snodecolmap_(interfaceData_.SNodeColMap()),
+      mnoderowmap_(interfaceData_.MNodeRowMap()),
+      mnodecolmap_(interfaceData_.MNodeColMap()),
+      snoderowmapbound_(interfaceData_.SNodeRowMapBound()),
+      snodecolmapbound_(interfaceData_.SNodeColMapBound()),
+      mnoderowmapnobound_(interfaceData_.MNodeRowMapNoBound()),
+      mnodecolmapnobound_(interfaceData_.MNodeColMapNoBound()),
+      selerowmap_(interfaceData_.SEleRowMap()),
+      selecolmap_(interfaceData_.SEleColMap()),
+      melerowmap_(interfaceData_.MEleRowMap()),
+      melecolmap_(interfaceData_.MEleColMap()),
+      sdofrowmap_(interfaceData_.SDofRowMap()),
+      sdofcolmap_(interfaceData_.SDofColMap()),
+      mdofrowmap_(interfaceData_.MDofRowMap()),
+      mdofcolmap_(interfaceData_.MDofColMap()),
+      psdofrowmap_(interfaceData_.PSDofRowMap()),
+      plmdofmap_(interfaceData_.PLmDofRowMap()),
+      lmdofmap_(interfaceData_.LmDofRowMap()),
+      maxdofglobal_(interfaceData_.MaxDofGlobal()),
+      searchalgo_(interfaceData_.SearchAlgorithm()),
+      binarytree_(interfaceData_.BinaryTree()),
+      searchparam_(interfaceData_.SearchParam()),
+      searchuseauxpos_(interfaceData_.SearchUseAuxPos()),
+      inttime_interface_(interfaceData_.IntTimeInterface()),
+      nurbs_(interfaceData_.IsNurbs()),
+      poro_(interfaceData_.IsPoro()),
+      ehl_(interfaceData_.IsEhl())
 {
-  idata_.SetIsInit(true);
+  interfaceData_.SetIsInit(true);
   id_ = id;
   comm_ = Teuchos::rcpFromRef(comm);
   dim_ = spatialDim;
@@ -1719,7 +1722,7 @@ void MORTAR::MortarInterface::UpdateMasterSlaveSets()
         Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mcb.size(), &mcb[0], 0, Comm()));
 
     // build exporter
-    idata_.SlExporterPtr() =
+    interfaceData_.SlExporterPtr() =
         Teuchos::rcp(new DRT::Exporter(*snoderowmapbound_, *snodecolmapbound_, Comm()));
   }
 
@@ -1922,11 +1925,11 @@ Teuchos::RCP<Epetra_Map> MORTAR::MortarInterface::UpdateLagMultSets(
 void MORTAR::MortarInterface::StoreUnredistributedMaps()
 {
   psdofrowmap_ = Teuchos::rcp(new Epetra_Map(*sdofrowmap_));
-  idata_.PMDofRowMap() = Teuchos::rcp(new Epetra_Map(*mdofrowmap_));
+  interfaceData_.PMDofRowMap() = Teuchos::rcp(new Epetra_Map(*mdofrowmap_));
   plmdofmap_ = Teuchos::rcp(new Epetra_Map(*lmdofmap_));
 
-  idata_.PSNodeRowMap() = Teuchos::rcp(new Epetra_Map(*snoderowmap_));
-  idata_.PMNodeRowMap() = Teuchos::rcp(new Epetra_Map(*mnoderowmap_));
+  interfaceData_.PSNodeRowMap() = Teuchos::rcp(new Epetra_Map(*snoderowmap_));
+  interfaceData_.PMNodeRowMap() = Teuchos::rcp(new Epetra_Map(*mnoderowmap_));
 
   return;
 }
@@ -2807,7 +2810,7 @@ void MORTAR::MortarInterface::ExportNodalNormals() const
 
   // communicate from slave node row to column map
 
-  idata_.Exporter().Export(triad);
+  interfaceData_.Exporter().Export(triad);
 
   // extract info on column map
   for (int i = 0; i < snodecolmapbound_->NumMyElements(); ++i)
@@ -4348,14 +4351,14 @@ void MORTAR::MortarInterface::CreateVolumeGhosting()
  *----------------------------------------------------------------------------*/
 bool MORTAR::MortarInterface::HasMaSharingRefInterface() const
 {
-  return (idata_.GetMaSharingRefInterfacePtr() != NULL);
+  return (interfaceData_.GetMaSharingRefInterfacePtr() != NULL);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 const MORTAR::MortarInterface* MORTAR::MortarInterface::GetMaSharingRefInterfacePtr() const
 {
-  return idata_.GetMaSharingRefInterfacePtr();
+  return interfaceData_.GetMaSharingRefInterfacePtr();
 }
 
 
@@ -4387,7 +4390,7 @@ void MORTAR::MortarInterface::AddMaSharingRefInterface(const MortarInterface* re
     if (size_curr_ref_interface >= size_new_ref_interface) return;
   }
 
-  idata_.SetMaSharingRefInterfacePtr(ref_interface);
+  interfaceData_.SetMaSharingRefInterfacePtr(ref_interface);
 }
 
 /*----------------------------------------------------------------------------*
