@@ -8,7 +8,7 @@ MAT 1 MAT_VISCONEOHOOKE YOUNGS_SLOW 1.0 POISSON 0.499 DENS 0.1 YOUNGS_FAST 100.0
 
 \level 2
 
-\maintainer Fabian Braeu
+\maintainer Amadeus Gebauer
 *----------------------------------------------------------------------*/
 
 

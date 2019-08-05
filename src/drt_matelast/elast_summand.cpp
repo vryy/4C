@@ -5,7 +5,7 @@ Interface class for materials of (visco)elasthyper toolbox.
 
 \level 1
 
-\maintainer Fabian Braeu
+\maintainer Amadeus Gebauer
 */
 /*----------------------------------------------------------------------*/
 
