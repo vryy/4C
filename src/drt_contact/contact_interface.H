@@ -191,46 +191,99 @@ namespace CONTACT
     /// @}
 
    private:
-    bool selfcontact_;       ///< flag indicating if this is a self contact interface
-    bool friction_;          ///< flag for frictional contact
-    bool nonSmoothContact_;  ///< flag for non-smooth contact algorithm
-    bool two_half_pass_;     ///< flag for two half pass contact algorithm
-    INPAR::CONTACT::ConstraintDirection
-        constr_direction_;  ///< direction in which the contact constraints are formulated
+    //! flag indicating if this is a self contact interface
+    bool selfcontact_;
 
-    Teuchos::RCP<Epetra_Map> activenodes_;    ///< row map of all active slave nodes
-    Teuchos::RCP<Epetra_Map> activedofs_;     ///< row map of all active slave dofs
-    Teuchos::RCP<Epetra_Map> inactivenodes_;  ///< row map of all inactive slave nodes
-    Teuchos::RCP<Epetra_Map> inactivedofs_;   ///< row map of all inactive slave dofs
-    Teuchos::RCP<Epetra_Map> activen_;        ///< row map of global N-matrix
-    Teuchos::RCP<Epetra_Map> activet_;        ///< row map of global T-matrix
-    Teuchos::RCP<Epetra_Map> slipnodes_;      ///< row map of all slip slave nodes
-    Teuchos::RCP<Epetra_Map> slipdofs_;       ///< row map of all slip slave dofs
-    Teuchos::RCP<Epetra_Map> slipt_;          ///< row map of part of T-matrix (slip nodes)
+    //! flag for frictional contact
+    bool friction_;
 
-    Teuchos::RCP<Epetra_Map> nonsmoothnodes_;  ///< row map of all nonsmooth slave nodes
-    Teuchos::RCP<Epetra_Map> smoothnodes_;     ///< row map of all smooth slave nodes
+    //! flag for non-smooth contact algorithm
+    bool nonSmoothContact_;
 
-    Teuchos::RCP<Epetra_Map> sdofVertexRowmap_;  ///< row map of all nonsmooth slave nodes
-    Teuchos::RCP<Epetra_Map> sdofVertexColmap_;  ///< row map of all smooth slave nodes
-    Teuchos::RCP<Epetra_Map> sdofEdgeRowmap_;    ///< row map of all nonsmooth slave nodes
-    Teuchos::RCP<Epetra_Map> sdofEdgeColmap_;    ///< row map of all smooth slave nodes
-    Teuchos::RCP<Epetra_Map> sdofSurfRowmap_;    ///< row map of all nonsmooth slave nodes
-    Teuchos::RCP<Epetra_Map> sdofSurfColmap_;    ///< row map of all smooth slave nodes
+    //! flag for two half pass contact algorithm
+    bool two_half_pass_;
+
+    //! direction in which the contact constraints are formulated
+    INPAR::CONTACT::ConstraintDirection constr_direction_;
+
+    //! @name Maps
+    //! @{
+
+    //! row map of all active slave nodes
+    Teuchos::RCP<Epetra_Map> activenodes_;
+
+    //! row map of all active slave dofs
+    Teuchos::RCP<Epetra_Map> activedofs_;
+
+    //! row map of all inactive slave nodes
+    Teuchos::RCP<Epetra_Map> inactivenodes_;
+
+    //! row map of all inactive slave dofs
+    Teuchos::RCP<Epetra_Map> inactivedofs_;
+
+    //! row map of global N-matrix
+    Teuchos::RCP<Epetra_Map> activen_;
+
+    //! row map of global T-matrix
+    Teuchos::RCP<Epetra_Map> activet_;
+
+    //! row map of all slip slave nodes
+    Teuchos::RCP<Epetra_Map> slipnodes_;
+
+    //! row map of all slip slave dofs
+    Teuchos::RCP<Epetra_Map> slipdofs_;
+
+    //! row map of part of T-matrix (slip nodes)
+    Teuchos::RCP<Epetra_Map> slipt_;
+
+    //! row map of all nonsmooth slave nodes
+    Teuchos::RCP<Epetra_Map> nonsmoothnodes_;
+
+    //! row map of all smooth slave nodes
+    Teuchos::RCP<Epetra_Map> smoothnodes_;
+
+    //! row map of all nonsmooth slave nodes
+    Teuchos::RCP<Epetra_Map> sdofVertexRowmap_;
+
+    //! row map of all smooth slave nodes
+    Teuchos::RCP<Epetra_Map> sdofVertexColmap_;
+
+    //! row map of all nonsmooth slave nodes
+    Teuchos::RCP<Epetra_Map> sdofEdgeRowmap_;
+
+    //! row map of all smooth slave nodes
+    Teuchos::RCP<Epetra_Map> sdofEdgeColmap_;
+
+    //! row map of all nonsmooth slave nodes
+    Teuchos::RCP<Epetra_Map> sdofSurfRowmap_;
+
+    //! row map of all smooth slave nodes
+    Teuchos::RCP<Epetra_Map> sdofSurfColmap_;
 
     Teuchos::RCP<Epetra_Map> nextendedghosting_;
     Teuchos::RCP<Epetra_Map> eextendedghosting_;
 
-    Teuchos::RCP<SelfBinaryTree> binarytreeself_;  ///< binary tree for self contact search
+    //! @}
+
+    //! binary tree for self contact search
+    Teuchos::RCP<SelfBinaryTree> binarytreeself_;
 
     //! cn-values of each node
-    Teuchos::RCP<Epetra_Vector> cnValues_;  ///< cn
-    Teuchos::RCP<Epetra_Vector> ctValues_;  ///< ct
+    Teuchos::RCP<Epetra_Vector> cnValues_;
 
-    int smpairs_;     ///< proc local number of slave/master pairs
-    int smintpairs_;  ///< proc local number of slave/master integration pairs
-    int intcells_;    ///< proc local number of integration cells
-  };                  // class CONTACT::InterfaceDataContainer
+    //! ct-values of each node
+    Teuchos::RCP<Epetra_Vector> ctValues_;
+
+    //! proc local number of slave/master pairs
+    int smpairs_;
+
+    //! proc local number of slave/master integration pairs
+    int smintpairs_;
+
+    ///< proc local number of integration cells
+    int intcells_;
+
+  };  // class CONTACT::InterfaceDataContainer
 
   /*----------------------------------------------------------------------------*/
   /*!
