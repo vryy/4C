@@ -711,7 +711,7 @@ namespace MORTAR
     {
       if (not Filled()) dserror("MORTAR::MortarInterface::FillComplete was not called");
 
-      return interfaceData_.PSNodeRowMap();
+      return interfaceData_->PSNodeRowMap();
     }
 
     /*!
@@ -735,7 +735,7 @@ namespace MORTAR
     {
       if (not Filled()) dserror("MORTAR::MortarInterface::FillComplete was not called");
 
-      return interfaceData_.PMNodeRowMap();
+      return interfaceData_->PMNodeRowMap();
     }
 
     /*!
@@ -891,7 +891,7 @@ namespace MORTAR
     {
       if (not Filled()) dserror("MORTAR::MortarInterface::FillComplete was not called");
 
-      return interfaceData_.PSDofRowMap();
+      return interfaceData_->PSDofRowMap();
     }
 
     /*!
@@ -927,7 +927,7 @@ namespace MORTAR
     {
       if (not Filled()) dserror("MORTAR::MortarInterface::FillComplete was not called");
 
-      return interfaceData_.PMDofRowMap();
+      return interfaceData_->PMDofRowMap();
     }
 
     /*!
@@ -1525,10 +1525,7 @@ namespace MORTAR
     void SetShapeFunctionType();
 
     /// pointer to the interface data object
-    Teuchos::RCP<InterfaceDataContainer> interfaceData_ptr_;
-
-    /// reference to the interface data object
-    InterfaceDataContainer& interfaceData_;
+    Teuchos::RCP<InterfaceDataContainer> interfaceData_;
 
    protected:
     // don't want = operator and cctor

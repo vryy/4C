@@ -1546,10 +1546,7 @@ namespace CONTACT
     void SetNodeInitiallyActiveByGap(CoNode& cnode) const;
 
     /// pointer to the interface data object
-    Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr_;
-
-    /// reference to the interface data object
-    CONTACT::InterfaceDataContainer& interfaceData_;
+    Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_;
 
    protected:
     // don't want = operator and cctor

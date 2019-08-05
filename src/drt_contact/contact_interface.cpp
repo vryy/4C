@@ -90,40 +90,39 @@ Teuchos::RCP<CONTACT::CoInterface> CONTACT::CoInterface::Create(const int id,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::CoInterface::CoInterface(
-    const Teuchos::RCP<CONTACT::InterfaceDataContainer>& interfaceData_ptr)
-    : MORTAR::MortarInterface(interfaceData_ptr),
-      interfaceData_ptr_(interfaceData_ptr),
-      interfaceData_(*interfaceData_ptr_),
-      selfcontact_(interfaceData_.IsSelfContact()),
-      friction_(interfaceData_.IsFriction()),
-      nonSmoothContact_(interfaceData_.IsNonSmoothContact()),
-      two_half_pass_(interfaceData_.IsTwoHalfPass()),
-      constr_direction_(interfaceData_.ConstraintDirection()),
-      activenodes_(interfaceData_.ActiveNodes()),
-      activedofs_(interfaceData_.ActiveDofs()),
-      inactivenodes_(interfaceData_.InActiveNodes()),
-      inactivedofs_(interfaceData_.InActiveDofs()),
-      activen_(interfaceData_.ActiveN()),
-      activet_(interfaceData_.ActiveT()),
-      slipnodes_(interfaceData_.SlipNodes()),
-      slipdofs_(interfaceData_.SlipDofs()),
-      slipt_(interfaceData_.SlipT()),
-      nonsmoothnodes_(interfaceData_.NonSmoothNodes()),
-      smoothnodes_(interfaceData_.SmoothNodes()),
-      sdofVertexRowmap_(interfaceData_.SdofVertexRowmap()),
-      sdofVertexColmap_(interfaceData_.SdofVertexColmap()),
-      sdofEdgeRowmap_(interfaceData_.SdofEdgeRowmap()),
-      sdofEdgeColmap_(interfaceData_.SdofEdgeColmap()),
-      sdofSurfRowmap_(interfaceData_.SdofSurfRowmap()),
-      sdofSurfColmap_(interfaceData_.SdofSurfColmap()),
-      nextendedghosting_(interfaceData_.NExtendedGhosting()),
-      eextendedghosting_(interfaceData_.EExtendedGhosting()),
-      binarytreeself_(interfaceData_.BinaryTreeSelf()),
-      cnValues_(interfaceData_.CnValues()),
-      ctValues_(interfaceData_.CtValues()),
-      smpairs_(interfaceData_.SMIntPairs()),
-      smintpairs_(interfaceData_.SMIntPairs()),
-      intcells_(interfaceData_.IntCells())
+    const Teuchos::RCP<CONTACT::InterfaceDataContainer>& interfaceData)
+    : MORTAR::MortarInterface(interfaceData),
+      interfaceData_(interfaceData),
+      selfcontact_(interfaceData_->IsSelfContact()),
+      friction_(interfaceData_->IsFriction()),
+      nonSmoothContact_(interfaceData_->IsNonSmoothContact()),
+      two_half_pass_(interfaceData_->IsTwoHalfPass()),
+      constr_direction_(interfaceData_->ConstraintDirection()),
+      activenodes_(interfaceData_->ActiveNodes()),
+      activedofs_(interfaceData_->ActiveDofs()),
+      inactivenodes_(interfaceData_->InActiveNodes()),
+      inactivedofs_(interfaceData_->InActiveDofs()),
+      activen_(interfaceData_->ActiveN()),
+      activet_(interfaceData_->ActiveT()),
+      slipnodes_(interfaceData_->SlipNodes()),
+      slipdofs_(interfaceData_->SlipDofs()),
+      slipt_(interfaceData_->SlipT()),
+      nonsmoothnodes_(interfaceData_->NonSmoothNodes()),
+      smoothnodes_(interfaceData_->SmoothNodes()),
+      sdofVertexRowmap_(interfaceData_->SdofVertexRowmap()),
+      sdofVertexColmap_(interfaceData_->SdofVertexColmap()),
+      sdofEdgeRowmap_(interfaceData_->SdofEdgeRowmap()),
+      sdofEdgeColmap_(interfaceData_->SdofEdgeColmap()),
+      sdofSurfRowmap_(interfaceData_->SdofSurfRowmap()),
+      sdofSurfColmap_(interfaceData_->SdofSurfColmap()),
+      nextendedghosting_(interfaceData_->NExtendedGhosting()),
+      eextendedghosting_(interfaceData_->EExtendedGhosting()),
+      binarytreeself_(interfaceData_->BinaryTreeSelf()),
+      cnValues_(interfaceData_->CnValues()),
+      ctValues_(interfaceData_->CtValues()),
+      smpairs_(interfaceData_->SMIntPairs()),
+      smintpairs_(interfaceData_->SMIntPairs()),
+      intcells_(interfaceData_->IntCells())
 {
   /* do nothing */
 }
@@ -131,44 +130,43 @@ CONTACT::CoInterface::CoInterface(
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
-CONTACT::CoInterface::CoInterface(
-    const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr, const int id,
-    const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& icontact,
-    bool selfcontact, INPAR::MORTAR::RedundantStorage redundant)
-    : MORTAR::MortarInterface(interfaceData_ptr, id, comm, spatialDim, icontact, redundant),
-      interfaceData_ptr_(
-          Teuchos::rcp_dynamic_cast<CONTACT::InterfaceDataContainer>(interfaceData_ptr, true)),
-      interfaceData_(*interfaceData_ptr_),
-      selfcontact_(interfaceData_.IsSelfContact()),
-      friction_(interfaceData_.IsFriction()),
-      nonSmoothContact_(interfaceData_.IsNonSmoothContact()),
-      two_half_pass_(interfaceData_.IsTwoHalfPass()),
-      constr_direction_(interfaceData_.ConstraintDirection()),
-      activenodes_(interfaceData_.ActiveNodes()),
-      activedofs_(interfaceData_.ActiveDofs()),
-      inactivenodes_(interfaceData_.InActiveNodes()),
-      inactivedofs_(interfaceData_.InActiveDofs()),
-      activen_(interfaceData_.ActiveN()),
-      activet_(interfaceData_.ActiveT()),
-      slipnodes_(interfaceData_.SlipNodes()),
-      slipdofs_(interfaceData_.SlipDofs()),
-      slipt_(interfaceData_.SlipT()),
-      nonsmoothnodes_(interfaceData_.NonSmoothNodes()),
-      smoothnodes_(interfaceData_.SmoothNodes()),
-      sdofVertexRowmap_(interfaceData_.SdofVertexRowmap()),
-      sdofVertexColmap_(interfaceData_.SdofVertexColmap()),
-      sdofEdgeRowmap_(interfaceData_.SdofEdgeRowmap()),
-      sdofEdgeColmap_(interfaceData_.SdofEdgeColmap()),
-      sdofSurfRowmap_(interfaceData_.SdofSurfRowmap()),
-      sdofSurfColmap_(interfaceData_.SdofSurfColmap()),
-      nextendedghosting_(interfaceData_.NExtendedGhosting()),
-      eextendedghosting_(interfaceData_.EExtendedGhosting()),
-      binarytreeself_(interfaceData_.BinaryTreeSelf()),
-      cnValues_(interfaceData_.CnValues()),
-      ctValues_(interfaceData_.CtValues()),
-      smpairs_(interfaceData_.SMIntPairs()),
-      smintpairs_(interfaceData_.SMIntPairs()),
-      intcells_(interfaceData_.IntCells())
+CONTACT::CoInterface::CoInterface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData,
+    const int id, const Epetra_Comm& comm, const int spatialDim,
+    const Teuchos::ParameterList& icontact, bool selfcontact,
+    INPAR::MORTAR::RedundantStorage redundant)
+    : MORTAR::MortarInterface(interfaceData, id, comm, spatialDim, icontact, redundant),
+      interfaceData_(
+          Teuchos::rcp_dynamic_cast<CONTACT::InterfaceDataContainer>(interfaceData, true)),
+      selfcontact_(interfaceData_->IsSelfContact()),
+      friction_(interfaceData_->IsFriction()),
+      nonSmoothContact_(interfaceData_->IsNonSmoothContact()),
+      two_half_pass_(interfaceData_->IsTwoHalfPass()),
+      constr_direction_(interfaceData_->ConstraintDirection()),
+      activenodes_(interfaceData_->ActiveNodes()),
+      activedofs_(interfaceData_->ActiveDofs()),
+      inactivenodes_(interfaceData_->InActiveNodes()),
+      inactivedofs_(interfaceData_->InActiveDofs()),
+      activen_(interfaceData_->ActiveN()),
+      activet_(interfaceData_->ActiveT()),
+      slipnodes_(interfaceData_->SlipNodes()),
+      slipdofs_(interfaceData_->SlipDofs()),
+      slipt_(interfaceData_->SlipT()),
+      nonsmoothnodes_(interfaceData_->NonSmoothNodes()),
+      smoothnodes_(interfaceData_->SmoothNodes()),
+      sdofVertexRowmap_(interfaceData_->SdofVertexRowmap()),
+      sdofVertexColmap_(interfaceData_->SdofVertexColmap()),
+      sdofEdgeRowmap_(interfaceData_->SdofEdgeRowmap()),
+      sdofEdgeColmap_(interfaceData_->SdofEdgeColmap()),
+      sdofSurfRowmap_(interfaceData_->SdofSurfRowmap()),
+      sdofSurfColmap_(interfaceData_->SdofSurfColmap()),
+      nextendedghosting_(interfaceData_->NExtendedGhosting()),
+      eextendedghosting_(interfaceData_->EExtendedGhosting()),
+      binarytreeself_(interfaceData_->BinaryTreeSelf()),
+      cnValues_(interfaceData_->CnValues()),
+      ctValues_(interfaceData_->CtValues()),
+      smpairs_(interfaceData_->SMIntPairs()),
+      smintpairs_(interfaceData_->SMIntPairs()),
+      intcells_(interfaceData_->IntCells())
 {
   selfcontact_ = selfcontact;
   nonSmoothContact_ = DRT::INPUT::IntegralValue<int>(icontact, "NONSMOOTH_GEOMETRIES");
@@ -6738,7 +6736,7 @@ void CONTACT::CoInterface::ExportNodalNormals() const
 
 
   // communicate from slave node row to column map
-  DRT::Exporter& ex = interfaceData_.Exporter();
+  DRT::Exporter& ex = interfaceData_->Exporter();
 
   ex.Export(triad);
 
@@ -14807,7 +14805,7 @@ void CONTACT::CoInterface::AssembleNCoupLin(
  *----------------------------------------------------------------------------*/
 const CONTACT::CoInterface& CONTACT::CoInterface::GetMaSharingRefInterface() const
 {
-  return dynamic_cast<const CoInterface&>(interfaceData_.GetMaSharingRefInterface());
+  return dynamic_cast<const CoInterface&>(interfaceData_->GetMaSharingRefInterface());
 }
 
 /*------------------------------------------------------------------------*
