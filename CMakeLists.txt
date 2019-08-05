@@ -1921,6 +1921,7 @@ set(OBJS_DRT_PARTICLE_ENGINE_LIB
 set(OBJS_DRT_PARTICLE_WALL
   src/drt_particle_wall/particle_wall.cpp
   src/drt_particle_wall/particle_wall_datastate.cpp
+  src/drt_particle_wall/particle_wall_discretization_runtime_vtu_writer.cpp
   src/drt_particle_wall/particle_wall_result_test.cpp
 )
 set(OBJS_DRT_ACOU

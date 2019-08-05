@@ -276,8 +276,8 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Output() const
     // write binning discretization output (debug feature)
     particleengine_->WriteBinDisOutput(Step(), Time());
 
-    // write wall runtime vtu output
-    if (particlewall_) particlewall_->WriteWallRuntimeVtuOutput(Step(), Time());
+    // write wall runtime output
+    if (particlewall_) particlewall_->WriteWallRuntimeOutput(Step(), Time());
   }
 
   // write restart step

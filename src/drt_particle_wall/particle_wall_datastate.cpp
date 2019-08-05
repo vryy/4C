@@ -13,6 +13,8 @@
  *---------------------------------------------------------------------------*/
 #include "particle_wall_datastate.H"
 
+#include "../drt_inpar/inpar_particle.H"
+
 #include "../drt_lib/drt_discret.H"
 
 #include "../linalg/linalg_utils.H"
@@ -20,7 +22,7 @@
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 05/2019 |
  *---------------------------------------------------------------------------*/
-PARTICLEWALL::WallDataState::WallDataState()
+PARTICLEWALL::WallDataState::WallDataState(const Teuchos::ParameterList& params) : params_(params)
 {
   // empty constructor
 }
@@ -37,8 +39,12 @@ void PARTICLEWALL::WallDataState::Init()
  | setup wall data state container                            sfuchs 05/2019 |
  *---------------------------------------------------------------------------*/
 void PARTICLEWALL::WallDataState::Setup(
-    Teuchos::RCP<const DRT::Discretization> const& walldiscretization, bool ismoving, bool isloaded)
+    Teuchos::RCP<const DRT::Discretization> const& walldiscretization)
 {
+  // get flags defining considered states of particle wall
+  bool ismoving = DRT::INPUT::IntegralValue<int>(params_, "PARTICLE_WALL_MOVING");
+  bool isloaded = DRT::INPUT::IntegralValue<int>(params_, "PARTICLE_WALL_LOADED");
+
   // set current dof row and column map
   curr_dof_row_map_ = Teuchos::rcp(new Epetra_Map(*walldiscretization->DofRowMap()));
 
