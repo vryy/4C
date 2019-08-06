@@ -192,7 +192,7 @@ ML_DAMPCOARSE                   1.0                             // damping coars
 MAT 1 MAT_fluid DYNVISCOSITY 0.004 DENSITY 1e-3 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.0e6 NUE 0.3 DENS 1.2e-3
 MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 1.0e6 NUE 0.3 DENS 1.2e-3
-MAT 4 MAT_CNST_ART VISCOSITY 0.004 DENS 1.0e-3 YOUNG 2.0e6 NUE 0.3 DIAM 10.0 TH 0.5 PEXT1 0.0 PEXT2 0.0
+MAT 4 MAT_CNST_ART VISCOSITY 0.004 DENS 1.0e-3 YOUNG 2.0e6 NUE 0.3 TH 0.5 PEXT1 0.0 PEXT2 0.0
 MAT 5 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 1.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2

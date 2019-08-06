@@ -1,11 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\brief
-Former file of Lena Yoshihara
+\brief Material for a 1D artery, contains its initial diameter, thickness, dynamic
+       viscosity and density of the fluid flowing in it, Young's modulus and Poisson ratio and
+       external constant tissue pressures for the nodes
 
 \level 3
 
-\maintainer Martin Kronbichler
+\maintainer Johannes Kremheller
 */
 /*----------------------------------------------------------------------*/
 #ifndef CNST_1D_ART_H
@@ -44,8 +45,6 @@ namespace MAT
       const double young_;
       /// Artery Poisson's ratio
       const double nue_;
-      /// Artery initial diameter
-      const double diam_;
       /// Artery wall thickness
       const double th_;
       /// Fixed external pressure at node 1
@@ -146,8 +145,11 @@ namespace MAT
     /// return Poisson's ratio
     double Nue() const { return params_->nue_; }
 
+    /// set the artery diameter
+    void SetDiam(const double* diam) { diam_ = *diam; }
+
     /// return artery diameter
-    double Diam() const { return params_->diam_; }
+    double Diam() const { return diam_; }
 
     /// return artery wall thickness
     double Th() const { return params_->th_; }
@@ -170,6 +172,8 @@ namespace MAT
    private:
     /// my material parameters
     MAT::PAR::Cnst_1d_art* params_;
+    /// Artery initial diameter
+    double diam_;
   };
 
 }  // namespace MAT

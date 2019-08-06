@@ -56,7 +56,8 @@ void DRT::ELEMENTS::ArteryType::SetupElementDefinition(
       .AddIntVector("LINE2", 2)
       .AddNamedInt("MAT")
       .AddNamedInt("GP")
-      .AddNamedString("TYPE");
+      .AddNamedString("TYPE")
+      .AddNamedDouble("DIAM");
 
   defs["LIN2"].AddIntVector("LIN2", 2).AddNamedInt("MAT").AddNamedInt("GP").AddNamedString("TYPE");
 }
@@ -66,7 +67,7 @@ void DRT::ELEMENTS::ArteryType::SetupElementDefinition(
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Artery::Artery(int id, int owner)
-    : DRT::Element(id, owner), impltype_(INPAR::ARTDYN::impltype_undefined), is_ale_(false), data_()
+    : DRT::Element(id, owner), impltype_(INPAR::ARTDYN::impltype_undefined), data_()
 {
   gaussrule_ = intrule1D_undefined;
 
@@ -78,11 +79,7 @@ DRT::ELEMENTS::Artery::Artery(int id, int owner)
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Artery::Artery(const DRT::ELEMENTS::Artery& old)
-    : DRT::Element(old),
-      impltype_(old.impltype_),
-      gaussrule_(old.gaussrule_),
-      is_ale_(old.is_ale_),
-      data_(old.data_)
+    : DRT::Element(old), impltype_(old.impltype_), gaussrule_(old.gaussrule_), data_(old.data_)
 {
   return;
 }
@@ -131,9 +128,6 @@ void DRT::ELEMENTS::Artery::Pack(DRT::PackBuffer& data) const
   // Gaussrule
   AddtoPack(data, gaussrule_);  // implicit conversion from enum to integer
   AddtoPack(data, impltype_);
-  // is_ale_
-  //  AddtoPack(data,is_ale_);
-
 
   // data_
   AddtoPack(data, data_);
@@ -163,8 +157,6 @@ void DRT::ELEMENTS::Artery::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, gausrule_integer);
   gaussrule_ = GaussRule1D(gausrule_integer);  // explicit conversion from integer to enum
   impltype_ = static_cast<INPAR::ARTDYN::ImplType>(ExtractInt(position, data));
-  // is_ale_
-  //  ExtractfromPack(position,data,is_ale_);
 
   // data_
   std::vector<char> tmp(0);
