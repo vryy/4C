@@ -10,7 +10,7 @@
        USE ELASTHYPER-Toolbox!!
 \level 3
 
-\maintainer Fabian Braeu
+\maintainer Amadeus Gebauer
 */
 /*----------------------------------------------------------------------*/
 #ifndef NEOHOOKE_H_
