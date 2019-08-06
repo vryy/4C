@@ -8,10 +8,6 @@
 */
 /*---------------------------------------------------------------------*/
 
-//#include <iostream>
-//#include <algorithm>
-//#include <numeric>
-
 #include "mortar_dofset.H"
 #include "mortar_node.H"
 #include "../drt_lib/drt_discret.H"

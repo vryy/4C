@@ -17,7 +17,6 @@
 /*----------------------------------------------------------------------*
  | Header                                                   farah 01/14 |
  *----------------------------------------------------------------------*/
-//#include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "mortar_node.H"
