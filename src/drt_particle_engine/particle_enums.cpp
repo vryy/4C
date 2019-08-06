@@ -91,10 +91,10 @@ std::string PARTICLEENGINE::EnumToStateName(const enum PARTICLEENGINE::ParticleS
       name = "density";
       break;
     case PARTICLEENGINE::DensitySum:
-      name = "densitysum";
+      name = "density sum";
       break;
     case PARTICLEENGINE::DensityDot:
-      name = "densitydot";
+      name = "density dot";
       break;
     case PARTICLEENGINE::Pressure:
       name = "pressure";
@@ -103,7 +103,7 @@ std::string PARTICLEENGINE::EnumToStateName(const enum PARTICLEENGINE::ParticleS
       name = "temperature";
       break;
     case PARTICLEENGINE::TemperatureDot:
-      name = "temperaturedot";
+      name = "temperature dot";
       break;
     case PARTICLEENGINE::Position:
       name = "position";
@@ -160,7 +160,7 @@ std::string PARTICLEENGINE::EnumToStateName(const enum PARTICLEENGINE::ParticleS
       name = "wall distance";
       break;
     case PARTICLEENGINE::TemperatureGradient:
-      name = "temperaturegradient";
+      name = "temperature gradient";
       break;
     case PARTICLEENGINE::LastIterPosition:
       name = "position last iteration";
