@@ -157,9 +157,9 @@ void PARTICLEENGINE::ParticleEngine::ReadRestart(
 }
 
 /*---------------------------------------------------------------------------*
- | write particle runtime vtp output                          sfuchs 04/2018 |
+ | write particle runtime output                              sfuchs 04/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleEngine::WriteParticleRuntimeVtpOutput(
+void PARTICLEENGINE::ParticleEngine::WriteParticleRuntimeOutput(
     const int step, const double time) const
 {
   particlevtpwriter_->ResetTimeAndTimeStep(time, step);

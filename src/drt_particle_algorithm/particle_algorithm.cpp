@@ -270,8 +270,8 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Output() const
   // write result step
   if (writeresultsthisstep_)
   {
-    // write particle runtime vtp output
-    particleengine_->WriteParticleRuntimeVtpOutput(Step(), Time());
+    // write particle runtime output
+    particleengine_->WriteParticleRuntimeOutput(Step(), Time());
 
     // write binning discretization output (debug feature)
     particleengine_->WriteBinDisOutput(Step(), Time());
