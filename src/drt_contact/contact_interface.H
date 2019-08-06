@@ -14,7 +14,6 @@
 #include "../drt_mortar/mortar_strategy_base.H"
 #include "../drt_mortar/mortar_interface.H"
 #include "../drt_inpar/inpar_contact.H"
-#include "../linalg/linalg_sparseoperator.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include <Epetra_FEVector.h>
 
@@ -32,6 +31,11 @@ namespace ADAPTER
 namespace DRT
 {
   class Node;
+}
+
+namespace LINALG
+{
+  class SparseMatrix;
 }
 
 namespace CONTACT

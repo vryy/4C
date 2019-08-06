@@ -11,6 +11,8 @@
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_FEVector.h>
 #include <Epetra_Time.h>
+#include <Teuchos_TimeMonitor.hpp>
+
 #include "contact_interface.H"
 #include "contact_node.H"
 #include "contact_element.H"
@@ -21,14 +23,20 @@
 #include "contact_defines.H"
 #include "contact_line_coupling.H"
 #include "friction_node.H"
+
 #include "../drt_mortar/mortar_binarytree.H"
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_projector.H"
+
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_inpar/inpar_contact.H"
+
 #include "../drt_lib/drt_utils_parmetis.H"
+
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensevector.H"
+#include "../linalg/linalg_sparsematrix.H"
+
 #include "../drt_adapter/adapter_coupling.H"
 
 #include "../drt_mortar/mortar_coupling3d_classes.H"
@@ -36,7 +44,6 @@
 
 #include "../drt_io/io.H"
 
-#include <Teuchos_TimeMonitor.hpp>
 #include "selfcontact_binarytree_unbiased.H"
 
 /*----------------------------------------------------------------------------*
