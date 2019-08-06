@@ -213,3 +213,29 @@ void CONTACT::MeshtyingContactBridge::VisualizeGmsh(const int istep, const int i
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const Epetra_Comm& CONTACT::MeshtyingContactBridge::Comm() const
+{
+  if (cman_ != Teuchos::null) return cman_->Comm();
+
+  if (mtman_ != Teuchos::null) return mtman_->Comm();
+
+  dserror("can't get comm()");
+  return cman_->Comm();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<MORTAR::ManagerBase> CONTACT::MeshtyingContactBridge::ContactManager() const
+{
+  return cman_;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<MORTAR::ManagerBase> CONTACT::MeshtyingContactBridge::MtManager() const
+{
+  return mtman_;
+}

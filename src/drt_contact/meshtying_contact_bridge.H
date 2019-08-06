@@ -13,7 +13,6 @@
 #include "Epetra_Vector.h"
 #include "../drt_inpar/inpar_contact.H"
 #include "Epetra_Comm.h"
-#include "../drt_mortar/mortar_manager_base.H"  // TODO forward declaration!!!
 #include "../drt_lib/drt_dserror.H"
 
 // forward declarations
@@ -23,6 +22,12 @@ namespace DRT
   class Condition;
 }  // namespace DRT
 
+namespace IO
+{
+  class DiscretizationWriter;
+  class DiscretizationReader;
+}  // namespace IO
+
 namespace LINALG
 {
   class MapExtractor;
@@ -30,6 +35,7 @@ namespace LINALG
 
 namespace MORTAR
 {
+  class ManagerBase;
   class StrategyBase;
 }  // namespace MORTAR
 
@@ -68,25 +74,19 @@ namespace CONTACT
     \brief Get Epetra communicator
 
     */
-    const Epetra_Comm& Comm() const
-    {
-      if (cman_ != Teuchos::null) return cman_->Comm();
-      if (mtman_ != Teuchos::null) return mtman_->Comm();
-      dserror("can't get comm()");
-      return cman_->Comm();
-    }
+    const Epetra_Comm& Comm() const;
 
     /*!
     \brief Get contact manager
 
     */
-    Teuchos::RCP<MORTAR::ManagerBase> ContactManager() { return cman_; }
+    Teuchos::RCP<MORTAR::ManagerBase> ContactManager() const;
 
     /*!
     \brief Get meshtying manager
 
     */
-    Teuchos::RCP<MORTAR::ManagerBase> MtManager() { return mtman_; }
+    Teuchos::RCP<MORTAR::ManagerBase> MtManager() const;
 
     /*!
     \brief Get strategy of mt/contact problem
