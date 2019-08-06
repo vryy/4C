@@ -89,22 +89,22 @@ namespace CONTACT
     Teuchos::RCP<MORTAR::ManagerBase> MtManager() const;
 
     /*!
-    \brief Get strategy of mt/contact problem
+    \brief Get strategy of meshtying/contact problem
 
     */
-    MORTAR::StrategyBase& GetStrategy();
+    MORTAR::StrategyBase& GetStrategy() const;
 
     /*!
     \brief return bool indicating if contact is defined
 
     */
-    bool HaveContact() { return (cman_ != Teuchos::null); }
+    bool HaveContact() const { return (cman_ != Teuchos::null); }
 
     /*!
     \brief return bool indicating if meshtying is defined
 
     */
-    bool HaveMeshtying() { return (mtman_ != Teuchos::null); }
+    bool HaveMeshtying() const { return (mtman_ != Teuchos::null); }
 
     /*!
     \brief Write results for visualization for meshtying/contact problems
@@ -171,10 +171,8 @@ namespace CONTACT
     void WriteRestart(Teuchos::RCP<IO::DiscretizationWriter>& output, bool forcedrestart = false);
 
    private:
-    // don't want cctor (= operator impossible anyway for abstract class)
+    //! don't want cctor (= operator impossible anyway for abstract class)
     MeshtyingContactBridge(const MeshtyingContactBridge& old) = delete;
-
-    // internal variables:
 
     //! Contact manager
     Teuchos::RCP<MORTAR::ManagerBase> cman_;

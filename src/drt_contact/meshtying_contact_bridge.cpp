@@ -97,7 +97,7 @@ void CONTACT::MeshtyingContactBridge::SetState(Teuchos::RCP<Epetra_Vector> zeros
 /*----------------------------------------------------------------------*
  |  Get Strategy                                             farah 06/14|
  *----------------------------------------------------------------------*/
-MORTAR::StrategyBase& CONTACT::MeshtyingContactBridge::GetStrategy()
+MORTAR::StrategyBase& CONTACT::MeshtyingContactBridge::GetStrategy() const
 {
   // if contact is involved use contact strategy!
   // contact conditions/strategies are dominating the algorithm!
