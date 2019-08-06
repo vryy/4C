@@ -179,3 +179,10 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::SolveRela
   // return the increment
   return Teuchos::rcpFromRef(increment.getEpetraVector());
 }
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+const STR::TIMINT::BaseDataIO& STR::MODELEVALUATOR::PartitionedFSI::GetInOutput() const
+{
+  CheckInit();
+  return GInOutput();
+}

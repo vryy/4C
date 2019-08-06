@@ -1,10 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\file beam_to_fluid_meshtying_params.cpp
 
 \brief Data container holding all beam to fluid volume meshtying input parameters.
 
-\level 3
+\level 1
 \maintainer Nora Hagmeyer
 */
 
@@ -12,6 +11,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "beam_to_fluid_meshtying_params.H"
 #include "../drt_inpar/inpar_fbi.H"
+#include "../drt_beaminteraction/beam_to_solid_volume_meshtying_vtk_output_params.H"
 
 
 /**
@@ -61,6 +61,12 @@ void FBI::BeamToFluidMeshtyingParams::Init()
       beam_to_fluid_meshtying_params_list.sublist("BEAM TO FLUID MESHTYING")
           .get<int>("GAUSS_POINTS"));
   isinit_ = true;
+
+  // Create and get vtk output parameter
+  output_params_ = Teuchos::rcp<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams>(
+      new BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams());
+  output_params_->Init();
+  output_params_->Setup();
 }
 
 

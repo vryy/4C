@@ -55,14 +55,18 @@ namespace BEAMINTERACTION
         LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
         LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22) override;
 
+   private:
+    //! Type to be used for scalar AD variables. This can not be inherited from the base class.
+    typedef Sacado::ELRFad::SLFad<double, beam::n_dof_ + fluid::n_dof_> TYPE_BTS_VMT_AD;
+
    protected: /**
                * \brief Standard Constructor
                */
     BeamToFluidMeshtyingPairGaussPoint();
 
-   private:
-    //! Type to be used for scalar AD variables. This can not be inherited from the base class.
-    typedef Sacado::ELRFad::SLFad<double, beam::n_dof_ + fluid::n_dof_> TYPE_BTS_VMT_AD;
+    virtual void EvaluatePenaltyForce(LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& force,
+        const GEOMETRYPAIR::ProjectionPointLineToVolume<double>& projected_gauss_point,
+        LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> v_beam) const override;
   };
 }  // namespace BEAMINTERACTION
 

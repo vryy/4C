@@ -67,7 +67,7 @@ void INPAR::FBI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   // Create subsection for runtime vtk output.
   Teuchos::ParameterList& beam_to_fluid_meshtying_vtk =
-      fbi.sublist("RUNTIME VTK OUTPUT", false, "");
+      beam_to_fluid_meshtying.sublist("RUNTIME VTK OUTPUT", false, "");
 
   // Whether to write vtp output at all for beam to fluid meshtying.
   setStringToIntegralParameter<int>("WRITE_OUTPUT", "No",

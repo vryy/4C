@@ -316,6 +316,8 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--FSI DYNAMIC/TIMEADAPTIVITY", *list);
   reader.ReadGidSection("--FLUID BEAM INTERACTION", *list);
   reader.ReadGidSection("--FLUID BEAM INTERACTION/BEAM TO FLUID MESHTYING", *list);
+  reader.ReadGidSection(
+      "--FLUID BEAM INTERACTION/BEAM TO FLUID MESHTYING/RUNTIME VTK OUTPUT", *list);
   reader.ReadGidSection("--IMMERSED METHOD", *list);
   reader.ReadGidSection("--IMMERSED METHOD/PARTITIONED SOLVER", *list);
   reader.ReadGidSection("--CELL DYNAMIC", *list);

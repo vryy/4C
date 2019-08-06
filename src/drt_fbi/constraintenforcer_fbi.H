@@ -5,7 +5,7 @@
 \brief Abstract class to be overloaded by different constraintenforcement techniques for fluid-beam
 interaction.
 
-\level 3
+\level 2
 
 \maintainer Nora Hagmeyer
 *----------------------------------------------------------------------*/

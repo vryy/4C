@@ -208,6 +208,17 @@ namespace BEAMINTERACTION
     void CreateGeometryPair(const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal>
             geometry_evaluation_data_ptr);
 
+    virtual void EvaluatePenaltyForce(LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& force,
+        const GEOMETRYPAIR::ProjectionPointLineToVolume<double>& projected_gauss_point,
+        LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> v_beam) const
+    {
+      dserror("Not implemented yet!\n");
+    };
+
+    void EvaluateBeamPosition(
+        const GEOMETRYPAIR::ProjectionPointLineToVolume<double>& integration_point,
+        LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& r_beam, bool reference) const;
+
     /**
      * \brief Return a cast of the geometry pair to the type for this contact pair.
      * @return RPC with the type of geometry pair for this beam contact pair.

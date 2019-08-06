@@ -21,6 +21,10 @@
 
 #include "../drt_fbi/constraintenforcer_fbi.H"
 #include "../drt_fbi/constraintenforcer_fbi_factory.H"
+#include "../drt_fbi/beam_to_fluid_meshtying_vtk_output_writer.H"
+#include "../drt_fbi/ad_fbi_constraintbridge.H"
+#include "../drt_fbi/beam_to_fluid_meshtying_params.H"
+
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 
@@ -29,7 +33,8 @@
 FSI::DirichletNeumannVel::DirichletNeumannVel(const Epetra_Comm& comm)
     : DirichletNeumann(comm),
       constraint_manager_(ADAPTER::ConstraintEnforcerFactory::CreateEnforcer(
-          DRT::Problem::Instance()->FSIDynamicParams()))
+          DRT::Problem::Instance()->FSIDynamicParams())),
+      vtk_output_writer_(Teuchos::null)
 {
   // empty constructor
 }
@@ -39,19 +44,20 @@ void FSI::DirichletNeumannVel::Setup()
 {
   // call setup of base class
   FSI::DirichletNeumann::Setup();
-  printf("After dirichletneumann setup\n");
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
   if (DRT::INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::disp)
     dserror("Please set the fsi coupling variable to Velocity or Force!\n");
   SetKinematicCoupling(
       DRT::INPUT::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::vel);
-  // setup in fsi::partition?
   printf("before constraint manager\n");
   constraint_manager_->Setup(StructureField(), MBFluidField());
-  // constraint_manager_->Evaluate();
-
-  // Hier noch erstes coupling->evaluate für coupling. Dann nach jeder Struktur Auswertung
+  vtk_output_writer_ = Teuchos::rcp(new BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter());
+  vtk_output_writer_->Init();
+  vtk_output_writer_->Setup(
+      Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(StructureField(), true)->GetIOData(),
+      constraint_manager_->GetBridge()->GetParams()->GetVtkOuputParamsPtr(), Time());
+  constraint_manager_->Evaluate();
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -157,4 +163,14 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::FluidToStruct(Teuchos::RCP
 Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::StructToFluid(Teuchos::RCP<Epetra_Vector> iv)
 {
   return constraint_manager_->MasterToSlave();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+
+void FSI::DirichletNeumannVel::Output()
+{
+  FSI::DirichletNeumann::Output();
+  printf("We are in the output\n");
+  vtk_output_writer_->WriteOutputRuntime(constraint_manager_, Step(), Time());
 }

@@ -23,6 +23,11 @@ namespace ADAPTER
   class FBIConstraintenforcer;
 }
 
+namespace BEAMINTERACTION
+{
+  class BeamToFluidMeshtyingVtkOutputWriter;
+}
+
 namespace FSI
 {
   /**
@@ -91,6 +96,9 @@ namespace FSI
     /// setup this object
     virtual void Setup() override;
 
+    /// write output
+    virtual void Output() override;
+
    protected:
     /** \brief interface fluid operator
      *
@@ -130,6 +138,8 @@ namespace FSI
      * effectively separating it from the actual algorithm
      */
     Teuchos::RCP<ADAPTER::FBIConstraintenforcer> constraint_manager_;
+
+    Teuchos::RCP<BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter> vtk_output_writer_;
   };
 }  // namespace FSI
 

@@ -14,15 +14,24 @@ structure and methods dependent on the interface
 #define FBI_STRUCTURE_WRAPPER_H
 
 #include "ad_str_fsiwrapper.H"
-#include "../drt_fsi/fsi_str_model_evaluator_partitioned.H"
 
 // forward declarations
-
+namespace STR
+{
+  namespace TIMINT
+  {
+    class ParamsRuntimeVtkOutput;
+  }
+}  // namespace STR
 namespace LINALG
 {
   class MultiMapExtractor;
 }  // namespace LINALG
 
+namespace BEAMINTERACTION
+{
+  class BeamToSolidVolumeMeshtyingVtkOutputParams;
+}
 namespace ADAPTER
 {
   class FBIStructureWrapper : public FSIStructureWrapper
@@ -75,6 +84,8 @@ namespace ADAPTER
     virtual void RebuildInterface() override;
 
     virtual void SetupMultiMapExtractor();
+
+    virtual Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> GetIOData();
 
    private:
     /// Map extractor seperating the beam elements from the structure elements

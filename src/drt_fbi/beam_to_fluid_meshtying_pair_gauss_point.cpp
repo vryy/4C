@@ -236,6 +236,23 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
   return true;
 }
 
+template <typename beam, typename fluid>
+void BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::EvaluatePenaltyForce(
+    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& force,
+    const GEOMETRYPAIR::ProjectionPointLineToVolume<double>& projected_gauss_point,
+    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> v_beam) const
+{
+  LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> v_fluid;
+
+  GEOMETRYPAIR::EvaluatePosition<beam>(
+      projected_gauss_point.GetEta(), this->ele1vel_, v_beam, this->Element1());
+  GEOMETRYPAIR::EvaluatePosition<fluid>(projected_gauss_point.GetXi(), this->ele2vel_, v_fluid);
+
+  force = v_fluid;
+  force -= v_beam;
+  force.Scale(Teuchos::rcp_dynamic_cast<FBI::BeamToFluidMeshtyingParams>(this->Params(), true)
+                  ->GetPenaltyParameter());
+}
 
 /**
  * Explicit template initialization of template class.

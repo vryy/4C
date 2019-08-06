@@ -14,7 +14,9 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_structure/stru_aux.H"
 #include "../drt_beaminteraction/beaminteraction_calc_utils.H"
-
+#include "../drt_fsi/fsi_str_model_evaluator_partitioned.H"
+#include "../drt_structure_new/str_timint_basedataio_runtime_vtk_output.H"
+#include "../drt_structure_new/str_timint_basedataio.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -115,4 +117,12 @@ void ADAPTER::FBIStructureWrapper::ApplyInterfaceForces(Teuchos::RCP<Epetra_Vect
 void ADAPTER::FBIStructureWrapper::SetupMultiMapExtractor()
 {
   FSIModelEvaluator()->SetupMultiMapExtractor();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+
+Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> ADAPTER::FBIStructureWrapper::GetIOData()
+{
+  return FSIModelEvaluator()->GetInOutput().GetRuntimeVtkOutputParams();
 }

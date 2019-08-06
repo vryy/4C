@@ -1,13 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\file beam_to_fluid_meshtying_params.H
 
 \brief Data container holding all beam to fluid volume meshtying input parameters.
 
-\level 3
+\level 1
+
 \maintainer Nora Hagmeyer
 */
-// End doxygen header.
 
 
 #ifndef BEAM_TO_FLUID_MESHTYING_PARAMS_H
@@ -19,12 +18,18 @@
 
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_beaminteraction/beam_contact_params.H"
+
+namespace BEAMINTERACTION
+{
+  class BeamToSolidVolumeMeshtyingVtkOutputParams;
+}
+
 namespace FBI
 {
   /**
    * \brief Class for beam to fluid meshtying parameters.
    */
-  class BeamToFluidMeshtyingParams : public BEAMINTERACTION::BeamContactParams  // todo fix this
+  class BeamToFluidMeshtyingParams : public BEAMINTERACTION::BeamContactParams
   {
    public:
     /**
@@ -33,17 +38,17 @@ namespace FBI
     BeamToFluidMeshtyingParams();
 
     /**
-     * \brief Destructor.
+     * \brief empty Destructor
      */
     virtual ~BeamToFluidMeshtyingParams(){};
 
     /**
-     * \brief Initialize with the stuff coming from input file.
+     * \brief Initialize with the stuff coming from input file
      */
     void Init();
 
     /**
-     * \brief Setup member variables.
+     * \brief Setup
      */
     void Setup();
 
@@ -100,45 +105,59 @@ namespace FBI
 
     /**
      * \brief Returns the penalty parameter.
-     * @return penalty parameter.
+     * \returns penalty parameter.
      */
     inline double GetPenaltyParameter() const { return penalty_parameter_; }
 
     /**
      * \brief Returns the Gauss rule.
-     * @return gauss rule.
+     * \returns gauss rule.
      */
     inline DRT::UTILS::GaussRule1D GetGaussRule() const { return gauss_rule_; }
 
+    /**
+     * \brief Returns a pointer to the vtk output parameters.
+     * @return Pointer to vtk output parameters.
+     */
+    const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams>
+    GetVtkOuputParamsPtr() const
+    {
+      return output_params_;
+    }
+
+
    private:
-    //! Flag if Init was called.
+    /// Flag if Init was called.
     bool isinit_;
 
-    //! Flag if Setup was called.
+    /// Flag if Setup was called.
     bool issetup_;
 
-    //! Enforcement strategy for constraints.
+    /// Enforcement strategy for constraints.
     INPAR::FBI::BeamToFluidConstraintEnforcement constraint_enforcement_;
 
-    //! Discretization used for the contact.
+    /// Discretization used for the contact.
     INPAR::FBI::BeamToFluidDiscretization meshtying_discretization_;
 
-    //! Penalty parameter.
+    /// Penalty parameter.
     double penalty_parameter_;
 
-    //! Gauss rule to be used.
+    /// Gauss rule to be used.
     DRT::UTILS::GaussRule1D gauss_rule_;
 
     /**
      * \brief Flag to keep track if the RHS contribution for the weak Dirichlet enforcement of the
      * kinematic continuity condition is requested
      *
-     * In the case of a DirichletNeumann the right-hand side contribution C_fs*v_s leads to the
-     * unnecessary costly creation of a non-local sparse matrix and matrix-vector product. Instead,
-     * the contributions of the fluid "force" introduced by the beam DOFs can be calculated directly
-     * on pair level
+     * In the case of a DirichletNeumann algorithm the right-hand side contribution C_fs*v_s leads
+     * to the unnecessary costly creation of a non-local sparse matrix and matrix-vector product.
+     * Instead, the contributions of the fluid "force" introduced by the beam DOFs can be calculated
+     * directly on pair level
      */
     bool calcfluidweakdirichletforce_;
+
+    /// VTK output params. For now I see no reason to overload this
+    Teuchos::RCP<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputParams> output_params_;
   };
 
 }  // namespace FBI

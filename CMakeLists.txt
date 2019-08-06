@@ -1250,6 +1250,7 @@ set(OBJS_DRT_FBI
   src/drt_fbi/ad_fbi_constraintbridge_penalty.cpp
   src/drt_fbi/partitioned_penaltycoupling_assembly_manager.cpp
   src/drt_fbi/partitioned_penaltycoupling_assembly_manager_direct.cpp
+  src/drt_fbi/beam_to_fluid_meshtying_vtk_output_writer.cpp
 )
 set(OBJS_DRT_FSI
   src/drt_fsi/fsi_str_model_evaluator_partitioned.cpp

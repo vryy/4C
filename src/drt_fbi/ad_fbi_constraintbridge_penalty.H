@@ -13,9 +13,13 @@ constraint enforcement technique with a discretization approach for Fluid-beam i
 #define AD_FBI_CONSTRAINTBRIDGE_PENALTY_H_
 
 #include <Teuchos_RCP.hpp>
-#include "../linalg/linalg_utils.H"
 #include <Epetra_FEVector.h>
 #include "ad_fbi_constraintbridge.H"
+
+namespace BEAMINTERACTION
+{
+  class BeamToFluidMeshtyingVtkOutputWriter;
+}
 
 namespace ADAPTER
 {
@@ -23,6 +27,7 @@ namespace ADAPTER
   {
     friend class ConstraintEnforcerFactory;
     friend class FBIPenaltyConstraintenforcer;
+    friend class BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter;
 
    public:
     /// empty destructor
