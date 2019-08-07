@@ -87,13 +87,13 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::Setup(
   historypairs_->Setup(particleengineinterface);
 
   // setup contact handler
-  contact_->Setup(particleengineinterface, particlewallinterface, particlematerial_, neighborpairs_,
-      historypairs_);
+  contact_->Setup(particleengineinterface, particlewallinterface, particlematerial_,
+      particleinteractionwriter_, neighborpairs_, historypairs_);
 
   // setup adhesion handler
   if (adhesion_)
-    adhesion_->Setup(particleengineinterface, particlewallinterface, neighborpairs_, historypairs_,
-        contact_->GetNormalContactStiffness());
+    adhesion_->Setup(particleengineinterface, particlewallinterface, particleinteractionwriter_,
+        neighborpairs_, historypairs_, contact_->GetNormalContactStiffness());
 }
 
 /*---------------------------------------------------------------------------*

@@ -43,6 +43,7 @@ namespace PARTICLEWALL
 
 namespace PARTICLEINTERACTION
 {
+  class InteractionWriter;
   class DEMNeighborPairs;
   class DEMHistoryPairs;
   class DEMAdhesionLawBase;
@@ -70,6 +71,7 @@ namespace PARTICLEINTERACTION
     void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
+        const std::shared_ptr<PARTICLEINTERACTION::InteractionWriter> particleinteractionwriter,
         const std::shared_ptr<PARTICLEINTERACTION::DEMNeighborPairs> neighborpairs,
         const std::shared_ptr<PARTICLEINTERACTION::DEMHistoryPairs> historypairs,
         const double& k_normal);
@@ -93,6 +95,9 @@ namespace PARTICLEINTERACTION
     //! init adhesion surface energy handler
     void InitAdhesionSurfaceEnergyHandler();
 
+    //! setup particle interaction writer
+    void SetupParticleInteractionWriter();
+
     //! evaluate particle adhesion contribution
     void EvaluateParticleAdhesion();
 
@@ -111,6 +116,9 @@ namespace PARTICLEINTERACTION
     //! interface to particle wall handler
     std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface_;
 
+    //! particle interaction writer
+    std::shared_ptr<PARTICLEINTERACTION::InteractionWriter> particleinteractionwriter_;
+
     //! neighbor pair handler
     std::shared_ptr<PARTICLEINTERACTION::DEMNeighborPairs> neighborpairs_;
 
@@ -125,6 +133,9 @@ namespace PARTICLEINTERACTION
 
     //! adhesion distance
     const double adhesion_distance_;
+
+    //! write particle-wall interaction output
+    const bool writeparticlewallinteraction_;
   };
 
 }  // namespace PARTICLEINTERACTION

@@ -44,6 +44,7 @@ namespace PARTICLEWALL
 namespace PARTICLEINTERACTION
 {
   class MaterialHandler;
+  class InteractionWriter;
   class DEMNeighborPairs;
   class DEMHistoryPairs;
   class DEMContactNormalBase;
@@ -73,6 +74,7 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
         const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
+        const std::shared_ptr<PARTICLEINTERACTION::InteractionWriter> particleinteractionwriter,
         const std::shared_ptr<PARTICLEINTERACTION::DEMNeighborPairs> neighborpairs,
         const std::shared_ptr<PARTICLEINTERACTION::DEMHistoryPairs> historypairs);
 
@@ -115,6 +117,9 @@ namespace PARTICLEINTERACTION
     //! init rolling contact handler
     virtual void InitRollingContactHandler();
 
+    //! setup particle interaction writer
+    virtual void SetupParticleInteractionWriter();
+
     //! get maximum density of all materials
     virtual double GetMaxDensityOfAllMaterials() const final;
 
@@ -139,6 +144,9 @@ namespace PARTICLEINTERACTION
     //! particle material handler
     std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial_;
 
+    //! particle interaction writer
+    std::shared_ptr<PARTICLEINTERACTION::InteractionWriter> particleinteractionwriter_;
+
     //! neighbor pair handler
     std::shared_ptr<PARTICLEINTERACTION::DEMNeighborPairs> neighborpairs_;
 
@@ -156,6 +164,9 @@ namespace PARTICLEINTERACTION
 
     //! time step size
     double dt_;
+
+    //! write particle-wall interaction output
+    const bool writeparticlewallinteraction_;
   };
 
 }  // namespace PARTICLEINTERACTION

@@ -268,6 +268,10 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   Teuchos::ParameterList& particledyndem = particledyn.sublist(
       "DEM", false, "control parameters for discrete element method (DEM) simulations\n");
 
+  // write particle-wall interaction output
+  BoolParameter("WRITE_PARTICLE_WALL_INTERACTION", "no", "write particle-wall interaction output",
+      &particledyndem);
+
   // type of normal contact law
   setStringToIntegralParameter<int>("NORMALCONTACTLAW", "NormalLinearSpring",
       "normal contact law for particles",
