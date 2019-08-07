@@ -9,6 +9,7 @@
 
 #include "artery.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_mat/cnst_1d_art.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -73,5 +74,28 @@ bool DRT::ELEMENTS::Artery::ReadElement(
   else
     dserror("Invalid implementation type for ARTERY elements!");
 
+  // extract diameter
+  double diam = 0.0;
+  linedef->ExtractDouble("DIAM", diam);
+
+  // set diameter in material
+  SetDiamInMaterial(&diam);
+
   return true;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Artery::SetDiamInMaterial(const double* diam)
+{
+  // now the element knows its material, and we can use it to set the diameter
+  Teuchos::RCP<MAT::Material> mat = Material();
+  if (mat->MaterialType() == INPAR::MAT::m_cnst_art)
+  {
+    MAT::Cnst_1d_art* arterymat = dynamic_cast<MAT::Cnst_1d_art*>(mat.get());
+    arterymat->SetDiam(diam);
+  }
+  else
+    dserror("Artery element got unsupported material type %d", mat->MaterialType());
+  return;
 }

@@ -123,7 +123,7 @@ MAT 501 MAT_Struct_StVenantKirchhoff YOUNG 10 NUE 0.35 DENS 0.1
 MAT 502 MAT_PoroLawDensityDependent DENSITYLAWID 503
 MAT 503 MAT_PoroDensityLawExp BULKMODULUS 1e15
 
-MAT 3 MAT_CNST_ART VISCOSITY 0.04 DENS 0.001 YOUNG 400000.0 NUE 0.5 DIAM 24.0 TH 1.630 PEXT1 0.0 PEXT2 0.0
+MAT 3 MAT_CNST_ART VISCOSITY 0.04 DENS 0.001 YOUNG 400000.0 NUE 0.5 TH 1.630 PEXT1 0.0 PEXT2 0.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD porofluid SRC_MAT 1 TAR_FIELD structure TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
@@ -222,12 +222,12 @@ NODE 15 COORD 150.0 -10.0 0.0
 1 POROFLUIDMULTIPHASE QUAD4  1 2 3 4    MAT 1
 2 POROFLUIDMULTIPHASE QUAD4  4 3 5 6    MAT 1
 -------------------------------------------------------------ARTERY ELEMENTS
-1 ART LINE2 7 8 MAT 3 GP 3 TYPE PressureBased
-2 ART LINE2 8 9 MAT 3 GP 3 TYPE PressureBased
-3 ART LINE2 10 11 MAT 3 GP 3 TYPE PressureBased
-4 ART LINE2 11 12 MAT 3 GP 3 TYPE PressureBased
-5 ART LINE2 13 14 MAT 3 GP 3 TYPE PressureBased
-6 ART LINE2 14 15 MAT 3 GP 3 TYPE PressureBased
+1 ART LINE2 7 8 MAT 3 GP 3 TYPE PressureBased DIAM 24.0
+2 ART LINE2 8 9 MAT 3 GP 3 TYPE PressureBased DIAM 24.0
+3 ART LINE2 10 11 MAT 3 GP 3 TYPE PressureBased DIAM 24.0
+4 ART LINE2 11 12 MAT 3 GP 3 TYPE PressureBased DIAM 24.0
+5 ART LINE2 13 14 MAT 3 GP 3 TYPE PressureBased DIAM 24.0
+6 ART LINE2 14 15 MAT 3 GP 3 TYPE PressureBased DIAM 24.0
 ------------------------------------------------------ALE ELEMENTS
 ------------------------------------------------LUBRICATION ELEMENTS
 ------------------------------------------------TRANSPORT ELEMENTS
