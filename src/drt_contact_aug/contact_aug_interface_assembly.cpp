@@ -24,7 +24,7 @@ sparse matrices and parallel distributed vectors
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::INTERFACE::AssembleStrategy::AssembleStrategy(Interface* inter)
     : inter_(inter),
-      idata_ptr_(Inter().SharedInterfaceDataPtr().get()),
+      interfaceData_ptr_(Inter().SharedInterfaceDataPtr().get()),
       idiscret_(Inter().Discret())
 {
   // empty

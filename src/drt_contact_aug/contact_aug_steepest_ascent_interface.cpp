@@ -18,8 +18,8 @@
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::STEEPESTASCENT::Interface::Interface(
-    const Teuchos::RCP<CONTACT::AUG::IDataContainer>& idata_ptr)
-    : ::CONTACT::AUG::Interface(idata_ptr)
+    const Teuchos::RCP<CONTACT::AUG::InterfaceDataContainer>& interfaceData_ptr)
+    : ::CONTACT::AUG::Interface(interfaceData_ptr)
 {
   /* do nothing */
 }
@@ -27,10 +27,10 @@ CONTACT::AUG::STEEPESTASCENT::Interface::Interface(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::STEEPESTASCENT::Interface::Interface(
-    const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr, int id, const Epetra_Comm& comm, int dim,
-    const Teuchos::ParameterList& icontact, bool selfcontact,
+    const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr, int id,
+    const Epetra_Comm& comm, int dim, const Teuchos::ParameterList& icontact, bool selfcontact,
     INPAR::MORTAR::RedundantStorage redundant)
-    : ::CONTACT::AUG::Interface(idata_ptr, id, comm, dim, icontact, selfcontact, redundant)
+    : ::CONTACT::AUG::Interface(interfaceData_ptr, id, comm, dim, icontact, selfcontact, redundant)
 {
   /* left blank, nothing to do here */
 }

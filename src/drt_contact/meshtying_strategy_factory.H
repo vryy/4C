@@ -30,7 +30,7 @@ namespace Teuchos
 
 namespace MORTAR
 {
-  class IDataContainer;
+  class InterfaceDataContainer;
   class MortarAbstractStrategy;
   class MortarElement;
   class MortarInterface;

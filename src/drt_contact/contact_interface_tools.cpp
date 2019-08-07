@@ -4979,7 +4979,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv(
       }  //  loop over master nodes
 
       // gp-wise slip !!!!!!!
-      if (DRT::INPUT::IntegralValue<int>(IParams(), "GP_SLIP_INCR") == true)
+      if (DRT::INPUT::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
       {
         jumptxi = cnode->FriData().jump_var()[0];
         jumpteta = 0.0;
@@ -5101,7 +5101,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv(
         }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-        if (DRT::INPUT::IntegralValue<int>(IParams(), "GP_SLIP_INCR") == true)
+        if (DRT::INPUT::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
         {
           jumptxi = kcnode->FriData().jump_var()[0];
           jumpteta = 0.0;
@@ -5315,7 +5315,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv(
         }  //  loop over master nodes
         // gp-wise slip !!!!!!!
 
-        if (DRT::INPUT::IntegralValue<int>(IParams(), "GP_SLIP_INCR") == true)
+        if (DRT::INPUT::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
         {
           jumptxi = kcnode->FriData().jump_var()[0];
           jumpteta = 0.0;
@@ -5449,11 +5449,11 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(
 
   // information from interface contact parameter list
   INPAR::CONTACT::FrictionType ftype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(), "FRICTION");
-  double frbound = IParams().get<double>("FRBOUND");
-  double frcoeff = IParams().get<double>("FRCOEFF");
-  double ct = IParams().get<double>("SEMI_SMOOTH_CT");
-  double cn = IParams().get<double>("SEMI_SMOOTH_CN");
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
+  double frbound = InterfaceParams().get<double>("FRBOUND");
+  double frcoeff = InterfaceParams().get<double>("FRCOEFF");
+  double ct = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
+  double cn = InterfaceParams().get<double>("SEMI_SMOOTH_CN");
 
   // create storage for values of complementary function C
   int nrow = snoderowmap_->NumMyElements();
@@ -5529,7 +5529,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(
       }  //  loop over master nodes
 
       // gp-wise slip !!!!!!!
-      if (DRT::INPUT::IntegralValue<int>(IParams(), "GP_SLIP_INCR") == true)
+      if (DRT::INPUT::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
       {
         jumptxi = cnode->FriData().jump_var()[0];
         jumpteta = 0.0;
@@ -5659,7 +5659,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(
         }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-        if (DRT::INPUT::IntegralValue<int>(IParams(), "GP_SLIP_INCR") == true)
+        if (DRT::INPUT::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
         {
           jumptxi = kcnode->FriData().jump_var()[0];
           jumpteta = 0.0;
@@ -5895,7 +5895,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(
         }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-        if (DRT::INPUT::IntegralValue<int>(IParams(), "GP_SLIP_INCR") == true)
+        if (DRT::INPUT::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
         {
           jumptxi = kcnode->FriData().jump_var()[0];
           jumpteta = 0.0;
@@ -6134,7 +6134,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(
         }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-        if (DRT::INPUT::IntegralValue<int>(IParams(), "GP_SLIP_INCR") == true)
+        if (DRT::INPUT::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
         {
           jumptxi = kcnode->FriData().jump_var()[0];
           jumpteta = 0.0;
@@ -6577,9 +6577,9 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
   if (!lComm()) return;
 
   // information from interface contact parameter list
-  double frcoeff = IParams().get<double>("FRCOEFF");
-  double ppnor = IParams().get<double>("PENALTYPARAM");
-  double pptan = IParams().get<double>("PENALTYPARAMTAN");
+  double frcoeff = InterfaceParams().get<double>("FRCOEFF");
+  double ppnor = InterfaceParams().get<double>("PENALTYPARAM");
+  double pptan = InterfaceParams().get<double>("PENALTYPARAMTAN");
 
   // create storage for values of complementary function C
   int nrow = snoderowmap_->NumMyElements();
@@ -6659,7 +6659,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
     Epetra_SerialDenseMatrix lmuzawatan(dim, 1);
     lmuzawatan.Multiply('N', 'N', 1, tanplane, lmuzawa, 0.0);
 
-    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(IParams(), "STRATEGY") ==
+    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(InterfaceParams(), "STRATEGY") ==
         INPAR::CONTACT::solution_penalty)
     {
       for (int j = 0; j < dim; j++)
@@ -6814,8 +6814,8 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
       Epetra_SerialDenseMatrix lmuzawatan(dim, 1);
       lmuzawatan.Multiply('N', 'N', 1, tanplane, lmuzawa, 0.0);
 
-      if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(IParams(), "STRATEGY") ==
-          INPAR::CONTACT::solution_penalty)
+      if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+              InterfaceParams(), "STRATEGY") == INPAR::CONTACT::solution_penalty)
       {
         for (int j = 0; j < dim; j++)
         {
@@ -7030,8 +7030,8 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
       Epetra_SerialDenseMatrix lmuzawatan(dim, 1);
       lmuzawatan.Multiply('N', 'N', 1, tanplane, lmuzawa, 0.0);
 
-      if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(IParams(), "STRATEGY") ==
-          INPAR::CONTACT::solution_penalty)
+      if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+              InterfaceParams(), "STRATEGY") == INPAR::CONTACT::solution_penalty)
       {
         for (int j = 0; j < dim; j++)
         {

@@ -2177,7 +2177,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           // perform parallel redistribution if desired
           if (imortarredistribution_ and idiscret.Comm().NumProc() > 1)
           {
-            interface.IParams()
+            interface.InterfaceParams()
                 .sublist("PARALLEL REDISTRIBUTION")
                 .set<std::string>("PARALLEL_REDIST", DRT::Problem::Instance()
                                                          ->MortarCouplingParams()

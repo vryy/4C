@@ -631,7 +631,8 @@ void EHL::Base::SetupFieldCoupling(
   mortaradapter_->Setup(structdis, structdis, coupleddof, "EHLCoupling");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-          mortaradapter_->Interface()->IParams(), "STRATEGY") != INPAR::CONTACT::solution_ehl)
+          mortaradapter_->Interface()->InterfaceParams(), "STRATEGY") !=
+      INPAR::CONTACT::solution_ehl)
     dserror("you need to set ---CONTACT DYNAMIC: STRATEGY   Ehl");
 
   Teuchos::RCP<Epetra_Vector> idisp = LINALG::CreateVector(

@@ -231,7 +231,7 @@ void CONTACT::CoNitscheStrategy::Integrate(CONTACT::ParamsInterface& cparams)
   // Evaluation for all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    interface_[i]->IParams().set<double>("TIMESTEP", cparams.GetDeltaTime());
+    interface_[i]->InterfaceParams().set<double>("TIMESTEP", cparams.GetDeltaTime());
     interface_[i]->Initialize();
     interface_[i]->Evaluate(0, step_, iter_);
 
