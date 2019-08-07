@@ -327,14 +327,10 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   DoubleParameter("RADIUSDISTRIBUTION_VAR", -1.0, "variance of random particle radius distribution",
       &particledyndem);
 
-  DoubleParameter("REL_PENETRATION", -1.0,
-      "maximum allowed relative penetration (particle-particle)", &particledyndem);
-  DoubleParameter(
-      "NORMAL_STIFF", -1.0, "normal contact stiffness (particle-particle)", &particledyndem);
-  DoubleParameter(
-      "NORMAL_DAMP", -1.0, "normal contact damping parameter (particle-particle)", &particledyndem);
-  DoubleParameter(
-      "COEFF_RESTITUTION", -1.0, "coefficient of restitution (particle-particle)", &particledyndem);
+  DoubleParameter("REL_PENETRATION", -1.0, "maximum allowed relative penetration", &particledyndem);
+  DoubleParameter("NORMAL_STIFF", -1.0, "normal contact stiffness", &particledyndem);
+  DoubleParameter("NORMAL_DAMP", -1.0, "normal contact damping parameter", &particledyndem);
+  DoubleParameter("COEFF_RESTITUTION", -1.0, "coefficient of restitution", &particledyndem);
   DoubleParameter("DAMP_REG_FAC", -1.0,
       "linearly regularized damping normal force in the interval |g| < (DAMP_REG_FAC * r_min)",
       &particledyndem);
@@ -343,10 +339,10 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   DoubleParameter("POISSON_RATIO", -1.0, "poisson ratio", &particledyndem);
   DoubleParameter("YOUNG_MODULUS", -1.0, "young's modulus", &particledyndem);
 
-  DoubleParameter("FRICT_COEFF_TANG", -1.0,
-      "dynamic friction coefficient for tangential contact (particle-particle)", &particledyndem);
-  DoubleParameter("FRICT_COEFF_ROLL", -1.0,
-      "dynamic friction coefficient for rolling contact (particle-particle)", &particledyndem);
+  DoubleParameter("FRICT_COEFF_TANG", -1.0, "dynamic friction coefficient for tangential contact",
+      &particledyndem);
+  DoubleParameter("FRICT_COEFF_ROLL", -1.0, "dynamic friction coefficient for rolling contact",
+      &particledyndem);
 
   DoubleParameter(
       "ADHESION_DISTANCE", -1.0, "adhesion distance between interacting surfaces", &particledyndem);
