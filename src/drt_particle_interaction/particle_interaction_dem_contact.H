@@ -64,13 +64,13 @@ namespace PARTICLEINTERACTION
     explicit DEMContact(const Teuchos::ParameterList& params);
 
     //! virtual destructor
-    virtual ~DEMContact();
+    ~DEMContact();
 
     //! init contact handler
-    virtual void Init();
+    void Init();
 
     //! setup contact handler
-    virtual void Setup(
+    void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
         const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
@@ -79,55 +79,55 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::DEMHistoryPairs> historypairs);
 
     //! write restart of contact handler
-    virtual void WriteRestart(const int step, const double time) const;
+    void WriteRestart(const int step, const double time) const;
 
     //! read restart of contact handler
-    virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
+    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
     //! set current step size
-    virtual void SetCurrentStepSize(const double currentstepsize) final;
+    void SetCurrentStepSize(const double currentstepsize);
 
     //! insert contact evaluation dependent states
-    virtual void InsertParticleStatesOfParticleTypes(
+    void InsertParticleStatesOfParticleTypes(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) const;
 
     //! get normal contact stiffness
-    virtual double GetNormalContactStiffness() const;
+    double GetNormalContactStiffness() const;
 
     //! have tangential contact
-    virtual bool HaveTangentialContact() const { return contacttangential_ ? true : false; };
+    bool HaveTangentialContact() const { return contacttangential_ ? true : false; };
 
     //! have rolling contact
-    virtual bool HaveRollingContact() const { return contactrolling_ ? true : false; };
+    bool HaveRollingContact() const { return contactrolling_ ? true : false; };
 
     //! check critical time step (on this processor)
-    virtual void CheckCriticalTimeStep() const;
+    void CheckCriticalTimeStep() const;
 
     //! add contact contribution to force and moment field
-    virtual void AddForceAndMomentContribution();
+    void AddForceAndMomentContribution();
 
    private:
     //! init normal contact handler
-    virtual void InitNormalContactHandler();
+    void InitNormalContactHandler();
 
     //! init tangential contact handler
-    virtual void InitTangentialContactHandler();
+    void InitTangentialContactHandler();
 
     //! init rolling contact handler
-    virtual void InitRollingContactHandler();
+    void InitRollingContactHandler();
 
     //! setup particle interaction writer
-    virtual void SetupParticleInteractionWriter();
+    void SetupParticleInteractionWriter();
 
     //! get maximum density of all materials
-    virtual double GetMaxDensityOfAllMaterials() const final;
+    double GetMaxDensityOfAllMaterials() const;
 
     //! evaluate particle contact contribution
-    virtual void EvaluateParticleContact();
+    void EvaluateParticleContact();
 
     //! evaluate particle-wall contact contribution
-    virtual void EvaluateParticleWallContact();
+    void EvaluateParticleWallContact();
 
     //! discrete element method specific parameter list
     const Teuchos::ParameterList& params_dem_;
