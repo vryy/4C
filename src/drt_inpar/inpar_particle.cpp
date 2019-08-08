@@ -16,6 +16,8 @@
 #include "drt_validparameters.H"
 #include "inpar_parameterlist_utils.H"
 
+#include "../drt_lib/drt_conditiondefinition.H"
+
 /*---------------------------------------------------------------------------*
  | set the particle parameters                                sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
@@ -372,4 +374,28 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "adhesion surface energy distribution limited by multiple of variance", &particledyndem);
   DoubleParameter("ADHESION_SURFACE_ENERGY_FACTOR", 1.0,
       "factor to calculate minimum adhesion surface energy", &particledyndem);
+}
+
+/*---------------------------------------------------------------------------*
+ | set the particle conditions                                sfuchs 08/2019 |
+ *---------------------------------------------------------------------------*/
+void INPAR::PARTICLE::SetValidConditions(
+    std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist)
+{
+  using namespace DRT::INPUT;
+
+  /*-------------------------------------------------------------------------*
+   | particle wall condition                                                 |
+   *-------------------------------------------------------------------------*/
+  std::vector<Teuchos::RCP<ConditionComponent>> particlewallcomponents;
+  particlewallcomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
+
+  Teuchos::RCP<ConditionDefinition> surfpartwall = Teuchos::rcp(new ConditionDefinition(
+      "DESIGN SURFACE PARTICLE WALL", "ParticleWall", "Wall for particle interaction",
+      DRT::Condition::ParticleWall, true, DRT::Condition::Surface));
+
+  for (unsigned i = 0; i < particlewallcomponents.size(); ++i)
+    surfpartwall->AddComponent(particlewallcomponents[i]);
+
+  condlist.push_back(surfpartwall);
 }
