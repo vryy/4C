@@ -1502,19 +1502,19 @@ namespace MORTAR
 
    private:
     /*!
-    \brief check and init possible cross point modification
+    \brief check and initialize possible cross point modification
 
     */
     void InitializeCrossPoints();
 
     /*!
-    \brief check and init for lin lm interpolation for 2nd order FE
+    \brief check and initialize for linear Lagrange multiplier interpolation for 2nd order FE
 
     */
     void InitializeLagMultLin();
 
     /*!
-    \brief check and init for const lm interpolation for 2nd order FE
+    \brief check and initialize for constant Lagrange muliplier interpolation for 2nd order FE
 
     */
     void InitializeLagMultConst();
@@ -1537,8 +1537,10 @@ namespace MORTAR
     Teuchos::RCP<InterfaceDataContainer> interfaceData_;
 
    protected:
-    // don't want = operator and cctor
+    //! don't want = operator
     MortarInterface operator=(const MortarInterface& old) = delete;
+
+    //! don't want copy constructor
     MortarInterface(const MortarInterface& old) = delete;
 
     /** @name References to the interface data container content
