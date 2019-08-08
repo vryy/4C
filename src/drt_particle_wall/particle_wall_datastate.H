@@ -19,6 +19,7 @@
  *---------------------------------------------------------------------------*/
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                       sfuchs 05/2019 |
@@ -37,7 +38,7 @@ namespace PARTICLEWALL
   {
    public:
     //! constructor
-    explicit WallDataState();
+    explicit WallDataState(const Teuchos::ParameterList& params);
 
     //! destructor
     ~WallDataState(){};
@@ -46,8 +47,7 @@ namespace PARTICLEWALL
     void Init();
 
     //! setup wall data state container
-    void Setup(Teuchos::RCP<const DRT::Discretization> const& walldiscretization, bool ismoving,
-        bool isloaded);
+    void Setup(Teuchos::RCP<const DRT::Discretization> const& walldiscretization);
 
     //! check for correct maps
     void CheckForCorrectMaps(Teuchos::RCP<const DRT::Discretization> const& walldiscretization);
@@ -111,6 +111,9 @@ namespace PARTICLEWALL
     //@}
 
    private:
+    //! particle simulation parameter list
+    const Teuchos::ParameterList& params_;
+
     //! current dof row map
     Teuchos::RCP<Epetra_Map> curr_dof_row_map_;
 

@@ -36,7 +36,8 @@ namespace IO
 namespace PARTICLEINTERACTION
 {
   class MaterialHandler;
-}
+  class InteractionWriter;
+}  // namespace PARTICLEINTERACTION
 
 namespace PARTICLEENGINE
 {
@@ -102,12 +103,21 @@ namespace PARTICLEINTERACTION
     //! set current step size
     virtual void SetCurrentStepSize(const double currentstepsize);
 
+    //! set current write result flag
+    virtual void SetCurrentWriteResultFlag(bool writeresultsthisstep);
+
     //! set gravity
     virtual void SetGravity(std::vector<double>& gravity) final;
+
+    //! write interaction runtime output
+    virtual void WriteInteractionRuntimeOutput(const int step, const double time);
 
    private:
     //! init particle material handler
     virtual void InitParticleMaterialHandler();
+
+    //! init particle interaction writer
+    virtual void InitParticleInteractionWriter();
 
    protected:
     //! maximum particle radius (on this processor)
@@ -133,6 +143,9 @@ namespace PARTICLEINTERACTION
 
     //! particle material handler
     std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial_;
+
+    //! particle interaction writer
+    std::shared_ptr<PARTICLEINTERACTION::InteractionWriter> particleinteractionwriter_;
 
     //! current time
     double time_;

@@ -1906,6 +1906,7 @@ set(OBJS_DRT_PARTICLE_INTERACTION
   src/drt_particle_interaction/particle_interaction_sph_heatsource.cpp
   src/drt_particle_interaction/particle_interaction_sph_phase_change.cpp
   src/drt_particle_interaction/particle_interaction_material_handler.cpp
+  src/drt_particle_interaction/particle_interaction_runtime_vtp_writer.cpp
 )
 set(OBJS_DRT_PARTICLE_ENGINE
   src/drt_particle_engine/particle_container.cpp
@@ -1921,6 +1922,7 @@ set(OBJS_DRT_PARTICLE_ENGINE_LIB
 set(OBJS_DRT_PARTICLE_WALL
   src/drt_particle_wall/particle_wall.cpp
   src/drt_particle_wall/particle_wall_datastate.cpp
+  src/drt_particle_wall/particle_wall_discretization_runtime_vtu_writer.cpp
   src/drt_particle_wall/particle_wall_result_test.cpp
 )
 set(OBJS_DRT_ACOU
