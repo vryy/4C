@@ -17,7 +17,7 @@
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_parobject.H"
-#include "../drt_lib/drt_utils_parmetis.H"
+#include "../drt_lib/drt_utils_rebalancing.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
 #include "../linalg/linalg_utils.H"
@@ -754,7 +754,8 @@ void COMM_UTILS::NPDuplicateDiscretization(const int sgroup, const int rgroup,
     Teuchos::RCP<Epetra_Map> coleles;
     Teuchos::RCP<Epetra_Map> rownodes;
     Teuchos::RCP<Epetra_Map> colnodes;
-    DRT::UTILS::PartUsingParMetis(commondis, roweles, rownodes, colnodes, icomm, false);
+    DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
+        commondis, roweles, rownodes, colnodes, lcomm, false, lcomm->NumProc());
     commondis->BuildElementRowColumn(*rownodes, *colnodes, roweles, coleles);
     commondis->ExportRowNodes(*rownodes);
     commondis->ExportRowElements(*roweles);
@@ -897,7 +898,8 @@ void COMM_UTILS::NPDuplicateDiscretization(const int sgroup, const int rgroup,
     Teuchos::RCP<Epetra_Map> coleles;
     Teuchos::RCP<Epetra_Map> rownodes;
     Teuchos::RCP<Epetra_Map> colnodes;
-    DRT::UTILS::PartUsingParMetis(dis, roweles, rownodes, colnodes, lcomm, false);
+    DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
+        dis, roweles, rownodes, colnodes, lcomm, false, lcomm->NumProc());
     dis->BuildElementRowColumn(*rownodes, *colnodes, roweles, coleles);
     dis->ExportRowNodes(*rownodes);
     dis->ExportRowElements(*roweles);

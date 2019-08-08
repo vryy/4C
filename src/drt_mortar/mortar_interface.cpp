@@ -29,7 +29,7 @@
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 
-#include "../drt_lib/drt_utils_parmetis.H"
+#include "../drt_lib/drt_utils_rebalancing.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_parallel.H"
@@ -1277,7 +1277,7 @@ void MORTAR::MortarInterface::Redistribute()
 
   //**********************************************************************
   // call ZOLTAN for parallel redistribution
-  DRT::UTILS::PartUsingParMetis(
+  DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
       idiscret_, sroweles, srownodes, scolnodes, comm, false, sproc, imbalance_tol);
   //**********************************************************************
 
@@ -1325,7 +1325,7 @@ void MORTAR::MortarInterface::RedistributeMasterSide(Teuchos::RCP<Epetra_Map>& r
   if (not HasMaSharingRefInterface())
   {
     // call ZOLTAN for parallel redistribution
-    DRT::UTILS::PartUsingParMetis(
+    DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
         idiscret_, roweles, rownodes, colnodes, comm, false, parts, imbalance);
   }
   else

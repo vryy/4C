@@ -342,6 +342,13 @@ namespace DRT
     namespace BEAM
     {
     }  // namespace BEAM
+
+    /*! \brief Rebalancing, repartitioning, and redistribution
+     *
+     */
+    namespace REBALANCING
+    {
+    }  // namespace REBALANCING
   }    // namespace UTILS
 }  // namespace DRT
 
