@@ -571,7 +571,7 @@ void MORTAR::MortarInterface::FillComplete(int maxdof, bool newghosting)
   // check/init corner/edge modification
   InitializeCornerEdge();
 
-  // later we will export node and element column map to FULL overlap,
+  // later we might export node and element column map to extended or even FULL overlap,
   // thus store the standard column maps first
   // get standard nodal column map (overlap=1)
   oldnodecolmap_ = Teuchos::rcp(new Epetra_Map(*(Discret().NodeColMap())));
@@ -664,7 +664,7 @@ void MORTAR::MortarInterface::FillComplete(int maxdof, bool newghosting)
   // (the only exceptions are self contact and coupled problems, where
   // also the slave is still made fully redundant)
   // ghosting can be skipped if the desired parallel layout is already present
-  if (newghosting) CreateInterfaceGhosting();
+  if (newghosting) ExtendInterfaceGhosting();
 
   // make sure discretization is complete
   Discret().FillComplete(true, false, false);
@@ -1341,23 +1341,12 @@ void MORTAR::MortarInterface::RedistributeMasterSide(Teuchos::RCP<Epetra_Map>& r
 }
 
 /*----------------------------------------------------------------------*
- | create interface ghosting (public)                         popp 10/10|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::CreateInterfaceGhosting()
+void MORTAR::MortarInterface::ExtendInterfaceGhosting()
 {
-  // TODO: we still do full ghosting of all MASTER elements
-  // -> this is supposed to go away one day...
-
-  //**********************************************************************
-  // IMPORTANT NOTE:
-  // In some cases (self contact, sliding ALE mortar coupling), we still
-  // need the SLAVE nodes and elements in fully overlapping column layout,
-  // too. In the case of self contact, this is due to the fact that contact
-  // search is then based on the contact interface as a whole without
-  // initially distinguishing between slave and master sides. In general,
-  // however we do not need (or even want) slave redundancy but only master
-  // redundancy and can thus use the ELSE branch below.
-  //**********************************************************************
+  // These are the new extended column maps to be computed
+  Teuchos::RCP<Epetra_Map> newnodecolmap = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::null;
 
   //*****REDUNDANT SLAVE AND MASTER STORAGE*****
   if (Redundant() == INPAR::MORTAR::redundant_all)
@@ -1596,7 +1585,7 @@ void MORTAR::MortarInterface::CreateInterfaceGhosting()
   //*****INVALID CASES*****
   else
   {
-    dserror("ERROR: CreateInterfaceGhosting: Invalid redundancy type.");
+    dserror("ERROR: ExtendInterfaceGhosting: Invalid redundancy type.");
   }
 
   return;

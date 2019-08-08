@@ -1491,17 +1491,30 @@ namespace MORTAR
     */
     virtual void UpdateMasterSlaveSets();
 
-    /*!
-    \brief Create interface ghosting
-
-    To ease our search algorithms we'll afford the luxury to ghost all nodes
-    on all processors in the general mortar coupling framework. Currently, this
-    still holds for both slave and master side of the interface.
-
-    */
-    virtual void CreateInterfaceGhosting();
-
    private:
+    /*!
+    \brief Extend interface ghosting
+
+    To guarantee that the search algorithms can find _every_ possible slave/master pair
+    -- even if entities reside on different processors --
+    we afford the luxury to ghost some or all nodes
+    on all processors in the general mortar coupling framework.
+
+    Technically, we compute extended node/element column maps and the export the discretization
+    based on these extended column maps. The actual extension strategy is defined in the input file.
+
+    \note In some cases (self contact, sliding ALE mortar coupling), we still
+    need the SLAVE nodes and elements in fully overlapping column layout,
+    too. In the case of self contact, this is due to the fact that contact
+    search is then based on the contact interface as a whole without
+    initially distinguishing between slave and master sides. In general,
+    however we do not need (or even want) slave redundancy. Redundancy of the
+    master side is controlled via the input file.
+
+    \post The interface discretization is _NOT_ FillComplete.
+    */
+    void ExtendInterfaceGhosting();
+
     /*!
     \brief check and initialize possible cross point modification
 
