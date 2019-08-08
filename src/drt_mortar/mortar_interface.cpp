@@ -1362,8 +1362,6 @@ void MORTAR::MortarInterface::CreateInterfaceGhosting()
   //*****REDUNDANT SLAVE AND MASTER STORAGE*****
   if (Redundant() == INPAR::MORTAR::redundant_all)
   {
-    // std::cout << "REDUNDANT SLAVE AND MASTER InterfaceGhosting" << std::endl;
-
     // to ease our search algorithms we'll afford the luxury to ghost all nodes
     // on all processors. To do so, we'll take the node row map and export it to
     // full overlap. Then we export the discretization to full overlap column map.
@@ -1432,8 +1430,6 @@ void MORTAR::MortarInterface::CreateInterfaceGhosting()
   //*****ONLY REDUNDANT MASTER STORAGE*****
   else if (Redundant() == INPAR::MORTAR::redundant_master)
   {
-    // std::cout << "ONLY REDUNDANT MASTER InterfaceGhosting" << std::endl;
-
     // to ease our search algorithms we'll afford the luxury to ghost all master
     // nodes on all processors. To do so, we'll take the master node row map and
     // export it to full overlap. Then we export the discretization to partially
@@ -1538,8 +1534,6 @@ void MORTAR::MortarInterface::CreateInterfaceGhosting()
   //*****NON-REDUNDANT STORAGE*****
   else if (Redundant() == INPAR::MORTAR::redundant_none)
   {
-    // dserror("ERROR: Non-redundant interface storage not yet implemented.");
-
     // nothing to do here, we work with the given non-redundant distribution
     // of both slave and master nodes to the individual processsors. However
     // we want ALL procs to be part of the interface discretization, not only
