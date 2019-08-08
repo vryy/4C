@@ -1028,8 +1028,12 @@ void DRT::Problem::OpenControlFile(
   outputcontrol_ = Teuchos::rcp(new IO::OutputControl(comm, ProblemName(), SpatialApproximation(),
       inputfile, restartkenner, prefix, NDim(), Restart(), IOParams().get<int>("FILESTEPS"),
       DRT::INPUT::IntegralValue<int>(IOParams(), "OUTPUT_BIN"), true));
-  if (!DRT::INPUT::IntegralValue<int>(IOParams(), "OUTPUT_BIN"))
-    IO::cout << " Warning no binary Output will be written " << IO::endl;
+
+  if (!DRT::INPUT::IntegralValue<int>(IOParams(), "OUTPUT_BIN") && comm.MyPID() == 0)
+    IO::cout << "==================================================\n"
+             << "=== WARNING: No binary output will be written. ===\n"
+             << "==================================================\n"
+             << IO::endl;
 }
 
 
