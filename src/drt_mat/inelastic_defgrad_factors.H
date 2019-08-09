@@ -93,8 +93,8 @@ namespace MAT
   /*! \class InelasticDefgradLinear
 
    This class evaluates delta growth which is required in various routines of subclasses for
-   isotropic and anisotropic case. Delta growth is used the calculate the scaling factor which gives
-   the magnitude of material growth
+   isotropic and anisotropic case. Delta growth is used to calculate the scaling factor which gives
+   the magnitude of material growth.
    */
   class InelasticDefgradLinear : public InelasticDefgradFactors
   {
@@ -109,7 +109,7 @@ namespace MAT
     ~InelasticDefgradLinear() { ; }
 
     /// evaluate scaling factor
-    virtual double EvaluateDeltaGrowth(const double Growthfac, const double DetJacobian,
+    double EvaluateDeltaGrowth(const double Growthfac, const double DetJacobian,
         const double Referenceconc, const double concentration, const double Cmax);
 
     /// provide material type
@@ -163,13 +163,13 @@ namespace MAT
     }
   };  // end of class InelasticDefgradLinear
 
-
   /*--------------------------------------------------------------------*/
   /*! \class InelasticDefgradPolynomial
 
-   This class evaluates polynomial which is required in various routines of subclasses for isotropic
-   and anisotropic case. This polynomial describes the growth of material with respect to
-   concentration
+   This class evaluates polynomial and its first derivative w.r.t. intercalation fraction which is
+   required in various routines of subclasses for isotropic and anisotropic case. This polynomial
+   describes the growth of material with respect to intercalation fraction and it is prescribed by
+   user in input file by defining it coefficients.
    */
   class InelasticDefgradPolynomial : public InelasticDefgradFactors
   {
@@ -184,12 +184,12 @@ namespace MAT
     ~InelasticDefgradPolynomial() { ; }
 
     /// evaluate polynomial describing growth of material with regard to concentration
-    virtual double EvaluateMatPolynomial(const double Scalar, const int NumberPolyparams,
+    double EvaluateMatPolynomial(const double Scalar, const int NumberPolyparams,
         const std::vector<double> ParamsPoly, const double X_min, const double X_max,
         double concentration, const double Cmax, double DetJacobian);
 
     /// evaluate the first derivative of polynomial
-    virtual double EvaluateMatPolynomialDerivative(const double Scalar, const int NumberPolyparams,
+    double EvaluateMatPolynomialDerivative(const double Scalar, const int NumberPolyparams,
         const std::vector<double> ParamsPoly, double concentration, const double Cmax,
         double DetJacobian);
 
@@ -250,11 +250,9 @@ namespace MAT
     /*----------------------------------------------------------------------*/
     /*! \class InelasticDefgradLinScalarIso
 
-        This inelastic deformation gradient provides an isotropic growth law.
-        Volumetric change due to this law is linearly dependent on a
-        concentration mapped to the reference frame as follows:
-        F_{in} = [1.0 + Scalar1growthfac_ * det(F) * (c - Scalar1refconc_)]^(1/3) * I
-       */
+    This is a parameter class of InelasticDefgradLinScalarIso, which stores parameters needed for
+    the calculation of inelastic deformation gradient and its linearizations.
+    */
     class InelasticDefgradLinScalarIso : public MAT::PAR::Parameter
     {
      public:
@@ -298,7 +296,7 @@ namespace MAT
       This inelastic deformation gradient provides an isotropic growth law.
       Volumetric change due to this law is linearly dependent on a
       concentration mapped to the reference frame as follows:
-      F_{in} = [1.0 + Scalar1growthfac_ * det(F) * (c - Scalar1refconc_)]^(1/3) * I
+      F_{in} = [1.0 + Scalar1growthfac_ * det(F) * (c - Scalar1refconc_) / C_MAX]^(1/3) * I
      */
   class InelasticDefgradLinScalarIso : public InelasticDefgradLinear
   {
@@ -367,16 +365,8 @@ namespace MAT
     /*----------------------------------------------------------------------*/
     /*! \class InelasticDefgradLinScalarAniso
 
-        This inelastic deformation gradient provides an anisotropic growth law.
-        Volumetric change due to this law is linearly dependent on a
-        concentration mapped to the reference frame as follows:
-        F_{in} = I + [Scalar1growthfac_ * det(F) * (c - Scalar1refconc_)] * G,
-        where G (growthdirmat_) is a matrix providing the information of the growth
-        direction, that is constructed as follows:
-
-        G = g \otimes g, where g is the growth direction vector given in the input file.
-
-        g is normalized to length 1 before calculation of G.
+    This is a parameter class of InelasticDefgradLinScalarAniso, which stores parameters needed for
+    the calculation of inelastic deformation gradient and its linearizations.
        */
     class InelasticDefgradLinScalarAniso : public Parameter
     {
@@ -425,7 +415,7 @@ namespace MAT
       This inelastic deformation gradient provides an anisotropic growth law.
       Volumetric change due to this law is linearly dependent on a
       concentration mapped to the reference frame as follows:
-      F_{in} = I + [Scalar1growthfac_ * det(F) * (c - Scalar1refconc_)] * G,
+      F_{in} = I + [Scalar1growthfac_ * det(F) * (c - Scalar1refconc_) / C_MAX] * G,
       where G (growthdirmat_) is a matrix providing the information of the growth
       direction, that is constructed as follows:
 
@@ -502,11 +492,8 @@ namespace MAT
     /*--------------------------------------------------------------------*/
     /*! \class InelasticDefgradPolyScalarIso
 
-     This inelastic deformation gradient provides an isotropic growth law.
-     Volumetric change due to this law is non-linearly dependent on a
-     concentration mapped to the reference frame as follows:
-     F_{in} = [1.0 + Scalar1growthfac_ * det(F) * (f(c) - Scalar1refconc_) / Cmax]^(1/3) * I
-     where f(c) is prescribed by user in input file.
+    This is a parameter class of InelasticDefgradPolyScalarIso, which stores parameters needed for
+    the calculation of inelastic deformation gradient and its linearizations.
      */
     class InelasticDefgradPolyScalarIso : public Parameter
     {
@@ -534,6 +521,8 @@ namespace MAT
       double Xmax() { return Xmax_; };
       /// return saturation concentration of material
       double Cmax() { return Cmax_; };
+      /// return value of polynomial at reference intercalation fraction
+      double MATPolynomReference() { return MATPolynomReference_; };
 
      private:
       /// scalar that causes growth
@@ -552,6 +541,8 @@ namespace MAT
       const int Matid_;
       /// saturation concentration of material
       double Cmax_;
+      /// value of polynomial at reference intercalation fraction
+      double MATPolynomReference_;
     };  // end of class InelasticDefgradPolyScalarIso
 
   }  // namespace PAR
@@ -562,8 +553,8 @@ namespace MAT
    This inelastic deformation gradient provides an isotropic growth law.
    Volumetric change due to this law is non-linearly dependent on a
    concentration mapped to the reference frame as follows:
-   F_{in} = [1.0 + Scalar1growthfac_ * det(F) * (f(c) - Scalar1refconc_) / Cmax]^(1/3) * I
-   where f(c) is prescribed by user in input file.
+   F_{in} = [(1.0 + f(X)) / (1 + f(X_ref))]^(1/3) * I
+   where f(X) is prescribed by user in input file.
    */
   class InelasticDefgradPolyScalarIso : public InelasticDefgradPolynomial
   {
@@ -631,15 +622,8 @@ namespace MAT
     /*----------------------------------------------------------------------*/
     /*! \class InelasticDefgradPolyScalarAniso
 
-     This inelastic deformation gradient provides an anisotropic growth law.
-     Volumetric change due to this law is nonlinearly dependent on a
-     concentration mapped to the reference frame as follows:
-     F_{in} = I + [Scalar1growthfac_ * det(F) * (f(c) - Scalar1refconc_) / Cmax] * G,
-     where G (growthdirmat_) is a matrix providing the information of the growth
-     direction, that is constructed as follows:
-
-     G = g \otimes g, where g is the growth direction vector given in the input file.
-     g is normalized to length 1 before calculation of G. f(c) is defined by user in input file.
+    This is a parameter class of InelasticDefgradPolyScalarAniso, which stores parameters needed for
+    the calculation of inelastic deformation gradient and its linearizations.
      */
     class InelasticDefgradPolyScalarAniso : public Parameter
     {
@@ -669,6 +653,8 @@ namespace MAT
       double Xmax() { return Xmax_; };
       /// return saturation concentration of material
       double Cmax() { return Cmax_; };
+      /// return value of polynomial at reference intercalation fraction
+      double MATPolynomReference() { return MATPolynomReference_; };
 
      private:
       /// scalar that causes growth
@@ -689,6 +675,8 @@ namespace MAT
       const int Matid_;
       /// saturation concentration of material
       double Cmax_;
+      /// value of polynomial at reference intercalation fraction
+      double MATPolynomReference_;
     };  // end of class InelasticDefgradPolyScalarAniso
 
   }  // namespace PAR
@@ -699,12 +687,12 @@ namespace MAT
    This inelastic deformation gradient provides an anisotropic growth law.
    Volumetric change due to this law is nonlinearly dependent on a
    concentration mapped to the reference frame as follows:
-   F_{in} = I + [Scalar1growthfac_ * det(F) * (f(c) - Scalar1refconc_) / Cmax] * G,
+   F_{in} = I + [(f(X) - f(X_ref)) / (f(X_ref) + 1)] * G,
    where G (growthdirmat_) is a matrix providing the information of the growth
    direction, that is constructed as follows:
 
    G = g \otimes g, where g is the growth direction vector given in the input file.
-   g is normalized to length 1 before calculation of G. f(c) is defined by user in input file.
+   g is normalized to length 1 before calculation of G. f(X) is defined by user in input file.
    */
   class InelasticDefgradPolyScalarAniso : public InelasticDefgradPolynomial
   {

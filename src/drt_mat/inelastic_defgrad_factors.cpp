@@ -112,10 +112,10 @@ double MAT::InelasticDefgradLinear::EvaluateDeltaGrowth(const double Growthfac,
     const double DetJacobian, const double Referenceconc, const double concentration,
     const double Cmax)
 {
-  // compute intercalation fraction
-  const double Xhi = (concentration - Referenceconc) / Cmax;
+  // compute delta intercalation fraction between reference and current state
+  const double deltaX = (concentration - Referenceconc) / Cmax;
   // calculate growth
-  const double scalingfactor = Growthfac * DetJacobian * Xhi;
+  const double scalingfactor = Growthfac * DetJacobian * deltaX;
   return scalingfactor;
 }
 
@@ -143,24 +143,21 @@ double MAT::InelasticDefgradPolynomial::EvaluateMatPolynomial(const double Scala
   // initialize the variables for polynomial
   double MATPolynom(0.0);
   // safety check for validity of polynomial
-  const double Xhi = (concentration * DetJacobian) / Cmax;
+  const double X = (concentration * DetJacobian) / Cmax;
   // print warning to screen if prescribed interval of validity for polynomial
   // calculation model is not satisfied
-  if ((Xhi < X_min) or (Xhi > X_max))
+  if ((X < X_min) or (X > X_max))
   {
     std::cout
         << "WARNING: intercalation fraction X = c / c_max * detJacobian is violating prescribed "
            "bounds of polynomial calculation model. Calculated values might therefore not be "
            "reasonable!"
         << std::endl;
-    std::cout << "Current X: " << Xhi << " Lower bound is " << X_min << " Upper bound is " << X_max
+    std::cout << "Current X: " << X << " Lower bound is " << X_min << " Upper bound is " << X_max
               << std::endl;
   }
   // compute polynomial
-  // add constant
-  MATPolynom = ParamsPoly[0];
-  // add higher polynomial order terms
-  for (int i = 1; i < NumberPolyparams; ++i) MATPolynom += ParamsPoly[i] * pow(Xhi, i);
+  for (int i = 0; i < NumberPolyparams; ++i) MATPolynom += ParamsPoly[i] * pow(X, i);
   return MATPolynom;
 }
 
@@ -175,10 +172,10 @@ double MAT::InelasticDefgradPolynomial::EvaluateMatPolynomialDerivative(const do
   // initialize the variables for polynomial
   double DerivativeMATPolynom(0.0);
   // intercalation fraction
-  const double Xhi = (concentration * DetJacobian) / Cmax;
+  const double X = (concentration * DetJacobian) / Cmax;
   // compute first derivative of polynomial
   for (int i = 1; i < NumberPolyparams; ++i)
-    DerivativeMATPolynom += i * ParamsPoly[i] * pow(Xhi, i - 1);
+    DerivativeMATPolynom += i * ParamsPoly[i] * pow(X, i - 1);
   return DerivativeMATPolynom;
 }
 
@@ -213,7 +210,7 @@ MAT::PAR::InelasticDefgradLinScalarIso::InelasticDefgradLinScalarIso(
 
   // Check if the material specified by user with MATID is one of allowed materials which are
   // currently electrode, elchmat and scatra
-  if (Matid_ > 0.0)
+  if (Matid_ > 0)
   {
     // retrieve problem instance to read from
     const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
@@ -244,7 +241,7 @@ MAT::PAR::InelasticDefgradLinScalarIso::InelasticDefgradLinScalarIso(
             "elchmat or scatra material!");
     }
   }
-  if (Matid_ <= 0.0)
+  else
   {
     dserror("You have to enter a valid MATID for the corresponding scatra material!");
   }
@@ -441,7 +438,7 @@ MAT::PAR::InelasticDefgradLinScalarAniso::InelasticDefgradLinScalarAniso(
 
   // Check if the material specified by user with MATID is one of allowed materials which are
   // currently electrode, elchmat and scatra
-  if (Matid_ > 0.0)
+  if (Matid_ > 0)
   {
     // retrieve problem instance to read from
     const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
@@ -472,7 +469,7 @@ MAT::PAR::InelasticDefgradLinScalarAniso::InelasticDefgradLinScalarAniso(
             "elchmat or scatra material!");
     }
   }
-  if (Matid_ <= 0.0)
+  else
   {
     dserror("You have to enter a valid MATID for the corresponding scatra material!");
   }
@@ -485,7 +482,7 @@ MAT::PAR::InelasticDefgradLinScalarAniso::InelasticDefgradLinScalarAniso(
  | construct empty material                             schmidt 03/18 |
  *--------------------------------------------------------------------*/
 MAT::InelasticDefgradLinScalarAniso::InelasticDefgradLinScalarAniso()
-    : InelasticDefgradLinear(), gp_(-1)
+    : InelasticDefgradLinear(), gp_(-1), concentrations_(NULL)
 {
 }
 
@@ -494,7 +491,7 @@ MAT::InelasticDefgradLinScalarAniso::InelasticDefgradLinScalarAniso()
  | construct material with specific material params     schmidt 03/18 |
  *--------------------------------------------------------------------*/
 MAT::InelasticDefgradLinScalarAniso::InelasticDefgradLinScalarAniso(MAT::PAR::Parameter* params)
-    : InelasticDefgradLinear(params), gp_(-1)
+    : InelasticDefgradLinear(params), gp_(-1), concentrations_(NULL)
 {
 }
 
@@ -641,7 +638,8 @@ MAT::PAR::InelasticDefgradPolyScalarIso::InelasticDefgradPolyScalarIso(
       Xmin_(matdata->GetDouble("X_min")),
       Xmax_(matdata->GetDouble("X_max")),
       Matid_(matdata->GetInt("MATID")),
-      Cmax_(-1.0)
+      Cmax_(-1.0),
+      MATPolynomReference_(0.0)
 {
   // safety checks
   // in case not all scatra dofs are transported scalars, the last scatra dof is a potential and can
@@ -663,7 +661,7 @@ MAT::PAR::InelasticDefgradPolyScalarIso::InelasticDefgradPolyScalarIso(
 
   // Check if the material specified by user with MATID is one of allowed materials which are
   // currently electrode, elchmat and scatra
-  if (Matid_ > 0.0)
+  if (Matid_ > 0)
   {
     // retrieve problem instance to read from
     const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
@@ -694,10 +692,14 @@ MAT::PAR::InelasticDefgradPolyScalarIso::InelasticDefgradPolyScalarIso(
             "elchmat or scatra material!");
     }
   }
-  if (Matid_ <= 0.0)
+  else
   {
     dserror("You have to enter a valid MATID for the corresponding scatra material!");
   }
+  // evaluate polynomial at reference X
+  MAT::InelasticDefgradPolynomial Polynomial;
+  MATPolynomReference_ = Polynomial.EvaluateMatPolynomial(
+      Scalar1_, Polyparanum_, Polyparams_, Xmin_, Xmax_, Scalar1refconc_, Cmax_, 1.0);
   return;
 }
 
@@ -705,7 +707,7 @@ MAT::PAR::InelasticDefgradPolyScalarIso::InelasticDefgradPolyScalarIso(
  | construct empty material                             civaner 03/19 |
  *--------------------------------------------------------------------*/
 MAT::InelasticDefgradPolyScalarIso::InelasticDefgradPolyScalarIso()
-    : InelasticDefgradPolynomial(), gp_(-1)
+    : InelasticDefgradPolynomial(), gp_(-1), concentrations_(NULL)
 {
 }
 
@@ -714,7 +716,7 @@ MAT::InelasticDefgradPolyScalarIso::InelasticDefgradPolyScalarIso()
  | construct material with specific material params     civaner 03/19 |
  *--------------------------------------------------------------------*/
 MAT::InelasticDefgradPolyScalarIso::InelasticDefgradPolyScalarIso(MAT::PAR::Parameter* params)
-    : InelasticDefgradPolynomial(params), gp_(-1)
+    : InelasticDefgradPolynomial(params), gp_(-1), concentrations_(NULL)
 {
 }
 
@@ -727,17 +729,15 @@ void MAT::InelasticDefgradPolyScalarIso::EvaluateInverseInelasticDefGrad(
 {
   // get parameters
   const double Sc1 = Parameter()->Scalar1();
-  const double Sc1refconc = Parameter()->Scalar1refconc();
   const int Polyparanum = Parameter()->Polyparanum();
   const std::vector<double> Polyparams = Parameter()->Polyparams();
   const double Xmin = Parameter()->Xmin();
   const double Xmax = Parameter()->Xmax();
   const double Cmax = Parameter()->Cmax();
   const double detjacobian = defgrad->Determinant();
+  const double MATPolynomReference = Parameter()->MATPolynomReference();
 
   // get polynomial
-  const double MATPolynomReference =
-      EvaluateMatPolynomial(Sc1, Polyparanum, Polyparams, Xmin, Xmax, Sc1refconc, Cmax, 1.0);
   const double MATPolynom = EvaluateMatPolynomial(Sc1, Polyparanum, Polyparams, Xmin, Xmax,
       concentrations_->at(gp_).at(Sc1 - 1), Cmax, detjacobian);
   // calculate growth
@@ -766,18 +766,16 @@ void MAT::InelasticDefgradPolyScalarIso::EvaluateAdditionalCmat(
 
   // get parameters
   const double Sc1 = Parameter()->Scalar1();
-  const double Sc1refconc = Parameter()->Scalar1refconc();
   const int Polyparanum = Parameter()->Polyparanum();
   const std::vector<double> Polyparams = Parameter()->Polyparams();
   const double Xmin = Parameter()->Xmin();
   const double Xmax = Parameter()->Xmax();
   const double Cmax = Parameter()->Cmax();
   const double detjacobian = defgrad->Determinant();
+  const double MATPolynomReference = Parameter()->MATPolynomReference();
 
   // calculate scaling factor
   // get polynomial
-  const double MATPolynomReference =
-      EvaluateMatPolynomial(Sc1, Polyparanum, Polyparams, Xmin, Xmax, Sc1refconc, Cmax, 1.0);
   const double MATPolynom = EvaluateMatPolynomial(Sc1, Polyparanum, Polyparams, Xmin, Xmax,
       concentrations_->at(gp_).at(Sc1 - 1), Cmax, detjacobian);
   const double DerMATPolynom = EvaluateMatPolynomialDerivative(
@@ -811,18 +809,16 @@ void MAT::InelasticDefgradPolyScalarIso::EvaluateODStiffMat(
 
   // get parameters
   const double Sc1 = Parameter()->Scalar1();
-  const double Sc1refconc = Parameter()->Scalar1refconc();
   const int Polyparanum = Parameter()->Polyparanum();
   const std::vector<double> Polyparams = Parameter()->Polyparams();
   const double Xmin = Parameter()->Xmin();
   const double Xmax = Parameter()->Xmax();
   const double Cmax = Parameter()->Cmax();
   const double detjacobian = defgrad->Determinant();
+  const double MATPolynomReference = Parameter()->MATPolynomReference();
 
   // calculate scalefac
   // get polynomial
-  const double MATPolynomReference =
-      EvaluateMatPolynomial(Sc1, Polyparanum, Polyparams, Xmin, Xmax, Sc1refconc, Cmax, 1.0);
   const double MATPolynom = EvaluateMatPolynomial(Sc1, Polyparanum, Polyparams, Xmin, Xmax,
       concentrations_->at(gp_).at(Sc1 - 1), Cmax, detjacobian);
   const double DerMATPolynom = EvaluateMatPolynomialDerivative(
@@ -870,7 +866,8 @@ MAT::PAR::InelasticDefgradPolyScalarAniso::InelasticDefgradPolyScalarAniso(
       Xmin_(matdata->GetDouble("X_min")),
       Xmax_(matdata->GetDouble("X_max")),
       Matid_(matdata->GetInt("MATID")),
-      Cmax_(-1.0)
+      Cmax_(-1.0),
+      MATPolynomReference_(0.0)
 {
   // safety checks
   // in the case when not all scatra dofs are transported scalars, the last scatra dof is a
@@ -913,7 +910,7 @@ MAT::PAR::InelasticDefgradPolyScalarAniso::InelasticDefgradPolyScalarAniso(
 
   // Check if the material specified by user with MATID is one of allowed materials which are
   // currently electrode, elchmat and scatra
-  if (Matid_ > 0.0)
+  if (Matid_ > 0)
   {
     // retrieve problem instance to read from
     const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
@@ -944,10 +941,14 @@ MAT::PAR::InelasticDefgradPolyScalarAniso::InelasticDefgradPolyScalarAniso(
             "elchmat or scatra material!");
     }
   }
-  if (Matid_ <= 0.0)
+  else
   {
     dserror("You have to enter a valid MATID for the corresponding scatra material!");
   }
+  // evaluate polynomial at reference X
+  MAT::InelasticDefgradPolynomial Polynomial;
+  MATPolynomReference_ = Polynomial.EvaluateMatPolynomial(
+      Scalar1_, Polyparanum_, Polyparams_, Xmin_, Xmax_, Scalar1refconc_, Cmax_, 1.0);
 
   return;
 }
@@ -957,7 +958,7 @@ MAT::PAR::InelasticDefgradPolyScalarAniso::InelasticDefgradPolyScalarAniso(
  | construct empty material                             civaner 03/19 |
  *--------------------------------------------------------------------*/
 MAT::InelasticDefgradPolyScalarAniso::InelasticDefgradPolyScalarAniso()
-    : InelasticDefgradPolynomial(), gp_(-1)
+    : InelasticDefgradPolynomial(), gp_(-1), concentrations_(NULL)
 {
 }
 
@@ -966,7 +967,7 @@ MAT::InelasticDefgradPolyScalarAniso::InelasticDefgradPolyScalarAniso()
  | construct material with specific material params     civaner 03/19 |
  *--------------------------------------------------------------------*/
 MAT::InelasticDefgradPolyScalarAniso::InelasticDefgradPolyScalarAniso(MAT::PAR::Parameter* params)
-    : InelasticDefgradPolynomial(params), gp_(-1)
+    : InelasticDefgradPolynomial(params), gp_(-1), concentrations_(NULL)
 {
 }
 
@@ -984,16 +985,15 @@ void MAT::InelasticDefgradPolyScalarAniso::EvaluateInverseInelasticDefGrad(
 
   // get parameters
   const double Sc1 = Parameter()->Scalar1();
-  const double Sc1refconc = Parameter()->Scalar1refconc();
   const double detjacobian = defgrad->Determinant();
   const int Polyparanum = Parameter()->Polyparanum();
   const std::vector<double> Polyparams = Parameter()->Polyparams();
   const double Xmin = Parameter()->Xmin();
   const double Xmax = Parameter()->Xmax();
   const double Cmax = Parameter()->Cmax();
+  const double MATPolynomReference = Parameter()->MATPolynomReference();
+
   // get polynomials
-  const double MATPolynomReference =
-      EvaluateMatPolynomial(Sc1, Polyparanum, Polyparams, Xmin, Xmax, Sc1refconc, Cmax, 1.0);
   const double MATPolynom = EvaluateMatPolynomial(Sc1, Polyparanum, Polyparams, Xmin, Xmax,
       concentrations_->at(gp_).at(Sc1 - 1), Cmax, detjacobian);
   // calculate growth
@@ -1026,17 +1026,13 @@ void MAT::InelasticDefgradPolyScalarAniso::EvaluateAdditionalCmat(
 
   // get parameters
   const double Sc1 = Parameter()->Scalar1();
-  const double Sc1refconc = Parameter()->Scalar1refconc();
   const int Polyparanum = Parameter()->Polyparanum();
   const std::vector<double> Polyparams = Parameter()->Polyparams();
-  const double Xmin = Parameter()->Xmin();
-  const double Xmax = Parameter()->Xmax();
   const double Cmax = Parameter()->Cmax();
   const double detjacobian = defgrad->Determinant();
+  const double MATPolynomReference = Parameter()->MATPolynomReference();
 
   // get polynomial
-  const double MATPolynomReference =
-      EvaluateMatPolynomial(Sc1, Polyparanum, Polyparams, Xmin, Xmax, Sc1refconc, Cmax, 1.0);
   const double DerMATPolynom = EvaluateMatPolynomialDerivative(
       Sc1, Polyparanum, Polyparams, concentrations_->at(gp_).at(Sc1 - 1), Cmax, detjacobian);
 
@@ -1075,16 +1071,12 @@ void MAT::InelasticDefgradPolyScalarAniso::EvaluateODStiffMat(
   // get parameters
   const int Polyparanum = Parameter()->Polyparanum();
   const double Sc1 = Parameter()->Scalar1();
-  const double Sc1refconc = Parameter()->Scalar1refconc();
   const std::vector<double> Polyparams = Parameter()->Polyparams();
   const double Cmax = Parameter()->Cmax();
   const double detjacobian = defgrad->Determinant();
-  const double Xmin = Parameter()->Xmin();
-  const double Xmax = Parameter()->Xmax();
+  const double MATPolynomReference = Parameter()->MATPolynomReference();
 
   // get polynomials
-  const double MATPolynomReference =
-      EvaluateMatPolynomial(Sc1, Polyparanum, Polyparams, Xmin, Xmax, Sc1refconc, Cmax, 1.0);
   const double DerMATPolynom = EvaluateMatPolynomialDerivative(
       Sc1, Polyparanum, Polyparams, concentrations_->at(gp_).at(Sc1 - 1), Cmax, detjacobian);
 
