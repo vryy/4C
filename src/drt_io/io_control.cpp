@@ -176,7 +176,7 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtyp
 
     WriteHeader(name.str(), spatial_approx);
 
-    InsertRestartBackReference(restart, outputname);
+    InsertRestartBackReference(restart, restartname);
   }
 }
 
