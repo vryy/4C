@@ -13,6 +13,7 @@
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_dem_adhesion.H"
 
+#include "particle_interaction_runtime_vtp_writer.H"
 #include "particle_interaction_utils.H"
 
 #include "particle_interaction_dem_neighbor_pairs.H"
@@ -20,11 +21,11 @@
 #include "particle_interaction_dem_adhesion_law.H"
 #include "particle_interaction_dem_adhesion_surface_energy.H"
 
-#include "../drt_particle_algorithm/particle_wall_interface.H"
-#include "../drt_particle_algorithm/particle_wall_datastate.H"
-
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_container.H"
+
+#include "../drt_particle_wall/particle_wall_interface.H"
+#include "../drt_particle_wall/particle_wall_datastate.H"
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
@@ -32,13 +33,18 @@
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 
+#include "../drt_io/runtime_vtp_writer.H"
+
 #include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 07/2019 |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMAdhesion::DEMAdhesion(const Teuchos::ParameterList& params)
-    : params_dem_(params), adhesion_distance_(params_dem_.get<double>("ADHESION_DISTANCE"))
+    : params_dem_(params),
+      adhesion_distance_(params_dem_.get<double>("ADHESION_DISTANCE")),
+      writeparticlewallinteraction_(
+          DRT::INPUT::IntegralValue<int>(params_dem_, "WRITE_PARTICLE_WALL_INTERACTION"))
 {
   // empty constructor
 }
@@ -69,7 +75,8 @@ void PARTICLEINTERACTION::DEMAdhesion::Init()
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMAdhesion::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-    const std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface,
+    const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
+    const std::shared_ptr<PARTICLEINTERACTION::InteractionWriter> particleinteractionwriter,
     const std::shared_ptr<PARTICLEINTERACTION::DEMNeighborPairs> neighborpairs,
     const std::shared_ptr<PARTICLEINTERACTION::DEMHistoryPairs> historypairs,
     const double& k_normal)
@@ -82,6 +89,12 @@ void PARTICLEINTERACTION::DEMAdhesion::Setup(
 
   // set interface to particle wall hander
   particlewallinterface_ = particlewallinterface;
+
+  // set particle interaction writer
+  particleinteractionwriter_ = particleinteractionwriter;
+
+  // setup particle interaction writer
+  SetupParticleInteractionWriter();
 
   // set neighbor pair handler
   neighborpairs_ = neighborpairs;
@@ -217,6 +230,16 @@ void PARTICLEINTERACTION::DEMAdhesion::InitAdhesionSurfaceEnergyHandler()
 }
 
 /*---------------------------------------------------------------------------*
+ | setup particle interaction writer                          sfuchs 08/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::DEMAdhesion::SetupParticleInteractionWriter()
+{
+  // register specific runtime vtp writer
+  if (writeparticlewallinteraction_)
+    particleinteractionwriter_->RegisterSpecificRuntimeVtpWriter("particle-wall-adhesion");
+}
+
+/*---------------------------------------------------------------------------*
  | evaluate particle adhesion contribution                    sfuchs 07/2019 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleAdhesion()
@@ -330,15 +353,40 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion()
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion");
 
   // get wall data state container
-  std::shared_ptr<PARTICLEALGORITHM::WallDataState> walldatastate =
+  std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
       particlewallinterface_->GetWallDataState();
+
+  // get reference to particle-wall pair data
+  const DEMParticleWallPairData& particlewallpairdata =
+      neighborpairs_->GetRefToParticleWallPairAdhesionData();
 
   // get reference to particle-wall adhesion history pair data
   DEMHistoryPairAdhesionData& adhesionhistorydata =
       historypairs_->GetRefToParticleWallAdhesionHistoryData();
 
+  // write interaction output
+  const bool writeinteractionoutput =
+      particleinteractionwriter_->GetCurrentWriteResultFlag() and writeparticlewallinteraction_;
+
+  // init storage for interaction output
+  std::vector<double> attackpoints;
+  std::vector<double> adhesionforces;
+  std::vector<double> normaldirection;
+  std::vector<double> surfaceenergy;
+
+  // prepare storage for interaction output
+  if (writeinteractionoutput)
+  {
+    const int numparticlewallpairs = particlewallpairdata.size();
+
+    attackpoints.reserve(3 * numparticlewallpairs);
+    adhesionforces.reserve(3 * numparticlewallpairs);
+    normaldirection.reserve(3 * numparticlewallpairs);
+    surfaceenergy.reserve(numparticlewallpairs);
+  }
+
   // iterate over particle-wall pairs
-  for (const auto& particlewallpair : neighborpairs_->GetRefToParticleWallPairAdhesionData())
+  for (const auto& particlewallpair : particlewallpairdata)
   {
     // access values of local index tuple of particle i
     PARTICLEENGINE::TypeEnum type_i;
@@ -354,10 +402,11 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion()
     const int* globalid_i = container_i->GetPtrToParticleGlobalID(particle_i);
 
     // declare pointer variables for particle i
-    const double *vel_i, *rad_i, *mass_i;
+    const double *pos_i, *vel_i, *rad_i, *mass_i;
     double* force_i;
 
     // get pointer to particle states
+    pos_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
     vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
     rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
     mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
@@ -428,24 +477,61 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion()
     for (int histele : particlewallpair.histeles_)
       adhesionhistorydata[globalid_i[0]][histele] = touchedadhesionhistory_ij;
 
+    // calculation of wall adhesion force
+    double walladhesionforce[3] = {0.0};
+    if (writeinteractionoutput or walldatastate->GetForceCol() != Teuchos::null)
+    {
+      UTILS::vec_setscale(
+          walladhesionforce, -adhesionhistory_ij.adhesion_force_, particlewallpair.e_ji_);
+    }
+
+    // write interaction output
+    if (writeinteractionoutput)
+    {
+      // compute vector from particle i to wall contact point j
+      double r_ji[3];
+      UTILS::vec_setscale(r_ji, (rad_i[0] + particlewallpair.gap_), particlewallpair.e_ji_);
+
+      // calculate wall contact point
+      double wallcontactpoint[3];
+      UTILS::vec_set(wallcontactpoint, pos_i);
+      UTILS::vec_add(wallcontactpoint, r_ji);
+
+      // set wall attack point and states
+      for (int dim = 0; dim < 3; ++dim) attackpoints.push_back(wallcontactpoint[dim]);
+      for (int dim = 0; dim < 3; ++dim) adhesionforces.push_back(walladhesionforce[dim]);
+      for (int dim = 0; dim < 3; ++dim) normaldirection.push_back(-particlewallpair.e_ji_[dim]);
+      surfaceenergy.push_back(adhesionhistory_ij.surface_energy_);
+    }
+
     // assemble adhesion force acting on wall element
     if (walldatastate->GetForceCol() != Teuchos::null)
     {
-      // wall contact force
-      double wallcontactforce[3];
-      UTILS::vec_setscale(
-          wallcontactforce, -adhesionhistory_ij.adhesion_force_, particlewallpair.e_ji_);
-
       // determine nodal forces
       double nodal_force[numnodes * 3];
       for (int node = 0; node < numnodes; ++node)
         for (int dim = 0; dim < 3; ++dim)
-          nodal_force[node * 3 + dim] = funct[node] * wallcontactforce[dim];
+          nodal_force[node * 3 + dim] = funct[node] * walladhesionforce[dim];
 
       // assemble nodal forces
       const int err = walldatastate->GetMutableForceCol()->SumIntoGlobalValues(
           numnodes * 3, &nodal_force[0], &(lmele)[0]);
       if (err < 0) dserror("sum into Epetra_Vector failed!");
     }
+  }
+
+  if (writeinteractionoutput)
+  {
+    // get specific runtime vtp writer
+    RuntimeVtpWriter* runtime_vtpwriter =
+        particleinteractionwriter_->GetSpecificRuntimeVtpWriter("particle-wall-adhesion");
+
+    // set wall attack points
+    runtime_vtpwriter->ResetGeometry(attackpoints);
+
+    // append states
+    runtime_vtpwriter->AppendVisualizationPointDataVector(adhesionforces, 3, "adhesion force");
+    runtime_vtpwriter->AppendVisualizationPointDataVector(normaldirection, 3, "normal direction");
+    runtime_vtpwriter->AppendVisualizationPointDataVector(surfaceenergy, 1, "surface energy");
   }
 }

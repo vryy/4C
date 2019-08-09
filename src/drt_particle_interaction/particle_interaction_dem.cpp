@@ -21,10 +21,10 @@
 #include "particle_interaction_dem_contact.H"
 #include "particle_interaction_dem_adhesion.H"
 
-#include "../drt_particle_algorithm/particle_wall_interface.H"
-
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_container.H"
+
+#include "../drt_particle_wall/particle_wall_interface.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -75,7 +75,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::Init()
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionDEM::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-    const std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface)
+    const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface)
 {
   // call base class setup
   ParticleInteractionBase::Setup(particleengineinterface, particlewallinterface);
@@ -87,13 +87,13 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::Setup(
   historypairs_->Setup(particleengineinterface);
 
   // setup contact handler
-  contact_->Setup(particleengineinterface, particlewallinterface, particlematerial_, neighborpairs_,
-      historypairs_);
+  contact_->Setup(particleengineinterface, particlewallinterface, particlematerial_,
+      particleinteractionwriter_, neighborpairs_, historypairs_);
 
   // setup adhesion handler
   if (adhesion_)
-    adhesion_->Setup(particleengineinterface, particlewallinterface, neighborpairs_, historypairs_,
-        contact_->GetNormalContactStiffness());
+    adhesion_->Setup(particleengineinterface, particlewallinterface, particleinteractionwriter_,
+        neighborpairs_, historypairs_, contact_->GetNormalContactStiffness());
 }
 
 /*---------------------------------------------------------------------------*

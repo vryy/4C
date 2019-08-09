@@ -9,7 +9,7 @@ the same tau, alpha and beta.
 
 \level 2
 
-\maintainer Fabian Braeu
+\maintainer Amadeus Gebauer
 
 *----------------------------------------------------------------------*/
 #ifndef VISCO_FRACT_H_

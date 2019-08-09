@@ -24,7 +24,7 @@
 /*---------------------------------------------------------------------------*
  | forward declarations                                       sfuchs 03/2019 |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEALGORITHM
+namespace PARTICLEWALL
 {
   class WallHandlerInterface;
 }
@@ -37,7 +37,7 @@ namespace DRT
 /*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 03/2019 |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEALGORITHM
+namespace PARTICLEWALL
 {
   class WallResultTest : public DRT::ResultTest
   {
@@ -53,7 +53,7 @@ namespace PARTICLEALGORITHM
 
     //! setup wall result test
     virtual void Setup(
-        const std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface);
+        const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface);
 
     //! test node value
     virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
@@ -63,13 +63,13 @@ namespace PARTICLEALGORITHM
 
    private:
     //! interface to particle wall handler
-    std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface_;
+    std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface_;
 
     //! wall discretization
     Teuchos::RCP<const DRT::Discretization> walldiscretization_;
   };
 
-}  // namespace PARTICLEALGORITHM
+}  // namespace PARTICLEWALL
 
 /*---------------------------------------------------------------------------*/
 #endif

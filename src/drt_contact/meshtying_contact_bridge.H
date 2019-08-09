@@ -13,7 +13,6 @@
 #include "Epetra_Vector.h"
 #include "../drt_inpar/inpar_contact.H"
 #include "Epetra_Comm.h"
-#include "../drt_mortar/mortar_manager_base.H"  // TODO forward declaration!!!
 #include "../drt_lib/drt_dserror.H"
 
 // forward declarations
@@ -23,6 +22,12 @@ namespace DRT
   class Condition;
 }  // namespace DRT
 
+namespace IO
+{
+  class DiscretizationWriter;
+  class DiscretizationReader;
+}  // namespace IO
+
 namespace LINALG
 {
   class MapExtractor;
@@ -30,6 +35,7 @@ namespace LINALG
 
 namespace MORTAR
 {
+  class ManagerBase;
   class StrategyBase;
 }  // namespace MORTAR
 
@@ -68,43 +74,37 @@ namespace CONTACT
     \brief Get Epetra communicator
 
     */
-    const Epetra_Comm& Comm() const
-    {
-      if (cman_ != Teuchos::null) return cman_->Comm();
-      if (mtman_ != Teuchos::null) return mtman_->Comm();
-      dserror("can't get comm()");
-      return cman_->Comm();
-    }
+    const Epetra_Comm& Comm() const;
 
     /*!
     \brief Get contact manager
 
     */
-    Teuchos::RCP<MORTAR::ManagerBase> ContactManager() { return cman_; }
+    Teuchos::RCP<MORTAR::ManagerBase> ContactManager() const;
 
     /*!
     \brief Get meshtying manager
 
     */
-    Teuchos::RCP<MORTAR::ManagerBase> MtManager() { return mtman_; }
+    Teuchos::RCP<MORTAR::ManagerBase> MtManager() const;
 
     /*!
-    \brief Get strategy of mt/contact problem
+    \brief Get strategy of meshtying/contact problem
 
     */
-    MORTAR::StrategyBase& GetStrategy();
+    MORTAR::StrategyBase& GetStrategy() const;
 
     /*!
     \brief return bool indicating if contact is defined
 
     */
-    bool HaveContact() { return (cman_ != Teuchos::null); }
+    bool HaveContact() const { return (cman_ != Teuchos::null); }
 
     /*!
     \brief return bool indicating if meshtying is defined
 
     */
-    bool HaveMeshtying() { return (mtman_ != Teuchos::null); }
+    bool HaveMeshtying() const { return (mtman_ != Teuchos::null); }
 
     /*!
     \brief Write results for visualization for meshtying/contact problems
@@ -171,10 +171,8 @@ namespace CONTACT
     void WriteRestart(Teuchos::RCP<IO::DiscretizationWriter>& output, bool forcedrestart = false);
 
    private:
-    // don't want cctor (= operator impossible anyway for abstract class)
+    //! don't want cctor (= operator impossible anyway for abstract class)
     MeshtyingContactBridge(const MeshtyingContactBridge& old) = delete;
-
-    // internal variables:
 
     //! Contact manager
     Teuchos::RCP<MORTAR::ManagerBase> cman_;

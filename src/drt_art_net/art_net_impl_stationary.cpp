@@ -19,6 +19,7 @@
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra/scatra_resulttest.H"
+#include "../drt_mat/cnst_1d_art.H"
 #include <Epetra_Vector.h>
 
 
@@ -301,6 +302,8 @@ void ART::ArtNetImplStationary::LinearSolve()
 
   // linear solve
   solver_->Solve(sysmat_->EpetraOperator(), pressureincnp_, rhs_, true, 1, Teuchos::null);
+  // note: incremental form since rhs-coupling with poromultielastscatra-framework might be
+  //       nonlinear
   pressurenp_->Update(1.0, *pressureincnp_, 1.0);
 
   // end time measurement for solver
@@ -447,13 +450,53 @@ void ART::ArtNetImplStationary::Output(
     output_.NewStep(step_, time_);
 
     // write domain decomposition for visualization (only once at step "upres"!)
-    if (step_ == upres_ or step_ == 0) output_.WriteElementData(true);
+    // and element radius
+    if (step_ == upres_ or step_ == 0)
+    {
+      output_.WriteElementData(true);
+      OutputRadius();
+    }
 
     // "pressure in the arteries" vector
     output_.WriteVector("one_d_artery_pressure", pressurenp_);
 
     if (solvescatra_) scatra_->ScaTraField()->Output();
   }
+
+  return;
+}
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | output of element-based radius                       kremheller 07/19|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void ART::ArtNetImplStationary::OutputRadius()
+{
+  // vector containing element radius
+  Teuchos::RCP<Epetra_Vector> eleradiusvector =
+      LINALG::CreateVector(*discret_->ElementRowMap(), true);
+
+  // loop over row elements
+  const int numrowele = discret_->NumMyRowElements();
+  for (int i = 0; i < numrowele; ++i)
+  {
+    DRT::Element* actele = discret_->lRowElement(i);
+    // cast the material to artery material material
+    const Teuchos::RCP<const MAT::Cnst_1d_art>& arterymat =
+        Teuchos::rcp_dynamic_cast<const MAT::Cnst_1d_art>(actele->Material());
+    if (arterymat == Teuchos::null)
+      dserror("cast to MAT::Cnst_1d_art failed during output of radius!");
+    const double radius = arterymat->Diam() / 2.0;
+    eleradiusvector->ReplaceGlobalValue(actele->Id(), 0, radius);
+  }
+
+  // write the output
+  output_.WriteVector("ele_radius", eleradiusvector, IO::elementvector);
 
   return;
 }

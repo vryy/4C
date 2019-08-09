@@ -13,6 +13,8 @@
  *---------------------------------------------------------------------------*/
 #include "particle_wall_datastate.H"
 
+#include "../drt_inpar/inpar_particle.H"
+
 #include "../drt_lib/drt_discret.H"
 
 #include "../linalg/linalg_utils.H"
@@ -20,7 +22,7 @@
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 05/2019 |
  *---------------------------------------------------------------------------*/
-PARTICLEALGORITHM::WallDataState::WallDataState()
+PARTICLEWALL::WallDataState::WallDataState(const Teuchos::ParameterList& params) : params_(params)
 {
   // empty constructor
 }
@@ -28,7 +30,7 @@ PARTICLEALGORITHM::WallDataState::WallDataState()
 /*---------------------------------------------------------------------------*
  | init wall data state container                             sfuchs 05/2019 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallDataState::Init()
+void PARTICLEWALL::WallDataState::Init()
 {
   // nothing to do
 }
@@ -36,9 +38,13 @@ void PARTICLEALGORITHM::WallDataState::Init()
 /*---------------------------------------------------------------------------*
  | setup wall data state container                            sfuchs 05/2019 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallDataState::Setup(
-    Teuchos::RCP<const DRT::Discretization> const& walldiscretization, bool ismoving, bool isloaded)
+void PARTICLEWALL::WallDataState::Setup(
+    Teuchos::RCP<const DRT::Discretization> const& walldiscretization)
 {
+  // get flags defining considered states of particle wall
+  bool ismoving = DRT::INPUT::IntegralValue<int>(params_, "PARTICLE_WALL_MOVING");
+  bool isloaded = DRT::INPUT::IntegralValue<int>(params_, "PARTICLE_WALL_LOADED");
+
   // set current dof row and column map
   curr_dof_row_map_ = Teuchos::rcp(new Epetra_Map(*walldiscretization->DofRowMap()));
 
@@ -62,7 +68,7 @@ void PARTICLEALGORITHM::WallDataState::Setup(
 /*---------------------------------------------------------------------------*
  | check for correct maps                                     sfuchs 05/2019 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallDataState::CheckForCorrectMaps(
+void PARTICLEWALL::WallDataState::CheckForCorrectMaps(
     Teuchos::RCP<const DRT::Discretization> const& walldiscretization)
 {
   if (disp_row_ != Teuchos::null)
@@ -93,7 +99,7 @@ void PARTICLEALGORITHM::WallDataState::CheckForCorrectMaps(
 /*---------------------------------------------------------------------------*
  | update maps of state vectors                               sfuchs 05/2019 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallDataState::UpdateMapsOfStateVectors(
+void PARTICLEWALL::WallDataState::UpdateMapsOfStateVectors(
     Teuchos::RCP<const DRT::Discretization> const& walldiscretization)
 {
   if (disp_row_ != Teuchos::null and disp_col_ != Teuchos::null)

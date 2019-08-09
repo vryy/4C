@@ -609,13 +609,13 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
       double checkfrcoeff = 0.0;
       if (ftype == INPAR::CONTACT::friction_tresca)
       {
-        checkfrcoeff = interfaces[i]->IParams().get<double>("FRBOUND");
+        checkfrcoeff = interfaces[i]->InterfaceParams().get<double>("FRBOUND");
         std::cout << std::endl << "Interface         " << i + 1 << std::endl;
         std::cout << "FrBound (Tresca)  " << checkfrcoeff << std::endl;
       }
       else if (ftype == INPAR::CONTACT::friction_coulomb)
       {
-        checkfrcoeff = interfaces[i]->IParams().get<double>("FRCOEFF");
+        checkfrcoeff = interfaces[i]->InterfaceParams().get<double>("FRCOEFF");
         std::cout << std::endl << "Interface         " << i + 1 << std::endl;
         std::cout << "FrCoeff (Coulomb) " << checkfrcoeff << std::endl;
       }

@@ -127,7 +127,7 @@ namespace CONTACT
      \brief Get interface contact parameter list
 
      */
-    virtual Teuchos::ParameterList& IParams() { return imortar_; };
+    virtual Teuchos::ParameterList& InterfaceParams() { return imortar_; };
 
     /*!
      \brief create intersections
@@ -473,7 +473,7 @@ namespace CONTACT
      \brief Get interface contact parameter list
 
      */
-    virtual Teuchos::ParameterList& IParams() { return imortar_; };
+    virtual Teuchos::ParameterList& InterfaceParams() { return imortar_; };
 
 
     /*!

@@ -1,11 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\brief
-Former file of Lena Yoshihara
+\brief Material for a 1D artery, contains its initial diameter, thickness, dynamic
+       viscosity and density of the fluid flowing in it, Young's modulus and Poisson ratio and
+       external constant tissue pressures for the nodes
 
 \level 3
 
-\maintainer Martin Kronbichler
+\maintainer Johannes Kremheller
 */
 /*----------------------------------------------------------------------*/
 
@@ -25,7 +26,6 @@ MAT::PAR::Cnst_1d_art::Cnst_1d_art(Teuchos::RCP<MAT::PAR::Material> matdata)
       density_(matdata->GetDouble("DENS")),
       young_(matdata->GetDouble("YOUNG")),
       nue_(matdata->GetDouble("NUE")),
-      diam_(matdata->GetDouble("DIAM")),
       th_(matdata->GetDouble("TH")),
       pext1_(matdata->GetDouble("PEXT1")),
       pext2_(matdata->GetDouble("PEXT2"))
@@ -51,12 +51,12 @@ DRT::ParObject* MAT::Cnst_1d_artType::Create(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Cnst_1d_art::Cnst_1d_art() : params_(NULL) {}
+MAT::Cnst_1d_art::Cnst_1d_art() : params_(NULL), diam_(0.0) {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Cnst_1d_art::Cnst_1d_art(MAT::PAR::Cnst_1d_art* params) : params_(params) {}
+MAT::Cnst_1d_art::Cnst_1d_art(MAT::PAR::Cnst_1d_art* params) : params_(params), diam_(0.0) {}
 
 
 /*----------------------------------------------------------------------*/
@@ -74,6 +74,7 @@ void MAT::Cnst_1d_art::Pack(DRT::PackBuffer& data) const
   int matid = -1;
   if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
+  AddtoPack(data, diam_);
 }
 
 
@@ -103,6 +104,9 @@ void MAT::Cnst_1d_art::Unpack(const std::vector<char>& data)
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
+
+  // diameter
+  ExtractfromPack(position, data, diam_);
 
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }

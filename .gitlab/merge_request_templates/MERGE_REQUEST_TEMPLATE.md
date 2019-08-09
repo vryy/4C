@@ -14,6 +14,10 @@ Assignees:  If you know anyone who should likely handle bringing this merge requ
 Labels: Update the label of the issue(s) addressed by this merge request to "Under Review".
 -->
 
+<!--
+Check the box "Delete source branch when merge request is accepted." when opening the merge request in order to automatically delete the feature branch from LRZ GitLab after it has been merged.  Note that this will just remove the feature branch from GitLab, but not from your local clone of the repository.
+-->
+
 ## Description and Context
 <!--
 Provide a brief and concise description of your proposed change. Why is this change required?  What problem does it solve?

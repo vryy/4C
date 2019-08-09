@@ -7,7 +7,7 @@ The input line should read
 
 \level 2
 
-\maintainer Fabian Braeu
+\maintainer Amadeus Gebauer
 */
 
 /*----------------------------------------------------------------------*/

@@ -14,6 +14,7 @@
 #include "particle_wall.H"
 
 #include "particle_wall_datastate.H"
+#include "particle_wall_discretization_runtime_vtu_writer.H"
 
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_enums.H"
@@ -31,7 +32,6 @@
 #include "../drt_lib/drt_dofset_transparent.H"
 
 #include "../drt_io/io.H"
-#include "../drt_io/discretization_runtime_vtu_writer.H"
 
 #include "../linalg/linalg_utils.H"
 
@@ -42,10 +42,9 @@
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 10/2018 |
  *---------------------------------------------------------------------------*/
-PARTICLEALGORITHM::WallHandlerBase::WallHandlerBase(
+PARTICLEWALL::WallHandlerBase::WallHandlerBase(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
-    : setuptime_(0.0),
-      comm_(comm),
+    : comm_(comm),
       myrank_(comm.MyPID()),
       params_(params),
       validwallelements_(false),
@@ -57,7 +56,7 @@ PARTICLEALGORITHM::WallHandlerBase::WallHandlerBase(
 /*---------------------------------------------------------------------------*
  | destructor                                                 sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-PARTICLEALGORITHM::WallHandlerBase::~WallHandlerBase()
+PARTICLEWALL::WallHandlerBase::~WallHandlerBase()
 {
   // note: destructor declaration here since at compile-time a complete type
   // of class T as used in class member std::unique_ptr<T> ptr_T_ is required
@@ -66,7 +65,7 @@ PARTICLEALGORITHM::WallHandlerBase::~WallHandlerBase()
 /*---------------------------------------------------------------------------*
  | init wall handler                                          sfuchs 10/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallHandlerBase::Init()
+void PARTICLEWALL::WallHandlerBase::Init()
 {
   // init wall discretization
   InitWallDiscretization();
@@ -75,13 +74,13 @@ void PARTICLEALGORITHM::WallHandlerBase::Init()
   InitWallDataState();
 
   // init wall discretization runtime vtu writer
-  InitWallVtuWriter();
+  InitWallDiscretizationRuntimeVtuWriter();
 }
 
 /*---------------------------------------------------------------------------*
  | setup wall handler                                         sfuchs 10/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallHandlerBase::Setup(
+void PARTICLEWALL::WallHandlerBase::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<BINSTRATEGY::BinningStrategy> binstrategy)
 {
@@ -95,44 +94,53 @@ void PARTICLEALGORITHM::WallHandlerBase::Setup(
   SetupWallDiscretization();
 
   // setup wall data state container
-  SetupWallDataState();
+  walldatastate_->Setup(walldiscretization_);
 
-  // setup wall discretization runtime vtu writer
-  SetupWallVtuWriter();
+  // setup wall runtime vtu/vtp writers
+  {
+    // get data format for written numeric data
+    bool write_binary_output = (DRT::INPUT::IntegralValue<INPAR::PARTICLE::OutputDataFormat>(
+                                    params_, "OUTPUT_DATA_FORMAT") == INPAR::PARTICLE::binary);
+
+    // setup wall discretization runtime vtu writer
+    walldiscretizationruntimevtuwriter_->Setup(write_binary_output);
+  }
 }
 
 /*---------------------------------------------------------------------------*
  | write restart of wall handler                              sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallHandlerBase::WriteRestart(const int step, const double time) const
+void PARTICLEWALL::WallHandlerBase::WriteRestart(const int step, const double time) const
 {
   // get wall discretization writer
   Teuchos::RCP<IO::DiscretizationWriter> walldiscretizationwriter = walldiscretization_->Writer();
 
   walldiscretizationwriter->NewStep(step, time);
+
+  // write restart of wall discretization runtime vtu writer
+  walldiscretizationruntimevtuwriter_->WriteRestart(step, time);
 }
 
 /*---------------------------------------------------------------------------*
  | read restart of wall handler                               sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallHandlerBase::ReadRestart(const int restartstep)
+void PARTICLEWALL::WallHandlerBase::ReadRestart(const int restartstep)
 {
-  // create wall discretization reader
-  const Teuchos::RCP<IO::DiscretizationReader> wallreader =
-      Teuchos::rcp(new IO::DiscretizationReader(walldiscretization_, restartstep));
+  // create discretization reader
+  const std::shared_ptr<IO::DiscretizationReader> reader =
+      std::make_shared<IO::DiscretizationReader>(walldiscretization_, restartstep);
 
   // safety check
-  if (restartstep != wallreader->ReadInt("step"))
-    dserror("time step on file not equal to given step!");
+  if (restartstep != reader->ReadInt("step")) dserror("time step on file not equal to given step!");
 
-  // get restart time
-  setuptime_ = wallreader->ReadDouble("time");
+  // read restart of wall discretization runtime vtu writer
+  walldiscretizationruntimevtuwriter_->ReadRestart(reader);
 }
 
 /*---------------------------------------------------------------------------*
  | insert wall handler dependent states of all particle types sfuchs 05/2019 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallHandlerBase::InsertParticleStatesOfParticleTypes(
+void PARTICLEWALL::WallHandlerBase::InsertParticleStatesOfParticleTypes(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
     const
 {
@@ -167,60 +175,18 @@ void PARTICLEALGORITHM::WallHandlerBase::InsertParticleStatesOfParticleTypes(
 }
 
 /*---------------------------------------------------------------------------*
- | write wall runtime vtu output                              sfuchs 11/2018 |
+ | write wall runtime output                                  sfuchs 08/2019 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallHandlerBase::WriteWallRuntimeVtuOutput(
-    const int step, const double time) const
+void PARTICLEWALL::WallHandlerBase::WriteWallRuntimeOutput(const int step, const double time) const
 {
-  // reset time and time step of the writer object
-  wallvtuwriter_->ResetTimeAndTimeStep(time, step);
-
-
-  // node displacements
-  if (walldatastate_->GetDispCol() != Teuchos::null)
-    wallvtuwriter_->AppendDofBasedResultDataVector(
-        walldatastate_->GetRefMutableDispCol(), 3, 0, "disp");
-
-  // node owner
-  Teuchos::RCP<Epetra_Vector> nodeowner =
-      Teuchos::rcp(new Epetra_Vector(*walldiscretization_->NodeColMap(), true));
-  for (int inode = 0; inode < walldiscretization_->NumMyColNodes(); ++inode)
-  {
-    const DRT::Node* node = walldiscretization_->lColNode(inode);
-    (*nodeowner)[inode] = node->Owner();
-  }
-  wallvtuwriter_->AppendNodeBasedResultDataVector(nodeowner, 1, "owner");
-
-  // element owner
-  Teuchos::RCP<Epetra_Vector> eleowner =
-      Teuchos::rcp(new Epetra_Vector(*walldiscretization_->ElementColMap(), true));
-  for (int iele = 0; iele < walldiscretization_->NumMyColElements(); ++iele)
-  {
-    const DRT::Element* ele = walldiscretization_->lColElement(iele);
-    (*eleowner)[iele] = ele->Owner();
-  }
-  wallvtuwriter_->AppendElementBasedResultDataVector(eleowner, 1, "owner");
-
-  // element id
-  Teuchos::RCP<Epetra_Vector> eleid =
-      Teuchos::rcp(new Epetra_Vector(*walldiscretization_->ElementColMap(), true));
-  for (int iele = 0; iele < walldiscretization_->NumMyColElements(); ++iele)
-  {
-    const DRT::Element* ele = walldiscretization_->lColElement(iele);
-    (*eleid)[iele] = ele->Id();
-  }
-  wallvtuwriter_->AppendElementBasedResultDataVector(eleid, 1, "id");
-
-
-  // finalize everything and write all required files to filesystem
-  wallvtuwriter_->WriteFiles();
-  wallvtuwriter_->WriteCollectionFileOfAllWrittenFiles();
+  // write wall discretization runtime output
+  walldiscretizationruntimevtuwriter_->WriteWallDiscretizationRuntimeOutput(step, time);
 }
 
 /*---------------------------------------------------------------------------*
  | update bin row and column map                              sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallHandlerBase::UpdateBinRowAndColMap(
+void PARTICLEWALL::WallHandlerBase::UpdateBinRowAndColMap(
     const Teuchos::RCP<Epetra_Map> binrowmap, const Teuchos::RCP<Epetra_Map> bincolmap)
 {
   binrowmap_ = binrowmap;
@@ -230,8 +196,7 @@ void PARTICLEALGORITHM::WallHandlerBase::UpdateBinRowAndColMap(
 /*---------------------------------------------------------------------------*
  | get max wall position increment since last transfer        sfuchs 03/2019 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallHandlerBase::GetMaxWallPositionIncrement(
-    double& allprocmaxpositionincrement)
+void PARTICLEWALL::WallHandlerBase::GetMaxWallPositionIncrement(double& allprocmaxpositionincrement)
 {
   if (walldatastate_->GetDispRow() != Teuchos::null)
   {
@@ -272,12 +237,12 @@ void PARTICLEALGORITHM::WallHandlerBase::GetMaxWallPositionIncrement(
 /*---------------------------------------------------------------------------*
  | relate bins to column wall elements                        sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallHandlerBase::RelateBinsToColWallEles()
+void PARTICLEWALL::WallHandlerBase::RelateBinsToColWallEles()
 {
   // valid flag denoting validity of map relating bins to column wall elements
   if (validwallelements_) return;
 
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::WallHandlerBase::RelateBinsToColWallEles");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEWALL::WallHandlerBase::RelateBinsToColWallEles");
 
 #ifdef DEBUG
   walldatastate_->CheckForCorrectMaps(walldiscretization_);
@@ -312,10 +277,10 @@ void PARTICLEALGORITHM::WallHandlerBase::RelateBinsToColWallEles()
 /*---------------------------------------------------------------------------*
  | build particle to wall neighbors                           sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallHandlerBase::BuildParticleToWallNeighbors(
+void PARTICLEWALL::WallHandlerBase::BuildParticleToWallNeighbors(
     const PARTICLEENGINE::ParticlesToBins& particlestobins)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::WallHandlerBase::BuildParticleToWallNeighbors");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEWALL::WallHandlerBase::BuildParticleToWallNeighbors");
 
 #ifdef DEBUG
   walldatastate_->CheckForCorrectMaps(walldiscretization_);
@@ -417,7 +382,7 @@ void PARTICLEALGORITHM::WallHandlerBase::BuildParticleToWallNeighbors(
  | get reference to potential wall neighbors                  sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
 const PARTICLEENGINE::PotentialWallNeighbors&
-PARTICLEALGORITHM::WallHandlerBase::GetPotentialWallNeighbors() const
+PARTICLEWALL::WallHandlerBase::GetPotentialWallNeighbors() const
 {
   // safety check
   if (not validwallneighbors_) dserror("invalid wall neighbors!");
@@ -428,7 +393,7 @@ PARTICLEALGORITHM::WallHandlerBase::GetPotentialWallNeighbors() const
 /*---------------------------------------------------------------------------*
  | determine nodal positions of column wall element           sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallHandlerBase::DetermineColWallEleNodalPos(
+void PARTICLEWALL::WallHandlerBase::DetermineColWallEleNodalPos(
     DRT::Element* ele, std::map<int, LINALG::Matrix<3, 1>>& colelenodalpos) const
 {
 #ifdef DEBUG
@@ -480,7 +445,7 @@ void PARTICLEALGORITHM::WallHandlerBase::DetermineColWallEleNodalPos(
 /*---------------------------------------------------------------------------*
  | init wall discretization                                   sfuchs 10/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallHandlerBase::InitWallDiscretization()
+void PARTICLEWALL::WallHandlerBase::InitWallDiscretization()
 {
   // create wall discretization
   walldiscretization_ =
@@ -493,60 +458,33 @@ void PARTICLEALGORITHM::WallHandlerBase::InitWallDiscretization()
 /*---------------------------------------------------------------------------*
  | init wall data state container                             sfuchs 05/2019 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallHandlerBase::InitWallDataState()
+void PARTICLEWALL::WallHandlerBase::InitWallDataState()
 {
   // create and init wall data state container
-  walldatastate_ = std::make_shared<PARTICLEALGORITHM::WallDataState>();
+  walldatastate_ = std::make_shared<PARTICLEWALL::WallDataState>(params_);
   walldatastate_->Init();
-}
-
-/*---------------------------------------------------------------------------*
- | setup wall data state container                            sfuchs 05/2019 |
- *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallHandlerBase::SetupWallDataState()
-{
-  // get flags defining considered states of particle wall
-  bool ismoving = DRT::INPUT::IntegralValue<int>(params_, "PARTICLE_WALL_MOVING");
-  bool isloaded = DRT::INPUT::IntegralValue<int>(params_, "PARTICLE_WALL_LOADED");
-
-  // setup wall data state container
-  walldatastate_->Setup(walldiscretization_, ismoving, isloaded);
 }
 
 /*---------------------------------------------------------------------------*
  | init wall discretization runtime vtu writer                sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallHandlerBase::InitWallVtuWriter()
+void PARTICLEWALL::WallHandlerBase::InitWallDiscretizationRuntimeVtuWriter()
 {
   // construct wall discretization runtime vtu writer
-  wallvtuwriter_ =
-      std::unique_ptr<DiscretizationRuntimeVtuWriter>(new DiscretizationRuntimeVtuWriter());
-}
+  walldiscretizationruntimevtuwriter_ =
+      std::unique_ptr<PARTICLEWALL::WallDiscretizationRuntimeVtuWriter>(
+          new PARTICLEWALL::WallDiscretizationRuntimeVtuWriter());
 
-/*---------------------------------------------------------------------------*
- | setup wall discretization runtime vtu writer               sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallHandlerBase::SetupWallVtuWriter()
-{
-  // get data format for written numeric data via vtu
-  bool write_binary_output = (DRT::INPUT::IntegralValue<INPAR::PARTICLE::OutputDataFormat>(
-                                  params_, "OUTPUT_DATA_FORMAT") == INPAR::PARTICLE::binary);
-
-  // we need a better upper bound for total number of time steps here
-  // however, this 'only' affects the number of leading zeros in the vtk file names
-  const unsigned int max_number_timesteps_to_be_written = 1.0e+6;
-
-  // initialize the writer object
-  wallvtuwriter_->Initialize(
-      walldiscretization_, max_number_timesteps_to_be_written, setuptime_, write_binary_output);
+  // init wall discretization runtime vtu writer
+  walldiscretizationruntimevtuwriter_->Init(walldiscretization_, walldatastate_);
 }
 
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 10/2018 |
  *---------------------------------------------------------------------------*/
-PARTICLEALGORITHM::WallHandlerDiscretCondition::WallHandlerDiscretCondition(
+PARTICLEWALL::WallHandlerDiscretCondition::WallHandlerDiscretCondition(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
-    : PARTICLEALGORITHM::WallHandlerBase(comm, params)
+    : PARTICLEWALL::WallHandlerBase(comm, params)
 {
   // empty constructor
 }
@@ -554,10 +492,10 @@ PARTICLEALGORITHM::WallHandlerDiscretCondition::WallHandlerDiscretCondition(
 /*---------------------------------------------------------------------------*
  | distribute wall elements and nodes                         sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallHandlerDiscretCondition::DistributeWallElementsAndNodes()
+void PARTICLEWALL::WallHandlerDiscretCondition::DistributeWallElementsAndNodes()
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "PARTICLEALGORITHM::WallHandlerDiscretCondition::DistributeWallElementsAndNodes");
+      "PARTICLEWALL::WallHandlerDiscretCondition::DistributeWallElementsAndNodes");
 
   // invalidate flags
   validwallelements_ = false;
@@ -592,13 +530,13 @@ void PARTICLEALGORITHM::WallHandlerDiscretCondition::DistributeWallElementsAndNo
 /*---------------------------------------------------------------------------*
  | transfer wall elements and nodes                           sfuchs 03/2019 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallHandlerDiscretCondition::TransferWallElementsAndNodes()
+void PARTICLEWALL::WallHandlerDiscretCondition::TransferWallElementsAndNodes()
 {
   // transfer wall elements and nodes only if wall displacements are set
   if (walldatastate_->GetDispRow() == Teuchos::null) return;
 
   TEUCHOS_FUNC_TIME_MONITOR(
-      "PARTICLEALGORITHM::WallHandlerDiscretCondition::TransferWallElementsAndNodes");
+      "PARTICLEWALL::WallHandlerDiscretCondition::TransferWallElementsAndNodes");
 
   // invalidate flags
   validwallelements_ = false;
@@ -619,7 +557,7 @@ void PARTICLEALGORITHM::WallHandlerDiscretCondition::TransferWallElementsAndNode
 /*---------------------------------------------------------------------------*
  | extend wall element ghosting                               sfuchs 03/2019 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallHandlerDiscretCondition::ExtendWallElementGhosting(
+void PARTICLEWALL::WallHandlerDiscretCondition::ExtendWallElementGhosting(
     std::map<int, std::set<int>>& bintorowelemap)
 {
   std::map<int, std::set<int>> colbintoelemap;
@@ -633,7 +571,7 @@ void PARTICLEALGORITHM::WallHandlerDiscretCondition::ExtendWallElementGhosting(
 /*---------------------------------------------------------------------------*
  | setup wall discretization                                  sfuchs 10/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallHandlerDiscretCondition::SetupWallDiscretization() const
+void PARTICLEWALL::WallHandlerDiscretCondition::SetupWallDiscretization() const
 {
   // safety check
   if (binstrategy_->HavePBC())
@@ -699,9 +637,9 @@ void PARTICLEALGORITHM::WallHandlerDiscretCondition::SetupWallDiscretization() c
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 10/2018 |
  *---------------------------------------------------------------------------*/
-PARTICLEALGORITHM::WallHandlerBoundingBox::WallHandlerBoundingBox(
+PARTICLEWALL::WallHandlerBoundingBox::WallHandlerBoundingBox(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
-    : PARTICLEALGORITHM::WallHandlerBase(comm, params)
+    : PARTICLEWALL::WallHandlerBase(comm, params)
 {
   // empty constructor
 }
@@ -709,7 +647,7 @@ PARTICLEALGORITHM::WallHandlerBoundingBox::WallHandlerBoundingBox(
 /*---------------------------------------------------------------------------*
  | distribute wall elements and nodes                         sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallHandlerBoundingBox::DistributeWallElementsAndNodes()
+void PARTICLEWALL::WallHandlerBoundingBox::DistributeWallElementsAndNodes()
 {
   // no need to distribute wall elements and nodes
 }
@@ -717,7 +655,7 @@ void PARTICLEALGORITHM::WallHandlerBoundingBox::DistributeWallElementsAndNodes()
 /*---------------------------------------------------------------------------*
  | transfer wall elements and nodes                           sfuchs 03/2019 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallHandlerBoundingBox::TransferWallElementsAndNodes()
+void PARTICLEWALL::WallHandlerBoundingBox::TransferWallElementsAndNodes()
 {
   // no need to transfer wall elements and nodes
 }
@@ -725,7 +663,7 @@ void PARTICLEALGORITHM::WallHandlerBoundingBox::TransferWallElementsAndNodes()
 /*---------------------------------------------------------------------------*
  | setup wall discretization                                  sfuchs 10/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::WallHandlerBoundingBox::SetupWallDiscretization() const
+void PARTICLEWALL::WallHandlerBoundingBox::SetupWallDiscretization() const
 {
   // init vector of node and element ids
   std::vector<int> nodeids(0);

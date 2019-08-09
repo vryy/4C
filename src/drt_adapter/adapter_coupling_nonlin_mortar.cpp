@@ -785,8 +785,8 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinD(const std::string& statename,
     if (!ele) dserror("ERROR: Cannot find ele with gid %", gid);
     CONTACT::CoElement* cele = dynamic_cast<CONTACT::CoElement*>(ele);
 
-    Teuchos::RCP<CONTACT::CoIntegrator> integrator =
-        Teuchos::rcp(new CONTACT::CoIntegrator(interface_->IParams(), cele->Shape(), *comm_));
+    Teuchos::RCP<CONTACT::CoIntegrator> integrator = Teuchos::rcp(
+        new CONTACT::CoIntegrator(interface_->InterfaceParams(), cele->Shape(), *comm_));
 
     integrator->IntegrateD(*cele, *comm_, true);
   }
@@ -1025,8 +1025,8 @@ void ADAPTER::CouplingNonLinMortar::CreateP()
   CheckSetup();
 
   // check
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Interface()->IParams(), "LM_SHAPEFCN") !=
-      INPAR::MORTAR::shape_dual)
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(
+          Interface()->InterfaceParams(), "LM_SHAPEFCN") != INPAR::MORTAR::shape_dual)
     dserror("ERROR: Creation of P operator only for dual shape functions!");
 
   /********************************************************************/

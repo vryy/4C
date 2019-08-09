@@ -28,17 +28,16 @@
 /*---------------------------------------------------------------------------*
  | forward declarations                                       sfuchs 10/2018 |
  *---------------------------------------------------------------------------*/
-class DiscretizationRuntimeVtuWriter;
-
 namespace IO
 {
   class DiscretizationReader;
 }
 
-namespace PARTICLEALGORITHM
+namespace PARTICLEWALL
 {
   class WallDataState;
-}
+  class WallDiscretizationRuntimeVtuWriter;
+}  // namespace PARTICLEWALL
 
 namespace PARTICLEENGINE
 {
@@ -59,7 +58,7 @@ namespace DRT
 /*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 10/2018 |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEALGORITHM
+namespace PARTICLEWALL
 {
   class WallHandlerBase : public WallHandlerInterface
   {
@@ -89,8 +88,8 @@ namespace PARTICLEALGORITHM
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) const final;
 
-    //! write wall runtime vtu output
-    virtual void WriteWallRuntimeVtuOutput(const int step, const double time) const;
+    //! write wall runtime output
+    virtual void WriteWallRuntimeOutput(const int step, const double time) const final;
 
     //! update bin row and column map
     virtual void UpdateBinRowAndColMap(
@@ -119,8 +118,7 @@ namespace PARTICLEALGORITHM
     };
 
     //! get wall data state container
-    virtual std::shared_ptr<PARTICLEALGORITHM::WallDataState> GetWallDataState()
-        const override final
+    virtual std::shared_ptr<PARTICLEWALL::WallDataState> GetWallDataState() const override final
     {
       return walldatastate_;
     }
@@ -143,23 +141,18 @@ namespace PARTICLEALGORITHM
     //! init wall data state container
     virtual void InitWallDataState() final;
 
-    //! setup wall data state container
-    virtual void SetupWallDataState() final;
-
     //! init wall discretization runtime vtu writer
-    virtual void InitWallVtuWriter() final;
-
-    //! setup wall discretization runtime vtu writer
-    virtual void SetupWallVtuWriter() final;
-
-    //! setup time of runtime vtu writer
-    double setuptime_;
+    virtual void InitWallDiscretizationRuntimeVtuWriter() final;
 
     //! relate bins to column wall elements
     PARTICLEENGINE::BinsToColWallEles binstocolwalleles_;
 
     //! relate potential neighboring column wall elements to particles of all types
     PARTICLEENGINE::PotentialWallNeighbors potentialwallneighbors_;
+
+    //! wall discretization runtime vtu writer
+    std::unique_ptr<PARTICLEWALL::WallDiscretizationRuntimeVtuWriter>
+        walldiscretizationruntimevtuwriter_;
 
    protected:
     //! communication
@@ -187,10 +180,7 @@ namespace PARTICLEALGORITHM
     Teuchos::RCP<DRT::Discretization> walldiscretization_;
 
     //! wall data state container
-    std::shared_ptr<PARTICLEALGORITHM::WallDataState> walldatastate_;
-
-    //! wall discretization runtime vtu writer
-    std::unique_ptr<DiscretizationRuntimeVtuWriter> wallvtuwriter_;
+    std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate_;
 
     //! flag denoting valid relation of bins to column wall elements
     bool validwallelements_;
@@ -243,7 +233,7 @@ namespace PARTICLEALGORITHM
     virtual void SetupWallDiscretization() const override;
   };
 
-}  // namespace PARTICLEALGORITHM
+}  // namespace PARTICLEWALL
 
 /*---------------------------------------------------------------------------*/
 #endif

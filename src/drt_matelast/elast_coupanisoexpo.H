@@ -5,7 +5,7 @@
 
 \level 1
 
-\maintainer Fabian Braeu
+\maintainer Amadeus Gebauer
 
 *----------------------------------------------------------------------*/
 #ifndef ELAST_COUPANISOEXPO_H_

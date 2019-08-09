@@ -3,7 +3,7 @@
 
 \level 1
 
-\maintainer Fabian Braeu
+\maintainer Amadeus Gebauer
 
 *-----------------------------------------------------------------------*/
 

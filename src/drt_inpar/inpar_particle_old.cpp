@@ -275,22 +275,5 @@ void INPAR::PARTICLEOLD::SetValidConditions(
 
   condlist.push_back(particleradiuscond);
 
-  /*--------------------------------------------------------------------*/
-  // particle wall condition
-
-  std::vector<Teuchos::RCP<ConditionComponent>> particlewallcomponents;
-  particlewallcomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
-
-  Teuchos::RCP<ConditionDefinition> surfpartwall = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN SURFACE PARTICLE WALL", "ParticleWall", "Wall for particle collisions",
-      DRT::Condition::ParticleWall, true, DRT::Condition::Surface));
-
-  for (unsigned i = 0; i < particlewallcomponents.size(); ++i)
-  {
-    surfpartwall->AddComponent(particlewallcomponents[i]);
-  }
-
-  condlist.push_back(surfpartwall);
-
   return;
 }

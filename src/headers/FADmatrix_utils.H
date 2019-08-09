@@ -5,7 +5,7 @@
 
 \level 3
 
-\maintainer Fabian Braeu
+\maintainer Christoph Schmidt
 
 */
 /*----------------------------------------------------------------------*/

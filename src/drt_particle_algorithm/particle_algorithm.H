@@ -19,10 +19,10 @@
  *---------------------------------------------------------------------------*/
 #include "../drt_adapter/adapter_algorithmbase.H"
 
-#include "particle_wall.H"
-
 #include "../drt_particle_engine/particle_typedefs.H"
 #include "../drt_particle_engine/particle_engine.H"
+
+#include "../drt_particle_wall/particle_wall.H"
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                       sfuchs 04/2018 |
@@ -95,7 +95,7 @@ namespace PARTICLEALGORITHM
     }
 
     //! get interface to particle wall handler
-    const std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> GetParticleWallHandlerInterface()
+    const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> GetParticleWallHandlerInterface()
         const
     {
       return particlewall_;
@@ -162,6 +162,9 @@ namespace PARTICLEALGORITHM
     //! set current step size
     void SetCurrentStepSize();
 
+    //! set current write result flag
+    void SetCurrentWriteResultFlag();
+
     //! set gravity acceleration
     void SetGravityAcceleration();
 
@@ -175,7 +178,7 @@ namespace PARTICLEALGORITHM
     std::shared_ptr<PARTICLEENGINE::ParticleEngine> particleengine_;
 
     //! particle wall handler
-    std::shared_ptr<PARTICLEALGORITHM::WallHandlerBase> particlewall_;
+    std::shared_ptr<PARTICLEWALL::WallHandlerBase> particlewall_;
 
     //! particle time integration
     std::unique_ptr<PARTICLEALGORITHM::TimInt> particletimint_;

@@ -19,10 +19,8 @@
 #include "particle_input_generator.H"
 #include "particle_gravity.H"
 #include "particle_viscous_damping.H"
-#include "particle_wall.H"
 #include "particle_initial_field.H"
 #include "particle_result_test.H"
-#include "particle_wall_result_test.H"
 
 #include "../drt_particle_interaction/particle_interaction_base.H"
 #include "../drt_particle_interaction/particle_interaction_sph.H"
@@ -32,6 +30,9 @@
 #include "../drt_particle_engine/particle_communication_utils.H"
 #include "../drt_particle_engine/particle_object.H"
 #include "../drt_particle_engine/particle_container.H"
+
+#include "../drt_particle_wall/particle_wall.H"
+#include "../drt_particle_wall/particle_wall_result_test.H"
 
 #include "../drt_inpar/inpar_particle.H"
 
@@ -233,6 +234,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::PrepareTimeStep(bool print_header)
   // update result and restart control flags
   writeresultsthisstep_ = (writeresultsevery_ and (Step() % writeresultsevery_ == 0));
   writerestartthisstep_ = (writerestartevery_ and (Step() % writerestartevery_ == 0));
+
+  // set current write result flag
+  SetCurrentWriteResultFlag();
 }
 
 /*---------------------------------------------------------------------------*
@@ -269,14 +273,17 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Output() const
   // write result step
   if (writeresultsthisstep_)
   {
-    // write particle runtime vtp output
-    particleengine_->WriteParticleRuntimeVtpOutput(Step(), Time());
+    // write particle runtime output
+    particleengine_->WriteParticleRuntimeOutput(Step(), Time());
 
     // write binning discretization output (debug feature)
     particleengine_->WriteBinDisOutput(Step(), Time());
 
-    // write wall runtime vtu output
-    if (particlewall_) particlewall_->WriteWallRuntimeVtuOutput(Step(), Time());
+    // write interaction runtime output
+    if (particleinteraction_) particleinteraction_->WriteInteractionRuntimeOutput(Step(), Time());
+
+    // write wall runtime output
+    if (particlewall_) particlewall_->WriteWallRuntimeOutput(Step(), Time());
   }
 
   // write restart step
@@ -332,8 +339,8 @@ PARTICLEALGORITHM::ParticleAlgorithm::CreateResultTests()
   if (particlewall_)
   {
     // create and init wall result test
-    std::shared_ptr<PARTICLEALGORITHM::WallResultTest> wallresulttest =
-        std::make_shared<PARTICLEALGORITHM::WallResultTest>();
+    std::shared_ptr<PARTICLEWALL::WallResultTest> wallresulttest =
+        std::make_shared<PARTICLEWALL::WallResultTest>();
     wallresulttest->Init();
 
     // setup wall result test
@@ -370,18 +377,17 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleWall()
   {
     case INPAR::PARTICLE::NoParticleWall:
     {
-      particlewall_ = std::shared_ptr<PARTICLEALGORITHM::WallHandlerBase>(nullptr);
+      particlewall_ = std::shared_ptr<PARTICLEWALL::WallHandlerBase>(nullptr);
       break;
     }
     case INPAR::PARTICLE::DiscretCondition:
     {
-      particlewall_ =
-          std::make_shared<PARTICLEALGORITHM::WallHandlerDiscretCondition>(Comm(), params_);
+      particlewall_ = std::make_shared<PARTICLEWALL::WallHandlerDiscretCondition>(Comm(), params_);
       break;
     }
     case INPAR::PARTICLE::BoundingBox:
     {
-      particlewall_ = std::make_shared<PARTICLEALGORITHM::WallHandlerBoundingBox>(Comm(), params_);
+      particlewall_ = std::make_shared<PARTICLEWALL::WallHandlerBoundingBox>(Comm(), params_);
       break;
     }
     default:
@@ -969,6 +975,15 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetCurrentStepSize()
 {
   // set current step size in particle interaction
   if (particleinteraction_) particleinteraction_->SetCurrentStepSize(Dt());
+}
+
+/*---------------------------------------------------------------------------*
+ | set current write result flag                              sfuchs 08/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::ParticleAlgorithm::SetCurrentWriteResultFlag()
+{
+  // set current write result flag in particle interaction
+  if (particleinteraction_) particleinteraction_->SetCurrentWriteResultFlag(writeresultsthisstep_);
 }
 
 /*---------------------------------------------------------------------------*

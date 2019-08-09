@@ -19,7 +19,7 @@ For a detailed description see:
 
 \level 2
 
-\maintainer Fabian Braeu
+\maintainer Amadeus Gebauer
 */
 /*----------------------------------------------------------------------------*/
 

@@ -342,6 +342,13 @@ namespace DRT
     namespace BEAM
     {
     }  // namespace BEAM
+
+    /*! \brief Rebalancing, repartitioning, and redistribution
+     *
+     */
+    namespace REBALANCING
+    {
+    }  // namespace REBALANCING
   }    // namespace UTILS
 }  // namespace DRT
 
@@ -1583,12 +1590,12 @@ namespace PARTICLE
 {
 }  // namespace PARTICLE
 
-/*! \brief
+/*! \brief Algorithm to control particle simulations
  *
  */
 namespace PARTICLEALGORITHM
 {
-  /*! \brief Utilities for particle algorithms
+  /*! \brief Utilities for particle algorithm
    *
    */
   namespace UTILS
@@ -1596,12 +1603,12 @@ namespace PARTICLEALGORITHM
   }  // namespace UTILS
 }  // namespace PARTICLEALGORITHM
 
-/*! \brief
+/*! \brief Particle engine to control particle simulations
  *
  */
 namespace PARTICLEENGINE
 {
-  /*! \brief
+  /*! \brief Communication utilities for particle engine
    *
    */
   namespace COMMUNICATION
@@ -1609,12 +1616,19 @@ namespace PARTICLEENGINE
   }  // namespace COMMUNICATION
 }  // namespace PARTICLEENGINE
 
-/*! \brief
+/*! \brief Collection of particle interaction evaluations
  *
  */
 namespace PARTICLEINTERACTION
 {
 }  // namespace PARTICLEINTERACTION
+
+/*! \brief Particle wall enabling interaction of particles and finite element interfaces
+ *
+ */
+namespace PARTICLEWALL
+{
+}  // namespace PARTICLEWALL
 
 /*! \brief Interaction of particles with solids/structures
  *

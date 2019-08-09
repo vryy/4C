@@ -3434,7 +3434,7 @@ bool MORTAR::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterfa
     if (!Quad())
     {
       // call integrator
-      MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(), IParams())
+      MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(), InterfaceParams())
           ->IntegrateCell3DAuxPlane(SlaveElement(), MasterElement(), Cells()[i], Auxn(), Comm());
     }
 
@@ -3449,7 +3449,7 @@ bool MORTAR::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterfa
       MORTAR::IntElement& sintref = dynamic_cast<MORTAR::IntElement&>(SlaveIntElement());
       MORTAR::IntElement& mintref = dynamic_cast<MORTAR::IntElement&>(MasterIntElement());
 
-      MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(), IParams())
+      MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(), InterfaceParams())
           ->IntegrateCell3DAuxPlaneQuad(
               SlaveElement(), MasterElement(), sintref, mintref, Cells()[i], Auxn());
     }
@@ -3469,7 +3469,7 @@ bool MORTAR::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterfa
       MORTAR::IntElement& sintref = dynamic_cast<MORTAR::IntElement&>(SlaveIntElement());
       MORTAR::IntElement& mintref = dynamic_cast<MORTAR::IntElement&>(MasterIntElement());
 
-      MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(), IParams())
+      MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(), InterfaceParams())
           ->IntegrateCell3DAuxPlaneQuad(
               SlaveElement(), MasterElement(), sintref, mintref, Cells()[i], Auxn());
     }

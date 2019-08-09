@@ -28,16 +28,17 @@ namespace CONTACT
          *  A prerequisite for this constructor is, that the passed
          *  shared interface data object has been filled/initialized already.
          *
-         *  \param idata_ptr (in) : filled shared augmented contact interface
+         *  \param interfaceData_ptr (in) : filled shared augmented contact interface
          *                          data container object
          *
          *  \author hiermeier \date 03/17 */
-        Interface(const Teuchos::RCP<CONTACT::AUG::IDataContainer>& idata_ptr);
+        Interface(const Teuchos::RCP<CONTACT::AUG::InterfaceDataContainer>& interfaceData_ptr);
 
         /// constructor
-        Interface(const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr, const int id,
-            const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
-            const bool selfcontact, INPAR::MORTAR::RedundantStorage redundant);
+        Interface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr,
+            const int id, const Epetra_Comm& comm, const int dim,
+            const Teuchos::ParameterList& icontact, const bool selfcontact,
+            INPAR::MORTAR::RedundantStorage redundant);
 
         /// destructor
         virtual ~Interface(){};

@@ -10,7 +10,7 @@ GROWTHTYPE 1 LOCTIMEINT 1 MEMBRANE 0
 
 \level 3
 
-\maintainer Fabian Braeu
+\maintainer Amadeus Gebauer
 */
 /*----------------------------------------------------------------------*/
 /* headers */

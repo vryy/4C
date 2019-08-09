@@ -8,7 +8,7 @@ MAT 1 ELAST_IsoMooneyRivlin C1 100 C2 50
 
 \level 1
 
-\maintainer Fabian Braeu
+\maintainer Amadeus Gebauer
 
 *----------------------------------------------------------------------*/
 #ifndef ELAST_ISOMOONEYRIVLIN_H_
