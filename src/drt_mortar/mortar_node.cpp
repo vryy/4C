@@ -6,6 +6,7 @@
 
 \maintainer Matthias Mayr
 */
+/*-----------------------------------------------------------------------*/
 
 #include "mortar_node.H"
 #include "mortar_element.H"
