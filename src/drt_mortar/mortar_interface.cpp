@@ -1644,144 +1644,140 @@ void MORTAR::MortarInterface::CreateSearchTree()
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::UpdateMasterSlaveSets()
 {
-  //********************************************************************
-  // NODES
-  //********************************************************************
-  // need row and column maps of slave and master nodes separately so we
-  // can easily address them
+  UpdateMasterSlaveNodeMaps();
+  UpdateMasterSlaveElementMaps();
+  UpdateMasterSlaveDofMaps();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::UpdateMasterSlaveDofMaps()
+{
+  std::vector<int> sc;  // slave column map
+  std::vector<int> sr;  // slave row map
+  std::vector<int> mc;  // master column map
+  std::vector<int> mr;  // master row map
+
+  for (int i = 0; i < Discret().NodeColMap()->NumMyElements(); ++i)
   {
-    std::vector<int> sc;   // slave column map
-    std::vector<int> sr;   // slave row map
-    std::vector<int> mc;   // master column map
-    std::vector<int> mr;   // master row map
-    std::vector<int> srb;  // slave row map + boundary nodes
-    std::vector<int> scb;  // slave column map + boundary nodes
-    std::vector<int> mrb;  // master row map - boundary nodes
-    std::vector<int> mcb;  // master column map - boundary nodes
+    int gid = Discret().NodeColMap()->GID(i);
+    DRT::Node* node = Discret().gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    MortarNode* mrtrnode = dynamic_cast<MortarNode*>(node);
+    bool isslave = mrtrnode->IsSlave();
 
-    for (int i = 0; i < Discret().NodeColMap()->NumMyElements(); ++i)
+    if (isslave)
+      for (int j = 0; j < mrtrnode->NumDof(); ++j) sc.push_back(mrtrnode->Dofs()[j]);
+    else
+      for (int j = 0; j < mrtrnode->NumDof(); ++j) mc.push_back(mrtrnode->Dofs()[j]);
+
+    if (Discret().NodeRowMap()->MyGID(gid))
     {
-      int gid = Discret().NodeColMap()->GID(i);
-      bool isslave = dynamic_cast<MORTAR::MortarNode*>(Discret().gNode(gid))->IsSlave();
-      bool isonbound = dynamic_cast<MORTAR::MortarNode*>(Discret().gNode(gid))->IsOnBoundorCE();
+      if (isslave)
+        for (int j = 0; j < mrtrnode->NumDof(); ++j) sr.push_back(mrtrnode->Dofs()[j]);
+      else
+        for (int j = 0; j < mrtrnode->NumDof(); ++j) mr.push_back(mrtrnode->Dofs()[j]);
+    }
+  }
 
+  sdofrowmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)sr.size(), &sr[0], 0, Comm()));
+  sdofcolmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)sc.size(), &sc[0], 0, Comm()));
+  mdofrowmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mr.size(), &mr[0], 0, Comm()));
+  mdofcolmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mc.size(), &mc[0], 0, Comm()));
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::UpdateMasterSlaveElementMaps()
+{
+  std::vector<int> sc;  // slave column map
+  std::vector<int> sr;  // slave row map
+  std::vector<int> mc;  // master column map
+  std::vector<int> mr;  // master row map
+
+  for (int i = 0; i < Discret().ElementColMap()->NumMyElements(); ++i)
+  {
+    int gid = Discret().ElementColMap()->GID(i);
+    bool isslave = dynamic_cast<MORTAR::MortarElement*>(Discret().gElement(gid))->IsSlave();
+
+    if (isslave)
+      sc.push_back(gid);
+    else
+      mc.push_back(gid);
+
+    if (Discret().ElementRowMap()->MyGID(gid))
+    {
+      if (isslave)
+        sr.push_back(gid);
+      else
+        mr.push_back(gid);
+    }
+  }
+
+  selerowmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)sr.size(), &sr[0], 0, Comm()));
+  selecolmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)sc.size(), &sc[0], 0, Comm()));
+  melerowmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mr.size(), &mr[0], 0, Comm()));
+  melecolmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mc.size(), &mc[0], 0, Comm()));
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::UpdateMasterSlaveNodeMaps()
+{
+  std::vector<int> sc;   // slave column map
+  std::vector<int> sr;   // slave row map
+  std::vector<int> mc;   // master column map
+  std::vector<int> mr;   // master row map
+  std::vector<int> srb;  // slave row map + boundary nodes
+  std::vector<int> scb;  // slave column map + boundary nodes
+  std::vector<int> mrb;  // master row map - boundary nodes
+  std::vector<int> mcb;  // master column map - boundary nodes
+
+  for (int i = 0; i < Discret().NodeColMap()->NumMyElements(); ++i)
+  {
+    int gid = Discret().NodeColMap()->GID(i);
+    bool isslave = dynamic_cast<MORTAR::MortarNode*>(Discret().gNode(gid))->IsSlave();
+    bool isonbound = dynamic_cast<MORTAR::MortarNode*>(Discret().gNode(gid))->IsOnBoundorCE();
+
+    if (isslave || isonbound)
+      scb.push_back(gid);
+    else
+      mcb.push_back(gid);
+    if (isslave)
+      sc.push_back(gid);
+    else
+      mc.push_back(gid);
+
+    if (Discret().NodeRowMap()->MyGID(gid))
+    {
       if (isslave || isonbound)
-        scb.push_back(gid);
+        srb.push_back(gid);
       else
-        mcb.push_back(gid);
+        mrb.push_back(gid);
       if (isslave)
-        sc.push_back(gid);
+        sr.push_back(gid);
       else
-        mc.push_back(gid);
-
-      if (Discret().NodeRowMap()->MyGID(gid))
-      {
-        if (isslave || isonbound)
-          srb.push_back(gid);
-        else
-          mrb.push_back(gid);
-        if (isslave)
-          sr.push_back(gid);
-        else
-          mr.push_back(gid);
-      }
+        mr.push_back(gid);
     }
-
-    snoderowmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)sr.size(), &sr[0], 0, Comm()));
-    snodecolmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)sc.size(), &sc[0], 0, Comm()));
-    mnoderowmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mr.size(), &mr[0], 0, Comm()));
-    mnodecolmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mc.size(), &mc[0], 0, Comm()));
-
-    snoderowmapbound_ =
-        Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)srb.size(), &srb[0], 0, Comm()));
-    snodecolmapbound_ =
-        Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)scb.size(), &scb[0], 0, Comm()));
-    mnoderowmapnobound_ =
-        Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mrb.size(), &mrb[0], 0, Comm()));
-    mnodecolmapnobound_ =
-        Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mcb.size(), &mcb[0], 0, Comm()));
-
-    // build exporter
-    interfaceData_->SlExporterPtr() =
-        Teuchos::rcp(new DRT::Exporter(*snoderowmapbound_, *snodecolmapbound_, Comm()));
   }
 
-  //********************************************************************
-  // ELEMENTS
-  //********************************************************************
-  // do the same business for elements
-  // (get row and column maps of slave and master elements seperately)
-  {
-    std::vector<int> sc;  // slave column map
-    std::vector<int> sr;  // slave row map
-    std::vector<int> mc;  // master column map
-    std::vector<int> mr;  // master row map
+  snoderowmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)sr.size(), &sr[0], 0, Comm()));
+  snodecolmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)sc.size(), &sc[0], 0, Comm()));
+  mnoderowmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mr.size(), &mr[0], 0, Comm()));
+  mnodecolmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mc.size(), &mc[0], 0, Comm()));
 
-    for (int i = 0; i < Discret().ElementColMap()->NumMyElements(); ++i)
-    {
-      int gid = Discret().ElementColMap()->GID(i);
-      bool isslave = dynamic_cast<MORTAR::MortarElement*>(Discret().gElement(gid))->IsSlave();
+  snoderowmapbound_ =
+      Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)srb.size(), &srb[0], 0, Comm()));
+  snodecolmapbound_ =
+      Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)scb.size(), &scb[0], 0, Comm()));
+  mnoderowmapnobound_ =
+      Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mrb.size(), &mrb[0], 0, Comm()));
+  mnodecolmapnobound_ =
+      Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mcb.size(), &mcb[0], 0, Comm()));
 
-      if (isslave)
-        sc.push_back(gid);
-      else
-        mc.push_back(gid);
-
-      if (Discret().ElementRowMap()->MyGID(gid))
-      {
-        if (isslave)
-          sr.push_back(gid);
-        else
-          mr.push_back(gid);
-      }
-    }
-
-    selerowmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)sr.size(), &sr[0], 0, Comm()));
-    selecolmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)sc.size(), &sc[0], 0, Comm()));
-    melerowmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mr.size(), &mr[0], 0, Comm()));
-    melecolmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mc.size(), &mc[0], 0, Comm()));
-  }
-
-  //********************************************************************
-  // DOFS
-  //********************************************************************
-  // do the same business for dofs
-  // (get row and column maps of slave and master dofs seperately)
-  {
-    std::vector<int> sc;  // slave column map
-    std::vector<int> sr;  // slave row map
-    std::vector<int> mc;  // master column map
-    std::vector<int> mr;  // master row map
-
-    for (int i = 0; i < Discret().NodeColMap()->NumMyElements(); ++i)
-    {
-      int gid = Discret().NodeColMap()->GID(i);
-      DRT::Node* node = Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
-      MortarNode* mrtrnode = dynamic_cast<MortarNode*>(node);
-      bool isslave = mrtrnode->IsSlave();
-
-      if (isslave)
-        for (int j = 0; j < mrtrnode->NumDof(); ++j) sc.push_back(mrtrnode->Dofs()[j]);
-      else
-        for (int j = 0; j < mrtrnode->NumDof(); ++j) mc.push_back(mrtrnode->Dofs()[j]);
-
-      if (Discret().NodeRowMap()->MyGID(gid))
-      {
-        if (isslave)
-          for (int j = 0; j < mrtrnode->NumDof(); ++j) sr.push_back(mrtrnode->Dofs()[j]);
-        else
-          for (int j = 0; j < mrtrnode->NumDof(); ++j) mr.push_back(mrtrnode->Dofs()[j]);
-      }
-    }
-
-    sdofrowmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)sr.size(), &sr[0], 0, Comm()));
-    sdofcolmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)sc.size(), &sc[0], 0, Comm()));
-    mdofrowmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mr.size(), &mr[0], 0, Comm()));
-    mdofcolmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mc.size(), &mc[0], 0, Comm()));
-  }
-
-  return;
+  // build exporter
+  interfaceData_->SlExporterPtr() =
+      Teuchos::rcp(new DRT::Exporter(*snoderowmapbound_, *snodecolmapbound_, Comm()));
 }
 
 /*----------------------------------------------------------------------*

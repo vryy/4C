@@ -1516,6 +1516,36 @@ namespace MORTAR
     void ExtendInterfaceGhosting();
 
     /*!
+    \brief Update master and slave interface maps for DOFs
+
+    Update #sdofrowmap_, #sdofcolmap_, #mdofrowmap_, #mdofcolmap_.
+
+    \pre A valid node column map of interface discretization exists.
+    \post DOF row/column maps for slave/master side exist.
+    */
+    void UpdateMasterSlaveDofMaps();
+
+    /*!
+    \brief Update master and slave interface maps for elements
+
+    Update #selerowmap_, #selecolmap_, #melerowmap_, #melecolmap_.
+
+    \pre A valid node column map of interface discretization exists.
+    \post Element row/column maps for slave/master side exist.
+    */
+    void UpdateMasterSlaveElementMaps();
+
+    /*!
+    \brief Update master and slave interface maps for nodes
+
+    Update #snoderowmap_, #snodecolmap_, #mnoderowmap_, #mnodecolmap_.
+
+    \pre A valid node column map of interface discretization exists.
+    \post Node row/column maps for slave/master side exist.
+    */
+    void UpdateMasterSlaveNodeMaps();
+
+    /*!
     \brief check and initialize possible cross point modification
 
     */
