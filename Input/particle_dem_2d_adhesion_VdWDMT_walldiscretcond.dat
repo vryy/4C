@@ -43,7 +43,7 @@ YOUNG_MODULUS                   210.0E9
 POISSON_RATIO                   0.3
 ADHESIONLAW                     AdhesionVdWDMT
 ADHESION_DISTANCE               2.5e-3
-ADHESION_NORMAL_EPS             4e-16
+ADHESION_HAMAKER                4e-16
 ADHESION_SURFACE_ENERGY         8e-8
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 2.0e-2

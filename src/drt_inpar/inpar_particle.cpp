@@ -363,8 +363,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   BoolParameter(
       "ADHESION_VDW_CURVE_SHIFT", "no", "shifts van-der-Waals-curve to g = 0", &particledyndem);
 
-  DoubleParameter("ADHESION_NORMAL_EPS", -1.0, "depth of Lennard-Jones adhesion potential well",
-      &particledyndem);
+  DoubleParameter("ADHESION_HAMAKER", -1.0, "hamaker constant of vdW interaction", &particledyndem);
 
   DoubleParameter("ADHESION_SURFACE_ENERGY", -1.0,
       "adhesion surface energy for the calculation of the pull-out force", &particledyndem);
