@@ -47,6 +47,7 @@ namespace MORTAR
   {
    public:
     //! @name Constructors and destructors and related methods
+    //! @{
 
     /*!
      \brief Standard Constructor
@@ -54,10 +55,15 @@ namespace MORTAR
      */
     MortarNodeDataContainer();
 
+    //! @}
+
+    //! @name Pack/Unpack
+    //! @{
+
     /*!
      \brief Pack this class so that it can be communicated
 
-     This function packs the datacontainer. This is only called
+     This function packs the data container. This is only called
      when the class has been initialized and the pointer to this
      class exists.
 
@@ -67,16 +73,17 @@ namespace MORTAR
     /*!
      \brief Unpack data from a vector into this class
 
-     This function unpacks the datacontainer. This is only called
+     This function unpacks the data container. This is only called
      when the class has been initialized and the pointer to this
      class exists.
 
      */
     void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
 
-    //@}
+    //!@}
 
-    //! @name Access methods
+    //! @name Access methods (general stuff)
+    //! @{
 
     /*!
      \brief Return current nodal normal (only for slave side!) (length 3)
@@ -87,26 +94,37 @@ namespace MORTAR
      \brief Return current edge tangent(length 3)
      */
     double* EdgeTangent() { return edgeTangent_; }
+
+    //! @}
+
+    //! @name Access methods for Lagrange multipliers
+    //! @{
+
     /*!
-     \brief Return current Lagrange mutliplier in step n+1 (only for slave side!) (length 3)
+     \brief Return current Lagrange multiplier in step n+1 (only for slave side!) (length 3)
      */
     double* lm() { return lm_; }
 
     /*!
-     \brief Return const ptr to current Lagrange mutliplier in step n+1
+     \brief Return const ptr to current Lagrange multiplier in step n+1
      (only for slave side!) (length 3)
      */
     const double* lm() const { return lm_; }
 
     /*!
-     \brief Return old Lagrange mutliplier from step n (only for slave side!) (length 3)
+     \brief Return old Lagrange multiplier from step n (only for slave side!) (length 3)
      */
     double* lmold() { return lmold_; }
 
     /*!
-     \brief Return Lagrange mutliplier from last Uzawa step (only for slave side!) (length 3)
+     \brief Return Lagrange multiplier from last Uzawa step (only for slave side!) (length 3)
      */
     double* lmuzawa() { return lmuzawa_; }
+
+    //! @}
+
+    //! @name Access methods for segment-to-segment data
+    //! @{
 
     /*!
      \brief Return the 'D' map (vector) of this node
@@ -118,35 +136,52 @@ namespace MORTAR
      */
     std::map<int, double>& GetM() { return mrows_; }
 
+    //! @}
+
+    //! @name Access methods for node-to-segment data
+    //! @{
+
     /*!
-     \brief Return the 'D' map (vector) of this node for nts
+     \brief Return the 'D' map (vector) of this node for node-to-segment
      */
     GEN::pairedvector<int, double>& GetDnts() { return drows_nts_; }
 
     /*!
-     \brief Return the 'M' map of this node for nts
+     \brief Return the 'M' map of this node for node-to-segment
      */
     std::map<int, double>& GetMnts() { return mrows_nts_; }
 
+    //! @}
+
+    //! @name Access methods for line-to-segment data
+    //! @{
+
     /*!
-     \brief Return the 'D' map (vector) of this node for lts
+     \brief Return the 'D' map (vector) of this node for line-to-segment
      */
     GEN::pairedvector<int, double>& GetDlts() { return drows_lts_; }
 
     /*!
-     \brief Return the 'M' map of this node for lts
+     \brief Return the 'M' map of this node for line-to-segment
      */
     std::map<int, double>& GetMlts() { return mrows_lts_; }
 
+    //! @}
+
+    //! @name Access methods for line-to-line data
+    //! @{
+
     /*!
-     \brief Return the 'D' map (vector) of this node for lts
+     \brief Return the 'D' map (vector) of this node for line-to-line
      */
     GEN::pairedvector<int, double>& GetDltl() { return drows_ltl_; }
 
     /*!
-     \brief Return the 'M' map of this node for lts
+     \brief Return the 'M' map of this node for line-to-line
      */
     std::map<int, double>& GetMltl() { return mrows_ltl_; }
+
+    //! @}
 
     /*!
      \brief Return the 'Mmod' map of this node
@@ -157,37 +192,88 @@ namespace MORTAR
      \brief Return the d matrix scale factor of this node
      */
     double& GetDscale() { return d_nonsmooth_; }
-    //@}
 
-   protected:
-    // don't want = operator and cctor
+   private:
+    //! don't want = operator
     MortarNodeDataContainer operator=(const MortarNodeDataContainer& old);
+
+    //! don't want copy constructor
     MortarNodeDataContainer(const MortarNodeDataContainer& old);
 
-    double n_[3];            //< nodal normal for contact methods
-    double edgeTangent_[3];  //< current edge tangent
-    double lm_[3];           //< current Lagrange multiplier value (n+1)
-    double lmold_[3];        //< old Lagrange multiplier value (last converged state n)
-    double lmuzawa_[3];      //< Uzawa Lagrange multiplier value (last Uzawa step k)
+   protected:
+    //! @name Geometry-related vectors
+    //! @{
+
+    //! Nodal normal for contact methods
+    double n_[3];
+
+    //! Current edge tangent
+    double edgeTangent_[3];
+
+    //! @}
+
+    //! @name Lagrange multipliers
+    //! @{
+
+    //! Current Lagrange multiplier value (n+1)
+    double lm_[3];
+
+    //! Old Lagrange multiplier value (last converged state n)
+    double lmold_[3];
+
+    //! Uzawa Lagrange multiplier value (last Uzawa step k)
+    double lmuzawa_[3];
+
+    //! @}
     double d_nonsmooth_;
 
-    GEN::pairedvector<int, double> drows_;  //< nodal rows of D matrix for sts
-    std::map<int, double> mrows_;           //< nodal rows of M matrix for sts
-    std::map<int, double> mmodrows_;        //< nodal rows of Mmod matrix (sts)
+    //! @name Segment-to-segment (sts) specifics
+    //! @{
 
-    //! node-to-segment (nts) specific
-    GEN::pairedvector<int, double> drows_nts_;  //< nodal rows of D matrix for nts
-    std::map<int, double> mrows_nts_;           //< nodal rows of M matrix for nts
+    //! Nodal rows of D matrix for segment-to-segment
+    GEN::pairedvector<int, double> drows_;
 
-    //! line-to-segment (lts) specific
-    GEN::pairedvector<int, double> drows_lts_;  //< nodal rows of D matrix for lts
-    std::map<int, double> mrows_lts_;           //< nodal rows of M matrix for lts
+    //! Nodal rows of M matrix for segment-to-segment
+    std::map<int, double> mrows_;
 
-    //! line-to-line (ltl) specific
-    GEN::pairedvector<int, double> drows_ltl_;  //< nodal rows of D matrix for lts
-    std::map<int, double> mrows_ltl_;           //< nodal rows of M matrix for lts
-  };
-  // class MortarNodeDataContainer
+    //! Nodal rows of Mmod matrix (segment-to-segment)
+    std::map<int, double> mmodrows_;
+
+    //! @}
+
+    //! @name Node-to-segment (nts) specifics
+    //! @{
+
+    //! Nodal rows of D matrix for node-to-segment
+    GEN::pairedvector<int, double> drows_nts_;
+
+    //! Nodal rows of M matrix for node-to-segment
+    std::map<int, double> mrows_nts_;
+
+    //! @}
+
+    //! @name Line-to-segment (lts) specifics
+    //! @{
+
+    //! Nodal rows of D matrix for line-to-segment
+    GEN::pairedvector<int, double> drows_lts_;
+
+    //! Nodal rows of M matrix for line-to-segment
+    std::map<int, double> mrows_lts_;
+
+    //! @}
+
+    //! @name Line-to-line (ltl) specifics
+    //! @{
+
+    //! Nodal rows of D matrix for lts
+    GEN::pairedvector<int, double> drows_ltl_;
+
+    //! Nodal rows of M matrix for lts
+    std::map<int, double> mrows_ltl_;
+
+    //! @}
+  };  // class MortarNodeDataContainer
 
   /*!
    \brief A class for a mortar node derived from DRT::Node
@@ -200,13 +286,14 @@ namespace MORTAR
   {
    public:
     //! @name Enums and Friends
+    //! @{
 
     /*!
      \brief The Discretization is a friend of MortarNode
      */
     friend class DRT::Discretization;
 
-    //@}
+    //! @}
 
     //! @name Constructors and destructors and related methods
 
@@ -348,17 +435,17 @@ namespace MORTAR
     bool& SetBound() { return isonbound_; }
 
     /*!
-     \brief Is node on bound or corner/edge
+     \brief Is this node on a boundary, edge, or corner?
      */
     bool IsOnBoundorCE() const { return ((isonedge_ or isoncorner_) or isonbound_); }
 
     /*!
-     \brief Is node on edge or corner
+     \brief Is this node on an edge or corner?
      */
     bool IsOnCornerEdge() const { return (isonedge_ or isoncorner_); }
 
     /*!
-     \brief Is node on geometrical edge
+     \brief Is this nnode on a geometrical edge
      */
     bool IsOnEdge() const { return isonedge_; }
 
@@ -368,12 +455,12 @@ namespace MORTAR
     bool& SetOnEdge() { return isonedge_; }
 
     /*!
-     \brief Is node on geometrical corner
+     \brief Is this node on geometrical corner?
      */
     bool IsOnCorner() const { return isoncorner_; }
 
     /*!
-     \brief Is node on geometrical corner
+     \brief Is this node on a boundary or a corner?
      */
     bool IsOnCornerorBound() const { return (isoncorner_ or isonbound_); }
 
@@ -569,33 +656,67 @@ namespace MORTAR
     //@}
 
    protected:
-    bool isslave_;           // true if cnode is on slave side of contact problem
-    bool istiedslave_;       // true if cnode is on slave side and actually tied
-    bool isonbound_;         // true if cnode is on slave side boundary
-    bool isonedge_;          // true if cnode is on geometrical edge
-    bool isoncorner_;        // true if cnode is on geometrical corner
-    bool isdbc_;             // true if cnode has D.B.C.applied to at least one dof
-    bool dbcdofs_[3];        // true at each cnode has D.B.C applied at i-th dof
-    int numdof_;             // number of degrees of freedom (length of dofs_)
-    std::vector<int> dofs_;  // degrees of freedom of this node
-    double xspatial_[3];     // current configuration
-    double uold_[3];         // old displacement (last converged state)
-    bool hasproj_;           // true if feasible projection within search set (slave nodes only)
-    bool hassegment_;        // true if some integration segment / cell attached (slave nodes only)
-    bool detected_;  // true if cnode is detected in active(slip) maps (only for master side)
-    int dentries_;   // max number of d matrix entries for this node
+    //! true if this node is on slave side of mortar interface
+    bool isslave_;
 
-    Teuchos::RCP<MORTAR::MortarNodeDataContainer>
-        modata_;  // additional information of proc's mortar nodes
+    //! true if this node is on slave side and actually tied
+    bool istiedslave_;
 
-    // nurbs specific:
-    double nurbsw_;  // nurbs control point weighting
+    //! true if this node is on slave side boundary
+    bool isonbound_;
+
+    //! true if this node is on geometrical edge
+    bool isonedge_;
+
+    //! true if this node is on geometrical corner
+    bool isoncorner_;
+
+    //! true if this node has a Dirichlet boundary condition applied to at least one of its DOFs
+    bool isdbc_;
+
+    //! true at each node that has a Dirichlet boundary condition applied at i-th dof
+    bool dbcdofs_[3];
+
+    //! number of degrees of freedom (length of dofs_)
+    int numdof_;
+
+    //! degrees of freedom of this node
+    std::vector<int> dofs_;
+
+    //! position in current configuration
+    double xspatial_[3];
+
+    //! old displacement (last converged state)
+    double uold_[3];
+
+    //! true if feasible projection within search set (slave nodes only)
+    bool hasproj_;
+
+    //! true if some integration segment / cell attached (slave nodes only)
+    bool hassegment_;
+
+    //! true if this node is detected in active(slip) maps (only for master side)
+    bool detected_;
+
+    //! max number of d matrix entries for this node
+    int dentries_;
+
+    //! additional information of proc's mortar nodes
+    Teuchos::RCP<MORTAR::MortarNodeDataContainer> modata_;
+
+    //! @name Nurbs specifics
+    //! @{
+
+    //! Nurbs control point weighting
+    double nurbsw_;
+
+    //! @}
 
   };  // class MortarNode
 }  // namespace MORTAR
 
 
-// << operator
+//! << operator
 std::ostream& operator<<(std::ostream& os, const MORTAR::MortarNode& cnode);
 
 
