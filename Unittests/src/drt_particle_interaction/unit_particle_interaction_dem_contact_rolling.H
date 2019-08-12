@@ -181,7 +181,7 @@ class PARTICLEINTERACTION::DEMContactRollingViscous_TestSuite : public CxxTest::
 
     double rollingcontactmoment[3] = {0.0};
     contactrolling_->RollingContactMoment(gap_rolling, stick_rolling, e_ji, v_rel_rolling, m_eff,
-        r_eff, normalcontactforce, rollingcontactmoment);
+        r_eff, mu_rolling_, normalcontactforce, rollingcontactmoment);
 
     double rollingcontactmoment_ref[3] = {0.0};
     const double fac = young_ / (1.0 - UTILS::pow<2>(nue_));
@@ -343,7 +343,7 @@ class PARTICLEINTERACTION::DEMContactRollingCoulomb_TestSuite : public CxxTest::
 
     double rollingcontactmoment[3] = {0.0};
     contactrolling_->RollingContactMoment(gap_rolling, stick_rolling, e_ji, v_rel_rolling, m_eff,
-        r_eff, normalcontactforce, rollingcontactmoment);
+        r_eff, mu_rolling_, normalcontactforce, rollingcontactmoment);
 
     double gap_rolling_ref[3] = {0.06858666958093279, 0.05062425428544091, -0.05782673704478762};
     double rollingcontactmoment_ref[3] = {
@@ -382,7 +382,7 @@ class PARTICLEINTERACTION::DEMContactRollingCoulomb_TestSuite : public CxxTest::
 
     double rollingcontactmoment[3] = {0.0};
     contactrolling_->RollingContactMoment(gap_rolling, stick_rolling, e_ji, v_rel_rolling, m_eff,
-        r_eff, normalcontactforce, rollingcontactmoment);
+        r_eff, mu_rolling_, normalcontactforce, rollingcontactmoment);
 
     double gap_rolling_ref[3] = {0.06858666958093279, 0.05062425428544091, -0.05782673704478762};
     double rollingcontactmoment_ref[3] = {

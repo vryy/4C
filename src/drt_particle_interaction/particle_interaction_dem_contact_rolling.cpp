@@ -28,7 +28,6 @@ PARTICLEINTERACTION::DEMContactRollingBase::DEMContactRollingBase(
       dt_(0.0),
       e_(params_dem_.get<double>("COEFF_RESTITUTION")),
       nue_(params_dem_.get<double>("POISSON_RATIO")),
-      mu_rolling_(params_dem_.get<double>("FRICT_COEFF_ROLL")),
       d_rolling_fac_(0.0)
 {
   // empty constructor
@@ -39,11 +38,11 @@ PARTICLEINTERACTION::DEMContactRollingBase::DEMContactRollingBase(
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactRollingBase::Init()
 {
-  // safety checks for particle-particle contact parameters
+  // safety checks for contact parameters
   if (nue_ <= -1.0 or nue_ > 0.5)
     dserror("invalid input parameter POISSON_RATIO (expected in range ]-1.0; 0.5])!");
 
-  if (mu_rolling_ <= 0.0)
+  if (params_dem_.get<double>("FRICT_COEFF_ROLL") <= 0.0)
     dserror("invalid input parameter FRICT_COEFF_ROLL for this kind of contact law!");
 }
 
@@ -118,7 +117,7 @@ void PARTICLEINTERACTION::DEMContactRollingViscous::Setup(const double& k_normal
   // determine rolling contact damping factor
   const double fac = young_ / (1.0 - UTILS::pow<2>(nue_));
   const double c_1 = 1.15344;
-  d_rolling_fac_ = mu_rolling_ * (1.0 - e_) / (c_1 * std::pow(fac, 0.4) * std::pow(v_max_, 0.2));
+  d_rolling_fac_ = (1.0 - e_) / (c_1 * std::pow(fac, 0.4) * std::pow(v_max_, 0.2));
 }
 
 /*---------------------------------------------------------------------------*
@@ -149,10 +148,11 @@ void PARTICLEINTERACTION::DEMContactRollingViscous::RelativeRollingVelocity(cons
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactRollingViscous::RollingContactMoment(double* gap_rolling,
     bool& stick_rolling, const double* normal, const double* v_rel_rolling, const double& m_eff,
-    const double& r_eff, const double& normalcontactforce, double* rollingcontactmoment) const
+    const double& r_eff, const double& mu_rolling, const double& normalcontactforce,
+    double* rollingcontactmoment) const
 {
   // determine rolling contact damping parameter
-  const double d_rolling = d_rolling_fac_ * std::pow(0.5 * r_eff, -0.2);
+  const double d_rolling = d_rolling_fac_ * mu_rolling * std::pow(0.5 * r_eff, -0.2);
 
   // compute rolling contact force
   double rollingcontactforce[3];
@@ -199,7 +199,7 @@ void PARTICLEINTERACTION::DEMContactRollingCoulomb::Setup(const double& k_normal
 }
 
 /*---------------------------------------------------------------------------*
- | calculate effective radius for particle-particle contact   sfuchs 07/2019 |
+ | calculate effective radius                                 sfuchs 07/2019 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactRollingCoulomb::EffectiveRadiusParticle(
     const double* radius_i, const double* radius_j, const double& gap, double& r_eff) const
@@ -229,7 +229,8 @@ void PARTICLEINTERACTION::DEMContactRollingCoulomb::RelativeRollingVelocity(cons
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactRollingCoulomb::RollingContactMoment(double* gap_rolling,
     bool& stick_rolling, const double* normal, const double* v_rel_rolling, const double& m_eff,
-    const double& r_eff, const double& normalcontactforce, double* rollingcontactmoment) const
+    const double& r_eff, const double& mu_rolling, const double& normalcontactforce,
+    double* rollingcontactmoment) const
 {
   // determine rolling contact damping parameter
   const double d_rolling = d_rolling_fac_ * std::sqrt(m_eff);
@@ -258,7 +259,7 @@ void PARTICLEINTERACTION::DEMContactRollingCoulomb::RollingContactMoment(double*
   const double norm_rollingcontactforce = UTILS::vec_norm2(rollingcontactforce);
 
   // rolling contact force for stick-case
-  if (norm_rollingcontactforce <= (mu_rolling_ * std::abs(normalcontactforce)))
+  if (norm_rollingcontactforce <= (mu_rolling * std::abs(normalcontactforce)))
   {
     stick_rolling = true;
 
@@ -271,7 +272,7 @@ void PARTICLEINTERACTION::DEMContactRollingCoulomb::RollingContactMoment(double*
 
     // compute rolling contact force
     UTILS::vec_setscale(rollingcontactforce,
-        mu_rolling_ * std::abs(normalcontactforce) / norm_rollingcontactforce, rollingcontactforce);
+        mu_rolling * std::abs(normalcontactforce) / norm_rollingcontactforce, rollingcontactforce);
 
     // compute rolling displacement
     const double inv_k_rolling = 1.0 / k_rolling_;

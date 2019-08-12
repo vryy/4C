@@ -349,10 +349,10 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   DoubleParameter("POISSON_RATIO", -1.0, "poisson ratio", &particledyndem);
   DoubleParameter("YOUNG_MODULUS", -1.0, "young's modulus", &particledyndem);
 
-  DoubleParameter("FRICT_COEFF_TANG", -1.0, "dynamic friction coefficient for tangential contact",
-      &particledyndem);
-  DoubleParameter("FRICT_COEFF_ROLL", -1.0, "dynamic friction coefficient for rolling contact",
-      &particledyndem);
+  DoubleParameter(
+      "FRICT_COEFF_TANG", -1.0, "friction coefficient for tangential contact", &particledyndem);
+  DoubleParameter(
+      "FRICT_COEFF_ROLL", -1.0, "friction coefficient for rolling contact", &particledyndem);
 
   DoubleParameter(
       "ADHESION_DISTANCE", -1.0, "adhesion distance between interacting surfaces", &particledyndem);

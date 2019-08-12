@@ -74,10 +74,10 @@ namespace PARTICLEINTERACTION
     //! maximum expected particle velocity
     const double v_max_;
 
-    //! maximum allowed relative penetration (particle-particle)
+    //! maximum allowed relative penetration
     const double c_;
 
-    //! normal contact stiffness (particle-particle)
+    //! normal contact stiffness
     double k_normal_;
   };
 
@@ -126,7 +126,7 @@ namespace PARTICLEINTERACTION
         double& normalcontactforce) const override;
 
    private:
-    //! coefficient of restitution (particle-particle)
+    //! coefficient of restitution
     const double e_;
 
     //! parameter for regularization of damping contact force
@@ -135,7 +135,7 @@ namespace PARTICLEINTERACTION
     //! tension cutoff
     const bool tension_cutoff_;
 
-    //! normal contact damping factor (particle-particle)
+    //! normal contact damping factor
     double d_normal_fac_;
   };
 
@@ -163,7 +163,7 @@ namespace PARTICLEINTERACTION
         double& normalcontactforce) const = 0;
 
    private:
-    //! time step critical contact stiffness (particle-particle)
+    //! time step critical contact stiffness
     double k_tcrit_;
   };
 
@@ -200,7 +200,7 @@ namespace PARTICLEINTERACTION
         double& normalcontactforce) const = 0;
 
    protected:
-    //! normal contact damping parameter (particle-particle)
+    //! normal contact damping parameter
     const double d_normal_;
 
     //! tension cutoff
