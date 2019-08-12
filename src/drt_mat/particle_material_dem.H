@@ -119,6 +119,8 @@ namespace MAT
     //! return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
+    //@}
+
    private:
     //! my material parameters
     MAT::PAR::ParticleMaterialDEM* params_;
