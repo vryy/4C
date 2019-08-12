@@ -163,6 +163,7 @@ namespace INPAR
       m_particle_sph_fluid,      ///< particle material for SPH fluid
       m_particle_sph_boundary,   ///< particle material for SPH boundary
       m_particle_dem,            ///< particle material for DEM
+      m_particle_wall_dem,       ///< particle wall material for DEM
       m_permeable_fluid,         ///< permeable fluid
       m_plelasthyper,      ///< general hyperelastic material for finite strain von-Mises plasticity
                            ///< using a semi-smooth Newton strategy (only in combination with such
