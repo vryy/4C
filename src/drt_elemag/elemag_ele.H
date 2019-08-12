@@ -343,11 +343,11 @@ namespace DRT
 
       /// This variable represents the elctric field in the nodes
       Epetra_SerialDenseVector eleinteriorElectric_;
-      // Epetra_SerialDenseVector eleinteriorElectricnm_;
+      Epetra_SerialDenseVector eleinteriorElectricnm_;
 
       /// This variable represents the magnetic field in thge nodes
       Epetra_SerialDenseVector eleinteriorMagnetic_;
-      // Epetra_SerialDenseVector eleinteriorMagneticnm_;
+      Epetra_SerialDenseVector eleinteriorMagneticnm_;
 
       // Is it for the post processing?
       /*

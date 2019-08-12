@@ -258,7 +258,6 @@ namespace DRT
           shfunctI;  /// evaluated shape functions on face for interior HDG polynomials
       LINALG::SerialDenseMatrix
           normals;  /// normal vectors on a single face for all quadrature points
-      LINALG::SerialDenseMatrix tangents;  /// Real reference frame wrt face one (real -> face)
 
       LINALG::Matrix<nsd_ - 1, 1> xsi;  /// face quadrature points
       LINALG::Matrix<nsd_, nfn_> xyze;  /// face nodes
@@ -271,6 +270,12 @@ namespace DRT
 
       /*!
       \brief Computes the face reference system considering the ordering of the master element
+
+      The face reference system created is orthonormal and therefore the inverse of the
+      transformationm matrix is just the transpose of the matrix (T)^{-1} = (T)'.
+
+      \note
+      The routine is only used in 3D so far and therefore tested only in this case.
 
       \Author: Berardocco
        */
