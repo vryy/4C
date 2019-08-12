@@ -16,6 +16,8 @@
 #include "drt_validparameters.H"
 #include "inpar_parameterlist_utils.H"
 
+#include "../drt_lib/drt_conditiondefinition.H"
+
 /*---------------------------------------------------------------------------*
  | set the particle parameters                                sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
@@ -268,6 +270,10 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   Teuchos::ParameterList& particledyndem = particledyn.sublist(
       "DEM", false, "control parameters for discrete element method (DEM) simulations\n");
 
+  // write particle-wall interaction output
+  BoolParameter("WRITE_PARTICLE_WALL_INTERACTION", "no", "write particle-wall interaction output",
+      &particledyndem);
+
   // type of normal contact law
   setStringToIntegralParameter<int>("NORMALCONTACTLAW", "NormalLinearSpring",
       "normal contact law for particles",
@@ -327,14 +333,10 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   DoubleParameter("RADIUSDISTRIBUTION_VAR", -1.0, "variance of random particle radius distribution",
       &particledyndem);
 
-  DoubleParameter("REL_PENETRATION", -1.0,
-      "maximum allowed relative penetration (particle-particle)", &particledyndem);
-  DoubleParameter(
-      "NORMAL_STIFF", -1.0, "normal contact stiffness (particle-particle)", &particledyndem);
-  DoubleParameter(
-      "NORMAL_DAMP", -1.0, "normal contact damping parameter (particle-particle)", &particledyndem);
-  DoubleParameter(
-      "COEFF_RESTITUTION", -1.0, "coefficient of restitution (particle-particle)", &particledyndem);
+  DoubleParameter("REL_PENETRATION", -1.0, "maximum allowed relative penetration", &particledyndem);
+  DoubleParameter("NORMAL_STIFF", -1.0, "normal contact stiffness", &particledyndem);
+  DoubleParameter("NORMAL_DAMP", -1.0, "normal contact damping parameter", &particledyndem);
+  DoubleParameter("COEFF_RESTITUTION", -1.0, "coefficient of restitution", &particledyndem);
   DoubleParameter("DAMP_REG_FAC", -1.0,
       "linearly regularized damping normal force in the interval |g| < (DAMP_REG_FAC * r_min)",
       &particledyndem);
@@ -343,10 +345,10 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   DoubleParameter("POISSON_RATIO", -1.0, "poisson ratio", &particledyndem);
   DoubleParameter("YOUNG_MODULUS", -1.0, "young's modulus", &particledyndem);
 
-  DoubleParameter("FRICT_COEFF_TANG", -1.0,
-      "dynamic friction coefficient for tangential contact (particle-particle)", &particledyndem);
-  DoubleParameter("FRICT_COEFF_ROLL", -1.0,
-      "dynamic friction coefficient for rolling contact (particle-particle)", &particledyndem);
+  DoubleParameter("FRICT_COEFF_TANG", -1.0, "dynamic friction coefficient for tangential contact",
+      &particledyndem);
+  DoubleParameter("FRICT_COEFF_ROLL", -1.0, "dynamic friction coefficient for rolling contact",
+      &particledyndem);
 
   DoubleParameter(
       "ADHESION_DISTANCE", -1.0, "adhesion distance between interacting surfaces", &particledyndem);
@@ -361,8 +363,8 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   BoolParameter(
       "ADHESION_VDW_CURVE_SHIFT", "no", "shifts van-der-Waals-curve to g = 0", &particledyndem);
 
-  DoubleParameter("ADHESION_NORMAL_EPS", -1.0, "depth of Lennard-Jones adhesion potential well",
-      &particledyndem);
+  DoubleParameter(
+      "ADHESION_HAMAKER", -1.0, "hamaker constant of van-der-Waals interaction", &particledyndem);
 
   DoubleParameter("ADHESION_SURFACE_ENERGY", -1.0,
       "adhesion surface energy for the calculation of the pull-out force", &particledyndem);
@@ -372,4 +374,28 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "adhesion surface energy distribution limited by multiple of variance", &particledyndem);
   DoubleParameter("ADHESION_SURFACE_ENERGY_FACTOR", 1.0,
       "factor to calculate minimum adhesion surface energy", &particledyndem);
+}
+
+/*---------------------------------------------------------------------------*
+ | set the particle conditions                                sfuchs 08/2019 |
+ *---------------------------------------------------------------------------*/
+void INPAR::PARTICLE::SetValidConditions(
+    std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist)
+{
+  using namespace DRT::INPUT;
+
+  /*-------------------------------------------------------------------------*
+   | particle wall condition                                                 |
+   *-------------------------------------------------------------------------*/
+  std::vector<Teuchos::RCP<ConditionComponent>> particlewallcomponents;
+  particlewallcomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
+
+  Teuchos::RCP<ConditionDefinition> surfpartwall = Teuchos::rcp(new ConditionDefinition(
+      "DESIGN SURFACE PARTICLE WALL", "ParticleWall", "Wall for particle interaction",
+      DRT::Condition::ParticleWall, true, DRT::Condition::Surface));
+
+  for (unsigned i = 0; i < particlewallcomponents.size(); ++i)
+    surfpartwall->AddComponent(particlewallcomponents[i]);
+
+  condlist.push_back(surfpartwall);
 }

@@ -868,7 +868,7 @@ bool MORTAR::Coupling2d::IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInter
       (Quad() && lmtype == INPAR::MORTAR::lagmult_const))
   {
     // do the overlap integration (integrate and linearize both M and gap)
-    MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(), IParams())
+    MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(), InterfaceParams())
         ->IntegrateSegment2D(SlaveElement(), sxia, sxib, MasterElement(), mxia, mxib, Comm());
   }
 

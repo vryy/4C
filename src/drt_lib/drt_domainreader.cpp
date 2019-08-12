@@ -14,7 +14,7 @@
 #include "drt_domainreader.H"
 #include "standardtypes_cpp.H"
 #include "drt_elementdefinition.H"
-#include "drt_utils_parmetis.H"
+#include "drt_utils_rebalancing.H"
 #include "drt_utils_factory.H"
 #include "drt_utils_parallel.H"
 #include "drt_utils_reader.H"
@@ -389,16 +389,16 @@ namespace DRT
 #if defined(HAVE_PARMETIS)
         rownodes_ = Teuchos::null;
         colnodes_ = Teuchos::null;
-        DRT::UTILS::PartUsingParMetis(
-            dis_, roweles_, rownodes_, colnodes_, comm_, !reader_.MyOutputFlag());
+        DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
+            dis_, roweles_, rownodes_, colnodes_, comm_, !reader_.MyOutputFlag(), comm_->NumProc());
 #else
         dserror("We need parmetis.");
 #endif
       }
       else  // do not destroy our manual partitioning
       {
-        Teuchos::RCP<const Epetra_CrsGraph> graph =
-            DRT::UTILS::BuildGraph(dis_, roweles_, rownodes_, comm_, !reader_.MyOutputFlag());
+        Teuchos::RCP<const Epetra_CrsGraph> graph = DRT::UTILS::REBALANCING::BuildGraph(
+            dis_, roweles_, rownodes_, comm_, !reader_.MyOutputFlag());
         colnodes_ = Teuchos::rcp(new Epetra_Map(
             -1, graph->ColMap().NumMyElements(), graph->ColMap().MyGlobalElements(), 0, *comm_));
       }

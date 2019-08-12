@@ -2376,7 +2376,7 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(double* sxi, double* mxi,
 {
   bool friction = false;
   INPAR::CONTACT::FrictionType ftype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(), "FRICTION");
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
   if (ftype != INPAR::CONTACT::friction_none) friction = true;
 
   // get slave element nodes themselves for normal evaluation

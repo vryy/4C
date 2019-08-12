@@ -10,7 +10,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "drt_utils_parmetis.H"
+#include "drt_utils_rebalancing.H"
 
 #include "../linalg/linalg_utils.H"
 
@@ -28,217 +28,92 @@
 #include <Isorropia_EpetraPartitioner.hpp>
 #include <Isorropia_EpetraRedistributor.hpp>
 
-#include <iterator>
-
-namespace DRT
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
+    Teuchos::RCP<DRT::Discretization> discretization, Teuchos::RCP<const Epetra_Map> elementRowMap,
+    Teuchos::RCP<Epetra_Map>& nodeRowMap, Teuchos::RCP<Epetra_Map>& nodeColumnMap,
+    Teuchos::RCP<const Epetra_Comm> comm, const bool outflag, const int numPartitions,
+    const double imbalanceTol)
 {
-  namespace UTILS
-  {
-    void PackLocalConnectivity(std::map<int, std::set<int>>& lcon, DRT::PackBuffer& sblock);
-    void UnpackLocalConnectivity(std::map<int, std::set<int>>& lcon, std::vector<char>& rblock);
-
-  }  // namespace UTILS
-}  // namespace DRT
-
-/*typedef int idxtype;
-extern "C"
-{
-  void ParMETIS_V3_PartKway(idxtype *vtxdist, idxtype *xadj, idxtype *adjncy, idxtype *vwgt,
-                            idxtype *adjwgt, int *wgtflag, int *numflag, int *ncon, int *nparts,
-                            float *tpwgts, float *ubvec, int *options, int *edgecut, idxtype *part,
-                            MPI_Comm *comm);
-}*/
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::UTILS::PackLocalConnectivity(std::map<int, std::set<int>>& lcon, DRT::PackBuffer& sblock)
-{
-  std::map<int, std::set<int>>::iterator gidinlcon;
-  std::set<int>::iterator adjacentgid;
-
-  // size (number of nodes we have a connectivity for)
-  int size = lcon.size();
-  DRT::ParObject::AddtoPack(sblock, size);
-
-  for (gidinlcon = lcon.begin(); gidinlcon != lcon.end(); ++gidinlcon)
-  {
-    // add node gid we store the connectivity for
-    DRT::ParObject::AddtoPack(sblock, (int)(gidinlcon->first));
-
-    // add number of nodes adjacent to this one
-    DRT::ParObject::AddtoPack(sblock, (int)(gidinlcon->second).size());
-
-    // add list of neighbours to this node
-    for (adjacentgid = (gidinlcon->second).begin(); adjacentgid != (gidinlcon->second).end();
-         ++adjacentgid)
-    {
-      DRT::ParObject::AddtoPack(sblock, *adjacentgid);
-    }
-  }
-
-  lcon.clear();
-
-  return;
-}  // end Pack_lcon
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::UTILS::UnpackLocalConnectivity(
-    std::map<int, std::set<int>>& lcon, std::vector<char>& rblock)
-{
-  if (rblock.empty())
-  {
-    dserror("trying to extract information from an empty receive block\n");
-  }
-
-  lcon.clear();
-
-  // position to extract
-  std::vector<char>::size_type position = 0;
-
-  // extract size (number of nodes we have a connectivity for)
-  int size = 0;
-  DRT::ParObject::ExtractfromPack(position, rblock, size);
-
-  for (int i = 0; i < size; ++i)
-  {
-    // extract node gid we store the connectivity for
-    int gid = -1;
-    DRT::ParObject::ExtractfromPack(position, rblock, gid);
-
-    if (gid < 0)
-    {
-      dserror("Unable to unpack a proper gid");
-    }
-
-    // extract number of adjacent nodes
-    int numnb = 0;
-    DRT::ParObject::ExtractfromPack(position, rblock, numnb);
-
-    if (numnb < 1)
-    {
-      dserror("Everybody should have at least one unpackable neighbour (%d given)", numnb);
-    }
-
-    std::set<int> neighbourset;
-
-    // extract all adjacent nodes and feed them into the set
-    for (int j = 0; j < numnb; ++j)
-    {
-      int nbgid = 0;
-      DRT::ParObject::ExtractfromPack(position, rblock, nbgid);
-      neighbourset.insert(nbgid);
-    }
-
-    // add this node connectivity to local connectivity map
-    lcon.insert(std::pair<int, std::set<int>>(gid, neighbourset));
-  }
-
-  // trash receive block
-  rblock.clear();
-
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::UTILS::PartUsingParMetis(Teuchos::RCP<DRT::Discretization> dis,
-    Teuchos::RCP<Epetra_Map> roweles, Teuchos::RCP<Epetra_Map>& rownodes,
-    Teuchos::RCP<Epetra_Map>& colnodes, Teuchos::RCP<Epetra_Comm> comm, const bool outflag,
-    const int parts, const double imbalance)
-{
-  const int myrank = comm->MyPID();
-  Epetra_Time timer(dis->Comm());
+  const int myrank = discretization->Comm().MyPID();
+  const Epetra_Time timer(*comm);
   const double t1 = timer.ElapsedTime();
   if (!myrank && outflag)
-  {
-    printf("parmetis:\n");
-    fflush(stdout);
-  }
+    std::cout << "Rebalance nodal maps of discretization '" << discretization->Name() << "'..."
+              << std::endl;
 
-  Teuchos::RCP<const Epetra_CrsGraph> graph = BuildGraph(dis, roweles, rownodes, comm, outflag);
+  // create nodal graph of existing problem
+  Teuchos::RCP<const Epetra_CrsGraph> initialGraph =
+      DRT::UTILS::REBALANCING::BuildGraph(discretization, elementRowMap, nodeRowMap, comm, outflag);
 
-  /* Use Isorropia package to access Zoltan
-   *
-   * By default, Isorropia will use Zoltan hypergraph partitioning, treating the graph columns as
-   * hyperedges and the graph rows as vertices.
-   */
+  // Create parameter list with rebalancing options
+  Teuchos::RCP<Teuchos::ParameterList> rebalanceParams =
+      CreateRebalancingParameterList(numPartitions, imbalanceTol);
 
-  // Pass parameters to Zoltan via this parameter list
-  Teuchos::ParameterList paramlist;
+  // Compute rebalanced graph
+  Teuchos::RCP<Epetra_CrsGraph> balancedGraph =
+      DRT::UTILS::REBALANCING::RebalanceGraph(initialGraph, *rebalanceParams);
 
-  /* Set tolerance on max. relative imbalance of subdomain sizes
-   * if it is provided. Otherwise, don't set it. This will then use the default value.
-   */
-  if (imbalance > 0.0)
-  {
-    std::stringstream ss;
-    ss << imbalance;
-    paramlist.set("IMBALANCE_TOL", ss.str());
-  }
-
-  // if the user wants to use less procs than available (as indicated by
-  // the input flag "parts" above) then pass on this information to the
-  // parameter list for Zoltan/Isorropia
-  if (parts != -1)
-  {
-    std::stringstream ss;
-    ss << parts;
-    paramlist.set("num parts", ss.str());
-  }
-
-  Epetra_CrsGraph* balanced_graph = NULL;
-  try
-  {
-    balanced_graph = Isorropia::Epetra::createBalancedCopy(*graph, paramlist);
-  }
-  catch (std::exception& exc)
-  {
-    std::cout << "Isorropia::createBalancedCopy threw "
-              << "exception '" << exc.what() << "' on proc " << myrank << std::endl;
-    dserror("Error within Isorropia (graph balancing)");
-  }
-
-  // obtain the new column and row map
-  Teuchos::RCP<Epetra_CrsGraph> rcp_balanced_graph = Teuchos::rcp(balanced_graph);
-  rcp_balanced_graph->FillComplete();
-  rcp_balanced_graph->OptimizeStorage();
-  rownodes = Teuchos::rcp(new Epetra_Map(-1, rcp_balanced_graph->RowMap().NumMyElements(),
-      rcp_balanced_graph->RowMap().MyGlobalElements(), 0, *comm));
-  colnodes = Teuchos::rcp(new Epetra_Map(-1, rcp_balanced_graph->ColMap().NumMyElements(),
-      rcp_balanced_graph->ColMap().MyGlobalElements(), 0, *comm));
+  // Extract rebalanced maps
+  nodeRowMap = Teuchos::rcp(new Epetra_Map(-1, balancedGraph->RowMap().NumMyElements(),
+      balancedGraph->RowMap().MyGlobalElements(), 0, *comm));
+  nodeColumnMap = Teuchos::rcp(new Epetra_Map(-1, balancedGraph->ColMap().NumMyElements(),
+      balancedGraph->ColMap().MyGlobalElements(), 0, *comm));
 
   const double t2 = timer.ElapsedTime();
   if (!myrank && outflag)
-  {
-    printf("Graph rebalancing:    %10.5e secs\n", t2 - t1);
-    fflush(stdout);
-  }
+    std::cout << std::setprecision(5) << "Node map rebalancing:    " << t2 - t1 << " secs"
+              << std::endl;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::REBALANCING::ComputeRebalancedNodeMapsUsingWeights(
+    Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Map>& rownodes,
+    Teuchos::RCP<Epetra_Map>& colnodes, const bool outflag)
+{
+  const int myrank = dis->Comm().MyPID();
+  Epetra_Time timer(dis->Comm());
+  const double t1 = timer.ElapsedTime();
+  if (!myrank && outflag)
+    std::cout << "Rebalance nodal maps of discretization '" << dis->Name() << "'..." << std::endl;
+
+  // create nodal graph of existing problem
+  Teuchos::RCP<const Epetra_CrsGraph> initgraph = dis->BuildNodeGraph();
+
+  // Setup cost describer based on element connectivity
+  Teuchos::RCP<Isorropia::Epetra::CostDescriber> costs = SetupCostDescriber(*dis);
+
+  // Create parameter list with repartitioning options
+  Teuchos::ParameterList paramlist;
+  Teuchos::ParameterList& sublist = paramlist.sublist("Zoltan");
+  sublist.set("LB_APPROACH", "PARTITION");
+
+  // Compute rebalanced graph
+  Teuchos::RCP<Epetra_CrsGraph> balanced_graph =
+      DRT::UTILS::REBALANCING::RebalanceGraph(initgraph, costs, paramlist);
+
+  // extract repartitioned maps
+  rownodes = Teuchos::rcp(new Epetra_Map(-1, balanced_graph->RowMap().NumMyElements(),
+      balanced_graph->RowMap().MyGlobalElements(), 0, dis->Comm()));
+  colnodes = Teuchos::rcp(new Epetra_Map(-1, balanced_graph->ColMap().NumMyElements(),
+      balanced_graph->ColMap().MyGlobalElements(), 0, dis->Comm()));
+
+  const double t2 = timer.ElapsedTime();
+  if (!myrank && outflag)
+    std::cout << std::setprecision(5) << "Node map rebalancing:    " << t2 - t1 << " secs"
+              << std::endl;
 
   return;
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::PartUsingZoltanWithWeights(Teuchos::RCP<DRT::Discretization> dis,
-    Teuchos::RCP<Epetra_Map>& rownodes, Teuchos::RCP<Epetra_Map>& colnodes, bool outflag)
+Teuchos::RCP<Isorropia::Epetra::CostDescriber> DRT::UTILS::REBALANCING::SetupCostDescriber(
+    const DRT::Discretization& discretization)
 {
-  const int myrank = dis->Comm().MyPID();
-  Epetra_Time timer(dis->Comm());
-  double t1 = timer.ElapsedTime();
-  if (!myrank && outflag)
-  {
-    printf("parmetis:\n");
-    fflush(stdout);
-  }
-
-  // create nodal graph of existing problem
-  Teuchos::RCP<Epetra_CrsGraph> initgraph = dis->BuildNodeGraph();
-
-  const Epetra_Map* oldnoderowmap = dis->NodeRowMap();
+  const Epetra_Map* oldnoderowmap = discretization.NodeRowMap();
   // Now we're going to create a Epetra_Vector with vertex weights and a Epetra_CrsMatrix
   // for the edge weights to be used in the partitioning operation.
   // weights must be at least one for zoltan
@@ -247,9 +122,9 @@ void DRT::UTILS::PartUsingZoltanWithWeights(Teuchos::RCP<DRT::Discretization> di
   Teuchos::RCP<Epetra_Vector> vweights = LINALG::CreateVector(*oldnoderowmap, true);
 
   // loop all row elements and get their cost of evaluation
-  for (int i = 0; i < dis->ElementRowMap()->NumMyElements(); ++i)
+  for (int i = 0; i < discretization.ElementRowMap()->NumMyElements(); ++i)
   {
-    DRT::Element* ele = dis->lRowElement(i);
+    DRT::Element* ele = discretization.lRowElement(i);
     DRT::Node** nodes = ele->Nodes();
     const int numnode = ele->NumNode();
     std::vector<int> lm(numnode);
@@ -275,43 +150,14 @@ void DRT::UTILS::PartUsingZoltanWithWeights(Teuchos::RCP<DRT::Discretization> di
   costs->setGraphEdgeWeights(crs_ge_weights);
   costs->setVertexWeights(vweights);
 
-  Teuchos::ParameterList paramlist;
-  Teuchos::ParameterList& sublist = paramlist.sublist("Zoltan");
-  sublist.set("LB_APPROACH", "PARTITION");
-
-  // Now create the partitioner object
-  Teuchos::RCP<Isorropia::Epetra::Partitioner> partitioner =
-      Teuchos::rcp(new Isorropia::Epetra::Partitioner(
-          Teuchos::rcp_const_cast<const Epetra_CrsGraph>(initgraph), costs, paramlist));
-
-  Isorropia::Epetra::Redistributor rd(partitioner);
-
-  Teuchos::RCP<Epetra_CrsGraph> balanced_graph = rd.redistribute(*initgraph);
-
-  // extract repartitioned maps
-  const Epetra_BlockMap& rntmp = balanced_graph->RowMap();
-  rownodes = Teuchos::rcp(
-      new Epetra_Map(-1, rntmp.NumMyElements(), rntmp.MyGlobalElements(), 0, dis->Comm()));
-  const Epetra_BlockMap& cntmp = balanced_graph->ColMap();
-  colnodes = Teuchos::rcp(
-      new Epetra_Map(-1, cntmp.NumMyElements(), cntmp.MyGlobalElements(), 0, dis->Comm()));
-
-  double t2 = timer.ElapsedTime();
-  if (!myrank && outflag)
-  {
-    printf("Graph rebalancing:    %10.5e secs\n", t2 - t1);
-    fflush(stdout);
-  }
-
-  return;
+  return costs;
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_CrsGraph> DRT::UTILS::BuildGraph(Teuchos::RCP<DRT::Discretization> dis,
-    Teuchos::RCP<Epetra_Map> roweles, Teuchos::RCP<Epetra_Map>& rownodes,
-    Teuchos::RCP<Epetra_Comm> comm, bool outflag)
+Teuchos::RCP<const Epetra_CrsGraph> DRT::UTILS::REBALANCING::BuildGraph(
+    Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<const Epetra_Map> roweles,
+    Teuchos::RCP<Epetra_Map>& rownodes, Teuchos::RCP<const Epetra_Comm> comm, bool outflag)
 {
   const int myrank = comm->MyPID();
   const int numproc = comm->NumProc();
@@ -493,29 +339,107 @@ Teuchos::RCP<const Epetra_CrsGraph> DRT::UTILS::BuildGraph(Teuchos::RCP<DRT::Dis
   return graph;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::REBALANCING::ExportAndFillCompleteDiscretization(
+    DRT::Discretization& discretization, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
+    const bool assigndegreesoffreedom, const bool initelements, const bool doboundaryconditions)
+{
+  // Export nodes
+  discretization.ExportRowNodes(noderowmap);
+  discretization.ExportColumnNodes(nodecolmap);
+
+  // Build reasonable maps for elements from the already valid and final node maps
+  Teuchos::RCP<Epetra_Map> elerowmap = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> elecolmap = Teuchos::null;
+  discretization.BuildElementRowColumn(noderowmap, nodecolmap, elerowmap, elecolmap);
+  discretization.ExportRowElements(*elerowmap);
+  discretization.ExportColumnElements(*elecolmap);
+
+  discretization.FillComplete(assigndegreesoffreedom, initelements, doboundaryconditions);
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::WeightedRepartitioning(Teuchos::RCP<DRT::Discretization> dis,
-    bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions)
+void DRT::UTILS::REBALANCING::RedistributeAndFillCompleteDiscretizationUsingWeights(
+    Teuchos::RCP<DRT::Discretization> discretization, const bool assigndegreesoffreedom,
+    const bool initelements, const bool doboundaryconditions)
 {
   // maps to be filled with final distributed node maps
-  Teuchos::RCP<Epetra_Map> rownodes;
-  Teuchos::RCP<Epetra_Map> colnodes;
-  // do weighted repartitioning
-  DRT::UTILS::PartUsingZoltanWithWeights(dis, rownodes, colnodes, true);
+  Teuchos::RCP<Epetra_Map> rownodes = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> colnodes = Teuchos::null;
 
-  // rebuild of the system with new maps
-  Teuchos::RCP<Epetra_Map> roweles;
-  Teuchos::RCP<Epetra_Map> coleles;
-  dis->BuildElementRowColumn(*rownodes, *colnodes, roweles, coleles);
-  dis->ExportRowNodes(*rownodes);
-  dis->ExportRowElements(*roweles);
-  dis->ExportColumnNodes(*colnodes);
-  dis->ExportColumnElements(*coleles);
+  // do weighted repartitioning to obtain new row/column maps
+  DRT::UTILS::REBALANCING::ComputeRebalancedNodeMapsUsingWeights(
+      discretization, rownodes, colnodes, true);
 
-  // do final fill complete
-  dis->FillComplete(assigndegreesoffreedom, initelements, doboundaryconditions);
+  // rebuild the discretization with new maps
+  DRT::UTILS::REBALANCING::ExportAndFillCompleteDiscretization(*discretization, *rownodes,
+      *colnodes, assigndegreesoffreedom, initelements, doboundaryconditions);
 
   return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::REBALANCING::RebalanceGraph(
+    Teuchos::RCP<const Epetra_CrsGraph> initialGraph, const Teuchos::ParameterList& rebalanceParams)
+{
+  Epetra_CrsGraph* balancedGraph = NULL;
+  try
+  {
+    balancedGraph = Isorropia::Epetra::createBalancedCopy(*initialGraph, rebalanceParams);
+  }
+  catch (std::exception& exc)
+  {
+    std::cout << "Isorropia::createBalancedCopy threw "
+              << "exception '" << exc.what() << "' on proc " << initialGraph->Comm().MyPID()
+              << std::endl;
+    dserror("Error within Isorropia (graph balancing)");
+  }
+
+  balancedGraph->FillComplete();
+  balancedGraph->OptimizeStorage();
+
+  return Teuchos::rcp(balancedGraph);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::REBALANCING::RebalanceGraph(
+    Teuchos::RCP<const Epetra_CrsGraph> initialGraph,
+    Teuchos::RCP<Isorropia::Epetra::CostDescriber> costs,
+    const Teuchos::ParameterList& rebalanceParams)
+{
+  Teuchos::RCP<Epetra_CrsGraph> balanced_graph = Teuchos::null;
+  try
+  {
+    Teuchos::RCP<Isorropia::Epetra::Partitioner> partitioner =
+        Teuchos::rcp(new Isorropia::Epetra::Partitioner(initialGraph, costs, rebalanceParams));
+
+    Isorropia::Epetra::Redistributor rd(partitioner);
+    balanced_graph = rd.redistribute(*initialGraph, true);
+  }
+  catch (std::exception& exc)
+  {
+    std::cout << "Isorropia threw exception '" << exc.what() << "' on proc "
+              << initialGraph->Comm().MyPID() << std::endl;
+    dserror("Error within Isorropia (graph balancing)");
+  }
+
+  return balanced_graph;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Teuchos::ParameterList> DRT::UTILS::REBALANCING::CreateRebalancingParameterList(
+    const int numPartitions, const double imbalanceTol)
+{
+  Teuchos::RCP<Teuchos::ParameterList> rebalancingParams =
+      Teuchos::rcp(new Teuchos::ParameterList());
+
+  rebalancingParams->set<std::string>("num parts", std::to_string(numPartitions));
+  rebalancingParams->set<std::string>("IMBALANCE_TOL", std::to_string(imbalanceTol));
+
+  return rebalancingParams;
 }

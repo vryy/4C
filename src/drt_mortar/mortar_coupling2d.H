@@ -110,7 +110,7 @@ namespace MORTAR
      \brief Get interface contact parameter list
 
      */
-    virtual Teuchos::ParameterList& IParams() { return imortar_; };
+    virtual Teuchos::ParameterList& InterfaceParams() { return imortar_; };
 
     /*!
      \brief Get projection status of the four end nodes

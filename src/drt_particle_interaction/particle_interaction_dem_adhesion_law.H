@@ -104,8 +104,8 @@ namespace PARTICLEINTERACTION
     void CalculateIntersectionGap(
         double a, double b, double c, double d, double& gap_intersect) const;
 
-    //! depth of Lennard-Jones adhesion potential well
-    const double adhesion_normal_eps_;
+    //! hamaker constant
+    const double hamaker_constant;
   };
 
   class DEMAdhesionLawRegDMT : public DEMAdhesionLawBase

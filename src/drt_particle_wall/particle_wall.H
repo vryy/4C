@@ -28,8 +28,6 @@
 /*---------------------------------------------------------------------------*
  | forward declarations                                       sfuchs 10/2018 |
  *---------------------------------------------------------------------------*/
-class DiscretizationRuntimeVtuWriter;
-
 namespace IO
 {
   class DiscretizationReader;
@@ -38,7 +36,8 @@ namespace IO
 namespace PARTICLEWALL
 {
   class WallDataState;
-}
+  class WallDiscretizationRuntimeVtuWriter;
+}  // namespace PARTICLEWALL
 
 namespace PARTICLEENGINE
 {
@@ -89,8 +88,8 @@ namespace PARTICLEWALL
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) const final;
 
-    //! write wall runtime vtu output
-    virtual void WriteWallRuntimeVtuOutput(const int step, const double time) const;
+    //! write wall runtime output
+    virtual void WriteWallRuntimeOutput(const int step, const double time) const final;
 
     //! update bin row and column map
     virtual void UpdateBinRowAndColMap(
@@ -142,23 +141,18 @@ namespace PARTICLEWALL
     //! init wall data state container
     virtual void InitWallDataState() final;
 
-    //! setup wall data state container
-    virtual void SetupWallDataState() final;
-
     //! init wall discretization runtime vtu writer
-    virtual void InitWallVtuWriter() final;
-
-    //! setup wall discretization runtime vtu writer
-    virtual void SetupWallVtuWriter() final;
-
-    //! setup time of runtime vtu writer
-    double setuptime_;
+    virtual void InitWallDiscretizationRuntimeVtuWriter() final;
 
     //! relate bins to column wall elements
     PARTICLEENGINE::BinsToColWallEles binstocolwalleles_;
 
     //! relate potential neighboring column wall elements to particles of all types
     PARTICLEENGINE::PotentialWallNeighbors potentialwallneighbors_;
+
+    //! wall discretization runtime vtu writer
+    std::unique_ptr<PARTICLEWALL::WallDiscretizationRuntimeVtuWriter>
+        walldiscretizationruntimevtuwriter_;
 
    protected:
     //! communication
@@ -187,9 +181,6 @@ namespace PARTICLEWALL
 
     //! wall data state container
     std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate_;
-
-    //! wall discretization runtime vtu writer
-    std::unique_ptr<DiscretizationRuntimeVtuWriter> wallvtuwriter_;
 
     //! flag denoting valid relation of bins to column wall elements
     bool validwallelements_;

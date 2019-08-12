@@ -56,7 +56,7 @@ namespace PARTICLEENGINE
     LastIterAcceleration,
     LastIterAngularVelocity,
     LastIterAngularAcceleration,
-    LastIterModifiedAcceleration,
+    LastIterModifiedAcceleration
   };
 
   //! get dimension of particle state

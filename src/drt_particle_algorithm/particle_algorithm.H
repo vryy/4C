@@ -162,6 +162,9 @@ namespace PARTICLEALGORITHM
     //! set current step size
     void SetCurrentStepSize();
 
+    //! set current write result flag
+    void SetCurrentWriteResultFlag();
+
     //! set gravity acceleration
     void SetGravityAcceleration();
 

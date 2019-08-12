@@ -234,6 +234,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::PrepareTimeStep(bool print_header)
   // update result and restart control flags
   writeresultsthisstep_ = (writeresultsevery_ and (Step() % writeresultsevery_ == 0));
   writerestartthisstep_ = (writerestartevery_ and (Step() % writerestartevery_ == 0));
+
+  // set current write result flag
+  SetCurrentWriteResultFlag();
 }
 
 /*---------------------------------------------------------------------------*
@@ -270,14 +273,17 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Output() const
   // write result step
   if (writeresultsthisstep_)
   {
-    // write particle runtime vtp output
-    particleengine_->WriteParticleRuntimeVtpOutput(Step(), Time());
+    // write particle runtime output
+    particleengine_->WriteParticleRuntimeOutput(Step(), Time());
 
     // write binning discretization output (debug feature)
     particleengine_->WriteBinDisOutput(Step(), Time());
 
-    // write wall runtime vtu output
-    if (particlewall_) particlewall_->WriteWallRuntimeVtuOutput(Step(), Time());
+    // write interaction runtime output
+    if (particleinteraction_) particleinteraction_->WriteInteractionRuntimeOutput(Step(), Time());
+
+    // write wall runtime output
+    if (particlewall_) particlewall_->WriteWallRuntimeOutput(Step(), Time());
   }
 
   // write restart step
@@ -969,6 +975,15 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetCurrentStepSize()
 {
   // set current step size in particle interaction
   if (particleinteraction_) particleinteraction_->SetCurrentStepSize(Dt());
+}
+
+/*---------------------------------------------------------------------------*
+ | set current write result flag                              sfuchs 08/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::ParticleAlgorithm::SetCurrentWriteResultFlag()
+{
+  // set current write result flag in particle interaction
+  if (particleinteraction_) particleinteraction_->SetCurrentWriteResultFlag(writeresultsthisstep_);
 }
 
 /*---------------------------------------------------------------------------*

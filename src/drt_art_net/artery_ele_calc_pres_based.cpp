@@ -223,6 +223,8 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Sysmat(Artery* ele,
       for (int jnode = 0; jnode < numnode; jnode++)
         sysmat(inode, jnode) += my::deriv_(0, inode) * fac * my::deriv_(0, jnode);
 
+    // note: incremental form since rhs-coupling with poromultielastscatra-framework might be
+    //       nonlinear
     LINALG::Matrix<1, 1> pressgrad;
     pressgrad.Multiply(my::deriv_, mypress);
     for (int inode = 0; inode < numnode; inode++)

@@ -2087,7 +2087,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(m, "DENS", "density of blood");
     AddNamedReal(m, "YOUNG", "artery Youngs modulus of elasticity");
     AddNamedReal(m, "NUE", "Poissons ratio of artery fiber");
-    AddNamedReal(m, "DIAM", "artery initial diameter");
     AddNamedReal(m, "TH", "artery thickness");
     AddNamedReal(m, "PEXT1", "artery fixed external pressure 1");
     AddNamedReal(m, "PEXT2", "artery fixed external pressure 2");

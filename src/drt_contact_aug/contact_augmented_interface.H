@@ -52,14 +52,14 @@ namespace CONTACT
      *  data between different interface objects w/o the need of copying them.
      *
      *  \author hiermeier \date 03/17 */
-    class IDataContainer : public ::CONTACT::IDataContainer
+    class InterfaceDataContainer : public ::CONTACT::InterfaceDataContainer
     {
      public:
       /// constructor
-      IDataContainer();
+      InterfaceDataContainer();
 
       /// destructor
-      virtual ~IDataContainer(){};
+      virtual ~InterfaceDataContainer(){};
 
       /// @name Accessors
       /// @{
@@ -191,7 +191,7 @@ namespace CONTACT
 
       EleEvaluateTimes eletimes_;
 
-    };  // class CONTACT::AUG::IDataContainer
+    };  // class CONTACT::AUG::InterfaceDataContainer
 
     /*--------------------------------------------------------------------------*/
     /** \brief Augmented contact interface class
@@ -205,14 +205,14 @@ namespace CONTACT
        *  A prerequisite for this constructor is, that the passed
        *  shared interface data object has been filled/initialized already.
        *
-       *  \param idata_ptr (in) : filled shared augmented contact interface
+       *  \param interfaceData_ptr (in) : filled shared augmented contact interface
        *                          data container object
        *
        *  \author hiermeier \date 03/17 */
-      Interface(const Teuchos::RCP<CONTACT::AUG::IDataContainer>& idata_ptr);
+      Interface(const Teuchos::RCP<CONTACT::AUG::InterfaceDataContainer>& interfaceData_ptr);
 
       //! Constructor
-      Interface(const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr, int id,
+      Interface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr, int id,
           const Epetra_Comm& comm, int dim, const Teuchos::ParameterList& icontact,
           bool selfcontact, INPAR::MORTAR::RedundantStorage redundant);
 
@@ -223,13 +223,16 @@ namespace CONTACT
       //! @{
 
       /// share the data with other derived interfaces via copy constructor
-      Teuchos::RCP<AUG::IDataContainer> SharedInterfaceDataPtr() const { return idata_ptr_; }
+      Teuchos::RCP<AUG::InterfaceDataContainer> SharedInterfaceDataPtr() const
+      {
+        return interfaceData_ptr_;
+      }
 
       //! Get row map of slave normal dofs
       const Teuchos::RCP<Epetra_Map> SlaveRowNDofs() const
       {
         if (Filled())
-          return idata_.SNDofRowMap();
+          return interfaceData_.SNDofRowMap();
         else
           dserror("CONTACT::AugmentedInterface::FillComplete was not called");
         exit(EXIT_FAILURE);
@@ -239,14 +242,14 @@ namespace CONTACT
       const Teuchos::RCP<Epetra_Map> SlaveRowTDofs() const
       {
         if (Filled())
-          return idata_.STDofRowMap();
+          return interfaceData_.STDofRowMap();
         else
           dserror("CONTACT::AugmentedInterface::FillComplete was not called");
         exit(EXIT_FAILURE);
       }
 
       //! Returns the penetration bound of the current interface.
-      inline double PenetrationBound() const { return idata_.PenBound(); };
+      inline double PenetrationBound() const { return interfaceData_.PenBound(); };
 
       //! @}
 
@@ -429,7 +432,7 @@ namespace CONTACT
       /// return the variational approach type (complete, incomplete, etc.)
       INPAR::CONTACT::VariationalApproach GetVariationalApproachType() const
       {
-        return idata_.VariationalApproachType();
+        return interfaceData_.VariationalApproachType();
       }
 
       /// derived
@@ -829,10 +832,10 @@ namespace CONTACT
        *                                                        hiermeier 03/17 */
 
       /// pointer to the interface data object
-      Teuchos::RCP<AUG::IDataContainer> idata_ptr_;
+      Teuchos::RCP<AUG::InterfaceDataContainer> interfaceData_ptr_;
 
       /// reference to the interface data object
-      AUG::IDataContainer& idata_;
+      AUG::InterfaceDataContainer& interfaceData_;
 
     };  // class Interface
 
@@ -909,19 +912,19 @@ namespace CONTACT
         const Epetra_Map& SlNDofRowMap(const enum MapType map_type) const;
 
         /// return a reference the interface data object (read-only)
-        inline const IDataContainer& IData() const
+        inline const InterfaceDataContainer& IData() const
         {
-          if (not idata_ptr_)
+          if (not interfaceData_ptr_)
             dserror(
                 "The interface data pointer has not been initialized "
                 "correctly!");
 
-          return *idata_ptr_;
+          return *interfaceData_ptr_;
         }
 
        private:
         Interface* inter_;
-        IDataContainer* idata_ptr_;
+        InterfaceDataContainer* interfaceData_ptr_;
 
        protected:
         DRT::Discretization& idiscret_;
@@ -1038,13 +1041,16 @@ namespace CONTACT
 
     }  // namespace INTERFACE
 
-    /// IDataContainer class member function specializations
+    /// InterfaceDataContainer class member function specializations
     template <>
-    Teuchos::RCP<const Epetra_Map> IDataContainer::ElementRowMapPtr<SideType::master>() const;
+    Teuchos::RCP<const Epetra_Map> InterfaceDataContainer::ElementRowMapPtr<SideType::master>()
+        const;
     template <>
-    Teuchos::RCP<const Epetra_Map> IDataContainer::ElementRowMapPtr<SideType::slave>() const;
+    Teuchos::RCP<const Epetra_Map> InterfaceDataContainer::ElementRowMapPtr<SideType::slave>()
+        const;
     template <>
-    Teuchos::RCP<const Epetra_Map> IDataContainer::ElementRowMapPtr<SideType::slave_master>() const;
+    Teuchos::RCP<const Epetra_Map>
+    InterfaceDataContainer::ElementRowMapPtr<SideType::slave_master>() const;
 
 
     /// Interface class member function specializations

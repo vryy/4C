@@ -19,7 +19,7 @@
 #include "../drt_lib/drt_element.H"
 
 #include "../drt_lib/drt_dofset_transparent.H"
-#include "../drt_lib/drt_utils_parmetis.H"
+#include "../drt_lib/drt_utils_rebalancing.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -636,7 +636,8 @@ void FLD::XWall::SetupXWallDis()
     Teuchos::RCP<Epetra_Map> rownodes;
     Teuchos::RCP<Epetra_Map> colnodes;
     Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(discret_->Comm().Clone());
-    DRT::UTILS::PartUsingParMetis(xwdiscret_, elemap, rownodes, colnodes, comm, true);
+    DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
+        xwdiscret_, elemap, rownodes, colnodes, comm, true, comm->NumProc());
     // rebuild of the system with new maps
     xwdiscret_->Redistribute(*rownodes, *colnodes, false, false);
 
