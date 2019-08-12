@@ -52,7 +52,7 @@ NDSURF                          1
 NDPARTICLE                      1
 ------------------------------------------------DESIGN SURFACE PARTICLE WALL
 DSURF                           1
-E 1 - 1
+E 1 - MAT -1
 ------------------------------------DESIGN PARTICLE INITIAL FIELD CONDITIONS
 DPARTICLE                       1
 E 1 - Velocity 1

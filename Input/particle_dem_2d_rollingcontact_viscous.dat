@@ -71,7 +71,7 @@ TYPE phase1 POS -0.015 0.0 0.03
 NDSURF     1
 --------------------------------------DESIGN SURFACE PARTICLE WALL
 DSURF  1
-E 1 - 1
+E 1 - MAT -1
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE 3 DSURFACE 1
 NODE 4 DSURFACE 1

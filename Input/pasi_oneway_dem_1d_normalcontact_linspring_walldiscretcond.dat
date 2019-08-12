@@ -98,7 +98,7 @@ DPOINT 1
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 FUNCT 1 1 1
 ------------------------------------------------DESIGN SURFACE PARTICLE WALL
 DSURF  1
-E 1 - 1
+E 1 - MAT -1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE    1 DNODE 1
 NODE    2 DNODE 1
