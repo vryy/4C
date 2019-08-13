@@ -94,6 +94,20 @@ PARTICLEINTERACTION::DEMContactRollingViscous::DEMContactRollingViscous(
 }
 
 /*---------------------------------------------------------------------------*
+ | init rolling contact handler                               sfuchs 08/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::DEMContactRollingViscous::Init()
+{
+  // call base class init
+  DEMContactRollingBase::Init();
+
+  // safety checks for contact parameters
+  if (young_ <= 0.0) dserror("invalid input parameter YOUNG_MODULUS (expected to be positive)!");
+
+  if (v_max_ <= 0.0) dserror("invalid input parameter MAX_VELOCITY (expected to be positive)!");
+}
+
+/*---------------------------------------------------------------------------*
  | setup rolling contact handler                              sfuchs 07/2019 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactRollingViscous::Setup(const double& k_normal)

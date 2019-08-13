@@ -693,7 +693,7 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
     mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
     force_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Force, particle_i);
 
-    if (contacttangential_)
+    if (contacttangential_ or contactrolling_)
     {
       angvel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::AngularVelocity, particle_i);
       moment_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Moment, particle_i);

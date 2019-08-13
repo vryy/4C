@@ -98,6 +98,9 @@ namespace PARTICLEINTERACTION
     //! virtual destructor
     virtual ~DEMContactRollingViscous(){};
 
+    //! init rolling contact handler
+    virtual void Init();
+
     //! setup rolling contact handler
     virtual void Setup(const double& k_normal);
 
