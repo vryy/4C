@@ -2273,6 +2273,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       std::set<std::string> elemagelementtypes;
       elemagelementtypes.insert("ELECTROMAGNETIC");
+      elemagelementtypes.insert("ELECTROMAGNETICDIFF");
 
       nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(
           elemagdis, reader, "--ELECTROMAGNETIC ELEMENTS", elemagelementtypes)));

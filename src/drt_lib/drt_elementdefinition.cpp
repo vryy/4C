@@ -145,6 +145,7 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
 
   PrintSectionHeader(stream, "ELECTROMAGNETIC ELEMENTS");
   PrintElementLines(stream, "ELECTROMAGNETIC");
+  PrintElementLines(stream, "ELECTROMAGNETICDIFF");
 }
 
 

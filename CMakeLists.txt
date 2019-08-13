@@ -1960,10 +1960,12 @@ set(OBJS_DRT_ELEMAG
 set(OBJS_DRT_ELEMAG_LIB
   src/drt_elemag/elemag_ele_boundary_calc.cpp
   src/drt_elemag/elemag_ele_calc.cpp
+  src/drt_elemag/elemag_diff_ele_calc.cpp
   src/drt_elemag/elemag_ele_evaluate.cpp
   src/drt_elemag/elemag_ele_factory.cpp
   src/drt_elemag/elemag_ele_intfaces_calc.cpp
   src/drt_elemag/elemag_ele.cpp
+  src/drt_elemag/elemag_diff_ele.cpp
 )
 set(OBJS_LINALG
   src/linalg/linalg_ana.cpp

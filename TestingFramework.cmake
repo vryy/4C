@@ -764,6 +764,8 @@ baci_test_restartonly(elemag_hex_cube_restart 2 5) #this one MUST be placed behi
 baci_test(elemag_tet_cube 2 "")
 baci_test_restartonly(elemag_tet_cube_restart 2 10) #this one MUST be placed behind test case 'elemag_tet_cube'
 baci_test(elemag_abc_sphere 2 "")
+baci_test(elemag_hex_diff 2 "" minimal)
+baci_test_restartonly(elemag_hex_diff_restart 2 10) #this one MUST be placed behind test case 'elemag_hex_diff'
 baci_test(f2_channel20x20_drt_weak 2 "")
 baci_test(f2_channel20x20_drt_mixhyb 1 "")
 baci_test(f2_channel20x20_drt_mixhyb 2 8)

@@ -1,80 +1,60 @@
-/*----------------------------------------------------------------------*/
 /*!
+\file elemag_diff_ele.H
 
-\brief A C++ wrapper for the electromagnetic element
+\brief A C++ wrapper for the electromagnetic diffusion element
 
 This file contains the element-specific service routines such as
 Pack, Unpack, NumDofPerNode etc.
 
-
+<pre>
 \level 2
 
 \maintainer Luca Berardocco
             berardocco@lnm.mw.tum.de
             089 - 289-15244
+</pre>
 */
-/*----------------------------------------------------------------------*/
 
-#ifndef ELEMAG_ELE_H
-#define ELEMAG_ELE_H
+#ifndef ELEMAG_DIFF_ELE_H
+#define ELEMAG_DIFF_ELE_H
 
-#include "Teuchos_RCP.hpp"
-
-#include "../drt_lib/drt_elementtype.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_fem_general/drt_utils_gausspoints.H"
-#include "../drt_fem_general/drt_utils_polynomial.H"
-
-const bool trac_with_pml_elemag = false;
+#include "elemag_ele.H"
 
 namespace DRT
 {
-  // forward declarations
   class Discretization;
 
   namespace ELEMENTS
   {
-    class ElemagIntFace;
-
-    class ElemagType : public DRT::ElementType
+    class ElemagDiffType : public ElemagType
     {
      public:
-      std::string Name() const { return "ElemagType"; }
+      /// Type name
+      std::string Name() const { return "ElemagDiffType"; }
 
-      static ElemagType& Instance();
-
+      // Instance
+      static ElemagDiffType& Instance();
+      /// Create
       virtual DRT::ParObject* Create(const std::vector<char>& data);
-
+      /// Create
       virtual Teuchos::RCP<DRT::Element> Create(
           const std::string eletype, const std::string eledistype, const int id, const int owner);
-
+      /// Create
       virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
-
-      virtual void NodalBlockInformation(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
-
-      virtual void ComputeNullSpace(DRT::Discretization& dis, std::vector<double>& ns,
-          const double* x0, int numdf, int dimns);
-
+      /// Element definition
       virtual void SetupElementDefinition(
           std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
 
-      /// pre-evaluation
-      virtual void PreEvaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
-          Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-          Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
-          Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
-          Teuchos::RCP<Epetra_Vector> systemvector3);
-
      private:
-      static ElemagType instance_;
+      /// Instance
+      static ElemagDiffType instance_;
     };
 
+
     /*!
-    \brief A C++ wrapper for the electromagnetic element
+    \brief electromagnetic diffusion element
     */
-    class Elemag : public DRT::Element
+    class ElemagDiff : public Elemag
     {
      public:
       //@}
@@ -83,17 +63,16 @@ namespace DRT
       /*!
       \brief standard constructor
       */
-      Elemag(int id,  ///< A unique global id
-          int owner   ///< ???
+      ElemagDiff(int id,  ///< A unique global id
+          int owner       ///< Owner
       );
-
       /*!
       \brief Copy Constructor
 
       Makes a deep copy of a Element
 
       */
-      Elemag(const Elemag& old);
+      ElemagDiff(const ElemagDiff& old);
 
       /*!
       \brief Deep copy this instance and return pointer to the copy
@@ -107,7 +86,7 @@ namespace DRT
       /*!
       \brief Destructor
       */
-      virtual ~Elemag();
+      virtual ~ElemagDiff();
 
       /*!
       \brief Get shape type of element
@@ -158,7 +137,7 @@ namespace DRT
       the parent_slave element
       */
       virtual Teuchos::RCP<DRT::Element> CreateFaceElement(
-          DRT::Element* parent_slave,  //!< parent slave fluid3 element
+          DRT::Element* parent_slave,  //!< parent slave element
           int nnode,                   //!< number of surface nodes
           const int* nodeids,          //!< node ids of surface element
           DRT::Node** nodes,           //!< nodes of surface element
@@ -173,7 +152,10 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      virtual int UniqueParObjectId() const { return ElemagType::Instance().UniqueParObjectId(); }
+      virtual int UniqueParObjectId() const
+      {
+        return ElemagDiffType::Instance().UniqueParObjectId();
+      }
       /*!
       \brief Pack this class so it can be communicated
 
@@ -206,6 +188,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom per face
+
       This implementation is problem related. In the case of a fluid flow
       NumDofPerFace() reuturns the number of velocity components (one for each spatial dimension)
       times the number of nodes per face (given by NumDofPerComponent()).
@@ -223,7 +206,7 @@ namespace DRT
       \brief Get number of dofs per component per face
       It gives the number of nodes the unknowns have to be computed in.
 
-      EXAMPLE: For a HEX8 NumDofPerComponent() will return 4 while for a TET4 will return 3.
+      \note For a HEX8 NumDofPerComponent() will return 4 while for a TET4 will return 3.
       */
       virtual int NumDofPerComponent(const unsigned face) const
       {
@@ -234,7 +217,7 @@ namespace DRT
       /*!
       \brief Returns the number of unknowns to be computed in each element.
 
-      EXAMPLE: For a HEX8 element and a 3D problem the return value will be 48.
+      \note For a HEX8 element and a 3D problem the return value will be 48.
       */
       virtual int NumDofPerElementAuxiliary() const
       {
@@ -269,7 +252,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const;
 
-      virtual DRT::ElementType& ElementType() const { return ElemagType::Instance(); }
+      virtual DRT::ElementType& ElementType() const { return ElemagDiffType::Instance(); }
 
       //@}
 
@@ -282,55 +265,9 @@ namespace DRT
           DRT::INPUT::LineDefinition* linedef);
 
       //@}
-
-      //! @name Evaluation
-
-      /*!
-      \brief Evaluate an element, that is, call the element routines to evaluate Elemag
-      element matrices and vectors or evaluate errors, statistics or updates etc. directly.
-
-      \param params (in/out): ParameterList for communication between control routine
-                              and elements
-      \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
-                              the controling method does not epxect the element to fill
-                              this matrix.
-      \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
-                              the controling method does not epxect the element to fill
-                              this matrix.
-      \param elevec1 (out)  : vector to be filled by element. If NULL on input,
-                              the controlling method does not epxect the element
-                              to fill this vector
-      \param elevec2 (out)  : vector to be filled by element. If NULL on input,
-                              the controlling method does not epxect the element
-                              to fill this vector
-      \param elevec3 (out)  : vector to be filled by element. If NULL on input,
-                              the controlling method does not epxect the element
-                              to fill this vector
-      \return 0 if successful, negative otherwise
-      */
-      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
-
-
-      /*!
-      \brief Evaluate Neumann boundary condition
-
-      \param params (in/out)    : ParameterList for communication between control routine
-                                  and elements
-      \param discretization (in): reference to the underlying discretization
-      \param condition (in)     : condition to be evaluated
-      \param lm (in)            : location vector of this element
-      \param elevec1 (out)      : vector to be filled by element. If NULL on input,
-
-      \return 0 if successful, negative otherwise
-      */
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
-
-      //@}
+      // state vectors which do not have to be stored as global distributed vector, since
+      // we are in a discontinuous setting here
+      //! @name interior stored states
 
       /// Trace values per element
       Epetra_SerialDenseVector elenodeTrace2d_;
@@ -345,22 +282,14 @@ namespace DRT
 
       /// This variable represents the magnetic field in thge nodes
       Epetra_SerialDenseVector eleinteriorMagnetic_;
-      Epetra_SerialDenseVector eleinteriorMagneticnm_;
-
-      // Is it for the post processing?
-      /*
-      Epetra_SerialDenseVector eleADERimprovedGrad_;
-      Epetra_SerialDenseVector eleADERimprovedDiv_;
-      */
-      //@}
 
      protected:
       //! discretization type
       DRT::Element::DiscretizationType distype_;
+      //! face discretization type
       DRT::Element::DiscretizationType facedis_;
 
      private:
-      // Why this?
       int fixedPower(const int number, const int pow) const
       {
         int result = 1;
@@ -368,72 +297,35 @@ namespace DRT
         return result;
       }
 
-      // Why this?
       // don't want = operator
-      Elemag& operator=(const Elemag& old);
+      ElemagDiff& operator=(const ElemagDiff& old);
 
-      // stores the degree of the element
+      /// stores the degree of the element
       unsigned char degree_;
 
-      // Why this?
-      // stores the polynomial type (tensor product or complete polynomial)
+      /// stores the polynomial type (tensor product or complete polynomial)
       bool completepol_;
-      /*
-      /// local contributions to the gradient in case of electromagnetic parameter optimization
-      double grad_c_;
-      double grad_rho_;
-      */
-    };  // class Elemag
 
+    };  // class ElemagDiff
 
-    //=======================================================================
-    //=======================================================================
-    //=======================================================================
-    //=======================================================================
-
-
-
-    //=======================================================================
-    //=======================================================================
-    //=======================================================================
-    //=======================================================================
-
-
-    /*!
-    \brief An element representing a boundary element of an Elemag element
-
-    \note This is a pure Neumann boundary condition element. It's only
-          purpose is to evaluate surface Neumann boundary conditions that might be
-          adjacent to a parent Elemag element. It therefore does not implement
-          the DRT::Element::Evaluate method and does not have its own ElementRegister class.
-
-    */
-
-    class ElemagBoundaryType : public DRT::ElementType
+    /// class ElemagDiffBoundaryType
+    class ElemagDiffBoundaryType : public ElemagBoundaryType
     {
      public:
-      std::string Name() const { return "ElemagBoundaryType"; }
-
-      static ElemagBoundaryType& Instance();
-
+      /// Type name
+      std::string Name() const { return "ElemagDiffBoundaryType"; }
+      // Instance
+      static ElemagDiffBoundaryType& Instance();
+      // Create
       virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
 
-      virtual void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np)
-      {
-      }
-
-      virtual void ComputeNullSpace(
-          DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
-      {
-      }
-
      private:
-      static ElemagBoundaryType instance_;
+      /// Instance
+      static ElemagDiffBoundaryType instance_;
     };
 
-    /// class ElemagBoundary
-
-    class ElemagBoundary : public DRT::FaceElement
+    /// class ElemagDiffBoundary
+    class ElemagDiffBoundary : public ElemagBoundary
     {
      public:
       //! @name Constructors and destructors and related methods
@@ -447,11 +339,11 @@ namespace DRT
       \param nnode: Number of nodes attached to this element
       \param nodeids: global ids of nodes attached to this element
       \param nodes: the discretizations map of nodes to build ptrs to nodes from
-      \param parent: The parent Elemag element of this surface
+      \param parent: The parent elemag element of this surface
       \param lsurface: the local surface number of this surface w.r.t. the parent element
       */
-      ElemagBoundary(int id, int owner, int nnode, const int* nodeids, DRT::Node** nodes,
-          DRT::ELEMENTS::Elemag* parent, const int lsurface);
+      ElemagDiffBoundary(int id, int owner, int nnode, const int* nodeids, DRT::Node** nodes,
+          DRT::ELEMENTS::ElemagDiff* parent, const int lsurface);
 
       /*!
       \brief Copy Constructor
@@ -459,7 +351,7 @@ namespace DRT
       Makes a deep copy of a Element
 
       */
-      ElemagBoundary(const ElemagBoundary& old);
+      ElemagDiffBoundary(const ElemagDiffBoundary& old);
 
       /*!
       \brief Deep copy this instance of an element and return pointer to the copy
@@ -471,33 +363,6 @@ namespace DRT
       DRT::Element* Clone() const;
 
       /*!
-      \brief Get shape type of element
-      */
-      virtual DiscretizationType Shape() const;
-
-      /*!
-      \brief Return number of lines of this element
-      */
-      virtual int NumLine() const { return DRT::UTILS::getNumberOfElementLines(Shape()); }
-
-      /*!
-      \brief Return number of surfaces of this element
-      */
-      virtual int NumSurface() const { return DRT::UTILS::getNumberOfElementSurfaces(Shape()); }
-
-      /*!
-      \brief Get vector of Teuchos::RCPs to the lines of this element
-
-      */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
-
-      /*!
-      \brief Get vector of Teuchos::RCPs to the surfaces of this element
-      */
-
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Surfaces();
-
-      /*!
       \brief Return unique ParObject id
 
       every class implementing ParObject needs a unique id defined at the
@@ -505,7 +370,7 @@ namespace DRT
       */
       virtual int UniqueParObjectId() const
       {
-        return ElemagBoundaryType::Instance().UniqueParObjectId();
+        return ElemagDiffBoundaryType::Instance().UniqueParObjectId();
       }
 
       /*!
@@ -528,7 +393,7 @@ namespace DRT
       \brief Destructor
 
       */
-      virtual ~ElemagBoundary();
+      virtual ~ElemagDiffBoundary();
 
       //@}
 
@@ -549,15 +414,13 @@ namespace DRT
         return ParentElement()->NumDofPerNode(node);
       }
 
-      /// Number of degrees of freedom per element
-      virtual int NumDofPerElement() const { return 0; }
-
       /*!
       \brief Print this element
       */
       void Print(std::ostream& os) const;
 
-      virtual DRT::ElementType& ElementType() const { return ElemagBoundaryType::Instance(); }
+      /// Return the instance of the element type
+      virtual DRT::ElementType& ElementType() const { return ElemagDiffBoundaryType::Instance(); }
 
       //@}
 
@@ -589,26 +452,6 @@ namespace DRT
           std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
           Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
           Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
-
-      //@}
-
-      //! @name Evaluate methods
-
-      /*!
-      \brief Evaluate Neumann boundary condition
-
-      \param params (in/out)    : ParameterList for communication between control routine
-                                  and elements
-      \param discretization (in): reference to the underlying discretization
-      \param condition (in)     : condition to be evaluated
-      \param lm (in)            : location vector of this element
-      \param elevec1 (out)      : vector to be filled by element. If NULL on input,
-
-      \return 0 if successful, negative otherwise
-      */
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
 
       //@}
 
@@ -647,53 +490,44 @@ namespace DRT
 
      private:
       // don't want = operator
-      ElemagBoundary& operator=(const ElemagBoundary& old);
+      ElemagDiffBoundary& operator=(const ElemagDiffBoundary& old);
 
-    };  // class ElemagBoundary
+    };  // class ElemagDiffBoundary
 
-
-    //=======================================================================
-    //=======================================================================
-    //=======================================================================
-    //=======================================================================
-
-
-
-    //=======================================================================
-    //=======================================================================
-    //=======================================================================
-    //=======================================================================
-
-
-    /*!
-    \brief An element representing an internal face element between two Elemag elements
-    */
-    class ElemagIntFaceType : public DRT::ElementType
+    /// class ElemagDiffIntFaceType
+    class ElemagDiffIntFaceType : public DRT::ElementType
     {
      public:
-      std::string Name() const { return "ElemagIntFaceType"; }
+      /// Name of the element type
+      std::string Name() const { return "ElemagDiffIntFaceType"; }
 
-      static ElemagIntFaceType& Instance();
+      /// Instance
+      static ElemagDiffIntFaceType& Instance();
 
+      /// Create
       virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
 
+      /// Nodal block information
       virtual void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np)
       {
       }
 
+      /*!
+        \brief Null space
+        \note Implementation to be fixed
+       */
       virtual void ComputeNullSpace(
           DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
       {
       }
 
      private:
-      static ElemagIntFaceType instance_;
+      /// instance of the class
+      static ElemagDiffIntFaceType instance_;
     };
 
-
-    // class ElemagIntFace
-
-    class ElemagIntFace : public DRT::FaceElement
+    /// class ElemagDiffIntFace
+    class ElemagDiffIntFace : public ElemagIntFace
     {
      public:
       //! @name Constructors and destructors and related methods
@@ -707,16 +541,16 @@ namespace DRT
       \param nnode: Number of nodes attached to this element
       \param nodeids: global ids of nodes attached to this element
       \param nodes: the discretizations map of nodes to build ptrs to nodes from
-      \param master_parent: The master parent Elemag element of this surface
-      \param slave_parent: The slave parent Elemag element of this surface
+      \param master_parent: The master parent elemag element of this surface
+      \param slave_parent: The slave parent elemag element of this surface
       \param lsurface_master: the local surface number of this surface w.r.t. the master parent
       element \param lsurface_slave: the local surface number of this surface w.r.t. the slave
       parent element \param localtrafomap: transformation map between the local coordinate systems
       of the face w.r.t the master parent element's face's coordinate system and the slave element's
       face's coordinate system
       */
-      ElemagIntFace(int id, int owner, int nnode, const int* nodeids, DRT::Node** nodes,
-          DRT::ELEMENTS::Elemag* parent_master, DRT::ELEMENTS::Elemag* parent_slave,
+      ElemagDiffIntFace(int id, int owner, int nnode, const int* nodeids, DRT::Node** nodes,
+          DRT::ELEMENTS::ElemagDiff* parent_master, DRT::ELEMENTS::ElemagDiff* parent_slave,
           const int lsurface_master, const int lsurface_slave,
           const std::vector<int> localtrafomap);
 
@@ -725,7 +559,7 @@ namespace DRT
 
       Makes a deep copy of a Element
       */
-      ElemagIntFace(const ElemagIntFace& old);
+      ElemagDiffIntFace(const ElemagDiffIntFace& old);
 
       /*!
       \brief Deep copy this instance of an element and return pointer to the copy
@@ -742,29 +576,6 @@ namespace DRT
       virtual DiscretizationType Shape() const;
 
       /*!
-      \brief Return number of lines of this element
-      */
-      virtual int NumLine() const { return DRT::UTILS::getNumberOfElementLines(Shape()); }
-
-      /*!
-      \brief Return number of surfaces of this element
-      */
-      virtual int NumSurface() const { return DRT::UTILS::getNumberOfElementSurfaces(Shape()); }
-
-      /*!
-      \brief Get vector of Teuchos::RCPs to the lines of this element
-      */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
-
-      /*!
-      \brief Return unique ParObject id
-
-      every class implementing ParObject needs a unique id defined at the
-      top of the drt_parobject.H file.
-      */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Surfaces();
-
-      /*!
       \brief Return unique ParObject id
 
       every class implementing ParObject needs a unique id defined at the
@@ -772,27 +583,13 @@ namespace DRT
       */
       virtual int UniqueParObjectId() const
       {
-        return ElemagIntFaceType::Instance().UniqueParObjectId();
+        return ElemagDiffIntFaceType::Instance().UniqueParObjectId();
       }
-
-      /*!
-      \brief Pack this class so it can be communicated
-
-      \ref Pack and \ref Unpack are used to communicate this element
-      */
-      virtual void Pack(DRT::PackBuffer& data) const;
-
-      /*!
-      \brief Unpack data from a char vector into this class
-
-      \ref Pack and \ref Unpack are used to communicate this element
-      */
-      virtual void Unpack(const std::vector<char>& data);
 
       /*!
       \brief Destructor
       */
-      virtual ~ElemagIntFace();
+      virtual ~ElemagDiffIntFace();
 
       //@}
 
@@ -825,18 +622,6 @@ namespace DRT
             element dofs that are condensed internally should NOT be considered.
       */
       virtual int NumDofPerElement() const { return 0; }
-
-      /*!
-       \brief Returns the degree of the element
-       */
-      virtual int Degree() const { return degree_; }
-
-      void SetDegree(int degree)
-      {
-        degree_ = degree;
-        return;
-      }
-
       /*!
       \brief create the location vector for patch of master and slave element
 
@@ -858,104 +643,50 @@ namespace DRT
           std::vector<int>&
               lm_slaveNodeToPatch  ///< local map between slave nodes and nodes in patch
       );
-
       /*!
       \brief Print this element
       */
       void Print(std::ostream& os) const;
 
-      virtual DRT::ElementType& ElementType() const { return ElemagIntFaceType::Instance(); }
+      virtual DRT::ElementType& ElementType() const { return ElemagDiffIntFaceType::Instance(); }
 
       //@}
 
-      //! @name Evaluation
-
       /*!
-      \brief Evaluate element
-
-      \param params (in/out): ParameterList for communication between control routine
-                              and elements
-      \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
-                              the controling method does not epxect the element to fill
-                              this matrix.
-      \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
-                              the controling method does not epxect the element to fill
-                              this matrix.
-      \param elevec1 (out)  : vector to be filled by element. If NULL on input,
-                              the controlling method does not epxect the element
-                              to fill this vector
-      \param elevec2 (out)  : vector to be filled by element. If NULL on input,
-                              the controlling method does not epxect the element
-                              to fill this vector
-      \param elevec3 (out)  : vector to be filled by element. If NULL on input,
-                              the controlling method does not epxect the element
-                              to fill this vector
-      \return 0 if successful, negative otherwise
+      \brief return the master parent elemag element
       */
-      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
-
-      //@}
-
-      //! @name Evaluate methods
-
-      /*!
-      \brief Evaluate Neumann boundary condition
-
-      \param params (in/out)    : ParameterList for communication between control routine
-                                  and elements
-      \param discretization (in): reference to the underlying discretization
-      \param condition (in)     : condition to be evaluated
-      \param lm (in)            : location vector of this element
-      \param elevec1 (out)      : vector to be filled by element. If NULL on input,
-
-      \return 0 if successful, negative otherwise
-      */
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
-
-      /*!
-      \brief return the master parent Elemag element
-      */
-      DRT::ELEMENTS::Elemag* ParentMasterElement() const
+      DRT::ELEMENTS::ElemagDiff* ParentMasterElement() const
       {
         DRT::Element* parent = this->DRT::FaceElement::ParentMasterElement();
         // make sure the static cast below is really valid
-        dsassert(dynamic_cast<DRT::ELEMENTS::Elemag*>(parent) != NULL,
-            "Master element is no Elemag element");
-        return static_cast<DRT::ELEMENTS::Elemag*>(parent);
+        dsassert(dynamic_cast<DRT::ELEMENTS::ElemagDiff*>(parent) != NULL,
+            "Master element is no elemag_diff element");
+        return static_cast<DRT::ELEMENTS::ElemagDiff*>(parent);
       }
 
       /*!
-      \brief return the slave parent Elemag element
+      \brief return the slave parent elemag element
       */
-      DRT::ELEMENTS::Elemag* ParentSlaveElement() const
+      DRT::ELEMENTS::ElemagDiff* ParentSlaveElement() const
       {
         DRT::Element* parent = this->DRT::FaceElement::ParentSlaveElement();
         // make sure the static cast below is really valid
-        dsassert(dynamic_cast<DRT::ELEMENTS::Elemag*>(parent) != NULL,
-            "Slave element is no Elemag element");
-        return static_cast<DRT::ELEMENTS::Elemag*>(parent);
+        dsassert(dynamic_cast<DRT::ELEMENTS::ElemagDiff*>(parent) != NULL,
+            "Slave element is no elemag_diff element");
+        return static_cast<DRT::ELEMENTS::ElemagDiff*>(parent);
       }
 
       //@}
 
      private:
       // don't want = operator
-      ElemagIntFace& operator=(const ElemagIntFace& old);
+      ElemagDiffIntFace& operator=(const ElemagDiffIntFace& old);
 
-      // degree of this face element
-      int degree_;
-
-    };  // class ElemagIntFace
-
-
+    };  // class ElemagDiffIntFace
 
   }  // namespace ELEMENTS
 }  // namespace DRT
 
 
-#endif /* ELEMAG_ELE_H */
+
+#endif  // ELEMAG_DIFF_ELE_H
