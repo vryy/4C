@@ -41,18 +41,20 @@ void INPAR::ELEMAG::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   {
     // time integration
 
-    Teuchos::Tuple<std::string, 5> name;
-    Teuchos::Tuple<int, 5> label;
+    Teuchos::Tuple<std::string, 6> name;
+    Teuchos::Tuple<int, 6> label;
     name[0] = "One_Step_Theta";
     label[0] = elemag_ost;
     name[1] = "Implicit_Euler";
     label[1] = elemag_implicit_euler;
-    name[2] = "Explicit_Euler";
-    label[2] = elemag_explicit_euler;
-    name[3] = "Runge_Kutta";
-    label[3] = elemag_rk;
-    name[4] = "Crank_Nicolson";
-    label[4] = elemag_cn;
+    name[2] = "BDF2";
+    label[2] = elemag_bdf;
+    name[3] = "Explicit_Euler";
+    label[3] = elemag_explicit_euler;
+    name[4] = "Runge_Kutta";
+    label[4] = elemag_rk;
+    name[5] = "Crank_Nicolson";
+    label[5] = elemag_cn;
 
     setStringToIntegralParameter<int>("TIMEINT", "One_Step_Theta",
         "Type of time integration scheme", name, label, &electromagneticdyn);

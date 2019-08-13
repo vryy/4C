@@ -108,7 +108,7 @@ namespace DRT
 
         /// Compute the residual
         void ComputeResidual(Teuchos::ParameterList& params, Epetra_SerialDenseVector& eleVec,
-            Epetra_SerialDenseVector& interiorVeln, Epetra_SerialDenseVector& interiorPressn);
+            DRT::ELEMENTS::Elemag& ele);
 
         /// Computes the source term in the element.
         void ComputeSource(Teuchos::ParameterList& params,
@@ -239,6 +239,8 @@ namespace DRT
       /// Local values from interior solution vector (electric and magnetic fields) at n
       Epetra_SerialDenseVector interiorElectricnp_;
       Epetra_SerialDenseVector interiorMagneticnp_;
+      Epetra_SerialDenseVector interiorElectricnm_;
+      Epetra_SerialDenseVector interiorMagneticnm_;
       Epetra_SerialDenseVector interiorauxiliaryPML_;
 
       /// Time integration scheme.

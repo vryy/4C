@@ -87,7 +87,20 @@ namespace ELEMAG
     /*!
     \brief print the name of the scheme as std::string.
     */
-    virtual std::string Name() { return "General time integration class. No scheme implemented."; }
+    virtual std::string Name()
+    {
+      switch (elemagdyna_)
+      {
+        case INPAR::ELEMAG::DynamicType::elemag_implicit_euler:
+          return "Implicit Euler";
+        // break;
+        case INPAR::ELEMAG::DynamicType::elemag_bdf:
+          return "Second order Backward Differentiation Formula";
+          // break;
+        default:
+          return "General time integration class. No scheme implemented.";
+      }
+    };
 
     /*!
     \brief Print system matrix.
