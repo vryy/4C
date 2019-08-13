@@ -106,20 +106,20 @@ MAT::MultiplicativeSplitDefgrad_ElastHyper::MultiplicativeSplitDefgrad_ElastHype
   // safety checks
   // get the scatra structure control parameter list
   const Teuchos::ParameterList& ssicontrol = DRT::Problem::Instance()->SSIControlParams();
-  // monolithic ssi coupling algorithm only implemented for MAT_InelasticDefgradLinScalarIso and
-  // MAT_InelasticDefgradLinScalarAniso so far
   if (DRT::INPUT::IntegralValue<INPAR::SSI::SolutionSchemeOverFields>(ssicontrol, "COUPALGO") ==
       INPAR::SSI::ssi_Monolithic)
   {
     for (unsigned int p = 0; p < facdefgradin_.size(); ++p)
     {
       if ((facdefgradin_[p]->MaterialType() != INPAR::MAT::mfi_lin_scalar_aniso) and
-          (facdefgradin_[p]->MaterialType() != INPAR::MAT::mfi_lin_scalar_iso))
+          (facdefgradin_[p]->MaterialType() != INPAR::MAT::mfi_lin_scalar_iso) and
+          (facdefgradin_[p]->MaterialType() != INPAR::MAT::mfi_poly_scalar_iso) and
+          (facdefgradin_[p]->MaterialType() != INPAR::MAT::mfi_poly_scalar_aniso))
         dserror(
             "When you use the 'COUPALGO' 'ssi_Monolithic' from the 'SSI CONTROL' section, you need "
-            "to"
-            " use the material 'MAT_InelasticDefgradLinScalarAniso' or "
-            "'MAT_InelasticDefgradLinScalarIso'!"
+            "to use the material 'MAT_InelasticDefgradLinScalarAniso' "
+            "'MAT_InelasticDefgradLinScalarIso', 'MAT_InelasticDefgradPolyScalarIso' or "
+            "'MAT_InelasticDefgradPolyScalarAniso'!"
             " If you want to use a different material, feel free to implement it! ;-)");
     }
   }

@@ -888,6 +888,8 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     case INPAR::MAT::mfi_lin_scalar_iso:
     case INPAR::MAT::mix_rule_base:
     case INPAR::MAT::mix_elasthyper:
+    case INPAR::MAT::mfi_poly_scalar_aniso:
+    case INPAR::MAT::mfi_poly_scalar_iso:
     {
       return Teuchos::null;
     }
