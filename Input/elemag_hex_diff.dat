@@ -23,7 +23,7 @@ RANDSEED                        -1
 --------------------------------------------ELECTROMAGNETIC DYNAMIC
 TIMESTEP                        0.01
 NUMSTEP                         200000
-MAXTIME                         0.0999
+MAXTIME                         0.199
 RESULTSEVRY                     1
 RESTARTEVRY                     10
 LINEAR_SOLVER                   1
@@ -50,13 +50,14 @@ COMPONENT 0 FUNCTION 0
 COMPONENT 1 FUNCTION 0
 COMPONENT 2 FUNCTION 0
 
-------------------------------------------------RESULT DESCRIPTION
-ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2electric VALUE 2.62879885228372266e-02 TOLERANCE 1e-6
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0
 NDSURF  6
 NDVOL   0
+
+------------------------------------------------RESULT DESCRIPTION
+ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2electric VALUE 2.68123214011973740e-02 TOLERANCE 1e-6
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  6
 // front_face
