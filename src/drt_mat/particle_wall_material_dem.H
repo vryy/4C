@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\brief particle material for DEM
+\brief particle wall material for DEM
 
 \level 3
 
@@ -10,59 +10,75 @@
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 07/2018 |
+ | definitions                                                sfuchs 08/2019 |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_MATERIAL_DEM_H
-#define PARTICLE_MATERIAL_DEM_H
+#ifndef PARTICLE_WALL_MATERIAL_BASE_H
+#define PARTICLE_WALL_MATERIAL_BASE_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 07/2018 |
+ | headers                                                    sfuchs 08/2019 |
  *---------------------------------------------------------------------------*/
-#include "particle_material_base.H"
+#include "matpar_parameter.H"
+#include "material.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 07/2018 |
+ | class definitions                                          sfuchs 08/2019 |
  *---------------------------------------------------------------------------*/
 namespace MAT
 {
   namespace PAR
   {
-    class ParticleMaterialDEM : public ParticleMaterialBase
+    class ParticleWallMaterialDEM : public Parameter
     {
      public:
       //! constructor
-      ParticleMaterialDEM(Teuchos::RCP<MAT::PAR::Material> matdata);
+      ParticleWallMaterialDEM(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       //! virtual desctructor
-      virtual ~ParticleMaterialDEM(){};
+      virtual ~ParticleWallMaterialDEM(){};
 
       //! create material instance of matching type with parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
+      //! @name material parameters
+      //@{
+
+      //! tangential contact friction coefficient
+      const double frictionTang_;
+
+      //! rolling contact friction coefficient
+      const double frictionRoll_;
+
+      //! adhesion surface energy
+      const double adhesionSurfaceEnergy_;
+
+      //@}
     };
 
   }  // namespace PAR
 
-  class ParticleMaterialDEMType : public DRT::ParObjectType
+  class ParticleWallMaterialDEMType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "ParticleMaterialDEMType"; };
+    std::string Name() const { return "ParticleWallMaterialDEMType"; };
 
-    static ParticleMaterialDEMType& Instance() { return instance_; };
+    static ParticleWallMaterialDEMType& Instance() { return instance_; };
 
     virtual DRT::ParObject* Create(const std::vector<char>& data);
 
    private:
-    static ParticleMaterialDEMType instance_;
+    static ParticleWallMaterialDEMType instance_;
   };
 
-  class ParticleMaterialDEM : public Material
+  class ParticleWallMaterialDEM : public Material
   {
    public:
     //! constructor (empty material object)
-    ParticleMaterialDEM();
+    ParticleWallMaterialDEM();
 
     //! constructor (with given material parameters)
-    explicit ParticleMaterialDEM(MAT::PAR::ParticleMaterialDEM* params);
+    explicit ParticleWallMaterialDEM(MAT::PAR::ParticleWallMaterialDEM* params);
 
     //! @name Packing and Unpacking
 
@@ -76,7 +92,7 @@ namespace MAT
     */
     virtual int UniqueParObjectId() const
     {
-      return ParticleMaterialDEMType::Instance().UniqueParObjectId();
+      return ParticleWallMaterialDEMType::Instance().UniqueParObjectId();
     }
 
     /*!
@@ -107,23 +123,39 @@ namespace MAT
 
     //@}
 
+    //! @name Access methods
+
+    //@{
+
     //! material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_particle_dem; }
+    virtual INPAR::MAT::MaterialType MaterialType() const
+    {
+      return INPAR::MAT::m_particle_wall_dem;
+    }
 
     //! return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const
     {
-      return Teuchos::rcp(new ParticleMaterialDEM(*this));
+      return Teuchos::rcp(new ParticleWallMaterialDEM(*this));
     }
 
     //! return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
+    //! return tangential contact friction coefficient
+    double MuTangential() const { return params_->frictionTang_; }
+
+    //! return rolling contact friction coefficient
+    double MuRolling() const { return params_->frictionRoll_; }
+
+    //! return adhesion surface energy
+    double AdhesionSurfaceEnergy() const { return params_->adhesionSurfaceEnergy_; }
+
     //@}
 
    private:
     //! my material parameters
-    MAT::PAR::ParticleMaterialDEM* params_;
+    MAT::PAR::ParticleWallMaterialDEM* params_;
   };
 
 }  // namespace MAT

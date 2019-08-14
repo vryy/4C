@@ -29,6 +29,8 @@
 #include "../drt_particle_wall/particle_wall_interface.H"
 #include "../drt_particle_wall/particle_wall_datastate.H"
 
+#include "../drt_mat/particle_wall_material_dem.H"
+
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
 #include "../drt_lib/drt_element.H"
@@ -438,6 +440,13 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleContact()
   DEMHistoryPairRollingData& rollinghistorydata =
       historypairs_->GetRefToParticleRollingHistoryData();
 
+  // tangential contact friction coefficient
+  const double mu_tangential =
+      contacttangential_ ? params_dem_.get<double>("FRICT_COEFF_TANG") : 0.0;
+
+  // rolling contact friction coefficient
+  const double mu_rolling = contactrolling_ ? params_dem_.get<double>("FRICT_COEFF_ROLL") : 0.0;
+
   // iterate over particle pairs
   for (const auto& particlepair : neighborpairs_->GetRefToParticlePairData())
   {
@@ -541,7 +550,7 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleContact()
       double tangentialcontactforce[3];
       contacttangential_->TangentialContactForce(tangentialhistory_ij.gap_t_,
           tangentialhistory_ij.stick_, particlepair.e_ji_, vel_rel_tangential, particlepair.m_eff_,
-          normalcontactforce, tangentialcontactforce);
+          mu_tangential, normalcontactforce, tangentialcontactforce);
 
       // copy history from interaction pair ij to ji
       if (status_j == PARTICLEENGINE::Owned)
@@ -596,8 +605,8 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleContact()
       // calculate rolling contact moment
       double rollingcontactmoment[3];
       contactrolling_->RollingContactMoment(rollinghistory_ij.gap_r_, rollinghistory_ij.stick_,
-          particlepair.e_ji_, vel_rel_rolling, particlepair.m_eff_, r_eff, normalcontactforce,
-          rollingcontactmoment);
+          particlepair.e_ji_, vel_rel_rolling, particlepair.m_eff_, r_eff, mu_rolling,
+          normalcontactforce, rollingcontactmoment);
 
       // copy history from interaction pair ij to ji
       if (status_j == PARTICLEENGINE::Owned)
@@ -693,7 +702,7 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
     mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
     force_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Force, particle_i);
 
-    if (contacttangential_)
+    if (contacttangential_ or contactrolling_)
     {
       angvel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::AngularVelocity, particle_i);
       moment_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Moment, particle_i);
@@ -716,6 +725,26 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
     std::vector<int> lmowner;
     std::vector<int> lmstride;
     ele->LocationVector(*particlewallinterface_->GetWallDiscretization(), lmele, lmowner, lmstride);
+
+    // tangential and rolling contact friction coefficient
+    double mu_tangential = 0.0;
+    double mu_rolling = 0.0;
+
+    // get material parameters of wall element
+    if (contacttangential_ or contactrolling_)
+    {
+      // cast material to particle wall material
+      const Teuchos::RCP<const MAT::ParticleWallMaterialDEM>& particlewallmaterial =
+          Teuchos::rcp_dynamic_cast<const MAT::ParticleWallMaterialDEM>(ele->Material());
+      if (particlewallmaterial == Teuchos::null)
+        dserror("cast to MAT::ParticleWallMaterialDEM failed!");
+
+      // get tangential contact friction coefficient
+      if (contacttangential_) mu_tangential = particlewallmaterial->MuTangential();
+
+      // get rolling contact friction coefficient
+      if (contactrolling_) mu_rolling = particlewallmaterial->MuRolling();
+    }
 
     // declare zero radius for wall contact point j
     const double rad_j = 0.0;
@@ -757,7 +786,7 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
 
     // calculation of tangential contact force
     double tangentialcontactforce[3] = {0.0};
-    if (contacttangential_)
+    if (contacttangential_ and mu_tangential > 0.0)
     {
       // get reference to touched tangential history
       TouchedDEMHistoryPairTangential& touchedtangentialhistory_ij =
@@ -777,7 +806,7 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
       // calculate tangential contact force
       contacttangential_->TangentialContactForce(tangentialhistory_ij.gap_t_,
           tangentialhistory_ij.stick_, particlewallpair.e_ji_, vel_rel_tangential, mass_i[0],
-          normalcontactforce, tangentialcontactforce);
+          mu_tangential, normalcontactforce, tangentialcontactforce);
 
       // add tangential contact force contribution
       UTILS::vec_add(force_i, tangentialcontactforce);
@@ -792,7 +821,7 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
 
     // calculation of rolling contact moment
     double rollingcontactmoment[3] = {0.0};
-    if (contactrolling_)
+    if (contactrolling_ and mu_rolling > 0.0)
     {
       // get reference to touched rolling history
       TouchedDEMHistoryPairRolling& touchedrollinghistory_ij =
@@ -815,7 +844,7 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
 
       // calculate rolling contact moment
       contactrolling_->RollingContactMoment(rollinghistory_ij.gap_r_, rollinghistory_ij.stick_,
-          particlewallpair.e_ji_, vel_rel_rolling, mass_i[0], r_eff, normalcontactforce,
+          particlewallpair.e_ji_, vel_rel_rolling, mass_i[0], r_eff, mu_rolling, normalcontactforce,
           rollingcontactmoment);
 
       // add rolling contact moment contribution

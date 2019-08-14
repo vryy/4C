@@ -15,11 +15,11 @@ class Header(object):
     blk = Header._extract_first_doxy_block(filetext)
     if len(blk) > 0:
       self.header = True
-   # check for correct header start
+      # check for correct header start
       for line in blk:
-        if (("/*!" in line or "/**" in line)  and ("*/" not in line)):
+        if (("/*!" in line  or "/**" in line) and ("*/" not in line)):
           start = line
-          if len(start) >= 1:
+          if len(start)>=1:
             self.start=start
           break
      # check for brief tag
@@ -46,8 +46,8 @@ class Header(object):
             pass
           break
       # check for compliant developers as maintainers
-    with open(os.path.join(sys.path[0],'../../utilities/git_hooks/baci_developers.json'),'r') as f:
-        developers = json.load(f)
+    with open(os.path.join(sys.path[0],'baci_developers.json'),'r') as f:
+          developers = json.load(f)
     #maintainer_list = self.maintainer.split(",")
     #maintainer_list = [item.strip() for item in maintainer_list]
     maintainer_clean = [self.maintainer.strip()]
@@ -96,10 +96,11 @@ class Header(object):
     blk = []
     marker = False
     for line in cont:
-      if (not marker) and ("/*!" in line or "/**" in line or "/*" in line or "/!*") and ("*/" not in line):
+      if (not marker) and ("/*!" in line or "/**" in line or "/*" in line or "/!*" in line) and ("*/" not in line):
         marker = True
       if marker:
         blk.append(line)
         if "*/" in line:
           return blk
     return []
+

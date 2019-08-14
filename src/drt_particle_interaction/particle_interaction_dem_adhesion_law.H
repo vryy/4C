@@ -79,7 +79,7 @@ namespace PARTICLEINTERACTION
     //! shift van-der-Waals-curve to g = 0
     const bool adhesion_vdW_curve_shift_;
 
-    //! inverse normal contact stiffness (particle-particle)
+    //! inverse normal contact stiffness
     double inv_k_normal_;
   };
 

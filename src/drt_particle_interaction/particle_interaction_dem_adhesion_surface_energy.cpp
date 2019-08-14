@@ -24,8 +24,7 @@
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyBase::DEMAdhesionSurfaceEnergyBase(
     const Teuchos::ParameterList& params)
-    : params_dem_(params),
-      adhesion_surface_energy_(params_dem_.get<double>("ADHESION_SURFACE_ENERGY"))
+    : params_dem_(params)
 {
   // empty constructor
 }
@@ -44,7 +43,8 @@ void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyBase::Init()
 void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyBase::Setup()
 {
   // safety check
-  if (not(adhesion_surface_energy_ > 0.0)) dserror("non-positive adhesion surface energy!");
+  if (not(params_dem_.get<double>("ADHESION_SURFACE_ENERGY") > 0.0))
+    dserror("non-positive adhesion surface energy!");
 }
 
 /*---------------------------------------------------------------------------*
@@ -82,13 +82,7 @@ PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionBase::
     DEMAdhesionSurfaceEnergyDistributionBase(const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyBase(params),
       variance_(params_dem_.get<double>("ADHESION_SURFACE_ENERGY_DISTRIBUTION_VAR")),
-      adhesion_surface_energy_min_(
-          adhesion_surface_energy_ -
-          params_dem_.get<double>("ADHESION_SURFACE_ENERGY_DISTRIBUTION_CUTOFF_FACTOR") *
-              variance_),
-      adhesion_surface_energy_max_(
-          adhesion_surface_energy_ +
-          params_dem_.get<double>("ADHESION_SURFACE_ENERGY_DISTRIBUTION_CUTOFF_FACTOR") * variance_)
+      cutofffactor_(params_dem_.get<double>("ADHESION_SURFACE_ENERGY_DISTRIBUTION_CUTOFF_FACTOR"))
 {
   // empty constructor
 }
@@ -103,12 +97,24 @@ void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionBase::Setup()
 
   // safety checks
   if (variance_ < 0.0) dserror("negative variance for adhesion surface energy distribution!");
+  if (cutofffactor_ < 0.0) dserror("negative cutoff factor of adhesion surface energy!");
+}
 
-  if (adhesion_surface_energy_min_ < 0.0) dserror("negative minimum adhesion surface energy!");
-  if (adhesion_surface_energy_max_ < 0.0) dserror("negative maximum adhesion surface energy!");
+/*---------------------------------------------------------------------------*
+ | adjust surface energy to allowed bounds                    sfuchs 08/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionBase::
+    AdjustSurfaceEnergyToAllowedBounds(
+        const double& mean_surface_energy, double& surface_energy) const
+{
+  const double adhesion_surface_energy_min =
+      std::min(0.0, mean_surface_energy - cutofffactor_ * variance_);
+  const double adhesion_surface_energy_max = mean_surface_energy + cutofffactor_ * variance_;
 
-  if (adhesion_surface_energy_min_ > adhesion_surface_energy_max_)
-    dserror("minimum adhesion surface energy larger than maximum adhesion surface energy!");
+  if (surface_energy > adhesion_surface_energy_max)
+    surface_energy = adhesion_surface_energy_max;
+  else if (surface_energy < adhesion_surface_energy_min)
+    surface_energy = adhesion_surface_energy_min;
 }
 
 /*---------------------------------------------------------------------------*
@@ -116,8 +122,7 @@ void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionBase::Setup()
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionNormal::
     DEMAdhesionSurfaceEnergyDistributionNormal(const Teuchos::ParameterList& params)
-    : PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionBase(params),
-      mean_(adhesion_surface_energy_)
+    : PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionBase(params)
 {
   // empty constructor
 }
@@ -126,19 +131,16 @@ PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionNormal::
  | get adhesion surface energy                                sfuchs 07/2019 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionNormal::AdhesionSurfaceEnergy(
-    double& adhesion_surface_energy) const
+    const double& mean_surface_energy, double& surface_energy) const
 {
   // initialize random number generator
-  DRT::Problem::Instance()->Random()->SetMeanVariance(mean_, variance_);
+  DRT::Problem::Instance()->Random()->SetMeanVariance(mean_surface_energy, variance_);
 
   // set normal distributed random value for surface energy
-  adhesion_surface_energy = DRT::Problem::Instance()->Random()->Normal();
+  surface_energy = DRT::Problem::Instance()->Random()->Normal();
 
   // adjust surface energy to allowed bounds
-  if (adhesion_surface_energy > adhesion_surface_energy_max_)
-    adhesion_surface_energy = adhesion_surface_energy_max_;
-  else if (adhesion_surface_energy < adhesion_surface_energy_min_)
-    adhesion_surface_energy = adhesion_surface_energy_min_;
+  AdjustSurfaceEnergyToAllowedBounds(mean_surface_energy, surface_energy);
 }
 
 /*---------------------------------------------------------------------------*
@@ -146,8 +148,7 @@ void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionNormal::AdhesionSu
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionLogNormal::
     DEMAdhesionSurfaceEnergyDistributionLogNormal(const Teuchos::ParameterList& params)
-    : PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionBase(params),
-      mean_(std::log(adhesion_surface_energy_))
+    : PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionBase(params)
 {
   // empty constructor
 }
@@ -156,17 +157,14 @@ PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionLogNormal::
  | get adhesion surface energy                                sfuchs 07/2019 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionLogNormal::AdhesionSurfaceEnergy(
-    double& adhesion_surface_energy) const
+    const double& mean_surface_energy, double& surface_energy) const
 {
   // initialize random number generator
-  DRT::Problem::Instance()->Random()->SetMeanVariance(mean_, variance_);
+  DRT::Problem::Instance()->Random()->SetMeanVariance(std::log(mean_surface_energy), variance_);
 
   // set log-normal distributed random value for surface energy
-  adhesion_surface_energy = std::exp(DRT::Problem::Instance()->Random()->Normal());
+  surface_energy = std::exp(DRT::Problem::Instance()->Random()->Normal());
 
   // adjust surface energy to allowed bounds
-  if (adhesion_surface_energy > adhesion_surface_energy_max_)
-    adhesion_surface_energy = adhesion_surface_energy_max_;
-  else if (adhesion_surface_energy < adhesion_surface_energy_min_)
-    adhesion_surface_energy = adhesion_surface_energy_min_;
+  AdjustSurfaceEnergyToAllowedBounds(mean_surface_energy, surface_energy);
 }

@@ -54,14 +54,12 @@ namespace PARTICLEINTERACTION
     virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
     //! calculate adhesion surface energy
-    virtual void AdhesionSurfaceEnergy(double& adhesion_surface_energy) const = 0;
+    virtual void AdhesionSurfaceEnergy(
+        const double& mean_surface_energy, double& surface_energy) const = 0;
 
    protected:
     //! discrete element method parameter list
     const Teuchos::ParameterList& params_dem_;
-
-    //! adhesion surface energy
-    const double adhesion_surface_energy_;
   };
 
   class DEMAdhesionSurfaceEnergyConstant : public DEMAdhesionSurfaceEnergyBase
@@ -74,9 +72,10 @@ namespace PARTICLEINTERACTION
     ~DEMAdhesionSurfaceEnergyConstant(){};
 
     //! get adhesion surface energy
-    void AdhesionSurfaceEnergy(double& adhesion_surface_energy) const override
+    void AdhesionSurfaceEnergy(
+        const double& mean_surface_energy, double& surface_energy) const override
     {
-      adhesion_surface_energy = adhesion_surface_energy_;
+      surface_energy = mean_surface_energy;
     };
   };
 
@@ -93,17 +92,19 @@ namespace PARTICLEINTERACTION
     virtual void Setup();
 
     //! get adhesion surface energy
-    virtual void AdhesionSurfaceEnergy(double& adhesion_surface_energy) const override = 0;
+    virtual void AdhesionSurfaceEnergy(
+        const double& mean_surface_energy, double& surface_energy) const override = 0;
 
    protected:
+    //! adjust surface energy to allowed bounds
+    void AdjustSurfaceEnergyToAllowedBounds(
+        const double& mean_surface_energy, double& surface_energy) const;
+
     //! variance of adhesion surface energy distribution
     const double variance_;
 
-    //! minimum value of adhesion surface energy
-    const double adhesion_surface_energy_min_;
-
-    //! maximum value of adhesion surface energy
-    const double adhesion_surface_energy_max_;
+    //! cutoff factor of adhesion surface energy to determine minimum and maximum value
+    const double cutofffactor_;
   };
 
   class DEMAdhesionSurfaceEnergyDistributionNormal : public DEMAdhesionSurfaceEnergyDistributionBase
@@ -116,11 +117,8 @@ namespace PARTICLEINTERACTION
     ~DEMAdhesionSurfaceEnergyDistributionNormal(){};
 
     //! get adhesion surface energy
-    void AdhesionSurfaceEnergy(double& adhesion_surface_energy) const override;
-
-   private:
-    //! mean of adhesion surface energy distribution
-    const double mean_;
+    void AdhesionSurfaceEnergy(
+        const double& mean_surface_energy, double& surface_energy) const override;
   };
 
   class DEMAdhesionSurfaceEnergyDistributionLogNormal
@@ -134,11 +132,8 @@ namespace PARTICLEINTERACTION
     ~DEMAdhesionSurfaceEnergyDistributionLogNormal(){};
 
     //! get adhesion surface energy
-    void AdhesionSurfaceEnergy(double& adhesion_surface_energy) const override;
-
-   private:
-    //! mean of adhesion surface energy distribution
-    const double mean_;
+    void AdhesionSurfaceEnergy(
+        const double& mean_surface_energy, double& surface_energy) const override;
   };
 
 }  // namespace PARTICLEINTERACTION

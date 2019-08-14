@@ -124,6 +124,7 @@
 #include "particle_material_sph_fluid.H"
 #include "particle_material_sph_boundary.H"
 #include "particle_material_dem.H"
+#include "particle_wall_material_dem.H"
 #include "superelastic_sma.H"
 #include "mixture_elasthyper.H"
 
@@ -888,6 +889,8 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     case INPAR::MAT::mfi_lin_scalar_iso:
     case INPAR::MAT::mix_rule_base:
     case INPAR::MAT::mix_elasthyper:
+    case INPAR::MAT::mfi_poly_scalar_aniso:
+    case INPAR::MAT::mfi_poly_scalar_iso:
     {
       return Teuchos::null;
     }
@@ -1153,6 +1156,14 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
         curmat->SetParameter(new MAT::PAR::ParticleMaterialDEM(curmat));
       MAT::PAR::ParticleMaterialDEM* params =
           dynamic_cast<MAT::PAR::ParticleMaterialDEM*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_particle_wall_dem:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::ParticleWallMaterialDEM(curmat));
+      MAT::PAR::ParticleWallMaterialDEM* params =
+          static_cast<MAT::PAR::ParticleWallMaterialDEM*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_acousticmat:

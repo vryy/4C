@@ -79,7 +79,7 @@ DPARTICLE                       1
 E 1 - Velocity 1
 ------------------------------------------------DESIGN SURFACE PARTICLE WALL
 DSURF                           1
-E 1 - 1
+E 1 - MAT -1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------------DPARTICLE-NODE TOPOLOGY
 NODE 1 DPARTICLE 1

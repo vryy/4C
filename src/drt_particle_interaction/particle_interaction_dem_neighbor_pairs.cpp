@@ -20,6 +20,8 @@
 
 #include "../drt_particle_wall/particle_wall_interface.H"
 
+#include "../drt_mat/particle_wall_material_dem.H"
+
 #include "../drt_geometry/searchtree_geometry_service.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_geometry/element_coordtrafo.H"
@@ -522,6 +524,24 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairsAdhesion(
 
     // get pointer to column wall element
     DRT::Element* ele = potentialneighbors.second;
+
+    // adhesion surface energy
+    double surface_energy = 0.0;
+
+    // get material parameters of wall element
+    {
+      // cast material to particle wall material
+      const Teuchos::RCP<const MAT::ParticleWallMaterialDEM>& particlewallmaterial =
+          Teuchos::rcp_dynamic_cast<const MAT::ParticleWallMaterialDEM>(ele->Material());
+      if (particlewallmaterial == Teuchos::null)
+        dserror("cast to MAT::ParticleWallMaterialDEM failed!");
+
+      // get adhesion surface energy
+      surface_energy = particlewallmaterial->AdhesionSurfaceEnergy();
+    }
+
+    // no evaluation of adhesion contribution
+    if (not(surface_energy > 0.0)) continue;
 
     // determine nodal positions of column wall element
     std::map<int, LINALG::Matrix<3, 1>> colelenodalpos;
