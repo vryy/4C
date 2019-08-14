@@ -7,11 +7,9 @@
 # input files and source files are violated. In the event of failure, an error message is written to stdout and to the files
 # "wrong_clang_format.txt", respectively "wrong_format.txt".
 
-# maintainer:   Jonas Nitzler
-#               nitzler@lnm.mw.tum.de
-#               089/28915257
-#
-#------------------------------------------------------------------------------------------------------------------------------#
+# Author:    Jonas Nitzler
+# Date:      07.08.2019
+# Version:   1.2
 
 ## Delete old .txt files containing non-compliant files
 [ -e wrong_format.txt ] && rm wrong_format.txt
@@ -19,7 +17,7 @@
 
 ### Header check ################################################
 echo "Start test for correct file headers ..."
-python2 ./tests/code_test/nightly_header-check.py | tee wrong_format.txt
+python2 ./utilities/code_checks/header_check.py --test_flag=0 | tee wrong_format.txt
 
 if [ -s wrong_format.txt ]
 then
@@ -31,7 +29,7 @@ else
 fi
 
 ########### Execute clang-format with style file settings (taken from https://github.com/sheredom/git-hooks)##################################################
-if [ -f ./utilities/code_styles/clang-format ]
+if [ -f ./utilities/code_checks/clang-format ]
 then
   # set the field separator to new line
   IFS=$'\n'
@@ -43,7 +41,7 @@ then
     if [[ $line == *.cpp || $line == *.cc || $line == *.cp || $line == *.cxx || $line == *.H || $line == *.h || $line == *.hpp || $line == *.hh || $line == *.hxx ]]
     then
       # Check if clang would format the file
-      if [[  $(diff -u <(./utilities/code_styles/clang-format -style=file $(pwd)/${line}) <(cat $(pwd)/${line})) ]]
+      if [[  $(diff -u <(./utilities/code_checks/clang-format -style=file $(pwd)/${line}) <(cat $(pwd)/${line})) ]]
       then
         uncompliant_files+="$(pwd)/${line}\n"
       fi

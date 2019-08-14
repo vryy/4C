@@ -1,13 +1,15 @@
 #!/bin/env python2
-" Baci header check to be executed along with the Git pre-commit hook. "
+" Baci header check"
+
 import os
+import argparse
 import baciheader as bh
 import inputheader as ih
+import subprocess
 #UTILS
 
 def command_output(cmd):
   " Capture a command's standard output. "
-  import subprocess
   message = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE).communicate()[0]
   return message
 
@@ -34,27 +36,39 @@ def files_changed(look_cmd):
   """
   def filename(line):
     return line
-  looked_files  = command_output(look_cmd).decode().split("\n")
+  looked_files  = command_output(look_cmd).split("\n")
   changed_files = [filename(line) for line in looked_files]
   return changed_files
 
 def file_contents(filename):
   " Return a file's contents for this transaction. "
-  output=command_output("cat %s" %filename)
+  with open (filename) as myfile:
+    output=myfile.readlines()
   return output
 
 def pretty_print_error(allerrors):
   max_width = 56
   if len(allerrors) > 0:
     max_width = max(max_width,max([len(line) for line in allerrors]))
-#header
-  sys.stderr.write("\n"+"E"*(max_width+4)+"\nE"+" "*(max_width+2)+"E\n")
-  sys.stderr.write("E Your commit was rejected due to the following reason(s):"+" "*(max_width-55)+"E\nE"+" "*(max_width+2)+"E\n")
-#body
-  for line in allerrors:
-    sys.stderr.write("E "+line+" "*(max_width-len(line))+" E\n")
+  if test_flag:
+  #header
+    sys.stderr.write("\n"+"E"*(max_width+4)+"\nE"+" "*(max_width+2)+"E\n")
+    sys.stderr.write("E Your commit was rejected due to the following reason(s):"+" "*(max_width-55)+"E\nE"+" "*(max_width+2)+"E\n")
+  #body
+    for line in allerrors:
+      sys.stderr.write("E "+line+" "*(max_width-len(line))+" E\n")
 #footer
-  sys.stderr.write("E"+" "*(max_width+2)+"E\n"+"E"*(max_width+4)+"\n")
+    sys.stderr.write("E"+" "*(max_width+2)+"E\n"+"E"*(max_width+4)+"\n")
+  else:
+    f = open('wrong_format.txt', 'w')
+  #header
+    f.write("\n"+"E"*(max_width+4)+"\nE"+" "*(max_width+2)+"E\n")
+  #body
+    for line in allerrors:
+      f.write("E "+line+" "*(max_width-len(line))+" E\n")
+  #footer
+    f.write("E"+" "*(max_width+2)+"E\n"+"E"*(max_width+4)+"\n")
+    f.close()
   return
 
 # CHECK FOR TABS
@@ -65,6 +79,7 @@ def contains_tabs(filename):
 
 def check_support_files_for_tabs(look_cmd, allerrors):
   " Check support files in this transaction are tab-free. "
+
   support_files_with_tabs = [ff for ff in files_changed(look_cmd) if is_support_file(ff) and contains_tabs(ff)]
   if len(support_files_with_tabs) > 0:
     if len(allerrors) > 0:
@@ -77,7 +92,7 @@ def check_support_files_for_tabs(look_cmd, allerrors):
 
 def trailing_whitespace(filename):
   " Return True if this version of the file contains a trailing whitespace. "
-  return " \n" in file_contents(filename)
+  return "\t" in file_contents(filename)
 
 def check_support_files_for_trailing_whitespace(look_cmd, allerrors):
   " Check support files in this transaction are trailing whitespace-free. "
@@ -90,19 +105,13 @@ def check_support_files_for_trailing_whitespace(look_cmd, allerrors):
   return len(support_files_with_trailing_whitespace)
 
 
+
 #CHECK HEADER
 def check_cpp_files_for_header(look_cmd, allerrors):
   " Check C/C++ files in this transaction have a maintainer. "
-  import os
   headers = dict([(ff,bh.Header(file_contents(ff))) for ff in files_changed(look_cmd)[:-1] if is_source_file(ff)])
 # \brief tag
   cpp_files_wo_brief = []
-#cpp_files_wo_brief = [ff for ff, hdr in headers.items() if len(hdr.get_brief()) < 5]
-#if len(cpp_files_wo_brief) > 0:
-#if len(allerrors) > 0:
-#allerrors.append("")
-#allerrors.append("The following files are missing a \\brief tag:")
-#allerrors += cpp_files_wo_brief
 # \maintainer tag
   cpp_files_wo_maint = [ff for ff,hdr in headers.items() if len(hdr.get_maintainer()) < 1]
   if len(cpp_files_wo_maint) > 0:
@@ -110,7 +119,6 @@ def check_cpp_files_for_header(look_cmd, allerrors):
       allerrors.append("")
     allerrors.append("The following files have an incorrect or are missing a \\maintainer tag:")
     allerrors += cpp_files_wo_maint
-
 # check for correct start of header
   cpp_files_wrong_start = [ff for ff,hdr in headers.items() if len(hdr.get_start())<1]
   if len(cpp_files_wrong_start) > 0:
@@ -125,21 +133,20 @@ def check_cpp_files_for_header(look_cmd, allerrors):
       allerrors.append("")
     allerrors.append("The following files are missing a \\level tag:")
     allerrors += cpp_files_wo_lvl
-
 # check compliance of maintainer with the baci_developers.json (List of active BACI developers)
   cpp_files_uncompliant_maintainer = [ff for ff,hdr in headers.items() if len(hdr.get_compliant_maintainer())<1]
   if len(cpp_files_uncompliant_maintainer) > 0:
     if len(allerrors) > 0:
         allerrors.append("")
-    allerrors.append("The following files contain an uncompliant maintainer. Please check './utilities/git/hooks/baci_developers.json' for a list of compliant maintainers. Several maintainers are not allowed!")
+    allerrors.append("The following files contain an uncompliant maintainer. Please check './utilities/code_checks/baci_developers.json' for a list of compliant maintainers. Several maintainers are not allowed!")
     allerrors += cpp_files_uncompliant_maintainer
-
 
 #print example header
   if len(cpp_files_wo_brief) > 0 or len(cpp_files_wrong_start) > 0 or len(cpp_files_wo_maint) > 0 or len(cpp_files_wo_lvl) > 0 or len(cpp_files_uncompliant_maintainer):
     allerrors += bh.Header.get_example()
 
   return len(cpp_files_wo_brief)+len(cpp_files_wo_maint)+len(cpp_files_wo_lvl)+len(cpp_files_wrong_start)+len(cpp_files_uncompliant_maintainer)
+
 
 #CHECK INPUT FILE HEADERS
 def check_input_files_for_header(look_cmd, allerrors):
@@ -158,7 +165,7 @@ def check_input_files_for_header(look_cmd, allerrors):
   if len(dat_files_uncompliant_maintainer) > 0:
     if len(allerrors) > 0:
         allerrors.append("")
-    allerrors.append("The following input files (.dat) contain an uncompliant maintainer. Please check './utilities/git/hooks/baci_developers.json' for a list of compliant maintainers. Several maintainers are not allowed!")
+    allerrors.append("The following input files (.dat) contain an uncompliant maintainer. Please check './utilities/code_checks/baci_developers.json' for a list of compliant maintainers. Several maintainers are not allowed!")
     allerrors += dat_files_uncompliant_maintainer
 
 #print example header
@@ -166,7 +173,6 @@ def check_input_files_for_header(look_cmd, allerrors):
     allerrors += ih.Header.get_example()
 
   return len(datfiles_without_header)+len(dat_files_uncompliant_maintainer)
-
 
 #CHECK FOR.GITIGNORE FILES
 
@@ -192,10 +198,23 @@ def check_all_files_for_gitignore(look_cmd, allerrors):
 #######################################################################################################################
 
 def main():
+  parser = argparse.ArgumentParser()
+  parser.add_argument("--test_flag", help="Please specify the test_flag to determine the type of the code check. A value of 1 means pre-commit hook and a value of 0 a nightly test case.", type=int)
+  args = parser.parse_args()
+  flag = args.test_flag
+  global test_flag
+  if flag==1:
+    test_flag = True # pre-commit hook
+  elif flag==0:
+    test_flag = False # nightly test case
+  else: raise ValueError(r'Invalid argument for code checks! Must be integer')
   errors = 0
   allerrors = []
   try:
-    look_cmd = "git diff --name-only --cached --diff-filter=MRAC"
+    if test_flag:
+      look_cmd = "git diff --name-only --cached --diff-filter=MRAC"
+    else:
+      look_cmd = "find ./ -type f"
     errors += check_cpp_files_for_header(look_cmd, allerrors)
     errors += check_input_files_for_header(look_cmd, allerrors)
     errors += check_support_files_for_tabs(look_cmd, allerrors)

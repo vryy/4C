@@ -50,7 +50,7 @@ class Header(object):
   def _extract_header(cont):
     blk = []
     marker = False
-    for line in cont.splitlines():
+    for line in cont:
       if line.startswith("--"):
         break
       blk.append(line)
