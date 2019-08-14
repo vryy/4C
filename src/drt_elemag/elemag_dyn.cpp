@@ -166,6 +166,8 @@ void electromagnetics_drt()
   // call time-integration scheme
   elemagalgo->Integrate();
 
+  elemagalgo->SpySysmat("matrix_file.mat");
+
   // Computing the error at the las time step (the conditional stateme nt is inside for now)
   if (DRT::INPUT::IntegralValue<bool>(elemagparams, "CALCERR"))
   {
