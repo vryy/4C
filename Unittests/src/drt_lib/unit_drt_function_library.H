@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------*/
 /*!
 
-\brief unittests for slm functions
+\brief unittests for the function library
 
 \level 3
 
@@ -14,7 +14,7 @@
 
 #include <cxxtest/TestSuite.h>
 #include "../../../src/drt_lib/drt_function.H"
-#include "../../../src/drt_lib/drt_slmfunction.H"
+#include "../../../src/drt_lib/drt_function_library.H"
 
 namespace DRT
 {

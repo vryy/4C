@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 
-\brief Managing and evaluating of functions for selective laser melting
+\brief Collection of functions that are not problem-specific
 
 \maintainer Sebastian Proell
 
@@ -11,13 +11,8 @@
 /*----------------------------------------------------------------------*/
 
 #include <Sacado.hpp>
-#include "drt_slmfunction.H"
 #include "drt_function.H"
-#include "drt_functionvariables.H"
-#include "drt_globalproblem.H"
-#include "standardtypes_cpp.H"
-#include "drt_linedefinition.H"
-#include "../drt_io/io.H"
+#include "drt_function_library.H"
 
 
 DRT::UTILS::TranslatedFunction::TranslatedFunction(

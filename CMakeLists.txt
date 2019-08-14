@@ -469,12 +469,12 @@ set(OBJS_DRT_LIB
   src/drt_lib/drt_singletondestruction.cpp
   src/drt_lib/drt_function.cpp
   src/drt_lib/drt_functionvariables.cpp
+  src/drt_lib/drt_function_library.cpp
   src/drt_lib/drt_globalproblem.cpp
   src/drt_lib/drt_locsys.cpp
   src/drt_lib/drt_node.cpp
   src/drt_lib/drt_parobject.cpp
   src/drt_lib/drt_parobjectfactory.cpp
-  src/drt_lib/drt_slmfunction.cpp
   src/drt_lib/drt_utils_createdis.cpp
   src/drt_lib/drt_utils_materials.cpp
   src/drt_lib/drt_utils_factory.cpp

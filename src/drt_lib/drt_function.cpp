@@ -21,7 +21,7 @@
 #include "../drt_fluid_xfluid/xfluid_functions.H"
 #include "../drt_fluid_xfluid/xfluid_functions_combust.H"
 #include "../drt_io/io.H"
-#include "drt_slmfunction.H"
+#include "drt_function_library.H"
 
 /*----------------------------------------------------------------------*/
 //! Print function
