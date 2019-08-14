@@ -97,7 +97,7 @@ autocmd BufWritePre *.h,*.cc,*.cpp call Formatonsave()
 * Visual Studio: Download the latest Visual Studio extension from the [alpha build site](http://llvm.org/builds/). The default key-binding is `Ctrl-R`,`Ctrl-F`.
 
 ## Git-hook configuration in repository
-Currently two different client-side hooks are used in the work-flow. A *pre-commit* hook and a *commit-msg* hook. See [Client-side hooks](Client-side hooks) for reference. Both files can be found in `utilities/git_hooks`. It was decided to check the code style in the pre-commit hook that consists of two parts: The clang-format style changes and a subsequent check for correct header format. After the user types `git commit` the hook gets activated. First clang-format is called and the code style formation is done automatically. The program clang format is shared in the repository and is located in `utilities/code_styles`. The associated format file *.clang-format* is located in the top level folder. For the code style the *Google-style template* is used with some slight modifications that can be seen when opening the file itself.
+Currently two different client-side hooks are used in the work-flow. A *pre-commit* hook and a *commit-msg* hook. See [Client-side hooks](Client-side hooks) for reference. Both files can be found in `utilities/code_checks`. It was decided to check the code style in the pre-commit hook that consists of two parts: The clang-format style changes and a subsequent check for correct header format. After the user types `git commit` the hook gets activated. First clang-format is called and the code style formation is done automatically. The program clang format is shared in the repository and is located in `utilities/code_checks`. The associated format file *.clang-format* is located in the top level folder. For the code style the *Google-style template* is used with some slight modifications that can be seen when opening the file itself.
 
 Afterwards the user gets a short terminal output of the changes done by clang format. If the code was already compliant to the defined clang style no extra output is given. For the header checks three different Python files namely *baciheader.py*, *header-check.py* and *inputheader.py* are called. Headers are checked for cpp-files and input-files, separately:
 * cpp-files:
@@ -126,11 +126,11 @@ Our Git-hooks check for compliant file-maintainers in source and input files and
   - `\maintainer` tag in **source-files**, followed by the name of the file-maintainer
   - `// Maintainer:` tag in **input-files**, followed by the name of the file-maintainer
 
-  which has to be compliant with names listed in `utilities/git_hooks/baci_developers.json`
+  which has to be compliant with names listed in `utilities/code_checks/baci_developers.json`
 - All members of the Gitlab **baci_developers** group are compliant file-maintainers
 - We only allow for one compliant file-maintainer per file
 - An up-to-date `baci_developers.json` list can be created by the following steps:
     1. Create a personal access token for your Baci Gitlab repository as described in the [gitlab documentation](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html)
     1. Download the list of all members of the **baci_developers** group using the command
 `curl -H "Private-Token: <Token>" "https://gitlab.lrz.de/api/v4/groups/13552/members/all?per_page=100&page=1" > baci_developers.json`
-    1. Commit and merge the changes in `utilities/git_hooks/baci_developers.json`
+    1. Commit and merge the changes in `utilities/code_checks/baci_developers.json`
