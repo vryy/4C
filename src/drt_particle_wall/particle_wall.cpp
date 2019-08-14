@@ -584,19 +584,31 @@ void PARTICLEWALL::WallHandlerDiscretCondition::SetupWallDiscretization() const
   // finalize structure discretization construction
   if (not structurediscretization->Filled()) structurediscretization->FillComplete();
 
-  // declare structure objects in wall condition
-  std::map<int, std::map<int, DRT::Node*>> nodes;
-  std::map<int, std::map<int, DRT::Node*>> colnodes;
-  std::map<int, std::map<int, Teuchos::RCP<DRT::Element>>> colelements;
+  // get all particle wall conditions
+  std::vector<DRT::Condition*> conditions;
+  structurediscretization->GetCondition("ParticleWall", conditions);
 
-  // get structure objects in wall condition
-  DRT::UTILS::FindConditionObjects(
-      *structurediscretization, nodes, colnodes, colelements, "ParticleWall");
-
-  for (auto& condit : colelements)
+  // iterate over particle wall conditions
+  for (int i = 0; i < (int)conditions.size(); ++i)
   {
+    // set current particle wall condition
+    std::vector<DRT::Condition*> currcondition(0);
+    currcondition.push_back(conditions[i]);
+
+    // get material id for current particle wall condition
+    const int mat = currcondition[0]->GetInt("MAT");
+
+    // initialize maps for particle wall conditions
+    std::map<int, DRT::Node*> nodes;
+    std::map<int, DRT::Node*> colnodes;
+    std::map<int, Teuchos::RCP<DRT::Element>> colelements;
+
+    // get structure objects in wall condition
+    DRT::UTILS::FindConditionObjects(
+        *structurediscretization, nodes, colnodes, colelements, currcondition);
+
     // iterate over column wall nodes
-    for (auto& nodeit : colnodes[condit.first])
+    for (auto& nodeit : colnodes)
     {
       // get current node
       DRT::Node* currnode = nodeit.second;
@@ -607,7 +619,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::SetupWallDiscretization() const
     }
 
     // iterate over column wall elements
-    for (auto& eleit : condit.second)
+    for (auto& eleit : colelements)
     {
       // get current element
       Teuchos::RCP<DRT::Element> currele = eleit.second;
@@ -618,6 +630,9 @@ void PARTICLEWALL::WallHandlerDiscretCondition::SetupWallDiscretization() const
 
       // set node ids to element
       wallele->SetNodeIds(currele->NumNode(), currele->NodeIds());
+
+      // create material for current wall element
+      if (not(mat < 0)) wallele->SetMaterial(mat);
 
       // add wall element to discretization
       walldiscretization_->AddElement(wallele);
@@ -725,6 +740,9 @@ void PARTICLEWALL::WallHandlerBoundingBox::SetupWallDiscretization() const
     nodeidsofelements.push_back({0, 1, 5, 4});
     nodeidsofelements.push_back({2, 3, 7, 6});
 
+    // get material id for particle wall
+    const int mat = params_.get<int>("PARTICLE_WALL_MAT");
+
     int eleid = 0;
     for (int dim = 0; dim < 3; ++dim)
     {
@@ -740,6 +758,9 @@ void PARTICLEWALL::WallHandlerBoundingBox::SetupWallDiscretization() const
 
         // set node ids to element
         wallele->SetNodeIds(4, &(nodeidsofelements[dim * 2 + sign])[0]);
+
+        // create material for current wall element
+        if (not(mat < 0)) wallele->SetMaterial(mat);
 
         // add wall element to discretization
         walldiscretization_->AddElement(wallele);

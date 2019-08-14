@@ -99,6 +99,10 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
           INPAR::PARTICLE::BoundingBox),
       &particledyn);
 
+  // material id for particle wall from bounding box source
+  IntParameter("PARTICLE_WALL_MAT", -1, "material id for particle wall from bounding box source",
+      &particledyn);
+
   // flags defining considered states of particle wall
   BoolParameter("PARTICLE_WALL_MOVING", "no", "consider a moving particle wall", &particledyn);
   BoolParameter("PARTICLE_WALL_LOADED", "no", "consider loading on particle wall", &particledyn);
@@ -345,10 +349,10 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   DoubleParameter("POISSON_RATIO", -1.0, "poisson ratio", &particledyndem);
   DoubleParameter("YOUNG_MODULUS", -1.0, "young's modulus", &particledyndem);
 
-  DoubleParameter("FRICT_COEFF_TANG", -1.0, "dynamic friction coefficient for tangential contact",
-      &particledyndem);
-  DoubleParameter("FRICT_COEFF_ROLL", -1.0, "dynamic friction coefficient for rolling contact",
-      &particledyndem);
+  DoubleParameter(
+      "FRICT_COEFF_TANG", -1.0, "friction coefficient for tangential contact", &particledyndem);
+  DoubleParameter(
+      "FRICT_COEFF_ROLL", -1.0, "friction coefficient for rolling contact", &particledyndem);
 
   DoubleParameter(
       "ADHESION_DISTANCE", -1.0, "adhesion distance between interacting surfaces", &particledyndem);
@@ -388,11 +392,13 @@ void INPAR::PARTICLE::SetValidConditions(
    | particle wall condition                                                 |
    *-------------------------------------------------------------------------*/
   std::vector<Teuchos::RCP<ConditionComponent>> particlewallcomponents;
-  particlewallcomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
+  particlewallcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("MAT")));
+  particlewallcomponents.push_back(Teuchos::rcp(new IntConditionComponent("MAT")));
 
-  Teuchos::RCP<ConditionDefinition> surfpartwall = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN SURFACE PARTICLE WALL", "ParticleWall", "Wall for particle interaction",
-      DRT::Condition::ParticleWall, true, DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> surfpartwall =
+      Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE PARTICLE WALL", "ParticleWall",
+          "Wall for particle interaction with (optional) material definition",
+          DRT::Condition::ParticleWall, true, DRT::Condition::Surface));
 
   for (unsigned i = 0; i < particlewallcomponents.size(); ++i)
     surfpartwall->AddComponent(particlewallcomponents[i]);

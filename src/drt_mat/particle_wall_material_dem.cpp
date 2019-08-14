@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\brief particle material for DEM
+\brief particle wall material for DEM
 
 \level 3
 
@@ -10,65 +10,68 @@
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 07/2018 |
+ | headers                                                    sfuchs 08/2019 |
  *---------------------------------------------------------------------------*/
-#include "particle_material_dem.H"
+#include "particle_wall_material_dem.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
 
 /*---------------------------------------------------------------------------*
- | define static class member                                 sfuchs 07/2018 |
+ | define static class member                                 sfuchs 08/2019 |
  *---------------------------------------------------------------------------*/
-MAT::ParticleMaterialDEMType MAT::ParticleMaterialDEMType::instance_;
+MAT::ParticleWallMaterialDEMType MAT::ParticleWallMaterialDEMType::instance_;
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 07/2018 |
+ | constructor                                                sfuchs 08/2019 |
  *---------------------------------------------------------------------------*/
-MAT::PAR::ParticleMaterialDEM::ParticleMaterialDEM(Teuchos::RCP<MAT::PAR::Material> matdata)
-    : Parameter(matdata), ParticleMaterialBase(matdata)
+MAT::PAR::ParticleWallMaterialDEM::ParticleWallMaterialDEM(Teuchos::RCP<MAT::PAR::Material> matdata)
+    : Parameter(matdata),
+      frictionTang_(matdata->GetDouble("FRICT_COEFF_TANG")),
+      frictionRoll_(matdata->GetDouble("FRICT_COEFF_ROLL")),
+      adhesionSurfaceEnergy_(matdata->GetDouble("ADHESION_SURFACE_ENERGY"))
 {
   // empty constructor
 }
 
 /*---------------------------------------------------------------------------*
- | create material instance of matching type with parameters  sfuchs 07/2018 |
+ | create material instance of matching type with parameters  sfuchs 08/2019 |
  *---------------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::PAR::ParticleMaterialDEM::CreateMaterial()
+Teuchos::RCP<MAT::Material> MAT::PAR::ParticleWallMaterialDEM::CreateMaterial()
 {
-  return Teuchos::rcp(new MAT::ParticleMaterialDEM(this));
+  return Teuchos::rcp(new MAT::ParticleWallMaterialDEM(this));
 }
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-DRT::ParObject* MAT::ParticleMaterialDEMType::Create(const std::vector<char>& data)
+DRT::ParObject* MAT::ParticleWallMaterialDEMType::Create(const std::vector<char>& data)
 {
-  MAT::ParticleMaterialDEM* particlematdem = new MAT::ParticleMaterialDEM();
-  particlematdem->Unpack(data);
-  return particlematdem;
+  MAT::ParticleWallMaterialDEM* particlewallmatdem = new MAT::ParticleWallMaterialDEM();
+  particlewallmatdem->Unpack(data);
+  return particlewallmatdem;
 }
 
 /*---------------------------------------------------------------------------*
- | constructor (empty material object)                        sfuchs 07/2018 |
+ | constructor (empty material object)                        sfuchs 08/2019 |
  *---------------------------------------------------------------------------*/
-MAT::ParticleMaterialDEM::ParticleMaterialDEM() : params_(NULL)
+MAT::ParticleWallMaterialDEM::ParticleWallMaterialDEM() : params_(NULL)
 {
   // empty constructor
 }
 
 /*---------------------------------------------------------------------------*
- | constructor (with given material parameters)               sfuchs 07/2018 |
+ | constructor (with given material parameters)               sfuchs 08/2019 |
  *---------------------------------------------------------------------------*/
-MAT::ParticleMaterialDEM::ParticleMaterialDEM(MAT::PAR::ParticleMaterialDEM* params)
+MAT::ParticleWallMaterialDEM::ParticleWallMaterialDEM(MAT::PAR::ParticleWallMaterialDEM* params)
     : params_(params)
 {
   // empty constructor
 }
 
 /*---------------------------------------------------------------------------*
- | pack                                                       sfuchs 07/2018 |
+ | pack                                                       sfuchs 08/2019 |
  *---------------------------------------------------------------------------*/
-void MAT::ParticleMaterialDEM::Pack(DRT::PackBuffer& data) const
+void MAT::ParticleWallMaterialDEM::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -84,9 +87,9 @@ void MAT::ParticleMaterialDEM::Pack(DRT::PackBuffer& data) const
 }
 
 /*---------------------------------------------------------------------------*
- | unpack                                                     sfuchs 07/2018 |
+ | unpack                                                     sfuchs 08/2019 |
  *---------------------------------------------------------------------------*/
-void MAT::ParticleMaterialDEM::Unpack(const std::vector<char>& data)
+void MAT::ParticleWallMaterialDEM::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -102,12 +105,11 @@ void MAT::ParticleMaterialDEM::Unpack(const std::vector<char>& data)
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
-      // note: dynamic_cast needed due diamond inheritance structure
       const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
       MAT::PAR::Parameter* mat =
           DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = dynamic_cast<MAT::PAR::ParticleMaterialDEM*>(mat);
+        params_ = static_cast<MAT::PAR::ParticleWallMaterialDEM*>(mat);
       else
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());

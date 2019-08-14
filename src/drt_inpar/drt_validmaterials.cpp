@@ -3519,6 +3519,19 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
+  // particle wall material dem
+  {
+    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+        "MAT_ParticleWallDEM", "particle wall material for DEM", INPAR::MAT::m_particle_wall_dem));
+
+    AddNamedReal(m, "FRICT_COEFF_TANG", "friction coefficient for tangential contact", -1.0, true);
+    AddNamedReal(m, "FRICT_COEFF_ROLL", "friction coefficient for rolling contact", -1.0, true);
+    AddNamedReal(m, "ADHESION_SURFACE_ENERGY", "adhesion surface energy", -1.0, true);
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // acoustic material
   {
     Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(

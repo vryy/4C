@@ -27,6 +27,8 @@
 #include "../drt_particle_wall/particle_wall_interface.H"
 #include "../drt_particle_wall/particle_wall_datastate.H"
 
+#include "../drt_mat/particle_wall_material_dem.H"
+
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
 #include "../drt_lib/drt_element.H"
@@ -250,6 +252,9 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleAdhesion()
   DEMHistoryPairAdhesionData& adhesionhistorydata =
       historypairs_->GetRefToParticleAdhesionHistoryData();
 
+  // adhesion surface energy
+  const double surface_energy = params_dem_.get<double>("ADHESION_SURFACE_ENERGY");
+
   // iterate over particle pairs
   for (const auto& particlepair : neighborpairs_->GetRefToParticlePairAdhesionData())
   {
@@ -314,7 +319,8 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleAdhesion()
 
     // calculate adhesion surface energy
     if (not(adhesionhistory_ij.surface_energy_ > 0.0))
-      adhesionsurfaceenergy_->AdhesionSurfaceEnergy(adhesionhistory_ij.surface_energy_);
+      adhesionsurfaceenergy_->AdhesionSurfaceEnergy(
+          surface_energy, adhesionhistory_ij.surface_energy_);
 
     // calculate adhesion force
     adhesionlaw_->AdhesionForce(particlepair.gap_, adhesionhistory_ij.surface_energy_, r_eff,
@@ -430,6 +436,24 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion()
     std::vector<int> lmstride;
     ele->LocationVector(*particlewallinterface_->GetWallDiscretization(), lmele, lmowner, lmstride);
 
+    // adhesion surface energy
+    double surface_energy = 0.0;
+
+    // get material parameters of wall element
+    {
+      // cast material to particle wall material
+      const Teuchos::RCP<const MAT::ParticleWallMaterialDEM>& particlewallmaterial =
+          Teuchos::rcp_dynamic_cast<const MAT::ParticleWallMaterialDEM>(ele->Material());
+      if (particlewallmaterial == Teuchos::null)
+        dserror("cast to MAT::ParticleWallMaterialDEM failed!");
+
+      // get adhesion surface energy
+      surface_energy = particlewallmaterial->AdhesionSurfaceEnergy();
+    }
+
+    // no evaluation of adhesion contribution
+    if (not(surface_energy > 0.0)) continue;
+
     // velocity of wall contact point j
     double vel_j[3] = {0.0};
 
@@ -464,7 +488,8 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion()
 
     // calculate adhesion surface energy
     if (not(adhesionhistory_ij.surface_energy_ > 0.0))
-      adhesionsurfaceenergy_->AdhesionSurfaceEnergy(adhesionhistory_ij.surface_energy_);
+      adhesionsurfaceenergy_->AdhesionSurfaceEnergy(
+          surface_energy, adhesionhistory_ij.surface_energy_);
 
     // calculate adhesion force
     adhesionlaw_->AdhesionForce(particlewallpair.gap_, adhesionhistory_ij.surface_energy_, rad_i[0],
