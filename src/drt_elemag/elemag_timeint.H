@@ -210,6 +210,10 @@ namespace ELEMAG
     virtual void ReadRestart(int step);
     // void ReadRestart(int step);
 
+    /*!
+    \brief print the system matrix giving the output filename
+
+    */
     void SpySysmat(std::string filename)
     {
       std::ofstream out;
@@ -218,7 +222,7 @@ namespace ELEMAG
       out.close();
     };
     /*!
-    \brief print the system matrix
+    \brief print the system matrix to a given output stream
 
     This function still ha to be implemented.
     This function is supposed to work as a matlab or numpy spy().
