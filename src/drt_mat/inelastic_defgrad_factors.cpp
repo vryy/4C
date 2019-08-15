@@ -645,7 +645,7 @@ MAT::PAR::InelasticDefgradPolyScalarIso::InelasticDefgradPolyScalarIso(
   // in case not all scatra dofs are transported scalars, the last scatra dof is a potential and can
   // not be treated as a concentration but it is treated like that in so3_scatra_evaluate.cpp in the
   // PreEvaluate method!
-  if (Polyparams_.size() != abs(Polyparanum_))
+  if (Polyparams_.size() != Polyparanum_)
     dserror(
         "Number of coefficients POLY_PARA_NUM you entered in input file has to match the size of "
         "coefficient vector POLY_PARAMS");
@@ -873,7 +873,7 @@ MAT::PAR::InelasticDefgradPolyScalarAniso::InelasticDefgradPolyScalarAniso(
   // in the case when not all scatra dofs are transported scalars, the last scatra dof is a
   // potential and can not be treated as a concentration but it is treated like that in
   // so3_scatra_evaluate.cpp in the PreEvaluate!
-  if (Polyparams_.size() != abs(Polyparanum_))
+  if (Polyparams_.size() != Polyparanum_)
     dserror(
         "Number of coefficients POLY_PARA_NUM you entered in input file has to match the size of "
         "coefficient vector POLY_PARAMS");
