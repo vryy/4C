@@ -191,36 +191,44 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassAndColorfield() const
 
     // declare pointer variables for particle i and j
     const double *mass_i, *dens_i;
-    double *denssum_i, *colorfield_i;
+    double *denssum_i = nullptr, *colorfield_i = nullptr;
 
     const double *mass_j, *dens_j;
-    double *denssum_j, *colorfield_j;
+    double *denssum_j = nullptr, *colorfield_j = nullptr;
 
     // get pointer to particle states
     mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
-    denssum_i = container_i->GetPtrToParticleState(PARTICLEENGINE::DensitySum, particle_i);
 
-    if (computecolorfield_)
+    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase)
     {
-      if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase)
-        dens_i = &(material_j->initDensity_);
-      else
-        dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
+      if (computecolorfield_) dens_i = &(material_j->initDensity_);
+    }
+    else
+    {
+      denssum_i = container_i->GetPtrToParticleState(PARTICLEENGINE::DensitySum, particle_i);
 
-      colorfield_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Colorfield, particle_i);
+      if (computecolorfield_)
+      {
+        dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
+        colorfield_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Colorfield, particle_i);
+      }
     }
 
     mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
-    denssum_j = container_j->GetPtrToParticleState(PARTICLEENGINE::DensitySum, particle_j);
 
-    if (computecolorfield_)
+    if (type_j == PARTICLEENGINE::BoundaryPhase or type_j == PARTICLEENGINE::RigidPhase)
     {
-      if (type_j == PARTICLEENGINE::BoundaryPhase or type_j == PARTICLEENGINE::RigidPhase)
-        dens_j = &(material_i->initDensity_);
-      else
-        dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
+      if (computecolorfield_) dens_j = &(material_i->initDensity_);
+    }
+    else
+    {
+      denssum_j = container_j->GetPtrToParticleState(PARTICLEENGINE::DensitySum, particle_j);
 
-      colorfield_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Colorfield, particle_j);
+      if (computecolorfield_)
+      {
+        dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
+        colorfield_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Colorfield, particle_j);
+      }
     }
 
     // no density summation for boundary or rigid particles
@@ -289,14 +297,13 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquation() const
 
     // declare pointer variables for particle i and j
     const double *vel_i, *mass_i, *dens_i;
-    double* densdot_i;
+    double* densdot_i = nullptr;
 
     const double *vel_j, *mass_j, *dens_j;
-    double* densdot_j;
+    double* densdot_j = nullptr;
 
     // get pointer to particle states
     mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
-    densdot_i = container_i->GetPtrToParticleState(PARTICLEENGINE::DensityDot, particle_i);
 
     if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase)
     {
@@ -312,10 +319,10 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquation() const
         vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
 
       dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
+      densdot_i = container_i->GetPtrToParticleState(PARTICLEENGINE::DensityDot, particle_i);
     }
 
     mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
-    densdot_j = container_j->GetPtrToParticleState(PARTICLEENGINE::DensityDot, particle_j);
 
     if (type_j == PARTICLEENGINE::BoundaryPhase or type_j == PARTICLEENGINE::RigidPhase)
     {
@@ -331,6 +338,7 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquation() const
         vel_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_j);
 
       dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
+      densdot_j = container_j->GetPtrToParticleState(PARTICLEENGINE::DensityDot, particle_j);
     }
 
     // relative velocity (use modified velocities in case of transport velocity formulation)
