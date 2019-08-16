@@ -365,6 +365,42 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquation() const
 }
 
 /*---------------------------------------------------------------------------*
+ | set density sum to density field                           sfuchs 08/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::SPHDensityBase::SetDensitySum() const
+{
+  // iterate over particle types
+  for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
+  {
+    // no density integration for boundary or rigid particles
+    if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
+      continue;
+
+    // update density of all particles
+    particlecontainerbundle_->UpdateStateSpecificContainer(
+        0.0, PARTICLEENGINE::Density, 1.0, PARTICLEENGINE::DensitySum, typeEnum);
+  }
+}
+
+/*---------------------------------------------------------------------------*
+ | add time step scaled density dot to density field          sfuchs 08/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::SPHDensityBase::AddTimeStepScaledDensityDot() const
+{
+  // iterate over particle types
+  for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
+  {
+    // no density integration for boundary or rigid particles
+    if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
+      continue;
+
+    // update density of all particles
+    particlecontainerbundle_->UpdateStateSpecificContainer(
+        1.0, PARTICLEENGINE::Density, dt_, PARTICLEENGINE::DensityDot, typeEnum);
+  }
+}
+
+/*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 08/2018 |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHDensitySummation::SPHDensitySummation(const Teuchos::ParameterList& params)
@@ -407,17 +443,8 @@ void PARTICLEINTERACTION::SPHDensitySummation::ComputeDensity() const
   // evaluate sum of weighted mass and colorfield
   SumWeightedMassAndColorfield();
 
-  // iterate over particle types
-  for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
-  {
-    // no density integration for boundary or rigid particles
-    if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
-      continue;
-
-    // update density of all particles
-    particlecontainerbundle_->UpdateStateSpecificContainer(
-        0.0, PARTICLEENGINE::Density, 1.0, PARTICLEENGINE::DensitySum, typeEnum);
-  }
+  // set density sum to density field
+  SetDensitySum();
 
   // refresh density of ghosted particles
   particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(densitytorefresh_);
@@ -467,17 +494,8 @@ void PARTICLEINTERACTION::SPHDensityIntegration::ComputeDensity() const
   // evaluate continuity equation
   ContinuityEquation();
 
-  // iterate over particle types
-  for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
-  {
-    // no density integration for boundary or rigid particles
-    if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
-      continue;
-
-    // update density of all particles
-    particlecontainerbundle_->UpdateStateSpecificContainer(
-        1.0, PARTICLEENGINE::Density, dt_, PARTICLEENGINE::DensityDot, typeEnum);
-  }
+  // add time step scaled density dot to density field
+  AddTimeStepScaledDensityDot();
 
   // refresh density of ghosted particles
   particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(densitytorefresh_);
@@ -596,17 +614,8 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::ComputeDensity() const
   // evaluate continuity equation
   ContinuityEquation();
 
-  // iterate over particle types
-  for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
-  {
-    // no density integration for boundary or rigid particles
-    if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
-      continue;
-
-    // update density of all particles
-    particlecontainerbundle_->UpdateStateSpecificContainer(
-        1.0, PARTICLEENGINE::Density, dt_, PARTICLEENGINE::DensityDot, typeEnum);
-  }
+  // add time step scaled density dot to density field
+  AddTimeStepScaledDensityDot();
 
   // refresh density of ghosted particles
   particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(densitytorefresh_);
