@@ -19,30 +19,9 @@ def check_unittests(look_cmd, allerrors):
       errors += 1
       allerrors.append('The file extension of unit tests have to be .H')
 
-    file_parts = utils.path_split_all(fname)
-    # check, whether there is a corresponding source file to the unit test
-
-    # NOTE: We decided not to enforce this for now, as there could be a reason for unit_tests that do not
-    # belong to one specific file.
-    #
-    # 
-    # basename = os.path.splitext(file_parts[-1])[0][
-    #            5:]  # remove extension and unit_
-    # basepath = os.path.sep.join(file_parts[1:-1])
-    # file_exts = ['.h', '.H', '.hpp', '.cpp', '.c', '.cxx']
-    # file_exists = False
-    # for ext in file_exts:
-    #   if os.path.isfile(os.path.join(basepath, '{0}{1}'.format(basename, ext))):
-    #     file_exists = True
-    #     break
-
-    # if not file_exists:
-    #   errors += 1
-    #   allerrors.append(
-    #     'There is no corresponding source file for the unittest {0}'.format(
-    #       fname))
 
     # check, whether there is a corresponding CMakeLists.txt
+    file_parts = utils.path_split_all(fname)
     unittest_package = os.path.sep.join(file_parts[0:-1])
     if not os.path.isfile(os.path.join(unittest_package, 'CMakeLists.txt')):
       errors += 1
