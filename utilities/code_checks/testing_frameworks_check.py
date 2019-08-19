@@ -190,9 +190,7 @@ def main():
         'https://gitlab.lrz.de/baci/baci/wikis/Unit-testing:-good-practice-in-software-development'])
 
     # check input fiile tests
-    # include input tests only in diff_only. Otherwise
-    errors_input_tests = check_inputtests(look_cmd, allerrors)
-    errors += errors_input_tests if diff_only else 0
+    errors += check_inputtests(look_cmd, allerrors)
   except ValueError:
     print("Something went wrong! Check the error functions in this script again!")
     errors += 1
