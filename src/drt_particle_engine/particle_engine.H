@@ -370,6 +370,23 @@ namespace PARTICLEENGINE
      */
     void RelateAllParticlesToAllProcs(std::vector<int>& particlestoproc) const override;
 
+    /*!
+     * \brief get particles within radius
+     *
+     * Get all (owned and ghosted) particles within a search radius around a search point.
+     *
+     * \note In case the search point is located in a ghosted bin on this processor, particles
+     *       within the search radius but not owned or ghosted by this processor are not found.
+     *
+     * \author Sebastian Fuchs \date 09/2019
+     *
+     * \param[in]  position             position of search point
+     * \param[in]  radius               search radius around search point
+     * \param[out] neighboringparticles particles within search radius
+     */
+    void GetParticlesWithinRadius(const double* position, const double radius,
+        std::vector<LocalIndexTuple>& neighboringparticles) const override;
+
     const double* BinSize() const override;
 
     double MinBinSize() const override { return minbinsize_; };

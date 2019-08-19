@@ -159,6 +159,18 @@ namespace PARTICLEENGINE
      */
     virtual void RelateAllParticlesToAllProcs(std::vector<int>& particlestoproc) const = 0;
 
+    /*!
+     * \brief get particles within radius
+     *
+     * \author Sebastian Fuchs \date 09/2019
+     *
+     * \param[in]  position             position of search point
+     * \param[in]  radius               search radius around search point
+     * \param[out] neighboringparticles particles within search radius
+     */
+    virtual void GetParticlesWithinRadius(const double* position, const double radius,
+        std::vector<LocalIndexTuple>& neighboringparticles) const = 0;
+
     //! \name get information regarding underlying bin discretization
     //! @{
 
