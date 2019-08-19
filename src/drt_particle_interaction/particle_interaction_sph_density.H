@@ -94,6 +94,12 @@ namespace PARTICLEINTERACTION
     //! evaluate continuity equation
     virtual void ContinuityEquation() const final;
 
+    //! set density sum to density field
+    virtual void SetDensitySum() const final;
+
+    //! add time step scaled density dot to density field
+    virtual void AddTimeStepScaledDensityDot() const final;
+
     //! smoothed particle hydrodynamics specific parameter list
     const Teuchos::ParameterList& params_sph_;
 

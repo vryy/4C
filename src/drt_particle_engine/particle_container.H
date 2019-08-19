@@ -76,12 +76,25 @@ namespace PARTICLEENGINE
     void RemoveParticle(int index);
 
     //! return particle state dimension
-    inline int GetParticleStateDim(StateEnum stateEnum) { return statedim_[stateEnum]; };
+    inline int GetParticleStateDim(StateEnum stateEnum)
+    {
+#ifdef DEBUG
+      if (not storedstates_.count(stateEnum))
+        dserror("particle state '%s' not stored in container!",
+            PARTICLEENGINE::EnumToStateName(stateEnum).c_str());
+#endif
+
+      return statedim_[stateEnum];
+    };
 
     //! return pointer to state of a particle at index
     inline double* GetPtrToParticleState(StateEnum stateEnum, int index)
     {
 #ifdef DEBUG
+      if (not storedstates_.count(stateEnum))
+        dserror("particle state '%s' not stored in container!",
+            PARTICLEENGINE::EnumToStateName(stateEnum).c_str());
+
       if (index < 0 or index > (particlestored_ - 1))
         dserror("can not return pointer to state of particle as index %d out of bounds!", index);
 #endif
@@ -104,6 +117,12 @@ namespace PARTICLEENGINE
     //! scale state of particles
     inline void ScaleState(double fac, StateEnum stateEnum)
     {
+#ifdef DEBUG
+      if (not storedstates_.count(stateEnum))
+        dserror("particle state '%s' not stored in container!",
+            PARTICLEENGINE::EnumToStateName(stateEnum).c_str());
+#endif
+
       for (int i = 0; i < (particlestored_ * statedim_[stateEnum]); ++i)
         (states_[stateEnum])[i] *= fac;
     };
@@ -111,8 +130,18 @@ namespace PARTICLEENGINE
     //! scale and add states to update state of particles
     inline void UpdateState(double facA, StateEnum stateEnumA, double facB, StateEnum stateEnumB)
     {
-      dsassert(
-          statedim_[stateEnumA] == statedim_[stateEnumB], "dimensions of states do not match!");
+#ifdef DEBUG
+      if (not storedstates_.count(stateEnumA))
+        dserror("particle state '%s' not stored in container!",
+            PARTICLEENGINE::EnumToStateName(stateEnumA).c_str());
+
+      if (not storedstates_.count(stateEnumB))
+        dserror("particle state '%s' not stored in container!",
+            PARTICLEENGINE::EnumToStateName(stateEnumB).c_str());
+
+      if (statedim_[stateEnumA] != statedim_[stateEnumB])
+        dserror("dimensions of states do not match!");
+#endif
 
       for (int i = 0; i < (particlestored_ * statedim_[stateEnumA]); ++i)
         (states_[stateEnumA])[i] =
@@ -122,8 +151,14 @@ namespace PARTICLEENGINE
     //! set state to particles
     inline void SetState(std::vector<double> val, StateEnum stateEnum)
     {
-      dsassert(statedim_[stateEnum] == static_cast<int>(val.size()),
-          "dimensions of states do not match!");
+#ifdef DEBUG
+      if (not storedstates_.count(stateEnum))
+        dserror("particle state '%s' not stored in container!",
+            PARTICLEENGINE::EnumToStateName(stateEnum).c_str());
+
+      if (statedim_[stateEnum] != static_cast<int>(val.size()))
+        dserror("dimensions of states do not match!");
+#endif
 
       for (int i = 0; i < particlestored_; ++i)
         for (int dim = 0; dim < statedim_[stateEnum]; ++dim)
@@ -133,6 +168,12 @@ namespace PARTICLEENGINE
     //! clear state of particles
     inline void ClearState(StateEnum stateEnum)
     {
+#ifdef DEBUG
+      if (not storedstates_.count(stateEnum))
+        dserror("particle state '%s' not stored in container!",
+            PARTICLEENGINE::EnumToStateName(stateEnum).c_str());
+#endif
+
       for (int i = 0; i < (particlestored_ * statedim_[stateEnum]); ++i)
         (states_[stateEnum])[i] = 0.0;
     };
