@@ -8,26 +8,26 @@ def check_unittests(look_cmd, allerrors):
   # get list of all unit tests
   unit_tests = [str(ff) for ff in utils.files_changed(look_cmd)[:-1] if utils.is_unittest_file(ff)]
 
+  naming_convention = set()
+  cmakelists = set()
+  alphabetical_order = set()
+  content = set()
+
   for fname in unit_tests:
     # check for naming convention
     if not str.startswith(os.path.split(fname)[1], 'unit_'):
-      errors += 1
-      allerrors.append('Unit test has to start with unit_')
+      naming_convention.add(fname)
 
     # check for naming convention of file extension
     if os.path.splitext(fname)[1] != ".H":
-      errors += 1
-      allerrors.append('The file extension of unit tests have to be .H')
+      naming_convention.add(fname)
 
 
     # check, whether there is a corresponding CMakeLists.txt
     file_parts = utils.path_split_all(fname)
     unittest_package = os.path.sep.join(file_parts[0:-1])
     if not os.path.isfile(os.path.join(unittest_package, 'CMakeLists.txt')):
-      errors += 1
-      allerrors.append(
-        'There is no corresponding CMakeLists.txt file for the unittest package {0}'.format(
-          unittest_package))
+      cmakelists.add(fname)
     else:
       # check, whether the file is added to the corresponding CMakeLists.txt file on the same level
       # IN ALPHABETICAL ORDER
@@ -45,16 +45,10 @@ def check_unittests(look_cmd, allerrors):
               found = True
 
       if not found:
-        errors += 1
-        allerrors.append(
-          'The unittest {0} is missing in the corresponding CMakeLists.txt file {1}'.format(
-            fname, os.path.join(unittest_package, 'CMakeLists.txt')))
+        cmakelists.add(fname)
 
       if not utils.is_alphabetically(entries):
-        errors += 1
-        allerrors.append(
-          'Tests are not in alphabetical order in CMakeLists.txt file {0}'.format(
-            os.path.join(unittest_package, 'CMakeLists.txt')))
+        alphabetical_order.add(os.path.join(unittest_package, 'CMakeLists.txt'))
 
     # check the content of the unittest file itself
     # the name of the class must be in the same line as ": public CxxTest::TestSuite"
@@ -68,24 +62,49 @@ def check_unittests(look_cmd, allerrors):
           # this line contains a TestSuite class.
           # There is no line break allowed here!
           if testsuite_test_re.search(line) is None:
-            errors += 1
-            allerrors.extend(
-                '''The unittesttest {0} contains a class definition with a line break.
-  
-  The framework does not allow to have a line break between class NAMESPACE::Class_TestSuite : public Cxx::TestSuite.
-  
-  If the line is too long to be conform with the code style restrictions, add a "// clang-format off"
-  before the class definition and "// clang-format on" after it. Example:
-  
-  ```
-  // clang-format off
-  class NAMESPACE::VeryLongClassName_TestSuite : public Cxx::TestSuite
-  // clang-format on
-  ```
-  
-  This will avoid automatic added linebreaks in between.'''.format(fname).split('\n'))
+            content.add(fname)
 
-    
+  
+  if len(naming_convention) > 0:
+    errors += 1
+    allerrors.append('The following unit tests are not compliant with the naming conventions.')
+    allerrors.append('Unit tests have to start with unit_ and must have a .H file extension.')
+    allerrors.append('')
+    allerrors.extend(list(naming_convention))
+    allerrors.append('')
+  
+  if len(cmakelists) > 0:
+    errors += 1
+    allerrors.append('The following unit tests are not added to a local CMakeLists.txt:')
+    allerrors.append('')
+    allerrors.extend(list(cmakelists))
+    allerrors.append('')
+  
+  if len(alphabetical_order) > 0:
+    errors += 1
+    allerrors.append('The unit tests in the following local CMakeLists.txt are not in alphabetical order:')
+    allerrors.append('')
+    allerrors.extend(list(alphabetical_order))
+    allerrors.append('')
+
+  if len(content) > 0:
+    errors += 1
+    allerrors.append('The contents of the following unit tests are not correct.')
+    allerrors.append('')
+    allerrors.append('The framework does not allow to have a line break between class NAMESPACE::Class_TestSuite : public Cxx::TestSuite.')
+    allerrors.append('If the line is too long to be conform with the code style restrictions, add a "// clang-format off"')
+    allerrors.append('before the class definition and "// clang-format on" after it. Example:')
+    allerrors.append('')
+    allerrors.append('```')
+    allerrors.append('// clang-format off')
+    allerrors.append('class NAMESPACE::VeryLongClassName_TestSuite : public Cxx::TestSuite')
+    allerrors.append('// clang-format on')
+    allerrors.append('')
+    allerrors.append('This will avoid automatic added linebreaks in between.')
+    allerrors.append('')
+    allerrors.extend(list(content))
+    allerrors.append('')
+
   return errors
 
 # CHECK INPUT FILE TESTS
@@ -118,6 +137,7 @@ def check_inputtests(look_cmd, allerrors):
       for entry in line_entries:
         entries.append(entry)
 
+  missing_input_tests = []
   for input_test in input_tests:
     # check, whether this input file is in TestingFramework.cmake
     found = False
@@ -127,9 +147,13 @@ def check_inputtests(look_cmd, allerrors):
         found = True
 
     if not found:
-      errors += 1
-      allerrors.append(
-        'The input file {0} is missing in TestingFramework.cmake'.format(input_test))
+      missing_input_tests.append(input_test)
+    
+  if len(missing_input_tests) > 0:
+    errors += 1
+    allerrors.append('The following input files are missing in TestingFramework.cmake:')
+    allerrors.append('')
+    allerrors.extend(missing_input_tests)
   
   return errors
 
@@ -166,11 +190,13 @@ def main():
         'https://gitlab.lrz.de/baci/baci/wikis/Unit-testing:-good-practice-in-software-development'])
 
     # check input fiile tests
-    errors += check_inputtests(look_cmd, allerrors)
+    # include input tests only in diff_only. Otherwise
+    errors_input_tests = check_inputtests(look_cmd, allerrors)
+    errors += errors_input_tests if diff_only else 0
   except ValueError:
     print("Something went wrong! Check the error functions in this script again!")
     errors += 1
-  if errors > 0:
+  if len(allerrors) > 0:
     if errfile is None:
       utils.pretty_print_error_stderr(allerrors)
     else:
