@@ -54,7 +54,7 @@ namespace ADAPTER
      *
      * \param[inout] k system/stiffness matrix
      */
-    virtual Teuchos::RCP<LINALG::SparseMatrix> AssembleMasterStiffness() const override;
+    virtual Teuchos::RCP<LINALG::SparseMatrix> AssembleStructureStiffness() const override;
 
     /**
      * \brief Computes the contributions to the stiffness matrix of the master field.
@@ -64,7 +64,7 @@ namespace ADAPTER
      *
      * \returns k system/stiffness matrix
      */
-    virtual Teuchos::RCP<LINALG::SparseMatrix> AssembleSlaveStiffness() const override;
+    virtual Teuchos::RCP<LINALG::SparseMatrix> AssembleFluidStiffness() const override;
 
     /**
      * \brief Computes the contributions to the residuum of the master field.
@@ -74,7 +74,7 @@ namespace ADAPTER
      *
      * \returns f force/rhs matrix
      */
-    virtual Teuchos::RCP<Epetra_Vector> AssembleMasterForce() const override;
+    virtual Teuchos::RCP<Epetra_Vector> AssembleStructureForce() const override;
 
     /**
      * \brief Computes the contributions to the residuum of the slave field.
@@ -84,7 +84,7 @@ namespace ADAPTER
      *
      * \returns f force/rhs matrix
      */
-    virtual Teuchos::RCP<Epetra_Vector> AssembleSlaveForce() override;
+    virtual Teuchos::RCP<Epetra_Vector> AssembleFluidForce() const override;
 
     /// Interface to do preparations to solve the fluid
     virtual void PrepareFluidSolve() override;

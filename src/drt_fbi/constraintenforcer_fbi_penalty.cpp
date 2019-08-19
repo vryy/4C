@@ -18,7 +18,7 @@ fluid-beam interaction)
 #include "../drt_adapter/ad_fld_moving_boundary.H"
 #include <Epetra_Vector.h>
 
-Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::FBIPenaltyConstraintenforcer::AssembleMasterStiffness()
+Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::FBIPenaltyConstraintenforcer::AssembleFluidStiffness()
     const
 {
   if (Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)
@@ -31,14 +31,14 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::FBIPenaltyConstraintenforcer::Assemb
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::FBIPenaltyConstraintenforcer::AssembleSlaveStiffness()
-    const
+Teuchos::RCP<LINALG::SparseMatrix>
+ADAPTER::FBIPenaltyConstraintenforcer::AssembleStructureStiffness() const
 {
   return Teuchos::null;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FBIPenaltyConstraintenforcer::AssembleMasterForce() const
+Teuchos::RCP<Epetra_Vector> ADAPTER::FBIPenaltyConstraintenforcer::AssembleFluidForce() const
 {
   Teuchos::RCP<Epetra_Vector> f = Teuchos::rcp(new Epetra_Vector(
       (Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)->GetFm())
@@ -53,7 +53,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FBIPenaltyConstraintenforcer::AssembleMaste
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FBIPenaltyConstraintenforcer::AssembleSlaveForce() const
+Teuchos::RCP<Epetra_Vector> ADAPTER::FBIPenaltyConstraintenforcer::AssembleStructureForce() const
 {
   Teuchos::RCP<Epetra_Vector> f = Teuchos::rcp(new Epetra_Vector(
       (Teuchos::rcp_dynamic_cast<ADAPTER::FBIConstraintBridgePenalty>(GetBridge(), true)->GetFs())

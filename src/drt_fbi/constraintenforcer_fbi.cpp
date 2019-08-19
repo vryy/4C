@@ -30,8 +30,6 @@
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_lib/drt_discret_faces.H"
 
-#include <mpi.h>
-
 ADAPTER::FBIConstraintenforcer::FBIConstraintenforcer(
     Teuchos::RCP<ADAPTER::FBIConstraintBridge> bridge)
     : fluid_(Teuchos::null),
@@ -57,10 +55,8 @@ void ADAPTER::FBIConstraintenforcer::Setup(Teuchos::RCP<ADAPTER::FSIStructureWra
 {
   fluid_ = fluid;
   structure_ = structure;
-  printf("After structure\n");
   discretizations_->push_back(structure_->Discretization());
   discretizations_->push_back(fluid_->Discretization());
-  printf("After discretization\n");
   bridge_->Setup(structure_->Discretization()->DofRowMap(), fluid_->Discretization()->DofRowMap());
   fluidpositions_ = Teuchos::rcp(new std::map<int, LINALG::Matrix<3, 1>>);
   beampositions_ = Teuchos::rcp(new std::map<int, LINALG::Matrix<3, 1>>);
@@ -75,10 +71,6 @@ void ADAPTER::FBIConstraintenforcer::Setup(Teuchos::RCP<ADAPTER::FSIStructureWra
 
 void ADAPTER::FBIConstraintenforcer::Evaluate()
 {
-  std::cout << "Fluid velocity is "
-            << *(Teuchos::rcp_dynamic_cast<ADAPTER::FluidBeamImmersed>(fluid_, true)->Velnp())
-            << std::endl;
-
   column_structure_displacement_ =
       DRT::UTILS::GetColVersionOfRowVector(structure_->Discretization(), structure_->Dispnp());
   column_structure_velocity_ =
@@ -86,7 +78,6 @@ void ADAPTER::FBIConstraintenforcer::Evaluate()
   column_fluid_velocity_ = DRT::UTILS::GetColVersionOfRowVector(fluid_->Discretization(),
       Teuchos::rcp_dynamic_cast<ADAPTER::FluidBeamImmersed>(fluid_, true)->Velnp());
 
-  std::cout << "Structure velocity is " << *(structure_->Velnp()) << std::endl;
   // Vector to hand elements pointers to the bridge object
   std::map<int, std::vector<int>> pairids;
   // todo search radius is hard-coded for the first few tries
@@ -340,14 +331,14 @@ void ADAPTER::FBIConstraintenforcer::ExtendBeamGhosting()
 }
 
 
-Teuchos::RCP<Epetra_Vector> ADAPTER::FBIConstraintenforcer::MasterToSlave()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FBIConstraintenforcer::StructureToFluid()
 {
   const Teuchos::ParameterList& fbi = DRT::Problem::Instance()->FBIParams();
   if (DRT::INPUT::IntegralValue<int>(fbi, "COUPLING") != INPAR::FBI::BeamToFluidCoupling::solid)
   {
     Teuchos::rcp_dynamic_cast<ADAPTER::FluidBeamImmersed>(fluid_, true)
-        ->SetCouplingContributions(AssembleMasterStiffness());
-    fluid_->ApplyInterfaceValues(AssembleMasterForce());
+        ->SetCouplingContributions(AssembleFluidStiffness());
+    fluid_->ApplyInterfaceValues(AssembleFluidForce());
   }
 
   return Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(structure_, true)
@@ -356,9 +347,9 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FBIConstraintenforcer::MasterToSlave()
 
 
 // This is the interface to the outside world regarding the force.
-Teuchos::RCP<Epetra_Vector> ADAPTER::FBIConstraintenforcer::SlaveToMaster()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FBIConstraintenforcer::FluidToStructure()
 {
-  return AssembleSlaveForce();
+  return AssembleStructureForce();
 };
 
 void ADAPTER::FBIConstraintenforcer::ComputeFixedPositions(Teuchos::RCP<DRT::Discretization> dis,

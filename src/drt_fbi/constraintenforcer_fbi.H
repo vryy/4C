@@ -54,6 +54,36 @@ namespace ADAPTER
     virtual void Evaluate();
 
     /**
+     * \brief Ghosts ALL beams to all processors in order to do the search
+     *
+     * \note For now we assume that we only have beam elements in the structure discretization
+     */
+
+    virtual void ExtendBeamGhosting();
+
+    /**
+     * \brief Handles the parallel communication necessary to create the beam-fluid pairs
+     *
+     * For now the pairs have to be evaluated on the proc owning the beam element to ensure that
+     * every pair is only evaluated once. This function handles all necessary communication to send
+     * the data from the owner of the fluid element ( which did the search) to the owner of the beam
+     * element ( who ensures uniqueness of the beam segments). This becomes obsolete as soon as the
+     * geoemtry pair is adapted to handle the communication of the tracking data instead.
+     *
+     * \params[in] pairids  a map containing a map relating all beam element ids to a set of fluid
+     * elements ids which they potentially cut
+     */
+    virtual void PreparePairCreation(std::map<int, std::vector<int>>& pairids);
+
+    /**
+     * \brief Creates all possible interaction pairs
+     *
+     * \params[in] pairids a map containing a map relating all beam element ids to a set of fluid
+     * elements ids which they potentially cut
+     */
+    virtual void CreatePairs(std::map<int, std::vector<int>> pairids);
+
+    /**
      * \brief Abstractly, we do everything we have to, to introduce the coupling condition into the
      * master field.
      *
@@ -62,18 +92,11 @@ namespace ADAPTER
      * vector with additional contributions as well as a stiffness matrix with additional
      * information is returned (monolithic formulation, full penalty partitioned, weak Dirichlet).
      *
-     * What exactly has to be done, has to be implemented in the derived classes.
      *
      * \returns f residuum vector
      */
 
-    virtual void ExtendBeamGhosting();
-
-    virtual void PreparePairCreation(std::map<int, std::vector<int>>& pairids);
-
-    virtual void CreatePairs(std::map<int, std::vector<int>> pairids);
-
-    virtual Teuchos::RCP<Epetra_Vector> SlaveToMaster();
+    virtual Teuchos::RCP<Epetra_Vector> FluidToStructure();
 
     /**
      * \brief Abstractly, we do everything we have to, to introduce the coupling condition into the
@@ -84,37 +107,45 @@ namespace ADAPTER
      * vector with additional contributions as well as a stiffness matrix with additional
      * information is returned (monolithic formulation, full penalty partitioned, weak Dirichlet).
      *
-     * What exactly has to be done, has to be implemented in the derived classes.
      *
-     * \returns f residuum vector
+     * \returns v velocity
      */
-    virtual Teuchos::RCP<Epetra_Vector> MasterToSlave();
+
+    virtual Teuchos::RCP<Epetra_Vector> StructureToFluid();
 
     /// Interface to do preparations to solve the fluid
     virtual void PrepareFluidSolve(){};
 
+    /// Get function for the structure field
     virtual Teuchos::RCP<const ADAPTER::FSIStructureWrapper> GetStructure() const final
     {
       return structure_;
     };
+    /// Get function for the fluid field
     virtual Teuchos::RCP<const ADAPTER::FluidMovingBoundary> GetFluid() const final
     {
       return fluid_;
     };
+    /// Get function for the search tree
     virtual Teuchos::RCP<const GEO::SearchTree> GetSearchtree() const final { return searchtree_; };
+
+    /// Get function for the bridge object
     virtual const Teuchos::RCP<ADAPTER::FBIConstraintBridge> GetBridge() const final
     {
       return bridge_;
     };
+    /// Get function for the fludi positions
     virtual Teuchos::RCP<const std::map<int, LINALG::Matrix<3, 1>>> GetFluidPositions() const final
     {
       return fluidpositions_;
     };
+    /// Get function for the beam positions
     virtual Teuchos::RCP<const std::map<int, LINALG::Matrix<3, 1>>> GetBeamPositions() const final
     {
       return beampositions_;
     };
 
+    /// Get function for the structure and the fluid discretization
     virtual Teuchos::RCP<const std::vector<Teuchos::RCP<DRT::Discretization>>> GetDiscretizations()
         const final
     {
@@ -146,8 +177,7 @@ namespace ADAPTER
      *
      * \param[inout] k system/stiffness matrix
      */
-    virtual Teuchos::RCP<LINALG::SparseMatrix> AssembleMasterStiffness()
-        const  // todo Is this really necessary?
+    virtual Teuchos::RCP<LINALG::SparseMatrix> AssembleFluidStiffness() const
     {
       dserror("Not yet implemented! This has to be overloaded by a derived class.\n");
       return Teuchos::null;
@@ -161,8 +191,7 @@ namespace ADAPTER
      *
      * \returns k system/stiffness matrix
      */
-    virtual Teuchos::RCP<LINALG::SparseMatrix> AssembleSlaveStiffness()
-        const  // todo Is this really necessary?
+    virtual Teuchos::RCP<LINALG::SparseMatrix> AssembleStructureStiffness() const
     {
       dserror("Not yet implemented! This has to be overloaded by a derived class.\n");
       return Teuchos::null;
@@ -174,10 +203,9 @@ namespace ADAPTER
      * This has to be implemented differently depending on the concrete constraint enforcement
      * strategy.
      *
-     * \returns f force/rhs matrix
+     * \returns f force vector
      */
-    virtual Teuchos::RCP<Epetra_Vector> AssembleMasterForce()
-        const  // todo Is this really necessary?
+    virtual Teuchos::RCP<Epetra_Vector> AssembleStructureForce() const
     {
       dserror("Not yet implemented! This has to be overloaded by a derived class.\n");
       return Teuchos::null;
@@ -189,10 +217,9 @@ namespace ADAPTER
      * This has to be implemented differently depending on the concrete constraint enforcement
      * strategy.
      *
-     * \returns f force/rhs matrix
+     * \returns f force matrix
      */
-    virtual Teuchos::RCP<Epetra_Vector> AssembleSlaveForce()
-        const  // todo Is this really necessary?
+    virtual Teuchos::RCP<Epetra_Vector> AssembleFluidForce() const
     {
       dserror("Not yet implemented! This has to be overloaded by a derived class.\n");
       return Teuchos::null;
@@ -213,6 +240,7 @@ namespace ADAPTER
         Teuchos::RCP<const Epetra_Vector> disp) const;
 
    private:
+    FBIConstraintenforcer() = delete;
     /// underlying fluid of the FSI problem
     Teuchos::RCP<ADAPTER::FluidMovingBoundary> fluid_;
 
@@ -248,8 +276,11 @@ namespace ADAPTER
     /// Flag determining the fluid stabilization type
     bool edgebased_fluidstabilization;
 
+    /// Displacement of the structural column nodes on the current proc
     Teuchos::RCP<const Epetra_Vector> column_structure_displacement_;
+    /// Velocity of the structural column nodes on the current proc
     Teuchos::RCP<const Epetra_Vector> column_structure_velocity_;
+    /// Velocity of the fluid column nodes on the current proc
     Teuchos::RCP<const Epetra_Vector> column_fluid_velocity_;
   };
 }  // namespace ADAPTER

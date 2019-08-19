@@ -155,14 +155,14 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::InitialGuess()
 
 Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::FluidToStruct(Teuchos::RCP<Epetra_Vector> iv)
 {
-  return constraint_manager_->SlaveToMaster();
+  return constraint_manager_->FluidToStructure();
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
 Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::StructToFluid(Teuchos::RCP<Epetra_Vector> iv)
 {
-  return constraint_manager_->MasterToSlave();
+  return constraint_manager_->StructureToFluid();
 }
 
 /*----------------------------------------------------------------------*/
