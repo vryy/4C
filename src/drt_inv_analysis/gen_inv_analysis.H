@@ -238,7 +238,7 @@ namespace STR
     };
     INV_REG_UPDATE_STRATEGY reg_update_;
 
-    // don't accept optimization step for negative material parameters
+    //! don't accept optimization step for negative material parameters
     int check_neg_params_;
 
 
