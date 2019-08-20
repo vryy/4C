@@ -1,4 +1,4 @@
-/*!---------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 /*!
 \brief submaterial associated with macro-scale Gauss point in multi-scale simulations of scalar
 transport problems

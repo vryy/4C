@@ -1,4 +1,4 @@
-/*!----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 /*!
 \brief material for heat transport due to Fourier-type thermal conduction and the Soret effect
 
