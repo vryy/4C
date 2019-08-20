@@ -95,8 +95,11 @@ namespace PARTICLEWALL
     virtual void UpdateBinRowAndColMap(
         const Teuchos::RCP<Epetra_Map> binrowmap, const Teuchos::RCP<Epetra_Map> bincolmap) final;
 
-    // get max wall position increment since last transfer
-    virtual void GetMaxWallPositionIncrement(double& allprocmaxpositionincrement) final;
+    //! check that wall nodes are located in bounding box
+    virtual void CheckWallNodesLocatedInBoundingBox() const final;
+
+    //! get max wall position increment since last transfer
+    virtual void GetMaxWallPositionIncrement(double& allprocmaxpositionincrement) const final;
 
     //! distribute wall elements and nodes
     virtual void DistributeWallElementsAndNodes() = 0;

@@ -738,6 +738,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
   if (particleinteraction_)
     invalidparticleneighbors = (not particleengine_->HaveValidParticleNeighbors());
 
+  // check that wall nodes are located in bounding box
+  if (particlewall_) particlewall_->CheckWallNodesLocatedInBoundingBox();
+
   if (transferevery_ or transferneeded or writeresultsthisstep_ or writerestartthisstep_ or
       invalidparticleconnectivity or invalidparticleneighbors)
   {
