@@ -21,6 +21,13 @@ void ADAPTER::FieldWrapper::PrepareTimeStep()
   if (NOXCorrection_) ResetStepinc();
 }
 
+
+void ADAPTER::FieldWrapper::UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc)
+{
+  if (NOXCorrection_) GetIterinc(disiterinc);
+  field_->UpdateStateIncrementally(disiterinc);
+}
+
 /*-----------------------------------------------------------------------/
 | update dofs and evaluate elements                                      |
 /-----------------------------------------------------------------------*/

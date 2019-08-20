@@ -299,6 +299,17 @@ void STR::TIMINT::LOCAContinuation::PreparePartitionStep()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::TIMINT::LOCAContinuation::UpdateStateIncrementally(
+    Teuchos::RCP<const Epetra_Vector> disiterinc)
+{
+  dserror(
+      "The LOCA integration is currently not supporting coupled monolithic"
+      "problems, thus UpdateStateIncrementally() can not be called. Use the implicit integrator "
+      "instead.");
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::TIMINT::LOCAContinuation::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
 {
   dserror(

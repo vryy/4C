@@ -42,6 +42,8 @@ namespace STR
       //! Prepare time step
       virtual void PrepareTimeStep();
 
+      //!  Update state incrementally for coupled problems with monolithic approach
+      virtual void UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc);
 
       //!  Evaluate routine for coupled problems with monolithic approach
       virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc);

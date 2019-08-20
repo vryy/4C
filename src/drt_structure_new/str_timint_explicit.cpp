@@ -55,6 +55,17 @@ void STR::TIMINT::Explicit::PrepareTimeStep()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::TIMINT::Explicit::UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc)
+{
+  CheckInitSetup();
+  dserror(
+      "All monolithically coupled problems work with implicit time "
+      "integration schemes. Thus, calling Evaluate() in an explicit scheme "
+      "is not possible.");
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::TIMINT::Explicit::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
 {
   CheckInitSetup();

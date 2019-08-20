@@ -74,13 +74,17 @@ namespace ADAPTER
     /// start new time step
     virtual void PrepareTimeStep();
 
-    /// update displacement and evaluate elements
+    /// update state with given increment vector
+    virtual void UpdateStateIncrementally(
+        const Teuchos::RCP<const Epetra_Vector> disi  ///< iterative solution increment
+    );
+
+    /// update state and evaluate elements
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc);
 
 
-    /// update displacement and evaluate elements
+    /// update state and evaluate elements
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc, bool firstiter);
-
 
     /// update at time step end
     virtual void Update() { field_->Update(); }
