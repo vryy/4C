@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief  Basis of all structure approaches with ale
         (Lagrangian step followed by Shape Evolution step )

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief This holds the implementation of the non-abstract methods of the Mixture constituents
  interface

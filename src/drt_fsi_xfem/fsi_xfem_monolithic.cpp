@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief Control routine for monolithic FSI (XFSI) solved via a classical Newton scheme
        taking into account changing fluid dofsets
 

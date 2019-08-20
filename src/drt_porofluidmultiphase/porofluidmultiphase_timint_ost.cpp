@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief one-step-theta time integration scheme for porous multiphase flow
 
    \level 3

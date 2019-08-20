@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief
 Be sure to include 'AAA' in your BACI configurations file!!!
 This file contains the routines required for OGDEN-like material model

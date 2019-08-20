@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Library of Continuation Algorithms (LOCA) implementation.
 

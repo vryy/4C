@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------*/
-/*!
+/*! \file
 // Masterthesis of h.Willmann under supervision of Anh-Tu Vuong and Christoph Ager
 // Originates from contact_poro_lagrange_strategy
 

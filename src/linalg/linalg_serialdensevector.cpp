@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief A class that wraps Epetra_SerialDenseVector with minor modifications
        in the constructor

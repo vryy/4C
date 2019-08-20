@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief class for handling of micro-macro transitions
 
 \level 3

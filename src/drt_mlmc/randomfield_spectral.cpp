@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Class for generating samples of gaussian and non gaussian random fields based on spectral
 representation
 

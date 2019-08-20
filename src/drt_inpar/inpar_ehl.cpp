@@ -1,5 +1,5 @@
 /*--------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Elastohydrodynamic lubrication (lubrication structure interaction) parameters
 

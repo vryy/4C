@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Interface to Baci's NLNSOL as nonlinear solver in structural dynamics
 

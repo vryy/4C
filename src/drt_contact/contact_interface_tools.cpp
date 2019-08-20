@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Contains support methods for the contact interface evaluation.
 
 \level 2

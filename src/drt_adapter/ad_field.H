@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief general Field adapter - In the end should be the base class for all
 'fields' like structure, fluid, ale, poro,... (in principle every coupled

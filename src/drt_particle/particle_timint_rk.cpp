@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Particle time integration with Runge-Kutta time integration
        scheme of 2nd/4th order (explicit),
 

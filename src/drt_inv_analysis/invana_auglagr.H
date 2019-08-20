@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief augmented lagrange functional specialization of Invana base class
 
 \level 3

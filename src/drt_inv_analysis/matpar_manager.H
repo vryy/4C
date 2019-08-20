@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Class to handle calls to material parameters from an optimization routine
 
 \level 3

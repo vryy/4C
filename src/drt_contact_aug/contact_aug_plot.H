@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief unite all necessary methods to generate the data for external plots in
 MATLAB, PGFPlot or other tools.
 

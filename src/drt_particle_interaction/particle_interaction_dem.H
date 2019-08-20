@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief discrete element method (DEM) interaction handler
 
 \level 3

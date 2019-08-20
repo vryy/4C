@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Interface for all scatra adapters.
 \level 1
 \maintainer Anh-Tu Vuong

@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Check the active set for convergence. Only meaningful for
        inequality constrained problems.

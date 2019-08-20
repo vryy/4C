@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief line evaluate routines for discsh3 element
 
 \level 3

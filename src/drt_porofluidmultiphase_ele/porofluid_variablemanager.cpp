@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief variable manager class for poro multiphase fluid element
 
    \level 3

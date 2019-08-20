@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief wrapper for structure material of porous media including reactive reference porosity
 
 \maintainer Christoph Schmidt

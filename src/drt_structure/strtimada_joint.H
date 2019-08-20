@@ -1,5 +1,5 @@
 /*======================================================================*/
-/*!
+/*! \file
 \brief Indicator based on general STR::TimInt object
 
 \level 1

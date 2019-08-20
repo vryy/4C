@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 \brief Structure specific result test class
 
 \maintainer Anh-Tu Vuong

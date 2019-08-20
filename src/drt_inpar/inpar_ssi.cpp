@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief input parameters for solid-scatra-interaction
 
 \level 2

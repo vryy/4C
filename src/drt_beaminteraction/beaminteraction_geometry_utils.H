@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief utility functions for geometric problems associated with beam-to-? interactions
 

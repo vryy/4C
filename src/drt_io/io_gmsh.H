@@ -1,4 +1,5 @@
-/*!
+/*----------------------------------------------------------------------*/
+/*! \file
  *  * \brief simple element print library for Gmsh
  *
  * Useful for debugging, only output per processor (no communication supported)

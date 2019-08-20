@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
  \brief  Basis of all monolithic poroelasticity algorithms
 

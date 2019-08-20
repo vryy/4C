@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief three dimensional nonlinear Kirchhoff beam element based on a C1 curve
 

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Implicit time integration for spatial discretised
        thermal dynamics
 \level 1

@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief OST time integrator for FS3I-AC problems. Is in diamond inhertance with TimIntOneStepTheta
        and TimIntAC.

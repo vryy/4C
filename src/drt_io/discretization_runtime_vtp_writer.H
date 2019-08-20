@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Write visualization output for a discretization in vtk/vtp format at runtime
 

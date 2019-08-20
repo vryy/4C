@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief calculation classes for evaluation of constitutive relation for (microscopic) density in
  porous media
 

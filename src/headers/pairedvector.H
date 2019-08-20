@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief This class is meant as a replacement for std::maps, when other
        storage and access characteristics are needed.

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief a wrapper for porous multiphase flow algorithms
 
    \level 3

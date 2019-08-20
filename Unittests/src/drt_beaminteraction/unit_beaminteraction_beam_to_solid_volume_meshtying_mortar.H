@@ -1,4 +1,5 @@
-/*!
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief Unit tests for the beam to volume meshtying mortar pair.
 

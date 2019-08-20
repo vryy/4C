@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Uncertainty Quantification
 
 \maintainer Jonas Nitzler

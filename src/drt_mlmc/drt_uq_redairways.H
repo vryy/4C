@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Class for performing UQ analysis with redairways
 
 \maintainer Jonas Nitzler

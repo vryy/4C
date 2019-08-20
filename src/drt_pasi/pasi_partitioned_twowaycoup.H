@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief two way coupled partitioned algorithm for particle structure interaction
 
 \level 3

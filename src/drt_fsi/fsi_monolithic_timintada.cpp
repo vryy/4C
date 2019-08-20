@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Provide time adaptivity functionalities within the Monolithic class
 

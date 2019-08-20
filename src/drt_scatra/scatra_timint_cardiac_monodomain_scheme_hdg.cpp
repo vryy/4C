@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief time-integration scheme for HDG with extensions for
        cardiac monodomain problems
 

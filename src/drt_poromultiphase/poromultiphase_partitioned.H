@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief  base class for partitioned porous multiphase flow through elastic medium problems
 
    \level 3

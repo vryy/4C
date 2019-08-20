@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief auxiliary material for macro-scale elements in multi-scale simulations of scalar transport
 problems
 

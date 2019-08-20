@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief One beam contact pair (two beam elements) consisting of several contact segments
 

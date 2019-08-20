@@ -1,4 +1,5 @@
-/*!incomplete
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief Line to volume interaction with Gauss point projection on the cylinder surface along the
 line.

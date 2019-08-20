@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief structural model evaluator for monolithic scalar-structure interaction
 
 \level 2

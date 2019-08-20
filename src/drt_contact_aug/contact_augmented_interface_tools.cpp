@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Tools for the augmented contact interface evaluation.
 
 \level 2

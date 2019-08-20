@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief This class is inherited from dofset and replaces the
        method AssignDegreesOfFreedom by a version that does not query

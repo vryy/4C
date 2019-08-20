@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief temperature-dependent water according to "VDI Waermeatlas"
 
 \level 2

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief One beam-to-beam pair (two beam elements) connected by a mechanical link
 

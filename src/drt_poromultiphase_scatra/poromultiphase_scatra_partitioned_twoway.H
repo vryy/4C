@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief two-way coupled partitioned algorithm for scalar transport within multiphase porous medium
 
    \level 3

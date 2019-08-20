@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Testing of structure calculation results
 
 \maintainer Matthias Mayr

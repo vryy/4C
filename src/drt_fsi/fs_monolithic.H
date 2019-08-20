@@ -1,4 +1,5 @@
-/*!
+/*----------------------------------------------------------------------*/
+/*! \file
 
  \brief Free-surface flow as monolithic problem
 

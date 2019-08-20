@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief structure-specific utils and auxiliary functions
 
 \level 1

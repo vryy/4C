@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief A collection of helper methods and classes using automatic differentiation with FAD;
 

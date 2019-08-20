@@ -1,4 +1,5 @@
-/*!
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief Meshtying element for meshtying between a beam and a 3D solid element using Gauss points
 on the surface of the (circular) beam cross section.

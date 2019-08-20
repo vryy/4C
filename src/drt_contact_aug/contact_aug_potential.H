@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Class for the evaluation of the contact potential and its
        linearization.
 

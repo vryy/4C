@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Structural time integration with one-step-theta
 \level 1
 \maintainer Matthias Mayr

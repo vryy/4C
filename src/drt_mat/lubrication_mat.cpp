@@ -1,5 +1,5 @@
 /*--------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Material model for the lubrication film
 
 \level 3

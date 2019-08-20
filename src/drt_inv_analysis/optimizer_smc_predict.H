@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Prediction based on Sequential Monte Carlo particles
 
 \level 3

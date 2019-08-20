@@ -1,4 +1,5 @@
-/*!-----------------------------------------------------------------------------------------------*
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief class that provides the common functionality for a mesh cut based on a level set field or on
 surface meshes

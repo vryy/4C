@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief a single phase material of a multiphase porous fluid
 
    \level 3

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief single phase material for multiphase porous flow
 
    \level 3

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief singleton class holding all static time integration parameters required for scalar transport
 element evaluation

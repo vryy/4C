@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Wrapper for all Dirichlet boundary condition tasks.
 

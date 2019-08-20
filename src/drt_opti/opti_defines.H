@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief for an exact gradient, we need fully linearized adjoint equations with
  respect to the primal variables (velocity, pressure). Therefore, the stabilization

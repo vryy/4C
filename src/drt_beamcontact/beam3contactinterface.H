@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief interface class for templated classes beam3contact and beam3contactnew
 

@@ -1,4 +1,5 @@
-/*!---------------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief provides enum of actions. Motivation was to have a quick enum
 comparison instead of a cumbersome std::string compare.

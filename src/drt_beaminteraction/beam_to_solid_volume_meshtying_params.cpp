@@ -1,4 +1,5 @@
-/*!
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief Data container holding all beam to solid volume meshtying input parameters.
 

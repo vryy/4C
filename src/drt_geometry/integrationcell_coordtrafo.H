@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief routines doing coordinate transformation between various coordinate systems
        a integration cell is lying in

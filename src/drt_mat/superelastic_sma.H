@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Material law for superelastic isotropic material
        following finite strain with linear and exponential
        flow rules.

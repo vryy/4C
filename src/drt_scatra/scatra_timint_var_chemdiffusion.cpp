@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief  Time integration for variational formulation of chemical diffusion,
     it inherits directly from scatra_timint_ost.

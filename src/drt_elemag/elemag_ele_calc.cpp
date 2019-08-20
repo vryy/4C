@@ -1,5 +1,5 @@
 /*--------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief All functionality for electromagnetic element evaluations
 
 \level 2

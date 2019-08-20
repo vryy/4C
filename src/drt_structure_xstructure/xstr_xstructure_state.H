@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/**
+/** \file
 
 \brief XStructure state handling ( only one single XFEM-discretization )
 

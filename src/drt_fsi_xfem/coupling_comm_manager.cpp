@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief  Coupling Communication Manager automatically creates all required coupling object to
 transform matrixes, vectors, ...
 

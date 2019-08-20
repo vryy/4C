@@ -1,5 +1,5 @@
 /*--------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief evaluation of scalar transport elements for standard scalar transport problems
 

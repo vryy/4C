@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief generic interface for implementations of the porofluidmultiphase
         boundary element evaluation routines
 

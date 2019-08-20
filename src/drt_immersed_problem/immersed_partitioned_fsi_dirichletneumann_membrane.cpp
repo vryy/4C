@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief partitioned immersed fsi algorithm for dirichlet-neumann coupling with membrane finite
 elements

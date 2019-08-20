@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief three dimensional total Lagrange truss element (can be connected to beam3 elements and
 adapts assembly automatically according to the thereby changed number of nodal degrees of freedom)
 

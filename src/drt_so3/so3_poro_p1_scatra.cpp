@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
  \brief implementation of the 3D solid-poro element (p1, mixed approach) including scatra
  functionality

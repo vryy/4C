@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Control routine for convection-diffusion (in)stationary solvers,
 
      including instationary solvers based on

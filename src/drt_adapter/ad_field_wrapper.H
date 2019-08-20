@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Wrapper for the field time integration - This Wrapper already implements the functionality to
 use StepIncrements, therefore set NOXCorrection == true!!!

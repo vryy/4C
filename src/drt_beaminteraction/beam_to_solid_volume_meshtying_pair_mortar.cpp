@@ -1,4 +1,5 @@
-/*!
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief Meshtying element for meshtying between a 3D beam and a 3D solid element using mortar shape
 functions for the traction.

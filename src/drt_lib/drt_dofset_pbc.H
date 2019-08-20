@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief A modified set of degrees of freedom for periodic boundary
        conditions. This class is inherited from dofset and replaces the

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief search tree input parameters
 \level 2
 \maintainer Martin Kronbichler

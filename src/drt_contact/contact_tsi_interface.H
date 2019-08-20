@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Contact interface capable of TSI
 
 \maintainer Matthias Mayr

@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief Basic constraint class, dealing with constraints living on boundaries
 \level 2
 \maintainer Matthias Mayr

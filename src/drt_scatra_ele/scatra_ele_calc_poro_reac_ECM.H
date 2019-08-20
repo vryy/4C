@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief evaluation class containing routines for dissolving reactions within
        porous medium for ECM modeling

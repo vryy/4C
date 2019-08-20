@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Adams-Bashforth-2 time integration for solid dynamics
 

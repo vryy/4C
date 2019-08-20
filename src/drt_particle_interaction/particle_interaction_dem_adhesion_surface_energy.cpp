@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief adhesion surface energy handler for discrete element method (DEM) interactions
 
 \level 3

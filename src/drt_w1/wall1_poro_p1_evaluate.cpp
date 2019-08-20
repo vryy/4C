@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Evaluate methods for 2D wall element for structure part of porous medium
        using p1 approach (mixed approach).
 

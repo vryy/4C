@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief unittests for normal contact handler for discrete element method (DEM) interactions
 
 \level 3

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief abstract interface for electrode and electrolyte materials carrying concentration and
 electric potential as degrees of freedom
 

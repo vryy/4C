@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/**
+/** \file
 \brief Service functionality for the solid shell8 elements
 
 \maintainer Matthias Mayr

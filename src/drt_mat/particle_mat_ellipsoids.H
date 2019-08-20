@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief material properties of ellipsoidal particles
 
 \level 2

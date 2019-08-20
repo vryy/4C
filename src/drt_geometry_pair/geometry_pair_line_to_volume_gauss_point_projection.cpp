@@ -1,4 +1,5 @@
-/*!incomplete
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief Line to volume interaction with simple Gauss point projection and boundary segmentation.
 

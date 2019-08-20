@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Templated Evaluate file for inter-acinar linker element containing
        the action types for a reduced inter-acinar linker element

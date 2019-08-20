@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Explicit time integration for thermal dynamics
 
 \level 3

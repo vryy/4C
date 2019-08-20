@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief a contact element
 \level 2
 \maintainer Matthias Mayr

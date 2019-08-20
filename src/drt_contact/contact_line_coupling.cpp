@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief A class to perform line clipping for line to surface contact +
        call for numerical integration
 

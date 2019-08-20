@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Robinson's visco-plastic material
 
       The visco-plastic Robinson's material is only admissible in small strain

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Computation of mean values of nodal/cp quantities. The
 means are computed as time averages

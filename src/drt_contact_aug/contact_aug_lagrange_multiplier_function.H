@@ -1,4 +1,5 @@
-/*!
+/*----------------------------------------------------------------------*/
+/*! \file
   \brief Lagrange multiplier function: solve a least squares problem to compute
   the Lagrange multiplier value dependent on the current displacement state
 

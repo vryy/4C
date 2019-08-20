@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Interface class for the eXtended contact evaluation
 
 \level 3

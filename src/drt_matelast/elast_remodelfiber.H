@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Base class for fiber materials which remodel. Has a pointer to the single fiber families
 
 \level 2

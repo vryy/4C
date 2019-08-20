@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief unittests for momentum formulation handler in smoothed particle hydrodynamics (SPH)
 
 \level 3

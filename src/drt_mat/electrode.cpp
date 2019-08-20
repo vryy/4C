@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief electrode material carrying concentration and electric potential as degrees of freedom
 
 \level 2

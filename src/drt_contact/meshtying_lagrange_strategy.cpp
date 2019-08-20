@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief strategy handling mesh tying problems with Lagrange multipliers
 
 \level 1

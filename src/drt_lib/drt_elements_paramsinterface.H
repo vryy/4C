@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief collection of a serial of possible element actions to pass information
        down to elements

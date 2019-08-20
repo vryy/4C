@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief Abstract interface for meshtying strategies in scalar transport problems (including standard
 strategy without meshtying)

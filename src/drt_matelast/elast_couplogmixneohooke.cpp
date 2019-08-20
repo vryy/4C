@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief
 This file contains the routines required for mixed-logarithmic neo-Hooke material
 according to example 1 in Stupkiewicz "An ALE formulation for implicit time integration of quasi-

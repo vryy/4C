@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief  update dofrowmap and dofsets for periodic boundary conditions
 

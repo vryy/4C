@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Incomplete! - Purpose: Templated Evaluate file for blood scatra element containing the
 action types for a reduced blood scatra element RedAirBloodScatra. The actual implementation of the

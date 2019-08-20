@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief evaluation of ScaTra boundary elements for isothermal electrodes exhibiting surface layer
 growth, e.g., lithium plating

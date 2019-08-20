@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Thermal time integration with generalised-alpha
 \level 1
 \maintainer Christoph Meier
