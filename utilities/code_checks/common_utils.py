@@ -26,6 +26,14 @@ def is_unittest_file(fname):
 
   return os.path.splitext(parts[-1])[1] in ".h .H .hpp".split()
 
+def is_unittest_cmakefile(fname):
+  parts = path_split_all(fname)
+
+  if parts[0] != 'Unittests':
+    return False
+
+  return parts[-1] == 'CMakeLists.txt'
+
 def is_source_file(fname):
   return os.path.splitext(fname)[1] in ".c .cpp .cxx .h .H .hpp".split()
 

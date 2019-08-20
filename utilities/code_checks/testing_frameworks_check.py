@@ -7,11 +7,18 @@ def check_unittests(look_cmd, allerrors):
 
   # get list of all unit tests
   unit_tests = [str(ff) for ff in utils.files_changed(look_cmd)[:-1] if utils.is_unittest_file(ff)]
+  unit_tests_cmake = [str(ff) for ff in utils.files_changed(look_cmd)[:-1] if utils.is_unittest_cmakefile(ff)]
 
   naming_convention = set()
   cmakelists = set()
   alphabetical_order = set()
   content = set()
+
+  # check, whether there is a corresponding CMakeLists.txt
+  cmake_regex_entries = [
+    (re.compile(r'\$\{CMAKE_CURRENT_SOURCE_DIR\}\/([a-zA-Z0-9_\-\.]*)'), True),
+    (re.compile(r'add_subdirectory\s*\(\s*([a-zA-Z0-9_\-\.]*)\s*\)'), False)
+  ]
 
   for fname in unit_tests:
     # check for naming convention
@@ -22,8 +29,6 @@ def check_unittests(look_cmd, allerrors):
     if os.path.splitext(fname)[1] != ".H":
       naming_convention.add(fname)
 
-
-    # check, whether there is a corresponding CMakeLists.txt
     file_parts = utils.path_split_all(fname)
     unittest_package = os.path.sep.join(file_parts[0:-1])
     if not os.path.isfile(os.path.join(unittest_package, 'CMakeLists.txt')):
@@ -33,22 +38,21 @@ def check_unittests(look_cmd, allerrors):
       # IN ALPHABETICAL ORDER
       with open(os.path.join(unittest_package, 'CMakeLists.txt'),
                 'r') as cmakefile:
-        entries = []
         found = False
-        entry_regex = re.compile(
-          r'\$\{CMAKE_CURRENT_SOURCE_DIR\}\/([a-zA-Z0-9_\-\.]*)')
+
         for line in cmakefile:
-          line_entries = entry_regex.findall(line)
-          for entry in line_entries:
-            entries.append(entry)
-            if entry == file_parts[-1]:
-              found = True
+
+          for entry_regex in cmake_regex_entries:
+            # this regex does not describe a unit test, it's a directory. Skip it
+            if entry_regex[1] == False:
+              continue
+            line_entries = entry_regex.findall(line)
+            for entry in line_entries:
+              if entry == file_parts[-1]:
+                found = True
 
       if not found:
         cmakelists.add(fname)
-
-      if not utils.is_alphabetically(entries):
-        alphabetical_order.add(os.path.join(unittest_package, 'CMakeLists.txt'))
 
     # check the content of the unittest file itself
     # the name of the class must be in the same line as ": public CxxTest::TestSuite"
@@ -63,6 +67,22 @@ def check_unittests(look_cmd, allerrors):
           # There is no line break allowed here!
           if testsuite_test_re.search(line) is None:
             content.add(fname)
+  
+  for fname in unit_tests_cmake:
+    # check whether all tests are added in alphabetical order
+    with open(fname, 'r') as cmakefile:
+      entries = []
+      for _ in range(len(cmake_regex_entries)):
+        entries.append([])
+      
+      for line in cmakefile:
+        for i, entry_regex in enumerate(cmake_regex_entries):
+          line_entries = entry_regex[0].findall(line)
+          entries[i].extend(line_entries)
+      
+      for l in entries:
+        if not utils.is_alphabetically(l):
+          alphabetical_order.add(fname)
 
   
   if len(naming_convention) > 0:
@@ -82,7 +102,7 @@ def check_unittests(look_cmd, allerrors):
   
   if len(alphabetical_order) > 0:
     errors += 1
-    allerrors.append('The unit tests in the following local CMakeLists.txt are not in alphabetical order:')
+    allerrors.append('The items in the following local CMakeLists.txt are not in alphabetical order:')
     allerrors.append('')
     allerrors.extend(list(alphabetical_order))
     allerrors.append('')
