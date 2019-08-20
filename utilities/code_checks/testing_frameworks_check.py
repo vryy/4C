@@ -67,24 +67,24 @@ def check_unittests(look_cmd, allerrors):
           # There is no line break allowed here!
           if testsuite_test_re.search(line) is None:
             content.add(fname)
-  
+
   for fname in unit_tests_cmake:
     # check whether all tests are added in alphabetical order
     with open(fname, 'r') as cmakefile:
       entries = []
       for _ in range(len(cmake_regex_entries)):
         entries.append([])
-      
+
       for line in cmakefile:
         for i, entry_regex in enumerate(cmake_regex_entries):
           line_entries = entry_regex[0].findall(line)
           entries[i].extend(line_entries)
-      
+
       for l in entries:
         if not utils.is_alphabetically(l):
           alphabetical_order.add(fname)
 
-  
+
   if len(naming_convention) > 0:
     errors += 1
     allerrors.append('The following unit tests are not compliant with the naming conventions.')
@@ -92,14 +92,14 @@ def check_unittests(look_cmd, allerrors):
     allerrors.append('')
     allerrors.extend(list(naming_convention))
     allerrors.append('')
-  
+
   if len(cmakelists) > 0:
     errors += 1
     allerrors.append('The following unit tests are not added to a local CMakeLists.txt:')
     allerrors.append('')
     allerrors.extend(list(cmakelists))
     allerrors.append('')
-  
+
   if len(alphabetical_order) > 0:
     errors += 1
     allerrors.append('The items in the following local CMakeLists.txt are not in alphabetical order:')
@@ -153,7 +153,7 @@ def check_inputtests(look_cmd, allerrors):
             line_entries.extend(list(item))
           else:
             line_entries.append(item)
-      
+
       for entry in line_entries:
         entries.append(entry)
 
@@ -168,13 +168,13 @@ def check_inputtests(look_cmd, allerrors):
 
     if not found:
       missing_input_tests.append(input_test)
-    
+
   if len(missing_input_tests) > 0:
     errors += 1
     allerrors.append('The following input files are missing in TestingFramework.cmake:')
     allerrors.append('')
     allerrors.extend(missing_input_tests)
-  
+
   return errors
 
 
@@ -199,7 +199,7 @@ def main():
       look_cmd = "git diff --name-only --cached --diff-filter=MRAC"
     else:
       look_cmd = "find ./ -type f"
-    
+
     # execute error checks
 
     # check unit tests
