@@ -17,13 +17,26 @@
 
 ### Header check ################################################
 echo "Start test for correct file headers ..."
-python2 ./utilities/code_checks/header_check.py --test_flag=0 | tee wrong_format.txt
+python2 ./utilities/code_checks/header_check.py --out wrong_format.txt | tee wrong_format.txt
 
 if [ -s wrong_format.txt ]
 then
   echo "Failed. Non-compliant file headers have been reported in wrong_format.txt."
   cat wrong_format.txt
   exit 1
+else
+  echo "Passed."
+fi
+
+
+### Tests check ################################################
+python2 ./utilities/code_checks/testing_frameworks_check.py --out wrong_tests.txt | tee wrong_tests.txt
+
+if [ -s wrong_tests.txt ]
+then
+  echo "Failed. Non-compliant (unit- and input file-)tests have been reported in wrong_tests.txt."
+  cat wrong_tests.txt
+  # exit 1
 else
   echo "Passed."
 fi

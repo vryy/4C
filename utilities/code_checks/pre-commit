@@ -61,5 +61,6 @@ else
 fi
 
 ### Header check ################################################
-python2 ./utilities/code_checks/header_check.py --test_flag=1 || exit 1
+python2 ./utilities/code_checks/header_check.py --diff_only || exit 1
+python2 ./utilities/code_checks/testing_frameworks_check.py --diff_only || exit 1
 exit 0
