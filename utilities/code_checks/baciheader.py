@@ -15,14 +15,14 @@ class Header(object):
     blk = Header._extract_first_doxy_block(filetext)
     if len(blk) > 0:
       self.header = True
-      # check for correct header start
+      # check for correct header start (which includes the mandatory \file tag)
       for line in blk:
-        if (("/*!" in line  or "/**" in line) and ("*/" not in line)):
+        if (("/*! \\file\n" == line  or "/** \\file\n" == line) and ("*/" not in line)):
           start = line
           if len(start)>=1:
             self.start=start
           break
-     # check for brief tag
+      # check for brief tag
       for line in blk:
         if "\\brief " in line:
           brief = line.split("\\brief ",1)[1].strip()
@@ -45,7 +45,7 @@ class Header(object):
           except ValueError:
             pass
           break
-      # check for compliant developers as maintainers
+    # check for compliant developers as maintainers
     with open(os.path.join(sys.path[0],'baci_developers.json'),'r') as f:
           developers = json.load(f)
     #maintainer_list = self.maintainer.split(",")
@@ -82,7 +82,7 @@ class Header(object):
   def get_example():
     return ["","An appropriate header block looks as follows:",
             "/*----------------------------------------------------------------------------*/",
-            "/*!",
+            "/*! \\file",
             "\\brief This header provides the interface for all FE simulations",
             "",
             "\\level 3",
