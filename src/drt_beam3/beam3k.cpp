@@ -1210,7 +1210,7 @@ void DRT::ELEMENTS::Beam3k::GetPosAtXi(
   {
     // in this case, we need to "add" reference values first, because if rotvec_==true,
     // we can extract tangent vectors only from total rotation vectors
-    LINALG::TMatrix<double, 15, 1> disp_totlag(&disp[0]);
+    LINALG::Matrix<15, 1, double> disp_totlag(&disp[0]);
     AddRefValuesDisp<2, double>(disp_totlag);
     this->ExtractCenterlineDofValuesFromElementStateVector<2, 2, double>(
         disp_totlag, disp_totlag_centerline);
@@ -1247,14 +1247,14 @@ void DRT::ELEMENTS::Beam3k::GetTriadAtXi(
 
 
   // Dof vector in total Lagrangian style, i.e. "displacement + reference values"
-  LINALG::TMatrix<double, 6 * 2 + BEAM3K_COLLOCATION_POINTS, 1> disp_totlag(true);
+  LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, double> disp_totlag(true);
 
   UpdateDispTotlag<2, double>(disp, disp_totlag);
 
   // material triads at collocation points
-  std::vector<LINALG::TMatrix<double, 3, 3>> triad_mat_cp(
-      BEAM3K_COLLOCATION_POINTS, LINALG::TMatrix<double, 3, 3>(true));
-  LINALG::TMatrix<double, 6 * 2 + BEAM3K_COLLOCATION_POINTS, 1> dummy(true);
+  std::vector<LINALG::Matrix<3, 3, double>> triad_mat_cp(
+      BEAM3K_COLLOCATION_POINTS, LINALG::Matrix<3, 3, double>(true));
+  LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, double> dummy(true);
   std::vector<LINALG::Matrix<4, 1>> Qref_dummy(
       BEAM3K_COLLOCATION_POINTS, LINALG::Matrix<4, 1>(true));
 
@@ -1335,8 +1335,8 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixVariationsAtXi(
   // concerning interpolation of variation of CENTERLINE POSITION \vardelta r:
   // *******************************************************************************
 
-  LINALG::TMatrix<double, ndim, numdof> N(true);
-  LINALG::TMatrix<double, 1, vpernode * nnodecl> N_i(true);
+  LINALG::Matrix<ndim, numdof, double> N(true);
+  LINALG::Matrix<1, vpernode * nnodecl, double> N_i(true);
 
 
   DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, line2);
@@ -1358,34 +1358,34 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixVariationsAtXi(
   double xi_cp = 0.0;
 
 
-  LINALG::TMatrix<double, ndim, numdof> N_s(true);
-  LINALG::TMatrix<double, 1, vpernode * nnodecl> N_i_xi(true);
+  LINALG::Matrix<ndim, numdof, double> N_s(true);
+  LINALG::Matrix<1, vpernode * nnodecl, double> N_i_xi(true);
 
-  LINALG::TMatrix<double, 1, numdof> L(true);
-  LINALG::TMatrix<double, 1, BEAM3K_COLLOCATION_POINTS> L_i(true);
+  LINALG::Matrix<1, numdof, double> L(true);
+  LINALG::Matrix<1, BEAM3K_COLLOCATION_POINTS, double> L_i(true);
 
 
-  LINALG::TMatrix<double, numdof, 1> disp_totlag(true);
-  LINALG::TMatrix<double, numdof, 1> disp_totlag_centerline(true);
+  LINALG::Matrix<numdof, 1, double> disp_totlag(true);
+  LINALG::Matrix<numdof, 1, double> disp_totlag_centerline(true);
 
-  std::vector<LINALG::TMatrix<double, 3, 3>> triad_dummy(
-      BEAM3K_COLLOCATION_POINTS, LINALG::TMatrix<double, 3, 3>(true));
+  std::vector<LINALG::Matrix<3, 3, double>> triad_dummy(
+      BEAM3K_COLLOCATION_POINTS, LINALG::Matrix<3, 3, double>(true));
   std::vector<LINALG::Matrix<4, 1>> Qref_dummy(
       BEAM3K_COLLOCATION_POINTS, LINALG::Matrix<4, 1>(true));
 
 
-  LINALG::TMatrix<double, 3, 1> r_s(true);  // r' vector
-  double abs_r_s = 0.0;                     // ||r'||
+  LINALG::Matrix<3, 1, double> r_s(true);  // r' vector
+  double abs_r_s = 0.0;                    // ||r'||
 
 
-  std::vector<LINALG::TMatrix<double, numdof, ndim>> v_thetaperp_cp(
-      BEAM3K_COLLOCATION_POINTS, LINALG::TMatrix<double, numdof, ndim>(true));
-  std::vector<LINALG::TMatrix<double, numdof, ndim>> v_thetapar_cp(
-      BEAM3K_COLLOCATION_POINTS, LINALG::TMatrix<double, numdof, ndim>(true));
+  std::vector<LINALG::Matrix<numdof, ndim, double>> v_thetaperp_cp(
+      BEAM3K_COLLOCATION_POINTS, LINALG::Matrix<numdof, ndim, double>(true));
+  std::vector<LINALG::Matrix<numdof, ndim, double>> v_thetapar_cp(
+      BEAM3K_COLLOCATION_POINTS, LINALG::Matrix<numdof, ndim, double>(true));
 
 
   // re-interpolated spin vector variation: v_theta_bar
-  LINALG::TMatrix<double, numdof, ndim> v_theta_bar(true);
+  LINALG::Matrix<numdof, ndim, double> v_theta_bar(true);
 
 
   // set nodal / cp quantities: positions, tangents, triads
@@ -1488,12 +1488,12 @@ void DRT::ELEMENTS::Beam3k::GetStiffmatResultingFromGeneralizedInterpolationMatr
   stiffmat.Zero();
 
   // create an auxiliary fixed size matrix and set as a view to original data in stiffmat
-  LINALG::TMatrix<double, numdof, numdof> stiffmat_fixedsize(stiffmat, true);
+  LINALG::Matrix<numdof, numdof, double> stiffmat_fixedsize(stiffmat, true);
 
 
-  LINALG::TMatrix<double, ndim, 1> moment(&(force(3)));
+  LINALG::Matrix<ndim, 1, double> moment(&(force(3)));
 
-  LINALG::TMatrix<double, ndim, ndim> S_of_moment(true);
+  LINALG::Matrix<ndim, ndim, double> S_of_moment(true);
   LARGEROTATIONS::computespin<double>(S_of_moment, moment);
 
 
@@ -1504,35 +1504,35 @@ void DRT::ELEMENTS::Beam3k::GetStiffmatResultingFromGeneralizedInterpolationMatr
   double xi_cp = 0.0;
 
 
-  LINALG::TMatrix<double, ndim, numdof> N_s(true);
-  LINALG::TMatrix<double, 1, vpernode * nnodecl> N_i_xi(true);
+  LINALG::Matrix<ndim, numdof, double> N_s(true);
+  LINALG::Matrix<1, vpernode * nnodecl, double> N_i_xi(true);
 
 
-  LINALG::TMatrix<double, 1, numdof> L(true);
-  LINALG::TMatrix<double, 1, BEAM3K_COLLOCATION_POINTS> L_i(true);
+  LINALG::Matrix<1, numdof, double> L(true);
+  LINALG::Matrix<1, BEAM3K_COLLOCATION_POINTS, double> L_i(true);
 
 
-  LINALG::TMatrix<double, numdof, 1> disp_totlag(true);
-  LINALG::TMatrix<double, numdof, 1> disp_totlag_centerline(true);
+  LINALG::Matrix<numdof, 1, double> disp_totlag(true);
+  LINALG::Matrix<numdof, 1, double> disp_totlag_centerline(true);
 
-  std::vector<LINALG::TMatrix<double, 3, 3>> triad_mat_cp(
-      BEAM3K_COLLOCATION_POINTS, LINALG::TMatrix<double, 3, 3>(true));
+  std::vector<LINALG::Matrix<3, 3, double>> triad_mat_cp(
+      BEAM3K_COLLOCATION_POINTS, LINALG::Matrix<3, 3, double>(true));
   std::vector<LINALG::Matrix<4, 1>> Qref_dummy(
       BEAM3K_COLLOCATION_POINTS, LINALG::Matrix<4, 1>(true));
 
 
-  LINALG::TMatrix<double, ndim, 1> r_s(true);  // r' vector
-  double abs_r_s = 0.0;                        // ||r'||
+  LINALG::Matrix<ndim, 1, double> r_s(true);  // r' vector
+  double abs_r_s = 0.0;                       // ||r'||
 
   // first base vector at CP
-  LINALG::TMatrix<double, ndim, 1> g_1_cp(true);
+  LINALG::Matrix<ndim, 1, double> g_1_cp(true);
 
 
-  std::vector<LINALG::TMatrix<double, numdof, numdof>> lin_v_thetaperp_moment_cp(
-      BEAM3K_COLLOCATION_POINTS, LINALG::TMatrix<double, numdof, numdof>(true));
+  std::vector<LINALG::Matrix<numdof, numdof, double>> lin_v_thetaperp_moment_cp(
+      BEAM3K_COLLOCATION_POINTS, LINALG::Matrix<numdof, numdof, double>(true));
 
-  std::vector<LINALG::TMatrix<double, numdof, numdof>> lin_v_thetapar_moment_cp(
-      BEAM3K_COLLOCATION_POINTS, LINALG::TMatrix<double, numdof, numdof>(true));
+  std::vector<LINALG::Matrix<numdof, numdof, double>> lin_v_thetapar_moment_cp(
+      BEAM3K_COLLOCATION_POINTS, LINALG::Matrix<numdof, numdof, double>(true));
 
 
   // set nodal / cp quantities: positions, tangents, triads
@@ -1629,8 +1629,8 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixIncrementsAtXi(
   // concerning interpolation of increment of CENTERLINE POSITION \Delta r:
   // *******************************************************************************
 
-  LINALG::TMatrix<double, ndim, numdof> N(true);
-  LINALG::TMatrix<double, 1, vpernode * nnodecl> N_i(true);
+  LINALG::Matrix<ndim, numdof, double> N(true);
+  LINALG::Matrix<1, vpernode * nnodecl, double> N_i(true);
 
 
   DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, line2);
@@ -1653,41 +1653,41 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixIncrementsAtXi(
   double xi_cp = 0.0;
 
 
-  LINALG::TMatrix<double, ndim, numdof> N_s(true);
-  LINALG::TMatrix<double, 1, vpernode * nnodecl> N_i_xi(true);
+  LINALG::Matrix<ndim, numdof, double> N_s(true);
+  LINALG::Matrix<1, vpernode * nnodecl, double> N_i_xi(true);
 
-  LINALG::TMatrix<double, 1, numdof> L(true);
-  LINALG::TMatrix<double, 1, BEAM3K_COLLOCATION_POINTS> L_i(true);
+  LINALG::Matrix<1, numdof, double> L(true);
+  LINALG::Matrix<1, BEAM3K_COLLOCATION_POINTS, double> L_i(true);
 
 
-  LINALG::TMatrix<double, numdof, 1> disp_totlag(true);
-  LINALG::TMatrix<double, numdof, 1> disp_totlag_centerline(true);
+  LINALG::Matrix<numdof, 1, double> disp_totlag(true);
+  LINALG::Matrix<numdof, 1, double> disp_totlag_centerline(true);
 
-  std::vector<LINALG::TMatrix<double, 3, 3>> triad_mat_cp(
-      BEAM3K_COLLOCATION_POINTS, LINALG::TMatrix<double, 3, 3>(true));
+  std::vector<LINALG::Matrix<3, 3, double>> triad_mat_cp(
+      BEAM3K_COLLOCATION_POINTS, LINALG::Matrix<3, 3, double>(true));
   std::vector<LINALG::Matrix<4, 1>> Qref_dummy(
       BEAM3K_COLLOCATION_POINTS, LINALG::Matrix<4, 1>(true));
 
 
-  LINALG::TMatrix<double, 3, 1> r_s(true);  // r' vector
-  double abs_r_s = 0.0;                     // ||r'||
+  LINALG::Matrix<3, 1, double> r_s(true);  // r' vector
+  double abs_r_s = 0.0;                    // ||r'||
 
   // first base vector at CP
-  LINALG::TMatrix<double, 3, 1> g_1_cp(true);
+  LINALG::Matrix<3, 1, double> g_1_cp(true);
   // first base vector of the triad, from which the new intermediate triad is obtained via
   // smallest rotation (SR); this triad is arbitrary, but we choose the intermediate triad
   // of the last time step; see Dissertation Meier, p.25
-  LINALG::TMatrix<double, 3, 1> g_1_cp_bar(true);
+  LINALG::Matrix<3, 1, double> g_1_cp_bar(true);
 
 
-  LINALG::TMatrix<double, ndim, numdof> lin_theta_perp_cp(true), lin_theta_par_cp(true);
+  LINALG::Matrix<ndim, numdof, double> lin_theta_perp_cp(true), lin_theta_par_cp(true);
 
   // lin_theta_cp = lin_theta_perp_cp + lin_theta_par_cp
-  std::vector<LINALG::TMatrix<double, ndim, numdof>> lin_theta_cp(
-      BEAM3K_COLLOCATION_POINTS, LINALG::TMatrix<double, ndim, numdof>(true));
+  std::vector<LINALG::Matrix<ndim, numdof, double>> lin_theta_cp(
+      BEAM3K_COLLOCATION_POINTS, LINALG::Matrix<ndim, numdof, double>(true));
 
   // re-interpolated lin_theta:
-  LINALG::TMatrix<double, ndim, numdof> lin_theta_bar(true);
+  LINALG::Matrix<ndim, numdof, double> lin_theta_bar(true);
 
 
   // set nodal / cp quantities: positions, tangents, triads
@@ -1740,7 +1740,7 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixIncrementsAtXi(
     g_1_cp.Clear();
     g_1_cp.Update(std::pow(abs_r_s, -1.0), r_s);
 
-    LINALG::TMatrix<double, 3, 3> triad_ref_conv_cp(true);
+    LINALG::Matrix<3, 3, double> triad_ref_conv_cp(true);
     LARGEROTATIONS::quaterniontotriad(Qrefconv_[ind], triad_ref_conv_cp);
 
     g_1_cp_bar.Clear();
@@ -1756,8 +1756,8 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixIncrementsAtXi(
 
   // re-interpolation of quantities at xi based on CP values
   // *******************************************************************************
-  std::vector<LINALG::TMatrix<double, 3, 3>> Itilde(
-      BEAM3K_COLLOCATION_POINTS, LINALG::TMatrix<double, 3, 3>(true));
+  std::vector<LINALG::Matrix<3, 3, double>> Itilde(
+      BEAM3K_COLLOCATION_POINTS, LINALG::Matrix<3, 3, double>(true));
 
   // create object of triad interpolation scheme
   Teuchos::RCP<
@@ -1773,7 +1773,7 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixIncrementsAtXi(
   triad_interpolation_scheme_ptr->GetNodalGeneralizedRotationInterpolationMatricesAtXi(Itilde, xi);
 
 
-  LINALG::TMatrix<double, 3, numdof> auxmatrix(true);
+  LINALG::Matrix<3, numdof, double> auxmatrix(true);
 
   lin_theta_bar.Clear();
   for (unsigned int inode = 0; inode < BEAM3K_COLLOCATION_POINTS; ++inode)
@@ -1809,8 +1809,8 @@ void DRT::ELEMENTS::Beam3k::ExtractCenterlineDofValuesFromElementStateVector(
   dofvec_centerline.resize(12, 0.0);
 
   // we use the method for LINALG fixed size matrix and create it as a view on the STL vector
-  LINALG::TMatrix<double, 15, 1> dofvec_fixedsize(&dofvec[0]);
-  LINALG::TMatrix<double, 12, 1> dofvec_centerline_fixedsize(&dofvec_centerline[0], true);
+  LINALG::Matrix<15, 1, double> dofvec_fixedsize(&dofvec[0]);
+  LINALG::Matrix<12, 1, double> dofvec_centerline_fixedsize(&dofvec_centerline[0], true);
 
   this->ExtractCenterlineDofValuesFromElementStateVector<2, 2, double>(
       dofvec_fixedsize, dofvec_centerline_fixedsize, add_reference_values);
@@ -1820,8 +1820,8 @@ void DRT::ELEMENTS::Beam3k::ExtractCenterlineDofValuesFromElementStateVector(
  *------------------------------------------------------------------------------------------------*/
 template <unsigned int nnodecl, unsigned int vpernode, typename T>
 void DRT::ELEMENTS::Beam3k::ExtractCenterlineDofValuesFromElementStateVector(
-    const LINALG::TMatrix<T, 3 * vpernode * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& dofvec,
-    LINALG::TMatrix<T, 3 * vpernode * nnodecl, 1>& dofvec_centerline,
+    const LINALG::Matrix<3 * vpernode * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& dofvec,
+    LINALG::Matrix<3 * vpernode * nnodecl, 1, T>& dofvec_centerline,
     bool add_reference_values) const
 {
   // nnodecl: number of nodes used for interpolation of centerline
@@ -1851,9 +1851,9 @@ void DRT::ELEMENTS::Beam3k::ExtractCenterlineDofValuesFromElementStateVector(
   else
   {
     // values for tangent DOFs must be transformed in case of rotvec_==true
-    LINALG::TMatrix<T, 3, 1> theta(true);
-    LINALG::TMatrix<T, 3, 3> unity(true);
-    LINALG::TMatrix<T, 3, 3> triad(true);
+    LINALG::Matrix<3, 1, T> theta(true);
+    LINALG::Matrix<3, 3, T> unity(true);
+    LINALG::Matrix<3, 3, T> triad(true);
 
     for (unsigned int dim = 0; dim < 3; ++dim) unity(dim, dim) = 1.0;
 
@@ -1884,7 +1884,7 @@ void DRT::ELEMENTS::Beam3k::ExtractCenterlineDofValuesFromElementStateVector(
  *------------------------------------------------------------------------------------------------*/
 template <unsigned int nnodecl, unsigned int vpernode, typename T>
 void DRT::ELEMENTS::Beam3k::AddRefValuesDispCenterline(
-    LINALG::TMatrix<T, 3 * vpernode * nnodecl, 1>& dofvec_centerline) const
+    LINALG::Matrix<3 * vpernode * nnodecl, 1, T>& dofvec_centerline) const
 {
   for (unsigned int dim = 0; dim < 3; ++dim)
     for (unsigned int node = 0; node < nnodecl; ++node)
@@ -1900,7 +1900,7 @@ void DRT::ELEMENTS::Beam3k::AddRefValuesDispCenterline(
  *------------------------------------------------------------------------------------------------*/
 template <unsigned int nnodecl, typename T>
 void DRT::ELEMENTS::Beam3k::AddRefValuesDisp(
-    LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& dofvec) const
+    LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& dofvec) const
 {
   // For the boundary nodes we have to add the initial values. For the interior nodes we are already
   // done since the initial relative angles are zero: alpha_i(t=0)=0;
@@ -1985,7 +1985,7 @@ void DRT::ELEMENTS::Beam3k::AddRefValuesDisp(
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int nnodecl, typename T>
 void DRT::ELEMENTS::Beam3k::UpdateDispTotlag(const std::vector<double>& disp,
-    LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& disp_totlag) const
+    LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& disp_totlag) const
 {
   disp_totlag.Clear();
   for (unsigned int dof = 0; dof < 6 * nnodecl + BEAM3K_COLLOCATION_POINTS; ++dof)
@@ -1998,9 +1998,9 @@ void DRT::ELEMENTS::Beam3k::UpdateDispTotlag(const std::vector<double>& disp,
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int nnodecl, typename T>
 void DRT::ELEMENTS::Beam3k::UpdateNodalVariables(
-    const LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& disp_totlag,
-    LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& disp_totlag_centerline,
-    std::vector<LINALG::TMatrix<T, 3, 3>>& triad_mat_cp,
+    const LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& disp_totlag,
+    LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& disp_totlag_centerline,
+    std::vector<LINALG::Matrix<3, 3, T>>& triad_mat_cp,
     std::vector<LINALG::Matrix<4, 1>>& Qref_new) const
 {
   // Set positions vectors and tangents and triads at boundary nodes
@@ -2019,8 +2019,8 @@ void DRT::ELEMENTS::Beam3k::UpdateNodalVariables(
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int nnodecl, typename T>
 void DRT::ELEMENTS::Beam3k::SetPositionsAtBoundaryNodes(
-    const LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& disp_totlag,
-    LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& disp_totlag_centerline) const
+    const LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& disp_totlag,
+    LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& disp_totlag_centerline) const
 {
   for (unsigned int i = 0; i < 3; ++i)
   {
@@ -2033,18 +2033,18 @@ void DRT::ELEMENTS::Beam3k::SetPositionsAtBoundaryNodes(
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int nnodecl, typename T>
 void DRT::ELEMENTS::Beam3k::SetTangentsAndTriadsAndReferenceTriadsAtBoundaryNodes(
-    const LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& disp_totlag,
-    LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& disp_totlag_centerline,
-    std::vector<LINALG::TMatrix<T, 3, 3>>& triad_mat_cp,
+    const LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& disp_totlag,
+    LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& disp_totlag_centerline,
+    std::vector<LINALG::Matrix<3, 3, T>>& triad_mat_cp,
     std::vector<LINALG::Matrix<4, 1>>& Qref_new) const
 {
   if (rotvec_ == false)
   {
-    LINALG::TMatrix<T, 3, 1> tangent(true);
-    LINALG::TMatrix<T, 3, 3> triad_ref(true);
+    LINALG::Matrix<3, 1, T> tangent(true);
+    LINALG::Matrix<3, 3, T> triad_ref(true);
     LINALG::Matrix<3, 3> triad_aux(true);
     // Todo @grill: get rid of auxiliary matrix of different type
-    LINALG::TMatrix<T, 3, 3> triad_aux2(true);
+    LINALG::Matrix<3, 3, T> triad_aux2(true);
     T alpha = 0.0;
 
     for (unsigned int node = 0; node < 2; ++node)
@@ -2069,7 +2069,7 @@ void DRT::ELEMENTS::Beam3k::SetTangentsAndTriadsAndReferenceTriadsAtBoundaryNode
       LARGEROTATIONS::CalculateSRTriads<T>(tangent, triad_aux2, triad_ref);
 
       // Store nodal reference triad
-      LINALG::TMatrix<T, 4, 1> Qref(true);
+      LINALG::Matrix<4, 1, T> Qref(true);
       LARGEROTATIONS::triadtoquaternion(triad_ref, Qref);
       for (unsigned int i = 0; i < 4; ++i) Qref_new[node](i) = FADUTILS::CastToDouble(Qref(i));
 
@@ -2080,8 +2080,8 @@ void DRT::ELEMENTS::Beam3k::SetTangentsAndTriadsAndReferenceTriadsAtBoundaryNode
   }
   else
   {
-    LINALG::TMatrix<T, 3, 1> theta(true);
-    LINALG::TMatrix<T, 3, 3> unity(true);
+    LINALG::Matrix<3, 1, T> theta(true);
+    LINALG::Matrix<3, 3, T> unity(true);
     for (unsigned int node = 0; node < 2; ++node)
     {
       for (unsigned int i = 0; i < 3; ++i)
@@ -2106,21 +2106,21 @@ void DRT::ELEMENTS::Beam3k::SetTangentsAndTriadsAndReferenceTriadsAtBoundaryNode
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int nnodecl, typename T>
 void DRT::ELEMENTS::Beam3k::SetTriadsAndReferenceTriadsAtRemainingCollocationPoints(
-    const LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& disp_totlag,
-    const LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& disp_totlag_centerline,
-    std::vector<LINALG::TMatrix<T, 3, 3>>& triad_mat_cp,
+    const LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& disp_totlag,
+    const LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& disp_totlag_centerline,
+    std::vector<LINALG::Matrix<3, 3, T>>& triad_mat_cp,
     std::vector<LINALG::Matrix<4, 1>>& Qref_new) const
 {
-  LINALG::TMatrix<T, 3, 1> tangent(true);
-  LINALG::TMatrix<T, 3, 3> triad_ref(true);
+  LINALG::Matrix<3, 1, T> tangent(true);
+  LINALG::Matrix<3, 3, T> triad_ref(true);
   LINALG::Matrix<3, 3> triad_aux(true);
   // Todo @grill: get rid of auxiliary matrix of different type
-  LINALG::TMatrix<T, 3, 3> triad_aux2(true);
+  LINALG::Matrix<3, 3, T> triad_aux2(true);
   T alpha = 0.0;
 
-  LINALG::TMatrix<T, 1, 4> N_i_xi(true);
-  LINALG::TMatrix<T, 3, 6 * 2 + BEAM3K_COLLOCATION_POINTS> N_s(true);
-  LINALG::TMatrix<T, 1, BEAM3K_COLLOCATION_POINTS> L_i;
+  LINALG::Matrix<1, 4, T> N_i_xi(true);
+  LINALG::Matrix<3, 6 * 2 + BEAM3K_COLLOCATION_POINTS, T> N_s(true);
+  LINALG::Matrix<1, BEAM3K_COLLOCATION_POINTS, T> L_i;
   double xi = 0.0;
   unsigned int ind = 0;
 
@@ -2159,7 +2159,7 @@ void DRT::ELEMENTS::Beam3k::SetTriadsAndReferenceTriadsAtRemainingCollocationPoi
     LARGEROTATIONS::CalculateSRTriads<T>(tangent, triad_aux2, triad_ref);
 
     // Store nodal reference triad
-    LINALG::TMatrix<T, 4, 1> Qref(true);
+    LINALG::Matrix<4, 1, T> Qref(true);
     LARGEROTATIONS::triadtoquaternion(triad_ref, Qref);
     for (unsigned int i = 0; i < 4; ++i) Qref_new[ind](i) = FADUTILS::CastToDouble(Qref(i));
 
@@ -2173,7 +2173,7 @@ void DRT::ELEMENTS::Beam3k::SetTriadsAndReferenceTriadsAtRemainingCollocationPoi
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int nnodecl>
 void DRT::ELEMENTS::Beam3k::SetAutomaticDifferentiationVariables(
-    LINALG::TMatrix<FAD, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& disp_totlag) const
+    LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, FAD>& disp_totlag) const
 {
   for (unsigned int dof = 0; dof < nnodecl * 6 + BEAM3K_COLLOCATION_POINTS; dof++)
   {
@@ -2185,9 +2185,9 @@ void DRT::ELEMENTS::Beam3k::SetAutomaticDifferentiationVariables(
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int nnodecl, unsigned int vpernode, unsigned int ndim>
 void DRT::ELEMENTS::Beam3k::Calc_velocity(
-    const LINALG::TMatrix<double, ndim * vpernode * nnodecl, 1>& velocity_dofvec,
-    const LINALG::TMatrix<double, 1, vpernode * nnodecl>& N_i,
-    LINALG::TMatrix<double, ndim, 1>& velocity, const LINALG::TMatrix<double, ndim, 1>& position,
+    const LINALG::Matrix<ndim * vpernode * nnodecl, 1, double>& velocity_dofvec,
+    const LINALG::Matrix<1, vpernode * nnodecl, double>& N_i,
+    LINALG::Matrix<ndim, 1, double>& velocity, const LINALG::Matrix<ndim, 1, double>& position,
     int gausspoint_index) const
 {
   DRT::UTILS::BEAM::CalcInterpolation<nnodecl, vpernode, ndim, double>(
@@ -2198,9 +2198,9 @@ void DRT::ELEMENTS::Beam3k::Calc_velocity(
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int nnodecl, unsigned int vpernode, unsigned int ndim>
 void DRT::ELEMENTS::Beam3k::Calc_velocity(
-    const LINALG::TMatrix<double, ndim * vpernode * nnodecl, 1>& velocity_dofvec,
-    const LINALG::TMatrix<double, 1, vpernode * nnodecl>& N_i,
-    LINALG::TMatrix<FAD, ndim, 1>& velocity, const LINALG::TMatrix<FAD, ndim, 1>& position,
+    const LINALG::Matrix<ndim * vpernode * nnodecl, 1, double>& velocity_dofvec,
+    const LINALG::Matrix<1, vpernode * nnodecl, double>& N_i,
+    LINALG::Matrix<ndim, 1, FAD>& velocity, const LINALG::Matrix<ndim, 1, FAD>& position,
     int gausspoint_index)
 {
   /* if we use FAD, we need to track the dependency of velocity vector on primary variables, i.e.
@@ -2209,7 +2209,7 @@ void DRT::ELEMENTS::Beam3k::Calc_velocity(
    * the position of this element (nodes) might have been shifted outside; we therefore manually
    * adapt the calculated velocity and compare it with the velocity calculated in time integrator
    * and handed in from outside for safety reasons */
-  LINALG::TMatrix<double, ndim, 1> velocity_test;
+  LINALG::Matrix<ndim, 1, double> velocity_test;
   DRT::UTILS::BEAM::CalcInterpolation<nnodecl, vpernode, ndim, double>(
       velocity_dofvec, N_i, velocity_test);
 
@@ -2218,7 +2218,7 @@ void DRT::ELEMENTS::Beam3k::Calc_velocity(
 
   LINALG::Matrix<3, 1> diff(true);
 
-  LINALG::TMatrix<FAD, ndim, 1> delta_r_ost(true);
+  LINALG::Matrix<ndim, 1, FAD> delta_r_ost(true);
   Teuchos::RCP<GEO::MESHFREE::BoundingBox> pbb =
       BrownianDynParamsInterface().GetPeriodicBoundingBox();
 
@@ -2265,13 +2265,13 @@ void DRT::ELEMENTS::Beam3k::Calc_velocity(
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int nnodecl, typename T>
 void DRT::ELEMENTS::Beam3k::Calc_v_thetaperp(
-    LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3>& v_thetaperp,
-    const LINALG::TMatrix<T, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_s,
-    const LINALG::TMatrix<T, 3, 1>& r_s, T abs_r_s) const
+    LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3, T>& v_thetaperp,
+    const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, T>& N_s,
+    const LINALG::Matrix<3, 1, T>& r_s, T abs_r_s) const
 {
   v_thetaperp.Clear();
 
-  LINALG::TMatrix<T, 3, 3> S_of_r_s(true);
+  LINALG::Matrix<3, 3, T> S_of_r_s(true);
   LARGEROTATIONS::computespin<T>(S_of_r_s, r_s);
 
   v_thetaperp.MultiplyTN(N_s, S_of_r_s);
@@ -2282,9 +2282,9 @@ void DRT::ELEMENTS::Beam3k::Calc_v_thetaperp(
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int nnodecl, typename T>
 void DRT::ELEMENTS::Beam3k::Calc_v_thetapartheta(
-    LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3>& v_thetapartheta,
-    const LINALG::TMatrix<T, 1, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& L,
-    const LINALG::TMatrix<T, 3, 1>& r_s, T abs_r_s) const
+    LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3, T>& v_thetapartheta,
+    const LINALG::Matrix<1, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, T>& L,
+    const LINALG::Matrix<3, 1, T>& r_s, T abs_r_s) const
 {
   v_thetapartheta.Clear();
 
@@ -2297,16 +2297,16 @@ void DRT::ELEMENTS::Beam3k::Calc_v_thetapartheta(
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int nnodecl>
 void DRT::ELEMENTS::Beam3k::Calc_lin_thetaperp(
-    LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_thetaperp,
-    const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_s,
-    const LINALG::TMatrix<double, 3, 1>& r_s, double abs_r_s) const
+    LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_thetaperp,
+    const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_s,
+    const LINALG::Matrix<3, 1, double>& r_s, double abs_r_s) const
 {
   // Todo @grill: maybe re-use method for v_thetaperp here, which is simply the transpose of this
   // term
 
   lin_thetaperp.Clear();
 
-  LINALG::TMatrix<double, 3, 3> S_of_r_s(true);
+  LINALG::Matrix<3, 3, double> S_of_r_s(true);
   LARGEROTATIONS::computespin<double>(S_of_r_s, r_s);
 
   lin_thetaperp.Multiply(S_of_r_s, N_s);
@@ -2317,41 +2317,41 @@ void DRT::ELEMENTS::Beam3k::Calc_lin_thetaperp(
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int nnodecl>
 void DRT::ELEMENTS::Beam3k::Calc_lin_thetapar(
-    LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_thetapar,
-    const LINALG::TMatrix<double, 1, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& L,
-    const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_s,
-    const LINALG::TMatrix<double, 3, 1>& g_1, const LINALG::TMatrix<double, 3, 1>& g_1_bar,
+    LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_thetapar,
+    const LINALG::Matrix<1, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& L,
+    const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_s,
+    const LINALG::Matrix<3, 1, double>& g_1, const LINALG::Matrix<3, 1, double>& g_1_bar,
     double abs_r_s) const
 {
   const unsigned int numdof = 6 * nnodecl + BEAM3K_COLLOCATION_POINTS;
 
   lin_thetapar.Clear();
 
-  LINALG::TMatrix<double, 3, 3> S_of_g_1(true);
+  LINALG::Matrix<3, 3, double> S_of_g_1(true);
   LARGEROTATIONS::computespin<double>(S_of_g_1, g_1);
 
 
   // Todo @grill: decide about alternatives, apparently no change in results
 
   // *********** alternative 1 ************
-  LINALG::TMatrix<double, 3, 3> g_1_dyadicproduct_g_1_bar_T(true);
+  LINALG::Matrix<3, 3, double> g_1_dyadicproduct_g_1_bar_T(true);
 
   for (unsigned int irow = 0; irow < 3; ++irow)
     for (unsigned int icol = 0; icol < 3; ++icol)
       g_1_dyadicproduct_g_1_bar_T(irow, icol) = g_1(irow) * g_1_bar(icol);
 
-  LINALG::TMatrix<double, 3, 3> g_1_dyadicproduct_g_1_bar_T_S_of_g_1(true);
+  LINALG::Matrix<3, 3, double> g_1_dyadicproduct_g_1_bar_T_S_of_g_1(true);
   g_1_dyadicproduct_g_1_bar_T_S_of_g_1.Multiply(g_1_dyadicproduct_g_1_bar_T, S_of_g_1);
 
   lin_thetapar.Multiply(g_1_dyadicproduct_g_1_bar_T_S_of_g_1, N_s);
 
   // *********** alternative 2 ************
 
-  //  LINALG::TMatrix<double,1,3> g_1_bar_T_S_of_g_1(true);
+  //  LINALG::Matrix<1,3,double> g_1_bar_T_S_of_g_1(true);
   //  g_1_bar_T_S_of_g_1.MultiplyTN(g_1_bar, S_of_g_1);
   //
   //
-  //  LINALG::TMatrix<double,1,numdof> g_1_bar_T_S_of_g_1_N_s(true);
+  //  LINALG::Matrix<1,numdof,double> g_1_bar_T_S_of_g_1_N_s(true);
   //  g_1_bar_T_S_of_g_1_N_s.Multiply(g_1_bar_T_S_of_g_1, N_s);
   //
   //
@@ -2375,13 +2375,13 @@ void DRT::ELEMENTS::Beam3k::Calc_lin_thetapar(
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int nnodecl>
 void DRT::ELEMENTS::Beam3k::Calc_lin_tangent_tilde(
-    LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_tangent_tilde,
-    const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_s,
-    const LINALG::TMatrix<double, 3, 1>& g_1, double abs_r_s) const
+    LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_tangent_tilde,
+    const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_s,
+    const LINALG::Matrix<3, 1, double>& g_1, double abs_r_s) const
 {
   lin_tangent_tilde.Clear();
 
-  LINALG::TMatrix<double, 3, 3> auxmatrix;
+  LINALG::Matrix<3, 3, double> auxmatrix;
 
   for (unsigned int idim = 0; idim < 3; ++idim)
     for (unsigned int jdim = 0; jdim < 3; ++jdim)
@@ -2396,17 +2396,17 @@ void DRT::ELEMENTS::Beam3k::Calc_lin_tangent_tilde(
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int nnodecl>
 void DRT::ELEMENTS::Beam3k::Calc_lin_tangent_tilde_s(
-    LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_tangent_tilde_s,
-    const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_s,
-    const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_ss,
-    const LINALG::TMatrix<double, 3, 1>& g_1, const LINALG::TMatrix<double, 3, 1>& g_1_s,
-    const LINALG::TMatrix<double, 3, 1>& r_s, const LINALG::TMatrix<double, 3, 1>& r_ss,
+    LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_tangent_tilde_s,
+    const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_s,
+    const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_ss,
+    const LINALG::Matrix<3, 1, double>& g_1, const LINALG::Matrix<3, 1, double>& g_1_s,
+    const LINALG::Matrix<3, 1, double>& r_s, const LINALG::Matrix<3, 1, double>& r_ss,
     double abs_r_s) const
 {
   lin_tangent_tilde_s.Clear();
 
-  LINALG::TMatrix<double, 3, 3> auxmatrix;
-  LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS> summand(true);
+  LINALG::Matrix<3, 3, double> auxmatrix;
+  LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double> summand(true);
 
   // first summand
   for (unsigned int idim = 0; idim < 3; ++idim)
@@ -2450,13 +2450,13 @@ void DRT::ELEMENTS::Beam3k::Calc_lin_tangent_tilde_s(
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int nnodecl>
 void DRT::ELEMENTS::Beam3k::Calc_lin_g_1(
-    LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_g_1,
-    const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_s,
-    const LINALG::TMatrix<double, 3, 1>& g_1, double abs_r_s) const
+    LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_g_1,
+    const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_s,
+    const LINALG::Matrix<3, 1, double>& g_1, double abs_r_s) const
 {
   lin_g_1.Clear();
 
-  LINALG::TMatrix<double, 3, 3> auxmatrix;
+  LINALG::Matrix<3, 3, double> auxmatrix;
 
   for (unsigned int idim = 0; idim < 3; ++idim)
     for (unsigned int jdim = 0; jdim < 3; ++jdim)
@@ -2471,17 +2471,17 @@ void DRT::ELEMENTS::Beam3k::Calc_lin_g_1(
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int nnodecl>
 void DRT::ELEMENTS::Beam3k::Calc_lin_g_1_s(
-    LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_g_1_s,
-    const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_s,
-    const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_ss,
-    const LINALG::TMatrix<double, 3, 1>& g_1, const LINALG::TMatrix<double, 3, 1>& g_1_s,
-    const LINALG::TMatrix<double, 3, 1>& r_s, const LINALG::TMatrix<double, 3, 1>& r_ss,
+    LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_g_1_s,
+    const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_s,
+    const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_ss,
+    const LINALG::Matrix<3, 1, double>& g_1, const LINALG::Matrix<3, 1, double>& g_1_s,
+    const LINALG::Matrix<3, 1, double>& r_s, const LINALG::Matrix<3, 1, double>& r_ss,
     double abs_r_s) const
 {
   lin_g_1_s.Clear();
 
-  LINALG::TMatrix<double, 3, 3> auxmatrix;
-  LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS> summand(true);
+  LINALG::Matrix<3, 3, double> auxmatrix;
+  LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double> summand(true);
 
   // first summand
   for (unsigned int idim = 0; idim < 3; ++idim)
@@ -2525,14 +2525,14 @@ void DRT::ELEMENTS::Beam3k::Calc_lin_g_1_s(
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int nnodecl>
 void DRT::ELEMENTS::Beam3k::Calc_lin_v_epsilon(
-    LINALG::TMatrix<double, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
-        6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_v_epsilon,
-    const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_s,
-    const LINALG::TMatrix<double, 3, 1>& g_1, double abs_r_s) const
+    LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
+        double>& lin_v_epsilon,
+    const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_s,
+    const LINALG::Matrix<3, 1, double>& g_1, double abs_r_s) const
 {
   lin_v_epsilon.Clear();
 
-  LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS> lin_g_1(true);
+  LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double> lin_g_1(true);
 
   Calc_lin_g_1<nnodecl>(lin_g_1, N_s, g_1, abs_r_s);
 
@@ -2543,11 +2543,11 @@ void DRT::ELEMENTS::Beam3k::Calc_lin_v_epsilon(
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int nnodecl>
 void DRT::ELEMENTS::Beam3k::Calc_lin_moment_resultant(
-    LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_moment_resultant,
-    const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_theta,
-    const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_theta_s,
-    const LINALG::TMatrix<double, 3, 3>& spinmatrix_of_moment,
-    const LINALG::TMatrix<double, 3, 3>& cm) const
+    LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_moment_resultant,
+    const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_theta,
+    const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_theta_s,
+    const LINALG::Matrix<3, 3, double>& spinmatrix_of_moment,
+    const LINALG::Matrix<3, 3, double>& cm) const
 {
   lin_moment_resultant.Clear();
 
@@ -2556,7 +2556,7 @@ void DRT::ELEMENTS::Beam3k::Calc_lin_moment_resultant(
   lin_moment_resultant.Scale(-1.0);
 
   // second summand
-  LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS> auxmatrix(true);
+  LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double> auxmatrix(true);
 
   auxmatrix.Multiply(cm, lin_theta_s);
 
@@ -2567,14 +2567,14 @@ void DRT::ELEMENTS::Beam3k::Calc_lin_moment_resultant(
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int nnodecl>
 void DRT::ELEMENTS::Beam3k::Calc_lin_moment_inertia(
-    LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_moment_inertia,
-    const LINALG::TMatrix<double, 3, 3>& triad_mat,
-    const LINALG::TMatrix<double, 3, 3>& triad_mat_conv,
-    const LINALG::TMatrix<double, 3, 1>& deltatheta,
-    const LINALG::TMatrix<double, 3, 1>& angular_velocity_material,
-    const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_theta,
-    const LINALG::TMatrix<double, 3, 3>& spinmatrix_of_moment,
-    const LINALG::TMatrix<double, 3, 3>& C_rho, double lin_prefactor_acc,
+    LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_moment_inertia,
+    const LINALG::Matrix<3, 3, double>& triad_mat,
+    const LINALG::Matrix<3, 3, double>& triad_mat_conv,
+    const LINALG::Matrix<3, 1, double>& deltatheta,
+    const LINALG::Matrix<3, 1, double>& angular_velocity_material,
+    const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_theta,
+    const LINALG::Matrix<3, 3, double>& spinmatrix_of_moment,
+    const LINALG::Matrix<3, 3, double>& C_rho, double lin_prefactor_acc,
     double lin_prefactor_vel) const
 {
   lin_moment_inertia.Clear();
@@ -2583,14 +2583,14 @@ void DRT::ELEMENTS::Beam3k::Calc_lin_moment_inertia(
   lin_moment_inertia.Multiply(spinmatrix_of_moment, lin_theta);
 
   // second summand
-  LINALG::TMatrix<double, 3, 3> auxmatrix(true);
+  LINALG::Matrix<3, 3, double> auxmatrix(true);
 
-  LINALG::TMatrix<double, 3, 3> spinmatrix(true);
+  LINALG::Matrix<3, 3, double> spinmatrix(true);
   LARGEROTATIONS::computespin(spinmatrix, angular_velocity_material);
 
   auxmatrix.Multiply(spinmatrix, C_rho);
 
-  LINALG::TMatrix<double, 3, 1> C_rho_W(true);
+  LINALG::Matrix<3, 1, double> C_rho_W(true);
   C_rho_W.Multiply(C_rho, angular_velocity_material);
 
   spinmatrix.Clear();
@@ -2601,18 +2601,18 @@ void DRT::ELEMENTS::Beam3k::Calc_lin_moment_inertia(
   auxmatrix.Update(lin_prefactor_acc, C_rho, 1.0);
 
 
-  LINALG::TMatrix<double, 3, 3> Tmat_of_deltatheta = LARGEROTATIONS::Tmatrix(deltatheta);
-  LINALG::TMatrix<double, 3, 3> Lambda_conv_Tmat_of_deltatheta(true);
+  LINALG::Matrix<3, 3, double> Tmat_of_deltatheta = LARGEROTATIONS::Tmatrix(deltatheta);
+  LINALG::Matrix<3, 3, double> Lambda_conv_Tmat_of_deltatheta(true);
   Lambda_conv_Tmat_of_deltatheta.MultiplyTN(triad_mat_conv, Tmat_of_deltatheta);
 
-  LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS> lin_THETA_tilde(true);
+  LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double> lin_THETA_tilde(true);
   lin_THETA_tilde.Multiply(Lambda_conv_Tmat_of_deltatheta, lin_theta);
 
-  LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS> auxmatrix2(true);
+  LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double> auxmatrix2(true);
   auxmatrix2.Multiply(auxmatrix, lin_THETA_tilde);
 
 
-  LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS> auxmatrix3(true);
+  LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double> auxmatrix3(true);
   auxmatrix3.Multiply(triad_mat, auxmatrix2);
 
   lin_moment_inertia.Update(1.0, auxmatrix3, 1.0);
@@ -2624,12 +2624,12 @@ void DRT::ELEMENTS::Beam3k::Calc_lin_moment_inertia(
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int nnodecl>
 void DRT::ELEMENTS::Beam3k::Calc_lin_moment_viscous(
-    LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_moment_viscous,
-    const LINALG::TMatrix<double, 3, 3>& triad_mat,
-    const LINALG::TMatrix<double, 3, 3>& triad_mat_conv,
-    const LINALG::TMatrix<double, 3, 1>& deltatheta,
-    const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_theta,
-    const LINALG::TMatrix<double, 3, 3>& spinmatrix_of_moment, double gamma_polar, double dt) const
+    LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_moment_viscous,
+    const LINALG::Matrix<3, 3, double>& triad_mat,
+    const LINALG::Matrix<3, 3, double>& triad_mat_conv,
+    const LINALG::Matrix<3, 1, double>& deltatheta,
+    const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_theta,
+    const LINALG::Matrix<3, 3, double>& spinmatrix_of_moment, double gamma_polar, double dt) const
 {
   lin_moment_viscous.Clear();
 
@@ -2638,18 +2638,18 @@ void DRT::ELEMENTS::Beam3k::Calc_lin_moment_viscous(
   lin_moment_viscous.Scale(-1.0);
 
   // second summand
-  LINALG::TMatrix<double, 3, 3> auxmatrix(true);
+  LINALG::Matrix<3, 3, double> auxmatrix(true);
 
-  LINALG::TMatrix<double, 3, 3> gamma_g1_g1_conv;
+  LINALG::Matrix<3, 3, double> gamma_g1_g1_conv;
   for (unsigned int i = 0; i < 3; ++i)
     for (unsigned int j = 0; j < 3; ++j)
       gamma_g1_g1_conv(i, j) = triad_mat(i, 0) * triad_mat_conv(j, 0) * gamma_polar / dt;
 
-  LINALG::TMatrix<double, 3, 3> Tmat_of_deltatheta = LARGEROTATIONS::Tmatrix(deltatheta);
+  LINALG::Matrix<3, 3, double> Tmat_of_deltatheta = LARGEROTATIONS::Tmatrix(deltatheta);
 
   auxmatrix.Multiply(gamma_g1_g1_conv, Tmat_of_deltatheta);
 
-  LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS> second_summand(true);
+  LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double> second_summand(true);
   second_summand.Multiply(auxmatrix, lin_theta);
 
   lin_moment_viscous.Update(1.0, second_summand, 1.0);
@@ -2659,20 +2659,20 @@ void DRT::ELEMENTS::Beam3k::Calc_lin_moment_viscous(
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int nnodecl>
 void DRT::ELEMENTS::Beam3k::Calc_lin_v_thetaperp_moment(
-    LINALG::TMatrix<double, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
-        6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_v_thetaperp_moment,
-    const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_s,
-    const LINALG::TMatrix<double, 3, 1>& g_1, double abs_r_s,
-    const LINALG::TMatrix<double, 3, 3>& spinmatrix_of_moment) const
+    LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
+        double>& lin_v_thetaperp_moment,
+    const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_s,
+    const LINALG::Matrix<3, 1, double>& g_1, double abs_r_s,
+    const LINALG::Matrix<3, 3, double>& spinmatrix_of_moment) const
 {
   lin_v_thetaperp_moment.Clear();
 
-  LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS> lin_tangent_tilde(true);
+  LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double> lin_tangent_tilde(true);
 
   Calc_lin_tangent_tilde<nnodecl>(lin_tangent_tilde, N_s, g_1, abs_r_s);
 
 
-  LINALG::TMatrix<double, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3> auxmatrix(true);
+  LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3, double> auxmatrix(true);
 
   // Todo @grill: check: is the order of matrix products relevant?
   auxmatrix.MultiplyTN(N_s, spinmatrix_of_moment);
@@ -2684,37 +2684,37 @@ void DRT::ELEMENTS::Beam3k::Calc_lin_v_thetaperp_moment(
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int nnodecl>
 void DRT::ELEMENTS::Beam3k::Calc_lin_v_thetaperp_s_moment(
-    LINALG::TMatrix<double, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
-        6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_v_thetaperp_s_moment,
-    const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_s,
-    const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_ss,
-    const LINALG::TMatrix<double, 3, 1>& g_1, const LINALG::TMatrix<double, 3, 1>& g_1_s,
-    const LINALG::TMatrix<double, 3, 1>& r_s, const LINALG::TMatrix<double, 3, 1>& r_ss,
-    double abs_r_s, const LINALG::TMatrix<double, 3, 3>& spinmatrix_of_moment) const
+    LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
+        double>& lin_v_thetaperp_s_moment,
+    const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_s,
+    const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_ss,
+    const LINALG::Matrix<3, 1, double>& g_1, const LINALG::Matrix<3, 1, double>& g_1_s,
+    const LINALG::Matrix<3, 1, double>& r_s, const LINALG::Matrix<3, 1, double>& r_ss,
+    double abs_r_s, const LINALG::Matrix<3, 3, double>& spinmatrix_of_moment) const
 {
   lin_v_thetaperp_s_moment.Clear();
 
   // first summand
-  LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS> lin_tangent_tilde(true);
+  LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double> lin_tangent_tilde(true);
 
   Calc_lin_tangent_tilde<nnodecl>(lin_tangent_tilde, N_s, g_1, abs_r_s);
 
-  LINALG::TMatrix<double, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3> auxmatrix(true);
+  LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3, double> auxmatrix(true);
 
   auxmatrix.MultiplyTN(N_ss, spinmatrix_of_moment);
 
   lin_v_thetaperp_s_moment.Multiply(auxmatrix, lin_tangent_tilde);
 
   // second summand
-  LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS> lin_tangent_tilde_s(true);
+  LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double> lin_tangent_tilde_s(true);
 
   Calc_lin_tangent_tilde_s<nnodecl>(lin_tangent_tilde_s, N_s, N_ss, g_1, g_1_s, r_s, r_ss, abs_r_s);
 
   auxmatrix.Clear();
   auxmatrix.MultiplyTN(N_s, spinmatrix_of_moment);
 
-  LINALG::TMatrix<double, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
-      6 * nnodecl + BEAM3K_COLLOCATION_POINTS>
+  LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
+      double>
       second_summand(true);
 
   second_summand.Multiply(auxmatrix, lin_tangent_tilde_s);
@@ -2726,20 +2726,20 @@ void DRT::ELEMENTS::Beam3k::Calc_lin_v_thetaperp_s_moment(
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int nnodecl>
 void DRT::ELEMENTS::Beam3k::Calc_lin_v_thetapar_moment(
-    LINALG::TMatrix<double, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
-        6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_v_thetapar_moment,
-    LINALG::TMatrix<double, 1, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& L,
-    const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_s,
-    const LINALG::TMatrix<double, 3, 1>& g_1, double abs_r_s,
-    const LINALG::TMatrix<double, 3, 1>& moment) const
+    LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
+        double>& lin_v_thetapar_moment,
+    LINALG::Matrix<1, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& L,
+    const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_s,
+    const LINALG::Matrix<3, 1, double>& g_1, double abs_r_s,
+    const LINALG::Matrix<3, 1, double>& moment) const
 {
   lin_v_thetapar_moment.Clear();
 
-  LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS> lin_g_1(true);
+  LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double> lin_g_1(true);
 
   Calc_lin_g_1<nnodecl>(lin_g_1, N_s, g_1, abs_r_s);
 
-  LINALG::TMatrix<double, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3> auxmatrix(true);
+  LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3, double> auxmatrix(true);
 
   // Todo @grill: check: is the order of matrix products relevant?
   for (unsigned int idof = 0; idof < 6 * nnodecl + BEAM3K_COLLOCATION_POINTS; ++idof)
@@ -2752,24 +2752,24 @@ void DRT::ELEMENTS::Beam3k::Calc_lin_v_thetapar_moment(
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int nnodecl>
 void DRT::ELEMENTS::Beam3k::Calc_lin_v_thetapar_s_moment(
-    LINALG::TMatrix<double, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
-        6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_v_thetapar_s_moment,
-    LINALG::TMatrix<double, 1, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& L,
-    LINALG::TMatrix<double, 1, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& L_s,
-    const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_s,
-    const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_ss,
-    const LINALG::TMatrix<double, 3, 1>& g_1, const LINALG::TMatrix<double, 3, 1>& g_1_s,
-    const LINALG::TMatrix<double, 3, 1>& r_s, const LINALG::TMatrix<double, 3, 1>& r_ss,
-    double abs_r_s, const LINALG::TMatrix<double, 3, 1>& moment) const
+    LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
+        double>& lin_v_thetapar_s_moment,
+    LINALG::Matrix<1, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& L,
+    LINALG::Matrix<1, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& L_s,
+    const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_s,
+    const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_ss,
+    const LINALG::Matrix<3, 1, double>& g_1, const LINALG::Matrix<3, 1, double>& g_1_s,
+    const LINALG::Matrix<3, 1, double>& r_s, const LINALG::Matrix<3, 1, double>& r_ss,
+    double abs_r_s, const LINALG::Matrix<3, 1, double>& moment) const
 {
   lin_v_thetapar_s_moment.Clear();
 
   // first summand
-  LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS> lin_g_1(true);
+  LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double> lin_g_1(true);
 
   Calc_lin_g_1<nnodecl>(lin_g_1, N_s, g_1, abs_r_s);
 
-  LINALG::TMatrix<double, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3> auxmatrix(true);
+  LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3, double> auxmatrix(true);
 
   for (unsigned int idof = 0; idof < 6 * nnodecl + BEAM3K_COLLOCATION_POINTS; ++idof)
     for (unsigned int jdim = 0; jdim < 3; ++jdim) auxmatrix(idof, jdim) = L_s(idof) * moment(jdim);
@@ -2777,7 +2777,7 @@ void DRT::ELEMENTS::Beam3k::Calc_lin_v_thetapar_s_moment(
   lin_v_thetapar_s_moment.Multiply(auxmatrix, lin_g_1);
 
   // second summand
-  LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS> lin_g_1_s(true);
+  LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double> lin_g_1_s(true);
 
   Calc_lin_g_1_s<nnodecl>(lin_g_1_s, N_s, N_ss, g_1, g_1_s, r_s, r_ss, abs_r_s);
 
@@ -2786,8 +2786,8 @@ void DRT::ELEMENTS::Beam3k::Calc_lin_v_thetapar_s_moment(
   for (unsigned int idof = 0; idof < 6 * nnodecl + BEAM3K_COLLOCATION_POINTS; ++idof)
     for (unsigned int jdim = 0; jdim < 3; ++jdim) auxmatrix(idof, jdim) = L(idof) * moment(jdim);
 
-  LINALG::TMatrix<double, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
-      6 * nnodecl + BEAM3K_COLLOCATION_POINTS>
+  LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
+      double>
       second_summand(true);
 
   second_summand.Multiply(auxmatrix, lin_g_1_s);
@@ -2798,185 +2798,184 @@ void DRT::ELEMENTS::Beam3k::Calc_lin_v_thetapar_s_moment(
 // explicit template instantiations
 template void DRT::ELEMENTS::Beam3k::ExtractCenterlineDofValuesFromElementStateVector<2, 2,
     Sacado::Fad::DFad<double>>(
-    const LINALG::TMatrix<Sacado::Fad::DFad<double>, 12 + BEAM3K_COLLOCATION_POINTS, 1>&,
-    LINALG::TMatrix<Sacado::Fad::DFad<double>, 12, 1>&, bool) const;
+    const LINALG::Matrix<12 + BEAM3K_COLLOCATION_POINTS, 1, Sacado::Fad::DFad<double>>&,
+    LINALG::Matrix<12, 1, Sacado::Fad::DFad<double>>&, bool) const;
 template void DRT::ELEMENTS::Beam3k::ExtractCenterlineDofValuesFromElementStateVector<2, 2, double>(
-    const LINALG::TMatrix<double, 12 + BEAM3K_COLLOCATION_POINTS, 1>&,
-    LINALG::TMatrix<double, 12, 1>&, bool) const;
+    const LINALG::Matrix<12 + BEAM3K_COLLOCATION_POINTS, 1, double>&,
+    LINALG::Matrix<12, 1, double>&, bool) const;
 
 template void DRT::ELEMENTS::Beam3k::AddRefValuesDispCenterline<2, 2, Sacado::Fad::DFad<double>>(
-    LINALG::TMatrix<Sacado::Fad::DFad<double>, 12, 1>&) const;
+    LINALG::Matrix<12, 1, Sacado::Fad::DFad<double>>&) const;
 template void DRT::ELEMENTS::Beam3k::AddRefValuesDispCenterline<2, 2, double>(
-    LINALG::TMatrix<double, 12, 1>&) const;
+    LINALG::Matrix<12, 1, double>&) const;
 
 template void DRT::ELEMENTS::Beam3k::AddRefValuesDisp<2, double>(
-    LINALG::TMatrix<double, 6 * 2 + BEAM3K_COLLOCATION_POINTS, 1>&) const;
+    LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, double>&) const;
 template void DRT::ELEMENTS::Beam3k::AddRefValuesDisp<2, Sacado::Fad::DFad<double>>(
-    LINALG::TMatrix<Sacado::Fad::DFad<double>, 6 * 2 + BEAM3K_COLLOCATION_POINTS, 1>&) const;
+    LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, Sacado::Fad::DFad<double>>&) const;
 
 template void DRT::ELEMENTS::Beam3k::UpdateDispTotlag<2, double>(const std::vector<double>&,
-    LINALG::TMatrix<double, 6 * 2 + BEAM3K_COLLOCATION_POINTS, 1>&) const;
+    LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, double>&) const;
 template void DRT::ELEMENTS::Beam3k::UpdateDispTotlag<2, Sacado::Fad::DFad<double>>(
     const std::vector<double>&,
-    LINALG::TMatrix<Sacado::Fad::DFad<double>, 6 * 2 + BEAM3K_COLLOCATION_POINTS, 1>&) const;
+    LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, Sacado::Fad::DFad<double>>&) const;
 
 template void DRT::ELEMENTS::Beam3k::UpdateNodalVariables<2, double>(
-    const LINALG::TMatrix<double, 6 * 2 + BEAM3K_COLLOCATION_POINTS, 1>&,
-    LINALG::TMatrix<double, 6 * 2 + BEAM3K_COLLOCATION_POINTS, 1>&,
-    std::vector<LINALG::TMatrix<double, 3, 3>>&, std::vector<LINALG::Matrix<4, 1>>&) const;
+    const LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, double>&,
+    LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, double>&,
+    std::vector<LINALG::Matrix<3, 3, double>>&, std::vector<LINALG::Matrix<4, 1>>&) const;
 template void DRT::ELEMENTS::Beam3k::UpdateNodalVariables<2, Sacado::Fad::DFad<double>>(
-    const LINALG::TMatrix<Sacado::Fad::DFad<double>, 6 * 2 + BEAM3K_COLLOCATION_POINTS, 1>&,
-    LINALG::TMatrix<Sacado::Fad::DFad<double>, 6 * 2 + BEAM3K_COLLOCATION_POINTS, 1>&,
-    std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 3>>&,
+    const LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, Sacado::Fad::DFad<double>>&,
+    LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, Sacado::Fad::DFad<double>>&,
+    std::vector<LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>>&,
     std::vector<LINALG::Matrix<4, 1>>&) const;
 
 template void DRT::ELEMENTS::Beam3k::SetPositionsAtBoundaryNodes<2, double>(
-    const LINALG::TMatrix<double, 6 * 2 + BEAM3K_COLLOCATION_POINTS, 1>&,
-    LINALG::TMatrix<double, 6 * 2 + BEAM3K_COLLOCATION_POINTS, 1>&) const;
+    const LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, double>&,
+    LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, double>&) const;
 template void DRT::ELEMENTS::Beam3k::SetPositionsAtBoundaryNodes<2, Sacado::Fad::DFad<double>>(
-    const LINALG::TMatrix<Sacado::Fad::DFad<double>, 6 * 2 + BEAM3K_COLLOCATION_POINTS, 1>&,
-    LINALG::TMatrix<Sacado::Fad::DFad<double>, 6 * 2 + BEAM3K_COLLOCATION_POINTS, 1>&) const;
+    const LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, Sacado::Fad::DFad<double>>&,
+    LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, Sacado::Fad::DFad<double>>&) const;
 
 template void DRT::ELEMENTS::Beam3k::SetTangentsAndTriadsAndReferenceTriadsAtBoundaryNodes<2,
-    double>(const LINALG::TMatrix<double, 6 * 2 + BEAM3K_COLLOCATION_POINTS, 1>&,
-    LINALG::TMatrix<double, 6 * 2 + BEAM3K_COLLOCATION_POINTS, 1>&,
-    std::vector<LINALG::TMatrix<double, 3, 3>>&, std::vector<LINALG::Matrix<4, 1>>&) const;
+    double>(const LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, double>&,
+    LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, double>&,
+    std::vector<LINALG::Matrix<3, 3, double>>&, std::vector<LINALG::Matrix<4, 1>>&) const;
 template void DRT::ELEMENTS::Beam3k::SetTangentsAndTriadsAndReferenceTriadsAtBoundaryNodes<2,
     Sacado::Fad::DFad<double>>(
-    const LINALG::TMatrix<Sacado::Fad::DFad<double>, 6 * 2 + BEAM3K_COLLOCATION_POINTS, 1>&,
-    LINALG::TMatrix<Sacado::Fad::DFad<double>, 6 * 2 + BEAM3K_COLLOCATION_POINTS, 1>&,
-    std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 3>>&,
+    const LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, Sacado::Fad::DFad<double>>&,
+    LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, Sacado::Fad::DFad<double>>&,
+    std::vector<LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>>&,
     std::vector<LINALG::Matrix<4, 1>>&) const;
 
 template void DRT::ELEMENTS::Beam3k::SetTriadsAndReferenceTriadsAtRemainingCollocationPoints<2,
-    double>(const LINALG::TMatrix<double, 6 * 2 + BEAM3K_COLLOCATION_POINTS, 1>&,
-    const LINALG::TMatrix<double, 6 * 2 + BEAM3K_COLLOCATION_POINTS, 1>&,
-    std::vector<LINALG::TMatrix<double, 3, 3>>&, std::vector<LINALG::Matrix<4, 1>>&) const;
+    double>(const LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, double>&,
+    const LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, double>&,
+    std::vector<LINALG::Matrix<3, 3, double>>&, std::vector<LINALG::Matrix<4, 1>>&) const;
 template void DRT::ELEMENTS::Beam3k::SetTriadsAndReferenceTriadsAtRemainingCollocationPoints<2,
     Sacado::Fad::DFad<double>>(
-    const LINALG::TMatrix<Sacado::Fad::DFad<double>, 6 * 2 + BEAM3K_COLLOCATION_POINTS, 1>&,
-    const LINALG::TMatrix<Sacado::Fad::DFad<double>, 6 * 2 + BEAM3K_COLLOCATION_POINTS, 1>&,
-    std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 3>>&,
+    const LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, Sacado::Fad::DFad<double>>&,
+    const LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, Sacado::Fad::DFad<double>>&,
+    std::vector<LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>>&,
     std::vector<LINALG::Matrix<4, 1>>&) const;
 
 template void DRT::ELEMENTS::Beam3k::SetAutomaticDifferentiationVariables<2>(
-    LINALG::TMatrix<FAD, 6 * 2 + BEAM3K_COLLOCATION_POINTS, 1>&) const;
+    LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 1, FAD>&) const;
 
 template void DRT::ELEMENTS::Beam3k::Calc_velocity<2, 2, 3>(
-    const LINALG::TMatrix<double, 3 * 2 * 2, 1>&, const LINALG::TMatrix<double, 1, 2 * 2>&,
-    LINALG::TMatrix<double, 3, 1>&, const LINALG::TMatrix<double, 3, 1>&, int) const;
+    const LINALG::Matrix<3 * 2 * 2, 1, double>&, const LINALG::Matrix<1, 2 * 2, double>&,
+    LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 1, double>&, int) const;
 
 template void DRT::ELEMENTS::Beam3k::Calc_velocity<2, 2, 3>(
-    const LINALG::TMatrix<double, 3 * 2 * 2, 1>&, const LINALG::TMatrix<double, 1, 2 * 2>&,
-    LINALG::TMatrix<FAD, 3, 1>&, const LINALG::TMatrix<FAD, 3, 1>&, int);
+    const LINALG::Matrix<3 * 2 * 2, 1, double>&, const LINALG::Matrix<1, 2 * 2, double>&,
+    LINALG::Matrix<3, 1, FAD>&, const LINALG::Matrix<3, 1, FAD>&, int);
 
 template void DRT::ELEMENTS::Beam3k::Calc_v_thetaperp<2, double>(
-    LINALG::TMatrix<double, 6 * 2 + BEAM3K_COLLOCATION_POINTS, 3>&,
-    const LINALG::TMatrix<double, 3, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<double, 3, 1>&, double) const;
+    LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 3, double>&,
+    const LINALG::Matrix<3, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<3, 1, double>&, double) const;
 template void DRT::ELEMENTS::Beam3k::Calc_v_thetaperp<2, Sacado::Fad::DFad<double>>(
-    LINALG::TMatrix<Sacado::Fad::DFad<double>, 6 * 2 + BEAM3K_COLLOCATION_POINTS, 3>&,
-    const LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1>&, Sacado::Fad::DFad<double>) const;
+    LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 3, Sacado::Fad::DFad<double>>&,
+    const LINALG::Matrix<3, 6 * 2 + BEAM3K_COLLOCATION_POINTS, Sacado::Fad::DFad<double>>&,
+    const LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&, Sacado::Fad::DFad<double>) const;
 
 template void DRT::ELEMENTS::Beam3k::Calc_v_thetapartheta<2, double>(
-    LINALG::TMatrix<double, 6 * 2 + BEAM3K_COLLOCATION_POINTS, 3>&,
-    const LINALG::TMatrix<double, 1, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<double, 3, 1>&, double) const;
+    LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 3, double>&,
+    const LINALG::Matrix<1, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<3, 1, double>&, double) const;
 template void DRT::ELEMENTS::Beam3k::Calc_v_thetapartheta<2, Sacado::Fad::DFad<double>>(
-    LINALG::TMatrix<Sacado::Fad::DFad<double>, 6 * 2 + BEAM3K_COLLOCATION_POINTS, 3>&,
-    const LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1>&, Sacado::Fad::DFad<double>) const;
+    LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 3, Sacado::Fad::DFad<double>>&,
+    const LINALG::Matrix<1, 6 * 2 + BEAM3K_COLLOCATION_POINTS, Sacado::Fad::DFad<double>>&,
+    const LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&, Sacado::Fad::DFad<double>) const;
 
 template void DRT::ELEMENTS::Beam3k::Calc_lin_thetaperp<2>(
-    LINALG::TMatrix<double, 3, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<double, 3, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<double, 3, 1>&, double) const;
+    LINALG::Matrix<3, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<3, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<3, 1, double>&, double) const;
 
 template void DRT::ELEMENTS::Beam3k::Calc_lin_thetapar<2>(
-    LINALG::TMatrix<double, 3, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<double, 1, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<double, 3, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<double, 3, 1>&, const LINALG::TMatrix<double, 3, 1>&, double) const;
+    LINALG::Matrix<3, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<1, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<3, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 1, double>&, double) const;
 
 template void DRT::ELEMENTS::Beam3k::Calc_lin_tangent_tilde<2>(
-    LINALG::TMatrix<double, 3, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<double, 3, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<double, 3, 1>&, double) const;
+    LINALG::Matrix<3, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<3, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<3, 1, double>&, double) const;
 
 template void DRT::ELEMENTS::Beam3k::Calc_lin_tangent_tilde_s<2>(
-    LINALG::TMatrix<double, 3, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<double, 3, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<double, 3, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<double, 3, 1>&, const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<double, 3, 1>&, const LINALG::TMatrix<double, 3, 1>&, double) const;
+    LINALG::Matrix<3, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<3, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<3, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 1, double>&,
+    const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 1, double>&, double) const;
 
 template void DRT::ELEMENTS::Beam3k::Calc_lin_g_1<2>(
-    LINALG::TMatrix<double, 3, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<double, 3, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<double, 3, 1>&, double) const;
+    LINALG::Matrix<3, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<3, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<3, 1, double>&, double) const;
 
 template void DRT::ELEMENTS::Beam3k::Calc_lin_g_1_s<2>(
-    LINALG::TMatrix<double, 3, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<double, 3, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<double, 3, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<double, 3, 1>&, const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<double, 3, 1>&, const LINALG::TMatrix<double, 3, 1>&, double) const;
+    LINALG::Matrix<3, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<3, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<3, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 1, double>&,
+    const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 1, double>&, double) const;
 
 template void DRT::ELEMENTS::Beam3k::Calc_lin_v_epsilon<2>(
-    LINALG::TMatrix<double, 6 * 2 + BEAM3K_COLLOCATION_POINTS, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<double, 3, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<double, 3, 1>&, double) const;
+    LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<3, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<3, 1, double>&, double) const;
 
 template void DRT::ELEMENTS::Beam3k::Calc_lin_moment_resultant<2>(
-    LINALG::TMatrix<double, 3, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<double, 3, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<double, 3, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<double, 3, 3>&, const LINALG::TMatrix<double, 3, 3>&) const;
+    LINALG::Matrix<3, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<3, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<3, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<3, 3, double>&, const LINALG::Matrix<3, 3, double>&) const;
 
 template void DRT::ELEMENTS::Beam3k::Calc_lin_moment_inertia<2>(
-    LINALG::TMatrix<double, 3, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<double, 3, 3>&, const LINALG::TMatrix<double, 3, 3>&,
-    const LINALG::TMatrix<double, 3, 1>&, const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<double, 3, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<double, 3, 3>&, const LINALG::TMatrix<double, 3, 3>&, double,
-    double) const;
+    LINALG::Matrix<3, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<3, 3, double>&, const LINALG::Matrix<3, 3, double>&,
+    const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 1, double>&,
+    const LINALG::Matrix<3, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<3, 3, double>&, const LINALG::Matrix<3, 3, double>&, double, double) const;
 
 template void DRT::ELEMENTS::Beam3k::Calc_lin_moment_viscous<2>(
-    LINALG::TMatrix<double, 3, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<double, 3, 3>&, const LINALG::TMatrix<double, 3, 3>&,
-    const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<double, 3, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<double, 3, 3>&, double, double) const;
+    LINALG::Matrix<3, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<3, 3, double>&, const LINALG::Matrix<3, 3, double>&,
+    const LINALG::Matrix<3, 1, double>&,
+    const LINALG::Matrix<3, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<3, 3, double>&, double, double) const;
 
 template void DRT::ELEMENTS::Beam3k::Calc_lin_v_thetaperp_moment<2>(
-    LINALG::TMatrix<double, 6 * 2 + BEAM3K_COLLOCATION_POINTS, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<double, 3, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<double, 3, 1>&, double, const LINALG::TMatrix<double, 3, 3>&) const;
+    LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<3, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<3, 1, double>&, double, const LINALG::Matrix<3, 3, double>&) const;
 
 template void DRT::ELEMENTS::Beam3k::Calc_lin_v_thetapar_moment<2>(
-    LINALG::TMatrix<double, 6 * 2 + BEAM3K_COLLOCATION_POINTS, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&
+    LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&
         lin_v_thetapar_moment,
-    LINALG::TMatrix<double, 1, 6 * 2 + BEAM3K_COLLOCATION_POINTS>& L,
-    const LINALG::TMatrix<double, 3, 6 * 2 + BEAM3K_COLLOCATION_POINTS>& N_s,
-    const LINALG::TMatrix<double, 3, 1>& g_1, double abs_r_s,
-    const LINALG::TMatrix<double, 3, 1>& moment) const;
+    LINALG::Matrix<1, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>& L,
+    const LINALG::Matrix<3, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>& N_s,
+    const LINALG::Matrix<3, 1, double>& g_1, double abs_r_s,
+    const LINALG::Matrix<3, 1, double>& moment) const;
 
 template void DRT::ELEMENTS::Beam3k::Calc_lin_v_thetaperp_s_moment<2>(
-    LINALG::TMatrix<double, 6 * 2 + BEAM3K_COLLOCATION_POINTS, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<double, 3, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<double, 3, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&,
-    const LINALG::TMatrix<double, 3, 1>&, const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<double, 3, 1>&, const LINALG::TMatrix<double, 3, 1>&, double,
-    const LINALG::TMatrix<double, 3, 3>&) const;
+    LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<3, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<3, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&,
+    const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 1, double>&,
+    const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 1, double>&, double,
+    const LINALG::Matrix<3, 3, double>&) const;
 
 template void DRT::ELEMENTS::Beam3k::Calc_lin_v_thetapar_s_moment<2>(
-    LINALG::TMatrix<double, 6 * 2 + BEAM3K_COLLOCATION_POINTS, 6 * 2 + BEAM3K_COLLOCATION_POINTS>&
+    LINALG::Matrix<6 * 2 + BEAM3K_COLLOCATION_POINTS, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>&
         lin_v_thetapar_s_moment,
-    LINALG::TMatrix<double, 1, 6 * 2 + BEAM3K_COLLOCATION_POINTS>& L,
-    LINALG::TMatrix<double, 1, 6 * 2 + BEAM3K_COLLOCATION_POINTS>& L_s,
-    const LINALG::TMatrix<double, 3, 6 * 2 + BEAM3K_COLLOCATION_POINTS>& N_s,
-    const LINALG::TMatrix<double, 3, 6 * 2 + BEAM3K_COLLOCATION_POINTS>& N_ss,
-    const LINALG::TMatrix<double, 3, 1>& g_1, const LINALG::TMatrix<double, 3, 1>& g_1_s,
-    const LINALG::TMatrix<double, 3, 1>& r_s, const LINALG::TMatrix<double, 3, 1>& r_ss,
-    double abs_r_s, const LINALG::TMatrix<double, 3, 1>& moment) const;
+    LINALG::Matrix<1, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>& L,
+    LINALG::Matrix<1, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>& L_s,
+    const LINALG::Matrix<3, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>& N_s,
+    const LINALG::Matrix<3, 6 * 2 + BEAM3K_COLLOCATION_POINTS, double>& N_ss,
+    const LINALG::Matrix<3, 1, double>& g_1, const LINALG::Matrix<3, 1, double>& g_1_s,
+    const LINALG::Matrix<3, 1, double>& r_s, const LINALG::Matrix<3, 1, double>& r_ss,
+    double abs_r_s, const LINALG::Matrix<3, 1, double>& moment) const;

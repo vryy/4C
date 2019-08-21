@@ -40,11 +40,11 @@ namespace GEOMETRYPAIR
    * @param element (in) Pointer to the element, needed for beam elements.
    */
   template <typename element_type, typename T, typename V, typename scalar_type>
-  inline void EvaluatePosition(const T& xi, const V& q, LINALG::TMatrix<scalar_type, 3, 1>& r,
+  inline void EvaluatePosition(const T& xi, const V& q, LINALG::Matrix<3, 1, scalar_type>& r,
       const DRT::Element* element = NULL)
   {
     // Matrix for shape function values.
-    LINALG::TMatrix<scalar_type, 1, element_type::n_nodes_ * element_type::n_val_> N(true);
+    LINALG::Matrix<1, element_type::n_nodes_ * element_type::n_val_, scalar_type> N(true);
 
     // Evaluate the shape function values.
     element_type::EvaluateShapeFunction(
@@ -75,10 +75,10 @@ namespace GEOMETRYPAIR
    */
   template <typename element_type, typename T, typename V, typename scalar_type>
   inline void EvaluatePositionDerivative1(const T& xi, const V& q,
-      LINALG::TMatrix<scalar_type, 3, element_type::dim_>& dr, const DRT::Element* element = NULL)
+      LINALG::Matrix<3, element_type::dim_, scalar_type>& dr, const DRT::Element* element = NULL)
   {
     // Matrix for shape function values.
-    LINALG::TMatrix<scalar_type, element_type::dim_, element_type::n_nodes_ * element_type::n_val_>
+    LINALG::Matrix<element_type::dim_, element_type::n_nodes_ * element_type::n_val_, scalar_type>
         dN(true);
 
     // Evaluate the shape function values.
@@ -377,7 +377,7 @@ namespace GEOMETRYPAIR
         dserror("EvaluateShapeFunction for nurbs needs a valid element pointer!");
 
       // Get the knots and weights for this element.
-      LINALG::TMatrix<double, 27, 1> weights(true);
+      LINALG::Matrix<27, 1, double> weights(true);
       std::vector<Epetra_SerialDenseVector> myknots(true);
       DRT::NURBS::GetMyNurbsKnotsAndWeights(
           *(DRT::Problem::Instance()->GetDis("structure")), element, myknots, weights);
@@ -409,7 +409,7 @@ namespace GEOMETRYPAIR
         dserror("EvaluateShapeFunctionDeriv1 for nurbs needs a valid element pointer!");
 
       // Get the knots and weights for this element.
-      LINALG::TMatrix<double, 27, 1> weights(true);
+      LINALG::Matrix<27, 1, double> weights(true);
       std::vector<Epetra_SerialDenseVector> myknots(true);
       DRT::NURBS::GetMyNurbsKnotsAndWeights(
           *(DRT::Problem::Instance()->GetDis("structure")), element, myknots, weights);
@@ -419,7 +419,7 @@ namespace GEOMETRYPAIR
       DRT::Element::DiscretizationType discretization = base::discretization_;
 
       // Evaluate the shape functions.
-      LINALG::TMatrix<typename V::scalar_type, base::n_nodes_, 1> dummy;
+      LINALG::Matrix<base::n_nodes_, 1, typename V::scalar_type> dummy;
       DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(dummy, N, xi, myknots, weights, discretization);
     };
   };

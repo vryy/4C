@@ -45,23 +45,23 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Init(
  */
 template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectPointToVolume(
-    const LINALG::TMatrix<scalar_type, 3, 1>& point,
-    const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
-    LINALG::TMatrix<scalar_type, 3, 1>& xi, ProjectionResult& projection_result) const
+    const LINALG::Matrix<3, 1, scalar_type>& point,
+    const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
+    LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result) const
 {
   // Initialize data structures
 
   // Point on volume.
-  LINALG::TMatrix<scalar_type, 3, 1> r_volume;
+  LINALG::Matrix<3, 1, scalar_type> r_volume;
 
   // Jacobian / inverse.
-  LINALG::TMatrix<scalar_type, 3, 3> J_J_inv;
+  LINALG::Matrix<3, 3, scalar_type> J_J_inv;
 
   // Increment of xi.
-  LINALG::TMatrix<scalar_type, 3, 1> delta_xi;
+  LINALG::Matrix<3, 1, scalar_type> delta_xi;
 
   // Residuum.
-  LINALG::TMatrix<scalar_type, 3, 1> residuum;
+  LINALG::Matrix<3, 1, scalar_type> residuum;
 
   // Reset the projection result flag.
   projection_result = ProjectionResult::projection_not_found;
@@ -118,12 +118,12 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectP
  */
 template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectPointOnLineToVolume(
-    const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
-    const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume, const scalar_type& eta,
-    LINALG::TMatrix<scalar_type, 3, 1>& xi, ProjectionResult& projection_result) const
+    const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+    const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume, const scalar_type& eta,
+    LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result) const
 {
   // Get the point on the line.
-  LINALG::TMatrix<scalar_type, 3, 1> r_line;
+  LINALG::Matrix<3, 1, scalar_type> r_line;
   GEOMETRYPAIR::EvaluatePosition<line>(eta, q_line, r_line, Element1());
 
   // Project the point to the solid.
@@ -136,8 +136,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectP
  */
 template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectPointsOnLineToVolume(
-    const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
-    const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
+    const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+    const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
     std::vector<ProjectionPointLineToVolume<scalar_type>>& projection_points,
     unsigned int& n_projections_valid, unsigned int& n_projections) const
 {
@@ -169,8 +169,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectP
  */
 template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectPointsOnLineToVolume(
-    const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
-    const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
+    const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+    const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
     std::vector<ProjectionPointLineToVolume<scalar_type>>& projection_points,
     unsigned int& n_projections_valid) const
 {
@@ -187,18 +187,18 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectP
  *
  */
 template <typename scalar_type, typename line, typename volume>
-void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::
-    ProjectGaussPointsOnSegmentToVolume(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
-        const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
-        const DRT::UTILS::IntegrationPoints1D& gauss_points,
-        LineSegment<scalar_type>& segment) const
+void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line,
+    volume>::ProjectGaussPointsOnSegmentToVolume(const LINALG::Matrix<line::n_dof_, 1, scalar_type>&
+                                                     q_line,
+    const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
+    const DRT::UTILS::IntegrationPoints1D& gauss_points, LineSegment<scalar_type>& segment) const
 {
   // Set up the vector with the projection points.
   std::vector<ProjectionPointLineToVolume<scalar_type>>& projection_points =
       segment.GetProjectionPointsMutable();
   projection_points.clear();
   projection_points.reserve(gauss_points.nquad);
-  LINALG::TMatrix<scalar_type, 3, 1> xi_start;
+  LINALG::Matrix<3, 1, scalar_type> xi_start;
   this->ValidParameterElement2(xi_start);
   for (unsigned int i = 0; i < (unsigned int)gauss_points.nquad; i++)
   {
@@ -226,10 +226,10 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::
  */
 template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::IntersectLineWithSurface(
-    const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
-    const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
+    const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+    const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
     const unsigned int& fixed_parameter, const double& fixed_value, scalar_type& eta,
-    LINALG::TMatrix<scalar_type, 3, 1>& xi, ProjectionResult& projection_result) const
+    LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result) const
 {
   // Check the input parameters.
   {
@@ -245,19 +245,19 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
 
   // Initialize data structures
   // Point on line.
-  LINALG::TMatrix<scalar_type, 3, 1> r_line;
-  LINALG::TMatrix<scalar_type, 3, 1> dr_line;
+  LINALG::Matrix<3, 1, scalar_type> r_line;
+  LINALG::Matrix<3, 1, scalar_type> dr_line;
 
   // Point on volume.
-  LINALG::TMatrix<scalar_type, 3, 1> r_volume;
-  LINALG::TMatrix<scalar_type, 3, 3> dr_volume;
+  LINALG::Matrix<3, 1, scalar_type> r_volume;
+  LINALG::Matrix<3, 3, scalar_type> dr_volume;
 
   // Residuum.
-  LINALG::TMatrix<scalar_type, 4, 1> residuum;
-  LINALG::TMatrix<scalar_type, 4, 1> delta_x;
+  LINALG::Matrix<4, 1, scalar_type> residuum;
+  LINALG::Matrix<4, 1, scalar_type> delta_x;
 
   // Jacobian / inverse.
-  LINALG::TMatrix<scalar_type, 4, 4> J_J_inv;
+  LINALG::Matrix<4, 4, scalar_type> J_J_inv;
 
   // Reset the projection result flag.
   projection_result = ProjectionResult::projection_not_found;
@@ -347,10 +347,10 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
  */
 template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::IntersectLineWithVolume(
-    const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
-    const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
+    const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+    const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
     std::vector<ProjectionPointLineToVolume<scalar_type>>& intersection_points,
-    const scalar_type& eta_start, const LINALG::TMatrix<scalar_type, 3, 1>& xi_start) const
+    const scalar_type& eta_start, const LINALG::Matrix<3, 1, scalar_type>& xi_start) const
 {
   // Get number of faces for this volume and create a vector with the indices of the faces, so all
   // surfaces of the volume can be checked for an intersection with the line.
@@ -380,7 +380,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
 
   // Create variables.
   scalar_type eta;
-  LINALG::TMatrix<scalar_type, 3, 1> xi;
+  LINALG::Matrix<3, 1, scalar_type> xi;
   ProjectionResult intersection_found;
 
   // Try to intersect the beam with each face.
@@ -408,13 +408,13 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
  */
 template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::IntersectLineWithVolume(
-    const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
-    const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
+    const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+    const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
     std::vector<ProjectionPointLineToVolume<scalar_type>>& intersection_points) const
 {
   // Set default values for the parameter coordinates.
   scalar_type eta_start;
-  LINALG::TMatrix<scalar_type, 3, 1> xi_start;
+  LINALG::Matrix<3, 1, scalar_type> xi_start;
   SetStartValuesElement1(eta_start);
   SetStartValuesElement2(xi_start);
 
@@ -443,7 +443,7 @@ bool GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ValidPar
  */
 template <typename scalar_type, typename line, typename volume>
 bool GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ValidParameterElement2(
-    const LINALG::TMatrix<scalar_type, 3, 1>& xi) const
+    const LINALG::Matrix<3, 1, scalar_type>& xi) const
 {
   double xi_limit = 1.0 + CONSTANTS::projection_xi_eta_tol;
   if (volume::volume_type_ == DiscretizationTypeVolume::hexaeder)
@@ -483,7 +483,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::SetStart
  */
 template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::SetStartValuesElement2(
-    LINALG::TMatrix<scalar_type, 3, 1>& xi) const
+    LINALG::Matrix<3, 1, scalar_type>& xi) const
 {
   if (volume::volume_type_ == DiscretizationTypeVolume::hexaeder)
     xi.PutScalar(0.0);

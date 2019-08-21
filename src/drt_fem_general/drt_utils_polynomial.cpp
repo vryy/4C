@@ -153,7 +153,7 @@ namespace DRT
 
       // avoid memory allocation by allocating values on the stack
       double evaluation[nsd_][20], gradient[nsd_][20];
-      LINALG::TMatrix<double, 2, 1> eval;
+      LINALG::Matrix<2, 1, double> eval;
       for (unsigned int i = 0; i < size; ++i)
         for (unsigned int d = 0; d < nsd_; ++d)
         {
@@ -208,7 +208,7 @@ namespace DRT
 
       // avoid memory allocation by allocating values on the stack
       double evaluation[nsd_][20], gradient[nsd_][20], hessian[nsd_][20];
-      LINALG::TMatrix<double, 3, 1> eval;
+      LINALG::Matrix<3, 1, double> eval;
       for (unsigned int i = 0; i < size; ++i)
         for (unsigned int d = 0; d < nsd_; ++d)
         {
@@ -358,7 +358,7 @@ namespace DRT
 
       // avoid memory allocation by allocating values on the stack
       double evaluation[nsd_][20], gradient[nsd_][20];
-      LINALG::TMatrix<double, 2, 1> eval;
+      LINALG::Matrix<2, 1, double> eval;
       for (unsigned int i = 0; i < size; ++i)
         for (unsigned int d = 0; d < nsd_; ++d)
         {
@@ -417,7 +417,7 @@ namespace DRT
 
       // avoid memory allocation by allocating values on the stack
       double evaluation[nsd_][20], gradient[nsd_][20], hessian[nsd_][20];
-      LINALG::TMatrix<double, 3, 1> eval;
+      LINALG::Matrix<3, 1, double> eval;
       for (unsigned int i = 0; i < size; ++i)
         for (unsigned int d = 0; d < nsd_; ++d)
         {

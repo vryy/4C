@@ -577,7 +577,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix* stiff,
   //-----------------------------------------------------------------------
   // build averaged F and volume of node (using sacado)
   double VnodeL = 0.0;
-  LINALG::TMatrix<FAD, 3, 3> fad_FnodeL(true);
+  LINALG::Matrix<3, 3, FAD> fad_FnodeL(true);
   std::vector<std::vector<int>> lmlm(neleinpatch);
   for (int i = 0; i < neleinpatch; ++i)
   {
@@ -600,12 +600,12 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix* stiff,
     }
 
     // copy element disp to 4x3 format
-    LINALG::TMatrix<FAD, 4, 3> eledispmat(false);
+    LINALG::Matrix<4, 3, FAD> eledispmat(false);
     for (int j = 0; j < 4; ++j)
       for (int k = 0; k < 3; ++k) eledispmat(j, k) = patchdisp[lmlm[i][j * 3 + k]];
 
     // build F of this element
-    LINALG::TMatrix<FAD, 3, 3> Fele(true);
+    LINALG::Matrix<3, 3, FAD> Fele(true);
     Fele = adjele[i]->BuildF<FAD>(eledispmat, adjele[i]->Nxyz());
 
     // add up to nodal deformation gradient
@@ -674,7 +674,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix* stiff,
 
   //-------------------------------------------------------------- averaged strain
   // right cauchy green
-  LINALG::TMatrix<FAD, 3, 3> CG(false);
+  LINALG::Matrix<3, 3, FAD> CG(false);
   CG.MultiplyTN(fad_FnodeL, fad_FnodeL);
   std::vector<FAD> Ebar(6);
   Ebar[0] = 0.5 * (CG(0, 0) - 1.0);
@@ -978,12 +978,12 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(Epetra_SerialDenseMatrix* sti
     }
 
     // copy eledisp to 4x3 format
-    LINALG::TMatrix<FAD, 4, 3> eledispmat(false);
+    LINALG::Matrix<4, 3, FAD> eledispmat(false);
     for (int j = 0; j < 4; ++j)
       for (int k = 0; k < 3; ++k) eledispmat(j, k) = patchdisp[lmlm[i][j * 3 + k]];
 
     // build F and det(F) of this element
-    LINALG::TMatrix<FAD, 3, 3> Fele = adjele[i]->BuildF<FAD>(eledispmat, adjele[i]->nxyz_);
+    LINALG::Matrix<3, 3, FAD> Fele = adjele[i]->BuildF<FAD>(eledispmat, adjele[i]->nxyz_);
     FAD Jele = LINALG::Determinant3x3<FAD>(Fele);
 
     fad_Jnode += V * Jele;
@@ -996,7 +996,7 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(Epetra_SerialDenseMatrix* sti
   FAD Jpowthird = std::pow(fad_Jnode, 1. / 3.);
 
   // build volumetric deformation gradient
-  LINALG::TMatrix<FAD, 3, 3> fad_FnodeL(true);
+  LINALG::Matrix<3, 3, FAD> fad_FnodeL(true);
   for (int i = 0; i < 3; ++i) fad_FnodeL(i, i) = Jpowthird;
 
   // copy to LINALG::Matrix objects for output of strain
@@ -1057,7 +1057,7 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(Epetra_SerialDenseMatrix* sti
 
   //-----------------------------------------------------------------------
   // green-lagrange strains based on averaged volumetric F
-  LINALG::TMatrix<FAD, 3, 3> CG(false);
+  LINALG::Matrix<3, 3, FAD> CG(false);
   CG.MultiplyTN(fad_FnodeL, fad_FnodeL);
   std::vector<FAD> Ebar(6);
   Ebar[0] = 0.5 * (CG(0, 0) - 1.0);

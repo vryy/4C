@@ -154,10 +154,10 @@ namespace DRT
 
       //! build deformation gradient
       template <typename T>
-      static LINALG::TMatrix<T, 3, 3> TBuildF(
-          const LINALG::TMatrix<T, 4, 3>& xdisp, const LINALG::Matrix<4, 3>& nxyz)
+      static LINALG::Matrix<3, 3, T> TBuildF(
+          const LINALG::Matrix<4, 3, T>& xdisp, const LINALG::Matrix<4, 3>& nxyz)
       {
-        LINALG::TMatrix<T, 3, 3> F(true);
+        LINALG::Matrix<3, 3, T> F(true);
         for (int i = 0; i < 3; ++i)
         {
           for (int j = 0; j < 3; ++j)
@@ -169,7 +169,7 @@ namespace DRT
 
       //! build and return determinant of a 3x3 matrix
       template <typename T>
-      T Determinant3x3(LINALG::TMatrix<T, 3, 3>& A)
+      T Determinant3x3(LINALG::Matrix<3, 3, T>& A)
       {
         T b00 = A(0, 0);
         T b01 = A(0, 1);

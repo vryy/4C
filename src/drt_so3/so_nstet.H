@@ -481,10 +481,10 @@ namespace DRT
       }
 
       template <typename T>
-      static LINALG::TMatrix<T, 3, 3> BuildF(
-          LINALG::TMatrix<T, 4, 3>& xdisp, LINALG::Matrix<4, 3>& nxyz)
+      static LINALG::Matrix<3, 3, T> BuildF(
+          LINALG::Matrix<4, 3, T>& xdisp, LINALG::Matrix<4, 3>& nxyz)
       {
-        LINALG::TMatrix<T, 3, 3> F(true);
+        LINALG::Matrix<3, 3, T> F(true);
         for (int i = 0; i < 3; ++i)
         {
           for (int j = 0; j < 3; ++j)

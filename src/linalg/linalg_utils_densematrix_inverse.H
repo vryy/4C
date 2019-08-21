@@ -26,7 +26,7 @@ namespace LINALG
    * @param A (in/out) Matrix A.
    */
   template <typename T>
-  void Inverse2x2ReorderMatrixEntries(LINALG::TMatrix<T, 2, 2>& A)
+  void Inverse2x2ReorderMatrixEntries(LINALG::Matrix<2, 2, T>& A)
   {
     T b00 = A(0, 0);
     T b01 = A(0, 1);
@@ -45,7 +45,7 @@ namespace LINALG
    * @param A (in/out) Matrix to be inverted. The inverse will be stored in this variable.
    */
   template <typename T>
-  void Inverse2x2(LINALG::TMatrix<T, 2, 2>& A)
+  void Inverse2x2(LINALG::Matrix<2, 2, T>& A)
   {
     T det = Determinant2x2(A);
     if (det == 0.0) dserror("Determinant of 2x2 matrix is exactly zero");
@@ -63,7 +63,7 @@ namespace LINALG
    * @return True if matrix could be inverted, false if matrix is singular.
    */
   template <typename T>
-  bool Inverse2x2DoNotThrowErrorOnZeroDeterminant(LINALG::TMatrix<T, 2, 2>& A, double eps)
+  bool Inverse2x2DoNotThrowErrorOnZeroDeterminant(LINALG::Matrix<2, 2, T>& A, double eps)
   {
     T det = Determinant2x2(A);
     if (abs(det) < eps) return false;
@@ -78,7 +78,7 @@ namespace LINALG
    * @param A (in/out) Matrix A.
    */
   template <typename T>
-  void Inverse3x3ReorderMatrixEntries(LINALG::TMatrix<T, 3, 3>& A)
+  void Inverse3x3ReorderMatrixEntries(LINALG::Matrix<3, 3, T>& A)
   {
     T b00 = A(0, 0);
     T b01 = A(0, 1);
@@ -107,7 +107,7 @@ namespace LINALG
    * @param A (in/out) Matrix to be inverted. The inverse will be stored in this variable.
    */
   template <typename T>
-  void Inverse3x3(LINALG::TMatrix<T, 3, 3>& A)
+  void Inverse3x3(LINALG::Matrix<3, 3, T>& A)
   {
     T det = Determinant3x3(A);
     if (det == 0.0) dserror("Determinant of 3x3 matrix is exactly zero");
@@ -125,7 +125,7 @@ namespace LINALG
    * @return True if matrix could be inverted, false if matrix is singular.
    */
   template <typename T>
-  bool Inverse3x3DoNotThrowErrorOnZeroDeterminant(LINALG::TMatrix<T, 3, 3>& A, double eps)
+  bool Inverse3x3DoNotThrowErrorOnZeroDeterminant(LINALG::Matrix<3, 3, T>& A, double eps)
   {
     T det = Determinant3x3(A);
     if (abs(det) < eps) return false;
@@ -140,7 +140,7 @@ namespace LINALG
    * @param A (in/out) Matrix A.
    */
   template <typename T>
-  void Inverse4x4ReorderMatrixEntries(LINALG::TMatrix<T, 4, 4>& A)
+  void Inverse4x4ReorderMatrixEntries(LINALG::Matrix<4, 4, T>& A)
   {
     T a00 = A(0, 0);
     T a01 = A(0, 1);
@@ -206,7 +206,7 @@ namespace LINALG
    * @param A (in/out) Matrix to be inverted. The inverse will be stored in this variable.
    */
   template <typename T>
-  void Inverse4x4(LINALG::TMatrix<T, 4, 4>& A)
+  void Inverse4x4(LINALG::Matrix<4, 4, T>& A)
   {
     T det = Determinant4x4(A);
     if (det == 0.0) dserror("Determinant of 4x4 matrix is exactly zero");
@@ -224,7 +224,7 @@ namespace LINALG
    * @return True if matrix could be inverted, false if matrix is singular.
    */
   template <typename T>
-  bool Inverse4x4DoNotThrowErrorOnZeroDeterminant(LINALG::TMatrix<T, 4, 4>& A, double eps)
+  bool Inverse4x4DoNotThrowErrorOnZeroDeterminant(LINALG::Matrix<4, 4, T>& A, double eps)
   {
     T det = Determinant4x4(A);
     if (abs(det) < eps) return false;

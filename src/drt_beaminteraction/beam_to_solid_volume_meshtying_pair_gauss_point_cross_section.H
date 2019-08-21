@@ -92,7 +92,7 @@ namespace BEAMINTERACTION
      */
     void EvaluateBeamPosition(
         const GEOMETRYPAIR::ProjectionPointLineToVolume<double>& integration_point,
-        LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& r_beam, bool reference) const override;
+        LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_beam, bool reference) const override;
   };
 }  // namespace BEAMINTERACTION
 

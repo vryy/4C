@@ -89,12 +89,12 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
   if (projection_points.size() == 0) return false;
 
   // Initialize variables for position and force vectors.
-  LINALG::TMatrix<double, 3, 1> dr_beam_ref;
-  LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> r_beam;
-  LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> r_solid;
-  LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> force;
-  LINALG::TMatrix<TYPE_BTS_VMT_AD, beam::n_dof_, 1> force_element_1(true);
-  LINALG::TMatrix<TYPE_BTS_VMT_AD, solid::n_dof_, 1> force_element_2(true);
+  LINALG::Matrix<3, 1, double> dr_beam_ref;
+  LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> r_beam;
+  LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> r_solid;
+  LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> force;
+  LINALG::Matrix<beam::n_dof_, 1, TYPE_BTS_VMT_AD> force_element_1(true);
+  LINALG::Matrix<solid::n_dof_, 1, TYPE_BTS_VMT_AD> force_element_2(true);
 
   // Initialize scalar variables.
   double beam_jacobian;
@@ -218,7 +218,7 @@ template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<beam,
     solid>::EvaluateBeamPosition(const GEOMETRYPAIR::ProjectionPointLineToVolume<double>&
                                      integration_point,
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& r_beam, bool reference) const
+    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_beam, bool reference) const
 {
   if (reference)
     GEOMETRYPAIR::EvaluatePositionLineCrossSection<beam>(integration_point.GetEta(),

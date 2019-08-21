@@ -174,7 +174,7 @@ namespace BEAMINTERACTION
     \brief Fill absolute nodal positions and nodal quaternions with current values
     */
     void FillStateVariablesForElementEvaluation(
-        LINALG::TMatrix<double, 6, 1>& absolute_nodal_positions) const;
+        LINALG::Matrix<6, 1, double>& absolute_nodal_positions) const;
 
     //@}
 

@@ -37,9 +37,9 @@ namespace BEAMINTERACTION
      *  \author grill, meier
      *  \date 10/17, 01/14 */
     template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-    bool PointToCurveProjection(LINALG::TMatrix<T, 3, 1> const& r_slave, T& xi_master,
+    bool PointToCurveProjection(LINALG::Matrix<3, 1, T> const& r_slave, T& xi_master,
         double const& xi_master_initial_guess,
-        const LINALG::TMatrix<T, 3 * numnodes * numnodalvalues, 1>& master_centerline_dof_values,
+        const LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T>& master_centerline_dof_values,
         const DRT::Element::DiscretizationType& master_distype, double master_ele_ref_length);
 
     /** \brief evaluates residual of orthogonality condition for so-called unilateral closest-point
@@ -48,8 +48,8 @@ namespace BEAMINTERACTION
      *  \author grill, meier
      *  \date 10/17, 10/14 */
     template <typename T>
-    void EvaluatePointToCurveOrthogonalityCondition(T& f, const LINALG::TMatrix<T, 3, 1>& delta_r,
-        const double norm_delta_r, const LINALG::TMatrix<T, 3, 1>& r_xi_master);
+    void EvaluatePointToCurveOrthogonalityCondition(T& f, const LINALG::Matrix<3, 1, T>& delta_r,
+        const double norm_delta_r, const LINALG::Matrix<3, 1, T>& r_xi_master);
 
     /** \brief evaluates Jacobian of orthogonality condition for so-called unilateral closest-point
      *         projection, i.e. a point-to-curve projection
@@ -58,8 +58,8 @@ namespace BEAMINTERACTION
      *  \date 10/17, 10/14 */
     template <typename T>
     bool EvaluateLinearizationPointToCurveOrthogonalityCondition(T& df,
-        const LINALG::TMatrix<T, 3, 1>& delta_r, const double norm_delta_r,
-        const LINALG::TMatrix<T, 3, 1>& r_xi_master, const LINALG::TMatrix<T, 3, 1>& r_xixi_master);
+        const LINALG::Matrix<3, 1, T>& delta_r, const double norm_delta_r,
+        const LINALG::Matrix<3, 1, T>& r_xi_master, const LINALG::Matrix<3, 1, T>& r_xixi_master);
 
     /** \brief compute linearization of parameter coordinate on master if determined by a
      *         point-to-curve projection
@@ -68,13 +68,13 @@ namespace BEAMINTERACTION
      *  \date 10/17, 10/14 */
     template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
     void CalcLinearizationPointToCurveProjectionParameterCoordMaster(
-        LINALG::TMatrix<T, 1, 3 * numnodes * numnodalvalues>& lin_xi_master_slaveDofs,
-        LINALG::TMatrix<T, 1, 3 * numnodes * numnodalvalues>& lin_xi_master_masterDofs,
-        const LINALG::TMatrix<T, 3, 1>& delta_r, const LINALG::TMatrix<T, 3, 1>& r_xi_master,
-        const LINALG::TMatrix<T, 3, 1>& r_xixi_master,
-        const LINALG::TMatrix<double, 3, 3 * numnodes * numnodalvalues>& N_slave,
-        const LINALG::TMatrix<T, 3, 3 * numnodes * numnodalvalues>& N_master,
-        const LINALG::TMatrix<T, 3, 3 * numnodes * numnodalvalues>& N_xi_master);
+        LINALG::Matrix<1, 3 * numnodes * numnodalvalues, T>& lin_xi_master_slaveDofs,
+        LINALG::Matrix<1, 3 * numnodes * numnodalvalues, T>& lin_xi_master_masterDofs,
+        const LINALG::Matrix<3, 1, T>& delta_r, const LINALG::Matrix<3, 1, T>& r_xi_master,
+        const LINALG::Matrix<3, 1, T>& r_xixi_master,
+        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, double>& N_slave,
+        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, T>& N_master,
+        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, T>& N_xi_master);
 
     /** \brief point-to-curve projection:
      *         partial derivatives of the parameter coordinate on master xi_master with respect to
@@ -84,11 +84,11 @@ namespace BEAMINTERACTION
      *  \date 10/17 */
     template <typename T>
     void CalcPointToCurveProjectionParameterCoordMasterPartialDerivs(
-        LINALG::TMatrix<T, 1, 3>& xi_master_partial_r_slave,
-        LINALG::TMatrix<T, 1, 3>& xi_master_partial_r_master,
-        LINALG::TMatrix<T, 1, 3>& xi_master_partial_r_xi_master,
-        const LINALG::TMatrix<T, 3, 1>& delta_r, const LINALG::TMatrix<T, 3, 1>& r_xi_master,
-        const LINALG::TMatrix<T, 3, 1>& r_xixi_master);
+        LINALG::Matrix<1, 3, T>& xi_master_partial_r_slave,
+        LINALG::Matrix<1, 3, T>& xi_master_partial_r_master,
+        LINALG::Matrix<1, 3, T>& xi_master_partial_r_xi_master,
+        const LINALG::Matrix<3, 1, T>& delta_r, const LINALG::Matrix<3, 1, T>& r_xi_master,
+        const LINALG::Matrix<3, 1, T>& r_xixi_master);
 
     /** \brief point-to-curve projection:
      *         partial second derivatives of the parameter coordinate on master xi_master with
@@ -99,30 +99,30 @@ namespace BEAMINTERACTION
      *  \date 04/19 */
     template <typename T>
     void CalcPointToCurveProjectionParameterCoordMasterPartial2ndDerivs(
-        LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_slave_partial_r_slave,
-        LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_slave_partial_r_master,
-        LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_slave_partial_r_xi_master,
-        LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_slave_partial_r_xixi_master,
-        LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_master_partial_r_slave,
-        LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_master_partial_r_master,
-        LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_master_partial_r_xi_master,
-        LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_master_partial_r_xixi_master,
-        LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_xi_master_partial_r_slave,
-        LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_xi_master_partial_r_master,
-        LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_xi_master_partial_r_xi_master,
-        LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_xi_master_partial_r_xixi_master,
-        LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_xixi_master_partial_r_slave,
-        LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_xixi_master_partial_r_master,
-        LINALG::TMatrix<T, 3, 3>& xi_master_partial_r_xixi_master_partial_r_xi_master,
-        const LINALG::TMatrix<T, 1, 3>& xi_master_partial_r_slave,
-        const LINALG::TMatrix<T, 1, 3>& xi_master_partial_r_master,
-        const LINALG::TMatrix<T, 1, 3>& xi_master_partial_r_xi_master,
-        const LINALG::TMatrix<T, 3, 3>& delta_r_deriv_r_slave,
-        const LINALG::TMatrix<T, 3, 3>& delta_r_deriv_r_master,
-        const LINALG::TMatrix<T, 3, 3>& delta_r_deriv_r_xi_master,
-        const LINALG::TMatrix<T, 3, 1>& delta_r, const LINALG::TMatrix<T, 3, 1>& r_xi_master,
-        const LINALG::TMatrix<T, 3, 1>& r_xixi_master,
-        const LINALG::TMatrix<T, 3, 1>& r_xixixi_master);
+        LINALG::Matrix<3, 3, T>& xi_master_partial_r_slave_partial_r_slave,
+        LINALG::Matrix<3, 3, T>& xi_master_partial_r_slave_partial_r_master,
+        LINALG::Matrix<3, 3, T>& xi_master_partial_r_slave_partial_r_xi_master,
+        LINALG::Matrix<3, 3, T>& xi_master_partial_r_slave_partial_r_xixi_master,
+        LINALG::Matrix<3, 3, T>& xi_master_partial_r_master_partial_r_slave,
+        LINALG::Matrix<3, 3, T>& xi_master_partial_r_master_partial_r_master,
+        LINALG::Matrix<3, 3, T>& xi_master_partial_r_master_partial_r_xi_master,
+        LINALG::Matrix<3, 3, T>& xi_master_partial_r_master_partial_r_xixi_master,
+        LINALG::Matrix<3, 3, T>& xi_master_partial_r_xi_master_partial_r_slave,
+        LINALG::Matrix<3, 3, T>& xi_master_partial_r_xi_master_partial_r_master,
+        LINALG::Matrix<3, 3, T>& xi_master_partial_r_xi_master_partial_r_xi_master,
+        LINALG::Matrix<3, 3, T>& xi_master_partial_r_xi_master_partial_r_xixi_master,
+        LINALG::Matrix<3, 3, T>& xi_master_partial_r_xixi_master_partial_r_slave,
+        LINALG::Matrix<3, 3, T>& xi_master_partial_r_xixi_master_partial_r_master,
+        LINALG::Matrix<3, 3, T>& xi_master_partial_r_xixi_master_partial_r_xi_master,
+        const LINALG::Matrix<1, 3, T>& xi_master_partial_r_slave,
+        const LINALG::Matrix<1, 3, T>& xi_master_partial_r_master,
+        const LINALG::Matrix<1, 3, T>& xi_master_partial_r_xi_master,
+        const LINALG::Matrix<3, 3, T>& delta_r_deriv_r_slave,
+        const LINALG::Matrix<3, 3, T>& delta_r_deriv_r_master,
+        const LINALG::Matrix<3, 3, T>& delta_r_deriv_r_xi_master,
+        const LINALG::Matrix<3, 1, T>& delta_r, const LINALG::Matrix<3, 1, T>& r_xi_master,
+        const LINALG::Matrix<3, 1, T>& r_xixi_master,
+        const LINALG::Matrix<3, 1, T>& r_xixixi_master);
 
     /** \brief point-to-curve projection:
      *         partial derivative of the orthogonality condition with respect to parameter
@@ -132,8 +132,8 @@ namespace BEAMINTERACTION
      *  \date 10/17 */
     template <typename T>
     void CalcPTCProjectionOrthogonalityConditionPartialDerivParameterCoordMaster(
-        T& orthogon_condition_partial_xi_master, const LINALG::TMatrix<T, 3, 1>& delta_r,
-        const LINALG::TMatrix<T, 3, 1>& r_xi_master, const LINALG::TMatrix<T, 3, 1>& r_xixi_master);
+        T& orthogon_condition_partial_xi_master, const LINALG::Matrix<3, 1, T>& delta_r,
+        const LINALG::Matrix<3, 1, T>& r_xi_master, const LINALG::Matrix<3, 1, T>& r_xixi_master);
 
     /** \brief point-to-curve projection:
      *         partial derivative of the orthogonality condition with respect to centerline position
@@ -143,8 +143,8 @@ namespace BEAMINTERACTION
      *  \date 10/17 */
     template <typename T>
     void CalcPTCProjectionOrthogonalityConditionPartialDerivClPosSlave(
-        LINALG::TMatrix<T, 1, 3>& orthogon_condition_partial_r_slave,
-        const LINALG::TMatrix<T, 3, 1>& r_xi_master);
+        LINALG::Matrix<1, 3, T>& orthogon_condition_partial_r_slave,
+        const LINALG::Matrix<3, 1, T>& r_xi_master);
 
     /** \brief point-to-curve projection:
      *         partial derivative of the orthogonality condition with respect to centerline position
@@ -154,8 +154,8 @@ namespace BEAMINTERACTION
      *  \date 10/17 */
     template <typename T>
     void CalcPTCProjectionOrthogonalityConditionPartialDerivClPosMaster(
-        LINALG::TMatrix<T, 1, 3>& orthogon_condition_partial_r_master,
-        const LINALG::TMatrix<T, 3, 1>& r_xi_master);
+        LINALG::Matrix<1, 3, T>& orthogon_condition_partial_r_master,
+        const LINALG::Matrix<3, 1, T>& r_xi_master);
 
     /** \brief point-to-curve projection:
      *         partial derivative of the orthogonality condition with respect to centerline tangent
@@ -165,16 +165,16 @@ namespace BEAMINTERACTION
      *  \date 10/17 */
     template <typename T>
     void CalcPTCProjectionOrthogonalityConditionPartialDerivClTangentMaster(
-        LINALG::TMatrix<T, 1, 3>& orthogon_condition_partial_r_xi_master,
-        const LINALG::TMatrix<T, 3, 1>& delta_r);
+        LINALG::Matrix<1, 3, T>& orthogon_condition_partial_r_xi_master,
+        const LINALG::Matrix<3, 1, T>& delta_r);
 
     /** \brief calculate angle enclosed by two vectors a and b
      *
      *  \author grill, meier
      *  \date 10/17, 10/14 */
     template <typename T>
-    void CalcEnclosedAngle(T& angle, T& cosine_angle, const LINALG::TMatrix<T, 3, 1>& a,
-        const LINALG::TMatrix<T, 3, 1>& b);
+    void CalcEnclosedAngle(T& angle, T& cosine_angle, const LINALG::Matrix<3, 1, T>& a,
+        const LINALG::Matrix<3, 1, T>& b);
 
   }  // namespace GEO
 }  // namespace BEAMINTERACTION

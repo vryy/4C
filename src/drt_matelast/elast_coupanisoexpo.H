@@ -170,11 +170,11 @@ namespace MAT
       ///\f]
       template <typename T>
       void GetDerivativesAniso(
-          LINALG::TMatrix<T, 2, 1>& dPI_aniso,    ///< first derivative with respect to invariants
-          LINALG::TMatrix<T, 3, 1>& ddPII_aniso,  ///< second derivative with respect to invariants
-          LINALG::TMatrix<T, 4, 1>& dddPIII_aniso,  ///< third derivative with respect to invariants
-          LINALG::TMatrix<T, 3, 3> const& rcg,      ///< right Cauchy-Green tensor
-          const int eleGID) const;                  ///< element GID
+          LINALG::Matrix<2, 1, T>& dPI_aniso,      ///< first derivative with respect to invariants
+          LINALG::Matrix<3, 1, T>& ddPII_aniso,    ///< second derivative with respect to invariants
+          LINALG::Matrix<4, 1, T>& dddPIII_aniso,  ///< third derivative with respect to invariants
+          LINALG::Matrix<3, 3, T> const& rcg,      ///< right Cauchy-Green tensor
+          const int eleGID) const;                 ///< element GID
 
       /// Add anisotropic principal stresses
       virtual void AddStressAnisoPrincipal(
@@ -197,9 +197,9 @@ namespace MAT
 
       /// Evaluates strain energy for automatic differentiation with FAD
       template <typename T>
-      void EvaluateFunc(T& psi,                 ///< strain energy functions
-          LINALG::TMatrix<T, 3, 3> const& rcg,  ///< Right Cauchy-Green tensor
-          int const eleGID) const;              ///< element GID
+      void EvaluateFunc(T& psi,                ///< strain energy functions
+          LINALG::Matrix<3, 3, T> const& rcg,  ///< Right Cauchy-Green tensor
+          int const eleGID) const;             ///< element GID
 
 
       /// @name Access methods

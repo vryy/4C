@@ -56,17 +56,17 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>:
   if (this->line_to_volume_segments_.size() == 0) return false;
 
   // Initialize variables for local mortar matrices.
-  LINALG::TMatrix<double, mortar::n_dof_, beam::n_dof_> D(true);
-  LINALG::TMatrix<double, mortar::n_dof_, solid::n_dof_> M(true);
-  LINALG::TMatrix<double, mortar::n_dof_, 1> kappa(true);
+  LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double> D(true);
+  LINALG::Matrix<mortar::n_dof_, solid::n_dof_, double> M(true);
+  LINALG::Matrix<mortar::n_dof_, 1, double> kappa(true);
 
   // Initialize variables for shape function values.
-  LINALG::TMatrix<double, 1, mortar::n_nodes_ * mortar::n_val_> N_mortar(true);
-  LINALG::TMatrix<double, 1, beam::n_nodes_ * beam::n_val_> N_beam(true);
-  LINALG::TMatrix<double, 1, solid::n_nodes_ * solid::n_val_> N_solid(true);
+  LINALG::Matrix<1, mortar::n_nodes_ * mortar::n_val_, double> N_mortar(true);
+  LINALG::Matrix<1, beam::n_nodes_ * beam::n_val_, double> N_beam(true);
+  LINALG::Matrix<1, solid::n_nodes_ * solid::n_val_, double> N_solid(true);
 
   // Initialize variable for beam position derivative.
-  LINALG::TMatrix<double, 3, 1> dr_beam_ref(true);
+  LINALG::Matrix<3, 1, double> dr_beam_ref(true);
 
   // Initialize scalar variables.Clear
   double segment_jacobian, beam_segmentation_factor;
@@ -174,12 +174,12 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
   if (visualization_discret != Teuchos::null || visualization_continuous != Teuchos::null)
   {
     // Setup variables.
-    LINALG::TMatrix<double, mortar::n_dof_, 1> q_lambda;
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> X;
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> r;
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> u;
-    LINALG::TMatrix<double, 3, 1> lambda_discret;
-    LINALG::TMatrix<double, 3, 1> xi_mortar_node;
+    LINALG::Matrix<mortar::n_dof_, 1, double> q_lambda;
+    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> X;
+    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> r;
+    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> u;
+    LINALG::Matrix<3, 1, double> lambda_discret;
+    LINALG::Matrix<3, 1, double> xi_mortar_node;
 
     // Get the mortar manager and the global lambda vector, those objects will be used to get the
     // discrete Lagrange multiplier values for this pair.
@@ -290,9 +290,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
  */
 template <typename beam, typename solid, typename mortar>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
-    mortar>::EvaluatePenaltyForce(const LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& r_beam,
-    const LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& r_solid,
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& force) const
+    mortar>::EvaluatePenaltyForce(const LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_beam,
+    const LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_solid,
+    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& force) const
 {
   force.PutScalar(0.);
 }

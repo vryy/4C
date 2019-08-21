@@ -57,8 +57,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
  */
 template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scalar_type, line,
-    volume>::PreEvaluate(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
-    const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
+    volume>::PreEvaluate(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+    const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
     std::vector<LineSegment<scalar_type>>& segments) const
 {
   // Check if the element is initialized.
@@ -79,9 +79,9 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
   // Initilaize variables for the projection.
   scalar_type eta;
   double alpha;
-  LINALG::TMatrix<scalar_type, 3, 1> r_line_cross_section;
-  LINALG::TMatrix<scalar_type, 2, 1> eta_cross_section;
-  LINALG::TMatrix<scalar_type, 3, 1> xi_solid;
+  LINALG::Matrix<3, 1, scalar_type> r_line_cross_section;
+  LINALG::Matrix<2, 1, scalar_type> eta_cross_section;
+  LINALG::Matrix<3, 1, scalar_type> xi_solid;
   ProjectionResult projection_result;
   segments.clear();
   bool one_projects = false;
@@ -139,8 +139,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
  */
 template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scalar_type, line,
-    volume>::Evaluate(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
-    const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
+    volume>::Evaluate(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+    const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
     std::vector<LineSegment<scalar_type>>& segments) const
 {
   // Check if the element is initialized.

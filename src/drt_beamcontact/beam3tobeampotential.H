@@ -212,8 +212,8 @@ namespace CONTACT
     std::vector<DRT::Condition*> linechargeconds_;
 
     //! current node coordinates of the two elements
-    LINALG::TMatrix<TYPE, 3 * numnodes * numnodalvalues, 1> ele1pos_;
-    LINALG::TMatrix<TYPE, 3 * numnodes * numnodalvalues, 1> ele2pos_;
+    LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> ele1pos_;
+    LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> ele2pos_;
 
     //! parameters of the applied (point-point) potential law Phi(r)=k_ * r^(-m_)
     double k_;
@@ -239,13 +239,13 @@ namespace CONTACT
     double radius2_;
 
     //! resulting forces on element 1 and 2
-    LINALG::TMatrix<TYPE, 3 * numnodes * numnodalvalues, 1> fpot1_;
-    LINALG::TMatrix<TYPE, 3 * numnodes * numnodalvalues, 1> fpot2_;
+    LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> fpot1_;
+    LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> fpot2_;
 
     //! stiffness contributions
-    LINALG::TMatrix<TYPE, 3 * numnodes * numnodalvalues, 2 * 3 * numnodes * numnodalvalues>
+    LINALG::Matrix<3 * numnodes * numnodalvalues, 2 * 3 * numnodes * numnodalvalues, TYPE>
         stiffpot1_;
-    LINALG::TMatrix<TYPE, 3 * numnodes * numnodalvalues, 2 * 3 * numnodes * numnodalvalues>
+    LINALG::Matrix<3 * numnodes * numnodalvalues, 2 * 3 * numnodes * numnodalvalues, TYPE>
         stiffpot2_;
 
 
@@ -280,9 +280,9 @@ namespace CONTACT
     /*!
     \brief Compute coordinates of centreline points from the discretization
     */
-    void ComputeCoords(LINALG::TMatrix<TYPE, 3, 1>& r,
+    void ComputeCoords(LINALG::Matrix<3, 1, TYPE>& r,
         const LINALG::Matrix<1, numnodes * numnodalvalues>& N_i,
-        const LINALG::TMatrix<TYPE, 3 * numnodes * numnodalvalues, 1> elepos);
+        const LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> elepos);
 
     /*!
       \brief Get global dofs of a node

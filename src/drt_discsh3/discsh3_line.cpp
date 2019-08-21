@@ -137,10 +137,10 @@ void DRT::ELEMENTS::DiscSh3Line::Print(std::ostream& os) const
  | Calculate change in angle from reference configuration         mukherjee 09/14|
  *-------------------------------------------------------------------------------*/
 FAD DRT::ELEMENTS::DiscSh3Line::CalcTheta(
-    LINALG::TMatrix<FAD, 1, 3>& vector1, LINALG::TMatrix<FAD, 1, 3>& vector2)
+    LINALG::Matrix<1, 3, FAD>& vector1, LINALG::Matrix<1, 3, FAD>& vector2)
 {
   FAD theta = 0;
-  LINALG::TMatrix<FAD, 1, 3> crossprod(true);
+  LINALG::Matrix<1, 3, FAD> crossprod(true);
 
   FAD CosTheta = (vector1.Dot(vector2));
 
@@ -521,21 +521,21 @@ void DRT::ELEMENTS::DiscSh3Line::SortPrimaryDOFs(DRT::Element& master, DRT::Elem
 /*-----------------------------------------------------------------------------*
  |  Calculate surface normal of the master element (private)    mukherjee 05/15|
  *-----------------------------------------------------------------------------*/
-LINALG::TMatrix<FAD, 1, 3> DRT::ELEMENTS::DiscSh3Line::CalcSurfaceNormalMaster(
+LINALG::Matrix<1, 3, FAD> DRT::ELEMENTS::DiscSh3Line::CalcSurfaceNormalMaster(
     std::vector<FAD>& x_FAD)
 {
   // Element connectivity 134
-  LINALG::TMatrix<FAD, 1, 3> normal(true);
+  LINALG::Matrix<1, 3, FAD> normal(true);
 
-  LINALG::TMatrix<FAD, 1, 3> side1(true);  // side 31
-  LINALG::TMatrix<FAD, 1, 3> side2(true);  // side 41
+  LINALG::Matrix<1, 3, FAD> side1(true);  // side 31
+  LINALG::Matrix<1, 3, FAD> side2(true);  // side 41
   for (int j = 0; j < 3; j++)
   {
     side1(j) = x_FAD[j + 3] - x_FAD[j];
     side2(j) = x_FAD[j + 6] - x_FAD[j];
   }
 
-  LINALG::TMatrix<FAD, 1, 3> crossprod(true);
+  LINALG::Matrix<1, 3, FAD> crossprod(true);
 
   // Cross Product
   crossprod = CalcCrossProduct(side1, side2);
@@ -552,21 +552,21 @@ LINALG::TMatrix<FAD, 1, 3> DRT::ELEMENTS::DiscSh3Line::CalcSurfaceNormalMaster(
 /*-----------------------------------------------------------------------------*
  |  Calculate surface normal of the slave element (private)    mukherjee 05/15 |
  *-----------------------------------------------------------------------------*/
-LINALG::TMatrix<FAD, 1, 3> DRT::ELEMENTS::DiscSh3Line::CalcSurfaceNormalSlave(
+LINALG::Matrix<1, 3, FAD> DRT::ELEMENTS::DiscSh3Line::CalcSurfaceNormalSlave(
     std::vector<FAD>& x_FAD)
 {
   // Element connectivity 243
-  LINALG::TMatrix<FAD, 1, 3> normal(true);
+  LINALG::Matrix<1, 3, FAD> normal(true);
 
-  LINALG::TMatrix<FAD, 1, 3> side1(true);  // side 34
-  LINALG::TMatrix<FAD, 1, 3> side2(true);  // side 24
+  LINALG::Matrix<1, 3, FAD> side1(true);  // side 34
+  LINALG::Matrix<1, 3, FAD> side2(true);  // side 24
   for (int j = 0; j < 3; j++)
   {
     side1(j) = x_FAD[j + 6] - x_FAD[j + 3];
     side2(j) = x_FAD[j] - x_FAD[j + 3];
   }
 
-  LINALG::TMatrix<FAD, 1, 3> crossprod(true);
+  LINALG::Matrix<1, 3, FAD> crossprod(true);
 
 
   // Cross Product
@@ -704,19 +704,19 @@ void DRT::ELEMENTS::DiscSh3Line::ReassembleRHSBlock(const int row_block,  ///< r
  |  Calculate gradient of the normal of an element (private)   mukherjee 07/15|
  *----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::DiscSh3Line::CalcGradienNormal(std::vector<FAD>& x_FAD,
-    LINALG::TMatrix<FAD, 3, 3>& DnDx1, LINALG::TMatrix<FAD, 3, 3>& DnDx2,
-    LINALG::TMatrix<FAD, 3, 3>& DnDx3)
+    LINALG::Matrix<3, 3, FAD>& DnDx1, LINALG::Matrix<3, 3, FAD>& DnDx2,
+    LINALG::Matrix<3, 3, FAD>& DnDx3)
 {
   // Calculate surface area at spatial config FAD
-  LINALG::TMatrix<FAD, 1, 3> side1(true);
-  LINALG::TMatrix<FAD, 1, 3> side2(true);
+  LINALG::Matrix<1, 3, FAD> side1(true);
+  LINALG::Matrix<1, 3, FAD> side2(true);
   for (int j = 0; j < 3; j++)
   {
     side1(j) = x_FAD[j + 3] - x_FAD[j];
     side2(j) = x_FAD[j + 6] - x_FAD[j + 3];
   }
 
-  LINALG::TMatrix<FAD, 1, 3> crossprod(true);
+  LINALG::Matrix<1, 3, FAD> crossprod(true);
 
   // Cross Product
   crossprod = CalcCrossProduct(side1, side2);
@@ -724,9 +724,9 @@ void DRT::ELEMENTS::DiscSh3Line::CalcGradienNormal(std::vector<FAD>& x_FAD,
   FAD area_curr = 0.5 * pow((crossprod.Dot(crossprod)), 0.5);
 
   // Auxiliarry vector
-  LINALG::TMatrix<FAD, 1, 3> AuxVect1(true);
-  LINALG::TMatrix<FAD, 1, 3> AuxVect2(true);
-  LINALG::TMatrix<FAD, 1, 3> AuxVect3(true);
+  LINALG::Matrix<1, 3, FAD> AuxVect1(true);
+  LINALG::Matrix<1, 3, FAD> AuxVect2(true);
+  LINALG::Matrix<1, 3, FAD> AuxVect3(true);
 
   for (int i = 0; i < NUMNOD_DISCSH3; i++)
   {

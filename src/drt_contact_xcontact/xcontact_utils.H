@@ -189,7 +189,7 @@ namespace XCONTACT
       const LINALG::Matrix<probdim, DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>&
           xyze,
       const LINALG::Matrix<DRT::UTILS::DisTypeToDim<eletype>::dim, 1>& xi,
-      LINALG::TMatrix<LINALG::Matrix<probdim, 1>, DRT::UTILS::DisTypeToDim<eletype>::dim, 1>& g_xi)
+      LINALG::Matrix<DRT::UTILS::DisTypeToDim<eletype>::dim, 1, LINALG::Matrix<probdim, 1>>& g_xi)
   {
     const unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim;
     const unsigned numNodeEle = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement;
@@ -198,7 +198,7 @@ namespace XCONTACT
       unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim,
       unsigned numNodeEle = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
   void ParDerivMetrics(const LINALG::Matrix<probdim, numNodeEle>& xyze,
-      const LINALG::Matrix<dim, 1>& xi, LINALG::TMatrix<LINALG::Matrix<probdim, 1>, dim, 1>& g_xi)
+      const LINALG::Matrix<dim, 1>& xi, LINALG::Matrix<dim, 1, LINALG::Matrix<probdim, 1>>& g_xi)
   {
 #endif
     DEBUG::CheckIsZero(g_xi);

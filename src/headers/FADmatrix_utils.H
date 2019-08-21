@@ -22,46 +22,46 @@ namespace LINALG
   /// Serial dense matrix with FAD (automatic differentiation data type) numbers and templated
   /// dimensions
   template <unsigned int rows, unsigned int cols>
-  class FADMatrix : public TMatrix<FAD, rows, cols>
+  class FADMatrix : public Matrix<rows, cols, FAD>
   {
    public:
     /// Constructor
-    explicit FADMatrix(bool setzero = true) : TMatrix<FAD, rows, cols>(setzero) {}
+    explicit FADMatrix(bool setzero = true) : Matrix<rows, cols, FAD>(setzero) {}
 
     /// Constructor
-    explicit FADMatrix(double* d, bool view = false) : TMatrix<FAD, rows, cols>(d, view) {}
+    explicit FADMatrix(double* d, bool view = false) : Matrix<rows, cols, FAD>(d, view) {}
 
     /// Constructor
-    explicit FADMatrix(const double* d, bool view = false) : TMatrix<FAD, rows, cols>(d, view) {}
+    explicit FADMatrix(const double* d, bool view = false) : Matrix<rows, cols, FAD>(d, view) {}
 
     /// Constructor
     explicit FADMatrix(Epetra_SerialDenseMatrix& d, bool view = false)
-        : TMatrix<FAD, rows, cols>(d, view)
+        : Matrix<rows, cols, FAD>(d, view)
     {
     }
 
     /// Constructor
-    FADMatrix(FADMatrix<rows, cols>& source, bool view) : TMatrix<FAD, rows, cols>(source, view) {}
+    FADMatrix(FADMatrix<rows, cols>& source, bool view) : Matrix<rows, cols, FAD>(source, view) {}
 
     /// Copy constructor
-    FADMatrix(const FADMatrix<rows, cols>& source) : TMatrix<FAD, rows, cols>(source) {}
+    FADMatrix(const FADMatrix<rows, cols>& source) : Matrix<rows, cols, FAD>(source) {}
 
     /// = operator
     inline FADMatrix<rows, cols>& operator=(FADMatrix<rows, cols> const& other)
     {
-      TMatrix<FAD, rows, cols>::operator=(other);
+      Matrix<rows, cols, FAD>::operator=(other);
       return *this;
     }
 
     /// = operator
-    inline FADMatrix<rows, cols>& operator=(TMatrix<FAD, rows, cols> const& other)
+    inline FADMatrix<rows, cols>& operator=(Matrix<rows, cols, FAD> const& other)
     {
-      TMatrix<FAD, rows, cols>::operator=(other);
+      Matrix<rows, cols, FAD>::operator=(other);
       return *this;
     }
 
     /// = operator
-    inline FADMatrix<rows, cols>& operator=(TMatrix<double, rows, cols> const& other)
+    inline FADMatrix<rows, cols>& operator=(Matrix<rows, cols, double> const& other)
     {
       for (unsigned i = 0; i < rows; ++i)
         for (unsigned j = 0; j < cols; ++j) (*this)(i, j) = other(i, j);
@@ -99,7 +99,7 @@ namespace LINALG
 /// Save first derivatives in a 3x3 double matrix
 template <typename T>
 inline void FirstDerivToMatrix(FAD const& r_fad,  ///< FAD function
-    LINALG::TMatrix<T, 3, 3>& out)                ///< First derivatives
+    LINALG::Matrix<3, 3, T>& out)                 ///< First derivatives
 {
   for (int i = 0; i < 3; ++i) out(i, i) = r_fad.dx(i);
   out(0, 1) = r_fad.dx(3);

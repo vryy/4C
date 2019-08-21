@@ -46,7 +46,7 @@ namespace CONTACT
       /// @{
 
       void Deriv1st_NonUnitSlaveElementNormal(const MORTAR::MortarElement& sele,
-          const LINALG::TMatrix<int, probdim, SLAVENUMNODE>& nodal_dofs,
+          const LINALG::Matrix<probdim, SLAVENUMNODE, int>& nodal_dofs,
           const LINALG::Matrix<SLAVEDIM, SLAVENUMNODE>& deriv, const LINALG::Matrix<3, 2>& tau,
           Deriv1stVecMap& d_non_unit_normal) const;
 
@@ -67,7 +67,7 @@ namespace CONTACT
           const Deriv2ndVecMap& dd_non_unit_normal, Deriv2ndMap& dd_jac) const;
 
       void Deriv2nd_NonUnitSlaveElementNormal(const MORTAR::MortarElement& sele,
-          const LINALG::TMatrix<int, probdim, SLAVENUMNODE>& nodal_dofs,
+          const LINALG::Matrix<probdim, SLAVENUMNODE, int>& nodal_dofs,
           const LINALG::Matrix<SLAVEDIM, SLAVENUMNODE>& deriv,
           Deriv2ndVecMap& dd_non_unit_normal) const;
 
@@ -127,12 +127,12 @@ namespace CONTACT
           Deriv1stMap& d_alpha) const;
 
       void Add_Deriv2nd_MaDispl(const LINALG::Matrix<probdim, probdim>& lmat_inv,
-          const LINALG::TMatrix<int, probdim, MASTERNUMNODE>& mnodal_dofs,
+          const LINALG::Matrix<probdim, MASTERNUMNODE, int>& mnodal_dofs,
           const LINALG::Matrix<MASTERDIM, MASTERNUMNODE>& mderiv, const Deriv1stVecMap& d_mxigp,
           Deriv2ndVecMap& dd_mxigp) const;
 
       void Add_Deriv1st_MaMetric(const LINALG::Matrix<probdim, probdim>& lmat_inv,
-          const LINALG::TMatrix<int, probdim, MASTERNUMNODE>& mnodal_dofs,
+          const LINALG::Matrix<probdim, MASTERNUMNODE, int>& mnodal_dofs,
           const LINALG::Matrix<3, 2>& mtau, const LINALG::Matrix<MASTERDIM, MASTERNUMNODE>& mderiv,
           const LINALG::Matrix<3, MASTERNUMNODE>& mderiv2nd,
           const LINALG::Matrix<3, MASTERNUMNODE>& mcoord, const Deriv1stVecMap& d_mxigp,
@@ -204,7 +204,7 @@ namespace CONTACT
       ~IncompleteIntPolicy(){/* empty */};
 
       void Get_Deriv2nd_Jacobian(const MORTAR::MortarElement& sele,
-          const LINALG::TMatrix<int, probdim, my::SLAVENUMNODE>& nodal_dofs,
+          const LINALG::Matrix<probdim, my::SLAVENUMNODE, int>& nodal_dofs,
           const LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& deriv,
           const LINALG::Matrix<probdim, 1>& unit_normal, const double length_n_inv,
           const Deriv1stVecMap& d_non_unit_normal, Deriv2ndMap& dd_jac) const;
@@ -291,7 +291,7 @@ namespace CONTACT
       ~CompleteIntPolicy(){/* empty */};
 
       void Get_Deriv2nd_Jacobian(const MORTAR::MortarElement& sele,
-          const LINALG::TMatrix<int, probdim, my::SLAVENUMNODE>& nodal_dofs,
+          const LINALG::Matrix<probdim, my::SLAVENUMNODE, int>& nodal_dofs,
           const LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& deriv,
           const LINALG::Matrix<probdim, 1>& unit_normal, const double length_n_inv,
           const Deriv1stVecMap& d_non_unit_normal, Deriv2ndMap& dd_jac) const;

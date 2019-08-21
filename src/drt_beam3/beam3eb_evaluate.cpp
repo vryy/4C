@@ -1125,8 +1125,8 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
 
 #ifdef INEXTENSIBLE
     std::vector<FAD> lm_fad(3, 0.0);
-    LINALG::TMatrix<FAD, 15, 1> Res_inextensibility(true);
-    LINALG::TMatrix<FAD, 15, 15> R_inextensibility(true);
+    LINALG::Matrix<15, 1, FAD> Res_inextensibility(true);
+    LINALG::Matrix<15, 15, FAD> R_inextensibility(true);
 #endif
 
     LINALG::Matrix<3, 1> r_;
@@ -1143,8 +1143,8 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
     double tension;
 
 #ifdef BEAM3EBAUTOMATICDIFF
-    LINALG::TMatrix<FAD, 3, 1> rx_fad;
-    LINALG::TMatrix<FAD, 3, 1> ortho_normal(true);
+    LINALG::Matrix<3, 1, FAD> rx_fad;
+    LINALG::Matrix<3, 1, FAD> ortho_normal(true);
     FAD rxrx_fad;
 #endif
 
@@ -1168,7 +1168,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
     LINALG::Matrix<1, NODALDOFS * nnode> N_i_xx;
 
 #ifdef BEAM3EBAUTOMATICDIFF
-    LINALG::TMatrix<FAD, 3, nnode * dofpn> N;
+    LINALG::Matrix<3, nnode * dofpn, FAD> N;
 #endif
     LINALG::Matrix<3, nnode * dofpn> N_x;
     LINALG::Matrix<3, nnode * dofpn> N_xx;
@@ -1182,7 +1182,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
     LINALG::Matrix<nnode * dofpn, 1> Res_tension;
     LINALG::Matrix<nnode * dofpn, 1> Res_bending;
 #ifdef BEAM3EBAUTOMATICDIFF
-    LINALG::TMatrix<FAD, nnode * dofpn, 1> Res_orthopressure;
+    LINALG::Matrix<nnode * dofpn, 1, FAD> Res_orthopressure;
 #endif
 
 // some matrices necessary for ANS approach
@@ -1202,11 +1202,11 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
     LINALG::Matrix<1, nnode * dofpn> lin_epsilon_ANS(true);
 
 #ifdef BEAM3EBAUTOMATICDIFF
-    LINALG::TMatrix<FAD, 1, nnode * dofpn> lin_epsilon_ANS_fad(true);
+    LINALG::Matrix<1, nnode * dofpn, FAD> lin_epsilon_ANS_fad(true);
 
-    LINALG::TMatrix<FAD, nnode * dofpn, 1> Res_tension_ANS_fad;
+    LINALG::Matrix<nnode * dofpn, 1, FAD> Res_tension_ANS_fad;
     Res_tension_ANS_fad.Clear();
-    LINALG::TMatrix<FAD, nnode * dofpn, nnode * dofpn> R_tension_ANS_fad;
+    LINALG::Matrix<nnode * dofpn, nnode * dofpn, FAD> R_tension_ANS_fad;
     R_tension_ANS_fad.Clear();
     FAD epsilon_ANS_fad = 0.0;
 #endif
@@ -1274,9 +1274,9 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
     LINALG::Matrix<3, NODALDOFS * 6> lin_epsilon_cp(true);
 
 #ifdef BEAM3EBAUTOMATICDIFF
-    LINALG::TMatrix<FAD, 3, 1> epsilon_cp_fad(true);
-    LINALG::TMatrix<FAD, 3, 3> tangent_cp_fad(true);
-    LINALG::TMatrix<FAD, 3, NODALDOFS * 6> lin_epsilon_cp_fad(true);
+    LINALG::Matrix<3, 1, FAD> epsilon_cp_fad(true);
+    LINALG::Matrix<3, 3, FAD> tangent_cp_fad(true);
+    LINALG::Matrix<3, NODALDOFS * 6, FAD> lin_epsilon_cp_fad(true);
 #endif
 
     N_i_x.Clear();
@@ -2510,7 +2510,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(std::vector<double>& disp,
     // see also so_nstet_nodalstrain.cpp, so_nstet.H, autodiff.cpp and autodiff.H
     // FAD calculated stiff matrix for validation purposes
     Epetra_SerialDenseMatrix stiffmatrix_check;
-    LINALG::TMatrix<FAD, 12, 1> force_check;
+    LINALG::Matrix<12, 1, FAD> force_check;
 
     // reshape stiffmatrix_check
     stiffmatrix_check.Shape(12, 12);
@@ -2525,43 +2525,43 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(std::vector<double>& disp,
     std::vector<FAD> disp_totlag(nnode * dofpn, 0.0);
 
     // abbreviated matrices for clearness
-    LINALG::TMatrix<FAD, dofpn * nnode, dofpn * nnode> NTilde;
-    LINALG::TMatrix<FAD, dofpn * nnode, dofpn * nnode> NTilde_x;
-    LINALG::TMatrix<FAD, dofpn * nnode, dofpn * nnode> NTilde_xx;
-    LINALG::TMatrix<FAD, dofpn * nnode, dofpn * nnode> NTilde_aux;
+    LINALG::Matrix<dofpn * nnode, dofpn * nnode, FAD> NTilde;
+    LINALG::Matrix<dofpn * nnode, dofpn * nnode, FAD> NTilde_x;
+    LINALG::Matrix<dofpn * nnode, dofpn * nnode, FAD> NTilde_xx;
+    LINALG::Matrix<dofpn * nnode, dofpn * nnode, FAD> NTilde_aux;
 
     // matrices helping to assemble above
-    LINALG::TMatrix<FAD, 3, nnode * dofpn> N_x;
-    LINALG::TMatrix<FAD, 3, nnode * dofpn> N_xx;
+    LINALG::Matrix<3, nnode * dofpn, FAD> N_x;
+    LINALG::Matrix<3, nnode * dofpn, FAD> N_xx;
 
     // Matrices for N_i,xi and N_i,xixi. 2*nnode due to hermite shapefunctions
-    LINALG::TMatrix<FAD, 1, 2 * nnode> N_i_x;
-    LINALG::TMatrix<FAD, 1, 2 * nnode> N_i_xx;
+    LINALG::Matrix<1, 2 * nnode, FAD> N_i_x;
+    LINALG::Matrix<1, 2 * nnode, FAD> N_i_xx;
 
     // stiffness due to tension and bending
-    LINALG::TMatrix<FAD, nnode * dofpn, nnode * dofpn> R_tension;
-    LINALG::TMatrix<FAD, nnode * dofpn, nnode * dofpn> R_bending;
+    LINALG::Matrix<nnode * dofpn, nnode * dofpn, FAD> R_tension;
+    LINALG::Matrix<nnode * dofpn, nnode * dofpn, FAD> R_bending;
 
     // internal force due to tension and bending
-    LINALG::TMatrix<FAD, nnode * dofpn, 1> Res_tension;
-    LINALG::TMatrix<FAD, nnode * dofpn, 1> Res_bending;
+    LINALG::Matrix<nnode * dofpn, 1, FAD> Res_tension;
+    LINALG::Matrix<nnode * dofpn, 1, FAD> Res_bending;
 
     // algebraic operations
-    LINALG::TMatrix<FAD, nnode * dofpn, 1> NTilded;
-    LINALG::TMatrix<FAD, nnode * dofpn, 1> NTilde_xd;
-    LINALG::TMatrix<FAD, nnode * dofpn, 1> NTilde_xxd;
-    LINALG::TMatrix<FAD, nnode * dofpn, 1> NTilde_auxd;
+    LINALG::Matrix<nnode * dofpn, 1, FAD> NTilded;
+    LINALG::Matrix<nnode * dofpn, 1, FAD> NTilde_xd;
+    LINALG::Matrix<nnode * dofpn, 1, FAD> NTilde_xxd;
+    LINALG::Matrix<nnode * dofpn, 1, FAD> NTilde_auxd;
 
-    LINALG::TMatrix<FAD, 1, nnode * dofpn> dTNTilde_x;
-    LINALG::TMatrix<FAD, 1, nnode * dofpn> dTNTilde_xx;
-    LINALG::TMatrix<FAD, 1, nnode * dofpn> dTNTilde_aux;
+    LINALG::Matrix<1, nnode * dofpn, FAD> dTNTilde_x;
+    LINALG::Matrix<1, nnode * dofpn, FAD> dTNTilde_xx;
+    LINALG::Matrix<1, nnode * dofpn, FAD> dTNTilde_aux;
 
-    LINALG::TMatrix<FAD, nnode * dofpn, nnode * dofpn> NTilde_xddTNTilde_x;
-    LINALG::TMatrix<FAD, nnode * dofpn, nnode * dofpn> NTilde_xddTNTilde_aux;
-    LINALG::TMatrix<FAD, nnode * dofpn, nnode * dofpn> NTilde_auxddTNTilde_x;
-    LINALG::TMatrix<FAD, nnode * dofpn, nnode * dofpn> NTilde_xxddTNTilde_x;
-    LINALG::TMatrix<FAD, nnode * dofpn, nnode * dofpn> NTilde_xddTNTilde_xx;
-    LINALG::TMatrix<FAD, nnode * dofpn, nnode * dofpn> NTilde_auxddTNTilde_aux;
+    LINALG::Matrix<nnode * dofpn, nnode * dofpn, FAD> NTilde_xddTNTilde_x;
+    LINALG::Matrix<nnode * dofpn, nnode * dofpn, FAD> NTilde_xddTNTilde_aux;
+    LINALG::Matrix<nnode * dofpn, nnode * dofpn, FAD> NTilde_auxddTNTilde_x;
+    LINALG::Matrix<nnode * dofpn, nnode * dofpn, FAD> NTilde_xxddTNTilde_x;
+    LINALG::Matrix<nnode * dofpn, nnode * dofpn, FAD> NTilde_xddTNTilde_xx;
+    LINALG::Matrix<nnode * dofpn, nnode * dofpn, FAD> NTilde_auxddTNTilde_aux;
 
 
     // Get integrationpoints for exact integration
@@ -2800,7 +2800,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(std::vector<double>& disp,
     // see also so_nstet_nodalstrain.cpp, so_nstet.H, autodiff.cpp and autodiff.H
     // FAD calculated stiff matrix for validation purposes
     Epetra_SerialDenseMatrix stiffmatrix_check;
-    LINALG::TMatrix<FAD, 12, 1> force_check;
+    LINALG::Matrix<12, 1, FAD> force_check;
 
     // reshape stiffmatrix_check
     stiffmatrix_check.Shape(12, 12);
@@ -2815,43 +2815,43 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(std::vector<double>& disp,
     std::vector<FAD> disp_totlag(nnode * dofpn, 0.0);
 
     // abbreviated matrices for clearness
-    LINALG::TMatrix<FAD, dofpn * nnode, dofpn * nnode> NTilde;
-    LINALG::TMatrix<FAD, dofpn * nnode, dofpn * nnode> NTilde_x;
-    LINALG::TMatrix<FAD, dofpn * nnode, dofpn * nnode> NTilde_xx;
-    LINALG::TMatrix<FAD, dofpn * nnode, dofpn * nnode> NTilde_aux;
+    LINALG::Matrix<dofpn * nnode, dofpn * nnode, FAD> NTilde;
+    LINALG::Matrix<dofpn * nnode, dofpn * nnode, FAD> NTilde_x;
+    LINALG::Matrix<dofpn * nnode, dofpn * nnode, FAD> NTilde_xx;
+    LINALG::Matrix<dofpn * nnode, dofpn * nnode, FAD> NTilde_aux;
 
     // matrices helping to assemble above
-    LINALG::TMatrix<FAD, 3, nnode * dofpn> N_x;
-    LINALG::TMatrix<FAD, 3, nnode * dofpn> N_xx;
+    LINALG::Matrix<3, nnode * dofpn, FAD> N_x;
+    LINALG::Matrix<3, nnode * dofpn, FAD> N_xx;
 
     // Matrices for N_i,xi and N_i,xixi. 2*nnode due to hermite shapefunctions
-    LINALG::TMatrix<FAD, 1, 2 * nnode> N_i_x;
-    LINALG::TMatrix<FAD, 1, 2 * nnode> N_i_xx;
+    LINALG::Matrix<1, 2 * nnode, FAD> N_i_x;
+    LINALG::Matrix<1, 2 * nnode, FAD> N_i_xx;
 
     // stiffness due to tension and bending
-    LINALG::TMatrix<FAD, nnode * dofpn, nnode * dofpn> R_tension;
-    LINALG::TMatrix<FAD, nnode * dofpn, nnode * dofpn> R_bending;
+    LINALG::Matrix<nnode * dofpn, nnode * dofpn, FAD> R_tension;
+    LINALG::Matrix<nnode * dofpn, nnode * dofpn, FAD> R_bending;
 
     // internal force due to tension and bending
-    LINALG::TMatrix<FAD, nnode * dofpn, 1> Res_tension;
-    LINALG::TMatrix<FAD, nnode * dofpn, 1> Res_bending;
+    LINALG::Matrix<nnode * dofpn, 1, FAD> Res_tension;
+    LINALG::Matrix<nnode * dofpn, 1, FAD> Res_bending;
 
     // algebraic operations
-    LINALG::TMatrix<FAD, nnode * dofpn, 1> NTilded;
-    LINALG::TMatrix<FAD, nnode * dofpn, 1> NTilde_xd;
-    LINALG::TMatrix<FAD, nnode * dofpn, 1> NTilde_xxd;
-    LINALG::TMatrix<FAD, nnode * dofpn, 1> NTilde_auxd;
+    LINALG::Matrix<nnode * dofpn, 1, FAD> NTilded;
+    LINALG::Matrix<nnode * dofpn, 1, FAD> NTilde_xd;
+    LINALG::Matrix<nnode * dofpn, 1, FAD> NTilde_xxd;
+    LINALG::Matrix<nnode * dofpn, 1, FAD> NTilde_auxd;
 
-    LINALG::TMatrix<FAD, 1, nnode * dofpn> dTNTilde_x;
-    LINALG::TMatrix<FAD, 1, nnode * dofpn> dTNTilde_xx;
-    LINALG::TMatrix<FAD, 1, nnode * dofpn> dTNTilde_aux;
+    LINALG::Matrix<1, nnode * dofpn, FAD> dTNTilde_x;
+    LINALG::Matrix<1, nnode * dofpn, FAD> dTNTilde_xx;
+    LINALG::Matrix<1, nnode * dofpn, FAD> dTNTilde_aux;
 
-    LINALG::TMatrix<FAD, nnode * dofpn, nnode * dofpn> NTilde_xddTNTilde_x;
-    LINALG::TMatrix<FAD, nnode * dofpn, nnode * dofpn> NTilde_xddTNTilde_aux;
-    LINALG::TMatrix<FAD, nnode * dofpn, nnode * dofpn> NTilde_auxddTNTilde_x;
-    LINALG::TMatrix<FAD, nnode * dofpn, nnode * dofpn> NTilde_xxddTNTilde_x;
-    LINALG::TMatrix<FAD, nnode * dofpn, nnode * dofpn> NTilde_xddTNTilde_xx;
-    LINALG::TMatrix<FAD, nnode * dofpn, nnode * dofpn> NTilde_auxddTNTilde_aux;
+    LINALG::Matrix<nnode * dofpn, nnode * dofpn, FAD> NTilde_xddTNTilde_x;
+    LINALG::Matrix<nnode * dofpn, nnode * dofpn, FAD> NTilde_xddTNTilde_aux;
+    LINALG::Matrix<nnode * dofpn, nnode * dofpn, FAD> NTilde_auxddTNTilde_x;
+    LINALG::Matrix<nnode * dofpn, nnode * dofpn, FAD> NTilde_xxddTNTilde_x;
+    LINALG::Matrix<nnode * dofpn, nnode * dofpn, FAD> NTilde_xddTNTilde_xx;
+    LINALG::Matrix<nnode * dofpn, nnode * dofpn, FAD> NTilde_auxddTNTilde_aux;
 
 
     // Get integrationpoints for exact integration
@@ -3117,7 +3117,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckNeumann(Teuchos::ParameterList& params,
   const int nnode = 2;
   const int dofpn = 6;
 
-  LINALG::TMatrix<FAD, dofpn * nnode, 1> force_check;
+  LINALG::Matrix<dofpn * nnode, 1, FAD> force_check;
 
   // reshape stiffmatrix_check
   stiffmatrix_check.Shape((dofpn)*nnode, (dofpn)*nnode);
@@ -3199,10 +3199,10 @@ void DRT::ELEMENTS::Beam3eb::FADCheckNeumann(Teuchos::ParameterList& params,
     }
 
     // matrix for current tangent, moment at node and crossproduct
-    LINALG::TMatrix<FAD, 3, 1> tangent;
-    LINALG::TMatrix<FAD, 3, 1> crossproduct;
-    LINALG::TMatrix<FAD, 3, 1> moment;
-    LINALG::TMatrix<FAD, 3, 3> spinmatrix;
+    LINALG::Matrix<3, 1, FAD> tangent;
+    LINALG::Matrix<3, 1, FAD> crossproduct;
+    LINALG::Matrix<3, 1, FAD> moment;
+    LINALG::Matrix<3, 3, FAD> spinmatrix;
 
     // clear all matrices
     tangent.Clear();
@@ -3245,7 +3245,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckNeumann(Teuchos::ParameterList& params,
     }
 
     // assembly for stiffnessmatrix
-    LINALG::TMatrix<FAD, 3, 3> crossxtangent;
+    LINALG::Matrix<3, 3, FAD> crossxtangent;
 
     crossxtangent.Clear();
 
@@ -3316,9 +3316,9 @@ void DRT::ELEMENTS::Beam3eb::FADCheckNeumann(Teuchos::ParameterList& params,
 //***************************************************************************************
 #ifdef PRECISION
 
-void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmassprec(LINALG::TMatrix<cl_F, 12, 1>* displocal,
-    LINALG::TMatrix<cl_F, 12, 12>* stifflocal, LINALG::TMatrix<cl_F, 12, 1>* reslocal,
-    LINALG::TMatrix<cl_F, 6, 1>* xreflocal)
+void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmassprec(LINALG::Matrix<12, 1, cl_F>* displocal,
+    LINALG::Matrix<12, 12, cl_F>* stifflocal, LINALG::Matrix<12, 1, cl_F>* reslocal,
+    LINALG::Matrix<6, 1, cl_F>* xreflocal)
 {
 #if NODALDOFS == 3
   dserror("High precision calculation is not implemented for the case NODALDOFS = 3!!!");
@@ -3339,48 +3339,48 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmassprec(LINALG::TMatrix<cl_F, 12, 1>* d
   // matrix for current positions and tangents
   std::vector<cl_F> disp_totlag(nnode * dofpn);
 
-  LINALG::TMatrix<cl_F, 3, 1> r_;
-  LINALG::TMatrix<cl_F, 3, 1> r_x;
-  LINALG::TMatrix<cl_F, 3, 1> r_xx;
+  LINALG::Matrix<3, 1, cl_F> r_;
+  LINALG::Matrix<3, 1, cl_F> r_x;
+  LINALG::Matrix<3, 1, cl_F> r_xx;
 
-  LINALG::TMatrix<cl_F, 3, 1> f1;
-  LINALG::TMatrix<cl_F, 3, 1> f2;
-  LINALG::TMatrix<cl_F, 3, 1> n1;
+  LINALG::Matrix<3, 1, cl_F> f1;
+  LINALG::Matrix<3, 1, cl_F> f2;
+  LINALG::Matrix<3, 1, cl_F> n1;
 
   cl_F rxrxx;
   cl_F rxxrxx;
   cl_F rxrx;
   cl_F tension;
 
-  LINALG::TMatrix<cl_F, dofpn * nnode, dofpn * nnode> NTilde;
-  LINALG::TMatrix<cl_F, dofpn * nnode, dofpn * nnode> NTildex;
-  LINALG::TMatrix<cl_F, dofpn * nnode, dofpn * nnode> NTildexx;
+  LINALG::Matrix<dofpn * nnode, dofpn * nnode, cl_F> NTilde;
+  LINALG::Matrix<dofpn * nnode, dofpn * nnode, cl_F> NTildex;
+  LINALG::Matrix<dofpn * nnode, dofpn * nnode, cl_F> NTildexx;
 
-  LINALG::TMatrix<cl_F, dofpn * nnode, 1> NxTrx;
-  LINALG::TMatrix<cl_F, dofpn * nnode, 1> NxTrxx;
-  LINALG::TMatrix<cl_F, dofpn * nnode, 1> NxxTrx;
-  LINALG::TMatrix<cl_F, dofpn * nnode, 1> NxxTrxx;
+  LINALG::Matrix<dofpn * nnode, 1, cl_F> NxTrx;
+  LINALG::Matrix<dofpn * nnode, 1, cl_F> NxTrxx;
+  LINALG::Matrix<dofpn * nnode, 1, cl_F> NxxTrx;
+  LINALG::Matrix<dofpn * nnode, 1, cl_F> NxxTrxx;
 
-  LINALG::TMatrix<cl_F, dofpn * nnode, dofpn * nnode> M1;
-  LINALG::TMatrix<cl_F, dofpn * nnode, dofpn * nnode> M2;
-  LINALG::TMatrix<cl_F, dofpn * nnode, dofpn * nnode> M3;
-  LINALG::TMatrix<cl_F, dofpn * nnode, dofpn * nnode> NxTrxrxTNx;
+  LINALG::Matrix<dofpn * nnode, dofpn * nnode, cl_F> M1;
+  LINALG::Matrix<dofpn * nnode, dofpn * nnode, cl_F> M2;
+  LINALG::Matrix<dofpn * nnode, dofpn * nnode, cl_F> M3;
+  LINALG::Matrix<dofpn * nnode, dofpn * nnode, cl_F> NxTrxrxTNx;
 
   // Matrices for N_i,xi and N_i,xixi. 2*nnode due to hermite shapefunctions
-  LINALG::TMatrix<cl_F, 1, 2 * nnode> N_i;
-  LINALG::TMatrix<cl_F, 1, 2 * nnode> N_i_x;
-  LINALG::TMatrix<cl_F, 1, 2 * nnode> N_i_xx;
+  LINALG::Matrix<1, 2 * nnode, cl_F> N_i;
+  LINALG::Matrix<1, 2 * nnode, cl_F> N_i_x;
+  LINALG::Matrix<1, 2 * nnode, cl_F> N_i_xx;
 
-  LINALG::TMatrix<cl_F, 3, nnode * dofpn> N_x;
-  LINALG::TMatrix<cl_F, 3, nnode * dofpn> N_xx;
+  LINALG::Matrix<3, nnode * dofpn, cl_F> N_x;
+  LINALG::Matrix<3, nnode * dofpn, cl_F> N_xx;
 
   // stiffness due to tension and bending
-  LINALG::TMatrix<cl_F, nnode * dofpn, nnode * dofpn> R_tension;
-  LINALG::TMatrix<cl_F, nnode * dofpn, nnode * dofpn> R_bending;
+  LINALG::Matrix<nnode * dofpn, nnode * dofpn, cl_F> R_tension;
+  LINALG::Matrix<nnode * dofpn, nnode * dofpn, cl_F> R_bending;
 
   // internal force due to tension and bending
-  LINALG::TMatrix<cl_F, nnode * dofpn, 1> Res_tension;
-  LINALG::TMatrix<cl_F, nnode * dofpn, 1> Res_bending;
+  LINALG::Matrix<nnode * dofpn, 1, cl_F> Res_tension;
+  LINALG::Matrix<nnode * dofpn, 1, cl_F> Res_bending;
 
   // clear disp_totlag vector before assembly
   disp_totlag.clear();
@@ -3669,7 +3669,7 @@ void DRT::ELEMENTS::Beam3eb::HighPrecissionCalc()
   cl_F balkenlaenge = "10.0_40";
   balkenradiusprec_ = "1.0_40";
   cl_F fext = "0.0_40";
-  LINALG::TMatrix<cl_F, 3, 1> mextvec;
+  LINALG::Matrix<3, 1, cl_F> mextvec;
   mextvec(0) = "0.0_40";
   mextvec(1) = "0.0_40";
   mextvec(2) = "0.0_40";
@@ -3688,7 +3688,7 @@ void DRT::ELEMENTS::Beam3eb::HighPrecissionCalc()
   cl_F mext = Izzprec_ * Eprec_ * cl_F("2.0_40") * PIPREC / balkenlaenge;
   mextvec(2) = mext;
 
-  LINALG::TMatrix<cl_F, numnode * 3, 1> xrefglobal;
+  LINALG::Matrix<numnode * 3, 1, cl_F> xrefglobal;
 
   for (int i = 0; i < numnode; i++)
   {
@@ -3707,11 +3707,11 @@ void DRT::ELEMENTS::Beam3eb::HighPrecissionCalc()
   cl_F resnorm = "10.0_40";
   cl_F dispnorm = "10.0_40";
   cl_F linsolverrornorm = "10.0_40";
-  LINALG::TMatrix<cl_F, numnode * 6, numnode * 6> stiffglobal;
-  LINALG::TMatrix<cl_F, numnode * 6, 1> resglobal;
-  LINALG::TMatrix<cl_F, numnode * 6, 1> dispglobal;
-  LINALG::TMatrix<cl_F, numnode * 6, 1> deltadispglobal;
-  LINALG::TMatrix<cl_F, numnode * 6, 1> fextglobal;
+  LINALG::Matrix<numnode * 6, numnode * 6, cl_F> stiffglobal;
+  LINALG::Matrix<numnode * 6, 1, cl_F> resglobal;
+  LINALG::Matrix<numnode * 6, 1, cl_F> dispglobal;
+  LINALG::Matrix<numnode * 6, 1, cl_F> deltadispglobal;
+  LINALG::Matrix<numnode * 6, 1, cl_F> fextglobal;
 
   for (int i = 0; i < 6 * numnode; i++)
   {
@@ -3727,7 +3727,7 @@ void DRT::ELEMENTS::Beam3eb::HighPrecissionCalc()
 
 
   // Loadsteps
-  LINALG::TMatrix<cl_F, 3, 1> mextvecstep;
+  LINALG::Matrix<3, 1, cl_F> mextvecstep;
   cl_F fextstep = "0.0_40";
   for (int i = 0; i < 3; i++)
   {
@@ -3752,10 +3752,10 @@ void DRT::ELEMENTS::Beam3eb::HighPrecissionCalc()
     while (resnorm > "1.0e-50_40")
     {
       iter++;
-      LINALG::TMatrix<cl_F, 12, 12> stifflocal;
-      LINALG::TMatrix<cl_F, 12, 1> reslocal;
-      LINALG::TMatrix<cl_F, 12, 1> displocal;
-      LINALG::TMatrix<cl_F, 6, 1> xreflocal;
+      LINALG::Matrix<12, 12, cl_F> stifflocal;
+      LINALG::Matrix<12, 1, cl_F> reslocal;
+      LINALG::Matrix<12, 1, cl_F> displocal;
+      LINALG::Matrix<6, 1, cl_F> xreflocal;
 
       // Normen nullen
       resnorm = "0.0_40";
@@ -3936,9 +3936,9 @@ void DRT::ELEMENTS::Beam3eb::HighPrecissionCalc()
       }
       fextglobal(numnode * 6 - 1 - 4, 0) = fextstep;
 
-      LINALG::TMatrix<cl_F, 3, 1> fextm;
-      LINALG::TMatrix<cl_F, 3, 3> stiffextm;
-      LINALG::TMatrix<cl_F, 3, 1> tangentdisp;
+      LINALG::Matrix<3, 1, cl_F> fextm;
+      LINALG::Matrix<3, 3, cl_F> stiffextm;
+      LINALG::Matrix<3, 1, cl_F> tangentdisp;
       for (int i = 0; i < 3; i++)
       {
         for (int j = 0; j < 3; j++)
@@ -3999,8 +3999,8 @@ void DRT::ELEMENTS::Beam3eb::HighPrecissionCalc()
       // end: apply dirichlet
 
       // linear solver
-      LINALG::TMatrix<cl_F, numnode * 6, numnode * 6> stiffglobalsolv;
-      LINALG::TMatrix<cl_F, numnode * 6, 1> resglobalsolv;
+      LINALG::Matrix<numnode * 6, numnode * 6, cl_F> stiffglobalsolv;
+      LINALG::Matrix<numnode * 6, 1, cl_F> resglobalsolv;
 
       for (int i = 0; i < 6 * numnode; i++)
       {
@@ -4062,7 +4062,7 @@ void DRT::ELEMENTS::Beam3eb::HighPrecissionCalc()
       // End: Rückwärtseliminierung
 
       // Ermittlung des Fehlers
-      LINALG::TMatrix<cl_F, numnode * 6, 1> disperror;
+      LINALG::Matrix<numnode * 6, 1, cl_F> disperror;
       for (int i = 0; i < 6 * numnode; i++)
       {
         disperror(i, 0) = cl_F("0.0_40");
@@ -4114,16 +4114,16 @@ void DRT::ELEMENTS::Beam3eb::HighPrecissionCalc()
   return;
 }
 
-void DRT::ELEMENTS::Beam3eb::EvaluateNeumannPrec(LINALG::TMatrix<cl_F, 3, 1> tangentdisp,
-    LINALG::TMatrix<cl_F, 3, 1> mextvec, LINALG::TMatrix<cl_F, 3, 1>* fextm,
-    LINALG::TMatrix<cl_F, 3, 3>* stiffextm)
+void DRT::ELEMENTS::Beam3eb::EvaluateNeumannPrec(LINALG::Matrix<3, 1, cl_F> tangentdisp,
+    LINALG::Matrix<3, 1, cl_F> mextvec, LINALG::Matrix<3, 1, cl_F>* fextm,
+    LINALG::Matrix<3, 3, cl_F>* stiffextm)
 {
 #if NODALDOFS == 3
   dserror("High precision calculation is not implemented for the case NODALDOFS = 3!!!");
 #endif
 
-  LINALG::TMatrix<cl_F, 3, 1> tangent;
-  LINALG::TMatrix<cl_F, 3, 1> crossproduct;
+  LINALG::Matrix<3, 1, cl_F> tangent;
+  LINALG::Matrix<3, 1, cl_F> crossproduct;
   cl_F abs_tangent_quadr = "0.0_40";
   // assemble current tangent and moment at node
   for (int i = 0; i < 3; i++)
@@ -4139,8 +4139,8 @@ void DRT::ELEMENTS::Beam3eb::EvaluateNeumannPrec(LINALG::TMatrix<cl_F, 3, 1> tan
   (*fextm)(2) = -(tangent(0) * mextvec(1) - tangent(1) * mextvec(0)) / abs_tangent_quadr;
 
   // assembly for stiffnessmatrix
-  LINALG::TMatrix<cl_F, 3, 3> crossxtangent;
-  LINALG::TMatrix<cl_F, 3, 3> spinmatrix;
+  LINALG::Matrix<3, 3, cl_F> crossxtangent;
+  LINALG::Matrix<3, 3, cl_F> spinmatrix;
 
   // perform matrix operation
   for (int i = 0; i < 3; i++)

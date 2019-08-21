@@ -27,7 +27,7 @@ namespace LARGEROTATIONS
   //! this is a templated version of the method computespin as declared above in order to also
   //! handle the datatype FAD which is needed for automatic differentiation
   template <typename T>
-  void computespin(LINALG::TMatrix<T, 3, 3>& S, const LINALG::TMatrix<T, 3, 1>& theta)
+  void computespin(LINALG::Matrix<3, 3, T>& S, const LINALG::Matrix<3, 1, T>& theta)
   {
     // function based on Crisfield Vol. 2, Section 16 (16.8)
     S(0, 0) = 0.0;
@@ -47,10 +47,10 @@ namespace LARGEROTATIONS
   //! this is a templated version of the method declared above in order to also handle
   //! the datatype FAD which is needed for automatic differentiation
   template <typename T>
-  void quaterniontotriad(const LINALG::TMatrix<T, 4, 1>& q, LINALG::TMatrix<T, 3, 3>& R)
+  void quaterniontotriad(const LINALG::Matrix<4, 1, T>& q, LINALG::Matrix<3, 3, T>& R)
   {
     // separate storage of vector part of q
-    LINALG::TMatrix<T, 3, 1> qvec;
+    LINALG::Matrix<3, 1, T> qvec;
     for (int i = 0; i < 3; i++) qvec(i) = q(i);
 
     // setting R to third summand of equation (16.70)
@@ -75,7 +75,7 @@ namespace LARGEROTATIONS
   //! this is a templated version of the method declared above in order to also handle
   //! the datatype FAD which is needed for automatic differentiation
   template <typename T>
-  void angletoquaternion(const LINALG::TMatrix<T, 3, 1>& theta, LINALG::TMatrix<T, 4, 1>& q)
+  void angletoquaternion(const LINALG::Matrix<3, 1, T>& theta, LINALG::Matrix<4, 1, T>& q)
   {
     // absolute value of rotation angle theta
     T abs_theta = 0.0;
@@ -110,11 +110,11 @@ namespace LARGEROTATIONS
   //! this is a templated version of the method declared above in order to also handle
   //! the datatype FAD which is needed for automatic differentiation
   template <typename T>
-  void angletotriad(const LINALG::TMatrix<T, 3, 1>& theta,
-      const LINALG::TMatrix<T, 3, 3>& triad_ref, LINALG::TMatrix<T, 3, 3>& triad)
+  void angletotriad(const LINALG::Matrix<3, 1, T>& theta, const LINALG::Matrix<3, 3, T>& triad_ref,
+      LINALG::Matrix<3, 3, T>& triad)
   {
-    LINALG::TMatrix<T, 3, 3> rotation_matrix;
-    LINALG::TMatrix<T, 4, 1> quaternion;
+    LINALG::Matrix<3, 3, T> rotation_matrix;
+    LINALG::Matrix<4, 1, T> quaternion;
 
     rotation_matrix.Clear();
     quaternion.Clear();
@@ -131,7 +131,7 @@ namespace LARGEROTATIONS
   //! this is a templated version of the method declared above in order to also handle
   //! the datatype FAD which is needed for automatic differentiation
   template <typename T>
-  void quaterniontoangle(const LINALG::TMatrix<T, 4, 1>& q, LINALG::TMatrix<T, 3, 1>& theta)
+  void quaterniontoangle(const LINALG::Matrix<4, 1, T>& q, LINALG::Matrix<3, 1, T>& theta)
   {
     /*the following function computes from a quaternion q an angle theta within [-PI; PI]; such an
      * interval is imperative for the use of the resulting angle together with formulae like
@@ -149,7 +149,7 @@ namespace LARGEROTATIONS
     else
     {
       // otherwise the angle can be computed from a quaternion via Crisfield, Vol. 2, eq. (16.79)
-      LINALG::TMatrix<T, 3, 1> omega;
+      LINALG::Matrix<3, 1, T> omega;
       T abs_omega = 0.0;
       for (int i = 0; i < 3; i++)
       {
@@ -185,7 +185,7 @@ namespace LARGEROTATIONS
   //! this is a templated version of the method declared above in order to also handle
   //! the datatype FAD which is needed for automatic differentiation
   template <typename T>
-  void triadtoquaternion(const LINALG::TMatrix<T, 3, 3>& R, LINALG::TMatrix<T, 4, 1>& q)
+  void triadtoquaternion(const LINALG::Matrix<3, 3, T>& R, LINALG::Matrix<4, 1, T>& q)
   {
     T trace = R(0, 0) + R(1, 1) + R(2, 2);
 
@@ -257,7 +257,7 @@ namespace LARGEROTATIONS
   //! this is a templated version of the method declared above in order to also handle
   //! the datatype FAD which is needed for automatic differentiation
   template <typename T>
-  LINALG::TMatrix<T, 4, 1> inversequaternion(const LINALG::TMatrix<T, 4, 1>& q)
+  LINALG::Matrix<4, 1, T> inversequaternion(const LINALG::Matrix<4, 1, T>& q)
   {
     // square norm ||q||^2 of quaternion q
     T qnormsq = 0.0;
@@ -268,7 +268,7 @@ namespace LARGEROTATIONS
     }
 
     // declaration of variable for inverse quaternion
-    LINALG::TMatrix<T, 4, 1> qinv;
+    LINALG::Matrix<4, 1, T> qinv;
 
     // inverse quaternion q^(-1) = [-q0, -q1, -q2, q3] / ||q||^2;
     for (int i = 0; i < 3; i++) qinv(i) = -q(i) / qnormsq;
@@ -285,9 +285,9 @@ namespace LARGEROTATIONS
   //! matrix T(\theta) from Jelenic 1999, eq. (2.5), equivalent to matrix H^{-1} in Crisfield,
   //! (16.94)
   template <typename T>
-  LINALG::TMatrix<T, 3, 3> Tmatrix(LINALG::TMatrix<T, 3, 1> theta)
+  LINALG::Matrix<3, 3, T> Tmatrix(LINALG::Matrix<3, 1, T> theta)
   {
-    LINALG::TMatrix<T, 3, 3> result(true);
+    LINALG::Matrix<3, 3, T> result(true);
     T theta_abs = pow(theta(0) * theta(0) + theta(1) * theta(1) + theta(2) * theta(2), 0.5);
 
     // in case of theta_abs == 0 the following computation has problems with singularities
@@ -321,9 +321,9 @@ namespace LARGEROTATIONS
   //! this is a templated version of the method Tinvmatrix as declared in LARGEROTATIONS in order to
   //! also handle the datatype FAD which is needed for automatic differentiation
   template <typename T>
-  LINALG::TMatrix<T, 3, 3> Tinvmatrix(LINALG::TMatrix<T, 3, 1> theta)
+  LINALG::Matrix<3, 3, T> Tinvmatrix(LINALG::Matrix<3, 1, T> theta)
   {
-    LINALG::TMatrix<T, 3, 3> result(true);
+    LINALG::Matrix<3, 3, T> result(true);
     T theta_abs = pow(theta(0) * theta(0) + theta(1) * theta(1) + theta(2) * theta(2), 0.5);
 
     // in case of theta_abs == 0 the following computation has problems with ill-conditioning /
@@ -364,11 +364,11 @@ namespace LARGEROTATIONS
   //! compute dT^{-1}(\theta)/dx according to the two-lined equation below (3.19) on page 152 of
   //! Jelenic 1999
   template <typename T>
-  void computedTinvdx(const LINALG::TMatrix<T, 3, 1>& Psil,
-      const LINALG::TMatrix<T, 3, 1>& Psilprime, LINALG::TMatrix<T, 3, 3>& dTinvdx)
+  void computedTinvdx(const LINALG::Matrix<3, 1, T>& Psil, const LINALG::Matrix<3, 1, T>& Psilprime,
+      LINALG::Matrix<3, 3, T>& dTinvdx)
   {
     // auxiliary matrix for storing intermediate results
-    LINALG::TMatrix<T, 3, 3> auxmatrix;
+    LINALG::Matrix<3, 3, T> auxmatrix;
 
     // norm of \Psi^l:
     T normPsil = pow(Psil(0) * Psil(0) + Psil(1) * Psil(1) + Psil(2) * Psil(2), 0.5);
@@ -387,8 +387,8 @@ namespace LARGEROTATIONS
       for (int i = 0; i < 3; i++) scalarproductPsilPsilprime += Psil(i) * Psilprime(i);
 
       // spin matrices of Psil and Psilprime
-      LINALG::TMatrix<T, 3, 3> spinPsil;
-      LINALG::TMatrix<T, 3, 3> spinPsilprime;
+      LINALG::Matrix<3, 3, T> spinPsil;
+      LINALG::Matrix<3, 3, T> spinPsilprime;
       computespin(spinPsil, Psil);
       computespin(spinPsilprime, Psilprime);
 
@@ -430,7 +430,7 @@ namespace LARGEROTATIONS
   //! Rotate an arbitrary triad around its first base vector (tangent)
   template <typename T>
   void RotateTriad(
-      const LINALG::TMatrix<T, 3, 3>& triad, const T& alpha, LINALG::TMatrix<T, 3, 3>& triad_rot)
+      const LINALG::Matrix<3, 3, T>& triad, const T& alpha, LINALG::Matrix<3, 3, T>& triad_rot)
   {
     for (int i = 0; i < 3; i++)
     {
@@ -444,8 +444,8 @@ namespace LARGEROTATIONS
 
   //! Calculate the SR mapping for a given reference system triad_ref and a given tangent vector r_s
   template <typename T>
-  void CalculateSRTriads(const LINALG::TMatrix<T, 3, 1>& r_s,
-      const LINALG::TMatrix<T, 3, 3>& triad_ref, LINALG::TMatrix<T, 3, 3>& triad)
+  void CalculateSRTriads(const LINALG::Matrix<3, 1, T>& r_s,
+      const LINALG::Matrix<3, 3, T>& triad_ref, LINALG::Matrix<3, 3, T>& triad)
   {
     // In this calculation, r_s does not necessarily have to be a unit vector.
     T temp_scalar1 = 0.0;
@@ -489,11 +489,11 @@ namespace LARGEROTATIONS
   //! compute the relative angle theta between triad_ref and triad so that exp(theta) =
   //! triad_ref^T*triad -> inversion of the right translation triad=triad_ref*exp(theta)
   template <typename T>
-  void triadtoangleright(LINALG::TMatrix<T, 3, 1>& theta, const LINALG::TMatrix<T, 3, 3>& triad_ref,
-      const LINALG::TMatrix<T, 3, 3>& triad)
+  void triadtoangleright(LINALG::Matrix<3, 1, T>& theta, const LINALG::Matrix<3, 3, T>& triad_ref,
+      const LINALG::Matrix<3, 3, T>& triad)
   {
-    LINALG::TMatrix<T, 3, 3> rotation_matrix;
-    LINALG::TMatrix<T, 4, 1> quaternion;
+    LINALG::Matrix<3, 3, T> rotation_matrix;
+    LINALG::Matrix<4, 1, T> quaternion;
 
     rotation_matrix.Clear();
     quaternion.Clear();
@@ -506,11 +506,11 @@ namespace LARGEROTATIONS
   //! compute the relative angle theta between triad_ref and triad so that exp(theta) =
   //! triad*triad_ref^T -> inversion of the right translation triad=exp(theta)*triad_ref
   template <typename T>
-  void triadtoangleleft(LINALG::TMatrix<T, 3, 1>& theta, const LINALG::TMatrix<T, 3, 3>& triad_ref,
-      const LINALG::TMatrix<T, 3, 3>& triad)
+  void triadtoangleleft(LINALG::Matrix<3, 1, T>& theta, const LINALG::Matrix<3, 3, T>& triad_ref,
+      const LINALG::Matrix<3, 3, T>& triad)
   {
-    LINALG::TMatrix<T, 3, 3> rotation_matrix;
-    LINALG::TMatrix<T, 4, 1> quaternion;
+    LINALG::Matrix<3, 3, T> rotation_matrix;
+    LINALG::Matrix<4, 1, T> quaternion;
 
     rotation_matrix.Clear();
     quaternion.Clear();

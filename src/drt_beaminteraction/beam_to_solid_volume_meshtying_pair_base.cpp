@@ -254,11 +254,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
   if (visualization != Teuchos::null)
   {
     // Setup variables.
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> X;
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> u;
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> r;
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> r_solid;
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> force_integration_point;
+    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> X;
+    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> u;
+    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> r;
+    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> r_solid;
+    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> force_integration_point;
 
     // Get the visualization vectors.
     std::vector<double>& point_coordinates = visualization->GetMutablePointCoordinateVector();
@@ -294,9 +294,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
   if (visualization != Teuchos::null)
   {
     // Setup variables.
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> X;
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> u;
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1> r;
+    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> X;
+    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> u;
+    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD> r;
 
     // Get the visualization vectors.
     std::vector<double>& point_coordinates = visualization->GetMutablePointCoordinateVector();
@@ -328,7 +328,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::EvaluateBeamPosition(
     const GEOMETRYPAIR::ProjectionPointLineToVolume<double>& integration_point,
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& r_beam, bool reference) const
+    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_beam, bool reference) const
 {
   if (reference)
     GEOMETRYPAIR::EvaluatePosition<beam>(
@@ -343,9 +343,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::EvaluateB
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::EvaluatePenaltyForce(
-    const LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& r_beam,
-    const LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& r_solid,
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& force) const
+    const LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_beam,
+    const LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_solid,
+    LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& force) const
 {
   // TODO: call this function also in the Evaluate methods.
   // The base implementation of the force is a simple linear penalty law.

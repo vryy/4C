@@ -285,7 +285,7 @@ void BEAMINTERACTION::BeamLinkTruss::ResetState(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamLinkTruss::FillStateVariablesForElementEvaluation(
-    LINALG::TMatrix<double, 6, 1>& absolute_nodal_positions) const
+    LINALG::Matrix<6, 1, double>& absolute_nodal_positions) const
 {
   for (unsigned int i = 0; i < 3; ++i)
   {

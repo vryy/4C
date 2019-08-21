@@ -362,10 +362,10 @@ namespace DRT
        \brief Convert from a index within the polynomial space to the tensor indices in the
        individual dimensions
        */
-      LINALG::TMatrix<unsigned int, nsd_, 1> getIndices(const unsigned int index) const
+      LINALG::Matrix<nsd_, 1, unsigned int> getIndices(const unsigned int index) const
       {
         dsassert(index < Size(), "Access out of range");
-        LINALG::TMatrix<unsigned int, nsd_, 1> indices;
+        LINALG::Matrix<nsd_, 1, unsigned int> indices;
         const unsigned int npoly = polySpace1d_.size();
         switch (nsd_)
         {

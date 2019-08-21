@@ -555,7 +555,7 @@ void CONTACT::INTEGRATOR::Deriv1st_NonUnitSlaveNormal(
   const unsigned slavedim = DRT::UTILS::DisTypeToDim<slavetype>::dim;
   const unsigned probdim = slavedim + 1;
 
-  LINALG::TMatrix<int, probdim, slavenumnode> nodal_dofs;
+  LINALG::Matrix<probdim, slavenumnode, int> nodal_dofs;
   CONTACT::INTEGRATOR::GetElementNodalDofs(sele, nodal_dofs);
 
   // evaluate the convective base vectors
@@ -682,7 +682,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_NonUnitSlaveNormal(
   const unsigned slavedim = DRT::UTILS::DisTypeToDim<slavetype>::dim;
   const unsigned probdim = slavedim + 1;
 
-  LINALG::TMatrix<int, probdim, slavenumnode> nodal_dofs;
+  LINALG::Matrix<probdim, slavenumnode, int> nodal_dofs;
   CONTACT::INTEGRATOR::GetElementNodalDofs(sele, nodal_dofs);
 
   // derivatives with respect to xi^1 and xi^2
@@ -801,7 +801,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const DRT::Element::Discretiz
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, unsigned numnode>
 void CONTACT::INTEGRATOR::GetElementNodalDofs(
-    const MORTAR::MortarElement& ele, LINALG::TMatrix<int, probdim, numnode>& nodal_dofs)
+    const MORTAR::MortarElement& ele, LINALG::Matrix<probdim, numnode, int>& nodal_dofs)
 {
   const DRT::Node* const* mynodes = ele.Nodes();
 
@@ -893,12 +893,12 @@ bool CONTACT::INTEGRATOR::CheckSymmetry(
 
 /*----------------------------------------------------------------------------*/
 template void CONTACT::INTEGRATOR::GetElementNodalDofs(
-    const MORTAR::MortarElement& ele, LINALG::TMatrix<int, 2, 2>& nodal_dofs);
+    const MORTAR::MortarElement& ele, LINALG::Matrix<2, 2, int>& nodal_dofs);
 template void CONTACT::INTEGRATOR::GetElementNodalDofs(
-    const MORTAR::MortarElement& ele, LINALG::TMatrix<int, 2, 3>& nodal_dofs);
+    const MORTAR::MortarElement& ele, LINALG::Matrix<2, 3, int>& nodal_dofs);
 template void CONTACT::INTEGRATOR::GetElementNodalDofs(
-    const MORTAR::MortarElement& ele, LINALG::TMatrix<int, 3, 3>& nodal_dofs);
+    const MORTAR::MortarElement& ele, LINALG::Matrix<3, 3, int>& nodal_dofs);
 template void CONTACT::INTEGRATOR::GetElementNodalDofs(
-    const MORTAR::MortarElement& ele, LINALG::TMatrix<int, 3, 4>& nodal_dofs);
+    const MORTAR::MortarElement& ele, LINALG::Matrix<3, 4, int>& nodal_dofs);
 template void CONTACT::INTEGRATOR::GetElementNodalDofs(
-    const MORTAR::MortarElement& ele, LINALG::TMatrix<int, 3, 9>& nodal_dofs);
+    const MORTAR::MortarElement& ele, LINALG::Matrix<3, 9, int>& nodal_dofs);

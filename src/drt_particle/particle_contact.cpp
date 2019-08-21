@@ -5288,11 +5288,11 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElement
   const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
   // solution vector
-  static LINALG::TMatrix<FAD, 3, 1> coll_solution;
-  static LINALG::TMatrix<FAD, 3, 1> wallcollpoint_pos_fad;
-  static LINALG::TMatrix<FAD, 3, 1> wallcollpoint_vel_fad;
-  static LINALG::TMatrix<FAD, 3, 1> particle_pos_fad;
-  static LINALG::TMatrix<FAD, 3, 1> particle_vel_fad;
+  static LINALG::Matrix<3, 1, FAD> coll_solution;
+  static LINALG::Matrix<3, 1, FAD> wallcollpoint_pos_fad;
+  static LINALG::Matrix<3, 1, FAD> wallcollpoint_vel_fad;
+  static LINALG::Matrix<3, 1, FAD> particle_pos_fad;
+  static LINALG::Matrix<3, 1, FAD> particle_vel_fad;
   coll_solution.Clear();
   wallcollpoint_pos_fad.Clear();
   wallcollpoint_vel_fad.Clear();
@@ -5314,7 +5314,7 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElement
   for (int i = 0; i < 3; ++i) coll_solution(i).diff(i, 3);
 
   // unit normal at collision point
-  static LINALG::TMatrix<FAD, 3, 1> unitnormal;
+  static LINALG::Matrix<3, 1, FAD> unitnormal;
   unitnormal.Clear();
 
   // velocity of wall element is constant over the time step
@@ -5323,9 +5323,9 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElement
   vele += xyze_final;
   vele.Scale(1.0 / dt);
 
-  static LINALG::TMatrix<FAD, 3, numnode> vele_fad;
-  static LINALG::TMatrix<FAD, 3, numnode> xyze_n_fad;
-  static LINALG::TMatrix<FAD, 3, numnode> xyze_colltime;
+  static LINALG::Matrix<3, numnode, FAD> vele_fad;
+  static LINALG::Matrix<3, numnode, FAD> xyze_n_fad;
+  static LINALG::Matrix<3, numnode, FAD> xyze_colltime;
   vele_fad.Clear();
   xyze_n_fad.Clear();
   xyze_colltime.Clear();
@@ -5355,7 +5355,7 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElement
     xyze_colltime.Update(1.0, xyze_n_fad, colltime, vele_fad);
 
     // position and velocity of wall collision point at collision time
-    static LINALG::TMatrix<FAD, numnode, 1> funct;
+    static LINALG::Matrix<numnode, 1, FAD> funct;
     funct.Clear();
     DRT::UTILS::shape_function<DISTYPE>(coll_solution, funct);
     wallcollpoint_pos_fad.Clear();
@@ -5369,12 +5369,12 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElement
 
     // get unit normal of wall element at collision point
     {
-      static LINALG::TMatrix<FAD, 2, numnode> deriv;
+      static LINALG::Matrix<2, numnode, FAD> deriv;
       deriv.Clear();
       DRT::UTILS::shape_function_2D_deriv1(deriv, coll_solution(0), coll_solution(1), DISTYPE);
 
       // compute dXYZ / drs
-      static LINALG::TMatrix<FAD, 3, 2> dxyzdrs;
+      static LINALG::Matrix<3, 2, FAD> dxyzdrs;
       dxyzdrs.Clear();
       dxyzdrs.Clear();
       for (int i = 0; i < 3; ++i)
@@ -5394,19 +5394,19 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElement
     }
 
     // update particle position to current time
-    static LINALG::TMatrix<FAD, 3, 1> particle_pos_colltime;
+    static LINALG::Matrix<3, 1, FAD> particle_pos_colltime;
     particle_pos_colltime.Clear();
     particle_pos_colltime.Update(1.0, particle_pos_fad, coll_solution(2), particle_vel_fad);
 
     // check whether normal is pointing outward (particle is inside) and adapt it if necessary
-    static LINALG::TMatrix<FAD, 3, 1> testvector_fad;
+    static LINALG::Matrix<3, 1, FAD> testvector_fad;
     testvector_fad.Clear();
     testvector_fad.Update(1.0, wallcollpoint_pos_fad, -1.0, particle_pos_colltime);
 
     if (unitnormal.Dot(testvector_fad) < 0.0) unitnormal.Scale(-1.0);
 
     // compute residual
-    static LINALG::TMatrix<FAD, 3, 1> residual;
+    static LINALG::Matrix<3, 1, FAD> residual;
     residual.Clear();
     double bnorm = 0.0;
     for (int i = 0; i < 3; ++i)
@@ -5819,12 +5819,12 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
   const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
   // solution vector
-  static LINALG::TMatrix<FAD, 2, 1> coll_solution;
-  static LINALG::TMatrix<FAD, 3, 1> wallcollpoint_pos_fad;
-  static LINALG::TMatrix<FAD, 3, 1> wallcollpoint_vel_fad;
-  static LINALG::TMatrix<FAD, 3, 1> wallcollpoint_deriv_vel_fad;
-  static LINALG::TMatrix<FAD, 3, 1> particle_pos_fad;
-  static LINALG::TMatrix<FAD, 3, 1> particle_vel_fad;
+  static LINALG::Matrix<2, 1, FAD> coll_solution;
+  static LINALG::Matrix<3, 1, FAD> wallcollpoint_pos_fad;
+  static LINALG::Matrix<3, 1, FAD> wallcollpoint_vel_fad;
+  static LINALG::Matrix<3, 1, FAD> wallcollpoint_deriv_vel_fad;
+  static LINALG::Matrix<3, 1, FAD> particle_pos_fad;
+  static LINALG::Matrix<3, 1, FAD> particle_vel_fad;
   coll_solution.Clear();
   wallcollpoint_pos_fad.Clear();
   wallcollpoint_vel_fad.Clear();
@@ -5847,13 +5847,13 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
   for (int i = 0; i < 2; ++i) coll_solution(i).diff(i, 2);
 
   // unit normal at collision point
-  static LINALG::TMatrix<FAD, 3, 1> unitnormal;
+  static LINALG::Matrix<3, 1, FAD> unitnormal;
   unitnormal.Clear();
 
   // velocity of wall element is constant over the time step
-  static LINALG::TMatrix<FAD, 3, numnodes> vele_fad;
-  static LINALG::TMatrix<FAD, 3, numnodes> xyze_n_fad;
-  static LINALG::TMatrix<FAD, 3, numnodes> xyze_colltime;
+  static LINALG::Matrix<3, numnodes, FAD> vele_fad;
+  static LINALG::Matrix<3, numnodes, FAD> xyze_n_fad;
+  static LINALG::Matrix<3, numnodes, FAD> xyze_colltime;
   vele_fad.Clear();
   xyze_n_fad.Clear();
   xyze_colltime.Clear();
@@ -5869,13 +5869,13 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
   }
 
   // connection vector between edge coll point and particle position
-  static LINALG::TMatrix<FAD, 3, 1> F;
+  static LINALG::Matrix<3, 1, FAD> F;
   F.Clear();
   // compute first derivative of r
-  static LINALG::TMatrix<FAD, 3, 1> F_deriv1;
+  static LINALG::Matrix<3, 1, FAD> F_deriv1;
   F_deriv1.Clear();
   // compute second derivative of r
-  static LINALG::TMatrix<FAD, 3, 1> F_deriv2;
+  static LINALG::Matrix<3, 1, FAD> F_deriv2;
   F_deriv2.Clear();
 
   double distance = 0.0;
@@ -5902,20 +5902,20 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
     xyze_colltime.Update(1.0, xyze_n_fad, colltime, vele_fad);
 
     // update particle position to current time
-    static LINALG::TMatrix<FAD, 3, 1> particle_pos_colltime;
+    static LINALG::Matrix<3, 1, FAD> particle_pos_colltime;
     particle_pos_colltime.Clear();
     particle_pos_colltime.Update(1.0, particle_pos_fad, coll_solution(1), particle_vel_fad);
 
     // determine shape function, 1. and 2. derivative at current solution
-    static LINALG::TMatrix<FAD, numnodes, 1> funct;
+    static LINALG::Matrix<numnodes, 1, FAD> funct;
     funct.Clear();
     DRT::UTILS::shape_function_1D(funct, coll_solution(0), DISTYPE);
 
-    static LINALG::TMatrix<FAD, 1, numnodes> deriv1;
+    static LINALG::Matrix<1, numnodes, FAD> deriv1;
     deriv1.Clear();
     DRT::UTILS::shape_function_1D_deriv1(deriv1, coll_solution(0), DISTYPE);
 
-    static LINALG::TMatrix<FAD, 1, numnodes> deriv2;
+    static LINALG::Matrix<1, numnodes, FAD> deriv2;
     deriv2.Clear();
     DRT::UTILS::shape_function_1D_deriv2(deriv2, coll_solution(0), DISTYPE);
 
@@ -5995,7 +5995,7 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
     F.Update(1.0, wallcollpoint_pos_fad, -1.0, particle_pos_colltime);
 
     // compute rhs
-    static LINALG::TMatrix<FAD, 2, 1> residual;
+    static LINALG::Matrix<2, 1, FAD> residual;
     residual.Clear();
     static FAD dotprod_pos_pos, dotprod_pos_deriv1, dotprod_deriv1_deriv1, dotprod_pos_deriv2,
         dotprod_pos_v, dotprod_v_deriv1, dotprod_pos_derivv, pos2subtractrad2;
