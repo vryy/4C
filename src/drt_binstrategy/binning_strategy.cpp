@@ -1244,7 +1244,7 @@ void BINSTRATEGY::BinningStrategy::ExtendBinGhosting(
 | extend ghosting according to bin distribution          ghamm 11/13 |
  *-------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::ExtendGhosting(
-    DRT::Discretization& mortardis, Teuchos::RCP<Epetra_Map> initial_elecolmap,
+    DRT::Discretization& mortardis, const Epetra_Map& initial_elecolmap,
     std::map<int, std::set<int>>& slavebinelemap,
     std::map<int, std::set<int>>& masterbinelemap) const
 {
@@ -1306,9 +1306,9 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::ExtendGhosting(
   }
 
   // insert standard ghosting for master and slave side
-  for (int lid = 0; lid < initial_elecolmap->NumMyElements(); ++lid)
+  for (int lid = 0; lid < initial_elecolmap.NumMyElements(); ++lid)
   {
-    mastereleset.insert(initial_elecolmap->GID(lid));
+    mastereleset.insert(initial_elecolmap.GID(lid));
   }
 
   std::vector<int> mastercolgids(mastereleset.begin(), mastereleset.end());

@@ -1104,7 +1104,7 @@ void MORTAR::MortarInterface::BinningStrategy(
 
   // ghosting is extended
   Teuchos::RCP<Epetra_Map> extendedmastercolmap = binningstrategy->ExtendGhosting(
-      Discret(), initial_elecolmap, slavebinelemap, masterbinelemap);
+      Discret(), *initial_elecolmap, slavebinelemap, masterbinelemap);
 
   // adapt layout to extended ghosting in discret
   // first export the elements according to the processor local element column maps
