@@ -1559,6 +1559,18 @@ namespace MORTAR
     Teuchos::RCP<BINSTRATEGY::BinningStrategy> SetupBinningStrategy(const double vel = 0.0);
 
     /*!
+    \brief Create interface local communicator
+
+    Find all procs that have business on this interface (own or ghost nodes/elements). Then, build a
+    Epetra_Comm that contains only those procs. This intra-communicator will be used to handle most
+    stuff on this interface so the interface will not block all other procs
+
+    ToDo (mayr.mt) Move this to MORTAR::UTILS::INTERFACE. This does not have to be a function in
+    this class.
+    */
+    void CreateInterfaceLocalCommunicator();
+
+    /*!
     \brief check and initialize possible cross point modification
 
     */
