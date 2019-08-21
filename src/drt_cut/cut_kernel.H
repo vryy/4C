@@ -2894,7 +2894,7 @@ namespace GEO
 
         ClnWrapper clndistance_;
 
-        // reference to the double TMatrix
+        // reference to the double Matrix
         LINALG::Matrix<probDim, 1>& xsi_;
 
         LINALG::Matrix<probDim, 1, ClnWrapper> clnxsi_;

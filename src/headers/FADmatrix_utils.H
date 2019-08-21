@@ -83,7 +83,7 @@ namespace LINALG
       (*this)(2, 0).diff(pos + 2 + 6, n);
     };
 
-    /// Convert FADMatrix to TMatrix<double,rows,cols>
+    /// Convert FADMatrix to Matrix<rows,cols,double>
     inline Matrix<rows, cols> ConverttoDouble() const
     {
       LINALG::Matrix<rows, cols> tmp(true);

@@ -3151,7 +3151,7 @@ namespace LINALG
   /// Serial dense matrix with templated dimensions
   /*!
     A serial dense matrix with templated dimensions that is supposed to
-    be fast and lightweight.
+    be fast and lightweight. The default scalar type is double.
     The value_type-array is allocated on the stack (small sizes, up to 512
     bytes or on the heap (larger sizes) and stored in
     column-major order, just like in Epetra_SerialDenseMatrix.
@@ -3163,9 +3163,6 @@ namespace LINALG
     There is no operator[]. It behaves differently in
     Epetra_SerialDenseMatrix and Epetra_SerialDenseVector, and is not
     needed in either of them.
-
-    \author Martin Kuettler
-    \date 09/08
    */
   template <unsigned int rows, unsigned int cols, class value_type = double>
   class Matrix
