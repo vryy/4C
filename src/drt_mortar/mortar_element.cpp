@@ -1339,155 +1339,166 @@ bool MORTAR::MortarElement::LocalToGlobal(const double* xi, double* globcoord, i
 double MORTAR::MortarElement::MinEdgeSize()
 {
   double minedgesize = 1.0e12;
-  DRT::Element::DiscretizationType dt = Shape();
+  DRT::Element::DiscretizationType discretizationType = Shape();
 
   // get coordinates of element nodes
   LINALG::SerialDenseMatrix coord(3, NumPoint());
   GetNodalCoords(coord);
 
-  // 2D case (2noded and 3noded line elements)
-  if (dt == line2 || dt == line3)
+  switch (discretizationType)
   {
-    // there is only one edge
-    // (we approximate the quadratic case as linear)
-    double diff[3] = {0.0, 0.0, 0.0};
-    for (int k = 0; k < 3; ++k) diff[k] = coord(k, 1) - coord(k, 0);
-    minedgesize = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
-  }
-
-  // 3D tri case (3noded and 6noded triangular elements)
-  else if (dt == tri3 || dt == tri6)
-  {
-    // there are three edges
-    // (we approximate the quadratic case as linear)
-    for (int edge = 0; edge < 3; ++edge)
+    case line2:
+    case line3:
     {
+      // there is only one edge
+      // (we approximate the quadratic case as linear)
       double diff[3] = {0.0, 0.0, 0.0};
-      for (int k = 0; k < 3; ++k)
-      {
-        if (edge == 2)
-          diff[k] = coord(k, 0) - coord(k, edge);
-        else
-          diff[k] = coord(k, edge + 1) - coord(k, edge);
-      }
-      double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
-      if (dist < minedgesize) minedgesize = dist;
-    }
-  }
+      for (int dim = 0; dim < 3; ++dim) diff[dim] = coord(dim, 1) - coord(dim, 0);
+      minedgesize = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
 
-  // 3D quad case (4noded, 8noded and 9noded quadrilateral elements)
-  else if (dt == quad4 || dt == quad8 || dt == quad9)
-  {
-    // there are four edges
-    // (we approximate the quadratic case as linear)
-    for (int edge = 0; edge < 4; ++edge)
+      break;
+    }
+    case tri3:
+    case tri6:
     {
+      // there are three edges
+      // (we approximate the quadratic case as linear)
+      for (int edge = 0; edge < 3; ++edge)
+      {
+        double diff[3] = {0.0, 0.0, 0.0};
+        for (int dim = 0; dim < 3; ++dim)
+        {
+          if (edge == 2)
+            diff[dim] = coord(dim, 0) - coord(dim, edge);
+          else
+            diff[dim] = coord(dim, edge + 1) - coord(dim, edge);
+        }
+        double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
+        if (dist < minedgesize) minedgesize = dist;
+      }
+
+      break;
+    }
+    case quad4:
+    case quad8:
+    case quad9:
+    {
+      // there are four edges
+      // (we approximate the quadratic case as linear)
+      for (int edge = 0; edge < 4; ++edge)
+      {
+        double diff[3] = {0.0, 0.0, 0.0};
+        for (int dim = 0; dim < 3; ++dim)
+        {
+          if (edge == 3)
+            diff[dim] = coord(dim, 0) - coord(dim, edge);
+          else
+            diff[dim] = coord(dim, edge + 1) - coord(dim, edge);
+        }
+        double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
+        if (dist < minedgesize) minedgesize = dist;
+      }
+
+      break;
+    }
+    case nurbs3:
+    {
+      double sxi0[2] = {-1.0, 0.0};
+      double sxi1[2] = {1.0, 0.0};
+      const int nrow = NumNode();
+      LINALG::SerialDenseVector sval0(nrow);
+      LINALG::SerialDenseVector sval1(nrow);
+      LINALG::SerialDenseMatrix sderiv(nrow, 1);
+      EvaluateShape(sxi0, sval0, sderiv, nrow);
+      EvaluateShape(sxi1, sval1, sderiv, nrow);
+
+      double gpx0[3] = {0.0, 0.0, 0.0};
+      double gpx1[3] = {0.0, 0.0, 0.0};
+
+      for (int j = 0; j < nrow; ++j)
+      {
+        for (int i = 0; i < 3; ++i)
+        {
+          gpx0[i] += sval0(j) * coord(i, j);
+          gpx1[i] += sval1(j) * coord(i, j);
+        }
+      }
+
       double diff[3] = {0.0, 0.0, 0.0};
-      for (int k = 0; k < 3; ++k)
+      for (int dim = 0; dim < 3; ++dim) diff[dim] = gpx1[dim] - gpx0[dim];
+      minedgesize = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
+
+      break;
+    }
+    case nurbs9:
+    {
+      const int nrow = NumNode();
+
+      // get real point data
+      LINALG::SerialDenseMatrix coordnurbs(3, nrow, true);
+
+      // parameter space coordinates
+      double sxi0[2] = {-1.0, -1.0};
+      double sxi1[2] = {1.0, -1.0};
+      double sxi2[2] = {1.0, 1.0};
+      double sxi3[2] = {-1.0, 1.0};
+
+      // evaluate shape functions at these coordinates
+      LINALG::SerialDenseVector sval0(nrow);
+      LINALG::SerialDenseVector sval1(nrow);
+      LINALG::SerialDenseVector sval2(nrow);
+      LINALG::SerialDenseVector sval3(nrow);
+      LINALG::SerialDenseMatrix sderiv(nrow, 2);
+      EvaluateShape(sxi0, sval0, sderiv, nrow);
+      EvaluateShape(sxi1, sval1, sderiv, nrow);
+      EvaluateShape(sxi2, sval2, sderiv, nrow);
+      EvaluateShape(sxi3, sval3, sderiv, nrow);
+
+      double gpx0[3] = {0.0, 0.0, 0.0};
+      double gpx1[3] = {0.0, 0.0, 0.0};
+
+      for (int j = 0; j < nrow; ++j)
       {
-        if (edge == 3)
-          diff[k] = coord(k, 0) - coord(k, edge);
-        else
-          diff[k] = coord(k, edge + 1) - coord(k, edge);
+        for (int i = 0; i < 3; ++i)
+        {
+          gpx0[i] += sval0(j) * coord(i, j);
+          gpx1[i] += sval1(j) * coord(i, j);
+        }
       }
-      double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
-      if (dist < minedgesize) minedgesize = dist;
+
+      // there are four edges
+      // (we approximate the quadratic case as linear)
+      for (int edge = 0; edge < 4; ++edge)
+      {
+        double diff[3] = {0.0, 0.0, 0.0};
+        for (int dim = 0; dim < 3; ++dim)
+        {
+          if (edge == 0)
+            diff[dim] = coord(dim, 0) - coord(dim, 2);
+          else if (edge == 1)
+            diff[dim] = coord(dim, 2) - coord(dim, 8);
+          else if (edge == 2)
+            diff[dim] = coord(dim, 8) - coord(dim, 6);
+          else if (edge == 3)
+            diff[dim] = coord(dim, 6) - coord(dim, 0);
+          else
+            dserror("Wrong edge size!");
+        }
+        double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
+        if (dist < minedgesize) minedgesize = dist;
+      }
+
+      break;
+    }
+    default:
+    {
+      dserror("%s is not implemented for discretization type '%s' of MortarElement.",
+          __PRETTY_FUNCTION__, DRT::DistypeToString(discretizationType).c_str());
+      break;
     }
   }
 
-  //==================================================
-  //                     NURBS
-  //==================================================
-  else if (dt == nurbs3)
-  {
-    double sxi0[2] = {-1.0, 0.0};
-    double sxi1[2] = {1.0, 0.0};
-    int nrow = NumNode();
-    LINALG::SerialDenseVector sval0(nrow);
-    LINALG::SerialDenseVector sval1(nrow);
-    LINALG::SerialDenseMatrix sderiv(nrow, 1);
-    EvaluateShape(sxi0, sval0, sderiv, nrow);
-    EvaluateShape(sxi1, sval1, sderiv, nrow);
-
-    double gpx0[3] = {0.0, 0.0, 0.0};
-    double gpx1[3] = {0.0, 0.0, 0.0};
-
-    for (int j = 0; j < nrow; ++j)
-    {
-      for (int i = 0; i < 3; ++i)
-      {
-        gpx0[i] += sval0(j) * coord(i, j);
-        gpx1[i] += sval1(j) * coord(i, j);
-      }
-    }
-
-    double diff[3] = {0.0, 0.0, 0.0};
-    for (int k = 0; k < 3; ++k) diff[k] = gpx1[k] - gpx0[k];
-    minedgesize = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
-  }
-  else if (dt == nurbs9)
-  {
-    int nrow = NumNode();
-
-    // get real point data
-    LINALG::SerialDenseMatrix coordnurbs(3, nrow, true);
-
-    // parameter space coordinates
-    double sxi0[2] = {-1.0, -1.0};
-    double sxi1[2] = {1.0, -1.0};
-    double sxi2[2] = {1.0, 1.0};
-    double sxi3[2] = {-1.0, 1.0};
-
-    // evaluate shape functions at these coordinates
-    LINALG::SerialDenseVector sval0(nrow);
-    LINALG::SerialDenseVector sval1(nrow);
-    LINALG::SerialDenseVector sval2(nrow);
-    LINALG::SerialDenseVector sval3(nrow);
-    LINALG::SerialDenseMatrix sderiv(nrow, 2);
-    EvaluateShape(sxi0, sval0, sderiv, nrow);
-    EvaluateShape(sxi1, sval1, sderiv, nrow);
-    EvaluateShape(sxi2, sval2, sderiv, nrow);
-    EvaluateShape(sxi3, sval3, sderiv, nrow);
-
-    double gpx0[3] = {0.0, 0.0, 0.0};
-    double gpx1[3] = {0.0, 0.0, 0.0};
-
-    for (int j = 0; j < nrow; ++j)
-    {
-      for (int i = 0; i < 3; ++i)
-      {
-        gpx0[i] += sval0(j) * coord(i, j);
-        gpx1[i] += sval1(j) * coord(i, j);
-      }
-    }
-
-    // there are four edges
-    // (we approximate the quadratic case as linear)
-    for (int edge = 0; edge < 4; ++edge)
-    {
-      double diff[3] = {0.0, 0.0, 0.0};
-      for (int k = 0; k < 3; ++k)
-      {
-        if (edge == 0)
-          diff[k] = coord(k, 0) - coord(k, 2);
-        else if (edge == 1)
-          diff[k] = coord(k, 2) - coord(k, 8);
-        else if (edge == 2)
-          diff[k] = coord(k, 8) - coord(k, 6);
-        else if (edge == 3)
-          diff[k] = coord(k, 6) - coord(k, 0);
-        else
-          dserror("Wrong edge size!");
-      }
-      double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
-      if (dist < minedgesize) minedgesize = dist;
-    }
-  }
-  // invalid case
-  else
-    dserror("ERROR: MinEdgeSize not implemented for this type of MortarElement");
-
-  if (minedgesize == 1.0e12) dserror("ERROR: MinEdgeSize went wrong...!");
+  if (minedgesize == 1.0e12) dserror("%s went wrong...!", __FUNCTION__);
   return minedgesize;
 }
 
@@ -1497,67 +1508,74 @@ double MORTAR::MortarElement::MinEdgeSize()
 double MORTAR::MortarElement::MaxEdgeSize()
 {
   double maxedgesize = 0.0;
-  DRT::Element::DiscretizationType dt = Shape();
+  DRT::Element::DiscretizationType discretizationType = Shape();
 
   // get coordinates of element nodes
   LINALG::SerialDenseMatrix coord(3, NumPoint());
   GetNodalCoords(coord);
 
-  // 2D case (2noded and 3noded line elements)
-  if (dt == line2 || dt == line3)
+  switch (discretizationType)
   {
-    // there is only one edge
-    // (we approximate the quadratic case as linear)
-    double diff[3] = {0.0, 0.0, 0.0};
-    for (int k = 0; k < 3; ++k) diff[k] = coord(k, 1) - coord(k, 0);
-    maxedgesize = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
-  }
-
-  // 3D tri case (3noded and 6noded triangular elements)
-  else if (dt == tri3 || dt == tri6)
-  {
-    // there are three edges
-    // (we approximate the quadratic case as linear)
-    for (int edge = 0; edge < 3; ++edge)
+    case line2:
+    case line3:
     {
+      // there is only one edge
       double diff[3] = {0.0, 0.0, 0.0};
-      for (int k = 0; k < 3; ++k)
+      for (int dim = 0; dim < 3; ++dim) diff[dim] = coord(dim, 1) - coord(dim, 0);
+      maxedgesize = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
+
+      break;
+    }
+    case tri3:
+    case tri6:
+    {
+      // there are three edges
+      for (int edge = 0; edge < 3; ++edge)
       {
-        if (edge == 2)
-          diff[k] = coord(k, 0) - coord(k, edge);
-        else
-          diff[k] = coord(k, edge + 1) - coord(k, edge);
+        double diff[3] = {0.0, 0.0, 0.0};
+        for (int dim = 0; dim < 3; ++dim)
+        {
+          if (edge == 2)
+            diff[dim] = coord(dim, 0) - coord(dim, edge);
+          else
+            diff[dim] = coord(dim, edge + 1) - coord(dim, edge);
+        }
+        double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
+        if (dist > maxedgesize) maxedgesize = dist;
       }
-      double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
-      if (dist > maxedgesize) maxedgesize = dist;
+
+      break;
+    }
+    case quad4:
+    case quad8:
+    case quad9:
+    {
+      // there are four edges
+      for (int edge = 0; edge < 4; ++edge)
+      {
+        double diff[3] = {0.0, 0.0, 0.0};
+        for (int dim = 0; dim < 3; ++dim)
+        {
+          if (edge == 3)
+            diff[dim] = coord(dim, 0) - coord(dim, edge);
+          else
+            diff[dim] = coord(dim, edge + 1) - coord(dim, edge);
+        }
+        double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
+        if (dist > maxedgesize) maxedgesize = dist;
+      }
+
+      break;
+    }
+    default:
+    {
+      dserror("%s is not implemented for discretization type '%s' of MortarElement.",
+          __PRETTY_FUNCTION__, DRT::DistypeToString(discretizationType).c_str());
+      break;
     }
   }
 
-  // 3D quad case (4noded, 8noded and 9noded quadrilateral elements)
-  else if (dt == quad4 || dt == quad8 || dt == quad9)
-  {
-    // there are four edges
-    // (we approximate the quadratic case as linear)
-    for (int edge = 0; edge < 4; ++edge)
-    {
-      double diff[3] = {0.0, 0.0, 0.0};
-      for (int k = 0; k < 3; ++k)
-      {
-        if (edge == 3)
-          diff[k] = coord(k, 0) - coord(k, edge);
-        else
-          diff[k] = coord(k, edge + 1) - coord(k, edge);
-      }
-      double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
-      if (dist > maxedgesize) maxedgesize = dist;
-    }
-  }
-
-  // invalid case
-  else
-    dserror("ERROR: MaxEdgeSize not implemented for this type of MortarElement");
-
-  if (maxedgesize < 1e-12) dserror("ERROR: MaxEdgeSize went wrong...!");
+  if (maxedgesize < 1e-12) dserror("MaxEdgeSize() went wrong...!");
   return maxedgesize;
 }
 

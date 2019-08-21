@@ -889,14 +889,20 @@ namespace MORTAR
     virtual bool LocalToGlobal(const double* xi, double* globcoord, int inttype);
 
     /*!
-    \brief Evaluate minimal edge size of CElement
+    \brief Evaluate minimal edge size of this element
 
+
+    \return Approximation of minimum geometric dimension of this element
     */
     virtual double MinEdgeSize();
 
     /*!
-    \brief Evaluate maximal edge size of CElement
+    \brief Evaluate maximal edge size of this element
 
+    \note We only care about geometric dimensions. Hence, all elements are treated like linear
+    elements here.
+
+    \return Approximation of maximum geometric dimension of this element
     */
     virtual double MaxEdgeSize();
 
