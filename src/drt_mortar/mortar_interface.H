@@ -25,6 +25,11 @@
 
 
 // forward declarations
+namespace BINSTRATEGY
+{
+  class BinningStrategy;
+}  // namespace BINSTRATEGY
+
 namespace DRT
 {
   class Discretization;
@@ -35,7 +40,7 @@ namespace DRT
 namespace LINALG
 {
   class SparseMatrix;
-}
+}  // namespace LINALG
 
 namespace MORTAR
 {
@@ -639,7 +644,7 @@ namespace MORTAR
     /*!
     \brief binning strategy for efficient ghosting
     */
-    void BinningStrategy(Teuchos::RCP<Epetra_Map> initial_elecolmap, double vel);
+    void BinningStrategy(Teuchos::RCP<Epetra_Map> initial_elecolmap, const double vel);
 
     /*!
     \brief Get quadratic 2d/3d slave element flag
@@ -1544,6 +1549,14 @@ namespace MORTAR
     \post Node row/column maps for slave/master side exist.
     */
     void UpdateMasterSlaveNodeMaps();
+
+    /*!
+    \brief Setup the binning strategy for geometrically motivated extended ghosting
+
+    @param[in] vel Average velocity of solid body
+    @return Binning strategy object ready to be used
+    */
+    Teuchos::RCP<BINSTRATEGY::BinningStrategy> SetupBinningStrategy(const double vel = 0.0);
 
     /*!
     \brief check and initialize possible cross point modification
