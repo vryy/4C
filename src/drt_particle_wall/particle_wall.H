@@ -114,6 +114,9 @@ namespace PARTICLEWALL
     virtual void BuildParticleToWallNeighbors(
         const PARTICLEENGINE::ParticlesToBins& particlestobins) final;
 
+    //! check for valid wall neighbors
+    virtual bool HaveValidWallNeighbors() const final { return validwallneighbors_; };
+
     //! get wall discretization
     virtual Teuchos::RCP<const DRT::Discretization> GetWallDiscretization() const override final
     {
