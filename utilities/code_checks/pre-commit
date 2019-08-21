@@ -51,7 +51,7 @@ then
     echo "(Run this from BACI's top-level directory)"
     printf "\n"
     echo "--> Alternatively you can use the following script to format ALL source files:"
-    echo "./utilities/code_checks/run_clang_on_everything"
+    echo "./utilities/run_clang_on_everything"
     echo "(Run this from BACI's top-level directory)"
     printf "\n"
     echo "--> Afterwards, please add all formatted files to the Git staging area using: git add <path/to/file>"
