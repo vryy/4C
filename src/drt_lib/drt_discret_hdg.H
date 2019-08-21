@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief A class to manage an enhanced discretization for hybridizable
      discontinuous Galerkin methods (HDG)

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Solve FSI problems using a Dirichlet-Neumann partitioned approach
 based on the interface displacements

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief solid shell8 element formulation
 
 \maintainer Matthias Mayr

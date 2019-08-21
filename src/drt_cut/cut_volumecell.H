@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Cut Volumecell (3d-Object described by 2d surfaces(facets))
 

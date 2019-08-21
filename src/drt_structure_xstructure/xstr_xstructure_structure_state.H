@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/**
+/** \file
 
 \brief XStructure/Structure state handling ( combination of XFEM and std.
        discretizations )

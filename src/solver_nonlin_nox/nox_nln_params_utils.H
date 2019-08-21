@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
  *  *
  * \brief Utility methods to handle and parse (input) parameter lists
  *

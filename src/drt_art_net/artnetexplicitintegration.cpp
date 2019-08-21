@@ -1,5 +1,5 @@
 
-/*!----------------------------------------------------------------------
+/*! \file
 \brief Control routine for artery solvers,
 
      including solvers based on

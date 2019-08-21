@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief data container for input parameters for vtk-based visualization of potential-based beam
        interactions

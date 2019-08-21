@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief
 This file contains the routines required for aneurysmatic artery wall
 damaging following Simo approach explained in Holzapfel (p298).

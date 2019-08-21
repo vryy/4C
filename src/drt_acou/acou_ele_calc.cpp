@@ -1,5 +1,5 @@
 /*--------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief all functionality for acoustic element evaluations
 
 \level 2

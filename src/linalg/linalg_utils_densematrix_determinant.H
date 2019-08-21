@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \file linalg_utils_densematrix_determinant.H
 
 \brief Determinant functions for dense matrices up to 4x4.

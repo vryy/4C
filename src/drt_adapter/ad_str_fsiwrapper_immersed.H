@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Structural adapter for Immersed and Immersed + ALE FSI problems containing the interface
        and methods dependent on the interface

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief This file contains routines for integration point based isotropic and anisotropic volumetric
 growth laws.
 

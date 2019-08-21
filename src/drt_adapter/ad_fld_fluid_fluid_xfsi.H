@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Fluid field adapter for XFSI allowing multiple fluid discretizations. Can only be used in
 conjunction with XFluidFluid!

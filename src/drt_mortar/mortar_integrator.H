@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief integrate mortar terms
 \level 1
 \maintainer Matthias Mayr

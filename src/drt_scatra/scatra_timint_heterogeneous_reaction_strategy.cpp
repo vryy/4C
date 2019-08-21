@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
  \brief Solution strategy for heterogeneous reactions. This is not meshtying!!!
 

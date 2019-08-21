@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief strategies for Newton-Raphson convergence check for monolithic scalar-structure interaction
 problems
 

@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief General algorithmic routines for partitioned solution approaches
        to fluid-porous-structure-scalar-scalar interaction (FPS3I), that is,
        algorithmic routines not specifically related to partitioned

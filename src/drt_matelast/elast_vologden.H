@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief
 This file contains the routines required for the volumetic function
 suggested by Ogden, see Doll, S. and Schweizerhof, K.

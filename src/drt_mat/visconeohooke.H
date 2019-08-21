@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief
 Viscohyperelastic material model containing the following parts:
 IsoNeohooke + VolSussmannBathe with Generalized Maxwell (just on isochoric part).

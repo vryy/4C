@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief
 This file contains the routines required for aneurysmatic artery wall following
 Raghavan and Vorp [2000]

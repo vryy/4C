@@ -1,4 +1,5 @@
-/*!
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief Base meshtying element for meshtying between a 3D beam and a 3D solid element.
 

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Definitions of NOX group for non-linear solution techniques
        used within implicit structural time integration
 \level 1

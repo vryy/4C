@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Implementation of the mixture material holding a general mixture law and mixture constituents
 
 \level 3

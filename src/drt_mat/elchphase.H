@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief material that stores a list of ion species in electrolyte solutions
 
 \level 2

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief base class for implicit time integration schemes for
         multiphas porous fluid problems
 

@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief Contains conductivity, permittivity and permeability of the medium for isotropic
        electromagetic field evolution.
        example input line:

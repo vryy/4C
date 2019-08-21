@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief specialization of ssi2wc for biochemo-mechano coupled active cell material
 

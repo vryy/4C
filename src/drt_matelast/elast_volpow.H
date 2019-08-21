@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief
 This file contains the routines for a volumetric power law.
 The resultant pressure depends on the prefactor and pressure.

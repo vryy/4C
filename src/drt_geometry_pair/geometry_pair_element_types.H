@@ -1,4 +1,5 @@
-/*!
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief Element types that can be part of a pair. This types can be used as a template argument.
 

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  * \brief output control
 \level 0
 \maintainer Martin Kronbichler

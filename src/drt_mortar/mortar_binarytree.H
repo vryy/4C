@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief A class for performing mortar search in 2D/3D based on binarytrees
 
 \level 1

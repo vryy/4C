@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Class which stores floating points numbers of arbitrary precision (equivalent to double )
 
 \level 3

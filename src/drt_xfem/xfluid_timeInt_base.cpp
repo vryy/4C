@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief provides the basic class for XFEM-time-integration, e.g. for Semi-Lagrangean methods
 

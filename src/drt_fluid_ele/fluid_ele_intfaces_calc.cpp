@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Integrate internal faces (stabilization) terms on an internal face element
 

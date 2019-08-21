@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Some utility functions for Monte Carlo analysis
 
 \maintainer Jonas Nitzler

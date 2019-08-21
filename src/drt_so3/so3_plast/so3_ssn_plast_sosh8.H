@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \maintainer Matthias Mayr
 \level 2
 \brief elasto-plastic solid shell

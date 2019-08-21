@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief This strategy allows the combination of an arbitrary number of
        augmented contact solving strategies.
 

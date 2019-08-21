@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief temperature-dependent gas according to Sutherland law
 
 \level 2

@@ -1,5 +1,5 @@
 /*--------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief node representing ellipsoidal particle with possibly specified semi-axes and orientation
 

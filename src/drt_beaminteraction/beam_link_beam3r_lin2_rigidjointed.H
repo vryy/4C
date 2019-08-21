@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Wrapper for a linear Reissner beam element used as mechanical link between two other beam
 elements

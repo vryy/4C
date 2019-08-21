@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief Control routine for thermo-structure-interaction problems.
 \level 1
 \maintainer Christoph Meier

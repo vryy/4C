@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief base algorithm for coupling between poromultiphase_scatra-
         framework and flow in artery networks including scalar transport
 

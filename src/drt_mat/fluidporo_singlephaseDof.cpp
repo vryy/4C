@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief a material defining the degree of freedom of a single phase of
         a multiphase porous fluid
 

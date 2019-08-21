@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Utility routines for the Teuchos::ParameterList
 
 \level 1

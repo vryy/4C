@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Optimization algorithm Globally Convergent Method of Moving Asyptotes (GCMMA)
 

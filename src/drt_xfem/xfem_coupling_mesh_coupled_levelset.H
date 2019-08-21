@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief manages a mesh coupling object with knowledge of a level set field
 

@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Tools for the mortar interface
 
 \maintainer Matthias Mayr

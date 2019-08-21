@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief input parameters for VTP output of structural problem at runtime
 
 \level 2

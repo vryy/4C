@@ -1,5 +1,5 @@
 /*--------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief evaluation of ScaTra elements for diffusion-conduction ion-transport equations
 

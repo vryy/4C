@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
  \brief monolithic coupling algorithm for scalar transport within porous medium
 

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief A service method allowing the application of initial conditions
        for nurbs discretisations.

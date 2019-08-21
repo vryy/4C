@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Input for RedAirway, RedAcinus, RedInterAcinarDep, RedAirBloodScatra and
 RedAirBloodScatraLine3 elements

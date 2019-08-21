@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief Fluid field adapter for fsi airway simulations with attached
 parenchyma balloon

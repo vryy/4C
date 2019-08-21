@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief A class for performing self contact search in 2D / 3D based
        on binary search trees and dual graphs
 

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief write visualization output for particle interaction in vtk/vtp format at runtime
 
 \level 3

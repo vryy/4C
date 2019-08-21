@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief result testing functionality for scalar-structure interaction problems
 
 \level 2

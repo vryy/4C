@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief for intersection with an levelset, levelsetside represents the surface described by the
 levelset

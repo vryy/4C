@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief evaluate boundary conditions requiring parent-element evaluations
 

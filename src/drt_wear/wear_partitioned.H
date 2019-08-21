@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief  Basis of partitioned wear algorithm
         (Lagrangian step followed by Eulerian step)

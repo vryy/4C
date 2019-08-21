@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief contains the functions to establish local material law
        stress-strain law for isotropic material for a 3D hex element
        following compressible Neo Hookean material law

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Compute dissipation rates for Taylor-Green vortex
        and write them to files.

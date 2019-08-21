@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief This file contains the routines required for the anisotropic material using a neo-Hooke
 material
 

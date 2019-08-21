@@ -1,5 +1,5 @@
 /*--------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief evaluation of ScaTra elements for chemical diffusion under a variational framework
 \Equations : Evolution eq: Conservation of mass

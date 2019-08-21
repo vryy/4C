@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief
 This file contains the routines required for a strain energy function,
 which is exponential according to Weickenmeier_2014 and contains a linear

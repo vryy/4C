@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief This file contains the main evaluate methods of a wall1 element.
 
 \level 1

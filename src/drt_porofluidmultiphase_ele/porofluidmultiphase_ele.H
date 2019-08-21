@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief definition of porofluidmultiphase elements
 
    \level 3

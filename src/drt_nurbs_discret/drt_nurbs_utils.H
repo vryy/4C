@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief service methods for accessing knot vector and weights for a given
        element of a nurbs discretisations

@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief Monolithic coupling of 3D structural dynamics and 0D cardiovascular flow models
 

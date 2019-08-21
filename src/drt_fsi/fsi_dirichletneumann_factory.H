@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Factory to create appropriate DirichletNeumann Algorithm
 

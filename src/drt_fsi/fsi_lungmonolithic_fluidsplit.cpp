@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Volume-coupled FSI (fluid-split)
 
 \maintainer Matthias Mayr

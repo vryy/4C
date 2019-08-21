@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 \brief three dimensional spring element
 
 \maintainer Christoph Meier

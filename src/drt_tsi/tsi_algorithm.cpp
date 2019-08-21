@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief  Basis of all TSI algorithms that perform a coupling between the linear
         momentum equation and the heat conduction equation

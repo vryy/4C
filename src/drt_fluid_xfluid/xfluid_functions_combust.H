@@ -1,4 +1,5 @@
-/*!-------------------------------------------------------------------------*
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief Managing and evaluating of spatial functions for combustion and two-phase flow problems
 

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief three dimensional nonlinear torsionless rod based on a C1 curve
 

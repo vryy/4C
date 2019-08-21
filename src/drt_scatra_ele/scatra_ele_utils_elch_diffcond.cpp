@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief utility class supporting element evaluation for concentrated electrolytes
 

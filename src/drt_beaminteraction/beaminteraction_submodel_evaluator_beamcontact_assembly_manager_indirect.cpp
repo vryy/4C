@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Class to assemble pair based contributions into global matrices. The pairs in this class can
 not be directly assembled into the global matrices. They have to be assembled into the global

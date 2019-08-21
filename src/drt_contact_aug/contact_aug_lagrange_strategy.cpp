@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Lagrange contact solving strategy with standard Lagrangian
        multipliers based on the augmented Lagrange formulation.
 

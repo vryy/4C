@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief two-way coupled monolithic solution algorithm
         for porous multiphase flow through elastic medium problems
 

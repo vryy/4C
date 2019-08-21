@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Wrapper for the ALE time integration for fluid problems with moving boundaries
 

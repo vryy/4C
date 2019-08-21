@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief MAT 1 CoupAnisoPow C 100 D 2.0 GAMMA 35.0 INIT 0 ADAPT_ANGLE 0
 
 \level 3

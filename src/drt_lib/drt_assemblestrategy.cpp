@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Routines for the handing a collection of element matrices and vectors to
        the actual assembly calls into one global sparse matrix and global load vector

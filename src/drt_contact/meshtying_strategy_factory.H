@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Factory to create the desired meshtying strategy.
 
 \maintainer Matthias Mayr

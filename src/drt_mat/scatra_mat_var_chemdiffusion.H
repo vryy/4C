@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief scatra material for chemical diffusion under a variational framework
 
    \level 3

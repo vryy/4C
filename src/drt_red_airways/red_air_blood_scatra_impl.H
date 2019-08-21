@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Incomplete! - Purpose: Internal implementation of RedAirBloodScatra element
 

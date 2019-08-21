@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief evaluation methods for 3D nonlinear Reissner beam element
 

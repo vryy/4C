@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
   \brief postprocessing of thermal heatfluxes
 

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Control routine for structural dynamics (outsourced to adapter layer)
 
 \level 1

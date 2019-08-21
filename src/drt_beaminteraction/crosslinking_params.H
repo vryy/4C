@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief data container holding all crosslinking input parameters
 
 \level 3

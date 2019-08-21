@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
  \brief Utility functions to calculate properties in the reference configuration
 

@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Derived class which manages the special requirements to the linear
        solver for structural problems.

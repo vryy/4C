@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief scatra material for transport within porous model with special implementations
         for ECM model
 

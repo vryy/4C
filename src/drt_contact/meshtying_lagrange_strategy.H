@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Mesh-tying solving strategy with (standard/dual) Lagrangian multipliers
 
 \level 2

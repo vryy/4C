@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief This file contains the adaptions of the structural time integration due
        to XFEM
 

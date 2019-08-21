@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief A set of analytical solutions for convergence analysis of contact/meshtying methods
 
 \level 2

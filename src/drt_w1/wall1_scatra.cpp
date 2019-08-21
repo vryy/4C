@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief a 2D solid-wall element with ScaTra coupling.
 
 \level 2

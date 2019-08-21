@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief input parameters for porous multiphase problem
 
    \level 3

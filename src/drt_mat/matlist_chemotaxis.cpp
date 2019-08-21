@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
  \brief
 
 This file contains the material for chemotactic scalars. It derives from MAT_matlist

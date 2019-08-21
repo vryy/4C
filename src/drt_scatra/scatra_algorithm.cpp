@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Transport of passive scalars in Navier-Stokes velocity field
 

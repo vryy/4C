@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief Implementation of Biochemo-Mechano Coupled Stress Fiber Formation and Dissociation.
 
 \level 3

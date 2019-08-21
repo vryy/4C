@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief %NOX::NLN's pure virtual class to allow users to insert pre and post
        operations into different NOX::NLN classes.

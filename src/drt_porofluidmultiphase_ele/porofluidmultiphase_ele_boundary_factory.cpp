@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief factory class providing the implementations of the porofluidmultiphase
         boundary element evaluation routines
 

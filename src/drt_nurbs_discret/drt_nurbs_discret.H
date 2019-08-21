@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief discretisation with additional knot vectors for nurbs problems
        (isogeometric analysis)
