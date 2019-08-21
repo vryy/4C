@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# This script searches for all C++ source files in baci and applies clang-format to them.
+
+if [ -f ./utilities/code_checks/clang-format ]
+then
+  # set the field separator to new line
+  IFS=$'\n'
+
+  echo "Run clang-format on all source files in the repository."
+  for line in $(find ./ -type f)
+  do
+    # check if the file is a c or cpp file
+    if [[ $line == *.cpp || $line == *.cc || $line == *.cp || $line == *.cxx || $line == *.H || $line == *.h || $line == *.hpp || $line == *.hh || $line == *.hxx ]]
+    then
+      # Check if clang would format the file
+      ./utilities/code_checks/clang-format -i -style=file $(pwd)/${line}
+    fi
+  done
+  echo "Done."
+else
+  echo "'./utilities/code_checks/clang-format' is not available!"
+  exit 1
+fi
+
