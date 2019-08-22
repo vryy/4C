@@ -456,7 +456,7 @@ namespace CONTACT
        *  more expensive.
        *
        *  \author hiermeier \date 06/17 */
-      virtual void ExportNodalNormals() const final;
+      void ExportNodalNormals() const final;
 
       //! derived
       void UpdateMasterSlaveSets() final;

@@ -317,7 +317,7 @@ namespace WEAR
     \brief Evaluate nodal normals
 
     */
-    virtual void ExportNodalNormals() const final;
+    void ExportNodalNormals() const final;
 
     /*!
     \brief Update interface Wear variable sets
