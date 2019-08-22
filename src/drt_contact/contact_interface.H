@@ -644,7 +644,7 @@ namespace CONTACT
     that only parts of the slave surface actually need to evaluate
     contact terms (those parts that are "close" to the master side).
 
-    Internally, we call ZOLTAN to re-partition the contact interfacs
+    Internally, we call ZOLTAN to re-partition the contact interfaces
     in three independent parts: (1) close slave part, (2) non-close
     slave part, (3) master part. This results in new "optimal" node/element
     maps of the interface discretization. Note that after Redistribute(),
@@ -652,19 +652,15 @@ namespace CONTACT
     simulations Redistribute() might be called dynamically again and
     again to account for changes of the contact zone.
 
-    Two special cases are treated seperately: First, if ALL slave
+    Two special cases are treated separately: First, if ALL slave
     elements of the interface have some "close" neighbors, we do not
     need to distinguish the two different slave parts. Thus, we
     simply call the base class method Redistribute() also used for
     meshtying. Second, if NO slave element of the interface has any
     "close" neighbors, we do not need to redistribute at all. This
     is indicated by returning with a boolean return value FALSE.
-
-    \param index (in): global index of current interface
-    \return flag indicating whether redistribution has been performed
-
     */
-    bool Redistribute(int index);
+    void Redistribute() final;
 
     void RoundRobinChangeOwnership();
 

@@ -1030,7 +1030,7 @@ namespace MORTAR
     Note that after Redistribute(), we must call FillComplete() again.
 
     */
-    void Redistribute();
+    virtual void Redistribute();
 
     /*!
     \brief Create binary search tree

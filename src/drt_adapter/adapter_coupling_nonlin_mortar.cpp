@@ -547,7 +547,7 @@ void ADAPTER::CouplingNonLinMortar::CompleteInterface(
   if (parredist && comm_->NumProc() > 1)
   {
     // redistribute optimally among all procs
-    interface->Redistribute(1);
+    interface->Redistribute();
 
     // call fill complete again
     interface->FillComplete();
