@@ -266,8 +266,8 @@ namespace ADAPTER
 
     /// update displacment
     void UpdateStateIncrementally(
-        const Teuchos::RCP<const Epetra_Vector> disi  ///< iterative solution increment
-    )
+        Teuchos::RCP<const Epetra_Vector> disi  ///< iterative solution increment
+        ) override
     {
       structure_->UpdateStateIncrementally(disi);
     }

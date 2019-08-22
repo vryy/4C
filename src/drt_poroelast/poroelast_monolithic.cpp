@@ -299,7 +299,7 @@ void POROELAST::Monolithic::UpdateStateIncrementally(Teuchos::RCP<const Epetra_V
   Teuchos::RCP<const Epetra_Vector> sx = Teuchos::null;
   Teuchos::RCP<const Epetra_Vector> fx = Teuchos::null;
 
-  // if an increment vector exists
+  // do nothing in the case no increment vector is given
   if (x == Teuchos::null)
   {
     return;

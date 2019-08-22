@@ -246,7 +246,7 @@ namespace STR
     }
 
     //!  Update displacement state in case of coupled problems
-    virtual void UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc)
+    void UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override
     {
       dserror(
           "All monolithically coupled problems work with implicit time "

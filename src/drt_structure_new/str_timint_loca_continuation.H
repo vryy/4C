@@ -59,7 +59,7 @@ namespace STR
       virtual int IntegrateStep();
 
       /// Update State Incrementally for coupled problems with monolithic approach
-      virtual void UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc);
+      void UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override;
 
       ///  Evaluate routine for coupled problems with monolithic approach
       virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc);

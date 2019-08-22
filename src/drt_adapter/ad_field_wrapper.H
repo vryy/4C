@@ -75,9 +75,9 @@ namespace ADAPTER
     virtual void PrepareTimeStep();
 
     /// update state with given increment vector
-    virtual void UpdateStateIncrementally(
-        const Teuchos::RCP<const Epetra_Vector> disi  ///< iterative solution increment
-    );
+    void UpdateStateIncrementally(
+        Teuchos::RCP<const Epetra_Vector> disi  ///< iterative solution increment
+        ) override;
 
     /// update state and evaluate elements
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc);

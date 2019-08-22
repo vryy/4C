@@ -302,7 +302,7 @@ namespace STR
      *
      *  with n and i being time and Newton iteration step
      */
-    virtual void UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) = 0;
+    void UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override = 0;
 
     /*! \brief Update displacement and evaluate elements in case of coupled problems
      *
