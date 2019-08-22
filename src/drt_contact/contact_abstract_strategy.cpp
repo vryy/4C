@@ -362,7 +362,7 @@ bool CONTACT::CoAbstractStrategy::RedistributeContact(Teuchos::RCP<const Epetra_
       Interfaces()[i]->FillComplete(maxdof_);
 
       // print new parallel distribution
-      Interfaces()[i]->PrintParallelDistribution(i + 1);
+      Interfaces()[i]->PrintParallelDistribution();
 
       // re-create binary search tree
       Interfaces()[i]->CreateSearchTree();

@@ -596,7 +596,7 @@ namespace MORTAR
     /*!
     \brief Print parallel distribution of this Interface
     */
-    void PrintParallelDistribution(int index) const;
+    void PrintParallelDistribution() const;
 
     /*!
     \brief Get communicator

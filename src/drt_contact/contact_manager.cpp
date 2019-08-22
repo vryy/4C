@@ -623,7 +623,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
   }
 
   // print initial parallel redistribution
-  for (int i = 0; i < (int)interfaces.size(); ++i) interfaces[i]->PrintParallelDistribution(i + 1);
+  for (int i = 0; i < (int)interfaces.size(); ++i) interfaces[i]->PrintParallelDistribution();
 
   // create binary search tree
   for (int i = 0; i < (int)interfaces.size(); ++i) interfaces[i]->CreateSearchTree();

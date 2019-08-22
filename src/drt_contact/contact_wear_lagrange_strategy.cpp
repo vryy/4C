@@ -4648,7 +4648,7 @@ bool WEAR::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<const Epetra_V
       interface_[i]->FillComplete(maxdof_);
 
       // print new parallel distribution
-      interface_[i]->PrintParallelDistribution(i + 1);
+      interface_[i]->PrintParallelDistribution();
 
       // re-create binary search tree
       interface_[i]->CreateSearchTree();

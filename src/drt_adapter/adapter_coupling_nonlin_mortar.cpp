@@ -531,7 +531,7 @@ void ADAPTER::CouplingNonLinMortar::CompleteInterface(
   psmdofrowmap_ = LINALG::MergeMap(pslavedofrowmap_, pmasterdofrowmap_, false);
 
   // print parallel distribution
-  interface->PrintParallelDistribution(1);
+  interface->PrintParallelDistribution();
 
   // check for parallel redistribution
   bool parredist = false;
@@ -556,7 +556,7 @@ void ADAPTER::CouplingNonLinMortar::CompleteInterface(
     interface->CreateSearchTree();
 
     // print parallel distribution again
-    interface->PrintParallelDistribution(1);
+    interface->PrintParallelDistribution();
   }
 
   // store row maps (after parallel redistribution)

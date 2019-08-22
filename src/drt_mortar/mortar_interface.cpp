@@ -339,7 +339,7 @@ bool MORTAR::MortarInterface::Filled() const { return idiscret_->Filled(); }
 /*----------------------------------------------------------------------*
  |  print parallel distribution (public)                      popp 06/10|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::PrintParallelDistribution(int index) const
+void MORTAR::MortarInterface::PrintParallelDistribution() const
 {
   // how many processors
   const int numproc = Discret().Comm().NumProc();
@@ -421,7 +421,7 @@ void MORTAR::MortarInterface::PrintParallelDistribution(int index) const
     if (myrank == 0)
     {
       std::cout << std::endl;
-      std::cout << "   Discretization: " << Discret().Name() << " #" << index << std::endl;
+      std::cout << "   Discretization: " << Discret().Name() << std::endl;
       printf("   +-----+-----------------+--------------+-----------------+--------------+\n");
       printf("   | PID |   n_rownodes    | n_ghostnodes |  n_rowelements  |  n_ghostele  |\n");
       printf("   +-----+-----------------+--------------+-----------------+--------------+\n");

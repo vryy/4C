@@ -986,7 +986,7 @@ bool CONTACT::CoInterface::Redistribute(int index)
   }
 
   // print old parallel distribution
-  PrintParallelDistribution(index);
+  PrintParallelDistribution();
 
   // use simple base class method if there are ONLY close or non-close elements
   // (return value TRUE, because redistribution performed)
