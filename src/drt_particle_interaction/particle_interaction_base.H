@@ -88,6 +88,9 @@ namespace PARTICLEINTERACTION
     //! evaluate particle interactions
     virtual void EvaluateInteractions() = 0;
 
+    //! check particle interaction distance concerning bin size
+    virtual void CheckParticleInteractionDistanceConcerningBinSize() const final;
+
     //! maximum interaction distance (on this processor)
     virtual double MaxInteractionDistance() const = 0;
 

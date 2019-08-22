@@ -132,9 +132,6 @@ namespace PARTICLEALGORITHM
     //! setup initial particles
     void SetupInitialParticles();
 
-    //! setup initial wall distribution
-    void SetupInitalWallDistribution();
-
     //! setup initial states
     void SetupInitialStates();
 
@@ -144,14 +141,26 @@ namespace PARTICLEALGORITHM
     //! update connectivity
     void UpdateConnectivity();
 
-    //! check particle transfer including bin size safety checks
-    bool CheckParticleTransfer();
+    //! check load transfer
+    bool CheckLoadTransferNeeded();
+
+    //! check max position increment
+    bool CheckMaxPositionIncrement();
 
     //! get max particle position increment since last transfer
     void GetMaxParticlePositionIncrement(double& allprocmaxpositionincrement);
 
-    //! check load balance
-    bool CheckLoadBalancing();
+    //! transfer load between processors
+    void TransferLoadBetweenProcs();
+
+    //! check load redistribution
+    bool CheckLoadRedistributionNeeded();
+
+    //! distribute load among processors
+    void DistributeLoadAmongProcs();
+
+    //! build potential neighbor relation
+    void BuildPotentialNeighborRelation();
 
     //! set initial conditions
     void SetInitialConditions();

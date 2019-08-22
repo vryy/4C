@@ -194,9 +194,56 @@ void PARTICLEWALL::WallHandlerBase::UpdateBinRowAndColMap(
 }
 
 /*---------------------------------------------------------------------------*
+ | check that wall nodes are located in bounding box          sfuchs 08/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEWALL::WallHandlerBase::CheckWallNodesLocatedInBoundingBox() const
+{
+  // get bounding box dimension
+  LINALG::Matrix<3, 2> xaabb = binstrategy_->XAABB();
+
+  // iterate over row wall nodes
+  for (int rowlidofnode = 0; rowlidofnode < walldiscretization_->NumMyRowNodes(); ++rowlidofnode)
+  {
+    // get pointer to current row wall node
+    DRT::Node* node = walldiscretization_->lRowNode(rowlidofnode);
+
+    // init current position of node
+    LINALG::Matrix<3, 1> currpos;
+    for (int dim = 0; dim < 3; ++dim) currpos(dim) = node->X()[dim];
+
+    if (walldatastate_->GetDispRow() != Teuchos::null)
+    {
+      // get nodal dofs
+      std::vector<int> lm;
+      walldiscretization_->Dof(static_cast<unsigned int>(0), node, lm);
+
+      // iterate over spatial directions
+      for (int dim = 0; dim < 3; ++dim)
+      {
+        // local id of nodal dof in current spatial direction
+        const int lid = walldiscretization_->DofRowMap()->LID(lm[dim]);
+
+#ifdef DEBUG
+        // safety check
+        if (lid < 0) dserror("dof gid=%d not in dof row map!", lm[dim]);
+#endif
+
+        currpos(dim) += walldatastate_->GetDispRow()->operator[](lid);
+      }
+    }
+
+    // safety check
+    for (int dim = 0; dim < 3; ++dim)
+      if (currpos(dim) < xaabb(dim, 0) or xaabb(dim, 1) < currpos(dim))
+        dserror("node gid=%d resides outside of bounding box!", node->Id());
+  }
+}
+
+/*---------------------------------------------------------------------------*
  | get max wall position increment since last transfer        sfuchs 03/2019 |
  *---------------------------------------------------------------------------*/
-void PARTICLEWALL::WallHandlerBase::GetMaxWallPositionIncrement(double& allprocmaxpositionincrement)
+void PARTICLEWALL::WallHandlerBase::GetMaxWallPositionIncrement(
+    double& allprocmaxpositionincrement) const
 {
   if (walldatastate_->GetDispRow() != Teuchos::null)
   {
@@ -257,7 +304,7 @@ void PARTICLEWALL::WallHandlerBase::RelateBinsToColWallEles()
   // iterate over column wall elements
   for (int collidofele = 0; collidofele < walldiscretization_->NumMyColElements(); ++collidofele)
   {
-    // get pointer to current column wall elements
+    // get pointer to current column wall element
     DRT::Element* ele = walldiscretization_->lColElement(collidofele);
 
     // get corresponding bin ids for element
@@ -319,7 +366,7 @@ void PARTICLEWALL::WallHandlerBase::BuildParticleToWallNeighbors(
       neighborbins.insert(binvec.begin(), binvec.end());
     }
 
-    // get pointer to current column wall elements
+    // get pointer to current column wall element
     DRT::Element* ele = walldiscretization_->lColElement(collidofele);
 
     // determine nodal positions of column wall element

@@ -94,6 +94,38 @@ void PARTICLEINTERACTION::ParticleInteractionBase::ReadRestart(
 }
 
 /*---------------------------------------------------------------------------*
+ | check particle interaction distance concerning bin size    sfuchs 08/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::ParticleInteractionBase::
+    CheckParticleInteractionDistanceConcerningBinSize() const
+{
+  // get maximum particle interaction distance
+  double allprocmaxinteractiondistance = 0.0;
+  double maxinteractiondistance = MaxInteractionDistance();
+  comm_.MaxAll(&maxinteractiondistance, &allprocmaxinteractiondistance, 1);
+
+  // bin size safety check
+  if (allprocmaxinteractiondistance > particleengineinterface_->MinBinSize())
+    dserror("the particle interaction distance is larger than the minimal bin size (%f > %f)!",
+        allprocmaxinteractiondistance, particleengineinterface_->MinBinSize());
+
+  // periodic length safety check
+  if (particleengineinterface_->HavePBC())
+  {
+    // loop over all spatial directions
+    for (int dim = 0; dim < 3; ++dim)
+    {
+      // check for periodic boundary condition in current spatial direction
+      if (not particleengineinterface_->HavePBC(dim)) continue;
+
+      // check periodic length in current spatial direction
+      if ((2.0 * allprocmaxinteractiondistance) > particleengineinterface_->PBCDelta(dim))
+        dserror("particles are not allowed to interact directly and across the periodic boundary!");
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*
  | set current time                                           sfuchs 08/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionBase::SetCurrentTime(const double currenttime)
