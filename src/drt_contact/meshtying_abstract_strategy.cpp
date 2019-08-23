@@ -129,25 +129,6 @@ void CONTACT::MtAbstractStrategy::RedistributeMeshtying()
       std::cout << "\nTime for parallel redistribution.........." << t_sum << " secs\n";
   }
 
-  //---------------------------------------
-  // Extend ghosting with binning
-  //---------------------------------------
-  INPAR::MORTAR::GhostingStrategy strat =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
-          interface_[0]->InterfaceParams().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
-  Teuchos::RCP<Epetra_Map> melefullmap = Teuchos::null;
-  if (strat == INPAR::MORTAR::binningstrategy)
-  {
-    for (int i = 0; i < (int)interface_.size(); ++i)
-    {
-      // binning if necessary
-      interface_[i]->BinningStrategy(initial_elecolmap_[i], 0.0);
-
-      // output
-      interface_[i]->PrintParallelDistribution();
-    }
-  }
-
   return;
 }
 

@@ -1354,10 +1354,6 @@ void MORTAR::MortarInterface::RedistributeMasterSide(Teuchos::RCP<Epetra_Map>& r
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::ExtendInterfaceGhosting()
 {
-  // These are the new extended column maps to be computed
-  Teuchos::RCP<Epetra_Map> newnodecolmap = Teuchos::null;
-  Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::null;
-
   //*****REDUNDANT SLAVE AND MASTER STORAGE*****
   if (Redundant() == INPAR::MORTAR::redundant_all)
   {
@@ -1590,6 +1586,62 @@ void MORTAR::MortarInterface::ExtendInterfaceGhosting()
     // new (=old) node / element column layout
     Discret().ExportColumnNodes(*newnodecolmap);
     Discret().ExportColumnElements(*newelecolmap);
+
+    const INPAR::MORTAR::GhostingStrategy ghostingStrategy =
+        DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
+            DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION"),
+            "GHOSTING_STRATEGY");
+
+    if (ghostingStrategy == INPAR::MORTAR::binningstrategy)
+    {
+      /* We have to update the row/column maps split into master/slave. We start from the new
+       * node/element column maps. Since we don't have row maps at this point, we can/have to pass
+       * the column map as row map.
+       */
+      UpdateMasterSlaveElementMaps(*newelecolmap, *newelecolmap);
+      UpdateMasterSlaveNodeMaps(*newnodecolmap, *newnodecolmap);
+
+      /* Ask the discretization to initialize the elements. We need this, since the setup of the
+       * binning strategy relies on some element information.
+       * Note: This should be cheap, since we don't assign new degrees of freedom.
+       */
+      Discret().FillComplete(false, true, false);
+
+      // Create the binning strategy
+      const double vel = 0.0;
+      Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy = SetupBinningStrategy(vel);
+
+      // fill master and slave elements into bins
+      std::map<int, std::set<int>> slavebinelemap;
+      binningstrategy->DistributeElesToBins(Discret(), slavebinelemap, true);
+      std::map<int, std::set<int>> masterbinelemap;
+      binningstrategy->DistributeElesToBins(Discret(), masterbinelemap, false);
+
+      // Extend ghosting of the master elements
+      Teuchos::RCP<Epetra_Map> extendedmastercolmap = binningstrategy->ExtendGhosting(
+          Discret(), *newelecolmap, slavebinelemap, masterbinelemap);
+
+      // adapt layout to extended ghosting in the discretization
+      // first export the elements according to the processor local element column maps
+      Discret().ExportColumnElements(*extendedmastercolmap);
+
+      // get the node ids of the elements that are to be ghosted and create a proper node column map
+      // for their export
+      std::set<int> nodes;
+      for (int lid = 0; lid < extendedmastercolmap->NumMyElements(); ++lid)
+      {
+        DRT::Element* ele = Discret().gElement(extendedmastercolmap->GID(lid));
+        const int* nodeids = ele->NodeIds();
+        for (int inode = 0; inode < ele->NumNode(); ++inode) nodes.insert(nodeids[inode]);
+      }
+
+      std::vector<int> colnodes(nodes.begin(), nodes.end());
+      Teuchos::RCP<Epetra_Map> nodecolmap =
+          Teuchos::rcp(new Epetra_Map(-1, (int)colnodes.size(), &colnodes[0], 0, Comm()));
+
+      // now ghost the nodes
+      Discret().ExportColumnNodes(*nodecolmap);
+    }
   }
 
   //*****INVALID CASES*****

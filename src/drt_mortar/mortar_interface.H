@@ -1508,6 +1508,10 @@ namespace MORTAR
     Technically, we compute extended node/element column maps and the export the discretization
     based on these extended column maps. The actual extension strategy is defined in the input file.
 
+    \note We'll do ghosting _NOT ONLY_ on procs that do own or ghost any of the nodes in the natural
+    distribution of the interface discretization #idiscret_, but really on _ALL_ procs. This makes
+    dynamic redistribution easier.
+
     \note In some cases (self contact, sliding ALE mortar coupling), we still
     need the SLAVE nodes and elements in fully overlapping column layout,
     too. In the case of self contact, this is due to the fact that contact
@@ -1582,10 +1586,14 @@ namespace MORTAR
     /*!
     \brief Setup the binning strategy for geometrically motivated extended ghosting
 
+    \note The average velocity is only important, if binning is performed in the deformed
+    configuration, e.g. as in contact problems. For meshtying, where binning occurs during mortar
+    coupling in the reference configuration, it suffices to set the velocity to 0.0.
+
     @param[in] vel Average velocity of solid body
     @return Binning strategy object ready to be used
     */
-    Teuchos::RCP<BINSTRATEGY::BinningStrategy> SetupBinningStrategy(const double vel = 0.0);
+    Teuchos::RCP<BINSTRATEGY::BinningStrategy> SetupBinningStrategy(const double vel);
 
     /*!
     \brief Create interface local communicator
