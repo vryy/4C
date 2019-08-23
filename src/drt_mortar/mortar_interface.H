@@ -1531,24 +1531,53 @@ namespace MORTAR
     void UpdateMasterSlaveDofMaps();
 
     /*!
-    \brief Update master and slave interface maps for elements
-
-    Update #selerowmap_, #selecolmap_, #melerowmap_, #melecolmap_.
+    \brief Update master and slave interface maps for elements based on current maps in the
+    interface discretization
 
     \pre A valid node column map of interface discretization exists.
-    \post Element row/column maps for slave/master side exist.
+
+    \sa UpdateMasterSlaveElementMaps(const Epetra_Map&, const Epetra_Map&)
     */
     void UpdateMasterSlaveElementMaps();
 
     /*!
-    \brief Update master and slave interface maps for nodes
+    \brief Update master and slave interface maps for elements using given maps
 
-    Update #snoderowmap_, #snodecolmap_, #mnoderowmap_, #mnodecolmap_.
+    \post Element row/column maps for slave/master side -- i.e. #selerowmap_, #selecolmap_,
+    #melerowmap_, #melecolmap_ -- exist and have been updated.
+
+    \param[in] elementRowMap Row map of interface elements
+    \param[in] elementColumnMap Column map of interface elements
+
+    \warning Use the row map only for checking ownership of an element. Do not loop the row map,
+    because we sometimes pass a column map to the row map argument.
+    */
+    void UpdateMasterSlaveElementMaps(
+        const Epetra_Map& elementRowMap, const Epetra_Map& elementColumnMap);
+
+    /*!
+    \brief Update master and slave interface maps for nodes based on current maps in the interface
+    discretization
 
     \pre A valid node column map of interface discretization exists.
-    \post Node row/column maps for slave/master side exist.
+
+    \sa UpdateMasterSlaveNodeMaps(const Epetra_Map&, const Epetra_Map&)
     */
     void UpdateMasterSlaveNodeMaps();
+
+    /*!
+    \brief Update master and slave interface maps for nodes
+
+    \post Node row/column maps for slave/master side -- i.e. #snoderowmap_, #snodecolmap_,
+    #mnoderowmap_, #mnodecolmap_ -- exist and have been updated.
+
+    \param[in] nodeRowMap Row map of interface nodes
+    \param[in] nodeColumnMap Column map of interface nodes
+
+    \warning Use the row map only for checking ownership of a node. Do not loop the row map, because
+    we sometimes pass a column map to the row map argument.
+    */
+    void UpdateMasterSlaveNodeMaps(const Epetra_Map& nodeRowMap, const Epetra_Map& nodeColumnMap);
 
     /*!
     \brief Setup the binning strategy for geometrically motivated extended ghosting

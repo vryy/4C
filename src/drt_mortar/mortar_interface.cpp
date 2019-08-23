@@ -1663,12 +1663,14 @@ void MORTAR::MortarInterface::UpdateMasterSlaveSets()
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::UpdateMasterSlaveDofMaps()
 {
+  // Vectors to collect GIDs to build maps
   std::vector<int> sc;  // slave column map
   std::vector<int> sr;  // slave row map
   std::vector<int> mc;  // master column map
   std::vector<int> mr;  // master row map
 
-  for (int i = 0; i < Discret().NodeColMap()->NumMyElements(); ++i)
+  const int numMyColumnDofs = Discret().NodeColMap()->NumMyElements();
+  for (int i = 0; i < numMyColumnDofs; ++i)
   {
     int gid = Discret().NodeColMap()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
@@ -1700,14 +1702,24 @@ void MORTAR::MortarInterface::UpdateMasterSlaveDofMaps()
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::UpdateMasterSlaveElementMaps()
 {
+  UpdateMasterSlaveElementMaps(*Discret().ElementRowMap(), *Discret().ElementColMap());
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::UpdateMasterSlaveElementMaps(
+    const Epetra_Map& elementRowMap, const Epetra_Map& elementColumnMap)
+{
+  // Vectors to collect GIDs to build maps
   std::vector<int> sc;  // slave column map
   std::vector<int> sr;  // slave row map
   std::vector<int> mc;  // master column map
   std::vector<int> mr;  // master row map
 
-  for (int i = 0; i < Discret().ElementColMap()->NumMyElements(); ++i)
+  const int numMyColumnElements = elementColumnMap.NumMyElements();
+  for (int i = 0; i < numMyColumnElements; ++i)
   {
-    int gid = Discret().ElementColMap()->GID(i);
+    int gid = elementColumnMap.GID(i);
     bool isslave = dynamic_cast<MORTAR::MortarElement*>(Discret().gElement(gid))->IsSlave();
 
     if (isslave)
@@ -1715,7 +1727,7 @@ void MORTAR::MortarInterface::UpdateMasterSlaveElementMaps()
     else
       mc.push_back(gid);
 
-    if (Discret().ElementRowMap()->MyGID(gid))
+    if (elementRowMap.MyGID(gid))
     {
       if (isslave)
         sr.push_back(gid);
@@ -1734,6 +1746,15 @@ void MORTAR::MortarInterface::UpdateMasterSlaveElementMaps()
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::UpdateMasterSlaveNodeMaps()
 {
+  UpdateMasterSlaveNodeMaps(*Discret().NodeRowMap(), *Discret().NodeColMap());
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::UpdateMasterSlaveNodeMaps(
+    const Epetra_Map& nodeRowMap, const Epetra_Map& nodeColumnMap)
+{
+  // Vectors to collect GIDs to build maps
   std::vector<int> sc;   // slave column map
   std::vector<int> sr;   // slave row map
   std::vector<int> mc;   // master column map
@@ -1743,9 +1764,10 @@ void MORTAR::MortarInterface::UpdateMasterSlaveNodeMaps()
   std::vector<int> mrb;  // master row map - boundary nodes
   std::vector<int> mcb;  // master column map - boundary nodes
 
-  for (int i = 0; i < Discret().NodeColMap()->NumMyElements(); ++i)
+  const int numMyColumnNodes = nodeColumnMap.NumMyElements();
+  for (int i = 0; i < numMyColumnNodes; ++i)
   {
-    int gid = Discret().NodeColMap()->GID(i);
+    int gid = nodeColumnMap.GID(i);
     bool isslave = dynamic_cast<MORTAR::MortarNode*>(Discret().gNode(gid))->IsSlave();
     bool isonbound = dynamic_cast<MORTAR::MortarNode*>(Discret().gNode(gid))->IsOnBoundorCE();
 
@@ -1758,7 +1780,7 @@ void MORTAR::MortarInterface::UpdateMasterSlaveNodeMaps()
     else
       mc.push_back(gid);
 
-    if (Discret().NodeRowMap()->MyGID(gid))
+    if (nodeRowMap.MyGID(gid))
     {
       if (isslave || isonbound)
         srb.push_back(gid);
