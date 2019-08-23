@@ -279,7 +279,7 @@ namespace WEAR
     Derived version!
 
     */
-    virtual void Initialize();
+    void Initialize() final;
 
 
     /*!
@@ -304,20 +304,20 @@ namespace WEAR
     Derived version!
 
     */
-    void SetElementAreas();
+    void SetElementAreas() final;
 
     /*!
     \brief Evaluate nodal normals
 
     */
-    virtual void EvaluateNodalNormals() const;
+    void EvaluateNodalNormals() const final;
 
 
     /*!
     \brief Evaluate nodal normals
 
     */
-    virtual void ExportNodalNormals() const;
+    void ExportNodalNormals() const final;
 
     /*!
     \brief Update interface Wear variable sets
@@ -437,7 +437,7 @@ namespace WEAR
     Derived verision!
 
     */
-    virtual void InitializeDataContainer();
+    void InitializeDataContainer() final;
 
 
     // both-sided wear specific stuff

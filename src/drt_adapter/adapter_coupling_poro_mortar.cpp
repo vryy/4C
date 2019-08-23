@@ -371,7 +371,7 @@ void ADAPTER::CouplingPoroMortar::CompleteInterface(
   slavenoderowmap_ = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowNodes()));
 
   // print parallel distribution
-  interface->PrintParallelDistribution(1);
+  interface->PrintParallelDistribution();
 
   // TODO: is this possible?
   //**********************************************************************
@@ -386,7 +386,7 @@ void ADAPTER::CouplingPoroMortar::CompleteInterface(
   //    interface->FillComplete();
   //
   //    // print parallel distribution again
-  //    interface->PrintParallelDistribution(1);
+  //    interface->PrintParallelDistribution();
   //  }
 
   // store interface

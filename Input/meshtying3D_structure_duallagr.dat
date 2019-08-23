@@ -55,11 +55,8 @@ STRATEGY                        Lagrange
 SYSTEM                          Condensed
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     Dual
-//                                                             // exemplarily test static redistribution with minimum
-//                                                             // number of elements per proc = 0 here
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 Static
-MIN_ELEPROC                     0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

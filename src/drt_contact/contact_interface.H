@@ -351,7 +351,7 @@ namespace CONTACT
 
     \param[in] os Output stream used for printing
     */
-    virtual void Print(std::ostream& os) const;
+    void Print(std::ostream& os) const final;
 
     //! @name Access methods
 
@@ -644,7 +644,7 @@ namespace CONTACT
     that only parts of the slave surface actually need to evaluate
     contact terms (those parts that are "close" to the master side).
 
-    Internally, we call ZOLTAN to re-partition the contact interfacs
+    Internally, we call ZOLTAN to re-partition the contact interfaces
     in three independent parts: (1) close slave part, (2) non-close
     slave part, (3) master part. This results in new "optimal" node/element
     maps of the interface discretization. Note that after Redistribute(),
@@ -652,19 +652,15 @@ namespace CONTACT
     simulations Redistribute() might be called dynamically again and
     again to account for changes of the contact zone.
 
-    Two special cases are treated seperately: First, if ALL slave
+    Two special cases are treated separately: First, if ALL slave
     elements of the interface have some "close" neighbors, we do not
     need to distinguish the two different slave parts. Thus, we
     simply call the base class method Redistribute() also used for
     meshtying. Second, if NO slave element of the interface has any
     "close" neighbors, we do not need to redistribute at all. This
     is indicated by returning with a boolean return value FALSE.
-
-    \param index (in): global index of current interface
-    \return flag indicating whether redistribution has been performed
-
     */
-    bool Redistribute(int index);
+    void Redistribute() final;
 
     void RoundRobinChangeOwnership();
 
@@ -698,7 +694,7 @@ namespace CONTACT
     Derived version!
 
     */
-    void CreateSearchTree();
+    void CreateSearchTree() final;
 
     /*!
     \brief Initialize / reset interface for contact
@@ -706,7 +702,7 @@ namespace CONTACT
     Derived version!
 
     */
-    void Initialize();
+    void Initialize() override;
 
     /*!
     \brief Set element areas
@@ -714,7 +710,7 @@ namespace CONTACT
     Derived version!
 
     */
-    void SetElementAreas();
+    void SetElementAreas() override;
 
     /*!
     \brief Export nodal normals
@@ -726,7 +722,7 @@ namespace CONTACT
     Derived version!
 
     */
-    void ExportNodalNormals() const;
+    void ExportNodalNormals() const override;
 
     /*!
     \brief Binary tree search algorithm for potentially coupling slave /
@@ -735,7 +731,7 @@ namespace CONTACT
     Derived version!
 
     */
-    bool EvaluateSearchBinarytree();
+    bool EvaluateSearchBinarytree() final;
 
     /*!
     \brief Integrate Mortar matrix M and gap g on slave/master overlaps
@@ -744,19 +740,19 @@ namespace CONTACT
 
     */
     bool MortarCoupling(MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele,
-        const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) override;
+        const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) final;
 
     /*!
     \brief evaluate coupling terms for nts coupling + lin
 
     */
-    void EvaluateNTS();
+    void EvaluateNTS() final;
 
     /*!
     \brief evaluate coupling terms for lts coupling + lin
 
     */
-    void EvaluateLTS();
+    void EvaluateLTS() final;
 
     /*!
     \brief evaluate coupling terms for lts coupling + lin
@@ -774,16 +770,16 @@ namespace CONTACT
     \brief evaluate coupling terms for ltl coupling + lin
 
     */
-    void EvaluateLTL();
+    void EvaluateLTL() final;
 
     /*!
     \brief evaluate coupling terms for stl coupling + lin
 
     */
-    void EvaluateSTL();
+    void EvaluateSTL() final;
 
     /*!
-    \brief Integrate penalty sclaing factor kappa on slave element
+    \brief Integrate penalty scaling factor \f$\kappa\f$ on slave element
 
     This method is only called, if a penalty strategy is applied. It is
     called ONCE at the beginning of the simulation and evaluates the
@@ -1133,7 +1129,7 @@ namespace CONTACT
     \param[in] step Time step index
     \param[in] iter Nonlinear iteration index
     */
-    void VisualizeGmsh(const int step, const int iter);
+    void VisualizeGmsh(const int step, const int iter) final;
 
     //! @name Finite difference checks
     //!@{
@@ -1304,7 +1300,7 @@ namespace CONTACT
     //! @{
 
     //! [derived]
-    virtual void PostprocessQuantities(const Teuchos::ParameterList& outputParams);
+    void PostprocessQuantities(const Teuchos::ParameterList& outputParams) final;
 
     //! @}
 
@@ -1337,7 +1333,7 @@ namespace CONTACT
     Derived version!
 
     */
-    virtual void InitializeDataContainer();
+    void InitializeDataContainer() override;
 
     /*!
     \brief initialize slave/master node status for corner/edge modification
@@ -1345,7 +1341,7 @@ namespace CONTACT
     Derived version!
 
     */
-    virtual void InitializeCornerEdge();
+    void InitializeCornerEdge() final;
 
     /*!
     \brief Set closest-point-projection normal and tangent to data container
@@ -1372,15 +1368,15 @@ namespace CONTACT
     Derived version!
 
     */
-    virtual void EvaluateCoupling(const Epetra_Map& selecolmap, const Epetra_Map* snoderowmap,
-        const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+    void EvaluateCoupling(const Epetra_Map& selecolmap, const Epetra_Map* snoderowmap,
+        const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) final;
 
     /*!
     \brief Evaluate segment-to-segment coupling (mortar...)
 
     */
-    virtual void EvaluateSTS(
-        const Epetra_Map& selecolmap, const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+    void EvaluateSTS(const Epetra_Map& selecolmap,
+        const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) final;
 
     /*!
     \brief export master nodal normals for cpp calculation
@@ -1528,7 +1524,7 @@ namespace CONTACT
     slave/master status is assigned dynamically.
 
     */
-    virtual void UpdateMasterSlaveSets();
+    void UpdateMasterSlaveSets() override;
 
    private:
     /*! \brief Set node active if it is active in input file

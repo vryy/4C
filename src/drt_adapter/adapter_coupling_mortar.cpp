@@ -460,7 +460,7 @@ void ADAPTER::CouplingMortar::SetupInterface(
   pmasterdofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface_->MasterRowDofs()));
 
   // print parallel distribution
-  interface_->PrintParallelDistribution(1);
+  interface_->PrintParallelDistribution();
 
   //**********************************************************************
   // PARALLEL REDISTRIBUTION OF INTERFACE
@@ -476,7 +476,7 @@ void ADAPTER::CouplingMortar::SetupInterface(
     interface_->FillComplete();
 
     // print parallel distribution again
-    interface_->PrintParallelDistribution(1);
+    interface_->PrintParallelDistribution();
   }
   //**********************************************************************
 
