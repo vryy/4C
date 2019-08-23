@@ -80,6 +80,10 @@ void PARTICLEINTERACTION::InteractionWriter::ReadRestart(
 void PARTICLEINTERACTION::InteractionWriter::RegisterSpecificRuntimeVtpWriter(
     const std::string& fieldname)
 {
+  // safety check
+  if (runtime_vtpwriters_.count(fieldname))
+    dserror("a runtime vtp writer for field '%s' is already stored!", fieldname.c_str());
+
   // determine path of output directory
   const std::string outputfilename(DRT::Problem::Instance()->OutputControlFile()->FileName());
   size_t pos = outputfilename.find_last_of("/");
