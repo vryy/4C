@@ -84,9 +84,9 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
   void test_line_along_element_surface()
   {
     // Definition of variables for this test case.
-    std::vector<LINALG::TMatrix<double, 12, 1>> q_line_elements;
-    std::vector<LINALG::TMatrix<double, 9, 1>> q_rot_line_elements;
-    std::vector<LINALG::TMatrix<double, 24, 1>> q_volume_elements;
+    std::vector<LINALG::Matrix<12, 1, double>> q_line_elements;
+    std::vector<LINALG::Matrix<9, 1, double>> q_rot_line_elements;
+    std::vector<LINALG::Matrix<24, 1, double>> q_volume_elements;
     std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
         GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>>>
         geometry_pairs;
@@ -122,9 +122,9 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
   void test_multiple_intersections_hex27()
   {
     // Definition of variables for this test case.
-    std::vector<LINALG::TMatrix<double, 12, 1>> q_line_elements;
-    std::vector<LINALG::TMatrix<double, 9, 1>> q_rot_line_elements;
-    std::vector<LINALG::TMatrix<double, 81, 1>> q_volume_elements;
+    std::vector<LINALG::Matrix<12, 1, double>> q_line_elements;
+    std::vector<LINALG::Matrix<9, 1, double>> q_rot_line_elements;
+    std::vector<LINALG::Matrix<81, 1, double>> q_volume_elements;
     std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
         GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex27>>>
         geometry_pairs;
@@ -163,9 +163,9 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
   void test_multiple_intersections_tet10()
   {
     // Definition of variables for this test case.
-    std::vector<LINALG::TMatrix<double, 12, 1>> q_line_elements;
-    std::vector<LINALG::TMatrix<double, 9, 1>> q_rot_line_elements;
-    std::vector<LINALG::TMatrix<double, 30, 1>> q_volume_elements;
+    std::vector<LINALG::Matrix<12, 1, double>> q_line_elements;
+    std::vector<LINALG::Matrix<9, 1, double>> q_rot_line_elements;
+    std::vector<LINALG::Matrix<30, 1, double>> q_volume_elements;
     std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
         GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10>>>
         geometry_pairs;
@@ -205,9 +205,9 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
   void test_multiple_intersections_nurbs27()
   {
     // Definition of variables for this test case.
-    std::vector<LINALG::TMatrix<double, 12, 1>> q_line_elements;
-    std::vector<LINALG::TMatrix<double, 9, 1>> q_rot_line_elements;
-    std::vector<LINALG::TMatrix<double, 81, 1>> q_volume_elements;
+    std::vector<LINALG::Matrix<12, 1, double>> q_line_elements;
+    std::vector<LINALG::Matrix<9, 1, double>> q_rot_line_elements;
+    std::vector<LINALG::Matrix<81, 1, double>> q_volume_elements;
     std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
         GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs27>>>
         geometry_pairs;
@@ -258,9 +258,9 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
   void CreateEvaluatePairs(
       std::vector<Teuchos::RCP<
           GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, el1, el2>>>& geometry_pairs,
-      const std::vector<LINALG::TMatrix<double, el1::n_dof_, 1>>& q_line_elements,
-      const std::vector<LINALG::TMatrix<double, 9, 1>>& q_rot_line_elements,
-      const std::vector<LINALG::TMatrix<double, el2::n_dof_, 1>>& q_volume_elements,
+      const std::vector<LINALG::Matrix<el1::n_dof_, 1, double>>& q_line_elements,
+      const std::vector<LINALG::Matrix<9, 1, double>>& q_rot_line_elements,
+      const std::vector<LINALG::Matrix<el2::n_dof_, 1, double>>& q_volume_elements,
       std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>>& segments_vector)
   {
     // Check that the vectors have the right size.

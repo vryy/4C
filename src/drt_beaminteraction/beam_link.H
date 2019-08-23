@@ -130,10 +130,10 @@ namespace BEAMINTERACTION
     }
 
     //! return position of first connection site
-    inline const LINALG::TMatrix<double, 3, 1>& GetBindSpotPos1() const { return bspotpos1_; }
+    inline const LINALG::Matrix<3, 1, double>& GetBindSpotPos1() const { return bspotpos1_; }
 
     //! return position of second connection site
-    inline const LINALG::TMatrix<double, 3, 1>& GetBindSpotPos2() const { return bspotpos2_; }
+    inline const LINALG::Matrix<3, 1, double>& GetBindSpotPos2() const { return bspotpos2_; }
 
     inline INPAR::BEAMINTERACTION::CrosslinkerType GetLinkerType() const { return linkertype_; }
 

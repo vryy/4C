@@ -140,7 +140,7 @@ namespace BEAMINTERACTION
      * \brief Get coordinates of all active contact points on element1. Not yet implemented.
      */
     void GetAllActiveContactPointCoordsElement1(
-        std::vector<LINALG::TMatrix<double, 3, 1>>& coords) const override
+        std::vector<LINALG::Matrix<3, 1, double>>& coords) const override
     {
       dserror("not yet implemented!");
     }
@@ -149,7 +149,7 @@ namespace BEAMINTERACTION
      * \brief Get coordinates of all active contact points on element2. Not yet implemented.
      */
     void GetAllActiveContactPointCoordsElement2(
-        std::vector<LINALG::TMatrix<double, 3, 1>>& coords) const override
+        std::vector<LINALG::Matrix<3, 1, double>>& coords) const override
     {
       dserror("not yet implemented!");
     }
@@ -225,7 +225,7 @@ namespace BEAMINTERACTION
      */
     virtual void EvaluateBeamPosition(
         const GEOMETRYPAIR::ProjectionPointLineToVolume<double>& integration_point,
-        LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& r_beam, bool reference) const;
+        LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_beam, bool reference) const;
 
     /**
      * \brief This function evaluates the penalty force from a given beam position and a given solid
@@ -237,21 +237,21 @@ namespace BEAMINTERACTION
      * @param r_solid (in) Position on the solid.
      * @param force (out) Force acting on the beam (the negative force acts on the solid).
      */
-    virtual void EvaluatePenaltyForce(const LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& r_beam,
-        const LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& r_solid,
-        LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& force) const;
+    virtual void EvaluatePenaltyForce(const LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_beam,
+        const LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_solid,
+        LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& force) const;
 
    protected:
     //! Flag if the meshtying has been evaluated already.
     bool meshtying_is_evaluated_;
 
     //! Current nodal positions (and tangents) of the two elements.
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, beam::n_dof_, 1> ele1pos_;
-    LINALG::TMatrix<TYPE_BTS_VMT_AD, solid::n_dof_, 1> ele2pos_;
+    LINALG::Matrix<beam::n_dof_, 1, TYPE_BTS_VMT_AD> ele1pos_;
+    LINALG::Matrix<solid::n_dof_, 1, TYPE_BTS_VMT_AD> ele2pos_;
 
     //! Reference nodal positions (and tangents) of the two elements.
-    LINALG::TMatrix<TYPEBTS, beam::n_dof_, 1> ele1posref_;
-    LINALG::TMatrix<TYPEBTS, solid::n_dof_, 1> ele2posref_;
+    LINALG::Matrix<beam::n_dof_, 1, TYPEBTS> ele1posref_;
+    LINALG::Matrix<solid::n_dof_, 1, TYPEBTS> ele2posref_;
 
     //! Vector with the segments of the line to volume pair.
     std::vector<GEOMETRYPAIR::LineSegment<double>> line_to_volume_segments_;

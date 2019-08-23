@@ -92,13 +92,13 @@ namespace BEAMINTERACTION
     \brief Get coordinates of all interacting points on element1 and element2
     */
     virtual void GetAllInteractingPointCoordsElement1(
-        std::vector<LINALG::TMatrix<double, 3, 1>>& coords) const
+        std::vector<LINALG::Matrix<3, 1, double>>& coords) const
     {
       dserror("not implemented yet");
     }
 
     virtual void GetAllInteractingPointCoordsElement2(
-        std::vector<LINALG::TMatrix<double, 3, 1>>& coords) const
+        std::vector<LINALG::Matrix<3, 1, double>>& coords) const
     {
       dserror("not implemented yet");
     }
@@ -107,13 +107,13 @@ namespace BEAMINTERACTION
     \brief Get forces at all interacting points on element1 and element2
     */
     virtual void GetForcesAtAllInteractingPointsElement1(
-        std::vector<LINALG::TMatrix<double, 3, 1>>& forces) const
+        std::vector<LINALG::Matrix<3, 1, double>>& forces) const
     {
       dserror("not implemented yet");
     }
 
     virtual void GetForcesAtAllInteractingPointsElement2(
-        std::vector<LINALG::TMatrix<double, 3, 1>>& forces) const
+        std::vector<LINALG::Matrix<3, 1, double>>& forces) const
     {
       dserror("not implemented yet");
     }
@@ -122,13 +122,13 @@ namespace BEAMINTERACTION
     \brief Get moments at all interacting points on element1 and element2
     */
     virtual void GetMomentsAtAllInteractingPointsElement1(
-        std::vector<LINALG::TMatrix<double, 3, 1>>& moments) const
+        std::vector<LINALG::Matrix<3, 1, double>>& moments) const
     {
       dserror("not implemented yet");
     }
 
     virtual void GetMomentsAtAllInteractingPointsElement2(
-        std::vector<LINALG::TMatrix<double, 3, 1>>& moments) const
+        std::vector<LINALG::Matrix<3, 1, double>>& moments) const
     {
       dserror("not implemented yet");
     }
@@ -177,8 +177,8 @@ namespace BEAMINTERACTION
     double time_;
 
     //! current absolute Dof values of the two elements
-    LINALG::TMatrix<TYPE, 3 * numnodes * numnodalvalues, 1> ele1pos_;
-    LINALG::TMatrix<TYPE, 3, 1> ele2pos_;
+    LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> ele1pos_;
+    LINALG::Matrix<3, 1, TYPE> ele2pos_;
 
     //! parameters of the applied (point-point) potential law Phi(r)=k_ * r^(-m_)
     double k_;
@@ -194,13 +194,13 @@ namespace BEAMINTERACTION
     double radius2_;
 
     //! resulting forces on element 1 and 2
-    LINALG::TMatrix<TYPE, 3 * numnodes * numnodalvalues, 1> fpot1_;
-    LINALG::TMatrix<TYPE, 3, 1> fpot2_;
+    LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> fpot1_;
+    LINALG::Matrix<3, 1, TYPE> fpot2_;
 
     //! stiffness contributions
-    LINALG::TMatrix<TYPE, 3 * numnodes * numnodalvalues, 3 * numnodes * numnodalvalues + 3>
+    LINALG::Matrix<3 * numnodes * numnodalvalues, 3 * numnodes * numnodalvalues + 3, TYPE>
         stiffpot1_;
-    LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues + 3> stiffpot2_;
+    LINALG::Matrix<3, 3 * numnodes * numnodalvalues + 3, TYPE> stiffpot2_;
 
     //! total interaction potential of this pair
     double interaction_potential_;
@@ -226,9 +226,9 @@ namespace BEAMINTERACTION
     \brief Compute coordinates of centreline points from the discretization
         Todo call more general utils method
     */
-    void ComputeCoords(LINALG::TMatrix<TYPE, 3, 1>& r,
+    void ComputeCoords(LINALG::Matrix<3, 1, TYPE>& r,
         const LINALG::Matrix<1, numnodes * numnodalvalues>& N_i,
-        const LINALG::TMatrix<TYPE, 3 * numnodes * numnodalvalues, 1> elepos);
+        const LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> elepos);
 
     //@}
   };

@@ -95,12 +95,12 @@ namespace BEAMINTERACTION
     /*!
     \brief Set gap
     */
-    void SetNormal(LINALG::TMatrix<TYPE, 3, 1> normal) { normal_ = normal; };
+    void SetNormal(LINALG::Matrix<3, 1, TYPE> normal) { normal_ = normal; };
 
     /*!
     \brief Get gap
     */
-    LINALG::TMatrix<TYPE, 3, 1> GetNormal() const { return normal_; };
+    LINALG::Matrix<3, 1, TYPE> GetNormal() const { return normal_; };
 
     /*!
     \brief Get penalty parameter
@@ -230,7 +230,7 @@ namespace BEAMINTERACTION
     TYPE gap_;
 
     // normal vector
-    LINALG::TMatrix<TYPE, 3, 1> normal_;
+    LINALG::Matrix<3, 1, TYPE> normal_;
 
     // penalty parameter
     double pp_;

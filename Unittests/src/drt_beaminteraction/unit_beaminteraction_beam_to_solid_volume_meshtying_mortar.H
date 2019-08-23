@@ -88,17 +88,17 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
             lambda_type>();
 
     // Definition of variables for this test case.
-    LINALG::TMatrix<double, beam_type::n_dof_, 1> q_beam;
-    LINALG::TMatrix<double, 9, 1> q_beam_rot;
-    LINALG::TMatrix<double, solid_type::n_dof_, 1> q_solid;
+    LINALG::Matrix<beam_type::n_dof_, 1, double> q_beam;
+    LINALG::Matrix<9, 1, double> q_beam_rot;
+    LINALG::Matrix<solid_type::n_dof_, 1, double> q_solid;
     LINALG::SerialDenseMatrix local_D;
     LINALG::SerialDenseMatrix local_M;
     LINALG::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    LINALG::TMatrix<double, lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    LINALG::TMatrix<double, lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    LINALG::TMatrix<double, lambda_type::n_dof_, 1> result_local_kappa(true);
+    LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_, double> result_local_D(true);
+    LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_, double> result_local_M(true);
+    LINALG::Matrix<lambda_type::n_dof_, 1, double> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam(0) = 0.15;
@@ -255,17 +255,17 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
             lambda_type>();
 
     // Definition of variables for this test case.
-    LINALG::TMatrix<double, beam_type::n_dof_, 1> q_beam;
-    LINALG::TMatrix<double, 9, 1> q_beam_rot;
-    LINALG::TMatrix<double, solid_type::n_dof_, 1> q_solid;
+    LINALG::Matrix<beam_type::n_dof_, 1, double> q_beam;
+    LINALG::Matrix<9, 1, double> q_beam_rot;
+    LINALG::Matrix<solid_type::n_dof_, 1, double> q_solid;
     LINALG::SerialDenseMatrix local_D;
     LINALG::SerialDenseMatrix local_M;
     LINALG::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    LINALG::TMatrix<double, lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    LINALG::TMatrix<double, lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    LINALG::TMatrix<double, lambda_type::n_dof_, 1> result_local_kappa(true);
+    LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_, double> result_local_D(true);
+    LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_, double> result_local_M(true);
+    LINALG::Matrix<lambda_type::n_dof_, 1, double> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam(0) = 0.15;
@@ -461,17 +461,17 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
             lambda_type>();
 
     // Definition of variables for this test case.
-    LINALG::TMatrix<double, beam_type::n_dof_, 1> q_beam;
-    LINALG::TMatrix<double, 9, 1> q_beam_rot;
-    LINALG::TMatrix<double, solid_type::n_dof_, 1> q_solid;
+    LINALG::Matrix<beam_type::n_dof_, 1, double> q_beam;
+    LINALG::Matrix<9, 1, double> q_beam_rot;
+    LINALG::Matrix<solid_type::n_dof_, 1, double> q_solid;
     LINALG::SerialDenseMatrix local_D;
     LINALG::SerialDenseMatrix local_M;
     LINALG::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    LINALG::TMatrix<double, lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    LINALG::TMatrix<double, lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    LINALG::TMatrix<double, lambda_type::n_dof_, 1> result_local_kappa(true);
+    LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_, double> result_local_D(true);
+    LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_, double> result_local_M(true);
+    LINALG::Matrix<lambda_type::n_dof_, 1, double> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam(0) = 0.15;
@@ -706,17 +706,17 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
             lambda_type>();
 
     // Definition of variables for this test case.
-    LINALG::TMatrix<double, beam_type::n_dof_, 1> q_beam;
-    LINALG::TMatrix<double, 9, 1> q_beam_rot;
-    LINALG::TMatrix<double, solid_type::n_dof_, 1> q_solid;
+    LINALG::Matrix<beam_type::n_dof_, 1, double> q_beam;
+    LINALG::Matrix<9, 1, double> q_beam_rot;
+    LINALG::Matrix<solid_type::n_dof_, 1, double> q_solid;
     LINALG::SerialDenseMatrix local_D;
     LINALG::SerialDenseMatrix local_M;
     LINALG::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    LINALG::TMatrix<double, lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    LINALG::TMatrix<double, lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    LINALG::TMatrix<double, lambda_type::n_dof_, 1> result_local_kappa(true);
+    LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_, double> result_local_D(true);
+    LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_, double> result_local_M(true);
+    LINALG::Matrix<lambda_type::n_dof_, 1, double> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam(0) = 0.15;
@@ -981,17 +981,17 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
             lambda_type>();
 
     // Definition of variables for this test case.
-    LINALG::TMatrix<double, beam_type::n_dof_, 1> q_beam;
-    LINALG::TMatrix<double, 9, 1> q_beam_rot;
-    LINALG::TMatrix<double, solid_type::n_dof_, 1> q_solid;
+    LINALG::Matrix<beam_type::n_dof_, 1, double> q_beam;
+    LINALG::Matrix<9, 1, double> q_beam_rot;
+    LINALG::Matrix<solid_type::n_dof_, 1, double> q_solid;
     LINALG::SerialDenseMatrix local_D;
     LINALG::SerialDenseMatrix local_M;
     LINALG::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    LINALG::TMatrix<double, lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    LINALG::TMatrix<double, lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    LINALG::TMatrix<double, lambda_type::n_dof_, 1> result_local_kappa(true);
+    LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_, double> result_local_D(true);
+    LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_, double> result_local_M(true);
+    LINALG::Matrix<lambda_type::n_dof_, 1, double> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam(0) = 0.15;
@@ -1331,17 +1331,17 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
             lambda_type>();
 
     // Definition of variables for this test case.
-    LINALG::TMatrix<double, beam_type::n_dof_, 1> q_beam;
-    LINALG::TMatrix<double, 9, 1> q_beam_rot;
-    LINALG::TMatrix<double, solid_type::n_dof_, 1> q_solid;
+    LINALG::Matrix<beam_type::n_dof_, 1, double> q_beam;
+    LINALG::Matrix<9, 1, double> q_beam_rot;
+    LINALG::Matrix<solid_type::n_dof_, 1, double> q_solid;
     LINALG::SerialDenseMatrix local_D;
     LINALG::SerialDenseMatrix local_M;
     LINALG::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    LINALG::TMatrix<double, lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    LINALG::TMatrix<double, lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    LINALG::TMatrix<double, lambda_type::n_dof_, 1> result_local_kappa(true);
+    LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_, double> result_local_D(true);
+    LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_, double> result_local_M(true);
+    LINALG::Matrix<lambda_type::n_dof_, 1, double> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam(0) = 0.15;
@@ -1756,17 +1756,17 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
             lambda_type>();
 
     // Definition of variables for this test case.
-    LINALG::TMatrix<double, beam_type::n_dof_, 1> q_beam;
-    LINALG::TMatrix<double, 9, 1> q_beam_rot;
-    LINALG::TMatrix<double, solid_type::n_dof_, 1> q_solid;
+    LINALG::Matrix<beam_type::n_dof_, 1, double> q_beam;
+    LINALG::Matrix<9, 1, double> q_beam_rot;
+    LINALG::Matrix<solid_type::n_dof_, 1, double> q_solid;
     LINALG::SerialDenseMatrix local_D;
     LINALG::SerialDenseMatrix local_M;
     LINALG::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    LINALG::TMatrix<double, lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    LINALG::TMatrix<double, lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    LINALG::TMatrix<double, lambda_type::n_dof_, 1> result_local_kappa(true);
+    LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_, double> result_local_D(true);
+    LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_, double> result_local_M(true);
+    LINALG::Matrix<lambda_type::n_dof_, 1, double> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam(0) = 0.15;
@@ -2094,17 +2094,17 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
             lambda_type>();
 
     // Definition of variables for this test case.
-    LINALG::TMatrix<double, beam_type::n_dof_, 1> q_beam;
-    LINALG::TMatrix<double, 9, 1> q_beam_rot;
-    LINALG::TMatrix<double, solid_type::n_dof_, 1> q_solid;
+    LINALG::Matrix<beam_type::n_dof_, 1, double> q_beam;
+    LINALG::Matrix<9, 1, double> q_beam_rot;
+    LINALG::Matrix<solid_type::n_dof_, 1, double> q_solid;
     LINALG::SerialDenseMatrix local_D;
     LINALG::SerialDenseMatrix local_M;
     LINALG::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    LINALG::TMatrix<double, lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    LINALG::TMatrix<double, lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    LINALG::TMatrix<double, lambda_type::n_dof_, 1> result_local_kappa(true);
+    LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_, double> result_local_D(true);
+    LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_, double> result_local_M(true);
+    LINALG::Matrix<lambda_type::n_dof_, 1, double> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam(0) = 0.15;
@@ -2528,17 +2528,17 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
             lambda_type>();
 
     // Definition of variables for this test case.
-    LINALG::TMatrix<double, beam_type::n_dof_, 1> q_beam;
-    LINALG::TMatrix<double, 9, 1> q_beam_rot;
-    LINALG::TMatrix<double, solid_type::n_dof_, 1> q_solid;
+    LINALG::Matrix<beam_type::n_dof_, 1, double> q_beam;
+    LINALG::Matrix<9, 1, double> q_beam_rot;
+    LINALG::Matrix<solid_type::n_dof_, 1, double> q_solid;
     LINALG::SerialDenseMatrix local_D;
     LINALG::SerialDenseMatrix local_M;
     LINALG::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    LINALG::TMatrix<double, lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    LINALG::TMatrix<double, lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    LINALG::TMatrix<double, lambda_type::n_dof_, 1> result_local_kappa(true);
+    LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_, double> result_local_D(true);
+    LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_, double> result_local_M(true);
+    LINALG::Matrix<lambda_type::n_dof_, 1, double> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam(0) = 0.15;
@@ -3058,17 +3058,17 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
             lambda_type>();
 
     // Definition of variables for this test case.
-    LINALG::TMatrix<double, beam_type::n_dof_, 1> q_beam;
-    LINALG::TMatrix<double, 9, 1> q_beam_rot;
-    LINALG::TMatrix<double, solid_type::n_dof_, 1> q_solid;
+    LINALG::Matrix<beam_type::n_dof_, 1, double> q_beam;
+    LINALG::Matrix<9, 1, double> q_beam_rot;
+    LINALG::Matrix<solid_type::n_dof_, 1, double> q_solid;
     LINALG::SerialDenseMatrix local_D;
     LINALG::SerialDenseMatrix local_M;
     LINALG::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    LINALG::TMatrix<double, lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    LINALG::TMatrix<double, lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    LINALG::TMatrix<double, lambda_type::n_dof_, 1> result_local_kappa(true);
+    LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_, double> result_local_D(true);
+    LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_, double> result_local_M(true);
+    LINALG::Matrix<lambda_type::n_dof_, 1, double> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam(0) = 0.15;
@@ -3189,17 +3189,17 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
             lambda_type>();
 
     // Definition of variables for this test case.
-    LINALG::TMatrix<double, beam_type::n_dof_, 1> q_beam;
-    LINALG::TMatrix<double, 9, 1> q_beam_rot;
-    LINALG::TMatrix<double, solid_type::n_dof_, 1> q_solid;
+    LINALG::Matrix<beam_type::n_dof_, 1, double> q_beam;
+    LINALG::Matrix<9, 1, double> q_beam_rot;
+    LINALG::Matrix<solid_type::n_dof_, 1, double> q_solid;
     LINALG::SerialDenseMatrix local_D;
     LINALG::SerialDenseMatrix local_M;
     LINALG::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    LINALG::TMatrix<double, lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    LINALG::TMatrix<double, lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    LINALG::TMatrix<double, lambda_type::n_dof_, 1> result_local_kappa(true);
+    LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_, double> result_local_D(true);
+    LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_, double> result_local_M(true);
+    LINALG::Matrix<lambda_type::n_dof_, 1, double> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam(0) = 0.15;
@@ -3347,17 +3347,17 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
             lambda_type>();
 
     // Definition of variables for this test case.
-    LINALG::TMatrix<double, beam_type::n_dof_, 1> q_beam;
-    LINALG::TMatrix<double, 9, 1> q_beam_rot;
-    LINALG::TMatrix<double, solid_type::n_dof_, 1> q_solid;
+    LINALG::Matrix<beam_type::n_dof_, 1, double> q_beam;
+    LINALG::Matrix<9, 1, double> q_beam_rot;
+    LINALG::Matrix<solid_type::n_dof_, 1, double> q_solid;
     LINALG::SerialDenseMatrix local_D;
     LINALG::SerialDenseMatrix local_M;
     LINALG::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    LINALG::TMatrix<double, lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    LINALG::TMatrix<double, lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    LINALG::TMatrix<double, lambda_type::n_dof_, 1> result_local_kappa(true);
+    LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_, double> result_local_D(true);
+    LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_, double> result_local_M(true);
+    LINALG::Matrix<lambda_type::n_dof_, 1, double> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam(0) = 0.15;
@@ -3532,17 +3532,17 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
             lambda_type>();
 
     // Definition of variables for this test case.
-    LINALG::TMatrix<double, beam_type::n_dof_, 1> q_beam;
-    LINALG::TMatrix<double, 9, 1> q_beam_rot;
-    LINALG::TMatrix<double, solid_type::n_dof_, 1> q_solid;
+    LINALG::Matrix<beam_type::n_dof_, 1, double> q_beam;
+    LINALG::Matrix<9, 1, double> q_beam_rot;
+    LINALG::Matrix<solid_type::n_dof_, 1, double> q_solid;
     LINALG::SerialDenseMatrix local_D;
     LINALG::SerialDenseMatrix local_M;
     LINALG::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    LINALG::TMatrix<double, lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    LINALG::TMatrix<double, lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    LINALG::TMatrix<double, lambda_type::n_dof_, 1> result_local_kappa(true);
+    LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_, double> result_local_D(true);
+    LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_, double> result_local_M(true);
+    LINALG::Matrix<lambda_type::n_dof_, 1, double> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam(0) = 0.15;
@@ -3717,17 +3717,17 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
             lambda_type>();
 
     // Definition of variables for this test case.
-    LINALG::TMatrix<double, beam_type::n_dof_, 1> q_beam;
-    LINALG::TMatrix<double, 9, 1> q_beam_rot;
-    LINALG::TMatrix<double, solid_type::n_dof_, 1> q_solid;
+    LINALG::Matrix<beam_type::n_dof_, 1, double> q_beam;
+    LINALG::Matrix<9, 1, double> q_beam_rot;
+    LINALG::Matrix<solid_type::n_dof_, 1, double> q_solid;
     LINALG::SerialDenseMatrix local_D;
     LINALG::SerialDenseMatrix local_M;
     LINALG::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    LINALG::TMatrix<double, lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    LINALG::TMatrix<double, lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    LINALG::TMatrix<double, lambda_type::n_dof_, 1> result_local_kappa(true);
+    LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_, double> result_local_D(true);
+    LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_, double> result_local_M(true);
+    LINALG::Matrix<lambda_type::n_dof_, 1, double> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam(0) = 0.15;
@@ -3947,17 +3947,17 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
             lambda_type>();
 
     // Definition of variables for this test case.
-    LINALG::TMatrix<double, beam_type::n_dof_, 1> q_beam;
-    LINALG::TMatrix<double, 9, 1> q_beam_rot;
-    LINALG::TMatrix<double, solid_type::n_dof_, 1> q_solid;
+    LINALG::Matrix<beam_type::n_dof_, 1, double> q_beam;
+    LINALG::Matrix<9, 1, double> q_beam_rot;
+    LINALG::Matrix<solid_type::n_dof_, 1, double> q_solid;
     LINALG::SerialDenseMatrix local_D;
     LINALG::SerialDenseMatrix local_M;
     LINALG::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    LINALG::TMatrix<double, lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    LINALG::TMatrix<double, lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    LINALG::TMatrix<double, lambda_type::n_dof_, 1> result_local_kappa(true);
+    LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_, double> result_local_D(true);
+    LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_, double> result_local_M(true);
+    LINALG::Matrix<lambda_type::n_dof_, 1, double> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam(0) = 0.15;
@@ -4214,12 +4214,12 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
   void PerformMortarPairUnitTest(
       BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>&
           contact_pair,
-      const LINALG::TMatrix<double, beam_type::n_dof_, 1>& q_beam,
-      const LINALG::TMatrix<double, 9, 1>& q_beam_rot,
-      const LINALG::TMatrix<double, solid_type::n_dof_, 1>& q_solid,
-      const LINALG::TMatrix<double, lambda_type::n_dof_, beam_type::n_dof_>& result_local_D,
-      const LINALG::TMatrix<double, lambda_type::n_dof_, solid_type::n_dof_>& result_local_M,
-      const LINALG::TMatrix<double, lambda_type::n_dof_, 1>& result_local_kappa)
+      const LINALG::Matrix<beam_type::n_dof_, 1, double>& q_beam,
+      const LINALG::Matrix<9, 1, double>& q_beam_rot,
+      const LINALG::Matrix<solid_type::n_dof_, 1, double>& q_solid,
+      const LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_, double>& result_local_D,
+      const LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_, double>& result_local_M,
+      const LINALG::Matrix<lambda_type::n_dof_, 1, double>& result_local_kappa)
   {
     // Create the elements.
     const int dummy_node_ids[2] = {0, 1};

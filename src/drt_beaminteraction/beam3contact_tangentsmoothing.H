@@ -216,10 +216,10 @@ namespace CONTACT
      *----------------------------------------------------------------------*/
 
     template <int numnodes, int numnodalvalues>
-    void ComputeTangentsAndDerivs(LINALG::TMatrix<TYPE, 3, 1>& t, LINALG::TMatrix<TYPE, 3, 1>& t_xi,
+    void ComputeTangentsAndDerivs(LINALG::Matrix<3, 1, TYPE>& t, LINALG::Matrix<3, 1, TYPE>& t_xi,
         const LINALG::Matrix<3 * numnodes, 1> nodaltangentssmooth1,
-        const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N,
-        const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N_xi)
+        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N,
+        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N_xi)
     {
       t.Clear();
       t_xi.Clear();

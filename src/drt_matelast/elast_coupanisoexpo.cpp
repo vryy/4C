@@ -144,10 +144,10 @@ void MAT::ELASTIC::CoupAnisoExpo::AddStrainEnergy(double& psi, const LINALG::Mat
 /*----------------------------------------------------------------------*/
 template <typename T>
 void MAT::ELASTIC::CoupAnisoExpo::EvaluateFunc(
-    T& psi, LINALG::TMatrix<T, 3, 3> const& rcg, int const eleGID) const
+    T& psi, LINALG::Matrix<3, 3, T> const& rcg, int const eleGID) const
 {
   T I4_fad = 0.0;
-  static LINALG::TMatrix<T, 6, 1> Av_T(true);
+  static LINALG::Matrix<6, 1, T> Av_T(true);
   for (int i = 0; i < 6; ++i) Av_T(i) = A_(i);
   I4_fad = Av_T(0) * rcg(0, 0) + Av_T(1) * rcg(1, 1) + Av_T(2) * rcg(2, 2) +
            Av_T(3) * (rcg(0, 1) + rcg(1, 0)) + Av_T(4) * (rcg(1, 2) + rcg(2, 1)) +
@@ -171,12 +171,12 @@ void MAT::ELASTIC::CoupAnisoExpo::EvaluateFunc(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <typename T>
-void MAT::ELASTIC::CoupAnisoExpo::GetDerivativesAniso(LINALG::TMatrix<T, 2, 1>& dPI_aniso,
-    LINALG::TMatrix<T, 3, 1>& ddPII_aniso, LINALG::TMatrix<T, 4, 1>& dddPIII_aniso,
-    LINALG::TMatrix<T, 3, 3> const& rcg, const int eleGID) const
+void MAT::ELASTIC::CoupAnisoExpo::GetDerivativesAniso(LINALG::Matrix<2, 1, T>& dPI_aniso,
+    LINALG::Matrix<3, 1, T>& ddPII_aniso, LINALG::Matrix<4, 1, T>& dddPIII_aniso,
+    LINALG::Matrix<3, 3, T> const& rcg, const int eleGID) const
 {
   T I4 = 0.0;
-  LINALG::TMatrix<T, 3, 3> AM(true);
+  LINALG::Matrix<3, 3, T> AM(true);
   for (int i = 0; i < 3; ++i) AM(i, i) = A_(i);
   AM(0, 1) = AM(1, 0) = A_(3);
   AM(2, 1) = AM(1, 2) = A_(4);
@@ -290,12 +290,12 @@ void MAT::ELASTIC::CoupAnisoExpo::SetFiberVecs(const LINALG::Matrix<3, 1>& fiber
 
 // explicit instantiation of template functions
 template void MAT::ELASTIC::CoupAnisoExpo::GetDerivativesAniso<double>(
-    LINALG::TMatrix<double, 2, 1>&, LINALG::TMatrix<double, 3, 1>&, LINALG::TMatrix<double, 4, 1>&,
-    LINALG::TMatrix<double, 3, 3> const&, const int) const;
-template void MAT::ELASTIC::CoupAnisoExpo::GetDerivativesAniso<FAD>(LINALG::TMatrix<FAD, 2, 1>&,
-    LINALG::TMatrix<FAD, 3, 1>&, LINALG::TMatrix<FAD, 4, 1>&, LINALG::TMatrix<FAD, 3, 3> const&,
+    LINALG::Matrix<2, 1, double>&, LINALG::Matrix<3, 1, double>&, LINALG::Matrix<4, 1, double>&,
+    LINALG::Matrix<3, 3, double> const&, const int) const;
+template void MAT::ELASTIC::CoupAnisoExpo::GetDerivativesAniso<FAD>(LINALG::Matrix<2, 1, FAD>&,
+    LINALG::Matrix<3, 1, FAD>&, LINALG::Matrix<4, 1, FAD>&, LINALG::Matrix<3, 3, FAD> const&,
     const int) const;
 template void MAT::ELASTIC::CoupAnisoExpo::EvaluateFunc<double>(
-    double&, LINALG::TMatrix<double, 3, 3> const&, const int) const;
+    double&, LINALG::Matrix<3, 3, double> const&, const int) const;
 template void MAT::ELASTIC::CoupAnisoExpo::EvaluateFunc<FAD>(
-    FAD&, LINALG::TMatrix<FAD, 3, 3> const&, const int) const;
+    FAD&, LINALG::Matrix<3, 3, FAD> const&, const int) const;

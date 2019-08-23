@@ -432,7 +432,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix* stiff
   // build averaged F and volume of node
   double Vnode = 0.0;
   LINALG::Matrix<3, 3> Fnode(true);
-  //  LINALG::TMatrix<FADFAD,3,3> tFnode(true);
+  //  LINALG::Matrix<3,3,FADFAD> tFnode(true);
 
   for (int i = 0; i < neleinpatch; ++i)
   {
@@ -445,7 +445,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix* stiff
 
       // copy subelement displacements to 4x3 format
       //      LINALG::Matrix<4,3> eledispmat(false);
-      //      LINALG::TMatrix<FADFAD,4,3> teledispmat(false);
+      //      LINALG::Matrix<4,3,FADFAD> teledispmat(false);
       //      for (int k=0; k<4; ++k)
       //        for (int l=0; l<3; ++l)
       //        {
@@ -455,7 +455,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix* stiff
 
       // build F from this subelement
       //     LINALG::Matrix<3,3> F(false);
-      //     LINALG::TMatrix<FADFAD,3,3> tF(true);
+      //     LINALG::Matrix<3,3,FADFAD> tF(true);
       //     F = ele->BuildF(eledispmat,ele->SubNxyz(subeleid));
       LINALG::Matrix<3, 3> F = ele->SubF(subeleid);
       //     tF = TBuildF(teledispmat,ele->SubNxyz(subeleid));
@@ -555,7 +555,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix* stiff
   // right cauchy green
 
   LINALG::Matrix<3, 3> cauchygreen;
-  //  LINALG::TMatrix<FADFAD,3,3> tcauchygreen;
+  //  LINALG::Matrix<3,3,FADFAD> tcauchygreen;
   cauchygreen.MultiplyTN(Fnode, Fnode);
   //  tcauchygreen.MultiplyTN(tFnode,tFnode);
 
@@ -570,7 +570,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix* stiff
   glstrain(5) = cauchygreen(2, 0);
 
 #if 0
-  LINALG::TMatrix<FADFAD,6,1> tglstrain(false);
+  LINALG::Matrix<6,1,FADFAD> tglstrain(false);
   tglstrain(0) = 0.5 * (tcauchygreen(0,0) - 1.0);
   tglstrain(1) = 0.5 * (tcauchygreen(1,1) - 1.0);
   tglstrain(2) = 0.5 * (tcauchygreen(2,2) - 1.0);

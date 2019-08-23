@@ -45,8 +45,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<scalar_type, line, volum
  */
 template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<scalar_type, line, volume>::Evaluate(
-    const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
-    const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
+    const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+    const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
     std::vector<LineSegment<scalar_type>>& segments) const
 {
   // Check if the element is initialized.
@@ -64,7 +64,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<scalar_type, line, volum
   // Set up vector with projection points for the search points.
   std::vector<ProjectionPointLineToVolume<scalar_type>> search_points;
   search_points.reserve(n_search_points);
-  LINALG::TMatrix<scalar_type, 3, 1> xi_start;
+  LINALG::Matrix<3, 1, scalar_type> xi_start;
   this->SetStartValuesElement2(xi_start);
   scalar_type eta;
   for (unsigned int i_search_point = 0; i_search_point < n_search_points; i_search_point++)

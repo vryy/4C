@@ -301,7 +301,7 @@ bool GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside
   side_rs_corner_intersect.reserve(2);
   edge_r_corner_intersect.reserve(2);
 
-  LINALG::TMatrix<LINALG::Matrix<2, 1>, 2, 1> e_corner_distance;
+  LINALG::Matrix<2, 1, LINALG::Matrix<2, 1>> e_corner_distance;
   for (unsigned i = 0; i < 2; ++i)
   {
     const LINALG::Matrix<probdim, 1> e_cornerpoint(&xyze_lineElement_(0, i), true);
@@ -469,12 +469,12 @@ GEO::CUT::ParallelIntersectionStatus GEO::CUT::Intersection<probdim, edgetype, s
 
   bool zeroarea = false;
   // local coordinates are inside element
-  LINALG::TMatrix<bool, 2, 1> lineendpoint_within_surfacelimits(true);
+  LINALG::Matrix<2, 1, bool> lineendpoint_within_surfacelimits(true);
   // point is really inside element (normal distance = 0)
-  LINALG::TMatrix<bool, 2, 1> lineendpoint_in_surface(true);
+  LINALG::Matrix<2, 1, bool> lineendpoint_in_surface(true);
   LINALG::Matrix<2, 1> lineendpoint_dist;
   LINALG::Matrix<2, 1> lineendpoint_tol;
-  LINALG::TMatrix<bool, 2, 1> lineendpoint_conv(true);
+  LINALG::Matrix<2, 1, bool> lineendpoint_conv(true);
   LINALG::Matrix<dimside + dimedge, 2> lineendpoint_xsi(true);
   std::vector<std::vector<int>> lineendpoint_touched_edges(2);
   std::vector<KERNEL::PointOnSurfaceLoc> lineendpoint_location_kernel(2);
@@ -530,7 +530,7 @@ GEO::CUT::ParallelIntersectionStatus GEO::CUT::Intersection<probdim, edgetype, s
          * the distance onto tri3! */
         LINALG::Matrix<2, 1> tri_dist;
         LINALG::Matrix<2, 1> tri_tol;
-        LINALG::TMatrix<bool, 2, 1> tri_conv;
+        LINALG::Matrix<2, 1, bool> tri_conv;
 
         std::vector<KERNEL::PointOnSurfaceLoc> tri_location_kernel(2);
         std::vector<std::vector<int>> tri_touched_edges(2);

@@ -24,7 +24,7 @@
 
 #include "../drt_lib/drt_dserror.H"
 
-// Attention: In the case a LINALG::Matrix or LINALG::TMatrix is created with float_type ClnWrapper,
+// Attention: In the case a LINALG::Matrix is created with float_type ClnWrapper,
 // include the header "/drt_cut/cut_clnwrapper.H" before this header is processed.
 
 namespace LINALG
@@ -3151,7 +3151,7 @@ namespace LINALG
   /// Serial dense matrix with templated dimensions
   /*!
     A serial dense matrix with templated dimensions that is supposed to
-    be fast and lightweight.
+    be fast and lightweight. The default scalar type is double.
     The value_type-array is allocated on the stack (small sizes, up to 512
     bytes or on the heap (larger sizes) and stored in
     column-major order, just like in Epetra_SerialDenseMatrix.
@@ -3163,12 +3163,9 @@ namespace LINALG
     There is no operator[]. It behaves differently in
     Epetra_SerialDenseMatrix and Epetra_SerialDenseVector, and is not
     needed in either of them.
-
-    \author Martin Kuettler
-    \date 09/08
    */
-  template <class value_type, unsigned int rows, unsigned int cols /* =1  ?*/>
-  class TMatrix
+  template <unsigned int rows, unsigned int cols, class value_type = double>
+  class Matrix
   {
    private:
     /// threshold for when to allocate the memory instead of placing the matrix on the stack.
@@ -3200,7 +3197,7 @@ namespace LINALG
       \param setzero
         whether matrix should be initialised to zero
      */
-    explicit TMatrix(bool setzero = true);
+    explicit Matrix(bool setzero = true);
 
     /// Constructor
     /*!
@@ -3213,7 +3210,7 @@ namespace LINALG
       \param view
         whether the data is to be viewed or copied
      */
-    explicit TMatrix(value_type* d, bool view = false);
+    explicit Matrix(value_type* d, bool view = false);
 
     /// Constructor
     /*!
@@ -3227,7 +3224,7 @@ namespace LINALG
       \param view
         whether the data is to be viewed or copied
      */
-    explicit TMatrix(const value_type* d, bool view = false);
+    explicit Matrix(const value_type* d, bool view = false);
 
     /// Constructor
     /*!
@@ -3240,7 +3237,7 @@ namespace LINALG
       \param view
         whether the data is to be viewed or copied
      */
-    explicit TMatrix(Epetra_SerialDenseMatrix& d, bool view = false);
+    explicit Matrix(Epetra_SerialDenseMatrix& d, bool view = false);
 
     /// Constructor
     /*!
@@ -3258,7 +3255,7 @@ namespace LINALG
       \param view
         whether the data is to be viewed or copied
      */
-    TMatrix(TMatrix<value_type, rows, cols>& source, bool view);
+    Matrix(Matrix<rows, cols, value_type>& source, bool view);
 
     /// Copy constructor
     /*!
@@ -3269,7 +3266,7 @@ namespace LINALG
       \param source
         matrix to copy
      */
-    TMatrix(const TMatrix<value_type, rows, cols>& source);
+    Matrix(const Matrix<rows, cols, value_type>& source);
 
     /// Copy constructor
     /*!
@@ -3286,10 +3283,10 @@ namespace LINALG
             In this case I recommend to use the copy constructor in combination
             with a const qualifier!
      */
-    TMatrix(const TMatrix<value_type, rows, cols>& source, bool view);
+    Matrix(const Matrix<rows, cols, value_type>& source, bool view);
 
     /// Deconstructor
-    ~TMatrix();
+    ~Matrix();
 
     /// Return the value_type* holding the data.
     inline const value_type* A() const { return data_; }
@@ -3338,7 +3335,7 @@ namespace LINALG
       \param source
         matrix to be viewed
      */
-    void SetView(TMatrix<value_type, rows, cols>& source);
+    void SetView(Matrix<rows, cols, value_type>& source);
 
     /// Set copy
     /*!
@@ -3362,7 +3359,7 @@ namespace LINALG
       \param source
         matrix to copy from
      */
-    void SetCopy(const TMatrix<value_type, rows, cols>& source);
+    void SetCopy(const Matrix<rows, cols, value_type>& source);
 
 
     /// Calculate determinant
@@ -3387,7 +3384,7 @@ namespace LINALG
         matrix to be inverted
       \return determinant of \e other
      */
-    inline value_type Invert(const TMatrix<value_type, rows, cols>& other);
+    inline value_type Invert(const Matrix<rows, cols, value_type>& other);
 
     /// Set to zero
     /*!
@@ -3417,7 +3414,7 @@ namespace LINALG
         second factor
       \return dot product
      */
-    inline value_type Dot(const TMatrix<value_type, rows, cols>& other) const
+    inline value_type Dot(const Matrix<rows, cols, value_type>& other) const
     {
       return DENSEFUNCTIONS::dot<value_type, rows, cols>(A(), other.A());
     }
@@ -3431,7 +3428,7 @@ namespace LINALG
       \return cross product
      */
     inline void CrossProduct(
-        const TMatrix<value_type, rows, cols>& left, const TMatrix<value_type, rows, cols>& right)
+        const Matrix<rows, cols, value_type>& left, const Matrix<rows, cols, value_type>& right)
     {
       DENSEFUNCTIONS::crossproduct<value_type, rows, cols>(A(), left.A(), right.A());
     }
@@ -3443,7 +3440,7 @@ namespace LINALG
       \param other
         matrix to read values from
      */
-    inline void Abs(const TMatrix<value_type, rows, cols>& other)
+    inline void Abs(const Matrix<rows, cols, value_type>& other)
     {
       DENSEFUNCTIONS::abs<value_type, rows, cols>(A(), other.A());
     }
@@ -3455,7 +3452,7 @@ namespace LINALG
       \param other
         matrix to read values from
      */
-    inline void Reciprocal(const TMatrix<value_type, rows, cols>& other)
+    inline void Reciprocal(const Matrix<rows, cols, value_type>& other)
     {
       DENSEFUNCTIONS::reciprocal<value_type, rows, cols>(A(), other.A());
     }
@@ -3479,7 +3476,7 @@ namespace LINALG
       \param other
         matrix to copy
      */
-    inline void Update(const TMatrix<value_type, rows, cols>& other)
+    inline void Update(const Matrix<rows, cols, value_type>& other)
     {
       DENSEFUNCTIONS::update<value_type, rows, cols>(A(), other.A());
     }
@@ -3493,7 +3490,7 @@ namespace LINALG
       \param other
         matrix to read from
      */
-    inline void Update(const value_type scalarOther, const TMatrix<value_type, rows, cols>& other)
+    inline void Update(const value_type scalarOther, const Matrix<rows, cols, value_type>& other)
     {
       DENSEFUNCTIONS::update<value_type, rows, cols>(A(), scalarOther, other.A());
     }
@@ -3509,7 +3506,7 @@ namespace LINALG
       \param scalarThis
         scaling factor for \e this
      */
-    inline void Update(const value_type scalarOther, const TMatrix<value_type, rows, cols>& other,
+    inline void Update(const value_type scalarOther, const Matrix<rows, cols, value_type>& other,
         const value_type scalarThis)
     {
       DENSEFUNCTIONS::update<value_type, rows, cols>(scalarThis, A(), scalarOther, other.A());
@@ -3525,7 +3522,7 @@ namespace LINALG
         second matrix to add
      */
     inline void Update(
-        const TMatrix<value_type, rows, cols>& left, const TMatrix<value_type, rows, cols>& right)
+        const Matrix<rows, cols, value_type>& left, const Matrix<rows, cols, value_type>& right)
     {
       DENSEFUNCTIONS::update<value_type, rows, cols>(A(), left.A(), right.A());
     }
@@ -3543,8 +3540,8 @@ namespace LINALG
       \param right
         second matrix to add
      */
-    inline void Update(const value_type scalarLeft, const TMatrix<value_type, rows, cols>& left,
-        const value_type scalarRight, const TMatrix<value_type, rows, cols>& right)
+    inline void Update(const value_type scalarLeft, const Matrix<rows, cols, value_type>& left,
+        const value_type scalarRight, const Matrix<rows, cols, value_type>& right)
     {
       DENSEFUNCTIONS::update<value_type, rows, cols>(
           A(), scalarLeft, left.A(), scalarRight, right.A());
@@ -3565,8 +3562,8 @@ namespace LINALG
       \param scalarThis
         scaling factor for \e this
      */
-    inline void Update(const value_type scalarLeft, const TMatrix<value_type, rows, cols>& left,
-        const value_type scalarRight, const TMatrix<value_type, rows, cols>& right,
+    inline void Update(const value_type scalarLeft, const Matrix<rows, cols, value_type>& left,
+        const value_type scalarRight, const Matrix<rows, cols, value_type>& right,
         const value_type scalarThis)
     {
       DENSEFUNCTIONS::update<value_type, rows, cols>(
@@ -3580,7 +3577,7 @@ namespace LINALG
       \param other
         matrix to copy
      */
-    inline void UpdateT(const TMatrix<value_type, cols, rows>& other)
+    inline void UpdateT(const Matrix<cols, rows, value_type>& other)
     {
       DENSEFUNCTIONS::updateT<value_type, rows, cols>(A(), other.A());
     }
@@ -3594,7 +3591,7 @@ namespace LINALG
       \param other
         matrix to read from
      */
-    inline void UpdateT(const value_type scalarOther, const TMatrix<value_type, cols, rows>& other)
+    inline void UpdateT(const value_type scalarOther, const Matrix<cols, rows, value_type>& other)
     {
       DENSEFUNCTIONS::updateT<value_type, rows, cols>(A(), scalarOther, other.A());
     }
@@ -3610,7 +3607,7 @@ namespace LINALG
       \param scalarThis
         scaling factor for \e this
      */
-    inline void UpdateT(const value_type scalarOther, const TMatrix<value_type, cols, rows>& other,
+    inline void UpdateT(const value_type scalarOther, const Matrix<cols, rows, value_type>& other,
         const value_type scalarThis)
     {
       DENSEFUNCTIONS::updateT<value_type, rows, cols>(scalarThis, A(), scalarOther, other.A());
@@ -3623,7 +3620,7 @@ namespace LINALG
       \param other
         factor
      */
-    inline void EMultiply(const TMatrix<value_type, rows, cols>& other)
+    inline void EMultiply(const Matrix<rows, cols, value_type>& other)
     {
       DENSEFUNCTIONS::eMultiply<value_type, rows, cols>(A(), other.A());
     }
@@ -3637,7 +3634,7 @@ namespace LINALG
       \param other
         factor
      */
-    inline void EMultiply(const value_type scalar, const TMatrix<value_type, rows, cols>& other)
+    inline void EMultiply(const value_type scalar, const Matrix<rows, cols, value_type>& other)
     {
       DENSEFUNCTIONS::eMultiply<value_type, rows, cols>(scalar, A(), other.A());
     }
@@ -3652,7 +3649,7 @@ namespace LINALG
         second factor
      */
     inline void EMultiply(
-        const TMatrix<value_type, rows, cols>& left, const TMatrix<value_type, rows, cols>& right)
+        const Matrix<rows, cols, value_type>& left, const Matrix<rows, cols, value_type>& right)
     {
       DENSEFUNCTIONS::eMultiply<value_type, rows, cols>(A(), left.A(), right.A());
     }
@@ -3669,8 +3666,8 @@ namespace LINALG
       \param right
         second factor
      */
-    inline void EMultiply(const value_type scalarOther, const TMatrix<value_type, rows, cols>& left,
-        const TMatrix<value_type, rows, cols>& right)
+    inline void EMultiply(const value_type scalarOther, const Matrix<rows, cols, value_type>& left,
+        const Matrix<rows, cols, value_type>& right)
     {
       DENSEFUNCTIONS::eMultiply<value_type, rows, cols>(A(), scalarOther, left.A(), right.A());
     }
@@ -3690,8 +3687,8 @@ namespace LINALG
       \param scalarThis
         scaling factor for \e this
      */
-    inline void EMultiply(const value_type scalarOther, const TMatrix<value_type, rows, cols>& left,
-        const TMatrix<value_type, rows, cols>& right, const value_type scalarThis)
+    inline void EMultiply(const value_type scalarOther, const Matrix<rows, cols, value_type>& left,
+        const Matrix<rows, cols, value_type>& right, const value_type scalarThis)
     {
       DENSEFUNCTIONS::eMultiply<value_type, rows, cols>(
           scalarThis, A(), scalarOther, left.A(), right.A());
@@ -3704,7 +3701,7 @@ namespace LINALG
       \param other
         factor
      */
-    inline void EDivide(const TMatrix<value_type, rows, cols>& other)
+    inline void EDivide(const Matrix<rows, cols, value_type>& other)
     {
       DENSEFUNCTIONS::eDivide<value_type, rows, cols>(A(), other.A());
     }
@@ -3718,7 +3715,7 @@ namespace LINALG
       \param other
         factor
      */
-    inline void EDivide(const value_type scalar, const TMatrix<value_type, rows, cols>& other)
+    inline void EDivide(const value_type scalar, const Matrix<rows, cols, value_type>& other)
     {
       DENSEFUNCTIONS::eDivide<value_type, rows, cols>(scalar, A(), other.A());
     }
@@ -3733,7 +3730,7 @@ namespace LINALG
         divisor
      */
     inline void EDivide(
-        const TMatrix<value_type, rows, cols>& left, const TMatrix<value_type, rows, cols>& right)
+        const Matrix<rows, cols, value_type>& left, const Matrix<rows, cols, value_type>& right)
     {
       DENSEFUNCTIONS::eDivide<value_type, rows, cols>(A(), left.A(), right.A());
     }
@@ -3750,8 +3747,8 @@ namespace LINALG
       \param right
         divisor
      */
-    inline void EDivide(const value_type scalarOther, const TMatrix<value_type, rows, cols>& left,
-        const TMatrix<value_type, rows, cols>& right)
+    inline void EDivide(const value_type scalarOther, const Matrix<rows, cols, value_type>& left,
+        const Matrix<rows, cols, value_type>& right)
     {
       DENSEFUNCTIONS::eDivide<value_type, rows, cols>(A(), scalarOther, left.A(), right.A());
     }
@@ -3771,8 +3768,8 @@ namespace LINALG
       \param scalarThis
         scaling factor for \e this
      */
-    inline void EDivide(const value_type scalarOther, const TMatrix<value_type, rows, cols>& left,
-        const TMatrix<value_type, rows, cols>& right, const value_type scalarThis)
+    inline void EDivide(const value_type scalarOther, const Matrix<rows, cols, value_type>& left,
+        const Matrix<rows, cols, value_type>& right, const value_type scalarThis)
     {
       DENSEFUNCTIONS::eDivide<value_type, rows, cols>(
           scalarThis, A(), scalarOther, left.A(), right.A());
@@ -3842,7 +3839,7 @@ namespace LINALG
      */
     template <unsigned int inner>
     inline void Multiply(
-        const TMatrix<value_type, rows, inner>& left, const TMatrix<value_type, inner, cols>& right)
+        const Matrix<rows, inner, value_type>& left, const Matrix<inner, cols, value_type>& right)
     {
       DENSEFUNCTIONS::multiply<value_type, rows, inner, cols>(A(), left.A(), right.A());
     }
@@ -3856,7 +3853,7 @@ namespace LINALG
      */
     template <unsigned int inner>
     inline void MultiplyNN(
-        const TMatrix<value_type, rows, inner>& left, const TMatrix<value_type, inner, cols>& right)
+        const Matrix<rows, inner, value_type>& left, const Matrix<inner, cols, value_type>& right)
     {
       DENSEFUNCTIONS::multiply<value_type, rows, inner, cols>(A(), left.A(), right.A());
     }
@@ -3870,7 +3867,7 @@ namespace LINALG
      */
     template <unsigned int inner>
     inline void MultiplyNT(
-        const TMatrix<value_type, rows, inner>& left, const TMatrix<value_type, cols, inner>& right)
+        const Matrix<rows, inner, value_type>& left, const Matrix<cols, inner, value_type>& right)
     {
       DENSEFUNCTIONS::multiplyNT<value_type, rows, inner, cols>(A(), left.A(), right.A());
     }
@@ -3884,7 +3881,7 @@ namespace LINALG
      */
     template <unsigned int inner>
     inline void MultiplyTN(
-        const TMatrix<value_type, inner, rows>& left, const TMatrix<value_type, inner, cols>& right)
+        const Matrix<inner, rows, value_type>& left, const Matrix<inner, cols, value_type>& right)
     {
       DENSEFUNCTIONS::multiplyTN<value_type, rows, inner, cols>(A(), left.A(), right.A());
     }
@@ -3898,7 +3895,7 @@ namespace LINALG
      */
     template <unsigned int inner>
     inline void MultiplyTT(
-        const TMatrix<value_type, inner, rows>& left, const TMatrix<value_type, cols, inner>& right)
+        const Matrix<inner, rows, value_type>& left, const Matrix<cols, inner, value_type>& right)
     {
       DENSEFUNCTIONS::multiplyTT<value_type, rows, inner, cols>(A(), left.A(), right.A());
     }
@@ -3914,8 +3911,8 @@ namespace LINALG
         second factor
      */
     template <unsigned int inner>
-    inline void Multiply(const value_type scalarOthers,
-        const TMatrix<value_type, rows, inner>& left, const TMatrix<value_type, inner, cols>& right)
+    inline void Multiply(const value_type scalarOthers, const Matrix<rows, inner, value_type>& left,
+        const Matrix<inner, cols, value_type>& right)
     {
       DENSEFUNCTIONS::multiply<value_type, rows, inner, cols>(
           A(), scalarOthers, left.A(), right.A());
@@ -3934,7 +3931,7 @@ namespace LINALG
      */
     template <unsigned int inner>
     inline void MultiplyNN(const value_type scalarOthers,
-        const TMatrix<value_type, rows, inner>& left, const TMatrix<value_type, inner, cols>& right)
+        const Matrix<rows, inner, value_type>& left, const Matrix<inner, cols, value_type>& right)
     {
       DENSEFUNCTIONS::multiply<value_type, rows, inner, cols>(
           A(), scalarOthers, left.A(), right.A());
@@ -3951,7 +3948,7 @@ namespace LINALG
      */
     template <unsigned int inner>
     inline void MultiplyNT(const value_type scalarOthers,
-        const TMatrix<value_type, rows, inner>& left, const TMatrix<value_type, cols, inner>& right)
+        const Matrix<rows, inner, value_type>& left, const Matrix<cols, inner, value_type>& right)
     {
       DENSEFUNCTIONS::multiplyNT<value_type, rows, inner, cols>(
           A(), scalarOthers, left.A(), right.A());
@@ -3968,7 +3965,7 @@ namespace LINALG
      */
     template <unsigned int inner>
     inline void MultiplyTN(const value_type scalarOthers,
-        const TMatrix<value_type, inner, rows>& left, const TMatrix<value_type, inner, cols>& right)
+        const Matrix<inner, rows, value_type>& left, const Matrix<inner, cols, value_type>& right)
     {
       DENSEFUNCTIONS::multiplyTN<value_type, rows, inner, cols>(
           A(), scalarOthers, left.A(), right.A());
@@ -3985,7 +3982,7 @@ namespace LINALG
      */
     template <unsigned int inner>
     inline void MultiplyTT(const value_type scalarOthers,
-        const TMatrix<value_type, inner, rows>& left, const TMatrix<value_type, cols, inner>& right)
+        const Matrix<inner, rows, value_type>& left, const Matrix<cols, inner, value_type>& right)
     {
       DENSEFUNCTIONS::multiplyTT<value_type, rows, inner, cols>(
           A(), scalarOthers, left.A(), right.A());
@@ -4005,9 +4002,8 @@ namespace LINALG
         scalar factor for \e this
      */
     template <unsigned int inner>
-    inline void Multiply(const value_type scalarOthers,
-        const TMatrix<value_type, rows, inner>& left, const TMatrix<value_type, inner, cols>& right,
-        const value_type scalarThis)
+    inline void Multiply(const value_type scalarOthers, const Matrix<rows, inner, value_type>& left,
+        const Matrix<inner, cols, value_type>& right, const value_type scalarThis)
     {
       DENSEFUNCTIONS::multiply<value_type, rows, inner, cols>(
           scalarThis, A(), scalarOthers, left.A(), right.A());
@@ -4026,7 +4022,7 @@ namespace LINALG
      */
     template <unsigned int inner>
     inline void MultiplyNN(const value_type scalarOthers,
-        const TMatrix<value_type, rows, inner>& left, const TMatrix<value_type, inner, cols>& right,
+        const Matrix<rows, inner, value_type>& left, const Matrix<inner, cols, value_type>& right,
         const value_type scalarThis)
     {
       DENSEFUNCTIONS::multiply<value_type, rows, inner, cols>(
@@ -4046,7 +4042,7 @@ namespace LINALG
      */
     template <unsigned int inner>
     inline void MultiplyNT(const value_type scalarOthers,
-        const TMatrix<value_type, rows, inner>& left, const TMatrix<value_type, cols, inner>& right,
+        const Matrix<rows, inner, value_type>& left, const Matrix<cols, inner, value_type>& right,
         const value_type scalarThis)
     {
       DENSEFUNCTIONS::multiplyNT<value_type, rows, inner, cols>(
@@ -4066,7 +4062,7 @@ namespace LINALG
      */
     template <unsigned int inner>
     inline void MultiplyTN(const value_type scalarOthers,
-        const TMatrix<value_type, inner, rows>& left, const TMatrix<value_type, inner, cols>& right,
+        const Matrix<inner, rows, value_type>& left, const Matrix<inner, cols, value_type>& right,
         const value_type scalarThis)
     {
       DENSEFUNCTIONS::multiplyTN<value_type, rows, inner, cols>(
@@ -4086,7 +4082,7 @@ namespace LINALG
      */
     template <unsigned int inner>
     inline void MultiplyTT(const value_type scalarOthers,
-        const TMatrix<value_type, inner, rows>& left, const TMatrix<value_type, cols, inner>& right,
+        const Matrix<inner, rows, value_type>& left, const Matrix<cols, inner, value_type>& right,
         const value_type scalarThis)
     {
       DENSEFUNCTIONS::multiplyTT<value_type, rows, inner, cols>(
@@ -4109,7 +4105,7 @@ namespace LINALG
       \param other
         matrix to get data from
      */
-    inline TMatrix<value_type, rows, cols>& operator=(const TMatrix<value_type, rows, cols>& other);
+    inline Matrix<rows, cols, value_type>& operator=(const Matrix<rows, cols, value_type>& other);
 
     /// = operator for double
     /*!
@@ -4118,7 +4114,7 @@ namespace LINALG
       \param other
         scalar value
      */
-    inline TMatrix<value_type, rows, cols>& operator=(const value_type other);
+    inline Matrix<rows, cols, value_type>& operator=(const value_type other);
 
     /// == operator
     /*!
@@ -4127,7 +4123,7 @@ namespace LINALG
       \param other
         matrix to compare with
      */
-    inline bool operator==(const TMatrix<value_type, rows, cols>& other) const;
+    inline bool operator==(const Matrix<rows, cols, value_type>& other) const;
 
     /// != operator
     /*!
@@ -4136,7 +4132,7 @@ namespace LINALG
       \param other
         matrix to compare with
      */
-    inline bool operator!=(const TMatrix<value_type, rows, cols>& other) const;
+    inline bool operator!=(const Matrix<rows, cols, value_type>& other) const;
 
     /// += operator
     /*!
@@ -4145,7 +4141,7 @@ namespace LINALG
       \param other
         matrix to add
      */
-    inline TMatrix<value_type, rows, cols>& operator+=(const TMatrix<value_type, rows, cols>& other)
+    inline Matrix<rows, cols, value_type>& operator+=(const Matrix<rows, cols, value_type>& other)
     {
       DENSEFUNCTIONS::update<value_type, rows, cols>(1.0, A(), 1.0, other.A());
       return *this;
@@ -4158,7 +4154,7 @@ namespace LINALG
       \param other
         matrix to subtract
      */
-    inline TMatrix<value_type, rows, cols>& operator-=(const TMatrix<value_type, rows, cols>& other)
+    inline Matrix<rows, cols, value_type>& operator-=(const Matrix<rows, cols, value_type>& other)
     {
       DENSEFUNCTIONS::update<value_type, rows, cols>(1.0, A(), -1.0, other.A());
       return *this;
@@ -4208,12 +4204,12 @@ namespace LINALG
   };
 
   template <class value_type, unsigned int cols, unsigned int rows>
-  std::ostream& operator<<(std::ostream& out, const TMatrix<value_type, rows, cols>& matrix);
+  std::ostream& operator<<(std::ostream& out, const Matrix<rows, cols, value_type>& matrix);
 
   // Constructors
 
-  template <class value_type, unsigned int rows, unsigned int cols>
-  TMatrix<value_type, rows, cols>::TMatrix(bool setzero)
+  template <unsigned int rows, unsigned int cols, class value_type>
+  Matrix<rows, cols, value_type>::Matrix(bool setzero)
       : data_(0), isview_(false), isreadonly_(false)
   {
     DENSEERROR::Checker<(rows != 0) and (cols != 0)>::Matrix_dimensions_cannot_be_zero();
@@ -4224,8 +4220,8 @@ namespace LINALG
     if (setzero) DENSEFUNCTIONS::clearMatrix<value_type, rows, cols>(data_);
   }
 
-  template <class value_type, unsigned int rows, unsigned int cols>
-  TMatrix<value_type, rows, cols>::TMatrix(value_type* d, bool view)
+  template <unsigned int rows, unsigned int cols, class value_type>
+  Matrix<rows, cols, value_type>::Matrix(value_type* d, bool view)
       : data_(0), isview_(view), isreadonly_(false)
   {
     DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
@@ -4243,8 +4239,8 @@ namespace LINALG
     }
   }
 
-  template <class value_type, unsigned int rows, unsigned int cols>
-  TMatrix<value_type, rows, cols>::TMatrix(const value_type* d, bool view)
+  template <unsigned int rows, unsigned int cols, class value_type>
+  Matrix<rows, cols, value_type>::Matrix(const value_type* d, bool view)
       : data_(0), isview_(view), isreadonly_(false)
   {
     DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
@@ -4263,8 +4259,8 @@ namespace LINALG
     }
   }
 
-  template <class value_type, unsigned int rows, unsigned int cols>
-  TMatrix<value_type, rows, cols>::TMatrix(Epetra_SerialDenseMatrix& d, bool view)
+  template <unsigned int rows, unsigned int cols, class value_type>
+  Matrix<rows, cols, value_type>::Matrix(Epetra_SerialDenseMatrix& d, bool view)
       : data_(0), isview_(view), isreadonly_(false)
   {
     DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
@@ -4284,8 +4280,8 @@ namespace LINALG
     }
   }
 
-  template <class value_type, unsigned int rows, unsigned int cols>
-  TMatrix<value_type, rows, cols>::TMatrix(TMatrix<value_type, rows, cols>& source, bool view)
+  template <unsigned int rows, unsigned int cols, class value_type>
+  Matrix<rows, cols, value_type>::Matrix(Matrix<rows, cols, value_type>& source, bool view)
       : data_(0), isview_(view), isreadonly_(false)
   {
     DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
@@ -4303,8 +4299,8 @@ namespace LINALG
     }
   }
 
-  template <class value_type, unsigned int rows, unsigned int cols>
-  TMatrix<value_type, rows, cols>::TMatrix(const TMatrix<value_type, rows, cols>& source)
+  template <unsigned int rows, unsigned int cols, class value_type>
+  Matrix<rows, cols, value_type>::Matrix(const Matrix<rows, cols, value_type>& source)
       : data_(0), isview_(false), isreadonly_(false)
   {
     DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
@@ -4315,8 +4311,8 @@ namespace LINALG
     std::copy(source.data_, source.data_ + rows * cols, data_);
   }
 
-  template <class value_type, unsigned int rows, unsigned int cols>
-  TMatrix<value_type, rows, cols>::TMatrix(const TMatrix<value_type, rows, cols>& source, bool view)
+  template <unsigned int rows, unsigned int cols, class value_type>
+  Matrix<rows, cols, value_type>::Matrix(const Matrix<rows, cols, value_type>& source, bool view)
       : data_(0), isview_(view), isreadonly_(false)
   {
     DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
@@ -4336,14 +4332,14 @@ namespace LINALG
   }
 
   // Destructor
-  template <class value_type, unsigned int rows, unsigned int cols>
-  TMatrix<value_type, rows, cols>::~TMatrix()
+  template <unsigned int rows, unsigned int cols, class value_type>
+  Matrix<rows, cols, value_type>::~Matrix()
   {
     if (allocatesmemory_ && not isview_) delete[] data_;
   }
 
-  template <class value_type, unsigned int rows, unsigned int cols>
-  void TMatrix<value_type, rows, cols>::SetView(value_type* data)
+  template <unsigned int rows, unsigned int cols, class value_type>
+  void Matrix<rows, cols, value_type>::SetView(value_type* data)
   {
     if (not isview_)
     {
@@ -4353,8 +4349,8 @@ namespace LINALG
     data_ = data;
   }
 
-  template <class value_type, unsigned int rows, unsigned int cols>
-  void TMatrix<value_type, rows, cols>::SetView(TMatrix<value_type, rows, cols>& source)
+  template <unsigned int rows, unsigned int cols, class value_type>
+  void Matrix<rows, cols, value_type>::SetView(Matrix<rows, cols, value_type>& source)
   {
     if (not isview_)
     {
@@ -4364,8 +4360,8 @@ namespace LINALG
     data_ = source.data_;
   }
 
-  template <class value_type, unsigned int rows, unsigned int cols>
-  void TMatrix<value_type, rows, cols>::SetCopy(const value_type* data)
+  template <unsigned int rows, unsigned int cols, class value_type>
+  void Matrix<rows, cols, value_type>::SetCopy(const value_type* data)
   {
     if (isview_)
     {
@@ -4378,38 +4374,38 @@ namespace LINALG
     std::copy(data, data + rows * cols, data_);
   }
 
-  template <class value_type, unsigned int rows, unsigned int cols>
-  void TMatrix<value_type, rows, cols>::SetCopy(const TMatrix<value_type, rows, cols>& source)
+  template <unsigned int rows, unsigned int cols, class value_type>
+  void Matrix<rows, cols, value_type>::SetCopy(const Matrix<rows, cols, value_type>& source)
   {
     SetCopy(source.A());
   }
 
   // Determinant
-  template <class value_type, unsigned int rows, unsigned int cols>
-  inline value_type TMatrix<value_type, rows, cols>::Determinant() const
+  template <unsigned int rows, unsigned int cols, class value_type>
+  inline value_type Matrix<rows, cols, value_type>::Determinant() const
   {
     DENSEERROR::Checker<rows == cols>::Cannot_compute_determinant_of_nonsquare_matrix();
     return DENSEFUNCTIONS::determinant<value_type, rows, cols>(A());
   }
 
   // Invert
-  template <class value_type, unsigned int rows, unsigned int cols>
-  inline value_type TMatrix<value_type, rows, cols>::Invert()
+  template <unsigned int rows, unsigned int cols, class value_type>
+  inline value_type Matrix<rows, cols, value_type>::Invert()
   {
     DENSEERROR::Checker<rows == cols>::Cannot_compute_inverse_of_nonsquare_matrix();
     return DENSEFUNCTIONS::invert<value_type, rows, cols>(A());
   }
 
-  template <class value_type, unsigned int rows, unsigned int cols>
-  inline value_type TMatrix<value_type, rows, cols>::Invert(
-      const TMatrix<value_type, rows, cols>& other)
+  template <unsigned int rows, unsigned int cols, class value_type>
+  inline value_type Matrix<rows, cols, value_type>::Invert(
+      const Matrix<rows, cols, value_type>& other)
   {
     DENSEERROR::Checker<rows == cols>::Cannot_compute_inverse_of_nonsquare_matrix();
     return DENSEFUNCTIONS::invert<value_type, rows, cols>(A(), other.A());
   }
 
-  template <class value_type, unsigned int rows, unsigned int cols>
-  void TMatrix<value_type, rows, cols>::Print(std::ostream& out) const
+  template <unsigned int rows, unsigned int cols, class value_type>
+  void Matrix<rows, cols, value_type>::Print(std::ostream& out) const
   {
     out << "Matrix<" << rows << ',' << cols << '>';
     if (isview_) out << " (view to memory only)";
@@ -4453,32 +4449,32 @@ namespace LINALG
     Write matrix to out. This function calls matrix.Print(out).
    */
   template <class value_type, unsigned int cols, unsigned int rows>
-  std::ostream& operator<<(std::ostream& out, const TMatrix<value_type, rows, cols>& matrix)
+  std::ostream& operator<<(std::ostream& out, const Matrix<rows, cols, value_type>& matrix)
   {
     matrix.Print(out);
     return out;
   }
 
 
-  template <class value_type, unsigned int rows, unsigned int cols>
-  inline TMatrix<value_type, rows, cols>& TMatrix<value_type, rows, cols>::operator=(
-      const TMatrix<value_type, rows, cols>& other)
+  template <unsigned int rows, unsigned int cols, class value_type>
+  inline Matrix<rows, cols, value_type>& Matrix<rows, cols, value_type>::operator=(
+      const Matrix<rows, cols, value_type>& other)
   {
     DENSEFUNCTIONS::update<value_type, rows, cols>(A(), other.A());
     return *this;
   }
 
-  template <class value_type, unsigned int rows, unsigned int cols>
-  inline TMatrix<value_type, rows, cols>& TMatrix<value_type, rows, cols>::operator=(
+  template <unsigned int rows, unsigned int cols, class value_type>
+  inline Matrix<rows, cols, value_type>& Matrix<rows, cols, value_type>::operator=(
       const value_type other)
   {
     DENSEFUNCTIONS::putScalar<value_type, rows, cols>(other, A());
     return *this;
   }
 
-  template <class value_type, unsigned int rows, unsigned int cols>
-  inline bool TMatrix<value_type, rows, cols>::operator==(
-      const TMatrix<value_type, rows, cols>& other) const
+  template <unsigned int rows, unsigned int cols, class value_type>
+  inline bool Matrix<rows, cols, value_type>::operator==(
+      const Matrix<rows, cols, value_type>& other) const
   {
     if (A() == other.A()) return true;
     // unfortunately memcmp does not work, because +0 and -0 are
@@ -4488,107 +4484,57 @@ namespace LINALG
     return true;
   }
 
-  template <class value_type, unsigned int rows, unsigned int cols>
-  inline bool TMatrix<value_type, rows, cols>::operator!=(
-      const TMatrix<value_type, rows, cols>& other) const
+  template <unsigned int rows, unsigned int cols, class value_type>
+  inline bool Matrix<rows, cols, value_type>::operator!=(
+      const Matrix<rows, cols, value_type>& other) const
   {
     return not(*this == other);
   }
 
   // Access operator
 
-  template <class value_type, unsigned int rows, unsigned int cols>
-  inline value_type& TMatrix<value_type, rows, cols>::operator()(unsigned int r, unsigned int c)
+  template <unsigned int rows, unsigned int cols, class value_type>
+  inline value_type& Matrix<rows, cols, value_type>::operator()(unsigned int r, unsigned int c)
   {
 #ifdef DEBUG
     if (r >= rows or c >= cols)
-      dserror("Indices %i,%i out of range in TMatrix<%i,%i>.", r, c, rows, cols);
+      dserror("Indices %i,%i out of range in Matrix<%i,%i>.", r, c, rows, cols);
 #endif
     return A()[r + c * rows];
   }
 
-  template <class value_type, unsigned int rows, unsigned int cols>
-  inline const value_type& TMatrix<value_type, rows, cols>::operator()(
+  template <unsigned int rows, unsigned int cols, class value_type>
+  inline const value_type& Matrix<rows, cols, value_type>::operator()(
       unsigned int r, unsigned int c) const
   {
 #ifdef DEBUG
     if (r >= rows or c >= cols)
-      dserror("Indices %i,%i out of range in TMatrix<%i,%i>.", r, c, rows, cols);
+      dserror("Indices %i,%i out of range in Matrix<%i,%i>.", r, c, rows, cols);
 #endif
     return A()[r + c * rows];
   }
 
-  template <class value_type, unsigned int rows, unsigned int cols>
-  inline value_type& TMatrix<value_type, rows, cols>::operator()(unsigned int r)
+  template <unsigned int rows, unsigned int cols, class value_type>
+  inline value_type& Matrix<rows, cols, value_type>::operator()(unsigned int r)
   {
     DENSEERROR::Checker<(cols == 1) or (rows == 1)>::Cannot_call_1D_access_function_on_2D_matrix();
 #ifdef DEBUG
     if (r >= (cols == 1 ? rows : cols))
-      dserror("Index %i out of range in TMatrix<%i,%i>.", r, rows, cols);
+      dserror("Index %i out of range in Matrix<%i,%i>.", r, rows, cols);
 #endif
     return A()[r];
   }
 
-  template <class value_type, unsigned int rows, unsigned int cols>
-  inline const value_type& TMatrix<value_type, rows, cols>::operator()(unsigned int r) const
+  template <unsigned int rows, unsigned int cols, class value_type>
+  inline const value_type& Matrix<rows, cols, value_type>::operator()(unsigned int r) const
   {
     DENSEERROR::Checker<(cols == 1) or (rows == 1)>::Cannot_call_1D_access_function_on_2D_matrix();
 #ifdef DEBUG
     if (r >= (cols == 1 ? rows : cols))
-      dserror("Index %i out of range in TMatrix<%i,%i>.", r, rows, cols);
+      dserror("Index %i out of range in Matrix<%i,%i>.", r, rows, cols);
 #endif
     return A()[r];
   }
-
-
-  /// Serial dense matrix with double numbers and templated dimensions
-  template <unsigned int rows, unsigned int cols, typename value_type = double>
-  class Matrix : public TMatrix<value_type, rows, cols>
-  {
-   public:
-    /// Constructor
-    explicit Matrix(bool setzero = true) : TMatrix<value_type, rows, cols>(setzero) {}
-
-    /// Constructor
-    explicit Matrix(value_type* d, bool view = false) : TMatrix<value_type, rows, cols>(d, view) {}
-
-    /// Constructor
-    explicit Matrix(const value_type* d, bool view = false)
-        : TMatrix<value_type, rows, cols>(d, view)
-    {
-    }
-
-    /// Constructor
-    explicit Matrix(Epetra_SerialDenseMatrix& d, bool view = false)
-        : TMatrix<value_type, rows, cols>(d, view)
-    {
-    }
-
-    /// Constructor
-    Matrix(Matrix<rows, cols, value_type>& source, bool view)
-        : TMatrix<value_type, rows, cols>(source, view)
-    {
-    }
-
-    /// Copy constructor
-    Matrix(const Matrix<rows, cols, value_type>& source) : TMatrix<value_type, rows, cols>(source)
-    {
-    }
-
-    /// = operator
-    inline Matrix<rows, cols, value_type>& operator=(const Matrix<rows, cols, value_type>& other)
-    {
-      TMatrix<value_type, rows, cols>::operator=(other);
-      return *this;
-    }
-
-    /// = operator
-    inline Matrix<rows, cols, value_type>& operator=(const value_type other)
-    {
-      TMatrix<value_type, rows, cols>::operator=(other);
-      return *this;
-    }
-  };
 
 
   /// A solver for fixed size serial dense matrices
@@ -4623,11 +4569,11 @@ namespace LINALG
     static Epetra_BLAS blas_;
 
     /// the matrix we got
-    TMatrix<double, rows, cols>* matrix_;
+    Matrix<rows, cols, double>* matrix_;
     /// the vector of unknowns
-    TMatrix<double, cols, dim_rhs>* vec_X_;
+    Matrix<cols, dim_rhs, double>* vec_X_;
     /// the right hand side vector
-    TMatrix<double, rows, dim_rhs>* vec_B_;
+    Matrix<rows, dim_rhs, double>* vec_B_;
 
     /// some storage for LAPACK
     std::vector<int> pivot_vec_;
@@ -4707,7 +4653,7 @@ namespace LINALG
       \param mat
         new matrix
      */
-    void SetMatrix(TMatrix<double, rows, cols>& mat);
+    void SetMatrix(Matrix<rows, cols, double>& mat);
 
     /// Set the vectors
     /*!
@@ -4718,7 +4664,7 @@ namespace LINALG
       \param B
         right hand side vector
      */
-    void SetVectors(TMatrix<double, cols, dim_rhs>& X, TMatrix<double, rows, dim_rhs>& B);
+    void SetVectors(Matrix<cols, dim_rhs, double>& X, Matrix<rows, dim_rhs, double>& B);
 
     /// Set the equilibration
     /*!
@@ -4786,7 +4732,7 @@ namespace LINALG
   }
 
   template <unsigned int rows, unsigned int cols, unsigned int dim_rhs>
-  void FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::SetMatrix(TMatrix<double, rows, cols>& mat)
+  void FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::SetMatrix(Matrix<rows, cols, double>& mat)
   {
     c_.clear();
     r_.clear();
@@ -4798,7 +4744,7 @@ namespace LINALG
 
   template <unsigned int rows, unsigned int cols, unsigned int dim_rhs>
   void FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::SetVectors(
-      TMatrix<double, cols, dim_rhs>& X, TMatrix<double, rows, dim_rhs>& B)
+      Matrix<cols, dim_rhs, double>& X, Matrix<rows, dim_rhs, double>& B)
   {
     solved_ = false;
     vec_X_ = &X;

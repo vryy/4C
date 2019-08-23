@@ -699,14 +699,14 @@ namespace DRT
        *  \date 01/16 */
       template <unsigned int nnodecl, typename T>
       void CalculateInternalForcesAndStiffWK(Teuchos::ParameterList& params,
-          const LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>&
+          const LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>&
               disp_totlag_centerline,
-          const std::vector<LINALG::TMatrix<T, 3, 3>>& triad_mat_cp,
+          const std::vector<LINALG::Matrix<3, 3, T>>& triad_mat_cp,
           Epetra_SerialDenseMatrix* stiffmatrix,
-          LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& internal_force,
-          std::vector<LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3>>& v_theta_gp,
-          std::vector<LINALG::TMatrix<T, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>>& lin_theta_gp,
-          std::vector<LINALG::TMatrix<T, 3, 3>>& triad_mat_gp);
+          LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& internal_force,
+          std::vector<LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3, T>>& v_theta_gp,
+          std::vector<LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, T>>& lin_theta_gp,
+          std::vector<LINALG::Matrix<3, 3, T>>& triad_mat_gp);
 
       /** \brief Calculate internal forces and stiffness matrix in case of a Strong Kirchhoff
        * Constraint
@@ -715,13 +715,13 @@ namespace DRT
        *  \date 02/16 */
       template <unsigned int nnodecl>
       void CalculateInternalForcesAndStiffSK(Teuchos::ParameterList& params,
-          const LINALG::TMatrix<FAD, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>&
+          const LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, FAD>&
               disp_totlag_centerline,
-          const std::vector<LINALG::TMatrix<FAD, 3, 3>>& triad_mat_cp,
+          const std::vector<LINALG::Matrix<3, 3, FAD>>& triad_mat_cp,
           Epetra_SerialDenseMatrix* stiffmatrix,
-          LINALG::TMatrix<FAD, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& internal_force,
-          std::vector<LINALG::TMatrix<FAD, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3>>& v_theta_gp,
-          std::vector<LINALG::TMatrix<FAD, 3, 3>>& triad_mat_gp);
+          LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, FAD>& internal_force,
+          std::vector<LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3, FAD>>& v_theta_gp,
+          std::vector<LINALG::Matrix<3, 3, FAD>>& triad_mat_gp);
 
       /** \brief Calculate contributions to the stiffness matrix at a Gauss point analytically
        *         in case of weak Kirchhoff constraint
@@ -730,42 +730,42 @@ namespace DRT
        *  \date 02/17 */
       template <unsigned int nnodecl>
       void CalculateStiffmatContributionsAnalyticWK(Epetra_SerialDenseMatrix& stiffmatrix,
-          const LINALG::TMatrix<double, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>&
+          const LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, double>&
               disp_totlag_centerline,
           const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<BEAM3K_COLLOCATION_POINTS,
               double>& triad_intpol,
-          const LINALG::TMatrix<double, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3>& v_theta_s_bar,
-          const std::vector<LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>>&
+          const LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3, double>& v_theta_s_bar,
+          const std::vector<LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>>&
               lin_theta_cp,
-          LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_theta_bar,
-          const std::vector<LINALG::TMatrix<double, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
-              6 * nnodecl + BEAM3K_COLLOCATION_POINTS>>& lin_v_epsilon_cp,
-          const LINALG::TMatrix<double, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& v_epsilon_bar,
-          double axial_force_bar, const LINALG::TMatrix<double, 3, 1>& moment_resultant,
+          LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_theta_bar,
+          const std::vector<LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
+              6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>>& lin_v_epsilon_cp,
+          const LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, double>& v_epsilon_bar,
+          double axial_force_bar, const LINALG::Matrix<3, 1, double>& moment_resultant,
           double axial_rigidity,
-          const LINALG::TMatrix<double, 3, 3>& constitutive_matrix_moment_material,
-          const LINALG::TMatrix<double, 3, 1>& theta_gp,
-          const LINALG::TMatrix<double, 3, 1>& theta_s_gp,
-          const LINALG::TMatrix<double, 3, 3>& triad_mat_gp, double xi_gp, double jacobifac_gp,
+          const LINALG::Matrix<3, 3, double>& constitutive_matrix_moment_material,
+          const LINALG::Matrix<3, 1, double>& theta_gp,
+          const LINALG::Matrix<3, 1, double>& theta_s_gp,
+          const LINALG::Matrix<3, 3, double>& triad_mat_gp, double xi_gp, double jacobifac_gp,
           double GPwgt) const;
 
       template <unsigned int nnodecl>
       void CalculateStiffmatContributionsAnalyticWK(Epetra_SerialDenseMatrix& stiffmatrix,
-          const LINALG::TMatrix<FAD, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>&
+          const LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, FAD>&
               disp_totlag_centerline,
           const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<BEAM3K_COLLOCATION_POINTS,
               FAD>& triad_intpol,
-          const LINALG::TMatrix<FAD, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3>& v_theta_s_bar,
-          const std::vector<LINALG::TMatrix<FAD, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>>&
+          const LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3, FAD>& v_theta_s_bar,
+          const std::vector<LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, FAD>>&
               lin_theta_cp,
-          LINALG::TMatrix<FAD, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_theta_bar,
-          const std::vector<LINALG::TMatrix<FAD, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
-              6 * nnodecl + BEAM3K_COLLOCATION_POINTS>>& lin_v_epsilon_cp,
-          const LINALG::TMatrix<FAD, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& v_epsilon_bar,
-          FAD axial_force_bar, const LINALG::TMatrix<FAD, 3, 1>& moment_resultant,
-          FAD axial_rigidity, const LINALG::TMatrix<FAD, 3, 3>& constitutive_matrix_moment_material,
-          const LINALG::TMatrix<FAD, 3, 1>& theta_gp, const LINALG::TMatrix<FAD, 3, 1>& theta_s_gp,
-          const LINALG::TMatrix<FAD, 3, 3>& triad_mat_gp, double xi_gp, double jacobifac_gp,
+          LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, FAD>& lin_theta_bar,
+          const std::vector<LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
+              6 * nnodecl + BEAM3K_COLLOCATION_POINTS, FAD>>& lin_v_epsilon_cp,
+          const LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, FAD>& v_epsilon_bar,
+          FAD axial_force_bar, const LINALG::Matrix<3, 1, FAD>& moment_resultant,
+          FAD axial_rigidity, const LINALG::Matrix<3, 3, FAD>& constitutive_matrix_moment_material,
+          const LINALG::Matrix<3, 1, FAD>& theta_gp, const LINALG::Matrix<3, 1, FAD>& theta_s_gp,
+          const LINALG::Matrix<3, 3, FAD>& triad_mat_gp, double xi_gp, double jacobifac_gp,
           double GPwgt) const
       {
         // this is a dummy because in case that the pre-calculated values are of type Fad,
@@ -779,23 +779,23 @@ namespace DRT
        *  \date 02/17 */
       template <unsigned int nnodecl>
       void PreComputeTermsAtCPForStiffmatContributionsAnalyticWK(
-          LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_theta,
-          LINALG::TMatrix<double, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
-              6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_v_epsilon,
-          const LINALG::TMatrix<double, 1, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& L,
-          const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_s,
-          const LINALG::TMatrix<double, 3, 1>& r_s, double abs_r_s,
-          const LINALG::TMatrix<double, 4, 1>& Qref_conv) const;
+          LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_theta,
+          LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
+              6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_v_epsilon,
+          const LINALG::Matrix<1, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& L,
+          const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_s,
+          const LINALG::Matrix<3, 1, double>& r_s, double abs_r_s,
+          const LINALG::Matrix<4, 1, double>& Qref_conv) const;
 
       template <unsigned int nnodecl>
       void PreComputeTermsAtCPForStiffmatContributionsAnalyticWK(
-          LINALG::TMatrix<FAD, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_theta,
-          LINALG::TMatrix<FAD, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
-              6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_v_epsilon,
-          const LINALG::TMatrix<FAD, 1, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& L,
-          const LINALG::TMatrix<FAD, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_s,
-          const LINALG::TMatrix<FAD, 3, 1>& r_s, FAD abs_r_s,
-          const LINALG::TMatrix<double, 4, 1>& Qref_conv) const
+          LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, FAD>& lin_theta,
+          LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
+              6 * nnodecl + BEAM3K_COLLOCATION_POINTS, FAD>& lin_v_epsilon,
+          const LINALG::Matrix<1, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, FAD>& L,
+          const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, FAD>& N_s,
+          const LINALG::Matrix<3, 1, FAD>& r_s, FAD abs_r_s,
+          const LINALG::Matrix<4, 1, double>& Qref_conv) const
       {
         // this is empty because in case that the pre-calculated values are of type Fad,
         // we use automatic differentiation and consequently there is no need for analytic stiffmat
@@ -808,14 +808,14 @@ namespace DRT
        *  \date 02/16 */
       template <unsigned int nnodecl, typename T>
       void CalculateInertiaForcesAndMassMatrix(Teuchos::ParameterList& params,
-          const std::vector<LINALG::TMatrix<T, 3, 3>>& triad_mat_gp,
-          const LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>&
+          const std::vector<LINALG::Matrix<3, 3, T>>& triad_mat_gp,
+          const LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>&
               disp_totlag_centerline,
-          const std::vector<LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3>>&
+          const std::vector<LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3, T>>&
               v_theta_gp,
-          const std::vector<LINALG::TMatrix<T, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>>&
+          const std::vector<LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, T>>&
               lin_theta_gp,
-          LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& f_inert,
+          LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& f_inert,
           Epetra_SerialDenseMatrix* massmatrix);
 
       /** \brief Calculate analytic linearization of inertia forces, i.e. mass matrix
@@ -824,34 +824,33 @@ namespace DRT
        *  \date 02/17 */
       template <unsigned int nnodecl>
       void CalculateMassMatrixContributionsAnalyticWK(Epetra_SerialDenseMatrix& massmatrix,
-          const LINALG::TMatrix<double, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>&
+          const LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, double>&
               disp_totlag_centerline,
-          const LINALG::TMatrix<double, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3>& v_theta_bar,
-          const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_theta_bar,
-          const LINALG::TMatrix<double, 3, 1>& moment_rho,
-          const LINALG::TMatrix<double, 3, 1>& deltatheta,
-          const LINALG::TMatrix<double, 3, 1>& angular_velocity_material,
-          const LINALG::TMatrix<double, 3, 3>& triad_mat,
-          const LINALG::TMatrix<double, 3, 3>& triad_mat_conv,
-          const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N,
+          const LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3, double>& v_theta_bar,
+          const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_theta_bar,
+          const LINALG::Matrix<3, 1, double>& moment_rho,
+          const LINALG::Matrix<3, 1, double>& deltatheta,
+          const LINALG::Matrix<3, 1, double>& angular_velocity_material,
+          const LINALG::Matrix<3, 3, double>& triad_mat,
+          const LINALG::Matrix<3, 3, double>& triad_mat_conv,
+          const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N,
           double mass_inertia_translational,
-          const LINALG::TMatrix<double, 3, 3>& tensor_mass_moment_of_inertia,
+          const LINALG::Matrix<3, 3, double>& tensor_mass_moment_of_inertia,
           double lin_prefactor_acc, double lin_prefactor_vel, double xi_gp, double jacobifac_gp,
           double GPwgt) const;
 
       template <unsigned int nnodecl>
       void CalculateMassMatrixContributionsAnalyticWK(Epetra_SerialDenseMatrix& massmatrix,
-          const LINALG::TMatrix<FAD, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>&
+          const LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, FAD>&
               disp_totlag_centerline,
-          const LINALG::TMatrix<FAD, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3>& v_theta_bar,
-          const LINALG::TMatrix<FAD, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_theta_bar,
-          const LINALG::TMatrix<FAD, 3, 1>& moment_rho,
-          const LINALG::TMatrix<FAD, 3, 1>& deltatheta,
-          const LINALG::TMatrix<FAD, 3, 1>& angular_velocity_material,
-          const LINALG::TMatrix<FAD, 3, 3>& triad_mat,
-          const LINALG::TMatrix<FAD, 3, 3>& triad_mat_conv,
-          const LINALG::TMatrix<FAD, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N, double density,
-          const LINALG::TMatrix<FAD, 3, 3>& tensor_mass_moment_of_inertia, double lin_prefactor_acc,
+          const LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3, FAD>& v_theta_bar,
+          const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, FAD>& lin_theta_bar,
+          const LINALG::Matrix<3, 1, FAD>& moment_rho, const LINALG::Matrix<3, 1, FAD>& deltatheta,
+          const LINALG::Matrix<3, 1, FAD>& angular_velocity_material,
+          const LINALG::Matrix<3, 3, FAD>& triad_mat,
+          const LINALG::Matrix<3, 3, FAD>& triad_mat_conv,
+          const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, FAD>& N, double density,
+          const LINALG::Matrix<3, 3, FAD>& tensor_mass_moment_of_inertia, double lin_prefactor_acc,
           double lin_prefactor_vel, double xi_gp, double jacobifac_gp, double GPwgt) const
       {
         // this is empty because in case that the pre-calculated values are of type Fad,
@@ -869,8 +868,8 @@ namespace DRT
       template <unsigned int nnodecl>
       void EvaluatePointNeumannEB(Epetra_SerialDenseVector& forcevec,
           Epetra_SerialDenseMatrix* stiffmat,
-          const LINALG::TMatrix<double, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& disp_totlag,
-          const LINALG::TMatrix<double, 6, 1>& load_vector_neumann, int node) const;
+          const LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, double>& disp_totlag,
+          const LINALG::Matrix<6, 1, double>& load_vector_neumann, int node) const;
 
       /** \brief evaluate contributions to element residual vector from point Neumann moment
        *
@@ -878,9 +877,9 @@ namespace DRT
        *  \date 02/17 */
       template <unsigned int nnodecl, typename T>
       void EvaluateResidualFromPointNeumannMoment(
-          LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& force_ext,
-          const LINALG::TMatrix<T, 3, 1>& moment_ext, const LINALG::TMatrix<T, 3, 1>& r_s,
-          T abs_r_s, int node) const;
+          LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& force_ext,
+          const LINALG::Matrix<3, 1, T>& moment_ext, const LINALG::Matrix<3, 1, T>& r_s, T abs_r_s,
+          int node) const;
 
       /** \brief evaluate contributions to element stiffness matrix from point Neumann moment
        *
@@ -888,7 +887,7 @@ namespace DRT
        *  \date 02/17 */
       template <unsigned int nnodecl>
       void EvaluateStiffMatrixAnalyticFromPointNeumannMoment(Epetra_SerialDenseMatrix& stiffmat,
-          const LINALG::TMatrix<double, 3, 1>& moment_ext, const LINALG::TMatrix<double, 3, 1>& r_s,
+          const LINALG::Matrix<3, 1, double>& moment_ext, const LINALG::Matrix<3, 1, double>& r_s,
           double abs_r_s, int node) const;
 
       /** \brief evaluate contributions to element residual vector and stiffmat from line Neumann
@@ -899,8 +898,8 @@ namespace DRT
       template <unsigned int nnodecl>
       void EvaluateLineNeumann(Epetra_SerialDenseVector& forcevec,
           Epetra_SerialDenseMatrix* stiffmat,
-          const LINALG::TMatrix<double, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& disp_totlag,
-          const LINALG::TMatrix<double, 6, 1>& load_vector_neumann,
+          const LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, double>& disp_totlag,
+          const LINALG::Matrix<6, 1, double>& load_vector_neumann,
           const std::vector<int>* function_numbers, double time) const;
 
       /** \brief evaluate contributions to element residual vector from line Neumann condition
@@ -909,8 +908,8 @@ namespace DRT
        *  \date 02/17 */
       template <unsigned int nnodecl, typename T>
       void EvaluateLineNeumannForces(
-          LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& force_ext,
-          const LINALG::TMatrix<double, 6, 1>& load_vector_neumann,
+          LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& force_ext,
+          const LINALG::Matrix<6, 1, double>& load_vector_neumann,
           const std::vector<int>* function_numbers, double time) const;
 
       /** \brief evaluate all contributions from brownian dynamics (thermal & viscous
@@ -931,10 +930,10 @@ namespace DRT
        *  \date 12/16 */
       template <typename T, unsigned int nnode, unsigned int vpernode, unsigned int ndim>
       void EvaluateTranslationalDamping(Teuchos::ParameterList& params,  //!< parameter list
-          const LINALG::TMatrix<double, ndim * vpernode * nnode, 1>& vel,
-          const LINALG::TMatrix<T, ndim * vpernode * nnode, 1>& disp_totlag,
+          const LINALG::Matrix<ndim * vpernode * nnode, 1, double>& vel,
+          const LINALG::Matrix<ndim * vpernode * nnode, 1, T>& disp_totlag,
           Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-          LINALG::TMatrix<T, ndim * vpernode * nnode + BEAM3K_COLLOCATION_POINTS, 1>&
+          LINALG::Matrix<ndim * vpernode * nnode + BEAM3K_COLLOCATION_POINTS, 1, T>&
               f_int);  //!< element internal force vector
 
       /** \brief evaluate contributions to element stiffness matrix from translational damping
@@ -945,24 +944,24 @@ namespace DRT
       template <unsigned int nnode, unsigned int vpernode, unsigned int ndim>
       void EvaluateAnalyticStiffmatContributionsFromTranslationalDamping(
           Epetra_SerialDenseMatrix& stiffmatrix,
-          const LINALG::TMatrix<double, ndim, ndim>& damping_matrix,
-          const LINALG::TMatrix<double, ndim, 1>& r_s,
-          const LINALG::TMatrix<double, ndim, 1>& vel_rel,
-          const LINALG::TMatrix<double, ndim, 1>& gamma,
-          const LINALG::TMatrix<double, ndim, ndim>& velbackgroundgrad,
-          const LINALG::TMatrix<double, 1, nnode * vpernode>& N_i,
-          const LINALG::TMatrix<double, 1, nnode * vpernode>& N_i_xi, double jacobifactor,
+          const LINALG::Matrix<ndim, ndim, double>& damping_matrix,
+          const LINALG::Matrix<ndim, 1, double>& r_s,
+          const LINALG::Matrix<ndim, 1, double>& vel_rel,
+          const LINALG::Matrix<ndim, 1, double>& gamma,
+          const LINALG::Matrix<ndim, ndim, double>& velbackgroundgrad,
+          const LINALG::Matrix<1, nnode * vpernode, double>& N_i,
+          const LINALG::Matrix<1, nnode * vpernode, double>& N_i_xi, double jacobifactor,
           double gp_weight) const;
 
       template <unsigned int nnode, unsigned int vpernode, unsigned int ndim>
       void EvaluateAnalyticStiffmatContributionsFromTranslationalDamping(
           Epetra_SerialDenseMatrix& stiffmatrix,
-          const LINALG::TMatrix<FAD, ndim, ndim>& damping_matrix,
-          const LINALG::TMatrix<FAD, ndim, 1>& r_s, const LINALG::TMatrix<FAD, ndim, 1>& vel_rel,
-          const LINALG::TMatrix<double, ndim, 1>& gamma,
-          const LINALG::TMatrix<FAD, ndim, ndim>& velbackgroundgrad,
-          const LINALG::TMatrix<double, 1, nnode * vpernode>& N_i,
-          const LINALG::TMatrix<double, 1, nnode * vpernode>& N_i_xi, double jacobifactor,
+          const LINALG::Matrix<ndim, ndim, FAD>& damping_matrix,
+          const LINALG::Matrix<ndim, 1, FAD>& r_s, const LINALG::Matrix<ndim, 1, FAD>& vel_rel,
+          const LINALG::Matrix<ndim, 1, double>& gamma,
+          const LINALG::Matrix<ndim, ndim, FAD>& velbackgroundgrad,
+          const LINALG::Matrix<1, nnode * vpernode, double>& N_i,
+          const LINALG::Matrix<1, nnode * vpernode, double>& N_i_xi, double jacobifactor,
           double gp_weight) const
       {
         // this is empty because in case that the pre-calculated values are of type Fad,
@@ -976,9 +975,9 @@ namespace DRT
       template <typename T, unsigned int nnode, unsigned int vpernode, unsigned int ndim,
           unsigned int randompergauss>
       void EvaluateStochasticForces(
-          const LINALG::TMatrix<T, ndim * vpernode * nnode, 1>& disp_totlag,
+          const LINALG::Matrix<ndim * vpernode * nnode, 1, T>& disp_totlag,
           Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-          LINALG::TMatrix<T, ndim * vpernode * nnode + BEAM3K_COLLOCATION_POINTS, 1>&
+          LINALG::Matrix<ndim * vpernode * nnode + BEAM3K_COLLOCATION_POINTS, 1, T>&
               f_int);  //!< element internal force vector
 
 
@@ -988,20 +987,20 @@ namespace DRT
        *  \date 02/17 */
       template <unsigned int nnode, unsigned int vpernode, unsigned int ndim>
       void EvaluateAnalyticStiffmatContributionsFromStochasticForces(
-          Epetra_SerialDenseMatrix& stiffmatrix, const LINALG::TMatrix<double, ndim, 1>& r_s,
-          const LINALG::TMatrix<double, ndim, 1>& randnumvec,
-          const LINALG::TMatrix<double, ndim, 1>& gamma,
-          const LINALG::TMatrix<double, 1, nnode * vpernode>& N_i,
-          const LINALG::TMatrix<double, 1, nnode * vpernode>& N_i_xi, double jacobifactor,
+          Epetra_SerialDenseMatrix& stiffmatrix, const LINALG::Matrix<ndim, 1, double>& r_s,
+          const LINALG::Matrix<ndim, 1, double>& randnumvec,
+          const LINALG::Matrix<ndim, 1, double>& gamma,
+          const LINALG::Matrix<1, nnode * vpernode, double>& N_i,
+          const LINALG::Matrix<1, nnode * vpernode, double>& N_i_xi, double jacobifactor,
           double gp_weight) const;
 
       template <unsigned int nnode, unsigned int vpernode, unsigned int ndim>
       void EvaluateAnalyticStiffmatContributionsFromStochasticForces(
-          Epetra_SerialDenseMatrix& stiffmatrix, const LINALG::TMatrix<FAD, ndim, 1>& r_s,
-          const LINALG::TMatrix<double, ndim, 1>& randnumvec,
-          const LINALG::TMatrix<double, ndim, 1>& gamma,
-          const LINALG::TMatrix<double, 1, nnode * vpernode>& N_i,
-          const LINALG::TMatrix<double, 1, nnode * vpernode>& N_i_xi, double jacobifactor,
+          Epetra_SerialDenseMatrix& stiffmatrix, const LINALG::Matrix<ndim, 1, FAD>& r_s,
+          const LINALG::Matrix<ndim, 1, double>& randnumvec,
+          const LINALG::Matrix<ndim, 1, double>& gamma,
+          const LINALG::Matrix<1, nnode * vpernode, double>& N_i,
+          const LINALG::Matrix<1, nnode * vpernode, double>& N_i_xi, double jacobifactor,
           double gp_weight) const
       {
         // this is empty because in case that the pre-calculated values are of type Fad,
@@ -1014,11 +1013,11 @@ namespace DRT
        *  \date 12/16 */
       template <typename T, unsigned int nnode, unsigned int vpernode, unsigned int ndim>
       void EvaluateRotationalDamping(
-          const LINALG::TMatrix<T, ndim * vpernode * nnode + BEAM3K_COLLOCATION_POINTS, 1>&
+          const LINALG::Matrix<ndim * vpernode * nnode + BEAM3K_COLLOCATION_POINTS, 1, T>&
               disp_totlag_centerline,
-          const std::vector<LINALG::TMatrix<T, ndim, ndim>>& triad_mat_cp,
+          const std::vector<LINALG::Matrix<ndim, ndim, T>>& triad_mat_cp,
           Epetra_SerialDenseMatrix* stiffmatrix,
-          LINALG::TMatrix<T, ndim * vpernode * nnode + BEAM3K_COLLOCATION_POINTS, 1>& f_int);
+          LINALG::Matrix<ndim * vpernode * nnode + BEAM3K_COLLOCATION_POINTS, 1, T>& f_int);
 
       /** \brief evaluate contributions to element stiffness matrix from rotational damping moment
        *
@@ -1027,37 +1026,36 @@ namespace DRT
       template <unsigned int nnodecl, unsigned int vpernode, unsigned int ndim>
       void EvaluateAnalyticStiffmatContributionsFromRotationalDamping(
           Epetra_SerialDenseMatrix& stiffmatrix,
-          const LINALG::TMatrix<double, ndim * vpernode * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>&
+          const LINALG::Matrix<ndim * vpernode * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, double>&
               disp_totlag_centerline,
           const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<BEAM3K_COLLOCATION_POINTS,
               double>& triad_intpol,
-          const LINALG::TMatrix<double, 3, 1> theta_gp,
-          const LINALG::TMatrix<double, 3, 1>& deltatheta_gp,
-          const LINALG::TMatrix<double, 3, 3>& triad_mat_gp,
-          const LINALG::TMatrix<double, 3, 3>& triad_mat_conv_gp,
-          const LINALG::TMatrix<double, ndim * vpernode * nnodecl + BEAM3K_COLLOCATION_POINTS,
-              ndim>& v_theta_par_bar,
-          const std::vector<LINALG::TMatrix<double, ndim,
-              ndim * vpernode * nnodecl + BEAM3K_COLLOCATION_POINTS>>& lin_theta_cp,
-          const LINALG::TMatrix<double, 3, 1> moment_viscous, double gamma_polar, double dt,
+          const LINALG::Matrix<3, 1, double> theta_gp,
+          const LINALG::Matrix<3, 1, double>& deltatheta_gp,
+          const LINALG::Matrix<3, 3, double>& triad_mat_gp,
+          const LINALG::Matrix<3, 3, double>& triad_mat_conv_gp,
+          const LINALG::Matrix<ndim * vpernode * nnodecl + BEAM3K_COLLOCATION_POINTS, ndim, double>&
+              v_theta_par_bar,
+          const std::vector<LINALG::Matrix<ndim,
+              ndim * vpernode * nnodecl + BEAM3K_COLLOCATION_POINTS, double>>& lin_theta_cp,
+          const LINALG::Matrix<3, 1, double> moment_viscous, double gamma_polar, double dt,
           double xi_gp, double jacobifac_GPwgt) const;
 
       template <unsigned int nnodecl, unsigned int vpernode, unsigned int ndim>
       void EvaluateAnalyticStiffmatContributionsFromRotationalDamping(
           Epetra_SerialDenseMatrix& stiffmatrix,
-          const LINALG::TMatrix<FAD, ndim * vpernode * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>&
+          const LINALG::Matrix<ndim * vpernode * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, FAD>&
               disp_totlag_centerline,
           const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<BEAM3K_COLLOCATION_POINTS,
               FAD>& triad_intpol,
-          const LINALG::TMatrix<FAD, 3, 1> theta_gp,
-          const LINALG::TMatrix<FAD, 3, 1>& deltatheta_gp,
-          const LINALG::TMatrix<FAD, 3, 3>& triad_mat_gp,
-          const LINALG::TMatrix<FAD, 3, 3>& triad_mat_conv_gp,
-          const LINALG::TMatrix<FAD, ndim * vpernode * nnodecl + BEAM3K_COLLOCATION_POINTS, ndim>&
+          const LINALG::Matrix<3, 1, FAD> theta_gp, const LINALG::Matrix<3, 1, FAD>& deltatheta_gp,
+          const LINALG::Matrix<3, 3, FAD>& triad_mat_gp,
+          const LINALG::Matrix<3, 3, FAD>& triad_mat_conv_gp,
+          const LINALG::Matrix<ndim * vpernode * nnodecl + BEAM3K_COLLOCATION_POINTS, ndim, FAD>&
               v_theta_par_bar,
-          const std::vector<LINALG::TMatrix<FAD, ndim,
-              ndim * vpernode * nnodecl + BEAM3K_COLLOCATION_POINTS>>& lin_theta_cp,
-          const LINALG::TMatrix<FAD, 3, 1> moment_viscous, double gamma_polar, double dt,
+          const std::vector<LINALG::Matrix<ndim,
+              ndim * vpernode * nnodecl + BEAM3K_COLLOCATION_POINTS, FAD>>& lin_theta_cp,
+          const LINALG::Matrix<3, 1, FAD> moment_viscous, double gamma_polar, double dt,
           double xi_gp, double jacobifac_GPwgt) const
       {
         // this is empty because in case that the pre-calculated values are of type Fad,
@@ -1070,23 +1068,21 @@ namespace DRT
        *  \date 02/17 */
       template <unsigned int nnode, unsigned int vpernode, unsigned int ndim>
       void PreComputeTermsAtCPForAnalyticStiffmatContributionsFromRotationalDamping(
-          LINALG::TMatrix<double, ndim, ndim * vpernode * nnode + BEAM3K_COLLOCATION_POINTS>&
+          LINALG::Matrix<ndim, ndim * vpernode * nnode + BEAM3K_COLLOCATION_POINTS, double>&
               lin_theta,
-          const LINALG::TMatrix<double, 1, ndim * vpernode * nnode + BEAM3K_COLLOCATION_POINTS>& L,
-          const LINALG::TMatrix<double, ndim, ndim * vpernode * nnode + BEAM3K_COLLOCATION_POINTS>&
+          const LINALG::Matrix<1, ndim * vpernode * nnode + BEAM3K_COLLOCATION_POINTS, double>& L,
+          const LINALG::Matrix<ndim, ndim * vpernode * nnode + BEAM3K_COLLOCATION_POINTS, double>&
               N_s,
-          const LINALG::TMatrix<double, ndim, 1>& r_s, double abs_r_s,
-          const LINALG::TMatrix<double, 4, 1>& Qref_conv) const;
+          const LINALG::Matrix<ndim, 1, double>& r_s, double abs_r_s,
+          const LINALG::Matrix<4, 1, double>& Qref_conv) const;
 
       template <unsigned int nnode, unsigned int vpernode, unsigned int ndim>
       void PreComputeTermsAtCPForAnalyticStiffmatContributionsFromRotationalDamping(
-          LINALG::TMatrix<FAD, ndim, ndim * vpernode * nnode + BEAM3K_COLLOCATION_POINTS>&
-              lin_theta,
-          const LINALG::TMatrix<FAD, 1, ndim * vpernode * nnode + BEAM3K_COLLOCATION_POINTS>& L,
-          const LINALG::TMatrix<FAD, ndim, ndim * vpernode * nnode + BEAM3K_COLLOCATION_POINTS>&
-              N_s,
-          const LINALG::TMatrix<FAD, ndim, 1>& r_s, FAD abs_r_s,
-          const LINALG::TMatrix<double, 4, 1>& Qref_conv) const
+          LINALG::Matrix<ndim, ndim * vpernode * nnode + BEAM3K_COLLOCATION_POINTS, FAD>& lin_theta,
+          const LINALG::Matrix<1, ndim * vpernode * nnode + BEAM3K_COLLOCATION_POINTS, FAD>& L,
+          const LINALG::Matrix<ndim, ndim * vpernode * nnode + BEAM3K_COLLOCATION_POINTS, FAD>& N_s,
+          const LINALG::Matrix<ndim, 1, FAD>& r_s, FAD abs_r_s,
+          const LINALG::Matrix<4, 1, double>& Qref_conv) const
       {
         // this is empty because in case that the pre-calculated values are of type Fad,
         // we use automatic differentiation and consequently there is no need for analytic stiffmat
@@ -1094,10 +1090,10 @@ namespace DRT
 
       //! compute (material) strain K
       template <typename T>
-      void computestrain(const LINALG::TMatrix<T, 3, 1>& theta,
-          const LINALG::TMatrix<T, 3, 1>& theta_deriv, LINALG::TMatrix<T, 3, 1>& K) const
+      void computestrain(const LINALG::Matrix<3, 1, T>& theta,
+          const LINALG::Matrix<3, 1, T>& theta_deriv, LINALG::Matrix<3, 1, T>& K) const
       {
-        LINALG::TMatrix<T, 3, 3> Tinv = LARGEROTATIONS::Tinvmatrix(theta);
+        LINALG::Matrix<3, 3, T> Tinv = LARGEROTATIONS::Tinvmatrix(theta);
 
         K.Clear();
         K.MultiplyTN(Tinv, theta_deriv);
@@ -1105,16 +1101,16 @@ namespace DRT
 
       //! calculate material stress resultants M,N from material strain resultants K, epsilon
       template <typename T>
-      void straintostress(const LINALG::TMatrix<T, 3, 1>& Omega, const T& epsilon,
-          const LINALG::TMatrix<T, 3, 3>& Cn, const LINALG::TMatrix<T, 3, 3>& Cm,
-          LINALG::TMatrix<T, 3, 1>& M, T& f_par) const;
+      void straintostress(const LINALG::Matrix<3, 1, T>& Omega, const T& epsilon,
+          const LINALG::Matrix<3, 3, T>& Cn, const LINALG::Matrix<3, 3, T>& Cm,
+          LINALG::Matrix<3, 1, T>& M, T& f_par) const;
 
       //! Compute the material triad in case of the strong Kirchhoff (SK)beam formulation
       template <typename T>
-      void ComputeTriadSK(const T& phi, const LINALG::TMatrix<T, 3, 1>& r_s,
-          const LINALG::TMatrix<T, 3, 3>& triad_ref, LINALG::TMatrix<T, 3, 3>& triad) const
+      void ComputeTriadSK(const T& phi, const LINALG::Matrix<3, 1, T>& r_s,
+          const LINALG::Matrix<3, 3, T>& triad_ref, LINALG::Matrix<3, 3, T>& triad) const
       {
-        LINALG::TMatrix<T, 3, 3> triad_bar(true);
+        LINALG::Matrix<3, 3, T> triad_bar(true);
 
         // Compute triad_bar via SR mapping from triad_ref onto r_s
         LARGEROTATIONS::CalculateSRTriads<T>(r_s, triad_ref, triad_bar);
@@ -1124,93 +1120,93 @@ namespace DRT
       }
 
       template <typename T1, typename T2>
-      void AssembleShapefunctionsL(LINALG::TMatrix<T1, 1, BEAM3K_COLLOCATION_POINTS>& L_i,
-          LINALG::TMatrix<T2, 1, 2 * 6 + BEAM3K_COLLOCATION_POINTS>& L) const;
+      void AssembleShapefunctionsL(LINALG::Matrix<1, BEAM3K_COLLOCATION_POINTS, T1>& L_i,
+          LINALG::Matrix<1, 2 * 6 + BEAM3K_COLLOCATION_POINTS, T2>& L) const;
 
       template <typename T1, typename T2>
-      void AssembleShapefunctionsNss(LINALG::TMatrix<T1, 1, 4>& N_i_xi,
-          LINALG::TMatrix<T1, 1, 4>& N_i_xixi, double jacobi, double jacobi2,
-          LINALG::TMatrix<T2, 3, 2 * 6 + BEAM3K_COLLOCATION_POINTS>& N_ss) const;
+      void AssembleShapefunctionsNss(LINALG::Matrix<1, 4, T1>& N_i_xi,
+          LINALG::Matrix<1, 4, T1>& N_i_xixi, double jacobi, double jacobi2,
+          LINALG::Matrix<3, 2 * 6 + BEAM3K_COLLOCATION_POINTS, T2>& N_ss) const;
 
       template <typename T1, typename T2>
-      void AssembleShapefunctionsNs(LINALG::TMatrix<T1, 1, 4>& N_i_xi, double jacobi,
-          LINALG::TMatrix<T2, 3, 2 * 6 + BEAM3K_COLLOCATION_POINTS>& N_s) const;
+      void AssembleShapefunctionsNs(LINALG::Matrix<1, 4, T1>& N_i_xi, double jacobi,
+          LINALG::Matrix<3, 2 * 6 + BEAM3K_COLLOCATION_POINTS, T2>& N_s) const;
 
       template <typename T1, typename T2>
-      void AssembleShapefunctionsN(LINALG::TMatrix<T1, 1, 4>& N_i,
-          LINALG::TMatrix<T2, 3, 2 * 6 + BEAM3K_COLLOCATION_POINTS>& N) const;
+      void AssembleShapefunctionsN(LINALG::Matrix<1, 4, T1>& N_i,
+          LINALG::Matrix<3, 2 * 6 + BEAM3K_COLLOCATION_POINTS, T2>& N) const;
 
       //! update absolute values for primary Dof vector based on the given displacement vector
       template <unsigned int nnodecl, typename T>
       void UpdateDispTotlag(const std::vector<double>& disp,
-          LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& disp_totlag) const;
+          LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& disp_totlag) const;
 
       //! update positions vectors and tangents at boundary nodes and triads at all CPs
       //  based on the given element displacement vector
       template <unsigned int nnodecl, typename T>
       void UpdateNodalVariables(
-          const LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& disp_totlag,
-          LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& disp_totlag_centerline,
-          std::vector<LINALG::TMatrix<T, 3, 3>>& triad_mat_cp,
+          const LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& disp_totlag,
+          LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& disp_totlag_centerline,
+          std::vector<LINALG::Matrix<3, 3, T>>& triad_mat_cp,
           std::vector<LINALG::Matrix<4, 1>>& Qref_new) const;
 
       //! extract those Dofs relevant for centerline-interpolation from total state vector
       template <unsigned int nnodecl, unsigned int vpernode, typename T>
       void ExtractCenterlineDofValuesFromElementStateVector(
-          const LINALG::TMatrix<T, 3 * vpernode * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& dofvec,
-          LINALG::TMatrix<T, 3 * vpernode * nnodecl, 1>& dofvec_centerline,
+          const LINALG::Matrix<3 * vpernode * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& dofvec,
+          LINALG::Matrix<3 * vpernode * nnodecl, 1, T>& dofvec_centerline,
           bool add_reference_values = false) const;
 
       //! add reference positions and tangents to (centerline) displacement state vector
       template <unsigned int nnodecl, unsigned int vpernode, typename T>
       void AddRefValuesDispCenterline(
-          LINALG::TMatrix<T, 3 * vpernode * nnodecl, 1>& dofvec_centerline) const;
+          LINALG::Matrix<3 * vpernode * nnodecl, 1, T>& dofvec_centerline) const;
 
       //! "add" reference values to displacement state vector (multiplicative in case of rotation
       //! pseudo vectors)
       template <unsigned int nnodecl, typename T>
       void AddRefValuesDisp(
-          LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& dofvec) const;
+          LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& dofvec) const;
 
       //! set positions at boundary nodes
       template <unsigned int nnodecl, typename T>
       void SetPositionsAtBoundaryNodes(
-          const LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& disp_totlag,
-          LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& disp_totlag_centerline)
+          const LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& disp_totlag,
+          LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& disp_totlag_centerline)
           const;
 
       //! set tangents and triads and reference triads in quaternion form at boundary nodes
       template <unsigned int nnodecl, typename T>
       void SetTangentsAndTriadsAndReferenceTriadsAtBoundaryNodes(
-          const LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& disp_totlag,
-          LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& disp_totlag_centerline,
-          std::vector<LINALG::TMatrix<T, 3, 3>>& triad_mat_cp,
+          const LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& disp_totlag,
+          LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& disp_totlag_centerline,
+          std::vector<LINALG::Matrix<3, 3, T>>& triad_mat_cp,
           std::vector<LINALG::Matrix<4, 1>>& Qref_new) const;
 
       //! set triads and reference triads in quaternion form at all CPs except boundary nodes
       template <unsigned int nnodecl, typename T>
       void SetTriadsAndReferenceTriadsAtRemainingCollocationPoints(
-          const LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& disp_totlag,
-          const LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>&
+          const LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& disp_totlag,
+          const LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>&
               disp_totlag_centerline,
-          std::vector<LINALG::TMatrix<T, 3, 3>>& triad_mat_cp,
+          std::vector<LINALG::Matrix<3, 3, T>>& triad_mat_cp,
           std::vector<LINALG::Matrix<4, 1>>& Qref_new) const;
 
       //! set differentiation variables for automatic differentiation via FAD
       template <unsigned int nnodecl>
       void SetAutomaticDifferentiationVariables(
-          LINALG::TMatrix<FAD, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& disp_totlag) const;
+          LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, FAD>& disp_totlag) const;
 
       //! Pre-multiply trafo matrix if rotvec_==true: \tilde{\vec{f}_int}=\mat{T}^T*\vec{f}_int
       template <unsigned int nnodecl, typename T>
-      void ApplyRotVecTrafo(const LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>&
+      void ApplyRotVecTrafo(const LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>&
                                 disp_totlag_centerline,
-          LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& f_int) const;
+          LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& f_int) const;
 
       //! Transform stiffness matrix in order to solve for multiplicative rotation vector increments
       template <unsigned int nnodecl, typename T>
       void TransformStiffMatrixMultipl(Epetra_SerialDenseMatrix* stiffmatrix,
-          const LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1>& disp_totlag) const;
+          const LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, T>& disp_totlag) const;
 
       //! lump mass matrix
       void Lumpmass(Epetra_SerialDenseMatrix* emass);
@@ -1221,15 +1217,15 @@ namespace DRT
           const std::vector<LINALG::Matrix<3, 1>>& trefe, double tolerance);
 
       template <typename T>
-      void Calculate_clcurvature(LINALG::TMatrix<T, 3, 1>& r_s, LINALG::TMatrix<T, 3, 1>& r_ss,
-          LINALG::TMatrix<T, 3, 1>& kappacl) const
+      void Calculate_clcurvature(LINALG::Matrix<3, 1, T>& r_s, LINALG::Matrix<3, 1, T>& r_ss,
+          LINALG::Matrix<3, 1, T>& kappacl) const
       {
         // spinmatrix Sr' = r'x
-        LINALG::TMatrix<T, 3, 3> Srs(true);
+        LINALG::Matrix<3, 3, T> Srs(true);
         LARGEROTATIONS::computespin(Srs, r_s);
 
         // cross-product r'xr''
-        LINALG::TMatrix<T, 3, 1> Srsrss(true);
+        LINALG::Matrix<3, 1, T> Srsrss(true);
         Srsrss.Multiply(Srs, r_ss);
         T rsTrs = 0.0;
 
@@ -1244,15 +1240,15 @@ namespace DRT
       }
 
       template <typename T>
-      void computestrainSK(const T& phi_s, const LINALG::TMatrix<T, 3, 1>& kappacl,
-          const LINALG::TMatrix<T, 3, 3>& triadref, const LINALG::TMatrix<T, 3, 3>& triad_mat,
-          LINALG::TMatrix<T, 3, 1>& K) const
+      void computestrainSK(const T& phi_s, const LINALG::Matrix<3, 1, T>& kappacl,
+          const LINALG::Matrix<3, 3, T>& triadref, const LINALG::Matrix<3, 3, T>& triad_mat,
+          LINALG::Matrix<3, 1, T>& K) const
       {
-        LINALG::TMatrix<T, 1, 1> scalar_aux(true);
-        LINALG::TMatrix<T, 3, 1> g1(true);
-        LINALG::TMatrix<T, 3, 1> g2(true);
-        LINALG::TMatrix<T, 3, 1> g3(true);
-        LINALG::TMatrix<T, 3, 1> gref1(true);
+        LINALG::Matrix<1, 1, T> scalar_aux(true);
+        LINALG::Matrix<3, 1, T> g1(true);
+        LINALG::Matrix<3, 1, T> g2(true);
+        LINALG::Matrix<3, 1, T> g3(true);
+        LINALG::Matrix<3, 1, T> gref1(true);
         T KR1 = 0.0;
 
         for (int i = 0; i < 3; i++)
@@ -1344,12 +1340,11 @@ namespace DRT
       Beam3k& operator=(const Beam3k& old);
 
       template <int dim>
-      void ComputeTripleProduct(LINALG::TMatrix<FAD, 3, dim>& mat1,
-          LINALG::TMatrix<FAD, 3, 1>& vec1, LINALG::TMatrix<FAD, 3, 1>& vec2,
-          LINALG::TMatrix<FAD, dim, 1>& vec_out) const
+      void ComputeTripleProduct(LINALG::Matrix<3, dim, FAD>& mat1, LINALG::Matrix<3, 1, FAD>& vec1,
+          LINALG::Matrix<3, 1, FAD>& vec2, LINALG::Matrix<dim, 1, FAD>& vec_out) const
       {
-        LINALG::TMatrix<FAD, 3, 3> auxmatrix1(true);
-        LINALG::TMatrix<FAD, 3, 1> auxvec1(true);
+        LINALG::Matrix<3, 3, FAD> auxmatrix1(true);
+        LINALG::Matrix<3, 1, FAD> auxvec1(true);
         LARGEROTATIONS::computespin(auxmatrix1, vec1);
         auxvec1.Multiply(auxmatrix1, vec2);
         vec_out.MultiplyTN(mat1, auxvec1);
@@ -1363,10 +1358,10 @@ namespace DRT
        *  \date 02/17 */
       template <unsigned int nnodecl, unsigned int vpernode, unsigned int ndim>
       void Calc_velocity(
-          const LINALG::TMatrix<double, ndim * vpernode * nnodecl, 1>& velocity_dofvec,
-          const LINALG::TMatrix<double, 1, vpernode * nnodecl>& N_i,
-          LINALG::TMatrix<double, ndim, 1>& velocity,
-          const LINALG::TMatrix<double, ndim, 1>& position, int gausspoint_index) const;
+          const LINALG::Matrix<ndim * vpernode * nnodecl, 1, double>& velocity_dofvec,
+          const LINALG::Matrix<1, vpernode * nnodecl, double>& N_i,
+          LINALG::Matrix<ndim, 1, double>& velocity,
+          const LINALG::Matrix<ndim, 1, double>& position, int gausspoint_index) const;
 
       /** \brief compute interpolated velocity vector if Fad is used
        *
@@ -1374,9 +1369,9 @@ namespace DRT
        *  \date 02/17 */
       template <unsigned int nnodecl, unsigned int vpernode, unsigned int ndim>
       void Calc_velocity(
-          const LINALG::TMatrix<double, ndim * vpernode * nnodecl, 1>& velocity_dofvec,
-          const LINALG::TMatrix<double, 1, vpernode * nnodecl>& N_i,
-          LINALG::TMatrix<FAD, ndim, 1>& velocity, const LINALG::TMatrix<FAD, ndim, 1>& position,
+          const LINALG::Matrix<ndim * vpernode * nnodecl, 1, double>& velocity_dofvec,
+          const LINALG::Matrix<1, vpernode * nnodecl, double>& N_i,
+          LINALG::Matrix<ndim, 1, FAD>& velocity, const LINALG::Matrix<ndim, 1, FAD>& position,
           int gausspoint_index);
 
       /** \brief compute discrete strain variations v_thetaperp
@@ -1385,9 +1380,9 @@ namespace DRT
        *  \date 02/17 */
       template <unsigned int nnodecl, typename T>
       void Calc_v_thetaperp(
-          LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3>& v_thetaperp,
-          const LINALG::TMatrix<T, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_s,
-          const LINALG::TMatrix<T, 3, 1>& r_s, T abs_r_s) const;
+          LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3, T>& v_thetaperp,
+          const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, T>& N_s,
+          const LINALG::Matrix<3, 1, T>& r_s, T abs_r_s) const;
 
       /** \brief compute discrete strain variations v_thetapartheta
        *
@@ -1395,9 +1390,9 @@ namespace DRT
        *  \date 02/17 */
       template <unsigned int nnodecl, typename T>
       void Calc_v_thetapartheta(
-          LINALG::TMatrix<T, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3>& v_thetapartheta,
-          const LINALG::TMatrix<T, 1, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& L,
-          const LINALG::TMatrix<T, 3, 1>& r_s, T abs_r_s) const;
+          LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3, T>& v_thetapartheta,
+          const LINALG::Matrix<1, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, T>& L,
+          const LINALG::Matrix<3, 1, T>& r_s, T abs_r_s) const;
 
       /** \brief compute discrete strain increments v_lin_thetaperp
        *
@@ -1405,9 +1400,9 @@ namespace DRT
        *  \date 02/17 */
       template <unsigned int nnodecl>
       void Calc_lin_thetaperp(
-          LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_thetaperp,
-          const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_s,
-          const LINALG::TMatrix<double, 3, 1>& r_s, double abs_r_s) const;
+          LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_thetaperp,
+          const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_s,
+          const LINALG::Matrix<3, 1, double>& r_s, double abs_r_s) const;
 
       /** \brief compute discrete strain increments v_lin_thetapar
        *
@@ -1415,10 +1410,10 @@ namespace DRT
        *  \date 02/17 */
       template <unsigned int nnodecl>
       void Calc_lin_thetapar(
-          LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_thetapar,
-          const LINALG::TMatrix<double, 1, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& L,
-          const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_s,
-          const LINALG::TMatrix<double, 3, 1>& g_1, const LINALG::TMatrix<double, 3, 1>& g_1_bar,
+          LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_thetapar,
+          const LINALG::Matrix<1, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& L,
+          const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_s,
+          const LINALG::Matrix<3, 1, double>& g_1, const LINALG::Matrix<3, 1, double>& g_1_bar,
           double abs_r_s) const;
 
       /** \brief compute linearization of scaled tangent vector
@@ -1427,9 +1422,9 @@ namespace DRT
        *  \date 02/17 */
       template <unsigned int nnodecl>
       void Calc_lin_tangent_tilde(
-          LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_tangent_tilde,
-          const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_s,
-          const LINALG::TMatrix<double, 3, 1>& g_1, double abs_r_s) const;
+          LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_tangent_tilde,
+          const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_s,
+          const LINALG::Matrix<3, 1, double>& g_1, double abs_r_s) const;
 
       /** \brief compute linearization of first arc-length derivative of scaled tangent vector
        *
@@ -1437,11 +1432,11 @@ namespace DRT
        *  \date 02/17 */
       template <unsigned int nnodecl>
       void Calc_lin_tangent_tilde_s(
-          LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_tangent_tilde_s,
-          const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_s,
-          const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_ss,
-          const LINALG::TMatrix<double, 3, 1>& g_1, const LINALG::TMatrix<double, 3, 1>& g_1_s,
-          const LINALG::TMatrix<double, 3, 1>& r_s, const LINALG::TMatrix<double, 3, 1>& r_ss,
+          LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_tangent_tilde_s,
+          const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_s,
+          const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_ss,
+          const LINALG::Matrix<3, 1, double>& g_1, const LINALG::Matrix<3, 1, double>& g_1_s,
+          const LINALG::Matrix<3, 1, double>& r_s, const LINALG::Matrix<3, 1, double>& r_ss,
           double abs_r_s) const;
 
       /** \brief compute linearization of first base vector
@@ -1449,10 +1444,9 @@ namespace DRT
        *  \author grill
        *  \date 02/17 */
       template <unsigned int nnodecl>
-      void Calc_lin_g_1(
-          LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_g_1,
-          const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_s,
-          const LINALG::TMatrix<double, 3, 1>& g_1, double abs_r_s) const;
+      void Calc_lin_g_1(LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_g_1,
+          const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_s,
+          const LINALG::Matrix<3, 1, double>& g_1, double abs_r_s) const;
 
       /** \brief compute linearization of first arc-length derivative of first base vector
        *
@@ -1460,11 +1454,11 @@ namespace DRT
        *  \date 02/17 */
       template <unsigned int nnodecl>
       void Calc_lin_g_1_s(
-          LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_g_1_s,
-          const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_s,
-          const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_ss,
-          const LINALG::TMatrix<double, 3, 1>& g_1, const LINALG::TMatrix<double, 3, 1>& g_1_s,
-          const LINALG::TMatrix<double, 3, 1>& r_s, const LINALG::TMatrix<double, 3, 1>& r_ss,
+          LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_g_1_s,
+          const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_s,
+          const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_ss,
+          const LINALG::Matrix<3, 1, double>& g_1, const LINALG::Matrix<3, 1, double>& g_1_s,
+          const LINALG::Matrix<3, 1, double>& r_s, const LINALG::Matrix<3, 1, double>& r_ss,
           double abs_r_s) const;
 
       /** \brief compute linearization of v_epsilon
@@ -1472,10 +1466,10 @@ namespace DRT
        *  \author grill
        *  \date 02/17 */
       template <unsigned int nnodecl>
-      void Calc_lin_v_epsilon(LINALG::TMatrix<double, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
-                                  6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_v_epsilon,
-          const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_s,
-          const LINALG::TMatrix<double, 3, 1>& g_1, double abs_r_s) const;
+      void Calc_lin_v_epsilon(LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
+                                  6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_v_epsilon,
+          const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_s,
+          const LINALG::Matrix<3, 1, double>& g_1, double abs_r_s) const;
 
       /** \brief compute linearization of moment resultant
        *
@@ -1483,11 +1477,11 @@ namespace DRT
        *  \date 02/17 */
       template <unsigned int nnodecl>
       void Calc_lin_moment_resultant(
-          LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_moment_resultant,
-          const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_theta,
-          const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_theta_s,
-          const LINALG::TMatrix<double, 3, 3>& spinmatrix_of_moment,
-          const LINALG::TMatrix<double, 3, 3>& cm) const;
+          LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_moment_resultant,
+          const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_theta,
+          const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_theta_s,
+          const LINALG::Matrix<3, 3, double>& spinmatrix_of_moment,
+          const LINALG::Matrix<3, 3, double>& cm) const;
 
       /** \brief compute linearization of inertia moment
        *
@@ -1495,14 +1489,14 @@ namespace DRT
        *  \date 02/17 */
       template <unsigned int nnodecl>
       void Calc_lin_moment_inertia(
-          LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_moment_inertia,
-          const LINALG::TMatrix<double, 3, 3>& triad_mat,
-          const LINALG::TMatrix<double, 3, 3>& triad_mat_conv,
-          const LINALG::TMatrix<double, 3, 1>& deltatheta,
-          const LINALG::TMatrix<double, 3, 1>& angular_velocity_material,
-          const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_theta,
-          const LINALG::TMatrix<double, 3, 3>& spinmatrix_of_moment,
-          const LINALG::TMatrix<double, 3, 3>& C_rho, double lin_prefactor_acc,
+          LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_moment_inertia,
+          const LINALG::Matrix<3, 3, double>& triad_mat,
+          const LINALG::Matrix<3, 3, double>& triad_mat_conv,
+          const LINALG::Matrix<3, 1, double>& deltatheta,
+          const LINALG::Matrix<3, 1, double>& angular_velocity_material,
+          const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_theta,
+          const LINALG::Matrix<3, 3, double>& spinmatrix_of_moment,
+          const LINALG::Matrix<3, 3, double>& C_rho, double lin_prefactor_acc,
           double lin_prefactor_vel) const;
 
       /** \brief compute linearization of moment from rotational damping
@@ -1511,12 +1505,12 @@ namespace DRT
        *  \date 02/17 */
       template <unsigned int nnodecl>
       void Calc_lin_moment_viscous(
-          LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_moment_viscous,
-          const LINALG::TMatrix<double, 3, 3>& triad_mat,
-          const LINALG::TMatrix<double, 3, 3>& triad_mat_conv,
-          const LINALG::TMatrix<double, 3, 1>& deltatheta,
-          const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_theta,
-          const LINALG::TMatrix<double, 3, 3>& spinmatrix_of_moment, double gamma_polar,
+          LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_moment_viscous,
+          const LINALG::Matrix<3, 3, double>& triad_mat,
+          const LINALG::Matrix<3, 3, double>& triad_mat_conv,
+          const LINALG::Matrix<3, 1, double>& deltatheta,
+          const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_theta,
+          const LINALG::Matrix<3, 3, double>& spinmatrix_of_moment, double gamma_polar,
           double dt) const;
 
       /** \brief compute linearization of v_theta_perp multiplied with moment vector
@@ -1525,11 +1519,11 @@ namespace DRT
        *  \date 02/17 */
       template <unsigned int nnodecl>
       void Calc_lin_v_thetaperp_moment(
-          LINALG::TMatrix<double, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
-              6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_v_thetaperp_moment,
-          const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_s,
-          const LINALG::TMatrix<double, 3, 1>& g_1, double abs_r_s,
-          const LINALG::TMatrix<double, 3, 3>& spinmatrix_of_moment) const;
+          LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
+              6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_v_thetaperp_moment,
+          const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_s,
+          const LINALG::Matrix<3, 1, double>& g_1, double abs_r_s,
+          const LINALG::Matrix<3, 3, double>& spinmatrix_of_moment) const;
 
       /** \brief compute linearization of v_theta_perp_s multiplied with moment vector
        *
@@ -1537,13 +1531,13 @@ namespace DRT
        *  \date 02/17 */
       template <unsigned int nnodecl>
       void Calc_lin_v_thetaperp_s_moment(
-          LINALG::TMatrix<double, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
-              6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_v_thetaperp_s_moment,
-          const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_s,
-          const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_ss,
-          const LINALG::TMatrix<double, 3, 1>& g_1, const LINALG::TMatrix<double, 3, 1>& g_1_s,
-          const LINALG::TMatrix<double, 3, 1>& r_s, const LINALG::TMatrix<double, 3, 1>& r_ss,
-          double abs_r_s, const LINALG::TMatrix<double, 3, 3>& spinmatrix_of_moment) const;
+          LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
+              6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_v_thetaperp_s_moment,
+          const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_s,
+          const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_ss,
+          const LINALG::Matrix<3, 1, double>& g_1, const LINALG::Matrix<3, 1, double>& g_1_s,
+          const LINALG::Matrix<3, 1, double>& r_s, const LINALG::Matrix<3, 1, double>& r_ss,
+          double abs_r_s, const LINALG::Matrix<3, 3, double>& spinmatrix_of_moment) const;
 
       /** \brief compute linearization of v_theta_par multiplied with moment vector
        *
@@ -1551,12 +1545,12 @@ namespace DRT
        *  \date 02/17 */
       template <unsigned int nnodecl>
       void Calc_lin_v_thetapar_moment(
-          LINALG::TMatrix<double, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
-              6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_v_thetapar_moment,
-          LINALG::TMatrix<double, 1, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& L,
-          const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_s,
-          const LINALG::TMatrix<double, 3, 1>& g_1, double abs_r_s,
-          const LINALG::TMatrix<double, 3, 1>& moment) const;
+          LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
+              6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_v_thetapar_moment,
+          LINALG::Matrix<1, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& L,
+          const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_s,
+          const LINALG::Matrix<3, 1, double>& g_1, double abs_r_s,
+          const LINALG::Matrix<3, 1, double>& moment) const;
 
       /** \brief compute linearization of v_theta_par_s multiplied with moment vector
        *
@@ -1564,15 +1558,15 @@ namespace DRT
        *  \date 02/17 */
       template <unsigned int nnodecl>
       void Calc_lin_v_thetapar_s_moment(
-          LINALG::TMatrix<double, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
-              6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& lin_v_thetapar_s_moment,
-          LINALG::TMatrix<double, 1, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& L,
-          LINALG::TMatrix<double, 1, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& L_s,
-          const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_s,
-          const LINALG::TMatrix<double, 3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS>& N_ss,
-          const LINALG::TMatrix<double, 3, 1>& g_1, const LINALG::TMatrix<double, 3, 1>& g_1_s,
-          const LINALG::TMatrix<double, 3, 1>& r_s, const LINALG::TMatrix<double, 3, 1>& r_ss,
-          double abs_r_s, const LINALG::TMatrix<double, 3, 1>& moment) const;
+          LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
+              6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& lin_v_thetapar_s_moment,
+          LINALG::Matrix<1, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& L,
+          LINALG::Matrix<1, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& L_s,
+          const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_s,
+          const LINALG::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>& N_ss,
+          const LINALG::Matrix<3, 1, double>& g_1, const LINALG::Matrix<3, 1, double>& g_1_s,
+          const LINALG::Matrix<3, 1, double>& r_s, const LINALG::Matrix<3, 1, double>& r_ss,
+          double abs_r_s, const LINALG::Matrix<3, 1, double>& moment) const;
 
      private:
       // Variables

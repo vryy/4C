@@ -22,7 +22,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
     IntPolicy>::EvaluatorDeriv1stOnly::Deriv_Jacobian(MORTAR::MortarElement& ele, const double* xi,
     const LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv, const LINALG::Matrix<3, 2>& stau)
 {
-  LINALG::TMatrix<int, probdim, my::SLAVENUMNODE> nodal_dofs;
+  LINALG::Matrix<probdim, my::SLAVENUMNODE, int> nodal_dofs;
 
   // evaluate the non-unit slave element normal and the inverse of its length
   LINALG::Matrix<probdim, 1> unit_normal;
@@ -41,7 +41,7 @@ template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
     IntPolicy>::EvaluatorDeriv1stOnly::Deriv1st_Jacobian(MORTAR::MortarElement& ele,
     const double* xi, const LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
-    const LINALG::Matrix<3, 2>& stau, LINALG::TMatrix<int, probdim, my::SLAVENUMNODE>& nodal_dofs,
+    const LINALG::Matrix<3, 2>& stau, LINALG::Matrix<probdim, my::SLAVENUMNODE, int>& nodal_dofs,
     LINALG::Matrix<probdim, 1>& unit_normal, double& length_n_inv,
     Deriv1stVecMap& d_non_unit_normal)
 {
@@ -72,7 +72,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
     IntPolicy>::EvaluatorFull::Deriv_Jacobian(MORTAR::MortarElement& ele, const double* xi,
     const LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv, const LINALG::Matrix<3, 2>& stau)
 {
-  LINALG::TMatrix<int, probdim, my::SLAVENUMNODE> nodal_dofs;
+  LINALG::Matrix<probdim, my::SLAVENUMNODE, int> nodal_dofs;
 
   // evaluate the non-unit slave element normal and the inverse of its length
   LINALG::Matrix<probdim, 1> unit_normal;

@@ -1756,12 +1756,12 @@ bool Beam3ContactOctTree::IntersectionCOBB(
   // Distance at which intersection happens
   double distancelimit = 0.5 * (bbox0diameter + bbox1diameter);
 
-  LINALG::TMatrix<double, 3, 1> t1(true);
-  LINALG::TMatrix<double, 3, 1> t2(true);
-  LINALG::TMatrix<double, 3, 1> r1_a;
-  LINALG::TMatrix<double, 3, 1> r1_b;
-  LINALG::TMatrix<double, 3, 1> r2_a;
-  LINALG::TMatrix<double, 3, 1> r2_b;
+  LINALG::Matrix<3, 1, double> t1(true);
+  LINALG::Matrix<3, 1, double> t2(true);
+  LINALG::Matrix<3, 1, double> r1_a;
+  LINALG::Matrix<3, 1, double> r1_b;
+  LINALG::Matrix<3, 1, double> r2_a;
+  LINALG::Matrix<3, 1, double> r2_b;
 
   int numshifts_bbox0 = 0;
   int numshifts_bbox1 = 0;

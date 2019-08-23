@@ -522,11 +522,11 @@ void DRT::ELEMENTS::DiscSh3::SortPrimaryDOFs(DRT::Element& master, DRT::Element&
 void DRT::ELEMENTS::DiscSh3::CheckIfOutwardsNormal(
     Teuchos::ParameterList& params, const int NumGElements)
 {
-  LINALG::TMatrix<FAD, 1, 3> normal(true);
+  LINALG::Matrix<1, 3, FAD> normal(true);
   LINALG::Matrix<1, 3> normal_val(true);
 
-  LINALG::TMatrix<FAD, 1, 3> side1(true);
-  LINALG::TMatrix<FAD, 1, 3> side2(true);
+  LINALG::Matrix<1, 3, FAD> side1(true);
+  LINALG::Matrix<1, 3, FAD> side2(true);
   LINALG::Matrix<1, 9> X = MaterialConfiguration();
   for (int j = 0; j < 3; j++)
   {
@@ -534,7 +534,7 @@ void DRT::ELEMENTS::DiscSh3::CheckIfOutwardsNormal(
     side2(j) = X(j + 6) - X(j);
   }
 
-  LINALG::TMatrix<FAD, 1, 3> crossprod(true);
+  LINALG::Matrix<1, 3, FAD> crossprod(true);
 
   // Cross Product
   crossprod = CalcCrossProduct(side1, side2);

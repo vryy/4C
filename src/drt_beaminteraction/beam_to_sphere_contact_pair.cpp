@@ -152,18 +152,18 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
   ClosestPointProjection();
 
   // vectors for shape functions and their derivatives
-  LINALG::TMatrix<TYPE, 1, numnodes * numnodalvalues> N1_i;
-  LINALG::TMatrix<TYPE, 1, numnodes * numnodalvalues> N1_i_xi;
-  LINALG::TMatrix<TYPE, 1, numnodes * numnodalvalues> N1_i_xixi;
+  LINALG::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i;
+  LINALG::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i_xi;
+  LINALG::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i_xixi;
 
   // coords and derivatives of the two contact points
-  LINALG::TMatrix<TYPE, 3, 1> x1;    // = x1
-  LINALG::TMatrix<TYPE, 3, 1> x2;    // = x2
-  LINALG::TMatrix<TYPE, 3, 1> dx1;   // = x1,xi
-  LINALG::TMatrix<TYPE, 3, 1> ddx1;  // = x1,xixi
+  LINALG::Matrix<3, 1, TYPE> x1;    // = x1
+  LINALG::Matrix<3, 1, TYPE> x2;    // = x2
+  LINALG::Matrix<3, 1, TYPE> dx1;   // = x1,xi
+  LINALG::Matrix<3, 1, TYPE> ddx1;  // = x1,xixi
 
   // initialize
-  LINALG::TMatrix<TYPE, 3, 1> normal;
+  LINALG::Matrix<3, 1, TYPE> normal;
   TYPE gap = 0.0;
   TYPE norm = 0.0;
 
@@ -320,16 +320,16 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Closest
   TYPE eta = 0.0;
 
   // vectors for shape functions and their derivatives
-  LINALG::TMatrix<TYPE, 1, numnodes * numnodalvalues> N1_i;
-  LINALG::TMatrix<TYPE, 1, numnodes * numnodalvalues> N1_i_xi;
-  LINALG::TMatrix<TYPE, 1, numnodes * numnodalvalues> N1_i_xixi;
+  LINALG::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i;
+  LINALG::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i_xi;
+  LINALG::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i_xixi;
 
   // coords and derivatives of the two contact points
-  LINALG::TMatrix<TYPE, 3, 1> x1;       // = x1
-  LINALG::TMatrix<TYPE, 3, 1> x2;       // = x2
-  LINALG::TMatrix<TYPE, 3, 1> dx1;      // = x1,xi
-  LINALG::TMatrix<TYPE, 3, 1> ddx1;     // = x1,xixi
-  LINALG::TMatrix<TYPE, 3, 1> delta_x;  // = x1 - x2
+  LINALG::Matrix<3, 1, TYPE> x1;       // = x1
+  LINALG::Matrix<3, 1, TYPE> x2;       // = x2
+  LINALG::Matrix<3, 1, TYPE> dx1;      // = x1,xi
+  LINALG::Matrix<3, 1, TYPE> ddx1;     // = x1,xixi
+  LINALG::Matrix<3, 1, TYPE> delta_x;  // = x1 - x2
 
   // initialize function f and Jacobian df for Newton iteration
   TYPE f;
@@ -432,8 +432,8 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Closest
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSphereContactPair<numnodes,
     numnodalvalues>::EvaluateOrthogonalityCondition(TYPE& f,
-    const LINALG::TMatrix<TYPE, 3, 1>& delta_x, const double norm_delta_x,
-    const LINALG::TMatrix<TYPE, 3, 1>& dx1)
+    const LINALG::Matrix<3, 1, TYPE>& delta_x, const double norm_delta_x,
+    const LINALG::Matrix<3, 1, TYPE>& dx1)
 {
   // reset f
   f = 0.0;
@@ -454,8 +454,8 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes,
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSphereContactPair<numnodes,
     numnodalvalues>::EvaluateLinOrthogonalityCondition(TYPE& df,
-    LINALG::TMatrix<TYPE, 3, 1>& delta_x, const double norm_delta_x,
-    const LINALG::TMatrix<TYPE, 3, 1>& dx1, const LINALG::TMatrix<TYPE, 3, 1>& ddx1)
+    LINALG::Matrix<3, 1, TYPE>& delta_x, const double norm_delta_x,
+    const LINALG::Matrix<3, 1, TYPE>& dx1, const LINALG::Matrix<3, 1, TYPE>& ddx1)
 
 {
   // reset df
@@ -485,8 +485,8 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::CheckAn
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::EvaluateFcContact(
     LINALG::SerialDenseVector& forcevec1, LINALG::SerialDenseVector& forcevec2, const double& pp,
-    const TYPE& gap, const LINALG::TMatrix<TYPE, 3, 1>& normal,
-    const LINALG::TMatrix<TYPE, 1, numnodes * numnodalvalues>& N1_i, const bool contactactive)
+    const TYPE& gap, const LINALG::Matrix<3, 1, TYPE>& normal,
+    const LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i, const bool contactactive)
 {
   fc1_.Clear();
   fc2_.Clear();
@@ -548,12 +548,12 @@ template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::EvaluateStiffcContact(
     LINALG::SerialDenseMatrix& stiffmat11, LINALG::SerialDenseMatrix& stiffmat12,
     LINALG::SerialDenseMatrix& stiffmat21, LINALG::SerialDenseMatrix& stiffmat22, const double& pp,
-    const TYPE& gap, const LINALG::TMatrix<TYPE, 3, 1>& normal, const TYPE& norm,
-    const LINALG::TMatrix<TYPE, 3, 1>& x1, const LINALG::TMatrix<TYPE, 3, 1>& x2,
-    const LINALG::TMatrix<TYPE, 3, 1>& dx1, const LINALG::TMatrix<TYPE, 3, 1>& ddx1,
-    const LINALG::TMatrix<TYPE, 1, numnodes * numnodalvalues>& N1_i,
-    const LINALG::TMatrix<TYPE, 1, numnodes * numnodalvalues>& N1_i_xi,
-    const LINALG::TMatrix<TYPE, 1, numnodes * numnodalvalues>& N1_i_xixi, bool activecontact,
+    const TYPE& gap, const LINALG::Matrix<3, 1, TYPE>& normal, const TYPE& norm,
+    const LINALG::Matrix<3, 1, TYPE>& x1, const LINALG::Matrix<3, 1, TYPE>& x2,
+    const LINALG::Matrix<3, 1, TYPE>& dx1, const LINALG::Matrix<3, 1, TYPE>& ddx1,
+    const LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i,
+    const LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xi,
+    const LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xixi, bool activecontact,
     bool linxi)
 {
   // get dimensions for vector fc1 and fc2
@@ -561,8 +561,8 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
   const unsigned int dim2 = 3;
 
   // temporary matrices for stiffness matrices
-  LINALG::TMatrix<TYPE, dim1, dim1 + dim2> stiffc1;
-  LINALG::TMatrix<TYPE, dim2, dim1 + dim2> stiffc2;
+  LINALG::Matrix<dim1, dim1 + dim2, TYPE> stiffc1;
+  LINALG::Matrix<dim2, dim1 + dim2, TYPE> stiffc2;
 
   // flag indicating assembly
   bool DoNotAssemble = false;
@@ -577,19 +577,19 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
   // evaluate contact stiffness for active pairs
   //**********************************************************************
   // initialize delta_xi here because we need it outside the if-environment for FAD Check
-  LINALG::TMatrix<TYPE, dim1 + dim2, 1> delta_xi;
+  LINALG::Matrix<dim1 + dim2, 1, TYPE> delta_xi;
 
   if (activecontact)
   {
     // auxiliary stiffmatrix for part III of linearization to avoid tensor notation
-    LINALG::TMatrix<TYPE, dim1 + dim2, dim1 + dim2> stiffc_III;
+    LINALG::Matrix<dim1 + dim2, dim1 + dim2, TYPE> stiffc_III;
 
     // initialize storage for linearizations
-    LINALG::TMatrix<TYPE, 3, 1> distance;
+    LINALG::Matrix<3, 1, TYPE> distance;
     TYPE normdist = 0.0;
-    LINALG::TMatrix<TYPE, dim1 + dim2, 1> delta_gap;
-    LINALG::TMatrix<TYPE, 3, dim1 + dim2> delta_x1_minus_x2;
-    LINALG::TMatrix<TYPE, 3, dim1 + dim2> delta_n;
+    LINALG::Matrix<dim1 + dim2, 1, TYPE> delta_gap;
+    LINALG::Matrix<3, dim1 + dim2, TYPE> delta_x1_minus_x2;
+    LINALG::Matrix<3, dim1 + dim2, TYPE> delta_n;
 
     //********************************************************************
     // evaluate linearizations and distance
@@ -621,7 +621,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
     //********************************************************************
     // part I
     //********************************************************************
-    LINALG::TMatrix<TYPE, dim1, 1> N1T_normal;
+    LINALG::Matrix<dim1, 1, TYPE> N1T_normal;
     for (unsigned int i = 0; i < 3; i++)
     {
       for (unsigned int j = 0; j < numnodes * numnodalvalues; j++)
@@ -655,7 +655,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
     //********************************************************************
     // part III
     //********************************************************************
-    LINALG::TMatrix<TYPE, dim1, 1> N1xiT_normal;
+    LINALG::Matrix<dim1, 1, TYPE> N1xiT_normal;
     for (unsigned int i = 0; i < 3; i++)
     {
       for (unsigned int j = 0; j < numnodes * numnodalvalues; j++)
@@ -811,8 +811,8 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::ComputeNormal(
-    LINALG::TMatrix<TYPE, 3, 1>& normal, TYPE& gap, TYPE& norm,
-    const LINALG::TMatrix<TYPE, 3, 1>& x1, const LINALG::TMatrix<TYPE, 3, 1>& x2)
+    LINALG::Matrix<3, 1, TYPE>& normal, TYPE& gap, TYPE& norm, const LINALG::Matrix<3, 1, TYPE>& x1,
+    const LINALG::Matrix<3, 1, TYPE>& x2)
 {
   // compute non-unit normal
   for (unsigned int i = 0; i < 3; i++) normal(i) = x1(i) - x2(i);
@@ -851,11 +851,11 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Compute
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::ComputeCoordsAndDerivs(
-    LINALG::TMatrix<TYPE, 3, 1>& x1, LINALG::TMatrix<TYPE, 3, 1>& x2,
-    LINALG::TMatrix<TYPE, 3, 1>& dx1, LINALG::TMatrix<TYPE, 3, 1>& ddx1,
-    const LINALG::TMatrix<TYPE, 1, numnodes * numnodalvalues>& N1_i,
-    const LINALG::TMatrix<TYPE, 1, numnodes * numnodalvalues>& N1_i_xi,
-    const LINALG::TMatrix<TYPE, 1, numnodes * numnodalvalues>& N1_i_xixi)
+    LINALG::Matrix<3, 1, TYPE>& x1, LINALG::Matrix<3, 1, TYPE>& x2, LINALG::Matrix<3, 1, TYPE>& dx1,
+    LINALG::Matrix<3, 1, TYPE>& ddx1,
+    const LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i,
+    const LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xi,
+    const LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xixi)
 {
   // reset input variables
   x1.Clear();
@@ -901,9 +901,9 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Compute
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::GetShapeFunctions(
-    LINALG::TMatrix<TYPE, 1, numnodes * numnodalvalues>& N1_i,
-    LINALG::TMatrix<TYPE, 1, numnodes * numnodalvalues>& N1_i_xi,
-    LINALG::TMatrix<TYPE, 1, numnodes * numnodalvalues>& N1_i_xixi, const TYPE& eta)
+    LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i,
+    LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xi,
+    LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xixi, const TYPE& eta)
 {
   // get both discretization types
   const DRT::Element::DiscretizationType distype1 = BeamElement()->Shape();
@@ -938,20 +938,20 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::GetShap
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::ComputeLinXi(
-    LINALG::TMatrix<TYPE, 3 * numnodes * numnodalvalues + 3, 1>& delta_xi,
-    const LINALG::TMatrix<TYPE, 3, 1>& x1, const LINALG::TMatrix<TYPE, 3, 1>& x2,
-    const LINALG::TMatrix<TYPE, 3, 1>& dx1, const LINALG::TMatrix<TYPE, 3, 1>& ddx1,
-    const LINALG::TMatrix<TYPE, 1, numnodes * numnodalvalues>& N1_i,
-    const LINALG::TMatrix<TYPE, 1, numnodes * numnodalvalues>& N1_i_xi)
+    LINALG::Matrix<3 * numnodes * numnodalvalues + 3, 1, TYPE>& delta_xi,
+    const LINALG::Matrix<3, 1, TYPE>& x1, const LINALG::Matrix<3, 1, TYPE>& x2,
+    const LINALG::Matrix<3, 1, TYPE>& dx1, const LINALG::Matrix<3, 1, TYPE>& ddx1,
+    const LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i,
+    const LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xi)
 {
   const unsigned int dim1 = 3 * numnodes * numnodalvalues;
   const unsigned int dim2 = 3;
 
   // matrices to compute Lin_Xi (in case of beam-sphere contact: scalar and vector)
   TYPE L = 0.0;
-  LINALG::TMatrix<TYPE, 1, dim1 + dim2> B;
+  LINALG::Matrix<1, dim1 + dim2, TYPE> B;
 
-  LINALG::TMatrix<TYPE, 3, 1> delta_x;
+  LINALG::Matrix<3, 1, TYPE> delta_x;
 
   // compute L
   for (unsigned int i = 0; i < 3; i++)
@@ -986,8 +986,8 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Compute
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::ComputeDistance(
-    LINALG::TMatrix<TYPE, 3, 1>& distance, TYPE& normdist,
-    const LINALG::TMatrix<TYPE, 3, 1>& normal, const TYPE& norm)
+    LINALG::Matrix<3, 1, TYPE>& distance, TYPE& normdist, const LINALG::Matrix<3, 1, TYPE>& normal,
+    const TYPE& norm)
 {
   // compute distance vector
   for (unsigned int i = 0; i < 3; i++) distance(i) = normal(i) * norm;
@@ -1002,13 +1002,13 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Compute
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::ComputeLinGap(
-    LINALG::TMatrix<TYPE, 3 * numnodes * numnodalvalues + 3, 1>& delta_gap,
-    LINALG::TMatrix<TYPE, 3 * numnodes * numnodalvalues + 3, 1>& delta_xi,
-    const LINALG::TMatrix<TYPE, 3, 1>& x1, const LINALG::TMatrix<TYPE, 3, 1>& x2,
-    const LINALG::TMatrix<TYPE, 3, 1>& dx1,
-    const LINALG::TMatrix<TYPE, 1, numnodes * numnodalvalues>& N1_i, const TYPE& normdist,
-    const LINALG::TMatrix<TYPE, 3, 1>& normal, const TYPE& norm, const TYPE& gap,
-    LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues + 3>& delta_x1_minus_x2)
+    LINALG::Matrix<3 * numnodes * numnodalvalues + 3, 1, TYPE>& delta_gap,
+    LINALG::Matrix<3 * numnodes * numnodalvalues + 3, 1, TYPE>& delta_xi,
+    const LINALG::Matrix<3, 1, TYPE>& x1, const LINALG::Matrix<3, 1, TYPE>& x2,
+    const LINALG::Matrix<3, 1, TYPE>& dx1,
+    const LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i, const TYPE& normdist,
+    const LINALG::Matrix<3, 1, TYPE>& normal, const TYPE& norm, const TYPE& gap,
+    LINALG::Matrix<3, 3 * numnodes * numnodalvalues + 3, TYPE>& delta_x1_minus_x2)
 {
   const unsigned int dim1 = 3 * numnodes * numnodalvalues;
   const unsigned int dim2 = 3;
@@ -1017,7 +1017,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Compute
   // delta g := delta_r/||delta_r||*auxiliary_matri1 delta d, with auxiliary_matri1 =
   // (r1_xi*delta_xi-r2_xi*delta_eta + (N1, -N2))
 
-  LINALG::TMatrix<TYPE, 3, dim1 + dim2> auxiliary_matrix1(true);
+  LINALG::Matrix<3, dim1 + dim2, TYPE> auxiliary_matrix1(true);
 
   for (unsigned int i = 0; i < 3; i++)
   {
@@ -1056,11 +1056,11 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Compute
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::ComputeLinNormal(
-    LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues + 3>& delta_normal,
-    const LINALG::TMatrix<TYPE, 3 * numnodes * numnodalvalues + 3, 1>& delta_xi,
-    const LINALG::TMatrix<TYPE, 3, 1>& normal, const TYPE& norm_delta_x,
-    const LINALG::TMatrix<TYPE, 3, 1>& x1_xi,
-    const LINALG::TMatrix<TYPE, 1, numnodes * numnodalvalues>& N1_i)
+    LINALG::Matrix<3, 3 * numnodes * numnodalvalues + 3, TYPE>& delta_normal,
+    const LINALG::Matrix<3 * numnodes * numnodalvalues + 3, 1, TYPE>& delta_xi,
+    const LINALG::Matrix<3, 1, TYPE>& normal, const TYPE& norm_delta_x,
+    const LINALG::Matrix<3, 1, TYPE>& x1_xi,
+    const LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i)
 {
   const unsigned int dim1 = 3 * numnodes * numnodalvalues;
   const unsigned int dim2 = 3;
@@ -1068,8 +1068,8 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Compute
   // delta n := auxiliary_matri2*auxiliary_matrix1* delta d, with auxiliary_matri2 =
   // (I-nxn)/||r1-r2|| and auxiliary_matri1 = (r1_xi*delta_xi-r2_xi*delta_eta + (N1, -N2))
 
-  LINALG::TMatrix<TYPE, 3, dim1 + dim2> auxiliary_matrix1(true);
-  LINALG::TMatrix<TYPE, 3, 3> auxiliary_matrix2(true);
+  LINALG::Matrix<3, dim1 + dim2, TYPE> auxiliary_matrix1(true);
+  LINALG::Matrix<3, 3, TYPE> auxiliary_matrix2(true);
 
   // compute auxiliary_matrix1
   for (unsigned int i = 0; i < 3; i++)

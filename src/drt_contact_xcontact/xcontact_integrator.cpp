@@ -338,7 +338,7 @@ void XCONTACT::GenericEvaluator<probdim, eletype, dim, numNodeEle>::ClosestPoint
     CovariantBasisVectors<probdim, eletype>(mxyze, mxi, mderiv, mg);
 
     // Compute parametric derivatives of covariant basis vectors
-    LINALG::TMatrix<LINALG::Matrix<probdim, 1>, dim, 1> mg_xi(true);
+    LINALG::Matrix<dim, 1, LINALG::Matrix<probdim, 1>> mg_xi(true);
     ParDerivMetrics<probdim, eletype>(mxyze, mxi, mg_xi);
 
 

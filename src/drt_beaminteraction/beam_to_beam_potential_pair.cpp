@@ -134,8 +134,8 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Eval
   const unsigned int dim1 = 3 * numnodes * numnodalvalues;
   const unsigned int dim2 = 3 * numnodes * numnodalvalues;
 
-  LINALG::TMatrix<T, 3 * numnodes * numnodalvalues, 1> force_pot1(true);
-  LINALG::TMatrix<T, 3 * numnodes * numnodalvalues, 1> force_pot2(true);
+  LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T> force_pot1(true);
+  LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T> force_pot2(true);
 
 
   if (stiffmat11 != NULL) stiffmat11->Shape(dim1, dim1);
@@ -193,9 +193,9 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Eval
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
-    T>::EvaluateFpotandStiffpot_LargeSepApprox(LINALG::TMatrix<T, 3 * numnodes * numnodalvalues, 1>&
+    T>::EvaluateFpotandStiffpot_LargeSepApprox(LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T>&
                                                    force_pot1,
-    LINALG::TMatrix<T, 3 * numnodes * numnodalvalues, 1>& force_pot2,
+    LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot2,
     LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
     LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22)
 {
@@ -219,17 +219,17 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 
   // vectors for shape functions
   // Attention: these are individual shape function values, NOT shape function matrices
-  std::vector<LINALG::TMatrix<double, 1, numnodes * numnodalvalues>> N1_i(numgp_persegment);
-  std::vector<LINALG::TMatrix<double, 1, numnodes * numnodalvalues>> N2_i(numgp_persegment);
+  std::vector<LINALG::Matrix<1, numnodes * numnodalvalues, double>> N1_i(numgp_persegment);
+  std::vector<LINALG::Matrix<1, numnodes * numnodalvalues, double>> N2_i(numgp_persegment);
 
   // Evaluate shape functions at gauss points and store values
   // Todo think about pre-computing and storing values for inner Gauss point loops here
 
   // coords of the two gauss points
-  LINALG::TMatrix<T, 3, 1> r1(true);    // = r1
-  LINALG::TMatrix<T, 3, 1> r2(true);    // = r2
-  LINALG::TMatrix<T, 3, 1> dist(true);  // = r1-r2
-  T norm_dist = 0.0;                    // = |r1-r2|
+  LINALG::Matrix<3, 1, T> r1(true);    // = r1
+  LINALG::Matrix<3, 1, T> r2(true);    // = r2
+  LINALG::Matrix<3, 1, T> dist(true);  // = r1-r2
+  T norm_dist = 0.0;                   // = |r1-r2|
 
   // evaluate charge densities from DLINE charge condition specified in input file
   double q1 = linechargeconds_[0]->GetDouble("val");
@@ -249,7 +249,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 
 
   // auxiliary variable
-  LINALG::TMatrix<T, 3, 1> fpot_tmp(true);
+  LINALG::Matrix<3, 1, T> fpot_tmp(true);
 
   // determine prefactor of the integral (depends on whether surface or volume potential is applied)
   double prefactor = k_ * m_;
@@ -270,10 +270,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   // prepare data storage for vtk visualization
   centerline_coords_GP1_.resize(numgp_perelement);
   centerline_coords_GP2_.resize(numgp_perelement);
-  forces_pot_GP1_.resize(numgp_perelement, LINALG::TMatrix<double, 3, 1>(true));
-  forces_pot_GP2_.resize(numgp_perelement, LINALG::TMatrix<double, 3, 1>(true));
-  moments_pot_GP1_.resize(numgp_perelement, LINALG::TMatrix<double, 3, 1>(true));
-  moments_pot_GP2_.resize(numgp_perelement, LINALG::TMatrix<double, 3, 1>(true));
+  forces_pot_GP1_.resize(numgp_perelement, LINALG::Matrix<3, 1, double>(true));
+  forces_pot_GP2_.resize(numgp_perelement, LINALG::Matrix<3, 1, double>(true));
+  moments_pot_GP1_.resize(numgp_perelement, LINALG::Matrix<3, 1, double>(true));
+  moments_pot_GP2_.resize(numgp_perelement, LINALG::Matrix<3, 1, double>(true));
 
   for (unsigned int isegment1 = 0; isegment1 < num_integration_segments; ++isegment1)
   {
@@ -447,11 +447,11 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
-    T>::EvaluateStiffpotAnalyticContributions_LargeSepApprox(LINALG::TMatrix<double, 3, 1> const&
+    T>::EvaluateStiffpotAnalyticContributions_LargeSepApprox(LINALG::Matrix<3, 1, double> const&
                                                                  dist,
     double const& norm_dist, double const& norm_dist_exp1, double q1q2_JacFac_GaussWeights,
-    LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N1_i_GP1,
-    LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N2_i_GP2,
+    LINALG::Matrix<1, numnodes * numnodalvalues, double> const& N1_i_GP1,
+    LINALG::Matrix<1, numnodes * numnodalvalues, double> const& N2_i_GP2,
     LINALG::SerialDenseMatrix& stiffmat11, LINALG::SerialDenseMatrix& stiffmat12,
     LINALG::SerialDenseMatrix& stiffmat21, LINALG::SerialDenseMatrix& stiffmat22) const
 {
@@ -461,7 +461,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   // auxiliary variables (same for both elements)
   double norm_dist_exp2 = (m_ + 2) * std::pow(norm_dist, -m_ - 4);
 
-  LINALG::TMatrix<double, 3, 3> dist_dist_T(true);
+  LINALG::Matrix<3, 3, double> dist_dist_T(true);
 
   for (unsigned int i = 0; i < 3; ++i)
   {
@@ -555,8 +555,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     EvaluateFpotandStiffpot_DoubleLengthSpecific_SmallSepApprox(
-        LINALG::TMatrix<T, 3 * numnodes * numnodalvalues, 1>& force_pot1,
-        LINALG::TMatrix<T, 3 * numnodes * numnodalvalues, 1>& force_pot2,
+        LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot1,
+        LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot2,
         LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
         LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22)
 {
@@ -592,18 +592,18 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
   // vectors for shape function values
   // Attention: these are individual shape function values, NOT shape function matrices
-  std::vector<LINALG::TMatrix<double, 1, numnodes * numnodalvalues>> N1_i(numgp_persegment);
-  std::vector<LINALG::TMatrix<double, 1, numnodes * numnodalvalues>> N2_i(numgp_persegment);
+  std::vector<LINALG::Matrix<1, numnodes * numnodalvalues, double>> N1_i(numgp_persegment);
+  std::vector<LINALG::Matrix<1, numnodes * numnodalvalues, double>> N2_i(numgp_persegment);
 
   // Evaluate shape functions at gauss points and store values
   // Todo think about pre-computing and storing values for inner Gauss point loops here
 
   // coords of the two gauss points
-  LINALG::TMatrix<T, 3, 1> r1(true);    // = r1
-  LINALG::TMatrix<T, 3, 1> r2(true);    // = r2
-  LINALG::TMatrix<T, 3, 1> dist(true);  // = r1-r2
-  T norm_dist = 0.0;                    // = |r1-r2|
-  T gap = 0.0;                          // = |r1-r2|-R1-R2
+  LINALG::Matrix<3, 1, T> r1(true);    // = r1
+  LINALG::Matrix<3, 1, T> r2(true);    // = r2
+  LINALG::Matrix<3, 1, T> dist(true);  // = r1-r2
+  T norm_dist = 0.0;                   // = |r1-r2|
+  T gap = 0.0;                         // = |r1-r2|-R1-R2
   T gap_regularized = 0.0;  // modified gap if a regularization of the force law is applied
 
   // evaluate charge/particle densities from DLINE charge condition specified in input file
@@ -671,13 +671,13 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   // prepare data storage for vtk visualization
   centerline_coords_GP1_.resize(numgp_perelement);
   centerline_coords_GP2_.resize(numgp_perelement);
-  forces_pot_GP1_.resize(numgp_perelement, LINALG::TMatrix<double, 3, 1>(true));
-  forces_pot_GP2_.resize(numgp_perelement, LINALG::TMatrix<double, 3, 1>(true));
-  moments_pot_GP1_.resize(numgp_perelement, LINALG::TMatrix<double, 3, 1>(true));
-  moments_pot_GP2_.resize(numgp_perelement, LINALG::TMatrix<double, 3, 1>(true));
+  forces_pot_GP1_.resize(numgp_perelement, LINALG::Matrix<3, 1, double>(true));
+  forces_pot_GP2_.resize(numgp_perelement, LINALG::Matrix<3, 1, double>(true));
+  moments_pot_GP1_.resize(numgp_perelement, LINALG::Matrix<3, 1, double>(true));
+  moments_pot_GP2_.resize(numgp_perelement, LINALG::Matrix<3, 1, double>(true));
 
   // auxiliary variables
-  LINALG::TMatrix<T, 3, 1> fpot_tmp(true);
+  LINALG::Matrix<3, 1, T> fpot_tmp(true);
 
   double prefactor = k_ * 2 * M_PI * (m_ - 3.5) / (m_ - 2) / (m_ - 2) *
                      std::sqrt(2 * radius1_ * radius2_ / (radius1_ + radius2_)) * C;
@@ -919,10 +919,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     EvaluateStiffpotAnalyticContributions_DoubleLengthSpecific_SmallSepApprox(
-        LINALG::TMatrix<double, 3, 1> const& dist, double const& norm_dist, double const& gap,
+        LINALG::Matrix<3, 1, double> const& dist, double const& norm_dist, double const& gap,
         double const& gap_regularized, double const& gap_exp1, double q1q2_JacFac_GaussWeights,
-        LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N1_i_GP1,
-        LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N2_i_GP2,
+        LINALG::Matrix<1, numnodes * numnodalvalues, double> const& N1_i_GP1,
+        LINALG::Matrix<1, numnodes * numnodalvalues, double> const& N2_i_GP2,
         LINALG::SerialDenseMatrix& stiffmat11, LINALG::SerialDenseMatrix& stiffmat12,
         LINALG::SerialDenseMatrix& stiffmat21, LINALG::SerialDenseMatrix& stiffmat22) const
 {
@@ -945,7 +945,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
                         (m_ - 2.5) * gap_exp2 / norm_dist / norm_dist) *
                     q1q2_JacFac_GaussWeights;
 
-  LINALG::TMatrix<double, 3, 3> dist_dist_T(true);
+  LINALG::Matrix<3, 3, double> dist_dist_T(true);
 
   for (unsigned int i = 0; i < 3; ++i)
   {
@@ -1031,8 +1031,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     EvaluateFpotandStiffpot_SingleLengthSpecific_SmallSepApprox(
-        LINALG::TMatrix<T, 3 * numnodes * numnodalvalues, 1>& force_pot1,
-        LINALG::TMatrix<T, 3 * numnodes * numnodalvalues, 1>& force_pot2,
+        LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot1,
+        LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot2,
         LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
         LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22)
 {
@@ -1095,35 +1095,35 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   // vectors for shape functions and their derivatives
   // Attention: these are individual shape function values, NOT shape function matrices
   // values at all Gauss points are stored in advance (more efficient espec. for many segments)
-  std::vector<LINALG::TMatrix<double, 1, numnodes * numnodalvalues>> N_i_slave(
+  std::vector<LINALG::Matrix<1, numnodes * numnodalvalues, double>> N_i_slave(
       numgp_persegment);  // = N1_i
-  std::vector<LINALG::TMatrix<double, 1, numnodes * numnodalvalues>> N_i_xi_slave(
+  std::vector<LINALG::Matrix<1, numnodes * numnodalvalues, double>> N_i_xi_slave(
       numgp_persegment);  // = N1_i,xi
 
-  LINALG::TMatrix<T, 1, numnodes * numnodalvalues> N_i_master(true);
-  LINALG::TMatrix<T, 1, numnodes * numnodalvalues> N_i_xi_master(true);
-  LINALG::TMatrix<T, 1, numnodes * numnodalvalues> N_i_xixi_master(true);
+  LINALG::Matrix<1, numnodes * numnodalvalues, T> N_i_master(true);
+  LINALG::Matrix<1, numnodes * numnodalvalues, T> N_i_xi_master(true);
+  LINALG::Matrix<1, numnodes * numnodalvalues, T> N_i_xixi_master(true);
 
   // assembled shape function matrices: Todo maybe avoid these matrices
-  LINALG::TMatrix<double, 3, 3 * numnodes * numnodalvalues> N_slave(true);
+  LINALG::Matrix<3, 3 * numnodes * numnodalvalues, double> N_slave(true);
 
-  LINALG::TMatrix<T, 3, 3 * numnodes * numnodalvalues> N_master(true);
-  LINALG::TMatrix<T, 3, 3 * numnodes * numnodalvalues> N_xi_master(true);
-  LINALG::TMatrix<T, 3, 3 * numnodes * numnodalvalues> N_xixi_master(true);
+  LINALG::Matrix<3, 3 * numnodes * numnodalvalues, T> N_master(true);
+  LINALG::Matrix<3, 3 * numnodes * numnodalvalues, T> N_xi_master(true);
+  LINALG::Matrix<3, 3 * numnodes * numnodalvalues, T> N_xixi_master(true);
 
 
   // coords and derivatives of the slave Gauss point and projected point on master element
-  LINALG::TMatrix<T, 3, 1> r_slave(true);        // centerline position vector on slave
-  LINALG::TMatrix<T, 3, 1> r_xi_slave(true);     // centerline tangent vector on slave
-  LINALG::TMatrix<T, 3, 1> t_slave(true);        // unit centerline tangent vector on slave
-  LINALG::TMatrix<T, 3, 1> r_master(true);       // centerline position vector on master
-  LINALG::TMatrix<T, 3, 1> r_xi_master(true);    // centerline tangent vector on master
-  LINALG::TMatrix<T, 3, 1> r_xixi_master(true);  // 2nd deriv of master curve
-  LINALG::TMatrix<T, 3, 1> t_master(true);       // unit centerline tangent vector on master
+  LINALG::Matrix<3, 1, T> r_slave(true);        // centerline position vector on slave
+  LINALG::Matrix<3, 1, T> r_xi_slave(true);     // centerline tangent vector on slave
+  LINALG::Matrix<3, 1, T> t_slave(true);        // unit centerline tangent vector on slave
+  LINALG::Matrix<3, 1, T> r_master(true);       // centerline position vector on master
+  LINALG::Matrix<3, 1, T> r_xi_master(true);    // centerline tangent vector on master
+  LINALG::Matrix<3, 1, T> r_xixi_master(true);  // 2nd deriv of master curve
+  LINALG::Matrix<3, 1, T> t_master(true);       // unit centerline tangent vector on master
 
-  LINALG::TMatrix<T, 3, 1> dist_ul(true);  // = r_slave-r_master
-  T alpha = 0.0;                           // mutual angle of tangent vectors
-  T cos_alpha = 0.0;                       // cosine of mutual angle of tangent vectors
+  LINALG::Matrix<3, 1, T> dist_ul(true);  // = r_slave-r_master
+  T alpha = 0.0;                          // mutual angle of tangent vectors
+  T cos_alpha = 0.0;                      // cosine of mutual angle of tangent vectors
 
 
   T interaction_potential_GP = 0.0;
@@ -1131,23 +1131,23 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
 
   // components from variation of parameter coordinate on master beam
-  LINALG::TMatrix<T, 1, 3> xi_master_partial_r_slave(true);
-  LINALG::TMatrix<T, 1, 3> xi_master_partial_r_master(true);
-  LINALG::TMatrix<T, 1, 3> xi_master_partial_r_xi_master(true);
+  LINALG::Matrix<1, 3, T> xi_master_partial_r_slave(true);
+  LINALG::Matrix<1, 3, T> xi_master_partial_r_master(true);
+  LINALG::Matrix<1, 3, T> xi_master_partial_r_xi_master(true);
 
 
   // linearization of parameter coordinate on master resulting from point-to-curve projection
-  LINALG::TMatrix<T, 1, 3 * numnodes * numnodalvalues> lin_xi_master_slaveDofs(true);
-  LINALG::TMatrix<T, 1, 3 * numnodes * numnodalvalues> lin_xi_master_masterDofs(true);
+  LINALG::Matrix<1, 3 * numnodes * numnodalvalues, T> lin_xi_master_slaveDofs(true);
+  LINALG::Matrix<1, 3 * numnodes * numnodalvalues, T> lin_xi_master_masterDofs(true);
 
   /* contribution of one Gauss point (required for automatic differentiation with contributions
    * from xi_master) */
-  LINALG::TMatrix<T, 3 * numnodes * numnodalvalues, 1> force_pot_slave_GP(true);
-  LINALG::TMatrix<T, 3 * numnodes * numnodalvalues, 1> force_pot_master_GP(true);
+  LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T> force_pot_slave_GP(true);
+  LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T> force_pot_master_GP(true);
 
   // Todo remove the following two variables, which are required for verification via FAD
-  LINALG::TMatrix<double, 3 * numnodes * numnodalvalues, 1> force_pot_slave_GP_calc_via_FAD(true);
-  LINALG::TMatrix<double, 3 * numnodes * numnodalvalues, 1> force_pot_master_GP_calc_via_FAD(true);
+  LINALG::Matrix<3 * numnodes * numnodalvalues, 1, double> force_pot_slave_GP_calc_via_FAD(true);
+  LINALG::Matrix<3 * numnodes * numnodalvalues, 1, double> force_pot_master_GP_calc_via_FAD(true);
 
   // evaluate charge/particle densities from DLINE charge condition specified in input file
   double rho1 = linechargeconds_[0]->GetDouble("val");
@@ -1198,10 +1198,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   // prepare data storage for vtk visualization
   centerline_coords_GP1_.resize(numgp_total);
   centerline_coords_GP2_.resize(numgp_total);
-  forces_pot_GP1_.resize(numgp_total, LINALG::TMatrix<double, 3, 1>(true));
-  forces_pot_GP2_.resize(numgp_total, LINALG::TMatrix<double, 3, 1>(true));
-  moments_pot_GP1_.resize(numgp_total, LINALG::TMatrix<double, 3, 1>(true));
-  moments_pot_GP2_.resize(numgp_total, LINALG::TMatrix<double, 3, 1>(true));
+  forces_pot_GP1_.resize(numgp_total, LINALG::Matrix<3, 1, double>(true));
+  forces_pot_GP2_.resize(numgp_total, LINALG::Matrix<3, 1, double>(true));
+  moments_pot_GP1_.resize(numgp_total, LINALG::Matrix<3, 1, double>(true));
+  moments_pot_GP2_.resize(numgp_total, LINALG::Matrix<3, 1, double>(true));
 
 
   for (unsigned int isegment = 0; isegment < num_integration_segments; ++isegment)
@@ -1466,7 +1466,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
 
         // unilateral normal vector
-        LINALG::TMatrix<T, 3, 1> normal_ul(true);
+        LINALG::Matrix<3, 1, T> normal_ul(true);
 
         normal_ul.Update(1.0 / norm_dist_ul, dist_ul);
 
@@ -1496,18 +1496,18 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
 
         // components from variation of unilateral gap
-        LINALG::TMatrix<T, 3, 1> gap_ul_deriv_r_slave(true);
-        LINALG::TMatrix<T, 3, 1> gap_ul_deriv_r_master(true);
+        LINALG::Matrix<3, 1, T> gap_ul_deriv_r_slave(true);
+        LINALG::Matrix<3, 1, T> gap_ul_deriv_r_master(true);
 
         // components from variation of cosine of enclosed angle
-        LINALG::TMatrix<T, 3, 1> cos_alpha_partial_r_xi_slave(true);
-        LINALG::TMatrix<T, 3, 1> cos_alpha_partial_r_xi_master(true);
+        LINALG::Matrix<3, 1, T> cos_alpha_partial_r_xi_slave(true);
+        LINALG::Matrix<3, 1, T> cos_alpha_partial_r_xi_master(true);
         T cos_alpha_partial_xi_master = 0.0;
 
-        LINALG::TMatrix<T, 3, 1> cos_alpha_deriv_r_slave(true);
-        LINALG::TMatrix<T, 3, 1> cos_alpha_deriv_r_master(true);
-        LINALG::TMatrix<T, 3, 1> cos_alpha_deriv_r_xi_slave(true);
-        LINALG::TMatrix<T, 3, 1> cos_alpha_deriv_r_xi_master(true);
+        LINALG::Matrix<3, 1, T> cos_alpha_deriv_r_slave(true);
+        LINALG::Matrix<3, 1, T> cos_alpha_deriv_r_master(true);
+        LINALG::Matrix<3, 1, T> cos_alpha_deriv_r_xi_slave(true);
+        LINALG::Matrix<3, 1, T> cos_alpha_deriv_r_xi_master(true);
 
 
         // compute derivatives of the interaction potential w.r.t. gap_ul and cos(alpha)
@@ -1616,7 +1616,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         // compute components from variation of cosine of enclosed angle
         T signum_tangentsscalarproduct = FADUTILS::Signum(r_xi_slave.Dot(r_xi_master));
         // auxiliary variables
-        LINALG::TMatrix<T, 3, 3> v_mat_tmp(true);
+        LINALG::Matrix<3, 3, T> v_mat_tmp(true);
 
         for (unsigned int i = 0; i < 3; ++i)
         {
@@ -1665,7 +1665,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
             FADUTILS::CastToDouble<T, 3, 1>(cos_alpha_deriv_r_slave), 1.0);
 
 
-        LINALG::TMatrix<double, 3, 1> moment_pot_tmp(true);
+        LINALG::Matrix<3, 1, double> moment_pot_tmp(true);
 
         moment_pot_tmp.Update(FADUTILS::CastToDouble(pot_ia_deriv_cos_alpha),
             FADUTILS::CastToDouble<T, 3, 1>(cos_alpha_deriv_r_xi_slave));
@@ -1674,7 +1674,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
          * part of) rotation vector theta_perp describing cross-section orientation can be used to
          *       identify (distributed) moments as follows: m_pot = 1/|r_xi| * ( m_pot_pseudo x g1 )
          */
-        LINALG::TMatrix<double, 3, 3> spin_pseudo_moment_tmp(true);
+        LINALG::Matrix<3, 3, double> spin_pseudo_moment_tmp(true);
 
         LARGEROTATIONS::computespin(spin_pseudo_moment_tmp, moment_pot_tmp);
 
@@ -1831,26 +1831,26 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     EvaluateStiffpotAnalyticContributions_SingleLengthSpecific_SmallSepApprox_Simple(
-        LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N_i_slave,
-        LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N_i_xi_slave,
-        LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N_i_master,
-        LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N_i_xi_master,
-        LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N_i_xixi_master,
-        double const& xi_master, LINALG::TMatrix<double, 3, 1> const& r_xi_slave,
-        LINALG::TMatrix<double, 3, 1> const& r_xi_master,
-        LINALG::TMatrix<double, 3, 1> const& r_xixi_master, double const& norm_dist_ul,
-        LINALG::TMatrix<double, 3, 1> const& normal_ul, double const& pot_ia_deriv_gap_ul,
+        LINALG::Matrix<1, numnodes * numnodalvalues, double> const& N_i_slave,
+        LINALG::Matrix<1, numnodes * numnodalvalues, double> const& N_i_xi_slave,
+        LINALG::Matrix<1, numnodes * numnodalvalues, double> const& N_i_master,
+        LINALG::Matrix<1, numnodes * numnodalvalues, double> const& N_i_xi_master,
+        LINALG::Matrix<1, numnodes * numnodalvalues, double> const& N_i_xixi_master,
+        double const& xi_master, LINALG::Matrix<3, 1, double> const& r_xi_slave,
+        LINALG::Matrix<3, 1, double> const& r_xi_master,
+        LINALG::Matrix<3, 1, double> const& r_xixi_master, double const& norm_dist_ul,
+        LINALG::Matrix<3, 1, double> const& normal_ul, double const& pot_ia_deriv_gap_ul,
         double const& pot_ia_deriv_cos_alpha, double const& pot_ia_2ndderiv_gap_ul,
         double const& pot_ia_deriv_gap_ul_deriv_cos_alpha, double const& pot_ia_2ndderiv_cos_alpha,
-        LINALG::TMatrix<double, 3, 1> const& gap_ul_deriv_r_slave,
-        LINALG::TMatrix<double, 3, 1> const& gap_ul_deriv_r_master,
-        LINALG::TMatrix<double, 3, 1> const& cos_alpha_deriv_r_slave,
-        LINALG::TMatrix<double, 3, 1> const& cos_alpha_deriv_r_master,
-        LINALG::TMatrix<double, 3, 1> const& cos_alpha_deriv_r_xi_slave,
-        LINALG::TMatrix<double, 3, 1> const& cos_alpha_deriv_r_xi_master,
-        LINALG::TMatrix<double, 1, 3> const& xi_master_partial_r_slave,
-        LINALG::TMatrix<double, 1, 3> const& xi_master_partial_r_master,
-        LINALG::TMatrix<double, 1, 3> const& xi_master_partial_r_xi_master,
+        LINALG::Matrix<3, 1, double> const& gap_ul_deriv_r_slave,
+        LINALG::Matrix<3, 1, double> const& gap_ul_deriv_r_master,
+        LINALG::Matrix<3, 1, double> const& cos_alpha_deriv_r_slave,
+        LINALG::Matrix<3, 1, double> const& cos_alpha_deriv_r_master,
+        LINALG::Matrix<3, 1, double> const& cos_alpha_deriv_r_xi_slave,
+        LINALG::Matrix<3, 1, double> const& cos_alpha_deriv_r_xi_master,
+        LINALG::Matrix<1, 3, double> const& xi_master_partial_r_slave,
+        LINALG::Matrix<1, 3, double> const& xi_master_partial_r_master,
+        LINALG::Matrix<1, 3, double> const& xi_master_partial_r_xi_master,
         LINALG::SerialDenseMatrix& stiffmat11, LINALG::SerialDenseMatrix& stiffmat12,
         LINALG::SerialDenseMatrix& stiffmat21, LINALG::SerialDenseMatrix& stiffmat22) const
 {
@@ -1859,13 +1859,13 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
 
   // auxiliary and intermediate quantities required for second derivatives of the unilateral gap
-  LINALG::TMatrix<double, 3, 3> unit_matrix(true);
+  LINALG::Matrix<3, 3, double> unit_matrix(true);
   for (unsigned int i = 0; i < 3; ++i) unit_matrix(i, i) = 1.0;
 
-  LINALG::TMatrix<double, 3, 3> dist_ul_deriv_r_slave(unit_matrix);
-  LINALG::TMatrix<double, 3, 3> dist_ul_deriv_r_master(unit_matrix);
+  LINALG::Matrix<3, 3, double> dist_ul_deriv_r_slave(unit_matrix);
+  LINALG::Matrix<3, 3, double> dist_ul_deriv_r_master(unit_matrix);
   dist_ul_deriv_r_master.Scale(-1.0);
-  LINALG::TMatrix<double, 3, 3> dist_ul_deriv_r_xi_master(true);
+  LINALG::Matrix<3, 3, double> dist_ul_deriv_r_xi_master(true);
 
   for (unsigned int irow = 0; irow < 3; ++irow)
   {
@@ -1881,7 +1881,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   }
 
 
-  LINALG::TMatrix<double, 3, 3> normal_ul_deriv_dist_ul(true);
+  LINALG::Matrix<3, 3, double> normal_ul_deriv_dist_ul(true);
 
   for (unsigned int i = 0; i < 3; ++i)
   {
@@ -1893,13 +1893,13 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
 
   // second derivatives of the unilateral gap
-  LINALG::TMatrix<double, 3, 3> gap_ul_deriv_r_slave_deriv_r_slave(true);
-  LINALG::TMatrix<double, 3, 3> gap_ul_deriv_r_slave_deriv_r_master(true);
-  LINALG::TMatrix<double, 3, 3> gap_ul_deriv_r_slave_deriv_r_xi_master(true);
+  LINALG::Matrix<3, 3, double> gap_ul_deriv_r_slave_deriv_r_slave(true);
+  LINALG::Matrix<3, 3, double> gap_ul_deriv_r_slave_deriv_r_master(true);
+  LINALG::Matrix<3, 3, double> gap_ul_deriv_r_slave_deriv_r_xi_master(true);
 
-  LINALG::TMatrix<double, 3, 3> gap_ul_deriv_r_master_deriv_r_slave(true);
-  LINALG::TMatrix<double, 3, 3> gap_ul_deriv_r_master_deriv_r_master(true);
-  LINALG::TMatrix<double, 3, 3> gap_ul_deriv_r_master_deriv_r_xi_master(true);
+  LINALG::Matrix<3, 3, double> gap_ul_deriv_r_master_deriv_r_slave(true);
+  LINALG::Matrix<3, 3, double> gap_ul_deriv_r_master_deriv_r_master(true);
+  LINALG::Matrix<3, 3, double> gap_ul_deriv_r_master_deriv_r_xi_master(true);
 
 
   gap_ul_deriv_r_slave_deriv_r_slave.Multiply(1.0, normal_ul_deriv_dist_ul, dist_ul_deriv_r_slave);
@@ -1917,9 +1917,9 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
   // add contributions from linearization of (variation of r_master) according to the chain
   // rule
-  LINALG::TMatrix<double, 3, 3> gap_ul_deriv_r_xi_master_deriv_r_slave(true);
-  LINALG::TMatrix<double, 3, 3> gap_ul_deriv_r_xi_master_deriv_r_master(true);
-  LINALG::TMatrix<double, 3, 3> gap_ul_deriv_r_xi_master_deriv_r_xi_master(true);
+  LINALG::Matrix<3, 3, double> gap_ul_deriv_r_xi_master_deriv_r_slave(true);
+  LINALG::Matrix<3, 3, double> gap_ul_deriv_r_xi_master_deriv_r_master(true);
+  LINALG::Matrix<3, 3, double> gap_ul_deriv_r_xi_master_deriv_r_xi_master(true);
 
   for (unsigned int irow = 0; irow < 3; ++irow)
   {
@@ -1938,28 +1938,28 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
 
   // second derivatives of cos(alpha)
-  LINALG::TMatrix<double, 3, 3> cos_alpha_deriv_r_slave_deriv_r_slave(true);
-  LINALG::TMatrix<double, 3, 3> cos_alpha_deriv_r_slave_deriv_r_xi_slave(true);
-  LINALG::TMatrix<double, 3, 3> cos_alpha_deriv_r_slave_deriv_r_master(true);
-  LINALG::TMatrix<double, 3, 3> cos_alpha_deriv_r_slave_deriv_r_xi_master(true);
-  LINALG::TMatrix<double, 3, 3> cos_alpha_deriv_r_slave_deriv_r_xixi_master(true);
+  LINALG::Matrix<3, 3, double> cos_alpha_deriv_r_slave_deriv_r_slave(true);
+  LINALG::Matrix<3, 3, double> cos_alpha_deriv_r_slave_deriv_r_xi_slave(true);
+  LINALG::Matrix<3, 3, double> cos_alpha_deriv_r_slave_deriv_r_master(true);
+  LINALG::Matrix<3, 3, double> cos_alpha_deriv_r_slave_deriv_r_xi_master(true);
+  LINALG::Matrix<3, 3, double> cos_alpha_deriv_r_slave_deriv_r_xixi_master(true);
 
-  LINALG::TMatrix<double, 3, 3> cos_alpha_deriv_r_xi_slave_deriv_r_slave(true);
-  LINALG::TMatrix<double, 3, 3> cos_alpha_deriv_r_xi_slave_deriv_r_xi_slave(true);
-  LINALG::TMatrix<double, 3, 3> cos_alpha_deriv_r_xi_slave_deriv_r_master(true);
-  LINALG::TMatrix<double, 3, 3> cos_alpha_deriv_r_xi_slave_deriv_r_xi_master(true);
+  LINALG::Matrix<3, 3, double> cos_alpha_deriv_r_xi_slave_deriv_r_slave(true);
+  LINALG::Matrix<3, 3, double> cos_alpha_deriv_r_xi_slave_deriv_r_xi_slave(true);
+  LINALG::Matrix<3, 3, double> cos_alpha_deriv_r_xi_slave_deriv_r_master(true);
+  LINALG::Matrix<3, 3, double> cos_alpha_deriv_r_xi_slave_deriv_r_xi_master(true);
 
-  LINALG::TMatrix<double, 3, 3> cos_alpha_deriv_r_master_deriv_r_slave(true);
-  LINALG::TMatrix<double, 3, 3> cos_alpha_deriv_r_master_deriv_r_xi_slave(true);
-  LINALG::TMatrix<double, 3, 3> cos_alpha_deriv_r_master_deriv_r_master(true);
-  LINALG::TMatrix<double, 3, 3> cos_alpha_deriv_r_master_deriv_r_xi_master(true);
-  LINALG::TMatrix<double, 3, 3> cos_alpha_deriv_r_master_deriv_r_xixi_master(true);
+  LINALG::Matrix<3, 3, double> cos_alpha_deriv_r_master_deriv_r_slave(true);
+  LINALG::Matrix<3, 3, double> cos_alpha_deriv_r_master_deriv_r_xi_slave(true);
+  LINALG::Matrix<3, 3, double> cos_alpha_deriv_r_master_deriv_r_master(true);
+  LINALG::Matrix<3, 3, double> cos_alpha_deriv_r_master_deriv_r_xi_master(true);
+  LINALG::Matrix<3, 3, double> cos_alpha_deriv_r_master_deriv_r_xixi_master(true);
 
-  LINALG::TMatrix<double, 3, 3> cos_alpha_deriv_r_xi_master_deriv_r_slave(true);
-  LINALG::TMatrix<double, 3, 3> cos_alpha_deriv_r_xi_master_deriv_r_xi_slave(true);
-  LINALG::TMatrix<double, 3, 3> cos_alpha_deriv_r_xi_master_deriv_r_master(true);
-  LINALG::TMatrix<double, 3, 3> cos_alpha_deriv_r_xi_master_deriv_r_xi_master(true);
-  LINALG::TMatrix<double, 3, 3> cos_alpha_deriv_r_xi_master_deriv_r_xixi_master(true);
+  LINALG::Matrix<3, 3, double> cos_alpha_deriv_r_xi_master_deriv_r_slave(true);
+  LINALG::Matrix<3, 3, double> cos_alpha_deriv_r_xi_master_deriv_r_xi_slave(true);
+  LINALG::Matrix<3, 3, double> cos_alpha_deriv_r_xi_master_deriv_r_master(true);
+  LINALG::Matrix<3, 3, double> cos_alpha_deriv_r_xi_master_deriv_r_xi_master(true);
+  LINALG::Matrix<3, 3, double> cos_alpha_deriv_r_xi_master_deriv_r_xixi_master(true);
 
 
   // auxiliary and intermediate quantities required for second derivatives of cos(alpha)
@@ -1967,17 +1967,17 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   double norm_r_xi_slave_inverse = 1.0 / FADUTILS::VectorNorm(r_xi_slave);
   double norm_r_xi_master_inverse = 1.0 / FADUTILS::VectorNorm(r_xi_master);
 
-  LINALG::TMatrix<double, 3, 1> t_slave(true);
+  LINALG::Matrix<3, 1, double> t_slave(true);
   t_slave.Update(norm_r_xi_slave_inverse, r_xi_slave);
-  LINALG::TMatrix<double, 3, 1> t_master(true);
+  LINALG::Matrix<3, 1, double> t_master(true);
   t_master.Update(norm_r_xi_master_inverse, r_xi_master);
 
   double t_slave_dot_t_master = t_slave.Dot(t_master);
   double signum_tangentsscalarproduct = FADUTILS::Signum(t_slave_dot_t_master);
 
-  LINALG::TMatrix<double, 3, 3> t_slave_tensorproduct_t_slave(true);
-  LINALG::TMatrix<double, 3, 3> t_slave_tensorproduct_t_master(true);
-  LINALG::TMatrix<double, 3, 3> t_master_tensorproduct_t_master(true);
+  LINALG::Matrix<3, 3, double> t_slave_tensorproduct_t_slave(true);
+  LINALG::Matrix<3, 3, double> t_slave_tensorproduct_t_master(true);
+  LINALG::Matrix<3, 3, double> t_master_tensorproduct_t_master(true);
 
   for (unsigned int i = 0; i < 3; ++i)
     for (unsigned int j = 0; j < 3; ++j)
@@ -1987,16 +1987,16 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       t_master_tensorproduct_t_master(i, j) = t_master(i) * t_master(j);
     }
 
-  LINALG::TMatrix<double, 3, 3> t_slave_partial_r_xi_slave(true);
+  LINALG::Matrix<3, 3, double> t_slave_partial_r_xi_slave(true);
   t_slave_partial_r_xi_slave.Update(norm_r_xi_slave_inverse, unit_matrix,
       -1.0 * norm_r_xi_slave_inverse, t_slave_tensorproduct_t_slave);
 
-  LINALG::TMatrix<double, 3, 3> t_master_partial_r_xi_master(true);
+  LINALG::Matrix<3, 3, double> t_master_partial_r_xi_master(true);
   t_master_partial_r_xi_master.Update(norm_r_xi_master_inverse, unit_matrix,
       -1.0 * norm_r_xi_master_inverse, t_master_tensorproduct_t_master);
 
 
-  LINALG::TMatrix<double, 3, 1> t_slave_partial_r_xi_slave_mult_t_master(true);
+  LINALG::Matrix<3, 1, double> t_slave_partial_r_xi_slave_mult_t_master(true);
   t_slave_partial_r_xi_slave_mult_t_master.Multiply(t_slave_partial_r_xi_slave, t_master);
 
   for (unsigned int i = 0; i < 3; ++i)
@@ -2007,7 +2007,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   cos_alpha_deriv_r_xi_slave_deriv_r_xi_slave.Update(
       -1.0 * norm_r_xi_slave_inverse * t_slave_dot_t_master, t_slave_partial_r_xi_slave, 1.0);
 
-  LINALG::TMatrix<double, 3, 3> tmp_mat(true);
+  LINALG::Matrix<3, 3, double> tmp_mat(true);
   tmp_mat.Multiply(t_slave_tensorproduct_t_master, t_slave_partial_r_xi_slave);
   cos_alpha_deriv_r_xi_slave_deriv_r_xi_slave.Update(-1.0 * norm_r_xi_slave_inverse, tmp_mat, 1.0);
 
@@ -2020,7 +2020,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
 
 
-  LINALG::TMatrix<double, 3, 1> t_master_partial_r_xi_master_mult_t_slave(true);
+  LINALG::Matrix<3, 1, double> t_master_partial_r_xi_master_mult_t_slave(true);
   t_master_partial_r_xi_master_mult_t_slave.Multiply(t_master_partial_r_xi_master, t_slave);
 
   for (unsigned int i = 0; i < 3; ++i)
@@ -2047,7 +2047,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
   // add contributions from variation of master parameter coordinate xi_master
   // to [.]_deriv_r_xi_master_[.] expressions (according to chain rule)
-  LINALG::TMatrix<double, 1, 3> tmp_vec;
+  LINALG::Matrix<1, 3, double> tmp_vec;
   tmp_vec.MultiplyTN(r_xixi_master, cos_alpha_deriv_r_xi_master_deriv_r_xi_slave);
 
   for (unsigned int irow = 0; irow < 3; ++irow)
@@ -2101,7 +2101,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
   // add contributions from linearization of master parameter coordinate xi_master
   // to [.]_deriv_r_xi_master expressions (according to chain rule)
-  LINALG::TMatrix<double, 3, 1> tmp_vec2;
+  LINALG::Matrix<3, 1, double> tmp_vec2;
   tmp_vec2.Multiply(cos_alpha_deriv_r_slave_deriv_r_xi_master, r_xixi_master);
 
   for (unsigned int irow = 0; irow < 3; ++irow)
@@ -2176,12 +2176,12 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
   // add contributions from linearization of master parameter coordinate xi_master
   // also to [.]_deriv_r_xixi_master expressions (according to chain rule)
-  LINALG::TMatrix<double, 1, numnodes * numnodalvalues> N_i_xixixi_master(true);
+  LINALG::Matrix<1, numnodes * numnodalvalues, double> N_i_xixixi_master(true);
 
   DRT::UTILS::BEAM::EvaluateShapeFunction3rdDerivsAtXi<numnodes, numnodalvalues>(
       xi_master, N_i_xixixi_master, BeamElement2()->Shape(), ele2length_);
 
-  LINALG::TMatrix<double, 3, 1> r_xixixi_master(true);
+  LINALG::Matrix<3, 1, double> r_xixixi_master(true);
 
   DRT::UTILS::BEAM::CalcInterpolation<numnodes, numnodalvalues, 3>(
       FADUTILS::CastToDouble(ele2pos_), N_i_xixixi_master, r_xixixi_master);
@@ -2240,9 +2240,9 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
   // add contributions from linearization of (variation of r_xi_master) according to the chain
   // rule
-  LINALG::TMatrix<double, 3, 3> cos_alpha_deriv_r_xixi_master_deriv_r_slave(true);
-  LINALG::TMatrix<double, 3, 3> cos_alpha_deriv_r_xixi_master_deriv_r_master(true);
-  LINALG::TMatrix<double, 3, 3> cos_alpha_deriv_r_xixi_master_deriv_r_xi_master(true);
+  LINALG::Matrix<3, 3, double> cos_alpha_deriv_r_xixi_master_deriv_r_slave(true);
+  LINALG::Matrix<3, 3, double> cos_alpha_deriv_r_xixi_master_deriv_r_master(true);
+  LINALG::Matrix<3, 3, double> cos_alpha_deriv_r_xixi_master_deriv_r_xi_master(true);
 
   for (unsigned int irow = 0; irow < 3; ++irow)
   {
@@ -2261,23 +2261,23 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
 
   // contributions from linarization of the (variation of master parameter coordinate xi_master)
-  LINALG::TMatrix<double, 3, 3> xi_master_partial_r_slave_partial_r_slave(true);
-  LINALG::TMatrix<double, 3, 3> xi_master_partial_r_slave_partial_r_master(true);
-  LINALG::TMatrix<double, 3, 3> xi_master_partial_r_slave_partial_r_xi_master(true);
-  LINALG::TMatrix<double, 3, 3> xi_master_partial_r_slave_partial_r_xixi_master(true);
-  LINALG::TMatrix<double, 3, 3> xi_master_partial_r_master_partial_r_slave(true);
-  LINALG::TMatrix<double, 3, 3> xi_master_partial_r_master_partial_r_master(true);
-  LINALG::TMatrix<double, 3, 3> xi_master_partial_r_master_partial_r_xi_master(true);
-  LINALG::TMatrix<double, 3, 3> xi_master_partial_r_master_partial_r_xixi_master(true);
-  LINALG::TMatrix<double, 3, 3> xi_master_partial_r_xi_master_partial_r_slave(true);
-  LINALG::TMatrix<double, 3, 3> xi_master_partial_r_xi_master_partial_r_master(true);
-  LINALG::TMatrix<double, 3, 3> xi_master_partial_r_xi_master_partial_r_xi_master(true);
-  LINALG::TMatrix<double, 3, 3> xi_master_partial_r_xi_master_partial_r_xixi_master(true);
-  LINALG::TMatrix<double, 3, 3> xi_master_partial_r_xixi_master_partial_r_slave(true);
-  LINALG::TMatrix<double, 3, 3> xi_master_partial_r_xixi_master_partial_r_master(true);
-  LINALG::TMatrix<double, 3, 3> xi_master_partial_r_xixi_master_partial_r_xi_master(true);
+  LINALG::Matrix<3, 3, double> xi_master_partial_r_slave_partial_r_slave(true);
+  LINALG::Matrix<3, 3, double> xi_master_partial_r_slave_partial_r_master(true);
+  LINALG::Matrix<3, 3, double> xi_master_partial_r_slave_partial_r_xi_master(true);
+  LINALG::Matrix<3, 3, double> xi_master_partial_r_slave_partial_r_xixi_master(true);
+  LINALG::Matrix<3, 3, double> xi_master_partial_r_master_partial_r_slave(true);
+  LINALG::Matrix<3, 3, double> xi_master_partial_r_master_partial_r_master(true);
+  LINALG::Matrix<3, 3, double> xi_master_partial_r_master_partial_r_xi_master(true);
+  LINALG::Matrix<3, 3, double> xi_master_partial_r_master_partial_r_xixi_master(true);
+  LINALG::Matrix<3, 3, double> xi_master_partial_r_xi_master_partial_r_slave(true);
+  LINALG::Matrix<3, 3, double> xi_master_partial_r_xi_master_partial_r_master(true);
+  LINALG::Matrix<3, 3, double> xi_master_partial_r_xi_master_partial_r_xi_master(true);
+  LINALG::Matrix<3, 3, double> xi_master_partial_r_xi_master_partial_r_xixi_master(true);
+  LINALG::Matrix<3, 3, double> xi_master_partial_r_xixi_master_partial_r_slave(true);
+  LINALG::Matrix<3, 3, double> xi_master_partial_r_xixi_master_partial_r_master(true);
+  LINALG::Matrix<3, 3, double> xi_master_partial_r_xixi_master_partial_r_xi_master(true);
 
-  LINALG::TMatrix<double, 3, 1> dist_ul(true);
+  LINALG::Matrix<3, 1, double> dist_ul(true);
   dist_ul.Update(norm_dist_ul, normal_ul);
 
   BEAMINTERACTION::GEO::CalcPointToCurveProjectionParameterCoordMasterPartial2ndDerivs(
@@ -2577,24 +2577,24 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     T>::EvaluateFullDiskCylinderPotential(T& interaction_potential_GP,
-    LINALG::TMatrix<T, 3 * numnodes * numnodalvalues, 1>& force_pot_slave_GP,
-    LINALG::TMatrix<T, 3 * numnodes * numnodalvalues, 1>& force_pot_master_GP,
-    LINALG::TMatrix<T, 3, 1> const& r_slave, LINALG::TMatrix<T, 3, 1> const& r_xi_slave,
-    LINALG::TMatrix<T, 3, 1> const& t1_slave, LINALG::TMatrix<T, 3, 1> const& r_master,
-    LINALG::TMatrix<T, 3, 1> const& r_xi_master, LINALG::TMatrix<T, 3, 1> const& r_xixi_master,
-    LINALG::TMatrix<T, 3, 1> const& t1_master, T alpha, T cos_alpha,
-    LINALG::TMatrix<T, 3, 1> const& dist_ul,
-    LINALG::TMatrix<T, 1, 3> const& xi_master_partial_r_slave,
-    LINALG::TMatrix<T, 1, 3> const& xi_master_partial_r_master,
-    LINALG::TMatrix<T, 1, 3> const& xi_master_partial_r_xi_master, double prefactor_vtk,
-    LINALG::TMatrix<double, 3, 1>& vtk_force_pot_slave_GP,
-    LINALG::TMatrix<double, 3, 1>& vtk_force_pot_master_GP,
-    LINALG::TMatrix<double, 3, 1>& vtk_moment_pot_slave_GP,
-    LINALG::TMatrix<double, 3, 1>& vtk_moment_pot_master_GP, double rho1rho2_JacFac_GaussWeight,
-    LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N_i_slave,
-    LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N_i_xi_slave,
-    LINALG::TMatrix<T, 1, numnodes * numnodalvalues> const& N_i_master,
-    LINALG::TMatrix<T, 1, numnodes * numnodalvalues> const& N_i_xi_master)
+    LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot_slave_GP,
+    LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T>& force_pot_master_GP,
+    LINALG::Matrix<3, 1, T> const& r_slave, LINALG::Matrix<3, 1, T> const& r_xi_slave,
+    LINALG::Matrix<3, 1, T> const& t1_slave, LINALG::Matrix<3, 1, T> const& r_master,
+    LINALG::Matrix<3, 1, T> const& r_xi_master, LINALG::Matrix<3, 1, T> const& r_xixi_master,
+    LINALG::Matrix<3, 1, T> const& t1_master, T alpha, T cos_alpha,
+    LINALG::Matrix<3, 1, T> const& dist_ul,
+    LINALG::Matrix<1, 3, T> const& xi_master_partial_r_slave,
+    LINALG::Matrix<1, 3, T> const& xi_master_partial_r_master,
+    LINALG::Matrix<1, 3, T> const& xi_master_partial_r_xi_master, double prefactor_vtk,
+    LINALG::Matrix<3, 1, double>& vtk_force_pot_slave_GP,
+    LINALG::Matrix<3, 1, double>& vtk_force_pot_master_GP,
+    LINALG::Matrix<3, 1, double>& vtk_moment_pot_slave_GP,
+    LINALG::Matrix<3, 1, double>& vtk_moment_pot_master_GP, double rho1rho2_JacFac_GaussWeight,
+    LINALG::Matrix<1, numnodes * numnodalvalues, double> const& N_i_slave,
+    LINALG::Matrix<1, numnodes * numnodalvalues, double> const& N_i_xi_slave,
+    LINALG::Matrix<1, numnodes * numnodalvalues, T> const& N_i_master,
+    LINALG::Matrix<1, numnodes * numnodalvalues, T> const& N_i_xi_master)
 {
   // get regularization type and separation
   const INPAR::BEAMPOTENTIAL::BeamPotentialRegularizationType regularization_type =
@@ -2603,13 +2603,13 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   const double regularization_separation = Params()->RegularizationSeparation();
 
 
-  T sin_alpha = 0.0;                         // sine of mutual angle of tangent vectors
-  T sin_2alpha = 0.0;                        // sine of 2*mutual angle of tangent vectors
-  LINALG::TMatrix<T, 3, 1> normal_bl(true);  // normal vector at bilateral closest point
-  T norm_normal_bl_tilde = 0.0;              // norm of vector defining bilateral normal vector
-  T gap_bl = 0.0;                            // gap of bilateral closest point
+  T sin_alpha = 0.0;                        // sine of mutual angle of tangent vectors
+  T sin_2alpha = 0.0;                       // sine of 2*mutual angle of tangent vectors
+  LINALG::Matrix<3, 1, T> normal_bl(true);  // normal vector at bilateral closest point
+  T norm_normal_bl_tilde = 0.0;             // norm of vector defining bilateral normal vector
+  T gap_bl = 0.0;                           // gap of bilateral closest point
   T x = 0.0;  // distance between Gauss point and bilateral closest point on slave
-  LINALG::TMatrix<T, 3, 1> aux_plane_normal(true);  // normal vector of auxiliary plane n*
+  LINALG::Matrix<3, 1, T> aux_plane_normal(true);  // normal vector of auxiliary plane n*
 
   T beta = 0.0;       // auxiliary quantity
   T beta_exp2 = 0.0;  // beta^2
@@ -2654,30 +2654,30 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 
 
   // components from variation of bilateral gap
-  LINALG::TMatrix<T, 3, 1> gap_bl_partial_r_slave(true);
-  LINALG::TMatrix<T, 3, 1> gap_bl_partial_r_master(true);
-  LINALG::TMatrix<T, 3, 1> gap_bl_partial_r_xi_slave(true);
-  LINALG::TMatrix<T, 3, 1> gap_bl_partial_r_xi_master(true);
+  LINALG::Matrix<3, 1, T> gap_bl_partial_r_slave(true);
+  LINALG::Matrix<3, 1, T> gap_bl_partial_r_master(true);
+  LINALG::Matrix<3, 1, T> gap_bl_partial_r_xi_slave(true);
+  LINALG::Matrix<3, 1, T> gap_bl_partial_r_xi_master(true);
   T gap_bl_partial_xi_master = 0.0;
 
   // components from variation of cosine of enclosed angle
-  LINALG::TMatrix<T, 3, 1> cos_alpha_partial_r_xi_slave(true);
-  LINALG::TMatrix<T, 3, 1> cos_alpha_partial_r_xi_master(true);
+  LINALG::Matrix<3, 1, T> cos_alpha_partial_r_xi_slave(true);
+  LINALG::Matrix<3, 1, T> cos_alpha_partial_r_xi_master(true);
   T cos_alpha_partial_xi_master = 0.0;
 
   // components from variation of distance from bilateral closest point on slave
-  LINALG::TMatrix<T, 3, 1> x_partial_r_slave(true);
-  LINALG::TMatrix<T, 3, 1> x_partial_r_master(true);
-  LINALG::TMatrix<T, 3, 1> x_partial_r_xi_slave(true);
-  LINALG::TMatrix<T, 3, 1> x_partial_r_xi_master(true);
+  LINALG::Matrix<3, 1, T> x_partial_r_slave(true);
+  LINALG::Matrix<3, 1, T> x_partial_r_master(true);
+  LINALG::Matrix<3, 1, T> x_partial_r_xi_slave(true);
+  LINALG::Matrix<3, 1, T> x_partial_r_xi_master(true);
 
-  LINALG::TMatrix<T, 3, 1> x_partial_aux_plane_normal(true);
+  LINALG::Matrix<3, 1, T> x_partial_aux_plane_normal(true);
   T x_partial_xi_master = 0.0;
 
 
   // auxiliary variables
-  LINALG::TMatrix<T, 3, 1> fpot_tmp(true);
-  LINALG::TMatrix<T, 3, 3> v_mat_tmp(true);
+  LINALG::Matrix<3, 1, T> fpot_tmp(true);
+  LINALG::Matrix<3, 3, T> v_mat_tmp(true);
 
   sin_alpha = std::sin(alpha);
   sin_2alpha = std::sin(2 * alpha);
@@ -3011,7 +3011,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     for (unsigned int j = 0; j < 3; ++j) v_mat_tmp(i, j) -= normal_bl(i) * normal_bl(j);
   }
 
-  LINALG::TMatrix<T, 3, 1> vec_tmp(true);
+  LINALG::Matrix<3, 1, T> vec_tmp(true);
   vec_tmp.Multiply(v_mat_tmp, dist_ul);
 
 
@@ -3146,7 +3146,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
       prefactor_vtk * FADUTILS::CastToDouble(pot_ia_partial_x * x_partial_xi_master),
       FADUTILS::CastToDouble<T, 1, 3>(xi_master_partial_r_slave), 1.0);
 
-  LINALG::TMatrix<double, 3, 1> moment_pot_tmp(true);
+  LINALG::Matrix<3, 1, double> moment_pot_tmp(true);
 
   moment_pot_tmp.Update(FADUTILS::CastToDouble(pot_ia_partial_gap_bl),
       FADUTILS::CastToDouble<T, 3, 1>(gap_bl_partial_r_xi_slave));
@@ -3161,7 +3161,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
    *       of) rotation vector theta_perp describing cross-section orientation can be used to
    *       identify (distributed) moments as follows: m_pot = 1/|r_xi| * ( m_pot_pseudo x g1 )
    */
-  LINALG::TMatrix<double, 3, 3> spin_pseudo_moment_tmp(true);
+  LINALG::Matrix<3, 3, double> spin_pseudo_moment_tmp(true);
 
   LARGEROTATIONS::computespin(spin_pseudo_moment_tmp, moment_pot_tmp);
 
@@ -3338,10 +3338,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
-    T>::CalcStiffmatAutomaticDifferentiationIfRequired(LINALG::TMatrix<Sacado::Fad::DFad<double>,
-                                                           3 * numnodes * numnodalvalues, 1> const&
+    T>::CalcStiffmatAutomaticDifferentiationIfRequired(LINALG::Matrix<3 * numnodes * numnodalvalues,
+                                                           1, Sacado::Fad::DFad<double>> const&
                                                            force_pot1,
-    LINALG::TMatrix<Sacado::Fad::DFad<double>, 3 * numnodes * numnodalvalues, 1> const& force_pot2,
+    LINALG::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>> const& force_pot2,
     LINALG::SerialDenseMatrix& stiffmat11, LINALG::SerialDenseMatrix& stiffmat12,
     LINALG::SerialDenseMatrix& stiffmat21, LINALG::SerialDenseMatrix& stiffmat22) const
 {
@@ -3369,13 +3369,13 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     AddStiffmatContributionsXiMasterAutomaticDifferentiationIfRequired(
-        LINALG::TMatrix<Sacado::Fad::DFad<double>, 3 * numnodes * numnodalvalues, 1> const&
+        LINALG::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>> const&
             force_pot1,
-        LINALG::TMatrix<Sacado::Fad::DFad<double>, 3 * numnodes * numnodalvalues, 1> const&
+        LINALG::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>> const&
             force_pot2,
-        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3 * numnodes * numnodalvalues> const&
+        LINALG::Matrix<1, 3 * numnodes * numnodalvalues, Sacado::Fad::DFad<double>> const&
             lin_xi_master_slaveDofs,
-        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3 * numnodes * numnodalvalues> const&
+        LINALG::Matrix<1, 3 * numnodes * numnodalvalues, Sacado::Fad::DFad<double>> const&
             lin_xi_master_masterDofs,
         LINALG::SerialDenseMatrix& stiffmat11, LINALG::SerialDenseMatrix& stiffmat12,
         LINALG::SerialDenseMatrix& stiffmat21, LINALG::SerialDenseMatrix& stiffmat22) const
@@ -3410,12 +3410,12 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     CalcFpotGausspointAutomaticDifferentiationIfRequired(
-        LINALG::TMatrix<double, 3 * numnodes * numnodalvalues, 1>& force_pot1,
-        LINALG::TMatrix<double, 3 * numnodes * numnodalvalues, 1>& force_pot2,
+        LINALG::Matrix<3 * numnodes * numnodalvalues, 1, double>& force_pot1,
+        LINALG::Matrix<3 * numnodes * numnodalvalues, 1, double>& force_pot2,
         Sacado::Fad::DFad<double> const& interaction_potential,
-        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3 * numnodes * numnodalvalues> const&
+        LINALG::Matrix<1, 3 * numnodes * numnodalvalues, Sacado::Fad::DFad<double>> const&
             lin_xi_master_slaveDofs,
-        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3 * numnodes * numnodalvalues> const&
+        LINALG::Matrix<1, 3 * numnodes * numnodalvalues, Sacado::Fad::DFad<double>> const&
             lin_xi_master_masterDofs) const
 {
   const unsigned int dim = 3 * numnodalvalues * numnodes;
@@ -3437,12 +3437,12 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     CalcFpotGausspointAutomaticDifferentiationIfRequired(
-        LINALG::TMatrix<Sacado::Fad::DFad<double>, 3 * numnodes * numnodalvalues, 1>& force_pot1,
-        LINALG::TMatrix<Sacado::Fad::DFad<double>, 3 * numnodes * numnodalvalues, 1>& force_pot2,
+        LINALG::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>>& force_pot1,
+        LINALG::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>>& force_pot2,
         Sacado::Fad::DFad<double> const& interaction_potential,
-        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3 * numnodes * numnodalvalues> const&
+        LINALG::Matrix<1, 3 * numnodes * numnodalvalues, Sacado::Fad::DFad<double>> const&
             lin_xi_master_slaveDofs,
-        LINALG::TMatrix<Sacado::Fad::DFad<double>, 1, 3 * numnodes * numnodalvalues> const&
+        LINALG::Matrix<1, 3 * numnodes * numnodalvalues, Sacado::Fad::DFad<double>> const&
             lin_xi_master_masterDofs) const
 {
   const unsigned int dim = 3 * numnodalvalues * numnodes;
@@ -3490,10 +3490,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::GetShapeFunctions(
-    std::vector<LINALG::TMatrix<double, 1, numnodes * numnodalvalues>>& N1_i,
-    std::vector<LINALG::TMatrix<double, 1, numnodes * numnodalvalues>>& N2_i,
-    std::vector<LINALG::TMatrix<double, 1, numnodes * numnodalvalues>>& N1_i_xi,
-    std::vector<LINALG::TMatrix<double, 1, numnodes * numnodalvalues>>& N2_i_xi,
+    std::vector<LINALG::Matrix<1, numnodes * numnodalvalues, double>>& N1_i,
+    std::vector<LINALG::Matrix<1, numnodes * numnodalvalues, double>>& N2_i,
+    std::vector<LINALG::Matrix<1, numnodes * numnodalvalues, double>>& N1_i_xi,
+    std::vector<LINALG::Matrix<1, numnodes * numnodalvalues, double>>& N2_i_xi,
     DRT::UTILS::IntegrationPoints1D& gausspoints) const
 {
   DRT::UTILS::BEAM::EvaluateShapeFunctionsAndDerivsAllGPs<numnodes, numnodalvalues>(
@@ -3509,9 +3509,9 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::GetS
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 template <typename T2>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
-    T>::ComputeCenterlinePosition(LINALG::TMatrix<T, 3, 1>& r,
-    const LINALG::TMatrix<T2, 1, numnodes * numnodalvalues>& N_i,
-    const LINALG::TMatrix<T, 3 * numnodes * numnodalvalues, 1> eledofvec) const
+    T>::ComputeCenterlinePosition(LINALG::Matrix<3, 1, T>& r,
+    const LINALG::Matrix<1, numnodes * numnodalvalues, T2>& N_i,
+    const LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T> eledofvec) const
 {
   DRT::UTILS::BEAM::CalcInterpolation<numnodes, numnodalvalues, 3, T, T2>(eledofvec, N_i, r);
 }
@@ -3522,9 +3522,9 @@ template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 template <typename T2>
 void
     BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::ComputeCenterlineTangent(
-        LINALG::TMatrix<T, 3, 1>& r_xi,
-        const LINALG::TMatrix<T2, 1, numnodes * numnodalvalues>& N_i_xi,
-        const LINALG::TMatrix<T, 3 * numnodes * numnodalvalues, 1> eledofvec) const
+        LINALG::Matrix<3, 1, T>& r_xi,
+        const LINALG::Matrix<1, numnodes * numnodalvalues, T2>& N_i_xi,
+        const LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T> eledofvec) const
 {
   DRT::UTILS::BEAM::CalcInterpolation<numnodes, numnodalvalues, 3, T, T2>(eledofvec, N_i_xi, r_xi);
 }
@@ -3557,10 +3557,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Rese
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
-    T>::SetAutomaticDifferentiationVariablesIfRequired(LINALG::TMatrix<Sacado::Fad::DFad<double>,
-                                                           3 * numnodes * numnodalvalues, 1>&
+    T>::SetAutomaticDifferentiationVariablesIfRequired(LINALG::Matrix<3 * numnodes * numnodalvalues,
+                                                           1, Sacado::Fad::DFad<double>>&
                                                            ele1centerlinedofvec,
-    LINALG::TMatrix<Sacado::Fad::DFad<double>, 3 * numnodes * numnodalvalues, 1>&
+    LINALG::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>>&
         ele2centerlinedofvec)
 {
   // The 2*3*numnodes*numnodalvalues primary DoFs consist of all nodal positions and tangents
@@ -3576,10 +3576,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
-    T>::SetAutomaticDifferentiationVariablesIfRequired(LINALG::TMatrix<Sacado::Fad::DFad<double>,
-                                                           3 * numnodes * numnodalvalues, 1>&
+    T>::SetAutomaticDifferentiationVariablesIfRequired(LINALG::Matrix<3 * numnodes * numnodalvalues,
+                                                           1, Sacado::Fad::DFad<double>>&
                                                            ele1centerlinedofvec,
-    LINALG::TMatrix<Sacado::Fad::DFad<double>, 3 * numnodes * numnodalvalues, 1>&
+    LINALG::Matrix<3 * numnodes * numnodalvalues, 1, Sacado::Fad::DFad<double>>&
         ele2centerlinedofvec,
     Sacado::Fad::DFad<double>& xi_master)
 {

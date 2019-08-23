@@ -926,7 +926,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 {
   DRT::Node* const* snodes = sele.Nodes();
 
-  LINALG::TMatrix<int, probdim, my::SLAVENUMNODE> nodal_dofs;
+  LINALG::Matrix<probdim, my::SLAVENUMNODE, int> nodal_dofs;
   CONTACT::INTEGRATOR::GetElementNodalDofs(sele, nodal_dofs);
 
   // evaluate the non-unit slave element normal and the inverse of its length
@@ -972,7 +972,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
 {
   DRT::Node* const* snodes = sele.Nodes();
 
-  LINALG::TMatrix<int, probdim, my::SLAVENUMNODE> nodal_dofs;
+  LINALG::Matrix<probdim, my::SLAVENUMNODE, int> nodal_dofs;
   CONTACT::INTEGRATOR::GetElementNodalDofs(sele, nodal_dofs);
 
   // evaluate the non-unit slave element normal and the inverse of its length
@@ -1025,7 +1025,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
 {
   DRT::Node* const* snodes = sele.Nodes();
 
-  LINALG::TMatrix<int, probdim, my::SLAVENUMNODE> nodal_dofs;
+  LINALG::Matrix<probdim, my::SLAVENUMNODE, int> nodal_dofs;
   CONTACT::INTEGRATOR::GetElementNodalDofs(sele, nodal_dofs);
 
   /*--------------------------------------------------------------------------*/
@@ -1068,7 +1068,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
 {
   DRT::Node* const* snodes = sele.Nodes();
 
-  LINALG::TMatrix<int, probdim, my::SLAVENUMNODE> nodal_dofs;
+  LINALG::Matrix<probdim, my::SLAVENUMNODE, int> nodal_dofs;
   CONTACT::INTEGRATOR::GetElementNodalDofs(sele, nodal_dofs);
 
   Deriv2ndVecMap dd_non_unit_normal(probdim);

@@ -110,13 +110,13 @@ namespace BEAMINTERACTION
     //! @name Access methods
 
     //! return orientation of first connection site as quaternion
-    inline const LINALG::TMatrix<double, 4, 1>& GetBindSpotQuaternion1() const
+    inline const LINALG::Matrix<4, 1, double>& GetBindSpotQuaternion1() const
     {
       return bspottriad1_;
     }
 
     //! return orientation of first connection site as quaternion
-    inline const LINALG::TMatrix<double, 4, 1>& GetBindSpotQuaternion2() const
+    inline const LINALG::Matrix<4, 1, double>& GetBindSpotQuaternion2() const
     {
       return bspottriad2_;
     }

@@ -220,7 +220,7 @@ const MAT::BeamElastHyperMaterial& DRT::ELEMENTS::Beam3Base::GetBeamMaterial() c
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
 void DRT::ELEMENTS::Beam3Base::GetConstitutiveMatrices(
-    LINALG::TMatrix<T, 3, 3>& CN, LINALG::TMatrix<T, 3, 3>& CM) const
+    LINALG::Matrix<3, 3, T>& CN, LINALG::Matrix<3, 3, T>& CM) const
 {
   GetBeamMaterial().GetConstitutiveMatrixOfForcesMaterialFrame(CN);
   GetBeamMaterial().GetConstitutiveMatrixOfMomentsMaterialFrame(CM);
@@ -230,7 +230,7 @@ void DRT::ELEMENTS::Beam3Base::GetConstitutiveMatrices(
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
 void DRT::ELEMENTS::Beam3Base::GetTranslationalAndRotationalMassInertiaTensor(
-    double& mass_inertia_translational, LINALG::TMatrix<T, 3, 3>& J) const
+    double& mass_inertia_translational, LINALG::Matrix<3, 3, T>& J) const
 {
   GetTranslationalMassInertiaFactor(mass_inertia_translational);
   GetBeamMaterial().GetMassMomentOfInertiaTensorMaterialFrame(J);
@@ -298,11 +298,11 @@ void DRT::ELEMENTS::Beam3Base::GetDampingCoefficients(LINALG::Matrix<3, 1>& gamm
  *----------------------------------------------------------------------*/
 template <unsigned int ndim, typename T>
 void DRT::ELEMENTS::Beam3Base::GetBackgroundVelocity(
-    Teuchos::ParameterList& params,                      //!< parameter list
-    const LINALG::TMatrix<T, ndim, 1>& evaluationpoint,  //!< point at which background velocity and
-                                                         //!< its gradient has to be computed
-    LINALG::TMatrix<T, ndim, 1>& velbackground,          //!< velocity of background fluid
-    LINALG::TMatrix<T, ndim, ndim>& velbackgroundgrad)
+    Teuchos::ParameterList& params,                     //!< parameter list
+    const LINALG::Matrix<ndim, 1, T>& evaluationpoint,  //!< point at which background velocity and
+                                                        //!< its gradient has to be computed
+    LINALG::Matrix<ndim, 1, T>& velbackground,          //!< velocity of background fluid
+    LINALG::Matrix<ndim, ndim, T>& velbackgroundgrad)
     const  //!< gradient of velocity of background fluid
 {
   /*note: this function is not yet a general one, but always assumes a shear flow, where the
@@ -467,21 +467,21 @@ void DRT::ELEMENTS::Beam3Base::GetTriadOfBindingSpot(LINALG::Matrix<3, 3>& triad
  | explicit template instantiations                                                           |
  *--------------------------------------------------------------------------------------------*/
 template void DRT::ELEMENTS::Beam3Base::GetConstitutiveMatrices<double>(
-    LINALG::TMatrix<double, 3, 3>& CN, LINALG::TMatrix<double, 3, 3>& CM) const;
+    LINALG::Matrix<3, 3, double>& CN, LINALG::Matrix<3, 3, double>& CM) const;
 template void DRT::ELEMENTS::Beam3Base::GetConstitutiveMatrices<Sacado::Fad::DFad<double>>(
-    LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 3>& CN,
-    LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 3>& CM) const;
+    LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>& CN,
+    LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>& CM) const;
 
 template void DRT::ELEMENTS::Beam3Base::GetTranslationalAndRotationalMassInertiaTensor<double>(
-    double&, LINALG::TMatrix<double, 3, 3>&) const;
+    double&, LINALG::Matrix<3, 3, double>&) const;
 template void
 DRT::ELEMENTS::Beam3Base::GetTranslationalAndRotationalMassInertiaTensor<Sacado::Fad::DFad<double>>(
-    double&, LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 3>&) const;
+    double&, LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&) const;
 
 template void DRT::ELEMENTS::Beam3Base::GetBackgroundVelocity<3, double>(Teuchos::ParameterList&,
-    const LINALG::TMatrix<double, 3, 1>&, LINALG::TMatrix<double, 3, 1>&,
-    LINALG::TMatrix<double, 3, 3>&) const;
+    const LINALG::Matrix<3, 1, double>&, LINALG::Matrix<3, 1, double>&,
+    LINALG::Matrix<3, 3, double>&) const;
 template void DRT::ELEMENTS::Beam3Base::GetBackgroundVelocity<3, Sacado::Fad::DFad<double>>(
-    Teuchos::ParameterList&, const LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1>&,
-    LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1>&,
-    LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 3>&) const;
+    Teuchos::ParameterList&, const LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
+    LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
+    LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&) const;

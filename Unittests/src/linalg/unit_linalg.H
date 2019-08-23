@@ -41,7 +41,7 @@ class LINALG::Linalg_TestSuite : public CxxTest::TestSuite
   void test_inverse_2x2()
   {
     // Variable definition.
-    LINALG::TMatrix<double, 2, 2> A1;
+    LINALG::Matrix<2, 2, double> A1;
 
     // Set the matrix values.
     A1(0, 0) = 0.72903241936703114203;
@@ -50,7 +50,7 @@ class LINALG::Linalg_TestSuite : public CxxTest::TestSuite
     A1(1, 1) = 0.0052737129228371719370;
 
     // Copy matrix.
-    LINALG::TMatrix<double, 2, 2> A2(A1);
+    LINALG::Matrix<2, 2, double> A2(A1);
 
     // Check the determinant function.
     TS_ASSERT_DELTA(LINALG::Determinant2x2(A1), -0.2639054076334587, 1e-14);
@@ -71,7 +71,7 @@ class LINALG::Linalg_TestSuite : public CxxTest::TestSuite
 
     // Check that the default inverse function throws an error if the matrix is singular, and that
     // the DoNotThrowErrorOnZeroDeterminant does not.
-    LINALG::TMatrix<double, 2, 2> A_singular(true);
+    LINALG::Matrix<2, 2, double> A_singular(true);
     A_singular(0, 0) = 1.;
     TS_ASSERT_THROWS_ANYTHING(LINALG::Inverse2x2(A_singular));
     TS_ASSERT_EQUALS(false, LINALG::Inverse2x2DoNotThrowErrorOnZeroDeterminant(A_singular, 1e-12));
@@ -87,7 +87,7 @@ class LINALG::Linalg_TestSuite : public CxxTest::TestSuite
   void test_inverse_3x3()
   {
     // Variable definition.
-    LINALG::TMatrix<double, 3, 3> A1;
+    LINALG::Matrix<3, 3, double> A1;
 
     // Set the matrix values.
     A1(0, 0) = 0.72903241936703114203;
@@ -101,7 +101,7 @@ class LINALG::Linalg_TestSuite : public CxxTest::TestSuite
     A1(2, 2) = 0.69378923027976465858;
 
     // Copy matrix.
-    LINALG::TMatrix<double, 3, 3> A2(A1);
+    LINALG::Matrix<3, 3, double> A2(A1);
 
     // Check the determinant function.
     TS_ASSERT_DELTA(LINALG::Determinant3x3(A1), -0.1008304741716571, 1e-14);
@@ -132,7 +132,7 @@ class LINALG::Linalg_TestSuite : public CxxTest::TestSuite
 
     // Check that the default inverse function throws an error if the matrix is singular, and that
     // the DoNotThrowErrorOnZeroDeterminant does not.
-    LINALG::TMatrix<double, 3, 3> A_singular(true);
+    LINALG::Matrix<3, 3, double> A_singular(true);
     A_singular(0, 0) = 1.;
     A_singular(1, 1) = 1.;
     TS_ASSERT_THROWS_ANYTHING(LINALG::Inverse3x3(A_singular));
@@ -149,7 +149,7 @@ class LINALG::Linalg_TestSuite : public CxxTest::TestSuite
   void test_inverse_4x4()
   {
     // Variable definition.
-    LINALG::TMatrix<double, 4, 4> A1;
+    LINALG::Matrix<4, 4, double> A1;
 
     // Set the matrix values.
     A1(0, 0) = 0.72903241936703114203;
@@ -170,7 +170,7 @@ class LINALG::Linalg_TestSuite : public CxxTest::TestSuite
     A1(3, 3) = 0.27465069811053651449;
 
     // Copy matrix.
-    LINALG::TMatrix<double, 4, 4> A2(A1);
+    LINALG::Matrix<4, 4, double> A2(A1);
 
     // Check the determinant function.
     TS_ASSERT_DELTA(LINALG::Determinant4x4(A1), -0.01620776397174742, 1e-14);
@@ -215,7 +215,7 @@ class LINALG::Linalg_TestSuite : public CxxTest::TestSuite
 
     // Check that the default inverse function throws an error if the matrix is singular, and that
     // the DoNotThrowErrorOnZeroDeterminant does not.
-    LINALG::TMatrix<double, 4, 4> A_singular(true);
+    LINALG::Matrix<4, 4, double> A_singular(true);
     A_singular(0, 0) = 1.;
     A_singular(1, 1) = 1.;
     A_singular(2, 2) = 1.;
