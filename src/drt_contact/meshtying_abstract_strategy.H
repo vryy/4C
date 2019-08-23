@@ -172,6 +172,19 @@ namespace CONTACT
     /*!
     \brief Redistribute all meshtying interfaces in parallel
 
+    Here, we call each interface to perform redistribution for each interface individually. Since
+    this changes maps and interface discretizations, we have to re-setup the strategy object
+    afterwards by calling Setup(bool).
+
+    If parallel redistribution is disabled in the input file or if this is a serial computation,
+    i.e. only one MPI rank, then we just print the current parallel distribution to the screen, but
+    do not change it.
+
+    \pre Meshtying interface discretizations are distributed to multiple processors, but maybe not
+    in an optimal way, i.e. with sub-optimal load balancing.
+
+    \post If desired by the user, all meshtying interface discretizations have been re-distributed,
+    such that load balancing among processors is closer to optimal.
     */
     void RedistributeMeshtying() final;
 

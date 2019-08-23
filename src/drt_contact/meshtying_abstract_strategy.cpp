@@ -73,22 +73,18 @@ std::ostream& operator<<(std::ostream& os, const CONTACT::MtAbstractStrategy& st
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::RedistributeMeshtying()
 {
-  // initialize time measurement
-  std::vector<double> times((int)interface_.size());
-
-  // do some more stuff with interfaces
-  for (int i = 0; i < (int)interface_.size(); ++i)
+  // Do we really want to redistribute?
+  if (ParRedist() && Comm().NumProc() > 1)
   {
-    // print parallel distribution
-    interface_[i]->PrintParallelDistribution();
+    // initialize time measurement
+    std::vector<double> times((int)interface_.size());
 
-    //---------------------------------------
-    // PARALLEL REDISTRIBUTION OF INTERFACES
-    //---------------------------------------
-    // get out of here if parallel redistribution is switched off
-    // or if this is a single processor (serial) job
-    if (ParRedist() && Comm().NumProc() > 1)
+    // do some more stuff with interfaces
+    for (int i = 0; i < (int)interface_.size(); ++i)
     {
+      // print parallel distribution
+      interface_[i]->PrintParallelDistribution();
+
       // time measurement
       Comm().Barrier();
       const double t_start = Teuchos::Time::wallTime();
@@ -106,14 +102,7 @@ void CONTACT::MtAbstractStrategy::RedistributeMeshtying()
       Comm().Barrier();
       times[i] = Teuchos::Time::wallTime() - t_start;
     }
-    //---------------------------------------
-  }
 
-  // re-setup strategy object
-  // get out of here if parallel redistribution is switched off
-  // or if this is a single processor (serial) job
-  if (ParRedist() && Comm().NumProc() > 1)
-  {
     // time measurement
     Comm().Barrier();
     const double t_start = Teuchos::Time::wallTime();
@@ -128,6 +117,11 @@ void CONTACT::MtAbstractStrategy::RedistributeMeshtying()
     if (Comm().MyPID() == 0)
       std::cout << "\nTime for parallel redistribution..............." << std::scientific
                 << std::setprecision(6) << t_sum << " secs\n";
+  }
+  else
+  {
+    // No parallel redistribution to be performed. Just print the current distribution to screen.
+    for (int i = 0; i < (int)interface_.size(); ++i) interface_[i]->PrintParallelDistribution();
   }
 
   return;
