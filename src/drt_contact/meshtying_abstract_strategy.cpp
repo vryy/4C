@@ -9,6 +9,7 @@
 */
 /*---------------------------------------------------------------------*/
 #include <Teuchos_Time.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 #include "Epetra_SerialComm.h"
 
 #include "meshtying_abstract_strategy.H"
@@ -73,21 +74,20 @@ std::ostream& operator<<(std::ostream& os, const CONTACT::MtAbstractStrategy& st
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::RedistributeMeshtying()
 {
+  TEUCHOS_FUNC_TIME_MONITOR("CONTACT::MtAbstractStrategy::RedistributeMeshtying");
+
   // Do we really want to redistribute?
   if (ParRedist() && Comm().NumProc() > 1)
   {
-    // initialize time measurement
-    std::vector<double> times((int)interface_.size());
+    // time measurement
+    Comm().Barrier();
+    const double t_start = Teuchos::Time::wallTime();
 
     // do some more stuff with interfaces
     for (int i = 0; i < (int)interface_.size(); ++i)
     {
       // print parallel distribution
       interface_[i]->PrintParallelDistribution();
-
-      // time measurement
-      Comm().Barrier();
-      const double t_start = Teuchos::Time::wallTime();
 
       // redistribute optimally among all procs
       interface_[i]->Redistribute();
@@ -97,23 +97,14 @@ void CONTACT::MtAbstractStrategy::RedistributeMeshtying()
 
       // print parallel distribution again
       interface_[i]->PrintParallelDistribution();
-
-      // time measurement
-      Comm().Barrier();
-      times[i] = Teuchos::Time::wallTime() - t_start;
     }
-
-    // time measurement
-    Comm().Barrier();
-    const double t_start = Teuchos::Time::wallTime();
 
     // re-setup strategy with flag redistributed=TRUE
     Setup(true);
 
     // time measurement
     Comm().Barrier();
-    double t_sum = Teuchos::Time::wallTime() - t_start;
-    for (int i = 0; i < (int)interface_.size(); ++i) t_sum += times[i];
+    const double t_sum = Teuchos::Time::wallTime() - t_start;
     if (Comm().MyPID() == 0)
       std::cout << "\nTime for parallel redistribution..............." << std::scientific
                 << std::setprecision(6) << t_sum << " secs\n";

@@ -1218,6 +1218,10 @@ Teuchos::RCP<BINSTRATEGY::BinningStrategy> MORTAR::MortarInterface::SetupBinning
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::Redistribute()
 {
+  std::stringstream ss;
+  ss << "MORTAR::MortarInterface::Redistribute of '" << Discret().Name() << "'";
+  TEUCHOS_FUNC_TIME_MONITOR(ss.str());
+
   const Teuchos::ParameterList& mortarParallelRedistParams =
       InterfaceParams().sublist("PARALLEL REDISTRIBUTION");
 
