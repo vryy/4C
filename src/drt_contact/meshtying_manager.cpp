@@ -370,13 +370,6 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
   // create binary search tree
   for (int i = 0; i < (int)interfaces.size(); ++i) interfaces[i]->CreateSearchTree();
 
-  // print parameter list to screen
-  if (Comm().MyPID() == 0)
-  {
-    std::cout << "\ngiven parameters in list '" << GetStrategy().Params().name() << "':\n";
-    std::cout << GetStrategy().Params() << std::endl;
-  }
-
   return;
 }
 
