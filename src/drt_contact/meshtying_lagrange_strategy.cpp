@@ -164,10 +164,9 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const Teuchos::RCP<const Epetra
   // time measurement
   Comm().Barrier();
   const double t_end = Teuchos::Time::wallTime() - t_start;
-  if (Comm().MyPID() == 0) std::cout << "in...." << t_end << " secs........";
-
-  // print message
-  if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
+  if (Comm().MyPID() == 0)
+    std::cout << "in...." << std::scientific << std::setprecision(6) << t_end << " secs"
+              << std::endl;
 
   return;
 }
@@ -284,14 +283,15 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::MeshInitializatio
   // time measurement
   Comm().Barrier();
   const double t_end = Teuchos::Time::wallTime() - t_start;
-  if (Comm().MyPID() == 0) std::cout << "in...." << t_end << " secs........";
+  if (Comm().MyPID() == 0)
+  {
+    std::cout << "in...." << std::scientific << std::setprecision(6) << t_end << " secs"
+              << std::endl;
+  }
 
-  // print message
-  if (Comm().MyPID() == 0) std::cout << "done!\n" << std::endl;
-
-  /**********************************************************************/
-  /* blank symmetry rows in dinv                                        */
-  /**********************************************************************/
+  //**********************************************************************
+  // blank symmetry rows in dinv
+  //**********************************************************************
   invd_ = Teuchos::rcp(new LINALG::SparseMatrix(*dmatrix_));
   Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(*gsdofrowmap_, true);
   int err = 0;

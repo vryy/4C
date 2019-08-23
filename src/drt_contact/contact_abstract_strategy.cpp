@@ -366,7 +366,9 @@ bool CONTACT::CoAbstractStrategy::RedistributeContact(Teuchos::RCP<const Epetra_
   Comm().Barrier();
   double t_end = Teuchos::Time::wallTime() - t_start;
   if (Comm().MyPID() == 0)
-    std::cout << "\nTime for parallel redistribution.........." << t_end << " secs\n" << std::endl;
+    std::cout << "\nTime for parallel redistribution..............." << std::scientific
+              << std::setprecision(6) << t_end << " secs\n"
+              << std::endl;
 
   return doredist;
 }

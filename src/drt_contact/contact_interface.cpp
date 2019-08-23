@@ -1027,7 +1027,7 @@ void CONTACT::CoInterface::Redistribute()
   // print message
   if (!myrank)
   {
-    std::cout << "\nRedistributing interface using ZOLTAN.........done!\n";
+    std::cout << "\nRedistributing interface '" << Discret().Name() << "' using ZOLTAN.........\n";
     std::cout << "Procs used for redistribution: " << scproc << " / " << sncproc << " / " << mproc
               << " (close-S / non-close-S / M)\n";
   }

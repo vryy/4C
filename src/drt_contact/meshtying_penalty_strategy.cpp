@@ -117,10 +117,9 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const Teuchos::RCP<const Epetra_
   // time measurement
   Comm().Barrier();
   const double t_end = Teuchos::Time::wallTime() - t_start;
-  if (Comm().MyPID() == 0) std::cout << "in...." << t_end << " secs........";
-
-  // print message
-  if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
+  if (Comm().MyPID() == 0)
+    std::cout << "in...." << std::scientific << std::setprecision(6) << t_end << " secs"
+              << std::endl;
 
   return;
 }
@@ -140,9 +139,12 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtPenaltyStrategy::MeshInitialization
   // print message
   if (Comm().MyPID() == 0)
   {
-    std::cout << "Performing mesh initialization...........";
-    fflush(stdout);
+    std::cout << "Performing mesh initialization..........." << std::endl;
   }
+
+  // time measurement
+  Comm().Barrier();
+  const double t_start = Teuchos::Time::wallTime();
 
   //**********************************************************************
   // (1) get master positions on global level
@@ -169,8 +171,14 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtPenaltyStrategy::MeshInitialization
   // this can be done in the AbstractStrategy now
   MtAbstractStrategy::MeshInitialization(Xslavemod);
 
-  // print message
-  if (Comm().MyPID() == 0) std::cout << "done!\n" << std::endl;
+  // time measurement
+  Comm().Barrier();
+  const double t_end = Teuchos::Time::wallTime() - t_start;
+  if (Comm().MyPID() == 0)
+  {
+    std::cout << "in...." << std::scientific << std::setprecision(6) << t_end << " secs"
+              << std::endl;
+  }
 
   // return xslavemod for global problem
   return Xslavemod;

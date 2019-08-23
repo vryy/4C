@@ -126,7 +126,8 @@ void CONTACT::MtAbstractStrategy::RedistributeMeshtying()
     double t_sum = Teuchos::Time::wallTime() - t_start;
     for (int i = 0; i < (int)interface_.size(); ++i) t_sum += times[i];
     if (Comm().MyPID() == 0)
-      std::cout << "\nTime for parallel redistribution.........." << t_sum << " secs\n";
+      std::cout << "\nTime for parallel redistribution..............." << std::scientific
+                << std::setprecision(6) << t_sum << " secs\n";
   }
 
   return;
