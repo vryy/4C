@@ -1349,8 +1349,8 @@ namespace MORTAR
     /*!
     \brief Redistribute the master side of the interface
 
-    \param[in] rownodes Node row map of master side
-    \param[in] colnodes Node column map of master side
+    \param[out] rownodes Redistributed node row map of master side after
+    \param[out] colnodes Redistributed node column map of master side
     \param[in] roweles Element row map of master side
     \param[in] comm Communicator object
     \param[in] parts Number of desired subdomains after redistribution
@@ -1358,7 +1358,7 @@ namespace MORTAR
     */
     void RedistributeMasterSide(Teuchos::RCP<Epetra_Map>& rownodes,
         Teuchos::RCP<Epetra_Map>& colnodes, const Teuchos::RCP<Epetra_Map>& roweles,
-        const Teuchos::RCP<Epetra_Comm>& comm, const int parts, const double imbalance = 1.1) const;
+        const Teuchos::RCP<Epetra_Comm>& comm, const int parts, const double imbalance) const;
 
     /** \brief function called at the beginning of each MortarCoupling call
      *
