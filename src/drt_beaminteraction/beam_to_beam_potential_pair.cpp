@@ -107,8 +107,10 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Eval
     LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22,
     const std::vector<DRT::Condition*> linechargeconds, const double k, const double m)
 {
-  // nothing to do in case of k==0.0
-  if (k == 0.0) return false;
+  // no need to evaluate this pair in case of separation by far larger than cutoff or prefactor zero
+  if ((Params()->CutoffRadius() != -1.0 and AreElementsMuchMoreSeparatedThanCutoffDistance()) or
+      k == 0.0)
+    return false;
 
 
   // set class variables
@@ -3594,6 +3596,71 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 
   // Additionally, we set the parameter coordinate on the master side xi_master as primary Dof
   xi_master.diff(2 * 3 * numnodes * numnodalvalues, 2 * 3 * numnodes * numnodalvalues + 1);
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
+bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
+    T>::AreElementsMuchMoreSeparatedThanCutoffDistance()
+{
+  // The idea is to get a conservative lower bound estimate for the minimal centerline separation of
+  // both elements, which doesn't require any interpolation, i.e., information on the deformation of
+  // the elements and is thus cheap to compute before we begin with the actual, expensive evaluation
+  // of the pair on Gauss point level.
+
+  const unsigned int num_spatial_dim = 3;
+
+  // multiple of the cutoff radius to be considered as "far enough" apart
+  const double safety_factor = 2.0;
+
+  // extract the current position of both elements' boundary nodes
+  LINALG::Matrix<num_spatial_dim, 1> position_element1node1(true);
+  LINALG::Matrix<num_spatial_dim, 1> position_element1node2(true);
+  LINALG::Matrix<num_spatial_dim, 1> position_element2node1(true);
+  LINALG::Matrix<num_spatial_dim, 1> position_element2node2(true);
+
+  for (unsigned int i_dim = 0; i_dim < num_spatial_dim; ++i_dim)
+  {
+    position_element1node1(i_dim) = FADUTILS::CastToDouble(ele1pos_(0 + i_dim));
+    position_element1node2(i_dim) =
+        FADUTILS::CastToDouble(ele1pos_(num_spatial_dim * 1 * numnodalvalues + i_dim));
+
+    position_element2node1(i_dim) = FADUTILS::CastToDouble(ele2pos_(0 + i_dim));
+    position_element2node2(i_dim) =
+        FADUTILS::CastToDouble(ele2pos_(num_spatial_dim * 1 * numnodalvalues + i_dim));
+  }
+
+
+  // the following rough estimate of the elements' separation is based on spherical bounding boxes
+  LINALG::Matrix<num_spatial_dim, 1> spherical_boxes_midpoint_distance(true);
+
+  spherical_boxes_midpoint_distance.Update(
+      0.5, position_element1node1, 0.5, position_element1node2);
+
+  spherical_boxes_midpoint_distance.Update(
+      -0.5, position_element2node1, -0.5, position_element2node2, 1.0);
+
+
+  LINALG::Matrix<num_spatial_dim, 1> element1_boundary_nodes_distance(true);
+  element1_boundary_nodes_distance.Update(
+      1.0, position_element1node1, -1.0, position_element1node2);
+  double element1_spherical_box_radius = 0.5 * element1_boundary_nodes_distance.Norm2();
+
+  LINALG::Matrix<num_spatial_dim, 1> element2_boundary_nodes_distance(true);
+  element2_boundary_nodes_distance.Update(
+      1.0, position_element2node1, -1.0, position_element2node2);
+  double element2_spherical_box_radius = 0.5 * element2_boundary_nodes_distance.Norm2();
+
+  double estimated_minimal_centerline_separation = spherical_boxes_midpoint_distance.Norm2() -
+                                                   element1_spherical_box_radius -
+                                                   element2_spherical_box_radius;
+
+
+  if (estimated_minimal_centerline_separation > safety_factor * Params()->CutoffRadius())
+    return true;
+  else
+    return false;
 }
 
 // explicit template instantiations

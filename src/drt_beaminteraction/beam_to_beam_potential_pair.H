@@ -534,6 +534,11 @@ namespace BEAMINTERACTION
             ele2centerlinedofvec,
         Sacado::Fad::DFad<double>& xi_master);
 
+    /** \brief estimate whether the elements' separation is much more than the cutoff distance
+     *
+     *  \author grill
+     *  \date 08/19 */
+    bool AreElementsMuchMoreSeparatedThanCutoffDistance();
 
     //@}
 
