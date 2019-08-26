@@ -999,18 +999,21 @@ namespace MORTAR
     /*!
     \brief Finalize construction of mortar interface
 
-    The methods completes construction phase of a mortar interface.
-    It creates complete overlap ghosting of all elements and nodes
-    on all processors that own at least one node or element on the interface.
-    On return, row maps of nodes and elements are the same as on input but column maps
-    are redundant on all participating processors. Also creates row and column maps
-    of slave and master nodes separately such that these can be easily accessed.
+    The methods completes construction phase of a mortar interface. It creates all row/column maps
+    of the mortar interface discretization.
 
+    If we have arrived at the final parallel distribution, we have to call ask the underlying
+    DRT::Discretization to assign degrees of freedom. Since this is very expensive, let's do this
+    only if requested.
+
+    \sa ExtendInterfaceGhosting()
+
+    \param isFinalParallelDistribution (in): Is this the final parallel distribution?
     \param maxdof (in): maximum dof ID in global discretization
                         (if default=0, then no lmdofrowmap is created)
     \return Filled()==true
     */
-    void FillComplete(int maxdof = 0);
+    void FillComplete(const bool isFinalParallelDistribution, const int maxdof = 0);
 
     /*!
     \brief Redistribute interface among all procs
@@ -1506,6 +1509,10 @@ namespace MORTAR
     Technically, we compute extended node/element column maps and the export the discretization
     based on these extended column maps. The actual extension strategy is defined in the input file.
 
+    The tasks to be performed depend on the status of the parallel distriution: Some tasks are only
+    necessary, if the parallel distribution is final and won't change anymore, before using the
+    interface discretization.
+
     \note We'll do ghosting _NOT ONLY_ on procs that do own or ghost any of the nodes in the natural
     distribution of the interface discretization #idiscret_, but really on _ALL_ procs. This makes
     dynamic redistribution easier.
@@ -1519,8 +1526,10 @@ namespace MORTAR
     master side is controlled via the input file.
 
     \post The interface discretization is _NOT_ FillComplete.
+
+    \param[in] isFinalParallelDistribution Is this parallel distribution final?
     */
-    void ExtendInterfaceGhosting();
+    void ExtendInterfaceGhosting(const bool isFinalParallelDistribution);
 
     /*!
     \brief Update master and slave interface maps for DOFs

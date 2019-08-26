@@ -361,7 +361,7 @@ void ADAPTER::CouplingPoroMortar::CompleteInterface(
 {
   // finalize the contact interface construction
   int maxdof = masterdis->DofRowMap()->MaxAllGID();
-  interface->FillComplete(maxdof);
+  interface->FillComplete(true, maxdof);
 
   // interface->CreateVolumeGhosting(*masterdis);
 

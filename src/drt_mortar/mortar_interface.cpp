@@ -538,7 +538,7 @@ void MORTAR::MortarInterface::RemoveSingleInterfaceSide(bool slaveside)
 /*----------------------------------------------------------------------*
  |  finalize construction of interface (public)              mwgee 10/07|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::FillComplete(int maxdof)
+void MORTAR::MortarInterface::FillComplete(const bool isFinalParallelDistribution, const int maxdof)
 {
   // store maximum global dof ID handed in
   // this ID is later needed when setting up the Lagrange multiplier
@@ -580,10 +580,10 @@ void MORTAR::MortarInterface::FillComplete(int maxdof)
 
   CreateInterfaceLocalCommunicator();
 
-  ExtendInterfaceGhosting();
+  ExtendInterfaceGhosting(isFinalParallelDistribution);
 
   // make sure discretization is complete
-  Discret().FillComplete(true, false, false);
+  Discret().FillComplete(isFinalParallelDistribution, false, false);
 
   // ghost also parent elements according to the ghosting strategy of the interface (atm just for
   // poro)
@@ -1121,7 +1121,7 @@ void MORTAR::MortarInterface::BinningStrategy(
   Discret().ExportColumnNodes(*nodecolmap);
 
   // fillcomplete interface
-  FillComplete();
+  FillComplete(true);
 
   return;
 }
@@ -1338,7 +1338,7 @@ void MORTAR::MortarInterface::RedistributeMasterSide(Teuchos::RCP<Epetra_Map>& r
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::ExtendInterfaceGhosting()
+void MORTAR::MortarInterface::ExtendInterfaceGhosting(const bool isFinalParallelDistribution)
 {
   //*****REDUNDANT SLAVE AND MASTER STORAGE*****
   if (Redundant() == INPAR::MORTAR::redundant_all)
@@ -1589,9 +1589,10 @@ void MORTAR::MortarInterface::ExtendInterfaceGhosting()
 
       /* Ask the discretization to initialize the elements. We need this, since the setup of the
        * binning strategy relies on some element information.
-       * Note: This should be cheap, since we don't assign new degrees of freedom.
+       * Note: This should be cheap, since we don't assign new degrees of freedom. Still, we skip
+       * initialization of elements, if we know, that the discretization will be redistriuted again.
        */
-      Discret().FillComplete(false, true, false);
+      Discret().FillComplete(false, isFinalParallelDistribution, false);
 
       // Create the binning strategy
       const double vel = 0.0;

@@ -577,7 +577,7 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
     }
 
     //-------------------- finalize the meshtying interface construction
-    interface->FillComplete(maxdof);
+    interface->FillComplete(true, maxdof);
 
   }  // for (int i=0; i<(int)contactconditions.size(); ++i)
   if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;

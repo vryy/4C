@@ -449,8 +449,23 @@ void ADAPTER::CouplingMortar::SetupInterface(
     }
   }
 
-  // finalize the contact interface construction
-  interface_->FillComplete();
+  /* Finalize the interface construction
+   *
+   * If this is the final parallel distribution, we need to assign degrees of freedom during
+   * during FillComplete(). If parallel redistribution is enabled, there will be another call to
+   * FillComplete(), so we skip this expensive operation here and do it later. DOFs have to be
+   * assigned only once!
+   */
+  const INPAR::MORTAR::ParRedist parallelRedist =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
+          input.sublist("PARALLEL REDISTRIBUTION"), "PARALLEL_REDIST");
+  {
+    bool isFinalDistribution = false;
+    if (parallelRedist == INPAR::MORTAR::parredist_none or comm.NumProc() == 1)
+      isFinalDistribution = true;
+
+    interface_->FillComplete(isFinalDistribution);
+  }
 
   // set setup flag!
   issetup_ = true;
@@ -465,15 +480,13 @@ void ADAPTER::CouplingMortar::SetupInterface(
   //**********************************************************************
   // PARALLEL REDISTRIBUTION OF INTERFACE
   //**********************************************************************
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input.sublist("PARALLEL REDISTRIBUTION"),
-          "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none and
-      comm.NumProc() > 1)
+  if (parallelRedist != INPAR::MORTAR::parredist_none and comm.NumProc() > 1)
   {
     // redistribute optimally among all procs
     interface_->Redistribute();
 
     // call fill complete again
-    interface_->FillComplete();
+    interface_->FillComplete(true);
 
     // print parallel distribution again
     interface_->PrintParallelDistribution();
@@ -609,7 +622,7 @@ void ADAPTER::CouplingMortar::SetupForUQAbuseNormalCalculation(
   }
 
   // finalize the contact interface construction
-  interface->FillComplete();
+  interface->FillComplete(true);
 
   // store old row maps (before parallel redistribution)
   slavedofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowDofs()));

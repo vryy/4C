@@ -4636,7 +4636,7 @@ bool WEAR::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<const Epetra_V
     interface_[i]->Redistribute();
 
     // call fill complete again
-    interface_[i]->FillComplete(maxdof_);
+    interface_[i]->FillComplete(true, maxdof_);
 
     // print new parallel distribution
     interface_[i]->PrintParallelDistribution();

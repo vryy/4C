@@ -350,7 +350,7 @@ bool CONTACT::CoAbstractStrategy::RedistributeContact(Teuchos::RCP<const Epetra_
     Interfaces()[i]->Redistribute();
 
     // call fill complete again
-    Interfaces()[i]->FillComplete(maxdof_);
+    Interfaces()[i]->FillComplete(true, maxdof_);
 
     // print new parallel distribution
     Interfaces()[i]->PrintParallelDistribution();

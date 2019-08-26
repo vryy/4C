@@ -93,7 +93,7 @@ void CONTACT::MtAbstractStrategy::RedistributeMeshtying()
       interface_[i]->Redistribute();
 
       // call fill complete again
-      interface_[i]->FillComplete(maxdof_);
+      interface_[i]->FillComplete(true, maxdof_);
 
       // print parallel distribution again
       interface_[i]->PrintParallelDistribution();

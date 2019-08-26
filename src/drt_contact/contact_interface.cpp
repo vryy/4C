@@ -810,7 +810,7 @@ void CONTACT::CoInterface::RoundRobinChangeOwnership()
   // call the (very) expensive FILLCOMPLETE()!
   // ********************************************
   // make sure discretization is complete
-  FillComplete();
+  FillComplete(true);
 
   return;
 }
@@ -886,7 +886,7 @@ void CONTACT::CoInterface::RoundRobinDetectGhosting()
   // finally extend ghosting
   Discret().ExportColumnElements(*eextendedghosting_);
   Discret().ExportColumnNodes(*nextendedghosting_);
-  FillComplete();
+  FillComplete(true);
 
   // reset extended ghosting maps
   eextendedghosting_ = Teuchos::null;
