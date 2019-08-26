@@ -213,9 +213,6 @@ $CMAKE_COMMAND \
   -D HAVE_DEAL_II:BOOL=$BUILD_Deal \
   -D HAVE_TEKO:BOOL=$BUILD_Teko \
   -D HAVE_MueLu:BOOL=$BUILD_MueLu \
-  -D HAVE_Trilinos_Q1_2013:BOOL=$BUILD_HAVE_Trilinos_Q1_2013 \
-  -D HAVE_Trilinos_Q3_2013:BOOL=$BUILD_HAVE_Trilinos_Q3_2013 \
-  -D HAVE_Trilinos_Q1_2014:BOOL=$BUILD_HAVE_Trilinos_Q1_2014 \
   -D HAVE_Stratimikos:BOOL=$BUILD_Stratimikos \
   -D HAVE_OpenMP:BOOL=OFF \
   -D HAVE_Kokkos:BOOL=$BUILD_MueLu \
