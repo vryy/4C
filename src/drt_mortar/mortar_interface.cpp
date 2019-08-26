@@ -538,7 +538,7 @@ void MORTAR::MortarInterface::RemoveSingleInterfaceSide(bool slaveside)
 /*----------------------------------------------------------------------*
  |  finalize construction of interface (public)              mwgee 10/07|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::FillComplete(int maxdof, bool newghosting)
+void MORTAR::MortarInterface::FillComplete(int maxdof)
 {
   // store maximum global dof ID handed in
   // this ID is later needed when setting up the Lagrange multiplier
@@ -580,25 +580,18 @@ void MORTAR::MortarInterface::FillComplete(int maxdof, bool newghosting)
 
   CreateInterfaceLocalCommunicator();
 
-  // create interface ghosting
-  // (currently, the slave is kept with the standard overlap of one,
-  // but the master is made fully redundant, i.e. it is exported to
-  // fully overlapping column layout, for the ease of interface search)
-  // (the only exceptions are self contact and coupled problems, where
-  // also the slave is still made fully redundant)
-  // ghosting can be skipped if the desired parallel layout is already present
-  if (newghosting) ExtendInterfaceGhosting();
+  ExtendInterfaceGhosting();
 
   // make sure discretization is complete
   Discret().FillComplete(true, false, false);
 
   // ghost also parent elements according to the ghosting strategy of the interface (atm just for
   // poro)
-  if (newghosting && poro_)
+  if (poro_)
     POROELAST::UTILS::CreateVolumeGhosting(Discret());
   else if (imortar_.isParameter("STRATEGY"))
-    if (newghosting && DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(
-                           imortar_, "ALGORITHM") == INPAR::MORTAR::algorithm_gpts)
+    if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM") ==
+        INPAR::MORTAR::algorithm_gpts)
       CreateVolumeGhosting();
 
   // need row and column maps of slave and master nodes / elements / dofs

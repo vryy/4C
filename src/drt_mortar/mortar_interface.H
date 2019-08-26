@@ -1008,11 +1008,9 @@ namespace MORTAR
 
     \param maxdof (in): maximum dof ID in global discretization
                         (if default=0, then no lmdofrowmap is created)
-    \param newghosting (in): bool to decide whether ghosting needs to be build (default=true)
-
     \return Filled()==true
     */
-    void FillComplete(int maxdof = 0, bool newghosting = true);
+    void FillComplete(int maxdof = 0);
 
     /*!
     \brief Redistribute interface among all procs
