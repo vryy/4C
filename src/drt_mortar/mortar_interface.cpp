@@ -1281,19 +1281,8 @@ void MORTAR::MortarInterface::Redistribute()
   Teuchos::RCP<Epetra_Map> srownodes = Teuchos::null;
   Teuchos::RCP<Epetra_Map> scolnodes = Teuchos::null;
 
-  // build redundant vector of all slave node ids on all procs
-  // (include crosspoints / boundary nodes if there are any)
-  std::vector<int> snids;
-  std::vector<int> snidslocal(SlaveRowNodesBound()->NumMyElements());
-  for (int i = 0; i < SlaveRowNodesBound()->NumMyElements(); ++i)
-    snidslocal[i] = SlaveRowNodesBound()->GID(i);
-  LINALG::Gather<int>(snidslocal, snids, numproc, &allproc[0], Comm());
-
-  //**********************************************************************
-  // call ZOLTAN for parallel redistribution
   DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
       idiscret_, sroweles, srownodes, scolnodes, comm, false, sproc, imbalance_tol);
-  //**********************************************************************
 
   //**********************************************************************
   // (3) MASTER redistribution
