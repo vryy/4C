@@ -512,6 +512,8 @@ void STR::TimInt::PrepareBeamContact(const Teuchos::ParameterList& sdynparams)
 /* Check for contact or meshtying and do preparations */
 void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynparams)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("STR::TimInt::PrepareContactMeshtying");
+
   // some parameters
   const Teuchos::ParameterList& smortar = DRT::Problem::Instance()->MortarCouplingParams();
   const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->ContactDynamicParams();
