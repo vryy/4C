@@ -1057,18 +1057,22 @@ void STR::TimInt::PrepareStepContact()
       cmtbridge_->GetStrategy().Inttime_init();
 
       // dynamic parallel redistribution of interfaces
-      cmtbridge_->GetStrategy().RedistributeContact((*dis_)(0));
+      const bool didRedistribute = cmtbridge_->GetStrategy().RedistributeContact((*dis_)(0));
 
-      // get type of parallel strategy
-      const Teuchos::ParameterList& parallelParamsMortar =
-          DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
-      INPAR::MORTAR::GhostingStrategy strat =
-          DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
-              parallelParamsMortar, "GHOSTING_STRATEGY");
+      // Ghosting has only to be redone, if interfaces have been redistributed
+      if (didRedistribute)
+      {
+        // get type of parallel strategy
+        const Teuchos::ParameterList& parallelParamsMortar =
+            DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
+        INPAR::MORTAR::GhostingStrategy strat =
+            DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
+                parallelParamsMortar, "GHOSTING_STRATEGY");
 
-      // prepare binning strategy for this time step
-      if (strat == INPAR::MORTAR::binningstrategy)
-        cmtbridge_->GetStrategy().InitBinStrategyforTimestep((*vel_)(0));
+        // prepare binning strategy for this time step
+        if (strat == INPAR::MORTAR::binningstrategy)
+          cmtbridge_->GetStrategy().InitBinStrategyforTimestep((*vel_)(0));
+      }
     }
   }
 
