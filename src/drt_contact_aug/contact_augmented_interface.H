@@ -258,11 +258,6 @@ namespace CONTACT
 
       //! @name Initialize and evaluate interface element contributions
       //! @{
-      /*! \brief Finalize the construction of an augmented contact interface
-       *
-       *  We look up the minimal edge length only once at the construction point
-       *  and call the standard mortar_interface FillComplete routine. */
-      virtual void FillComplete(int maxdof = 0, bool newghosting = true);
 
       //! Initialization of all augmented contact related quantities
       void Initialize() final;

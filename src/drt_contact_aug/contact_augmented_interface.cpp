@@ -83,14 +83,6 @@ CONTACT::AUG::Interface::Interface(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::FillComplete(int maxdof, bool newghosting)
-{
-  // call the standard mortar routine first
-  MortarInterface::FillComplete(maxdof, newghosting);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::Setup()
 {
   if (interfaceData_.IsSetup()) return;
