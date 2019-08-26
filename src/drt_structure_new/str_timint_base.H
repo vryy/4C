@@ -591,6 +591,8 @@ namespace STR
       /// see class \ref ADAPTER::StructureNew for detailed documentation.
       /// \note implemented only for implicit
       virtual void SetState(const Teuchos::RCP<Epetra_Vector>& x) = 0;
+      /// update displacement (implicit only)
+      void UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override = 0;
       /// update displacement and evaluate elements (implicit only)
       virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) = 0;
       /// don't update displacement but evaluate elements (implicit only)

@@ -294,6 +294,16 @@ namespace STR
     //! Linear structure solve with just an interface load
     virtual Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear() = 0;
 
+    /*! \brief Update displacement in case of coupled problems
+     *
+     *  We always need iterative displacement increments here:
+     *
+     *  x^n+1_i+1 = x^n+1_i + disiterinc (sometimes referred to as residual increment)
+     *
+     *  with n and i being time and Newton iteration step
+     */
+    void UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override = 0;
+
     /*! \brief Update displacement and evaluate elements in case of coupled problems
      *
      *  We always need iterative displacement increments here:

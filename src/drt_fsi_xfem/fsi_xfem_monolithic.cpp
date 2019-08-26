@@ -299,15 +299,15 @@ void FSI::MonolithicXFEM::ValidateParameters()
 
   // Check for the timestepsize
   if (fabs(FluidField()->Dt() - StructurePoro()->StructureField()->Dt()) > 1e-16)
-    dserror("ValidateParameters(): Timestep of fluid and structure not equal (%d != %d)!",
+    dserror("ValidateParameters(): Timestep of fluid and structure not equal (%f != %f)!",
         FluidField()->Dt(), StructurePoro()->StructureField()->Dt());
   if (HaveAle())
     if (fabs(FluidField()->Dt() - AleField()->Dt()) > 1e-16)
-      dserror("ValidateParameters(): Timestep of fluid and ale not equal (%d != %d)!",
+      dserror("ValidateParameters(): Timestep of fluid and ale not equal (%f != %f)!",
           FluidField()->Dt(), AleField()->Dt());
   if (StructurePoro()->isPoro())
     if (fabs(FluidField()->Dt() - StructurePoro()->PoroField()->Dt()) > 1e-16)
-      dserror("ValidateParameters(): Timestep of fluid and poro not equal (%d != %d)!",
+      dserror("ValidateParameters(): Timestep of fluid and poro not equal (%f != %f)!",
           FluidField()->Dt(), StructurePoro()->PoroField()->Dt());
 
   // TODO
@@ -1376,7 +1376,7 @@ void FSI::MonolithicXFEM::BuildCovergenceNorms()
  *----------------------------------------------------------------------*/
 bool FSI::MonolithicXFEM::Evaluate()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::Evaluate");
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicXFEM::Evaluate");
 
 
   // ------------------------------------------------------------------
@@ -1442,9 +1442,6 @@ bool FSI::MonolithicXFEM::Evaluate()
   {
     Comm().Barrier();
 
-    // structural field
-    Epetra_Time ts(Comm());
-
     // ------------------------------------------------------------------
     // ------------------------------------------------------------------
     // Set Field State Section, here we should set the state with the step increments in all fields
@@ -1466,9 +1463,7 @@ bool FSI::MonolithicXFEM::Evaluate()
     // call the structure evaluate with the current step increment  Delta d = d^(n+1,i+1) - d^n
     if (sx == Teuchos::null)
       sx = Teuchos::rcp(new Epetra_Vector(*StructurePoro()->DofRowMap(), true));
-    StructurePoro()->Evaluate(sx, iter_ == 1);
-
-    if (Comm().MyPID() == 0) IO::cout << "structure time: " << ts.ElapsedTime() << IO::endl;
+    StructurePoro()->UpdateStateIncrementally(sx);
   }
 
   //--------------------------------------------------------
@@ -1566,7 +1561,13 @@ bool FSI::MonolithicXFEM::Evaluate()
 
     if (Comm().MyPID() == 0) IO::cout << "fluid time : " << tf.ElapsedTime() << IO::endl;
 
-    // Teuchos::TimeMonitor::summarize();
+    // structural field
+    Epetra_Time ts(Comm());
+
+    // Evaluate Structure (do not set state again)
+    StructurePoro()->Evaluate(Teuchos::null, iter_ == 1);
+
+    if (Comm().MyPID() == 0) IO::cout << "structure time: " << ts.ElapsedTime() << IO::endl;
   }
 
   //--------------------------------------------------------
@@ -2011,12 +2012,12 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
         "no linear solver defined for fluid field. Please set LINEAR_SOLVER in FLUID DYNAMIC to a "
         "valid number!");
 
-  const int alinsolvernumber = -1;
+  int alinsolvernumber = -1;
   if (HaveAle())
   {
     // get parameter list of ale dynamics
     const Teuchos::ParameterList& adyn = DRT::Problem::Instance()->AleDynamicParams();
-    const int alinsolvernumber = adyn.get<int>("LINEAR_SOLVER");
+    alinsolvernumber = adyn.get<int>("LINEAR_SOLVER");
     // check if the ale solver has a valid solver number
     if (alinsolvernumber == (-1))
       dserror(
@@ -2100,7 +2101,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
 
       solver_->PutSolverParamsToSubParams("Inverse2", fsolverparams);
       FluidField()->Discretization()->ComputeNullSpaceIfNecessary(
-          solver_->Params().sublist("Inverse2"));
+          solver_->Params().sublist("Inverse2"), true);
 
       if (StructurePoro()->isPoro())
       {

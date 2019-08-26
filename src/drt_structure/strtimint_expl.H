@@ -245,6 +245,15 @@ namespace STR
       return;
     }
 
+    //!  Update displacement state in case of coupled problems
+    void UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override
+    {
+      dserror(
+          "All monolithically coupled problems work with implicit time "
+          "integration schemes. Thus, calling UpdateStateIncrementally() in an explicit scheme "
+          "is not possible.");
+    }
+
     //!  Evaluate routine for coupled problems with monolithic approach
     virtual void Evaluate(
         Teuchos::RCP<const Epetra_Vector> disiterinc  ///< iterative solution increment

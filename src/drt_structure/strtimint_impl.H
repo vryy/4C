@@ -838,6 +838,13 @@ namespace STR
     //! Prepare time step
     void PrepareTimeStep();
 
+    //! Update state incrementally for coupled problems with monolithic approach
+    void UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override
+    {
+      UpdateIterIncrementally(disiterinc);
+      return;
+    }
+
     //! Evaluate routine for coupled problems with monolithic approach
     void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
     {

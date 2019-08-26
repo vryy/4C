@@ -147,13 +147,35 @@ namespace POROELAST
     //! create linear solver (setup of parameter lists, etc...)
     void CreateLinearSolver();
 
+    //! update all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
+    void UpdateStateIncrementally(
+        Teuchos::RCP<const Epetra_Vector> iterinc  //!< increment between iteration i and i+1
+        ) override;
+
+    //! update all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc (with structural and fluid
+    //! increment separately)
+    void UpdateStateIncrementally(
+        Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx);
+
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
+    //! and assemble systemmatrix and rhs-vector
     virtual void Evaluate(
         Teuchos::RCP<const Epetra_Vector> iterinc,  //!< increment between iteration i and i+1
-        bool firstiter = false);
+        bool firstiter);
 
-    //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx);
+    //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
+    //! and assemble systemmatrix and rhs-vector
+    virtual void Evaluate(
+        Teuchos::RCP<const Epetra_Vector> sx,  //!< structural increment between iteration i and i+1
+        Teuchos::RCP<const Epetra_Vector> fx,  //!< fluid increment between iteration i and i+1
+        bool firstiter);
+
+    //! evaluate fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
+    virtual void EvaluateFields(Teuchos::RCP<const Epetra_Vector> x);
+
+    //! evaluate fields seperately at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
+    virtual void EvaluateFields(
+        Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx);
 
     //! extract initial guess from fields
     //! returns \f$\Delta x_{n+1}^{<k>}\f$
