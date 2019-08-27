@@ -16,14 +16,20 @@ def path_split_all(path):
     if file != "":
       folders.append(file)
   folders.reverse()
+  while folders[0] == '.':
+    folders.pop(0)
   return folders
 
 def is_unittest_file(fname):
   parts = path_split_all(fname)
 
+  if len(parts) < 3:
+    return False
   if parts[0] != 'Unittests':
     return False
-
+  if parts[1] != 'src':
+    return False
+    
   return os.path.splitext(parts[-1])[1] in ".h .H .hpp".split()
 
 def is_unittest_cmakefile(fname):
