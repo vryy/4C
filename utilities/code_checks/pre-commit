@@ -4,21 +4,28 @@
 ########## DESCRIPTION ##############################
 #####################################################
 
-# This pre - commit hook will be executed by Git before every new commit
+# This pre - commit hook will be executed by Git before every new commit and consists of the following stages:
+#
+# Stage 1: Style format check
 # In the version at hand, clang-format will only write out non-compliant files to the shell output and will not perfom any formatting automatically
 # In the case that the script detects files that are not compliant with the current clang-format BACI style, the commit will be rejected (script exits 1)
-
-# In a second phase a set of Python scripts checks the staged files for compliance with the BACI header requirements
+#
+# Stage 2: Header check
+# A set of Python scripts checks the staged files for compliance with the BACI header requirements
 # If a header is missing or does not follow the BACI standards, the Python scripts will generate error messages in the shell output
 # The commit will be rejected if errors appear (script exit 1). The user has to change the headers manually until all requirements are fulfilled
-
-# The commit will be accepted if the script exits with 0 (no uncompliant headers or style formats found)
-
+#
+# Stage 3: Check commit on master
+# A commit on master branch is rejected (script exits 1). The user is asked to create and checkout a new feature branch in order to proceed with the commit.
+#
+# The commit will be accepted if the script exits with 0
+#
 # Author:    Jonas Nitzler
 #            Maximilian Grill
-# Date:      07.08.2019
-# Version:   1.4
+# Date:      26.08.2019
+# Version:   1.5
 
+### Style format check ##############################
 if [ -f ./utilities/code_checks/clang-format ]
 then
   # set the field separator to new line
@@ -64,7 +71,25 @@ else
   exit 1
 fi
 
-### Header check ################################################
+### Header check ####################################
 python2 ./utilities/code_checks/header_check.py --diff_only || exit 1
 python2 ./utilities/code_checks/testing_frameworks_check.py --diff_only || exit 1
+
+### Check commit on master ##########################
+branch="$(git rev-parse --abbrev-ref HEAD)"
+if [ "$branch" = "master" ]
+then
+  printf "\n"
+  echo "Commiting directly to master branch is not allowed!"
+  printf "\n"
+  echo "--> Create and checkout a new feature branch via:"
+  echo "git checkout -b <branchName>"
+  echo "(All staged and unstaged changes are kept)"
+  printf "\n"
+  echo "--> Afterwards, commit on the newly created branch."
+  printf "\n"
+  exit 1
+fi
+
+
 exit 0
