@@ -65,25 +65,22 @@ if __name__ == '__main__':
 
     # Read arguments.
     if not len(sys.argv) == 4:
-        raise ValueError(('Wrong number of input arguments. Got {} indead '
+        raise ValueError(('Wrong number of input arguments. Got {} instead '
             + 'of 4!').format(len(sys.argv)))
     eps = float(sys.argv[1])
     file_ref = sys.argv[2]
     file_comp = sys.argv[3]
 
+    print('\n\nCompare files with tolerance{}:\n{}\n{}'.format(eps, file_ref, file_comp))
+
     # Load each file as a real array.
     data_ref = read_csv(file_ref)
     data_comp = read_csv(file_comp)
 
-    # Calulate the relative error in the data entries.
-    # To avoid divisions by zero, a very small value is used instead of 0 in the
-    # division for the relative error.
+    # Calculate the absolute error in the data entries.
     abs_diff = np.abs(data_comp - data_ref)
-    data_ref_no_zeros = np.abs(data_ref)
-    data_ref_no_zeros[data_ref_no_zeros < 1e-20] = 1e-20
-    error = np.divide(abs_diff, data_ref_no_zeros)
-    if eps > np.max(error):
+    if eps > np.max(abs_diff):
         print('CSV comparison successful!')
     else:
-        print('Largest error is {}'.format(np.max(error)))
+        print('Largest error is {}'.format(np.max(abs_diff)))
         raise ValueError('CSV comparison failed!')
