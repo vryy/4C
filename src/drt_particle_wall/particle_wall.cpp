@@ -32,6 +32,7 @@
 #include "../drt_lib/drt_dofset_transparent.H"
 
 #include "../drt_io/io.H"
+#include "../drt_io/io_pstream.H"
 
 #include "../linalg/linalg_utils.H"
 
@@ -620,9 +621,9 @@ void PARTICLEWALL::WallHandlerDiscretCondition::ExtendWallElementGhosting(
  *---------------------------------------------------------------------------*/
 void PARTICLEWALL::WallHandlerDiscretCondition::SetupWallDiscretization() const
 {
-  // safety check
-  if (binstrategy_->HavePBC())
-    dserror("periodic boundary conditions not supported for particle wall from discretization!");
+  // short screen output
+  if (binstrategy_->HavePBC() and myrank_ == 0)
+    IO::cout << "Warning: particle wall not transferred over periodic boundary!" << IO::endl;
 
   // access the structural discretization
   Teuchos::RCP<DRT::Discretization> structurediscretization =
