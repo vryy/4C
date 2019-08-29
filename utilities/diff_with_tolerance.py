@@ -71,7 +71,7 @@ if __name__ == '__main__':
     file_ref = sys.argv[2]
     file_comp = sys.argv[3]
 
-    print('\n\nCompare files with tolerance{}:\n{}\n{}'.format(eps, file_ref, file_comp))
+    print('\n\nCompare files with tolerance {}:\n{}\n{}'.format(eps, file_ref, file_comp))
 
     # Load each file as a real array.
     data_ref = read_csv(file_ref)
