@@ -1243,7 +1243,7 @@ void BINSTRATEGY::BinningStrategy::ExtendBinGhosting(
 /*-------------------------------------------------------------------*
 | extend ghosting according to bin distribution          ghamm 11/13 |
  *-------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::ExtendGhosting(
+Teuchos::RCP<const Epetra_Map> BINSTRATEGY::BinningStrategy::ExtendGhosting(
     DRT::Discretization& mortardis, const Epetra_Map& initial_elecolmap,
     std::map<int, std::set<int>>& slavebinelemap,
     std::map<int, std::set<int>>& masterbinelemap) const

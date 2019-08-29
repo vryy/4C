@@ -1096,7 +1096,7 @@ void MORTAR::MortarInterface::BinningStrategy(
   binningstrategy->DistributeElesToBins(Discret(), masterbinelemap, false);
 
   // ghosting is extended
-  Teuchos::RCP<Epetra_Map> extendedmastercolmap = binningstrategy->ExtendGhosting(
+  Teuchos::RCP<const Epetra_Map> extendedmastercolmap = binningstrategy->ExtendGhosting(
       Discret(), *initial_elecolmap, slavebinelemap, masterbinelemap);
 
   // adapt layout to extended ghosting in discret
@@ -1605,7 +1605,7 @@ void MORTAR::MortarInterface::ExtendInterfaceGhosting(const bool isFinalParallel
       binningstrategy->DistributeElesToBins(Discret(), masterbinelemap, false);
 
       // Extend ghosting of the master elements
-      Teuchos::RCP<Epetra_Map> extendedmastercolmap = binningstrategy->ExtendGhosting(
+      Teuchos::RCP<const Epetra_Map> extendedmastercolmap = binningstrategy->ExtendGhosting(
           Discret(), *newelecolmap, slavebinelemap, masterbinelemap);
 
       // adapt layout to extended ghosting in the discretization
