@@ -14,6 +14,8 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
+#include "../drt_lib/drt_dserror.H"
+
 #include <cmath>
 
 /*---------------------------------------------------------------------------*
@@ -171,6 +173,46 @@ namespace PARTICLEINTERACTION
     inline T vec_norm2(const T* a)
     {
       return std::sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
+    }
+
+    //@}
+
+    //! @name methods for construction of three dimensional vector space
+    //@{
+
+    /**
+     *  \brief construct orthogonal unit surface tangent vectors from given unit surface normal
+     */
+    template <class T>
+    inline void unitsurfacetangents(const T* n, T* t1, T* t2)
+    {
+#ifdef DEBUG
+      if (std::abs(1.0 - vec_norm2(n)) > 1.0e-14)
+        dserror("given unit surface normal not normalized!");
+#endif
+
+      if ((std::abs(n[0]) <= std::abs(n[1])) and (std::abs(n[0]) <= std::abs(n[2])))
+      {
+        t1[0] = 0.0;
+        t1[1] = -n[2];
+        t1[2] = n[1];
+      }
+      else if (std::abs(n[1]) <= std::abs(n[2]))
+      {
+        t1[0] = -n[2];
+        t1[1] = 0.0;
+        t1[2] = n[0];
+      }
+      else
+      {
+        t1[0] = -n[1];
+        t1[1] = n[0];
+        t1[2] = 0.0;
+      }
+
+      vec_scale(t1, 1.0 / vec_norm2(t1));
+
+      vec_setcross(t2, n, t1);
     }
 
     //@}
