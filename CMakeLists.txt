@@ -411,12 +411,6 @@ endif()
 REMOVE_DUPLICATES(LIBRARIES)
 list(REMOVE_ITEM LIBRARIES debug optimized general)
 
-if (HAVE_ASCII_FILE_COMPARISON_TESTS)
-  message("-- Test comparing restults to ASCII files: enabled")
-else()
-  message("-- Test comparing restults to ASCII files: disabled")
-endif()
-
 if (HAVE_ENSIGHT_POSTPROCESSING_TESTS)
   message("-- Post-processing test for ensight filter: enabled")
 else()
