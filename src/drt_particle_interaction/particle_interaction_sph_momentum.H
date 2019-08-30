@@ -65,7 +65,7 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit SPHMomentum(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
+    //! destructor
     ~SPHMomentum();
 
     //! init momentum handler

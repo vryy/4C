@@ -155,7 +155,7 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit SPHDensitySummation(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
+    //! destructor
     ~SPHDensitySummation(){};
 
     //! insert density evaluation dependent states
@@ -173,7 +173,7 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit SPHDensityIntegration(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
+    //! destructor
     ~SPHDensityIntegration(){};
 
     //! insert density evaluation dependent states
@@ -191,7 +191,7 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit SPHDensityPredictCorrect(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
+    //! destructor
     ~SPHDensityPredictCorrect();
 
     //! init density handler
