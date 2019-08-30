@@ -56,7 +56,7 @@ namespace PARTICLEINTERACTION
     //! evaluate specific coefficient
     virtual void SpecificCoefficient(const double* dens_i, const double* dens_j,
         const double* mass_i, const double* mass_j, const double& dWdrij, const double& dWdrji,
-        double& speccoeff_ij, double& speccoeff_ji) const = 0;
+        double* speccoeff_ij, double* speccoeff_ji) const = 0;
 
     //! evaluate pressure gradient
     virtual void PressureGradient(const double* dens_i, const double* dens_j, const double* press_i,
@@ -101,7 +101,7 @@ namespace PARTICLEINTERACTION
     //! evaluate specific coefficient
     virtual void SpecificCoefficient(const double* dens_i, const double* dens_j,
         const double* mass_i, const double* mass_j, const double& dWdrij, const double& dWdrji,
-        double& speccoeff_ij, double& speccoeff_ji) const override;
+        double* speccoeff_ij, double* speccoeff_ji) const override;
 
     //! evaluate pressure gradient
     virtual void PressureGradient(const double* dens_i, const double* dens_j, const double* press_i,
@@ -146,7 +146,7 @@ namespace PARTICLEINTERACTION
     //! evaluate specific coefficient
     virtual void SpecificCoefficient(const double* dens_i, const double* dens_j,
         const double* mass_i, const double* mass_j, const double& dWdrij, const double& dWdrji,
-        double& speccoeff_ij, double& speccoeff_ji) const override;
+        double* speccoeff_ij, double* speccoeff_ji) const override;
 
     //! evaluate pressure gradient
     virtual void PressureGradient(const double* dens_i, const double* dens_j, const double* press_i,

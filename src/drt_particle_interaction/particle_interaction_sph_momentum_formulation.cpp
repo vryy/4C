@@ -75,10 +75,10 @@ PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::SPHMomentumFormulationMonag
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::SpecificCoefficient(const double* dens_i,
     const double* dens_j, const double* mass_i, const double* mass_j, const double& dWdrij,
-    const double& dWdrji, double& speccoeff_ij, double& speccoeff_ji) const
+    const double& dWdrji, double* speccoeff_ij, double* speccoeff_ji) const
 {
-  speccoeff_ij = (dWdrij * mass_j[0]);
-  speccoeff_ji = (dWdrji * mass_i[0]);
+  if (speccoeff_ij) speccoeff_ij[0] = (dWdrij * mass_j[0]);
+  if (speccoeff_ji) speccoeff_ji[0] = (dWdrji * mass_i[0]);
 }
 
 /*---------------------------------------------------------------------------*
@@ -210,12 +210,12 @@ PARTICLEINTERACTION::SPHMomentumFormulationAdami::SPHMomentumFormulationAdami()
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentumFormulationAdami::SpecificCoefficient(const double* dens_i,
     const double* dens_j, const double* mass_i, const double* mass_j, const double& dWdrij,
-    const double& dWdrji, double& speccoeff_ij, double& speccoeff_ji) const
+    const double& dWdrji, double* speccoeff_ij, double* speccoeff_ji) const
 {
   const double fac = (UTILS::pow<2>(mass_i[0] / dens_i[0]) + UTILS::pow<2>(mass_j[0] / dens_j[0]));
 
-  speccoeff_ij = fac * (dWdrij / mass_i[0]);
-  speccoeff_ji = fac * (dWdrji / mass_j[0]);
+  if (speccoeff_ij) speccoeff_ij[0] = fac * (dWdrij / mass_i[0]);
+  if (speccoeff_ji) speccoeff_ji[0] = fac * (dWdrji / mass_j[0]);
 }
 
 /*---------------------------------------------------------------------------*

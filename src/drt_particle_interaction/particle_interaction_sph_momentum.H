@@ -66,13 +66,13 @@ namespace PARTICLEINTERACTION
     explicit SPHMomentum(const Teuchos::ParameterList& params);
 
     //! virtual destructor
-    virtual ~SPHMomentum();
+    ~SPHMomentum();
 
     //! init momentum handler
-    virtual void Init();
+    void Init();
 
     //! setup momentum handler
-    virtual void Setup(
+    void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
         const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
@@ -80,25 +80,28 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
 
     //! write restart of momentum handler
-    virtual void WriteRestart(const int step, const double time) const;
+    void WriteRestart(const int step, const double time) const;
 
     //! read restart of momentum handler
-    virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
+    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
     //! insert momentum evaluation dependent states
-    virtual void InsertParticleStatesOfParticleTypes(
+    void InsertParticleStatesOfParticleTypes(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) const;
 
     //! add momentum contribution to acceleration field
-    virtual void AddAccelerationContribution() const;
+    void AddAccelerationContribution() const;
 
-   protected:
+   private:
     //! init momentum formulation handler
-    virtual void InitMomentumFormulationHandler();
+    void InitMomentumFormulationHandler();
 
     //! init artificial viscosity handler
-    virtual void InitArtificialViscosityHandler();
+    void InitArtificialViscosityHandler();
+
+    //! momentum equation (particle contribution)
+    void MomentumEquationParticleContribution() const;
 
     //! smoothed particle hydrodynamics specific parameter list
     const Teuchos::ParameterList& params_sph_;
