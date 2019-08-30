@@ -123,6 +123,45 @@ void PARTICLEINTERACTION::SPHDensityBase::SetCurrentStepSize(const double curren
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassAndColorfield() const
 {
+  // clear density sum and colorfield states
+  ClearDensitySumAndColorfieldStates();
+
+  // sum weighted mass/colorfield (self contribution)
+  SumWeightedMassAndColorfieldSelfContribution();
+
+  // sum weighted mass/colorfield (particle contribution)
+  SumWeightedMassAndColorfieldParticleContribution();
+}
+
+/*---------------------------------------------------------------------------*
+ | clear density sum and colorfield states                    sfuchs 08/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::SPHDensityBase::ClearDensitySumAndColorfieldStates() const
+{
+  // iterate over particle types
+  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  {
+    // no density summation for boundary or rigid particles
+    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
+
+    // get container of owned particles of current particle type
+    PARTICLEENGINE::ParticleContainer* container_i =
+        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+
+    // clear density sum state
+    container_i->ClearState(PARTICLEENGINE::DensitySum);
+    if (computecolorfield_) container_i->ClearState(PARTICLEENGINE::Colorfield);
+  }
+}
+
+/*---------------------------------------------------------------------------*
+ | sum weighted mass/colorfield (self contribution)           sfuchs 08/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassAndColorfieldSelfContribution() const
+{
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassAndColorfieldSelfContribution");
+
   // iterate over particle types
   for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
   {
@@ -154,12 +193,20 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassAndColorfield() const
       // evaluate kernel
       const double Wii = kernel_->W0(rad_i[0]);
 
-      // add self-interaction
-      denssum_i[0] = Wii * mass_i[0];
-
-      if (computecolorfield_) colorfield_i[0] = (Wii / dens_i[0]) * mass_i[0];
+      // add self contribution
+      denssum_i[0] += Wii * mass_i[0];
+      if (computecolorfield_) colorfield_i[0] += (Wii / dens_i[0]) * mass_i[0];
     }
   }
+}
+
+/*---------------------------------------------------------------------------*
+ | sum weighted mass/colorfield (particle contribution)       sfuchs 08/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassAndColorfieldParticleContribution() const
+{
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassAndColorfieldParticleContribution");
 
   // iterate over particle pairs
   for (auto& particlepair : neighborpairs_->GetRefToParticlePairData())
@@ -253,6 +300,18 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassAndColorfield() const
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquation() const
 {
+  // clear density dot state
+  ClearDensityDotState();
+
+  // continuity equation (particle contribution)
+  ContinuityEquationParticleContribution();
+}
+
+/*---------------------------------------------------------------------------*
+ | clear density dot state                                    sfuchs 08/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::SPHDensityBase::ClearDensityDotState() const
+{
   // iterate over particle types
   for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
   {
@@ -266,6 +325,15 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquation() const
     // clear density dot state
     container_i->ClearState(PARTICLEENGINE::DensityDot);
   }
+}
+
+/*---------------------------------------------------------------------------*
+ | continuity equation (particle contribution)                sfuchs 08/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleContribution() const
+{
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleContribution");
 
   // iterate over particle pairs
   for (auto& particlepair : neighborpairs_->GetRefToParticlePairData())

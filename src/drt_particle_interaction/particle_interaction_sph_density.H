@@ -91,8 +91,23 @@ namespace PARTICLEINTERACTION
     //! evaluate sum of weighted mass and colorfield
     virtual void SumWeightedMassAndColorfield() const final;
 
+    //! clear density sum and colorfield states
+    virtual void ClearDensitySumAndColorfieldStates() const final;
+
+    //! sum weighted mass/colorfield (self contribution)
+    virtual void SumWeightedMassAndColorfieldSelfContribution() const final;
+
+    //! sum weighted mass/colorfield (particle contribution)
+    virtual void SumWeightedMassAndColorfieldParticleContribution() const final;
+
     //! evaluate continuity equation
     virtual void ContinuityEquation() const final;
+
+    //! clear density dot state
+    virtual void ClearDensityDotState() const final;
+
+    //! continuity equation (particle contribution)
+    virtual void ContinuityEquationParticleContribution() const final;
 
     //! set density sum to density field
     virtual void SetDensitySum() const final;
@@ -141,15 +156,15 @@ namespace PARTICLEINTERACTION
     explicit SPHDensitySummation(const Teuchos::ParameterList& params);
 
     //! virtual destructor
-    virtual ~SPHDensitySummation(){};
+    ~SPHDensitySummation(){};
 
     //! insert density evaluation dependent states
-    virtual void InsertParticleStatesOfParticleTypes(
+    void InsertParticleStatesOfParticleTypes(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) const override;
 
     //! compute density field
-    virtual void ComputeDensity() const override;
+    void ComputeDensity() const override;
   };
 
   class SPHDensityIntegration : public SPHDensityBase
@@ -159,15 +174,15 @@ namespace PARTICLEINTERACTION
     explicit SPHDensityIntegration(const Teuchos::ParameterList& params);
 
     //! virtual destructor
-    virtual ~SPHDensityIntegration(){};
+    ~SPHDensityIntegration(){};
 
     //! insert density evaluation dependent states
-    virtual void InsertParticleStatesOfParticleTypes(
+    void InsertParticleStatesOfParticleTypes(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) const override;
 
     //! compute density field
-    virtual void ComputeDensity() const override;
+    void ComputeDensity() const override;
   };
 
   class SPHDensityPredictCorrect : public SPHDensityBase
@@ -177,13 +192,13 @@ namespace PARTICLEINTERACTION
     explicit SPHDensityPredictCorrect(const Teuchos::ParameterList& params);
 
     //! virtual destructor
-    virtual ~SPHDensityPredictCorrect();
+    ~SPHDensityPredictCorrect();
 
     //! init density handler
-    virtual void Init();
+    void Init();
 
     //! setup density handler
-    virtual void Setup(
+    void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
         const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
@@ -191,25 +206,25 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
 
     //! write restart of density handler
-    virtual void WriteRestart(const int step, const double time) const;
+    void WriteRestart(const int step, const double time) const;
 
     //! read restart of density handler
-    virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
+    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
     //! insert density evaluation dependent states
-    virtual void InsertParticleStatesOfParticleTypes(
+    void InsertParticleStatesOfParticleTypes(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) const override;
 
     //! compute density field
-    virtual void ComputeDensity() const override;
+    void ComputeDensity() const override;
 
    private:
     //! init density correction handler
-    virtual void InitDensityCorrectionHandler();
+    void InitDensityCorrectionHandler();
 
     //! correct density of interior/surface particles
-    virtual void CorrectDensity() const;
+    void CorrectDensity() const;
 
     //! density correction handler
     std::unique_ptr<PARTICLEINTERACTION::SPHDensityCorrectionBase> densitycorrection_;
