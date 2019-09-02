@@ -70,7 +70,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
     double speccoeff_ji = 0.0;
 
     momentumformulation_->SpecificCoefficient(
-        &dens_i, &dens_j, &mass_i, &mass_j, dWdrij, dWdrji, speccoeff_ij, speccoeff_ji);
+        &dens_i, &dens_j, &mass_i, &mass_j, dWdrij, dWdrji, &speccoeff_ij, &speccoeff_ji);
 
     // compute reference solution
     const double speccoeff_ij_ref = dWdrij * mass_j;
@@ -875,7 +875,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTes
     double speccoeff_ji = 0.0;
 
     momentumformulation_->SpecificCoefficient(
-        &dens_i, &dens_j, &mass_i, &mass_j, dWdrij, dWdrji, speccoeff_ij, speccoeff_ji);
+        &dens_i, &dens_j, &mass_i, &mass_j, dWdrij, dWdrji, &speccoeff_ij, &speccoeff_ji);
 
     // compute reference solution
     const double fac = (std::pow((mass_i / dens_i), 2) + std::pow((mass_j / dens_j), 2));
