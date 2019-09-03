@@ -35,6 +35,7 @@ PHASE_TO_MATERIAL_ID            phase1 1 phase2 2 boundaryphase 3
 --------------------------------------------------------PARTICLE DYNAMIC/SPH
 KERNEL                          QuinticSpline
 KERNEL_SPACE_DIM                Kernel1D
+INITIALPARTICLESPACING          0.004
 EQUATIONOFSTATE                 GenTait
 MOMENTUMFORMULATION             AdamiMomentumFormulation
 DENSITYEVALUATION               DensityIntegration
@@ -45,7 +46,6 @@ TEMPERATUREEVALUATION           TemperatureIntegration
 HEATSOURCETYPE                  SurfaceHeatSource
 HEATSOURCE_FUNCT                1
 HEATSOURCE_DIRECTION            0.0 0.0 0.0
-CONSISTENTPROBLEMVOLUME         0.204
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 0.04*a*exp(-x^2)
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 1.0 10.0 DESCRIPTION t 1.0

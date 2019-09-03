@@ -37,6 +37,7 @@ TEMPERATURE_BOUNDARY_CONDITION  boundaryphase 1
 --------------------------------------------------------PARTICLE DYNAMIC/SPH
 KERNEL                          QuinticSpline
 KERNEL_SPACE_DIM                Kernel1D
+INITIALPARTICLESPACING          0.004
 EQUATIONOFSTATE                 GenTait
 MOMENTUMFORMULATION             AdamiMomentumFormulation
 DENSITYEVALUATION               DensityIntegration
@@ -44,7 +45,6 @@ DENSITYCORRECTION               NoCorrection
 BOUNDARYPARTICLEFORMULATION     AdamiBoundaryFormulation
 BOUNDARYPARTICLEINTERACTION     NoSlipBoundaryParticle
 TEMPERATUREEVALUATION           TemperatureIntegration
-CONSISTENTPROBLEMVOLUME         0.1
 PHASECHANGETYPE                 TwoWayScalarPhaseChange
 PHASECHANGEDEFINITION           rigidphase phase1 temperature 4.0
 ----------------------------------------------------------------------FUNCT1

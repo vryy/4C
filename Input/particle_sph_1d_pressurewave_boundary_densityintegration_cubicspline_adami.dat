@@ -37,13 +37,13 @@ INITIAL_VELOCITY_FIELD          phase1 1
 --------------------------------------------------------PARTICLE DYNAMIC/SPH
 KERNEL                          CubicSpline
 KERNEL_SPACE_DIM                Kernel1D
+INITIALPARTICLESPACING          0.004
 EQUATIONOFSTATE                 GenTait
 MOMENTUMFORMULATION             AdamiMomentumFormulation
 DENSITYEVALUATION               DensityIntegration
 DENSITYCORRECTION               NoCorrection
 BOUNDARYPARTICLEFORMULATION     AdamiBoundaryFormulation
 BOUNDARYPARTICLEINTERACTION     NoSlipBoundaryParticle
-CONSISTENTPROBLEMVOLUME         0.204
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 0.0005*(1+cos(x*pi/0.014))*(heaviside(x+0.014)-heaviside(x-0.014))
 COMPONENT 1 FUNCTION 0.0

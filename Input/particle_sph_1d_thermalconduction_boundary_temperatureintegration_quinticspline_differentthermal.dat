@@ -37,6 +37,7 @@ TEMPERATURE_BOUNDARY_CONDITION  boundaryphase 1
 --------------------------------------------------------PARTICLE DYNAMIC/SPH
 KERNEL                          QuinticSpline
 KERNEL_SPACE_DIM                Kernel1D
+INITIALPARTICLESPACING          0.004
 EQUATIONOFSTATE                 GenTait
 MOMENTUMFORMULATION             AdamiMomentumFormulation
 DENSITYEVALUATION               DensityIntegration
@@ -45,7 +46,6 @@ BOUNDARYPARTICLEFORMULATION     AdamiBoundaryFormulation
 BOUNDARYPARTICLEINTERACTION     NoSlipBoundaryParticle
 TEMPERATUREEVALUATION           TemperatureIntegration
 TEMPERATUREGRADIENT             yes
-CONSISTENTPROBLEMVOLUME         0.204
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 10.0*(heaviside(x)-heaviside(-x))*a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 1.0 10.0 DESCRIPTION t 1.0
