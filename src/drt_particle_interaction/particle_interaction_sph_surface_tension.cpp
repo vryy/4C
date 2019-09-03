@@ -604,9 +604,8 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallDis
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallCorrectionFactor()
 {
-  // get kernel space dimension
-  int kernelspacedim = 0;
-  kernel_->KernelSpaceDimension(kernelspacedim);
+  // get initial particle spacing
+  const double initialparticlespacing = params_sph_.get<double>("INITIALPARTICLESPACING");
 
   // iterate over particle types
   for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
@@ -621,10 +620,6 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallCor
       PARTICLEENGINE::ParticleContainer* container_i =
           particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
 
-      // get material for particle types
-      const MAT::PAR::ParticleMaterialBase* material_i =
-          particlematerial_->GetPtrToParticleMatParameter(type_i);
-
       // get number of particles stored in container
       const int particlestored = container_i->ParticlesStored();
 
@@ -635,20 +630,15 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallCor
       for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
       {
         // declare pointer variables for particle i and j
-        const double *rad_i, *mass_i, *walldistance_i;
+        const double *rad_i, *walldistance_i;
 
         // get pointer to particle states
         rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-        mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
         walldistance_i =
             container_i->GetPtrToParticleState(PARTICLEENGINE::WallDistance, particle_i);
 
-        // initial particle spacing
-        const double initspacing_i =
-            std::pow((mass_i[0] / material_i->initDensity_), (1.0 / kernelspacedim));
-
         // corrected wall distance and maximum correction distance
-        const double dw_i = walldistance_i[0] - initspacing_i;
+        const double dw_i = walldistance_i[0] - initialparticlespacing;
         const double dmax_i = kernel_->SmoothingLength(rad_i[0]);
 
         // determine correction factor

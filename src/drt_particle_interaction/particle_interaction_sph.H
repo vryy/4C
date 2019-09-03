@@ -123,9 +123,6 @@ namespace PARTICLEINTERACTION
     //! init phase change handler
     virtual void InitPhaseChangeHandler();
 
-    //! compute initial consistent particle volume
-    virtual double ComputeConsistentParticleVolume() const;
-
     //! smoothed particle hydrodynamics specific parameter list
     const Teuchos::ParameterList& params_sph_;
 
