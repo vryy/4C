@@ -2955,15 +2955,8 @@ target_link_libraries (${baciname} ${BACI_LIBRARIES} ${LIBRARIES} drt_error)
 
 set(FILTER_LIBRARIES
   post_drt_common
-  drt_lib_register
-  ${ELEMENT_LIBRARIES}
-  ${SUPPORT_LIBRARIES}
-  drt_mat
-  drt_lib_utils
-  libsolver
-  linalg                  #linalg requires symbols from drt_lib which are in the SUPPORT_LIBRARIES
   filter_common
-  drt_comm
+  -Wl,--start-group ${BACI_LIBRARIES} -Wl,--end-group
   ${LIBRARIES}
   drt_error)
 
@@ -2997,8 +2990,8 @@ include(CTest)
 
 add_executable(cut_test EXCLUDE_FROM_ALL ${OBJS_CUT_TEST})
 target_link_libraries(cut_test drt_lib_cut ${QHULL_LIBRARIES} ${LAPACK_LIBRARIES}
-    -Wl,--start-group ${FILTER_LIBRARIES} -Wl,--end-group
-)
+ -Wl,--start-group ${BACI_LIBRARIES} -Wl,--end-group ${LIBRARIES})
+
 add_test(NAME run_cut_test COMMAND ${MPI_RUN} $<TARGET_FILE:cut_test>)
 
 include (TestingFramework.cmake)
