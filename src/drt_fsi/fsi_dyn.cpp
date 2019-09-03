@@ -131,7 +131,6 @@ void fluid_ale_drt()
           "This it not allowed since it causes problems with Dirichlet BCs. "
           "Use either the ALE cloning functionality or ensure non-overlapping node numbering!");
   }
-
   Teuchos::RCP<FSI::FluidAleAlgorithm> fluid = Teuchos::rcp(new FSI::FluidAleAlgorithm(comm));
   const int restart = problem->Restart();
   if (restart)

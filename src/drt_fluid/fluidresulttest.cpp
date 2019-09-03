@@ -111,6 +111,12 @@ void FLD::FluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, 
         result = (*myerror_)[2];
       else if (position == "divu")
         result = (*mydivu_);
+      else if (position == "L2errmix")
+        result = (*myerror_)[0];
+      else if (position == "L2errden")
+        result = (*myerror_)[1];
+      else if (position == "L2errmom")
+        result = (*myerror_)[2];
       else
         dserror("Quantity '%s' not supported in fluid testing", position.c_str());
 

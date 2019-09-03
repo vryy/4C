@@ -42,7 +42,7 @@ void ADAPTER::FluidFPSI::Init()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::FluidFPSI::SetupInterface()
+void ADAPTER::FluidFPSI::SetupInterface(const int nds_master)
 {
   interface_->Setup(*dis_, false, true);  // create overlapping maps for fpsi problem
 }

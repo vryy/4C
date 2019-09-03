@@ -255,7 +255,7 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::FluidFluidFSI::ShapeDerivat
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::FluidFluidFSI::SetupInterface()
+void ADAPTER::FluidFluidFSI::SetupInterface(const int nds_master)
 {
   if (mergedfluidinterface_ == Teuchos::null)
   {

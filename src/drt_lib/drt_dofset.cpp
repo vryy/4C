@@ -97,6 +97,23 @@ void DRT::DofSet::Print(std::ostream& os) const
     }
     numdfcolnodes_->Comm().Barrier();
   }
+  for (int proc = 0; proc < numdfcolfaces_->Comm().NumProc(); ++proc)
+  {
+    if (proc == numdfcolfaces_->Comm().MyPID())
+    {
+      if (numdfcolfaces_->MyLength()) os << "-------------------------- Proc " << proc << " :\n";
+      for (int i = 0; i < numdfcolfaces_->MyLength(); ++i)
+      {
+        int numdf = (*numdfcolfaces_)[i];
+        int idx = (*idxcolfaces_)[i];
+        os << i << ": ";
+        for (int j = 0; j < numdf; ++j) os << (idx + j) << " ";
+        os << "\n";
+      }
+      os << std::endl;
+    }
+    numdfcolfaces_->Comm().Barrier();
+  }
 }
 
 
@@ -162,6 +179,9 @@ int DRT::DofSet::AssignDegreesOfFreedom(
   // Check if we have a face discretization which supports degrees of freedom on faces
   Teuchos::RCP<const DiscretizationHDG> facedis =
       Teuchos::rcp_dynamic_cast<const DiscretizationHDG>(Teuchos::rcp(&dis, false));
+
+  // set count to 0 in case of dofset 2 in HDG discretizations
+  if (facedis != Teuchos::null && dspos_ == 2) count = 0;
 
   // Now this is tricky. We have to care for nodes, faces, and elements, both
   // row and column maps. In general both nodes, faces, and elements can have

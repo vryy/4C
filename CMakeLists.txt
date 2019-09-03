@@ -1498,6 +1498,7 @@ set(OBJS_DRT_FLUID
   src/drt_fluid/fluidresulttest.cpp
   src/drt_fluid/fluid_timint.cpp
   src/drt_fluid/fluid_timint_hdg.cpp
+  src/drt_fluid/fluid_timint_hdg_weak_comp.cpp
   src/drt_fluid/fluid_timint_stat_hdg.cpp
   src/drt_fluid/fluid_xwall.cpp
 )
@@ -2230,7 +2231,9 @@ set(OBJS_DRT_FLUID_ELE_LIB
   src/drt_fluid_ele/fluid_ele_poro.cpp
   src/drt_fluid_ele/fluid_ele_poro_evaluate.cpp
   src/drt_fluid_ele/fluid_ele_hdg.cpp
+  src/drt_fluid_ele/fluid_ele_hdg_weak_comp.cpp
   src/drt_fluid_ele/fluid_ele_calc_hdg.cpp
+  src/drt_fluid_ele/fluid_ele_calc_hdg_weak_comp.cpp
   src/drt_opti/topopt_fluidAdjoint3_boundary.cpp
   src/drt_opti/topopt_fluidAdjoint3_impl.cpp
   src/drt_opti/topopt_fluidAdjoint3_impl_parameter.cpp

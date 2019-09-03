@@ -67,8 +67,18 @@ void ADAPTER::FluidFSI::Init()
   if (fluidimpl_ == Teuchos::null)
     dserror("Failed to cast ADAPTER::Fluid to FLD::FluidImplicitTimeInt.");
 
+  // default dofset for coupling
+  int nds_master = 0;
+
+  // set nds_master = 2 in case of HDG discretization
+  // (nds = 0 used for trace values, nds = 1 used for interior values)
+  if (DRT::Problem::Instance()->SpatialApproximationType() == INPAR::PROBLEMTYPE::shapefunction_hdg)
+  {
+    nds_master = 2;
+  }
+
   // create fluid map extractor
-  SetupInterface();
+  SetupInterface(nds_master);
 
   fluidimpl_->SetSurfaceSplitter(&(*interface_));
 
@@ -150,9 +160,13 @@ double ADAPTER::FluidFSI::TimeScaling() const
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidFSI::Update()
 {
-  Teuchos::RCP<Epetra_Vector> interfaceforcem = Interface()->ExtractFSICondVector(TrueResidual());
+  if (DRT::Problem::Instance()->SpatialApproximationType() !=
+      INPAR::PROBLEMTYPE::shapefunction_hdg)  // TODO als fix this!
+  {
+    Teuchos::RCP<Epetra_Vector> interfaceforcem = Interface()->ExtractFSICondVector(TrueResidual());
 
-  interfaceforcen_ = fluidimpl_->ExtrapolateEndPoint(interfaceforcen_, interfaceforcem);
+    interfaceforcen_ = fluidimpl_->ExtrapolateEndPoint(interfaceforcen_, interfaceforcem);
+  }
 
   FluidWrapper::Update();
 }
@@ -252,9 +266,10 @@ void ADAPTER::FluidFSI::ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> grid
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::FluidFSI::SetMeshMap(Teuchos::RCP<const Epetra_Map> mm)
+void ADAPTER::FluidFSI::SetMeshMap(Teuchos::RCP<const Epetra_Map> mm, const int nds_master)
 {
-  meshmap_->Setup(*dis_->DofRowMap(), mm, LINALG::SplitMap(*dis_->DofRowMap(), *mm));
+  meshmap_->Setup(
+      *dis_->DofRowMap(nds_master), mm, LINALG::SplitMap(*dis_->DofRowMap(nds_master), *mm));
 }
 
 /*----------------------------------------------------------------------*/
@@ -779,7 +794,10 @@ const std::string ADAPTER::FluidFSI::GetTimAdaMethodName() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::FluidFSI::SetupInterface() { interface_->Setup(*dis_, false); }
+void ADAPTER::FluidFSI::SetupInterface(const int nds_master)
+{
+  interface_->Setup(*dis_, false, false, nds_master);
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

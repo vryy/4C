@@ -28,7 +28,7 @@ namespace MAT
     {
      public:
       /// standard constructor
-    	WeaklyCompressibleFluid(Teuchos::RCP<MAT::PAR::Material> matdata);
+      WeaklyCompressibleFluid(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~WeaklyCompressibleFluid() { ; }
@@ -75,7 +75,7 @@ namespace MAT
   {
    public:
     /// construct empty material object
-	  WeaklyCompressibleFluid();
+    WeaklyCompressibleFluid();
 
     /// construct the material object given material parameters
     explicit WeaklyCompressibleFluid(MAT::PAR::WeaklyCompressibleFluid* params);
@@ -152,7 +152,7 @@ namespace MAT
     double RefPressure() const { return params_->refpressure_; }
 
     /// return compressibility coefficient
-    double CoeffDensity() const { return params_->comprcoeff_; }
+    double ComprCoeff() const { return params_->comprcoeff_; }
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }

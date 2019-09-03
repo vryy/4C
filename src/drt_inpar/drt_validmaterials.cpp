@@ -125,8 +125,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   {
     Teuchos::RCP<MaterialDefinition> m =
         Teuchos::rcp(new MaterialDefinition("MAT_fluid_weakly_compressible",
-            "Weakly compressible fluid",
-            INPAR::MAT::m_fluid_weakly_compressible));
+            "Weakly compressible fluid", INPAR::MAT::m_fluid_weakly_compressible));
 
     AddNamedReal(m, "VISCOSITY", "viscosity");
     AddNamedReal(m, "REFDENSITY", "reference density");

@@ -13,6 +13,10 @@
 #include "../drt_geometry/position_array.H"
 #include "../drt_fluid_ele/fluid_ele.H"
 
+#include "../drt_fluid_ele/fluid_ele_calc.H"
+#include "../drt_fluid_ele/fluid_ele_hdg_weak_comp.H"
+#include "../drt_fluid_ele/fluid_ele_calc_hdg_weak_comp.H"
+
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                              kronbichler 05/14 |
@@ -35,6 +39,7 @@ DRT::UTILS::ShapeValues<distype>::ShapeValues(
   xyzreal.Shape(nsd_, nqpoints_);
 
   funct.Shape(nen_, nqpoints_);
+  derxy.Shape(nen_ * nsd_, nqpoints_);
 
   shfunct.Shape(ndofs_, nqpoints_);
   shfunctAvg.Resize(ndofs_);
@@ -74,10 +79,20 @@ DRT::UTILS::ShapeValues<distype>::ShapeValues(
  |  Evaluate element-dependent shape data (public)    kronbichler 05/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::UTILS::ShapeValues<distype>::Evaluate(const DRT::Element& ele)
+void DRT::UTILS::ShapeValues<distype>::Evaluate(
+    const DRT::Element& ele, const std::vector<double> aleDis)
 {
   dsassert(ele.Shape() == distype, "Internal error");
   GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(&ele, xyze);
+
+  // update nodal coordinates
+  if (const DRT::ELEMENTS::FluidHDGWeakComp* hdgwkele =
+          dynamic_cast<const DRT::ELEMENTS::FluidHDGWeakComp*>(&ele))
+  {
+    if (hdgwkele->IsAle() && !(aleDis.empty()))
+      for (unsigned int n = 0; n < nen_; ++n)
+        for (unsigned int d = 0; d < nsd_; ++d) xyze(d, n) += aleDis[n * nsd_ + d];
+  }
 
   for (unsigned int i = 0; i < ndofs_; ++i) shfunctAvg(i) = 0.;
   double faceVol = 0.;
@@ -95,6 +110,14 @@ void DRT::UTILS::ShapeValues<distype>::Evaluate(const DRT::Element& ele)
     LINALG::Matrix<nen_, 1> myfunct(funct.A() + q * nen_, true);
     LINALG::Matrix<nsd_, 1> mypoint(xyzreal.A() + q * nsd_, true);
     mypoint.MultiplyNN(xyze, myfunct);
+
+    // compute global first derivates
+    for (unsigned int n = 0; n < nen_; ++n)
+      for (unsigned int d = 0; d < nsd_; ++d)
+      {
+        derxy(n * nsd_ + d, q) = xji(d, 0) * deriv(0, n);
+        for (unsigned int e = 1; e < nsd_; ++e) derxy(n * nsd_ + d, q) += xji(d, e) * deriv(e, n);
+      }
 
     // transform shape functions
     for (unsigned int i = 0; i < ndofs_; ++i)
@@ -179,7 +202,7 @@ DRT::UTILS::ShapeValuesFace<distype>::ShapeValuesFace(ShapeValuesFaceParams para
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace(
-    const DRT::Element& ele, const unsigned int face)
+    const DRT::Element& ele, const unsigned int face, const std::vector<double> aleDis)
 {
   const DRT::Element::DiscretizationType facedis =
       DRT::UTILS::DisTypeToFaceShapeType<distype>::shape;
@@ -189,6 +212,16 @@ void DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace(
 
   LINALG::Matrix<nsd_, nen_> xyzeElement;
   GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(&ele, xyzeElement);
+
+  // update nodal coordinates
+  if (const DRT::ELEMENTS::FluidHDGWeakComp* hdgwkele =
+          dynamic_cast<const DRT::ELEMENTS::FluidHDGWeakComp*>(&ele))
+  {
+    if (hdgwkele->IsAle() && !(aleDis.empty()))
+      for (unsigned int n = 0; n < nen_; ++n)
+        for (unsigned int d = 0; d < nsd_; ++d) xyzeElement(d, n) += aleDis[n * nsd_ + d];
+  }
+
   for (unsigned int i = 0; i < nfn_; ++i)
     for (unsigned int d = 0; d < nsd_; ++d) xyze(d, i) = xyzeElement(d, faceNodeOrder[face][i]);
 
