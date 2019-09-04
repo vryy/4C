@@ -137,6 +137,8 @@ namespace INPAR
       m_ion,                       ///< properties of an ion species in an electrolyte solution
       m_lubrication,               ///< lubrication material
       m_lubrication_law_constant,  ///< lubrication material with constant viscosity
+      m_lubrication_law_barus,     ///< lubrication material with Barus viscosity
+      m_lubrication_law_roeland,   ///< lubrication material with Roeland viscosity
       m_matlist,            ///< collection of single materials (used for scalar transport problems)
       m_matlist_reactions,  ///< collection of single materials (used for scalar transport problems)
                             ///< and collection of reactions (used for advanced reaction elements)

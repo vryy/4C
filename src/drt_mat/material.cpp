@@ -309,6 +309,22 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
           static_cast<MAT::PAR::LubricationLawConstant*>(curmat->Parameter());
       return params->CreateMaterial();
     }
+    case INPAR::MAT::m_lubrication_law_barus:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::LubricationLawBarus(curmat));
+      MAT::PAR::LubricationLawBarus* params =
+          static_cast<MAT::PAR::LubricationLawBarus*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_lubrication_law_roeland:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::LubricationLawRoeland(curmat));
+      MAT::PAR::LubricationLawRoeland* params =
+          static_cast<MAT::PAR::LubricationLawRoeland*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
     case INPAR::MAT::m_scatra:
     {
       if (curmat->Parameter() == NULL) curmat->SetParameter(new MAT::PAR::ScatraMat(curmat));

@@ -366,6 +366,8 @@ void LubricationFilter::WriteAllResults(PostField* field)
   writer_->WriteResult("no_gap_DBC", "no_gap_DBC", dofbased, 1);
   writer_->WriteResult("dispnp", "displacement", nodebased, 3);
 
+  writer_->WriteResult("viscosity", "viscosity", dofbased, 1);
+
   // write element results (e.g. element owner)
   WriteElementResults(field);
 }

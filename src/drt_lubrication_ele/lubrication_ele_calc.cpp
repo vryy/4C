@@ -361,6 +361,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Sysmat(
 
   // fluid viscosity
   double visc(0.0);
+  double dvisc(0.0);
 
   //----------------------------------------------------------------------
   // integration loop for one element
@@ -391,7 +392,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Sysmat(
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
-    GetMaterialParams(ele, densn, densnp, densam, visc, iquad);
+    GetMaterialParams(ele, densn, densnp, densam, visc, dvisc, iquad);
 
     // integration factors
     const double timefacfac = fac;  // works only for stationary problems!
@@ -437,6 +438,10 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Sysmat(
 
       CalcMatPsl(emat, timefacfac, visc, heightint);
 
+      // 1.2) calculation of Poiseuille-Pressure-dependent-viscosity contribution of element matrix
+
+      CalcMatPslVis(emat, timefacfac, visc, heightint, dvisc);
+
       // 2) rhs matrix
       // 2.1) calculation of Poiseuille contribution of rhs matrix
 
@@ -471,6 +476,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::MatrixforEHLMon(
 
   // fluid viscosity
   double visc(0.0);
+  double dvisc(0.0);
 
   //----------------------------------------------------------------------
   // integration loop for one element
@@ -497,7 +503,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::MatrixforEHLMon(
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
-    GetMaterialParams(ele, densn, densnp, densam, visc, iquad);
+    GetMaterialParams(ele, densn, densnp, densam, visc, dvisc, iquad);
 
     const LINALG::Matrix<nsd_, 1>& gradpre = lubricationvarmanager_->GradPre();
     const double roughness = lubricationpara_->RoughnessDeviation();
@@ -695,13 +701,14 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::GetMaterialParams(
     double& densnp,           //!< density at t_(n+1) or t_(n+alpha_F)
     double& densam,           //!< density at t_(n+alpha_M)
     double& visc,             //!< fluid viscosity
+    double& dvisc,            //!< derivative of the fluid viscosity
     const int iquad           //!< id of current gauss point
 )
 {
   // get the material
   Teuchos::RCP<MAT::Material> material = ele->Material();
 
-  Materials(material, densn, densnp, densam, visc, iquad);
+  Materials(material, densn, densnp, densam, visc, dvisc, iquad);
 
   return;
 }  // LubricationEleCalc::GetMaterialParams
@@ -716,6 +723,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Materials(
     double& densnp,                              //!< density at t_(n+1) or t_(n+alpha_F)
     double& densam,                              //!< density at t_(n+alpha_M)
     double& visc,                                //!< fluid viscosity
+    double& dvisc,                               //!< derivative of the fluid viscosity
     const int iquad                              //!< id of current gauss point
 
 )
@@ -723,7 +731,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Materials(
   switch (material->MaterialType())
   {
     case INPAR::MAT::m_lubrication:
-      MatLubrication(material, densn, densnp, densam, visc, iquad);
+      MatLubrication(material, densn, densnp, densam, visc, dvisc, iquad);
       break;
     default:
       dserror("Material type %i is not supported", material->MaterialType());
@@ -742,6 +750,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::MatLubrication(
     double& densnp,                              //!< density at t_(n+1) or t_(n+alpha_F)
     double& densam,                              //!< density at t_(n+alpha_M)
     double& visc,                                //!< fluid viscosity
+    double& dvisc,                               //!< derivative of the fluid viscosity
     const int iquad                              //!< id of current gauss point (default = -1)
 )
 {
@@ -749,14 +758,16 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::MatLubrication(
       Teuchos::rcp_dynamic_cast<MAT::LubricationMat>(material);
   // get constant viscosity
 
-  double pressure = 0.0;
+  // double pressure = 0.0;
   //  const double pres = my::eprenp_.Dot(my::funct_);
-  //  const double pre = lubricationvarmanager_->Prenp();
+  const double pre = lubricationvarmanager_->Prenp();
   //  const double p = eprenp_.Dot(funct_);
 
-  visc = actmat->ComputeViscosity(pressure);
+  visc = actmat->ComputeViscosity(pre);
+  dvisc = actmat->ComputeViscosityDeriv(pre, visc);
 
-  viscmanager_->SetIsotropicVisc(visc);
+
+  // viscmanager_->SetIsotropicVisc(visc);
   return;
 }  // LubricationEleCalc<distype>::MatLubrication
 
@@ -856,6 +867,34 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcMatPsl(Epetra_Seri
   return;
 }
 
+/*-----------------------------------------------------------------*
+ | contribution of pressure dependent viscosity                    |
+ *-----------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcMatPslVis(
+    Epetra_SerialDenseMatrix& emat, const double timefacfac, const double viscosity,
+    const double height, const double dviscosity_dp)
+{
+  // Poiseuille term (pressure dependent viscosity)
+
+  const double fac_pslvisc =
+      timefacfac * (1 / (12 * viscosity * viscosity)) * height * height * height * dviscosity_dp;
+  const LINALG::Matrix<nsd_, 1>& gradpre = lubricationvarmanager_->GradPre();
+
+  for (int vi = 0; vi < nen_; ++vi)
+  {
+    double laplawf(0.0);
+    GetLaplacianWeakFormRHS(laplawf, gradpre, vi);
+
+    for (int ui = 0; ui < nen_; ++ui)
+    {
+      emat(vi, ui) += fac_pslvisc * laplawf * funct_(ui);
+    }
+  }
+  return;
+}
+
+
 /*------------------------------------------------------------------- *
  |  calculation of Poiseuille element matrix           Faraji  02/19  |
  *--------------------------------------------------------------------*/
@@ -880,6 +919,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcMatPsl(Epetra_Seri
   }
   return;
 }
+
 
 /*------------------------------------------------------------------- *
  |  calculation of Poiseuille rhs matrix
