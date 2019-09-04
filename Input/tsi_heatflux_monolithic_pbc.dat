@@ -242,7 +242,8 @@ SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 273.0
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION (2.0)*z+4 // some linear function in z-direction
+//COMPONENT 0 FUNCTION (2.0)*z+4 // some linear function in z-direction
+COMPONENT 0 FUNCTION (2.0)*(z-4)+4 // some linear function in z-direction
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 
@@ -268,7 +269,7 @@ E 4 - 1 Master PLANE xy LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
 ---------------------------------------DESIGN SURF THERMO NEUMANN CONDITIONS
 DSURF  1
 // THR heatflux
-E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 2 0 0 0 0 0 Live Mid
+E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 2
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE 15 DLINE 1

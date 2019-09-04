@@ -600,28 +600,16 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(DRT::Element* el
     // output of function: fac_ =  detJ * w(gp)
     EvalShapeFuncAndIntFac(intpoints, iquad, ele->Id());
 
-    // multiply integration factor with the timecurve factor
-    // fac_ = fac_ * curvefac
-    //    fac_ *= curvefac;
-
-
     // factor given by spatial function
     double functfac = 1.0;
     // determine global coordinates of current Gauss point
-    double coordgp[3];  // coordinate has always to be given in 3D!
-    for (int i = 0; i < 3; i++) coordgp[i] = 0.0;
 
-    for (int i = 0; i < nsd_; i++)
-    {
-      for (int j = 0; j < nen_; j++)
-      {
-        // node coordinate * shape function
-        coordgp[i] += xyze_(i, j) * funct_(j);
-      }
-    }
+    const int nsd_vol_ele = nsd_ + 1;
+    LINALG::Matrix<nsd_vol_ele, 1> coordgp;  // coordinate has always to be given in 3D!
+    coordgp.MultiplyNN(xyze_, funct_);
 
     int functnum = -1;
-    const double* coordgpref = &coordgp[0];  // needed for function evaluation
+    const double* coordgpref = &coordgp(0);
 
     for (int dof = 0; dof < numdofpernode_; dof++)
     {
