@@ -379,7 +379,7 @@ void ADAPTER::FBIConstraintenforcer::ComputeCurrentPositions(Teuchos::RCP<DRT::D
 {
   positions->clear();
   std::vector<int> src_dofs(
-      6);  // todo this does not work for all possible elements, does it? Variable size?
+      9);  // todo this does not work for all possible elements, does it? Variable size?
   std::vector<double> mydisp(3, 0.0);
   for (int lid = 0; lid < dis->NumMyColNodes(); ++lid)
   {
@@ -401,19 +401,16 @@ void ADAPTER::FBIConstraintenforcer::ExtractCurrentElementDofs(
     std::vector<DRT::Element const*> elements, Teuchos::RCP<std::vector<double>>& beam_dofvec,
     Teuchos::RCP<std::vector<double>>& fluid_dofvec) const
 {
-  std::vector<int> tmp_dofs(6);
-  std::vector<int> src_dofs(3);
-  std::vector<double> myvel(3, 0.0);
   std::vector<double> vel_tmp;
 
   // extract the current position of the beam element from the displacement vector
   BEAMINTERACTION::UTILS::ExtractPosDofVecAbsoluteValues(*(structure_->Discretization()),
       elements[0], column_structure_displacement_,
       *beam_dofvec);  // todo check time step todo get "interface" displacements only for beam
-                      // elements
+                      // elements todo Only get centerline velocities?!
   ;
   // extract veclocity of the beam element
-  BEAMINTERACTION::UTILS::GetCurrentElementDis(
+  BEAMINTERACTION::UTILS::ExtractPosDofVecValues(
       *(structure_->Discretization()), elements[0], column_structure_velocity_, vel_tmp);
 
   for (double val : vel_tmp) beam_dofvec->push_back(val);
