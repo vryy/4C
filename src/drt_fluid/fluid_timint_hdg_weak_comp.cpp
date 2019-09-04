@@ -1,14 +1,12 @@
-/*-----------------------------------------------------------*/
-/*!
-
+/*----------------------------------------------------------------------------*/
+/*! \file
 \brief Basic HDG weakly compressible time-integration scheme
-
-\maintainer Andrea La Spina
 
 \level 2
 
+\maintainer Andrea La Spina
 */
-/*-----------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 
 #include "fluid_timint_hdg_weak_comp.H"
 #include "../drt_lib/drt_discret_hdg.H"

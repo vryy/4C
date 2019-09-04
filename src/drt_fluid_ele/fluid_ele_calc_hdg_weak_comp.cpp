@@ -1,14 +1,12 @@
-/*----------------------------------------------------------------------*/
-/*!
-
-\brief routines for calculation of HDG weakly compressible fluid element
-
-\maintainer Andrea La Spina
+/*----------------------------------------------------------------------------*/
+/*! \file
+\brief Routines for calculation of HDG weakly compressible fluid element
 
 \level 2
 
+\maintainer Andrea La Spina
 */
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 
 #include "fluid_ele_calc_hdg_weak_comp.H"
 #include "fluid_ele_calc.H"
