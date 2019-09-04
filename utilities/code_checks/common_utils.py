@@ -1,4 +1,4 @@
-import subprocess, os, sys
+import subprocess, os, sys, re
 
 #UTILS
 
@@ -20,6 +20,19 @@ def path_split_all(path):
     folders.pop(0)
   return folders
 
+def cstyle_comment_remover(text):
+    def replacer(match):
+        s = match.group(0)
+        if s.startswith('/'):
+            return ' ' # note: a space and not an empty string
+        else:
+            return s
+    pattern = re.compile(
+        r'//.*?$|/\*.*?\*/|\'(?:\\.|[^\\\'])*\'|"(?:\\.|[^\\"])*"',
+        re.DOTALL | re.MULTILINE
+    )
+    return re.sub(pattern, replacer, text)
+
 def is_unittest_file(fname):
   parts = path_split_all(fname)
 
@@ -29,8 +42,17 @@ def is_unittest_file(fname):
     return False
   if parts[1] != 'src':
     return False
-    
-  return os.path.splitext(parts[-1])[1] in ".h .H .hpp".split()
+  if not os.path.splitext(parts[-1])[1] in ".h .H .hpp".split():
+    return False
+  
+  # open file and check, whether it contains a CxxTest::TestSuite
+  with open(fname, 'r') as f:
+    content = cstyle_comment_remover('\n'.join(f.readlines()))
+    if 'CxxTest::TestSuite' not in content:
+      return False
+  
+  return True
+
 
 def is_unittest_cmakefile(fname):
   parts = path_split_all(fname)
