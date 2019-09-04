@@ -1,11 +1,11 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Structure field adapter for time step size adaptivity
 
 \level 2
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 
 */
 

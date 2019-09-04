@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Class for generation of realizations of random fields using a fourier series approximation
 
 \maintainer Jonas Nitzler

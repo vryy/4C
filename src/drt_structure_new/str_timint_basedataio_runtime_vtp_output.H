@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief input parameters related to VTP output at runtime for the structural (time) integration
 

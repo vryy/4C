@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief base class for all beam elements
 
@@ -420,9 +420,9 @@ namespace DRT
        *  \author grill
        *  \date 03/16 */
       template <unsigned int nnode, unsigned int vpernode, typename T>
-      void Calc_r(const LINALG::TMatrix<T, 3 * vpernode * nnode, 1>& disp_totlag_centerline,
-          const LINALG::TMatrix<double, 1, vpernode * nnode>& funct,
-          LINALG::TMatrix<T, 3, 1>& r) const
+      void Calc_r(const LINALG::Matrix<3 * vpernode * nnode, 1, T>& disp_totlag_centerline,
+          const LINALG::Matrix<1, vpernode * nnode, double>& funct,
+          LINALG::Matrix<3, 1, T>& r) const
       {
         DRT::UTILS::BEAM::CalcInterpolation<nnode, vpernode, 3, T>(
             disp_totlag_centerline, funct, r);
@@ -435,9 +435,9 @@ namespace DRT
        *  \author grill
        *  \date 03/16 */
       template <unsigned int nnode, unsigned int vpernode, typename T>
-      void Calc_r_xi(const LINALG::TMatrix<T, 3 * vpernode * nnode, 1>& disp_totlag_centerline,
-          const LINALG::TMatrix<double, 1, vpernode * nnode>& deriv,
-          LINALG::TMatrix<T, 3, 1>& r_xi) const
+      void Calc_r_xi(const LINALG::Matrix<3 * vpernode * nnode, 1, T>& disp_totlag_centerline,
+          const LINALG::Matrix<1, vpernode * nnode, double>& deriv,
+          LINALG::Matrix<3, 1, T>& r_xi) const
       {
         DRT::UTILS::BEAM::CalcInterpolation<nnode, vpernode, 3, T>(
             disp_totlag_centerline, deriv, r_xi);
@@ -451,9 +451,9 @@ namespace DRT
        *  \author grill
        *  \date 03/16 */
       template <unsigned int nnode, unsigned int vpernode, typename T>
-      void Calc_r_s(const LINALG::TMatrix<T, 3 * vpernode * nnode, 1>& disp_totlag_centerline,
-          const LINALG::TMatrix<double, 1, vpernode * nnode>& deriv, const double& jacobi,
-          LINALG::TMatrix<T, 3, 1>& r_s) const
+      void Calc_r_s(const LINALG::Matrix<3 * vpernode * nnode, 1, T>& disp_totlag_centerline,
+          const LINALG::Matrix<1, vpernode * nnode, double>& deriv, const double& jacobi,
+          LINALG::Matrix<3, 1, T>& r_s) const
       {
         Calc_r_xi<nnode, vpernode, T>(disp_totlag_centerline, deriv, r_s);
 
@@ -474,8 +474,7 @@ namespace DRT
        *  \author grill
        *  \date 03/16 */
       template <typename T>
-      void GetConstitutiveMatrices(
-          LINALG::TMatrix<T, 3, 3>& CN, LINALG::TMatrix<T, 3, 3>& CM) const;
+      void GetConstitutiveMatrices(LINALG::Matrix<3, 3, T>& CN, LINALG::Matrix<3, 3, T>& CM) const;
 
       /** \brief setup mass inertia tensors from material law
        *
@@ -483,7 +482,7 @@ namespace DRT
        *  \date 03/16 */
       template <typename T>
       void GetTranslationalAndRotationalMassInertiaTensor(
-          double& mass_inertia_translational, LINALG::TMatrix<T, 3, 3>& J) const;
+          double& mass_inertia_translational, LINALG::Matrix<3, 3, T>& J) const;
 
       /** \brief setup only translational mass inertia factor from material law
        *      this method is called by reduced beam formulation which don't inlcude
@@ -503,11 +502,11 @@ namespace DRT
       //! damping matrix
       template <unsigned int ndim, typename T>  // number of dimensions of embedding space
       void GetBackgroundVelocity(Teuchos::ParameterList& params,  //!< parameter list
-          const LINALG::TMatrix<T, ndim, 1>&
+          const LINALG::Matrix<ndim, 1, T>&
               evaluationpoint,  //!< point at which background velocity and its gradient has to be
                                 //!< computed
-          LINALG::TMatrix<T, ndim, 1>& velbackground,  //!< velocity of background fluid
-          LINALG::TMatrix<T, ndim, ndim>& velbackgroundgrad)
+          LINALG::Matrix<ndim, 1, T>& velbackground,  //!< velocity of background fluid
+          LINALG::Matrix<ndim, ndim, T>& velbackgroundgrad)
           const;  //!< gradient of velocity of background fluid
 
      public:

@@ -1,11 +1,11 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
  \brief utils functions related to volmortar
 
 \level 2
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
  *----------------------------------------------------------------------*/
 
 

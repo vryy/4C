@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief A class to perform integrations of Mortar matrices on the overlap
        of two MortarElements in 1D and 2D (derived version for
        augmented contact)
@@ -477,7 +477,7 @@ namespace CONTACT
       void Deriv1st_Jacobian(MORTAR::MortarElement& ele, const double* xi,
           const LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
           const LINALG::Matrix<3, 2>& stau,
-          LINALG::TMatrix<int, probdim, my::SLAVENUMNODE>& nodal_dofs,
+          LINALG::Matrix<probdim, my::SLAVENUMNODE, int>& nodal_dofs,
           LINALG::Matrix<probdim, 1>& unit_normal, double& length_n_inv,
           Deriv1stVecMap& d_non_unit_normal);
 

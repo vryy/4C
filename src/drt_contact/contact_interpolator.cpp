@@ -1,10 +1,11 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief file for mortar and contact interpolator. This is required for NTS
        algorithms
 
 \level 2
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 
 *-----------------------------------------------------------------------*/
 

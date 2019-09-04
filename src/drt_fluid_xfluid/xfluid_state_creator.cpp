@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Creates a state object for (in)stationary XFEM fluid problems
 

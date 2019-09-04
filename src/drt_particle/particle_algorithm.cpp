@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Algorithm to control particle simulations
 
@@ -997,10 +997,9 @@ void PARTICLE::Algorithm::SetupParticleWalls(
   //--------------------------------------------------------------------
 
   // declare struct objects in wall condition
-  std::map<int, std::map<int, Teuchos::RCP<DRT::Element>>>
-      structgelements;                                    // col map of structure elements
-  std::map<int, std::map<int, DRT::Node*>> dummy2;        // dummy map
-  std::map<int, std::map<int, DRT::Node*>> structgnodes;  // col map of structure nodes
+  std::map<int, Teuchos::RCP<DRT::Element>> structgelements;  // col map of structure elements
+  std::map<int, DRT::Node*> dummy2;                           // dummy map
+  std::map<int, DRT::Node*> structgnodes;                     // col map of structure nodes
 
   // initialize struct objects in wall condition
   DRT::UTILS::FindConditionObjects(
@@ -1014,15 +1013,11 @@ void PARTICLE::Algorithm::SetupParticleWalls(
 
   std::vector<int> nodeids;
   std::vector<int> eleids;
-  // loop over all particle wall nodes and elements and fill new discretization
-  for (std::map<int, std::map<int, Teuchos::RCP<DRT::Element>>>::iterator meit =
-           structgelements.begin();
-       meit != structgelements.end(); ++meit)
+
   {
     // care about particle wall nodes:
     // fill everything in case of static walls and only row nodes in case of moving walls
-    std::map<int, DRT::Node*> wallgnodes = structgnodes[meit->first];
-    for (std::map<int, DRT::Node*>::iterator nit = wallgnodes.begin(); nit != wallgnodes.end();
+    for (std::map<int, DRT::Node*>::iterator nit = structgnodes.begin(); nit != structgnodes.end();
          ++nit)
     {
       DRT::Node* currnode = (*nit).second;
@@ -1036,9 +1031,8 @@ void PARTICLE::Algorithm::SetupParticleWalls(
 
     // care about particle wall eles:
     // fill everything in case of static walls and only row elements in case of moving walls
-    std::map<int, Teuchos::RCP<DRT::Element>> structelementsinterf = structgelements[meit->first];
-    for (std::map<int, Teuchos::RCP<DRT::Element>>::iterator eit = structelementsinterf.begin();
-         eit != structelementsinterf.end(); ++eit)
+    for (std::map<int, Teuchos::RCP<DRT::Element>>::iterator eit = structgelements.begin();
+         eit != structgelements.end(); ++eit)
     {
       Teuchos::RCP<DRT::Element> currele = eit->second;
       if (not moving_walls_ || ((currele->Owner() == MyRank()) && moving_walls_))

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief utility functions for automatic creation of a discretization
        from an existing one (e.g. ALE from Fluid)

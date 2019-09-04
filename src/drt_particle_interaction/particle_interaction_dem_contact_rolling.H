@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief rolling contact handler for discrete element method (DEM) interactions
 
 \level 3
@@ -67,7 +67,8 @@ namespace PARTICLEINTERACTION
     //! calculate rolling contact moment
     virtual void RollingContactMoment(double* gap_rolling, bool& stick_rolling,
         const double* normal, const double* v_rel_rolling, const double& m_eff, const double& r_eff,
-        const double& normalcontactforce, double* rollingcontactmoment) const = 0;
+        const double& mu_rolling, const double& normalcontactforce,
+        double* rollingcontactmoment) const = 0;
 
    protected:
     //! discrete element method parameter list
@@ -76,16 +77,13 @@ namespace PARTICLEINTERACTION
     //! timestep size
     double dt_;
 
-    //! coefficient of restitution (particle-particle)
+    //! coefficient of restitution
     const double e_;
 
     //! particle Poisson ratio
     const double nue_;
 
-    //! rolling contact friction coefficient (particle-particle)
-    const double mu_rolling_;
-
-    //! rolling contact damping factor (particle-particle)
+    //! rolling contact damping factor
     double d_rolling_fac_;
   };
 
@@ -97,6 +95,9 @@ namespace PARTICLEINTERACTION
 
     //! virtual destructor
     virtual ~DEMContactRollingViscous(){};
+
+    //! init rolling contact handler
+    virtual void Init();
 
     //! setup rolling contact handler
     virtual void Setup(const double& k_normal);
@@ -112,7 +113,8 @@ namespace PARTICLEINTERACTION
     //! calculate rolling contact moment
     virtual void RollingContactMoment(double* gap_rolling, bool& stick_rolling,
         const double* normal, const double* v_rel_rolling, const double& m_eff, const double& r_eff,
-        const double& normalcontactforce, double* rollingcontactmoment) const override;
+        const double& mu_rolling, const double& normalcontactforce,
+        double* rollingcontactmoment) const override;
 
    private:
     //! particle Young's modulus
@@ -145,10 +147,11 @@ namespace PARTICLEINTERACTION
     //! calculate rolling contact moment
     virtual void RollingContactMoment(double* gap_rolling, bool& stick_rolling,
         const double* normal, const double* v_rel_rolling, const double& m_eff, const double& r_eff,
-        const double& normalcontactforce, double* rollingcontactmoment) const override;
+        const double& mu_rolling, const double& normalcontactforce,
+        double* rollingcontactmoment) const override;
 
    private:
-    //! rolling contact stiffness (particle-particle)
+    //! rolling contact stiffness
     double k_rolling_;
   };
 

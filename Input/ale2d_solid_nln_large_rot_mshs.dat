@@ -26,19 +26,19 @@ LIMIT_OUTP_TO_PROC              0
 --------------------------------------------------------ALE DYNAMIC
 ALE_TYPE                        solid
 LINEAR_SOLVER                   1
-NUMSTEP                         720
-MAXTIME                         60.0
-TIMESTEP                        0.5
-RESTARTEVRY                     1
+NUMSTEP                         25
+MAXTIME                         25.0
+TIMESTEP                        1.0
+RESTARTEVRY                     5
 RESULTSEVRY                     1
 MAXITER                         10
-MESHTYING                       meshsliding // no // meshtying // meshsliding
+MESHTYING                       meshsliding
 TOLRES                          1e-8
 TOLDISP                         1e-8
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   1
 -----------------------------------------------------------SOLVER 1
-SOLVER                          UMFPACK
+SOLVER                          Superlu
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 5 DENS 1.0
 MAT 5 ELAST_CoupLogNeoHooke MODE YN C1 1.0e4 C2 0.4995
@@ -49,10 +49,10 @@ COMPONENT 0 FUNCTION x*cos(t*pi/180)-y*sin(t*pi/180)-x
 -------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION x*sin(t*pi/180)+y*cos(t*pi/180)-y
 -------------------------------------------------RESULT DESCRIPTION
-ALE DIS ale NODE 2889 QUANTITY dispx VALUE -4.14182355590849260e-01 TOLERANCE 1e-12
-ALE DIS ale NODE 2889 QUANTITY dispy VALUE 2.45002647838524684e-01  TOLERANCE 1e-12
-ALE DIS ale NODE 3436 QUANTITY dispx VALUE -4.95163290878316526e-08 TOLERANCE 1e-12
-ALE DIS ale NODE 3436 QUANTITY dispy VALUE 3.06340817233810514e-01  TOLERANCE 1e-12
+ALE DIS ale NODE 2889 QUANTITY dispx VALUE -1.15865185964513784e-01 TOLERANCE 1e-10
+ALE DIS ale NODE 2889 QUANTITY dispy VALUE 1.47360048611483885e-01  TOLERANCE 1e-10
+ALE DIS ale NODE 3436 QUANTITY dispx VALUE -6.60556354903352174e-09 TOLERANCE 1e-10
+ALE DIS ale NODE 3436 QUANTITY dispy VALUE 7.57187094928491317e-02  TOLERANCE 1e-10
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  5
@@ -7324,11 +7324,5 @@ NODE      3456 COORD  5.0000000000000000e-01  0.0000000000000000e+00  0.00000000
    3126 ALE2 QUAD4  1404 1379 3454 3455    MAT 2
    3127 ALE2 QUAD4  3456 3455 2937 2912    MAT 2
    3128 ALE2 QUAD4  1429 1404 3455 3456    MAT 2
-------------------------------------------------LUBRICATION ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------ACOUSTIC ELEMENTS
----------------------------------------------------CELL ELEMENTS
----------------------------------------------------CELLSCATRA ELEMENTS
 ---------------------------------------------------------------END
 // END

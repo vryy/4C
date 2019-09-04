@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief particle material for DEM
 
 \level 3
@@ -43,9 +43,9 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ParticleMaterialDEM::CreateMaterial()
  *---------------------------------------------------------------------------*/
 DRT::ParObject* MAT::ParticleMaterialDEMType::Create(const std::vector<char>& data)
 {
-  MAT::ParticleMaterialDEM* particlematsph = new MAT::ParticleMaterialDEM();
-  particlematsph->Unpack(data);
-  return particlematsph;
+  MAT::ParticleMaterialDEM* particlematdem = new MAT::ParticleMaterialDEM();
+  particlematdem->Unpack(data);
+  return particlematdem;
 }
 
 /*---------------------------------------------------------------------------*

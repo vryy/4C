@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief %NOX::NLN extension of the %NOX::Epetra jacobian
        interface.

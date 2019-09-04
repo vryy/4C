@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Factory to create the desired contact strategy.
 
 \maintainer Matthias Mayr
@@ -29,7 +29,7 @@ namespace CONTACT
   class CoAbstractStrategy;
   class CoElement;
   class CoInterface;
-  class IDataContainer;
+  class InterfaceDataContainer;
   class ParamsInterface;
 
   namespace STRATEGY
@@ -83,7 +83,7 @@ namespace CONTACT
           const bool selfcontact, const enum INPAR::MORTAR::RedundantStorage redundant,
           const Teuchos::RCP<std::pair<enum XFEM::FieldName,
               Teuchos::RCP<const DRT::DiscretizationInterface>>>& parent_dis_pair,
-          Teuchos::RCP<CONTACT::IDataContainer> idata_ptr = Teuchos::null);
+          Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr = Teuchos::null);
 
       /** \brief Create a contact interface object based on the given information
        *
@@ -94,7 +94,7 @@ namespace CONTACT
           const enum INPAR::MORTAR::RedundantStorage redundant,
           const Teuchos::RCP<std::pair<enum XFEM::FieldName,
               Teuchos::RCP<const DRT::DiscretizationInterface>>>& parent_dis_pair,
-          Teuchos::RCP<CONTACT::IDataContainer> idata_ptr);
+          Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr);
 
       /*! \brief Create the solver strategy object and pass all necessary data to it
        *

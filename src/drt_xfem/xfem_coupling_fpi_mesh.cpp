@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief manages mesh based coupling of fluid and porous media
 xfluid class and the cut-library

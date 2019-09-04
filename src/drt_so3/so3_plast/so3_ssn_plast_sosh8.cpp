@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief
 This file contains everything additionally needed for plastic solid shell elements.
 Basically, it is a copy of the elastic so_sh8 element. (Virtual inheritance in the

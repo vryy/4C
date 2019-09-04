@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Wrapper for a linear Reissner beam element used as mechanical link between two other beam
 elements
@@ -195,8 +195,8 @@ bool BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::EvaluateForce(
 {
   CheckInitSetup();
 
-  LINALG::TMatrix<double, 6, 1> disp_totlag_centerline;
-  std::vector<LINALG::TMatrix<double, 4, 1>> Qnode;
+  LINALG::Matrix<6, 1, double> disp_totlag_centerline;
+  std::vector<LINALG::Matrix<4, 1, double>> Qnode;
 
   FillStateVariablesForElementEvaluation(disp_totlag_centerline, Qnode);
 
@@ -224,8 +224,8 @@ bool BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::EvaluateStiff(
 {
   CheckInitSetup();
 
-  LINALG::TMatrix<double, 6, 1> disp_totlag_centerline;
-  std::vector<LINALG::TMatrix<double, 4, 1>> Qnode;
+  LINALG::Matrix<6, 1, double> disp_totlag_centerline;
+  std::vector<LINALG::Matrix<4, 1, double>> Qnode;
 
   FillStateVariablesForElementEvaluation(disp_totlag_centerline, Qnode);
 
@@ -257,8 +257,8 @@ bool BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::EvaluateForceStiff(
 {
   CheckInitSetup();
 
-  LINALG::TMatrix<double, 6, 1> disp_totlag_centerline;
-  std::vector<LINALG::TMatrix<double, 4, 1>> Qnode;
+  LINALG::Matrix<6, 1, double> disp_totlag_centerline;
+  std::vector<LINALG::Matrix<4, 1, double>> Qnode;
 
   FillStateVariablesForElementEvaluation(disp_totlag_centerline, Qnode);
 
@@ -288,8 +288,8 @@ bool BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::EvaluateForceStiff(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::FillStateVariablesForElementEvaluation(
-    LINALG::TMatrix<double, 6, 1>& disp_totlag_centerline,
-    std::vector<LINALG::TMatrix<double, 4, 1>>& Qnode) const
+    LINALG::Matrix<6, 1, double>& disp_totlag_centerline,
+    std::vector<LINALG::Matrix<4, 1, double>>& Qnode) const
 {
   for (unsigned int i = 0; i < 3; ++i)
   {

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Utility methods for the contact integration.
 
 \level 2
@@ -166,7 +166,7 @@ namespace CONTACT
     /// collect all element nodal dofs and store them in one matrix
     template <unsigned probdim, unsigned numnode>
     void GetElementNodalDofs(
-        const MORTAR::MortarElement& ele, LINALG::TMatrix<int, probdim, numnode>& nodal_dofs);
+        const MORTAR::MortarElement& ele, LINALG::Matrix<probdim, numnode, int>& nodal_dofs);
 
     /// evaluate the Levi Civita pseudo tensor
     double LeviCivitaSymbol(const int i_1, const int i_2, const int i_3);

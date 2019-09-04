@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief
 This file contains the routines required for Varga's material.
 The input line should read
@@ -7,7 +7,7 @@ The input line should read
 
 \level 2
 
-\maintainer Fabian Braeu
+\maintainer Amadeus Gebauer
 */
 
 /*----------------------------------------------------------------------*/

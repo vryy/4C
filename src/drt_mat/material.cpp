@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Interface class for complex materials at Gauss points
 
 \level 1
 
-\maintainer Fabian Braeu
+\maintainer Amadeus Gebauer
 */
 /*----------------------------------------------------------------------*/
 
@@ -125,7 +125,9 @@
 #include "particle_material_sph_fluid.H"
 #include "particle_material_sph_boundary.H"
 #include "particle_material_dem.H"
+#include "particle_wall_material_dem.H"
 #include "superelastic_sma.H"
+#include "mixture_elasthyper.H"
 
 
 /*----------------------------------------------------------------------*
@@ -137,10 +139,10 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
 
   // for the sake of safety
   if (DRT::Problem::Instance(probinst)->Materials() == Teuchos::null)
-    dserror("Sorry dude, cannot work out problem instance.");
+    dserror("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
   if (DRT::Problem::Instance(probinst)->Materials()->Num() == 0)
-    dserror("Sorry dude, no materials defined.");
+    dserror("List of materials in the global problem instance is empty.");
 
   // retrieve validated input line of material ID in question
   Teuchos::RCP<MAT::PAR::Material> curmat =
@@ -894,6 +896,10 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     case INPAR::MAT::mes_coupSVK:
     case INPAR::MAT::mfi_lin_scalar_aniso:
     case INPAR::MAT::mfi_lin_scalar_iso:
+    case INPAR::MAT::mix_rule_base:
+    case INPAR::MAT::mix_elasthyper:
+    case INPAR::MAT::mfi_poly_scalar_aniso:
+    case INPAR::MAT::mfi_poly_scalar_iso:
     {
       return Teuchos::null;
     }
@@ -1005,6 +1011,14 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
         curmat->SetParameter(new MAT::PAR::GrowthRemodel_ElastHyper(curmat));
       MAT::PAR::GrowthRemodel_ElastHyper* params =
           static_cast<MAT::PAR::GrowthRemodel_ElastHyper*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_mixture_elasthyper:
+    {
+      if (curmat->Parameter() == nullptr)
+        curmat->SetParameter(new MAT::PAR::Mixture_ElastHyper(curmat));
+      MAT::PAR::Mixture_ElastHyper* params =
+          dynamic_cast<MAT::PAR::Mixture_ElastHyper*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_multiplicative_split_defgrad_elasthyper:
@@ -1151,6 +1165,14 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
         curmat->SetParameter(new MAT::PAR::ParticleMaterialDEM(curmat));
       MAT::PAR::ParticleMaterialDEM* params =
           dynamic_cast<MAT::PAR::ParticleMaterialDEM*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_particle_wall_dem:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::ParticleWallMaterialDEM(curmat));
+      MAT::PAR::ParticleWallMaterialDEM* params =
+          static_cast<MAT::PAR::ParticleWallMaterialDEM*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_acousticmat:

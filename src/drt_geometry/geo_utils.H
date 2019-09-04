@@ -1,4 +1,5 @@
-/*!------------------------------------------------------------------------------------------------*
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief Within this file all geometry typedefs shall be defined. Thus they can
 be used from outside in header files without including the according geometry

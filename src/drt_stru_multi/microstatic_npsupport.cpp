@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Static control for  microstructural problems in case of multiscale
 analysis for supporting processors

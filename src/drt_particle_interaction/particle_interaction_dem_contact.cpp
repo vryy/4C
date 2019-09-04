@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief contact handler for discrete element method (DEM) interactions
 
 \level 3
@@ -14,6 +14,7 @@
 #include "particle_interaction_dem_contact.H"
 
 #include "particle_interaction_material_handler.H"
+#include "particle_interaction_runtime_vtp_writer.H"
 #include "particle_interaction_utils.H"
 
 #include "particle_interaction_dem_neighbor_pairs.H"
@@ -22,11 +23,13 @@
 #include "particle_interaction_dem_contact_tangential.H"
 #include "particle_interaction_dem_contact_rolling.H"
 
-#include "../drt_particle_algorithm/particle_wall_interface.H"
-#include "../drt_particle_algorithm/particle_wall_datastate.H"
-
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_container.H"
+
+#include "../drt_particle_wall/particle_wall_interface.H"
+#include "../drt_particle_wall/particle_wall_datastate.H"
+
+#include "../drt_mat/particle_wall_material_dem.H"
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
@@ -34,13 +37,18 @@
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 
+#include "../drt_io/runtime_vtp_writer.H"
+
 #include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMContact::DEMContact(const Teuchos::ParameterList& params)
-    : params_dem_(params), dt_(0.0)
+    : params_dem_(params),
+      dt_(0.0),
+      writeparticlewallinteraction_(
+          DRT::INPUT::IntegralValue<int>(params_dem_, "WRITE_PARTICLE_WALL_INTERACTION"))
 {
   // empty constructor
 }
@@ -74,8 +82,9 @@ void PARTICLEINTERACTION::DEMContact::Init()
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContact::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-    const std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface,
+    const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
     const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
+    const std::shared_ptr<PARTICLEINTERACTION::InteractionWriter> particleinteractionwriter,
     const std::shared_ptr<PARTICLEINTERACTION::DEMNeighborPairs> neighborpairs,
     const std::shared_ptr<PARTICLEINTERACTION::DEMHistoryPairs> historypairs)
 {
@@ -90,6 +99,12 @@ void PARTICLEINTERACTION::DEMContact::Setup(
 
   // set particle material handler
   particlematerial_ = particlematerial;
+
+  // set particle interaction writer
+  particleinteractionwriter_ = particleinteractionwriter;
+
+  // setup particle interaction writer
+  SetupParticleInteractionWriter();
 
   // set neighbor pair handler
   neighborpairs_ = neighborpairs;
@@ -379,6 +394,16 @@ void PARTICLEINTERACTION::DEMContact::InitRollingContactHandler()
 }
 
 /*---------------------------------------------------------------------------*
+ | setup particle interaction writer                          sfuchs 08/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::DEMContact::SetupParticleInteractionWriter()
+{
+  // register specific runtime vtp writer
+  if (writeparticlewallinteraction_)
+    particleinteractionwriter_->RegisterSpecificRuntimeVtpWriter("particle-wall-contact");
+}
+
+/*---------------------------------------------------------------------------*
  | get maximum density of all materials                       sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::DEMContact::GetMaxDensityOfAllMaterials() const
@@ -414,6 +439,13 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleContact()
   // get reference to particle rolling history pair data
   DEMHistoryPairRollingData& rollinghistorydata =
       historypairs_->GetRefToParticleRollingHistoryData();
+
+  // tangential contact friction coefficient
+  const double mu_tangential =
+      contacttangential_ ? params_dem_.get<double>("FRICT_COEFF_TANG") : 0.0;
+
+  // rolling contact friction coefficient
+  const double mu_rolling = contactrolling_ ? params_dem_.get<double>("FRICT_COEFF_ROLL") : 0.0;
 
   // iterate over particle pairs
   for (const auto& particlepair : neighborpairs_->GetRefToParticlePairData())
@@ -518,7 +550,7 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleContact()
       double tangentialcontactforce[3];
       contacttangential_->TangentialContactForce(tangentialhistory_ij.gap_t_,
           tangentialhistory_ij.stick_, particlepair.e_ji_, vel_rel_tangential, particlepair.m_eff_,
-          normalcontactforce, tangentialcontactforce);
+          mu_tangential, normalcontactforce, tangentialcontactforce);
 
       // copy history from interaction pair ij to ji
       if (status_j == PARTICLEENGINE::Owned)
@@ -573,8 +605,8 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleContact()
       // calculate rolling contact moment
       double rollingcontactmoment[3];
       contactrolling_->RollingContactMoment(rollinghistory_ij.gap_r_, rollinghistory_ij.stick_,
-          particlepair.e_ji_, vel_rel_rolling, particlepair.m_eff_, r_eff, normalcontactforce,
-          rollingcontactmoment);
+          particlepair.e_ji_, vel_rel_rolling, particlepair.m_eff_, r_eff, mu_rolling,
+          normalcontactforce, rollingcontactmoment);
 
       // copy history from interaction pair ij to ji
       if (status_j == PARTICLEENGINE::Owned)
@@ -609,8 +641,12 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact");
 
   // get wall data state container
-  std::shared_ptr<PARTICLEALGORITHM::WallDataState> walldatastate =
+  std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
       particlewallinterface_->GetWallDataState();
+
+  // get reference to particle-wall pair data
+  const DEMParticleWallPairData& particlewallpairdata =
+      neighborpairs_->GetRefToParticleWallPairData();
 
   // get reference to particle-wall tangential history pair data
   DEMHistoryPairTangentialData& tangentialhistorydata =
@@ -620,8 +656,27 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
   DEMHistoryPairRollingData& rollinghistorydata =
       historypairs_->GetRefToParticleWallRollingHistoryData();
 
+  // write interaction output
+  const bool writeinteractionoutput =
+      particleinteractionwriter_->GetCurrentWriteResultFlag() and writeparticlewallinteraction_;
+
+  // init storage for interaction output
+  std::vector<double> attackpoints;
+  std::vector<double> contactforces;
+  std::vector<double> normaldirection;
+
+  // prepare storage for interaction output
+  if (writeinteractionoutput)
+  {
+    const int numparticlewallpairs = particlewallpairdata.size();
+
+    attackpoints.reserve(3 * numparticlewallpairs);
+    contactforces.reserve(3 * numparticlewallpairs);
+    normaldirection.reserve(3 * numparticlewallpairs);
+  }
+
   // iterate over particle-wall pairs
-  for (const auto& particlewallpair : neighborpairs_->GetRefToParticleWallPairData())
+  for (const auto& particlewallpair : particlewallpairdata)
   {
     // access values of local index tuple of particle i
     PARTICLEENGINE::TypeEnum type_i;
@@ -637,16 +692,17 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
     const int* globalid_i = container_i->GetPtrToParticleGlobalID(particle_i);
 
     // declare pointer variables for particle i
-    const double *vel_i, *rad_i, *mass_i, *angvel_i;
+    const double *pos_i, *vel_i, *rad_i, *mass_i, *angvel_i;
     double *force_i, *moment_i;
 
     // get pointer to particle states
+    pos_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
     vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
     rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
     mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
     force_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Force, particle_i);
 
-    if (contacttangential_)
+    if (contacttangential_ or contactrolling_)
     {
       angvel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::AngularVelocity, particle_i);
       moment_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Moment, particle_i);
@@ -658,17 +714,44 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
     // number of nodes of wall element
     const int numnodes = ele->NumNode();
 
-    // evaluate shape functions of element at wall contact point
+    // shape functions and location vector of wall element
     Epetra_SerialDenseVector funct(numnodes);
-    DRT::UTILS::shape_function_2D(
-        funct, particlewallpair.elecoords_[0], particlewallpair.elecoords_[1], ele->Shape());
-
-    // get location vector of wall element
     std::vector<int> lmele;
-    lmele.reserve(numnodes * 3);
-    std::vector<int> lmowner;
-    std::vector<int> lmstride;
-    ele->LocationVector(*particlewallinterface_->GetWallDiscretization(), lmele, lmowner, lmstride);
+
+    if (walldatastate->GetVelCol() != Teuchos::null or
+        walldatastate->GetForceCol() != Teuchos::null)
+    {
+      // evaluate shape functions of element at wall contact point
+      DRT::UTILS::shape_function_2D(
+          funct, particlewallpair.elecoords_[0], particlewallpair.elecoords_[1], ele->Shape());
+
+      // get location vector of wall element
+      lmele.reserve(numnodes * 3);
+      std::vector<int> lmowner;
+      std::vector<int> lmstride;
+      ele->LocationVector(
+          *particlewallinterface_->GetWallDiscretization(), lmele, lmowner, lmstride);
+    }
+
+    // tangential and rolling contact friction coefficient
+    double mu_tangential = 0.0;
+    double mu_rolling = 0.0;
+
+    // get material parameters of wall element
+    if (contacttangential_ or contactrolling_)
+    {
+      // cast material to particle wall material
+      const Teuchos::RCP<const MAT::ParticleWallMaterialDEM>& particlewallmaterial =
+          Teuchos::rcp_dynamic_cast<const MAT::ParticleWallMaterialDEM>(ele->Material());
+      if (particlewallmaterial == Teuchos::null)
+        dserror("cast to MAT::ParticleWallMaterialDEM failed!");
+
+      // get tangential contact friction coefficient
+      if (contacttangential_) mu_tangential = particlewallmaterial->MuTangential();
+
+      // get rolling contact friction coefficient
+      if (contactrolling_) mu_rolling = particlewallmaterial->MuRolling();
+    }
 
     // declare zero radius for wall contact point j
     const double rad_j = 0.0;
@@ -689,8 +772,7 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
 
     // compute vector from particle i to wall contact point j
     double r_ji[3];
-    if (contacttangential_ or contactrolling_)
-      UTILS::vec_setscale(r_ji, (rad_i[0] + particlewallpair.gap_), particlewallpair.e_ji_);
+    UTILS::vec_setscale(r_ji, (rad_i[0] + particlewallpair.gap_), particlewallpair.e_ji_);
 
     // relative velocity in wall contact point j
     double vel_rel[3];
@@ -711,7 +793,7 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
 
     // calculation of tangential contact force
     double tangentialcontactforce[3] = {0.0};
-    if (contacttangential_)
+    if (contacttangential_ and mu_tangential > 0.0)
     {
       // get reference to touched tangential history
       TouchedDEMHistoryPairTangential& touchedtangentialhistory_ij =
@@ -731,7 +813,7 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
       // calculate tangential contact force
       contacttangential_->TangentialContactForce(tangentialhistory_ij.gap_t_,
           tangentialhistory_ij.stick_, particlewallpair.e_ji_, vel_rel_tangential, mass_i[0],
-          normalcontactforce, tangentialcontactforce);
+          mu_tangential, normalcontactforce, tangentialcontactforce);
 
       // add tangential contact force contribution
       UTILS::vec_add(force_i, tangentialcontactforce);
@@ -746,7 +828,7 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
 
     // calculation of rolling contact moment
     double rollingcontactmoment[3] = {0.0};
-    if (contactrolling_)
+    if (contactrolling_ and mu_rolling > 0.0)
     {
       // get reference to touched rolling history
       TouchedDEMHistoryPairRolling& touchedrollinghistory_ij =
@@ -769,7 +851,7 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
 
       // calculate rolling contact moment
       contactrolling_->RollingContactMoment(rollinghistory_ij.gap_r_, rollinghistory_ij.stick_,
-          particlewallpair.e_ji_, vel_rel_rolling, mass_i[0], r_eff, normalcontactforce,
+          particlewallpair.e_ji_, vel_rel_rolling, mass_i[0], r_eff, mu_rolling, normalcontactforce,
           rollingcontactmoment);
 
       // add rolling contact moment contribution
@@ -780,14 +862,31 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
         rollinghistorydata[globalid_i[0]][histele] = touchedrollinghistory_ij;
     }
 
+    // calculation of wall contact force
+    double wallcontactforce[3] = {0.0};
+    if (writeinteractionoutput or walldatastate->GetForceCol() != Teuchos::null)
+    {
+      UTILS::vec_setscale(wallcontactforce, -normalcontactforce, particlewallpair.e_ji_);
+      UTILS::vec_sub(wallcontactforce, tangentialcontactforce);
+    }
+
+    // write interaction output
+    if (writeinteractionoutput)
+    {
+      // calculate wall contact point
+      double wallcontactpoint[3];
+      UTILS::vec_set(wallcontactpoint, pos_i);
+      UTILS::vec_add(wallcontactpoint, r_ji);
+
+      // set wall attack point and states
+      for (int dim = 0; dim < 3; ++dim) attackpoints.push_back(wallcontactpoint[dim]);
+      for (int dim = 0; dim < 3; ++dim) contactforces.push_back(wallcontactforce[dim]);
+      for (int dim = 0; dim < 3; ++dim) normaldirection.push_back(-particlewallpair.e_ji_[dim]);
+    }
+
     // assemble contact force acting on wall element
     if (walldatastate->GetForceCol() != Teuchos::null)
     {
-      // wall contact force
-      double wallcontactforce[3];
-      UTILS::vec_setscale(wallcontactforce, -normalcontactforce, particlewallpair.e_ji_);
-      UTILS::vec_sub(wallcontactforce, tangentialcontactforce);
-
       // determine nodal forces
       double nodal_force[numnodes * 3];
       for (int node = 0; node < numnodes; ++node)
@@ -799,5 +898,19 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
           numnodes * 3, &nodal_force[0], &(lmele)[0]);
       if (err < 0) dserror("sum into Epetra_Vector failed!");
     }
+  }
+
+  if (writeinteractionoutput)
+  {
+    // get specific runtime vtp writer
+    RuntimeVtpWriter* runtime_vtpwriter =
+        particleinteractionwriter_->GetSpecificRuntimeVtpWriter("particle-wall-contact");
+
+    // set wall attack points
+    runtime_vtpwriter->ResetGeometry(attackpoints);
+
+    // append states
+    runtime_vtpwriter->AppendVisualizationPointDataVector(contactforces, 3, "contact force");
+    runtime_vtpwriter->AppendVisualizationPointDataVector(normaldirection, 3, "normal direction");
   }
 }

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Class controlling local coordinate systems on points, lines and
 surfaces and supplying all necessary transformation methods for parallel

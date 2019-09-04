@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
  \brief implementation of the 3D solid-poro element including scatra functionality
 

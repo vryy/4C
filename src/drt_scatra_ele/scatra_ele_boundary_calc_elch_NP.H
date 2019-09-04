@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief evaluation of ScaTra boundary elements for Nernst-Planck formulation
 

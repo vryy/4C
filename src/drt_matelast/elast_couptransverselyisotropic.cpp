@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Summand for the transversely hyperelastic isotropic material model
 \level 3
 

@@ -35,26 +35,7 @@ CALCERR                         yes
 ERRORFUNCNO                     2
 
 -----------------------------------------------------------SOLVER 1
-SOLVER                          Aztec_MSR
-AZSOLVE                         GMRES
-AZPREC                          ILU
-IFPACKOVERLAP                   0
-IFPACKGFILL                     0
-IFPACKFILL                      1
-IFPACKCOMBINE                   Add
-AZDROP                          0
-AZPOLY                          3
-AZSUB                           500
-AZCONV                          AZ_r0
-AZOUTPUT                        0
-AZREUSE                         0
-AZITER                          10000
-AZGRAPH                         0
-AZBDIAG                         0
-AZTOL                           1e-08
-AZOMEGA                         0
-DWINDTAU                        1.5
-AZSCAL                          none
+SOLVER                          Superlu
 
 ----------------------------------------------------------MATERIALS
 
@@ -73,8 +54,8 @@ COMPONENT 4 FUNCTION 0
 COMPONENT 5 FUNCTION sqrt(3)*sin(pi*x)*sin(pi*y)*cos(pi*z)*sin(pi*t)
 
 ------------------------------------------------RESULT DESCRIPTION
-ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2electric VALUE 2.62592384551642126e-02 TOLERANCE 1e-6
-ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2magnetic VALUE 1.50971824246699082e-01 TOLERANCE 1e-6
+ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2electric VALUE 2.62592871704133875e-02 TOLERANCE 1e-6
+ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2magnetic VALUE 1.51033056601289462e-01 TOLERANCE 1e-6
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0

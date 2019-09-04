@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief Solid Wedge6 Element
 \level 1
 
@@ -461,7 +462,6 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
         DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
         sow6_remodel(lm, mydisp, params, Material());
       }
-      // Update of history for materials
       SolidMaterial()->Update();
     }
     break;

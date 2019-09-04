@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Deprecated structure field adapter
        (see ad_str_structure_new.H/.cpp for the new version)
@@ -31,7 +31,6 @@
 #include "../drt_comm/comm_utils.H"
 
 #include "../drt_inpar/drt_validparameters.H"
-#include "../drt_inpar/inpar_binningstrategy.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_inpar/inpar_poroelast.H"

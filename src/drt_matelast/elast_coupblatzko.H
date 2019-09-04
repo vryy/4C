@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief
 This file contains the routines required for Blatz and Ko material model
 according to Holzapfel, "Nonlinear solid mechanics", 2001.
@@ -8,7 +8,7 @@ The input line should read
 
 \level 1
 
-\maintainer Fabian Braeu
+\maintainer Amadeus Gebauer
 
 *----------------------------------------------------------------------*/
 #ifndef ELAST_COUPBLATZKO_H_

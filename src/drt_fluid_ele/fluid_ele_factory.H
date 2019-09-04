@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Factory class going from the generic evaluation routines to the ones
   templated by the element shape and specialization

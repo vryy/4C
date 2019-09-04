@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Basic discretization-related tools used in XFEM routines
 
@@ -20,7 +20,7 @@
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_utils_parallel.H"
 #include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_utils_parmetis.H"
+#include "../drt_lib/drt_utils_rebalancing.H"
 #include "../drt_lib/drt_dofset_fixed_size.H"
 
 #include "../linalg/linalg_utils.H"
@@ -469,7 +469,8 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::Redistribute(Teuchos::RCP<DRT::Disc
   if (!dis->Filled()) dis->Redistribute(*noderowmap, *nodecolmap);
 
   Teuchos::RCP<Epetra_Map> elerowmap = Teuchos::rcp(new Epetra_Map(*dis->ElementRowMap()));
-  DRT::UTILS::PartUsingParMetis(dis, elerowmap, noderowmap, nodecolmap, comm, false);
+  DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
+      dis, elerowmap, noderowmap, nodecolmap, comm, false, comm->NumProc());
 
   Teuchos::RCP<Epetra_Map> roweles = Teuchos::null;
   Teuchos::RCP<Epetra_Map> coleles = Teuchos::null;

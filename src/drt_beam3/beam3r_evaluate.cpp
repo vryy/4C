@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief evaluation methods for 3D nonlinear Reissner beam element
 
@@ -844,12 +844,12 @@ int DRT::ELEMENTS::Beam3r::EvaluateNeumann(Teuchos::ParameterList& params,
  rotation matrix Lambda   | |according to Romero 2004, eq. (3.10) cyron 04/10|
  *----------------------------------------------------------------------------------------------------------------------*/
 template <typename T>
-inline void DRT::ELEMENTS::Beam3r::pushforward(const LINALG::TMatrix<T, 3, 3>& Lambda,
-    const LINALG::TMatrix<T, 3, 1>& stress_mat, const LINALG::TMatrix<T, 3, 3>& C_mat,
-    LINALG::TMatrix<T, 3, 1>& stress_spatial, LINALG::TMatrix<T, 3, 3>& c_spatial) const
+inline void DRT::ELEMENTS::Beam3r::pushforward(const LINALG::Matrix<3, 3, T>& Lambda,
+    const LINALG::Matrix<3, 1, T>& stress_mat, const LINALG::Matrix<3, 3, T>& C_mat,
+    LINALG::Matrix<3, 1, T>& stress_spatial, LINALG::Matrix<3, 3, T>& c_spatial) const
 {
   // introduce auxiliary variable for pushforward of rotational matrices
-  LINALG::TMatrix<T, 3, 3> temp;
+  LINALG::Matrix<3, 3, T> temp;
 
   // push forward stress vector
   stress_spatial.Multiply(Lambda, stress_mat);
@@ -878,10 +878,10 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
 
   /* current nodal DOFs relevant for centerline interpolation in total Lagrangian
    * style, i.e. initial values + displacements */
-  LINALG::TMatrix<double, 3 * vpernode * nnodecl, 1> disp_totlag_centerline(true);
+  LINALG::Matrix<3 * vpernode * nnodecl, 1, double> disp_totlag_centerline(true);
 
   // quaternions of all nodal triads
-  std::vector<LINALG::TMatrix<double, 4, 1>> Qnode(nnodetriad);
+  std::vector<LINALG::Matrix<4, 1, double>> Qnode(nnodetriad);
 
   UpdateDispTotLagAndNodalTriads<nnodetriad, nnodecl, vpernode, double>(
       disp, disp_totlag_centerline, Qnode);
@@ -910,10 +910,10 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
 //
 //  /* current nodal DOFs relevant for centerline interpolation in total Lagrangian
 //   * style, i.e. initial values + displacements */
-//  LINALG::TMatrix<double,3*vpernode*nnodecl,1> disp_totlag_centerline(true);
+//  LINALG::Matrix<3*vpernode*nnodecl,1,double> disp_totlag_centerline(true);
 //
 //  // quaternions of all nodal triads
-//  std::vector<LINALG::TMatrix<double,4,1> > Qnode(nnodetriad);
+//  std::vector<LINALG::Matrix<4,1,double> > Qnode(nnodetriad);
 //
 //  UpdateDispTotLagAndNodalTriads<nnodetriad,nnodecl,vpernode,double>(
 //      disp,
@@ -933,33 +933,33 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
 //  ***************************
 //
 //  // derivation of beam centerline with respect to arc-length parameter: r'(x) from (2.12),
-//  Jelenic 1999 LINALG::TMatrix<T,3,1> r_s;
+//  Jelenic 1999 LINALG::Matrix<3,1,T> r_s;
 //  // spin matrix related to vector r_s
-//  LINALG::TMatrix<T,3,3> r_s_hat;
+//  LINALG::Matrix<3,3,T> r_s_hat;
 //  // interpolated local relative rotation \Psi^l at a certain Gauss point according to (3.11),
-//  Jelenic 1999 LINALG::TMatrix<T,3,1> Psi_l;
+//  Jelenic 1999 LINALG::Matrix<3,1,T> Psi_l;
 //  /* derivative of interpolated local relative rotation \Psi^l with respect to arc-length
 //  parameter
 //   * at a certain Gauss point according to (3.11), Jelenic 1999*/
-//  LINALG::TMatrix<T,3,1> Psi_l_s;
+//  LINALG::Matrix<3,1,T> Psi_l_s;
 //  // triad at GP
-//  LINALG::TMatrix<T,3,3> Lambda;
+//  LINALG::Matrix<3,3,T> Lambda;
 //
 //  // 3D vector related to spin matrix \hat{\kappa} from (2.1), Jelenic 1999
-//  LINALG::TMatrix<T,3,1> K;
+//  LINALG::Matrix<3,1,T> K;
 //  // 3D vector of material axial and shear strains from (2.1), Jelenic 1999
-//  LINALG::TMatrix<T,3,1> Gamma;
+//  LINALG::Matrix<3,1,T> Gamma;
 //
 //  // convected stresses N and M and constitutive matrices C_N and C_M according to section 2.4,
-//  Jelenic 1999 LINALG::TMatrix<T,3,1> stressN; LINALG::TMatrix<T,3,1> stressM;
-//  LINALG::TMatrix<T,3,3> CN;
-//  LINALG::TMatrix<T,3,3> CM;
+//  Jelenic 1999 LINALG::Matrix<3,1,T> stressN; LINALG::Matrix<3,1,T> stressM;
+//  LINALG::Matrix<3,3,T> CN;
+//  LINALG::Matrix<3,3,T> CM;
 //
 //  // spatial stresses n and m according to (3.10), Romero 2004 and spatial constitutive matrices
-//  c_n and c_m according to page 148, Jelenic 1999 LINALG::TMatrix<T,3,1> stressn;
-//  LINALG::TMatrix<T,3,1> stressm;
-//  LINALG::TMatrix<T,3,3> cn;
-//  LINALG::TMatrix<T,3,3> cm;
+//  c_n and c_m according to page 148, Jelenic 1999 LINALG::Matrix<3,1,T> stressn;
+//  LINALG::Matrix<3,1,T> stressm;
+//  LINALG::Matrix<3,3,T> cn;
+//  LINALG::Matrix<3,3,T> cm;
 //
 //  //********************************** (generalized) shape functions
 //  ************************************
@@ -969,16 +969,16 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
 //  /* vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial shape
 //  functions evaluated at the numgp-th Gauss point
 //   * these shape functions are used for the interpolation of the triad field*/
-//  LINALG::TMatrix<double,1,nnodetriad> I_i;
+//  LINALG::Matrix<1,nnodetriad,double> I_i;
 //  // same for the derivatives
-//  LINALG::TMatrix<double,1,nnodetriad> I_i_xi;
+//  LINALG::Matrix<1,nnodetriad,double> I_i_xi;
 //
 //  /* vector whose numgp-th element is a 1x(vpernode*nnode)-matrix with all (Lagrange/Hermite)
 //  shape functions evaluated at the numgp-th GP
 //   * these shape functions are used for the interpolation of the beam centerline*/
-//  std::vector<LINALG::TMatrix<double,1,vpernode*nnodecl> > H_i;
+//  std::vector<LINALG::Matrix<1,vpernode*nnodecl,double> > H_i;
 //  // same for the derivatives
-//  std::vector<LINALG::TMatrix<double,1,vpernode*nnodecl> > H_i_xi;
+//  std::vector<LINALG::Matrix<1,vpernode*nnodecl,double> > H_i_xi;
 //
 //
 //  /*************************** update/compute quantities valid for entire element
@@ -1036,8 +1036,8 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
  *----------------------------------------------------------------------------*/
 template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
 void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
-    LINALG::TMatrix<double, 3 * vpernode * nnodecl, 1>& disp_totlag_centerline,
-    std::vector<LINALG::TMatrix<double, 4, 1>>& Qnode, Epetra_SerialDenseMatrix* stiffmatrix,
+    LINALG::Matrix<3 * vpernode * nnodecl, 1, double>& disp_totlag_centerline,
+    std::vector<LINALG::Matrix<4, 1, double>>& Qnode, Epetra_SerialDenseMatrix* stiffmatrix,
     Epetra_SerialDenseMatrix* massmatrix, Epetra_SerialDenseVector* force,
     Epetra_SerialDenseVector* inertia_force)
 {
@@ -1046,7 +1046,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
   if (not useFAD_)
   {
     // internal force vector
-    LINALG::TMatrix<double, numdofelement, 1> internal_force(true);
+    LINALG::Matrix<numdofelement, 1, double> internal_force(true);
 
     if (force != NULL)
     {
@@ -1066,18 +1066,17 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
   else
   {
     // internal force vector
-    LINALG::TMatrix<Sacado::Fad::DFad<double>, numdofelement, 1> internal_force(true);
+    LINALG::Matrix<numdofelement, 1, Sacado::Fad::DFad<double>> internal_force(true);
 
     /* current nodal DOFs relevant for centerline interpolation in total Lagrangian
      * style, i.e. initial values + displacements */
-    LINALG::TMatrix<Sacado::Fad::DFad<double>, 3 * vpernode * nnodecl, 1>
-        disp_totlag_centerline_FAD;
+    LINALG::Matrix<3 * vpernode * nnodecl, 1, Sacado::Fad::DFad<double>> disp_totlag_centerline_FAD;
 
     for (unsigned int i = 0; i < 3 * vpernode * nnodecl; ++i)
       disp_totlag_centerline_FAD(i) = disp_totlag_centerline(i);
 
     // quaternions of all nodal triads
-    std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>, 4, 1>> Qnode_FAD(nnodetriad);
+    std::vector<LINALG::Matrix<4, 1, Sacado::Fad::DFad<double>>> Qnode_FAD(nnodetriad);
 
     for (unsigned int inode = 0; inode < nnodetriad; ++inode)
       for (unsigned int j = 0; j < 4; ++j) Qnode_FAD[inode](j) = Qnode[inode](j);
@@ -1113,9 +1112,9 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
  *----------------------------------------------------------------------------*/
 template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode, typename T>
 void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
-    const LINALG::TMatrix<T, 3 * vpernode * nnodecl, 1>& disp_totlag_centerline,
-    const std::vector<LINALG::TMatrix<T, 4, 1>>& Qnode, Epetra_SerialDenseMatrix* stiffmatrix,
-    LINALG::TMatrix<T, 3 * vpernode * nnodecl + 3 * nnodetriad, 1>& internal_force)
+    const LINALG::Matrix<3 * vpernode * nnodecl, 1, T>& disp_totlag_centerline,
+    const std::vector<LINALG::Matrix<4, 1, T>>& Qnode, Epetra_SerialDenseMatrix* stiffmatrix,
+    LINALG::Matrix<3 * vpernode * nnodecl + 3 * nnodetriad, 1, T>& internal_force)
 {
   // nnodetriad: number of nodes used for interpolation of triad field
   // nnodecl: number of nodes used for interpolation of centerline
@@ -1141,36 +1140,36 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
 
   // derivation of beam centerline with respect to arc-length parameter: r'(x) from (2.12), Jelenic
   // 1999
-  LINALG::TMatrix<T, 3, 1> r_s;
+  LINALG::Matrix<3, 1, T> r_s;
   // spin matrix related to vector r_s
-  LINALG::TMatrix<T, 3, 3> r_s_hat;
+  LINALG::Matrix<3, 3, T> r_s_hat;
   // interpolated local relative rotation \Psi^l at a certain Gauss point according to (3.11),
   // Jelenic 1999
-  LINALG::TMatrix<T, 3, 1> Psi_l;
+  LINALG::Matrix<3, 1, T> Psi_l;
   /* derivative of interpolated local relative rotation \Psi^l with respect to arc-length parameter
    * at a certain Gauss point according to (3.11), Jelenic 1999*/
-  LINALG::TMatrix<T, 3, 1> Psi_l_s;
+  LINALG::Matrix<3, 1, T> Psi_l_s;
   // triad at GP
-  LINALG::TMatrix<T, 3, 3> Lambda;
+  LINALG::Matrix<3, 3, T> Lambda;
 
   // 3D vector related to spin matrix \hat{\kappa} from (2.1), Jelenic 1999
-  LINALG::TMatrix<T, 3, 1> K;
+  LINALG::Matrix<3, 1, T> K;
   // 3D vector of material axial and shear strains from (2.1), Jelenic 1999
-  LINALG::TMatrix<T, 3, 1> Gamma;
+  LINALG::Matrix<3, 1, T> Gamma;
 
   // convected stresses N and M and constitutive matrices C_N and C_M according to section 2.4,
   // Jelenic 1999
-  LINALG::TMatrix<T, 3, 1> stressN;
-  LINALG::TMatrix<T, 3, 1> stressM;
-  LINALG::TMatrix<T, 3, 3> CN;
-  LINALG::TMatrix<T, 3, 3> CM;
+  LINALG::Matrix<3, 1, T> stressN;
+  LINALG::Matrix<3, 1, T> stressM;
+  LINALG::Matrix<3, 3, T> CN;
+  LINALG::Matrix<3, 3, T> CM;
 
   // spatial stresses n and m according to (3.10), Romero 2004 and spatial constitutive matrices c_n
   // and c_m according to page 148, Jelenic 1999
-  LINALG::TMatrix<T, 3, 1> stressn;
-  LINALG::TMatrix<T, 3, 1> stressm;
-  LINALG::TMatrix<T, 3, 3> cn;
-  LINALG::TMatrix<T, 3, 3> cm;
+  LINALG::Matrix<3, 1, T> stressn;
+  LINALG::Matrix<3, 1, T> stressm;
+  LINALG::Matrix<3, 3, T> cn;
+  LINALG::Matrix<3, 3, T> cm;
 
   //********************************** (generalized) shape functions
   //************************************
@@ -1180,16 +1179,16 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
   /* vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial shape functions
    * evaluated at the numgp-th Gauss point these shape functions are used for the interpolation of
    * the triad field*/
-  std::vector<LINALG::TMatrix<double, 1, nnodetriad>> I_i;
+  std::vector<LINALG::Matrix<1, nnodetriad, double>> I_i;
   // same for the derivatives
-  std::vector<LINALG::TMatrix<double, 1, nnodetriad>> I_i_xi;
+  std::vector<LINALG::Matrix<1, nnodetriad, double>> I_i_xi;
 
   /* vector whose numgp-th element is a 1x(vpernode*nnode)-matrix with all (Lagrange/Hermite) shape
    * functions evaluated at the numgp-th GP
    * these shape functions are used for the interpolation of the beam centerline*/
-  std::vector<LINALG::TMatrix<double, 1, vpernode * nnodecl>> H_i;
+  std::vector<LINALG::Matrix<1, vpernode * nnodecl, double>> H_i;
   // same for the derivatives
-  std::vector<LINALG::TMatrix<double, 1, vpernode * nnodecl>> H_i_xi;
+  std::vector<LINALG::Matrix<1, vpernode * nnodecl, double>> H_i_xi;
 
 
   /*************************** update/compute quantities valid for entire element
@@ -1443,8 +1442,8 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
 
 template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
 void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
-    const LINALG::TMatrix<double, 3 * vpernode * nnodecl, 1>& disp_totlag_centerline,
-    const std::vector<LINALG::TMatrix<double, 4, 1>>& Qnode, Epetra_SerialDenseMatrix* massmatrix,
+    const LINALG::Matrix<3 * vpernode * nnodecl, 1, double>& disp_totlag_centerline,
+    const std::vector<LINALG::Matrix<4, 1, double>>& Qnode, Epetra_SerialDenseMatrix* massmatrix,
     Epetra_SerialDenseVector* inertia_force)
 {
   const unsigned int dofperclnode = 3 * vpernode;
@@ -1504,12 +1503,12 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
   /* vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial shape functions
    * evaluated at the numgp-th Gauss point these shape functions are used for the interpolation of
    * the triad field*/
-  std::vector<LINALG::TMatrix<double, 1, nnodetriad>> I_i;
+  std::vector<LINALG::Matrix<1, nnodetriad, double>> I_i;
 
   /* vector whose numgp-th element is a 1x(vpernode*nnode)-matrix with all (Lagrange/Hermite) shape
    * functions evaluated at the numgp-th GP
    * these shape functions are used for the interpolation of the beam centerline*/
-  std::vector<LINALG::TMatrix<double, 1, vpernode * nnodecl>> H_i;
+  std::vector<LINALG::Matrix<1, vpernode * nnodecl, double>> H_i;
 
   // get integration scheme for inertia forces and mass matrix
   DRT::UTILS::IntegrationPoints1D gausspoints_mass(MyGaussRule(res_inertia));
@@ -1542,11 +1541,11 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
 
   // interpolated local relative rotation \Psi^l at a certain Gauss point according to (3.11),
   // Jelenic 1999
-  LINALG::TMatrix<double, 3, 1> Psi_l(true);
+  LINALG::Matrix<3, 1, double> Psi_l(true);
 
   // vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function
   // \tilde{I}^nnode at a certain Gauss point according to (3.18), Jelenic 1999
-  std::vector<LINALG::TMatrix<double, 3, 3>> Itilde(nnodetriad);
+  std::vector<LINALG::Matrix<3, 3, double>> Itilde(nnodetriad);
 
   for (int gp = 0; gp < gausspoints_mass.nquad; gp++)  // loop through Gauss points
   {
@@ -1858,11 +1857,11 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
  *----------------------------------------------------------------------------*/
 template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
 void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions(
-    Epetra_SerialDenseMatrix& stiffmatrix, const LINALG::TMatrix<double, 3, 1>& stressn,
-    const LINALG::TMatrix<double, 3, 3>& cn, const LINALG::TMatrix<double, 3, 3>& r_s_hat,
+    Epetra_SerialDenseMatrix& stiffmatrix, const LINALG::Matrix<3, 1, double>& stressn,
+    const LINALG::Matrix<3, 3, double>& cn, const LINALG::Matrix<3, 3, double>& r_s_hat,
     const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad, double>& triad_intpol,
-    const LINALG::TMatrix<double, 1, nnodetriad>& I_i,
-    const LINALG::TMatrix<double, 1, vpernode * nnodecl>& H_i_xi, const double wgt,
+    const LINALG::Matrix<1, nnodetriad, double>& I_i,
+    const LINALG::Matrix<1, vpernode * nnodecl, double>& H_i_xi, const double wgt,
     const double jacobifactor) const
 {
   const unsigned int dofperclnode = 3 * vpernode;
@@ -1877,18 +1876,18 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions(
 
   // vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function
   // \tilde{I}^nnode at a certain Gauss point according to (3.18), Jelenic 1999
-  std::vector<LINALG::TMatrix<double, 3, 3>> Itilde(nnodetriad);
+  std::vector<LINALG::Matrix<3, 3, double>> Itilde(nnodetriad);
 
-  LINALG::TMatrix<double, 3, 1> Psi_l(true);
+  LINALG::Matrix<3, 1, double> Psi_l(true);
   triad_intpol.GetInterpolatedLocalRotationVector(Psi_l, I_i);
   triad_intpol.GetNodalGeneralizedRotationInterpolationMatrices(Itilde, Psi_l, I_i);
 
 
   // auxiliary variables for storing intermediate matrices in computation of entries of stiffness
   // matrix
-  LINALG::TMatrix<double, 3, 3> auxmatrix1;
-  LINALG::TMatrix<double, 3, 3> auxmatrix2;
-  LINALG::TMatrix<double, 3, 3> auxmatrix3;
+  LINALG::Matrix<3, 3, double> auxmatrix1;
+  LINALG::Matrix<3, 3, double> auxmatrix2;
+  LINALG::Matrix<3, 3, double> auxmatrix3;
 
   for (unsigned int nodei = 0; nodei < nnodecl; nodei++)
   {
@@ -2065,12 +2064,12 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions(
  *----------------------------------------------------------------------------*/
 template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
 void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions(
-    Epetra_SerialDenseMatrix& stiffmatrix, const LINALG::TMatrix<double, 3, 1>& stressm,
-    const LINALG::TMatrix<double, 3, 3>& cm,
+    Epetra_SerialDenseMatrix& stiffmatrix, const LINALG::Matrix<3, 1, double>& stressm,
+    const LINALG::Matrix<3, 3, double>& cm,
     const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad, double>& triad_intpol,
-    const LINALG::TMatrix<double, 3, 1>& Psi_l, const LINALG::TMatrix<double, 3, 1>& Psi_l_s,
-    const LINALG::TMatrix<double, 1, nnodetriad>& I_i,
-    const LINALG::TMatrix<double, 1, nnodetriad>& I_i_xi, const double wgt,
+    const LINALG::Matrix<3, 1, double>& Psi_l, const LINALG::Matrix<3, 1, double>& Psi_l_s,
+    const LINALG::Matrix<1, nnodetriad, double>& I_i,
+    const LINALG::Matrix<1, nnodetriad, double>& I_i_xi, const double wgt,
     const double jacobifactor) const
 {
   const unsigned int dofperclnode = 3 * vpernode;
@@ -2081,11 +2080,11 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions(
 
   // vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function
   // \tilde{I}^nnode at a certain Gauss point according to (3.18), Jelenic 1999
-  std::vector<LINALG::TMatrix<double, 3, 3>> Itilde(nnodetriad);
+  std::vector<LINALG::Matrix<3, 3, double>> Itilde(nnodetriad);
 
   // vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function
   // \tilde{I'}^nnode at a certain Gauss point according to (3.19), Jelenic 1999
-  std::vector<LINALG::TMatrix<double, 3, 3>> Itildeprime(nnodetriad);
+  std::vector<LINALG::Matrix<3, 3, double>> Itildeprime(nnodetriad);
 
   triad_intpol.GetNodalGeneralizedRotationInterpolationMatrices(Itilde, Psi_l, I_i);
 
@@ -2095,8 +2094,8 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions(
 
   // auxiliary variables for storing intermediate matrices in computation of entries of stiffness
   // matrix
-  LINALG::TMatrix<double, 3, 3> auxmatrix1;
-  LINALG::TMatrix<double, 3, 3> auxmatrix2;
+  LINALG::Matrix<3, 3, double> auxmatrix1;
+  LINALG::Matrix<3, 3, double> auxmatrix2;
 
   for (unsigned int nodei = 0; nodei < nnodecl; nodei++)
   {
@@ -2193,8 +2192,8 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions(
  *----------------------------------------------------------------------------*/
 template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
 void DRT::ELEMENTS::Beam3r::CalcStiffmatAutomaticDifferentiation(
-    Epetra_SerialDenseMatrix& stiffmatrix, const std::vector<LINALG::TMatrix<double, 4, 1>>& Qnode,
-    LINALG::TMatrix<Sacado::Fad::DFad<double>, 3 * vpernode * nnodecl + 3 * nnodetriad, 1> forcevec)
+    Epetra_SerialDenseMatrix& stiffmatrix, const std::vector<LINALG::Matrix<4, 1, double>>& Qnode,
+    LINALG::Matrix<3 * vpernode * nnodecl + 3 * nnodetriad, 1, Sacado::Fad::DFad<double>> forcevec)
     const
 {
   const unsigned int dofperclnode = 3 * vpernode;
@@ -2217,10 +2216,10 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAutomaticDifferentiation(
    * the trafo matrix is simply the T-Matrix (see Jelenic1999, (2.4)): \Delta_{mult} \vec
    * \theta_{inode} = \mat T(\vec \theta_{inode} * \Delta_{addit} \vec \theta_{inode}*/
 
-  LINALG::TMatrix<double, 3, 3> tempmat(true);
-  LINALG::TMatrix<double, 3, 3> newstiffmat(true);
-  LINALG::TMatrix<double, 3, 3> Tmat(true);
-  LINALG::TMatrix<double, 3, 1> theta_totlag_j(true);
+  LINALG::Matrix<3, 3, double> tempmat(true);
+  LINALG::Matrix<3, 3, double> newstiffmat(true);
+  LINALG::Matrix<3, 3, double> Tmat(true);
+  LINALG::Matrix<3, 1, double> theta_totlag_j(true);
 
   for (unsigned int jnode = 0; jnode < nnodecl; jnode++)
   {
@@ -2398,13 +2397,13 @@ void DRT::ELEMENTS::Beam3r::CalcBrownianForcesAndStiff(Teuchos::ParameterList& p
 
   // current nodal DOFs relevant for centerline interpolation in total Lagrangian style, i.e.
   // initial values + displacements
-  LINALG::TMatrix<double, 3 * vpernode * nnodecl, 1> disp_totlag_centerline(true);
+  LINALG::Matrix<3 * vpernode * nnodecl, 1, double> disp_totlag_centerline(true);
 
   // discrete centerline (i.e. translational) velocity vector
-  LINALG::TMatrix<double, 3 * vpernode * nnodecl, 1> vel_centerline(true);
+  LINALG::Matrix<3 * vpernode * nnodecl, 1, double> vel_centerline(true);
 
   // quaternions of all nodal triads
-  std::vector<LINALG::TMatrix<double, 4, 1>> Q_i(nnodetriad);
+  std::vector<LINALG::Matrix<4, 1, double>> Q_i(nnodetriad);
 
   // update disp_totlag_centerline and nodal triads
   UpdateDispTotLagAndNodalTriads<nnodetriad, nnodecl, vpernode, double>(
@@ -2533,7 +2532,7 @@ int DRT::ELEMENTS::Beam3r::HowManyRandomNumbersINeed() const
 template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode, unsigned int ndim>
 void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(
     Teuchos::ParameterList& params,  //!< parameter list
-    const std::vector<LINALG::TMatrix<double, 4, 1>>& Qnode,
+    const std::vector<LINALG::Matrix<4, 1, double>>& Qnode,
     Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
     Epetra_SerialDenseVector* force)        //!< element internal force vector
 {
@@ -2575,14 +2574,14 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(
   /* vector whose numgp-th element is a 1xnnodetriad-matrix with all Lagrange polynomial shape
    * functions evaluated at the numgp-th Gauss point these shape functions are used for the
    * interpolation of the triad field */
-  std::vector<LINALG::TMatrix<double, 1, nnodetriad>> I_i(gausspoints.nquad);
+  std::vector<LINALG::Matrix<1, nnodetriad, double>> I_i(gausspoints.nquad);
 
   // evaluate all shape functions at all specified Gauss points
   DRT::UTILS::BEAM::EvaluateShapeFunctionsAllGPs<nnodetriad, 1>(gausspoints, I_i, this->Shape());
 
   /* vector with nnodetriad elements, who represent the 3x3-matrix-shaped interpolation function
    * \tilde{I}^nnode according to (3.19), Jelenic 1999*/
-  std::vector<LINALG::TMatrix<double, 3, 3>> Itilde(nnodetriad);
+  std::vector<LINALG::Matrix<3, 3, double>> Itilde(nnodetriad);
 
 
   // create an object of the triad interpolation scheme
@@ -2617,17 +2616,17 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(
     // ******** alternative 2 ***************
 
     // get quaternion in converged state at gp and compute corresponding triad
-    LINALG::TMatrix<double, 3, 3> triad_mat_conv(true);
-    LINALG::TMatrix<double, 4, 1> Qconv(true);
+    LINALG::Matrix<3, 3, double> triad_mat_conv(true);
+    LINALG::Matrix<4, 1, double> Qconv(true);
     for (unsigned int i = 0; i < 4; ++i) Qconv(i) = (QconvGPdampstoch_[gp])(i);
 
     LARGEROTATIONS::quaterniontotriad(Qconv, triad_mat_conv);
 
     // compute quaternion of relative rotation from converged to current state
-    LINALG::TMatrix<double, 3, 3> deltatriad(true);
+    LINALG::Matrix<3, 3, double> deltatriad(true);
     deltatriad.MultiplyNT(LambdaGP, triad_mat_conv);
 
-    LINALG::TMatrix<double, 4, 1> deltaQ(true);
+    LINALG::Matrix<4, 1, double> deltaQ(true);
     LARGEROTATIONS::triadtoquaternion(deltatriad, deltaQ);
 
     // **************************************
@@ -2780,8 +2779,8 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(
  *----------------------------------------------------------------------------------------------------------*/
 template <unsigned int nnodecl, unsigned int vpernode, unsigned int ndim>
 void DRT::ELEMENTS::Beam3r::EvaluateTranslationalDamping(Teuchos::ParameterList& params,
-    const LINALG::TMatrix<double, ndim * vpernode * nnodecl, 1>& vel_centerline,
-    const LINALG::TMatrix<double, ndim * vpernode * nnodecl, 1>& disp_totlag_centerline,
+    const LINALG::Matrix<ndim * vpernode * nnodecl, 1, double>& vel_centerline,
+    const LINALG::Matrix<ndim * vpernode * nnodecl, 1, double>& disp_totlag_centerline,
     Epetra_SerialDenseMatrix* stiffmatrix, Epetra_SerialDenseVector* force) const
 {
   /* only nodes for centerline interpolation are considered here (= first nnodecl nodes of this
@@ -2822,9 +2821,9 @@ void DRT::ELEMENTS::Beam3r::EvaluateTranslationalDamping(Teuchos::ParameterList&
   /* vector whose numgp-th element is a 1x(vpernode*nnode)-matrix with all (Lagrange/Hermite) shape
    * functions evaluated at the numgp-th GP
    * these shape functions are used for the interpolation of the beam centerline*/
-  std::vector<LINALG::TMatrix<double, 1, vpernode * nnodecl>> H_i(gausspoints.nquad);
+  std::vector<LINALG::Matrix<1, vpernode * nnodecl, double>> H_i(gausspoints.nquad);
   // same for the derivatives
-  std::vector<LINALG::TMatrix<double, 1, vpernode * nnodecl>> H_i_xi(gausspoints.nquad);
+  std::vector<LINALG::Matrix<1, vpernode * nnodecl, double>> H_i_xi(gausspoints.nquad);
 
   // evaluate all shape functions and derivatives with respect to element parameter xi at all
   // specified Gauss points
@@ -2972,7 +2971,7 @@ template <unsigned int nnodecl, unsigned int vpernode, unsigned int ndim,
                                   void
                                   DRT::ELEMENTS::Beam3r::EvaluateStochasticForces(
                                       Teuchos::ParameterList& params,
-                                      const LINALG::TMatrix<double, ndim * vpernode * nnodecl, 1>&
+                                      const LINALG::Matrix< ndim * vpernode * nnodecl, 1,double>&
                                           disp_totlag_centerline,
                                       Epetra_SerialDenseMatrix* stiffmatrix,
                                       Epetra_SerialDenseVector* force) const
@@ -3006,9 +3005,9 @@ template <unsigned int nnodecl, unsigned int vpernode, unsigned int ndim,
   /* vector whose numgp-th element is a 1x(vpernode*nnode)-matrix with all (Lagrange/Hermite) shape
    * functions evaluated at the numgp-th GP
    * these shape functions are used for the interpolation of the beam centerline*/
-  std::vector<LINALG::TMatrix<double, 1, vpernode * nnodecl>> H_i(gausspoints.nquad);
+  std::vector<LINALG::Matrix<1, vpernode * nnodecl, double>> H_i(gausspoints.nquad);
   // same for the derivatives
-  std::vector<LINALG::TMatrix<double, 1, vpernode * nnodecl>> H_i_xi(gausspoints.nquad);
+  std::vector<LINALG::Matrix<1, vpernode * nnodecl, double>> H_i_xi(gausspoints.nquad);
 
   // evaluate all shape function derivatives with respect to element parameter xi at all specified
   // Gauss points
@@ -3140,222 +3139,222 @@ template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<5, 2, 
     Epetra_SerialDenseMatrix*, Epetra_SerialDenseVector*, Epetra_SerialDenseVector*);
 
 template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<2, 2, 1>(
-    LINALG::TMatrix<double, 6, 1>&, std::vector<LINALG::TMatrix<double, 4, 1>>&,
+    LINALG::Matrix<6, 1, double>&, std::vector<LINALG::Matrix<4, 1, double>>&,
     Epetra_SerialDenseMatrix*, Epetra_SerialDenseMatrix*, Epetra_SerialDenseVector*,
     Epetra_SerialDenseVector*);
 template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<3, 3, 1>(
-    LINALG::TMatrix<double, 9, 1>&, std::vector<LINALG::TMatrix<double, 4, 1>>&,
+    LINALG::Matrix<9, 1, double>&, std::vector<LINALG::Matrix<4, 1, double>>&,
     Epetra_SerialDenseMatrix*, Epetra_SerialDenseMatrix*, Epetra_SerialDenseVector*,
     Epetra_SerialDenseVector*);
 template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<4, 4, 1>(
-    LINALG::TMatrix<double, 12, 1>&, std::vector<LINALG::TMatrix<double, 4, 1>>&,
+    LINALG::Matrix<12, 1, double>&, std::vector<LINALG::Matrix<4, 1, double>>&,
     Epetra_SerialDenseMatrix*, Epetra_SerialDenseMatrix*, Epetra_SerialDenseVector*,
     Epetra_SerialDenseVector*);
 template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<5, 5, 1>(
-    LINALG::TMatrix<double, 15, 1>&, std::vector<LINALG::TMatrix<double, 4, 1>>&,
+    LINALG::Matrix<15, 1, double>&, std::vector<LINALG::Matrix<4, 1, double>>&,
     Epetra_SerialDenseMatrix*, Epetra_SerialDenseMatrix*, Epetra_SerialDenseVector*,
     Epetra_SerialDenseVector*);
 template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<2, 2, 2>(
-    LINALG::TMatrix<double, 12, 1>&, std::vector<LINALG::TMatrix<double, 4, 1>>&,
+    LINALG::Matrix<12, 1, double>&, std::vector<LINALG::Matrix<4, 1, double>>&,
     Epetra_SerialDenseMatrix*, Epetra_SerialDenseMatrix*, Epetra_SerialDenseVector*,
     Epetra_SerialDenseVector*);
 template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<3, 2, 2>(
-    LINALG::TMatrix<double, 12, 1>&, std::vector<LINALG::TMatrix<double, 4, 1>>&,
+    LINALG::Matrix<12, 1, double>&, std::vector<LINALG::Matrix<4, 1, double>>&,
     Epetra_SerialDenseMatrix*, Epetra_SerialDenseMatrix*, Epetra_SerialDenseVector*,
     Epetra_SerialDenseVector*);
 template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<4, 2, 2>(
-    LINALG::TMatrix<double, 12, 1>&, std::vector<LINALG::TMatrix<double, 4, 1>>&,
+    LINALG::Matrix<12, 1, double>&, std::vector<LINALG::Matrix<4, 1, double>>&,
     Epetra_SerialDenseMatrix*, Epetra_SerialDenseMatrix*, Epetra_SerialDenseVector*,
     Epetra_SerialDenseVector*);
 template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<5, 2, 2>(
-    LINALG::TMatrix<double, 12, 1>&, std::vector<LINALG::TMatrix<double, 4, 1>>&,
+    LINALG::Matrix<12, 1, double>&, std::vector<LINALG::Matrix<4, 1, double>>&,
     Epetra_SerialDenseMatrix*, Epetra_SerialDenseMatrix*, Epetra_SerialDenseVector*,
     Epetra_SerialDenseVector*);
 
 template void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff<2, 2, 1, double>(
-    const LINALG::TMatrix<double, 6, 1>&, const std::vector<LINALG::TMatrix<double, 4, 1>>&,
-    Epetra_SerialDenseMatrix*, LINALG::TMatrix<double, 12, 1>&);
+    const LINALG::Matrix<6, 1, double>&, const std::vector<LINALG::Matrix<4, 1, double>>&,
+    Epetra_SerialDenseMatrix*, LINALG::Matrix<12, 1, double>&);
 template void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff<3, 3, 1, double>(
-    const LINALG::TMatrix<double, 9, 1>&, const std::vector<LINALG::TMatrix<double, 4, 1>>&,
-    Epetra_SerialDenseMatrix*, LINALG::TMatrix<double, 18, 1>&);
+    const LINALG::Matrix<9, 1, double>&, const std::vector<LINALG::Matrix<4, 1, double>>&,
+    Epetra_SerialDenseMatrix*, LINALG::Matrix<18, 1, double>&);
 template void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff<4, 4, 1, double>(
-    const LINALG::TMatrix<double, 12, 1>&, const std::vector<LINALG::TMatrix<double, 4, 1>>&,
-    Epetra_SerialDenseMatrix*, LINALG::TMatrix<double, 24, 1>&);
+    const LINALG::Matrix<12, 1, double>&, const std::vector<LINALG::Matrix<4, 1, double>>&,
+    Epetra_SerialDenseMatrix*, LINALG::Matrix<24, 1, double>&);
 template void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff<5, 5, 1, double>(
-    const LINALG::TMatrix<double, 15, 1>&, const std::vector<LINALG::TMatrix<double, 4, 1>>&,
-    Epetra_SerialDenseMatrix*, LINALG::TMatrix<double, 30, 1>&);
+    const LINALG::Matrix<15, 1, double>&, const std::vector<LINALG::Matrix<4, 1, double>>&,
+    Epetra_SerialDenseMatrix*, LINALG::Matrix<30, 1, double>&);
 template void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff<2, 2, 2, double>(
-    const LINALG::TMatrix<double, 12, 1>&, const std::vector<LINALG::TMatrix<double, 4, 1>>&,
-    Epetra_SerialDenseMatrix*, LINALG::TMatrix<double, 18, 1>&);
+    const LINALG::Matrix<12, 1, double>&, const std::vector<LINALG::Matrix<4, 1, double>>&,
+    Epetra_SerialDenseMatrix*, LINALG::Matrix<18, 1, double>&);
 template void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff<3, 2, 2, double>(
-    const LINALG::TMatrix<double, 12, 1>&, const std::vector<LINALG::TMatrix<double, 4, 1>>&,
-    Epetra_SerialDenseMatrix*, LINALG::TMatrix<double, 21, 1>&);
+    const LINALG::Matrix<12, 1, double>&, const std::vector<LINALG::Matrix<4, 1, double>>&,
+    Epetra_SerialDenseMatrix*, LINALG::Matrix<21, 1, double>&);
 template void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff<4, 2, 2, double>(
-    const LINALG::TMatrix<double, 12, 1>&, const std::vector<LINALG::TMatrix<double, 4, 1>>&,
-    Epetra_SerialDenseMatrix*, LINALG::TMatrix<double, 24, 1>&);
+    const LINALG::Matrix<12, 1, double>&, const std::vector<LINALG::Matrix<4, 1, double>>&,
+    Epetra_SerialDenseMatrix*, LINALG::Matrix<24, 1, double>&);
 template void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff<5, 2, 2, double>(
-    const LINALG::TMatrix<double, 12, 1>&, const std::vector<LINALG::TMatrix<double, 4, 1>>&,
-    Epetra_SerialDenseMatrix*, LINALG::TMatrix<double, 27, 1>&);
+    const LINALG::Matrix<12, 1, double>&, const std::vector<LINALG::Matrix<4, 1, double>>&,
+    Epetra_SerialDenseMatrix*, LINALG::Matrix<27, 1, double>&);
 template void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff<2, 2, 1, Sacado::Fad::DFad<double>>(
-    const LINALG::TMatrix<Sacado::Fad::DFad<double>, 6, 1>&,
-    const std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>, 4, 1>>&, Epetra_SerialDenseMatrix*,
-    LINALG::TMatrix<Sacado::Fad::DFad<double>, 12, 1>&);
+    const LINALG::Matrix<6, 1, Sacado::Fad::DFad<double>>&,
+    const std::vector<LINALG::Matrix<4, 1, Sacado::Fad::DFad<double>>>&, Epetra_SerialDenseMatrix*,
+    LINALG::Matrix<12, 1, Sacado::Fad::DFad<double>>&);
 template void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff<3, 3, 1, Sacado::Fad::DFad<double>>(
-    const LINALG::TMatrix<Sacado::Fad::DFad<double>, 9, 1>&,
-    const std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>, 4, 1>>&, Epetra_SerialDenseMatrix*,
-    LINALG::TMatrix<Sacado::Fad::DFad<double>, 18, 1>&);
+    const LINALG::Matrix<9, 1, Sacado::Fad::DFad<double>>&,
+    const std::vector<LINALG::Matrix<4, 1, Sacado::Fad::DFad<double>>>&, Epetra_SerialDenseMatrix*,
+    LINALG::Matrix<18, 1, Sacado::Fad::DFad<double>>&);
 template void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff<4, 4, 1, Sacado::Fad::DFad<double>>(
-    const LINALG::TMatrix<Sacado::Fad::DFad<double>, 12, 1>&,
-    const std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>, 4, 1>>&, Epetra_SerialDenseMatrix*,
-    LINALG::TMatrix<Sacado::Fad::DFad<double>, 24, 1>&);
+    const LINALG::Matrix<12, 1, Sacado::Fad::DFad<double>>&,
+    const std::vector<LINALG::Matrix<4, 1, Sacado::Fad::DFad<double>>>&, Epetra_SerialDenseMatrix*,
+    LINALG::Matrix<24, 1, Sacado::Fad::DFad<double>>&);
 template void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff<5, 5, 1, Sacado::Fad::DFad<double>>(
-    const LINALG::TMatrix<Sacado::Fad::DFad<double>, 15, 1>&,
-    const std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>, 4, 1>>&, Epetra_SerialDenseMatrix*,
-    LINALG::TMatrix<Sacado::Fad::DFad<double>, 30, 1>&);
+    const LINALG::Matrix<15, 1, Sacado::Fad::DFad<double>>&,
+    const std::vector<LINALG::Matrix<4, 1, Sacado::Fad::DFad<double>>>&, Epetra_SerialDenseMatrix*,
+    LINALG::Matrix<30, 1, Sacado::Fad::DFad<double>>&);
 template void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff<2, 2, 2, Sacado::Fad::DFad<double>>(
-    const LINALG::TMatrix<Sacado::Fad::DFad<double>, 12, 1>&,
-    const std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>, 4, 1>>&, Epetra_SerialDenseMatrix*,
-    LINALG::TMatrix<Sacado::Fad::DFad<double>, 18, 1>&);
+    const LINALG::Matrix<12, 1, Sacado::Fad::DFad<double>>&,
+    const std::vector<LINALG::Matrix<4, 1, Sacado::Fad::DFad<double>>>&, Epetra_SerialDenseMatrix*,
+    LINALG::Matrix<18, 1, Sacado::Fad::DFad<double>>&);
 template void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff<3, 2, 2, Sacado::Fad::DFad<double>>(
-    const LINALG::TMatrix<Sacado::Fad::DFad<double>, 12, 1>&,
-    const std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>, 4, 1>>&, Epetra_SerialDenseMatrix*,
-    LINALG::TMatrix<Sacado::Fad::DFad<double>, 21, 1>&);
+    const LINALG::Matrix<12, 1, Sacado::Fad::DFad<double>>&,
+    const std::vector<LINALG::Matrix<4, 1, Sacado::Fad::DFad<double>>>&, Epetra_SerialDenseMatrix*,
+    LINALG::Matrix<21, 1, Sacado::Fad::DFad<double>>&);
 template void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff<4, 2, 2, Sacado::Fad::DFad<double>>(
-    const LINALG::TMatrix<Sacado::Fad::DFad<double>, 12, 1>&,
-    const std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>, 4, 1>>&, Epetra_SerialDenseMatrix*,
-    LINALG::TMatrix<Sacado::Fad::DFad<double>, 24, 1>&);
+    const LINALG::Matrix<12, 1, Sacado::Fad::DFad<double>>&,
+    const std::vector<LINALG::Matrix<4, 1, Sacado::Fad::DFad<double>>>&, Epetra_SerialDenseMatrix*,
+    LINALG::Matrix<24, 1, Sacado::Fad::DFad<double>>&);
 template void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff<5, 2, 2, Sacado::Fad::DFad<double>>(
-    const LINALG::TMatrix<Sacado::Fad::DFad<double>, 12, 1>&,
-    const std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>, 4, 1>>&, Epetra_SerialDenseMatrix*,
-    LINALG::TMatrix<Sacado::Fad::DFad<double>, 27, 1>&);
+    const LINALG::Matrix<12, 1, Sacado::Fad::DFad<double>>&,
+    const std::vector<LINALG::Matrix<4, 1, Sacado::Fad::DFad<double>>>&, Epetra_SerialDenseMatrix*,
+    LINALG::Matrix<27, 1, Sacado::Fad::DFad<double>>&);
 
 template void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix<2, 2, 1>(
-    const LINALG::TMatrix<double, 6, 1>&, const std::vector<LINALG::TMatrix<double, 4, 1>>&,
+    const LINALG::Matrix<6, 1, double>&, const std::vector<LINALG::Matrix<4, 1, double>>&,
     Epetra_SerialDenseMatrix*, Epetra_SerialDenseVector*);
 template void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix<3, 3, 1>(
-    const LINALG::TMatrix<double, 9, 1>&, const std::vector<LINALG::TMatrix<double, 4, 1>>&,
+    const LINALG::Matrix<9, 1, double>&, const std::vector<LINALG::Matrix<4, 1, double>>&,
     Epetra_SerialDenseMatrix*, Epetra_SerialDenseVector*);
 template void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix<4, 4, 1>(
-    const LINALG::TMatrix<double, 12, 1>&, const std::vector<LINALG::TMatrix<double, 4, 1>>&,
+    const LINALG::Matrix<12, 1, double>&, const std::vector<LINALG::Matrix<4, 1, double>>&,
     Epetra_SerialDenseMatrix*, Epetra_SerialDenseVector*);
 template void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix<5, 5, 1>(
-    const LINALG::TMatrix<double, 15, 1>&, const std::vector<LINALG::TMatrix<double, 4, 1>>&,
+    const LINALG::Matrix<15, 1, double>&, const std::vector<LINALG::Matrix<4, 1, double>>&,
     Epetra_SerialDenseMatrix*, Epetra_SerialDenseVector*);
 template void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix<2, 2, 2>(
-    const LINALG::TMatrix<double, 12, 1>&, const std::vector<LINALG::TMatrix<double, 4, 1>>&,
+    const LINALG::Matrix<12, 1, double>&, const std::vector<LINALG::Matrix<4, 1, double>>&,
     Epetra_SerialDenseMatrix*, Epetra_SerialDenseVector*);
 template void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix<3, 2, 2>(
-    const LINALG::TMatrix<double, 12, 1>&, const std::vector<LINALG::TMatrix<double, 4, 1>>&,
+    const LINALG::Matrix<12, 1, double>&, const std::vector<LINALG::Matrix<4, 1, double>>&,
     Epetra_SerialDenseMatrix*, Epetra_SerialDenseVector*);
 template void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix<4, 2, 2>(
-    const LINALG::TMatrix<double, 12, 1>&, const std::vector<LINALG::TMatrix<double, 4, 1>>&,
+    const LINALG::Matrix<12, 1, double>&, const std::vector<LINALG::Matrix<4, 1, double>>&,
     Epetra_SerialDenseMatrix*, Epetra_SerialDenseVector*);
 template void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix<5, 2, 2>(
-    const LINALG::TMatrix<double, 12, 1>&, const std::vector<LINALG::TMatrix<double, 4, 1>>&,
+    const LINALG::Matrix<12, 1, double>&, const std::vector<LINALG::Matrix<4, 1, double>>&,
     Epetra_SerialDenseMatrix*, Epetra_SerialDenseVector*);
 
 template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions<2, 2, 1>(
-    Epetra_SerialDenseMatrix&, const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<double, 3, 3>&, const LINALG::TMatrix<double, 3, 3>&,
+    Epetra_SerialDenseMatrix&, const LINALG::Matrix<3, 1, double>&,
+    const LINALG::Matrix<3, 3, double>&, const LINALG::Matrix<3, 3, double>&,
     const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<2, double>&,
-    const LINALG::TMatrix<double, 1, 2>&, const LINALG::TMatrix<double, 1, 2>&, const double,
+    const LINALG::Matrix<1, 2, double>&, const LINALG::Matrix<1, 2, double>&, const double,
     const double) const;
 template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions<3, 3, 1>(
-    Epetra_SerialDenseMatrix&, const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<double, 3, 3>&, const LINALG::TMatrix<double, 3, 3>&,
+    Epetra_SerialDenseMatrix&, const LINALG::Matrix<3, 1, double>&,
+    const LINALG::Matrix<3, 3, double>&, const LINALG::Matrix<3, 3, double>&,
     const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&,
-    const LINALG::TMatrix<double, 1, 3>&, const LINALG::TMatrix<double, 1, 3>&, const double,
+    const LINALG::Matrix<1, 3, double>&, const LINALG::Matrix<1, 3, double>&, const double,
     const double) const;
 template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions<4, 4, 1>(
-    Epetra_SerialDenseMatrix&, const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<double, 3, 3>&, const LINALG::TMatrix<double, 3, 3>&,
+    Epetra_SerialDenseMatrix&, const LINALG::Matrix<3, 1, double>&,
+    const LINALG::Matrix<3, 3, double>&, const LINALG::Matrix<3, 3, double>&,
     const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<4, double>&,
-    const LINALG::TMatrix<double, 1, 4>&, const LINALG::TMatrix<double, 1, 4>&, const double,
+    const LINALG::Matrix<1, 4, double>&, const LINALG::Matrix<1, 4, double>&, const double,
     const double) const;
 template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions<5, 5, 1>(
-    Epetra_SerialDenseMatrix&, const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<double, 3, 3>&, const LINALG::TMatrix<double, 3, 3>&,
+    Epetra_SerialDenseMatrix&, const LINALG::Matrix<3, 1, double>&,
+    const LINALG::Matrix<3, 3, double>&, const LINALG::Matrix<3, 3, double>&,
     const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<5, double>&,
-    const LINALG::TMatrix<double, 1, 5>&, const LINALG::TMatrix<double, 1, 5>&, const double,
+    const LINALG::Matrix<1, 5, double>&, const LINALG::Matrix<1, 5, double>&, const double,
     const double) const;
 template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions<2, 2, 2>(
-    Epetra_SerialDenseMatrix&, const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<double, 3, 3>&, const LINALG::TMatrix<double, 3, 3>&,
+    Epetra_SerialDenseMatrix&, const LINALG::Matrix<3, 1, double>&,
+    const LINALG::Matrix<3, 3, double>&, const LINALG::Matrix<3, 3, double>&,
     const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<2, double>&,
-    const LINALG::TMatrix<double, 1, 2>&, const LINALG::TMatrix<double, 1, 4>&, const double,
+    const LINALG::Matrix<1, 2, double>&, const LINALG::Matrix<1, 4, double>&, const double,
     const double) const;
 template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions<3, 2, 2>(
-    Epetra_SerialDenseMatrix&, const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<double, 3, 3>&, const LINALG::TMatrix<double, 3, 3>&,
+    Epetra_SerialDenseMatrix&, const LINALG::Matrix<3, 1, double>&,
+    const LINALG::Matrix<3, 3, double>&, const LINALG::Matrix<3, 3, double>&,
     const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&,
-    const LINALG::TMatrix<double, 1, 3>&, const LINALG::TMatrix<double, 1, 4>&, const double,
+    const LINALG::Matrix<1, 3, double>&, const LINALG::Matrix<1, 4, double>&, const double,
     const double) const;
 template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions<4, 2, 2>(
-    Epetra_SerialDenseMatrix&, const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<double, 3, 3>&, const LINALG::TMatrix<double, 3, 3>&,
+    Epetra_SerialDenseMatrix&, const LINALG::Matrix<3, 1, double>&,
+    const LINALG::Matrix<3, 3, double>&, const LINALG::Matrix<3, 3, double>&,
     const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<4, double>&,
-    const LINALG::TMatrix<double, 1, 4>&, const LINALG::TMatrix<double, 1, 4>&, const double,
+    const LINALG::Matrix<1, 4, double>&, const LINALG::Matrix<1, 4, double>&, const double,
     const double) const;
 template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions<5, 2, 2>(
-    Epetra_SerialDenseMatrix&, const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<double, 3, 3>&, const LINALG::TMatrix<double, 3, 3>&,
+    Epetra_SerialDenseMatrix&, const LINALG::Matrix<3, 1, double>&,
+    const LINALG::Matrix<3, 3, double>&, const LINALG::Matrix<3, 3, double>&,
     const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<5, double>&,
-    const LINALG::TMatrix<double, 1, 5>&, const LINALG::TMatrix<double, 1, 4>&, const double,
+    const LINALG::Matrix<1, 5, double>&, const LINALG::Matrix<1, 4, double>&, const double,
     const double) const;
 
 template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions<2, 2, 1>(
-    Epetra_SerialDenseMatrix&, const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<double, 3, 3>&,
+    Epetra_SerialDenseMatrix&, const LINALG::Matrix<3, 1, double>&,
+    const LINALG::Matrix<3, 3, double>&,
     const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<2, double>&,
-    const LINALG::TMatrix<double, 3, 1>&, const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<double, 1, 2>&, const LINALG::TMatrix<double, 1, 2>&, const double,
+    const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 1, double>&,
+    const LINALG::Matrix<1, 2, double>&, const LINALG::Matrix<1, 2, double>&, const double,
     const double) const;
 template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions<3, 3, 1>(
-    Epetra_SerialDenseMatrix&, const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<double, 3, 3>&,
+    Epetra_SerialDenseMatrix&, const LINALG::Matrix<3, 1, double>&,
+    const LINALG::Matrix<3, 3, double>&,
     const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&,
-    const LINALG::TMatrix<double, 3, 1>&, const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<double, 1, 3>&, const LINALG::TMatrix<double, 1, 3>&, const double,
+    const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 1, double>&,
+    const LINALG::Matrix<1, 3, double>&, const LINALG::Matrix<1, 3, double>&, const double,
     const double) const;
 template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions<4, 4, 1>(
-    Epetra_SerialDenseMatrix&, const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<double, 3, 3>&,
+    Epetra_SerialDenseMatrix&, const LINALG::Matrix<3, 1, double>&,
+    const LINALG::Matrix<3, 3, double>&,
     const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<4, double>&,
-    const LINALG::TMatrix<double, 3, 1>&, const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<double, 1, 4>&, const LINALG::TMatrix<double, 1, 4>&, const double,
+    const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 1, double>&,
+    const LINALG::Matrix<1, 4, double>&, const LINALG::Matrix<1, 4, double>&, const double,
     const double) const;
 template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions<5, 5, 1>(
-    Epetra_SerialDenseMatrix&, const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<double, 3, 3>&,
+    Epetra_SerialDenseMatrix&, const LINALG::Matrix<3, 1, double>&,
+    const LINALG::Matrix<3, 3, double>&,
     const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<5, double>&,
-    const LINALG::TMatrix<double, 3, 1>&, const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<double, 1, 5>&, const LINALG::TMatrix<double, 1, 5>&, const double,
+    const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 1, double>&,
+    const LINALG::Matrix<1, 5, double>&, const LINALG::Matrix<1, 5, double>&, const double,
     const double) const;
 template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions<2, 2, 2>(
-    Epetra_SerialDenseMatrix&, const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<double, 3, 3>&,
+    Epetra_SerialDenseMatrix&, const LINALG::Matrix<3, 1, double>&,
+    const LINALG::Matrix<3, 3, double>&,
     const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<2, double>&,
-    const LINALG::TMatrix<double, 3, 1>&, const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<double, 1, 2>&, const LINALG::TMatrix<double, 1, 2>&, const double,
+    const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 1, double>&,
+    const LINALG::Matrix<1, 2, double>&, const LINALG::Matrix<1, 2, double>&, const double,
     const double) const;
 template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions<3, 2, 2>(
-    Epetra_SerialDenseMatrix&, const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<double, 3, 3>&,
+    Epetra_SerialDenseMatrix&, const LINALG::Matrix<3, 1, double>&,
+    const LINALG::Matrix<3, 3, double>&,
     const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&,
-    const LINALG::TMatrix<double, 3, 1>&, const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<double, 1, 3>&, const LINALG::TMatrix<double, 1, 3>&, const double,
+    const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 1, double>&,
+    const LINALG::Matrix<1, 3, double>&, const LINALG::Matrix<1, 3, double>&, const double,
     const double) const;
 template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions<4, 2, 2>(
-    Epetra_SerialDenseMatrix&, const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<double, 3, 3>&,
+    Epetra_SerialDenseMatrix&, const LINALG::Matrix<3, 1, double>&,
+    const LINALG::Matrix<3, 3, double>&,
     const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<4, double>&,
-    const LINALG::TMatrix<double, 3, 1>&, const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<double, 1, 4>&, const LINALG::TMatrix<double, 1, 4>&, const double,
+    const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 1, double>&,
+    const LINALG::Matrix<1, 4, double>&, const LINALG::Matrix<1, 4, double>&, const double,
     const double) const;
 template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions<5, 2, 2>(
-    Epetra_SerialDenseMatrix&, const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<double, 3, 3>&,
+    Epetra_SerialDenseMatrix&, const LINALG::Matrix<3, 1, double>&,
+    const LINALG::Matrix<3, 3, double>&,
     const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<5, double>&,
-    const LINALG::TMatrix<double, 3, 1>&, const LINALG::TMatrix<double, 3, 1>&,
-    const LINALG::TMatrix<double, 1, 5>&, const LINALG::TMatrix<double, 1, 5>&, const double,
+    const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 1, double>&,
+    const LINALG::Matrix<1, 5, double>&, const LINALG::Matrix<1, 5, double>&, const double,
     const double) const;

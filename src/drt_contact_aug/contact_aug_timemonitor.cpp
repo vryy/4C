@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Fast time monitor. E. g. to measure the element evaluation times.
 
 \maintainer Matthias Mayr

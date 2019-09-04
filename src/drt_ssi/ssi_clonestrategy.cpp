@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief mesh clone strategy for scatra-structure-interaction problems
 
 \level 2

@@ -52,7 +52,8 @@ COMPONENT 1 FUNCTION 0.0
 COMPONENT 2 FUNCTION -0.01
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ParticleDEM INITRADIUS 0.01 INITDENSITY 4.43e-3
-MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 210.0e3 NUE 0.3 DENS 1.0
+MAT 2 MAT_ParticleWallDEM FRICT_COEFF_TANG 0.8 FRICT_COEFF_ROLL 50 ADHESION_SURFACE_ENERGY -1.0
+MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 210.0e3 NUE 0.3 DENS 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
 PARTICLE ID 0 QUANTITY posx VALUE -2.64402312600504653e-02 TOLERANCE 1.0e-10
 PARTICLE ID 0 QUANTITY posz VALUE 1.01517663213227111e-02 TOLERANCE 1.0e-10
@@ -71,7 +72,7 @@ TYPE phase1 POS -0.015 0.0 0.03
 NDSURF     1
 --------------------------------------DESIGN SURFACE PARTICLE WALL
 DSURF  1
-E 1 - 1
+E 1 - MAT 2
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE 3 DSURFACE 1
 NODE 4 DSURFACE 1
@@ -89,5 +90,5 @@ NODE 6 COORD -0.05 0.025 0.0
 NODE 7 COORD 0.0 0.025 0.0
 NODE 8 COORD 0.0 -0.025 0.0
 ----------------------------------------------------------STRUCTURE ELEMENTS
-1 SOLIDH8 HEX8 1 2 3 4 5 6 7 8 MAT 2 KINEM nonlinear EAS none
+1 SOLIDH8 HEX8 1 2 3 4 5 6 7 8 MAT 3 KINEM nonlinear EAS none
 -------------------------------------------------------------------------END

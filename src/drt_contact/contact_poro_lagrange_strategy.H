@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Contact Strategy handling the porous no penetraction condition on the active contact
 interface
 

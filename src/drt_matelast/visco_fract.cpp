@@ -1,12 +1,12 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief
 the input line should read
   MAT 1 VISCO_Fract TAU 0.1 ALPHA 0.5 BETA 1
 
 \level 2
 
-\maintainer Fabian Braeu
+\maintainer Amadeus Gebauer
 */
 
 /*----------------------------------------------------------------------*/

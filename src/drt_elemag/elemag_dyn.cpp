@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Main control routine for electromagnetic simulations
 
@@ -118,6 +118,7 @@ void electromagnetics_drt()
       break;
     }
     case INPAR::ELEMAG::elemag_implicit_euler:
+    case INPAR::ELEMAG::elemag_bdf:
     {
       elemagalgo = Teuchos::rcp(new ELEMAG::ElemagTimeInt(elemagdishdg, solver, params, output));
       break;

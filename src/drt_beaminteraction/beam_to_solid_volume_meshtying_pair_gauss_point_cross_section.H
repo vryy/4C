@@ -1,4 +1,5 @@
-/*!
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief Meshtying element for meshtying between a beam and a 3D solid element using Gauss points
 on the surface of the (circular) beam cross section.
@@ -92,7 +93,7 @@ namespace BEAMINTERACTION
      */
     void EvaluateBeamPosition(
         const GEOMETRYPAIR::ProjectionPointLineToVolume<double>& integration_point,
-        LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& r_beam, bool reference) const override;
+        LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_beam, bool reference) const override;
   };
 }  // namespace BEAMINTERACTION
 

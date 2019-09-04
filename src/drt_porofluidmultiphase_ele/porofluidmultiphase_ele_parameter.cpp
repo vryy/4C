@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief container class holding parameters for element evaluation (singleton)
 
    \level 3

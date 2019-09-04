@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief strategy for cloning scatra discretization from structure discretization
 
 \level 2

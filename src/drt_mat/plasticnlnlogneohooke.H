@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Contains the functions to establish local material law /
        stress-strain law for isotropic material following large strain
        von-Mises plasticity with linear isotropic hardening

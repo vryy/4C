@@ -1,5 +1,5 @@
 /*--------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief supplementary element calculation class providing general utility for thermodynamic scalar
 transport

@@ -1,11 +1,11 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief One beam and solid contact pair (two elements)
 
 \level 3
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------------*/
 
@@ -162,9 +162,9 @@ namespace CONTACT
     //! brief Struct for debug data in Gmsh
     struct gmshDebugPoint
     {
-      LINALG::TMatrix<double, 3, 1> r1;
-      LINALG::TMatrix<double, 3, 1> x2;
-      LINALG::TMatrix<double, 3, 1> n2;
+      LINALG::Matrix<3, 1, double> r1;
+      LINALG::Matrix<3, 1, double> x2;
+      LINALG::Matrix<3, 1, double> n2;
       double gap;
       double fp;
       int type;
@@ -347,8 +347,8 @@ namespace CONTACT
     DRT::Element* element2_;
 
     //! current node coordinates of the two elements
-    LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues, 1> ele1pos_;
-    LINALG::TMatrix<TYPEBTS, 3 * numnodessol, 1> ele2pos_;
+    LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPEBTS> ele1pos_;
+    LINALG::Matrix<3 * numnodessol, 1, TYPEBTS> ele2pos_;
 
     //! variable to check if old or modified gap function
     bool ngf_;
@@ -382,8 +382,8 @@ namespace CONTACT
     bool shiftnodalvalues_;
 
     //! coordinates of contact points
-    LINALG::TMatrix<TYPEBTS, 3, 1> r1_;
-    LINALG::TMatrix<TYPEBTS, 3, 1> r2_;
+    LINALG::Matrix<3, 1, TYPEBTS> r1_;
+    LINALG::Matrix<3, 1, TYPEBTS> r2_;
 
     //! parameter values of contact point
     TYPEBTS xi1_;
@@ -391,10 +391,10 @@ namespace CONTACT
 
     //! Vector containing pairs of unit distance vector nD and beam parameter eta of current time
     //! step
-    std::vector<std::pair<TYPEBTS, LINALG::TMatrix<TYPEBTS, 3, 1>>> normalsets_;
+    std::vector<std::pair<TYPEBTS, LINALG::Matrix<3, 1, TYPEBTS>>> normalsets_;
 
     //! Vector containing pairs of unit distance vector nD and beam parameter eta of last time step
-    std::vector<std::pair<TYPEBTS, LINALG::TMatrix<TYPEBTS, 3, 1>>> normalsets_old_;
+    std::vector<std::pair<TYPEBTS, LINALG::Matrix<3, 1, TYPEBTS>>> normalsets_old_;
 
     //! neighbor elements of element 1
     Teuchos::RCP<B3CNeighbor> neighbors1_;
@@ -408,8 +408,8 @@ namespace CONTACT
 
     //! Comparator for comparing the beam parameter of two parameter sets
     static bool CompareParsets(
-        const std::pair<LINALG::TMatrix<TYPEBTS, 3, 1>, LINALG::TMatrix<int, 2, 1>>& lhs,
-        const std::pair<LINALG::TMatrix<TYPEBTS, 3, 1>, LINALG::TMatrix<int, 2, 1>>& rhs)
+        const std::pair<LINALG::Matrix<3, 1, TYPEBTS>, LINALG::Matrix<2, 1, int>>& lhs,
+        const std::pair<LINALG::Matrix<3, 1, TYPEBTS>, LINALG::Matrix<2, 1, int>>& rhs)
     {
       // Compare eta
       return lhs.first(2) < rhs.first(2);
@@ -417,7 +417,7 @@ namespace CONTACT
 
     //! Comparator for comparing the beam parameter of two normal sets
     static bool CompareNormalsets(
-        const std::pair<TYPEBTS, LINALG::TMatrix<TYPEBTS, 3, 1>>& lhs, const TYPEBTS& rhs)
+        const std::pair<TYPEBTS, LINALG::Matrix<3, 1, TYPEBTS>>& lhs, const TYPEBTS& rhs)
     {
       // Compare eta
       return lhs.first < rhs;
@@ -435,18 +435,18 @@ namespace CONTACT
     \brief Evaluate contact forces and stiffness for one contact interval
     */
     void EvaluateContactInterval(const double& pp,
-        const std::pair<LINALG::TMatrix<TYPEBTS, 3, 1>, int>& parset_a,
-        const std::pair<LINALG::TMatrix<TYPEBTS, 3, 1>, int>& parset_b,
-        LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues, 1>& fc1,
-        LINALG::TMatrix<TYPEBTS, 3 * numnodessol, 1>& fc2,
-        LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues,
-            3 * numnodes * numnodalvalues + 3 * numnodessol>& stiffc1,
-        LINALG::TMatrix<TYPEBTS, 3 * numnodessol, 3 * numnodes * numnodalvalues + 3 * numnodessol>&
+        const std::pair<LINALG::Matrix<3, 1, TYPEBTS>, int>& parset_a,
+        const std::pair<LINALG::Matrix<3, 1, TYPEBTS>, int>& parset_b,
+        LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPEBTS>& fc1,
+        LINALG::Matrix<3 * numnodessol, 1, TYPEBTS>& fc2,
+        LINALG::Matrix<3 * numnodes * numnodalvalues,
+            3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>& stiffc1,
+        LINALG::Matrix<3 * numnodessol, 3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>&
             stiffc2,
         bool& doAssembleContactInterval,
-        LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues,
-            3 * numnodes * numnodalvalues + 3 * numnodessol>& stiffc1_FAD,
-        LINALG::TMatrix<TYPEBTS, 3 * numnodessol, 3 * numnodes * numnodalvalues + 3 * numnodessol>&
+        LINALG::Matrix<3 * numnodes * numnodalvalues,
+            3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>& stiffc1_FAD,
+        LINALG::Matrix<3 * numnodessol, 3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>&
             stiffc2_FAD);
 
     /*!
@@ -458,108 +458,107 @@ namespace CONTACT
     \brief Evaluate contact forces
     */
     void EvaluateFcContact(const TYPEBTS& fp,
-        LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues, 1>& fc1,
-        LINALG::TMatrix<TYPEBTS, 3 * numnodessol, 1>& fc2, const TYPEBTS& eta_a,
+        LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPEBTS>& fc1,
+        LINALG::Matrix<3 * numnodessol, 1, TYPEBTS>& fc2, const TYPEBTS& eta_a,
         const TYPEBTS& eta_b, const double& w_gp, const double& sgn,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& nD, const LINALG::TMatrix<TYPEBTS, 3, 1>& n2,
-        const LINALG::TMatrix<TYPEBTS, 3, 3 * numnodes * numnodalvalues>& N1,
-        const LINALG::TMatrix<TYPEBTS, 3, 3 * numnodessol>& N2, const double& jacobi);
+        const LINALG::Matrix<3, 1, TYPEBTS>& nD, const LINALG::Matrix<3, 1, TYPEBTS>& n2,
+        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N1,
+        const LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N2, const double& jacobi);
 
     /*!
     \brief Evaluate contact stiffness
     */
     void EvaluateStiffcContact(const TYPEBTS& fp, const TYPEBTS& dfp, const TYPEBTS& gap,
-        LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues,
-            3 * numnodes * numnodalvalues + 3 * numnodessol>& stiffc1,
-        LINALG::TMatrix<TYPEBTS, 3 * numnodessol, 3 * numnodes * numnodalvalues + 3 * numnodessol>&
+        LINALG::Matrix<3 * numnodes * numnodalvalues,
+            3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>& stiffc1,
+        LINALG::Matrix<3 * numnodessol, 3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>&
             stiffc2,
         const double& sgn, const TYPEBTS& eta_a, const TYPEBTS& eta_b,
-        LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues + 3 * numnodessol, 1>& eta_d,
-        LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues + 3 * numnodessol, 1>& eta_a_d,
-        LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues + 3 * numnodessol, 1>& eta_b_d,
-        const double& w_gp, const LINALG::TMatrix<TYPEBTS, 3, 1>& rD, const TYPEBTS& norm_rD,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& nD, const LINALG::TMatrix<TYPEBTS, 3, 1>& a2,
-        const TYPEBTS& norm_a2, const LINALG::TMatrix<TYPEBTS, 3, 1>& n2,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& r1_eta, const LINALG::TMatrix<TYPEBTS, 3, 1>& x2_xi1,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& x2_xi2,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& x2_xi1xi1,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& x2_xi2xi2,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& x2_xi1xi2,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& x2_xi2xi1,
-        const LINALG::TMatrix<TYPEBTS, 3, 3 * numnodes * numnodalvalues>& N1,
-        const LINALG::TMatrix<TYPEBTS, 3, 3 * numnodes * numnodalvalues>& N1_eta,
-        const LINALG::TMatrix<TYPEBTS, 3, 3 * numnodessol>& N2,
-        const LINALG::TMatrix<TYPEBTS, 3, 3 * numnodessol>& N2_xi1,
-        const LINALG::TMatrix<TYPEBTS, 3, 3 * numnodessol>& N2_xi2, const double& jacobi,
-        LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues,
-            3 * numnodes * numnodalvalues + 3 * numnodessol>& stiffc1_FAD,
-        LINALG::TMatrix<TYPEBTS, 3 * numnodessol, 3 * numnodes * numnodalvalues + 3 * numnodessol>&
+        LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& eta_d,
+        LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& eta_a_d,
+        LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& eta_b_d,
+        const double& w_gp, const LINALG::Matrix<3, 1, TYPEBTS>& rD, const TYPEBTS& norm_rD,
+        const LINALG::Matrix<3, 1, TYPEBTS>& nD, const LINALG::Matrix<3, 1, TYPEBTS>& a2,
+        const TYPEBTS& norm_a2, const LINALG::Matrix<3, 1, TYPEBTS>& n2,
+        const LINALG::Matrix<3, 1, TYPEBTS>& r1_eta, const LINALG::Matrix<3, 1, TYPEBTS>& x2_xi1,
+        const LINALG::Matrix<3, 1, TYPEBTS>& x2_xi2, const LINALG::Matrix<3, 1, TYPEBTS>& x2_xi1xi1,
+        const LINALG::Matrix<3, 1, TYPEBTS>& x2_xi2xi2,
+        const LINALG::Matrix<3, 1, TYPEBTS>& x2_xi1xi2,
+        const LINALG::Matrix<3, 1, TYPEBTS>& x2_xi2xi1,
+        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N1,
+        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N1_eta,
+        const LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N2,
+        const LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N2_xi1,
+        const LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N2_xi2, const double& jacobi,
+        LINALG::Matrix<3 * numnodes * numnodalvalues,
+            3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>& stiffc1_FAD,
+        LINALG::Matrix<3 * numnodessol, 3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>&
             stiffc2_FAD);
 
     /*!
     \brief Compute linearizations of element parameters xi1, xi2 and eta
     */
     void ComputeLinParameter(const int& fixed_par,
-        LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues + 3 * numnodessol, 1>& xi1_d,
-        LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues + 3 * numnodessol, 1>& xi2_d,
-        LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues + 3 * numnodessol, 1>& eta_d,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& rD, const LINALG::TMatrix<TYPEBTS, 3, 1>& r1_eta,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& x2_xi1, const LINALG::TMatrix<TYPEBTS, 3, 1>& x2_xi2,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& x2_xi1xi1,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& x2_xi2xi2,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& x2_xi1xi2,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& x2_xi2xi1,
-        const LINALG::TMatrix<TYPEBTS, 3, 3 * numnodes * numnodalvalues>& N1,
-        const LINALG::TMatrix<TYPEBTS, 3, 3 * numnodessol>& N2,
-        const LINALG::TMatrix<TYPEBTS, 3, 3 * numnodessol>& N2_xi1,
-        const LINALG::TMatrix<TYPEBTS, 3, 3 * numnodessol>& N2_xi2);
+        LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& xi1_d,
+        LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& xi2_d,
+        LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& eta_d,
+        const LINALG::Matrix<3, 1, TYPEBTS>& rD, const LINALG::Matrix<3, 1, TYPEBTS>& r1_eta,
+        const LINALG::Matrix<3, 1, TYPEBTS>& x2_xi1, const LINALG::Matrix<3, 1, TYPEBTS>& x2_xi2,
+        const LINALG::Matrix<3, 1, TYPEBTS>& x2_xi1xi1,
+        const LINALG::Matrix<3, 1, TYPEBTS>& x2_xi2xi2,
+        const LINALG::Matrix<3, 1, TYPEBTS>& x2_xi1xi2,
+        const LINALG::Matrix<3, 1, TYPEBTS>& x2_xi2xi1,
+        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N1,
+        const LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N2,
+        const LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N2_xi1,
+        const LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N2_xi2);
 
     /*!
     \brief Compute linearization of gap
     */
     void ComputeLinGap(
-        LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues + 3 * numnodessol, 1>& gap_d,
-        const LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues + 3 * numnodessol, 1>& xi1_d,
-        const LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues + 3 * numnodessol, 1>& xi2_d,
-        const LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues + 3 * numnodessol, 1>& eta_d,
-        const double sgn, const LINALG::TMatrix<TYPEBTS, 3, 1>& rD,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& nD, const LINALG::TMatrix<TYPEBTS, 3, 1>& n2,
-        const TYPEBTS& norm_rD, const LINALG::TMatrix<TYPEBTS, 3, 1>& r1_eta,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& x2_xi1, const LINALG::TMatrix<TYPEBTS, 3, 1>& x2_xi2,
-        const LINALG::TMatrix<TYPEBTS, 3, 3 * numnodes * numnodalvalues>& N1,
-        const LINALG::TMatrix<TYPEBTS, 3, 3 * numnodessol>& N2,
-        LINALG::TMatrix<TYPEBTS, 3, 3 * numnodes * numnodalvalues + 3 * numnodessol>& rD_d);
+        LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& gap_d,
+        const LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& xi1_d,
+        const LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& xi2_d,
+        const LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& eta_d,
+        const double sgn, const LINALG::Matrix<3, 1, TYPEBTS>& rD,
+        const LINALG::Matrix<3, 1, TYPEBTS>& nD, const LINALG::Matrix<3, 1, TYPEBTS>& n2,
+        const TYPEBTS& norm_rD, const LINALG::Matrix<3, 1, TYPEBTS>& r1_eta,
+        const LINALG::Matrix<3, 1, TYPEBTS>& x2_xi1, const LINALG::Matrix<3, 1, TYPEBTS>& x2_xi2,
+        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N1,
+        const LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N2,
+        LINALG::Matrix<3, 3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>& rD_d);
 
     /*!
     \brief Compute linearization of unit distance vector nD and surface unit normal vector n2
     */
     void ComputeLinNormal(
-        LINALG::TMatrix<TYPEBTS, 3, 3 * numnodes * numnodalvalues + 3 * numnodessol>& nD_d,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& nD, const TYPEBTS& norm_rD,
-        LINALG::TMatrix<TYPEBTS, 3, 3 * numnodes * numnodalvalues + 3 * numnodessol>& n2_d,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& n2, const TYPEBTS& norm_a2,
-        const LINALG::TMatrix<TYPEBTS, 3, 3 * numnodes * numnodalvalues + 3 * numnodessol>& rD_d,
-        const LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues + 3 * numnodessol, 1>& xi1_d,
-        const LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues + 3 * numnodessol, 1>& xi2_d,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& x2_xi1, const LINALG::TMatrix<TYPEBTS, 3, 1>& x2_xi2,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& x2_xi1xi1,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& x2_xi2xi2,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& x2_xi1xi2,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& x2_xi2xi1,
-        const LINALG::TMatrix<TYPEBTS, 3, 3 * numnodessol>& N2_xi1,
-        const LINALG::TMatrix<TYPEBTS, 3, 3 * numnodessol>& N2_xi2);
+        LINALG::Matrix<3, 3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>& nD_d,
+        const LINALG::Matrix<3, 1, TYPEBTS>& nD, const TYPEBTS& norm_rD,
+        LINALG::Matrix<3, 3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>& n2_d,
+        const LINALG::Matrix<3, 1, TYPEBTS>& n2, const TYPEBTS& norm_a2,
+        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>& rD_d,
+        const LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& xi1_d,
+        const LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& xi2_d,
+        const LINALG::Matrix<3, 1, TYPEBTS>& x2_xi1, const LINALG::Matrix<3, 1, TYPEBTS>& x2_xi2,
+        const LINALG::Matrix<3, 1, TYPEBTS>& x2_xi1xi1,
+        const LINALG::Matrix<3, 1, TYPEBTS>& x2_xi2xi2,
+        const LINALG::Matrix<3, 1, TYPEBTS>& x2_xi1xi2,
+        const LINALG::Matrix<3, 1, TYPEBTS>& x2_xi2xi1,
+        const LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N2_xi1,
+        const LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N2_xi2);
 
     /*!
     \brief Assemble contact forces and stiffness
     */
     void AssembleFcAndStiffcContact(
-        const LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues, 1> fc1,
-        const LINALG::TMatrix<TYPEBTS, 3 * numnodessol, 1> fc2, Epetra_Vector* fint,
-        const LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues,
-            3 * numnodes * numnodalvalues + 3 * numnodessol>
+        const LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPEBTS> fc1,
+        const LINALG::Matrix<3 * numnodessol, 1, TYPEBTS> fc2, Epetra_Vector* fint,
+        const LINALG::Matrix<3 * numnodes * numnodalvalues,
+            3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>
             stiffc1,
-        const LINALG::TMatrix<TYPEBTS, 3 * numnodessol,
-            3 * numnodes * numnodalvalues + 3 * numnodessol>
+        const LINALG::Matrix<3 * numnodessol, 3 * numnodes * numnodalvalues + 3 * numnodessol,
+            TYPEBTS>
             stiffc2,
         LINALG::SparseMatrix& stiffmatrix);
 
@@ -574,108 +573,108 @@ namespace CONTACT
     \brief Find contact interval borders
     */
     void GetContactIntervalBorders(
-        std::vector<std::pair<LINALG::TMatrix<TYPEBTS, 3, 1>, int>>& parsets);
+        std::vector<std::pair<LINALG::Matrix<3, 1, TYPEBTS>, int>>& parsets);
 
     /*!
     \brief Calculate beam shape function values for given parameter value eta
     */
-    void GetBeamShapeFunctions(LINALG::TMatrix<TYPEBTS, 3, 3 * numnodes * numnodalvalues>& N,
-        LINALG::TMatrix<TYPEBTS, 3, 3 * numnodes * numnodalvalues>& N_eta,
-        LINALG::TMatrix<TYPEBTS, 3, 3 * numnodes * numnodalvalues>& N_etaeta, const TYPEBTS& eta);
+    void GetBeamShapeFunctions(LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N,
+        LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N_eta,
+        LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N_etaeta, const TYPEBTS& eta);
 
     /*!
     \brief Calculate solid surface shape function values for given parameter values xi1 and xi2
     */
-    void GetSurfShapeFunctions(LINALG::TMatrix<TYPEBTS, 3, 3 * numnodessol>& N,
-        LINALG::TMatrix<TYPEBTS, 3, 3 * numnodessol>& N_xi1,
-        LINALG::TMatrix<TYPEBTS, 3, 3 * numnodessol>& N_xi2,
-        LINALG::TMatrix<TYPEBTS, 3, 3 * numnodessol>& N_xi1xi1,
-        LINALG::TMatrix<TYPEBTS, 3, 3 * numnodessol>& N_xi2xi2,
-        LINALG::TMatrix<TYPEBTS, 3, 3 * numnodessol>& N_xi1xi2,
-        LINALG::TMatrix<TYPEBTS, 3, 3 * numnodessol>& N_xi2xi1, const TYPEBTS& xi1,
+    void GetSurfShapeFunctions(LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N,
+        LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi1,
+        LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi2,
+        LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi1xi1,
+        LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi2xi2,
+        LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi1xi2,
+        LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi2xi1, const TYPEBTS& xi1,
         const TYPEBTS& xi2);
 
     /*!
     \brief Assemble beam shape functions into corresponding matrices
     */
     void AssembleBeamShapefunctions(
-        const LINALG::TMatrix<TYPEBTS, 1, numnodes * numnodalvalues>& N_i,
-        const LINALG::TMatrix<TYPEBTS, 1, numnodes * numnodalvalues>& N_i_eta,
-        const LINALG::TMatrix<TYPEBTS, 1, numnodes * numnodalvalues>& N_i_etaeta,
-        LINALG::TMatrix<TYPEBTS, 3, 3 * numnodes * numnodalvalues>& N,
-        LINALG::TMatrix<TYPEBTS, 3, 3 * numnodes * numnodalvalues>& N_eta,
-        LINALG::TMatrix<TYPEBTS, 3, 3 * numnodes * numnodalvalues>& N_etaeta);
+        const LINALG::Matrix<1, numnodes * numnodalvalues, TYPEBTS>& N_i,
+        const LINALG::Matrix<1, numnodes * numnodalvalues, TYPEBTS>& N_i_eta,
+        const LINALG::Matrix<1, numnodes * numnodalvalues, TYPEBTS>& N_i_etaeta,
+        LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N,
+        LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N_eta,
+        LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N_etaeta);
 
     /*!
     \brief Assemble solid surface shape functions into corresponding matrices
     */
-    void AssembleSurfShapefunctions(const LINALG::TMatrix<TYPEBTS, 1, numnodessol>& N_i,
-        const LINALG::TMatrix<TYPEBTS, 2, numnodessol>& N_i_xi,
-        const LINALG::TMatrix<TYPEBTS, 3, numnodessol>& N_i_xixi,
-        LINALG::TMatrix<TYPEBTS, 3, 3 * numnodessol>& N,
-        LINALG::TMatrix<TYPEBTS, 3, 3 * numnodessol>& N_xi1,
-        LINALG::TMatrix<TYPEBTS, 3, 3 * numnodessol>& N_xi2,
-        LINALG::TMatrix<TYPEBTS, 3, 3 * numnodessol>& N_xi1xi1,
-        LINALG::TMatrix<TYPEBTS, 3, 3 * numnodessol>& N_xi2xi2,
-        LINALG::TMatrix<TYPEBTS, 3, 3 * numnodessol>& N_xi1xi2,
-        LINALG::TMatrix<TYPEBTS, 3, 3 * numnodessol>& N_xi2xi1);
+    void AssembleSurfShapefunctions(const LINALG::Matrix<1, numnodessol, TYPEBTS>& N_i,
+        const LINALG::Matrix<2, numnodessol, TYPEBTS>& N_i_xi,
+        const LINALG::Matrix<3, numnodessol, TYPEBTS>& N_i_xixi,
+        LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N,
+        LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi1,
+        LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi2,
+        LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi1xi1,
+        LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi2xi2,
+        LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi1xi2,
+        LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi2xi1);
 
     /*!
     \brief Compute beam coordinates and their derivatives from the discretization
     */
-    void ComputeBeamCoordsAndDerivs(LINALG::TMatrix<TYPEBTS, 3, 1>& r,
-        LINALG::TMatrix<TYPEBTS, 3, 1>& r_eta, LINALG::TMatrix<TYPEBTS, 3, 1>& r_etaeta,
-        const LINALG::TMatrix<TYPEBTS, 3, 3 * numnodes * numnodalvalues>& N,
-        const LINALG::TMatrix<TYPEBTS, 3, 3 * numnodes * numnodalvalues>& N_eta,
-        const LINALG::TMatrix<TYPEBTS, 3, 3 * numnodes * numnodalvalues>& N_etaeta);
+    void ComputeBeamCoordsAndDerivs(LINALG::Matrix<3, 1, TYPEBTS>& r,
+        LINALG::Matrix<3, 1, TYPEBTS>& r_eta, LINALG::Matrix<3, 1, TYPEBTS>& r_etaeta,
+        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N,
+        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N_eta,
+        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPEBTS>& N_etaeta);
 
     /*!
     \brief Compute solid surface coordinates and their derivatives from the discretization
     */
-    void ComputeSurfCoordsAndDerivs(LINALG::TMatrix<TYPEBTS, 3, 1>& r,
-        LINALG::TMatrix<TYPEBTS, 3, 1>& r_xi1, LINALG::TMatrix<TYPEBTS, 3, 1>& r_xi2,
-        LINALG::TMatrix<TYPEBTS, 3, 1>& r_xi1xi1, LINALG::TMatrix<TYPEBTS, 3, 1>& r_xi2xi2,
-        LINALG::TMatrix<TYPEBTS, 3, 1>& r_xi1xi2, LINALG::TMatrix<TYPEBTS, 3, 1>& r_xi2xi1,
-        LINALG::TMatrix<TYPEBTS, 3, 3 * numnodessol>& N,
-        LINALG::TMatrix<TYPEBTS, 3, 3 * numnodessol>& N_xi1,
-        LINALG::TMatrix<TYPEBTS, 3, 3 * numnodessol>& N_xi2,
-        LINALG::TMatrix<TYPEBTS, 3, 3 * numnodessol>& N_xi1xi1,
-        LINALG::TMatrix<TYPEBTS, 3, 3 * numnodessol>& N_xi2xi2,
-        LINALG::TMatrix<TYPEBTS, 3, 3 * numnodessol>& N_xi1xi2,
-        LINALG::TMatrix<TYPEBTS, 3, 3 * numnodessol>& N_xi2xi1);
+    void ComputeSurfCoordsAndDerivs(LINALG::Matrix<3, 1, TYPEBTS>& r,
+        LINALG::Matrix<3, 1, TYPEBTS>& r_xi1, LINALG::Matrix<3, 1, TYPEBTS>& r_xi2,
+        LINALG::Matrix<3, 1, TYPEBTS>& r_xi1xi1, LINALG::Matrix<3, 1, TYPEBTS>& r_xi2xi2,
+        LINALG::Matrix<3, 1, TYPEBTS>& r_xi1xi2, LINALG::Matrix<3, 1, TYPEBTS>& r_xi2xi1,
+        LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N,
+        LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi1,
+        LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi2,
+        LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi1xi1,
+        LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi2xi2,
+        LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi1xi2,
+        LINALG::Matrix<3, 3 * numnodessol, TYPEBTS>& N_xi2xi1);
 
     /*!
     \brief Compute distance vector rD, its norm norm_rD and unit distance vector nD
     */
-    void ComputeDistanceNormal(const LINALG::TMatrix<TYPEBTS, 3, 1>& r1,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& x2, LINALG::TMatrix<TYPEBTS, 3, 1>& rD,
-        TYPEBTS& norm_rD, LINALG::TMatrix<TYPEBTS, 3, 1>& nD);
+    void ComputeDistanceNormal(const LINALG::Matrix<3, 1, TYPEBTS>& r1,
+        const LINALG::Matrix<3, 1, TYPEBTS>& x2, LINALG::Matrix<3, 1, TYPEBTS>& rD,
+        TYPEBTS& norm_rD, LINALG::Matrix<3, 1, TYPEBTS>& nD);
 
     /*!
     \brief Compute tangent cross product a2, its norm norm_a2 and surface unit normal vector n2
     */
-    void ComputeSurfaceNormal(const LINALG::TMatrix<TYPEBTS, 3, 1>& x2_xi1,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& x2_xi2, LINALG::TMatrix<TYPEBTS, 3, 1>& a2,
-        TYPEBTS& norm_a2, LINALG::TMatrix<TYPEBTS, 3, 1>& n2);
+    void ComputeSurfaceNormal(const LINALG::Matrix<3, 1, TYPEBTS>& x2_xi1,
+        const LINALG::Matrix<3, 1, TYPEBTS>& x2_xi2, LINALG::Matrix<3, 1, TYPEBTS>& a2,
+        TYPEBTS& norm_a2, LINALG::Matrix<3, 1, TYPEBTS>& n2);
 
     /*!
     \brief Utility method for CPP (evaluate nonlinear function f)
     */
-    void EvaluateOrthogonalityCondition(LINALG::TMatrix<TYPEBTS, 2, 1>& f,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& delta_r, const double norm_delta_r,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& r1_xi, const LINALG::TMatrix<TYPEBTS, 3, 1>& x2_xi,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& t1, const LINALG::TMatrix<TYPEBTS, 3, 1>& t2);
+    void EvaluateOrthogonalityCondition(LINALG::Matrix<2, 1, TYPEBTS>& f,
+        const LINALG::Matrix<3, 1, TYPEBTS>& delta_r, const double norm_delta_r,
+        const LINALG::Matrix<3, 1, TYPEBTS>& r1_xi, const LINALG::Matrix<3, 1, TYPEBTS>& x2_xi,
+        const LINALG::Matrix<3, 1, TYPEBTS>& t1, const LINALG::Matrix<3, 1, TYPEBTS>& t2);
 
     /*!
     \brief Utility method for CPP (evaluate Jacobian of nonlinear function f)
     */
-    void EvaluateLinOrthogonalityCondition(LINALG::TMatrix<TYPEBTS, 2, 2>& df,
-        LINALG::TMatrix<TYPEBTS, 2, 2>& dfinv, const LINALG::TMatrix<TYPEBTS, 3, 1>& delta_r,
-        const double norm_delta_r, const LINALG::TMatrix<TYPEBTS, 3, 1>& r1_xi,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& x2_xi, const LINALG::TMatrix<TYPEBTS, 3, 1>& r1_xixi,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& x2_xixi, const LINALG::TMatrix<TYPEBTS, 3, 1>& t1,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& t2, const LINALG::TMatrix<TYPEBTS, 3, 1>& t1_xi,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& t2_xi);
+    void EvaluateLinOrthogonalityCondition(LINALG::Matrix<2, 2, TYPEBTS>& df,
+        LINALG::Matrix<2, 2, TYPEBTS>& dfinv, const LINALG::Matrix<3, 1, TYPEBTS>& delta_r,
+        const double norm_delta_r, const LINALG::Matrix<3, 1, TYPEBTS>& r1_xi,
+        const LINALG::Matrix<3, 1, TYPEBTS>& x2_xi, const LINALG::Matrix<3, 1, TYPEBTS>& r1_xixi,
+        const LINALG::Matrix<3, 1, TYPEBTS>& x2_xixi, const LINALG::Matrix<3, 1, TYPEBTS>& t1,
+        const LINALG::Matrix<3, 1, TYPEBTS>& t2, const LINALG::Matrix<3, 1, TYPEBTS>& t1_xi,
+        const LINALG::Matrix<3, 1, TYPEBTS>& t2_xi);
 
     /*!
     \brief Check, if we have contact or not
@@ -689,56 +688,56 @@ namespace CONTACT
     */
     void ShiftNodalPositions();
 
-    void FADCheckLinParameter(const int& fixed_par, const LINALG::TMatrix<TYPEBTS, 3, 1>& rD,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& x2_xi1, const LINALG::TMatrix<TYPEBTS, 3, 1>& x2_xi2,
-        LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues + 3 * numnodessol, 1>& xi1_d_FAD,
-        LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues + 3 * numnodessol, 1>& xi2_d_FAD,
-        LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues + 3 * numnodessol, 1>& eta_d_FAD,
-        const LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues + 3 * numnodessol, 1>& xi1_d,
-        const LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues + 3 * numnodessol, 1>& xi2_d,
-        const LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues + 3 * numnodessol, 1>& eta_d);
+    void FADCheckLinParameter(const int& fixed_par, const LINALG::Matrix<3, 1, TYPEBTS>& rD,
+        const LINALG::Matrix<3, 1, TYPEBTS>& x2_xi1, const LINALG::Matrix<3, 1, TYPEBTS>& x2_xi2,
+        LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& xi1_d_FAD,
+        LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& xi2_d_FAD,
+        LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& eta_d_FAD,
+        const LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& xi1_d,
+        const LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& xi2_d,
+        const LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& eta_d);
 
     void FADCheckLinOrthogonalityCondition(const int& fixed_par,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& rD, const LINALG::TMatrix<TYPEBTS, 3, 1>& x2_xi1,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& x2_xi2, LINALG::TMatrix<TYPEBTS, 2, 2>& J_FAD,
-        const LINALG::TMatrix<TYPEBTS, 2, 2>& J);
+        const LINALG::Matrix<3, 1, TYPEBTS>& rD, const LINALG::Matrix<3, 1, TYPEBTS>& x2_xi1,
+        const LINALG::Matrix<3, 1, TYPEBTS>& x2_xi2, LINALG::Matrix<2, 2, TYPEBTS>& J_FAD,
+        const LINALG::Matrix<2, 2, TYPEBTS>& J);
 
     void FADCheckLinGapAndDistanceVector(const TYPEBTS& gap,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& rD,
-        const LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues + 3 * numnodessol, 1>& xi1_d,
-        const LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues + 3 * numnodessol, 1>& xi2_d,
-        const LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues + 3 * numnodessol, 1>& eta_d,
-        LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues + 3 * numnodessol, 1>& gap_d_FAD,
-        LINALG::TMatrix<TYPEBTS, 3, 3 * numnodes * numnodalvalues + 3 * numnodessol>& rD_d_FAD,
-        const LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues + 3 * numnodessol, 1>& gap_d,
-        const LINALG::TMatrix<TYPEBTS, 3, 3 * numnodes * numnodalvalues + 3 * numnodessol>& rD_d);
+        const LINALG::Matrix<3, 1, TYPEBTS>& rD,
+        const LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& xi1_d,
+        const LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& xi2_d,
+        const LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& eta_d,
+        LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& gap_d_FAD,
+        LINALG::Matrix<3, 3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>& rD_d_FAD,
+        const LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& gap_d,
+        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>& rD_d);
 
-    void FADCheckLinNormal(const LINALG::TMatrix<TYPEBTS, 3, 1>& nD,
-        const LINALG::TMatrix<TYPEBTS, 3, 1>& n2,
-        const LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues + 3 * numnodessol, 1>& xi1_d,
-        const LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues + 3 * numnodessol, 1>& xi2_d,
-        const LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues + 3 * numnodessol, 1>& eta_d,
-        LINALG::TMatrix<TYPEBTS, 3, 3 * numnodes * numnodalvalues + 3 * numnodessol>& nD_d_FAD,
-        LINALG::TMatrix<TYPEBTS, 3, 3 * numnodes * numnodalvalues + 3 * numnodessol>& n2_d_FAD,
-        const LINALG::TMatrix<TYPEBTS, 3, 3 * numnodes * numnodalvalues + 3 * numnodessol>& nD_d,
-        const LINALG::TMatrix<TYPEBTS, 3, 3 * numnodes * numnodalvalues + 3 * numnodessol>& n2_d);
+    void FADCheckLinNormal(const LINALG::Matrix<3, 1, TYPEBTS>& nD,
+        const LINALG::Matrix<3, 1, TYPEBTS>& n2,
+        const LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& xi1_d,
+        const LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& xi2_d,
+        const LINALG::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>& eta_d,
+        LINALG::Matrix<3, 3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>& nD_d_FAD,
+        LINALG::Matrix<3, 3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>& n2_d_FAD,
+        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>& nD_d,
+        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>& n2_d);
 
     void FDCheckStiffness(const double& pp,
-        const LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues, 1>& fc1,
-        const LINALG::TMatrix<TYPEBTS, 3 * numnodessol, 1>& fc2,
-        LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues,
-            3 * numnodes * numnodalvalues + 3 * numnodessol>& stiffc1,
-        LINALG::TMatrix<TYPEBTS, 3 * numnodessol, 3 * numnodes * numnodalvalues + 3 * numnodessol>&
+        const LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPEBTS>& fc1,
+        const LINALG::Matrix<3 * numnodessol, 1, TYPEBTS>& fc2,
+        LINALG::Matrix<3 * numnodes * numnodalvalues,
+            3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>& stiffc1,
+        LINALG::Matrix<3 * numnodessol, 3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>&
             stiffc2);
 
-    void FADCheckStiffness(const LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues,
-                               3 * numnodes * numnodalvalues + 3 * numnodessol>& stiffc1,
-        const LINALG::TMatrix<TYPEBTS, 3 * numnodessol,
-            3 * numnodes * numnodalvalues + 3 * numnodessol>& stiffc2,
-        const LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues,
-            3 * numnodes * numnodalvalues + 3 * numnodessol>& stiffc1_FAD,
-        const LINALG::TMatrix<TYPEBTS, 3 * numnodessol,
-            3 * numnodes * numnodalvalues + 3 * numnodessol>& stiffc2_FAD);
+    void FADCheckStiffness(const LINALG::Matrix<3 * numnodes * numnodalvalues,
+                               3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>& stiffc1,
+        const LINALG::Matrix<3 * numnodessol, 3 * numnodes * numnodalvalues + 3 * numnodessol,
+            TYPEBTS>& stiffc2,
+        const LINALG::Matrix<3 * numnodes * numnodalvalues,
+            3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>& stiffc1_FAD,
+        const LINALG::Matrix<3 * numnodessol, 3 * numnodes * numnodalvalues + 3 * numnodessol,
+            TYPEBTS>& stiffc2_FAD);
 
 
     /*!

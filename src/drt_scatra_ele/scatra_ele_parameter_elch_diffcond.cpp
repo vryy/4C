@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief singleton class holding all static diffusion-conduction parameters required for element
 evaluation

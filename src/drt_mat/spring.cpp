@@ -1,9 +1,10 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief Material law for elastic spring (either translational or rotational spring)
 
 \level 3
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 *----------------------------------------------------------------------*/
 
 

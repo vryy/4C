@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief A class to perform line clipping for line to surface contact +
        call for numerical integration
 
 \level 2
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 
 */
 /*---------------------------------------------------------------------*/
@@ -127,7 +127,7 @@ namespace CONTACT
      \brief Get interface contact parameter list
 
      */
-    virtual Teuchos::ParameterList& IParams() { return imortar_; };
+    virtual Teuchos::ParameterList& InterfaceParams() { return imortar_; };
 
     /*!
      \brief create intersections
@@ -473,7 +473,7 @@ namespace CONTACT
      \brief Get interface contact parameter list
 
      */
-    virtual Teuchos::ParameterList& IParams() { return imortar_; };
+    virtual Teuchos::ParameterList& InterfaceParams() { return imortar_; };
 
 
     /*!

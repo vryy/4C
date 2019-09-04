@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief porous fluid multiphase material. Contains and defines the single phases.
 
         The input line should read (for example: 4 fluid phases, 2 volume fractions)

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/**
+/** \file
 
 \brief Input/output routines for the multi discretization wrapper
 

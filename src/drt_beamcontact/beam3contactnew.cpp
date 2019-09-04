@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief contact element for contact between two 3D beam elements
 
@@ -127,8 +127,8 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
   }
 
   // Calculate initial length of beam elements (approximation for initially curved elements!)
-  LINALG::TMatrix<double, 3, 1> lvec1(true);
-  LINALG::TMatrix<double, 3, 1> lvec2(true);
+  LINALG::Matrix<3, 1, double> lvec1(true);
+  LINALG::Matrix<3, 1, double> lvec2(true);
   for (int i = 0; i < 3; i++)
   {
     lvec1(i) = (element1_->Nodes())[0]->X()[i] - (element1_->Nodes())[1]->X()[i];
@@ -249,22 +249,22 @@ bool CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Evaluate(LINALG::Sparse
   //**********************************************************************
 
   // vectors for shape functions and their derivatives
-  LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues> N1(true);       // = N1
-  LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues> N2(true);       // = N2
-  LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues> N1_xi(true);    // = N1,xi
-  LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues> N2_xi(true);    // = N2,eta
-  LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues> N1_xixi(true);  // = N1,xixi
-  LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues> N2_xixi(true);  // = N2,etaeta
+  LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE> N1(true);       // = N1
+  LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE> N2(true);       // = N2
+  LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE> N1_xi(true);    // = N1,xi
+  LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE> N2_xi(true);    // = N2,eta
+  LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE> N1_xixi(true);  // = N1,xixi
+  LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE> N2_xixi(true);  // = N2,etaeta
 
   // coords and derivatives of the two contacting points
-  LINALG::TMatrix<TYPE, 3, 1> r1(true);       // = r1
-  LINALG::TMatrix<TYPE, 3, 1> r2(true);       // = r2
-  LINALG::TMatrix<TYPE, 3, 1> r1_xi(true);    // = r1,xi
-  LINALG::TMatrix<TYPE, 3, 1> r2_xi(true);    // = r2,eta
-  LINALG::TMatrix<TYPE, 3, 1> r1_xixi(true);  // = r1,xixi
-  LINALG::TMatrix<TYPE, 3, 1> r2_xixi(true);  // = r2,etaeta
-  LINALG::TMatrix<TYPE, 3, 1> delta_r(true);  // = r1-r2
-  TYPE norm_delta_r = 0.0;                    // = g
+  LINALG::Matrix<3, 1, TYPE> r1(true);       // = r1
+  LINALG::Matrix<3, 1, TYPE> r2(true);       // = r2
+  LINALG::Matrix<3, 1, TYPE> r1_xi(true);    // = r1,xi
+  LINALG::Matrix<3, 1, TYPE> r2_xi(true);    // = r2,eta
+  LINALG::Matrix<3, 1, TYPE> r1_xixi(true);  // = r1,xixi
+  LINALG::Matrix<3, 1, TYPE> r2_xixi(true);  // = r2,etaeta
+  LINALG::Matrix<3, 1, TYPE> delta_r(true);  // = r1-r2
+  TYPE norm_delta_r = 0.0;                   // = g
 
   // Check if the CPP found for this contact pair is really on the considered element, i.e. xi \in
   // [-1;1]
@@ -384,18 +384,18 @@ bool CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Evaluate(LINALG::Sparse
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateFcContact(const double& pp,
-    Epetra_Vector* fint, const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N1,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N2,
-    LINALG::TMatrix<TYPE, 3 * numnodes * numnodalvalues, 1>* fc1_FAD,
-    LINALG::TMatrix<TYPE, 3 * numnodes * numnodalvalues, 1>* fc2_FAD)
+    Epetra_Vector* fint, const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
+    LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc1_FAD,
+    LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc2_FAD)
 {
   // get dimensions for vectors fc1 and fc2
   const int dim1 = 3 * numnodes * numnodalvalues;
   const int dim2 = 3 * numnodes * numnodalvalues;
 
   // temporary vectors for contact forces, DOF-GIDs and owning procs
-  LINALG::TMatrix<TYPE, dim1, 1> fc1(true);
-  LINALG::TMatrix<TYPE, dim2, 1> fc2(true);
+  LINALG::Matrix<dim1, 1, TYPE> fc1(true);
+  LINALG::Matrix<dim2, 1, TYPE> fc2(true);
   Epetra_SerialDenseVector fcontact1(dim1);
   Epetra_SerialDenseVector fcontact2(dim2);
   std::vector<int> lm1(dim1);
@@ -540,27 +540,27 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateFcContact(const
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateStiffcContact(const double& pp,
-    const TYPE& norm_delta_r, const LINALG::TMatrix<TYPE, 3, 1>& delta_r,
-    LINALG::SparseMatrix& stiffmatrix, const LINALG::TMatrix<TYPE, 3, 1>& r1,
-    const LINALG::TMatrix<TYPE, 3, 1>& r2, const LINALG::TMatrix<TYPE, 3, 1>& r1_xi,
-    const LINALG::TMatrix<TYPE, 3, 1>& r2_xi, const LINALG::TMatrix<TYPE, 3, 1>& r1_xixi,
-    const LINALG::TMatrix<TYPE, 3, 1>& r2_xixi,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N1,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N2,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N1_xi,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N2_xi,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N1_xixi,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N2_xixi)
+    const TYPE& norm_delta_r, const LINALG::Matrix<3, 1, TYPE>& delta_r,
+    LINALG::SparseMatrix& stiffmatrix, const LINALG::Matrix<3, 1, TYPE>& r1,
+    const LINALG::Matrix<3, 1, TYPE>& r2, const LINALG::Matrix<3, 1, TYPE>& r1_xi,
+    const LINALG::Matrix<3, 1, TYPE>& r2_xi, const LINALG::Matrix<3, 1, TYPE>& r1_xixi,
+    const LINALG::Matrix<3, 1, TYPE>& r2_xixi,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xi,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xixi,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xixi)
 {
   // get dimensions for vectors fc1 and fc2
   const int dim1 = 3 * numnodes * numnodalvalues;
   const int dim2 = 3 * numnodes * numnodalvalues;
 
   // temporary matrices for stiffness and vectors for DOF-GIDs and owning procs
-  LINALG::TMatrix<TYPE, dim1, dim1 + dim2> stiffc1(true);
-  LINALG::TMatrix<TYPE, dim2, dim1 + dim2> stiffc2(true);
-  LINALG::TMatrix<TYPE, dim1, dim1 + dim2> stiffc1_FAD(true);
-  LINALG::TMatrix<TYPE, dim2, dim1 + dim2> stiffc2_FAD(true);
+  LINALG::Matrix<dim1, dim1 + dim2, TYPE> stiffc1(true);
+  LINALG::Matrix<dim2, dim1 + dim2, TYPE> stiffc2(true);
+  LINALG::Matrix<dim1, dim1 + dim2, TYPE> stiffc1_FAD(true);
+  LINALG::Matrix<dim2, dim1 + dim2, TYPE> stiffc2_FAD(true);
   Epetra_SerialDenseMatrix stiffcontact1(dim1, dim1 + dim2);
   Epetra_SerialDenseMatrix stiffcontact2(dim2, dim1 + dim2);
   std::vector<int> lmrow1(dim1);
@@ -615,12 +615,12 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateStiffcContact(c
     const int* node_ids2 = element2_->NodeIds();
 
     // initialize storage for linearizations
-    LINALG::TMatrix<TYPE, dim1 + dim2, 1> delta_xi(true);
-    LINALG::TMatrix<TYPE, dim1 + dim2, 1> delta_eta(true);
-    LINALG::TMatrix<TYPE, dim1 + dim2, 1> delta_gap(true);
-    LINALG::TMatrix<TYPE, dim1 + dim2, 1> delta_gap_t(true);
-    LINALG::TMatrix<TYPE, 3, dim1 + dim2> delta_x1_minus_x2(true);
-    LINALG::TMatrix<TYPE, 3, dim1 + dim2> delta_n(true);
+    LINALG::Matrix<dim1 + dim2, 1, TYPE> delta_xi(true);
+    LINALG::Matrix<dim1 + dim2, 1, TYPE> delta_eta(true);
+    LINALG::Matrix<dim1 + dim2, 1, TYPE> delta_gap(true);
+    LINALG::Matrix<dim1 + dim2, 1, TYPE> delta_gap_t(true);
+    LINALG::Matrix<3, dim1 + dim2, TYPE> delta_x1_minus_x2(true);
+    LINALG::Matrix<3, dim1 + dim2, TYPE> delta_n(true);
 
     //********************************************************************
     // evaluate linearizations and distance
@@ -729,7 +729,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateStiffcContact(c
       //********************************************************************
       // part I - basic stiffness
       //********************************************************************
-      LINALG::TMatrix<TYPE, dim1, 1> N1T_normal(true);
+      LINALG::Matrix<dim1, 1, TYPE> N1T_normal(true);
       for (int i = 0; i < 3; i++)
       {
         for (int j = 0; j < dim1; j++)
@@ -765,7 +765,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateStiffcContact(c
         //********************************************************************
         // part III - geometric stiffness 2
         //********************************************************************
-        LINALG::TMatrix<TYPE, dim1, 1> N1xiT_normal(true);
+        LINALG::Matrix<dim1, 1, TYPE> N1xiT_normal(true);
         for (int i = 0; i < 3; i++)
         {
           for (int j = 0; j < dim1; j++)
@@ -790,7 +790,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateStiffcContact(c
       //********************************************************************
       // part I
       //********************************************************************
-      LINALG::TMatrix<TYPE, dim2, 1> N2T_normal(true);
+      LINALG::Matrix<dim2, 1, TYPE> N2T_normal(true);
       for (int i = 0; i < 3; i++)
       {
         for (int j = 0; j < dim2; j++)
@@ -824,7 +824,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateStiffcContact(c
         //********************************************************************
         // part III
         //********************************************************************
-        LINALG::TMatrix<TYPE, dim1, 1> N2xiT_normal(true);
+        LINALG::Matrix<dim1, 1, TYPE> N2xiT_normal(true);
         for (int i = 0; i < 3; i++)
         {
           for (int j = 0; j < dim2; j++)
@@ -859,7 +859,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateStiffcContact(c
       //********************************************************************
       // part I
       //********************************************************************
-      LINALG::TMatrix<TYPE, dim1, 1> N1T_normal(true);
+      LINALG::Matrix<dim1, 1, TYPE> N1T_normal(true);
       for (int i = 0; i < 3; i++)
       {
         for (int j = 0; j < dim1; j++)
@@ -893,7 +893,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateStiffcContact(c
         //********************************************************************
         // part III
         //********************************************************************
-        LINALG::TMatrix<TYPE, dim1, 1> N1xiT_normal(true);
+        LINALG::Matrix<dim1, 1, TYPE> N1xiT_normal(true);
         for (int i = 0; i < 3; i++)
         {
           for (int j = 0; j < dim1; j++)
@@ -917,7 +917,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateStiffcContact(c
       //********************************************************************
       // part I
       //********************************************************************
-      LINALG::TMatrix<TYPE, dim2, 1> N2T_normal(true);
+      LINALG::Matrix<dim2, 1, TYPE> N2T_normal(true);
       for (int i = 0; i < 3; i++)
       {
         for (int j = 0; j < dim2; j++)
@@ -951,7 +951,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateStiffcContact(c
         //********************************************************************
         // part III
         //********************************************************************
-        LINALG::TMatrix<TYPE, dim1, 1> N2xiT_normal(true);
+        LINALG::Matrix<dim1, 1, TYPE> N2xiT_normal(true);
         for (int i = 0; i < 3; i++)
         {
           for (int j = 0; j < dim2; j++)
@@ -972,8 +972,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateStiffcContact(c
 
 // automatic differentiation for debugging
 #ifdef AUTOMATICDIFF
-    LINALG::TMatrix<TYPE, dim1, 1> fc1_FAD(true);
-    LINALG::TMatrix<TYPE, dim2, 1> fc2_FAD(true);
+    LINALG::Matrix<dim1, 1, TYPE> fc1_FAD(true);
+    LINALG::Matrix<dim2, 1, TYPE> fc2_FAD(true);
 
     EvaluateFcContact(pp, NULL, N1, N2, &fc1_FAD, &fc2_FAD);
     for (int j = 0; j < dim1 + dim2; j++)
@@ -1089,16 +1089,16 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateStiffcContact(c
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateAlgorithmicForce(const double& pp,
-    Epetra_Vector* fint, const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N1,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N2,
-    LINALG::TMatrix<TYPE, 3 * numnodes * numnodalvalues, 1>* fc1_FAD,
-    LINALG::TMatrix<TYPE, 3 * numnodes * numnodalvalues, 1>* fc2_FAD)
+    Epetra_Vector* fint, const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
+    LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc1_FAD,
+    LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc2_FAD)
 {
 #ifdef ALGORITHMICDAMP
-  LINALG::TMatrix<TYPE, 3, 1> r1_lastiter(true);
-  LINALG::TMatrix<TYPE, 3, 1> r2_lastiter(true);
-  LINALG::TMatrix<TYPE, 3, 1> vc1(true);
-  LINALG::TMatrix<TYPE, 3, 1> vc2(true);
+  LINALG::Matrix<3, 1, TYPE> r1_lastiter(true);
+  LINALG::Matrix<3, 1, TYPE> r2_lastiter(true);
+  LINALG::Matrix<3, 1, TYPE> vc1(true);
+  LINALG::Matrix<3, 1, TYPE> vc2(true);
   TYPE fd = 0.0;
   TYPE d = 0.0;
 
@@ -1186,8 +1186,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateAlgorithmicForc
   const int dim2 = 3 * numnodes * numnodalvalues;
 
   // temporary vectors for contact forces, DOF-GIDs and owning procs
-  LINALG::TMatrix<TYPE, dim1, 1> fc1(true);
-  LINALG::TMatrix<TYPE, dim2, 1> fc2(true);
+  LINALG::Matrix<dim1, 1, TYPE> fc1(true);
+  LINALG::Matrix<dim2, 1, TYPE> fc2(true);
   Epetra_SerialDenseVector fcontact1(dim1);
   Epetra_SerialDenseVector fcontact2(dim2);
   std::vector<int> lm1(dim1);
@@ -1302,26 +1302,26 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateAlgorithmicForc
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateAlgorithmicStiff(const double& pp,
-    const TYPE& norm_delta_r, const LINALG::TMatrix<TYPE, 3, 1>& delta_r,
-    LINALG::SparseMatrix& stiffmatrix, const LINALG::TMatrix<TYPE, 3, 1>& r1,
-    const LINALG::TMatrix<TYPE, 3, 1>& r2, const LINALG::TMatrix<TYPE, 3, 1>& r1_xi,
-    const LINALG::TMatrix<TYPE, 3, 1>& r2_xi, const LINALG::TMatrix<TYPE, 3, 1>& r1_xixi,
-    const LINALG::TMatrix<TYPE, 3, 1>& r2_xixi,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N1,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N2,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N1_xi,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N2_xi,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N1_xixi,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N2_xixi)
+    const TYPE& norm_delta_r, const LINALG::Matrix<3, 1, TYPE>& delta_r,
+    LINALG::SparseMatrix& stiffmatrix, const LINALG::Matrix<3, 1, TYPE>& r1,
+    const LINALG::Matrix<3, 1, TYPE>& r2, const LINALG::Matrix<3, 1, TYPE>& r1_xi,
+    const LINALG::Matrix<3, 1, TYPE>& r2_xi, const LINALG::Matrix<3, 1, TYPE>& r1_xixi,
+    const LINALG::Matrix<3, 1, TYPE>& r2_xixi,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xi,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xixi,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xixi)
 {
-  LINALG::TMatrix<TYPE, 3, 1> r1_lastiter(true);
-  LINALG::TMatrix<TYPE, 3, 1> r2_lastiter(true);
-  LINALG::TMatrix<TYPE, 3, 1> r1_xi_lastiter(true);
-  LINALG::TMatrix<TYPE, 3, 1> r2_xi_lastiter(true);
-  LINALG::TMatrix<TYPE, 3, 1> vc1(true);
-  LINALG::TMatrix<TYPE, 3, 1> vc2(true);
-  LINALG::TMatrix<TYPE, 3, 1> vc1_xi(true);
-  LINALG::TMatrix<TYPE, 3, 1> vc2_xi(true);
+  LINALG::Matrix<3, 1, TYPE> r1_lastiter(true);
+  LINALG::Matrix<3, 1, TYPE> r2_lastiter(true);
+  LINALG::Matrix<3, 1, TYPE> r1_xi_lastiter(true);
+  LINALG::Matrix<3, 1, TYPE> r2_xi_lastiter(true);
+  LINALG::Matrix<3, 1, TYPE> vc1(true);
+  LINALG::Matrix<3, 1, TYPE> vc2(true);
+  LINALG::Matrix<3, 1, TYPE> vc1_xi(true);
+  LINALG::Matrix<3, 1, TYPE> vc2_xi(true);
   TYPE fd = 0.0;
   TYPE dfd = 0.0;
   TYPE d = 0.0;
@@ -1424,10 +1424,10 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateAlgorithmicStif
   const int dim2 = 3 * numnodes * numnodalvalues;
 
   // temporary matrices for stiffness and vectors for DOF-GIDs and owning procs
-  LINALG::TMatrix<TYPE, dim1, dim1 + dim2> stiffc1(true);
-  LINALG::TMatrix<TYPE, dim2, dim1 + dim2> stiffc2(true);
-  LINALG::TMatrix<TYPE, dim1, dim1 + dim2> stiffc1_FAD(true);
-  LINALG::TMatrix<TYPE, dim2, dim1 + dim2> stiffc2_FAD(true);
+  LINALG::Matrix<dim1, dim1 + dim2, TYPE> stiffc1(true);
+  LINALG::Matrix<dim2, dim1 + dim2, TYPE> stiffc2(true);
+  LINALG::Matrix<dim1, dim1 + dim2, TYPE> stiffc1_FAD(true);
+  LINALG::Matrix<dim2, dim1 + dim2, TYPE> stiffc2_FAD(true);
   Epetra_SerialDenseMatrix stiffcontact1(dim1, dim1 + dim2);
   Epetra_SerialDenseMatrix stiffcontact2(dim2, dim1 + dim2);
   std::vector<int> lmrow1(dim1);
@@ -1469,12 +1469,12 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateAlgorithmicStif
     const int* node_ids2 = element2_->NodeIds();
 
     // initialize storage for linearizations
-    LINALG::TMatrix<TYPE, dim1 + dim2, 1> delta_xi(true);
-    LINALG::TMatrix<TYPE, dim1 + dim2, 1> delta_eta(true);
-    LINALG::TMatrix<TYPE, dim1 + dim2, 1> delta_gap(true);
-    LINALG::TMatrix<TYPE, dim1 + dim2, 1> delta_gap_t(true);
-    LINALG::TMatrix<TYPE, 3, dim1 + dim2> delta_x1_minus_x2(true);
-    LINALG::TMatrix<TYPE, 3, dim1 + dim2> delta_n(true);
+    LINALG::Matrix<dim1 + dim2, 1, TYPE> delta_xi(true);
+    LINALG::Matrix<dim1 + dim2, 1, TYPE> delta_eta(true);
+    LINALG::Matrix<dim1 + dim2, 1, TYPE> delta_gap(true);
+    LINALG::Matrix<dim1 + dim2, 1, TYPE> delta_gap_t(true);
+    LINALG::Matrix<3, dim1 + dim2, TYPE> delta_x1_minus_x2(true);
+    LINALG::Matrix<3, dim1 + dim2, TYPE> delta_n(true);
 
     //********************************************************************
     // evaluate linearizations and distance
@@ -1562,7 +1562,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateAlgorithmicStif
     // part I
     //********************************************************************
 
-    LINALG::TMatrix<TYPE, dim1, 1> N1T_normal(true);
+    LINALG::Matrix<dim1, 1, TYPE> N1T_normal(true);
     for (int i = 0; i < 3; i++)
     {
       for (int j = 0; j < dim1; j++)
@@ -1597,7 +1597,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateAlgorithmicStif
       //********************************************************************
       // part III
       //********************************************************************
-      LINALG::TMatrix<TYPE, dim1, 1> N1xiT_normal(true);
+      LINALG::Matrix<dim1, 1, TYPE> N1xiT_normal(true);
       for (int i = 0; i < 3; i++)
       {
         for (int j = 0; j < dim1; j++)
@@ -1621,7 +1621,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateAlgorithmicStif
     //********************************************************************
     // part I
     //********************************************************************
-    LINALG::TMatrix<TYPE, dim2, 1> N2T_normal(true);
+    LINALG::Matrix<dim2, 1, TYPE> N2T_normal(true);
     for (int i = 0; i < 3; i++)
     {
       for (int j = 0; j < dim2; j++)
@@ -1656,7 +1656,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateAlgorithmicStif
       //********************************************************************
       // part III
       //********************************************************************
-      LINALG::TMatrix<TYPE, dim1, 1> N2xiT_normal(true);
+      LINALG::Matrix<dim1, 1, TYPE> N2xiT_normal(true);
       for (int i = 0; i < 3; i++)
       {
         for (int j = 0; j < dim2; j++)
@@ -1676,8 +1676,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateAlgorithmicStif
 
 // automatic differentiation for debugging
 #ifdef AUTOMATICDIFF
-    LINALG::TMatrix<TYPE, dim1, 1> fc1_FAD(true);
-    LINALG::TMatrix<TYPE, dim2, 1> fc2_FAD(true);
+    LINALG::Matrix<dim1, 1, TYPE> fc1_FAD(true);
+    LINALG::Matrix<dim2, 1, TYPE> fc2_FAD(true);
 
     EvaluateFcContact(pp, NULL, N1, N2, &fc1_FAD, &fc2_FAD);
     for (int j = 0; j < dim1 + dim2; j++)
@@ -1747,7 +1747,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateAlgorithmicStif
       //********************************************************************
       // PTC for element 1 (similar to part I of original stiffness)
       //********************************************************************
-      LINALG::TMatrix<TYPE, dim1, 1> N1T_normal(true);
+      LINALG::Matrix<dim1, 1, TYPE> N1T_normal(true);
       for (int i = 0; i < 3; i++)
       {
         for (int j = 0; j < dim1; j++)
@@ -1765,7 +1765,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateAlgorithmicStif
       //********************************************************************
       // PTC for element 2 (similar to part I of original stiffness)
       //********************************************************************
-      LINALG::TMatrix<TYPE, dim2, 1> N2T_normal(true);
+      LINALG::Matrix<dim2, 1, TYPE> N2T_normal(true);
       for (int i = 0; i < 3; i++)
       {
         for (int j = 0; j < dim2; j++)
@@ -1857,15 +1857,15 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateAlgorithmicStif
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ComputeLinXiAndLinEta(
-    LINALG::TMatrix<TYPE, 2 * 3 * numnodes * numnodalvalues, 1>& delta_xi,
-    LINALG::TMatrix<TYPE, 2 * 3 * numnodes * numnodalvalues, 1>& delta_eta,
-    const LINALG::TMatrix<TYPE, 3, 1>& delta_r, const LINALG::TMatrix<TYPE, 3, 1>& r1_xi,
-    const LINALG::TMatrix<TYPE, 3, 1>& r2_xi, const LINALG::TMatrix<TYPE, 3, 1>& r1_xixi,
-    const LINALG::TMatrix<TYPE, 3, 1>& r2_xixi,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N1,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N2,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N1_xi,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N2_xi)
+    LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_xi,
+    LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_eta,
+    const LINALG::Matrix<3, 1, TYPE>& delta_r, const LINALG::Matrix<3, 1, TYPE>& r1_xi,
+    const LINALG::Matrix<3, 1, TYPE>& r2_xi, const LINALG::Matrix<3, 1, TYPE>& r1_xixi,
+    const LINALG::Matrix<3, 1, TYPE>& r2_xixi,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xi,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi)
 {
   //**********************************************************************
   // we have to solve the following system of equations:
@@ -1885,10 +1885,10 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ComputeLinXiAndLinEta(
   const int dim2 = 3 * numnodes * numnodalvalues;
 
   // matrices to compute Lin_Xi and Lin_Eta
-  LINALG::TMatrix<TYPE, 2, 2> L(true);
-  LINALG::TMatrix<TYPE, 2, 2> L_inv(true);
-  LINALG::TMatrix<TYPE, 2, dim1 + dim2> B(true);
-  LINALG::TMatrix<TYPE, 2, dim1 + dim2> D(true);
+  LINALG::Matrix<2, 2, TYPE> L(true);
+  LINALG::Matrix<2, 2, TYPE> L_inv(true);
+  LINALG::Matrix<2, dim1 + dim2, TYPE> B(true);
+  LINALG::Matrix<2, dim1 + dim2, TYPE> D(true);
 
   // compute L elementwise
   L(0, 0) = ::FADUTILS::ScalarProduct(r1_xi, r1_xi) + ::FADUTILS::ScalarProduct(delta_r, r1_xixi);
@@ -1944,13 +1944,13 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ComputeLinXiAndLinEta(
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ComputeLinGap(
-    LINALG::TMatrix<TYPE, 2 * 3 * numnodes * numnodalvalues, 1>& delta_gap,
-    const LINALG::TMatrix<TYPE, 2 * 3 * numnodes * numnodalvalues, 1>& delta_xi,
-    const LINALG::TMatrix<TYPE, 2 * 3 * numnodes * numnodalvalues, 1>& delta_eta,
-    const LINALG::TMatrix<TYPE, 3, 1>& delta_r, const TYPE& norm_delta_r,
-    const LINALG::TMatrix<TYPE, 3, 1>& r1_xi, const LINALG::TMatrix<TYPE, 3, 1>& r2_xi,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N1,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N2)
+    LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_gap,
+    const LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_xi,
+    const LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_eta,
+    const LINALG::Matrix<3, 1, TYPE>& delta_r, const TYPE& norm_delta_r,
+    const LINALG::Matrix<3, 1, TYPE>& r1_xi, const LINALG::Matrix<3, 1, TYPE>& r2_xi,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2)
 {
   const int dim1 = 3 * numnodes * numnodalvalues;
   const int dim2 = 3 * numnodes * numnodalvalues;
@@ -1958,7 +1958,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ComputeLinGap(
   // delta g := delta_r/||delta_r||*auxiliary_matri1 delta d, with auxiliary_matri1 =
   // (r1_xi*delta_xi-r2_xi*delta_eta + (N1, -N2))
 
-  LINALG::TMatrix<TYPE, 3, dim1 + dim2> auxiliary_matrix1(true);
+  LINALG::Matrix<3, dim1 + dim2, TYPE> auxiliary_matrix1(true);
 
   for (int i = 0; i < 3; i++)
   {
@@ -2004,26 +2004,26 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ComputeLinGap(
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ComputeLinGapt(
-    LINALG::TMatrix<TYPE, 2 * 3 * numnodes * numnodalvalues, 1>& delta_gap_t,
-    const LINALG::TMatrix<TYPE, 2 * 3 * numnodes * numnodalvalues, 1>& delta_xi,
-    const LINALG::TMatrix<TYPE, 2 * 3 * numnodes * numnodalvalues, 1>& delta_eta,
-    const LINALG::TMatrix<TYPE, 3, 2 * 3 * numnodes * numnodalvalues>& delta_n,
-    const LINALG::TMatrix<TYPE, 3, 1>& r1_xi, const LINALG::TMatrix<TYPE, 3, 1>& r2_xi,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N1,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N2,
-    const LINALG::TMatrix<TYPE, 3, 1>& r1_old, const LINALG::TMatrix<TYPE, 3, 1>& r2_old,
-    const LINALG::TMatrix<TYPE, 3, 1>& r1_xi_old, const LINALG::TMatrix<TYPE, 3, 1>& r2_xi_old)
+    LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_gap_t,
+    const LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_xi,
+    const LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_eta,
+    const LINALG::Matrix<3, 2 * 3 * numnodes * numnodalvalues, TYPE>& delta_n,
+    const LINALG::Matrix<3, 1, TYPE>& r1_xi, const LINALG::Matrix<3, 1, TYPE>& r2_xi,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
+    const LINALG::Matrix<3, 1, TYPE>& r1_old, const LINALG::Matrix<3, 1, TYPE>& r2_old,
+    const LINALG::Matrix<3, 1, TYPE>& r1_xi_old, const LINALG::Matrix<3, 1, TYPE>& r2_xi_old)
 {
   const int dim1 = 3 * numnodes * numnodalvalues;
   const int dim2 = 3 * numnodes * numnodalvalues;
 
-  LINALG::TMatrix<TYPE, 3, 2 * 3 * numnodes * numnodalvalues> delta_vc1(true);
-  LINALG::TMatrix<TYPE, 3, 2 * 3 * numnodes * numnodalvalues> delta_vc2(true);
+  LINALG::Matrix<3, 2 * 3 * numnodes * numnodalvalues, TYPE> delta_vc1(true);
+  LINALG::Matrix<3, 2 * 3 * numnodes * numnodalvalues, TYPE> delta_vc2(true);
 
-  LINALG::TMatrix<TYPE, 3, 1> vc1;
-  LINALG::TMatrix<TYPE, 3, 1> vc2;
-  LINALG::TMatrix<TYPE, 3, 1> vc1_xi;
-  LINALG::TMatrix<TYPE, 3, 1> vc2_xi;
+  LINALG::Matrix<3, 1, TYPE> vc1;
+  LINALG::Matrix<3, 1, TYPE> vc2;
+  LINALG::Matrix<3, 1, TYPE> vc1_xi;
+  LINALG::Matrix<3, 1, TYPE> vc2_xi;
   // Calculate velocities
   if (firsttimestep_)
   {
@@ -2100,13 +2100,13 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ComputeLinGapt(
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ComputeLinNormal(
-    LINALG::TMatrix<TYPE, 3, 2 * 3 * numnodes * numnodalvalues>& delta_normal,
-    const LINALG::TMatrix<TYPE, 2 * 3 * numnodes * numnodalvalues, 1>& delta_xi,
-    const LINALG::TMatrix<TYPE, 2 * 3 * numnodes * numnodalvalues, 1>& delta_eta,
-    const TYPE& norm_delta_r, const LINALG::TMatrix<TYPE, 3, 1>& r1_xi,
-    const LINALG::TMatrix<TYPE, 3, 1>& r2_xi,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N1,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N2)
+    LINALG::Matrix<3, 2 * 3 * numnodes * numnodalvalues, TYPE>& delta_normal,
+    const LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_xi,
+    const LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_eta,
+    const TYPE& norm_delta_r, const LINALG::Matrix<3, 1, TYPE>& r1_xi,
+    const LINALG::Matrix<3, 1, TYPE>& r2_xi,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2)
 {
   const int dim1 = 3 * numnodes * numnodalvalues;
   const int dim2 = 3 * numnodes * numnodalvalues;
@@ -2114,8 +2114,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ComputeLinNormal(
   // delta n := auxiliary_matri2*auxiliary_matrix1* delta d, with auxiliary_matri2 =
   // (I-nxn)/||r1-r2|| and auxiliary_matri1 = (r1_xi*delta_xi-r2_xi*delta_eta + (N1, -N2))
 
-  LINALG::TMatrix<TYPE, 3, dim1 + dim2> auxiliary_matrix1(true);
-  LINALG::TMatrix<TYPE, 3, 3> auxiliary_matrix2(true);
+  LINALG::Matrix<3, dim1 + dim2, TYPE> auxiliary_matrix1(true);
+  LINALG::Matrix<3, 3, TYPE> auxiliary_matrix2(true);
 
   // compute auxiliary_matrix1
   for (int i = 0; i < 3; i++)
@@ -2177,10 +2177,10 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ClosestPointProjection(
   // node interpolation The definitions of b_1, b_2, t_1 and t_2 are according to the paper "ON
   // CONTACT BETWEEN THREE-DIMENSIONAL BEAMS UNDERGOING LARGE DEFLECTIONS" of Wriggers and Zavarise
   // (1997)
-  LINALG::TMatrix<TYPE, 3, 1> b_1(true);
-  LINALG::TMatrix<TYPE, 3, 1> b_2(true);
-  LINALG::TMatrix<TYPE, 3, 1> t_1(true);
-  LINALG::TMatrix<TYPE, 3, 1> t_2(true);
+  LINALG::Matrix<3, 1, TYPE> b_1(true);
+  LINALG::Matrix<3, 1, TYPE> b_2(true);
+  LINALG::Matrix<3, 1, TYPE> t_1(true);
+  LINALG::Matrix<3, 1, TYPE> t_2(true);
 
   // This procedure also works for higher order Reissner beams, since the boundary node still
   // has the ID=2 and takes the second place in the ele1pos_/ele2pos_ vectors
@@ -2217,32 +2217,32 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ClosestPointProjection(
   }
 
   // vectors for shape functions and their derivatives
-  LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues> N1(true);       // = N1
-  LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues> N2(true);       // = N2
-  LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues> N1_xi(true);    // = N1,xi
-  LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues> N2_xi(true);    // = N2,eta
-  LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues> N1_xixi(true);  // = N1,xixi
-  LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues> N2_xixi(true);  // = N2,etaeta
+  LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE> N1(true);       // = N1
+  LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE> N2(true);       // = N2
+  LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE> N1_xi(true);    // = N1,xi
+  LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE> N2_xi(true);    // = N2,eta
+  LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE> N1_xixi(true);  // = N1,xixi
+  LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE> N2_xixi(true);  // = N2,etaeta
 
   // coords and derivatives of the two contacting points
-  LINALG::TMatrix<TYPE, 3, 1> r1(true);       // = r1
-  LINALG::TMatrix<TYPE, 3, 1> r2(true);       // = r2
-  LINALG::TMatrix<TYPE, 3, 1> r1_xi(true);    // = r1,xi
-  LINALG::TMatrix<TYPE, 3, 1> r2_xi(true);    // = r2,eta
-  LINALG::TMatrix<TYPE, 3, 1> r1_xixi(true);  // = r1,xixi
-  LINALG::TMatrix<TYPE, 3, 1> r2_xixi(true);  // = r2,etaeta
-  LINALG::TMatrix<TYPE, 3, 1> delta_r(true);  // = r1-r2
+  LINALG::Matrix<3, 1, TYPE> r1(true);       // = r1
+  LINALG::Matrix<3, 1, TYPE> r2(true);       // = r2
+  LINALG::Matrix<3, 1, TYPE> r1_xi(true);    // = r1,xi
+  LINALG::Matrix<3, 1, TYPE> r2_xi(true);    // = r2,eta
+  LINALG::Matrix<3, 1, TYPE> r1_xixi(true);  // = r1,xixi
+  LINALG::Matrix<3, 1, TYPE> r2_xixi(true);  // = r2,etaeta
+  LINALG::Matrix<3, 1, TYPE> delta_r(true);  // = r1-r2
 
   // Tangent and derivatives for tangent field smoothing (only for Reissner beams)
-  LINALG::TMatrix<TYPE, 3, 1> t1(true);
-  LINALG::TMatrix<TYPE, 3, 1> t1_xi(true);
-  LINALG::TMatrix<TYPE, 3, 1> t2(true);
-  LINALG::TMatrix<TYPE, 3, 1> t2_xi(true);
+  LINALG::Matrix<3, 1, TYPE> t1(true);
+  LINALG::Matrix<3, 1, TYPE> t1_xi(true);
+  LINALG::Matrix<3, 1, TYPE> t2(true);
+  LINALG::Matrix<3, 1, TYPE> t2_xi(true);
 
   // initialize function f and Jacobian df for Newton iteration
-  LINALG::TMatrix<TYPE, 2, 1> f(true);
-  LINALG::TMatrix<TYPE, 2, 2> df(true);
-  LINALG::TMatrix<TYPE, 2, 2> dfinv(true);
+  LINALG::Matrix<2, 1, TYPE> f(true);
+  LINALG::Matrix<2, 2, TYPE> df(true);
+  LINALG::Matrix<2, 2, TYPE> dfinv(true);
 
   // initial scalar residual (L2-norm of f)
   TYPE residual = 0.0;
@@ -2647,8 +2647,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::CalcDampingLaw()
 
   if (dampingcontactflag_)
   {
-    LINALG::TMatrix<TYPE, 3, 1> vc1;
-    LINALG::TMatrix<TYPE, 3, 1> vc2;
+    LINALG::Matrix<3, 1, TYPE> vc1;
+    LINALG::Matrix<3, 1, TYPE> vc2;
     // Calculate velocities
     if (firsttimestep_)
     {
@@ -2730,24 +2730,24 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::CalcDampingLaw()
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetShapeFunctions(
-    LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N1,
-    LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N2,
-    LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N1_xi,
-    LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N2_xi,
-    LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N1_xixi,
-    LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N2_xixi, const TYPE& eta1,
+    LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
+    LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
+    LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xi,
+    LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi,
+    LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xixi,
+    LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xixi, const TYPE& eta1,
     const TYPE& eta2)
 {
   // get both discretization types
   const DRT::Element::DiscretizationType distype1 = element1_->Shape();
   const DRT::Element::DiscretizationType distype2 = element2_->Shape();
 
-  LINALG::TMatrix<TYPE, 1, numnodes * numnodalvalues> N1_i(true);
-  LINALG::TMatrix<TYPE, 1, numnodes * numnodalvalues> N1_i_xi(true);
-  LINALG::TMatrix<TYPE, 1, numnodes * numnodalvalues> N1_i_xixi(true);
-  LINALG::TMatrix<TYPE, 1, numnodes * numnodalvalues> N2_i(true);
-  LINALG::TMatrix<TYPE, 1, numnodes * numnodalvalues> N2_i_xi(true);
-  LINALG::TMatrix<TYPE, 1, numnodes * numnodalvalues> N2_i_xixi(true);
+  LINALG::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i(true);
+  LINALG::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i_xi(true);
+  LINALG::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i_xixi(true);
+  LINALG::Matrix<1, numnodes * numnodalvalues, TYPE> N2_i(true);
+  LINALG::Matrix<1, numnodes * numnodalvalues, TYPE> N2_i_xi(true);
+  LINALG::Matrix<1, numnodes * numnodalvalues, TYPE> N2_i_xixi(true);
 
   if (numnodalvalues == 1)
   {
@@ -2800,12 +2800,12 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetShapeFunctions(
  *-----------------------------------------------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::AssembleShapefunctions(
-    const LINALG::TMatrix<TYPE, 1, numnodes * numnodalvalues>& N_i,
-    const LINALG::TMatrix<TYPE, 1, numnodes * numnodalvalues>& N_i_xi,
-    const LINALG::TMatrix<TYPE, 1, numnodes * numnodalvalues>& N_i_xixi,
-    LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N,
-    LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N_xi,
-    LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N_xixi)
+    const LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N_i,
+    const LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N_i_xi,
+    const LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N_i_xixi,
+    LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N,
+    LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N_xi,
+    LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N_xixi)
 {
   // assembly_N is just an array to help assemble the matrices of the shape functions
   // it determines, which shape function is used in which column of N
@@ -2868,15 +2868,15 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::AssembleShapefunctions(
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ComputeCoordsAndDerivs(
-    LINALG::TMatrix<TYPE, 3, 1>& r1, LINALG::TMatrix<TYPE, 3, 1>& r2,
-    LINALG::TMatrix<TYPE, 3, 1>& r1_xi, LINALG::TMatrix<TYPE, 3, 1>& r2_xi,
-    LINALG::TMatrix<TYPE, 3, 1>& r1_xixi, LINALG::TMatrix<TYPE, 3, 1>& r2_xixi,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N1,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N2,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N1_xi,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N2_xi,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N1_xixi,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N2_xixi)
+    LINALG::Matrix<3, 1, TYPE>& r1, LINALG::Matrix<3, 1, TYPE>& r2,
+    LINALG::Matrix<3, 1, TYPE>& r1_xi, LINALG::Matrix<3, 1, TYPE>& r2_xi,
+    LINALG::Matrix<3, 1, TYPE>& r1_xixi, LINALG::Matrix<3, 1, TYPE>& r2_xixi,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xi,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xixi,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xixi)
 {
   r1.Clear();
   r2.Clear();
@@ -2923,12 +2923,12 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ComputeCoordsAndDerivs(
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ComputeOldCoordsAndDerivs(
-    LINALG::TMatrix<TYPE, 3, 1>& r1_old, LINALG::TMatrix<TYPE, 3, 1>& r2_old,
-    LINALG::TMatrix<TYPE, 3, 1>& r1_xi_old, LINALG::TMatrix<TYPE, 3, 1>& r2_xi_old,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N1,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N2,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N1_xi,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N2_xi)
+    LINALG::Matrix<3, 1, TYPE>& r1_old, LINALG::Matrix<3, 1, TYPE>& r2_old,
+    LINALG::Matrix<3, 1, TYPE>& r1_xi_old, LINALG::Matrix<3, 1, TYPE>& r2_xi_old,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xi,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi)
 {
   r1_old.Clear();
   r2_old.Clear();
@@ -2960,10 +2960,10 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ComputeOldCoordsAndDeri
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateOrthogonalityCondition(
-    LINALG::TMatrix<TYPE, 2, 1>& f, const LINALG::TMatrix<TYPE, 3, 1>& delta_r,
-    const double norm_delta_r, const LINALG::TMatrix<TYPE, 3, 1>& r1_xi,
-    const LINALG::TMatrix<TYPE, 3, 1>& r2_xi, const LINALG::TMatrix<TYPE, 3, 1>& t1,
-    const LINALG::TMatrix<TYPE, 3, 1>& t2)
+    LINALG::Matrix<2, 1, TYPE>& f, const LINALG::Matrix<3, 1, TYPE>& delta_r,
+    const double norm_delta_r, const LINALG::Matrix<3, 1, TYPE>& r1_xi,
+    const LINALG::Matrix<3, 1, TYPE>& r2_xi, const LINALG::Matrix<3, 1, TYPE>& t1,
+    const LINALG::Matrix<3, 1, TYPE>& t2)
 {
   // reset f
   f.Clear();
@@ -3004,12 +3004,12 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateOrthogonalityCo
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateLinOrthogonalityCondition(
-    LINALG::TMatrix<TYPE, 2, 2>& df, LINALG::TMatrix<TYPE, 2, 2>& dfinv,
-    const LINALG::TMatrix<TYPE, 3, 1>& delta_r, const double norm_delta_r,
-    const LINALG::TMatrix<TYPE, 3, 1>& r1_xi, const LINALG::TMatrix<TYPE, 3, 1>& r2_xi,
-    const LINALG::TMatrix<TYPE, 3, 1>& r1_xixi, const LINALG::TMatrix<TYPE, 3, 1>& r2_xixi,
-    const LINALG::TMatrix<TYPE, 3, 1>& t1, const LINALG::TMatrix<TYPE, 3, 1>& t2,
-    const LINALG::TMatrix<TYPE, 3, 1>& t1_xi, const LINALG::TMatrix<TYPE, 3, 1>& t2_xi)
+    LINALG::Matrix<2, 2, TYPE>& df, LINALG::Matrix<2, 2, TYPE>& dfinv,
+    const LINALG::Matrix<3, 1, TYPE>& delta_r, const double norm_delta_r,
+    const LINALG::Matrix<3, 1, TYPE>& r1_xi, const LINALG::Matrix<3, 1, TYPE>& r2_xi,
+    const LINALG::Matrix<3, 1, TYPE>& r1_xixi, const LINALG::Matrix<3, 1, TYPE>& r2_xixi,
+    const LINALG::Matrix<3, 1, TYPE>& t1, const LINALG::Matrix<3, 1, TYPE>& t2,
+    const LINALG::Matrix<3, 1, TYPE>& t1_xi, const LINALG::Matrix<3, 1, TYPE>& t2_xi)
 
 {
   // reset df and dfinv
@@ -3082,7 +3082,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateLinOrthogonalit
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ComputeNormal(
-    LINALG::TMatrix<TYPE, 3, 1>& delta_r, TYPE& norm_delta_r,
+    LINALG::Matrix<3, 1, TYPE>& delta_r, TYPE& norm_delta_r,
     std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>>& contactpairmap)
 {
   // compute non-unit normal
@@ -3853,15 +3853,15 @@ double CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetJacobi(DRT::Elemen
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::FADCheckLinXiAndLinEta(
-    const LINALG::TMatrix<TYPE, 3, 1>& delta_r, const LINALG::TMatrix<TYPE, 3, 1>& r1_xi,
-    const LINALG::TMatrix<TYPE, 3, 1>& r2_xi, const LINALG::TMatrix<TYPE, 3, 1>& r1_xixi,
-    const LINALG::TMatrix<TYPE, 3, 1>& r2_xixi,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N1,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N2,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N1_xi,
-    const LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues>& N2_xi)
+    const LINALG::Matrix<3, 1, TYPE>& delta_r, const LINALG::Matrix<3, 1, TYPE>& r1_xi,
+    const LINALG::Matrix<3, 1, TYPE>& r2_xi, const LINALG::Matrix<3, 1, TYPE>& r1_xixi,
+    const LINALG::Matrix<3, 1, TYPE>& r2_xixi,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xi,
+    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi)
 {
-  LINALG::TMatrix<TYPE, 2, 1> f(true);
+  LINALG::Matrix<2, 1, TYPE> f(true);
 
   // compute norm of difference vector to scale the equations
   // (this yields better conditioning)
@@ -3896,10 +3896,10 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::FADCheckLinXiAndLinEta(
   const int dim2 = 3 * numnodes * numnodalvalues;
 
   // matrices to compute Lin_Xi and Lin_Eta
-  LINALG::TMatrix<TYPE, 2, 2> L(true);
-  LINALG::TMatrix<TYPE, 2, 2> L_inv(true);
-  LINALG::TMatrix<TYPE, 2, dim1 + dim2> B(true);
-  LINALG::TMatrix<TYPE, 2, dim1 + dim2> D(true);
+  LINALG::Matrix<2, 2, TYPE> L(true);
+  LINALG::Matrix<2, 2, TYPE> L_inv(true);
+  LINALG::Matrix<2, dim1 + dim2, TYPE> B(true);
+  LINALG::Matrix<2, dim1 + dim2, TYPE> D(true);
 
   // compute L elementwise
   L(0, 0) = f(0).dx(2 * 3 * numnodes * numnodalvalues);
@@ -3940,10 +3940,10 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::FADCheckLinXiAndLinEta(
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::FADCheckLinOrthogonalityCondition(
-    const LINALG::TMatrix<TYPE, 3, 1>& delta_r, const LINALG::TMatrix<TYPE, 3, 1>& r1_xi,
-    const LINALG::TMatrix<TYPE, 3, 1>& r2_xi)
+    const LINALG::Matrix<3, 1, TYPE>& delta_r, const LINALG::Matrix<3, 1, TYPE>& r1_xi,
+    const LINALG::Matrix<3, 1, TYPE>& r2_xi)
 {
-  LINALG::TMatrix<TYPE, 2, 1> f(true);
+  LINALG::Matrix<2, 1, TYPE> f(true);
 
   // compute norm of difference vector to scale the equations
   // (this yields better conditioning)
@@ -3960,7 +3960,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::FADCheckLinOrthogonalit
     f(1) += -delta_r(i) * r2_xi(i) / norm_delta_r;
   }
 
-  LINALG::TMatrix<TYPE, 2, 2> df(true);
+  LINALG::Matrix<2, 2, TYPE> df(true);
 
   for (int i = 0; i < 2; i++)
   {

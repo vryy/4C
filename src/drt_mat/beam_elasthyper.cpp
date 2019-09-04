@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief constitutive relations for beam cross-section resultants (hyperelastic stored energy
 function)
 
@@ -133,7 +133,7 @@ void MAT::BeamElastHyperMaterial::ThrowErrorIfParamsPointerIsNull() const
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
 void MAT::BeamElastHyperMaterial::GetConstitutiveMatrixOfForcesMaterialFrame(
-    LINALG::TMatrix<T, 3, 3>& C_N) const
+    LINALG::Matrix<3, 3, T>& C_N) const
 {
   // defining material constitutive matrix CN between Gamma and N
   // according to Jelenic 1999, section 2.4
@@ -148,7 +148,7 @@ void MAT::BeamElastHyperMaterial::GetConstitutiveMatrixOfForcesMaterialFrame(
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
 void MAT::BeamElastHyperMaterial::GetConstitutiveMatrixOfMomentsMaterialFrame(
-    LINALG::TMatrix<T, 3, 3>& C_M) const
+    LINALG::Matrix<3, 3, T>& C_M) const
 {
   // defining material constitutive matrix CM between curvature and moment
   // according to Jelenic 1999, section 2.4
@@ -170,7 +170,7 @@ double MAT::BeamElastHyperMaterial::GetTranslationalMassInertiaFactor() const
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
 void MAT::BeamElastHyperMaterial::GetMassMomentOfInertiaTensorMaterialFrame(
-    LINALG::TMatrix<T, 3, 3>& J) const
+    LINALG::Matrix<3, 3, T>& J) const
 {
   J.Clear();
 
@@ -188,19 +188,16 @@ double MAT::BeamElastHyperMaterial::GetInteractionRadius() const
 
 // explicit template instantiations
 template void MAT::BeamElastHyperMaterial::GetConstitutiveMatrixOfForcesMaterialFrame<double>(
-    LINALG::TMatrix<double, 3, 3>&) const;
-template void
-MAT::BeamElastHyperMaterial::GetConstitutiveMatrixOfForcesMaterialFrame<Sacado::Fad::DFad<double>>(
-    LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 3>&) const;
+    LINALG::Matrix<3, 3, double>&) const;
+template void MAT::BeamElastHyperMaterial::GetConstitutiveMatrixOfForcesMaterialFrame<
+    Sacado::Fad::DFad<double>>(LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&) const;
 
 template void MAT::BeamElastHyperMaterial::GetConstitutiveMatrixOfMomentsMaterialFrame<double>(
-    LINALG::TMatrix<double, 3, 3>&) const;
-template void
-MAT::BeamElastHyperMaterial::GetConstitutiveMatrixOfMomentsMaterialFrame<Sacado::Fad::DFad<double>>(
-    LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 3>&) const;
+    LINALG::Matrix<3, 3, double>&) const;
+template void MAT::BeamElastHyperMaterial::GetConstitutiveMatrixOfMomentsMaterialFrame<
+    Sacado::Fad::DFad<double>>(LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&) const;
 
 template void MAT::BeamElastHyperMaterial::GetMassMomentOfInertiaTensorMaterialFrame<double>(
-    LINALG::TMatrix<double, 3, 3>&) const;
-template void
-MAT::BeamElastHyperMaterial::GetMassMomentOfInertiaTensorMaterialFrame<Sacado::Fad::DFad<double>>(
-    LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 3>&) const;
+    LINALG::Matrix<3, 3, double>&) const;
+template void MAT::BeamElastHyperMaterial::GetMassMomentOfInertiaTensorMaterialFrame<
+    Sacado::Fad::DFad<double>>(LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&) const;

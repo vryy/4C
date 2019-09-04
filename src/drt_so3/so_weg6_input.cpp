@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief Solid Wedge6 Element
 \level 1
 \maintainer Christoph Meier
@@ -38,6 +39,10 @@ bool DRT::ELEMENTS::So_weg6::ReadElement(
 
   // check if material kinematics is compatible to element kinematics
   SolidMaterial()->ValidKinematics(kintype_);
+
+  // Validate that materials doesn't use extended update call.
+  if (SolidMaterial()->UsesExtendedUpdate())
+    dserror("This element currently does not support the extended update call.");
 
   return true;
 }

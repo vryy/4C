@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief A collection of helper methods for namespace DRT
 
@@ -25,29 +25,6 @@
 #include "../drt_lib/drt_condition.H"
 
 #include <Epetra_IntVector.h>
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::UTILS::RedistributeWithNewNodalDistribution(
-    DRT::Discretization& dis, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap)
-{
-  // redistribute nodes to column (ghost) map
-  dis.ExportColumnNodes(nodecolmap);
-
-  Teuchos::RCP<Epetra_Map> elerowmap;
-  Teuchos::RCP<Epetra_Map> elecolmap;
-
-  // now we have all elements in a linear map roweles
-  // build resonable maps for elements from the
-  // already valid and final node maps
-  dis.BuildElementRowColumn(noderowmap, nodecolmap, elerowmap, elecolmap);
-
-  // we can now export elements to resonable row element distribution
-  dis.ExportRowElements(*elerowmap);
-
-  // export to the column map / create ghosting of elements
-  dis.ExportColumnElements(*elecolmap);
-}
 
 /*----------------------------------------------------------------------*
  |  Redistribute using BinningStrategy                      rauch 08/16 |

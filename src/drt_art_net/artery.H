@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief One-dimensional artery element
 
 \maintainer Johannes Kremheller
@@ -235,6 +236,12 @@ namespace DRT
       bool ReadElement(const std::string& eletype, const std::string& distype,
           DRT::INPUT::LineDefinition* linedef);
 
+      /**
+       * Set diameter in material
+       * @param diam: diameter to be set
+       */
+      void SetDiamInMaterial(const double* diam);
+
       //@}
 
       //! @name Evaluation
@@ -318,8 +325,6 @@ namespace DRT
 
       //! @name Other
 
-      bool IsAle() const { return is_ale_; }
-
       DRT::UTILS::GaussRule1D GaussRule() const { return gaussrule_; }
 
 
@@ -332,9 +337,6 @@ namespace DRT
 
       //! Gaussrule
       DRT::UTILS::GaussRule1D gaussrule_;
-
-      //! flag for euler/ale net algorithm
-      bool is_ale_;
 
       //! container containing all kind of Artery thisandthat
       DRT::Container data_;

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief boundary element implementation of fluid adjoint equations for topology optimization
 

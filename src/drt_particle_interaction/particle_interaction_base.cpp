@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief base particle interaction handler
 
 \level 3
@@ -14,6 +14,7 @@
 #include "particle_interaction_base.H"
 
 #include "particle_interaction_material_handler.H"
+#include "particle_interaction_runtime_vtp_writer.H"
 
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_container.H"
@@ -35,6 +36,9 @@ void PARTICLEINTERACTION::ParticleInteractionBase::Init()
 {
   // init particle material handler
   InitParticleMaterialHandler();
+
+  // init particle interaction writer
+  InitParticleInteractionWriter();
 }
 
 /*---------------------------------------------------------------------------*
@@ -42,7 +46,7 @@ void PARTICLEINTERACTION::ParticleInteractionBase::Init()
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionBase::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-    const std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface)
+    const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface)
 {
   // set interface to particle engine
   particleengineinterface_ = particleengineinterface;
@@ -56,6 +60,9 @@ void PARTICLEINTERACTION::ParticleInteractionBase::Setup(
   // setup particle material handler
   particlematerial_->Setup();
 
+  // setup particle interaction writer
+  particleinteractionwriter_->Setup();
+
   // init vector
   gravity_.resize(3, 0.0);
 }
@@ -68,6 +75,9 @@ void PARTICLEINTERACTION::ParticleInteractionBase::WriteRestart(
 {
   // write restart of particle material handler
   particlematerial_->WriteRestart(step, time);
+
+  // write restart of particle interaction writer
+  particleinteractionwriter_->WriteRestart(step, time);
 }
 
 /*---------------------------------------------------------------------------*
@@ -78,6 +88,41 @@ void PARTICLEINTERACTION::ParticleInteractionBase::ReadRestart(
 {
   // read restart of particle material handler
   particlematerial_->ReadRestart(reader);
+
+  // read restart of particle interaction writer
+  particleinteractionwriter_->ReadRestart(reader);
+}
+
+/*---------------------------------------------------------------------------*
+ | check particle interaction distance concerning bin size    sfuchs 08/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::ParticleInteractionBase::
+    CheckParticleInteractionDistanceConcerningBinSize() const
+{
+  // get maximum particle interaction distance
+  double allprocmaxinteractiondistance = 0.0;
+  double maxinteractiondistance = MaxInteractionDistance();
+  comm_.MaxAll(&maxinteractiondistance, &allprocmaxinteractiondistance, 1);
+
+  // bin size safety check
+  if (allprocmaxinteractiondistance > particleengineinterface_->MinBinSize())
+    dserror("the particle interaction distance is larger than the minimal bin size (%f > %f)!",
+        allprocmaxinteractiondistance, particleengineinterface_->MinBinSize());
+
+  // periodic length safety check
+  if (particleengineinterface_->HavePBC())
+  {
+    // loop over all spatial directions
+    for (int dim = 0; dim < 3; ++dim)
+    {
+      // check for periodic boundary condition in current spatial direction
+      if (not particleengineinterface_->HavePBC(dim)) continue;
+
+      // check periodic length in current spatial direction
+      if ((2.0 * allprocmaxinteractiondistance) > particleengineinterface_->PBCDelta(dim))
+        dserror("particles are not allowed to interact directly and across the periodic boundary!");
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*
@@ -97,11 +142,31 @@ void PARTICLEINTERACTION::ParticleInteractionBase::SetCurrentStepSize(const doub
 }
 
 /*---------------------------------------------------------------------------*
+ | set current write result flag                              sfuchs 08/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::ParticleInteractionBase::SetCurrentWriteResultFlag(
+    bool writeresultsthisstep)
+{
+  // set current write result flag in particle interaction writer
+  particleinteractionwriter_->SetCurrentWriteResultFlag(writeresultsthisstep);
+}
+
+/*---------------------------------------------------------------------------*
  | set gravity                                                sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionBase::SetGravity(std::vector<double>& gravity)
 {
   gravity_ = gravity;
+}
+
+/*---------------------------------------------------------------------------*
+ | write interaction runtime output                           sfuchs 08/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::ParticleInteractionBase::WriteInteractionRuntimeOutput(
+    const int step, const double time)
+{
+  // write particle interaction runtime output
+  particleinteractionwriter_->WriteParticleInteractionRuntimeOutput(step, time);
 }
 
 /*---------------------------------------------------------------------------*
@@ -114,6 +179,19 @@ void PARTICLEINTERACTION::ParticleInteractionBase::InitParticleMaterialHandler()
 
   // init particle material handler
   particlematerial_->Init();
+}
+
+/*---------------------------------------------------------------------------*
+ | init particle interaction writer                           sfuchs 08/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::ParticleInteractionBase::InitParticleInteractionWriter()
+{
+  // create particle interaction writer
+  particleinteractionwriter_ =
+      std::make_shared<PARTICLEINTERACTION::InteractionWriter>(comm_, params_);
+
+  // init particle interaction writer
+  particleinteractionwriter_->Init();
 }
 
 /*---------------------------------------------------------------------------*

@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief H-file associated with algorithmic routines for partitioned
        solution approaches to fluid-porous-structure-scalar-scalar interaction
        (FPS3I) specifically related to one-way-coupled problem

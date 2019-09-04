@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Factory for optimzation algorithm within the inverse analysis
 
 \level 3

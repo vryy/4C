@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief A modified set of degrees of freedom that always pretends to be
        of a certain size in order to reserve space for fields that vary

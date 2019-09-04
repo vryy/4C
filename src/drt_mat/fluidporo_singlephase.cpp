@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief a single phase material of a multiphase porous fluid
 
    \level 3
@@ -30,10 +30,10 @@ MAT::PAR::FluidPoroSinglePhase::FluidPoroSinglePhase(Teuchos::RCP<MAT::PAR::Mate
 
   // for the sake of safety
   if (DRT::Problem::Instance(probinst)->Materials() == Teuchos::null)
-    dserror("Sorry dude, cannot work out problem instance.");
+    dserror("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
   if (DRT::Problem::Instance(probinst)->Materials()->Num() == 0)
-    dserror("Sorry dude, no materials defined.");
+    dserror("List of materials in the global problem instance is empty.");
 
   // create density law
   densitylaw_ = MAT::PAR::PoroDensityLaw::CreateDensityLaw(matdata->GetInt("DENSITYLAWID"));
@@ -276,10 +276,10 @@ MAT::PAR::FluidPoroSingleVolFrac::FluidPoroSingleVolFrac(Teuchos::RCP<MAT::PAR::
 
   // for the sake of safety
   if (DRT::Problem::Instance(probinst)->Materials() == Teuchos::null)
-    dserror("Sorry dude, cannot work out problem instance.");
+    dserror("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
   if (DRT::Problem::Instance(probinst)->Materials()->Num() == 0)
-    dserror("Sorry dude, no materials defined.");
+    dserror("List of materials in the global problem instance is empty.");
 
   // safety checks
   if (numscal_ < 0) dserror("NUMSCAL smaller than zero not possible");
@@ -427,10 +427,10 @@ MAT::PAR::FluidPoroVolFracPressure::FluidPoroVolFracPressure(
 
   // for the sake of safety
   if (DRT::Problem::Instance(probinst)->Materials() == Teuchos::null)
-    dserror("Sorry dude, cannot work out problem instance.");
+    dserror("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
   if (DRT::Problem::Instance(probinst)->Materials()->Num() == 0)
-    dserror("Sorry dude, no materials defined.");
+    dserror("List of materials in the global problem instance is empty.");
 
   // create viscosity law
   viscositylaw_ =

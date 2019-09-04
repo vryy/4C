@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief
 Isochoric coupled viscous material with pseudo-potential representing the collagen and
 elastin matrix surrounding the myocardial fiber (chappelle12)

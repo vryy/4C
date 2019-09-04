@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Input parameters for electromagnetic simulations
 
 \level 3
@@ -36,6 +36,8 @@ namespace INPAR
       elemag_explicit_euler,
       /// implicit euler method
       elemag_implicit_euler,
+      /// backward differentiation formula
+      elemag_bdf,
       /// runge-kutta method
       elemag_rk,
       /// crank-nicolson method

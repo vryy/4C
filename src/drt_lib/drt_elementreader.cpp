@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Read element sections of dat files.
 
@@ -15,7 +15,7 @@
 #include "standardtypes_cpp.H"
 #include "drt_elementdefinition.H"
 #include "drt_globalproblem.H"
-#include "drt_utils_parmetis.H"
+#include "drt_utils_rebalancing.H"
 #include "drt_utils_factory.H"
 #include "drt_utils_parallel.H"
 
@@ -385,8 +385,8 @@ namespace DRT
         rownodes_ = Teuchos::null;
         colnodes_ = Teuchos::null;
         nids.clear();
-        DRT::UTILS::PartUsingParMetis(dis_, roweles_, rownodes_, colnodes_, comm_,
-            !reader_.MyOutputFlag(), comm_->NumProc(), imbalance_tol);
+        DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(dis_, roweles_, rownodes_, colnodes_,
+            comm_, !reader_.MyOutputFlag(), comm_->NumProc(), imbalance_tol);
 
 #else
         nids.clear();

@@ -1,10 +1,10 @@
 /*-----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Assembly routines for contact integration
 
 \level 1
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 */
 /*-----------------------------------------------------------------------*/
 

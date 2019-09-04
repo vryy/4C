@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Base class for the CONTACT/MESHTYING factories.
 
 \level 2

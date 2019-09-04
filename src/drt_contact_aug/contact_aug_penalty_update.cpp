@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief different strategies for the update/correction of the regularization
 parameter cn
 

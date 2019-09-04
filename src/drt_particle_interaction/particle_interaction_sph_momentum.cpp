@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief momentum handler for smoothed particle hydrodynamics (SPH) interactions
 
 \level 3
@@ -188,8 +188,66 @@ void PARTICLEINTERACTION::SPHMomentum::AddAccelerationContribution() const
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHMomentum::AddAccelerationContribution");
 
-  // declare temp variables
-  double temp(0.0);
+  // momentum equation (particle contribution)
+  MomentumEquationParticleContribution();
+}
+
+/*---------------------------------------------------------------------------*
+ | init momentum formulation handler                          sfuchs 06/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::SPHMomentum::InitMomentumFormulationHandler()
+{
+  // get type of smoothed particle hydrodynamics momentum formulation
+  INPAR::PARTICLE::MomentumFormulationType momentumformulationtype =
+      DRT::INPUT::IntegralValue<INPAR::PARTICLE::MomentumFormulationType>(
+          params_sph_, "MOMENTUMFORMULATION");
+
+  // create momentum formulation handler
+  switch (momentumformulationtype)
+  {
+    case INPAR::PARTICLE::AdamiMomentumFormulation:
+    {
+      momentumformulation_ = std::unique_ptr<PARTICLEINTERACTION::SPHMomentumFormulationAdami>(
+          new PARTICLEINTERACTION::SPHMomentumFormulationAdami());
+      break;
+    }
+    case INPAR::PARTICLE::MonaghanMomentumFormulation:
+    {
+      momentumformulation_ = std::unique_ptr<PARTICLEINTERACTION::SPHMomentumFormulationMonaghan>(
+          new PARTICLEINTERACTION::SPHMomentumFormulationMonaghan());
+      break;
+    }
+    default:
+    {
+      dserror("unknown acceleration formulation type!");
+      break;
+    }
+  }
+
+  // init momentum formulation handler
+  momentumformulation_->Init();
+}
+
+/*---------------------------------------------------------------------------*
+ | init artificial viscosity handler                          sfuchs 06/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::SPHMomentum::InitArtificialViscosityHandler()
+{
+  // create artificial viscosity handler
+  artificialviscosity_ = std::unique_ptr<PARTICLEINTERACTION::SPHArtificialViscosity>(
+      new PARTICLEINTERACTION::SPHArtificialViscosity());
+
+  // init artificial viscosity handler
+  artificialviscosity_->Init();
+}
+
+/*---------------------------------------------------------------------------*
+ | momentum equation (particle contribution)                  sfuchs 05/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleContribution() const
+{
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleContribution");
 
   // iterate over particle pairs
   for (auto& particlepair : neighborpairs_->GetRefToParticlePairData())
@@ -245,17 +303,19 @@ void PARTICLEINTERACTION::SPHMomentum::AddAccelerationContribution() const
     const double* mod_vel_j = nullptr;
     double *acc_j = nullptr, *mod_acc_j = nullptr;
 
+    double temp_dens(0.0);
+
     // get pointer to particle states
     rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
 
     if (isboundaryrigid_i)
     {
       mass_i = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
-      dens_i = &temp;
       press_i = container_i->GetPtrToParticleState(PARTICLEENGINE::BoundaryPressure, particle_i);
       vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::BoundaryVelocity, particle_i);
 
-      temp = equationofstate_j->PressureToDensity(press_i[0], material_j->initDensity_);
+      temp_dens = equationofstate_j->PressureToDensity(press_i[0], material_j->initDensity_);
+      dens_i = &temp_dens;
     }
     else
     {
@@ -280,11 +340,11 @@ void PARTICLEINTERACTION::SPHMomentum::AddAccelerationContribution() const
     if (isboundaryrigid_j)
     {
       mass_j = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
-      dens_j = &temp;
       press_j = container_j->GetPtrToParticleState(PARTICLEENGINE::BoundaryPressure, particle_j);
       vel_j = container_j->GetPtrToParticleState(PARTICLEENGINE::BoundaryVelocity, particle_j);
 
-      temp = equationofstate_i->PressureToDensity(press_j[0], material_i->initDensity_);
+      temp_dens = equationofstate_i->PressureToDensity(press_j[0], material_i->initDensity_);
+      dens_j = &temp_dens;
     }
     else
     {
@@ -315,7 +375,7 @@ void PARTICLEINTERACTION::SPHMomentum::AddAccelerationContribution() const
     double speccoeff_ij(0.0);
     double speccoeff_ji(0.0);
     momentumformulation_->SpecificCoefficient(dens_i, dens_j, mass_i, mass_j, particlepair.dWdrij_,
-        particlepair.dWdrji_, speccoeff_ij, speccoeff_ji);
+        particlepair.dWdrji_, &speccoeff_ij, &speccoeff_ji);
 
     // evaluate pressure gradient
     momentumformulation_->PressureGradient(dens_i, dens_j, press_i, press_j, speccoeff_ij,
@@ -419,53 +479,4 @@ void PARTICLEINTERACTION::SPHMomentum::AddAccelerationContribution() const
           acc_i, acc_j);
     }
   }
-}
-
-/*---------------------------------------------------------------------------*
- | init momentum formulation handler                          sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHMomentum::InitMomentumFormulationHandler()
-{
-  // get type of smoothed particle hydrodynamics momentum formulation
-  INPAR::PARTICLE::MomentumFormulationType momentumformulationtype =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::MomentumFormulationType>(
-          params_sph_, "MOMENTUMFORMULATION");
-
-  // create momentum formulation handler
-  switch (momentumformulationtype)
-  {
-    case INPAR::PARTICLE::AdamiMomentumFormulation:
-    {
-      momentumformulation_ = std::unique_ptr<PARTICLEINTERACTION::SPHMomentumFormulationAdami>(
-          new PARTICLEINTERACTION::SPHMomentumFormulationAdami());
-      break;
-    }
-    case INPAR::PARTICLE::MonaghanMomentumFormulation:
-    {
-      momentumformulation_ = std::unique_ptr<PARTICLEINTERACTION::SPHMomentumFormulationMonaghan>(
-          new PARTICLEINTERACTION::SPHMomentumFormulationMonaghan());
-      break;
-    }
-    default:
-    {
-      dserror("unknown acceleration formulation type!");
-      break;
-    }
-  }
-
-  // init momentum formulation handler
-  momentumformulation_->Init();
-}
-
-/*---------------------------------------------------------------------------*
- | init artificial viscosity handler                          sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHMomentum::InitArtificialViscosityHandler()
-{
-  // create artificial viscosity handler
-  artificialviscosity_ = std::unique_ptr<PARTICLEINTERACTION::SPHArtificialViscosity>(
-      new PARTICLEINTERACTION::SPHArtificialViscosity());
-
-  // init artificial viscosity handler
-  artificialviscosity_->Init();
 }

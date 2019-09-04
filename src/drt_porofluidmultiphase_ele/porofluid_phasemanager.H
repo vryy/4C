@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief manager class for handling the phases and their dofs on element level
 
    \level 3

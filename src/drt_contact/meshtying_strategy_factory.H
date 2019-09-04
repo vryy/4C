@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Factory to create the desired meshtying strategy.
 
 \maintainer Matthias Mayr
@@ -30,7 +30,7 @@ namespace Teuchos
 
 namespace MORTAR
 {
-  class IDataContainer;
+  class InterfaceDataContainer;
   class MortarAbstractStrategy;
   class MortarElement;
   class MortarInterface;

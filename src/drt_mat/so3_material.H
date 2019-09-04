@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief a common base class for all solid materials
 
 \level 1
 
-\maintainer Fabian Braeu
+\maintainer Amadeus Gebauer
 */
 /*----------------------------------------------------------------------*/
 
@@ -128,6 +128,28 @@ namespace MAT
 
     /// Update of GP data (e.g., history variables)
     virtual void Update(){/* do nothing for simple material models */};
+
+    //! \brief Indicator, whether the extended update call is used
+    //!
+    //! Return true, if the material needs the Update(defgrd, gp, params, eleGID) call
+    virtual bool UsesExtendedUpdate() { return false; }
+
+    //! \brief Update of GP data (e.g., history variables)
+    //!
+    //! This method is currently only called
+    //! from specific element types. If you need the additional functionality compared to Update()
+    //! with any other element than the adapted ones, you need to implement it yourself. Currently
+    //! only HEX8 and HEX8FBAR elements are supported
+    //!
+    //! Materials that use this method need to return true in UsesExtendedUpdate()
+    //!
+    //! \param defgrd deformation gradient
+    //! \param gp Gauß point
+    //! \param params Container for additional information
+    //! \param eleGID Element id
+    virtual void Update(LINALG::Matrix<3, 3> const& defgrd, int const gp,
+        Teuchos::ParameterList& params,
+        int const eleGID){/* Do nothing for simple material models*/};
 
     /// Reset time step (for time adaptivity)
     virtual void ResetStep(){/* do nothing for simple material models */};

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief strategy for evaluation of the structural tensor in anisotropic materials
 
 \level 2

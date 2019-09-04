@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief routines to initialize homogeneous isotropic turbulence simulations
 

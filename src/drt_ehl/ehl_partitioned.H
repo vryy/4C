@@ -1,5 +1,5 @@
 /*--------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief class for partitioned elastohydrodynamic lubrication (lubrication structure interaction)
 

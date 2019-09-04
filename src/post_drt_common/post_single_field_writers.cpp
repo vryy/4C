@@ -1,4 +1,5 @@
-/*!
+/*----------------------------------------------------------------------*/
+/*! \file
 
   \brief main routine of the Ensight filter
 
@@ -71,6 +72,7 @@ void StructureFilter::WriteAllResults(PostField* field)
   writer_->WriteResult("Energy_norm", "Energy_norm", elementbased, 1);
 
   // one-dimensional artery
+  writer_->WriteResult("ele_radius", "radius", elementbased, 1);
   writer_->WriteResult("one_d_artery_pressure", "pressure", dofbased, 1);
   writer_->WriteResult("one_d_artery_flow", "flow", nodebased, 1);
   writer_->WriteResult("one_d_artery_area", "area", nodebased, 1);

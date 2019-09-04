@@ -1,5 +1,5 @@
 /*--------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief evaluation of scatra elements for conservation of mass concentration and electronic charge
 within electrodes

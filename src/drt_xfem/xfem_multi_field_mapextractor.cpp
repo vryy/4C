@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/**
+/** \file
 
 \brief MultiFieldMapExtractor class to handle different discretizations
        with joint interfaces

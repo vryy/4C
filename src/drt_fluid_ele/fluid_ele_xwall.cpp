@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Implementation of enrichment-wall fluid elements.
 In addition to that, it contains the interface between element call

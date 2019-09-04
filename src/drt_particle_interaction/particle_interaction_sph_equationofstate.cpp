@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief equation of state handler for smoothed particle hydrodynamics (SPH) interactions
 
 \level 3

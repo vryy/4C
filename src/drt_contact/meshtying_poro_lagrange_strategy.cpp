@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Meshtying of porous media using Lagrange multipliers
 
 // Masterthesis of h.Willmann under supervision of Anh-Tu Vuong and Christoph Ager

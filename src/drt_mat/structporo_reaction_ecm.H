@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief porous material for dissolution reaction in ECM model
 
 \maintainer Christoph Schmidt

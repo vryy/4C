@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief material for macro-scale elements in multi-scale simulations of electrochemistry problems
 
 \level 2

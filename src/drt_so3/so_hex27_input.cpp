@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief tri-quadratic displacement based solid element
 \level 1
 \maintainer Christoph Meier
@@ -40,6 +41,10 @@ bool DRT::ELEMENTS::So_hex27::ReadElement(
 
   // check if material kinematics is compatible to element kinematics
   SolidMaterial()->ValidKinematics(kintype_);
+
+  // Validate that materials doesn't use extended update call.
+  if (SolidMaterial()->UsesExtendedUpdate())
+    dserror("This element currently does not support the extended update call.");
 
   return true;
 }

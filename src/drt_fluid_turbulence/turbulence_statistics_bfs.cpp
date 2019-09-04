@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief calculate pressures, mean velocity values and fluctuations for
 turbulent flow over a backward-facing step

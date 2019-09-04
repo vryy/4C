@@ -1,12 +1,12 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief  Basis of partitioned wear algorithm
         (Lagrangian step followed by Eulerian step)
 
 \level 2
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 

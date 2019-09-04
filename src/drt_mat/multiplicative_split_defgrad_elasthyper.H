@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief evaluation of a generic material whose deformation gradient is modeled to be split
 multiplicatively into elastic and inelastic parts
 
@@ -170,83 +170,6 @@ namespace MAT
     /// update
     void Update() final;
 
-    /*! \brief Calculate coefficients gamma and delta from partial derivatives w.r.t. invariants.
-     *
-     *  The coefficients \f$\gamma_i\f$ and \f$\delta_j\f$ are based on the the
-     *  strain energy function \f$\Psi(I_{\bold{C}},II_{\bold{C}},III_{\bold{C}})\f$
-     *  in which the principal invariants of the right Cauchy-Green tensor \f$\bold{C}\f$
-     *  are the arguments, cf. Holzapfel [1].
-     *  Here, the formulation is slightly adapted since only the elastic strains \f$\bold{C}_e\f$
-     *  cause stresses, thus the invariants are also only composed of the elastic strains
-     *  \f$\bold{C}_e\f$ The strain energy function is thus named \f$\Psi_e\f$
-     *
-     * \f[
-     *   I_{\bold{C}_e} = {C_e}_{AA},
-     *   \quad
-     *   II_{\bold{C}_e} = 1/2 \left( \mathrm{trace}^2(\bold{C}_e) - \mathrm{trace}({\bold{C}_e}^2)
-     *   \right), \quad III_{\bold{C_e}} = \det(\bold{C}_e)
-     * \f]
-     *
-     * \f[
-     *  \gamma_1 = 2 \left( \frac{\partial \Psi_e}{\partial I_{\bold{C}_e}}
-     *           + I_{\bold{C}_e}\frac{\partial \Psi_e}{\partial II_{\bold{C}_e}} \right);
-     * \f]
-     * \f[
-     *  \gamma_2 = -2 \frac{\partial \Psi_e}{\partial II_{\bold{C}_e}};
-     * \f]
-     * \f[
-     *  \gamma_3 = 2 III_{\bold{C}_e} \frac{\partial \Psi_e}{\partial III_{\bold{C}_e}};
-     * \f]
-     *
-     *  material constitutive tensor coefficients
-     *  cf. Holzapfel [1], p. 261
-     *  But formulation is slightly adapted as above since only the elastic strains \f$\bold{C}_e\f$
-     *  cause stresses, thus the invariants are also only composed of the elastic strains
-     *  \f$\bold{C}_e\f$
-     * \f[
-     *  \delta_1 = 4 \left( \frac{\partial^2 \Psi_e}{\partial I_{\bold{C}_e}^2}
-     *           + 2 I_{\bold{C}_e} \frac{\partial^2 \Psi_e}{\partial I_{\bold{C}_e} \partial
-     *           II_{\bold{C}_e}}
-     *           + \frac{\partial \Psi_e}{\partial II_{\bold{C}_e}}
-     *           + I_{\bold{C}_e}^2 \frac{\partial^2 \Psi_e}{\partial II_{\bold{C}_e}^2} \right)
-     * \f]
-     * \f[
-     *  \delta_2 = -4 \left( \frac{\partial^2 \Psi_e}{\partial I_{\bold{C}_e} \partial
-     *  II_{\bold{C}_e}}
-     *           + I_{\bold{C}_e}\frac{\partial^2 \Psi_e}{\partial II_{\bold{C}_e}^2} \right)
-     * \f]
-     * \f[
-     *  \delta_3 = 4 \left( III_{\bold{C}_e} \frac{\partial^2 \Psi_e}{\partial I_{\bold{C}_e}
-     *  \partial III_{\bold{C}_e}}
-     *           + I_{\bold{C}_e} III_{\bold{C}_e} \frac{\partial^2 \Psi_e}{\partial II_{\bold{C}_e}
-     *           \partial III_{\bold{C}_e}} \right)
-     * \f]
-     * \f[
-     *  \delta_4 = 4 \frac{\partial^2 \Psi_e}{\partial II_{\bold{C}_e}^2}
-     * \f]
-     * \f[
-     *  \delta_5 = -4 III_{\bold{C}_e}\frac{\partial^2 \Psi_e}{\partial II_{\bold{C}_e} \partial
-     *  III_{\bold{C}_e}}
-     * \f]
-     * \f[
-     *  \delta_6 = 4 \left( III_{\bold{C}_e} \frac{\partial \Psi_e}{\partial III_{\bold{C}_e}}
-     *           + III_{\bold{C}_e}^2 \frac{\partial^2 \Psi_e}{\partial III_{\bold{C}_e}^2} \right)
-     * \f]
-     * \f[
-     *  \delta_7 = -4 III_{\bold{C}_e} \frac{\partial \Psi_e}{\partial III_{\bold{C}_e}}
-     * \f]
-     * \f[
-     *  \delta_8 = -4 \frac{\partial \Psi_e}{\partial II_{\bold{C}_e}}
-     * \f]
-     */
-    void CalculateGammaDelta(
-        const LINALG::Matrix<3, 1>&
-            prinv,  ///< principal invariants of the elastic right Cauchy-Green tensor
-        const LINALG::Matrix<3, 1>& dPI,     ///< first derivative with respect to invariants
-        const LINALG::Matrix<6, 1>& ddPII,   ///< second derivative with respect to invariants
-        LINALG::Matrix<3, 1>& gamma,         ///< factors for stress calculation
-        LINALG::Matrix<8, 1>& delta) const;  ///< factors for elasticity tensor calculation
-
     /// Evaluate off-diagonal stiffness matrix
     void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* const defgrad,  ///< Deformation gradient
         const std::vector<LINALG::Matrix<3, 3>>&
@@ -317,7 +240,7 @@ namespace MAT
      *   \bold{S} = \gamma_1 \ \bold{C}_{in}^{-1} + \gamma_2 \ \bold{C}_{in}^{-1} . \bold{C} .
      *   \bold{C}_{in}^{-1} + \gamma_3 \ \bold{C}^{-1}
      * \f]
-     * with \f$\gamma_i\f$ as defined above for CalculateGammaDelta()
+     * with \f$\gamma_i\f$ as defined in MAT::CalculateGammaDelta()
      *
      * \f[
      *   \mathbb{C} = \delta_1 \left( \bold{C}_{in}^{-1} \otimes \bold{C}_{in}^{-1} \right)

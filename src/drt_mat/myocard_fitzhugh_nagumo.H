@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Fitzhugh Nagumo model for myocard material
 
 \level 2

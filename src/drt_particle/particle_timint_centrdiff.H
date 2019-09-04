@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Particle time integration with central difference scheme 2nd order (explicit),
        also known as Velocity-Verlet algorithm

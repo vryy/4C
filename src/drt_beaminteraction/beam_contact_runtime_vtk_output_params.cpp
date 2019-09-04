@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief data container holding all input parameters for vtk-based visualization of beam contact
 

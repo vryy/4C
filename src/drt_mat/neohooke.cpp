@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief contains the functions to establish local material law
        stress-strain law for isotropic material for a 3D hex element
        following compressible Neo Hookean material law
@@ -7,7 +8,7 @@
        MAT 1 MAT_Struct_NeoHooke  YOUNG 100.0 NUE 0.3 DENS 1.0
 \level 3
 
-\maintainer Fabian Braeu
+\maintainer Amadeus Gebauer
 \param  Epetra_SerialDenseVector* glstrain      (i) Green-Lagrange strains
 \param  Epetra_SerialDenseVector* stress        (o) ele stress vector
 \param  Epetra_SerialDenseMatrix* cmat          (o) constitutive matrix

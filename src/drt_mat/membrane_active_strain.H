@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
  \brief Active strain membrane material for gastric electromechanics
 
  The input line should read

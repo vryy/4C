@@ -1,4 +1,5 @@
-/*!
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief Create the pairs for beam to solid volume meshtying depending on the input parameters..
 

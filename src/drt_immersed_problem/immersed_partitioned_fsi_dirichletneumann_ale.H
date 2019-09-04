@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief partitioned immersed fsi algorithm for neumann-neumann like coupling (volume force coupling)
 

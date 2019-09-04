@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Integrates base functions over volume, distribute Gauss points and solve moment fitting
 equations

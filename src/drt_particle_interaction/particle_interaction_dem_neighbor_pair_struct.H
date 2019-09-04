@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief neighbor pair struct for discrete element method (DEM) interactions
 
 \level 3

@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief Method to deal with one dimensional artery juction bcs
 
 \maintainer Johannes Kremheller

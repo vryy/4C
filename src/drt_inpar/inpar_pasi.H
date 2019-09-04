@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief input parameters for particle structure interaction problems
 
 \level 3

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Service routines of the scalar transport time integration class
 
 \level 1

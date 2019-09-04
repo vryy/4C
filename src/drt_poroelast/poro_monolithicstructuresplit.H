@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
  \brief  monolithic poroelasticity algorithm with split of structure degrees of freedom at the
 interface

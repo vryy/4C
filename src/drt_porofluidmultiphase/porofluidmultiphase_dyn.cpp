@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief entry point (global control routine) for porous multiphase flow
 
    \level 3

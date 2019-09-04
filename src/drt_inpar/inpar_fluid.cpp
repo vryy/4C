@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Input parameters for fluid and related problems
 
 \maintainer Martin Kronbichler

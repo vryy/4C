@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Implicit time integration for structural dynamics
 
 \level 1
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 */
 
 /*----------------------------------------------------------------------*/
@@ -446,12 +446,6 @@ namespace STR
     void LsPrintLsIterHeader(FILE* ofile  //!< output file handle
     );
 
-    /*! \brief Use nonlinear solver package NLNSOL
-     *
-     *  \author mayr.mt \date 06/2014
-     */
-    int NlnSolver();
-
     //! Do classical augmented lagrange for volume constraint
     //!
     //! Potential is linearized wrt displacements
@@ -843,6 +837,13 @@ namespace STR
 
     //! Prepare time step
     void PrepareTimeStep();
+
+    //! Update state incrementally for coupled problems with monolithic approach
+    void UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override
+    {
+      UpdateIterIncrementally(disiterinc);
+      return;
+    }
 
     //! Evaluate routine for coupled problems with monolithic approach
     void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)

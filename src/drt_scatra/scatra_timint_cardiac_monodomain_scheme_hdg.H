@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief  Connecting time-integration schemes for HDG with
         cardiac-monodomain-specific implementation

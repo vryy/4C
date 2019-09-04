@@ -1,5 +1,11 @@
 List of major features that were removed from BACI, including date and revision where code was removed
 
+NLNSOL nonlinear solver framework (by Matthias Mayr)
+- removed in commit 01ad0f4967da827bb7e6759dda442dbc3d96fa57 on 2019-07-30
+- reasons: it was purely experimental and never worked properly. Removing it reduces the amount of code to be maintained as well as reduces the number of interfaces to MueLu to be kept up-to-date.
+- if you need it: Implement it from scratch (recommended) or check out commit 01ad0f4967da827bb7e6759dda442dbc3d96fa57
+- mainly deleted src/solver_nonlin/
+- removed by Matthias Mayr
 
 xfem combust module (by Flo Henke, Ursula Rasthofer, Benedikt Schott)
 - removed in revision 23268 on 2017-07-27

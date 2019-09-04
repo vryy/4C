@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief Managing and evaluating of (reaction) functions for poromultiphase_scatra
         problems
 

@@ -1,4 +1,5 @@
-/*!
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief collection of math tools for the interface computation of two
        curved meshes
@@ -110,16 +111,16 @@ namespace GEO
 
 
   /*!
-  \brief computes the cross product of two LINALG::TMatrix<T,3,1> a x b
+  \brief computes the cross product of two LINALG::Matrix<3,1,T> a x b
   \param a (in) : arbitrary vector
   \param b (in) : arbitrary vector
-  \return cross product of two LINALG::TMatrix<T,3,1> a x b
+  \return cross product of two LINALG::Matrix<3,1,T> a x b
   */
   template <typename T>
-  LINALG::TMatrix<T, 3, 1> computeCrossProductT(
-      const LINALG::TMatrix<T, 3, 1>& a, const LINALG::TMatrix<T, 3, 1>& b)
+  LINALG::Matrix<3, 1, T> computeCrossProductT(
+      const LINALG::Matrix<3, 1, T>& a, const LINALG::Matrix<3, 1, T>& b)
   {
-    LINALG::TMatrix<T, 3, 1> c;
+    LINALG::Matrix<3, 1, T> c;
 
     c(0) = a(1) * b(2) - a(2) * b(1);
     c(1) = a(2) * b(0) - a(0) * b(2);

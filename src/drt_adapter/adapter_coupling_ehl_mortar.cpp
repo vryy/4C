@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief mortar coupling terms of ehl
 
 \level 3
@@ -101,8 +102,8 @@ void ADAPTER::CouplingEhlMortar::Setup(Teuchos::RCP<DRT::Discretization> masterd
     case INPAR::CONTACT::friction_none:
       break;
     case INPAR::CONTACT::friction_coulomb:
-      interface_->IParams().set<double>("FRCOEFF", fr_coeff);
-      interface_->IParams().set<double>("FRBOUND", -1.);
+      interface_->InterfaceParams().set<double>("FRCOEFF", fr_coeff);
+      interface_->InterfaceParams().set<double>("FRBOUND", -1.);
       break;
     default:
       dserror("don't know what to do with this friction type");
@@ -162,7 +163,7 @@ void ADAPTER::CouplingEhlMortar::CondenseContact(Teuchos::RCP<LINALG::BlockSpars
   const double alphaf_ = 0.;  // statics!
   const INPAR::CONTACT::ConstraintDirection& constr_direction_ =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>(
-          Interface()->IParams(), "CONSTRAINT_DIRECTIONS");
+          Interface()->InterfaceParams(), "CONSTRAINT_DIRECTIONS");
 
   // return if this state has already been evaluated
   if (not AlreadyEvaluated(disp)) Integrate(disp, dt);

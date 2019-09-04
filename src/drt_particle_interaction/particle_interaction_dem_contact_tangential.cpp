@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief tangential contact handler for discrete element method (DEM) interactions
 
 \level 3
@@ -79,7 +79,6 @@ PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::DEMContactTangentialL
     : PARTICLEINTERACTION::DEMContactTangentialBase(params),
       e_(params_dem_.get<double>("COEFF_RESTITUTION")),
       nue_(params_dem_.get<double>("POISSON_RATIO")),
-      mu_tangential_(params_dem_.get<double>("FRICT_COEFF_TANG")),
       k_tangential_(0.0),
       d_tangential_fac_(0.0)
 {
@@ -94,11 +93,11 @@ void PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::Init()
   // call base class init
   DEMContactTangentialBase::Init();
 
-  // safety checks for particle-particle contact parameters
+  // safety checks for contact parameters
   if (nue_ <= -1.0 or nue_ > 0.5)
     dserror("invalid input parameter POISSON_RATIO (expected in range ]-1.0; 0.5])!");
 
-  if (mu_tangential_ <= 0.0)
+  if (params_dem_.get<double>("FRICT_COEFF_TANG") <= 0.0)
     dserror("invalid input parameter FRICT_COEFF_TANG for this kind of contact law!");
 }
 
@@ -132,8 +131,8 @@ void PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::Setup(const doub
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::TangentialContactForce(
     double* gap_tangential, bool& stick_tangential, const double* normal,
-    const double* v_rel_tangential, const double& m_eff, const double& normalcontactforce,
-    double* tangentialcontactforce) const
+    const double* v_rel_tangential, const double& m_eff, const double& mu_tangential,
+    const double& normalcontactforce, double* tangentialcontactforce) const
 {
   // determine tangential contact damping parameter
   const double d_tangential = d_tangential_fac_ * std::sqrt(m_eff);
@@ -162,7 +161,7 @@ void PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::TangentialContac
   const double norm_tangentialcontactforce = UTILS::vec_norm2(tangentialcontactforce);
 
   // tangential contact force for stick-case
-  if (norm_tangentialcontactforce <= (mu_tangential_ * std::abs(normalcontactforce)))
+  if (norm_tangentialcontactforce <= (mu_tangential * std::abs(normalcontactforce)))
   {
     stick_tangential = true;
 
@@ -175,7 +174,7 @@ void PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::TangentialContac
 
     // compute tangential contact force
     UTILS::vec_setscale(tangentialcontactforce,
-        mu_tangential_ * std::abs(normalcontactforce) / norm_tangentialcontactforce,
+        mu_tangential * std::abs(normalcontactforce) / norm_tangentialcontactforce,
         tangentialcontactforce);
 
     // compute tangential displacement

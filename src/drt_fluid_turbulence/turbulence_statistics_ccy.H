@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Compute (time and space) averaged values for turbulent flows
        around a rotating cylinder and write them to files.
