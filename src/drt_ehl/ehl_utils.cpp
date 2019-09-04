@@ -1,5 +1,5 @@
 /*--------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief utility class for  elastohydrodynamic lubrication (lubrication structure interaction)
 

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief helper class encapsulating the reaction terms and its derivatives
 
    \level 3

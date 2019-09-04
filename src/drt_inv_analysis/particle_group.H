@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Collection of particles for the Sequential Monte Carlo algorithm
 
 \level 3

@@ -1,5 +1,5 @@
 
-/*!
+/*! \file
 
 \brief Global state data container for the structural (time) integration
 

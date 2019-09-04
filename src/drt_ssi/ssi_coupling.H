@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief helper classes for  scalar-structure coupling
 
  \level 3

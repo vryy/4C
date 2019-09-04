@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief time-integration scheme with extensions for
        cardiac monodomain problems
 

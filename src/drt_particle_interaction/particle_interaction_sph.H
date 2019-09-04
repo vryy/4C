@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief smoothed particle hydrodynamics (SPH) interaction handler
 
 \level 3
@@ -58,7 +58,7 @@ namespace PARTICLEINTERACTION
     //! setup particle interaction handler
     virtual void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-        const std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface);
+        const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface);
 
     //! write restart of particle interaction handler
     virtual void WriteRestart(const int step, const double time) const;
@@ -122,9 +122,6 @@ namespace PARTICLEINTERACTION
 
     //! init phase change handler
     virtual void InitPhaseChangeHandler();
-
-    //! compute initial consistent particle volume
-    virtual double ComputeConsistentParticleVolume() const;
 
     //! smoothed particle hydrodynamics specific parameter list
     const Teuchos::ParameterList& params_sph_;

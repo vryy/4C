@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Base class functions for time integration of electromagnetics
 
@@ -158,6 +158,7 @@ void ELEMAG::ElemagTimeInt::Integrate()
   // Fancy printing
   if (!myrank_)
   {
+    std::cout << std::endl;
     std::cout
         << "-----------------------------------------------------------------------------------"
         << std::endl;
@@ -168,18 +169,45 @@ void ELEMAG::ElemagTimeInt::Integrate()
   // time measurement: integration
   TEUCHOS_FUNC_TIME_MONITOR("ELEMAG::ElemagTimeInt::Integrate");
 
+  // In case of BDF2 the first step has to be computed with BDF1
+  if (elemagdyna_ == INPAR::ELEMAG::DynamicType::elemag_bdf && restart_ == 0)
+  {
+    // First step with a BDF1
+    elemagdyna_ = INPAR::ELEMAG::DynamicType::elemag_implicit_euler;
+
+    // call elements to calculate system matrix/rhs and assemble
+    AssembleMatAndRHS();
+
+    // Compute matrix for ABC boundary conditions
+    ComputeSilverMueller(false);
+
+    // increment time and step
+    IncrementTimeAndStep();
+
+    ApplyDirichletToSystem();
+    ComputeSilverMueller(true);
+    Solve();
+
+    UpdateInteriorVariablesAndAssembleRHS();
+
+    // The output to file only once in a while
+    if (step_ % upres_ == 0)
+    {
+      Output();
+      // Output to screen
+      OutputToScreen();
+    }
+
+    // Set the dynamics to BDF2 again
+    elemagdyna_ = INPAR::ELEMAG::DynamicType::elemag_bdf;
+  }
+
   // call elements to calculate system matrix/rhs and assemble
   AssembleMatAndRHS();
 
-  // apply Dirichlet boundary conditions to system of equations
+  // Compute matrix for ABC boundary conditions
   ComputeSilverMueller(false);
 
-  // Output of the initial condition plus the boundary conditions
-  Output();
-  if (!myrank_)
-  {
-    std::cout << "Written initial condition." << std::endl;
-  }
   // time loop
   while (step_ < stepmax_ and time_ < maxtime_)
   {
@@ -206,6 +234,7 @@ void ELEMAG::ElemagTimeInt::Integrate()
     std::cout
         << "-----------------------------------------------------------------------------------"
         << std::endl;
+    std::cout << std::endl;
   }
 
   return;
@@ -295,6 +324,7 @@ void ELEMAG::ElemagTimeInt::SetInitialField(
       initParams.set<int>("action", ELEMAG::project_field);
       initParams.set("startfuncno", startfuncno);
       initParams.set<double>("time", time_);
+      initParams.set<double>("dt", dtp_);
       initParams.set<INPAR::ELEMAG::DynamicType>("dynamic type", elemagdyna_);
       // loop over all elements on the processor
       DRT::Element::LocationArray la(2);
@@ -320,8 +350,11 @@ void ELEMAG::ElemagTimeInt::SetInitialField(
       break;
   }  // switch(init)
 
+  // Output of the initial condition
+  Output();
   if (!myrank_)
   {
+    std::cout << "Written initial condition." << std::endl;
     std::cout
         << "-----------------------------------------------------------------------------------"
         << std::endl;
@@ -782,18 +815,24 @@ void ELEMAG::ElemagTimeInt::WriteRestart()
   // write internal field for which we need to create and fill the corresponding vectors
   // since this requires some effort, the WriteRestart method should not be used excessively!
   Teuchos::RCP<Epetra_Vector> intVar = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap(1))));
+  Teuchos::RCP<Epetra_Vector> intVarnm = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap(1))));
+  discret_->SetState(1, "intVar", intVar);
+  discret_->SetState(1, "intVarnm", intVarnm);
+
   Teuchos::ParameterList eleparams;
   eleparams.set<int>("action", ELEMAG::fill_restart_vecs);
   eleparams.set<INPAR::ELEMAG::DynamicType>("dynamic type", elemagdyna_);
 
-  discret_->SetState(1, "intVar", intVar);
   discret_->Evaluate(eleparams);
 
   Teuchos::RCP<const Epetra_Vector> matrix_state = discret_->GetState(1, "intVar");
-
-  intVar->PutScalar(0.0);
   LINALG::Export(*matrix_state, *intVar);
+
+  matrix_state = discret_->GetState(1, "intVarnm");
+  LINALG::Export(*matrix_state, *intVarnm);
+
   output_->WriteVector("intVar", intVar);
+  output_->WriteVector("intVarnm", intVarnm);
 
   discret_->ClearState(true);
 
@@ -810,18 +849,50 @@ void ELEMAG::ElemagTimeInt::ReadRestart(int step)
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
   Teuchos::RCP<Epetra_Vector> intVar = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap(1))));
-  reader.ReadVector(intVar, "intVar");
-  reader.ReadMultiVector(trace, "traceRestart");
+  try
+  {
+    reader.ReadVector(intVar, "intVar");
+  }
+  catch (...)
+  {
+    dserror(
+        "Impossible to find restart data. Check if the restart step is an existing restart point.");
+  }
+  discret_->SetState(1, "intVar", intVar);
 
   Teuchos::ParameterList eleparams;
   eleparams.set<int>("action", ELEMAG::ele_init_from_restart);
   eleparams.set<INPAR::ELEMAG::DynamicType>("dynamic type", elemagdyna_);
-  discret_->SetState(1, "intVar", intVar);
+
+  Teuchos::RCP<Epetra_Vector> intVarnm = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap(1))));
+  try
+  {
+    reader.ReadVector(intVarnm, "intVarnm");
+  }
+  catch (...)
+  {
+    // if (myrank_ == 0)
+    //{
+    //  std::cout << "=========== Only one time step was found. Switch to BDF1." << std::endl;
+    //}
+    // eleparams.set<INPAR::ELEMAG::DynamicType>(
+    //    "dynamic type", INPAR::ELEMAG::DynamicType::elemag_implicit_euler);
+    dserror(
+        "Impossible to find the additional vector of unknown necessary for the BDF2 integration. "
+        "Consider fixing the code or restart a simulation that used BDF2 since the beginning.");
+  }
+  discret_->SetState(1, "intVarnm", intVarnm);
+  reader.ReadMultiVector(trace, "traceRestart");
+
   discret_->Evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   discret_->ClearState(true);
 
-  if (myrank_ == 0) std::cout << "Restart time: " << time_ << std::endl;
+  if (myrank_ == 0)
+  {
+    std::cout << "======= Restart of a previous simulation" << std::endl;
+    std::cout << "Restart time: " << time_ << std::endl;
+  }
 
   return;
 }  // ReadRestart

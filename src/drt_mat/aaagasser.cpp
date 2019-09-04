@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief
 This file contains the routines required for OGDEN-like material model
 according to GASSER: "Failure properties of intraluminal thrombus in abdominal

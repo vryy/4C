@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief creates a second discretization as part of the complete discretization for inflow generation
 
@@ -13,7 +13,7 @@
 #include "../drt_fluid/fluid_discret_extractor.H"
 #include "../drt_lib/drt_periodicbc.H"
 #include "../drt_lib/drt_dofset_transparent.H"
-#include "../drt_lib/drt_utils_parmetis.H"
+#include "../drt_lib/drt_utils_rebalancing.H"
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_discret_xwall.H"
 
@@ -383,10 +383,10 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     Epetra_Time time(parentdiscret_->Comm());
     Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(parentdiscret_->Comm().Clone());
 
-    // ParMetis gets the current distribution (sepcondelenodesmap) and returns a better one
-    // (sepcondrownodes, sepcondcolnodes) hopefully the optimal one
-    DRT::UTILS::PartUsingParMetis(
-        childdiscret_, sepcondelenodesmap, sepcondrownodes, sepcondcolnodes, comm, false);
+    // Starting from the current partitioning of the discretization, compute nodal maps with a
+    // hopefully better partitioning
+    DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(childdiscret_, sepcondelenodesmap,
+        sepcondrownodes, sepcondcolnodes, comm, false, comm->NumProc());
 
 #else
 #if defined(PARALLEL)

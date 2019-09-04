@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Concrete implementation of the Jacobian, Required and
        Preconditioner %NOX::NLN interfaces.

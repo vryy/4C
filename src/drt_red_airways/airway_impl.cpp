@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Internal implementation of RedAirway element. Methods implemented here
        are called by airway_evaluate.cpp by DRT::ELEMENTS::RedAirway::Evaluate()

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief material that stores a list of species and phases for electrochemistry applications
 
 \level 2

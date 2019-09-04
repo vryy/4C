@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Minimal implementation of the parameter interface for the element
 <--> time integrator data exchange

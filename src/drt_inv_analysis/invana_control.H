@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Control object to handle solution of the inverse analysis
 
 \level 3

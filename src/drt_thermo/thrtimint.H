@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief base class for all time integrators in thermal field
 \level 1
 \maintainer Christoph Meier

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Doxygen documentation of all namespaces in one central place
 
@@ -342,6 +342,13 @@ namespace DRT
     namespace BEAM
     {
     }  // namespace BEAM
+
+    /*! \brief Rebalancing, repartitioning, and redistribution
+     *
+     */
+    namespace REBALANCING
+    {
+    }  // namespace REBALANCING
   }    // namespace UTILS
 }  // namespace DRT
 
@@ -1442,6 +1449,21 @@ namespace MAT
   }  // namespace ScatraMatMultiPoro
 }  // namespace MAT
 
+/*!
+ * \brief Mixture framework for solids
+ *
+ * A framework for mixtures of solids with homogenized stress response.
+ */
+namespace MIXTURE
+{
+  /*!
+   * \brief Input data parameters for mixture constituents and mixture laws
+   */
+  namespace PAR
+  {
+  }
+}  // namespace MIXTURE
+
 /*! \brief Mortar coupling algorithms
  *
  */
@@ -1461,45 +1483,6 @@ namespace MORTAR
   {
   }  // namespace UTILS
 }  // namespace MORTAR
-
-/*! \brief A nonlinear solver tool box
- *
- *  A collection of nonlinear solver routines and methods to build a
- *  user-configured nonlinear solver. Configuration works via a xml-file.
- *
- *  <h3> Major algorithmic parts </h3>
- *  <ul>
- *  <li> Nonlinear solvers/operators inherit from NLNSOL::NlnOperatorBase. </li>
- *  <li> Possible line search strategies are derived from
- *       NLNSOL::LineSearchBase. </li>
- *  <li> An interface to the nonlinear problem to be solved is provided by
- *       NLNSOL::NlnProblemBase. </li>
- *  <li> A collection of helpful utilities can be found in NLNSOL::UTILS. </li>
- *  </ul>
- *
- *  \warning This is highly experimental.
- *
- *  \author mayr.mt \date 05/2014
- */
-namespace NLNSOL
-{
-  /*! \brief A Full Approximation Scheme (FAS) multigrid within the NLNSOL framework
-   *
-   * A full approximation scheme (FAS) is implemented to allow multigrid treatment of
-   * nonlinear problems. Hierarchy construction, i.e. calculation of transfer operators
-   * etc., is done by calling Trilinos'  MueLu package.
-   */
-  namespace FAS
-  {
-  }  // namespace FAS
-
-  /*! \brief Utilities for nonlinear solver NLNSOL
-   *
-   */
-  namespace UTILS
-  {
-  }  // namespace UTILS
-}  // namespace NLNSOL
 
 /*! \brief NOX: the nonlinear object solver from trilinos with local extensions
  *
@@ -1607,12 +1590,12 @@ namespace PARTICLE
 {
 }  // namespace PARTICLE
 
-/*! \brief
+/*! \brief Algorithm to control particle simulations
  *
  */
 namespace PARTICLEALGORITHM
 {
-  /*! \brief Utilities for particle algorithms
+  /*! \brief Utilities for particle algorithm
    *
    */
   namespace UTILS
@@ -1620,12 +1603,12 @@ namespace PARTICLEALGORITHM
   }  // namespace UTILS
 }  // namespace PARTICLEALGORITHM
 
-/*! \brief
+/*! \brief Particle engine to control particle simulations
  *
  */
 namespace PARTICLEENGINE
 {
-  /*! \brief
+  /*! \brief Communication utilities for particle engine
    *
    */
   namespace COMMUNICATION
@@ -1633,12 +1616,19 @@ namespace PARTICLEENGINE
   }  // namespace COMMUNICATION
 }  // namespace PARTICLEENGINE
 
-/*! \brief
+/*! \brief Collection of particle interaction evaluations
  *
  */
 namespace PARTICLEINTERACTION
 {
 }  // namespace PARTICLEINTERACTION
+
+/*! \brief Particle wall enabling interaction of particles and finite element interfaces
+ *
+ */
+namespace PARTICLEWALL
+{
+}  // namespace PARTICLEWALL
 
 /*! \brief Interaction of particles with solids/structures
  *

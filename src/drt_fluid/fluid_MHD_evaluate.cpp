@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Evaluate calls for magno-hydrodynamics
 
@@ -17,7 +17,7 @@
 #include "../drt_lib/drt_dofset_transparent.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
-#include "../drt_lib/drt_utils_parmetis.H"
+#include "../drt_lib/drt_utils_rebalancing.H"
 #include "../drt_lib/drt_element.H"
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -343,7 +343,8 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(Teuchos::RCP<DRT::Discretization> actdis
     Epetra_Time time(pdiscret_->Comm());
     Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(pdiscret_->Comm().Clone());
 
-    DRT::UTILS::PartUsingParMetis(bnd_discret_, belemap, bndrownodes, bndcolnodes, comm, false);
+    DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
+        bnd_discret_, belemap, bndrownodes, bndcolnodes, comm, false, comm->NumProc());
 
 #else
 #if defined(PARALLEL)

@@ -1,11 +1,9 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief
 \level 1
 
-\maintainer Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
+\maintainer Matthias Mayr
 
 *----------------------------------------------------------------------*/
 
@@ -49,6 +47,10 @@ bool DRT::ELEMENTS::So_shw6::ReadElement(
 
   // check if material kinematics is compatible to element kinematics
   SolidMaterial()->ValidKinematics(kintype_);
+
+  // Validate that materials doesn't use extended update call.
+  if (SolidMaterial()->UsesExtendedUpdate())
+    dserror("This element currently does not support the extended update call.");
 
   linedef->ExtractString("EAS", buffer);
 

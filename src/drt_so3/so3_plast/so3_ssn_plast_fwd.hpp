@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief template combinations
 \level 2
 \maintainer Matthias Mayr

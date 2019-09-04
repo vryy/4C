@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Enumerator lists for the internal use (no input parameters)
 
 \level 3

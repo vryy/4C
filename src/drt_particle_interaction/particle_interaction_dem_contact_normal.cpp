@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief normal contact handler for discrete element method (DEM) interactions
 
 \level 3
@@ -125,7 +125,7 @@ void PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp::Init()
   // call base class init
   DEMContactNormalLinearSpring::Init();
 
-  // safety checks for particle-particle contact parameters
+  // safety checks for contact parameters
   if (e_ < 0.0) dserror("invalid input parameter COEFF_RESTITUTION for this kind of contact law!");
 }
 
@@ -247,7 +247,7 @@ void PARTICLEINTERACTION::DEMContactNormalNonlinearDampBase::Init()
   // call base class init
   DEMContactNormalNonlinearBase::Init();
 
-  // safety checks for particle-particle contact parameters
+  // safety checks for contact parameters
   if (d_normal_ < 0.0) dserror("invalid input parameter NORMAL_DAMP for this kind of contact law!");
 }
 

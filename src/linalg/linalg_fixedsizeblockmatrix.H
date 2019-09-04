@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief Declaration
 
 \level 2
@@ -128,7 +129,7 @@ namespace LINALG
     }
 
     template <int rows, int cols>
-    void AssembleTo(LINALG::TMatrix<scalar_type, rows, cols>& dest, double f)
+    void AssembleTo(LINALG::Matrix<rows, cols, scalar_type>& dest, double f)
     {
       const int local_rows = rows / brows;
       const int local_cols = cols / bcols;

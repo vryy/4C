@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief internal representation of an input file
 
@@ -246,7 +246,16 @@ namespace DRT
 
     /// @name Control file
 
-    /// create control file for output and read restart data if required
+    /*!
+    \brief Create control file for output and read restart data if required
+
+    In addition, issue a warning to the screen, if no binary output will be written.
+
+    @param[in] comm Communicator
+    @param[in] inputfile File name of input file
+    @param[in] prefix
+    @param[in] restartkenner
+    */
     void OpenControlFile(const Epetra_Comm& comm, std::string inputfile, std::string prefix,
         std::string restartkenner);
 
@@ -542,10 +551,6 @@ namespace DRT
     const Teuchos::ParameterList& VolmortarParams() const
     {
       return getParameterList()->sublist("VOLMORTAR COUPLING");
-    }
-    const Teuchos::ParameterList& NonlinearSolverParams() const
-    {
-      return getParameterList()()->sublist("NONLINEAR SOLVER");
     }
     const Teuchos::ParameterList& TutorialParams() const
     {

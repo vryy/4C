@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief contains the functions to establish local material law
        stress-strain law for isotropic material for a 3D hex element
        following compressible Neo Hookean material law
@@ -10,7 +10,7 @@
        USE ELASTHYPER-Toolbox!!
 \level 3
 
-\maintainer Fabian Braeu
+\maintainer Amadeus Gebauer
 */
 /*----------------------------------------------------------------------*/
 #ifndef NEOHOOKE_H_

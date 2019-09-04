@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief routines for bfda test case (Semesterarbeit Sebastian Buechner)
   ___________          ______________

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief two-way coupled partitioned solution algorithm
         for porous multiphase flow through elastic medium problems
 

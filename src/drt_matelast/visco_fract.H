@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief
 This file contains the routines required to read the material parameters
 and add the contribution of the viscous part, calculated according to a
@@ -9,7 +9,7 @@ the same tau, alpha and beta.
 
 \level 2
 
-\maintainer Fabian Braeu
+\maintainer Amadeus Gebauer
 
 *----------------------------------------------------------------------*/
 #ifndef VISCO_FRACT_H_

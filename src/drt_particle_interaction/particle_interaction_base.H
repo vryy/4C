@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief base particle interaction handler
 
 \level 3
@@ -36,16 +36,17 @@ namespace IO
 namespace PARTICLEINTERACTION
 {
   class MaterialHandler;
-}
-
-namespace PARTICLEALGORITHM
-{
-  class WallHandlerInterface;
-}
+  class InteractionWriter;
+}  // namespace PARTICLEINTERACTION
 
 namespace PARTICLEENGINE
 {
   class ParticleEngineInterface;
+}
+
+namespace PARTICLEWALL
+{
+  class WallHandlerInterface;
 }
 
 /*---------------------------------------------------------------------------*
@@ -68,7 +69,7 @@ namespace PARTICLEINTERACTION
     //! setup particle interaction handler
     virtual void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-        const std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface);
+        const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface);
 
     //! write restart of particle interaction handler
     virtual void WriteRestart(const int step, const double time) const;
@@ -87,6 +88,9 @@ namespace PARTICLEINTERACTION
     //! evaluate particle interactions
     virtual void EvaluateInteractions() = 0;
 
+    //! check particle interaction distance concerning bin size
+    virtual void CheckParticleInteractionDistanceConcerningBinSize() const final;
+
     //! maximum interaction distance (on this processor)
     virtual double MaxInteractionDistance() const = 0;
 
@@ -102,12 +106,21 @@ namespace PARTICLEINTERACTION
     //! set current step size
     virtual void SetCurrentStepSize(const double currentstepsize);
 
+    //! set current write result flag
+    virtual void SetCurrentWriteResultFlag(bool writeresultsthisstep);
+
     //! set gravity
     virtual void SetGravity(std::vector<double>& gravity) final;
+
+    //! write interaction runtime output
+    virtual void WriteInteractionRuntimeOutput(const int step, const double time);
 
    private:
     //! init particle material handler
     virtual void InitParticleMaterialHandler();
+
+    //! init particle interaction writer
+    virtual void InitParticleInteractionWriter();
 
    protected:
     //! maximum particle radius (on this processor)
@@ -129,10 +142,13 @@ namespace PARTICLEINTERACTION
     PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle_;
 
     //! interface to particle wall handler
-    std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface_;
+    std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface_;
 
     //! particle material handler
     std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial_;
+
+    //! particle interaction writer
+    std::shared_ptr<PARTICLEINTERACTION::InteractionWriter> particleinteractionwriter_;
 
     //! current time
     double time_;

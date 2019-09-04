@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief A base class for binary trees and binary tree nodes providing common functionality
 
 \level 1

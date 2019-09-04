@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Factory class for providing an implementation for coupling with
        Mixed/Stress/Hybrid methods or Nitsche's method to enforce

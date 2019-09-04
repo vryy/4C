@@ -34,12 +34,12 @@ Tick the box as soon as a task is completed (either by inserting an "x" in edit 
 <!---
 Tick the box as soon as a task is completed (either by inserting an "x" in edit mode or clicking on it in view mode).
 -->
-- [ ] Review open issues assigned to the leaving team member and re-assign or unassign
-- [ ] Remove leaving team member from the GitLab group baci_developers
-- [ ] If applicable, remove leaving team member from the GitLab group baci_maintainers
-- [ ] Add leaving team member to the GitLab group baci_collaborators
-- [ ] Update the [baci_developers.json](https://gitlab.lrz.de/baci/baci/blob/master/utilities/git_hooks/baci_developers.json) file of all valid file maintainers
-
+- [ ] Review open issues assigned to the leaving team member and re-assign or unassign.
+- [ ] Remove leaving team member from the GitLab group baci_developers.
+- [ ] If applicable, remove the leaving team member from the GitLab group baci_maintainers.
+- [ ] If applicable, remove the leaving team member from the list of maintainers in #336.
+- [ ] Add leaving team member to the GitLab group baci_collaborators.
+- [ ] Update the [baci_developers.json](https://gitlab.lrz.de/baci/baci/blob/master/utilities/git_hooks/baci_developers.json) file of all valid file maintainers.
 
 ## Interested Parties
 <!---

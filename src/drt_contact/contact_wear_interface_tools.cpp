@@ -1,8 +1,8 @@
 /*-----------------------------------------------------------------------*/
-/*!
+/*! \file
 \level 2
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 
 \brief Some tools for wear problems
 */
@@ -1471,11 +1471,11 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
 
   // information from interface contact parameter list
   INPAR::CONTACT::FrictionType ftype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(), "FRICTION");
-  double frbound = IParams().get<double>("FRBOUND");
-  double frcoeff = IParams().get<double>("FRCOEFF");
-  double ct = IParams().get<double>("SEMI_SMOOTH_CT");
-  double cn = IParams().get<double>("SEMI_SMOOTH_CN");
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
+  double frbound = InterfaceParams().get<double>("FRBOUND");
+  double frcoeff = InterfaceParams().get<double>("FRCOEFF");
+  double ct = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
+  double cn = InterfaceParams().get<double>("SEMI_SMOOTH_CN");
 
   // create storage for values of complementary function C
   int nrow = snoderowmap_->NumMyElements();
@@ -1551,7 +1551,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
       }  //  loop over master nodes
 
       // gp-wise slip !!!!!!!
-      if (DRT::INPUT::IntegralValue<int>(IParams(), "GP_SLIP_INCR") == true)
+      if (DRT::INPUT::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
       {
         jumptxi = cnode->FriData().jump_var()[0];
         jumpteta = 0.0;
@@ -1681,7 +1681,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
         }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-        if (DRT::INPUT::IntegralValue<int>(IParams(), "GP_SLIP_INCR") == true)
+        if (DRT::INPUT::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
         {
           jumptxi = kcnode->FriData().jump_var()[0];
           jumpteta = 0.0;
@@ -1917,7 +1917,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
         }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-        if (DRT::INPUT::IntegralValue<int>(IParams(), "GP_SLIP_INCR") == true)
+        if (DRT::INPUT::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
         {
           jumptxi = kcnode->FriData().jump_var()[0];
           jumpteta = 0.0;
@@ -2156,7 +2156,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
         }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-        if (DRT::INPUT::IntegralValue<int>(IParams(), "GP_SLIP_INCR") == true)
+        if (DRT::INPUT::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
         {
           jumptxi = kcnode->FriData().jump_var()[0];
           jumpteta = 0.0;
@@ -2384,7 +2384,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
         }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-        if (DRT::INPUT::IntegralValue<int>(IParams(), "GP_SLIP_INCR") == true)
+        if (DRT::INPUT::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR") == true)
         {
           jumptxi = kcnode->FriData().jump_var()[0];
           jumpteta = 0.0;
@@ -3442,7 +3442,7 @@ void WEAR::WearInterface::FDCheckMortarE_Master_Deriv()
  *----------------------------------------------------------------------*/
 void WEAR::WearInterface::FDCheckWearDerivLm()
 {
-  double wcoeff = IParams().get<double>("WEARCOEFF");
+  double wcoeff = InterfaceParams().get<double>("WEARCOEFF");
 
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
@@ -3596,7 +3596,7 @@ void WEAR::WearInterface::FDCheckWearDerivLm()
  *----------------------------------------------------------------------*/
 void WEAR::WearInterface::FDCheckWearDeriv()
 {
-  double wcoeff = IParams().get<double>("WEARCOEFF");
+  double wcoeff = InterfaceParams().get<double>("WEARCOEFF");
 
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);

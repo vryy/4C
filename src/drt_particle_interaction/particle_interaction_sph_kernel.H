@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief kernel handler for smoothed particle hydrodynamics (SPH) interactions
 
 \level 3

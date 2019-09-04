@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \level 2
 \brief 8-node solid shell element
 \maintainer Christoph Meier

@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief wrapper class for a user derived NOX PrePostOperator
 

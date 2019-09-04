@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \level 1
 
@@ -54,8 +54,6 @@
 
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_lib/drt_resulttest.H"
-#include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_lib/drt_utils_parmetis.H"
 #include "../linalg/linalg_utils.H"
 
 #include "../drt_lib/drt_globalproblem.H"

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Methods to transfer a turbulent inflow profile from a (usually
 periodic boundary condition) separate domain to a name Dirichlet

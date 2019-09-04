@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief submodel for potential-based beam interactions
 
@@ -971,14 +971,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteOutputRuntimeVtpBea
 
 
   // loop over my points and collect the geometry/grid data, i.e. interacting points
-  std::vector<LINALG::TMatrix<double, 3, 1>> coordinates_ele1_this_pair;
-  std::vector<LINALG::TMatrix<double, 3, 1>> coordinates_ele2_this_pair;
+  std::vector<LINALG::Matrix<3, 1, double>> coordinates_ele1_this_pair;
+  std::vector<LINALG::Matrix<3, 1, double>> coordinates_ele2_this_pair;
 
-  std::vector<LINALG::TMatrix<double, 3, 1>> potential_forces_ele1_this_pair;
-  std::vector<LINALG::TMatrix<double, 3, 1>> potential_forces_ele2_this_pair;
+  std::vector<LINALG::Matrix<3, 1, double>> potential_forces_ele1_this_pair;
+  std::vector<LINALG::Matrix<3, 1, double>> potential_forces_ele2_this_pair;
 
-  std::vector<LINALG::TMatrix<double, 3, 1>> potential_moments_ele1_this_pair;
-  std::vector<LINALG::TMatrix<double, 3, 1>> potential_moments_ele2_this_pair;
+  std::vector<LINALG::Matrix<3, 1, double>> potential_moments_ele1_this_pair;
+  std::vector<LINALG::Matrix<3, 1, double>> potential_moments_ele2_this_pair;
 
   // loop over contact pairs and retrieve all active contact point coordinates
   std::vector<Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair>>::const_iterator pair_iter;

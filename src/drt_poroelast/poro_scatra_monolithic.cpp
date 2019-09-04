@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
  \brief monolithic coupling algorithm for scalar transport within porous medium
 
@@ -326,7 +326,7 @@ void POROELAST::PoroScatraMono::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   SetScatraSolution();
 
   // access poro problem to build poro-poro block
-  PoroField()->Evaluate(porostructinc, porofluidinc);
+  PoroField()->Evaluate(porostructinc, porofluidinc, iter_ == 1);
 
   /// scatra field
 
@@ -409,8 +409,6 @@ void POROELAST::PoroScatraMono::SetupRHS(bool firstcall)
 {
   // create full monolithic rhs vector
   if (rhs_ == Teuchos::null) rhs_ = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
-
-  PoroField()->SetupRHS(firstcall);
 
   // fill the Poroelasticity rhs vector rhs_ with the single field rhss
   SetupVector(*rhs_, PoroField()->RHS(), ScaTraField()->Residual());

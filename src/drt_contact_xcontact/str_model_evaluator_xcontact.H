@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/**
+/** \file
 \brief Model evaluator for the eXtended contact formulation
 
 \maintainer Matthias Mayr

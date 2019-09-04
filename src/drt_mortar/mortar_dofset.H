@@ -1,10 +1,10 @@
 /*-----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief A set of degrees of freedom special for mortar coupling
 
 \level 1
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 */
 /*---------------------------------------------------------------------*/
 #ifndef MORTAR_DOFSET_H

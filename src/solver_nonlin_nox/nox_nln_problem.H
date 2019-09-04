@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief This class manages some of the necessary factory calls
        if a %NOX::NLN solver is supposed to be used. Therefore a

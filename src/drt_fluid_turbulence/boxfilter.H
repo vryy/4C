@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Filter methods for the dynamic Smagorinsky, dynamic Vreman and any other model requiring a
 box filter

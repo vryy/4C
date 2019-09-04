@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Wrapper for the field time integration
 
@@ -19,6 +19,13 @@ void ADAPTER::FieldWrapper::PrepareTimeStep()
 {
   field_->PrepareTimeStep();
   if (NOXCorrection_) ResetStepinc();
+}
+
+
+void ADAPTER::FieldWrapper::UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc)
+{
+  if (NOXCorrection_) GetIterinc(disiterinc);
+  field_->UpdateStateIncrementally(disiterinc);
 }
 
 /*-----------------------------------------------------------------------/

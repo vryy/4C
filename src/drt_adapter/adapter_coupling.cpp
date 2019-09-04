@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Coupling of two discretizations (surface- or volume-coupling)
 

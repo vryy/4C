@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Input for wall1 element.
 
 \level 1
@@ -141,6 +141,10 @@ bool DRT::ELEMENTS::Wall1::ReadElement(
 
   // validate kinematics of solid material
   SolidMaterial()->ValidKinematics(kintype_);
+
+  // Validate that materials doesn't use extended update call.
+  if (SolidMaterial()->UsesExtendedUpdate())
+    dserror("This element currently does not support the extended update call.");
 
   return true;
 }

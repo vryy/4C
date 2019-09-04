@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief input parameters monitoring dirichlet boundary conditions
 
 \level 2

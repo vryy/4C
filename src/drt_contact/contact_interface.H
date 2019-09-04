@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief One contact interface
 
 \level 2
@@ -14,7 +14,6 @@
 #include "../drt_mortar/mortar_strategy_base.H"
 #include "../drt_mortar/mortar_interface.H"
 #include "../drt_inpar/inpar_contact.H"
-#include "../linalg/linalg_sparseoperator.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include <Epetra_FEVector.h>
 
@@ -34,6 +33,11 @@ namespace DRT
   class Node;
 }
 
+namespace LINALG
+{
+  class SparseMatrix;
+}
+
 namespace CONTACT
 {
   class CoInterface;
@@ -50,14 +54,14 @@ namespace CONTACT
    *  data between different interface objects w/o the need of copying them.
    *
    *  \author hiermeier \date 03/17 */
-  class IDataContainer : public MORTAR::IDataContainer
+  class InterfaceDataContainer : public MORTAR::InterfaceDataContainer
   {
    public:
     /// constructor
-    IDataContainer();
+    InterfaceDataContainer();
 
     /// destructor
-    virtual ~IDataContainer(){};
+    virtual ~InterfaceDataContainer(){};
 
     /// @name Accessors
     /// @{
@@ -191,46 +195,99 @@ namespace CONTACT
     /// @}
 
    private:
-    bool selfcontact_;       ///< flag indicating if this is a self contact interface
-    bool friction_;          ///< flag for frictional contact
-    bool nonSmoothContact_;  ///< flag for non-smooth contact algorithm
-    bool two_half_pass_;     ///< flag for two half pass contact algorithm
-    INPAR::CONTACT::ConstraintDirection
-        constr_direction_;  ///< direction in which the contact constraints are formulated
+    //! flag indicating if this is a self contact interface
+    bool selfcontact_;
 
-    Teuchos::RCP<Epetra_Map> activenodes_;    ///< row map of all active slave nodes
-    Teuchos::RCP<Epetra_Map> activedofs_;     ///< row map of all active slave dofs
-    Teuchos::RCP<Epetra_Map> inactivenodes_;  ///< row map of all inactive slave nodes
-    Teuchos::RCP<Epetra_Map> inactivedofs_;   ///< row map of all inactive slave dofs
-    Teuchos::RCP<Epetra_Map> activen_;        ///< row map of global N-matrix
-    Teuchos::RCP<Epetra_Map> activet_;        ///< row map of global T-matrix
-    Teuchos::RCP<Epetra_Map> slipnodes_;      ///< row map of all slip slave nodes
-    Teuchos::RCP<Epetra_Map> slipdofs_;       ///< row map of all slip slave dofs
-    Teuchos::RCP<Epetra_Map> slipt_;          ///< row map of part of T-matrix (slip nodes)
+    //! flag for frictional contact
+    bool friction_;
 
-    Teuchos::RCP<Epetra_Map> nonsmoothnodes_;  ///< row map of all nonsmooth slave nodes
-    Teuchos::RCP<Epetra_Map> smoothnodes_;     ///< row map of all smooth slave nodes
+    //! flag for non-smooth contact algorithm
+    bool nonSmoothContact_;
 
-    Teuchos::RCP<Epetra_Map> sdofVertexRowmap_;  ///< row map of all nonsmooth slave nodes
-    Teuchos::RCP<Epetra_Map> sdofVertexColmap_;  ///< row map of all smooth slave nodes
-    Teuchos::RCP<Epetra_Map> sdofEdgeRowmap_;    ///< row map of all nonsmooth slave nodes
-    Teuchos::RCP<Epetra_Map> sdofEdgeColmap_;    ///< row map of all smooth slave nodes
-    Teuchos::RCP<Epetra_Map> sdofSurfRowmap_;    ///< row map of all nonsmooth slave nodes
-    Teuchos::RCP<Epetra_Map> sdofSurfColmap_;    ///< row map of all smooth slave nodes
+    //! flag for two half pass contact algorithm
+    bool two_half_pass_;
+
+    //! direction in which the contact constraints are formulated
+    INPAR::CONTACT::ConstraintDirection constr_direction_;
+
+    //! @name Maps
+    //! @{
+
+    //! row map of all active slave nodes
+    Teuchos::RCP<Epetra_Map> activenodes_;
+
+    //! row map of all active slave dofs
+    Teuchos::RCP<Epetra_Map> activedofs_;
+
+    //! row map of all inactive slave nodes
+    Teuchos::RCP<Epetra_Map> inactivenodes_;
+
+    //! row map of all inactive slave dofs
+    Teuchos::RCP<Epetra_Map> inactivedofs_;
+
+    //! row map of global N-matrix
+    Teuchos::RCP<Epetra_Map> activen_;
+
+    //! row map of global T-matrix
+    Teuchos::RCP<Epetra_Map> activet_;
+
+    //! row map of all slip slave nodes
+    Teuchos::RCP<Epetra_Map> slipnodes_;
+
+    //! row map of all slip slave dofs
+    Teuchos::RCP<Epetra_Map> slipdofs_;
+
+    //! row map of part of T-matrix (slip nodes)
+    Teuchos::RCP<Epetra_Map> slipt_;
+
+    //! row map of all nonsmooth slave nodes
+    Teuchos::RCP<Epetra_Map> nonsmoothnodes_;
+
+    //! row map of all smooth slave nodes
+    Teuchos::RCP<Epetra_Map> smoothnodes_;
+
+    //! row map of all nonsmooth slave nodes
+    Teuchos::RCP<Epetra_Map> sdofVertexRowmap_;
+
+    //! row map of all smooth slave nodes
+    Teuchos::RCP<Epetra_Map> sdofVertexColmap_;
+
+    //! row map of all nonsmooth slave nodes
+    Teuchos::RCP<Epetra_Map> sdofEdgeRowmap_;
+
+    //! row map of all smooth slave nodes
+    Teuchos::RCP<Epetra_Map> sdofEdgeColmap_;
+
+    //! row map of all nonsmooth slave nodes
+    Teuchos::RCP<Epetra_Map> sdofSurfRowmap_;
+
+    //! row map of all smooth slave nodes
+    Teuchos::RCP<Epetra_Map> sdofSurfColmap_;
 
     Teuchos::RCP<Epetra_Map> nextendedghosting_;
     Teuchos::RCP<Epetra_Map> eextendedghosting_;
 
-    Teuchos::RCP<SelfBinaryTree> binarytreeself_;  ///< binary tree for self contact search
+    //! @}
+
+    //! binary tree for self contact search
+    Teuchos::RCP<SelfBinaryTree> binarytreeself_;
 
     //! cn-values of each node
-    Teuchos::RCP<Epetra_Vector> cnValues_;  ///< cn
-    Teuchos::RCP<Epetra_Vector> ctValues_;  ///< ct
+    Teuchos::RCP<Epetra_Vector> cnValues_;
 
-    int smpairs_;     ///< proc local number of slave/master pairs
-    int smintpairs_;  ///< proc local number of slave/master integration pairs
-    int intcells_;    ///< proc local number of integration cells
-  };                  // class CONTACT::IDataContainer
+    //! ct-values of each node
+    Teuchos::RCP<Epetra_Vector> ctValues_;
+
+    //! proc local number of slave/master pairs
+    int smpairs_;
+
+    //! proc local number of slave/master integration pairs
+    int smintpairs_;
+
+    ///< proc local number of integration cells
+    int intcells_;
+
+  };  // class CONTACT::InterfaceDataContainer
 
   /*----------------------------------------------------------------------------*/
   /*!
@@ -242,7 +299,7 @@ namespace CONTACT
   {
    protected:
     /// constructor ( only for derived classes )
-    CoInterface(const Teuchos::RCP<CONTACT::IDataContainer>& idata_ptr);
+    CoInterface(const Teuchos::RCP<CONTACT::InterfaceDataContainer>& interfaceData_ptr);
 
    public:
     /** \brief Create a new contact interface object
@@ -269,7 +326,7 @@ namespace CONTACT
     to a specific setting. Throughout the evaluation process, this set will be employed
     for the field of Lagrange multipliers.
 
-    \param idata_ptr (in): data container
+    \param interfaceData_ptr (in): data container
     \param id (in): Unique interface id
     \param comm (in): A communicator object
     \param spatialDim (in): spatial dimension of the problem
@@ -278,7 +335,7 @@ namespace CONTACT
     \param redundant (in): type of redundancy in interface storage
 
     */
-    CoInterface(const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr, const int id,
+    CoInterface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr, const int id,
         const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& icontact,
         bool selfcontact, INPAR::MORTAR::RedundantStorage redundant);
 
@@ -294,7 +351,7 @@ namespace CONTACT
 
     \param[in] os Output stream used for printing
     */
-    virtual void Print(std::ostream& os) const;
+    void Print(std::ostream& os) const final;
 
     //! @name Access methods
 
@@ -587,7 +644,7 @@ namespace CONTACT
     that only parts of the slave surface actually need to evaluate
     contact terms (those parts that are "close" to the master side).
 
-    Internally, we call ZOLTAN to re-partition the contact interfacs
+    Internally, we call ZOLTAN to re-partition the contact interfaces
     in three independent parts: (1) close slave part, (2) non-close
     slave part, (3) master part. This results in new "optimal" node/element
     maps of the interface discretization. Note that after Redistribute(),
@@ -595,19 +652,15 @@ namespace CONTACT
     simulations Redistribute() might be called dynamically again and
     again to account for changes of the contact zone.
 
-    Two special cases are treated seperately: First, if ALL slave
+    Two special cases are treated separately: First, if ALL slave
     elements of the interface have some "close" neighbors, we do not
     need to distinguish the two different slave parts. Thus, we
     simply call the base class method Redistribute() also used for
     meshtying. Second, if NO slave element of the interface has any
     "close" neighbors, we do not need to redistribute at all. This
     is indicated by returning with a boolean return value FALSE.
-
-    \param index (in): global index of current interface
-    \return flag indicating whether redistribution has been performed
-
     */
-    bool Redistribute(int index);
+    void Redistribute() final;
 
     void RoundRobinChangeOwnership();
 
@@ -641,7 +694,7 @@ namespace CONTACT
     Derived version!
 
     */
-    void CreateSearchTree();
+    void CreateSearchTree() final;
 
     /*!
     \brief Initialize / reset interface for contact
@@ -649,7 +702,7 @@ namespace CONTACT
     Derived version!
 
     */
-    void Initialize();
+    void Initialize() override;
 
     /*!
     \brief Set element areas
@@ -657,7 +710,7 @@ namespace CONTACT
     Derived version!
 
     */
-    void SetElementAreas();
+    void SetElementAreas() override;
 
     /*!
     \brief Export nodal normals
@@ -669,7 +722,7 @@ namespace CONTACT
     Derived version!
 
     */
-    void ExportNodalNormals() const;
+    void ExportNodalNormals() const override;
 
     /*!
     \brief Binary tree search algorithm for potentially coupling slave /
@@ -678,7 +731,7 @@ namespace CONTACT
     Derived version!
 
     */
-    bool EvaluateSearchBinarytree();
+    bool EvaluateSearchBinarytree() final;
 
     /*!
     \brief Integrate Mortar matrix M and gap g on slave/master overlaps
@@ -687,19 +740,19 @@ namespace CONTACT
 
     */
     bool MortarCoupling(MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele,
-        const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) override;
+        const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) final;
 
     /*!
     \brief evaluate coupling terms for nts coupling + lin
 
     */
-    void EvaluateNTS();
+    void EvaluateNTS() final;
 
     /*!
     \brief evaluate coupling terms for lts coupling + lin
 
     */
-    void EvaluateLTS();
+    void EvaluateLTS() final;
 
     /*!
     \brief evaluate coupling terms for lts coupling + lin
@@ -717,16 +770,16 @@ namespace CONTACT
     \brief evaluate coupling terms for ltl coupling + lin
 
     */
-    void EvaluateLTL();
+    void EvaluateLTL() final;
 
     /*!
     \brief evaluate coupling terms for stl coupling + lin
 
     */
-    void EvaluateSTL();
+    void EvaluateSTL() final;
 
     /*!
-    \brief Integrate penalty sclaing factor kappa on slave element
+    \brief Integrate penalty scaling factor \f$\kappa\f$ on slave element
 
     This method is only called, if a penalty strategy is applied. It is
     called ONCE at the beginning of the simulation and evaluates the
@@ -1076,7 +1129,7 @@ namespace CONTACT
     \param[in] step Time step index
     \param[in] iter Nonlinear iteration index
     */
-    void VisualizeGmsh(const int step, const int iter);
+    void VisualizeGmsh(const int step, const int iter) final;
 
     //! @name Finite difference checks
     //!@{
@@ -1247,7 +1300,7 @@ namespace CONTACT
     //! @{
 
     //! [derived]
-    virtual void PostprocessQuantities(const Teuchos::ParameterList& outputParams);
+    void PostprocessQuantities(const Teuchos::ParameterList& outputParams) final;
 
     //! @}
 
@@ -1280,7 +1333,7 @@ namespace CONTACT
     Derived version!
 
     */
-    virtual void InitializeDataContainer();
+    void InitializeDataContainer() override;
 
     /*!
     \brief initialize slave/master node status for corner/edge modification
@@ -1288,7 +1341,7 @@ namespace CONTACT
     Derived version!
 
     */
-    virtual void InitializeCornerEdge();
+    void InitializeCornerEdge() final;
 
     /*!
     \brief Set closest-point-projection normal and tangent to data container
@@ -1315,15 +1368,15 @@ namespace CONTACT
     Derived version!
 
     */
-    virtual void EvaluateCoupling(const Epetra_Map& selecolmap, const Epetra_Map* snoderowmap,
-        const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+    void EvaluateCoupling(const Epetra_Map& selecolmap, const Epetra_Map* snoderowmap,
+        const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) final;
 
     /*!
     \brief Evaluate segment-to-segment coupling (mortar...)
 
     */
-    virtual void EvaluateSTS(
-        const Epetra_Map& selecolmap, const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+    void EvaluateSTS(const Epetra_Map& selecolmap,
+        const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) final;
 
     /*!
     \brief export master nodal normals for cpp calculation
@@ -1471,7 +1524,7 @@ namespace CONTACT
     slave/master status is assigned dynamically.
 
     */
-    virtual void UpdateMasterSlaveSets();
+    void UpdateMasterSlaveSets() override;
 
    private:
     /*! \brief Set node active if it is active in input file
@@ -1493,10 +1546,7 @@ namespace CONTACT
     void SetNodeInitiallyActiveByGap(CoNode& cnode) const;
 
     /// pointer to the interface data object
-    Teuchos::RCP<CONTACT::IDataContainer> idata_ptr_;
-
-    /// reference to the interface data object
-    CONTACT::IDataContainer& idata_;
+    Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_;
 
    protected:
     // don't want = operator and cctor

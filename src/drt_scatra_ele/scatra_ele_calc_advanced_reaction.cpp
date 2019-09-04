@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief main file containing routines for calculation of scatra element with advanced reaction terms
 
  \level 2

@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 \brief calc utils for beam interaction framework
 
 \maintainer Jonas Eichinger

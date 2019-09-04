@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/**
+/** \file
 \brief base class of the inequality level-set approach algorithm for contact
        problems a.k.a. xcontact or extended contact
 

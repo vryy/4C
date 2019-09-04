@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Templated Evaluate file for airway element containing the action
        types for a reduced airway element RedAirway. The actual

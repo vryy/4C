@@ -1,12 +1,10 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief
 
 \level 3
 
-\maintainer Fabian Braeu
-            braeu@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15236
+\maintainer Sebastian Fuchs
 
 \brief Nonlinear Membrane Finite Element line evaluation
 

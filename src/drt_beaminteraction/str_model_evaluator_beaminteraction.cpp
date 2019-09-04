@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Evaluation of all beam interaction terms, managing
        everything that has to do with parallelity

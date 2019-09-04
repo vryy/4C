@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Adapter for the new structural time integration framework.
 
@@ -212,6 +212,24 @@ namespace ADAPTER
 
     /// start new time step
     virtual void PrepareTimeStep() = 0;
+
+    /*!
+     \brief update displacement
+     There are two displacement increments possible
+
+     \f$x^n+1_i+1 = x^n+1_i + disiterinc\f$  (sometimes referred to as residual increment), and
+
+     \f$x^n+1_i+1 = x^n     + disstepinc\f$
+
+     with \f$n\f$ and \f$i\f$ being time and Newton iteration step
+
+     Note: The structure expects an iteration increment.
+     In case the StructureNOXCorrectionWrapper is applied, the step increment is expected
+     which is then transformed into an iteration increment
+     */
+    void UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector>
+            disiterinc  ///< displacement increment between Newton iteration i and i+1
+        ) override = 0;
 
     /*!
     \brief update displacement and evaluate elements

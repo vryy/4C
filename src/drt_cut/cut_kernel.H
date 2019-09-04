@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief The cut kernel computes basic geometric operation, implemented are
     - Intersection of Surface and line or line and line
@@ -2894,7 +2894,7 @@ namespace GEO
 
         ClnWrapper clndistance_;
 
-        // reference to the double TMatrix
+        // reference to the double Matrix
         LINALG::Matrix<probDim, 1>& xsi_;
 
         LINALG::Matrix<probDim, 1, ClnWrapper> clnxsi_;

@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief hyperelastic toolbox for membranes assuming incompressibility and plane stress
 
 The input line should read
@@ -152,7 +153,7 @@ void MAT::Membrane_ElastHyper::Evaluate(
   cmat->Update(1.0, cmat_iso, 1.0);
 
   // evaluate anisotropic 2nd Piola-Kirchhoff stress and constitutive tensor
-  if (anisoprinc_)
+  if (summandProperties_.anisoprinc)
   {
     LINALG::Matrix<3, 1> stress_aniso(true);
     LINALG::Matrix<3, 3> cmat_aniso(true);
@@ -162,7 +163,7 @@ void MAT::Membrane_ElastHyper::Evaluate(
     stress->Update(1.0, stress_aniso, 1.0);
     cmat->Update(1.0, cmat_aniso, 1.0);
   }
-  if (anisomod_)
+  if (summandProperties_.anisomod)
   {
     dserror("anisomod_ not implemented for membrane elasthyper materials!");
   }
@@ -343,7 +344,7 @@ void MAT::Membrane_ElastHyper::EvaluateInvariantDerivatives(const LINALG::Matrix
     dserror("Incompressibility assumption not fulfilled in membrane hyperelastic material!");
 
   // derivatives of principal materials
-  if (isoprinc_)
+  if (summandProperties_.isoprinc)
   {
     // loop map of associated potential summands
     for (unsigned int p = 0; p < potsum_.size(); ++p)
@@ -353,7 +354,7 @@ void MAT::Membrane_ElastHyper::EvaluateInvariantDerivatives(const LINALG::Matrix
   }
 
   // derivatives of decoupled (volumetric or isochoric) materials
-  if (isomod_)
+  if (summandProperties_.isomod)
   {
     // loop map of associated potential summands
     for (unsigned int p = 0; p < potsum_.size(); ++p)

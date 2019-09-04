@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief BACI implementation of main class to control all contact
 
 \level 1
@@ -609,13 +609,13 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
       double checkfrcoeff = 0.0;
       if (ftype == INPAR::CONTACT::friction_tresca)
       {
-        checkfrcoeff = interfaces[i]->IParams().get<double>("FRBOUND");
+        checkfrcoeff = interfaces[i]->InterfaceParams().get<double>("FRBOUND");
         std::cout << std::endl << "Interface         " << i + 1 << std::endl;
         std::cout << "FrBound (Tresca)  " << checkfrcoeff << std::endl;
       }
       else if (ftype == INPAR::CONTACT::friction_coulomb)
       {
-        checkfrcoeff = interfaces[i]->IParams().get<double>("FRCOEFF");
+        checkfrcoeff = interfaces[i]->InterfaceParams().get<double>("FRCOEFF");
         std::cout << std::endl << "Interface         " << i + 1 << std::endl;
         std::cout << "FrCoeff (Coulomb) " << checkfrcoeff << std::endl;
       }
@@ -623,7 +623,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
   }
 
   // print initial parallel redistribution
-  for (int i = 0; i < (int)interfaces.size(); ++i) interfaces[i]->PrintParallelDistribution(i + 1);
+  for (int i = 0; i < (int)interfaces.size(); ++i) interfaces[i]->PrintParallelDistribution();
 
   // create binary search tree
   for (int i = 0; i < (int)interfaces.size(); ++i) interfaces[i]->CreateSearchTree();

@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief Solid Tet10 Element
 \level 1
 \maintainer Christoph Meier
@@ -364,6 +365,13 @@ namespace DRT
       /// compute Jacobian mapping wrt to deformed configuration
       void UpdateJacobianMapping(
           const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress);
+
+      //! Update history variables at the end of time step (fiber direction, inelastic deformation)
+      //! (gebauer 07/19)
+      void Update_element(std::vector<double>& disp,  // current displacements
+          Teuchos::ParameterList& params,             // algorithmic parameters e.g. time
+          Teuchos::RCP<MAT::Material> mat);           // material
+
       /// compute defgrd in all gp for given disp
       void DefGradient(const std::vector<double>& disp, Epetra_SerialDenseMatrix& gpdefgrd,
           DRT::ELEMENTS::PreStress& prestress);

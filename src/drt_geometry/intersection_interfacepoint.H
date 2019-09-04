@@ -1,4 +1,5 @@
-/*!
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief      InterfacePoint stores and delivers all data a point lying on the
             intersection interface has to know

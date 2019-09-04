@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief material for heat conduction according to fourier's law
 \level 1
 \maintainer Christoph Meier

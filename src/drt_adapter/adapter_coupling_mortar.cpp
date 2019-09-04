@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief A class providing coupling capabilities based on mortar methods
 
@@ -460,7 +460,7 @@ void ADAPTER::CouplingMortar::SetupInterface(
   pmasterdofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface_->MasterRowDofs()));
 
   // print parallel distribution
-  interface_->PrintParallelDistribution(1);
+  interface_->PrintParallelDistribution();
 
   //**********************************************************************
   // PARALLEL REDISTRIBUTION OF INTERFACE
@@ -476,7 +476,7 @@ void ADAPTER::CouplingMortar::SetupInterface(
     interface_->FillComplete();
 
     // print parallel distribution again
-    interface_->PrintParallelDistribution(1);
+    interface_->PrintParallelDistribution();
   }
   //**********************************************************************
 
@@ -1133,8 +1133,8 @@ void ADAPTER::CouplingMortar::CreateP()
   CheckSetup();
 
   // check
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Interface()->IParams(), "LM_SHAPEFCN") !=
-      INPAR::MORTAR::shape_dual)
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(
+          Interface()->InterfaceParams(), "LM_SHAPEFCN") != INPAR::MORTAR::shape_dual)
     dserror("ERROR: Creation of P operator only for dual shape functions!");
 
   /********************************************************************/

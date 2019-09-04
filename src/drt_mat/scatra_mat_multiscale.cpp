@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief material for macro-scale elements in multi-scale simulations of scalar transport problems
 
 \level 2

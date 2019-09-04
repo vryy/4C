@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/**
+/** \file
 
 \brief Merge the mutual functionality of the XCONTACT state creators.
 

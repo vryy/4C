@@ -1,4 +1,5 @@
-/*!
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief Object to store the beam to solid volume meshtying output (visualization) parameters.
 

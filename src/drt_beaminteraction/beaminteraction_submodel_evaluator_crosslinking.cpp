@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 \brief class for submodel crosslinking
 
 \maintainer Jonas Eichinger

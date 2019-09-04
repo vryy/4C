@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Setup of discretization including assignment of degrees of freedom
 
@@ -67,9 +67,10 @@ int DRT::Discretization::FillComplete(
   // print information to screen
   if (myrank == 0)
   {
-    IO::cout(IO::verbose) << "+--------------------------------------------------+" << IO::endl;
-    IO::cout(IO::verbose) << "| FillComplete() on discretization " << std::setw(16) << std::left
-                          << Name() << "|" << IO::endl;
+    IO::cout(IO::verbose)
+        << "\n+--------------------------------------------------------------------+" << IO::endl;
+    IO::cout(IO::verbose) << "| FillComplete() on discretization " << std::setw(34) << std::left
+                          << Name() << std::setw(1) << std::right << "|" << IO::endl;
   }
 
   // set all maps to Teuchos::null
@@ -103,7 +104,8 @@ int DRT::Discretization::FillComplete(
   {
     if (myrank == 0)
     {
-      IO::cout(IO::verbose) << "| AssignDegreesOfFreedom() ...                     |" << IO::endl;
+      IO::cout(IO::verbose)
+          << "| AssignDegreesOfFreedom() ...                                       |" << IO::endl;
     }
     AssignDegreesOfFreedom(0);
   }
@@ -113,7 +115,8 @@ int DRT::Discretization::FillComplete(
   {
     if (myrank == 0)
     {
-      IO::cout(IO::verbose) << "| InitializeElements() ...                         |" << IO::endl;
+      IO::cout(IO::verbose)
+          << "| InitializeElements() ...                                           |" << IO::endl;
     }
     InitializeElements();
   }
@@ -123,7 +126,8 @@ int DRT::Discretization::FillComplete(
   {
     if (myrank == 0)
     {
-      IO::cout(IO::verbose) << "| BoundaryConditionsGeometry() ...                 |" << IO::endl;
+      IO::cout(IO::verbose)
+          << "| BoundaryConditionsGeometry() ...                                   |" << IO::endl;
     }
 
     BoundaryConditionsGeometry();
@@ -131,7 +135,8 @@ int DRT::Discretization::FillComplete(
 
   if (myrank == 0)
   {
-    IO::cout(IO::verbose) << "+--------------------------------------------------+" << IO::endl;
+    IO::cout(IO::verbose)
+        << "+--------------------------------------------------------------------+" << IO::endl;
   }
 
   return 0;

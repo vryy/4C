@@ -114,7 +114,7 @@ E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 --------------------------------------DESIGN SURFACE PARTICLE WALL
 DSURF  1
 // sidewalls
-E 1 - 1
+E 1 - MAT -1
 ------------------------------------DESIGN PARTICLE INITIAL FIELD CONDITIONS
 DPARTICLE                       2
 E 1 - Velocity 1

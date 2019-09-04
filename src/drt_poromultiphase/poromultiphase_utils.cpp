@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief utils methods for for porous multiphase flow through elastic medium problems
 
    \level 3

@@ -1,10 +1,10 @@
 /*-----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief A set of utility functions for mortar methods
 
 \level 1
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 */
 /*-----------------------------------------------------------------------*/
 

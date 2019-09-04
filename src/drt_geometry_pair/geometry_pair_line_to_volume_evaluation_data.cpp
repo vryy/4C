@@ -1,4 +1,5 @@
-/*!
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief container for parameters for line to volume pairs, as well as global evaluation data.
 

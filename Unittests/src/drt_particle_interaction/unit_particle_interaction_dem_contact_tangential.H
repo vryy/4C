@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief unittests for tangential contact handler for discrete element method (DEM) interactions
 
 \level 3
@@ -96,7 +96,7 @@ class PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp_TestSuite : publ
 
     double tangentialcontactforce[3];
     contacttangential_->TangentialContactForce(gap_tangential, stick_tangential, e_ji,
-        vel_rel_tangential, m_eff, normalcontactforce, tangentialcontactforce);
+        vel_rel_tangential, m_eff, mu_tangential_, normalcontactforce, tangentialcontactforce);
 
     double gap_tangential_ref[3] = {0.17923102017884, 0.16378007016342, -0.12669779012642};
     double tangentialcontactforce_ref[3] = {-0.52425016124507, -0.53614987479507, 0.32632177321349};
@@ -133,7 +133,7 @@ class PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp_TestSuite : publ
 
     double tangentialcontactforce[3];
     contacttangential_->TangentialContactForce(gap_tangential, stick_tangential, e_ji,
-        vel_rel_tangential, m_eff, normalcontactforce, tangentialcontactforce);
+        vel_rel_tangential, m_eff, mu_tangential_, normalcontactforce, tangentialcontactforce);
 
     double gap_tangential_ref[3] = {0.068586669580933, 0.050624254285441, -0.057826737044788};
     double tangentialcontactforce_ref[3] = {-0.19231710945136, -0.19668242716113, 0.11970861396859};

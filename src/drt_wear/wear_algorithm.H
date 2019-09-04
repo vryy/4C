@@ -1,12 +1,12 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Basis of all WEAR algorithms that perform a coupling between the
        structural field equation and ALE field equations
 
 \level 2
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 

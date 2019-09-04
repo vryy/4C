@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief One beam-to-beam pair (two beam elements) connected by a mechanical link
 
@@ -275,7 +275,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::ResetState(
    * parent elements.
    * Note: constant rotation in material frame, therefore multiplication from right
    *       side */
-  LINALG::TMatrix<double, 3, 3> currenttriad(true);
+  LINALG::Matrix<3, 3, double> currenttriad(true);
   currenttriad.Multiply(bspottriad[0], Lambdarel1_);
   LARGEROTATIONS::triadtoquaternion<double>(currenttriad, bspottriad1_);
 
@@ -301,7 +301,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Print(std::ostream& out) const
   BeamLink::Print(out);
 
   out << "\nbspottriad1_ = ";
-  LINALG::TMatrix<double, 3, 3> triad;
+  LINALG::Matrix<3, 3, double> triad;
   LARGEROTATIONS::quaterniontotriad(bspottriad1_, triad);
   triad.Print(out);
   out << "\nbspottriad2_ = ";

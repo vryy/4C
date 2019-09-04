@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief constitutive relations for beam cross-section resultants (hyperelastic stored energy
 function)
 
@@ -160,7 +160,7 @@ namespace MAT
      *  \author grill
      *  \date 02/17 */
     template <typename T>
-    void GetConstitutiveMatrixOfForcesMaterialFrame(LINALG::TMatrix<T, 3, 3>& C_N) const;
+    void GetConstitutiveMatrixOfForcesMaterialFrame(LINALG::Matrix<3, 3, T>& C_N) const;
 
     /** \brief get constitutive matrix relating stress moment resultants and rotational strain
      *         measures, expressed w.r.t. material frame
@@ -168,7 +168,7 @@ namespace MAT
      *  \author grill
      *  \date 02/17 */
     template <typename T>
-    void GetConstitutiveMatrixOfMomentsMaterialFrame(LINALG::TMatrix<T, 3, 3>& C_M) const;
+    void GetConstitutiveMatrixOfMomentsMaterialFrame(LINALG::Matrix<3, 3, T>& C_M) const;
 
     /** \brief get mass inertia factor with respect to translational accelerations
      *         (usually: density * cross-section area)
@@ -182,7 +182,7 @@ namespace MAT
      *  \author grill
      *  \date 02/17 */
     template <typename T>
-    void GetMassMomentOfInertiaTensorMaterialFrame(LINALG::TMatrix<T, 3, 3>& J) const;
+    void GetMassMomentOfInertiaTensorMaterialFrame(LINALG::Matrix<3, 3, T>& J) const;
 
 
     /** \brief get the radius of a circular cross-section that is ONLY to be used for evaluation of

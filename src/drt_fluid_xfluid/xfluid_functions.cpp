@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Managing and evaluating of spatial functions for Xfluid problems
 

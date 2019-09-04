@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief
 This file contains a framework, which allows for the linear interpolation between two different
 strain energy functions, where the interpolation ratio come from 'outside'. For now this is supposed

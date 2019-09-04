@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief One-Step-Theta time-integration scheme
 
 \level 1

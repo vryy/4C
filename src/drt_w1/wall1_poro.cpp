@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief 2D wall element for structure part of porous medium.
 
 \level 2

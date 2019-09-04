@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Penalty mesh-tying solving strategy.
 
 \level 2

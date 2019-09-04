@@ -36,13 +36,13 @@ TEMPERATURE_BOUNDARY_CONDITION  boundaryphase 2
 --------------------------------------------------------PARTICLE DYNAMIC/SPH
 KERNEL                          QuinticSpline
 KERNEL_SPACE_DIM                Kernel2D
+INITIALPARTICLESPACING          0.02
 EQUATIONOFSTATE                 GenTait
 MOMENTUMFORMULATION             AdamiMomentumFormulation
 DENSITYEVALUATION               DensitySummation
 BOUNDARYPARTICLEFORMULATION     AdamiBoundaryFormulation
 BOUNDARYPARTICLEINTERACTION     NoSlipBoundaryParticle
 DENSITYCORRECTION               NoCorrection
-CONSISTENTPROBLEMVOLUME         1.0
 TRANSPORTVELOCITYFORMULATION    StandardTransportVelocity
 TEMPERATUREEVALUATION           TemperatureIntegration
 TEMPERATUREGRADIENT             yes

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief
 This file contains the routines required to calculate the isochoric contribution
 of a Mooney-Rivlin-type material.
@@ -8,7 +8,7 @@ MAT 1 ELAST_IsoMooneyRivlin C1 100 C2 50
 
 \level 1
 
-\maintainer Fabian Braeu
+\maintainer Amadeus Gebauer
 
 *----------------------------------------------------------------------*/
 /* macros */

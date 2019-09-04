@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief A set of utility functions for beam contact
 
@@ -30,21 +30,21 @@ namespace BEAMCONTACT
   /*!
   \brief Calculate angle encompassed by two lines: returns an angle \in [0;pi/2]
   */
-  double CalcAngle(LINALG::TMatrix<double, 3, 1> a, LINALG::TMatrix<double, 3, 1> b);
+  double CalcAngle(LINALG::Matrix<3, 1, double> a, LINALG::Matrix<3, 1, double> b);
 
   /*!
   \brief Get closest distance between the endpoints of two lines
   */
   template <typename type>
-  type GetClosestEndpointDist(LINALG::TMatrix<type, 3, 1> r1_a, LINALG::TMatrix<type, 3, 1> r1_b,
-      LINALG::TMatrix<type, 3, 1> r2_a, LINALG::TMatrix<type, 3, 1> r2_b);
+  type GetClosestEndpointDist(LINALG::Matrix<3, 1, type> r1_a, LINALG::Matrix<3, 1, type> r1_b,
+      LINALG::Matrix<3, 1, type> r2_a, LINALG::Matrix<3, 1, type> r2_b);
 
   /*!
   \brief Set primary displacement DoFs for automatic differentiation with Sacado
   */
   template <int numnodes, int numnodalvalues>
-  void SetFADDispDofs(LINALG::TMatrix<FAD, 3 * numnodes * numnodalvalues, 1>& ele1pos_,
-      LINALG::TMatrix<FAD, 3 * numnodes * numnodalvalues, 1>& ele2pos_)
+  void SetFADDispDofs(LINALG::Matrix<3 * numnodes * numnodalvalues, 1, FAD>& ele1pos_,
+      LINALG::Matrix<3 * numnodes * numnodalvalues, 1, FAD>& ele2pos_)
   {
     // The 2*3*numnodes*numnodalvalues primary DoFs are the components of the nodal positions /
     // tangents. The two (+2) additional degrees of freedom represent the dependency on the
@@ -62,8 +62,8 @@ namespace BEAMCONTACT
 \brief BTS-Contact: Set primary displacement DoFs for automatic differentiation with Sacado
 */
   template <int numnodessol, int numnodes, int numnodalvalues>
-  void SetFADDispDofs(LINALG::TMatrix<FAD, 3 * numnodes * numnodalvalues, 1>& ele1pos,
-      LINALG::TMatrix<FAD, 3 * numnodessol, 1>& ele2pos, const int& numvar)
+  void SetFADDispDofs(LINALG::Matrix<3 * numnodes * numnodalvalues, 1, FAD>& ele1pos,
+      LINALG::Matrix<3 * numnodessol, 1, FAD>& ele2pos, const int& numvar)
   {
     for (int i = 0; i < 3 * numnodes * numnodalvalues; i++)
       ele1pos(i).diff(i, 3 * numnodes * numnodalvalues + 3 * numnodessol + numvar);
@@ -174,16 +174,16 @@ namespace BEAMCONTACT
   /*
   \brief Intersect two parallel cylinders
   */
-  bool IntersectParallelCylinders(LINALG::TMatrix<double, 3, 1>& r1_a,
-      LINALG::TMatrix<double, 3, 1>& r1_b, LINALG::TMatrix<double, 3, 1>& r2_a,
-      LINALG::TMatrix<double, 3, 1>& r2_b, double& distancelimit);
+  bool IntersectParallelCylinders(LINALG::Matrix<3, 1, double>& r1_a,
+      LINALG::Matrix<3, 1, double>& r1_b, LINALG::Matrix<3, 1, double>& r2_a,
+      LINALG::Matrix<3, 1, double>& r2_b, double& distancelimit);
 
   /*
   \brief Intersect two non-parallel, arbitrary oriented cylinders
   */
-  bool IntersectArbitraryCylinders(LINALG::TMatrix<double, 3, 1>& r1_a,
-      LINALG::TMatrix<double, 3, 1>& r1_b, LINALG::TMatrix<double, 3, 1>& r2_a,
-      LINALG::TMatrix<double, 3, 1>& r2_b, double& distancelimit,
+  bool IntersectArbitraryCylinders(LINALG::Matrix<3, 1, double>& r1_a,
+      LINALG::Matrix<3, 1, double>& r1_b, LINALG::Matrix<3, 1, double>& r2_a,
+      LINALG::Matrix<3, 1, double>& r2_b, double& distancelimit,
       std::pair<double, double>&
           closestpoints,  // The closest point are only set, if we have detected an intersection at
                           // a valid closest point with eta1_seg, eta2_seg \in [-1.0;1.0]
@@ -192,8 +192,8 @@ namespace BEAMCONTACT
   /*
   \brief Calculate closest distance of a point and a line
   */
-  double CalcPointLineDist(LINALG::TMatrix<double, 3, 1>& rline_a,
-      LINALG::TMatrix<double, 3, 1>& rline_b, LINALG::TMatrix<double, 3, 1>& rp, double& eta);
+  double CalcPointLineDist(LINALG::Matrix<3, 1, double>& rline_a,
+      LINALG::Matrix<3, 1, double>& rline_b, LINALG::Matrix<3, 1, double>& rp, double& eta);
 
   /*
   \brief Determine inpute parameter representing the additive searchbox increment

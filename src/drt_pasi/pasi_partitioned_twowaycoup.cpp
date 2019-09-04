@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief two way coupled partitioned algorithm for particle structure interaction
 
 \level 3
@@ -16,8 +16,9 @@
 #include "../drt_adapter/ad_str_pasiwrapper.H"
 
 #include "../drt_particle_algorithm/particle_algorithm.H"
-#include "../drt_particle_algorithm/particle_wall_interface.H"
-#include "../drt_particle_algorithm/particle_wall_datastate.H"
+
+#include "../drt_particle_wall/particle_wall_interface.H"
+#include "../drt_particle_wall/particle_wall_datastate.H"
 
 #include "../drt_lib/drt_discret.H"
 
@@ -68,11 +69,11 @@ void PASI::PASI_PartTwoWayCoup::Setup()
   // safety check
   {
     // get interface to particle wall handler
-    std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface =
+    std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface =
         particlealgorithm_->GetParticleWallHandlerInterface();
 
     // get wall data state container
-    std::shared_ptr<PARTICLEALGORITHM::WallDataState> walldatastate =
+    std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
         particlewallinterface->GetWallDataState();
 
     if (walldatastate->GetDispRow() == Teuchos::null or
@@ -282,11 +283,11 @@ void PASI::PASI_PartTwoWayCoup::ClearWallForces()
   TEUCHOS_FUNC_TIME_MONITOR("PASI::PASI_PartTwoWayCoup::ClearWallForces");
 
   // get interface to particle wall handler
-  std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface =
+  std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface =
       particlealgorithm_->GetParticleWallHandlerInterface();
 
   // get wall data state container
-  std::shared_ptr<PARTICLEALGORITHM::WallDataState> walldatastate =
+  std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
       particlewallinterface->GetWallDataState();
 
 #ifdef DEBUG
@@ -305,11 +306,11 @@ void PASI::PASI_PartTwoWayCoup::GetWallForces()
   TEUCHOS_FUNC_TIME_MONITOR("PASI::PASI_PartTwoWayCoup::GetWallForces");
 
   // get interface to particle wall handler
-  std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface =
+  std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface =
       particlealgorithm_->GetParticleWallHandlerInterface();
 
   // get wall data state container
-  std::shared_ptr<PARTICLEALGORITHM::WallDataState> walldatastate =
+  std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
       particlewallinterface->GetWallDataState();
 
 #ifdef DEBUG

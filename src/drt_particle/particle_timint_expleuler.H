@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Particle time integration with Forward Euler time integration scheme of 1st order (explicit)
 

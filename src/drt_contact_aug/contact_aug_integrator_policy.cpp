@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief (augmented) contact integration policies
 
 \level 3
@@ -23,7 +23,7 @@ template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
     DRT::Element::DiscretizationType mastertype>
 void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deriv2nd_Jacobian(
     const MORTAR::MortarElement& sele,
-    const LINALG::TMatrix<int, probdim, my::SLAVENUMNODE>& nodal_dofs,
+    const LINALG::Matrix<probdim, my::SLAVENUMNODE, int>& nodal_dofs,
     const LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& deriv,
     const LINALG::Matrix<probdim, 1>& unit_normal, const double length_n_inv,
     const Deriv1stVecMap& d_non_unit_normal, Deriv2ndMap& dd_jac) const
@@ -38,7 +38,7 @@ template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
     DRT::Element::DiscretizationType mastertype>
 void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deriv2nd_Jacobian(
     const MORTAR::MortarElement& sele,
-    const LINALG::TMatrix<int, probdim, my::SLAVENUMNODE>& nodal_dofs,
+    const LINALG::Matrix<probdim, my::SLAVENUMNODE, int>& nodal_dofs,
     const LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& deriv,
     const LINALG::Matrix<probdim, 1>& unit_normal, const double length_n_inv,
     const Deriv1stVecMap& d_non_unit_normal, Deriv2ndMap& dd_jac) const
@@ -233,8 +233,7 @@ double CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::UnitSlaveElementNor
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, DRT::Element::DiscretizationType slavetype>
 void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv1st_NonUnitSlaveElementNormal(
-    const MORTAR::MortarElement& sele,
-    const LINALG::TMatrix<int, probdim, SLAVENUMNODE>& nodal_dofs,
+    const MORTAR::MortarElement& sele, const LINALG::Matrix<probdim, SLAVENUMNODE, int>& nodal_dofs,
     const LINALG::Matrix<SLAVEDIM, SLAVENUMNODE>& deriv, const LINALG::Matrix<3, 2>& tau,
     Deriv1stVecMap& d_non_unit_normal) const
 {
@@ -316,8 +315,7 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv1st_NonUnitSlave
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, DRT::Element::DiscretizationType slavetype>
 void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv2nd_NonUnitSlaveElementNormal(
-    const MORTAR::MortarElement& sele,
-    const LINALG::TMatrix<int, probdim, SLAVENUMNODE>& nodal_dofs,
+    const MORTAR::MortarElement& sele, const LINALG::Matrix<probdim, SLAVENUMNODE, int>& nodal_dofs,
     const LINALG::Matrix<SLAVEDIM, SLAVENUMNODE>& deriv, Deriv2ndVecMap& dd_non_unit_normal) const
 {
 #ifdef CONTACT_AUG_JACOBIAN_DEBUG_OUTPUT
@@ -628,10 +626,10 @@ void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::Deriv1st_MXiGP
 
   const DRT::Node* const* snodes = sele.Nodes();
 
-  LINALG::TMatrix<int, probdim, my::SLAVENUMNODE> snodal_dofs;
+  LINALG::Matrix<probdim, my::SLAVENUMNODE, int> snodal_dofs;
   CONTACT::INTEGRATOR::GetElementNodalDofs(sele, snodal_dofs);
 
-  LINALG::TMatrix<int, probdim, MASTERNUMNODE> mnodal_dofs;
+  LINALG::Matrix<probdim, MASTERNUMNODE, int> mnodal_dofs;
   CONTACT::INTEGRATOR::GetElementNodalDofs(mele, mnodal_dofs);
 
   for (unsigned i = 0; i < probdim; ++i)
@@ -700,7 +698,7 @@ void CONTACT::AUG::CompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deriv2
     const double* mxi, const double alpha, const Deriv1stVecMap& d_mxigp,
     const Deriv1stMap& d_alpha, Deriv2ndVecMap& dd_mxigp) const
 {
-  LINALG::TMatrix<int, probdim, my::MASTERNUMNODE> mnodal_dofs;
+  LINALG::Matrix<probdim, my::MASTERNUMNODE, int> mnodal_dofs;
   CONTACT::INTEGRATOR::GetElementNodalDofs(mele, mnodal_dofs);
 
   LINALG::Matrix<3, my::MASTERNUMNODE> mcoord;
@@ -726,7 +724,7 @@ template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
     DRT::Element::DiscretizationType mastertype>
 void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::Add_Deriv2nd_MaDispl(
     const LINALG::Matrix<probdim, probdim>& lmat_inv,
-    const LINALG::TMatrix<int, probdim, MASTERNUMNODE>& mnodal_dofs,
+    const LINALG::Matrix<probdim, MASTERNUMNODE, int>& mnodal_dofs,
     const LINALG::Matrix<MASTERDIM, MASTERNUMNODE>& mderiv, const Deriv1stVecMap& d_mxigp,
     Deriv2ndVecMap& dd_mxigp) const
 {
@@ -763,7 +761,7 @@ template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
     DRT::Element::DiscretizationType mastertype>
 void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::Add_Deriv1st_MaMetric(
     const LINALG::Matrix<probdim, probdim>& lmat_inv,
-    const LINALG::TMatrix<int, probdim, MASTERNUMNODE>& mnodal_dofs,
+    const LINALG::Matrix<probdim, MASTERNUMNODE, int>& mnodal_dofs,
     const LINALG::Matrix<3, 2>& mtau, const LINALG::Matrix<MASTERDIM, MASTERNUMNODE>& mderiv,
     const LINALG::Matrix<3, MASTERNUMNODE>& mderiv2nd,
     const LINALG::Matrix<3, MASTERNUMNODE>& mcoord, const Deriv1stVecMap& d_mxigp,

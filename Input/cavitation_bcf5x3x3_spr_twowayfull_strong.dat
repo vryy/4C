@@ -179,7 +179,7 @@ E 7 -
 --------------------------------------DESIGN SURFACE PARTICLE WALL
 DSURF  1
 // all_boundaries
-E 7 - 1
+E 7 - MAT -1
 -----------------------------------------------------DPARTICLE-NODE TOPOLOGY
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY

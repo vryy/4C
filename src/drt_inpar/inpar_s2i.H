@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief input quantities and globally accessible enumerations for scatra-scatra interface coupling
 
 \level 2

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief General framework for monolithic fpsi solution schemes
 
@@ -454,7 +454,9 @@ void FPSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
     dserror("No existing increment vector !");
   }
 
-  PoroField()->Evaluate(sx, pfx);
+  PoroField()->UpdateStateIncrementally(sx, pfx);
+  PoroField()->EvaluateFields(Teuchos::null);
+  PoroField()->SetupSystemMatrix();
 
   Teuchos::RCP<Epetra_Vector> porointerfacedisplacements_FPSI =
       FPSICoupl()->iPorostructToAle(PoroField()->StructureField()->ExtractInterfaceDispnp(true));
@@ -833,7 +835,11 @@ void FPSI::Monolithic::LineSearch(Teuchos::RCP<LINALG::SparseMatrix>& sparse)
       sx->Scale(-1.0);
       pfx->Scale(-1.0);
       fx->Scale(-1.0);
-      PoroField()->Evaluate(sx, pfx);
+
+      PoroField()->UpdateStateIncrementally(sx, pfx);
+      PoroField()->EvaluateFields(Teuchos::null);
+      PoroField()->SetupSystemMatrix();
+
       FluidField()->UpdateNewton(Teuchos::rcp_dynamic_cast<const Epetra_Vector>(fx));
       // AleField()   ->ResetNewton(ax);
 

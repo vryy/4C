@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Parser for mathematical expressions, which contain literals
        ('1.0', 'pi', etc) and operations ('+', '-', 'sin', etc.)

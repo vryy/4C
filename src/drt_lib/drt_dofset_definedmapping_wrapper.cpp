@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
  \brief  A dofset that does not rely on same GID/LID numbers but uses
          a defined node mapping instead (not implemented for element DOFs).

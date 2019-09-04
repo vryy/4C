@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief element input routines
 \level 1
 \maintainer Christoph Meier

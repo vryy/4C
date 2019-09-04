@@ -1,5 +1,5 @@
 
-/*!----------------------------------------------------------------------
+/*! \file
 
  \brief evaluate routines for the artery element
 

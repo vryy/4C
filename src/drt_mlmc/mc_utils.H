@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Utility functions for UQ analyis
 
 \maintainer Jonas Nitzler

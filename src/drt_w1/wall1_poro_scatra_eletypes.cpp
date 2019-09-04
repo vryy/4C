@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Element types of the 2D solid-poro element including scatra functionality.
 
 \level 2

@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief Control routine for acoustic explicit time integration for solids
        or aka elastodynamics
 \level 2

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief forward declarations for scatra_ele_calc_no_physics classes
 

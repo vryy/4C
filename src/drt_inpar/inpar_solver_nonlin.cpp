@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Input parameters for nonlinear solvers
 
 \maintainer Matthias Mayr
@@ -23,13 +23,6 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   using namespace DRT::INPUT;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
-
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& nlnsol =
-      list->sublist("NONLINEAR SOLVER", false, "Configuration of nonlinear solver package");
-
-  DRT::INPUT::StringParameter(
-      "XML_FILE", "none", "Filename of XML file with configuration of nonlinear solver", &nlnsol);
 
   /*----------------------------------------------------------------------*
    * parameters for NOX - non-linear solution

@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Wear interface implementation.
 
 \level 2
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 #ifndef CONTACT_WEAR_INTERFACE_H_
@@ -24,9 +24,10 @@ namespace WEAR
     \brief Constructor
 
     */
-    WearInterface(const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr, const int id,
-        const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
-        bool selfcontact, INPAR::MORTAR::RedundantStorage redundant);
+    WearInterface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr,
+        const int id, const Epetra_Comm& comm, const int dim,
+        const Teuchos::ParameterList& icontact, bool selfcontact,
+        INPAR::MORTAR::RedundantStorage redundant);
 
     /*!
     \brief Destructor
@@ -278,7 +279,7 @@ namespace WEAR
     Derived version!
 
     */
-    virtual void Initialize();
+    void Initialize() final;
 
 
     /*!
@@ -303,20 +304,20 @@ namespace WEAR
     Derived version!
 
     */
-    void SetElementAreas();
+    void SetElementAreas() final;
 
     /*!
     \brief Evaluate nodal normals
 
     */
-    virtual void EvaluateNodalNormals() const;
+    void EvaluateNodalNormals() const final;
 
 
     /*!
     \brief Evaluate nodal normals
 
     */
-    virtual void ExportNodalNormals() const;
+    void ExportNodalNormals() const final;
 
     /*!
     \brief Update interface Wear variable sets
@@ -436,7 +437,7 @@ namespace WEAR
     Derived verision!
 
     */
-    virtual void InitializeDataContainer();
+    void InitializeDataContainer() final;
 
 
     // both-sided wear specific stuff

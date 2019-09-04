@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief tangential contact handler for discrete element method (DEM) interactions
 
 \level 3
@@ -59,7 +59,8 @@ namespace PARTICLEINTERACTION
     //! calculate tangential contact force
     virtual void TangentialContactForce(double* gap_tangential, bool& stick_tangential,
         const double* normal, const double* v_rel_tangential, const double& m_eff,
-        const double& normalcontactforce, double* tangentialcontactforce) const = 0;
+        const double& mu_tangential, const double& normalcontactforce,
+        double* tangentialcontactforce) const = 0;
 
    protected:
     //! discrete element method parameter list
@@ -87,22 +88,20 @@ namespace PARTICLEINTERACTION
     //! calculate tangential contact force
     virtual void TangentialContactForce(double* gap_tangential, bool& stick_tangential,
         const double* normal, const double* v_rel_tangential, const double& m_eff,
-        const double& normalcontactforce, double* tangentialcontactforce) const override;
+        const double& mu_tangential, const double& normalcontactforce,
+        double* tangentialcontactforce) const override;
 
    private:
-    //! coefficient of restitution (particle-particle)
+    //! coefficient of restitution
     const double e_;
 
     //! particle Poisson ratio
     const double nue_;
 
-    //! tangential contact friction coefficient (particle-particle)
-    const double mu_tangential_;
-
-    //! tangential contact stiffness (particle-particle)
+    //! tangential contact stiffness
     double k_tangential_;
 
-    //! tangential contact damping factor (particle-particle)
+    //! tangential contact damping factor
     double d_tangential_fac_;
   };
 

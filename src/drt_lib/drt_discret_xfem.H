@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief a class to manage one discretization with changing dofs in xfem context
 

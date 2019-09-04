@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief one way coupled partitioned algorithm for particle structure interaction
 
 \level 3
@@ -14,8 +14,9 @@
 #include "pasi_partitioned_onewaycoup.H"
 
 #include "../drt_particle_algorithm/particle_algorithm.H"
-#include "../drt_particle_algorithm/particle_wall_interface.H"
-#include "../drt_particle_algorithm/particle_wall_datastate.H"
+
+#include "../drt_particle_wall/particle_wall_interface.H"
+#include "../drt_particle_wall/particle_wall_datastate.H"
 
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 02/2017 |
@@ -38,11 +39,11 @@ void PASI::PASI_PartOneWayCoup::Setup()
   // safety check
   {
     // get interface to particle wall handler
-    std::shared_ptr<PARTICLEALGORITHM::WallHandlerInterface> particlewallinterface =
+    std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface =
         particlealgorithm_->GetParticleWallHandlerInterface();
 
     // get wall data state container
-    std::shared_ptr<PARTICLEALGORITHM::WallDataState> walldatastate =
+    std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
         particlewallinterface->GetWallDataState();
 
     if (walldatastate->GetDispRow() == Teuchos::null or

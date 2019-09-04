@@ -67,7 +67,7 @@ Include relevant details about your environment such that we can replicate this 
 - **Operating system and version:**
 - **Compiler and TPL versions:**
 
-## Related Issues
+## Related Issues and Merge Requests
 <!---
 If applicable, let everybody know how this is related to any other open issues:
 -->

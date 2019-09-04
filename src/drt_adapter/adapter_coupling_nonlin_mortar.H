@@ -1,11 +1,12 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief A class providing coupling capabilities based on non-linear
        mortar methods
 
 \level 1
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 
 *----------------------------------------------------------------------*/
 

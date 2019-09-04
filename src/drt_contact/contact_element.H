@@ -1,10 +1,10 @@
 /*-----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Contact element
 
 \level 2
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 */
 /*-----------------------------------------------------------------------*/
 #ifndef CONTACT_ELEMENT_H

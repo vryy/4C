@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief a class to manage an enhanced discretization including the faces between elements
 

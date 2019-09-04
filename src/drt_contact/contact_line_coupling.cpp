@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief A class to perform line clipping for line to surface contact +
        call for numerical integration
 
 \level 2
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 
 */
 /*---------------------------------------------------------------------*/
@@ -381,7 +381,7 @@ void CONTACT::LineToSurfaceCoupling3d::ConsistDualShape()
   // invert bi-ortho matrix me
   //  LINALG::SerialDenseMatrix meinv = LINALG::InvertAndMultiplyByCholesky(me,de,ae);
 
-  LINALG::TMatrix<double, 4, 4> me_tmatrix(me, true);
+  LINALG::Matrix<4, 4, double> me_tmatrix(me, true);
   LINALG::Inverse4x4(me_tmatrix);
   LINALG::SerialDenseMatrix meinv = me;
 
@@ -2376,7 +2376,7 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(double* sxi, double* mxi,
 {
   bool friction = false;
   INPAR::CONTACT::FrictionType ftype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(), "FRICTION");
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
   if (ftype != INPAR::CONTACT::friction_none) friction = true;
 
   // get slave element nodes themselves for normal evaluation

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Active stress material
 
 \maintainer Amadeus Gebauer

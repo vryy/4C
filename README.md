@@ -87,7 +87,7 @@ and your email address to your institute email address with the following comman
 
     ```bash
     cd <someBaseDir>/<sourceDir>
-    git config core.hooksPath ./utilities/git_hooks/
+    git config core.hooksPath ./utilities/code_checks/
     ```
 
     > **Note:** Before actually executing these command, first [setup your LRZ GitLab account](#set-up-lrz-gitlab) and [clone the repository](#clone-the-repository).

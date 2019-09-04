@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief %NOX::NLN implementation of a %NOX::Epetra::Group
        to handle unconstrained problems.

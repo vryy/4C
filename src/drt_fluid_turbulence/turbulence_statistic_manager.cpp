@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Manage the computation of averages for several
 canonical flows like channel flow, flow around a square

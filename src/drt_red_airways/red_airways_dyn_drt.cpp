@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Main control routine for reduced dimensional airways network
  (time) integration. Includes routines for pure reduced modeling and for

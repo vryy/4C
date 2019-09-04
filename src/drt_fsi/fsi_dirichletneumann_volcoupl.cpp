@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief Solve FSI problems using a Dirichlet-Neumann partitioned approach
        with volume coupling

@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Factory for nonlinear solvers in structural dynamics
 
@@ -14,7 +14,6 @@
 
 // supported nonlinear solvers
 #include "str_nln_solver_fullnewton.H"
-#include "str_nln_solver_nonlin.H"
 #include "str_nln_solver_nox.H"
 #include "str_nln_solver_ptc.H"
 #include "str_nln_solver_uzawa.H"
@@ -46,9 +45,6 @@ Teuchos::RCP<STR::NLN::SOLVER::Generic> STR::NLN::SOLVER::Factory::BuildNlnSolve
     case INPAR::STR::soltech_ptc:
       nlnSolver = Teuchos::rcp(new STR::NLN::SOLVER::PseudoTransient());
       break;
-    case INPAR::STR::soltech_nlnsol:
-      //      nlnSolver = Teuchos::rcp(new STR::NLN::SOLVER::Nonlin());
-      //      break;
     case INPAR::STR::soltech_newtonuzawanonlin:
     case INPAR::STR::soltech_newtonuzawalin:
       //      nlnSolver = Teuchos::rcp(new STR::NLN::SOLVER::Uzawa());

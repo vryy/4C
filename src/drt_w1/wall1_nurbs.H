@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief 2D solid-wall elements using NURBS shape functions.
 
 \level 2

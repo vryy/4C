@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Fluid field adapter for fpsi. Can only be used in conjunction with #FluidImplicitTimeInt
 

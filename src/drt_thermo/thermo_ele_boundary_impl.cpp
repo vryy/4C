@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief internal implementation of thermo boundary elements (ThermoBoundary)
 

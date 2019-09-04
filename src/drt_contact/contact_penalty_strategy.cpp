@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Penalty contact solving strategy: The contact constrains are enforced
        by a penalty formulation.
 
@@ -436,8 +436,8 @@ void CONTACT::CoPenaltyStrategy::ResetPenalty()
   // reset penalty parameter in all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    interface_[i]->IParams().set<double>("PENALTYPARAM", InitialPenalty());
-    interface_[i]->IParams().set<double>("PENALTYPARAMTAN", InitialPenaltyTan());
+    interface_[i]->InterfaceParams().set<double>("PENALTYPARAM", InitialPenalty());
+    interface_[i]->InterfaceParams().set<double>("PENALTYPARAMTAN", InitialPenaltyTan());
   }
 
   return;
@@ -459,8 +459,8 @@ void CONTACT::CoPenaltyStrategy::ModifyPenalty()
   // modify penalty parameter in all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    interface_[i]->IParams().set<double>("PENALTYPARAM", pennew);
-    interface_[i]->IParams().set<double>("PENALTYPARAMTAN", pennew);
+    interface_[i]->InterfaceParams().set<double>("PENALTYPARAM", pennew);
+    interface_[i]->InterfaceParams().set<double>("PENALTYPARAMTAN", pennew);
   }
 
   return;
@@ -639,9 +639,9 @@ void CONTACT::CoPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
         // update penalty parameter in all interfaces
         for (int i = 0; i < (int)interface_.size(); ++i)
         {
-          double ippcurr = interface_[i]->IParams().get<double>("PENALTYPARAM");
+          double ippcurr = interface_[i]->InterfaceParams().get<double>("PENALTYPARAM");
           if (ippcurr != ppcurr) dserror("Something wrong with penalty parameter");
-          interface_[i]->IParams().set<double>("PENALTYPARAM", 10 * ippcurr);
+          interface_[i]->InterfaceParams().set<double>("PENALTYPARAM", 10 * ippcurr);
         }
         // in the case of frictional contact, the tangential penalty
         // parameter is also dated up when this is done for the normal one
@@ -655,9 +655,9 @@ void CONTACT::CoPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
           // update penalty parameter in all interfaces
           for (int i = 0; i < (int)interface_.size(); ++i)
           {
-            double ippcurrtan = interface_[i]->IParams().get<double>("PENALTYPARAMTAN");
+            double ippcurrtan = interface_[i]->InterfaceParams().get<double>("PENALTYPARAMTAN");
             if (ippcurrtan != ppcurrtan) dserror("Something wrong with penalty parameter");
-            interface_[i]->IParams().set<double>("PENALTYPARAMTAN", 10 * ippcurrtan);
+            interface_[i]->InterfaceParams().set<double>("PENALTYPARAMTAN", 10 * ippcurrtan);
           }
         }
       }

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Contact parameter interface. Necessary for the communication
        between the structural time integration framework and the
        contact strategies.

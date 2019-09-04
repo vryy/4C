@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Interface class for the eXtended contact evaluation
 
 \level 3
@@ -17,10 +17,11 @@
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-XCONTACT::Interface::Interface(const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr, const int id,
+XCONTACT::Interface::Interface(
+    const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr, const int id,
     const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
     bool selfcontact, INPAR::MORTAR::RedundantStorage redundant)
-    : CONTACT::CoInterface(idata_ptr, id, comm, dim, icontact, selfcontact, redundant),
+    : CONTACT::CoInterface(interfaceData_ptr, id, comm, dim, icontact, selfcontact, redundant),
       sndofrowmap_(Teuchos::null),
       stdofrowmap_(Teuchos::null),
       parent_discret_(*icontact.get<Teuchos::RCP<XSTR::MultiDiscretizationWrapper::cXDisPair>>(

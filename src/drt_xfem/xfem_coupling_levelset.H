@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief manages the different types of level-set based coupling conditions and thereby builds the
 bridge between the xfluid class and the cut-library

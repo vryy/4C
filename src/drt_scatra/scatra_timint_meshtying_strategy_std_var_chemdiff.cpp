@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief Standard solution strategy for variational chemical diffusion
      problems (without meshtying)

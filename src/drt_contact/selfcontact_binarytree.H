@@ -1,10 +1,10 @@
 /*-----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Search tree for self-contact problems
 
 \level 2
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 */
 /*-----------------------------------------------------------------------*/
 #ifndef SELFCONTACT_BINARYTREE_SELF_H

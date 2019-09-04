@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Write (time and space) averaged values to file for
 turbulent flow over a backward-facing step

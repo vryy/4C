@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief density handler for smoothed particle hydrodynamics (SPH) interactions
 
 \level 3
@@ -123,6 +123,45 @@ void PARTICLEINTERACTION::SPHDensityBase::SetCurrentStepSize(const double curren
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassAndColorfield() const
 {
+  // clear density sum and colorfield states
+  ClearDensitySumAndColorfieldStates();
+
+  // sum weighted mass/colorfield (self contribution)
+  SumWeightedMassAndColorfieldSelfContribution();
+
+  // sum weighted mass/colorfield (particle contribution)
+  SumWeightedMassAndColorfieldParticleContribution();
+}
+
+/*---------------------------------------------------------------------------*
+ | clear density sum and colorfield states                    sfuchs 08/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::SPHDensityBase::ClearDensitySumAndColorfieldStates() const
+{
+  // iterate over particle types
+  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  {
+    // no density summation for boundary or rigid particles
+    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
+
+    // get container of owned particles of current particle type
+    PARTICLEENGINE::ParticleContainer* container_i =
+        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+
+    // clear density sum state
+    container_i->ClearState(PARTICLEENGINE::DensitySum);
+    if (computecolorfield_) container_i->ClearState(PARTICLEENGINE::Colorfield);
+  }
+}
+
+/*---------------------------------------------------------------------------*
+ | sum weighted mass/colorfield (self contribution)           sfuchs 08/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassAndColorfieldSelfContribution() const
+{
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassAndColorfieldSelfContribution");
+
   // iterate over particle types
   for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
   {
@@ -154,12 +193,20 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassAndColorfield() const
       // evaluate kernel
       const double Wii = kernel_->W0(rad_i[0]);
 
-      // add self-interaction
-      denssum_i[0] = Wii * mass_i[0];
-
-      if (computecolorfield_) colorfield_i[0] = (Wii / dens_i[0]) * mass_i[0];
+      // add self contribution
+      denssum_i[0] += Wii * mass_i[0];
+      if (computecolorfield_) colorfield_i[0] += (Wii / dens_i[0]) * mass_i[0];
     }
   }
+}
+
+/*---------------------------------------------------------------------------*
+ | sum weighted mass/colorfield (particle contribution)       sfuchs 08/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassAndColorfieldParticleContribution() const
+{
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassAndColorfieldParticleContribution");
 
   // iterate over particle pairs
   for (auto& particlepair : neighborpairs_->GetRefToParticlePairData())
@@ -191,36 +238,44 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassAndColorfield() const
 
     // declare pointer variables for particle i and j
     const double *mass_i, *dens_i;
-    double *denssum_i, *colorfield_i;
+    double *denssum_i = nullptr, *colorfield_i = nullptr;
 
     const double *mass_j, *dens_j;
-    double *denssum_j, *colorfield_j;
+    double *denssum_j = nullptr, *colorfield_j = nullptr;
 
     // get pointer to particle states
     mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
-    denssum_i = container_i->GetPtrToParticleState(PARTICLEENGINE::DensitySum, particle_i);
 
-    if (computecolorfield_)
+    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase)
     {
-      if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase)
-        dens_i = &(material_j->initDensity_);
-      else
-        dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
+      if (computecolorfield_) dens_i = &(material_j->initDensity_);
+    }
+    else
+    {
+      denssum_i = container_i->GetPtrToParticleState(PARTICLEENGINE::DensitySum, particle_i);
 
-      colorfield_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Colorfield, particle_i);
+      if (computecolorfield_)
+      {
+        dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
+        colorfield_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Colorfield, particle_i);
+      }
     }
 
     mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
-    denssum_j = container_j->GetPtrToParticleState(PARTICLEENGINE::DensitySum, particle_j);
 
-    if (computecolorfield_)
+    if (type_j == PARTICLEENGINE::BoundaryPhase or type_j == PARTICLEENGINE::RigidPhase)
     {
-      if (type_j == PARTICLEENGINE::BoundaryPhase or type_j == PARTICLEENGINE::RigidPhase)
-        dens_j = &(material_i->initDensity_);
-      else
-        dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
+      if (computecolorfield_) dens_j = &(material_i->initDensity_);
+    }
+    else
+    {
+      denssum_j = container_j->GetPtrToParticleState(PARTICLEENGINE::DensitySum, particle_j);
 
-      colorfield_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Colorfield, particle_j);
+      if (computecolorfield_)
+      {
+        dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
+        colorfield_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Colorfield, particle_j);
+      }
     }
 
     // no density summation for boundary or rigid particles
@@ -245,6 +300,18 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassAndColorfield() const
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquation() const
 {
+  // clear density dot state
+  ClearDensityDotState();
+
+  // continuity equation (particle contribution)
+  ContinuityEquationParticleContribution();
+}
+
+/*---------------------------------------------------------------------------*
+ | clear density dot state                                    sfuchs 08/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::SPHDensityBase::ClearDensityDotState() const
+{
   // iterate over particle types
   for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
   {
@@ -258,6 +325,15 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquation() const
     // clear density dot state
     container_i->ClearState(PARTICLEENGINE::DensityDot);
   }
+}
+
+/*---------------------------------------------------------------------------*
+ | continuity equation (particle contribution)                sfuchs 08/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleContribution() const
+{
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleContribution");
 
   // iterate over particle pairs
   for (auto& particlepair : neighborpairs_->GetRefToParticlePairData())
@@ -289,14 +365,13 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquation() const
 
     // declare pointer variables for particle i and j
     const double *vel_i, *mass_i, *dens_i;
-    double* densdot_i;
+    double* densdot_i = nullptr;
 
     const double *vel_j, *mass_j, *dens_j;
-    double* densdot_j;
+    double* densdot_j = nullptr;
 
     // get pointer to particle states
     mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
-    densdot_i = container_i->GetPtrToParticleState(PARTICLEENGINE::DensityDot, particle_i);
 
     if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase)
     {
@@ -312,10 +387,10 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquation() const
         vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
 
       dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
+      densdot_i = container_i->GetPtrToParticleState(PARTICLEENGINE::DensityDot, particle_i);
     }
 
     mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
-    densdot_j = container_j->GetPtrToParticleState(PARTICLEENGINE::DensityDot, particle_j);
 
     if (type_j == PARTICLEENGINE::BoundaryPhase or type_j == PARTICLEENGINE::RigidPhase)
     {
@@ -331,6 +406,7 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquation() const
         vel_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_j);
 
       dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
+      densdot_j = container_j->GetPtrToParticleState(PARTICLEENGINE::DensityDot, particle_j);
     }
 
     // relative velocity (use modified velocities in case of transport velocity formulation)
@@ -353,6 +429,42 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquation() const
       // note: the signs in e_ij_ and vel_ij cancel out
       densdot_j[0] += dens_j[0] * (mass_i[0] / dens_i[0]) * particlepair.dWdrji_ * e_ij_vel_ij;
     }
+  }
+}
+
+/*---------------------------------------------------------------------------*
+ | set density sum to density field                           sfuchs 08/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::SPHDensityBase::SetDensitySum() const
+{
+  // iterate over particle types
+  for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
+  {
+    // no density integration for boundary or rigid particles
+    if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
+      continue;
+
+    // update density of all particles
+    particlecontainerbundle_->UpdateStateSpecificContainer(
+        0.0, PARTICLEENGINE::Density, 1.0, PARTICLEENGINE::DensitySum, typeEnum);
+  }
+}
+
+/*---------------------------------------------------------------------------*
+ | add time step scaled density dot to density field          sfuchs 08/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::SPHDensityBase::AddTimeStepScaledDensityDot() const
+{
+  // iterate over particle types
+  for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
+  {
+    // no density integration for boundary or rigid particles
+    if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
+      continue;
+
+    // update density of all particles
+    particlecontainerbundle_->UpdateStateSpecificContainer(
+        1.0, PARTICLEENGINE::Density, dt_, PARTICLEENGINE::DensityDot, typeEnum);
   }
 }
 
@@ -399,17 +511,8 @@ void PARTICLEINTERACTION::SPHDensitySummation::ComputeDensity() const
   // evaluate sum of weighted mass and colorfield
   SumWeightedMassAndColorfield();
 
-  // iterate over particle types
-  for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
-  {
-    // no density integration for boundary or rigid particles
-    if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
-      continue;
-
-    // update density of all particles
-    particlecontainerbundle_->UpdateStateSpecificContainer(
-        0.0, PARTICLEENGINE::Density, 1.0, PARTICLEENGINE::DensitySum, typeEnum);
-  }
+  // set density sum to density field
+  SetDensitySum();
 
   // refresh density of ghosted particles
   particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(densitytorefresh_);
@@ -459,17 +562,8 @@ void PARTICLEINTERACTION::SPHDensityIntegration::ComputeDensity() const
   // evaluate continuity equation
   ContinuityEquation();
 
-  // iterate over particle types
-  for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
-  {
-    // no density integration for boundary or rigid particles
-    if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
-      continue;
-
-    // update density of all particles
-    particlecontainerbundle_->UpdateStateSpecificContainer(
-        1.0, PARTICLEENGINE::Density, dt_, PARTICLEENGINE::DensityDot, typeEnum);
-  }
+  // add time step scaled density dot to density field
+  AddTimeStepScaledDensityDot();
 
   // refresh density of ghosted particles
   particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(densitytorefresh_);
@@ -588,17 +682,8 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::ComputeDensity() const
   // evaluate continuity equation
   ContinuityEquation();
 
-  // iterate over particle types
-  for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
-  {
-    // no density integration for boundary or rigid particles
-    if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
-      continue;
-
-    // update density of all particles
-    particlecontainerbundle_->UpdateStateSpecificContainer(
-        1.0, PARTICLEENGINE::Density, dt_, PARTICLEENGINE::DensityDot, typeEnum);
-  }
+  // add time step scaled density dot to density field
+  AddTimeStepScaledDensityDot();
 
   // refresh density of ghosted particles
   particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(densitytorefresh_);

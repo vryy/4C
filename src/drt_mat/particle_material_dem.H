@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief particle material for DEM
 
 \level 3
@@ -118,6 +118,8 @@ namespace MAT
 
     //! return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+
+    //@}
 
    private:
     //! my material parameters

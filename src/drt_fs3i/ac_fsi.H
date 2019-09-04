@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 
 
 \brief H-file associated with algorithmic routines for two-way coupled partitioned
