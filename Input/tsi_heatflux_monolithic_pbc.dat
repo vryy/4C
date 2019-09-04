@@ -242,7 +242,6 @@ SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 273.0
 ----------------------------------------------------------------------FUNCT2
-//COMPONENT 0 FUNCTION (2.0)*z+4 // some linear function in z-direction
 COMPONENT 0 FUNCTION (2.0)*(z-4)+4 // some linear function in z-direction
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
