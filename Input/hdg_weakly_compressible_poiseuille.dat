@@ -1,7 +1,5 @@
 //
 // Maintainer: Andrea La Spina
-// laspina@lnm.mw.tum.de
-// 089 - 289-15265
 //
 -------------------------------------------------------------TITLE
 Weakly compressible Poiseuille flow solved with the HDG method.
