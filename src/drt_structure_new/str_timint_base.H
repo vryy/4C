@@ -522,6 +522,9 @@ namespace STR
       virtual void Output() { Output(false); };
       virtual void Output(bool forced_writerestart);
 
+      /// output error norms
+      virtual void OutputErrorNorms();
+
       /// Write Gmsh output for structural field
       virtual void writeGmshStrucOutputStep();
 
