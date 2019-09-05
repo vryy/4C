@@ -21,6 +21,7 @@
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_parameter_turbulence.H"
+#include "scatra_ele_parameter_boundary.H"
 
 #include "scatra_ele_calc_utils.H"
 
@@ -92,6 +93,14 @@ void DRT::ELEMENTS::TransportType::PreEvaluate(DRT::Discretization& dis, Teuchos
 
       // set additional, problem-dependent parameters
       ScaTraEleParameterElch::Instance(dis.Name())->SetParameters(p);
+
+      break;
+    }
+
+    case SCATRA::set_scatra_ele_boundary_parameter:
+    {
+      // set additional, problem-dependent parameters
+      ScaTraEleParameterBoundary::Instance("scatra")->SetParameters(p);
 
       break;
     }
@@ -304,6 +313,7 @@ int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
     case SCATRA::set_mean_Cai:
     case SCATRA::set_lsreinit_scatra_parameter:
     case SCATRA::set_elch_scatra_parameter:
+    case SCATRA::set_scatra_ele_boundary_parameter:
     case SCATRA::set_diffcond_scatra_parameter:
       // these actions have already been evaluated during element pre-evaluate
       break;

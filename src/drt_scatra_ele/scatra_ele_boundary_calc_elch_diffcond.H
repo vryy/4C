@@ -91,7 +91,7 @@ namespace DRT
           Epetra_SerialDenseMatrix& eslavematrix,            ///< element matrix for slave side
           Epetra_SerialDenseMatrix& emastermatrix,           ///< element matrix for master side
           Epetra_SerialDenseVector& eslaveresidual           ///< element residual for slave side
-      );
+          ) override;
 
       //! extract valence of species k from element material
       double GetValence(const Teuchos::RCP<const MAT::Material>& material,  //! element material

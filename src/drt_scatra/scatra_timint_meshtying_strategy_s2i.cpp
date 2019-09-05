@@ -42,6 +42,7 @@
 #include "../drt_scatra_ele/scatra_ele_boundary_calc.H"
 #include "../drt_scatra_ele/scatra_ele_calc_utils.H"
 #include "../drt_scatra_ele/scatra_ele_parameter_timint.H"
+#include "../drt_scatra_ele/scatra_ele_parameter_boundary.H"
 
 #include "../drt_volmortar/volmortar_shape.H"
 
@@ -334,6 +335,9 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
       {
         if (conditions[icondition]->GetInt("interface side") == INPAR::S2I::side_slave)
         {
+          // collect condition specific data and store to scatra boundary parameter class
+          SetConditionSpecificScaTraParameters(*conditions[icondition]);
+
           if (not slaveonly_)
             scatratimint_->Discretization()->EvaluateCondition(condparams, islavematrix_,
                 imastermatrix_, islaveresidual_, Teuchos::null, Teuchos::null, "S2ICoupling",
@@ -652,6 +656,9 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
         // add current condition to parameter list
         params.set<DRT::Condition*>("condition", islavecondition->second);
 
+        // collect condition specific data and store to scatra boundary parameter class
+        SetConditionSpecificScaTraParameters(*(islavecondition->second));
+
         if (couplingtype_ != INPAR::S2I::coupling_nts_standard)
         {
           // set action
@@ -930,6 +937,10 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
         islavematrix_->Zero();
         imastermatrix_->Zero();
         islaveresidual_->PutScalar(0.);
+
+        // collect condition specific data and store to scatra boundary parameter class
+        SetConditionSpecificScaTraParameters(*conditions[0]);
+        // evaluate the condition
         scatratimint_->Discretization()->EvaluateCondition(condparams, islavematrix_,
             imastermatrix_, islaveresidual_, Teuchos::null, Teuchos::null, "S2ICouplingGrowth");
         scatratimint_->Discretization()->ClearState();
@@ -2873,6 +2884,106 @@ void SCATRA::MeshtyingStrategyS2I::SetElementGeneralParameters(
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | set interface kinetic model specific parameters        civaner 08/19 |
+ *----------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyS2I::SetConditionSpecificScaTraParameters(
+    DRT::Condition& s2icondition) const
+{
+  Teuchos::ParameterList conditionparams;
+
+  // get kinetic model and condition type
+  const int kineticmodel = s2icondition.GetInt("kinetic model");
+  const DRT::Condition::ConditionType conditiontype = s2icondition.Type();
+
+  // set action, kinetic model, condition type and numscal
+  conditionparams.set<int>("action", SCATRA::set_scatra_ele_boundary_parameter);
+  conditionparams.set<int>("kinetic model", kineticmodel);
+  conditionparams.set<DRT::Condition::ConditionType>("condition type", conditiontype);
+  conditionparams.set<int>("numscal", s2icondition.GetInt("numscal"));
+
+  // set the condition type specific parameters
+  switch (conditiontype)
+  {
+    case DRT::Condition::ConditionType::S2ICoupling:
+    {
+      // set the kinetic model specific parameters
+      switch (kineticmodel)
+      {
+        case INPAR::S2I::kinetics_constperm:
+        {
+          conditionparams.set<std::vector<double>*>(
+              "permeabilities", s2icondition.GetMutable<std::vector<double>>("permeabilities"));
+          break;
+        }
+
+        case INPAR::S2I::kinetics_butlervolmer:
+        case INPAR::S2I::kinetics_butlervolmerreduced:
+        case INPAR::S2I::kinetics_butlervolmerpeltier:
+        {
+          conditionparams.set<std::vector<int>*>(
+              "stoichiometries", s2icondition.GetMutable<std::vector<int>>("stoichiometries"));
+          conditionparams.set<int>("numelectrons", s2icondition.GetInt("e-"));
+          conditionparams.set<double>("k_r", s2icondition.GetDouble("k_r"));
+          conditionparams.set<double>("alpha_a", s2icondition.GetDouble("alpha_a"));
+          conditionparams.set<double>("alpha_c", s2icondition.GetDouble("alpha_c"));
+
+          if (kineticmodel == INPAR::S2I::kinetics_butlervolmerpeltier)
+            conditionparams.set<double>("peltier", s2icondition.GetDouble("peltier"));
+          break;
+        }
+
+        default:
+        {
+          dserror("Not implemented for this kinetic model: %i", kineticmodel);
+          break;
+        }
+      }
+      break;
+    }
+
+    case DRT::Condition::ConditionType::S2ICouplingGrowth:
+    {
+      // set the kinetic model specific parameters
+      switch (kineticmodel)
+      {
+        case INPAR::S2I::growth_kinetics_butlervolmer:
+        {
+          conditionparams.set<std::vector<int>*>(
+              "stoichiometries", s2icondition.GetMutable<std::vector<int>>("stoichiometries"));
+          conditionparams.set<int>("numelectrons", s2icondition.GetInt("e-"));
+          conditionparams.set<double>("k_r", s2icondition.GetDouble("k_r"));
+          conditionparams.set<double>("alpha_a", s2icondition.GetDouble("alpha_a"));
+          conditionparams.set<double>("alpha_c", s2icondition.GetDouble("alpha_c"));
+          conditionparams.set<double>("density", s2icondition.GetDouble("density"));
+          conditionparams.set<double>("molar mass", s2icondition.GetDouble("molar mass"));
+          conditionparams.set<double>("regpar", s2icondition.GetDouble("regularization parameter"));
+          conditionparams.set<std::string>(
+              "regtype", *(s2icondition.Get<std::string>("regularization type")));
+          conditionparams.set<double>("conductivity", s2icondition.GetDouble("conductivity"));
+          break;
+        }
+
+        default:
+        {
+          dserror("Not implemented for this kinetic model: %i", kineticmodel);
+          break;
+        }
+      }
+      break;
+    }
+
+    default:
+    {
+      dserror("Not implemented for this condition type: %i", conditiontype);
+      break;
+    }
+  }
+
+  // call standard loop over elements
+  scatratimint_->Discretization()->Evaluate(
+      conditionparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+}
 
 /*----------------------------------------------------------------------------------------------------------------------------------------------*
  | compute history vector, i.e., the history part of the right-hand side vector with all
@@ -4510,6 +4621,7 @@ SCATRA::MortarCellCalc<distypeS, distypeM>::MortarCellCalc(
     const int& numdofpernode_master  //!< number of master-side degrees of freedom per node
     )
     : MortarCellInterface(couplingtype, lmside, numdofpernode_slave, numdofpernode_master),
+      scatraparamsboundary_(DRT::ELEMENTS::ScaTraEleParameterBoundary::Instance("scatra")),
       ephinp_slave_(numdofpernode_slave, LINALG::Matrix<nen_slave_, 1>(true)),
       ephinp_master_(numdofpernode_master, LINALG::Matrix<nen_master_, 1>(true)),
       funct_slave_(true),
@@ -4938,10 +5050,6 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateCondition(
     Epetra_SerialDenseVector& r_m   //!< master-side residual vector
 )
 {
-  // extract condition from parameter list
-  DRT::Condition* condition = params.get<DRT::Condition*>("condition");
-  if (condition == NULL) dserror("Cannot access scatra-scatra interface coupling condition!");
-
   // extract nodal state variables associated with slave and master elements
   ExtractNodeValues(idiscret, la_slave, la_master);
 
@@ -4953,6 +5061,9 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateCondition(
 
   // determine quadrature rule
   const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::intrule_tri_7point);
+
+  const int kineticmodel = scatraparamsboundary_->KineticModel();
+  const std::vector<double>* permeabilities = scatraparamsboundary_->Permeabilities();
 
   // loop over all integration points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -4969,9 +5080,9 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateCondition(
     if (timefacfac < 0. or timefacrhsfac < 0.) dserror("Integration factor is negative!");
 
     DRT::ELEMENTS::ScaTraEleBoundaryCalc<distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<
-        distypeM>(*condition, ephinp_slave_, ephinp_master_, funct_slave_, funct_master_,
-        test_lm_slave_, test_lm_master_, numdofpernode_slave_, timefacfac, timefacrhsfac, k_ss,
-        k_sm, k_ms, k_mm, r_s, r_m);
+        distypeM>(ephinp_slave_, ephinp_master_, funct_slave_, funct_master_, test_lm_slave_,
+        test_lm_master_, numdofpernode_slave_, kineticmodel, permeabilities, timefacfac,
+        timefacrhsfac, k_ss, k_sm, k_ms, k_mm, r_s, r_m);
   }
 
   return;
@@ -5014,6 +5125,9 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateConditionNTS(
   // evaluate shape functions at position of slave-side node
   EvalShapeFuncAtSlaveNode(slavenode, slaveelement, masterelement);
 
+  const int kineticmodel = scatraparamsboundary_->KineticModel();
+  const std::vector<double>* permeabilities = scatraparamsboundary_->Permeabilities();
+
   // overall integration factors
   const double timefacfac =
       DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFac() * lumpedarea;
@@ -5022,9 +5136,9 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateConditionNTS(
   if (timefacfac < 0. or timefacrhsfac < 0.) dserror("Integration factor is negative!");
 
   DRT::ELEMENTS::ScaTraEleBoundaryCalc<distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<
-      distypeM>(condition, ephinp_slave, ephinp_master, funct_slave_, funct_master_, funct_slave_,
-      funct_master_, numdofpernode_slave_, timefacfac, timefacrhsfac, k_ss, k_sm, k_ms, k_mm, r_s,
-      r_m);
+      distypeM>(ephinp_slave, ephinp_master, funct_slave_, funct_master_, funct_slave_,
+      funct_master_, numdofpernode_slave_, kineticmodel, permeabilities, timefacfac, timefacrhsfac,
+      k_ss, k_sm, k_ms, k_mm, r_s, r_m);
 
   return;
 }

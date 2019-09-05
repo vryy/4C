@@ -47,7 +47,6 @@ namespace DRT
       //! evaluate scatra-scatra interface coupling condition at integration point
       template <DRT::Element::DiscretizationType distype_master>
       static void EvaluateS2ICouplingAtIntegrationPoint(
-          DRT::Condition& s2icondition,  //!< scatra-scatra interface coupling condition
           const Teuchos::RCP<const MAT::Electrode>& matelectrode,  //!< electrode material
           const LINALG::Matrix<my::nen_, 1>&
               eslavetempnp,  //!< thermo state variables at slave-side nodes
@@ -60,6 +59,11 @@ namespace DRT
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,            //!< master-side shape function values
+          const int kineticmodel,      //!< kinetic model
+          const double kr,             //! charge transfer constant
+          const double alphaa,         //! symmetry coefficient of anodic intercalation reaction
+          const double alphac,         //! symmetry coefficient of cathodic intercalation reaction
+          const double peltier,        //! peltier coefficient
           const double timefacfac,     //!< time-integration factor times domain-integration factor
           const double timefacrhsfac,  //!< time-integration factor for right-hand side times
                                        //!< domain-integration factor
@@ -72,7 +76,6 @@ namespace DRT
       //! coupling condition at integration point
       template <DRT::Element::DiscretizationType distype_master>
       static void EvaluateS2ICouplingODAtIntegrationPoint(
-          DRT::Condition& s2icondition,  //!< scatra-scatra interface coupling condition
           const Teuchos::RCP<const MAT::Electrode>& matelectrode,  //!< electrode material
           const LINALG::Matrix<my::nen_, 1>&
               eslavetempnp,  //!< thermo state variables at slave-side nodes
@@ -85,6 +88,11 @@ namespace DRT
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,         //!< master-side shape function values
+          const int kineticmodel,   //!< kinetic model
+          const double kr,          //! charge transfer constant
+          const double alphaa,      //! symmetry coefficient of anodic intercalation reaction
+          const double alphac,      //! symmetry coefficient of cathodic intercalation reaction
+          const double peltier,     //! peltier coefficient
           const double timefacfac,  //!< time-integration factor times domain-integration factor
           Epetra_SerialDenseMatrix&
               k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs

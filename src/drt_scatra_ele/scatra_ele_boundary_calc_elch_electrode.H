@@ -45,7 +45,6 @@ namespace DRT
       //! evaluate scatra-scatra interface coupling condition at integration point
       template <DRT::Element::DiscretizationType distype_master>
       static void EvaluateS2ICouplingAtIntegrationPoint(
-          DRT::Condition& s2icondition,  //!< scatra-scatra interface coupling condition
           const Teuchos::RCP<const MAT::Electrode>& matelectrode,  //!< electrode material
           const std::vector<LINALG::Matrix<my::nen_, 1>>&
               eslavephinp,  //!< state variables at slave-side nodes
@@ -59,7 +58,14 @@ namespace DRT
           const LINALG::Matrix<my::nen_, 1>& test_slave,  //!< slave-side test function values
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
-              test_master,             //!< master-side test function values
+              test_master,         //!< master-side test function values
+          const int kineticmodel,  //!< kinetic model of s2i condition,
+          const int numelectrons,  //! number of electrons involved in charge transfer
+          const std::vector<int>* stoichiometries,  //! vector of stoichiometric coefficients for
+                                                    //! scatra-scatra interface
+          const double kr,                          //! charge transfer constant
+          const double alphaa,         //! symmetry coefficient of anodic intercalation reaction
+          const double alphac,         //! symmetry coefficient of cathodic intercalation reaction
           const double timefacfac,     //!< time-integration factor times domain-integration factor
           const double timefacrhsfac,  //!< time-integration factor for right-hand side times
                                        //!< domain-integration factor

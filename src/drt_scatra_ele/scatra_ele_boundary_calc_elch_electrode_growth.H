@@ -73,7 +73,7 @@ namespace DRT
           Epetra_SerialDenseMatrix& eslavematrix,            ///< element matrix for slave side
           Epetra_SerialDenseMatrix& emastermatrix,           ///< element matrix for master side
           Epetra_SerialDenseVector& eslaveresidual           ///< element residual for slave side
-      );
+          ) override;
 
       //! evaluate global growth-growth matrix block for scatra-scatra interface coupling involving
       //! interface layer growth
@@ -121,26 +121,20 @@ namespace DRT
           const double& pot_el,      //!< electrolyte-side electric potential
           const double& epd,         //!< half-cell open-circuit potential
           const double& resistance,  //!< scatra-scatra interface layer resistance
-          const double& thickness,   //!< scatra-scatra interface layer thickness
-          const Teuchos::RCP<DRT::Condition>&
-              condition  //!< scatra-scatra interface coupling condition
+          const double& thickness    //!< scatra-scatra interface layer thickness
           ) const;
 
       //! compute regularization factor for lithium stripping
       double GetRegularizationFactor(
           const double& thickness,  //!< scatra-scatra interface layer thickness
-          const Teuchos::RCP<DRT::Condition>&
-              condition,    //!< scatra-scatra interface coupling condition
-          const double eta  //!< electrode-electrolyte overpotential at integration point
+          const double eta          //!< electrode-electrolyte overpotential at integration point
           ) const;
 
       //! compute derivative of regularization factor for lithium stripping w.r.t. thickness of
       //! plated lithium
       double GetRegularizationFactorDerivative(
           const double& thickness,  //!< scatra-scatra interface layer thickness
-          const Teuchos::RCP<DRT::Condition>&
-              condition,    //!< scatra-scatra interface coupling condition
-          const double eta  //!< electrode-electrolyte overpotential at integration point
+          const double eta          //!< electrode-electrolyte overpotential at integration point
           ) const;
 
       //! nodal growth variables

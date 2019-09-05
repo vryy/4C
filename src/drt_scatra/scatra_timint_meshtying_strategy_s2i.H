@@ -37,6 +37,11 @@ namespace DRT
     template <const int NSD>
     class IntPointsAndWeights;
   }
+  namespace ELEMENTS
+  {
+    class ScaTraEleParameterBoundary;
+  }
+
 }  // namespace DRT
 
 namespace FSI
@@ -219,6 +224,9 @@ namespace SCATRA
 
     //! set general parameters for element evaluation
     void SetElementGeneralParameters(Teuchos::ParameterList& parameters) const;
+
+    //! Set kinetic model specific parameters
+    void SetConditionSpecificScaTraParameters(DRT::Condition& s2icondition) const;
 
     //! compute history vector, i.e., the history part of the right-hand side vector with all
     //! contributions from the previous time step
@@ -929,6 +937,9 @@ namespace SCATRA
         MORTAR::MortarElement& slaveelement,                            //!< slave-side element
         MORTAR::MortarElement& masterelement                            //!< master-side element
     );
+
+    //! pointer to scatra boundary parameter list
+    DRT::ELEMENTS::ScaTraEleParameterBoundary* scatraparamsboundary_;
 
     //! nodal, slave-side state variables associated with time t_{n+1} or t_{n+alpha_f}
     std::vector<LINALG::Matrix<nen_slave_, 1>> ephinp_slave_;

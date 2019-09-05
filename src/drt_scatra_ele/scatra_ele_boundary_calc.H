@@ -35,6 +35,7 @@ namespace DRT
   {
     class ScaTraEleParameterStd;
     class ScaTraEleParameterTimInt;
+    class ScaTraEleParameterBoundary;
 
     /*! \brief Internal Scalar transport element implementation
 
@@ -154,7 +155,6 @@ namespace DRT
       //! evaluate scatra-scatra interface coupling condition at integration point
       template <DRT::Element::DiscretizationType distype_master>
       static void EvaluateS2ICouplingAtIntegrationPoint(
-          DRT::Condition& s2icondition,  //!< scatra-scatra interface coupling condition
           const std::vector<LINALG::Matrix<nen_, 1>>&
               eslavephinp,  //!< state variables at slave-side nodes
           const std::vector<LINALG::Matrix<
@@ -167,8 +167,10 @@ namespace DRT
           const LINALG::Matrix<nen_, 1>& test_slave,  //!< slave-side test function values
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
-              test_master,             //!< master-side test function values
-          const int numscal,           //!< number of transported scalars
+              test_master,                            //!< master-side test function values
+          const int numscal,                          //!< number of transported scalars
+          const int kineticmodel,                     //!< kinetic model
+          const std::vector<double>* permeabilities,  //!< vector of permeabilities
           const double timefacfac,     //!< time-integration factor times domain-integration factor
           const double timefacrhsfac,  //!< time-integration factor for right-hand side times
                                        //!< domain-integration factor
@@ -392,6 +394,8 @@ namespace DRT
       DRT::ELEMENTS::ScaTraEleParameterTimInt* scatraparamstimint_;
       //! pointer to parameter list
       DRT::ELEMENTS::ScaTraEleParameterStd* scatraparams_;
+      //! pointer to scatra boundary parameter list
+      DRT::ELEMENTS::ScaTraEleParameterBoundary* scatraparamsboundary_;
 
       //! number of dof per node
       const int numdofpernode_;

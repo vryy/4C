@@ -1412,6 +1412,7 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_evaluate.cpp
   src/drt_scatra_ele/scatra_ele_factory.cpp
   src/drt_scatra_ele/scatra_ele_input.cpp
+  src/drt_scatra_ele/scatra_ele_parameter_boundary.cpp
   src/drt_scatra_ele/scatra_ele_parameter_elch.cpp
   src/drt_scatra_ele/scatra_ele_parameter_elch_diffcond.cpp
   src/drt_scatra_ele/scatra_ele_parameter_lsreinit.cpp
