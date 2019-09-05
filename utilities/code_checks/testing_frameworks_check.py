@@ -46,7 +46,7 @@ def check_unittests(look_cmd, allerrors):
             # this regex does not describe a unit test, it's a directory. Skip it
             if entry_regex[1] == False:
               continue
-            line_entries = entry_regex.findall(line)
+            line_entries = entry_regex[0].findall(line)
             for entry in line_entries:
               if entry == file_parts[-1]:
                 found = True
