@@ -257,6 +257,9 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::FluidFluidFSI::ShapeDerivat
  *----------------------------------------------------------------------*/
 void ADAPTER::FluidFluidFSI::SetupInterface(const int nds_master)
 {
+  // check nds_master
+  if (nds_master != 0) dserror("nds_master is supposed to be 0 here");
+
   if (mergedfluidinterface_ == Teuchos::null)
   {
     std::stringstream errmsg;
