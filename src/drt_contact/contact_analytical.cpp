@@ -171,32 +171,6 @@ void CONTACT::AnalyticalSolutions2D(const LINALG::Matrix<2, 1>& pos, LINALG::Mat
                          pow(x * x + y * y, -3. / 2.)) /
                  8.;
   }
-  else if (entype == INPAR::CONTACT::errornorms_manufactured)
-  {
-    // final time
-    double t = 1.0;
-
-    // greek pi
-    double pi = 3.141592653589793;
-
-    // displacements
-    uanalyt(0, 0) = -2 / pi * (2 * pi * +std::sin(pi * pos(0, 0)) * std::cos(pi * pos(0, 0))) *
-                        std::cos(pi / 2 * t) +
-                    1 / pi * std::sin(2 * pi * pos(0, 0)) + 4 * pos(0, 0);
-    uanalyt(1, 0) = -4 * pos(1, 0) * std::cos(pi / 2 * t) + 4 * pos(1, 0);
-
-    // strains
-    epsanalyt(0, 0) = 0.0;
-    epsanalyt(1, 0) = 0.0;
-    epsanalyt(2, 0) = 0.0;
-    epsanalyt(3, 0) = 0.0;
-
-    // displacement derivatives
-    derivanalyt(0, 0) = 0.0;
-    derivanalyt(0, 1) = 0.0;
-    derivanalyt(1, 0) = 0.0;
-    derivanalyt(1, 1) = 0.0;
-  }
 
   //----------------------------------------------------------------------
   // Other cases

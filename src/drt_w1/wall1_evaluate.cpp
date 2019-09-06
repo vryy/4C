@@ -29,6 +29,8 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_contact/contact_analytical.H"
 #include "../drt_mat/stvenantkirchhoff.H"
+#include "../drt_inpar/inpar_contact.H"
+#include "../drt_inpar/inpar_structure.H"
 
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 #include "../drt_structure_new/str_enum_lists.H"
@@ -609,7 +611,42 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
           LINALG::Matrix<4, 1> strainanalyt(true);
           LINALG::Matrix<2, 2> derivanalyt(true);
 
-          CONTACT::AnalyticalSolutions2D(xgp, uanalyt, strainanalyt, derivanalyt);
+          // check if we evaluate the error through the contact facilities
+          const Teuchos::ParameterList& listcmt = DRT::Problem::Instance()->ContactDynamicParams();
+          INPAR::CONTACT::ErrorNorms entype =
+              DRT::INPUT::IntegralValue<INPAR::CONTACT::ErrorNorms>(listcmt, "ERROR_NORMS");
+
+          if (entype !=
+              INPAR::CONTACT::errornorms_none)  // evaluate error through the contact facilities
+          {
+            CONTACT::AnalyticalSolutions2D(xgp, uanalyt, strainanalyt, derivanalyt);
+          }
+          else  // evaluate error from given function
+          {
+            // get time
+            const double t = params.get("total time", -1.0);
+
+            // get function number
+            const int calcerrfunctno =
+                DRT::Problem::Instance()->StructuralDynamicParams().get<int>("CALCERRORFUNCNO");
+
+            // evaluate displacement error
+            for (unsigned int d = 0; d < 2; ++d)
+              uanalyt(d, 0) =
+                  DRT::Problem::Instance()->Funct(calcerrfunctno - 1).Evaluate(d, xgp.A(), t);
+
+            // set strains to zero
+            strainanalyt(0, 0) = 0.0;
+            strainanalyt(1, 0) = 0.0;
+            strainanalyt(2, 0) = 0.0;
+            strainanalyt(3, 0) = 0.0;
+
+            // set displacement derivatives to zero
+            derivanalyt(0, 0) = 0.0;
+            derivanalyt(0, 1) = 0.0;
+            derivanalyt(1, 0) = 0.0;
+            derivanalyt(1, 1) = 0.0;
+          }
           //**************************************************************
 
           //--------------------------------------------------------------

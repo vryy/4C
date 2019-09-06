@@ -635,6 +635,13 @@ namespace INPAR
       norm_inf         ///< Maximum/infinity norm: \f$\vert x\vert_\infty = \max{x_i}\f$
     };
 
+    /// calculate error
+    enum CalcError
+    {
+      no_error_calculation,  ///< no error calculation
+      byfunct                ///< evaluate error from function
+    };
+
     /// map enum term to std::string
     static inline const std::string VectorNormString(
         const enum VectorNorm norm  ///< input enum term

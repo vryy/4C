@@ -121,13 +121,12 @@ namespace INPAR
     /// (more details on analytical solutions, see drt_contact/contact_analytical.cpp)
     enum ErrorNorms
     {
-      errornorms_none,           ///< no error norm computation
-      errornorms_zero,           ///< error norms for zero analytical solution
-      errornorms_bending,        ///< error norms for beam bending problem
-      errornorms_sphere,         ///< error norms for pressurized sphere problem
-      errornorms_thicksphere,    ///< error norms for thick pressurized sphere problem
-      errornorms_infiniteplate,  ///< error norms for infinite plate with a circular hole
-      errornorms_manufactured    ///< error norms for problem with manufactured solution
+      errornorms_none,          ///< no error norm computation
+      errornorms_zero,          ///< error norms for zero analytical solution
+      errornorms_bending,       ///< error norms for beam bending problem
+      errornorms_sphere,        ///< error norms for pressurized sphere problem
+      errornorms_thicksphere,   ///< error norms for thick pressurized sphere problem
+      errornorms_infiniteplate  ///< error norms for infinite plate with a circular hole
     };
 
     /// Type of formulation of constraint equations

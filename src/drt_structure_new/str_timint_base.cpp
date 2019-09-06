@@ -32,6 +32,7 @@
 
 #include "../drt_contact/contact_analytical.H"
 #include "../drt_inpar/inpar_contact.H"
+#include "../drt_inpar/inpar_structure.H"
 
 #include "../linalg/linalg_blocksparsematrix.H"
 
@@ -1043,81 +1044,98 @@ int STR::TIMINT::Base::GroupId() const
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::OutputErrorNorms()
 {
-  // get out of here if no output wanted
-  const Teuchos::ParameterList& listcmt = DRT::Problem::Instance()->ContactDynamicParams();
-  INPAR::CONTACT::ErrorNorms entype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::ErrorNorms>(listcmt, "ERROR_NORMS");
-  if (entype == INPAR::CONTACT::errornorms_none) return;
+  // get parameters
+  const Teuchos::ParameterList& params = DRT::Problem::Instance()->StructuralDynamicParams();
 
-  // initialize variables
-  Teuchos::RCP<Epetra_SerialDenseVector> norms = Teuchos::rcp(new Epetra_SerialDenseVector(3));
-  norms->Scale(0.0);
+  // get error calculation info
+  const INPAR::STR::CalcError calcerr =
+      DRT::INPUT::IntegralValue<INPAR::STR::CalcError>(params, "CALCERROR");
 
-  // call discretization to evaluate error norms
-  Teuchos::ParameterList p;
-  p.set("action", "calc_struct_errornorms");
-  Discretization()->ClearState();
-  Discretization()->SetState("displacement", Dispnp());
-  Discretization()->EvaluateScalars(p, norms);
-  Discretization()->ClearState();
-
-  // print error
-  if (dataglobalstate_->GetMyRank() == 0)
+  switch (calcerr)
   {
+    case INPAR::STR::no_error_calculation:
     {
-      std::cout.precision(8);
-      std::cout << std::endl;
-      std::cout << "---- Error norm for analytical solution -------------------" << std::endl;
-      std::cout << "| absolute L_2 displacement error norm:   " << sqrt((*norms)(0)) << std::endl;
-      std::cout << "-----------------------------------------------------------" << std::endl;
-      std::cout << std::endl;
+      return;
+      break;
     }
-
-    // print last error in a seperate file
-
-    // append error of the last time step to the error file
-    if ((dataglobalstate_->GetStepN() == datasdyn_->GetStepMax()) or
-        (dataglobalstate_->GetTimeN() == datasdyn_->GetTimeMax()))  // write results to file
+    case INPAR::STR::byfunct:
     {
-      std::ostringstream temp;
-      const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
-      const std::string fname = simulation + ".abserror";
+      // initialize variables
+      Teuchos::RCP<Epetra_SerialDenseVector> norms = Teuchos::rcp(new Epetra_SerialDenseVector(3));
+      norms->Scale(0.0);
 
-      std::ofstream f;
-      f.open(fname.c_str(), std::fstream::ate | std::fstream::app);
-      f << "#| " << simulation << "\n";
-      f << "#| Step | Time | abs. L2-error displacement |\n";
-      f << dataglobalstate_->GetStepN() << " " << dataglobalstate_->GetTimeN() << " "
-        << sqrt((*norms)(0)) << "\n";
-      f.flush();
-      f.close();
-    }
+      // call discretization to evaluate error norms
+      Teuchos::ParameterList p;
+      p.set("action", "calc_struct_errornorms");
+      Discretization()->ClearState();
+      Discretization()->SetState("displacement", Dispnp());
+      Discretization()->EvaluateScalars(p, norms);
+      Discretization()->ClearState();
 
-    std::ostringstream temp;
-    const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
-    const std::string fname = simulation + "_time.abserror";
+      // print error
+      if (dataglobalstate_->GetMyRank() == 0)
+      {
+        {
+          std::cout.precision(8);
+          std::cout << std::endl;
+          std::cout << "---- Error norm for analytical solution -------------------" << std::endl;
+          std::cout << "| absolute L_2 displacement error norm:   " << sqrt((*norms)(0))
+                    << std::endl;
+          std::cout << "-----------------------------------------------------------" << std::endl;
+          std::cout << std::endl;
+        }
 
-    if (dataglobalstate_->GetStepN() == 1)
-    {
-      std::ofstream f;
-      f.open(fname.c_str());
-      f << "#| Step | Time | abs. L2-error displacement |\n";
-      f << std::setprecision(10) << dataglobalstate_->GetStepN() << " " << std::setw(1)
-        << std::setprecision(5) << dataglobalstate_->GetTimeN() << std::setw(1)
-        << std::setprecision(6) << " " << sqrt((*norms)(0)) << "\n";
-      f.flush();
-      f.close();
+        // print last error in a seperate file
+
+        // append error of the last time step to the error file
+        if ((dataglobalstate_->GetStepN() == datasdyn_->GetStepMax()) or
+            (dataglobalstate_->GetTimeN() == datasdyn_->GetTimeMax()))  // write results to file
+        {
+          std::ostringstream temp;
+          const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+          const std::string fname = simulation + ".abserror";
+
+          std::ofstream f;
+          f.open(fname.c_str(), std::fstream::ate | std::fstream::app);
+          f << "#| " << simulation << "\n";
+          f << "#| Step | Time | abs. L2-error displacement |\n";
+          f << dataglobalstate_->GetStepN() << " " << dataglobalstate_->GetTimeN() << " "
+            << sqrt((*norms)(0)) << "\n";
+          f.flush();
+          f.close();
+        }
+
+        std::ostringstream temp;
+        const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+        const std::string fname = simulation + "_time.abserror";
+
+        if (dataglobalstate_->GetStepN() == 1)
+        {
+          std::ofstream f;
+          f.open(fname.c_str());
+          f << "#| Step | Time | abs. L2-error displacement |\n";
+          f << std::setprecision(10) << dataglobalstate_->GetStepN() << " " << std::setw(1)
+            << std::setprecision(5) << dataglobalstate_->GetTimeN() << std::setw(1)
+            << std::setprecision(6) << " " << sqrt((*norms)(0)) << "\n";
+          f.flush();
+          f.close();
+        }
+        else
+        {
+          std::ofstream f;
+          f.open(fname.c_str(), std::fstream::ate | std::fstream::app);
+          f << std::setprecision(10) << dataglobalstate_->GetStepN() << " " << std::setw(3)
+            << std::setprecision(5) << dataglobalstate_->GetTimeN() << std::setw(1)
+            << std::setprecision(6) << " " << sqrt((*norms)(0)) << "\n";
+          f.flush();
+          f.close();
+        }
+      }
     }
-    else
-    {
-      std::ofstream f;
-      f.open(fname.c_str(), std::fstream::ate | std::fstream::app);
-      f << std::setprecision(10) << dataglobalstate_->GetStepN() << " " << std::setw(3)
-        << std::setprecision(5) << dataglobalstate_->GetTimeN() << std::setw(1)
-        << std::setprecision(6) << " " << sqrt((*norms)(0)) << "\n";
-      f.flush();
-      f.close();
-    }
+    break;
+    default:
+      dserror("Cannot calculate error. Unknown type of analytical test problem");
+      break;
   }
 
   return;
