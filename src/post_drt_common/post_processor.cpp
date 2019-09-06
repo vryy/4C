@@ -278,6 +278,7 @@ void runEnsightVtuFilter(PostProblem& problem)
       break;
     }
     case prb_particle:
+    case prb_pasi:
     {
       int numdiscr = problem.num_discr();
       for (int i = 0; i < numdiscr; ++i)
@@ -289,6 +290,13 @@ void runEnsightVtuFilter(PostProblem& problem)
           StructureFilter binwriter(visualizebins, problem.outname());
           binwriter.WriteFiles();
         }
+        else if (disname == "structure")
+        {
+          PostField* structure = problem.get_discretization(i);
+          StructureFilter writer(structure, problem.outname(), problem.stresstype(),
+              problem.straintype(), problem.optquantitytype());
+          writer.WriteFiles();
+        }
         else
         {
           dserror("Particle problem has illegal discretization name!");
@@ -297,7 +305,6 @@ void runEnsightVtuFilter(PostProblem& problem)
       break;
     }
     case prb_particle_old:
-    case prb_pasi:
     {
       int numdiscr = problem.num_discr();
       for (int i = 0; i < numdiscr; ++i)
