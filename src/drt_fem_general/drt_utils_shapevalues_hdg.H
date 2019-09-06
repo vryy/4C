@@ -131,7 +131,7 @@ namespace DRT
       \brief Compute element-dependent data, like gradients in real cell, integration weights, for
       element dofs
       */
-      void Evaluate(const DRT::Element &ele, const std::vector<double> aleDis = {});
+      void Evaluate(const DRT::Element &ele, const std::vector<double> &aleDis = {});
 
       /// polynomial degree
       unsigned int degree_;
@@ -214,7 +214,7 @@ namespace DRT
       correctly oriented trace variables
       */
       void EvaluateFace(
-          const DRT::Element &ele, const unsigned int face, const std::vector<double> aleDis = {});
+          const DRT::Element &ele, const unsigned int face, const std::vector<double> &aleDis = {});
 
       /*!
       \brief Consider the orientation of faces for face degrees of freedom

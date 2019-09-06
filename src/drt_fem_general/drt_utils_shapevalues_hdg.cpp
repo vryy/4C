@@ -14,10 +14,6 @@
 #include "../drt_geometry/position_array.H"
 #include "../drt_fluid_ele/fluid_ele.H"
 
-#include "../drt_fluid_ele/fluid_ele_calc.H"
-#include "../drt_fluid_ele/fluid_ele_hdg_weak_comp.H"
-#include "../drt_fluid_ele/fluid_ele_calc_hdg_weak_comp.H"
-
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                              kronbichler 05/14 |
@@ -81,19 +77,15 @@ DRT::UTILS::ShapeValues<distype>::ShapeValues(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::UTILS::ShapeValues<distype>::Evaluate(
-    const DRT::Element& ele, const std::vector<double> aleDis)
+    const DRT::Element& ele, const std::vector<double>& aleDis)
 {
   dsassert(ele.Shape() == distype, "Internal error");
   GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(&ele, xyze);
 
   // update nodal coordinates
-  if (const DRT::ELEMENTS::FluidHDGWeakComp* hdgwkele =
-          dynamic_cast<const DRT::ELEMENTS::FluidHDGWeakComp*>(&ele))
-  {
-    if (hdgwkele->IsAle() && !(aleDis.empty()))
-      for (unsigned int n = 0; n < nen_; ++n)
-        for (unsigned int d = 0; d < nsd_; ++d) xyze(d, n) += aleDis[n * nsd_ + d];
-  }
+  if (!(aleDis.empty()))
+    for (unsigned int n = 0; n < nen_; ++n)
+      for (unsigned int d = 0; d < nsd_; ++d) xyze(d, n) += aleDis[n * nsd_ + d];
 
   for (unsigned int i = 0; i < ndofs_; ++i) shfunctAvg(i) = 0.;
   double faceVol = 0.;
@@ -202,7 +194,7 @@ DRT::UTILS::ShapeValuesFace<distype>::ShapeValuesFace(ShapeValuesFaceParams para
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace(
-    const DRT::Element& ele, const unsigned int face, const std::vector<double> aleDis)
+    const DRT::Element& ele, const unsigned int face, const std::vector<double>& aleDis)
 {
   const DRT::Element::DiscretizationType facedis =
       DRT::UTILS::DisTypeToFaceShapeType<distype>::shape;
@@ -214,13 +206,9 @@ void DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace(
   GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(&ele, xyzeElement);
 
   // update nodal coordinates
-  if (const DRT::ELEMENTS::FluidHDGWeakComp* hdgwkele =
-          dynamic_cast<const DRT::ELEMENTS::FluidHDGWeakComp*>(&ele))
-  {
-    if (hdgwkele->IsAle() && !(aleDis.empty()))
-      for (unsigned int n = 0; n < nen_; ++n)
-        for (unsigned int d = 0; d < nsd_; ++d) xyzeElement(d, n) += aleDis[n * nsd_ + d];
-  }
+  if (!(aleDis.empty()))
+    for (unsigned int n = 0; n < nen_; ++n)
+      for (unsigned int d = 0; d < nsd_; ++d) xyzeElement(d, n) += aleDis[n * nsd_ + d];
 
   for (unsigned int i = 0; i < nfn_; ++i)
     for (unsigned int d = 0; d < nsd_; ++d) xyze(d, i) = xyzeElement(d, faceNodeOrder[face][i]);
