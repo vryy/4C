@@ -895,12 +895,177 @@ namespace FLD
     \return number of components
 
     */
+    virtual int NumberComponents() { return (1); };
+
+   private:
+    double refdensity_;
+    double refpressure_;
+    double comprcoeff_;
+  };
+
+
+  /// special implementation for weakly compressible flow - Etienne FSI problem
+  class WeaklyCompressibleEtienneFSIFluidFunction : public DRT::UTILS::Function
+  {
+   public:
+    WeaklyCompressibleEtienneFSIFluidFunction(int mat_id_fluid, int mat_id_struc);
+    /*!
+
+    \brief evaluate function at given position in space
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the function will be
+                     evaluated
+
+    */
+    double Evaluate(const int index, const double* x, double t);
+
+    /*!
+
+    \brief evaluate first or second time derivative
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the time derivative will
+                     be evaluated
+    \param t     (i) The point in time in which the time derivative will
+                     be evaluated
+    \param deg   (i) The degree of the time derivative
+
+    */
+    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
+        const double* x,                                                 //< coordinates
+        const double t,                                                  //< time
+        const unsigned deg);  //< degree of maximal derivative
+
+    /*!
+
+    \brief Return the number of components of this spatial function
+    (This is a vector-valued function)
+
+    \return number of components
+
+    */
+    virtual int NumberComponents() { return (6); };
+
+   private:
+    double refdensity_;
+    double refpressure_;
+    double comprcoeff_;
+    double youngmodulus_;
+    double poissonratio_;
+    double strucdensity_;
+  };
+
+
+  /// special implementation for weakly compressible flow - Etienne FSI problem (force)
+  class WeaklyCompressibleEtienneFSIFluidForceFunction : public DRT::UTILS::Function
+  {
+   public:
+    WeaklyCompressibleEtienneFSIFluidForceFunction(int mat_id_fluid, int mat_id_struc);
+    /*!
+
+    \brief evaluate function at given position in space
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the function will be
+                     evaluated
+
+    */
+    double Evaluate(const int index, const double* x, double t);
+
+    /*!
+
+    \brief evaluate first or second time derivative
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the time derivative will
+                     be evaluated
+    \param t     (i) The point in time in which the time derivative will
+                     be evaluated
+    \param deg   (i) The degree of the time derivative
+
+    */
+    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
+        const double* x,                                                 //< coordinates
+        const double t,                                                  //< time
+        const unsigned deg);  //< degree of maximal derivative
+
+    /*!
+
+    \brief Return the number of components of this spatial function
+    (This is a vector-valued function)
+
+    \return number of components
+
+    */
     virtual int NumberComponents() { return (3); };
 
    private:
     double refdensity_;
     double refpressure_;
     double comprcoeff_;
+    double youngmodulus_;
+    double poissonratio_;
+    double strucdensity_;
+  };
+
+
+  /// special implementation for weakly compressible flow - Etienne FSI problem (viscosity)
+  class WeaklyCompressibleEtienneFSIFluidViscosityFunction : public DRT::UTILS::Function
+  {
+   public:
+    WeaklyCompressibleEtienneFSIFluidViscosityFunction(int mat_id_fluid, int mat_id_struc);
+    /*!
+
+    \brief evaluate function at given position in space
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the function will be
+                     evaluated
+
+    */
+    double Evaluate(const int index, const double* x, double t);
+
+    /*!
+
+    \brief evaluate first or second time derivative
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the time derivative will
+                     be evaluated
+    \param t     (i) The point in time in which the time derivative will
+                     be evaluated
+    \param deg   (i) The degree of the time derivative
+
+    */
+    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
+        const double* x,                                                 //< coordinates
+        const double t,                                                  //< time
+        const unsigned deg);  //< degree of maximal derivative
+
+    /*!
+
+    \brief Return the number of components of this spatial function
+    (This is a vector-valued function)
+
+    \return number of components
+
+    */
+    virtual int NumberComponents() { return (1); };
+
+   private:
+    double refdensity_;
+    double refpressure_;
+    double comprcoeff_;
+    double youngmodulus_;
+    double poissonratio_;
+    double strucdensity_;
   };
 
 
