@@ -35,19 +35,6 @@ PROJECTION                      yes
 LUMPING                         yes
 DIFF_FUNC                       hyperbolic
 CONVTOL_REINIT                  -1.0 // unused
------------------------------------LEVEL-SET CONTROL/PARTICLE
-INCLUDE_PARTICLE                no //yes
-MIN_RADIUS                      0.1
-MAX_RADIUS                      0.5
-NUMPARTICLE                     32
-PARTICLEBANDWIDTH               3.0
-RESEEDING                       25
-FAST_CHECK                      yes
---------------------------------------------------------------------BINNING STRATEGY
-BIN_PER_DIR                     100 100 1
-------------------------------------------------------------PARTICLE DYNAMIC OLD
-DIMENSION                       2Dz
-DYNAMICTYP                      RK2
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      linear_full //nonlinear
 FSSUGRDIFF                      No

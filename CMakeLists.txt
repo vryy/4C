@@ -1858,7 +1858,6 @@ set(OBJS_DRT_PARTICLE
   src/drt_particle/particle_handler.cpp
   src/drt_particle/particle_algorithm.cpp
   src/drt_particle/particle_contact.cpp
-  src/drt_particle/scatra_particle_coupling.cpp
   src/drt_particle/particle_resulttest.cpp
 )
 set(OBJS_DRT_PARTICLE_ALGORITHM

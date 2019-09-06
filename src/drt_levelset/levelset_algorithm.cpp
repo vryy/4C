@@ -17,8 +17,6 @@
 
 #include "levelset_algorithm.H"
 
-//#include "../drt_adapter/adapter_scatra_base_algorithm.H"
-#include "../drt_particle/scatra_particle_coupling.H"
 #include "levelset_intersection_utils.H"
 
 #include "../drt_scatra/scatra_resulttest.H"
@@ -40,9 +38,7 @@ SCATRA::LevelSetAlgorithm::LevelSetAlgorithm(Teuchos::RCP<DRT::Discretization> d
     Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(dis, solver, sctratimintparams, extraparams, output),
       levelsetparams_(params),
-      particle_(Teuchos::null),
       reinitaction_(INPAR::SCATRA::reinitaction_none),
-      conveln_(Teuchos::null),
       switchreinit_(false),
       pseudostepmax_(0),
       pseudostep_(0),
@@ -87,19 +83,6 @@ void SCATRA::LevelSetAlgorithm::Init()
   // DO NOT CALL Init() IN ScaTraTimIntImpl
   // issue with writeflux and probably scalarhandler_
   // this should not be
-
-  // -------------------------------------------------------------------
-  //               set-up of particle algorithm
-  // -------------------------------------------------------------------
-
-  // check whether hybrid method including particles is selected
-  if (DRT::INPUT::IntegralValue<int>(levelsetparams_->sublist("PARTICLE"), "INCLUDE_PARTICLE"))
-  {
-    // get particle object
-    particle_ = Teuchos::rcp(
-        new PARTICLE::ScatraParticleCoupling(Teuchos::rcp(this, false), levelsetparams_));
-  }
-  // note: here, an extended ghosting is set
 
   return;
 }
@@ -258,13 +241,6 @@ void SCATRA::LevelSetAlgorithm::Setup()
 
   if (not lscontactpoint.empty()) cpbc_ = true;
 
-  // -------------------------------------------------------------------
-  //               initial seeding of particles
-  // -------------------------------------------------------------------
-  // initialize particle field with particles
-  // note: this has to been done after initial reinitialization
-  if (particle_ != Teuchos::null) particle_->InitialSeeding();
-
   return;
 }
 
@@ -321,12 +297,6 @@ void SCATRA::LevelSetAlgorithm::TimeLoop()
     Reinitialization();
 
     // -------------------------------------------------------------------
-    //                     hybrid particle method
-    // -------------------------------------------------------------------
-    // correct zero level-set by particles if available
-    ParticleCorrection();
-
-    // -------------------------------------------------------------------
     //                         update solution
     //        current solution becomes old solution of next time step
     // -------------------------------------------------------------------
@@ -355,9 +325,6 @@ void SCATRA::LevelSetAlgorithm::PrepareTimeStep()
 {
   // prepare basic scalar transport solver
   ScaTraTimIntImpl::PrepareTimeStep();
-
-  // prepare particle field if available
-  if (particle_ != Teuchos::null) particle_->PrepareTimeStep();
 
   return;
 }
@@ -446,38 +413,6 @@ void SCATRA::LevelSetAlgorithm::Reinitialization()
 }
 
 /*----------------------------------------------------------------------*
- | hybrid particle method                               rasthofer 11/13 |
- *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::ParticleCorrection()
-{
-  if (particle_ != Teuchos::null)
-  {
-    // -----------------------------------------------------------------
-    //                    particle time integration
-    // -----------------------------------------------------------------
-    // update particle position
-    particle_->Integrate();
-
-    // -----------------------------------------------------------------
-    //                    correction step
-    // -----------------------------------------------------------------
-    // correct zero level-set using particles
-    // update phinp
-
-    // hint: particle correction will yield a mismatch between phin and phinp
-    //       such that simple time-derivative calculation based on ost cannot be
-    //       used anymore and the more expensive calculation from the matrix system
-    //       has to be done: possibly introduce flag to avoid the computation, if particles
-    //       have not modified phinp
-    phinp_->Update(1.0, *(particle_->CorrectionStep()), 0.0);
-  }
-
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
  | output of solution                                   rasthofer 09/13 |
  *----------------------------------------------------------------------*/
 void SCATRA::LevelSetAlgorithm::Output(const int num)
@@ -509,12 +444,6 @@ void SCATRA::LevelSetAlgorithm::Output(const int num)
   }
 
   // -----------------------------------------------------------------
-  //      standard paraview output for particle field
-  // -----------------------------------------------------------------
-
-  if (particle_ != Teuchos::null) particle_->Output();
-
-  // -----------------------------------------------------------------
   //             further level-set specific values
   // -----------------------------------------------------------------
   OutputOfLevelSetSpecificValues();
@@ -533,34 +462,12 @@ void SCATRA::LevelSetAlgorithm::OutputOfLevelSetSpecificValues()
 }
 
 /*----------------------------------------------------------------------*
- | return velocity at intermediate time n+theta         rasthofer 01/14 |
- *----------------------------------------------------------------------*/
-const Teuchos::RCP<Epetra_Vector> SCATRA::LevelSetAlgorithm::ConVelTheta(double theta)
-{
-  if (conveln_ == Teuchos::null) dserror("Set convective velocity of previous time step!");
-
-  Teuchos::RCP<const Epetra_Vector> convel =
-      discret_->GetState(nds_vel_, "convective velocity field");
-  if (convel == Teuchos::null) dserror("Cannot get state vector convective velocity");
-  Teuchos::RCP<Epetra_Vector> tmpvel =
-      Teuchos::rcp(new Epetra_Vector(*discret_->DofColMap(nds_vel_), true));
-
-  tmpvel->Update((1.0 - theta), *conveln_, theta, *convel, 0.0);
-
-  return tmpvel;
-}
-
-
-/*----------------------------------------------------------------------*
  | perform result test                                  rasthofer 01/14 |
  *----------------------------------------------------------------------*/
 void SCATRA::LevelSetAlgorithm::TestResults()
 {
   problem_->AddFieldTest(Teuchos::rcp(new SCATRA::ScaTraResultTest(Teuchos::rcp(this, false))));
-  if (particle_ != Teuchos::null)
-    particle_->TestResults(discret_->Comm());
-  else
-    problem_->TestAll(discret_->Comm());
+  problem_->TestAll(discret_->Comm());
 
   return;
 }
@@ -573,11 +480,6 @@ void SCATRA::LevelSetAlgorithm::SetTimeStep(const double time, const int step)
 {
   // call base class function
   SCATRA::ScaTraTimIntImpl::SetTimeStep(time, step);
-
-  // set information also in scalar field
-  if (particle_ != Teuchos::null)
-    Teuchos::rcp_dynamic_cast<PARTICLE::ScatraParticleCoupling>(particle_)
-        ->SetTimeStepAdditionalParticles(time, step);
 
   return;
 }

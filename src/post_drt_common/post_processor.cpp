@@ -365,15 +365,6 @@ void runEnsightVtuFilter(PostProblem& problem)
       ScaTraFilter scatrawriter(scatrafield, basename);
       scatrawriter.WriteFiles();
 
-      // check if we have a particle field
-      int numfield = problem.num_discr();
-      if (numfield == 2)
-      {
-        PostField* particlefield = problem.get_discretization(1);
-        ParticleFilter particlewriter(particlefield, basename);
-        particlewriter.WriteFiles();
-      }
-
       break;
     }
     case prb_redairways_tissue:

@@ -341,8 +341,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
               Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->LevelSetControl()));
         // overrule certain parameters for coupled problems
         // this has already been ensured for scatratimeparams, but has also been ensured for the
-        // level-set parameter which are potentially handled down to the particle algorithm in a
-        // hybrid approach time step size
+        // level-set parameter in a hybrid approach time step size
         lsparams->set<double>("TIMESTEP", prbdyn.get<double>("TIMESTEP"));
         // maximum simulation time
         lsparams->set<double>("MAXTIME", prbdyn.get<double>("MAXTIME"));

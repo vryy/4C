@@ -385,7 +385,6 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--PARTICLE DYNAMIC OLD", *list);
   reader.ReadGidSection("--PASI DYNAMIC", *list);
   reader.ReadGidSection("--LEVEL-SET CONTROL", *list);
-  reader.ReadGidSection("--LEVEL-SET CONTROL/PARTICLE", *list);
   reader.ReadGidSection("--LEVEL-SET CONTROL/REINITIALIZATION", *list);
   reader.ReadGidSection("--WEAR", *list);
   reader.ReadGidSection("--BEAM CONTACT", *list);
@@ -1683,18 +1682,15 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       else
         fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm()));
       scatradis = Teuchos::rcp(new DRT::Discretization("scatra", reader.Comm()));
-      particledis = Teuchos::rcp(new DRT::Discretization("particle", reader.Comm()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
       fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
       scatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatradis)));
-      particledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(particledis)));
 
       AddDis("structure", structdis);
       AddDis("fluid", fluiddis);
       AddDis("scatra", scatradis);
-      AddDis("particle", particledis);
 
       nodereader.AddElementReader(
           Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
@@ -1704,7 +1700,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       // "--FLUID ELEMENTS")));
       nodereader.AddElementReader(
           Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
-      nodereader.AddParticleReader(particledis, reader, "PARTICLE");
       break;
     }
 
@@ -2223,18 +2218,14 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     {
       // create empty discretizations
       scatradis = Teuchos::rcp(new DRT::Discretization("scatra", reader.Comm()));
-      particledis = Teuchos::rcp(new DRT::Discretization("particle", reader.Comm()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       scatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatradis)));
-      particledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(particledis)));
 
       AddDis("scatra", scatradis);
-      AddDis("particle", particledis);
 
       nodereader.AddElementReader(
           Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
-      nodereader.AddParticleReader(particledis, reader, "PARTICLE");
       break;
     }
     case prb_np_support:

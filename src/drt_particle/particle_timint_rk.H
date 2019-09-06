@@ -51,44 +51,8 @@ namespace PARTICLE
     //! @name Actions
     //@{
 
-    //! mostly init of level-set vectors
-    virtual void Init();
-
     //! do time integration of single time step
     virtual int IntegrateStep();
-
-    //! state vectors are updated according to the new distribution of particles
-    virtual void UpdateStatesAfterParticleTransfer();
-
-    //! write restart
-    virtual void OutputRestart(bool& datawritten  //!< (in/out) read and append if
-                                                  //!< it was written at this time step
-    );
-
-    //! output displacements, velocities and accelerations
-    //! and more system vectors
-    virtual void OutputState(bool& datawritten  //!< (in/out) read and append if
-                                                //!< it was written at this time step
-    );
-
-    //! read and set restart state
-    virtual void ReadRestartState();
-
-    //@}
-
-    //! @name Access methods
-    //@{
-
-    //! return sign of particles
-    virtual Teuchos::RCP<const Epetra_Vector> Sign() { return sign_; }
-
-    //@}
-
-    //! @name Extract methods
-    //@{
-
-    //! return sign of particles
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessSign() { return sign_; }
 
     //@}
 
@@ -107,14 +71,6 @@ namespace PARTICLE
     //@{
 
     INPAR::PARTICLEOLD::DynamicType rk_scheme_;
-
-    //@}
-
-    //! @name Global state vectors
-    //@{
-
-    //! sign of each particle
-    Teuchos::RCP<Epetra_Vector> sign_;
 
     //@}
 

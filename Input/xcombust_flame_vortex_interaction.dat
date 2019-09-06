@@ -59,20 +59,6 @@ VELREINIT                       integration_point_based // node_based
 LINEARIZATIONREINIT             newton // fixed_point
 CORRECTOR_STEP                  yes
 REINITVOLCORRECTION             no //yes
------------------------------------LEVEL-SET CONTROL/PARTICLE
-INCLUDE_PARTICLE                no
-MIN_RADIUS                  0.1
-MAX_RADIUS                  0.5
-//DIMENSION                   2Dz
-NUMPARTICLE                 16
-PARTICLEBANDWIDTH           3.0
-RESEEDING                   40
-FAST_CHECK                  yes
-RESTARTDATA                 yes
---------------------------------------------------------------------BINNING STRATEGY
-BIN_PER_DIR                     100 200 1
-------------------------------------------------------------PARTICLE DYNAMIC OLD
-DYNAMICTYP                      RK2
 -----------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 PHYSICAL_TYPE    Incompressible

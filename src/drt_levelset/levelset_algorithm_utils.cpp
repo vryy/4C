@@ -35,12 +35,6 @@ void SCATRA::LevelSetAlgorithm::SetVelocityField(bool init)
   // call function of base class
   ScaTraTimIntImpl::SetVelocityField(1);
 
-  // if the velocity field is initialized at the beginning of the simulation
-  // or set after restart according to the restart time, we have to initialize
-  // the velocity at time n
-  if (init and (particle_ != Teuchos::null))
-    conveln_ = discret_->GetState(nds_vel_, "convective velocity field");
-
   // note: This function is only called from the level-set dyn. This is ok, since
   //       we only want to initialize conveln_ at the beginning of the simulation.
   //       for the remainder, it is updated as usual. For the dependent velocity fields
@@ -64,12 +58,6 @@ void SCATRA::LevelSetAlgorithm::SetVelocityField(Teuchos::RCP<const Epetra_Vecto
 
   // estimate velocity at contact points, i.e., intersection points of interface and (no-slip) walls
   if (cpbc_) ApplyContactPointBoundaryCondition();
-
-  // if the velocity field is initialized at the beginning of the simulation
-  // or set after restart according to the restart time, we have to initialize
-  // the velocity at time n
-  if (init and (particle_ != Teuchos::null))
-    conveln_ = discret_->GetState(nds_vel_, "convective velocity field");
 
   return;
 }

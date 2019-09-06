@@ -29,8 +29,6 @@ RESTARTEVRY                     10
 REINITIALIZATION                Signed_Distance_Function
 REINIT_INITIAL                  Yes
 REINITINTERVAL                  1
------------------------------------LEVEL-SET CONTROL/PARTICLE
-INCLUDE_PARTICLE                no
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      nonlinear
 INITFUNCNO                      3

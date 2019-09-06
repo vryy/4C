@@ -119,7 +119,7 @@ void XCONTACT::LEVELSET::TIMINT::OneStepTheta::SetOldPartOfRighthandside()
  *----------------------------------------------------------------------------*/
 void XCONTACT::LEVELSET::TIMINT::OneStepTheta::UpdateState()
 {
-  if ((not switchreinit_) and particle_ == Teuchos::null)
+  if (not switchreinit_)
   {
     // compute time derivative at time n+1
     ComputeTimeDerivative();
