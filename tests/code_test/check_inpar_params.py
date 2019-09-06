@@ -36,8 +36,6 @@ UNUSED_PARAMS_TO_KEEP = [
 			'INPAR::ELCH::elch_mov_bndry_fully_transient',
                         # Parameter is necessary, but only used in validparameters.cpp
                         # NOTE To be implemented in future
-                        'INPAR::CAVITATION::TwoWayMomentum',
-                        'INPAR::CAVITATION::TwoWayFull',
                         'INPAR::CONTACT::wear_both_ale',
                         'INPAR::CONTACT::wear_both_map',
                         'INPAR::CONTACT::wear_archard', 

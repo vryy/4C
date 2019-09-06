@@ -67,7 +67,6 @@ namespace INPAR
       m_biochemomechano_active,   ///< biochemo-mechano coupled model for stress fiber activity
       m_biochemomechano_passive,  ///< biochemo-mechano coupled model for homogenized cytoskeleton
       m_carreauyasuda,            ///< fluid with nonlinear viscosity according to Carreau-Yasuda
-      m_cavitation,               ///< fluid with varying density
       m_cnst_art,                 ///< 1D_Artery constant material properties
       m_compogden,                ///< compressible Ogden material (with shell8)
       m_consolidation,            ///< material providing a general interface for consolidation

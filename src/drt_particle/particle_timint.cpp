@@ -107,8 +107,6 @@ PARTICLE::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
 
       radiusdistribution_(DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::RadiusDistribution>(
           particledynparams, "RADIUS_DISTRIBUTION")),
-      variableradius_((bool)DRT::INPUT::IntegralValue<int>(
-          DRT::Problem::Instance()->CavitationParams(), "COMPUTE_RADIUS_RP_BASED")),
       radiuschangefunct_(particledynparams.get<int>("RADIUS_CHANGE_FUNCT")),
       particle_algorithm_(Teuchos::null),
       collhandler_(Teuchos::null)
@@ -156,7 +154,7 @@ void PARTICLE::TimInt::Init()
   mass_ = LINALG::CreateVector(*NodeRowMapView(), true);
   if (writeorientation_) orient_ = LINALG::CreateVector(*DofRowMapView());
 
-  if (variableradius_ or radiuschangefunct_ > 0)
+  if (radiuschangefunct_ > 0)
   {
     // initial radius of each particle for time dependent radius
     radius0_ = LINALG::CreateVector(*discret_->NodeRowMap(), true);
@@ -593,7 +591,7 @@ void PARTICLE::TimInt::ReadRestartState()
   }
 
   // read in variable radius relevant data
-  if (variableradius_ == true)
+  if (radiuschangefunct_ > 0)
   {
     reader.ReadVector(radius0_, "radius0");
     // time derivative of radius of each particle for time dependent radius
@@ -673,7 +671,7 @@ void PARTICLE::TimInt::OutputRestart(bool& datawritten)
   WriteVector("radius", radius_, false);
   WriteVector("mass", mass_, false);
 
-  if (variableradius_)
+  if (radiuschangefunct_ > 0)
   {
     WriteVector("radius0", radius0_, false);
     WriteVector("radiusDot", radiusDot_, false);

@@ -490,7 +490,6 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/beam_elasthyper.cpp
   src/drt_mat/beam_elasthyper_parameter.cpp
   src/drt_mat/carreauyasuda.cpp
-  src/drt_mat/cavitationfluid.cpp
   src/drt_mat/cnst_1d_art.cpp
   src/drt_mat/compogden.cpp
   src/drt_mat/consolidation.cpp
@@ -774,7 +773,6 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_cardiac_monodomain.cpp
   src/drt_inpar/inpar_particle.cpp
   src/drt_inpar/inpar_particle_old.cpp
-  src/drt_inpar/inpar_cavitation.cpp
   src/drt_inpar/inpar_pasi.cpp
   src/drt_inpar/inpar_cell.cpp
   src/drt_inpar/inpar_contact.cpp
@@ -1588,12 +1586,6 @@ set(OBJS_DRT_LOMA
   src/drt_loma/loma_dyn.cpp
 )
 
-set(OBJS_DRT_CAVITATION
-  src/drt_particle/cavitation_algorithm.cpp
-  src/drt_particle/cavitation_service.cpp
-  src/drt_particle/particle_dyn.cpp
-)
-
 set(OBJS_DRT_TWO_PHASE
   src/drt_two_phase_flow/two_phase_algorithm.cpp
   src/drt_two_phase_flow/two_phase_dyn.cpp
@@ -1849,6 +1841,7 @@ set(OBJS_POST_DRT_S8CONVERT
   src/post_s8convert/post_drt_s8convert.cpp
 )
 set(OBJS_DRT_PARTICLE
+  src/drt_particle/particle_dyn.cpp
   src/drt_particle/particle_timint.cpp
   src/drt_particle/particle_timint_expl.cpp
   src/drt_particle/particle_timint_centrdiff.cpp
@@ -2727,7 +2720,7 @@ add_library(alg_fsi ${OBJS_DRT_FSI})
 add_library(alg_immersed_problem ${OBJS_DRT_IMMERSED_PROBLEM})
 add_library(alg_fsi_xfem ${OBJS_DRT_FSI_XFEM})
 add_library(alg_loma ${OBJS_DRT_LOMA})
-add_library(alg_cavitation ${OBJS_DRT_CAVITATION})
+add_library(alg_particle ${OBJS_DRT_PARTICLE})
 add_library(alg_two_phase ${OBJS_DRT_TWO_PHASE})
 add_library(alg_contact_xfem ${OBJS_DRT_CONTACT_XCONTACT})
 add_library(alg_tsi ${OBJS_DRT_TSI})
@@ -2748,7 +2741,7 @@ set(MULTIFIELD_LIBRARIES
   alg_fsi
   alg_fsi_xfem
   alg_loma
-  alg_cavitation
+  alg_particle
   alg_two_phase
   alg_contact_xfem
   alg_tsi
@@ -2789,7 +2782,6 @@ add_library(alg_xstructure ${OBJS_DRT_STRUCTURE_XSTRUCTURE})
 add_library(alg_thermo ${OBJS_DRT_THERMO})
 add_library(alg_fluid_adjoint ${OBJS_DRT_TOPOPT_ADJOINT})
 add_library(alg_opti ${OBJS_OPTI})
-add_library(alg_particle ${OBJS_DRT_PARTICLE})
 add_library(alg_particle_algorithm ${OBJS_DRT_PARTICLE_ALGORITHM})
 add_library(alg_particle_interaction ${OBJS_DRT_PARTICLE_INTERACTION})
 add_library(alg_particle_engine ${OBJS_DRT_PARTICLE_ENGINE})

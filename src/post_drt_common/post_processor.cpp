@@ -342,21 +342,6 @@ void runEnsightVtuFilter(PostProblem& problem)
       }
       break;
     }
-    case prb_cavitation:
-    {
-      PostField* fluidfield = problem.get_discretization(0);
-      FluidFilter fluidwriter(fluidfield, problem.outname());
-      fluidwriter.WriteFiles();
-
-      PostField* particlewallfield = problem.get_discretization(1);
-      StructureFilter writer(particlewallfield, problem.outname());
-      writer.WriteFiles();
-
-      PostField* particlefield = problem.get_discretization(2);
-      ParticleFilter particlewriter(particlefield, problem.outname());
-      particlewriter.WriteFiles();
-      break;
-    }
     case prb_level_set:
     {
       std::string basename = problem.outname();

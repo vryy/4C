@@ -672,7 +672,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     {
       case prb_fluid:
       case prb_scatra:
-      case prb_cavitation:
       {
         // HDG implements all time stepping schemes within gen-alpha
         if (DRT::Problem::Instance()->SpatialApproximation() == "HDG" &&

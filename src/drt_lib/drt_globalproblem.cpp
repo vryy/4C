@@ -377,7 +377,6 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--TOPOLOGY OPTIMIZATION CONTROL", *list);
   reader.ReadGidSection("--TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY OPTIMIZER", *list);
   reader.ReadGidSection("--TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY ADJOINT FLUID", *list);
-  reader.ReadGidSection("--CAVITATION DYNAMIC", *list);
   reader.ReadGidSection("--PARTICLE DYNAMIC", *list);
   reader.ReadGidSection("--PARTICLE DYNAMIC/INITIAL AND BOUNDARY CONDITIONS", *list);
   reader.ReadGidSection("--PARTICLE DYNAMIC/SPH", *list);
@@ -2191,25 +2190,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       nodereader.AddAdvancedReader(structdis, reader, "STRUCTURE",
           DRT::INPUT::IntegralValue<INPAR::GeometryType>(StructuralDynamicParams(), "GEOMETRY"), 0);
-      nodereader.AddParticleReader(particledis, reader, "PARTICLE");
-
-      break;
-    }
-    case prb_cavitation:
-    {
-      // create empty discretizations
-      fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm()));
-      particledis = Teuchos::rcp(new DRT::Discretization("particle", reader.Comm()));
-
-      // create discretization writer - in constructor set into and owned by corresponding discret
-      fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
-      particledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(particledis)));
-
-      AddDis("fluid", fluiddis);
-      AddDis("particle", particledis);
-
-      nodereader.AddAdvancedReader(fluiddis, reader, "FLUID",
-          DRT::INPUT::IntegralValue<INPAR::GeometryType>(FluidDynamicParams(), "GEOMETRY"), 0);
       nodereader.AddParticleReader(particledis, reader, "PARTICLE");
 
       break;

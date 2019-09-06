@@ -139,13 +139,6 @@ namespace BROWNIANDYN
 {
 }  // namespace BROWNIANDYN
 
-/*! brief Cavitation problems
- *
- */
-namespace CAVITATION
-{
-}  // namespace CAVITATION
-
 /*! \brief
  *
  */
@@ -708,13 +701,6 @@ namespace INPAR
   namespace CARDIOVASCULAR0D
   {
   }  // namespace CARDIOVASCULAR0D
-
-  /*! \brief Input parameters for cavitation
-   *
-   */
-  namespace CAVITATION
-  {
-  }  // namespace CAVITATION
 
   /*! \brief Input parameters for cell migration
    *

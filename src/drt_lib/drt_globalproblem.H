@@ -503,10 +503,6 @@ namespace DRT
       return getParameterList()->sublist("STRUCT NOX");
     }
     const Teuchos::ParameterList& LocaParams() const { return getParameterList()->sublist("LOCA"); }
-    const Teuchos::ParameterList& CavitationParams() const
-    {
-      return getParameterList()->sublist("CAVITATION DYNAMIC");
-    }
     const Teuchos::ParameterList& ParticleParams() const
     {
       return getParameterList()->sublist("PARTICLE DYNAMIC");

@@ -218,19 +218,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AppendMaterialDefinition(matlist, m);
   }
 
-  /*----------------------------------------------------------------------*/
-  // cavitation fluid
-  {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(
-        new MaterialDefinition("MAT_cavitation", "Cavitation fluid", INPAR::MAT::m_cavitation));
-
-    AddNamedReal(m, "DYNVISCOSITY", "dynamic viscosity");
-    AddNamedReal(m, "DENSITY", "spatial mass density");
-    AddNamedReal(m, "GAMMA", "surface tension coefficient");
-    AddNamedReal(m, "PVAPOR", "vapor pressure");
-
-    AppendMaterialDefinition(matlist, m);
-  }
 
   /*----------------------------------------------------------------------*/
   // lubrication material

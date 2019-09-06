@@ -48,7 +48,6 @@
 #include "../drt_mat/permeablefluid.H"
 #include "../drt_mat/sutherland.H"
 #include "../drt_mat/tempdepwater.H"
-#include "../drt_mat/cavitationfluid.H"
 #include "../drt_mat/yoghurt.H"
 #include "../drt_mat/matlist.H"
 
@@ -2367,69 +2366,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
     // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
     const double scatrabodyforce = funct_.Dot(escabofoaf);
     scarhs_ = scatrabodyforce / actmat->Shc();
-  }
-  else if (material->MaterialType() == INPAR::MAT::m_cavitation)
-  {
-    const MAT::CavitationFluid* actmat = static_cast<const MAT::CavitationFluid*>(material.get());
-
-    // get constant dynamic viscosity
-    visc = actmat->Viscosity();
-
-    // get constant base density
-    const double density_0 = actmat->Density();
-
-    // get fluid fraction at at n+alpha_F
-    const double fluidfracaf = funct_.Dot(escaaf);
-
-    // compute density at at n+alpha_F; no density scaling necessary here due
-    // to the special choice of forces applied to the fluid
-    //  densaf = fluidfracaf*density_0;
-    densaf = density_0;
-
-    // do not need diffusivity
-    diffus_ = 0.0;
-
-    // nothing to add add due to thermodynamic pressure at n+alpha_M
-    thermpressadd_ = 0.0;
-
-    // no time derivative of thermodynamic pressure at n+alpha_F
-    scarhs_ = 0.0;
-
-    // factor for convective scalar term at n+alpha_F or n+1
-    scaconvfacaf_ = -1.0 / fluidfracaf;
-
-    if (fldparatimint_->IsGenalpha())
-    {
-      // compute fluid fraction at n+alpha_M
-      const double fluidfracam = funct_.Dot(escaam);
-
-      // factor for scalar time derivative at n+alpha_M
-      scadtfac_ = -1.0 / fluidfracam;
-
-      // compute density at n+alpha_M based; no density scaling necessary here due
-      // to the special choice of forces applied to the fluid
-      //    densam = fluidfracam*density_0;
-      densam = density_0;
-    }
-    else
-    {
-      // set density at n+1 at location n+alpha_M as well
-      densam = densaf;
-
-      // compute fluid fraction at n
-      const double fluidfracn = funct_.Dot(escaam);
-
-      // compute density at n based; no density scaling necessary here due
-      // to the special choice of forces applied to the fluid
-      //    densn = fluidfracn*density_0;
-      densn = density_0;
-
-      // factor for convective scalar term at n
-      scaconvfacn_ = -1.0 / fluidfracn;
-
-      // factor for scalar time derivative
-      scadtfac_ = scaconvfacaf_;
-    }
   }
   else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
   {

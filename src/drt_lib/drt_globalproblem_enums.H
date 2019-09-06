@@ -29,7 +29,6 @@ typedef enum _PROBLEM_TYP
   prb_art_net,             // arterial network problem _1D_ARTERY_
   prb_biofilm_fsi,         // biofilm growth problem
   prb_cardiac_monodomain,  // Cardiac electrophsiology problem
-  prb_cavitation,          // cavitation problem
   prb_ehl,        // elastohydrodynamic lubrication problem (or lubrication structure interaction)
   prb_elch,       // electrochemical problem
   prb_elemag,     // electromagnetic problem

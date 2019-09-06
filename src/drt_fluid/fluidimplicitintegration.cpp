@@ -3388,9 +3388,6 @@ void FLD::FluidImplicitTimeInt::Output()
       output_->WriteVector("fld_growth_displ", fldgrdisp_);
     }
 
-    // cavitation: fluid fraction
-    WriteOutputFluidFraction();
-
     if (params_->get<bool>("COMPUTE_EKIN")) WriteOutputKineticEnergy();
 
       // don't write output in case of separate inflow computation
@@ -6386,28 +6383,6 @@ void FLD::FluidImplicitTimeInt::SetupMeshtying()
 
   // meshtying_->OutputSetUp();
 
-  return;
-}
-
-/*------------------------------------------------------------------------------------------------*
- | set fluid fraction for cavitation problems                                       (ghamm 08/13) |
- *------------------------------------------------------------------------------------------------*/
-void FLD::FluidImplicitTimeInt::SetFluidFraction(Teuchos::RCP<Epetra_MultiVector> fluidfraction)
-{
-  if (density_scaling_ == Teuchos::null)
-    density_scaling_ = LINALG::CreateVector(*discret_->ElementRowMap(), false);
-  density_scaling_->Update(1.0, *fluidfraction, 0.0);
-}
-
-/*------------------------------------------------------------------------------------------------*
- | cavitation: output fluid fraction, overloaded (switched off) in TimIntTopOpt          bk 12/13 |
- *------------------------------------------------------------------------------------------------*/
-void FLD::FluidImplicitTimeInt::WriteOutputFluidFraction()
-{
-  if (density_scaling_ != Teuchos::null)
-  {
-    output_->WriteVector("fluidfraction", density_scaling_, IO::elementvector);
-  }
   return;
 }
 

@@ -42,8 +42,8 @@ void PARTICLE::TimIntCentrDiff::Init()
       particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLEOLD::NormalAndTang_DEM and
       particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLEOLD::None)
     dserror(
-        "central difference time integrator currently just combined with cavitation or discrete "
-        "element collision mechanism");
+        "central difference time integrator currently just combined with discrete element "
+        "collision mechanism");
 
   // call base class init
   PARTICLE::TimIntExpl::Init();

@@ -54,7 +54,6 @@
 #include "yoghurt.H"
 #include "permeablefluid.H"
 #include "matlist.H"
-#include "cavitationfluid.H"
 #include "elchmat.H"
 #include "elchphase.H"
 #include "ion.H"
@@ -689,13 +688,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
         curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofSaturation(curmat));
       MAT::PAR::FluidPoroPhaseDofSaturation* params =
           static_cast<MAT::PAR::FluidPoroPhaseDofSaturation*>(curmat->Parameter());
-      return params->CreateMaterial();
-    }
-    case INPAR::MAT::m_cavitation:
-    {
-      if (curmat->Parameter() == NULL) curmat->SetParameter(new MAT::PAR::CavitationFluid(curmat));
-      MAT::PAR::CavitationFluid* params =
-          static_cast<MAT::PAR::CavitationFluid*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_matlist:

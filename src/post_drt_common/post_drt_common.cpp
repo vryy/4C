@@ -622,8 +622,7 @@ void PostProblem::read_meshes()
         }
       }
 
-      if ((currfield.problem()->Problemtype() == prb_particle_old or
-              currfield.problem()->Problemtype() == prb_cavitation) and
+      if (currfield.problem()->Problemtype() == prb_particle_old and
           currfield.discretization()->Name() == "particle")
       {
         Teuchos::RCP<DRT::Discretization> particledis = currfield.discretization();

@@ -196,7 +196,6 @@ void ntacal()
       break;
 
     case prb_particle_old:
-    case prb_cavitation:
       particle_old_drt();
       break;
 

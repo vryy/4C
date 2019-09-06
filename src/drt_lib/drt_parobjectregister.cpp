@@ -111,7 +111,6 @@
 #include "../drt_mat/fluid_linear_density_viscosity.H"
 #include "../drt_mat/fluid_weakly_compressible.H"
 #include "../drt_mat/tempdepwater.H"
-#include "../drt_mat/cavitationfluid.H"
 #include "../drt_mat/arrhenius_spec.H"
 #include "../drt_mat/arrhenius_temp.H"
 #include "../drt_mat/arrhenius_pv.H"
@@ -322,7 +321,6 @@ std::string DRT::ParObjectList()
     << MAT::ArrheniusPVType::Instance().Name() << " " << MAT::ArrheniusSpecType::Instance().Name()
     << " " << MAT::ArrheniusTempType::Instance().Name() << " "
     << MAT::CarreauYasudaType::Instance().Name() << " "
-    << MAT::CavitationFluidType::Instance().Name() << " "
     << MAT::ConstraintMixtureType::Instance().Name() << " "
     << MAT::ConstraintMixtureHistoryType::Instance().Name() << " "
     << MAT::ElastHyperType::Instance().Name() << " "

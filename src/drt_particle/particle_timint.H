@@ -554,9 +554,6 @@ namespace PARTICLE
     //! flag for random distribution of particle radii
     const INPAR::PARTICLEOLD::RadiusDistribution radiusdistribution_;
 
-    //! bool to control whether radius is constant or variable in time
-    const bool variableradius_;
-
     //! number of curve governing radius change
     const int radiuschangefunct_;
 
