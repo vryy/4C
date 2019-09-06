@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Managing and evaluating of spatial functions
+\brief Managing and evaluating of space- and/or time-dependent functions
 
 \level 0
 
