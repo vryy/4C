@@ -25,6 +25,7 @@
 #include "../drt_fluid/fluid_functions.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/fluid_murnaghantait.H"
+#include "../drt_mat/fluid_weakly_compressible.H"
 
 #include "../drt_fem_general/drt_utils_polynomial.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"

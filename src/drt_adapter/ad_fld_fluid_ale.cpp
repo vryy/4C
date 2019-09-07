@@ -41,6 +41,18 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
 
   const int ndim = DRT::Problem::Instance()->NDim();
 
+  // default parameters for coupling
+  double tolerance = 1.e-3;
+  int nds_master = 0;
+  int nds_slave = 0;
+
+  // set nds_master = 2 in case of HDG discretization
+  // (nds = 0 used for trace values, nds = 1 used for interior values)
+  if (DRT::Problem::Instance()->SpatialApproximationType() == INPAR::PROBLEMTYPE::shapefunction_hdg)
+  {
+    nds_master = 2;
+  }
+
   // check for matching fluid and ale meshes (==true in default case)
   if (DRT::INPUT::IntegralValue<bool>(
           DRT::Problem::Instance()->FSIDynamicParams(), "MATCHGRID_FLUIDALE"))
@@ -58,7 +70,8 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
     Teuchos::RCP<ADAPTER::Coupling> coupfa_matching = Teuchos::rcp(new Coupling());
     coupfa_matching->SetupCoupling(*FluidField()->Discretization(), *AleField()->Discretization(),
         *fluidnodemap, *alenodemap, ndim,
-        DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->FSIDynamicParams(), "MATCHALL"));
+        DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->FSIDynamicParams(), "MATCHALL"),
+        tolerance, nds_master, nds_slave);
     coupfa_ = coupfa_matching;
   }
   else
@@ -104,7 +117,7 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
     Teuchos::RCP<Coupling> icoupfa = Teuchos::rcp(new Coupling());
     icoupfa->SetupConditionCoupling(*FluidField()->Discretization(),
         FluidField()->Interface()->FSICondMap(), *AleField()->Discretization(),
-        AleField()->Interface()->FSICondMap(), condname, ndim);
+        AleField()->Interface()->FSICondMap(), condname, ndim, true, nds_master, nds_slave);
     icoupfa_ = icoupfa;
   }
   else
@@ -137,14 +150,14 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
   fscoupfa_ = Teuchos::rcp(new Coupling());
   fscoupfa_->SetupConditionCoupling(*FluidField()->Discretization(),
       FluidField()->Interface()->FSCondMap(), *AleField()->Discretization(),
-      AleField()->Interface()->FSCondMap(), "FREESURFCoupling", ndim);
+      AleField()->Interface()->FSCondMap(), "FREESURFCoupling", ndim, true, nds_master, nds_slave);
 
   aucoupfa_ = Teuchos::rcp(new Coupling());
   aucoupfa_->SetupConditionCoupling(*FluidField()->Discretization(),
       FluidField()->Interface()->AUCondMap(), *AleField()->Discretization(),
-      AleField()->Interface()->AUCondMap(), "ALEUPDATECoupling", ndim);
+      AleField()->Interface()->AUCondMap(), "ALEUPDATECoupling", ndim, true, nds_master, nds_slave);
 
-  FluidField()->SetMeshMap(coupfa_->MasterDofMap());
+  FluidField()->SetMeshMap(coupfa_->MasterDofMap(), nds_master);
 
   // the ale matrix might be build just once
   AleField()->CreateSystemMatrix();

@@ -36,6 +36,8 @@ namespace INPAR
       incompressible,
       weakly_compressible,
       weakly_compressible_stokes,
+      weakly_compressible_dens_mom,
+      weakly_compressible_stokes_dens_mom,
       artcomp,
       boussinesq,
       varying_density,

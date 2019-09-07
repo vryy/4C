@@ -85,7 +85,8 @@ namespace FLD
     calc_mass_flow_periodic_hill,
     reset_immersed_ele,
     calc_velgrad_ele_center,
-    calc_pressure_average
+    calc_pressure_average,
+    update_local_solution
   };  // enum Action
 
   /*--------------------------------------------------------------------------
