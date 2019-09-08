@@ -225,7 +225,16 @@ namespace SCATRA
     //! set general parameters for element evaluation
     void SetElementGeneralParameters(Teuchos::ParameterList& parameters) const;
 
-    //! Set kinetic model specific parameters
+    /*!
+     * \brief Method sets the scatra-scatra interface condition specific values to the scatra
+     * element interface condition.
+     *
+     * \note Parameters are stored to the parameter class using the evaluate call at the end of this
+     * method.
+     *
+     * @param[in] s2icondition Scatra-scatra interface condition of which parameters are read and
+     * stored to the parameter class
+     */
     void SetConditionSpecificScaTraParameters(DRT::Condition& s2icondition) const;
 
     //! compute history vector, i.e., the history part of the right-hand side vector with all

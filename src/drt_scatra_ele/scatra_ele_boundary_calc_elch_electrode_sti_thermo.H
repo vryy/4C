@@ -41,39 +41,53 @@ namespace DRT
       //! singleton destruction
       virtual void Done();
 
-      //! evaluate off-diagonal system matrix contributions associated with scatra-scatra interface
-      //! coupling condition at integration point
+      /*!
+       * \brief evaluate off-diagonal system matrix contributions associated with scatra-scatra
+       *        interface coupling condition at integration point
+       *
+       * \remark This is a static method as it is also called from
+       *         `scatra_timint_meshtying_strategy_s2i_elch.cpp` for the mortar implementation.
+       *
+       * @param[in] matelectrode     electrode material
+       * @param[in] eslavephinp      scatra state variables at slave-side nodes
+       * @param[in] eslavetempnp     thermo state variables at slave-side nodes
+       * @param[in] emasterphinp     scatra state variables at master-side nodes
+       * @param[in] funct_slave      slave-side shape function values
+       * @param[in] funct_master     master-side shape function values
+       * @param[in] test_slave       slave-side test function values
+       * @param[in] test_master      master-side test function values
+       * @param[in] kineticmodel     kinetic model of scatra-scatra interface condition
+       * @param[in] numelectrons     number of electrons involved in charge transfer
+       * @param[in] stoichiometries  vector of stoichiometric coefficients for scatra-scatra
+       *                             interface
+       * @param[in] kr               charge transfer constant
+       * @param[in] alphaa           symmetry coefficient of anodic intercalation reaction
+       * @param[in] alphac           symmetry coefficient of cathodic intercalation reaction
+       * @param[in] timefacfac       time-integration factor times domain-integration factor
+       * @param[out] k_ss            linearizations of slave-side residuals w.r.t. slave-side dofs
+       * @param[out] k_ms            linearizations of master-side residuals w.r.t. slave-side dofs
+       *
+       * \tparam distype_master  This method is templated on the master-side discretization type.
+       */
       template <DRT::Element::DiscretizationType distype_master>
       static void EvaluateS2ICouplingODAtIntegrationPoint(
-          const Teuchos::RCP<const MAT::Electrode>& matelectrode,  //!< electrode material
-          const std::vector<LINALG::Matrix<my::nen_, 1>>&
-              eslavephinp,  //!< scatra state variables at slave-side nodes
-          const LINALG::Matrix<my::nen_, 1>&
-              eslavetempnp,  //!< thermo state variables at slave-side nodes
+          const Teuchos::RCP<const MAT::Electrode>& matelectrode,
+          const std::vector<LINALG::Matrix<my::nen_, 1>>& eslavephinp,
+          const LINALG::Matrix<my::nen_, 1>& eslavetempnp,
           const std::vector<LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
-              emasterphinp,  //!< scatra state variables at master-side nodes
-          const LINALG::Matrix<my::nen_, 1>& funct_slave,  //!< slave-side shape function values
+              emasterphinp,
+          const LINALG::Matrix<my::nen_, 1>& funct_slave,
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
-              funct_master,                               //!< master-side shape function values
-          const LINALG::Matrix<my::nen_, 1>& test_slave,  //!< slave-side test function values
+              funct_master,
+          const LINALG::Matrix<my::nen_, 1>& test_slave,
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
-              test_master,         //!< master-side test function values
-          const int kineticmodel,  //!< kinetic model of s2i condition,
-          const int numelectrons,  //! number of electrons involved in charge transfer
-          const std::vector<int>* stoichiometries,  //! vector of stoichiometric coefficients for
-                                                    //! scatra-scatra interface
-          const double kr,                          //! charge transfer constant
-          const double alphaa,      //! symmetry coefficient of anodic intercalation reaction
-          const double alphac,      //! symmetry coefficient of cathodic intercalation reaction
-          const double timefacfac,  //!< time-integration factor times domain-integration factor
-          Epetra_SerialDenseMatrix&
-              k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
-          Epetra_SerialDenseMatrix&
-              k_ms  //!< linearizations of master-side residuals w.r.t. slave-side dofs
-      );
+              test_master,
+          const int kineticmodel, const int numelectrons, const std::vector<int>* stoichiometries,
+          const double kr, const double alphaa, const double alphac, const double timefacfac,
+          Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_ms);
 
      private:
       //! private constructor for singletons

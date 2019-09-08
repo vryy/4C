@@ -154,29 +154,18 @@ template <DRT::Element::DiscretizationType distype>
 template <DRT::Element::DiscretizationType distype_master>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
     distype>::EvaluateS2ICouplingAtIntegrationPoint(const Teuchos::RCP<const MAT::Electrode>&
-                                                        matelectrode,  //!< electrode material
-    const LINALG::Matrix<my::nen_, 1>&
-        eslavetempnp,  //!< thermo state variables at slave-side nodes
-    const std::vector<LINALG::Matrix<my::nen_, 1>>&
-        eslavephinp,  //!< scatra state variables at slave-side nodes
+                                                        matelectrode,
+    const LINALG::Matrix<my::nen_, 1>& eslavetempnp,
+    const std::vector<LINALG::Matrix<my::nen_, 1>>& eslavephinp,
     const std::vector<
         LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
-        emasterphinp,  //!< scatra state variables at master-side nodes
+        emasterphinp,
     const LINALG::Matrix<my::nen_, 1>& funct_slave,  //!< slave-side shape function values
     const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
-        funct_master,            //!< master-side shape function values
-    const int kineticmodel,      //!< kinetic model
-    const double kr,             //! charge transfer constant
-    const double alphaa,         //! symmetry coefficient of anodic intercalation reaction
-    const double alphac,         //! symmetry coefficient of cathodic intercalation reaction
-    const double peltier,        //! peltier coefficient
-    const double timefacfac,     //!< time-integration factor times domain-integration factor
-    const double timefacrhsfac,  //!< time-integration factor for right-hand side times
-                                 //!< domain-integration factor
-    Epetra_SerialDenseMatrix&
-        k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
-    Epetra_SerialDenseVector& r_s  //!< slave-side residual vector
-)
+        funct_master,
+    const int kineticmodel, const double kr, const double alphaa, const double alphac,
+    const double peltier, const double timefacfac, const double timefacrhsfac,
+    Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseVector& r_s)
 {
   // evaluate dof values at current integration point on present and opposite side of scatra-scatra
   // interface
@@ -325,28 +314,18 @@ template <DRT::Element::DiscretizationType distype>
 template <DRT::Element::DiscretizationType distype_master>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
     distype>::EvaluateS2ICouplingODAtIntegrationPoint(const Teuchos::RCP<const MAT::Electrode>&
-                                                          matelectrode,  //!< electrode material
-    const LINALG::Matrix<my::nen_, 1>&
-        eslavetempnp,  //!< thermo state variables at slave-side nodes
-    const std::vector<LINALG::Matrix<my::nen_, 1>>&
-        eslavephinp,  //!< scatra state variables at slave-side nodes
+                                                          matelectrode,
+    const LINALG::Matrix<my::nen_, 1>& eslavetempnp,
+    const std::vector<LINALG::Matrix<my::nen_, 1>>& eslavephinp,
     const std::vector<
         LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
-        emasterphinp,  //!< scatra state variables at master-side nodes
-    const LINALG::Matrix<my::nen_, 1>& funct_slave,  //!< slave-side shape function values
-    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement,
-        1>& funct_master,     //!< master-side shape function values
-    const int kineticmodel,   //!< kinetic model
-    const double kr,          //! charge transfer constant
-    const double alphaa,      //! symmetry coefficient of anodic intercalation reaction
-    const double alphac,      //! symmetry coefficient of cathodic intercalation reaction
-    const double peltier,     //! peltier coefficient
-    const double timefacfac,  //!< time-integration factor times domain-integration factor
-    Epetra_SerialDenseMatrix&
-        k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
-    Epetra_SerialDenseMatrix&
-        k_sm  //!< linearizations of slave-side residuals w.r.t. master-side dofs
-)
+        emasterphinp,
+    const LINALG::Matrix<my::nen_, 1>& funct_slave,
+    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+        funct_master,
+    const int kineticmodel, const double kr, const double alphaa, const double alphac,
+    const double peltier, const double timefacfac, Epetra_SerialDenseMatrix& k_ss,
+    Epetra_SerialDenseMatrix& k_sm)
 {
   // number of nodes of master-side element
   const int nen_master = DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement;

@@ -179,14 +179,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateM
  *-------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS2ICoupling(
-    const DRT::FaceElement* ele,              ///< current boundary element
-    Teuchos::ParameterList& params,           ///< parameter list
-    DRT::Discretization& discretization,      ///< discretization
-    DRT::Element::LocationArray& la,          ///< location array
-    Epetra_SerialDenseMatrix& eslavematrix,   ///< element matrix for slave side
-    Epetra_SerialDenseMatrix& emastermatrix,  ///< element matrix for master side
-    Epetra_SerialDenseVector& eslaveresidual  ///< element residual for slave side
-)
+    const DRT::FaceElement* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    Epetra_SerialDenseMatrix& eslavematrix, Epetra_SerialDenseMatrix& emastermatrix,
+    Epetra_SerialDenseVector& eslaveresidual)
 {
   // safety checks
   if (my::numscal_ != 1) dserror("Invalid number of transported scalars!");
@@ -934,16 +930,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::ExtractNo
 template <DRT::Element::DiscretizationType distype>
 double
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::GetButlerVolmerCurrentDensity(
-    const double& i0,          //!< exchange current density
-    const double& alphaa,      //!< anodic transfer coefficient
-    const double& alphac,      //!< cathodic transfer coefficient
-    const double& frt,         //!< factor F/RT
-    const double& pot_ed,      //!< electrode-side electric potential
-    const double& pot_el,      //!< electrolyte-side electric potential
-    const double& epd,         //!< half-cell open-circuit potential
-    const double& resistance,  //!< scatra-scatra interface layer resistance
-    const double& thickness    //!< scatra-scatra interface layer thickness
-    ) const
+    const double i0, const double alphaa, const double alphac, const double frt,
+    const double pot_ed, const double pot_el, const double epd, const double resistance,
+    const double thickness) const
 {
   // initialize Butler-Volmer current density
   double i(0.);
@@ -1005,9 +994,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::GetButlerVolme
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::GetRegularizationFactor(
-    const double& thickness,  //!< scatra-scatra interface layer thickness
-    const double eta          //!< electrode-electrolyte overpotential at integration point
-    ) const
+    const double thickness, const double eta) const
 {
   // initialize regularization factor
   double regfac(1.);
@@ -1070,9 +1057,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::GetRegu
 template <DRT::Element::DiscretizationType distype>
 double
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::GetRegularizationFactorDerivative(
-    const double& thickness,  //!< scatra-scatra interface layer thickness
-    const double eta          //!< electrode-electrolyte overpotential at integration point
-    ) const
+    const double thickness, const double eta) const
 {
   // initialize derivative of regularization factor
   double regfacderiv(0.);

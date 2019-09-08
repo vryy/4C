@@ -152,39 +152,52 @@ namespace DRT
           DRT::Discretization& discretization, DRT::Condition& condition,
           DRT::Element::LocationArray& la, Epetra_SerialDenseVector& elevec1, const double scalar);
 
-      //! evaluate scatra-scatra interface coupling condition at integration point
+      /*!
+       * \brief evaluate scatra-scatra interface coupling condition at integration point
+       *
+       * \remark This is a static method as it is also called from
+       * `scatra_timint_meshtying_strategy_s2i.cpp` for the mortar implementation.
+       *
+       * @param[in] eslavephinp     state variables at slave-side nodes
+       * @param[in] emasterphinp    state variables at master-side nodes
+       * @param[in] funct_slave     slave-side shape function values
+       * @param[in] funct_master    master-side shape function values
+       * @param[in] test_slave      slave-side test function values
+       * @param[in] test_master     master-side test function values
+       * @param[in] numscal         number of transported scalars
+       * @param[in] kineticmodel    kinetic model of scatra-scatra interface condition
+       * @param[in] permeabilities  vector of permeabilities
+       * @param[in] timefacfac      time-integration factor times domain-integration factor
+       * @param[in] timefacrhsfac   time-integration factor for right-hand side times
+       *                            domain-integration factor
+       * @param[out] k_ss           linearizations of slave-side residuals w.r.t. slave-side dofs
+       * @param[out] k_sm           linearizations of slave-side residuals w.r.t. master-side dofs
+       * @param[out] k_ms           linearizations of master-side residuals w.r.t. slave-side dofs
+       * @param[out] k_mm           linearizations of master-side residuals w.r.t. master-side dofs
+       * @param[out] r_s            slave-side residual vector
+       * @param[out] r_m            master-side residual vector
+       *
+       * \tparam distype_master This method is templated on the master-side discretization type.
+       */
       template <DRT::Element::DiscretizationType distype_master>
       static void EvaluateS2ICouplingAtIntegrationPoint(
-          const std::vector<LINALG::Matrix<nen_, 1>>&
-              eslavephinp,  //!< state variables at slave-side nodes
+          const std::vector<LINALG::Matrix<nen_, 1>>& eslavephinp,
           const std::vector<LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
-              emasterphinp,                            //!< state variables at master-side nodes
-          const LINALG::Matrix<nen_, 1>& funct_slave,  //!< slave-side shape function values
+              emasterphinp,
+          const LINALG::Matrix<nen_, 1>& funct_slave,
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
-              funct_master,                           //!< master-side shape function values
-          const LINALG::Matrix<nen_, 1>& test_slave,  //!< slave-side test function values
+              funct_master,
+          const LINALG::Matrix<nen_, 1>& test_slave,
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
-              test_master,                            //!< master-side test function values
-          const int numscal,                          //!< number of transported scalars
-          const int kineticmodel,                     //!< kinetic model
-          const std::vector<double>* permeabilities,  //!< vector of permeabilities
-          const double timefacfac,     //!< time-integration factor times domain-integration factor
-          const double timefacrhsfac,  //!< time-integration factor for right-hand side times
-                                       //!< domain-integration factor
-          Epetra_SerialDenseMatrix&
-              k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
-          Epetra_SerialDenseMatrix&
-              k_sm,  //!< linearizations of slave-side residuals w.r.t. master-side dofs
-          Epetra_SerialDenseMatrix&
-              k_ms,  //!< linearizations of master-side residuals w.r.t. slave-side dofs
-          Epetra_SerialDenseMatrix&
-              k_mm,  //!< linearizations of master-side residuals w.r.t. master-side dofs
-          Epetra_SerialDenseVector& r_s,  //!< slave-side residual vector
-          Epetra_SerialDenseVector& r_m   //!< master-side residual vector
-      );
+              test_master,
+          const int numscal, const int kineticmodel, const std::vector<double>* permeabilities,
+          const double timefacfac, const double timefacrhsfac, Epetra_SerialDenseMatrix& k_ss,
+          Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseMatrix& k_ms,
+          Epetra_SerialDenseMatrix& k_mm, Epetra_SerialDenseVector& r_s,
+          Epetra_SerialDenseVector& r_m);
 
       //! computes mechanoresponsive scalar transport
       void CalcMechanotransduction(DRT::FaceElement* ele, Teuchos::ParameterList& params,

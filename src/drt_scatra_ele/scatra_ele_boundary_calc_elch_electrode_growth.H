@@ -65,15 +65,21 @@ namespace DRT
           DRT::Element::LocationArray& la                            //!< location array
       );
 
-      //! evaluate scatra-scatra interface coupling condition
-      void EvaluateS2ICoupling(const DRT::FaceElement* ele,  ///< current boundary element
-          Teuchos::ParameterList& params,                    ///< parameter list
-          DRT::Discretization& discretization,               ///< discretization
-          DRT::Element::LocationArray& la,                   ///< location array
-          Epetra_SerialDenseMatrix& eslavematrix,            ///< element matrix for slave side
-          Epetra_SerialDenseMatrix& emastermatrix,           ///< element matrix for master side
-          Epetra_SerialDenseVector& eslaveresidual           ///< element residual for slave side
-          ) override;
+      /*!
+       * \brief evaluate scatra-scatra interface coupling condition
+       *
+       * @param[in] ele              current boundary element
+       * @param[in] params           parameter list
+       * @param[in] discretization   discretization
+       * @param[in] la               location array
+       * @param[out] eslavematrix    element matrix for slave side
+       * @param[out] emastermatrix   element matrix for master side
+       * @param[out] eslaveresidual  element residual for slave side
+       */
+      void EvaluateS2ICoupling(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+          Epetra_SerialDenseMatrix& eslavematrix, Epetra_SerialDenseMatrix& emastermatrix,
+          Epetra_SerialDenseVector& eslaveresidual) override;
 
       //! evaluate global growth-growth matrix block for scatra-scatra interface coupling involving
       //! interface layer growth
@@ -112,30 +118,43 @@ namespace DRT
           DRT::Element::LocationArray& la                                //!< location array
       );
 
-      //! compute Butler-Volmer current density via Newton-Raphson iteration
-      double GetButlerVolmerCurrentDensity(const double& i0,  //!< exchange current density
-          const double& alphaa,                               //!< anodic transfer coefficient
-          const double& alphac,                               //!< cathodic transfer coefficient
-          const double& frt,                                  //!< factor F/RT
-          const double& pot_ed,                               //!< electrode-side electric potential
-          const double& pot_el,      //!< electrolyte-side electric potential
-          const double& epd,         //!< half-cell open-circuit potential
-          const double& resistance,  //!< scatra-scatra interface layer resistance
-          const double& thickness    //!< scatra-scatra interface layer thickness
-          ) const;
+      /*!
+       * \brief compute Butler-Volmer current density via Newton-Raphson iteration
+       *
+       * @param[in] i0         exchange current density
+       * @param[in] alphaa     symmetry coefficient of anodic intercalation reaction
+       * @param[in] alphac     symmetry coefficient of cathodic intercalation reaction
+       * @param[in] frt        factor F/RT
+       * @param[in] pot_ed     electrode-side electric potential
+       * @param[in] pot_el     electrolyte-side electric potential
+       * @param[in] epd        half-cell open-circuit potential
+       * @param[in] resistance scatra-scatra interface layer resistance
+       * @param[in] thickness  scatra-scatra interface layer thickness
+       * @return Butler-Volmer current density
+       */
+      double GetButlerVolmerCurrentDensity(const double i0, const double alphaa,
+          const double alphac, const double frt, const double pot_ed, const double pot_el,
+          const double epd, const double resistance, const double thickness) const;
 
-      //! compute regularization factor for lithium stripping
-      double GetRegularizationFactor(
-          const double& thickness,  //!< scatra-scatra interface layer thickness
-          const double eta          //!< electrode-electrolyte overpotential at integration point
-          ) const;
+      /*!
+       * \brief compute regularization factor for lithium stripping
+       *
+       * @param[in] thickness  scatra-scatra interface layer thickness
+       * @param[in] eta        electrode-electrolyte overpotential at integration point
+       * @return  return the regularization factor if regularization is applied
+       */
+      double GetRegularizationFactor(const double thickness, const double eta) const;
 
-      //! compute derivative of regularization factor for lithium stripping w.r.t. thickness of
-      //! plated lithium
-      double GetRegularizationFactorDerivative(
-          const double& thickness,  //!< scatra-scatra interface layer thickness
-          const double eta          //!< electrode-electrolyte overpotential at integration point
-          ) const;
+      /*!
+       * \brief compute derivative of regularization factor for lithium stripping w.r.t. thickness
+       * of plated lithium
+       *
+       * @param[in] thickness  scatra-scatra interface layer thickness
+       * @param[in] eta        electrode-electrolyte overpotential at integration point
+       * @return  return the derivative of the regularization factor w.r.t. thickness of deposited
+       * material if regularization is applied
+       */
+      double GetRegularizationFactorDerivative(const double thickness, const double eta) const;
 
       //! nodal growth variables
       LINALG::Matrix<my::nen_, 1> egrowth_;
