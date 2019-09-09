@@ -102,10 +102,10 @@ namespace SCATRA
     virtual ~MeshtyingStrategyS2I() { return; };
 
     //! provide global state vectors for element evaluation
-    void AddTimeIntegrationSpecificVectors() const;
+    void AddTimeIntegrationSpecificVectors() const override;
 
     //! compute time step size
-    virtual void ComputeTimeStepSize(double& dt) override;
+    void ComputeTimeStepSize(double& dt) override;
 
     //! return map extractor associated with blocks of global system matrix
     const LINALG::MultiMapExtractor& BlockMaps() const { return *blockmaps_; };
@@ -117,14 +117,14 @@ namespace SCATRA
     const LINALG::MultiMapExtractor& BlockMapsSlave() const { return *blockmaps_slave_; };
 
     //! compute time derivatives of discrete state variables
-    void ComputeTimeDerivative() const;
+    void ComputeTimeDerivative() const override;
 
     //! condense global system of equations
     void CondenseMatAndRHS(
         const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,  //!< system matrix
         const Teuchos::RCP<Epetra_Vector>& residual,               //!< residual vector
         const bool calcinittimederiv = false  //!< flag for calculation of initial time derivative
-        ) const;
+        ) const override;
 
     //! return interface coupling adapter
     const Teuchos::RCP<const ADAPTER::Coupling> CouplingAdapter() const { return icoup_; };
@@ -133,13 +133,13 @@ namespace SCATRA
     const INPAR::S2I::CouplingType& CouplingType() const { return couplingtype_; }
 
     //! return global map of degrees of freedom
-    const Epetra_Map& DofRowMap() const;
+    const Epetra_Map& DofRowMap() const override;
 
     //! return flag for equilibration of global system of equations
     const INPAR::S2I::EquilibrationMethods& Equilibration() const { return equilibration_; };
 
     //! compute meshtying residual terms and their linearizations
-    virtual void EvaluateMeshtying();
+    void EvaluateMeshtying() override;
 
     //! evaluate mortar integration cells
     void EvaluateMortarCells(const DRT::Discretization& idiscret,  //!< interface discretization
@@ -150,7 +150,7 @@ namespace SCATRA
         ) const;
 
     //! explicit predictor step to obtain better starting value for Newton-Raphson iteration
-    void ExplicitPredictor() const;
+    void ExplicitPredictor() const override;
 
     //! extract selected rows from a sparse matrix
     static void ExtractMatrixRows(const LINALG::SparseMatrix& matrix,  //!< source matrix
@@ -172,10 +172,10 @@ namespace SCATRA
     const Teuchos::RCP<Epetra_Vector>& GrowthVarNp() const { return growthnp_; };
 
     //! perform initialization of scatra-scatra interface coupling
-    void InitMeshtying();
+    void InitMeshtying() override;
 
     //! initialize system matrix
-    Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const;
+    Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const override;
 
     //! return interface map extractor
     const Teuchos::RCP<LINALG::MultiMapExtractor>& InterfaceMaps() const { return interfacemaps_; };
@@ -209,10 +209,10 @@ namespace SCATRA
     DRT::Discretization& MortarDiscretization(const int& condid) const;
 
     //! output solution for post-processing
-    void Output() const;
+    void Output() const override;
 
     //! output restart information
-    void OutputRestart() const;
+    void OutputRestart() const override;
 
     //! return mortar projector P
     const Teuchos::RCP<LINALG::SparseMatrix>& P() const { return P_; };
@@ -220,10 +220,10 @@ namespace SCATRA
     //! read restart data
     void ReadRestart(const int step,                          //!< restart step
         Teuchos::RCP<IO::InputControl> input = Teuchos::null  //!< control file manager
-        ) const;
+        ) const override;
 
     //! set general parameters for element evaluation
-    void SetElementGeneralParameters(Teuchos::ParameterList& parameters) const;
+    void SetElementGeneralParameters(Teuchos::ParameterList& parameters) const override;
 
     /*!
      * \brief Method sets the scatra-scatra interface condition specific values to the scatra
@@ -239,10 +239,10 @@ namespace SCATRA
 
     //! compute history vector, i.e., the history part of the right-hand side vector with all
     //! contributions from the previous time step
-    void SetOldPartOfRHS() const;
+    void SetOldPartOfRHS() const override;
 
     //! perform setup of scatra-scatra interface coupling
-    void SetupMeshtying();
+    void SetupMeshtying() override;
 
     //! return auxiliary system matrix for linearizations of slave fluxes w.r.t. slave dofs
     //! (non-mortar case) or slave and master dofs (mortar case)
@@ -256,13 +256,13 @@ namespace SCATRA
         const Teuchos::RCP<Epetra_Vector>& phinp,                  //!< state vector at time n+1
         const int& iteration,  //!< number of current Newton-Raphson iteration
         const Teuchos::RCP<LINALG::KrylovProjector>& projector  //!< Krylov projector
-        ) const;
+        ) const override;
 
     //! return linear solver for global system of linear equations
-    const LINALG::Solver& Solver() const;
+    const LINALG::Solver& Solver() const override;
 
     //! update solution after convergence of the nonlinear Newton-Raphson iteration
-    virtual void Update() const;
+    void Update() const override;
 
    protected:
     //! build maps associated with blocks of global system matrix
@@ -276,7 +276,7 @@ namespace SCATRA
     virtual void BuildBlockNullSpaces() const;
 
     //! instantiate strategy for Newton-Raphson convergence check
-    virtual void InitConvCheckStrategy();
+    void InitConvCheckStrategy() override;
 
     //! interface map extractor (0: other, 1: slave, 2: master)
     Teuchos::RCP<LINALG::MultiMapExtractor> interfacemaps_;
@@ -760,24 +760,24 @@ namespace SCATRA
     );
 
     //! singleton destruction
-    virtual void Done();
+    void Done() override;
 
     //! evaluate single mortar integration cell of particular slave-side and master-side
     //! discretization types
-    virtual void Evaluate(const DRT::Discretization& idiscret,  //!< interface discretization
-        MORTAR::IntCell& cell,                                  //!< mortar integration cell
-        MORTAR::MortarElement& slaveelement,                    //!< slave-side mortar element
-        MORTAR::MortarElement& masterelement,                   //!< master-side mortar element
-        DRT::Element::LocationArray& la_slave,                  //!< slave-side location array
-        DRT::Element::LocationArray& la_master,                 //!< master-side location array
-        const Teuchos::ParameterList& params,                   //!< parameter list
-        Epetra_SerialDenseMatrix& cellmatrix1,                  //!< cell matrix 1
-        Epetra_SerialDenseMatrix& cellmatrix2,                  //!< cell matrix 2
-        Epetra_SerialDenseMatrix& cellmatrix3,                  //!< cell matrix 3
-        Epetra_SerialDenseMatrix& cellmatrix4,                  //!< cell matrix 4
-        Epetra_SerialDenseVector& cellvector1,                  //!< cell vector 1
-        Epetra_SerialDenseVector& cellvector2                   //!< cell vector 2
-    );
+    void Evaluate(const DRT::Discretization& idiscret,  //!< interface discretization
+        MORTAR::IntCell& cell,                          //!< mortar integration cell
+        MORTAR::MortarElement& slaveelement,            //!< slave-side mortar element
+        MORTAR::MortarElement& masterelement,           //!< master-side mortar element
+        DRT::Element::LocationArray& la_slave,          //!< slave-side location array
+        DRT::Element::LocationArray& la_master,         //!< master-side location array
+        const Teuchos::ParameterList& params,           //!< parameter list
+        Epetra_SerialDenseMatrix& cellmatrix1,          //!< cell matrix 1
+        Epetra_SerialDenseMatrix& cellmatrix2,          //!< cell matrix 2
+        Epetra_SerialDenseMatrix& cellmatrix3,          //!< cell matrix 3
+        Epetra_SerialDenseMatrix& cellmatrix4,          //!< cell matrix 4
+        Epetra_SerialDenseVector& cellvector1,          //!< cell vector 1
+        Epetra_SerialDenseVector& cellvector2           //!< cell vector 2
+        ) override;
 
     //! evaluate single slave-side node for node-to-segment coupling
     void EvaluateNTS(const DRT::Discretization& idiscret,  //!< interface discretization
@@ -795,7 +795,7 @@ namespace SCATRA
         Epetra_SerialDenseMatrix& ntsmatrix4,    //!< node-to-segment matrix 4
         Epetra_SerialDenseVector& ntsvector1,    //!< node-to-segment vector 1
         Epetra_SerialDenseVector& ntsvector2     //!< node-to-segment vector 2
-    );
+        ) override;
 
     //! evaluate single mortar element
     void EvaluateMortarElement(const DRT::Discretization& idiscret,  //!< interface discretization
@@ -808,7 +808,7 @@ namespace SCATRA
         Epetra_SerialDenseMatrix& elematrix4,                        //!< element matrix 4
         Epetra_SerialDenseVector& elevector1,                        //!< element vector 1
         Epetra_SerialDenseVector& elevector2                         //!< element vector 2
-    );
+        ) override;
 
    protected:
     //! number of slave element nodes

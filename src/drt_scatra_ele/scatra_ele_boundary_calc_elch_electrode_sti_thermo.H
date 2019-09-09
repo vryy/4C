@@ -101,7 +101,7 @@ namespace DRT
           DRT::Discretization& discretization,                 ///< discretization
           DRT::Element::LocationArray& la,                     ///< location array
           Epetra_SerialDenseMatrix& eslavematrix               ///< element matrix for slave side
-      );
+          ) override;
 
       //! evaluate action
       int EvaluateAction(DRT::FaceElement* ele,      //!< boundary element
@@ -114,15 +114,15 @@ namespace DRT
           Epetra_SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
           Epetra_SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
           Epetra_SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
-      );
+          ) override;
 
       //! extract nodal state variables associated with boundary element
       void ExtractNodeValues(const DRT::Discretization& discretization,  //!< discretization
           DRT::Element::LocationArray& la                                //!< location array
-      );
+          ) override;
 
       //! evaluate factor F/RT
-      double GetFRT() const;
+      double GetFRT() const override;
 
       //! nodal temperature variables associated with time t_{n+1} or t_{n+alpha_f}
       LINALG::Matrix<my::nen_, 1> etempnp_;

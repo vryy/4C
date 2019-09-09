@@ -55,7 +55,7 @@ namespace DRT
           Epetra_SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
           Epetra_SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
           Epetra_SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
-      );
+          ) override;
 
       //! evaluate minimum and maximum interfacial overpotential associated with scatra-scatra
       //! interface layer growth
@@ -116,7 +116,7 @@ namespace DRT
       //! extract nodal state variables associated with boundary element
       void ExtractNodeValues(const DRT::Discretization& discretization,  //!< discretization
           DRT::Element::LocationArray& la                                //!< location array
-      );
+          ) override;
 
       /*!
        * \brief compute Butler-Volmer current density via Newton-Raphson iteration

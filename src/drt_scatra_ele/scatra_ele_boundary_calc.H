@@ -134,11 +134,11 @@ namespace DRT
           DRT::Element::LocationArray& la);
 
       //! Evaluate the element (using location array)
-      virtual int Evaluate(DRT::FaceElement* ele, Teuchos::ParameterList& params,
+      int Evaluate(DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
           Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-          Epetra_SerialDenseVector& elevec3_epetra);
+          Epetra_SerialDenseVector& elevec3_epetra) override;
 
       //! evaluate action
       virtual int EvaluateAction(DRT::FaceElement* ele, Teuchos::ParameterList& params,
@@ -148,9 +148,10 @@ namespace DRT
           Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra);
 
       //! evaluate Neumann boundary condition
-      virtual int EvaluateNeumann(DRT::FaceElement* ele, Teuchos::ParameterList& params,
+      int EvaluateNeumann(DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition,
-          DRT::Element::LocationArray& la, Epetra_SerialDenseVector& elevec1, const double scalar);
+          DRT::Element::LocationArray& la, Epetra_SerialDenseVector& elevec1,
+          const double scalar) override;
 
       /*!
        * \brief evaluate scatra-scatra interface coupling condition at integration point

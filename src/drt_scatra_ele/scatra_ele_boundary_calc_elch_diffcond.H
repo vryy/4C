@@ -57,12 +57,13 @@ namespace DRT
           Epetra_SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
           Epetra_SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
           Epetra_SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
-      );
+          ) override;
 
       //! evaluate Neumann boundary condition
       int EvaluateNeumann(DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition,
-          DRT::Element::LocationArray& la, Epetra_SerialDenseVector& elevec1, const double scalar);
+          DRT::Element::LocationArray& la, Epetra_SerialDenseVector& elevec1,
+          const double scalar) override;
 
       //! evaluate an electrode kinetics boundary condition
       void EvaluateElchBoundaryKinetics(const DRT::Element* ele,  ///< current element
@@ -81,7 +82,7 @@ namespace DRT
           const double frt,                   ///< factor F/RT
           const double
               scalar  ///< scaling factor for element matrix and right-hand side contributions
-      );
+          ) override;
 
       /*!
        * \brief evaluate scatra-scatra interface coupling condition
@@ -102,7 +103,7 @@ namespace DRT
       //! extract valence of species k from element material
       double GetValence(const Teuchos::RCP<const MAT::Material>& material,  //! element material
           const int k                                                       //! species number
-          ) const;
+          ) const override;
 
       //! diffusion manager
       Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc_;

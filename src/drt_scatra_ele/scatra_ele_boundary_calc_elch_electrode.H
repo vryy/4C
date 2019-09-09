@@ -104,29 +104,28 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! evaluate scatra-scatra interface coupling condition
-      virtual void EvaluateS2ICoupling(const DRT::FaceElement* ele,  ///< current boundary element
-          Teuchos::ParameterList& params,                            ///< parameter list
-          DRT::Discretization& discretization,                       ///< discretization
-          DRT::Element::LocationArray& la,                           ///< location array
-          Epetra_SerialDenseMatrix& eslavematrix,   ///< element matrix for slave side
-          Epetra_SerialDenseMatrix& emastermatrix,  ///< element matrix for master side
-          Epetra_SerialDenseVector& eslaveresidual  ///< element residual for slave side
-      );
+      void EvaluateS2ICoupling(const DRT::FaceElement* ele,  ///< current boundary element
+          Teuchos::ParameterList& params,                    ///< parameter list
+          DRT::Discretization& discretization,               ///< discretization
+          DRT::Element::LocationArray& la,                   ///< location array
+          Epetra_SerialDenseMatrix& eslavematrix,            ///< element matrix for slave side
+          Epetra_SerialDenseMatrix& emastermatrix,           ///< element matrix for master side
+          Epetra_SerialDenseVector& eslaveresidual           ///< element residual for slave side
+          ) override;
 
       //! evaluate off-diagonal system matrix contributions associated with scatra-scatra interface
       //! coupling condition
-      virtual void EvaluateS2ICouplingOD(const DRT::FaceElement* ele,  ///< current boundary element
-          Teuchos::ParameterList& params,                              ///< parameter list
-          DRT::Discretization& discretization,                         ///< discretization
-          DRT::Element::LocationArray& la,                             ///< location array
-          Epetra_SerialDenseMatrix& eslavematrix  ///< element matrix for slave side
-      );
+      void EvaluateS2ICouplingOD(const DRT::FaceElement* ele,  ///< current boundary element
+          Teuchos::ParameterList& params,                      ///< parameter list
+          DRT::Discretization& discretization,                 ///< discretization
+          DRT::Element::LocationArray& la,                     ///< location array
+          Epetra_SerialDenseMatrix& eslavematrix               ///< element matrix for slave side
+          ) override;
 
       //! extract valence of species k from element material
-      virtual double GetValence(
-          const Teuchos::RCP<const MAT::Material>& material,  //! element material
-          const int k                                         //! species number
-          ) const;
+      double GetValence(const Teuchos::RCP<const MAT::Material>& material,  //! element material
+          const int k                                                       //! species number
+          ) const override;
 
       //! evaluate factor F/RT
       virtual double GetFRT() const;
