@@ -23,12 +23,17 @@
 FLD::FluidResultTest::FluidResultTest(FluidImplicitTimeInt& fluid) : DRT::ResultTest("FLUID")
 {
   fluiddis_ = fluid.discret_;
-  mysol_ = fluid.velnp_;
-  mytraction_ = fluid.stressmanager_->GetPreCalcStresses(fluid.trueresidual_);
-  mywss_ = fluid.stressmanager_->GetPreCalcWallShearStresses(fluid.trueresidual_);
   myerror_ = fluid.EvaluateErrorComparedToAnalyticalSol();
-  mydivu_ = fluid.EvaluateDivU();
-  mydensity_scaling_ = fluid.density_scaling_;
+  mysol_ = fluid.velnp_;
+
+  // quantities not implemented in the HDG formulation
+  if (DRT::Problem::Instance()->SpatialApproximation() != "HDG")
+  {
+    mytraction_ = fluid.stressmanager_->GetPreCalcStresses(fluid.trueresidual_);
+    mywss_ = fluid.stressmanager_->GetPreCalcWallShearStresses(fluid.trueresidual_);
+    mydivu_ = fluid.EvaluateDivU();
+    mydensity_scaling_ = fluid.density_scaling_;
+  }
 }
 
 
