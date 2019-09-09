@@ -136,40 +136,6 @@ namespace DRT
           Epetra_SerialDenseVector& elevec1             //< reference to element vector to be filled
       );
 
-      /*! \brief Calculate material derivative of fluid velocity at specified element coordinates
-       *
-       *   elevec1 contains on return \f$u\f$
-       *   elevec2 contains on return \f$\frac{Du}{Dt} = \frac{du}{dt} + u grad(u)\f$
-       *   elevec3 contains on return \f$rot(u)\f$
-       *
-       *   \author ghamm
-       *   \date   01/2013
-       */
-      virtual int CalcMatDerivAndRotU(DRT::ELEMENTS::Fluid* ele,  //< current fluid element
-          Teuchos::ParameterList& params,                         //< parameter list
-          DRT::Discretization& discretization,                    //< fluid discretization
-          std::vector<int>& lm,               //< location vector for DOF management
-          Epetra_SerialDenseVector& elevec1,  //< reference to element vector to be filled
-          Epetra_SerialDenseVector& elevec2,  //< reference to element vector to be filled
-          Epetra_SerialDenseVector& elevec3   //< reference to element vector to be filled
-      );
-
-      /*! \brief Calculate pressure gradient and stress term at specified element coordinates
-       *
-       *   elevec1 contains on return \f$grad(p)\f$
-       *   elevec2 contains on return \f$div(epsilon(u)) - div((1/3)*(div u)*I)\f$
-       *
-       *   \author ghamm
-       *   \date   06/2014
-       */
-      virtual int CalcPressGradAndDivEps(DRT::ELEMENTS::Fluid* ele,  //< current fluid element
-          Teuchos::ParameterList& params,                            //< parameter list
-          DRT::Discretization& discretization,                       //< fluid discretization
-          std::vector<int>& lm,               //< location vector for DOF management
-          Epetra_SerialDenseVector& elevec1,  //< reference to element vector to be filled
-          Epetra_SerialDenseVector& elevec2   //< reference to element vector to be filled
-      );
-
       /*! \brief Calculate element mass matrix
        *
        *  \author mayr.mt \date 05/2014
@@ -284,16 +250,6 @@ namespace DRT
           DRT::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::RCP<MAT::Material>& mat);
 
-      /*! \brief Calculate volume integral over the element for computing the void fraction
-       *  for this element using a fourth order clipped polynomial
-       *
-       *   \author ghamm
-       *   \date   07/2013
-       */
-      virtual int ComputeVolumeIntegral(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1);
-
       /*! \brief Calculate mass flow for periodic hill
        *
        *  \author bk \date 12/2014
@@ -302,15 +258,6 @@ namespace DRT
           Teuchos::ParameterList& params, DRT::Discretization& discretization,
           const std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
           Teuchos::RCP<MAT::Material>& mat);
-
-      /*! \brief Project void fraction from element level to nodal level
-       *
-       *   \author ghamm
-       *   \date   04/2014
-       */
-      virtual int FluidFractionProjection(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseVector& elevec1);
 
       /*! \brief Project velocity gradient to nodal level
        *
