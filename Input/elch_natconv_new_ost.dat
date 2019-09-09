@@ -23,7 +23,6 @@ TIMEINTEGR                      One_Step_Theta
 NONLINITER                      Newton //fixed_point_like //Newton
 ITEMAX                          8
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-6
 RESULTSEVRY                           1
 RESTARTEVRY                     10
 NUMSTEP                         10
@@ -41,6 +40,11 @@ SIMPLER                         No
 PHYSICAL_TYPE                   Varying_density
 OST_CONT_PRESS                  Cont_normal_Press_normal //Cont_normal_Press_normal //Cont_impl_Press_impl
 NEW_OST                         yes
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-6
+TOL_VEL_INC	  1.0E-6
+TOL_PRES_RES	  1.0E-6
+TOL_PRES_INC	  1.0E-6
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall //Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall

@@ -53,9 +53,13 @@ ITEMAX                          3
 TIMESTEP                        1.0
 MAXTIME                         1.0
 THETA                           1.0
-CONVTOL                         1e-12
 GMSH_OUTPUT                     No
 GEOMETRY                        box
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1e-12
+TOL_VEL_INC	  1e-12
+TOL_PRES_RES	  1e-12
+TOL_PRES_INC	  1e-12
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based
 INCONSISTENT                    No

@@ -36,7 +36,6 @@ ALPHA_M                         1
 CALCERROR                       no
 CONVCHECK                       L_2_norm
 CONVFORM                        convective
-CONVTOL                         1e-06
 GAMMA                           1
 GMSH_OUTPUT                     No
 GRIDVEL                         OST
@@ -64,6 +63,11 @@ THETA                           0.9
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.01
 RESULTSEVRY                           1
+--------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1e-06
+TOL_VEL_INC	  1e-06
+TOL_PRES_RES	  1e-06
+TOL_PRES_INC	  1e-06
 ----------------------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
 CROSS-STRESS                    no_cross
 DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina

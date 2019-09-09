@@ -35,12 +35,16 @@ TIMESTEP                        0.05
 THETA                           0.50
 ITEMAX                          5
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-6
 NUMSTASTEPS                     0
 INITIALFIELD                    zero_field
 ADAPTCONV                       no
 ADAPTCONV_BETTER                1.0
 SIMPLER                         no
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-6
+TOL_VEL_INC	  1.0E-6
+TOL_PRES_RES	  1.0E-6
+TOL_PRES_INC	  1.0E-6
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 TDS                             quasistatic

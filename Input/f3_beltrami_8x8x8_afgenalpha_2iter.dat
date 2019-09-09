@@ -39,7 +39,6 @@ ALPHA_M                         0.833333
 GAMMA                           0.666666
 CONVCHECK                       L_2_norm
 CONVFORM convective //conservative
-CONVTOL                         1e-06
 GRIDVEL                         BE
 ITEMAX                          1
 MAXTIME                         0.5
@@ -54,6 +53,11 @@ TIMEINTEGR                      Af_Gen_Alpha
 TIMESTEP                        0.05
 RESULTSEVRY                           8
 MESHTYING                       no
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1e-06
+TOL_VEL_INC	  1e-06
+TOL_PRES_RES	  1e-06
+TOL_PRES_INC	  1e-06
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross                        // Cross stress term not available in combust fluid
 GRAD_DIV                        yes

@@ -59,8 +59,12 @@ GRIDVEL                         BE
 RESULTSEVRY                     1
 RESTARTEVRY                     99999
 THETA                           0.67
-CONVTOL                         1e-07
 START_THETA                     0.67
+--------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1e-07
+TOL_VEL_INC	  1e-07
+TOL_PRES_RES	  1e-07
+TOL_PRES_INC	  1e-07
 ----------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
 STAB_BIOT                       No
 STAB_BIOT_SCALING               1

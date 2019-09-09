@@ -56,8 +56,12 @@ INITSTATITEMAX                  5
 ALPHA_M                         0.83333333333333
 ALPHA_F                         0.66666666666666
 GAMMA                           0.66666666666666
-CONVTOL                         1e-06
 OFF_PROC_ASSEMBLY               Yes
+--------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1e-06
+TOL_VEL_INC	  1e-06
+TOL_PRES_RES	  1e-06
+TOL_PRES_INC	  1e-06
 -------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 INCONSISTENT                    No

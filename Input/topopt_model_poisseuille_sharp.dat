@@ -56,7 +56,6 @@ INITIALFIELD                    zero_field//field_by_function
 TESTCASE                        test_primal
 ------------------------------------------------------FLUID DYNAMIC
 CALCERROR  topopt_channel
-CONVTOL                         1e-10
 GMSH_OUTPUT                     no
 INITIALFIELD                    field_by_function
 ITEMAX                          20
@@ -68,6 +67,11 @@ STARTFUNCNO                     1
 THETA                           1.0
 TIMEINTEGR                      Stationary
 TIMESTEP  1.0
+--------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1e-10
+TOL_VEL_INC	  1e-10
+TOL_PRES_RES	  1e-10
+TOL_PRES_INC	  1e-10
 -------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        yes

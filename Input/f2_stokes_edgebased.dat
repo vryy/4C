@@ -35,9 +35,13 @@ NUMSTEP                         1
 NONLINITER                      fixed_point_like
 ITEMAX                          2
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-9
 NUMSTASTEPS                     0
 INITIALFIELD                    zero_field
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-9
+TOL_VEL_INC	  1.0E-9
+TOL_PRES_RES	  1.0E-9
+TOL_PRES_INC	  1.0E-9
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based
 TRANSIENT                       no_transient

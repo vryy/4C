@@ -143,12 +143,16 @@ INITIALFIELD                    zero_field
 CONVFORM                        convective
 START_THETA                     1
 THETA                           1.0
-CONVTOL                         1e-07
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.001
 CONVCHECK                       L_2_norm
 STARTFUNCNO                     -1
 ITEMAX                          10
+--------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1e-07
+TOL_VEL_INC	  1e-07
+TOL_PRES_RES	  1e-07
+TOL_PRES_INC	  1e-07
 ------------------------------------------------------POROELASTICITY DYNAMIC
 LINEAR_SOLVER                   1
 COUPALGO                        poro_monolithic

@@ -28,7 +28,6 @@ TIMEINTEGR                      Af_Gen_Alpha //BDF2
 NONLINITER                      Newton
 ITEMAX                          12
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-6
 RESULTSEVRY                           1
 RESTARTEVRY                     1
 NUMSTEP                         3270
@@ -43,6 +42,11 @@ GAMMA                           1.00
 LIFTDRAG                        no
 ADAPTCONV                       no
 ADAPTCONV_BETTER                0.01
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-6
+TOL_VEL_INC	  1.0E-6
+TOL_PRES_RES	  1.0E-6
+TOL_PRES_INC	  1.0E-6
 -----------------------------------------------------------------ALE DYNAMIC
 TIMESTEP                        0.1
 NUMSTEP                         41

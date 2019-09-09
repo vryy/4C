@@ -65,7 +65,6 @@ ALPHA_F                         1
 ALPHA_M                         1
 GAMMA                           1
 CONVCHECK                       L_2_norm                      // No,L_infinity_norm,L_1_norm,L_2_norm,L_2_norm_without_residual_at_itemax
-CONVTOL                         1e-04
 GRIDVEL                         BE
 INITIALFIELD                    zero_field
 ITEMAX                          20
@@ -83,6 +82,11 @@ SIMPLER                         no
 THETA                           0.66                          // Time integration factor
 TIMEINTEGR                      One_Step_Theta                // One_Step_Theta BDF2
 NONLINEARBC                     yes
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1e-04
+TOL_VEL_INC	  1e-04
+TOL_PRES_RES	  1e-04
+TOL_PRES_INC	  1e-04
 -----------------------------------------------------------------ALE DYNAMIC
 ALE_TYPE                        solid
 RESULTSEVRY                     1

@@ -48,7 +48,6 @@ INITFUNCNO                      3
 INITIALFIELD                    field_by_function
 TESTCASE                        test_no
 ------------------------------------------------------FLUID DYNAMIC
-CONVTOL                         1e-10
 INFNORMSCALING                  no
 INITIALFIELD                    zero_field // field_by_function
 INITSTATITEMAX                  5
@@ -67,6 +66,11 @@ START_THETA                     1.0
 STEADYSTEP                      -1
 THETA                           1.0
 TIMEINTEGR                      Stationary
+--------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1e-10
+TOL_VEL_INC	  1e-10
+TOL_PRES_RES	  1e-10
+TOL_PRES_INC	  1e-10
 ---------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        no

@@ -54,8 +54,12 @@ THETA                           1.0
 NONLINITER                      fixed_point_like
 ITEMAX                          10
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-8
 INITIALFIELD                    zero_field
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-8
+TOL_VEL_INC	  1.0E-8
+TOL_PRES_RES	  1.0E-8
+TOL_PRES_INC	  1.0E-8
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 CHARELELENGTH_PC                root_of_volume

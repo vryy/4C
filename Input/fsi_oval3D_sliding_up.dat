@@ -31,7 +31,6 @@ ALPHA_F                         1
 ALPHA_M                         1
 CONVCHECK                       L_2_norm
 CONVFORM                        convective
-CONVTOL                         1e-06
 GAMMA                           1
 GRIDVEL                         BE
 INITIALFIELD                    zero_field
@@ -41,6 +40,11 @@ NONLINITER                      fixed_point_like
 PREDICTOR                       steady_state
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1e-06
+TOL_VEL_INC	  1e-06
+TOL_PRES_RES	  1e-06
+TOL_PRES_INC	  1e-06
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        yes

@@ -30,7 +30,6 @@ ADAPTCONV_BETTER                0.1
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 CONVCHECK                       L_2_norm
-CONVTOL                         1e-12
 INITIALFIELD                    field_by_function
 ITEMAX                          10
 LIFTDRAG                        No
@@ -47,6 +46,11 @@ TIMESTEP                        1.0
 RESULTSEVRY                           1
 PHYSICAL_TYPE                   Incompressible
 LINEAR_SOLVER                   1
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1e-12
+TOL_VEL_INC	  1e-12
+TOL_PRES_RES	  1e-12
+TOL_PRES_INC	  1e-12
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   2
 ALE_TYPE                        springs_spatial

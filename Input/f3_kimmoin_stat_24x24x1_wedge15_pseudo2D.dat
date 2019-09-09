@@ -42,7 +42,6 @@ TIMEINTEGR       One_Step_Theta
 NONLINITER       fixed_point_like
 ITEMAX           10
 CONVCHECK        L_2_norm
-CONVTOL          1.0E-10
 RESTARTEVRY      0
 NUMSTEP          1
 NUMSTASTEPS      0
@@ -58,6 +57,11 @@ ADAPTCONV_BETTER 0.1
 SIMPLER          No
 GMSH_OUTPUT      yes
 GEOMETRY                        box
+-------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-10
+TOL_VEL_INC	  1.0E-10
+TOL_PRES_RES	  1.0E-10
+TOL_PRES_INC	  1.0E-10
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall

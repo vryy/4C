@@ -121,7 +121,6 @@ ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 ALPHA_F                         1.00
 ALPHA_M                         1.00
-CONVTOL                         1e-13
 INITIALFIELD                    zero_field
 ITEMAX                          10
 LIFTDRAG                        Yes
@@ -135,6 +134,11 @@ THETA                           1.0
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.01//0.02
 INFNORMSCALING                  no
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1e-13
+TOL_VEL_INC	  1e-13
+TOL_PRES_RES	  1e-13
+TOL_PRES_INC	  1e-13
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall_wo_dt// Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt// Franca_Barrenechea_Valentin_Frey_Wall_wo_dt  //

@@ -82,7 +82,6 @@ STARTFUNCNO                     3
 NONLINITER                      Newton
 ITEMAX                          5
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-6
 RESULTSEVRY                           1
 RESTARTEVRY                     20
 NUMSTEP                         3
@@ -95,6 +94,11 @@ LIFTDRAG                        no
 ADAPTCONV                       no
 PHYSICAL_TYPE                   Incompressible
 PREDICTOR                       steady_state
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-6
+TOL_VEL_INC	  1.0E-6
+TOL_PRES_RES	  1.0E-6
+TOL_PRES_INC	  1.0E-6
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
 EVALUATION_TAU                  integration_point

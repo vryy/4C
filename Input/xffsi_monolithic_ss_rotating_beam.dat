@@ -26,7 +26,6 @@ ADAPTCONV_BETTER                0.1
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 CONVCHECK                       L_2_norm
-CONVTOL                         1e-8
 INITIALFIELD                    zero_field                    //field_by_function
 ITEMAX                          25
 LIFTDRAG                        No
@@ -42,6 +41,11 @@ TIMEINTEGR                      One_Step_Theta                //Stationary
 TIMESTEP                        0.01//0.003125                //0.00625
 NONLINEARBC                     no
 LINEAR_SOLVER                   1
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1e-8
+TOL_VEL_INC	  1e-8
+TOL_PRES_RES	  1e-8
+TOL_PRES_INC	  1e-8
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based                    // residual_based //
 TDS                             quasistatic

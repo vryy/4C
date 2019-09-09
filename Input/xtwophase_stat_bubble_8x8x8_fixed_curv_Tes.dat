@@ -56,7 +56,6 @@ TIMEINTEGR                      Stationary                    //Stationary //One
 NONLINITER                      fixed_point_like
 ITEMAX                          10
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-14
 RESULTSEVRY                           1
 RESTARTEVRY                     10
 NUMSTASTEPS                     0
@@ -75,6 +74,11 @@ PREDICTOR                       steady_state
 MAXTIME                         1
 NUMSTEP                         1
 TIMESTEP                        0.01
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-14
+TOL_VEL_INC	  1.0E-14
+TOL_PRES_RES	  1.0E-14
+TOL_PRES_INC	  1.0E-14
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based                //residual_based //residual_based //residual_based, edge_based
 INCONSISTENT                    No

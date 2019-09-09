@@ -26,11 +26,15 @@ NONLINITER            fixed_point_like
 PHYSICAL_TYPE         Weakly_compressible_stokes
 ITEMAX                100
 CONVCHECK             L_2_norm
-CONVTOL               1.0E-13
 TIMEINTEGR            Stationary
 LINEAR_SOLVER         1
 CALCERROR             channel_weakly_compressible
 CORRTERMFUNCNO        2
+-------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-13
+TOL_VEL_INC	  1.0E-13
+TOL_PRES_RES	  1.0E-13
+TOL_PRES_INC	  1.0E-13
 ------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE              residual_based
 DEFINITION_TAU        Franca_Barrenechea_Valentin_Frey_Wall

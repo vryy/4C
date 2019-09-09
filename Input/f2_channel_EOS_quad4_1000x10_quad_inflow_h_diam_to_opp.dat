@@ -41,7 +41,6 @@ NONLINITER       fixed_point_like
 PHYSICAL_TYPE    Stokes //Incompressible //Stokes //Stokes
 ITEMAX           4
 CONVCHECK        L_2_norm
-CONVTOL          1.0E-11
 RESULTSEVRY            1
 RESTARTEVRY      5
 NUMSTEP          1//2
@@ -60,6 +59,11 @@ LINEAR_SOLVER    1
 GMSH_OUTPUT      no
 NONLINEARBC      no
 INFNORMSCALING   no
+-------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-11
+TOL_VEL_INC	  1.0E-11
+TOL_PRES_RES	  1.0E-11
+TOL_PRES_INC	  1.0E-11
 -------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based //residual_based
 DEFINITION_TAU                  Hughes_Franca_Balestra_wo_dt // Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall

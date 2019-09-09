@@ -61,7 +61,6 @@ NEW_OST                         yes
 NONLINITER                      fixed_point_like              //Newton
 ITEMAX                          20                            // 20
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-10
 RESULTSEVRY                           1
 RESTARTEVRY                     10
 NUMSTASTEPS                     1
@@ -73,6 +72,11 @@ CONVFORM                        convective
 GRIDVEL                         BE
 PREDICTOR                       steady_state
 GMSH_OUTPUT                     no
+-----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1.0E-10
+TOL_VEL_INC	  1.0E-10
+TOL_PRES_RES	  1.0E-10
+TOL_PRES_INC	  1.0E-10
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen  //Taylor_Hughes_Zarins_Whiting_Jansen

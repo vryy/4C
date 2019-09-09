@@ -41,7 +41,6 @@ RESULTSEVRY                           30
 ------------------------------------------------------FLUID DYNAMIC
 CONVCHECK                       L_2_norm
 CONVFORM                        convective
-CONVTOL                         1e-07   //1e-05
 INITIALFIELD                    zero_field //field_by_function
 //STARTFUNCNO  2
 ITEMAX                          20
@@ -61,6 +60,11 @@ TIMESTEP                        3.0e-4
 RESULTSEVRY                           5
 GMSH_OUTPUT                     yes
 NONLINEARBC                     no
+--------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+TOL_VEL_RES	  1e-07
+TOL_VEL_INC	  1e-07
+TOL_PRES_RES	  1e-07
+TOL_PRES_INC	  1e-07
 ----------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 GRAD_DIV                        yes
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
