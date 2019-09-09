@@ -16,6 +16,7 @@
 #define CUTOUTPUT_H_
 
 #include "cut_point.H"
+#include "cut_boundarycell.H"
 
 namespace GEO
 {
@@ -135,7 +136,7 @@ namespace GEO
       /*!
       \brief Write output of a coord as point with idx
        */
-      void GmshCoordDump(std::ofstream& file, LINALG::Matrix<3, 1> coord, int idx,
+      void GmshCoordDump(std::ofstream& file, LINALG::Matrix<3, 1> coord, double idx,
           bool to_local = false, Element* ele = NULL);
 
 
@@ -314,6 +315,183 @@ namespace GEO
 
       void DebugDump_MultipleCutPointsSpecial(Side* first, Side* second, const PointSet& cut,
           const PointSet& collected_points, const point_line_set& new_lines);
+
+      /*!
+      \brief Dumps object into gmsh file!
+      */
+      template <class T>
+      void GmshObjectDump(std::ofstream& file, T* obj, bool to_local = false, Element* ele = NULL)
+      {
+        dserror("GmshObjectDump: no specific implementation for your Object type!");
+      }
+
+      template <>
+      inline void GmshObjectDump<Point>(
+          std::ofstream& file, Point* obj, bool to_local, Element* ele)
+      {
+        GmshPointDump(file, obj, to_local, ele);
+      }
+
+      template <>
+      inline void GmshObjectDump<Node>(std::ofstream& file, Node* obj, bool to_local, Element* ele)
+      {
+        GmshNodeDump(file, obj, to_local, ele);
+      }
+
+      template <>
+      inline void GmshObjectDump<Element>(
+          std::ofstream& file, Element* obj, bool to_local, Element* ele)
+      {
+        GmshElementDump(file, obj, to_local);
+      }
+
+      template <>
+      inline void GmshObjectDump<Edge>(std::ofstream& file, Edge* obj, bool to_local, Element* ele)
+      {
+        GmshEdgeDump(file, obj, to_local, ele);
+      }
+
+      template <>
+      inline void GmshObjectDump<Side>(std::ofstream& file, Side* obj, bool to_local, Element* ele)
+      {
+        GmshSideDump(file, obj, to_local, ele);
+      }
+
+      template <>
+      inline void GmshObjectDump<Line>(std::ofstream& file, Line* obj, bool to_local, Element* ele)
+      {
+        GmshLineDump(file, obj, to_local, ele);
+      }
+
+      template <>
+      inline void GmshObjectDump<Facet>(
+          std::ofstream& file, Facet* obj, bool to_local, Element* ele)
+      {
+        GmshFacetDump(file, obj, "sides", true, to_local, ele);
+      }
+
+      template <>
+      inline void GmshObjectDump<VolumeCell>(
+          std::ofstream& file, VolumeCell* obj, bool to_local, Element* ele)
+      {
+        GmshVolumecellDump(file, obj, "sides", true, to_local, ele);
+      }
+
+      template <>
+      inline void GmshObjectDump<Cycle>(
+          std::ofstream& file, Cycle* obj, bool to_local, Element* ele)
+      {
+        GmshCycleDump(file, obj, "lines", to_local, ele);
+      }
+
+      template <>
+      inline void GmshObjectDump<BoundaryCell>(
+          std::ofstream& file, BoundaryCell* obj, bool to_local, Element* ele)
+      {
+        GmshCellDump(file, obj->Shape(), obj->Coordinates());
+      }
+
+      /*!
+       \brief Writes the geom. object  into a section gmsh file!
+       */
+      // for std::vector<T*>
+      template <class T>
+      void GmshWriteSection(std::ofstream& file, const std::string& section,
+          std::vector<T*> container, bool close_file = false, bool to_local = false,
+          Element* ele = NULL)
+      {
+        if (section != "") GmshNewSection(file, section);
+        for (typename std::vector<T*>::iterator t = container.begin(); t != container.end(); ++t)
+          GmshObjectDump<T>(file, (*t), to_local, ele);
+        if (section != "") GmshEndSection(file, close_file);
+      }
+
+      // for std::vector<Teuchos::RCP<T> >
+      template <class T>
+      void GmshWriteSection(std::ofstream& file, const std::string& section,
+          std::vector<Teuchos::RCP<T>> container, bool close_file = false, bool to_local = false,
+          Element* ele = NULL)
+      {
+        if (section != "") GmshNewSection(file, section);
+        for (typename std::vector<Teuchos::RCP<T>>::iterator t = container.begin();
+             t != container.end(); ++t)
+          GmshObjectDump<T>(file, &(*(*t)), to_local, ele);
+        if (section != "") GmshEndSection(file, close_file);
+      }
+
+      // for std::map<int, Teuchos::RCP<T> >
+      template <class T>
+      void GmshWriteSection(std::ofstream& file, const std::string& section,
+          std::map<int, Teuchos::RCP<T>> container, bool close_file = false, bool to_local = false,
+          Element* ele = NULL)
+      {
+        if (section != "") GmshNewSection(file, section);
+        for (typename std::map<int, Teuchos::RCP<T>>::iterator t = container.begin();
+             t != container.end(); ++t)
+          GmshObjectDump<T>(file, &(*(t->second)), to_local, ele);
+        if (section != "") GmshEndSection(file, close_file);
+      }
+
+      // for std::map<plain_int_set, Teuchos::RCP<T> >
+      template <class T>
+      void GmshWriteSection(std::ofstream& file, const std::string& section,
+          std::map<plain_int_set, Teuchos::RCP<T>> container, bool close_file = false,
+          bool to_local = false, Element* ele = NULL)
+      {
+        if (section != "") GmshNewSection(file, section);
+        for (typename std::map<plain_int_set, Teuchos::RCP<T>>::iterator t = container.begin();
+             t != container.end(); ++t)
+        {
+          GmshObjectDump<T>(file, &(*(t->second)), to_local, ele);
+        }
+        if (section != "") GmshEndSection(file, close_file);
+      }
+
+      // for sorted_vector<T*>
+      template <class T>
+      void GmshWriteSection(std::ofstream& file, const std::string& section,
+          sorted_vector<T*> container, bool close_file = false, bool to_local = false,
+          Element* ele = NULL)
+      {
+        if (section != "") GmshNewSection(file, section);
+        for (typename sorted_vector<T*>::iterator t = container.begin(); t != container.end(); ++t)
+          GmshObjectDump<T>(file, (*t), to_local, ele);
+        if (section != "") GmshEndSection(file, close_file);
+      }
+
+      // for sorted_vector<T*,true,PointPidLess>
+      template <class T>
+      void GmshWriteSection(std::ofstream& file, const std::string& section,
+          sorted_vector<T*, true, PointPidLess> container, bool close_file = false,
+          bool to_local = false, Element* ele = NULL)
+      {
+        if (section != "") GmshNewSection(file, section);
+        for (typename sorted_vector<T*, true, PointPidLess>::iterator t = container.begin();
+             t != container.end(); ++t)
+          GmshObjectDump<T>(file, (*t), to_local, ele);
+        if (section != "") GmshEndSection(file, close_file);
+      }
+
+      // for std::set<T*>
+      template <class T>
+      void GmshWriteSection(std::ofstream& file, const std::string& section, std::set<T*> container,
+          bool close_file = false, bool to_local = false, Element* ele = NULL)
+      {
+        if (section != "") GmshNewSection(file, section);
+        for (typename std::set<T*>::iterator t = container.begin(); t != container.end(); ++t)
+          GmshObjectDump<T>(file, (*t), to_local, ele);
+        if (section != "") GmshEndSection(file, close_file);
+      }
+
+      // for T*
+      template <class T>
+      void GmshWriteSection(std::ofstream& file, const std::string& section, T* obj,
+          bool close_file = false, bool to_local = false, Element* ele = NULL)
+      {
+        if (section != "") GmshNewSection(file, section);
+        GmshObjectDump<T>(file, obj, to_local, ele);
+        if (section != "") GmshEndSection(file, close_file);
+      }
 
     }  // namespace OUTPUT
 
