@@ -158,38 +158,6 @@ namespace DRT
       /// element type names to read
       std::set<std::string> elementtypes_;
     };
-
-
-
-    /*----------------------------------------------------------------------*/
-    /*!
-    Particle discretizations do not need elements. Hence, the functionality
-    of the element reader must be specified for particles separately
-
-    \author ghamm
-    \date 11/12
-    */
-    /*----------------------------------------------------------------------*/
-    class OldParticleReader : public ElementReader
-    {
-     public:
-      /// construct particle reader for a given field
-      /*!
-        Create empty discretization and append it to given field.
-
-        \param dis (i) the new discretization
-        \param comm (i) our communicator
-       */
-      OldParticleReader(Teuchos::RCP<Discretization> dis, const DatFileReader& reader);
-
-      //! Destructor
-      virtual ~OldParticleReader() { ; }
-
-     protected:
-      /// partition particles
-      virtual void Partition();
-    };
-
   }  // namespace INPUT
 }  // namespace DRT
 

@@ -117,6 +117,7 @@ void TWOPHASEFLOW::Algorithm::Setup()
   // This function overwrites the previous initialization in the
   // constructor of ScaTraFluidCouplingAlgorithm().
   // This is necessary to correctly initialize a particle algorithm.
+  // old particle framework removed -> todo: requires clean up
   SetFluidValuesInScaTra(true);
 
   return;
@@ -577,6 +578,7 @@ void TWOPHASEFLOW::Algorithm::Restart(int step, const bool restartscatrainput)
 
   // for particle level-set method, we cannot call the level-set restart, since there are no
   // particles yet (restart from flow generation via fluid)
+  // old particle framework removed -> todo: requires clean up
   if (!restartscatrainput)
     ScaTraField()->ReadRestart(step);
   else
@@ -624,6 +626,7 @@ void TWOPHASEFLOW::Algorithm::Restart(int step, const bool restartscatrainput)
 
   // set time in scalar transport time integration scheme
   // this has also to be done for restartscatrainput, since a particle field may now be included
+  // old particle framework removed -> todo: requires clean up
   if (restartscatrainput) ScaTraField()->SetTimeStep(FluidField()->Time(), step);
 
   SetTimeStep(FluidField()->Time(), step);
@@ -711,7 +714,7 @@ void TWOPHASEFLOW::Algorithm::TestResults()
 
   if (ScaTraField()->MethodName() != INPAR::SCATRA::timeint_gen_alpha)
   {
-    // DRT::Problem::Instance()->TestAll() is called in level-set field after adding particles
+    // DRT::Problem::Instance()->TestAll() is called in level-set field
     Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->TestResults();
   }
   else

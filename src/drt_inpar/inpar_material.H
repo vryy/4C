@@ -152,19 +152,17 @@ namespace INPAR
       m_multiplicative_split_defgrad_elasthyper,  ///< deformation gradient is split
                                                   ///< multiplicatively in elastic and inelastic
                                                   ///< parts
-      m_myocard,                 ///< anisotropic electrophysical model of heart tissue
-      m_neohooke,                ///< Neo-Hooke material
-      m_newman,                  ///< properties of an ion species in an electrolyte solution
-      m_newman_multiscale,       ///< properties of an ion species in an electrolyte solution for
-                                 ///< multi-scale approach
-      m_opti_dens,               ///< density field for topology optimization
-      m_particlemat,             ///< particle material
-      m_particlemat_ellipsoids,  ///< particle material for ellipsoidal particles
-      m_particle_sph_fluid,      ///< particle material for SPH fluid
-      m_particle_sph_boundary,   ///< particle material for SPH boundary
-      m_particle_dem,            ///< particle material for DEM
-      m_particle_wall_dem,       ///< particle wall material for DEM
-      m_permeable_fluid,         ///< permeable fluid
+      m_myocard,                ///< anisotropic electrophysical model of heart tissue
+      m_neohooke,               ///< Neo-Hooke material
+      m_newman,                 ///< properties of an ion species in an electrolyte solution
+      m_newman_multiscale,      ///< properties of an ion species in an electrolyte solution for
+                                ///< multi-scale approach
+      m_opti_dens,              ///< density field for topology optimization
+      m_particle_sph_fluid,     ///< particle material for SPH fluid
+      m_particle_sph_boundary,  ///< particle material for SPH boundary
+      m_particle_dem,           ///< particle material for DEM
+      m_particle_wall_dem,      ///< particle wall material for DEM
+      m_permeable_fluid,        ///< permeable fluid
       m_plelasthyper,      ///< general hyperelastic material for finite strain von-Mises plasticity
                            ///< using a semi-smooth Newton strategy (only in combination with such
                            ///< elements!)

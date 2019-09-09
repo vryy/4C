@@ -507,10 +507,6 @@ namespace DRT
     {
       return getParameterList()->sublist("PARTICLE DYNAMIC");
     }
-    const Teuchos::ParameterList& ParticleParamsOld() const
-    {
-      return getParameterList()->sublist("PARTICLE DYNAMIC OLD");
-    }
     const Teuchos::ParameterList& PASIDynamicParams() const
     {
       return getParameterList()->sublist("PASI DYNAMIC");

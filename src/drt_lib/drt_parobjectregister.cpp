@@ -32,7 +32,6 @@
 #include "../drt_lubrication_ele/lubrication_ele.H"
 #include "../drt_scatra_ele/scatra_ele.H"
 #include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele.H"
-#include "../drt_particle/particle_node.H"
 #include "../drt_fluid_ele/fluid_ele.H"
 #include "../drt_fluid_ele/fluid_ele_poro.H"
 #include "../drt_fluid_ele/fluid_ele_immersed.H"
@@ -191,7 +190,6 @@ std::string DRT::ParObjectList()
   s << DRT::ContainerType::Instance().Name() << " " << DRT::ConditionObjectType::Instance().Name()
     << " " << DRT::NodeType::Instance().Name() << " "
     << DRT::NURBS::ControlPointType::Instance().Name() << " "
-    << PARTICLE::ParticleNodeType::Instance().Name() << " "
     << IMMERSED::ImmersedNodeType::Instance().Name() << " "
     << CROSSLINKING::CrosslinkerNodeType::Instance().Name() << " "
     << DRT::MESHFREE::MeshfreeMultiBinType::Instance().Name() << " "

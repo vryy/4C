@@ -622,34 +622,6 @@ void PostProblem::read_meshes()
         }
       }
 
-      if (currfield.problem()->Problemtype() == prb_particle_old and
-          currfield.discretization()->Name() == "particle")
-      {
-        Teuchos::RCP<DRT::Discretization> particledis = currfield.discretization();
-        // replace dof set to have an IndependentDofSet for particles
-        Teuchos::RCP<DRT::IndependentDofSet> independentdofset =
-            Teuchos::rcp(new DRT::IndependentDofSet(true));
-        particledis->ReplaceDofSet(independentdofset);
-        if (comm_->MyPID() == 0)
-        {
-          // find maximum number of possible particles during simulation
-          int maxnodeid = get_max_nodeid("particle");
-          // insert maxnodeid+1 particles into discret (on proc 0) placed at the origin
-          double coords[] = {0.0, 0.0, 0.0};
-          for (int id = 0; id <= maxnodeid; ++id)
-          {
-            // add a rigid shpere element for each particle (element id euqal to node id)
-            Teuchos::RCP<DRT::Element> ele = DRT::UTILS::Factory("RIGIDSPHERE", "dummy", id, 0);
-            particledis->AddElement(ele);
-
-            Teuchos::RCP<DRT::Node> particle = Teuchos::rcp(new DRT::Node(id, coords, 0));
-            particledis->AddNode(particle);
-            ele->SetNodeIds(1, &id);
-          }
-          currfield.set_num_nodes(maxnodeid + 1);
-        }
-      }
-
       // read knot vectors for nurbs discretisations
       if (spatial_approx_ == "Nurbs")
       {

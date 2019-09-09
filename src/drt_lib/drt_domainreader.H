@@ -194,37 +194,6 @@ namespace DRT
           int eleid, int* nodeoffset, int myrank, DRT::INPUT::LineDefinition* linedef);
     };
 
-
-    /*----------------------------------------------------------------------*/
-    /*!
-    Particle discretizations do not need elements. Hence, the functionality
-    of the domain reader must be specified for particles separately
-
-    \author ghamm
-    \date 11/14
-    */
-    /*----------------------------------------------------------------------*/
-    class ParticleDomainReader : public DomainReader
-    {
-     public:
-      /// construct particle reader for a given field
-      /*!
-        Create empty discretization and append it to given field.
-
-        \param dis (i) the new discretization
-        \param reader (i) the dat file reader
-       */
-      ParticleDomainReader(
-          Teuchos::RCP<Discretization> dis, const DatFileReader& reader, std::string sectionname);
-
-      //! Destructor
-      virtual ~ParticleDomainReader() { ; }
-
-     protected:
-      /// partition particles
-      virtual void Partition(int* nodeoffset);
-    };
-
   }  // namespace INPUT
 }  // namespace DRT
 #endif

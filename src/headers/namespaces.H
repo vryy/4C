@@ -902,13 +902,6 @@ namespace INPAR
   {
   }  // namespace PARTICLE
 
-  /*! \brief Input parameters for old particle framework
-   *
-   */
-  namespace PARTICLEOLD
-  {
-  }  // namespace PARTICLEOLD
-
   /*! \brief Input parameters for particle-structure interaction
    *
    */
@@ -1568,13 +1561,6 @@ namespace NTS
 namespace OPTI
 {
 }  // namespace OPTI
-
-/*! \brief Particle dynamics
- *
- */
-namespace PARTICLE
-{
-}  // namespace PARTICLE
 
 /*! \brief Algorithm to control particle simulations
  *

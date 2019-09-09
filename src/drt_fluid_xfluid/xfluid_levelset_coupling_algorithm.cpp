@@ -118,17 +118,15 @@ void XFLUIDLEVELSET::Algorithm::DoAlgorithmSpecificInit()
   const int nds_xfluid = dofset_coupling_map_["vel_in_xfluid"];
 
   // TODO: do we need this after similar to the fluid-proxy in the fluid after redistributing scatra
-  // due to particles?
+  // old particle framework removed -> todo: requires clean up
   const int nds_phi_scatra = dofset_coupling_map_["phi_in_scatra"];
   const int nds_scatra_proxy_in_fluid = dofset_coupling_map_["phi_scatra_proxy_in_fluid"];
 
-
-
-  // we expect a level-set algorithm here, which potentially carries a particle algorithm
+  // we expect a level-set algorithm here
   Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField(), true);
 
   // check whether fluid and scatra discret still have the same maps
-  // they may change due a modified ghosting required, i.e., for particle level-set methods
+  // they may change due a modified ghosting required
 
   Teuchos::RCP<DRT::Discretization> fluiddis = FluidField()->Discretization();
   Teuchos::RCP<DRT::Discretization> scatradis = ScaTraField()->Discretization();
@@ -300,10 +298,12 @@ void XFLUIDLEVELSET::Algorithm::OuterLoop()
 
   bool scatra_init = false;
 
-  // initial time-derivative needed for particles restart
+  // initial time-derivative
+  // old particle framework removed -> todo: requires clean up
   const int restart = DRT::Problem::Instance()->Restart();
   if (Step() == restart + 1) scatra_init = true;
 
+  // todo: scatra_init unused, requires clean up
   SetFluidValuesInScaTra(scatra_init);
 
   DoScaTraField();
@@ -803,7 +803,8 @@ void XFLUIDLEVELSET::Algorithm::Restart(int step)
   SetTimeStep(FluidField()->Time(), step);
 
   // TODO: issue: this however will overwrite the scatra solution (the xfluid cutter-state however
-  // is behind the scatra state!) Needed for particle restart, try to comment!
+  // is behind the scatra state!)
+  // old particle framework removed -> todo: requires clean up
   //  SetFluidValuesInScaTra(true);
 
   return;

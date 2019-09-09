@@ -236,22 +236,6 @@ class ThermoFilter : public PostFilterBase
 
 
 /*!
- \brief Writer for particle problems
-
- \author ghamm
- \date 02/13
- */
-class ParticleFilter : public PostFilterBase
-{
- public:
-  ParticleFilter(PostField* field, std::string name);
-
- protected:
-  virtual void WriteAllResults(PostField* field);
-};
-
-
-/*!
  \brief Writer for acoustical problems
 
  \author schoeder

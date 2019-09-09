@@ -190,9 +190,6 @@ NDSURF                          0
 // number of volume clouds
 NDVOL                           0
 //
-// number of particle clouds
-NDPARTICLE                      0
-//
 -------------------------------------------------STRUCTURAL DYNAMIC
 //
 INT_STRATEGY                   Standard

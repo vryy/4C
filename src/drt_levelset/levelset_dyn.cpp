@@ -102,6 +102,7 @@ void levelset_dyn(int restart)
   //       time in the function ReadRestart() and then in case of time-dependent velocity fields to
   //       evaluate the velocity function and curve.
   // bool true allows for setting old convective velocity required for particle coupling
+  // old particle framework removed -> todo: requires clean up
   Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(levelsetalgo)->SetVelocityField(true);
 
   // time measurement: time loop

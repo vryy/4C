@@ -643,8 +643,6 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/maxwell_0d_acinus_Ogden.cpp
   src/drt_mat/hemoglobin_0d_O2_saturation.cpp
   src/drt_mat/air_0d_O2_saturation.cpp
-  src/drt_mat/particle_mat.cpp
-  src/drt_mat/particle_mat_ellipsoids.cpp
   src/drt_mat/particle_material_base.cpp
   src/drt_mat/particle_material_thermo.cpp
   src/drt_mat/particle_material_sph_fluid.cpp
@@ -692,7 +690,6 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_scatra_base_algorithm.cpp
   src/drt_adapter/adapter_scatra_fluid_ale_coupling_algo.cpp
   src/drt_adapter/adapter_scatra_fluid_coupling_algorithm.cpp
-  src/drt_adapter/adapter_particle.cpp
   src/drt_adapter/ad_str_structure.cpp
   src/drt_structure/stru_dyn_nln_drt.cpp
   src/drt_adapter/ad_str_factory.cpp
@@ -772,7 +769,6 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_bio.cpp
   src/drt_inpar/inpar_cardiac_monodomain.cpp
   src/drt_inpar/inpar_particle.cpp
-  src/drt_inpar/inpar_particle_old.cpp
   src/drt_inpar/inpar_pasi.cpp
   src/drt_inpar/inpar_cell.cpp
   src/drt_inpar/inpar_contact.cpp
@@ -1552,9 +1548,6 @@ set(OBJS_DRT_NURBS_DISCRET_LIB
 )
 set(OBJS_DRT_BINSTRATEGY_DISCRET_LIB
   src/drt_beaminteraction/crosslinker_node.cpp
-  src/drt_particle/particle_ellipsoid_node.cpp
-  src/drt_particle/particle_node.cpp
-  src/drt_particle/particle_radius_node.cpp
 )
 set(OBJS_DRT_TOPOPT
   src/drt_opti/topopt_algorithm.cpp
@@ -1622,7 +1615,6 @@ set(OBJS_POST_DRT_VTK
   src/post_vtk/post_drt_vtu_writer.cpp
   src/post_vtk/post_drt_vtu_writer_node_based.cpp
   src/post_vtk/post_drt_vti_writer.cpp
-  src/post_vtk/post_drt_vtp_writer.cpp
   src/post_vtk/post_drt_vtk_writer.cpp
 )
 set(OBJS_INV_ANALYSIS
@@ -1841,17 +1833,7 @@ set(OBJS_POST_DRT_S8CONVERT
   src/post_s8convert/post_drt_s8convert.cpp
 )
 set(OBJS_DRT_PARTICLE
-  src/drt_particle/particle_dyn.cpp
-  src/drt_particle/particle_timint.cpp
-  src/drt_particle/particle_timint_expl.cpp
-  src/drt_particle/particle_timint_centrdiff.cpp
-  src/drt_particle/particle_timint_expleuler.cpp
-  src/drt_particle/particle_timint_rk.cpp
-  src/drt_particle/particle_timint_strategy.cpp
   src/drt_particle/particle_handler.cpp
-  src/drt_particle/particle_algorithm.cpp
-  src/drt_particle/particle_contact.cpp
-  src/drt_particle/particle_resulttest.cpp
 )
 set(OBJS_DRT_PARTICLE_ALGORITHM
   src/drt_particle_algorithm/particle_sim.cpp
@@ -2741,7 +2723,6 @@ set(MULTIFIELD_LIBRARIES
   alg_fsi
   alg_fsi_xfem
   alg_loma
-  alg_particle
   alg_two_phase
   alg_contact_xfem
   alg_tsi

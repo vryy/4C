@@ -35,7 +35,6 @@
 #include "inpar_ssi.H"
 #include "inpar_ehl.H"
 #include "inpar_particle.H"
-#include "inpar_particle_old.H"
 #include "inpar_beampotential.H"
 #include "inpar_beaminteraction.H"
 #include "inpar_poromultiphase_scatra.H"
@@ -315,10 +314,6 @@ DRT::INPUT::ValidConditions()
       Teuchos::rcp(new ConditionDefinition("DESIGN VOL DIRICH CONDITIONS", "Dirichlet",
           "Volume Dirichlet", DRT::Condition::VolumeDirichlet, false, DRT::Condition::Volume));
 
-  Teuchos::RCP<ConditionDefinition> particledirichlet =
-      Teuchos::rcp(new ConditionDefinition("DESIGN PARTICLE DIRICH CONDITIONS", "Dirichlet",
-          "Particle Dirichlet", DRT::Condition::PointDirichlet, false, DRT::Condition::Particle));
-
   Teuchos::RCP<ConditionDefinition> pointaledirichlet =
       Teuchos::rcp(new ConditionDefinition("DESIGN POINT ALE DIRICH CONDITIONS", "ALEDirichlet",
           "Point Dirichlet", DRT::Condition::PointDirichlet, false, DRT::Condition::Point));
@@ -394,8 +389,6 @@ DRT::INPUT::ValidConditions()
     surfdirichlet->AddComponent(dirichletbundcomponents[i]);
     voldirichlet->AddComponent(dirichletbundcomponents[i]);
 
-    particledirichlet->AddComponent(dirichletbundcomponents[i]);
-
     pointaledirichlet->AddComponent(dirichletbundcomponents[i]);
     linealedirichlet->AddComponent(dirichletbundcomponents[i]);
     surfaledirichlet->AddComponent(dirichletbundcomponents[i]);
@@ -426,8 +419,6 @@ DRT::INPUT::ValidConditions()
   condlist.push_back(linedirichlet);
   condlist.push_back(surfdirichlet);
   condlist.push_back(voldirichlet);
-
-  condlist.push_back(particledirichlet);
 
   condlist.push_back(pointaledirichlet);
   condlist.push_back(linealedirichlet);
@@ -517,11 +508,6 @@ DRT::INPUT::ValidConditions()
       Teuchos::rcp(new ConditionDefinition("DESIGN VOL INITIAL FIELD CONDITIONS", "Initfield",
           "Volume Initfield", DRT::Condition::VolumeInitfield, false, DRT::Condition::Volume));
 
-  // initial field conditions for particle problems
-  Teuchos::RCP<ConditionDefinition> particleinitfields =
-      Teuchos::rcp(new ConditionDefinition("DESIGN PARTICLE INITIAL FIELD CONDITIONS", "Initfield",
-          "Particle Initfield", DRT::Condition::PointInitfield, false, DRT::Condition::Particle));
-
   // initial field conditions for temperature
   Teuchos::RCP<ConditionDefinition> pointthermoinitfields = Teuchos::rcp(
       new ConditionDefinition("DESIGN POINT THERMO INITIAL FIELD CONDITIONS", "ThermoInitfield",
@@ -543,8 +529,6 @@ DRT::INPUT::ValidConditions()
     surfinitfields->AddComponent(initfieldscomponents[i]);
     volinitfields->AddComponent(initfieldscomponents[i]);
 
-    particleinitfields->AddComponent(initfieldscomponents[i]);
-
     pointthermoinitfields->AddComponent(initfieldscomponents[i]);
     linethermoinitfields->AddComponent(initfieldscomponents[i]);
     surfthermoinitfields->AddComponent(initfieldscomponents[i]);
@@ -555,8 +539,6 @@ DRT::INPUT::ValidConditions()
   condlist.push_back(lineinitfields);
   condlist.push_back(surfinitfields);
   condlist.push_back(volinitfields);
-
-  condlist.push_back(particleinitfields);
 
   condlist.push_back(pointthermoinitfields);
   condlist.push_back(linethermoinitfields);
@@ -1167,8 +1149,6 @@ DRT::INPUT::ValidConditions()
   INPAR::SSI::SetValidConditions(condlist);
 
   INPAR::PARTICLE::SetValidConditions(condlist);
-
-  INPAR::PARTICLEOLD::SetValidConditions(condlist);
 
   INPAR::PATSPEC::SetValidConditions(condlist);
 
