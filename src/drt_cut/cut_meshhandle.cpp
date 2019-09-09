@@ -856,3 +856,76 @@ GEO::CUT::SideHandle* GEO::CUT::MeshHandle::GetSide(std::vector<int>& nodeids) c
   }
   return NULL;
 }
+
+void GEO::CUT::MeshHandle::RemoveSubSide(GEO::CUT::Side* side)
+{
+  std::map<int, LinearSideHandle>::iterator lit = linearsides_.find(side->Id());
+  if (lit != linearsides_.end())
+  {
+    std::cout << "==| WARNING: MeshHandle::RemoveSubSide: Your Subside belongs to a "
+                 "LinearSideHandle --> This should be done in a different way! |=="
+              << std::endl;
+  }
+  else
+  {
+    std::map<int, Teuchos::RCP<QuadraticSideHandle>>::iterator qit =
+        quadraticsides_.find(side->Id());
+    if (qit != quadraticsides_.end())
+    {
+      QuadraticSideHandle& qsh = *qit->second;
+      qsh.RemoveSubSidePointer(side);
+    }
+    else
+      dserror("Couldn't Identify side %d!", side->Id());
+  }
+}
+
+void GEO::CUT::MeshHandle::AddSubSide(GEO::CUT::Side* side)
+{
+  std::map<int, LinearSideHandle>::iterator lit = linearsides_.find(side->Id());
+  if (lit != linearsides_.end())
+  {
+    std::cout << "==| WARNING: MeshHandle::AddSubSide: Your Subside belongs to a LinearSideHandle "
+                 "--> This should be done in a different way! |=="
+              << std::endl;
+  }
+  else
+  {
+    std::map<int, Teuchos::RCP<QuadraticSideHandle>>::iterator qit =
+        quadraticsides_.find(side->Id());
+    if (qit != quadraticsides_.end())
+    {
+      QuadraticSideHandle& qsh = *qit->second;
+      qsh.AddSubSidePointer(side);
+    }
+    else
+    {
+      dserror("MeshHandle::AddSubSide: The SideHandle for Side %d does not exist yet!", side->Id());
+      // One could create a new QuadraticSideHandle, if there is a reason to do so.
+    }
+  }
+}
+
+void GEO::CUT::MeshHandle::MarkSubSideasUnphysical(GEO::CUT::Side* side)
+{
+  std::map<int, LinearSideHandle>::iterator lit = linearsides_.find(side->Id());
+  if (lit != linearsides_.end())
+  {
+    std::cout << "==| WARNING: MeshHandle::MarkSubSideasUnphysical: Your Subside belongs to a "
+                 "LinearSideHandle --> This should be done in a different way! |=="
+              << std::endl;
+  }
+  else
+  {
+    std::map<int, Teuchos::RCP<QuadraticSideHandle>>::iterator qit =
+        quadraticsides_.find(side->Id());
+    if (qit != quadraticsides_.end())
+    {
+      QuadraticSideHandle& qsh = *qit->second;
+      qsh.MarkSubSideunphysical(side);
+    }
+    else
+      dserror("MeshHandle::MarkSubSideasUnphysical: The SideHandle for Side %d does not exist yet!",
+          side->Id());
+  }
+}
