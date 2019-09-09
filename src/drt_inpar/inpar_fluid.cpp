@@ -306,7 +306,6 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   DoubleParameter("GAMMA", 1.0, "Time integration factor", &fdyn);
   DoubleParameter("THETA", 0.66, "Time integration factor", &fdyn);
 
-  DoubleParameter("CONVTOL", 1e-6, "Tolerance for convergence check", &fdyn);
   DoubleParameter("START_THETA", 1.0, "Time integration factor for starting scheme", &fdyn);
 
   setStringToIntegralParameter<int>("STRONG_REDD_3D_COUPLING_TYPE", "no",
@@ -334,17 +333,17 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn_nln = fdyn.sublist("NONLINEAR SOLVER TOLERANCES", false, "");
 
-  DoubleParameter("TOL_VEL_RES", 1e-6,
-      "Tolerance for convergence check of velocity residual", &fdyn_nln);
+  DoubleParameter(
+      "TOL_VEL_RES", 1e-6, "Tolerance for convergence check of velocity residual", &fdyn_nln);
 
-  DoubleParameter("TOL_VEL_INC", 1e-6,
-      "Tolerance for convergence check of velocity increment", &fdyn_nln);
+  DoubleParameter(
+      "TOL_VEL_INC", 1e-6, "Tolerance for convergence check of velocity increment", &fdyn_nln);
 
-  DoubleParameter("TOL_PRES_RES", 1e-6,
-      "Tolerance for convergence check of pressure residual", &fdyn_nln);
+  DoubleParameter(
+      "TOL_PRES_RES", 1e-6, "Tolerance for convergence check of pressure residual", &fdyn_nln);
 
-  DoubleParameter("TOL_PRES_INC", 1e-6,
-      "Tolerance for convergence check of pressure increment", &fdyn_nln);
+  DoubleParameter(
+      "TOL_PRES_INC", 1e-6, "Tolerance for convergence check of pressure increment", &fdyn_nln);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn_stab = fdyn.sublist("RESIDUAL-BASED STABILIZATION", false, "");

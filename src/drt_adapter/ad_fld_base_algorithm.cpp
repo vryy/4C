@@ -1487,7 +1487,6 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
   // maximum number of nonlinear iteration steps for initial stationary solution
   fluidtimeparams->set<int>("max nonlin iter steps init stat sol", fdyn.get<int>("INITSTATITEMAX"));
   // stop nonlinear iteration when both incr-norms are below this bound
-  fluidtimeparams->set<double>("tolerance for nonlin iter", fdyn.get<double>("CONVTOL"));
   fluidtimeparams->set<double>("velocity residual tolerance",
       fdyn.sublist("NONLINEAR SOLVER TOLERANCES").get<double>("TOL_VEL_RES"));
   fluidtimeparams->set<double>("pressure residual tolerance",
