@@ -50,17 +50,16 @@ namespace CONTACT
       virtual double Evaluate(double gap) = 0;
       virtual double EvaluateDeriv(double gap) = 0;
 
-      /// create CoConstLaw object given the type of constitutive law
-      static Teuchos::RCP<ConstitutiveLaw> Factory(
-          const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container>
-              coconstlawdata);  ///< Container holding the Coefficients for the Contact
-                                ///< ConstitutiveLaw
-
-      /* \brief Needed for backward compatibility
-       * it is used to modify the penalty parameter in the contact interface
-       * to keep the uzawa tests from failing
+      /* \brief create Contact ConstitutiveLaw object given the id of the constitutive law in the
+       * input file
        */
-      virtual void ResetPenalty(double pp) {}
+      static Teuchos::RCP<ConstitutiveLaw> Factory(const int id);
+
+      /* \brief create Contact Constitutivelaw object given input information for the constitutive
+       * law \params[in] Container holding the Coefficients for the Contact ConstitutiveLaw
+       */
+      static Teuchos::RCP<ConstitutiveLaw> Factory(
+          const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> contactconstitutivelawdata);
     };
   }  // namespace CONSTITUTIVELAW
 }  // namespace CONTACT

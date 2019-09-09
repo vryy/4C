@@ -1,6 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
-\file
+/*! \file
 
 \brief Contact interface used for constitutive laws
 
@@ -53,16 +52,11 @@ CONTACT::ConstitutivelawInterface::ConstitutivelawInterface(
     INPAR::MORTAR::RedundantStorage redundant)
     : CoInterface(idata_ptr, id, comm, dim, icontact, selfcontact, redundant)
 {
-  // For now, this should be the location of a CoLawDataContainer Factory (until input can be read
-  // in) Only the container should then be passed to the factory.
-  Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> coconstlawdata =
-      CONTACT::CONSTITUTIVELAW::Container::ContainerFactory(
-          INPAR::CONTACT::ConstitutiveLawType::colaw_penalty,
-          IParams().get<double>("PENALTYPARAM"));
   Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw =
-      CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::Factory(coconstlawdata);
+      CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::Factory(
+          id + 1);  // todo This is temporary, until we can hand the interface its roughness law id
+                    // via condition
   coconstlaw_ = coconstlaw;
-  // printf("deriv=%f \n", coconstlaw_->Evaluate(0.0));
   return;
 }
 /*----------------------------------------------------------------------*

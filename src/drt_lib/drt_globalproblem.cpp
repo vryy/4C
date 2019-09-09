@@ -36,11 +36,14 @@
 #include "drt_discret_hdg.H"
 #include "drt_discret_xfem.H"
 #include "drt_linedefinition.H"
+#include "../drt_contact_constitutivelaw/constitutivelaw_definition.H"
+#include "../drt_contact_constitutivelaw/contact_constitutivelaw_bundle.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_inpar/drt_validconditions.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/drt_validmaterials.H"
+#include "../drt_inpar/drt_validcoconstlaws.H"
 #include "../drt_inpar/inpar.H"
 #include "../drt_mat/elchmat.H"
 #include "../drt_mat/elchphase.H"
@@ -122,6 +125,7 @@ DRT::Problem::Problem()
     : probtype_(prb_none), restartstep_(0), restarttime_(0.0), npgroup_(Teuchos::null)
 {
   materials_ = Teuchos::rcp(new MAT::PAR::Bundle());
+  contactconstitutivelaws_ = Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::Bundle());
 }
 
 
@@ -699,13 +703,67 @@ void DRT::Problem::ReadMaterials(DRT::INPUT::DatFileReader& reader)
   // make fast access parameters
   materials_->MakeParameters();
 
-
-  // inform user
-  // std::cout << "Number of successfully read materials is " << nummat << std::endl;
-
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::Problem::ReadContactConstitutiveLaws(DRT::INPUT::DatFileReader& reader)
+{
+  // create list of known contact constitutive laws
+  Teuchos::RCP<std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>> vm =
+      DRT::INPUT::ValidContactConstitutiveLaws();
+  std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>& coconstlawlist = *vm;
+
+  // test for each contact constitutive law definition (input file --CONTACT CONSTITUTIVE LAWS
+  // section) and store it
+  for (unsigned m = 0; m < coconstlawlist.size(); ++m)
+  {
+    // read contact constitutive law from DAT file of type
+    coconstlawlist[m]->Read(*this, reader, contactconstitutivelaws_);
+  }
+
+  // check if every contact constitutive law was identified
+  const std::string name = "--CONTACT CONSTITUTIVE LAWS";
+  std::vector<const char*> section = reader.Section(name);
+  int numlaws = 0;
+  if (section.size() > 0)
+  {
+    for (std::vector<const char*>::iterator i = section.begin(); i != section.end(); ++i)
+    {
+      Teuchos::RCP<std::stringstream> condline = Teuchos::rcp(new std::stringstream(*i));
+
+      std::string coconstlaw;
+      std::string number;
+      std::string name;
+      (*condline) >> coconstlaw >> number >> name;
+      if ((not(*condline)) or (coconstlaw != "LAW"))
+        dserror("invalid contact constitutive law line in '%s'", name.c_str());
+
+      // extract contact constitutive law ID
+      int coconstlawid = -1;
+      {
+        char* ptr;
+        coconstlawid = strtol(number.c_str(), &ptr, 10);
+        if (ptr == number.c_str())
+          dserror("failed to read contact constitutive law object number '%s'", number.c_str());
+      }
+
+      // processed?
+      if (contactconstitutivelaws_->Find(coconstlawid) == -1)
+        dserror("Contact constitutive law 'LAW %d' with name '%s' could not be identified",
+            coconstlawid, name.c_str());
+
+      // count number of contact constitutive laws provided in file
+      numlaws += 1;
+    }
+  }
+
+  // make fast access parameters
+  contactconstitutivelaws_->MakeParameters();
+
+  return;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

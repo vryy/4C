@@ -20,7 +20,7 @@ CONTACT::CONSTITUTIVELAW::Parameter::Parameter(
         coconstlawdata  ///< read and validate contactconstitutivelaw data (of 'slow' access)
     )
     : id_(coconstlawdata->Id()),
-      offset_(coconstlawdata->GetDouble("offset")),
+      offset_(coconstlawdata->GetDouble("Offset")),
       type_(coconstlawdata->Type()),
       name_(coconstlawdata->Name()){};
 /*----------------------------------------------------------------------*/
@@ -110,67 +110,4 @@ void CONTACT::CONSTITUTIVELAW::Container::Unpack(const std::vector<char>& data)
 
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
   return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container>
-CONTACT::CONSTITUTIVELAW::Container::ContainerFactory(
-    INPAR::CONTACT::ConstitutiveLawType type, int id)
-{
-  Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> container =
-      Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::Container(id, type, "Factory_Container"));
-
-  if (id != 1)
-  {
-    container->Add("offset", 0.0);
-    container->Add("A", 1.0);
-    container->Add("B", 1.0);
-    container->Add("C", 1.0);
-    container->Add("D", 1.0);
-  }
-  else
-  {
-    container->Add("offset", 0.0);
-    container->Add("A", 1.0);
-    container->Add("B", 1.0);
-    container->Add("C", 1.0);
-    container->Add("D", 1.0);
-  }
-  return container;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container>
-CONTACT::CONSTITUTIVELAW::Container::ContainerFactory(
-    INPAR::CONTACT::ConstitutiveLawType type, double pp)
-{
-  Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> container =
-      Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::Container(1, type, "Penalty_Container"));
-
-  container->Add("offset", 0.0);
-  switch (type)
-  {
-    case INPAR::CONTACT::colaw_linear:
-    case INPAR::CONTACT::colaw_penalty:
-      container->Add("A", pp);
-      container->Add("B", 0.0);
-      break;
-    case INPAR::CONTACT::colaw_cubic:
-      container->Add("A", 0.0);
-      container->Add("B", 0.0);
-      container->Add("C", pp);
-      container->Add("D", 0.0);
-      break;
-    case INPAR::CONTACT::colaw_power:
-      container->Add("A", pp);
-      container->Add("B", 1.0);
-      break;
-    default:
-      dserror("Unknown contact law %d\n, type");
-      break;
-  }
-
-  return container;
 }

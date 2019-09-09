@@ -52,6 +52,14 @@ namespace PARTICLEENGINE
   class ParticleObject;
 }
 
+namespace CONTACT
+{
+  namespace CONSTITUTIVELAW
+  {
+    class Bundle;
+  }
+}  // namespace CONTACT
+
 namespace DRT
 {
   class Discretization;
@@ -182,6 +190,9 @@ namespace DRT
 
     /// set up supporting processors for micro-scale discretizations
     void ReadMicrofields_NPsupport();
+
+    /// input of contact constitutive laws
+    void ReadContactConstitutiveLaws(DRT::INPUT::DatFileReader& reader);
 
     /// input of materials
     void ReadMaterials(DRT::INPUT::DatFileReader& reader);
@@ -586,6 +597,12 @@ namespace DRT
     /// return pointer to materials bundled to the problem
     Teuchos::RCP<MAT::PAR::Bundle> Materials() { return materials_; }
 
+    // return pointer to contact constitutive law bundled to the problem
+    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Bundle> ContactConstitutiveLaws()
+    {
+      return contactconstitutivelaws_;
+    }
+
     //@}
 
     /// @name Particles
@@ -668,6 +685,9 @@ namespace DRT
 
     /// material bundle
     Teuchos::RCP<MAT::PAR::Bundle> materials_;
+
+    /// bundle containing all read-in contact constitutive laws
+    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Bundle> contactconstitutivelaws_;
 
     /// all particles that are read in
     std::vector<std::shared_ptr<PARTICLEENGINE::ParticleObject>> particles_;

@@ -37,7 +37,7 @@ namespace CONTACT
       /// create constitutive law instance of matching type with my parameters
       Teuchos::RCP<ConstitutiveLaw> CreateConstitutiveLaw() override;
 
-      /// @name get-functions for the Constitutive Law parameters of a broken rational function
+      /// @name get-functions for the Constitutive Law parameters of a power law function
       //@{
       /// Get the scaling factor
       double GetA() const { return a_; };

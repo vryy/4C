@@ -19,8 +19,29 @@
 #include "linear_coconstlaw.H"
 #include "power_coconstlaw.H"
 #include "coconstlaw_parameter.H"
+#include "contact_constitutivelaw_bundle.H"
 
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw>
+CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::Factory(const int id)
+{
+  const int probinst = DRT::Problem::Instance()->ContactConstitutiveLaws()->GetReadFromProblem();
+
+  // for the sake of safety
+  if (DRT::Problem::Instance(probinst)->ContactConstitutiveLaws() == Teuchos::null)
+    dserror("Cannot work out problem instance!");
+  // yet another safety check
+  if (DRT::Problem::Instance(probinst)->ContactConstitutiveLaws()->Num() == 0)
+    dserror("Cannot find any contact constitutive law!");
+
+  // retrieve validated input line of material ID in question
+  Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> coconstlawdata =
+      DRT::Problem::Instance(probinst)->ContactConstitutiveLaws()->ById(id);
+  return CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::Factory(coconstlawdata);
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

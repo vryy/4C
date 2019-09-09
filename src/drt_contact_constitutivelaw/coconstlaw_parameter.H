@@ -144,28 +144,6 @@ namespace CONTACT
       /// Destructor
       virtual ~Container(){};
 
-      /** \brief Temporary Container Factory
-       *
-       *   For now used to separate the input creation from the actual constitutive law creation
-       * until the input reader is implemented. todo Then, this Factory will be removed again.
-       *
-       * \params[in] contact interface id to be able to use different roughness profiles on
-       * different interfaces
-       */
-      static Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> ContainerFactory(
-          INPAR::CONTACT::ConstitutiveLawType type, int id);
-
-      /** \brief Temporary Container Factory
-       *
-       *   For now used to separate the input creation from the actual constitutive law creation
-       * until the input reader is implemented. todo Then, this Factory will be removed again.
-       *
-       * \params[in] contact interface id to be able to use different roughness profiles on
-       * different interfaces
-       */
-      static Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> ContainerFactory(
-          INPAR::CONTACT::ConstitutiveLawType type, double pp);
-
       /**
        * \brief Return unique ParObject id
        *
