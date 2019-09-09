@@ -40,7 +40,7 @@
 
 #include "../drt_binstrategy/drt_meshfree_multibin.H"
 
-#include "../drt_particle/particle_handler.H"
+#include "../drt_beaminteraction/particle_handler.H"
 
 #include "../drt_mat/crosslinkermat.H"
 

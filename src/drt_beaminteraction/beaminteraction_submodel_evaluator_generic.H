@@ -22,10 +22,6 @@ namespace BINSTRATEGY
 {
   class BinningStrategy;
 }
-namespace PARTICLE
-{
-  class ParticleHandler;
-}
 namespace IO
 {
   class DiscretizationWriter;
@@ -63,6 +59,8 @@ namespace STR
 }  // namespace STR
 namespace BEAMINTERACTION
 {
+  class ParticleHandler;
+
   namespace UTILS
   {
     class MapExtractor;
@@ -93,7 +91,7 @@ namespace BEAMINTERACTION
           Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> const& gstate,
           Teuchos::RCP<STR::TIMINT::BaseDataIO> const& gio_ptr,
           Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState> const& ia_gstate_ptr,
-          Teuchos::RCP<PARTICLE::ParticleHandler> const& particlehandler,
+          Teuchos::RCP<BEAMINTERACTION::ParticleHandler> const& particlehandler,
           Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy,
           Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox,
           Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor> const& eletypeextractor);
@@ -223,9 +221,9 @@ namespace BEAMINTERACTION
       Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState>& BeamInteractionDataStatePtr();
       STR::MODELEVALUATOR::BeamInteractionDataState const& BeamInteractionDataState() const;
 
-      PARTICLE::ParticleHandler& ParticleHandler();
-      Teuchos::RCP<PARTICLE::ParticleHandler>& ParticleHandlerPtr();
-      PARTICLE::ParticleHandler const& ParticleHandler() const;
+      BEAMINTERACTION::ParticleHandler& ParticleHandler();
+      Teuchos::RCP<BEAMINTERACTION::ParticleHandler>& ParticleHandlerPtr();
+      BEAMINTERACTION::ParticleHandler const& ParticleHandler() const;
 
       BINSTRATEGY::BinningStrategy& BinStrategy();
       Teuchos::RCP<BINSTRATEGY::BinningStrategy>& BinStrategyPtr();
@@ -264,7 +262,7 @@ namespace BEAMINTERACTION
       Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState> beaminteractiondatastate_;
 
       //! particle handler and binning strategy
-      Teuchos::RCP<PARTICLE::ParticleHandler> particlehandler_;
+      Teuchos::RCP<BEAMINTERACTION::ParticleHandler> particlehandler_;
 
       //! binning strategy
       Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy_;

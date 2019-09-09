@@ -942,6 +942,7 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
   src/drt_beaminteraction/spherebeamlinking_params.cpp
   src/drt_beaminteraction/beaminteraction_submodel_evaluator_spherebeamlinking.cpp
   src/drt_beaminteraction/beaminteraction_geometry_utils.cpp
+  src/drt_beaminteraction/particle_handler.cpp
 )
 set(OBJS_DRT_STRU_MULTI
   src/drt_stru_multi/convert_mat.cpp
@@ -1832,9 +1833,6 @@ set(OBJS_DRT_STRUCTURE_XSTRUCTURE
 set(OBJS_POST_DRT_S8CONVERT
   src/post_s8convert/post_drt_s8convert.cpp
 )
-set(OBJS_DRT_PARTICLE
-  src/drt_particle/particle_handler.cpp
-)
 set(OBJS_DRT_PARTICLE_ALGORITHM
   src/drt_particle_algorithm/particle_sim.cpp
   src/drt_particle_algorithm/particle_algorithm.cpp
@@ -2702,7 +2700,6 @@ add_library(alg_fsi ${OBJS_DRT_FSI})
 add_library(alg_immersed_problem ${OBJS_DRT_IMMERSED_PROBLEM})
 add_library(alg_fsi_xfem ${OBJS_DRT_FSI_XFEM})
 add_library(alg_loma ${OBJS_DRT_LOMA})
-add_library(alg_particle ${OBJS_DRT_PARTICLE})
 add_library(alg_two_phase ${OBJS_DRT_TWO_PHASE})
 add_library(alg_contact_xfem ${OBJS_DRT_CONTACT_XCONTACT})
 add_library(alg_tsi ${OBJS_DRT_TSI})
@@ -2792,7 +2789,6 @@ set(SINGLEFIELD_LIBRARIES
   alg_contact_aug
   alg_fluid_adjoint
   alg_opti
-  alg_particle
   alg_particle_algorithm
   alg_particle_interaction
   alg_particle_engine

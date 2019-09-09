@@ -33,7 +33,7 @@ namespace LINALG
   class MapExtractor;
 }
 
-namespace PARTICLE
+namespace BEAMINTERACTION
 {
   class ParticleHandler
   {
@@ -138,7 +138,7 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Map> bincolmap_;
   };
 
-}  // namespace PARTICLE
+}  // namespace BEAMINTERACTION
 
 
 /*----------------------------------------------------------------------*/

@@ -38,7 +38,7 @@
 
 #include "../drt_beam3/beam3_base.H"
 #include "../drt_rigidsphere/rigidsphere.H"
-#include "../drt_particle/particle_handler.H"
+#include "../drt_beaminteraction/particle_handler.H"
 
 #include "../drt_structure_new/str_timint_basedataglobalstate.H"
 #include "../drt_structure_new/str_timint_basedataio.H"

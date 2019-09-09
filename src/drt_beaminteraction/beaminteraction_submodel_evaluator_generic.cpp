@@ -18,7 +18,7 @@
 #include "../drt_beaminteraction/periodic_boundingbox.H"
 #include "../drt_lib/drt_dserror.H"
 
-#include "../drt_particle/particle_handler.H"
+#include "../drt_beaminteraction/particle_handler.H"
 
 
 
@@ -48,7 +48,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Init(
     Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> const& gstate,
     Teuchos::RCP<STR::TIMINT::BaseDataIO> const& gio_ptr,
     Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState> const& ia_gstate_ptr,
-    Teuchos::RCP<PARTICLE::ParticleHandler> const& particlehandler,
+    Teuchos::RCP<BEAMINTERACTION::ParticleHandler> const& particlehandler,
     Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy,
     Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox,
     Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor> const& eletypeextractor)
@@ -218,7 +218,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BeamInteractionDataState() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-PARTICLE::ParticleHandler& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::ParticleHandler()
+BEAMINTERACTION::ParticleHandler& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::ParticleHandler()
 {
   CheckInit();
   return *particlehandler_;
@@ -226,7 +226,7 @@ PARTICLE::ParticleHandler& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Particle
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<PARTICLE::ParticleHandler>&
+Teuchos::RCP<BEAMINTERACTION::ParticleHandler>&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::ParticleHandlerPtr()
 {
   CheckInit();
@@ -260,8 +260,8 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinStrategyPtr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-PARTICLE::ParticleHandler const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::ParticleHandler()
-    const
+BEAMINTERACTION::ParticleHandler const&
+BEAMINTERACTION::SUBMODELEVALUATOR::Generic::ParticleHandler() const
 {
   CheckInit();
   return *particlehandler_;

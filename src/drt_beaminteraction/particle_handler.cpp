@@ -29,27 +29,27 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-PARTICLE::ParticleHandler::ParticleHandler()
+BEAMINTERACTION::ParticleHandler::ParticleHandler()
     : binstrategy_(Teuchos::null), myrank_(-1), bincolmap_(Teuchos::null)
 {
   // empty constructor
 }
 
-void PARTICLE::ParticleHandler::Init(
+void BEAMINTERACTION::ParticleHandler::Init(
     int myrank, Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy)
 {
   binstrategy_ = binstrategy;
   myrank_ = myrank;
 }
 
-void PARTICLE::ParticleHandler::Setup()
+void BEAMINTERACTION::ParticleHandler::Setup()
 {
   // so far nothing to do
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-PARTICLE::ParticleHandler::ParticleHandler(const Epetra_Comm& comm)
+BEAMINTERACTION::ParticleHandler::ParticleHandler(const Epetra_Comm& comm)
     : binstrategy_(Teuchos::rcp(new BINSTRATEGY::BinningStrategy(comm))),
       myrank_(comm.MyPID()),
       bincolmap_(Teuchos::null)
@@ -59,7 +59,7 @@ PARTICLE::ParticleHandler::ParticleHandler(const Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void PARTICLE::ParticleHandler::DistributeParticlesToBins(
+void BEAMINTERACTION::ParticleHandler::DistributeParticlesToBins(
     Teuchos::RCP<Epetra_Map> const& particlerowmap)
 {
   std::list<Teuchos::RCP<DRT::Node>> homelessparticles;
@@ -76,7 +76,7 @@ void PARTICLE::ParticleHandler::DistributeParticlesToBins(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void PARTICLE::ParticleHandler::RemoveAllParticles()
+void BEAMINTERACTION::ParticleHandler::RemoveAllParticles()
 {
   // 1st) loop over bins and remove initial particle info
   const int numrowbin = BinStrategy()->BinDiscret()->NumMyColElements();
@@ -93,7 +93,7 @@ void PARTICLE::ParticleHandler::RemoveAllParticles()
 /*----------------------------------------------------------------------*
 | bins are distributed to the processors                    ghamm 09/12 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> PARTICLE::ParticleHandler::DistributeBinsToProcs()
+Teuchos::RCP<Epetra_Map> BEAMINTERACTION::ParticleHandler::DistributeBinsToProcs()
 {
   // create an initial equal distribution of row bins
   Teuchos::RCP<Epetra_Map> rowbins =
@@ -155,7 +155,7 @@ Teuchos::RCP<Epetra_Map> PARTICLE::ParticleHandler::DistributeBinsToProcs()
 /*----------------------------------------------------------------------*
 | dynamic load balancing for bin distribution               ghamm 08/13 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_CrsGraph> PARTICLE::ParticleHandler::CreateGraph()
+Teuchos::RCP<const Epetra_CrsGraph> BEAMINTERACTION::ParticleHandler::CreateGraph()
 {
   const Epetra_Map* oldrowmap = binstrategy_->BinDiscret()->ElementRowMap();
 
@@ -184,7 +184,7 @@ Teuchos::RCP<const Epetra_CrsGraph> PARTICLE::ParticleHandler::CreateGraph()
 /*----------------------------------------------------------------------*
 | fill particles into their correct bin on according proc   ghamm 09/12 |
  *----------------------------------------------------------------------*/
-void PARTICLE::ParticleHandler::FillParticlesIntoBinsRoundRobin(
+void BEAMINTERACTION::ParticleHandler::FillParticlesIntoBinsRoundRobin(
     std::list<Teuchos::RCP<DRT::Node>>& homelessparticles)
 {
   const int numproc = binstrategy_->BinDiscret()->Comm().NumProc();
@@ -278,10 +278,10 @@ void PARTICLE::ParticleHandler::FillParticlesIntoBinsRoundRobin(
 /*----------------------------------------------------------------------*
 | fill particles into their correct bin on according proc   ghamm 03/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::list<int>> PARTICLE::ParticleHandler::FillParticlesIntoBinsRemoteIdList(
+Teuchos::RCP<std::list<int>> BEAMINTERACTION::ParticleHandler::FillParticlesIntoBinsRemoteIdList(
     std::list<Teuchos::RCP<DRT::Node>>& homelessparticles)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleHandler::FillParticlesIntoBinsRemoteIdList");
+  TEUCHOS_FUNC_TIME_MONITOR("BEAMINTERACTION::ParticleHandler::FillParticlesIntoBinsRemoteIdList");
   const int numproc = binstrategy_->BinDiscret()->Comm().NumProc();
   Teuchos::RCP<std::list<int>> removedparticles = Teuchos::rcp(new std::list<int>(0));
 
@@ -387,10 +387,10 @@ Teuchos::RCP<std::list<int>> PARTICLE::ParticleHandler::FillParticlesIntoBinsRem
 /*-----------------------------------------------------------------------------------------*
 | fill particles into their correct bin on according proc using ghosting   eichinger 02/17 |
  *-----------------------------------------------------------------------------------------*/
-Teuchos::RCP<std::list<int>> PARTICLE::ParticleHandler::FillParticlesIntoBinsUsingGhosting(
+Teuchos::RCP<std::list<int>> BEAMINTERACTION::ParticleHandler::FillParticlesIntoBinsUsingGhosting(
     std::list<Teuchos::RCP<DRT::Node>>& homelessparticles)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleHandler::FillParticlesIntoBinsUsingGhosting");
+  TEUCHOS_FUNC_TIME_MONITOR("BEAMINTERACTION::ParticleHandler::FillParticlesIntoBinsUsingGhosting");
 
   const int numproc = binstrategy_->BinDiscret()->Comm().NumProc();
   Teuchos::RCP<std::list<int>> removedparticles = Teuchos::rcp(new std::list<int>(0));
@@ -499,7 +499,7 @@ Teuchos::RCP<std::list<int>> PARTICLE::ParticleHandler::FillParticlesIntoBinsUsi
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void PARTICLE::ParticleHandler::ReceiveParticlesAndFillThemInBins(int const numrec,
+void BEAMINTERACTION::ParticleHandler::ReceiveParticlesAndFillThemInBins(int const numrec,
     DRT::Exporter& exporter, std::list<Teuchos::RCP<DRT::Node>>& homelessparticles)
 {
   // ---- receive ----
@@ -541,7 +541,7 @@ void PARTICLE::ParticleHandler::ReceiveParticlesAndFillThemInBins(int const numr
 /*----------------------------------------------------------------------*
 | node is placed into the correct row bin                   ghamm 09/12 |
  *----------------------------------------------------------------------*/
-bool PARTICLE::ParticleHandler::PlaceNodeCorrectly(Teuchos::RCP<DRT::Node> node,
+bool BEAMINTERACTION::ParticleHandler::PlaceNodeCorrectly(Teuchos::RCP<DRT::Node> node,
     const double* currpos, std::list<Teuchos::RCP<DRT::Node>>& homelessparticles)
 {
   //  std::cout << "on proc: " << myrank_ << " node with ID: " << node->Id() << " and owner: " <<
@@ -627,7 +627,7 @@ bool PARTICLE::ParticleHandler::PlaceNodeCorrectly(Teuchos::RCP<DRT::Node> node,
 /*----------------------------------------------------------------------*
 | setup ghosting of bins and particles                      ghamm 09/12 |
  *----------------------------------------------------------------------*/
-void PARTICLE::ParticleHandler::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap)
+void BEAMINTERACTION::ParticleHandler::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap)
 {
   // 1st step: ghosting of bins
   {
@@ -710,10 +710,10 @@ void PARTICLE::ParticleHandler::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-Teuchos::RCP<std::list<int>> PARTICLE::ParticleHandler::TransferParticles(
+Teuchos::RCP<std::list<int>> BEAMINTERACTION::ParticleHandler::TransferParticles(
     bool const fill_using_ghosting)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleHandler::TransferParticles");
+  TEUCHOS_FUNC_TIME_MONITOR("BEAMINTERACTION::ParticleHandler::TransferParticles");
 
   // set of homeless particles
   std::list<Teuchos::RCP<DRT::Node>> homelessparticles;
@@ -822,7 +822,8 @@ Teuchos::RCP<std::list<int>> PARTICLE::ParticleHandler::TransferParticles(
 | bins are distributed to the processors based on an        ghamm 11/12 |
 | underlying discretization                                             |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> PARTICLE::ParticleHandler::DistributeBinsToProcsBasedOnUnderlyingDiscret(
+Teuchos::RCP<Epetra_Map>
+BEAMINTERACTION::ParticleHandler::DistributeBinsToProcsBasedOnUnderlyingDiscret(
     Teuchos::RCP<DRT::Discretization> underlyingdis, std::map<int, std::set<int>>& rowelesinbin)
 {
   //--------------------------------------------------------------------
@@ -926,7 +927,7 @@ Teuchos::RCP<Epetra_Map> PARTICLE::ParticleHandler::DistributeBinsToProcsBasedOn
 /*-----------------------------------------------------------------------------*
  | build reduced bin col map based on boundary row bins       eichinger 01/17  |
  *-----------------------------------------------------------------------------*/
-void PARTICLE::ParticleHandler::GetNeighbouringBinsOfParticleContainingBoundaryRowBins(
+void BEAMINTERACTION::ParticleHandler::GetNeighbouringBinsOfParticleContainingBoundaryRowBins(
     std::set<int>& colbins) const
 {
   colbins.clear();

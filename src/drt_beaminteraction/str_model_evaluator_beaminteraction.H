@@ -48,14 +48,11 @@ namespace BINSTRATEGY
   class BinningStrategy;
 }
 
-namespace PARTICLE
-{
-  class ParticleHandler;
-}
-
 namespace BEAMINTERACTION
 {
   class BeamInteractionParams;
+
+  class ParticleHandler;
 
   namespace SUBMODELEVALUATOR
   {
@@ -303,7 +300,7 @@ namespace STR
       Teuchos::RCP<LINALG::SparseMatrix> stiff_beaminteraction_;
 
       //! particle handler
-      Teuchos::RCP<PARTICLE::ParticleHandler> particlehandler_;
+      Teuchos::RCP<BEAMINTERACTION::ParticleHandler> particlehandler_;
 
       //! binning strategy
       Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy_;

@@ -32,7 +32,7 @@
 #include "../drt_fsi/fsi_matrixtransform.H"
 #include "../drt_adapter/adapter_coupling.H"
 
-#include "../drt_particle/particle_handler.H"
+#include "../drt_beaminteraction/particle_handler.H"
 #include "../drt_beam3/beam3_base.H"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -159,7 +159,7 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   // todo: move this and its single call during partition to crosslinker submodel
   if (HaveSubModelType(INPAR::BEAMINTERACTION::submodel_crosslinking))
   {
-    particlehandler_ = Teuchos::rcp(new PARTICLE::ParticleHandler());
+    particlehandler_ = Teuchos::rcp(new BEAMINTERACTION::ParticleHandler());
     particlehandler_->Init(GState().GetMyRank(), binstrategy_);
     particlehandler_->Setup();
   }
