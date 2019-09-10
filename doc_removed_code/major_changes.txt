@@ -1,5 +1,15 @@
 List of major features that were removed from BACI, including date and revision where code was removed
 
+old particle framework including dependent modules (by Georg Hammerl)
+- removed in the following commits on 2019-09-09:
+  8b80cd4eeada94e912b49cd4d7650b0c10926ad3 (old particle framework including MD interaction)
+  6a5f67eb96e8b8837c17575420371d4b6dba13ab (fluid action types for cavitation)
+  43678a64be03b632e47de4d0f42605370e460ef6 (cavitation algorithm)
+  02ada95b0ba122b4422676cca399ad9595063a23 (particle-scatra coupling for levelset)
+- reasons: A new particle framework has been added to Baci with Smoothed Particle Hydrodynamics (SPH), Discrete Element Method (DEM), and Particle-Structure-Interaction (PASI).
+           The modules Molecular Dynamics (MD), Cavitation, and Particle-Scatra Coupling for Level-set problems are not migrated and removed in order to reduce dependencies.
+- removed by Sebastian Fuchs
+
 NLNSOL nonlinear solver framework (by Matthias Mayr)
 - removed in commit 01ad0f4967da827bb7e6759dda442dbc3d96fa57 on 2019-07-30
 - reasons: it was purely experimental and never worked properly. Removing it reduces the amount of code to be maintained as well as reduces the number of interfaces to MueLu to be kept up-to-date.
