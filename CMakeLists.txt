@@ -942,7 +942,7 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
   src/drt_beaminteraction/spherebeamlinking_params.cpp
   src/drt_beaminteraction/beaminteraction_submodel_evaluator_spherebeamlinking.cpp
   src/drt_beaminteraction/beaminteraction_geometry_utils.cpp
-  src/drt_beaminteraction/particle_handler.cpp
+  src/drt_beaminteraction/beam_crosslinker_handler.cpp
 )
 set(OBJS_DRT_STRU_MULTI
   src/drt_stru_multi/convert_mat.cpp

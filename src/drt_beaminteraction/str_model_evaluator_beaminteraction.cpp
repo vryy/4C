@@ -32,7 +32,6 @@
 #include "../drt_fsi/fsi_matrixtransform.H"
 #include "../drt_adapter/adapter_coupling.H"
 
-#include "../drt_beaminteraction/particle_handler.H"
 #include "../drt_beam3/beam3_base.H"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -47,6 +46,7 @@
 #include "../drt_beaminteraction/str_model_evaluator_beaminteraction_datastate.H"
 #include "../drt_beaminteraction/beaminteraction_calc_utils.H"
 #include "../drt_beaminteraction/beaminteraction_data.H"
+#include "../drt_beaminteraction/beam_crosslinker_handler.H"
 
 
 
@@ -67,7 +67,7 @@ STR::MODELEVALUATOR::BeamInteraction::BeamInteraction()
       ia_force_beaminteraction_(Teuchos::null),
       force_beaminteraction_(Teuchos::null),
       stiff_beaminteraction_(Teuchos::null),
-      particlehandler_(Teuchos::null),
+      beam_crosslinker_handler_(Teuchos::null),
       binstrategy_(Teuchos::null),
       bindis_(Teuchos::null),
       rowbins_(Teuchos::null),
@@ -140,10 +140,10 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   siatransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
 
   // -------------------------------------------------------------------------
-  // initialize and setup binning strategy and particle handler
+  // initialize and setup binning strategy and beam crosslinker handler
   // -------------------------------------------------------------------------
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(DiscretPtr()->Comm().Clone());
-  bindis_ = Teuchos::rcp(new DRT::Discretization("particle", com));
+  bindis_ = Teuchos::rcp(new DRT::Discretization("linker", com));
   // create discretization writer
   bindis_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(bindis_)));
   bindis_->FillComplete(false, false, false);
@@ -155,13 +155,13 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   binstrategy_->Init(discret_vec, disp_vec);
   binstrategy_->Setup(bindis_, TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox());
 
-  // construct, init and setup particle handler and binning strategy
+  // construct, init and setup beam crosslinker handler and binning strategy
   // todo: move this and its single call during partition to crosslinker submodel
   if (HaveSubModelType(INPAR::BEAMINTERACTION::submodel_crosslinking))
   {
-    particlehandler_ = Teuchos::rcp(new BEAMINTERACTION::ParticleHandler());
-    particlehandler_->Init(GState().GetMyRank(), binstrategy_);
-    particlehandler_->Setup();
+    beam_crosslinker_handler_ = Teuchos::rcp(new BEAMINTERACTION::BeamCrosslinkerHandler());
+    beam_crosslinker_handler_->Init(GState().GetMyRank(), binstrategy_);
+    beam_crosslinker_handler_->Setup();
   }
 
   // some screen output for binning
@@ -287,7 +287,8 @@ void STR::MODELEVALUATOR::BeamInteraction::InitAndSetupSubModelEvaluators()
   for (sme_iter = (*me_vec_ptr_).begin(); sme_iter != (*me_vec_ptr_).end(); ++sme_iter)
   {
     (*sme_iter)->Init(ia_discret_, bindis_, GStatePtr(), GInOutputPtr(), ia_state_ptr_,
-        particlehandler_, binstrategy_, TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox(),
+        beam_crosslinker_handler_, binstrategy_,
+        TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox(),
         Teuchos::rcp_dynamic_cast<BEAMINTERACTION::UTILS::MapExtractor>(eletypeextractor_, true));
     (*sme_iter)->Setup();
   }
@@ -374,7 +375,7 @@ void STR::MODELEVALUATOR::BeamInteraction::PartitionProblem()
   // established in binning discretization. Therefore some nodes need to
   // change their owner according to the bins owner they reside in
   if (HaveSubModelType(INPAR::BEAMINTERACTION::submodel_crosslinking))
-    particlehandler_->DistributeParticlesToBins(noderowmap);
+    beam_crosslinker_handler_->DistributeLinkerToBins(noderowmap);
 
   // determine boundary bins (physical boundary as well as boundary to other procs)
   binstrategy_->DetermineBoundaryRowBins();
@@ -654,7 +655,7 @@ void STR::MODELEVALUATOR::BeamInteraction::WriteRestart(
 
   // mesh is not written to disc, only maximum node id is important for output
   // fixme: can we just write mesh
-  bin_writer->ParticleOutput(stepn, timen, true);
+  bin_writer->WriteOnlyNodesInNewFieldGroupToControlFile(stepn, timen, true);
   bin_writer->NewStep(stepn, timen);
 
   // as we know that our maps have changed every time we write output, we can empty
@@ -758,7 +759,7 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateStepElement()
    * one node on any proc has moved "too far" compared to the time step of the
    * last redistribution. Therefore we only do the expensive redistribution,
    * change of ghosting and assigning of elements if necessary.
-   * This holds for both the beam discretization as well as the particle/linker/binning
+   * This holds for both the beam discretization as well as the linker/binning
    * discretization.
    */
 
@@ -1055,8 +1056,7 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateMaps()
   CheckInit();
 
   // todo: performance improvement by using the same exporter object every time
-  // and not doing the safety checks in Linalg::Export. See in particle_timint
-  // how this can be done.
+  // and not doing the safety checks in Linalg::Export.
   // todo: check if update is necessary (->SameAs())
 
   // beam displacement

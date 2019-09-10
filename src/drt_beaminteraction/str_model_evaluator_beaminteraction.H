@@ -52,7 +52,7 @@ namespace BEAMINTERACTION
 {
   class BeamInteractionParams;
 
-  class ParticleHandler;
+  class BeamCrosslinkerHandler;
 
   namespace SUBMODELEVALUATOR
   {
@@ -299,8 +299,8 @@ namespace STR
       //! structural stiffness matrix based on Discret()
       Teuchos::RCP<LINALG::SparseMatrix> stiff_beaminteraction_;
 
-      //! particle handler
-      Teuchos::RCP<BEAMINTERACTION::ParticleHandler> particlehandler_;
+      //! beam crosslinker handler
+      Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler> beam_crosslinker_handler_;
 
       //! binning strategy
       Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy_;

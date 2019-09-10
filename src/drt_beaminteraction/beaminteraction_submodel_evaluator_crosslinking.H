@@ -498,7 +498,7 @@ namespace BEAMINTERACTION
       //! double bonded crosslinker that exert forces on network (map key is crosslinker gid)
       std::map<int, Teuchos::RCP<BEAMINTERACTION::BeamLink>> doublebondcl_;
 
-      //! particle, i.e. crosslinker molecule discretization runtime vtp writer
+      //! linker, i.e. crosslinker molecule discretization runtime vtp writer
       Teuchos::RCP<DiscretizationRuntimeVtpWriter> vtp_writer_ptr_;
 
       //! current linker displacement

@@ -11,14 +11,14 @@
 /*-----------------------------------------------------------*/
 
 
-#include "beaminteraction_submodel_evaluator_generic.H"
-#include "str_model_evaluator_beaminteraction_datastate.H"
-#include "beaminteraction_calc_utils.H"
+#include "../drt_beaminteraction/beaminteraction_submodel_evaluator_generic.H"
+#include "../drt_beaminteraction/str_model_evaluator_beaminteraction_datastate.H"
+#include "../drt_beaminteraction/beaminteraction_calc_utils.H"
 
 #include "../drt_beaminteraction/periodic_boundingbox.H"
 #include "../drt_lib/drt_dserror.H"
 
-#include "../drt_beaminteraction/particle_handler.H"
+#include "../drt_beaminteraction/beam_crosslinker_handler.H"
 
 
 
@@ -32,7 +32,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Generic()
       gstate_ptr_(Teuchos::null),
       gio_ptr_(Teuchos::null),
       beaminteractiondatastate_(Teuchos::null),
-      particlehandler_(Teuchos::null),
+      beam_crosslinker_handler_(Teuchos::null),
       binstrategy_(Teuchos::null),
       periodic_boundingbox_(Teuchos::null),
       eletypeextractor_(Teuchos::null)
@@ -48,7 +48,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Init(
     Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> const& gstate,
     Teuchos::RCP<STR::TIMINT::BaseDataIO> const& gio_ptr,
     Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState> const& ia_gstate_ptr,
-    Teuchos::RCP<BEAMINTERACTION::ParticleHandler> const& particlehandler,
+    Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler> const& beamcrosslinkerhandler,
     Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy,
     Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox,
     Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor> const& eletypeextractor)
@@ -60,7 +60,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Init(
   gstate_ptr_ = gstate;
   gio_ptr_ = gio_ptr;
   beaminteractiondatastate_ = ia_gstate_ptr;
-  particlehandler_ = particlehandler;
+  beam_crosslinker_handler_ = beamcrosslinkerhandler;
   binstrategy_ = binstrategy;
   periodic_boundingbox_ = periodic_boundingbox;
   eletypeextractor_ = eletypeextractor;
@@ -218,19 +218,20 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BeamInteractionDataState() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BEAMINTERACTION::ParticleHandler& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::ParticleHandler()
+BEAMINTERACTION::BeamCrosslinkerHandler&
+BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BeamCrosslinkerHandler()
 {
   CheckInit();
-  return *particlehandler_;
+  return *beam_crosslinker_handler_;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<BEAMINTERACTION::ParticleHandler>&
-BEAMINTERACTION::SUBMODELEVALUATOR::Generic::ParticleHandlerPtr()
+Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler>&
+BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BeamCrosslinkerHandlerPtr()
 {
   CheckInit();
-  return particlehandler_;
+  return beam_crosslinker_handler_;
 }
 
 /*----------------------------------------------------------------------------*
@@ -260,11 +261,11 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinStrategyPtr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BEAMINTERACTION::ParticleHandler const&
-BEAMINTERACTION::SUBMODELEVALUATOR::Generic::ParticleHandler() const
+BEAMINTERACTION::BeamCrosslinkerHandler const&
+BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BeamCrosslinkerHandler() const
 {
   CheckInit();
-  return *particlehandler_;
+  return *beam_crosslinker_handler_;
 }
 
 /*----------------------------------------------------------------------------*
