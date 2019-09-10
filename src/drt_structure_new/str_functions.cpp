@@ -79,7 +79,30 @@ std::vector<double> STR::WeaklyCompressibleEtienneFSIStructureFunction::Evaluate
   // add the 1st time derivative at time t
   if (deg >= 1)
   {
-    res[1] = 0.0;
+    // ease notation
+    double x = xp[0];
+    double y = xp[1];
+
+    // initialize variables
+    LINALG::Matrix<2, 1> dudt_ex;
+
+    // evaluate variables
+    dudt_ex(0) = (PI * cos(2. * PI * x) * sin(2. * PI * t) * (y - 1.)) / 3.;
+    dudt_ex(1) =
+        -(PI * sin(2. * PI * x) * cos(2. * PI * (t + 1. / 4.)) * (cos(2. * PI * x) - 1.)) / 10.;
+
+    switch (index)
+    {
+      case 0:
+        res[1] = dudt_ex(0);
+        break;
+      case 1:
+        res[1] = dudt_ex(1);
+        break;
+
+      default:
+        res[1] = 0.0;
+    }
   }
 
   // add the 2nd time derivative at time t
@@ -175,30 +198,7 @@ std::vector<double> STR::WeaklyCompressibleEtienneFSIStructureForceFunction::Eva
   // add the 1st time derivative at time t
   if (deg >= 1)
   {
-    // ease notation
-    double x = xp[0];
-    double y = xp[1];
-
-    // initialize variables
-    LINALG::Matrix<2, 1> dudt_ex;
-
-    // evaluate variables
-    dudt_ex(0) = (PI * cos(2. * PI * x) * sin(2. * PI * t) * (y - 1.)) / 3.;
-    dudt_ex(1) =
-        -(PI * sin(2. * PI * x) * cos(2. * PI * (t + 1. / 4.)) * (cos(2. * PI * x) - 1.)) / 10.;
-
-    switch (index)
-    {
-      case 0:
-        res[1] = dudt_ex(0);
-        break;
-      case 1:
-        res[1] = dudt_ex(1);
-        break;
-
-      default:
-        res[1] = 0.0;
-    }
+    res[1] = 0.0;
   }
 
   // add the 2nd time derivative at time t

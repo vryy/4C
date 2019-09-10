@@ -112,6 +112,10 @@ namespace STR
       virtual bool PredictConstAcc(
           Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const;
 
+      //! Set initial displacement field
+      virtual void SetInitialDisplacement(
+          const INPAR::STR::InitialDisp init, const int startfuncno);
+
       //!@}
 
      protected:

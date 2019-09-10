@@ -623,8 +623,9 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
           }
           else  // evaluate error from given function
           {
-            // get time
-            const double t = params.get("total time", -1.0);
+            // get final time
+            const double finaltime =
+                DRT::Problem::Instance()->StructuralDynamicParams().get<double>("MAXTIME");
 
             // get function number
             const int calcerrfunctno =
@@ -632,8 +633,9 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
 
             // evaluate displacement error
             for (unsigned int d = 0; d < 2; ++d)
-              uanalyt(d, 0) =
-                  DRT::Problem::Instance()->Funct(calcerrfunctno - 1).Evaluate(d, xgp.A(), t);
+              uanalyt(d, 0) = DRT::Problem::Instance()
+                                  ->Funct(calcerrfunctno - 1)
+                                  .Evaluate(d, xgp.A(), finaltime);
 
             // set strains to zero
             strainanalyt(0, 0) = 0.0;

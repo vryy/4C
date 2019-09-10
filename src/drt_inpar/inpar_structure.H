@@ -635,6 +635,13 @@ namespace INPAR
       norm_inf         ///< Maximum/infinity norm: \f$\vert x\vert_\infty = \max{x_i}\f$
     };
 
+    /// initial displacement field
+    enum InitialDisp
+    {
+      initdisp_zero_disp,        ///< zero initial displacement
+      initdisp_disp_by_function  ///< initial displacement from function
+    };
+
     /// calculate error
     enum CalcError
     {
