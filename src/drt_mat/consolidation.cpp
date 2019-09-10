@@ -16,6 +16,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_function_library.H"
 
 #include <algorithm>
 #include <iterator>
