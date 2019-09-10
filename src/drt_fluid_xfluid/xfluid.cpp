@@ -2442,8 +2442,13 @@ void FLD::XFluid::Solve()
         "+------------+-------------------+--------------+--------------+--------------+-----------"
         "---+\n");
     printf(
-        "|- step/max -|- tol      [norm] -|-- vel-res ---|-- pre-res ---|-- vel-inc ---|-- pre-inc "
+        "|- step/max -|-- vel-res ---|-- pre-res ---|-- vel-inc ---|-- pre-inc "
         "---|\n");
+    printf(
+        "|-   norm   -|-- abs. L2 ---|-- abs. L2 ---|-- rel. L2 ---|-- rel. L2 "
+        "---|\n");
+    printf("|-   tol    -| %10.3E   | %10.3E   | %10.3E   | %10.3E   |\n", velrestol, presrestol,
+        velinctol, presinctol);
   }
 
   while (stopnonliniter == false)
@@ -2675,8 +2680,8 @@ bool FLD::XFluid::ConvergenceCheck(int itnum, int itemax, const double velrestol
   {
     if (myrank_ == 0)
     {
-      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   |      --      |      --      |", itnum,
-          itemax, vresnorm_, presnorm_);
+      printf("|  %3d/%3d   | %10.3E   | %10.3E   |      --      |      --      |", itnum, itemax,
+          vresnorm_, presnorm_);
       printf(" (      --     ,te=%10.3E", dtele_);
       if (turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
       {
@@ -2699,7 +2704,7 @@ bool FLD::XFluid::ConvergenceCheck(int itnum, int itemax, const double velrestol
       stopnonliniter = true;
       if (myrank_ == 0)
       {
-        printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   |", itnum, itemax,
+        printf("|  %3d/%3d   | %10.3E   | %10.3E   | %10.3E   | %10.3E   |", itnum, itemax,
             vresnorm_, presnorm_, incvelnorm_L2_ / velnorm_L2_, incprenorm_L2_ / prenorm_L2_);
         printf(" (ts=%10.3E,te=%10.3E", dtsolve_, dtele_);
         if (turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
@@ -2725,8 +2730,8 @@ bool FLD::XFluid::ConvergenceCheck(int itnum, int itemax, const double velrestol
     else  // if not yet converged
         if (myrank_ == 0)
     {
-      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   |", itnum, itemax,
-          vresnorm_, presnorm_, incvelnorm_L2_ / velnorm_L2_, incprenorm_L2_ / prenorm_L2_);
+      printf("|  %3d/%3d   | %10.3E   | %10.3E   | %10.3E   | %10.3E   |", itnum, itemax, vresnorm_,
+          presnorm_, incvelnorm_L2_ / velnorm_L2_, incprenorm_L2_ / prenorm_L2_);
       printf(" (ts=%10.3E,te=%10.3E", dtsolve_, dtele_);
       if (turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
       {

@@ -824,6 +824,11 @@ void FLD::FluidImplicitTimeInt::Solve()
     printf(
         "|- step/max -|-- vel-res ---|-- pre-res ---|-- vel-inc ---|-- pre-inc "
         "---|\n");
+    printf(
+        "|-   norm   -|-- abs. L2 ---|-- abs. L2 ---|-- rel. L2 ---|-- rel. L2 "
+        "---|\n");
+    printf("|-   tol    -| %10.3E   | %10.3E   | %10.3E   | %10.3E   |\n", velrestol, presrestol,
+        velinctol, presinctol);
   }
 
   // -------------------------------------------------------------------
@@ -2297,8 +2302,8 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int itnum, int itmax, const dou
     }
     else
     {
-      printf("|   --/%3d   |  %10.3E   | %10.3E   |      --      |      --      |", itmax,
-          vresnorm_, presnorm_);
+      printf("|   --/%3d   | %10.3E   | %10.3E   |      --      |      --      |", itmax, vresnorm_,
+          presnorm_);
       printf(" (      --     ,te=%10.3E", dtele_);
       if (turbmodel_ == INPAR::FLUID::dynamic_smagorinsky) printf(",tf=%10.3E", dtfilter_);
       printf(")\n");
