@@ -73,7 +73,8 @@ XFEM::XFluidTimeInt::XFluidTimeInt(
     std::map<INPAR::XFEM::XFluidTimeInt, std::map<int, std::set<int>>>&
         reconstr_method_to_node,  /// inverse reconstruction map for nodes and its dofsets
     const int step,               /// global time step
-    const bool xfluid_timint_check_interfacetips  /// check interfacetips?
+    const bool xfluid_timint_check_interfacetips,      /// check interfacetips?
+    const bool xfluid_timint_check_sliding_on_surface  /// check sliding on surface?
     )
     : is_newton_increment_transfer_(is_newton_increment_transfer),
       dis_(dis),
@@ -86,7 +87,8 @@ XFEM::XFluidTimeInt::XFluidTimeInt(
       node_to_reconstr_method_(node_to_reconstr_method),
       reconstr_method_to_node_(reconstr_method_to_node),
       step_(step),
-      xfluid_timint_check_interfacetips_(xfluid_timint_check_interfacetips)
+      xfluid_timint_check_interfacetips_(xfluid_timint_check_interfacetips),
+      xfluid_timint_check_sliding_on_surface_(xfluid_timint_check_sliding_on_surface)
 {
   myrank_ = dis->Comm().MyPID();
   numproc_ = dis->Comm().NumProc();
@@ -1521,14 +1523,17 @@ int XFEM::XFluidTimeInt::IdentifyOldSets(const GEO::CUT::Node* n_old,  /// node 
 
 
     bool did_node_change_side = false;
-    bool successful_check = false;
+    bool successful_check = true;
 
-    //--------------------------------------
-    // special check whether node slides on cut surface
-    successful_check = SpecialCheck_SlidingOnSurface(did_node_change_side, n_old, n_new);
+    if (xfluid_timint_check_sliding_on_surface_)
+    {
+      //--------------------------------------
+      // special check whether node slides on cut surface
+      successful_check = SpecialCheck_SlidingOnSurface(did_node_change_side, n_old, n_new);
 
-    if (!successful_check or (successful_check and did_node_change_side))
-      return -1;  // do not accept the old value
+      if (!successful_check or (successful_check and did_node_change_side))
+        return -1;  // do not accept the old value
+    }
 
     if (xfluid_timint_check_interfacetips_)
     {
