@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Implementation of the Lagrangian merit function for
        constrained problems.

@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief Main control routine for acoustic simulations
 \level 2
 \maintainer Luca Berardocco

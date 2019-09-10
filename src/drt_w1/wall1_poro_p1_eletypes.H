@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Element types of the 2D solid-poro element (p1/mixed approach).
 
 \level 2

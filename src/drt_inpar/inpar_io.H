@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \file inpar_io.H
 
 \brief Input parameters for global IO section

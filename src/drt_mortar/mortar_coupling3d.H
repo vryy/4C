@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Classes for mortar coupling in 3D.
 
 \level 2
@@ -181,7 +181,7 @@ namespace MORTAR
      \brief Get interface contact parameter list
 
      */
-    virtual Teuchos::ParameterList& IParams() { return imortar_; };
+    virtual Teuchos::ParameterList& InterfaceParams() { return imortar_; };
 
     /*!
      \brief Return the LM shape fcn type

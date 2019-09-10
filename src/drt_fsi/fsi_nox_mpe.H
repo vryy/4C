@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Solve FSI problems using minimal polynomial vector extrapolation
 

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
-\brief Managing and evaluating of spatial functions
+\brief Managing and evaluating of space- and/or time-dependent functions
 
 \level 0
 
@@ -56,9 +56,9 @@ namespace DRT
   {
     /*!
 
-    \brief abstract interface for spatial functions.
+    \brief abstract interface for space- and time-dependent functions.
 
-    Spatial functions can be defined either scalar-valued or vector-valued.
+    Functions can be defined either scalar-valued or vector-valued.
 
     There exist function definitions using explicitly defined spatial functions
     for test problems (beltrami, kim-moin etc).
@@ -73,14 +73,14 @@ namespace DRT
       virtual ~Function(){};
 
       /// Evaluate time and space dependent FUNCT
-      virtual double Evaluate(const int index,  //< component of function
-          const double* x,                      //< coordinates
-          double t                              //< time
+      virtual double Evaluate(const int index,  ///< component of function
+          const double* x,                      ///< coordinates
+          double t                              ///< time
           ) = 0;
 
 
       /// Evaluate time dependent FUNCT
-      double EvaluateTime(double t  //< time
+      double EvaluateTime(double t  ///< time
       )
       {
         double dummy[3] = {0.0};
@@ -97,9 +97,9 @@ namespace DRT
 
       /// Evaluate first spatial derivatives of time and space dependent FUNCT
       virtual std::vector<double> EvaluateSpatialDerivative(
-          const int index,  //< component of function
-          const double* x,  //< coordinates
-          const double t    //< time
+          const int index,  ///< component of function
+          const double* x,  ///< coordinates
+          const double t    ///< time
       )
       {
         dserror("The evaluation of the derivative is not implemented for this function");
@@ -108,10 +108,11 @@ namespace DRT
       };
 
       /// Evaluate first or second time derivative of time and space dependent FUNCT
-      virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
-          const double* x,                                                 //< coordinates
-          const double t,                                                  //< time
-          const unsigned deg  //< degree of maximal derivative
+      virtual std::vector<double> EvaluateTimeDerivative(
+          const int index,    ///< component of function
+          const double* x,    ///< coordinates
+          const double t,     ///< time
+          const unsigned deg  ///< degree of maximal derivative
       )
       {
         dserror("The evaluation of the time derivative is not implemented for this function");
@@ -121,8 +122,8 @@ namespace DRT
 
 
       /// Evaluate first or second time derivative of time dependent FUNCT
-      std::vector<double> EvaluateTimeDerivative(const double t,  //< time
-          const unsigned deg                                      //< degree of maximal derivative
+      std::vector<double> EvaluateTimeDerivative(const double t,  ///< time
+          const unsigned deg                                      ///< degree of maximal derivative
       )
       {
         double dummy[3] = {0.0};
@@ -157,48 +158,48 @@ namespace DRT
 
       virtual ~ExprFunction();
 
-      // add an expression to the function
+      /// add an expression to the function
       virtual void AddExpr(
           std::string buf, std::vector<std::vector<Teuchos::RCP<FunctionVariable>>> variables);
 
-      // evaluate the function at given space and time
+      /// evaluate the function at given space and time
       virtual double Evaluate(const int index, const double* x, double t);
 
-      // evaluate the first derivative of the function at given space and time
+      /// evaluate the first derivative of the function at given space and time
       virtual std::vector<double> EvaluateSpatialDerivative(
           const int index, const double* x, const double t);
 
-      // evaluate the 1st or 2nd time derivative of the function at given space and time
+      /// evaluate the 1st or 2nd time derivative of the function at given space and time
       virtual std::vector<double> EvaluateTimeDerivative(
           const int index, const double* x, const double t, const unsigned deg);
 
-      // return the number of components
+      /// return the number of components
       virtual int NumberComponents() { return (expr_.size()); }
 
-      // check if it is a variable
+      /// check if it is a variable
       bool IsVariable(const int index, const std::string& varname) const;
 
-      // add a variable to the function
+      /// add a variable to the function
       void AddVariable(const int index, const std::string& varname, double varvalue);
 
-      // pars the expressions
+      /// pars the expressions
       void ParseExpressions();
 
      protected:
-      // dimension of the problem
+      /// dimension of the problem
       int dim_;
 
-      // vector of parsed expressions
+      /// vector of parsed expressions
       std::vector<Teuchos::RCP<DRT::PARSER::Parser<double>>> expr_;
 
-      // vector of parsed 1st derivatives
+      /// vector of parsed 1st derivatives
       std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<double>>>> exprd_;
 
-      // vector of parsed 2nd derivatives
+      /// vector of parsed 2nd derivatives
       std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>>>
           exprdd_;
 
-      // vector of the function variables and all their definitions
+      /// vector of the function variables and all their definitions
       std::vector<std::vector<Teuchos::RCP<FunctionVariable>>> variables_;
 
      private:
@@ -377,7 +378,8 @@ namespace DRT
       virtual void ParseExpressions();
 
      private:
-      bool isparsed_;  //! flag indicating whether expression was parsed
+      //! flag indicating whether expression was parsed
+      bool isparsed_;
     };
 
   }  // namespace UTILS

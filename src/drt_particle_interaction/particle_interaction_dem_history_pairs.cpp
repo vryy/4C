@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief history pair handler for discrete element method (DEM) interactions
 
 \level 3

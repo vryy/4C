@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
  \brief generic interface for implementations of the artery element
         evaluation routines

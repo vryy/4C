@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief non-Newtonian fluid of Herschel-Bulkley type
 
 \level 2

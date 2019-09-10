@@ -101,7 +101,7 @@ E 2 - Velocity 2
 ------------------------------------------------DESIGN SURFACE PARTICLE WALL
 DSURF                           1
 //                              walls
-E 1 - 1
+E 1 - MAT -1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------------DPARTICLE-NODE TOPOLOGY
 NODE 1 DPARTICLE 1

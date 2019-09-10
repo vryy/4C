@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief evaluation of multi-scale scalar transport material
 
 The functions implemented in this file have to be separated from the remainder

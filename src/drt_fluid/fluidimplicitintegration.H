@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Control routine for fluid (in)stationary solvers,
 
@@ -1355,6 +1355,9 @@ namespace FLD
 
     /// flag for windkessel outflow condition
     bool off_proc_assembly_;
+
+    /// number of dofset for ALE quantities (0 by default and 2 in case of HDG discretizations)
+    unsigned int ndsale_;
 
 
     //! @name Set general parameter in class f3Parameter

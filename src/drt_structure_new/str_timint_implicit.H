@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Implicit structural time integration strategy.
 
@@ -123,6 +123,9 @@ namespace STR
         CheckInitSetup();
         return implint_ptr_;
       };
+
+      /// Update State Incrementally for coupled problems with monolithic approach
+      void UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override;
 
       ///  Evaluate routine for coupled problems with monolithic approach
       virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc);

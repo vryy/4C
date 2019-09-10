@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief
 This file contains the routines required to calculate the isochoric contribution
 of a viscous rate dependent material law, modified from Pioletti,1997
@@ -8,7 +8,7 @@ The input line should read
 
 \level 2
 
-\maintainer Fabian Braeu
+\maintainer Amadeus Gebauer
 
 *----------------------------------------------------------------------*/
 #ifndef VISCO_ISORATEDEP_H_

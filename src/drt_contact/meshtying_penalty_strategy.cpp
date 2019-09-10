@@ -1,9 +1,10 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief strategy handling mesh tying problems with penalty formulation
 
 \level 1
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 
@@ -307,7 +308,7 @@ void CONTACT::MtPenaltyStrategy::ResetPenalty()
   // reset penalty parameter in all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    interface_[i]->IParams().set<double>("PENALTYPARAM", InitialPenalty());
+    interface_[i]->InterfaceParams().set<double>("PENALTYPARAM", InitialPenalty());
   }
 
   return;
@@ -328,7 +329,7 @@ void CONTACT::MtPenaltyStrategy::ModifyPenalty()
   // modify penalty parameter in all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    interface_[i]->IParams().set<double>("PENALTYPARAM", pennew);
+    interface_[i]->InterfaceParams().set<double>("PENALTYPARAM", pennew);
   }
 
   return;
@@ -369,9 +370,9 @@ void CONTACT::MtPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
       // update penalty parameter in all interfaces
       for (int i = 0; i < (int)interface_.size(); ++i)
       {
-        double ippcurr = interface_[i]->IParams().get<double>("PENALTYPARAM");
+        double ippcurr = interface_[i]->InterfaceParams().get<double>("PENALTYPARAM");
         if (ippcurr != ppcurr) dserror("Something wrong with penalty parameter");
-        interface_[i]->IParams().set<double>("PENALTYPARAM", 10 * ippcurr);
+        interface_[i]->InterfaceParams().set<double>("PENALTYPARAM", 10 * ippcurr);
       }
     }
   }

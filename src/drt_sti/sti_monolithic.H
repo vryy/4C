@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief monolithic coupling algorithm for scatra-thermo interaction
 

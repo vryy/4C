@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief infnorm-scaling utility class for preconditioning of fluid problems
 

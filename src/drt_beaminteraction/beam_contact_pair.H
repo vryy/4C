@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief one generic (beam-to-?) contact element pair
 
@@ -169,10 +169,10 @@ namespace BEAMINTERACTION
     \brief Get coordinates of all active contact points on element1 and element2
     */
     virtual void GetAllActiveContactPointCoordsElement1(
-        std::vector<LINALG::TMatrix<double, 3, 1>>& coords) const = 0;
+        std::vector<LINALG::Matrix<3, 1, double>>& coords) const = 0;
 
     virtual void GetAllActiveContactPointCoordsElement2(
-        std::vector<LINALG::TMatrix<double, 3, 1>>& coords) const = 0;
+        std::vector<LINALG::Matrix<3, 1, double>>& coords) const = 0;
 
     /*!
     \brief Get all (scalar) contact forces of this contact pair
@@ -184,7 +184,7 @@ namespace BEAMINTERACTION
     */
     virtual void GetAllActiveContactGaps(std::vector<double>& gaps) const = 0;
 
-    //  virtual LINALG::TMatrix<TYPE, 3, 1>* GetNormalOld()=0;
+    //  virtual LINALG::Matrix< 3, 1,TYPE>* GetNormalOld()=0;
     //
     //  /*!
     //    \Check, if there is a difference between the result of the new and old gap definition,

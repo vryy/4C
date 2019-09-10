@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief This file contains the implementation of the switching strategy
        for the AUG::ComboStrategy.
 

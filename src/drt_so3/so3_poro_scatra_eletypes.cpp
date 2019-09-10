@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
  \brief element types of the 3D solid-poro element including scatra functionality
 

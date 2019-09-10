@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief NeoHooke-like material for AAA
 This file contains the routines required for aneurysmatic artery wall following
 Raghavan and Vorp [2000]

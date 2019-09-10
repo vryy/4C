@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief implementation of predictor for either constant displacement, velocity or acceleration
 

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
  \brief partitioned one way coupled poroelasticity scalar transport interaction algorithms
 

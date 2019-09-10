@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief Evaluation of scalar shape functions for HDG
 
 \level 2
@@ -35,6 +36,7 @@ DRT::UTILS::ShapeValues<distype>::ShapeValues(
   xyzreal.Shape(nsd_, nqpoints_);
 
   funct.Shape(nen_, nqpoints_);
+  derxy.Shape(nen_ * nsd_, nqpoints_);
 
   shfunct.Shape(ndofs_, nqpoints_);
   shfunctAvg.Resize(ndofs_);
@@ -74,10 +76,16 @@ DRT::UTILS::ShapeValues<distype>::ShapeValues(
  |  Evaluate element-dependent shape data (public)    kronbichler 05/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::UTILS::ShapeValues<distype>::Evaluate(const DRT::Element& ele)
+void DRT::UTILS::ShapeValues<distype>::Evaluate(
+    const DRT::Element& ele, const std::vector<double>& aleDis)
 {
   dsassert(ele.Shape() == distype, "Internal error");
   GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(&ele, xyze);
+
+  // update nodal coordinates
+  if (!(aleDis.empty()))
+    for (unsigned int n = 0; n < nen_; ++n)
+      for (unsigned int d = 0; d < nsd_; ++d) xyze(d, n) += aleDis[n * nsd_ + d];
 
   for (unsigned int i = 0; i < ndofs_; ++i) shfunctAvg(i) = 0.;
   double faceVol = 0.;
@@ -95,6 +103,14 @@ void DRT::UTILS::ShapeValues<distype>::Evaluate(const DRT::Element& ele)
     LINALG::Matrix<nen_, 1> myfunct(funct.A() + q * nen_, true);
     LINALG::Matrix<nsd_, 1> mypoint(xyzreal.A() + q * nsd_, true);
     mypoint.MultiplyNN(xyze, myfunct);
+
+    // compute global first derivates
+    for (unsigned int n = 0; n < nen_; ++n)
+      for (unsigned int d = 0; d < nsd_; ++d)
+      {
+        derxy(n * nsd_ + d, q) = xji(d, 0) * deriv(0, n);
+        for (unsigned int e = 1; e < nsd_; ++e) derxy(n * nsd_ + d, q) += xji(d, e) * deriv(e, n);
+      }
 
     // transform shape functions
     for (unsigned int i = 0; i < ndofs_; ++i)
@@ -154,7 +170,6 @@ DRT::UTILS::ShapeValuesFace<distype>::ShapeValuesFace(ShapeValuesFaceParams para
   shfunctNoPermute.LightShape(nfdofs_, nqpoints_);
   shfunct.LightShape(nfdofs_, nqpoints_);
   normals.LightShape(nsd_, nqpoints_);
-  tangents.LightShape(nsd_, nsd_);
   jfac.LightResize(nqpoints_);
 
   shfunctI.Shape(nfdofs_, nqpoints_);
@@ -179,7 +194,7 @@ DRT::UTILS::ShapeValuesFace<distype>::ShapeValuesFace(ShapeValuesFaceParams para
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace(
-    const DRT::Element& ele, const unsigned int face)
+    const DRT::Element& ele, const unsigned int face, const std::vector<double>& aleDis)
 {
   const DRT::Element::DiscretizationType facedis =
       DRT::UTILS::DisTypeToFaceShapeType<distype>::shape;
@@ -189,6 +204,12 @@ void DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace(
 
   LINALG::Matrix<nsd_, nen_> xyzeElement;
   GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(&ele, xyzeElement);
+
+  // update nodal coordinates
+  if (!(aleDis.empty()))
+    for (unsigned int n = 0; n < nen_; ++n)
+      for (unsigned int d = 0; d < nsd_; ++d) xyzeElement(d, n) += aleDis[n * nsd_ + d];
+
   for (unsigned int i = 0; i < nfn_; ++i)
     for (unsigned int d = 0; d < nsd_; ++d) xyze(d, i) = xyzeElement(d, faceNodeOrder[face][i]);
 
@@ -473,8 +494,6 @@ void DRT::UTILS::ShapeValuesFace<distype>::ComputeFaceReferenceSystem(
   // find the master element and build the face reference system from the master side.
 
   Epetra_SerialDenseVector norm(nsd_ - 1);
-  tangents.Reshape(nsd_, nsd_);
-  std::vector<double> master_normal(nsd_);
 
   if (ele.Faces()[face]->ParentMasterElement() != &ele)
   {
@@ -490,44 +509,34 @@ void DRT::UTILS::ShapeValuesFace<distype>::ComputeFaceReferenceSystem(
 
     // Compute the reference system from the master side
     for (unsigned int d = 0; d < nsd_; ++d)
-    {
       for (unsigned int i = 0; i < nsd_ - 1; ++i)
-      {
         tangent(d, i) = xyzeMasterElement(d, faceNodeOrder[face][trafomap[i + 1]]) -
                         xyzeMasterElement(d, faceNodeOrder[face][trafomap[0]]);
-        norm(i) += pow(tangent(d, i), 2);
-      }
-      master_normal[d] = -normals(d, 0);
-    }
   }
-  else
-  {  // We already are on the master side
+  else  // We already are on the master side
+    for (unsigned int d = 0; d < nsd_; ++d)
+      for (unsigned int i = 0; i < nsd_ - 1; ++i) tangent(d, i) = xyze(d, i + 1) - xyze(d, 0);
+
+  // Normalizing the first vector
+  for (unsigned int d = 0; d < nsd_; ++d) norm(0) += pow(tangent(d, 0), 2);
+  for (unsigned int d = 0; d < nsd_; ++d) tangent(d, 0) /= sqrt(norm(0));
+
+  // In 2D the face reference system is complete.
+  // In 3D it is necessary to create an additional vector that is orthogonal to the first.
+
+  // Orthonormalization procedure
+  if (nsd_ == 3)
+  {
+    double tmp = 0;
+    for (unsigned int d = 0; d < nsd_; ++d) tmp -= tangent(d, 0) * tangent(d, 1);
     for (unsigned int d = 0; d < nsd_; ++d)
     {
-      for (unsigned int i = 0; i < nsd_ - 1; ++i)
-      {
-        tangent(d, i) = xyze(d, i + 1) - xyze(d, 0);
-        norm(i) += pow(tangent(d, i), 2);
-      }
-      master_normal[d] = normals(d, 0);
+      tangent(d, 1) = tangent(d, 0) * tmp + tangent(d, 1);
+      norm(1) += pow(tangent(d, 1), 2);
     }
+    // Normalizing the rest of the reference system
+    for (unsigned int d = 0; d < nsd_; ++d) tangent(d, 1) /= sqrt(norm(1));
   }
-
-  // Normalizing the tangent vector
-  for (unsigned int d = 0; d < nsd_; ++d)
-    for (unsigned int i = 0; i < nsd_ - 1; ++i)
-    {
-      tangent(d, i) /= sqrt(norm(i));
-      tangents(d, i) = tangent(d, i);
-    }
-
-  // Adding the normal vector to the tangential ones to get a complete basis
-  for (unsigned int d = 0; d < nsd_; ++d) tangents(d, nsd_ - 1) = master_normal[d];
-
-  Epetra_SerialDenseSolver inver;
-  inver.SetMatrix(tangents);
-  inver.Invert();
-  tangents.Reshape(nsd_ - 1, nsd_);
 
   return;
 }

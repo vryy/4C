@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Acoustics Base Algorithm for implicit and explicit time integration
 

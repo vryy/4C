@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief extracting maps of fluid discretizations
 
@@ -41,8 +41,8 @@ namespace FLD
       };
 
       /// setup the whole thing
-      void Setup(
-          const DRT::Discretization& dis, bool withpressure = false, bool overlapping = false);
+      void Setup(const DRT::Discretization& dis, bool withpressure = false,
+          bool overlapping = false, const int nds_master = 0);
 
       /*!
        * \brief setup from an existing extractor

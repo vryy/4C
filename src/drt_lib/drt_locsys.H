@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Local coordinate systems and transformations for all types of objects
 

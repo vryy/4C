@@ -1,4 +1,5 @@
-/*!---------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief Proper access to legacy parser module written in C.
 
 \maintainer Martin Kronbichler

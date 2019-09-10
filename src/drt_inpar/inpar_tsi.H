@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \maintainer Christoph Meier
 
 \brief TSI input parameters

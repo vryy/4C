@@ -1,9 +1,9 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Static Prestress  analysis
 \level 2
 
-\maintainer Fabian Braeu
+\maintainer Amadeus Gebauer
 */
 
 /*----------------------------------------------------------------------*/

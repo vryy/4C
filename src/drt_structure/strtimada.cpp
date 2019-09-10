@@ -1,8 +1,8 @@
 /*======================================================================*/
-/*!
+/*! \file
 \brief Time step adaptivity front-end for structural dynamics
 \level 1
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 */
 
 /*----------------------------------------------------------------------*/

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Factory class going from the generic evaluation routines to the ones
   templated by the element shape and specialization
@@ -24,6 +24,7 @@
 #include "fluid_ele_calc_xfem.H"
 #include "fluid_ele_calc_xwall.H"
 #include "fluid_ele_calc_hdg.H"
+#include "fluid_ele_calc_hdg_weak_comp.H"
 
 /*--------------------------------------------------------------------------*
  |                                                 (public) rasthofer Jan13 |
@@ -123,6 +124,8 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType
     return DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::Instance();
   else if (problem == "hdg")
     return DRT::ELEMENTS::FluidEleCalcHDG<distype>::Instance();
+  else if (problem == "hdgweakcomp")
+    return DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Instance();
   else if (problem == "xw")
   {
     // for now we only build the hex8 and tet4 elements for xwall

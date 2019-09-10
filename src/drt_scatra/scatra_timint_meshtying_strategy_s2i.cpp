@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief Scatra-scatra interface coupling strategy for standard scalar transport problems
 
@@ -2177,7 +2178,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           // perform parallel redistribution if desired
           if (imortarredistribution_ and idiscret.Comm().NumProc() > 1)
           {
-            interface.IParams()
+            interface.InterfaceParams()
                 .sublist("PARALLEL REDISTRIBUTION")
                 .set<std::string>("PARALLEL_REDIST", DRT::Problem::Instance()
                                                          ->MortarCouplingParams()
@@ -2185,7 +2186,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
                                                          .get<std::string>("PARALLEL_REDIST"));
             interface.Redistribute();
             interface.FillComplete();
-            interface.PrintParallelDistribution(condid);
+            interface.PrintParallelDistribution();
             interface.CreateSearchTree();
           }
 

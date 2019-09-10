@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief A collection of helper methods for namespace DRT
 
@@ -25,11 +25,6 @@ namespace DRT
 
   namespace UTILS
   {
-    //! Given a nodal row and coloumn map, this routines creates the corresponding element maps and
-    //! call FillComplete()
-    void RedistributeWithNewNodalDistribution(
-        DRT::Discretization& dis, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap);
-
     /*! \brief Redistribute discretizations in input vector using BinningStrategy
      *
     \param vector_of_discretizations (in) : vector containing RCPs to discretizations */

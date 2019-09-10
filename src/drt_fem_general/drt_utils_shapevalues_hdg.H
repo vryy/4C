@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief evaluation of arbitrary lagrange polynomials in HDG context
 
@@ -130,7 +131,7 @@ namespace DRT
       \brief Compute element-dependent data, like gradients in real cell, integration weights, for
       element dofs
       */
-      void Evaluate(const DRT::Element &ele);
+      void Evaluate(const DRT::Element &ele, const std::vector<double> &aleDis = {});
 
       /// polynomial degree
       unsigned int degree_;
@@ -152,7 +153,10 @@ namespace DRT
 
       LINALG::SerialDenseMatrix
           funct;  /// values of mapping shape functions on all quadrature points
-      LINALG::Matrix<nsd_, nen_> deriv;   /// gradients of mapping shape functions
+      LINALG::Matrix<nsd_, nen_>
+          deriv;                        /// gradients of mapping shape functions in unit coordinates
+      LINALG::SerialDenseMatrix derxy;  /// gradients of mapping shape functions in real coordinates
+                                        /// on all quadrature points
       LINALG::SerialDenseMatrix xyzreal;  /// coordinates of all quadrature points in real space
       LINALG::SerialDenseMatrix
           nodexyzunit;  /// coordinates of all node (support) points of Lagrange basis functions in
@@ -209,7 +213,8 @@ namespace DRT
       \brief Compute element-dependent data on faces, like integration weights, normal vectors,
       correctly oriented trace variables
       */
-      void EvaluateFace(const DRT::Element &ele, const unsigned int face);
+      void EvaluateFace(
+          const DRT::Element &ele, const unsigned int face, const std::vector<double> &aleDis = {});
 
       /*!
       \brief Consider the orientation of faces for face degrees of freedom
@@ -258,7 +263,6 @@ namespace DRT
           shfunctI;  /// evaluated shape functions on face for interior HDG polynomials
       LINALG::SerialDenseMatrix
           normals;  /// normal vectors on a single face for all quadrature points
-      LINALG::SerialDenseMatrix tangents;  /// Real reference frame wrt face one (real -> face)
 
       LINALG::Matrix<nsd_ - 1, 1> xsi;  /// face quadrature points
       LINALG::Matrix<nsd_, nfn_> xyze;  /// face nodes
@@ -271,6 +275,12 @@ namespace DRT
 
       /*!
       \brief Computes the face reference system considering the ordering of the master element
+
+      The face reference system created is orthonormal and therefore the inverse of the
+      transformationm matrix is just the transpose of the matrix (T)^{-1} = (T)'.
+
+      \note
+      The routine is only used in 3D so far and therefore tested only in this case.
 
       \Author: Berardocco
        */

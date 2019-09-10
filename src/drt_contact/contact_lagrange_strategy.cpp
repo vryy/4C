@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Contact solving strategy with (standard/dual) Lagrangian multipliers.
 
 \level 2
@@ -4638,7 +4638,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
                 interface_[i]->GetCtRef()[interface_[i]->GetCtRef().Map().LID(frinode->Id())];
 
             // CAREFUL: friction bound is now interface-local (popp 08/2012)
-            double frbound = interface_[i]->IParams().get<double>("FRBOUND");
+            double frbound = interface_[i]->InterfaceParams().get<double>("FRBOUND");
 
             if (frinode->FriData().Slip() == false)
             {
@@ -4676,7 +4676,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
                 interface_[i]->GetCtRef()[interface_[i]->GetCtRef().Map().LID(frinode->Id())];
 
             // CAREFUL: friction coefficient is now interface-local (popp 08/2012)
-            double frcoeff = interface_[i]->IParams().get<double>("FRCOEFF");
+            double frcoeff = interface_[i]->InterfaceParams().get<double>("FRCOEFF");
 
             if (frinode->FriData().Slip() == false)
             {

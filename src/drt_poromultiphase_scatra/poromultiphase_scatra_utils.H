@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief helper functions/classes for scalar transport within multiphase porous medium
 
    \level 3

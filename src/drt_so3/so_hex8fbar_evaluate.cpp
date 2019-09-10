@@ -1,11 +1,11 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Evaluate routines for Solid Hex8 element with F-bar modification
 
 \level 1
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 
@@ -1704,9 +1704,7 @@ void DRT::ELEMENTS::So_hex8fbar::UpdateJacobianMapping(
 void DRT::ELEMENTS::So_hex8fbar::Update_element(
     std::vector<double>& disp, Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material> mat)
 {
-  // Additional update call if material is m_growthremodel_elasthyper (used for the calculation and
-  // updating of the inelastic deformation)
-  if (mat->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
+  if (SolidMaterial()->UsesExtendedUpdate())
   {
     /* ============================================================================*
      ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
@@ -1853,11 +1851,13 @@ void DRT::ELEMENTS::So_hex8fbar::Update_element(
       double f_bar_factor = pow(detF_0 / detF, 1.0 / 3.0);
       defgrd_bar.Scale(f_bar_factor);
 
-      static_cast<MAT::GrowthRemodel_ElastHyper*>(mat.get())->Update(defgrd_bar, gp, params, Id());
+      // This is an additional update call needed for G&R materials (mixture,
+      // growthremodel_elasthyper)
+      SolidMaterial()->Update(defgrd_bar, gp, params, Id());
     }
   }
-
-  SolidMaterial()->Update();
+  else
+    SolidMaterial()->Update();
 
   return;
 }

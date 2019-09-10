@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief  This file contains the routines required to calculate the isochoric and volumetric
 contribution of the HU dependent neo hooke material. E.g used for inclusion of calcification in AAA
 simulations

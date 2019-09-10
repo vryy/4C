@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Hybrid Additive/Multiplicative Schwarz Block Preconditioner for FSI
 

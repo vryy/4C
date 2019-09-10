@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief strategies for Newton-Raphson convergence check for scalar transport problems
 

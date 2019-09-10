@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief list of valid materials
 
@@ -86,6 +86,7 @@ namespace INPAR
       m_fluid_linear_density_viscosity,  ///< linear law (pressure-dependent) for the density and
                                          ///< the viscosity
       m_fluid_murnaghantait,             ///< weakly compressible fluid according to Murnaghan-Tait
+      m_fluid_weakly_compressible,       ///< weakly compressible fluid
       m_fluidporo,                       ///< darcy fluid for poroelasticity problems
       m_fluidporo_singlephase,  ///< single phase material for multiphase flow through porous medium
       m_fluidporo_singlevolfrac,    ///< single volume fraction material for multiphase flow through
@@ -147,7 +148,8 @@ namespace INPAR
       m_matlist_chemoreac,  ///< collection of single materials (used for scalar transport problems)
                             ///< and collection of chemotactic pairs AND reactions
       m_mixfrac,            ///< material according to mixture-fraction approach
-      m_modpowerlaw,        ///< fluid with nonlinear viscosity according to a modified power law
+      m_mixture_elasthyper,  ///< material for solid mixtures with homogenized stress response
+      m_modpowerlaw,         ///< fluid with nonlinear viscosity according to a modified power law
       m_multiplicative_split_defgrad_elasthyper,  ///< deformation gradient is split
                                                   ///< multiplicatively in elastic and inelastic
                                                   ///< parts
@@ -162,6 +164,7 @@ namespace INPAR
       m_particle_sph_fluid,      ///< particle material for SPH fluid
       m_particle_sph_boundary,   ///< particle material for SPH boundary
       m_particle_dem,            ///< particle material for DEM
+      m_particle_wall_dem,       ///< particle wall material for DEM
       m_permeable_fluid,         ///< permeable fluid
       m_plelasthyper,      ///< general hyperelastic material for finite strain von-Mises plasticity
                            ///< using a semi-smooth Newton strategy (only in combination with such
@@ -274,9 +277,17 @@ namespace INPAR
       mfi_lin_scalar_aniso,  ///< volume change due to (anisotropic) inelastic deformation gradient
                              ///< is a linear function of the scalar (in material configuration)
                              ///< that causes the volume change
-      mfi_lin_scalar_iso  ///< volume change due to (isotropic) inelastic deformation gradient is a
-                          ///< linear function of the scalar (in material configuration) that causes
-                          ///< the volume change
+      mfi_lin_scalar_iso,  ///< volume change due to (isotropic) inelastic deformation gradient is a
+                           ///< linear function of the scalar (in material configuration) that
+                           ///< causes the volume change
+      mix_rule_base,       ///< Base rule for the mixture model
+      mix_elasthyper,      ///< Elast Hyper toolbox for Constituents
+      mfi_poly_scalar_aniso,  ///< volume change due to (anisotropic) inelastic deformation gradient
+                              ///< is a polynomial function of the scalar (in material
+                              ///< configuration) that causes the volume change
+      mfi_poly_scalar_iso  ///< volume change due to (isotropic) inelastic deformation gradient is a
+                           ///< is a polynomial function of the scalar (in material configuration)
+                           ///< that causes the volume change
     };
 
     /*----------------------------------------------------------------------*

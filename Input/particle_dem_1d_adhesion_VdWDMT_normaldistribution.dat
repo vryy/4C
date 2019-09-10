@@ -44,7 +44,7 @@ TENSION_CUTOFF                  Yes
 COEFF_RESTITUTION               0.8
 YOUNG_MODULUS                   210.0E3
 POISSON_RATIO                   0.3
-ADHESION_NORMAL_EPS             4e-16
+ADHESION_HAMAKER                4e-16
 ADHESION_SURFACE_ENERGY         1.0e-07
 ADHESION_DISTANCE               2.5e-3
 ADHESION_SURFACE_ENERGY_DISTRIBUTION          NormalSurfaceEnergyDistribution
@@ -60,7 +60,8 @@ COMPONENT 1 FUNCTION 0.0
 COMPONENT 2 FUNCTION 0.0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ParticleDEM INITRADIUS 0.01 INITDENSITY 4.43e-3
-MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 210.0e3 NUE 0.3 DENS 1.0
+MAT 2 MAT_ParticleWallDEM FRICT_COEFF_TANG -1.0 FRICT_COEFF_ROLL -1.0 ADHESION_SURFACE_ENERGY 1.0e-07
+MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 210.0e3 NUE 0.3 DENS 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
 PARTICLE ID 0 QUANTITY posx VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-10
 PARTICLE ID 0 QUANTITY posz VALUE -8.69516840031124005e-02 TOLERANCE 1.0e-10
@@ -82,8 +83,8 @@ TYPE phase2 POS 0.0 0.0 -0.05
 NDSURF                          2
 ------------------------------------------------DESIGN SURFACE PARTICLE WALL
 DSURF                           2
-E 1 - 1
-E 2 - 1
+E 1 - MAT 2
+E 2 - MAT 2
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1
@@ -103,6 +104,5 @@ NODE 6 COORD -0.04 0.04 -0.1
 NODE 7 COORD 0.04 0.04 -0.1
 NODE 8 COORD 0.04 -0.04 -0.1
 ----------------------------------------------------------STRUCTURE ELEMENTS
-1 SOLIDH8 HEX8 1 2 3 4 5 6 7 8 MAT 2 KINEM nonlinear EAS none
-2 SOLIDH8 HEX8 1 2 3 4 5 6 7 8 MAT 2 KINEM nonlinear EAS none
+1 SOLIDH8 HEX8 1 2 3 4 5 6 7 8 MAT 3 KINEM nonlinear EAS none
 -------------------------------------------------------------------------END

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief One-step-theta time-integration scheme with extensions for
        loma problems

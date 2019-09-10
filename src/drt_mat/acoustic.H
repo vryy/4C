@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief contains a density and a speed of sound to characterize all
        necessary properties for sound propagation in acoustic material
        example input line:

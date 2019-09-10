@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 \brief discsh3 element
 
 \level 3
@@ -412,7 +412,7 @@ namespace DRT
       //! shell thickness
       double thickness_;
       //! shell thickness
-      LINALG::TMatrix<FAD, 12, 12> stiff_dummy3nodes_;
+      LINALG::Matrix<12, 12, FAD> stiff_dummy3nodes_;
       //! no. gaussian points in each spatial dimension
       int ngp_[3];
       //! no. gaussian points for triangle elements
@@ -585,8 +585,8 @@ namespace DRT
 
 
       // calculate surface area of triangle (private)
-      FAD CalcSurfaceArea(LINALG::TMatrix<FAD, 1, 3>& vertex1, LINALG::TMatrix<FAD, 1, 3>& vertex2,
-          LINALG::TMatrix<FAD, 1, 3>& vertex3);
+      FAD CalcSurfaceArea(LINALG::Matrix<1, 3, FAD>& vertex1, LINALG::Matrix<1, 3, FAD>& vertex2,
+          LINALG::Matrix<1, 3, FAD>& vertex3);
 
       double CalcSurfaceArea(LINALG::Matrix<1, 3>& vertex1, LINALG::Matrix<1, 3>& vertex2,
           LINALG::Matrix<1, 3>& vertex3);
@@ -595,15 +595,15 @@ namespace DRT
       void CalcVolume(FAD& volume, const std::vector<double>& disp, bool refconfig);
 
       // calculate surface area of element (private)
-      LINALG::TMatrix<FAD, 1, 3> CalcSurfaceNormal(std::vector<FAD>& x_FAD);
+      LINALG::Matrix<1, 3, FAD> CalcSurfaceNormal(std::vector<FAD>& x_FAD);
 
       void CheckIfOutwardsNormal(Teuchos::ParameterList& params, const int NumGElements);
 
       // Calculate cross product of 2 FAD vectors
-      inline LINALG::TMatrix<FAD, 1, 3> CalcCrossProduct(
-          LINALG::TMatrix<FAD, 1, 3>& vector1, LINALG::TMatrix<FAD, 1, 3>& vector2) const
+      inline LINALG::Matrix<1, 3, FAD> CalcCrossProduct(
+          LINALG::Matrix<1, 3, FAD>& vector1, LINALG::Matrix<1, 3, FAD>& vector2) const
       {
-        LINALG::TMatrix<FAD, 1, 3> crossprod(true);
+        LINALG::Matrix<1, 3, FAD> crossprod(true);
         // Cross Product
         crossprod(0) = vector1(1) * vector2(2) - vector1(2) * vector2(1);
         crossprod(1) = vector1(2) * vector2(0) - vector1(0) * vector2(2);
@@ -715,7 +715,7 @@ namespace DRT
       void sh3_lumpmass(const std::vector<double>& disp,
           Epetra_SerialDenseMatrix* massmatrix);  //!< element mass matrix
 
-      FAD CalcTheta(LINALG::TMatrix<FAD, 1, 3>& vector1, LINALG::TMatrix<FAD, 1, 3>& vector2);
+      FAD CalcTheta(LINALG::Matrix<1, 3, FAD>& vector1, LINALG::Matrix<1, 3, FAD>& vector2);
 
 
     };  // class DiscSh3
@@ -896,10 +896,10 @@ namespace DRT
       void Print(std::ostream& os) const;
 
       // Calculate cross product of 2 FAD vectors
-      inline LINALG::TMatrix<FAD, 1, 3> CalcCrossProduct(
-          LINALG::TMatrix<FAD, 1, 3>& vector1, LINALG::TMatrix<FAD, 1, 3>& vector2) const
+      inline LINALG::Matrix<1, 3, FAD> CalcCrossProduct(
+          LINALG::Matrix<1, 3, FAD>& vector1, LINALG::Matrix<1, 3, FAD>& vector2) const
       {
-        LINALG::TMatrix<FAD, 1, 3> crossprod(true);
+        LINALG::Matrix<1, 3, FAD> crossprod(true);
         // Cross Product
         crossprod(0) = vector1(1) * vector2(2) - vector1(2) * vector2(1);
         crossprod(1) = vector1(2) * vector2(0) - vector1(0) * vector2(2);
@@ -908,9 +908,9 @@ namespace DRT
         return crossprod;
       }
 
-      inline LINALG::TMatrix<FAD, 3, 3> SkewSymmetricTrans(LINALG::TMatrix<FAD, 1, 3>& v) const
+      inline LINALG::Matrix<3, 3, FAD> SkewSymmetricTrans(LINALG::Matrix<1, 3, FAD>& v) const
       {
-        LINALG::TMatrix<FAD, 3, 3> w(true);
+        LINALG::Matrix<3, 3, FAD> w(true);
         w(0, 0) = 0;
         w(0, 1) = -v(2);
         w(0, 2) = v(1);
@@ -986,14 +986,14 @@ namespace DRT
 
 
       // Calculate gradient of normal of a surface
-      void CalcGradienNormal(std::vector<FAD>& x_FAD, LINALG::TMatrix<FAD, 3, 3>& DnDx1,
-          LINALG::TMatrix<FAD, 3, 3>& DnDx2, LINALG::TMatrix<FAD, 3, 3>& DnDx3);
+      void CalcGradienNormal(std::vector<FAD>& x_FAD, LINALG::Matrix<3, 3, FAD>& DnDx1,
+          LINALG::Matrix<3, 3, FAD>& DnDx2, LINALG::Matrix<3, 3, FAD>& DnDx3);
 
       void LengthConstrtStiffmass(Teuchos::ParameterList& params,
           DRT::ELEMENTS::DiscSh3Line* edge,  ///< internal face element
           std::vector<FAD>& x_FAD_curr,
           DRT::Discretization& discretization,  ///< discretization
-          LINALG::TMatrix<FAD, 1, 12>& ana_force_aux, LINALG::TMatrix<FAD, 12, 12>& stiff_dummy);
+          LINALG::Matrix<1, 12, FAD>& ana_force_aux, LINALG::Matrix<12, 12, FAD>& stiff_dummy);
 
       // Spatial Configuration
       LINALG::Matrix<1, 6> SpatialConfiguration(DRT::Discretization& dis) const;
@@ -1002,7 +1002,7 @@ namespace DRT
           DRT::Discretization& dis, const Epetra_Vector& discol) const;
 
 
-      FAD CalcTheta(LINALG::TMatrix<FAD, 1, 3>& vector1, LINALG::TMatrix<FAD, 1, 3>& vector2);
+      FAD CalcTheta(LINALG::Matrix<1, 3, FAD>& vector1, LINALG::Matrix<1, 3, FAD>& vector2);
 
       FAD GetRefEdgeLength();
 
@@ -1015,9 +1015,9 @@ namespace DRT
       FAD GetCurrEdgeLength(std::vector<FAD>& x_FAD_curr);
 
       // calculate surface area of element (private)
-      LINALG::TMatrix<FAD, 1, 3> CalcSurfaceNormalMaster(std::vector<FAD>& x_FAD);
+      LINALG::Matrix<1, 3, FAD> CalcSurfaceNormalMaster(std::vector<FAD>& x_FAD);
 
-      LINALG::TMatrix<FAD, 1, 3> CalcSurfaceNormalSlave(std::vector<FAD>& x_FAD);
+      LINALG::Matrix<1, 3, FAD> CalcSurfaceNormalSlave(std::vector<FAD>& x_FAD);
 
 
       virtual DRT::ElementType& ElementType() const { return DiscSh3LineType::Instance(); }
@@ -1090,13 +1090,13 @@ namespace DRT
       );
 
       void RemapForceVectoMasterSlave(
-          LINALG::TMatrix<FAD, 1, 12>& force,  ///< nodal dofset w.r.t master parent element
+          LINALG::Matrix<1, 12, FAD>& force,  ///< nodal dofset w.r.t master parent element
           LINALG::Matrix<NUMDOF_DISCSH3, 1>& elevector_m,
           LINALG::Matrix<NUMDOF_DISCSH3, 1>& elevector_s, std::vector<int>& connectivity,
           std::vector<int>& lm_slaveNodeToPatch);
 
       void RemapStiffmattoMasterSlave(
-          LINALG::TMatrix<FAD, 12, 12>& stiffmatrix,  ///< nodal dofset w.r.t master parent element
+          LINALG::Matrix<12, 12, FAD>& stiffmatrix,  ///< nodal dofset w.r.t master parent element
           LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>& elematrix_mm,
           LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>& elematrix_ms,
           LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>& elematrix_sm,

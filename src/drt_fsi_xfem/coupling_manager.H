@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief  Pure Virtual Coupling Manager, to define the basic functionality of all specified coupling
 managers
 

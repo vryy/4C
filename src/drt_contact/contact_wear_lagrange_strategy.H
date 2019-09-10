@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief wear strategy for finite wear modeling
 
 \level 2
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 

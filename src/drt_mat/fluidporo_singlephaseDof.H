@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief material defining the degree of freedom of phase within a multiphase porous fluid.
 
    \level 3

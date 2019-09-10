@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief
 This file contains the routines required for Saint-Venant-Kirchhoff material
 The input line should read
@@ -7,7 +7,7 @@ The input line should read
 
 \level 1
 
-\maintainer Fabian Braeu
+\maintainer Amadeus Gebauer
 
 *----------------------------------------------------------------------*/
 #ifndef ELAST_SVK_H_

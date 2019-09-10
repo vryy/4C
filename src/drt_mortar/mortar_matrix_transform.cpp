@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief matrix transformation tools: Switch between different parallel
 distributions
 

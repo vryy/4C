@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
  \brief porous medium algorithm with matrix split for condensation of
       no-penetration constraint
@@ -740,7 +740,7 @@ void POROELAST::MonolithicSplitNoPenetration::ReadRestart(const int step)
     // call an additional evaluate to get the old D matrix
     SetupSystem();
     // call evaluate to recalculate D matrix
-    Evaluate(zeros_);
+    Evaluate(zeros_, false);
 
     // copy D matrix from current time step to old D matrix
     k_Dn_ = Teuchos::rcp(

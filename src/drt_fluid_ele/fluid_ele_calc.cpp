@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief main file containing routines for calculation of fluid element
 
@@ -44,6 +44,7 @@
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/fluid_linear_density_viscosity.H"
 #include "../drt_mat/fluid_murnaghantait.H"
+#include "../drt_mat/fluid_weakly_compressible.H"
 #include "../drt_mat/permeablefluid.H"
 #include "../drt_mat/sutherland.H"
 #include "../drt_mat/tempdepwater.H"

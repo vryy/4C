@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief a derived strategy handling the Lagrange multiplier based TSI contact
 
 \level 3

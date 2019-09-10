@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Interface class for complex materials at Gauss points
 
 \level 1
 
-\maintainer Fabian Braeu
+\maintainer Amadeus Gebauer
 */
 /*----------------------------------------------------------------------*/
 
@@ -128,7 +128,7 @@ void MAT::AddtoCmatHolzapfelProduct(
  */
 template <typename T>
 void MAT::AddtoCmatHolzapfelProduct(
-    LINALG::TMatrix<T, 6, 6>& cmat, const LINALG::TMatrix<T, 6, 1>& invc, const T scalar)
+    LINALG::Matrix<6, 6, T>& cmat, const LINALG::Matrix<6, 1, T>& invc, const T scalar)
 {
 #ifdef DEBUG
   if (cmat.M() != 6 or cmat.N() != 6 or invc.M() != 6)
@@ -858,8 +858,8 @@ void MAT::AddSymmetricHolzapfelProduct(LINALG::Matrix<6, 6>& X, const LINALG::Ma
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <typename T>
-void MAT::AddRightNonSymmetricHolzapfelProduct(LINALG::TMatrix<T, 6, 9>& out,
-    LINALG::TMatrix<T, 3, 3> const& A, LINALG::TMatrix<T, 3, 3> const& B, T const fac)
+void MAT::AddRightNonSymmetricHolzapfelProduct(LINALG::Matrix<6, 9, T>& out,
+    LINALG::Matrix<3, 3, T> const& A, LINALG::Matrix<3, 3, T> const& B, T const fac)
 {
   out(0, 0) += 2 * fac * A(0, 0) * B(0, 0);
   out(0, 3) += 2 * fac * A(0, 0) * B(0, 1);
@@ -927,8 +927,8 @@ void MAT::AddRightNonSymmetricHolzapfelProduct(LINALG::TMatrix<T, 6, 9>& out,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <typename T>
-void MAT::AddRightNonSymmetricHolzapfelProductStrainLike(LINALG::TMatrix<T, 6, 9>& out,
-    LINALG::TMatrix<T, 3, 3> const& A, LINALG::TMatrix<T, 3, 3> const& B, T const fac)
+void MAT::AddRightNonSymmetricHolzapfelProductStrainLike(LINALG::Matrix<6, 9, T>& out,
+    LINALG::Matrix<3, 3, T> const& A, LINALG::Matrix<3, 3, T> const& B, T const fac)
 {
   out(0, 0) += 2 * fac * A(0, 0) * B(0, 0);
   out(0, 3) += 2 * fac * A(0, 0) * B(0, 1);
@@ -1168,7 +1168,7 @@ void MAT::AddNonSymmetricProduct(double const& fac, LINALG::Matrix<3, 3> const& 
 /*----------------------------------------------------------------------*/
 template <typename T>
 void MAT::MatrixtoStressLikeVoigtNotation(
-    LINALG::TMatrix<T, 3, 3> const& in, LINALG::TMatrix<T, 6, 1>& out)
+    LINALG::Matrix<3, 3, T> const& in, LINALG::Matrix<6, 1, T>& out)
 {
   for (int i = 0; i < 3; ++i) out(i) = in(i, i);
   out(3) = 0.5 * (in(0, 1) + in(1, 0));
@@ -1272,6 +1272,30 @@ void MAT::StretchesModified(LINALG::Matrix<3, 1>& modstr, const LINALG::Matrix<3
   return;
 }
 
+void MAT::IdentityMatrix(LINALG::Matrix<6, 1>& id)
+{
+  id.Clear();
+  for (unsigned i = 0; i < 3; ++i) id(i) = 1.0;
+}
+
+template <unsigned int N>
+void MAT::IdentityMatrix(LINALG::Matrix<N, N>& id)
+{
+  id.Clear();
+  for (unsigned i = 0; i < N; ++i) id(i, i) = 1.0;
+}
+
+template <MAT::VoigtNotation rows_notation, MAT::VoigtNotation cols_notation>
+void MAT::FourthOrderIdentityMatrix(LINALG::Matrix<6, 6>& id)
+{
+  id.Clear();
+
+  for (unsigned int i = 0; i < 3; ++i) id(i, i) = 1.0;
+
+  for (unsigned int i = 3; i < 6; ++i)
+    id(i, i) = 0.5 * ScaleFactor<rows_notation>(i) * ScaleFactor<cols_notation>(i);
+}
+
 /*----------------------------------------------------------------------------*/
 // initialization of const static members has to be done in the cpp file since
 // GCC complains otherwise
@@ -1358,25 +1382,27 @@ void MAT::VoigtUtils<type>::PowerOfSymmetricTensor(
  *----------------------------------------------------------------------------*/
 template <MAT::VoigtNotation type>
 void MAT::VoigtUtils<type>::InverseTensor(
-    const LINALG::Matrix<6, 1>& strain, LINALG::Matrix<6, 1>& strain_inv)
+    const LINALG::Matrix<6, 1>& tens, LINALG::Matrix<6, 1>& tens_inv)
 {
-  LINALG::Matrix<3, 3> strain_mat_inv(false);
-
-  for (unsigned i = 0; i < 3; ++i)
-    for (unsigned j = 0; j < 3; ++j)
-    {
-      const double fac = UnscaleFactor<type>(IMap::second_[i][j]);
-      strain_mat_inv(i, j) = fac * strain(IMap::second_[i][j]);
-    }
-
-  strain_mat_inv.Invert();
-
-  for (unsigned i = 0; i < 3; ++i)
-    for (unsigned j = i; j < 3; ++j)
-    {
-      const double fac = ScaleFactor<type>(IMap::second_[i][j]);
-      strain_inv(IMap::second_[i][j]) = fac * strain_mat_inv(i, j);
-    }
+  double det = MAT::VoigtUtils<type>::Determinant(tens);
+  tens_inv(0) = (tens(1) * tens(2) -
+                    MAT::UnscaleFactor<type>(4) * MAT::UnscaleFactor<type>(4) * tens(4) * tens(4)) /
+                det * MAT::ScaleFactor<type>(0);
+  tens_inv(1) = (tens(0) * tens(2) -
+                    MAT::UnscaleFactor<type>(5) * MAT::UnscaleFactor<type>(5) * tens(5) * tens(5)) /
+                det * MAT::ScaleFactor<type>(1);
+  tens_inv(2) = (tens(0) * tens(1) -
+                    MAT::UnscaleFactor<type>(3) * MAT::UnscaleFactor<type>(3) * tens(3) * tens(3)) /
+                det * MAT::ScaleFactor<type>(2);
+  tens_inv(3) = (MAT::UnscaleFactor<type>(5) * MAT::UnscaleFactor<type>(4) * tens(5) * tens(4) -
+                    MAT::UnscaleFactor<type>(3) * MAT::UnscaleFactor<type>(2) * tens(3) * tens(2)) /
+                det * MAT::ScaleFactor<type>(3);
+  tens_inv(4) = (MAT::UnscaleFactor<type>(3) * MAT::UnscaleFactor<type>(5) * tens(3) * tens(5) -
+                    MAT::UnscaleFactor<type>(0) * MAT::UnscaleFactor<type>(4) * tens(0) * tens(4)) /
+                det * MAT::ScaleFactor<type>(4);
+  tens_inv(5) = (MAT::UnscaleFactor<type>(3) * MAT::UnscaleFactor<type>(4) * tens(3) * tens(4) -
+                    MAT::UnscaleFactor<type>(5) * MAT::UnscaleFactor<type>(1) * tens(5) * tens(1)) /
+                det * MAT::ScaleFactor<type>(5);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1395,26 +1421,48 @@ void MAT::VoigtUtils<type>::UnscaleOffDiagonalVals(LINALG::Matrix<6, 1>& strain)
   for (unsigned i = 3; i < 6; ++i) strain(i, 0) *= UnscaleFactor<type>(i);
 }
 
+template <MAT::VoigtNotation type>
+void MAT::VoigtUtils<type>::ToStressLike(
+    const LINALG::Matrix<6, 1>& vtensor_in, LINALG::Matrix<6, 1>& vtensor_out)
+{
+  for (unsigned i = 0; i < 6; ++i) vtensor_out(i) = MAT::UnscaleFactor<type>(i) * vtensor_in(i);
+}
+
+template <MAT::VoigtNotation type>
+void MAT::VoigtUtils<type>::ToStrainLike(
+    const LINALG::Matrix<6, 1>& vtensor_in, LINALG::Matrix<6, 1>& vtensor_out)
+{
+  for (unsigned i = 0; i < 6; ++i)
+    vtensor_out(i) =
+        MAT::UnscaleFactor<type>(i) * vtensor_in(i) * MAT::ScaleFactor<VoigtNotation::strain>(i);
+}
+
 /*----------------------------------------------------------------------------*/
 // explicit instantiation of template functions
-template void MAT::AddRightNonSymmetricHolzapfelProduct<double>(LINALG::TMatrix<double, 6, 9>&,
-    LINALG::TMatrix<double, 3, 3> const&, LINALG::TMatrix<double, 3, 3> const&, double const);
-template void MAT::AddRightNonSymmetricHolzapfelProduct<FAD>(LINALG::TMatrix<FAD, 6, 9>&,
-    LINALG::TMatrix<FAD, 3, 3> const&, LINALG::TMatrix<FAD, 3, 3> const&, FAD const);
+template void MAT::AddRightNonSymmetricHolzapfelProduct<double>(LINALG::Matrix<6, 9, double>&,
+    LINALG::Matrix<3, 3, double> const&, LINALG::Matrix<3, 3, double> const&, double const);
+template void MAT::AddRightNonSymmetricHolzapfelProduct<FAD>(LINALG::Matrix<6, 9, FAD>&,
+    LINALG::Matrix<3, 3, FAD> const&, LINALG::Matrix<3, 3, FAD> const&, FAD const);
 template void MAT::AddRightNonSymmetricHolzapfelProductStrainLike<double>(
-    LINALG::TMatrix<double, 6, 9>& out, LINALG::TMatrix<double, 3, 3> const& A,
-    LINALG::TMatrix<double, 3, 3> const& B, double const fac);
+    LINALG::Matrix<6, 9, double>& out, LINALG::Matrix<3, 3, double> const& A,
+    LINALG::Matrix<3, 3, double> const& B, double const fac);
 template void MAT::AddRightNonSymmetricHolzapfelProductStrainLike<FAD>(
-    LINALG::TMatrix<FAD, 6, 9>& out, LINALG::TMatrix<FAD, 3, 3> const& A,
-    LINALG::TMatrix<FAD, 3, 3> const& B, FAD const fac);
+    LINALG::Matrix<6, 9, FAD>& out, LINALG::Matrix<3, 3, FAD> const& A,
+    LINALG::Matrix<3, 3, FAD> const& B, FAD const fac);
 template void MAT::AddtoCmatHolzapfelProduct<double>(
-    LINALG::TMatrix<double, 6, 6>&, const LINALG::TMatrix<double, 6, 1>&, const double scalar);
+    LINALG::Matrix<6, 6, double>&, const LINALG::Matrix<6, 1, double>&, const double scalar);
 template void MAT::AddtoCmatHolzapfelProduct<FAD>(
-    LINALG::TMatrix<FAD, 6, 6>&, const LINALG::TMatrix<FAD, 6, 1>&, const FAD scalar);
+    LINALG::Matrix<6, 6, FAD>&, const LINALG::Matrix<6, 1, FAD>&, const FAD scalar);
 template void MAT::MatrixtoStressLikeVoigtNotation<double>(
-    LINALG::TMatrix<double, 3, 3> const& in, LINALG::TMatrix<double, 6, 1>& out);
+    LINALG::Matrix<3, 3, double> const& in, LINALG::Matrix<6, 1, double>& out);
 template void MAT::MatrixtoStressLikeVoigtNotation<FAD>(
-    LINALG::TMatrix<FAD, 3, 3> const& in, LINALG::TMatrix<FAD, 6, 1>& out);
+    LINALG::Matrix<3, 3, FAD> const& in, LINALG::Matrix<6, 1, FAD>& out);
 
 template class MAT::VoigtUtils<MAT::VoigtNotation::strain>;
 template class MAT::VoigtUtils<MAT::VoigtNotation::stress>;
+
+template void MAT::IdentityMatrix<6>(LINALG::Matrix<6, 6>& id);
+template void MAT::FourthOrderIdentityMatrix<MAT::VoigtNotation::stress,
+    MAT::VoigtNotation::stress>(LINALG::Matrix<6, 6>& id);
+template void MAT::FourthOrderIdentityMatrix<MAT::VoigtNotation::stress,
+    MAT::VoigtNotation::strain>(LINALG::Matrix<6, 6>& id);

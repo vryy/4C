@@ -1,11 +1,11 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief
 St. Venant-Kirchhoff material
 
 \level 2
 
-\maintainer Fabian Braeu
+\maintainer Amadeus Gebauer
 */
 /*----------------------------------------------------------------------*/
 #ifndef STVENANTKIRCHHOFF_H_

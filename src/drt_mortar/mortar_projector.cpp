@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief A class to perform projections of nodes onto opposing MortarElements
 
 \level 1

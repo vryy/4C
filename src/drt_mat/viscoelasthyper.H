@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief
 This file contains the viscohyperelastic material toolbox.
 The availabele viscous models can be applied to any hyperelastic law
@@ -12,7 +12,7 @@ MAT 0   MAT_ViscoElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 
 \level 1
 
-\maintainer Fabian Braeu
+\maintainer Amadeus Gebauer
 */
 
 /*----------------------------------------------------------------------*/

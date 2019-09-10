@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief base class of implicit integration schemes for porous multiphase
         flow problems
 

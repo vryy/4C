@@ -1,5 +1,5 @@
 /*--------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief singleton class holding all static parameters required for Lubrication element evaluation
 

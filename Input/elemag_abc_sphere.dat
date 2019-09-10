@@ -21,15 +21,15 @@ SHAPEFCT                        HDG
 RANDSEED                        -1
 
 --------------------------------------------ELECTROMAGNETIC DYNAMIC
-TIMESTEP                        2e-11
+TIMESTEP                        1e-10
 NUMSTEP                         1000
-MAXTIME                         1e-9
-RESULTSEVRY                     5
+MAXTIME                         2.5e-9
+RESULTSEVRY                     1
 RESTARTEVRY                     1000
 LINEAR_SOLVER                   1
 STARTFUNCNO                     2
 SOURCEFUNCNO                    1
-TIMEINT                         Implicit_Euler
+TIMEINT                         BDF2
 INITIALFIELD                    field_by_function
 CALCERR                         yes
 ERRORFUNCNO                     2
@@ -54,8 +54,8 @@ COMPONENT 4 FUNCTION 0
 COMPONENT 5 FUNCTION 0
 
 ------------------------------------------------RESULT DESCRIPTION
-ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2electric VALUE 1.76975582336422216e-01 TOLERANCE 1e-6
-ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2magnetic VALUE 2.90284684249776048e-01 TOLERANCE 1e-6
+ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2electric VALUE 1.34056064957722654e-01 TOLERANCE 1e-6
+ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2magnetic VALUE 2.78534593842883482e-01 TOLERANCE 1e-6
 
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0

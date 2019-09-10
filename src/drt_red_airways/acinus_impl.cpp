@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Internal implementation of RedAcinus element. Methods implemented here
        are called by acinus_evaluate.cpp by DRT::ELEMENTS::RedAcinus::Evaluate()

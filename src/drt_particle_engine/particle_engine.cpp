@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief particle engine to control particle simulations
 
 \level 3
@@ -31,6 +31,7 @@
 #include "../drt_lib/drt_utils_factory.H"
 
 #include "../drt_io/io.H"
+#include "../drt_io/io_pstream.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -157,9 +158,9 @@ void PARTICLEENGINE::ParticleEngine::ReadRestart(
 }
 
 /*---------------------------------------------------------------------------*
- | write particle runtime vtp output                          sfuchs 04/2018 |
+ | write particle runtime output                              sfuchs 04/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleEngine::WriteParticleRuntimeVtpOutput(
+void PARTICLEENGINE::ParticleEngine::WriteParticleRuntimeOutput(
     const int step, const double time) const
 {
   particlevtpwriter_->ResetTimeAndTimeStep(time, step);
@@ -244,9 +245,8 @@ void PARTICLEENGINE::ParticleEngine::EraseParticlesOutsideBoundingBox(
 
   // short screen output
   if (numparticlesoutside)
-    std::cout << "on processor " << myrank_ << " a total of " << numparticlesoutside
-              << " particles are outside of the computational domain and therefore removed!"
-              << std::endl;
+    IO::cout << "on processor " << myrank_ << " removed " << numparticlesoutside
+             << " particle(s) being outside the computational domain!" << IO::endl;
 }
 
 /*---------------------------------------------------------------------------*
@@ -1350,8 +1350,8 @@ void PARTICLEENGINE::ParticleEngine::CheckParticlesAtBoundaries(
 
   // short screen output
   if (numparticlesoutside)
-    std::cout << "on processor " << myrank_ << " a total of " << numparticlesoutside
-              << " particles left the computational domain and therefore removed!" << std::endl;
+    IO::cout << "on processor " << myrank_ << " removed " << numparticlesoutside
+             << " particle(s) being outside the computational domain!" << IO::endl;
 }
 
 /*---------------------------------------------------------------------------*
@@ -1452,9 +1452,8 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeDistributed(
 
   // short screen output
   if (numparticlesoutside)
-    std::cout << "on processor " << myrank_ << " a total of " << numparticlesoutside
-              << " particles are outside of the computational domain and therefore removed!"
-              << std::endl;
+    IO::cout << "on processor " << myrank_ << " removed " << numparticlesoutside
+             << " particle(s) being outside the computational domain!" << IO::endl;
 
   // clear after all particles are prepared for distribution
   particlestodistribute.clear();

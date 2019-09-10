@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Fluid field adapter for fpsi. Can only be used in conjunction with #FluidImplicitTimeInt
 
@@ -42,8 +42,11 @@ void ADAPTER::FluidFPSI::Init()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::FluidFPSI::SetupInterface()
+void ADAPTER::FluidFPSI::SetupInterface(const int nds_master)
 {
+  // check nds_master
+  if (nds_master != 0) dserror("nds_master is supposed to be 0 here");
+
   interface_->Setup(*dis_, false, true);  // create overlapping maps for fpsi problem
 }
 

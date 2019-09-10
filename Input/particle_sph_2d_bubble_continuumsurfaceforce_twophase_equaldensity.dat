@@ -33,11 +33,11 @@ PHASE_TO_MATERIAL_ID            phase1 1 phase2 2
 --------------------------------------------------------PARTICLE DYNAMIC/SPH
 KERNEL                          QuinticSpline
 KERNEL_SPACE_DIM                Kernel2D
+INITIALPARTICLESPACING          0.02
 EQUATIONOFSTATE                 GenTait
 MOMENTUMFORMULATION             AdamiMomentumFormulation
 DENSITYEVALUATION               DensitySummation
 DENSITYCORRECTION               NoCorrection
-CONSISTENTPROBLEMVOLUME         1.0
 TRANSPORTVELOCITYFORMULATION    StandardTransportVelocity
 SURFACETENSIONFORMULATION       ContinuumSurfaceForce
 SURFACETENSION_RAMP_FUNCT       1

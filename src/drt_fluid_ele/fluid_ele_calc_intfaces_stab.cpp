@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief edge-oriented/continuous interior penalty stabilization for fluid (especially xfluid)
 problems.

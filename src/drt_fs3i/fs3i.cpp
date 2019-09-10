@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief cpp-file associated with general algorithmic routines for
        partitioned solution approaches to fluid-structure-scalar-scalar
        interaction (FS3I) and fluid-porous-structure-scalar-scalar

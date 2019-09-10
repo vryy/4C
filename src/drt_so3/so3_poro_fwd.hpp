@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief forward declarations (explicit instantiation) of the templated poro elements
 
 \maintainer Christoph Ager

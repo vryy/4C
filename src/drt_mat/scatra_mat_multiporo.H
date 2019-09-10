@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief scatra material for transport within multiphase porous medium
 
    \level 3

@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Control routine for structure with ale problems.
 
 \level 2
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 
 */
 /*----------------------------------------------------------------------*/

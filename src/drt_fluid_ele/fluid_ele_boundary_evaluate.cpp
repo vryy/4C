@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief outer evaluation class of fluid terms at integration points of boundaries
 

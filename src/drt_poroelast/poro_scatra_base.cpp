@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
  \brief  base class for all poroelasticity scalar transport interaction algorithms
 

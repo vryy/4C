@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Main abstract class for meshtying solution strategies
 
 \level 2
@@ -80,7 +80,7 @@ void CONTACT::MtAbstractStrategy::RedistributeMeshtying()
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
     // print parallel distribution
-    interface_[i]->PrintParallelDistribution(i + 1);
+    interface_[i]->PrintParallelDistribution();
 
     //---------------------------------------
     // PARALLEL REDISTRIBUTION OF INTERFACES
@@ -100,7 +100,7 @@ void CONTACT::MtAbstractStrategy::RedistributeMeshtying()
       interface_[i]->FillComplete(maxdof_);
 
       // print parallel distribution again
-      interface_[i]->PrintParallelDistribution(i + 1);
+      interface_[i]->PrintParallelDistribution();
 
       // time measurement
       Comm().Barrier();
@@ -134,7 +134,7 @@ void CONTACT::MtAbstractStrategy::RedistributeMeshtying()
   //---------------------------------------
   INPAR::MORTAR::GhostingStrategy strat =
       DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
-          interface_[0]->IParams().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
+          interface_[0]->InterfaceParams().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
   Teuchos::RCP<Epetra_Map> melefullmap = Teuchos::null;
   if (strat == INPAR::MORTAR::binningstrategy)
   {
@@ -144,7 +144,7 @@ void CONTACT::MtAbstractStrategy::RedistributeMeshtying()
       interface_[i]->BinningStrategy(initial_elecolmap_[i], 0.0);
 
       // output
-      interface_[i]->PrintParallelDistribution(i + 1);
+      interface_[i]->PrintParallelDistribution();
     }
   }
 

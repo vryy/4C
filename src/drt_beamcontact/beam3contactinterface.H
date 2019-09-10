@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief interface class for templated classes beam3contact and beam3contactnew
 
@@ -140,7 +140,7 @@ namespace CONTACT
 
     virtual const Epetra_SerialDenseVector GetNormal() = 0;
 
-    virtual LINALG::TMatrix<TYPE, 3, 1>* GetNormalOld() = 0;
+    virtual LINALG::Matrix<3, 1, TYPE>* GetNormalOld() = 0;
 
     /*!
       \Check, if there is a difference between the result of the new and old gap definition, i.e. if

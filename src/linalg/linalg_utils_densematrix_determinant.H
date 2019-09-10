@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \file linalg_utils_densematrix_determinant.H
 
 \brief Determinant functions for dense matrices up to 4x4.
@@ -27,7 +28,7 @@ namespace LINALG
    * @return Determinant of matrix A.
    */
   template <typename T>
-  T Determinant2x2(const LINALG::TMatrix<T, 2, 2>& A)
+  T Determinant2x2(const LINALG::Matrix<2, 2, T>& A)
   {
     T b00 = A(0, 0);
     T b01 = A(0, 1);
@@ -44,7 +45,7 @@ namespace LINALG
    * @return Determinant of matrix A.
    */
   template <typename T>
-  T Determinant3x3(const LINALG::TMatrix<T, 3, 3>& A)
+  T Determinant3x3(const LINALG::Matrix<3, 3, T>& A)
   {
     T b00 = A(0, 0);
     T b01 = A(0, 1);
@@ -69,7 +70,7 @@ namespace LINALG
    * @return Determinant of matrix A.
    */
   template <typename T>
-  T Determinant4x4(const LINALG::TMatrix<T, 4, 4>& A)
+  T Determinant4x4(const LINALG::Matrix<4, 4, T>& A)
   {
     T a00 = A(0, 0);
     T a01 = A(0, 1);

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Create a simple point graph for 1-D and 2-D elements ( embedded in a
        higher dimensional space )

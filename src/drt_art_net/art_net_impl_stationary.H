@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief Control routine for arterial network stationary formulation.
 
 \maintainer Johannes Kremheller
@@ -77,6 +78,9 @@ namespace ART
 
     // output
     void Output(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams);
+
+    //! output of element radius
+    void OutputRadius();
 
     //! set the initial field on the artery discretization
     virtual void SetInitialField(const INPAR::ARTDYN::InitialField init,  //!< type of initial field

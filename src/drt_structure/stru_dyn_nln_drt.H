@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Control routine for structural dynamics (outsourced to adapter layer)
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 
 \level 1
 */

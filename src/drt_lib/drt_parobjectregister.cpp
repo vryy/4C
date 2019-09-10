@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Implementation of registration of parallel objects
 
@@ -39,6 +39,7 @@
 #include "../drt_fluid_ele/fluid_ele_poro_immersed.H"
 #include "../drt_fluid_ele/fluid_ele_xwall.H"
 #include "../drt_fluid_ele/fluid_ele_hdg.H"
+#include "../drt_fluid_ele/fluid_ele_hdg_weak_comp.H"
 #include "../drt_ale2/ale2.H"
 #include "../drt_ale2/ale2_nurbs.H"
 #include "../drt_ale3/ale3.H"
@@ -108,6 +109,7 @@
 #include "../drt_mat/sutherland.H"
 #include "../drt_mat/fluid_murnaghantait.H"
 #include "../drt_mat/fluid_linear_density_viscosity.H"
+#include "../drt_mat/fluid_weakly_compressible.H"
 #include "../drt_mat/tempdepwater.H"
 #include "../drt_mat/cavitationfluid.H"
 #include "../drt_mat/arrhenius_spec.H"
@@ -132,6 +134,7 @@
 #include "../drt_mat/membrane_elasthyper.H"
 #include "../drt_mat/membrane_active_strain.H"
 #include "../drt_mat/growthremodel_elasthyper.H"
+#include "../drt_mat/mixture_elasthyper.H"
 #include "../drt_mat/constraintmixture.H"
 #include "../drt_mat/constraintmixture_history.H"
 #include "../drt_mat/plasticlinelast.H"
@@ -231,6 +234,7 @@ std::string DRT::ParObjectList()
     << DRT::ELEMENTS::FluidTypePoroImmersed::Instance().Name() << " "
     << DRT::ELEMENTS::FluidPoroEleType::Instance().Name() << " "
     << DRT::ELEMENTS::FluidHDGType::Instance().Name() << " "
+    << DRT::ELEMENTS::FluidHDGWeakCompType::Instance().Name() << " "
     << DRT::ELEMENTS::FluidBoundaryType::Instance().Name() << " "
     << DRT::ELEMENTS::FluidPoroBoundaryType::Instance().Name() << " "
     << DRT::ELEMENTS::Ale3Type::Instance().Name() << " "
@@ -336,8 +340,10 @@ std::string DRT::ParObjectList()
     << " " << MAT::Membrane_ElastHyperType::Instance().Name() << " "
     << MAT::Membrane_ActiveStrainType::Instance().Name() << " "
     << MAT::GrowthRemodel_ElastHyperType::Instance().Name() << " "
+    << MAT::Mixture_ElastHyperType::Instance().Name() << " "
     << MAT::HerschelBulkleyType::Instance().Name() << " " << MAT::IonType::Instance().Name() << " "
     << MAT::LinearDensityViscosityType::Instance().Name() << " "
+    << MAT::WeaklyCompressibleFluidType::Instance().Name() << " "
     << MAT::MatListType::Instance().Name() << " " << MAT::MatListReactionsType::Instance().Name()
     << " " << MAT::MatListChemotaxisType::Instance().Name() << " "
     << MAT::MatListChemoReacType::Instance().Name() << " " << MAT::ElchMatType::Instance().Name()

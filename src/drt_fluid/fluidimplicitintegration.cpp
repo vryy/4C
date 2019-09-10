@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Control routine for fluid (in)stationary solvers,
 
@@ -62,6 +62,7 @@
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/fluid_linear_density_viscosity.H"
 #include "../drt_mat/fluid_murnaghantait.H"
+#include "../drt_mat/fluid_weakly_compressible.H"
 #include "fluidimpedancecondition.H"
 #include "../drt_inpar/inpar_xfem.H"  //for enums only
 
@@ -119,6 +120,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(const Teuchos::RCP<DRT::Discreti
       impedancebc_(Teuchos::null),
       isimpedancebc_(false),
       off_proc_assembly_(params_->get<bool>("OFF_PROC_ASSEMBLY", false)),
+      ndsale_((DRT::Problem::Instance()->SpatialApproximation() == "HDG") * 2),
       massmat_(Teuchos::null),
       logenergy_(Teuchos::null)
 {
@@ -460,7 +462,7 @@ void FLD::FluidImplicitTimeInt::InitNonlinearBC()
     if (alefluid_)
     {
       discret_->ClearState();
-      discret_->SetState("dispnp", dispnp_);
+      discret_->SetState(ndsale_, "dispnp", dispnp_);
     }
 
     impedancebc_ = Teuchos::rcp(new UTILS::FluidImpedanceWrapper(discret_));
@@ -699,10 +701,7 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   if (locsysman_ != Teuchos::null)
   {
     discret_->ClearState();
-    if (alefluid_)
-    {
-      discret_->SetState("dispnp", dispnp_);
-    }
+    if (alefluid_) discret_->SetState(ndsale_, "dispnp", dispnp_);
     locsysman_->Setup(time_);
     discret_->ClearState();
   }
@@ -946,7 +945,7 @@ void FLD::FluidImplicitTimeInt::PrepareSolve()
   if ((locsysman_ != Teuchos::null) && (alefluid_))
   {
     discret_->ClearState();
-    discret_->SetState("dispnp", dispnp_);
+    discret_->SetState(ndsale_, "dispnp", dispnp_);
     locsysman_->Setup(time_);
     discret_->ClearState();
   }
@@ -1027,8 +1026,8 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   discret_->SetState("scaam", scaam_);
   if (alefluid_)
   {
-    discret_->SetState("dispnp", dispnp_);
-    discret_->SetState("gridv", gridv_);
+    discret_->SetState(ndsale_, "dispnp", dispnp_);
+    discret_->SetState(ndsale_, "gridv", gridv_);
   }
 
   // set scheme-specific element parameters and vector values
@@ -1198,10 +1197,7 @@ void FLD::FluidImplicitTimeInt::EvaluateMassMatrix()
   // action for elements
   eleparams.set<int>("action", FLD::calc_mass_matrix);
 
-  if (alefluid_)
-  {
-    discret_->SetState("dispnp", dispnp_);
-  }
+  if (alefluid_) discret_->SetState(ndsale_, "dispnp", dispnp_);
 
   discret_->Evaluate(
       eleparams, massmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
@@ -1268,7 +1264,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
     discret_->ClearState();
     discret_->SetState("velaf", velnp_);
 
-    if (alefluid_) discret_->SetState("dispnp", dispn_);
+    if (alefluid_) discret_->SetState(ndsale_, "dispnp", dispnp_);
 
     // update residual and sysmat with impedance boundary conditions
     impedancebc_->AddImpedanceBCToResidualAndSysmat(dta_, time_, residual_, sysmat_);
@@ -1300,7 +1296,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
     discret_->ClearState();
     discret_->SetState("scaaf", scaaf_);
     SetStateTimInt();
-    if (alefluid_) discret_->SetState("dispnp", dispnp_);
+    if (alefluid_) discret_->SetState(ndsale_, "dispnp", dispnp_);
 
     // evaluate all Neumann inflow boundary conditions
     discret_->EvaluateCondition(neuminparams, sysmat_, Teuchos::null, residual_, Teuchos::null,
@@ -1432,7 +1428,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
       // set required state vectors
       discret_->ClearState();
       SetStateTimInt();
-      if (alefluid_) discret_->SetState("dispnp", dispnp_);
+      if (alefluid_) discret_->SetState(ndsale_, "dispnp", dispnp_);
 
       // evaluate flow rate
       discret_->EvaluateCondition(flowdeppressureparams, flowrates, fdpcondname, fdpcondid);
@@ -1484,7 +1480,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
       flowdeppressureparams.set<double>("area", 0.0);
 
       // set required state vectors
-      if (alefluid_) discret_->SetState("dispnp", dispnp_);
+      if (alefluid_) discret_->SetState(ndsale_, "dispnp", dispnp_);
 
       // evaluate surface area
       discret_->EvaluateCondition(flowdeppressureparams, fdpcondname, fdpcondid);
@@ -1509,7 +1505,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
       // set required state vectors
       discret_->ClearState();
       SetStateTimInt();
-      if (alefluid_) discret_->SetState("dispnp", dispnp_);
+      if (alefluid_) discret_->SetState(ndsale_, "dispnp", dispnp_);
 
       // evaluate pressure integral
       discret_->EvaluateCondition(flowdeppressureparams, fdpcondname, fdpcondid);
@@ -1579,7 +1575,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
       discret_->ClearState();
       discret_->SetState("scaaf", scaaf_);
       SetStateTimInt();
-      if (alefluid_) discret_->SetState("dispnp", dispnp_);
+      if (alefluid_) discret_->SetState(ndsale_, "dispnp", dispnp_);
 
       // set values for elements
       const int fdp_cond_id = fdpcond[fdpcondid]->GetInt("ConditionID");
@@ -1618,7 +1614,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
 
     // set required state vectors
     SetStateTimInt();
-    if (alefluid_) discret_->SetState("dispnp", dispnp_);
+    if (alefluid_) discret_->SetState(ndsale_, "dispnp", dispnp_);
 
     // evaluate all line weak Dirichlet boundary conditions
     discret_->EvaluateCondition(weakdbcparams, sysmat_, Teuchos::null, residual_, Teuchos::null,
@@ -1651,7 +1647,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
 
     // set required state vectors
     SetStateTimInt();
-    if (alefluid_) discret_->SetState("dispnp", dispnp_);
+    if (alefluid_) discret_->SetState(ndsale_, "dispnp", dispnp_);
 
     // evaluate all line mixed/hybrid Dirichlet boundary conditions
     discret_->EvaluateCondition(mhdbcparams, sysmat_, Teuchos::null, residual_, Teuchos::null,
@@ -1746,7 +1742,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
 
       // set required state vectors
       SetStateTimInt();
-      if (alefluid_) discret_->SetState("dispnp", dispnp_);
+      if (alefluid_) discret_->SetState(ndsale_, "dispnp", dispnp_);
       // discret_->SetState("nodenormal",nodeNormal);
 
       // temporary variable holding the scaled residual contribution
@@ -1830,7 +1826,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
 
       // set required state vectors
       SetStateTimInt();
-      if (alefluid_) discret_->SetState("dispnp", dispnp_);
+      if (alefluid_) discret_->SetState(ndsale_, "dispnp", dispnp_);
 
       // set slip coefficient
       DRT::Condition* currnavierslip = nscond[nscondid];
@@ -1863,8 +1859,8 @@ void FLD::FluidImplicitTimeInt::AssembleEdgeBasedMatandRHS()
 
     if (alefluid_)
     {
-      discret_->SetState("dispnp", dispnp_);
-      discret_->SetState("gridv", gridv_);
+      discret_->SetState(ndsale_, "dispnp", dispnp_);
+      discret_->SetState(ndsale_, "gridv", gridv_);
     }
 
     Teuchos::ParameterList params;
@@ -1899,7 +1895,7 @@ void FLD::FluidImplicitTimeInt::FreeSurfaceFlowSurfaceTensionUpdate()
     eleparams.set<int>("action", FLD::calc_surface_tension);
 
     discret_->ClearState();
-    discret_->SetState("dispnp", dispnp_);
+    discret_->SetState(ndsale_, "dispnp", dispnp_);
     discret_->EvaluateCondition(
         eleparams, Teuchos::null, Teuchos::null, residual_, Teuchos::null, Teuchos::null, condname);
     discret_->ClearState();
@@ -2066,10 +2062,7 @@ void FLD::FluidImplicitTimeInt::UpdateKrylovSpaceProjection()
     // ... set action for elements to integration of shape functions
     mode_params.set<int>("action", FLD::integrate_shape);
 
-    if (alefluid_)
-    {
-      discret_->SetState("dispnp", dispnp_);
-    }
+    if (alefluid_) discret_->SetState(ndsale_, "dispnp", dispnp_);
 
     if (xwall_ != Teuchos::null) xwall_->SetXWallParams(mode_params);
 
@@ -2512,7 +2505,7 @@ void FLD::FluidImplicitTimeInt::AleUpdate(std::string condName)
         // Evaluate condition to calculate the node normals
         // Note: the normal vectors do not yet have length 1.0
         discret_->ClearState();
-        discret_->SetState("dispnp", dispnp_);
+        discret_->SetState(ndsale_, "dispnp", dispnp_);
         discret_->EvaluateCondition(eleparams, globalNodeNormals, condName);
         discret_->ClearState();
 
@@ -2950,7 +2943,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> stepi
   {
     // account for potentially moving Neumann boundaries
     Teuchos::ParameterList eleparams;
-    discret_->SetState("dispnp", dispnp_);
+    discret_->SetState(ndsale_, "dispnp", dispnp_);
 
     // evaluate Neumann conditions
     neumann_loads_->PutScalar(0.0);
@@ -4001,8 +3994,8 @@ void FLD::FluidImplicitTimeInt::AVM3AssembleMatAndRHS(Teuchos::ParameterList& el
 
   if (alefluid_)
   {
-    discret_->SetState("dispnp", dispnp_);
-    discret_->SetState("gridv", gridv_);
+    discret_->SetState(ndsale_, "dispnp", dispnp_);
+    discret_->SetState(ndsale_, "gridv", gridv_);
   }
 
   // set scheme-specific element parameters and vector values
@@ -4792,10 +4785,7 @@ Teuchos::RCP<std::vector<double>> FLD::FluidImplicitTimeInt::EvaluateErrorCompar
       // set scheme-specific element parameters and vector values
       SetStateTimInt();
 
-      if (alefluid_)
-      {
-        discret_->SetState("dispnp", dispnp_);
-      }
+      if (alefluid_) discret_->SetState(ndsale_, "dispnp", dispnp_);
 
       // get (squared) error values
       // 0: delta velocity for L2-error norm
@@ -5010,8 +5000,8 @@ double FLD::FluidImplicitTimeInt::EvaluateDtViaCflIfApplicable()
     discret_->SetState("velnp", velnp_);
     if (alefluid_)
     {
-      discret_->SetState("dispnp", dispnp_);
-      discret_->SetState("gridv", gridv_);
+      discret_->SetState(ndsale_, "dispnp", dispnp_);
+      discret_->SetState(ndsale_, "gridv", gridv_);
     }
 
     const Epetra_Map* elementrowmap = discret_->ElementRowMap();
@@ -5181,10 +5171,7 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::IntegrateInterfaceShape(s
 
   // call loop over elements
   discret_->ClearState();
-  if (alefluid_)
-  {
-    discret_->SetState("dispnp", dispnp_);
-  }
+  if (alefluid_) discret_->SetState(ndsale_, "dispnp", dispnp_);
   discret_->EvaluateCondition(eleparams, integratedshapefunc, condname);
   discret_->ClearState();
 
@@ -5336,8 +5323,8 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
     discret_->SetState("accam", accam_);
     discret_->SetState("scaaf", scaaf_);
     discret_->SetState("scaam", scaam_);
-    discret_->SetState("dispnp", griddisp);
-    discret_->SetState("gridv", zeros_);
+    discret_->SetState(ndsale_, "dispnp", griddisp);
+    discret_->SetState(ndsale_, "gridv", zeros_);
 
     eleparams.set<int>("action", FLD::calc_fluid_systemmat_and_residual);
     eleparams.set<int>("Physical Type", physicaltype_);
@@ -6177,7 +6164,7 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcDivOp()
 
   // copy row map of mesh displacement to column map (only if ALE is used)
   discret_->ClearState();
-  if (alefluid_) discret_->SetState("dispnp", dispnp_);
+  if (alefluid_) discret_->SetState(ndsale_, "dispnp", dispnp_);
 
   // construct the operator on element level as a column vector
   discret_->Evaluate(params, Teuchos::null, Teuchos::null, divop, Teuchos::null, Teuchos::null);
@@ -6254,11 +6241,13 @@ void FLD::FluidImplicitTimeInt::Reset(bool completeReset, int numsteps, int iter
 
     if (alefluid_)
     {
-      dispnp_ = LINALG::CreateVector(*dofrowmap, true);
-      dispn_ = LINALG::CreateVector(*dofrowmap, true);
-      dispnm_ = LINALG::CreateVector(*dofrowmap, true);
-      gridv_ = LINALG::CreateVector(*dofrowmap, true);
-      gridvn_ = LINALG::CreateVector(*dofrowmap, true);
+      const Epetra_Map* aledofrowmap = discret_->DofRowMap(ndsale_);
+
+      dispnp_ = LINALG::CreateVector(*aledofrowmap, true);
+      dispn_ = LINALG::CreateVector(*aledofrowmap, true);
+      dispnm_ = LINALG::CreateVector(*aledofrowmap, true);
+      gridv_ = LINALG::CreateVector(*aledofrowmap, true);
+      gridvn_ = LINALG::CreateVector(*aledofrowmap, true);
     }
   }
 
@@ -6455,7 +6444,6 @@ void FLD::FluidImplicitTimeInt::WriteOutputKineticEnergy()
 void FLD::FluidImplicitTimeInt::SetDt(const double dtnew)
 {
   dta_ = dtnew;
-
   return;
 }
 
@@ -6505,10 +6493,7 @@ void FLD::FluidImplicitTimeInt::SetDirichletNeumannBC()
   // add problem-dependent parameters, e.g., thermodynamic pressure in case of loma
   SetCustomEleParamsApplyNonlinearBoundaryConditions(eleparams);
 
-  if (alefluid_)
-  {
-    discret_->SetState("dispnp", dispnp_);
-  }
+  if (alefluid_) discret_->SetState(ndsale_, "dispnp", dispnp_);
 
   // evaluate Neumann conditions
   neumann_loads_->PutScalar(0.0);

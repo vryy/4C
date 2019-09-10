@@ -1,5 +1,5 @@
 /*--------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Solve FSI problem with sliding grids using a monolithic scheme
 with condensed fluid interface velocities

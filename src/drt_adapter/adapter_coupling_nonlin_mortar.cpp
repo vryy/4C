@@ -1,11 +1,12 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief A class providing coupling capabilities based on non-linear
        mortar methods
 
 \level 2
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 
 *----------------------------------------------------------------------*/
 
@@ -530,7 +531,7 @@ void ADAPTER::CouplingNonLinMortar::CompleteInterface(
   psmdofrowmap_ = LINALG::MergeMap(pslavedofrowmap_, pmasterdofrowmap_, false);
 
   // print parallel distribution
-  interface->PrintParallelDistribution(1);
+  interface->PrintParallelDistribution();
 
   // check for parallel redistribution
   bool parredist = false;
@@ -546,7 +547,7 @@ void ADAPTER::CouplingNonLinMortar::CompleteInterface(
   if (parredist && comm_->NumProc() > 1)
   {
     // redistribute optimally among all procs
-    interface->Redistribute(1);
+    interface->Redistribute();
 
     // call fill complete again
     interface->FillComplete();
@@ -555,7 +556,7 @@ void ADAPTER::CouplingNonLinMortar::CompleteInterface(
     interface->CreateSearchTree();
 
     // print parallel distribution again
-    interface->PrintParallelDistribution(1);
+    interface->PrintParallelDistribution();
   }
 
   // store row maps (after parallel redistribution)
@@ -785,8 +786,8 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinD(const std::string& statename,
     if (!ele) dserror("ERROR: Cannot find ele with gid %", gid);
     CONTACT::CoElement* cele = dynamic_cast<CONTACT::CoElement*>(ele);
 
-    Teuchos::RCP<CONTACT::CoIntegrator> integrator =
-        Teuchos::rcp(new CONTACT::CoIntegrator(interface_->IParams(), cele->Shape(), *comm_));
+    Teuchos::RCP<CONTACT::CoIntegrator> integrator = Teuchos::rcp(
+        new CONTACT::CoIntegrator(interface_->InterfaceParams(), cele->Shape(), *comm_));
 
     integrator->IntegrateD(*cele, *comm_, true);
   }
@@ -1025,8 +1026,8 @@ void ADAPTER::CouplingNonLinMortar::CreateP()
   CheckSetup();
 
   // check
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Interface()->IParams(), "LM_SHAPEFCN") !=
-      INPAR::MORTAR::shape_dual)
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(
+          Interface()->InterfaceParams(), "LM_SHAPEFCN") != INPAR::MORTAR::shape_dual)
     dserror("ERROR: Creation of P operator only for dual shape functions!");
 
   /********************************************************************/

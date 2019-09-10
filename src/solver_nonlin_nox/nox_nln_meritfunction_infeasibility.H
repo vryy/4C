@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Implementation of the infeasibility merit function for
        constrained problems. Especially useful for the filter method.

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief helpful methods for the porofluidmultiphase element
 
    \level 3

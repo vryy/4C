@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief smart particle container class
 
 \level 3
@@ -255,6 +255,12 @@ void PARTICLEENGINE::ParticleContainer::RemoveParticle(int index)
  *---------------------------------------------------------------------------*/
 double PARTICLEENGINE::ParticleContainer::GetMinValueOfState(StateEnum stateEnum) const
 {
+#ifdef DEBUG
+  if (not storedstates_.count(stateEnum))
+    dserror("particle state '%s' not stored in container!",
+        PARTICLEENGINE::EnumToStateName(stateEnum).c_str());
+#endif
+
   if (particlestored_ <= 0) return 0.0;
 
   double min = (states_[stateEnum])[0];
@@ -270,6 +276,12 @@ double PARTICLEENGINE::ParticleContainer::GetMinValueOfState(StateEnum stateEnum
  *---------------------------------------------------------------------------*/
 double PARTICLEENGINE::ParticleContainer::GetMaxValueOfState(StateEnum stateEnum) const
 {
+#ifdef DEBUG
+  if (not storedstates_.count(stateEnum))
+    dserror("particle state '%s' not stored in container!",
+        PARTICLEENGINE::EnumToStateName(stateEnum).c_str());
+#endif
+
   if (particlestored_ <= 0) return 0.0;
 
   double max = (states_[stateEnum])[0];

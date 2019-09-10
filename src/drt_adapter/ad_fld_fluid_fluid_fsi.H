@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Fluid field adapter for embedded (ALE-)fluid-fluid problems using XFEM
 
@@ -144,7 +144,7 @@ namespace ADAPTER
    private:
     /// setup of map extractor to distinguish between FSI DOF-map and
     /// merged inner embedded fluid and background fluid DOF-map
-    void SetupInterface();
+    void SetupInterface(const int nds_master = 0);
 
     /// prepare underlying extended shape derivatives matrix, that is based
     /// on the merged fluid dof-map (with background fluid dof set to zero),

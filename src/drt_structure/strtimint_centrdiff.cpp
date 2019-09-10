@@ -1,9 +1,9 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Structural time integration with central difference scheme 2nd order (explicit)
 \level 1
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 */
 
 /*----------------------------------------------------------------------*/

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief evaluation methods of the porofluidmultiphase boundary element
 
    \level 3

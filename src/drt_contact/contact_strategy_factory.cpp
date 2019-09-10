@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Factory to create the desired contact strategy
 
 \maintainer Matthias Mayr
@@ -1228,13 +1228,13 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
     const bool selfcontact, const enum INPAR::MORTAR::RedundantStorage redundant,
     const Teuchos::RCP<std::pair<enum XFEM::FieldName,
         Teuchos::RCP<const DRT::DiscretizationInterface>>>& parent_dis_pair,
-    Teuchos::RCP<CONTACT::IDataContainer> idata_ptr)
+    Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr)
 {
   INPAR::CONTACT::SolvingStrategy stype =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(icparams, "STRATEGY");
 
   return CreateInterface(
-      stype, id, comm, dim, icparams, selfcontact, redundant, parent_dis_pair, idata_ptr);
+      stype, id, comm, dim, icparams, selfcontact, redundant, parent_dis_pair, interfaceData_ptr);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1245,7 +1245,7 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
     const enum INPAR::MORTAR::RedundantStorage redundant,
     const Teuchos::RCP<std::pair<enum XFEM::FieldName,
         Teuchos::RCP<const DRT::DiscretizationInterface>>>& parent_dis_pair,
-    Teuchos::RCP<CONTACT::IDataContainer> idata_ptr)
+    Teuchos::RCP<CONTACT::InterfaceDataContainer> idata_ptr)
 {
   Teuchos::RCP<CONTACT::CoInterface> newinterface = Teuchos::null;
 
@@ -1261,15 +1261,15 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
     {
       if (idata_ptr.is_null())
       {
-        idata_ptr = Teuchos::rcp(new CONTACT::AUG::IDataContainer());
+        idata_ptr = Teuchos::rcp(new CONTACT::AUG::InterfaceDataContainer());
 
         newinterface = Teuchos::rcp(new CONTACT::AUG::Interface(
             idata_ptr, id, comm, dim, icparams, selfcontact, redundant));
       }
       else
       {
-        Teuchos::RCP<CONTACT::AUG::IDataContainer> iaugdata_ptr =
-            Teuchos::rcp_dynamic_cast<CONTACT::AUG::IDataContainer>(idata_ptr, true);
+        Teuchos::RCP<CONTACT::AUG::InterfaceDataContainer> iaugdata_ptr =
+            Teuchos::rcp_dynamic_cast<CONTACT::AUG::InterfaceDataContainer>(idata_ptr, true);
         newinterface = Teuchos::rcp(new CONTACT::AUG::Interface(iaugdata_ptr));
       }
 
@@ -1282,15 +1282,15 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
     {
       if (idata_ptr.is_null())
       {
-        idata_ptr = Teuchos::rcp(new CONTACT::AUG::IDataContainer());
+        idata_ptr = Teuchos::rcp(new CONTACT::AUG::InterfaceDataContainer());
 
         newinterface = Teuchos::rcp(new CONTACT::AUG::STEEPESTASCENT::Interface(
             idata_ptr, id, comm, dim, icparams, selfcontact, redundant));
       }
       else
       {
-        Teuchos::RCP<CONTACT::AUG::IDataContainer> iaugdata_ptr =
-            Teuchos::rcp_dynamic_cast<CONTACT::AUG::IDataContainer>(idata_ptr, true);
+        Teuchos::RCP<CONTACT::AUG::InterfaceDataContainer> iaugdata_ptr =
+            Teuchos::rcp_dynamic_cast<CONTACT::AUG::InterfaceDataContainer>(idata_ptr, true);
         newinterface = Teuchos::rcp(new CONTACT::AUG::STEEPESTASCENT::Interface(iaugdata_ptr));
       }
 
@@ -1303,15 +1303,15 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
     {
       if (idata_ptr.is_null())
       {
-        idata_ptr = Teuchos::rcp(new CONTACT::AUG::IDataContainer());
+        idata_ptr = Teuchos::rcp(new CONTACT::AUG::InterfaceDataContainer());
 
         newinterface = Teuchos::rcp(new CONTACT::AUG::LAGRANGE::Interface(
             idata_ptr, id, comm, dim, icparams, selfcontact, redundant));
       }
       else
       {
-        Teuchos::RCP<CONTACT::AUG::IDataContainer> iaugdata_ptr =
-            Teuchos::rcp_dynamic_cast<CONTACT::AUG::IDataContainer>(idata_ptr, true);
+        Teuchos::RCP<CONTACT::AUG::InterfaceDataContainer> iaugdata_ptr =
+            Teuchos::rcp_dynamic_cast<CONTACT::AUG::InterfaceDataContainer>(idata_ptr, true);
         newinterface = Teuchos::rcp(new CONTACT::AUG::LAGRANGE::Interface(iaugdata_ptr));
       }
 
@@ -1324,15 +1324,15 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
     {
       if (idata_ptr.is_null())
       {
-        idata_ptr = Teuchos::rcp(new CONTACT::AUG::IDataContainer());
+        idata_ptr = Teuchos::rcp(new CONTACT::AUG::InterfaceDataContainer());
 
         newinterface = Teuchos::rcp(new CONTACT::AUG::LAGRANGE::Interface(
             idata_ptr, id, comm, dim, icparams, selfcontact, redundant));
       }
       else
       {
-        Teuchos::RCP<CONTACT::AUG::IDataContainer> iaugdata_ptr =
-            Teuchos::rcp_dynamic_cast<CONTACT::AUG::IDataContainer>(idata_ptr, true);
+        Teuchos::RCP<CONTACT::AUG::InterfaceDataContainer> iaugdata_ptr =
+            Teuchos::rcp_dynamic_cast<CONTACT::AUG::InterfaceDataContainer>(idata_ptr, true);
         newinterface = Teuchos::rcp(new CONTACT::AUG::LAGRANGE::Interface(iaugdata_ptr));
       }
 
@@ -1343,7 +1343,7 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
     // ------------------------------------------------------------------------
     case INPAR::CONTACT::solution_xcontact:
     {
-      idata_ptr = Teuchos::rcp(new CONTACT::IDataContainer());
+      idata_ptr = Teuchos::rcp(new CONTACT::InterfaceDataContainer());
 
       icparams.set<Teuchos::RCP<XSTR::MultiDiscretizationWrapper::cXDisPair>>(
           "ParentDiscretPair", parent_dis_pair);
@@ -1357,7 +1357,7 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
     // ------------------------------------------------------------------------
     default:
     {
-      idata_ptr = Teuchos::rcp(new CONTACT::IDataContainer());
+      idata_ptr = Teuchos::rcp(new CONTACT::InterfaceDataContainer());
 
       if (wlaw != INPAR::WEAR::wear_none)
         newinterface = Teuchos::rcp(
@@ -1748,13 +1748,13 @@ void CONTACT::STRATEGY::Factory::Print(
       double checkfrcoeff = 0.0;
       if (ftype == INPAR::CONTACT::friction_tresca)
       {
-        checkfrcoeff = interfaces[i]->IParams().get<double>("FRBOUND");
+        checkfrcoeff = interfaces[i]->InterfaceParams().get<double>("FRBOUND");
         std::cout << std::endl << "Interface         " << i + 1 << std::endl;
         std::cout << "FrBound (Tresca)  " << checkfrcoeff << std::endl;
       }
       else if (ftype == INPAR::CONTACT::friction_coulomb)
       {
-        checkfrcoeff = interfaces[i]->IParams().get<double>("FRCOEFF");
+        checkfrcoeff = interfaces[i]->InterfaceParams().get<double>("FRCOEFF");
         std::cout << std::endl << "Interface         " << i + 1 << std::endl;
         std::cout << "FrCoeff (Coulomb) " << checkfrcoeff << std::endl;
       }
@@ -1762,7 +1762,7 @@ void CONTACT::STRATEGY::Factory::Print(
   }
 
   // print initial parallel redistribution
-  for (unsigned i = 0; i < interfaces.size(); ++i) interfaces[i]->PrintParallelDistribution(i + 1);
+  for (unsigned i = 0; i < interfaces.size(); ++i) interfaces[i]->PrintParallelDistribution();
 
   // show default parameters
   if (Comm().MyPID() == 0)

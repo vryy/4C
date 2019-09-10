@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/**
+/** \file
 
 \brief Special coupling routines to handle the possible changing number of DoFs
        from node to node during XFEM simulations

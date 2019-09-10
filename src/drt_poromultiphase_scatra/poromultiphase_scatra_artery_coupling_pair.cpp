@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief one pair consisting of exactly one artery element and one poro-
         multiphase-scatra element which might be coupled to each other
 
@@ -1588,23 +1588,23 @@ FAD POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   if (numdim_ == 3)
     gaussPoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::intrule_line_4point);
 
-  static LINALG::TMatrix<FAD, 1, numnodescont_> N2(true);           // = N2
-  static LINALG::TMatrix<FAD, numdim_, numnodescont_> N2_xi(true);  // = N2,xi1
+  static LINALG::Matrix<1, numnodescont_, FAD> N2(true);           // = N2
+  static LINALG::Matrix<numdim_, numnodescont_, FAD> N2_xi(true);  // = N2,xi1
 
-  static LINALG::TMatrix<FAD, numdim_, numdim_> InvJ(true);          // (dX/dxi)^-1
-  static LINALG::TMatrix<FAD, numdim_, numdim_> defGrad(true);       // (dX/dx) = F
-  static LINALG::TMatrix<FAD, numdim_, numnodescont_> N2_XYZ(true);  // = N2,X
-  static LINALG::TMatrix<FAD, numdim_, 1> Ft0(true);                 // = F*t0
+  static LINALG::Matrix<numdim_, numdim_, FAD> InvJ(true);          // (dX/dxi)^-1
+  static LINALG::Matrix<numdim_, numdim_, FAD> defGrad(true);       // (dX/dx) = F
+  static LINALG::Matrix<numdim_, numnodescont_, FAD> N2_XYZ(true);  // = N2,X
+  static LINALG::Matrix<numdim_, 1, FAD> Ft0(true);                 // = F*t0
 
   // t0
-  static LINALG::TMatrix<FAD, numdim_, 1> t0;
+  static LINALG::Matrix<numdim_, 1, FAD> t0;
   for (unsigned int i = 0; i < numdim_; i++) t0(i).val() = lambda0_(i);
   // ele2posref
-  static LINALG::TMatrix<FAD, numdim_, numnodescont_> ele2posref;
+  static LINALG::Matrix<numdim_, numnodescont_, FAD> ele2posref;
   for (unsigned int i = 0; i < numdim_; i++)
     for (unsigned int j = 0; j < numnodescont_; j++) ele2posref(i, j).val() = ele2posref_(i, j);
   // ele2pos
-  static LINALG::TMatrix<FAD, numdim_, numnodescont_> ele2pos;
+  static LINALG::Matrix<numdim_, numnodescont_, FAD> ele2pos;
   for (unsigned int i = 0; i < numdim_; i++)
     for (unsigned int j = 0; j < numnodescont_; j++) ele2pos(i, j).val() = ele2pos_(i, j);
 
@@ -2538,23 +2538,23 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   }
 
   // Initialize function f and Jacobian J for Newton iteration
-  LINALG::TMatrix<T, numdim_, 1> f(true);
-  LINALG::TMatrix<T, numdim_, numdim_> J(true);
-  LINALG::TMatrix<T, numdim_, numdim_> Jinv(true);
+  LINALG::Matrix<numdim_, 1, T> f(true);
+  LINALG::Matrix<numdim_, numdim_, T> J(true);
+  LINALG::Matrix<numdim_, numdim_, T> Jinv(true);
 
   // Vectors for shape functions and their derivatives
-  static LINALG::TMatrix<T, 1, numnodesart_> N1(true);      // = N1
-  static LINALG::TMatrix<T, 1, numnodesart_> N1_eta(true);  // = N1,eta
+  static LINALG::Matrix<1, numnodesart_, T> N1(true);      // = N1
+  static LINALG::Matrix<1, numnodesart_, T> N1_eta(true);  // = N1,eta
 
-  static LINALG::TMatrix<T, 1, numnodescont_> N2(true);           // = N2
-  static LINALG::TMatrix<T, numdim_, numnodescont_> N2_xi(true);  // = N2,xi1
+  static LINALG::Matrix<1, numnodescont_, T> N2(true);           // = N2
+  static LINALG::Matrix<numdim_, numnodescont_, T> N2_xi(true);  // = N2,xi1
 
   // Coords and derivatives of 1D and 2D/3D element
-  static LINALG::TMatrix<T, numdim_, 1> r1(true);      // = r1
-  static LINALG::TMatrix<T, numdim_, 1> r1_eta(true);  // = r1,eta
+  static LINALG::Matrix<numdim_, 1, T> r1(true);      // = r1
+  static LINALG::Matrix<numdim_, 1, T> r1_eta(true);  // = r1,eta
 
-  static LINALG::TMatrix<T, numdim_, 1> x2(true);           // = x2
-  static LINALG::TMatrix<T, numdim_, numdim_> x2_xi(true);  // = x2,xi
+  static LINALG::Matrix<numdim_, 1, T> x2(true);           // = x2
+  static LINALG::Matrix<numdim_, numdim_, T> x2_xi(true);  // = x2,xi
 
   // Initial scalar residual (L2-norm of f)
   T residual;
@@ -2694,8 +2694,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 template <typename T>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
-    distypeCont>::Get1DShapeFunctions(LINALG::TMatrix<T, 1, numnodesart_>& N1,
-    LINALG::TMatrix<T, 1, numnodesart_>& N1_eta, const T& eta)
+    distypeCont>::Get1DShapeFunctions(LINALG::Matrix<1, numnodesart_, T>& N1,
+    LINALG::Matrix<1, numnodesart_, T>& N1_eta, const T& eta)
 {
   // Clear shape functions and derivatives
   N1.Clear();
@@ -2717,8 +2717,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 template <typename T>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
-    distypeCont>::Get2D3DShapeFunctions(LINALG::TMatrix<T, 1, numnodescont_>& N2,
-    LINALG::TMatrix<T, numdim_, numnodescont_>& N2_xi, const std::vector<T>& xi)
+    distypeCont>::Get2D3DShapeFunctions(LINALG::Matrix<1, numnodescont_, T>& N2,
+    LINALG::Matrix<numdim_, numnodescont_, T>& N2_xi, const std::vector<T>& xi)
 {
   // Clear shape functions and derivatives
   N2.Clear();
@@ -2746,9 +2746,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 template <typename T>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
-    distypeCont>::ComputeArteryCoordsAndDerivsRef(LINALG::TMatrix<T, numdim_, 1>& r1,
-    LINALG::TMatrix<T, numdim_, 1>& r1_eta, const LINALG::TMatrix<T, 1, numnodesart_>& N1,
-    const LINALG::TMatrix<T, 1, numnodesart_>& N1_eta)
+    distypeCont>::ComputeArteryCoordsAndDerivsRef(LINALG::Matrix<numdim_, 1, T>& r1,
+    LINALG::Matrix<numdim_, 1, T>& r1_eta, const LINALG::Matrix<1, numnodesart_, T>& N1,
+    const LINALG::Matrix<1, numnodesart_, T>& N1_eta)
 {
   r1.Clear();
   r1_eta.Clear();
@@ -2770,9 +2770,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 template <typename T>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
-    distypeCont>::Compute2D3DCoordsAndDerivsRef(LINALG::TMatrix<T, numdim_, 1>& x2,
-    LINALG::TMatrix<T, numdim_, numdim_>& x2_xi, const LINALG::TMatrix<T, 1, numnodescont_>& N2,
-    const LINALG::TMatrix<T, numdim_, numnodescont_>& N2_xi)
+    distypeCont>::Compute2D3DCoordsAndDerivsRef(LINALG::Matrix<numdim_, 1, T>& x2,
+    LINALG::Matrix<numdim_, numdim_, T>& x2_xi, const LINALG::Matrix<1, numnodescont_, T>& N2,
+    const LINALG::Matrix<numdim_, numnodescont_, T>& N2_xi)
 {
   x2.Clear();
   x2_xi.Clear();

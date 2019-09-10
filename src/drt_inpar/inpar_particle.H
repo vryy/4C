@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief input parameters for particle problems
 
 \level 3
@@ -19,6 +19,17 @@
  | headers                                                    sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
 #include "inpar_parameterlist_utils.H"
+
+/*---------------------------------------------------------------------------*
+ | forward declarations                                       sfuchs 08/2019 |
+ *---------------------------------------------------------------------------*/
+namespace DRT
+{
+  namespace INPUT
+  {
+    class ConditionDefinition;
+  }
+}  // namespace DRT
 
 /*---------------------------------------------------------------------------*
  | input parameters for particle problems                     sfuchs 03/2018 |
@@ -218,6 +229,9 @@ namespace INPAR
 
     //! set the particle parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+    //! set the particle conditions
+    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
 
   }  // namespace PARTICLE
 

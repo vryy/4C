@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 \brief Parallel redistribution for CONTACT::AUG
 
 \maintainer Matthias Mayr

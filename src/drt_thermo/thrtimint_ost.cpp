@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Thermal time integration with one-step-theta
 \level 1
 \maintainer Christoph Meier

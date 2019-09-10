@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief abstract interface for parameter classes required for scalar transport element evaluation
 

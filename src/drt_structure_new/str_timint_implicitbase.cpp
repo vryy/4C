@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief This class summarizes the functionality which all
        implicit time integration strategies share and have in

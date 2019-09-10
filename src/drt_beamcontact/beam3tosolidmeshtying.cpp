@@ -1,14 +1,12 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief meshtying element for meshtying between a 3D beam end a 2D surface (belonging to a 3D solid)
 element
 
 \level 3
 
-\maintainer Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
+\maintainer Matthias Mayr
 
 *----------------------------------------------------------------------*/
 

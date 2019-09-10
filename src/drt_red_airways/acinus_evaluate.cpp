@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Templated Evaluate file for acinus element containing the action
        types for a reduced acinus element RedAcinus. The actual

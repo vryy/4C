@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief general Field adapter - In the end should be the base class for all
 'fields' like structure, fluid, ale, poro,... (in principle every coupled
@@ -85,6 +85,26 @@ namespace ADAPTER
 
     /// start new time step
     virtual void PrepareTimeStep() = 0;
+
+    /// Update state with prescribed increment vector
+    /*!
+    \brief update dofs
+
+    There are two dof increments possible
+
+    \f$x^n+1_i+1 = x^n+1_i + disiterinc\f$  (sometimes referred to as residual increment), and
+
+    \f$x^n+1_i+1 = x^n     + disstepinc\f$
+
+    with \f$n\f$ and \f$i\f$ being time and Newton iteration step
+
+    Note: Fields expect an iteration increment.
+    In case the StructureNOXCorrectionWrapper is applied, the step increment is expected
+    which is then transformed into an iteration increment
+    */
+    virtual void UpdateStateIncrementally(
+        Teuchos::RCP<const Epetra_Vector> disi  ///< iterative solution increment
+        ) = 0;
 
     /*!
     \brief update dofs and evaluate elements

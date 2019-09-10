@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Deprecated wrapper for the mesh-tying and contact managers.
 
 \level 2
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 
 */
 /*---------------------------------------------------------------------*/
@@ -97,7 +97,7 @@ void CONTACT::MeshtyingContactBridge::SetState(Teuchos::RCP<Epetra_Vector> zeros
 /*----------------------------------------------------------------------*
  |  Get Strategy                                             farah 06/14|
  *----------------------------------------------------------------------*/
-MORTAR::StrategyBase& CONTACT::MeshtyingContactBridge::GetStrategy()
+MORTAR::StrategyBase& CONTACT::MeshtyingContactBridge::GetStrategy() const
 {
   // if contact is involved use contact strategy!
   // contact conditions/strategies are dominating the algorithm!
@@ -212,4 +212,30 @@ void CONTACT::MeshtyingContactBridge::VisualizeGmsh(const int istep, const int i
   if (HaveMeshtying()) MtManager()->GetStrategy().VisualizeGmsh(istep, iter);
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const Epetra_Comm& CONTACT::MeshtyingContactBridge::Comm() const
+{
+  if (cman_ != Teuchos::null) return cman_->Comm();
+
+  if (mtman_ != Teuchos::null) return mtman_->Comm();
+
+  dserror("can't get comm()");
+  return cman_->Comm();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<MORTAR::ManagerBase> CONTACT::MeshtyingContactBridge::ContactManager() const
+{
+  return cman_;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<MORTAR::ManagerBase> CONTACT::MeshtyingContactBridge::MtManager() const
+{
+  return mtman_;
 }

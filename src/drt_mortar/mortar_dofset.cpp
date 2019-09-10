@@ -1,16 +1,12 @@
 /*-----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief A set of degrees of freedom special for mortar coupling
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 
 \level 1
 */
 /*---------------------------------------------------------------------*/
-
-//#include <iostream>
-//#include <algorithm>
-//#include <numeric>
 
 #include "mortar_dofset.H"
 #include "mortar_node.H"

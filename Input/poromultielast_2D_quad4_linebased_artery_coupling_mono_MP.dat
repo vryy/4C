@@ -111,7 +111,7 @@ MAT 501 MAT_Struct_StVenantKirchhoff YOUNG 10.0 NUE 0.35 DENS 0.1
 MAT 502 MAT_PoroLawDensityDependent DENSITYLAWID 503
 MAT 503 MAT_PoroDensityLawExp BULKMODULUS 1e15
 
-MAT 3 MAT_CNST_ART VISCOSITY 0.04 DENS 0.001 YOUNG 400000.0 NUE 0.5 DIAM 24.0 TH 1.630 PEXT1 0.0 PEXT2 0.0
+MAT 3 MAT_CNST_ART VISCOSITY 0.04 DENS 0.001 YOUNG 400000.0 NUE 0.5 TH 1.630 PEXT1 0.0 PEXT2 0.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD porofluid TAR_MAT 1
 ----------------------------------------------------------------------FUNCT1
@@ -192,7 +192,7 @@ NODE 8 COORD -0.5 0.5 0.0
 1 WALLQ4PORO QUAD4  1 2 3 4 MAT 2 KINEM nonlinear EAS none THICK 1 STRESS_STRAIN plane_strain GP 2 2
 2 WALLQ4PORO QUAD4  4 3 5 6 MAT 2 KINEM nonlinear EAS none THICK 1 STRESS_STRAIN plane_strain GP 2 2
 -------------------------------------------------------------ARTERY ELEMENTS
-1 ART LINE2 7 8 MAT 3 GP 3 TYPE PressureBased
+1 ART LINE2 7 8 MAT 3 GP 3 TYPE PressureBased DIAM 24.0
 ------------------------------------------------------ALE ELEMENTS
 ------------------------------------------------LUBRICATION ELEMENTS
 ------------------------------------------------TRANSPORT ELEMENTS

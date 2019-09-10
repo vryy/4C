@@ -1,12 +1,12 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief  Basis of all structure approaches with ale
         (Lagrangian step followed by Shape Evolution step )
 
 \level 2
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 
 */
 /*----------------------------------------------------------------------*/
@@ -661,8 +661,8 @@ void WEAR::Partitioned::WearSpatialMasterMap(
     disinterface_m = Teuchos::rcp(new Epetra_Vector(*masterdofs, true));
 
     // different wear coefficients on both sides...
-    double wearcoeff_s = interfaces_[i]->IParams().get<double>("WEARCOEFF", 0.0);
-    double wearcoeff_m = interfaces_[i]->IParams().get<double>("WEARCOEFF_MASTER", 0.0);
+    double wearcoeff_s = interfaces_[i]->InterfaceParams().get<double>("WEARCOEFF", 0.0);
+    double wearcoeff_m = interfaces_[i]->InterfaceParams().get<double>("WEARCOEFF_MASTER", 0.0);
     if (wearcoeff_s < 1e-12) dserror("ERROR: wcoeff negative!!!");
 
     double fac = wearcoeff_m / (wearcoeff_s);
@@ -714,8 +714,8 @@ void WEAR::Partitioned::WearSpatialMasterMap(
       if (!ele) dserror("ERROR: Cannot find ele with gid %", gid);
       CONTACT::CoElement* cele = dynamic_cast<CONTACT::CoElement*>(ele);
 
-      Teuchos::RCP<CONTACT::CoIntegrator> integrator =
-          Teuchos::rcp(new CONTACT::CoIntegrator(winterface->IParams(), cele->Shape(), Comm()));
+      Teuchos::RCP<CONTACT::CoIntegrator> integrator = Teuchos::rcp(
+          new CONTACT::CoIntegrator(winterface->InterfaceParams(), cele->Shape(), Comm()));
 
       integrator->IntegrateD(*cele, Comm());
     }
@@ -903,8 +903,8 @@ void WEAR::Partitioned::WearSpatialSlave(Teuchos::RCP<Epetra_Vector>& disinterfa
       if (activedofs->NumMyElements()) solver.Solve(daa->EpetraMatrix(), zref, wear_vectora, true);
 
       // different wear coefficients on both sides...
-      double wearcoeff_s = interfaces_[0]->IParams().get<double>("WEARCOEFF", 0.0);
-      double wearcoeff_m = interfaces_[0]->IParams().get<double>("WEARCOEFF_MASTER", 0.0);
+      double wearcoeff_s = interfaces_[0]->InterfaceParams().get<double>("WEARCOEFF", 0.0);
+      double wearcoeff_m = interfaces_[0]->InterfaceParams().get<double>("WEARCOEFF_MASTER", 0.0);
       if (wearcoeff_s < 1e-12) dserror("wcoeff negative!!!");
       double fac = wearcoeff_s / (wearcoeff_s + wearcoeff_m);
       zref->Scale(fac);
@@ -958,7 +958,7 @@ void WEAR::Partitioned::RedistributeMatInterfaces()
       winterface->Discret().ExportColumnElements(*interfaces_[m]->Discret().ElementColMap());
 
       winterface->FillComplete();
-      winterface->PrintParallelDistribution(m);
+      winterface->PrintParallelDistribution();
 
       if (Comm().MyPID() == 0)
       {
@@ -1089,7 +1089,7 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
       CONTACT::CoElement* cele = dynamic_cast<CONTACT::CoElement*>(ele);
 
       Teuchos::RCP<CONTACT::CoIntegrator> integrator = Teuchos::rcp(
-          new CONTACT::CoIntegrator(interfacesMat_[m]->IParams(), cele->Shape(), Comm()));
+          new CONTACT::CoIntegrator(interfacesMat_[m]->InterfaceParams(), cele->Shape(), Comm()));
 
       integrator->IntegrateD(*cele, Comm());
     }
@@ -1129,8 +1129,8 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
       disinterface_s = zref;
 
       // different wear coefficients on both sides...
-      double wearcoeff_s = interfaces_[0]->IParams().get<double>("WEARCOEFF", 0.0);
-      double wearcoeff_m = interfaces_[0]->IParams().get<double>("WEARCOEFF_MASTER", 0.0);
+      double wearcoeff_s = interfaces_[0]->InterfaceParams().get<double>("WEARCOEFF", 0.0);
+      double wearcoeff_m = interfaces_[0]->InterfaceParams().get<double>("WEARCOEFF_MASTER", 0.0);
       if (wearcoeff_s < 1e-12) dserror("ERROR: wcoeff negative!!!");
 
       double fac = wearcoeff_s / (wearcoeff_s + wearcoeff_m);
@@ -1296,8 +1296,8 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
       if (!ele) dserror("ERROR: Cannot find ele with gid %", gid);
       CONTACT::CoElement* cele = dynamic_cast<CONTACT::CoElement*>(ele);
 
-      Teuchos::RCP<CONTACT::CoIntegrator> integrator =
-          Teuchos::rcp(new CONTACT::CoIntegrator(winterface->IParams(), cele->Shape(), Comm()));
+      Teuchos::RCP<CONTACT::CoIntegrator> integrator = Teuchos::rcp(
+          new CONTACT::CoIntegrator(winterface->InterfaceParams(), cele->Shape(), Comm()));
 
       integrator->IntegrateD(*cele, Comm());
     }
@@ -1313,8 +1313,8 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
       if (!ele) dserror("ERROR: Cannot find ele with gid %", gid);
       CONTACT::CoElement* cele = dynamic_cast<CONTACT::CoElement*>(ele);
 
-      Teuchos::RCP<CONTACT::CoIntegrator> integrator =
-          Teuchos::rcp(new CONTACT::CoIntegrator(winterfaceMat->IParams(), cele->Shape(), Comm()));
+      Teuchos::RCP<CONTACT::CoIntegrator> integrator = Teuchos::rcp(
+          new CONTACT::CoIntegrator(winterfaceMat->InterfaceParams(), cele->Shape(), Comm()));
 
       integrator->IntegrateD(*cele, Comm());
     }

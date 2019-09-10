@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief Control routine for acoustic explicit time integration with ADER LTS
 
 \level 3

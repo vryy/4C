@@ -1,10 +1,10 @@
 /*-----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief A set of preprocessor defines for mortar methods
 
 \level 1
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 */
 /*---------------------------------------------------------------------*/
 #ifndef MORTAR_DEFINES_H

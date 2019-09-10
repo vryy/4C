@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief This file contains the routines required for the passive behaviour of cardiac muscle
 according to Holzapfel and Ogden, "Constitutive modelling of passive myocardium", 2009.
 

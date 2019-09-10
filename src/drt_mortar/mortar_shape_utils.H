@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief file for mortar shape utils --> shape calculations
 
 \level 1

@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief utility functions for spatial discretization of beam elements
 
@@ -31,7 +31,7 @@ namespace DRT
        *  \author grill
        *  \date 03/16 */
       template <unsigned int nnode, unsigned int vpernode, typename T>
-      void EvaluateShapeFunctionsAtXi(const T& xi, LINALG::TMatrix<T, 1, vpernode * nnode>& I_i,
+      void EvaluateShapeFunctionsAtXi(const T& xi, LINALG::Matrix<1, vpernode * nnode, T>& I_i,
           const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0)
       {
         I_i.Clear();
@@ -67,7 +67,7 @@ namespace DRT
        *  \date 03/16 */
       template <unsigned int nnode, unsigned int vpernode, typename T>
       void EvaluateShapeFunctionDerivsAtXi(const T& xi,
-          LINALG::TMatrix<T, 1, vpernode * nnode>& I_i_xi,
+          LINALG::Matrix<1, vpernode * nnode, T>& I_i_xi,
           const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0)
       {
         I_i_xi.Clear();
@@ -103,7 +103,7 @@ namespace DRT
        *  \date 03/16 */
       template <unsigned int nnode, unsigned int vpernode, typename T>
       void EvaluateShapeFunction2ndDerivsAtXi(const T& xi,
-          LINALG::TMatrix<T, 1, vpernode * nnode>& I_i_xixi,
+          LINALG::Matrix<1, vpernode * nnode, T>& I_i_xixi,
           const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0)
       {
         I_i_xixi.Clear();
@@ -139,7 +139,7 @@ namespace DRT
        *  \date 04/19 */
       template <unsigned int nnode, unsigned int vpernode, typename T>
       void EvaluateShapeFunction3rdDerivsAtXi(const T& xi,
-          LINALG::TMatrix<T, 1, vpernode * nnode>& I_i_xixixi,
+          LINALG::Matrix<1, vpernode * nnode, T>& I_i_xixixi,
           const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0)
       {
         I_i_xixixi.Clear();
@@ -175,8 +175,8 @@ namespace DRT
        *  \date 03/16 */
       template <unsigned int nnode, unsigned int vpernode, typename T>
       void EvaluateShapeFunctionsAndDerivsAtXi(const T& xi,
-          LINALG::TMatrix<T, 1, vpernode * nnode>& I_i,
-          LINALG::TMatrix<T, 1, vpernode * nnode>& I_i_xi,
+          LINALG::Matrix<1, vpernode * nnode, T>& I_i,
+          LINALG::Matrix<1, vpernode * nnode, T>& I_i_xi,
           const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0)
       {
         EvaluateShapeFunctionsAtXi<nnode, vpernode>(xi, I_i, distype, hermite_length_param);
@@ -190,9 +190,9 @@ namespace DRT
        *  \date 10/17 */
       template <unsigned int nnode, unsigned int vpernode, typename T>
       void EvaluateShapeFunctionsAndDerivsAnd2ndDerivsAtXi(const T& xi,
-          LINALG::TMatrix<T, 1, vpernode * nnode>& I_i,
-          LINALG::TMatrix<T, 1, vpernode * nnode>& I_i_xi,
-          LINALG::TMatrix<T, 1, vpernode * nnode>& I_i_xixi,
+          LINALG::Matrix<1, vpernode * nnode, T>& I_i,
+          LINALG::Matrix<1, vpernode * nnode, T>& I_i_xi,
+          LINALG::Matrix<1, vpernode * nnode, T>& I_i_xixi,
           const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0)
       {
         EvaluateShapeFunctionsAtXi<nnode, vpernode>(xi, I_i, distype, hermite_length_param);
@@ -207,7 +207,7 @@ namespace DRT
        *  \date 03/16 */
       template <unsigned int nnode, unsigned int vpernode, typename T>
       void EvaluateShapeFunctionsAllGPs(const DRT::UTILS::IntegrationPoints1D& gausspoints,
-          std::vector<LINALG::TMatrix<T, 1, vpernode * nnode>>& I_i,
+          std::vector<LINALG::Matrix<1, vpernode * nnode, T>>& I_i,
           const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0,
           double integration_interval_lower_limit = -1.0,
           double integration_interval_upper_limit = 1.0)
@@ -238,7 +238,7 @@ namespace DRT
        *  \date 03/16 */
       template <unsigned int nnode, unsigned int vpernode, typename T>
       void EvaluateShapeFunctionDerivsAllGPs(const DRT::UTILS::IntegrationPoints1D& gausspoints,
-          std::vector<LINALG::TMatrix<T, 1, vpernode * nnode>>& I_i_xi,
+          std::vector<LINALG::Matrix<1, vpernode * nnode, T>>& I_i_xi,
           const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0,
           double integration_interval_lower_limit = -1.0,
           double integration_interval_upper_limit = 1.0)
@@ -270,8 +270,8 @@ namespace DRT
        *  \date 03/16 */
       template <unsigned int nnode, unsigned int vpernode, typename T>
       void EvaluateShapeFunctionsAndDerivsAllGPs(const DRT::UTILS::IntegrationPoints1D& gausspoints,
-          std::vector<LINALG::TMatrix<T, 1, vpernode * nnode>>& I_i,
-          std::vector<LINALG::TMatrix<T, 1, vpernode * nnode>>& I_i_xi,
+          std::vector<LINALG::Matrix<1, vpernode * nnode, T>>& I_i,
+          std::vector<LINALG::Matrix<1, vpernode * nnode, T>>& I_i_xi,
           const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0,
           double integration_interval_lower_limit = -1.0,
           double integration_interval_upper_limit = 1.0)
@@ -289,8 +289,8 @@ namespace DRT
        *  \author meier
        *  \date 10/14 */
       template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-      void AssembleShapeFunctions(const LINALG::TMatrix<T, 1, numnodes * numnodalvalues>& N_i,
-          LINALG::TMatrix<T, 3, 3 * numnodes * numnodalvalues>& N)
+      void AssembleShapeFunctions(const LINALG::Matrix<1, numnodes * numnodalvalues, T>& N_i,
+          LINALG::Matrix<3, 3 * numnodes * numnodalvalues, T>& N)
       {
         // assembly_N is just an array to help assemble the matrices of the shape functions
         // it determines, which shape function is used in which column of N
@@ -343,12 +343,12 @@ namespace DRT
        *  \date 01/14 */
       template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
       void AssembleShapeFunctionsAndDerivsAnd2ndDerivs(
-          const LINALG::TMatrix<T, 1, numnodes * numnodalvalues>& N_i,
-          const LINALG::TMatrix<T, 1, numnodes * numnodalvalues>& N_i_xi,
-          const LINALG::TMatrix<T, 1, numnodes * numnodalvalues>& N_i_xixi,
-          LINALG::TMatrix<T, 3, 3 * numnodes * numnodalvalues>& N,
-          LINALG::TMatrix<T, 3, 3 * numnodes * numnodalvalues>& N_xi,
-          LINALG::TMatrix<T, 3, 3 * numnodes * numnodalvalues>& N_xixi)
+          const LINALG::Matrix<1, numnodes * numnodalvalues, T>& N_i,
+          const LINALG::Matrix<1, numnodes * numnodalvalues, T>& N_i_xi,
+          const LINALG::Matrix<1, numnodes * numnodalvalues, T>& N_i_xixi,
+          LINALG::Matrix<3, 3 * numnodes * numnodalvalues, T>& N,
+          LINALG::Matrix<3, 3 * numnodes * numnodalvalues, T>& N_xi,
+          LINALG::Matrix<3, 3 * numnodes * numnodalvalues, T>& N_xixi)
       {
         AssembleShapeFunctions<numnodes, numnodalvalues, T>(N_i, N);
         AssembleShapeFunctions<numnodes, numnodalvalues, T>(N_i_xi, N_xi);
@@ -361,9 +361,9 @@ namespace DRT
        *  \date 03/16 */
       template <unsigned int nnode, unsigned int vpernode, unsigned int ndim, typename T,
           typename T2>
-      void CalcInterpolation(const LINALG::TMatrix<T, ndim * vpernode * nnode, 1>& dof_vals,
-          const LINALG::TMatrix<T2, 1, vpernode * nnode>& shapefcn_vals,
-          LINALG::TMatrix<T, ndim, 1>& result)
+      void CalcInterpolation(const LINALG::Matrix<ndim * vpernode * nnode, 1, T>& dof_vals,
+          const LINALG::Matrix<1, vpernode * nnode, T2>& shapefcn_vals,
+          LINALG::Matrix<ndim, 1, T>& result)
       {
         result.Clear();
 

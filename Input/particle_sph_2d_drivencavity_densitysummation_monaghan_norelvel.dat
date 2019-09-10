@@ -35,13 +35,13 @@ PHASE_TO_MATERIAL_ID            phase1 1 boundaryphase 2
 --------------------------------------------------------PARTICLE DYNAMIC/SPH
 KERNEL                          QuinticSpline
 KERNEL_SPACE_DIM                Kernel2D
+INITIALPARTICLESPACING          0.02
 EQUATIONOFSTATE                 GenTait
 MOMENTUMFORMULATION             MonaghanMomentumFormulation
 DENSITYEVALUATION               DensitySummation
 DENSITYCORRECTION               NoCorrection
 BOUNDARYPARTICLEFORMULATION     AdamiBoundaryFormulation
 BOUNDARYPARTICLEINTERACTION     NoSlipBoundaryParticle
-CONSISTENTPROBLEMVOLUME         1.0
 TRANSPORTVELOCITYFORMULATION    StandardTransportVelocity
 NO_RELVEL_TERM                  yes
 ----------------------------PARTICLE DYNAMIC/INITIAL AND BOUNDARY CONDITIONS

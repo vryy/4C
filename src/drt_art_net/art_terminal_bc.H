@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief Method to deal with one dimensional artery inlet bcs
 
 \maintainer Johannes Kremheller

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief defining enums of particle states
 
 \level 3
@@ -56,7 +56,7 @@ namespace PARTICLEENGINE
     LastIterAcceleration,
     LastIterAngularVelocity,
     LastIterAngularAcceleration,
-    LastIterModifiedAcceleration,
+    LastIterModifiedAcceleration
   };
 
   //! get dimension of particle state

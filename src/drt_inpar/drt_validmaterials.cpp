@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \maintainer Martin Kronbichler
 
 \brief Setup of the list of valid materials for input
@@ -116,6 +116,21 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(m, "COEFFDENSITY", "density-pressure coefficient");
     AddNamedReal(m, "COEFFVISCOSITY", "viscosity-pressure coefficient");
     AddNamedReal(m, "GAMMA", "surface tension coefficient", 0.0, true);
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // Weakly compressible fluid
+  {
+    Teuchos::RCP<MaterialDefinition> m =
+        Teuchos::rcp(new MaterialDefinition("MAT_fluid_weakly_compressible",
+            "Weakly compressible fluid", INPAR::MAT::m_fluid_weakly_compressible));
+
+    AddNamedReal(m, "VISCOSITY", "viscosity");
+    AddNamedReal(m, "REFDENSITY", "reference density");
+    AddNamedReal(m, "REFPRESSURE", "reference pressure");
+    AddNamedReal(m, "COMPRCOEFF", "compressibility coefficient");
 
     AppendMaterialDefinition(matlist, m);
   }
@@ -2087,7 +2102,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(m, "DENS", "density of blood");
     AddNamedReal(m, "YOUNG", "artery Youngs modulus of elasticity");
     AddNamedReal(m, "NUE", "Poissons ratio of artery fiber");
-    AddNamedReal(m, "DIAM", "artery initial diameter");
     AddNamedReal(m, "TH", "artery thickness");
     AddNamedReal(m, "PEXT1", "artery fixed external pressure 1");
     AddNamedReal(m, "PEXT2", "artery fixed external pressure 2");
@@ -2282,6 +2296,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedInt(m, "SCALAR1", "number of growth inducing scalar");
     AddNamedReal(m, "SCALAR1_GrowthFac", "isotropic growth factor due to scalar 1");
     AddNamedReal(m, "SCALAR1_RefConc", "reference concentration of scalar 1 causing no strains");
+    AddNamedInt(m, "MATID", "material ID of the corresponding scatra material");
 
     AppendMaterialDefinition(matlist, m);
   }
@@ -2303,6 +2318,54 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedInt(m, "NUMSPACEDIM", "Number of space dimension (only 3 valid)");
     AddNamedRealVector(
         m, "GrowthDirection", "vector that defines the growth direction", "NUMSPACEDIM");
+    AddNamedInt(m, "MATID", "material ID of the corresponding scatra material");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // non-linear isotropic volumetric growth; growth is dependent on
+  // scalar mapped to material configuration, constant material density, nonlinear behavior
+  // prescribed by polynomial in input file
+  {
+    Teuchos::RCP<MaterialDefinition> m =
+        Teuchos::rcp(new MaterialDefinition("MAT_InelasticDefgradPolyScalarIso",
+            "scalar dependent isotropic growth law; volume change nonlinearly dependent on scalar"
+            "(in material configuration)",
+            INPAR::MAT::mfi_poly_scalar_iso));
+
+    AddNamedInt(m, "SCALAR1", "number of growth inducing scalar");
+    AddNamedReal(m, "SCALAR1_RefConc", "reference concentration of scalar 1 causing no strains");
+    AddNamedInt(m, "POLY_PARA_NUM", "number of polynomial coefficients");
+    AddNamedRealVector(m, "POLY_PARAMS", "coefficients of polynomial", "POLY_PARA_NUM");
+    AddNamedReal(m, "X_min", "lower bound of validity of polynomial");
+    AddNamedReal(m, "X_max", "upper bound of validity of polynomial");
+    AddNamedInt(m, "MATID", "material ID of the corresponding scatra material");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // non-linear anisotropic volumetric growth; growth direction prescribed in input-file;
+  // growth is dependent on a scalar mapped to material configuration, constant material
+  // density, nonlinear behavior prescribed by polynomial in input file
+  {
+    Teuchos::RCP<MaterialDefinition> m =
+        Teuchos::rcp(new MaterialDefinition("MAT_InelasticDefgradPolyScalarAniso",
+            "scalar dependent anisotropic growth law; growth in direction as given in input-file; "
+            "volume change linearly dependent on scalar (in material configuration)",
+            INPAR::MAT::mfi_poly_scalar_aniso));
+
+    AddNamedInt(m, "SCALAR1", "number of growth inducing scalar");
+    AddNamedReal(m, "SCALAR1_RefConc", "reference concentration of scalar 1 causing no strains");
+    AddNamedInt(m, "NUMSPACEDIM", "Number of space dimension (only 3 valid)");
+    AddNamedRealVector(
+        m, "GrowthDirection", "vector that defines the growth direction", "NUMSPACEDIM");
+    AddNamedInt(m, "POLY_PARA_NUM", "number of polynomial coefficients");
+    AddNamedRealVector(m, "POLY_PARAMS", "coefficients of polynomial", "POLY_PARA_NUM");
+    AddNamedReal(m, "X_min", "lower bound of validity of polynomial");
+    AddNamedReal(m, "X_max", "upper bound of validity of polynomial");
+    AddNamedInt(m, "MATID", "material ID of the corresponding scatra material");
 
     AppendMaterialDefinition(matlist, m);
   }
@@ -3471,6 +3534,19 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
+  // particle wall material dem
+  {
+    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+        "MAT_ParticleWallDEM", "particle wall material for DEM", INPAR::MAT::m_particle_wall_dem));
+
+    AddNamedReal(m, "FRICT_COEFF_TANG", "friction coefficient for tangential contact", -1.0, true);
+    AddNamedReal(m, "FRICT_COEFF_ROLL", "friction coefficient for rolling contact", -1.0, true);
+    AddNamedReal(m, "ADHESION_SURFACE_ENERGY", "adhesion surface energy", -1.0, true);
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // acoustic material
   {
     Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(
@@ -3564,6 +3640,44 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
     AddNamedInt(m, "IDMATELAST", "number of elastic material in input file");
     AddNamedReal(m, "VISC", "Viscosity mu of isotropic viscous part 2*mu*I");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // General mixture models (used for prestretching and for homogenized constrained mixture models)
+  {
+    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+        "MAT_MixtureElastHyper", "General mixture model", INPAR::MAT::m_mixture_elasthyper));
+
+    AddNamedReal(m, "DENS", "");
+    AddNamedInt(m, "NUMCONST", "number of mixture constituents");
+    AddNamedIntVector(
+        m, "MATIDSCONST", "list material IDs of the mixture constituents", "NUMCONST");
+    AddNamedRealVector(
+        m, "MASSFRAC", "list mass fractions of the mixture constituents", "NUMCONST");
+    AddNamedInt(m, "MATIDMIXTURELAW", "material id of the mixture law");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // Mixture constituent for ElastHyper toolbox
+  {
+    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+        "MIX_Constituent_ElastHyper", "ElastHyper toolbox", INPAR::MAT::mix_elasthyper));
+
+    AddNamedInt(m, "NUMMAT", "number of summands");
+    AddNamedIntVector(m, "MATIDS", "list material IDs of the summands", "NUMMAT");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // Base mixture rule for solid mixtures
+  {
+    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(
+        new MaterialDefinition("MIX_Rule_Base", "Base mixture rule", INPAR::MAT::mix_rule_base));
 
     AppendMaterialDefinition(matlist, m);
   }

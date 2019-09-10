@@ -1,4 +1,5 @@
-/*!
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief Meshtying element for meshtying between a 3D beam and a 3D solid element using mortar shape
 functions for the traction.
@@ -94,9 +95,9 @@ namespace BEAMINTERACTION
      * @param r_solid (in) Position on the solid.
      * @param force (out) Return 0 by default.
      */
-    void EvaluatePenaltyForce(const LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& r_beam,
-        const LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& r_solid,
-        LINALG::TMatrix<TYPE_BTS_VMT_AD, 3, 1>& force) const override;
+    void EvaluatePenaltyForce(const LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_beam,
+        const LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& r_solid,
+        LINALG::Matrix<3, 1, TYPE_BTS_VMT_AD>& force) const override;
   };
 }  // namespace BEAMINTERACTION
 

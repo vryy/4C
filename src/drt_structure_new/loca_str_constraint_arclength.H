@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Implementation of LOCA::MultiContinuation::ConstraintInterfaceMVDX for arc-length
 continuation.

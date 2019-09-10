@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/**
+/** \file
 \brief NOX interface implementation for the xcontact level-set elliptical
        reinitialization algorithm
 

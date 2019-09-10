@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief implementation of evaluation routines of porofluidmultiphase boundary element
 
    \level 3
@@ -229,16 +229,12 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateNeumann(
     double functfac = 1.0;
 
     // determine global coordinates of current Gauss point
-    double coordgp[3];  // we always need three coordinates for function evaluation!
-    for (int i = 0; i < 3; ++i) coordgp[i] = 0.;
-    for (int i = 0; i < nsd_; ++i)
-    {
-      coordgp[i] = 0.;
-      for (int j = 0; j < nen_; ++j) coordgp[i] += xyze_(i, j) * funct_(j);
-    }
+    const int nsd_vol_ele = nsd_ + 1;
+    LINALG::Matrix<nsd_vol_ele, 1> coordgp;  // coordinate has always to be given in 3D!
+    coordgp.MultiplyNN(xyze_, funct_);
 
     int functnum = -1;
-    const double* coordgpref = &coordgp[0];  // needed for function evaluation
+    const double* coordgpref = &coordgp(0);  // needed for function evaluation
 
     for (int dof = 0; dof < numdofpernode_; ++dof)
     {

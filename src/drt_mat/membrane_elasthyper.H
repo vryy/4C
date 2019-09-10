@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief hyperelastic toolbox for membranes assuming incompressibility and plane stress
 
 The input line should read

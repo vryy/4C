@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief pyramid shaped solid element
 \level 2
 
@@ -41,6 +42,10 @@ bool DRT::ELEMENTS::So_pyramid5::ReadElement(
 
   // check if material kinematics is compatible to element kinematics
   SolidMaterial()->ValidKinematics(kintype_);
+
+  // Validate that materials doesn't use extended update call.
+  if (SolidMaterial()->UsesExtendedUpdate())
+    dserror("This element currently does not support the extended update call.");
 
   // only for linear SVK materials and small strain plastic materials
   bool admissibl_mat = false;

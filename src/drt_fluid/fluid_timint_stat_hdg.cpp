@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Stationary fluid problem with HDG discretization
 
@@ -23,6 +23,7 @@
 #include "../drt_lib/drt_discret_hdg.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_fluid_ele/fluid_ele_hdg.H"
+#include "../drt_fluid_ele/fluid_ele_hdg_weak_comp.H"
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_dofset_predefineddofnumber.H"
 

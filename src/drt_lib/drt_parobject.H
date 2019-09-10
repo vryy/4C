@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief functionality to pack, unpack and communicate classes with MPI
 

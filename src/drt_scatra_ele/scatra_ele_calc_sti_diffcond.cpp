@@ -1,5 +1,5 @@
 /*--------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief evaluate heat transport within binary, concentrated electrolytes on element level
 

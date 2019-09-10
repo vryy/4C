@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief particle engine to control particle simulations
 
 \level 3
@@ -75,8 +75,8 @@ namespace PARTICLEENGINE
     void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader,
         std::vector<ParticleObjShrdPtr>& particlestoread) const;
 
-    //! write particle runtime vtp output
-    void WriteParticleRuntimeVtpOutput(const int step, const double time) const;
+    //! write particle runtime output
+    void WriteParticleRuntimeOutput(const int step, const double time) const;
 
     //! erase particles outside bounding box
     void EraseParticlesOutsideBoundingBox(std::vector<ParticleObjShrdPtr>& particlestocheck);

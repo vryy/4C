@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/**
+/** \file
 \brief wrapper of the discretizations involved in a xcontact simulation
 
 \maintainer Matthias Mayr

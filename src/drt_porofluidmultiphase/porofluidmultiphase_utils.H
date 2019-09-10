@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief helper methods/classes for multiphase porous fluid flow problems
 
    \level 3

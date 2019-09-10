@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/**
+/** \file
 
 \brief Implementation of a multi discretization wrapper for eXtended structural
        problems

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief
 This file contains the routines required to calculate the isochoric contribution
 of a general power-type material.
@@ -8,7 +8,7 @@ The input line should read
 
 \level 1
 
-\maintainer Fabian Braeu
+\maintainer Amadeus Gebauer
 */
 /*----------------------------------------------------------------------*/
 /* macros */

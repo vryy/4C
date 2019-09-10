@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief
 Anisotropic viscohyperelastic material
 The input line should read
@@ -7,7 +8,7 @@ BETA_ISO 1.E4 BETA_ANISO 1.E4 RELAX_ISO 0.0010001 RELAX_ANISO 0
 
 \level 2
 
-\maintainer Fabian Braeu
+\maintainer Amadeus Gebauer
 *----------------------------------------------------------------------*/
 #ifndef VISCOANISOTROPIC_H_
 #define VISCOANISOTROPIC_H_

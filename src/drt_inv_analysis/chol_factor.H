@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Cholesky factorization using Epetra_SerialSpdDenseSolver
 
 \level 3

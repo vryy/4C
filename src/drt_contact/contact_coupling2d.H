@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Classes for mortar contact coupling in 2D.
 
 \level 2

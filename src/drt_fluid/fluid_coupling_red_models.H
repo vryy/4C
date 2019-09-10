@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Method to deal with coupling between 3D fluid and 0/1D vascular
 problem

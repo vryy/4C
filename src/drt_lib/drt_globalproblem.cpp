@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief global list of problems
 
@@ -47,7 +47,7 @@
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mat/newman_multiscale.H"
 #include "../drt_mat/scatra_mat_multiscale.H"
-#include "../drt_lib/drt_utils_parmetis.H"
+#include "../drt_lib/drt_utils_rebalancing.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_comm/comm_utils.H"
 #include "../drt_immersed_problem/immersed_discretization.H"
@@ -397,7 +397,6 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--ACOUSTIC DYNAMIC/PA IMAGE RECONSTRUCTION", *list);
   reader.ReadGidSection("--ELECTROMAGNETIC DYNAMIC", *list);
   reader.ReadGidSection("--VOLMORTAR COUPLING", *list);
-  reader.ReadGidSection("--NONLINEAR SOLVER", *list);
   reader.ReadGidSection("--TUTORIAL DYNAMIC", *list);
   reader.ReadGidSection("--TUTORIAL DYNAMIC/NONLINEAR TRUSS", *list);
   reader.ReadGidSection("--TUTORIAL DYNAMIC/FIXED POINT SCHEME", *list);
@@ -1029,8 +1028,12 @@ void DRT::Problem::OpenControlFile(
   outputcontrol_ = Teuchos::rcp(new IO::OutputControl(comm, ProblemName(), SpatialApproximation(),
       inputfile, restartkenner, prefix, NDim(), Restart(), IOParams().get<int>("FILESTEPS"),
       DRT::INPUT::IntegralValue<int>(IOParams(), "OUTPUT_BIN"), true));
-  if (!DRT::INPUT::IntegralValue<int>(IOParams(), "OUTPUT_BIN"))
-    IO::cout << " Warning no binary Output will be written " << IO::endl;
+
+  if (!DRT::INPUT::IntegralValue<int>(IOParams(), "OUTPUT_BIN") && comm.MyPID() == 0)
+    IO::cout << "==================================================\n"
+             << "=== WARNING: No binary output will be written. ===\n"
+             << "==================================================\n"
+             << IO::endl;
 }
 
 
@@ -1467,7 +1470,12 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     case prb_fluid_ale:
     case prb_freesurf:
     {
-      if (distype == "Nurbs")
+      if (distype == "HDG")
+      {
+        fluiddis = Teuchos::rcp(new DRT::DiscretizationHDG("fluid", reader.Comm()));
+        aledis = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm()));
+      }
+      else if (distype == "Nurbs")
       {
         fluiddis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("fluid", reader.Comm()));
         aledis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("ale", reader.Comm()));
@@ -2465,7 +2473,8 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
 
   // repartition macro problem for a good distribution of elements with micro material
   if (macro_dis_name == "structure")
-    DRT::UTILS::WeightedRepartitioning(macro_dis, true, true, true);
+    DRT::UTILS::REBALANCING::RedistributeAndFillCompleteDiscretizationUsingWeights(
+        macro_dis, true, true, true);
 
   // make sure that we read the micro discretizations only on the processors on
   // which elements with the corresponding micro material are evaluated

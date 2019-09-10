@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief A 2D wall element for solid-part of porous medium using p1 (mixed) approach including scatra
 functionality
 

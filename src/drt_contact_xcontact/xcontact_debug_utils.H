@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/**
+/** \file
 \brief contains mainly debugging methods for the xcontact contact classes
 
 \maintainer Matthias Mayr
@@ -100,12 +100,12 @@ namespace XCONTACT
 #endif
     }
 
-    /** \brief Sanity check, that the LINALG::TMatrix was correctly zeroized
+    /** \brief Sanity check, that the LINALG::Matrix was correctly zeroized
      *
      *  \author hiermeier
      *  \date 08/16 */
     template <unsigned dim_1, unsigned dim_2, unsigned dim_3, unsigned dim_4>
-    inline void CheckIsZero(const LINALG::TMatrix<LINALG::Matrix<dim_1, dim_2>, dim_3, dim_4>& mat)
+    inline void CheckIsZero(const LINALG::Matrix<dim_3, dim_4, LINALG::Matrix<dim_1, dim_2>>& mat)
     {
 #ifdef DEBUG
       for (unsigned r = 0; r < dim_3; ++r)

@@ -1,11 +1,11 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief  norms and tolerances for wear algorithm
 
 \level 1
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 

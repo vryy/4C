@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Structural adapter for FSI problems containing the interface
        and methods dependent on the interface

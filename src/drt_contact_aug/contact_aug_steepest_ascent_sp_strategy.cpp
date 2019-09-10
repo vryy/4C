@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 \brief Some special solution strategy
 
 \maintainer Matthias Mayr

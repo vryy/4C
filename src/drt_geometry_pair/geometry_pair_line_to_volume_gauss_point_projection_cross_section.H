@@ -1,4 +1,5 @@
-/*!
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief Line to volume interaction with Gauss point projection on the cylinder surface along the
 line.
@@ -61,8 +62,8 @@ namespace GEOMETRYPAIR
      * @param q_volume (in) Degrees of freedom for the volume.
      * @param segments (out) Vector with the segments of this line to volume pair.
      */
-    void PreEvaluate(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
-        const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
+    void PreEvaluate(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+        const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
         std::vector<LineSegment<scalar_type>>& segments) const override;
 
     /**
@@ -72,8 +73,8 @@ namespace GEOMETRYPAIR
      * @param q_volume (in) Degrees of freedom for the volume.
      * @param segments (out) Vector with the segments of this line to volume pair.
      */
-    void Evaluate(const LINALG::TMatrix<scalar_type, line::n_dof_, 1>& q_line,
-        const LINALG::TMatrix<scalar_type, volume::n_dof_, 1>& q_volume,
+    void Evaluate(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+        const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
         std::vector<LineSegment<scalar_type>>& segments) const override;
 
    private:

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Global utility file for the augmented contact formulation
 
 \level 3

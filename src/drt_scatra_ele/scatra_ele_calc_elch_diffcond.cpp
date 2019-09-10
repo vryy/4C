@@ -1,5 +1,5 @@
 /*--------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief evaluation of scatra elements for isothermal diffusion-conduction ion-transport equations
 

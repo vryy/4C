@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief BGS preconditioner for volume-coupled FSI
 \level 2
 \maintainer Matthias Mayr

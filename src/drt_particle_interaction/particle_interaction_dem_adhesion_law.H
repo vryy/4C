@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief adhesion law handler for discrete element method (DEM) interactions
 
 \level 3
@@ -79,7 +79,7 @@ namespace PARTICLEINTERACTION
     //! shift van-der-Waals-curve to g = 0
     const bool adhesion_vdW_curve_shift_;
 
-    //! inverse normal contact stiffness (particle-particle)
+    //! inverse normal contact stiffness
     double inv_k_normal_;
   };
 
@@ -104,8 +104,8 @@ namespace PARTICLEINTERACTION
     void CalculateIntersectionGap(
         double a, double b, double c, double d, double& gap_intersect) const;
 
-    //! depth of Lennard-Jones adhesion potential well
-    const double adhesion_normal_eps_;
+    //! hamaker constant
+    const double hamaker_constant;
   };
 
   class DEMAdhesionLawRegDMT : public DEMAdhesionLawBase

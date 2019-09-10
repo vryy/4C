@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief
 This file contains the routines required to calculate the isochoric contribution
 of an exponential material.
@@ -9,7 +9,7 @@ C = Exponent D
 
 \level 1
 
-\maintainer Fabian Braeu
+\maintainer Amadeus Gebauer
 
 *----------------------------------------------------------------------*/
 #ifndef ELAST_ISOEXPOPOW_H_

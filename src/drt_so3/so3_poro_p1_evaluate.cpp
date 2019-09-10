@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
  \brief evaluate methods for porous media using the p1 approach (mixed approach)
 

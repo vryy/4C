@@ -1,11 +1,11 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Solid Hex8 element with F-bar modification
 
 \level 1
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 #ifndef SOH8FBAR_H

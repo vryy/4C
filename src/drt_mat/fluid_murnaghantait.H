@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Weakly compressible fluid according to Murnaghan-Tait
 
 \level 1

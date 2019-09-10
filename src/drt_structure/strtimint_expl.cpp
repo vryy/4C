@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Explicit time integration for structural dynamics
 
 \level 1
 
-\maintainer Alexander Popp
+\maintainer Matthias Mayr
 */
 
 /*----------------------------------------------------------------------*/

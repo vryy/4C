@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Evaluation on the boundary lines of a wall1 element.
 
 \level 1

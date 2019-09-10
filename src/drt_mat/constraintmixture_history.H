@@ -1,11 +1,11 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief This file contains the history class of the constraintmixture material
 
 
 \level 2
 
-\maintainer Fabian Braeu
+\maintainer Amadeus Gebauer
 
 */
 /*----------------------------------------------------------------------------*/

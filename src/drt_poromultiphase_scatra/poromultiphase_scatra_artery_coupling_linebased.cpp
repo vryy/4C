@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief base algorithm for line-based (non-conforming) coupling between
         poromultiphase_scatra-framework and flow in artery networks
         including scalar transport

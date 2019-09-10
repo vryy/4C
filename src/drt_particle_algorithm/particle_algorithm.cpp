@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief algorithm to control particle simulations
 
 \level 3
@@ -19,10 +19,8 @@
 #include "particle_input_generator.H"
 #include "particle_gravity.H"
 #include "particle_viscous_damping.H"
-#include "particle_wall.H"
 #include "particle_initial_field.H"
 #include "particle_result_test.H"
-#include "particle_wall_result_test.H"
 
 #include "../drt_particle_interaction/particle_interaction_base.H"
 #include "../drt_particle_interaction/particle_interaction_sph.H"
@@ -32,6 +30,9 @@
 #include "../drt_particle_engine/particle_communication_utils.H"
 #include "../drt_particle_engine/particle_object.H"
 #include "../drt_particle_engine/particle_container.H"
+
+#include "../drt_particle_wall/particle_wall.H"
+#include "../drt_particle_wall/particle_wall_result_test.H"
 
 #include "../drt_inpar/inpar_particle.H"
 
@@ -140,8 +141,17 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Setup()
   // setup initial particles
   SetupInitialParticles();
 
-  // setup initial wall distribution
-  if (particlewall_) SetupInitalWallDistribution();
+  // distribute load among processors
+  DistributeLoadAmongProcs();
+
+  // ghost particles on other processors
+  particleengine_->GhostParticles();
+
+  // build global id to local index map
+  particleengine_->BuildGlobalIDToLocalIndexMap();
+
+  // build potential neighbor relation
+  if (particleinteraction_) BuildPotentialNeighborRelation();
 
   // setup initial states
   if (not isrestarted_) SetupInitialStates();
@@ -233,6 +243,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::PrepareTimeStep(bool print_header)
   // update result and restart control flags
   writeresultsthisstep_ = (writeresultsevery_ and (Step() % writeresultsevery_ == 0));
   writerestartthisstep_ = (writerestartevery_ and (Step() % writerestartevery_ == 0));
+
+  // set current write result flag
+  SetCurrentWriteResultFlag();
 }
 
 /*---------------------------------------------------------------------------*
@@ -269,14 +282,17 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Output() const
   // write result step
   if (writeresultsthisstep_)
   {
-    // write particle runtime vtp output
-    particleengine_->WriteParticleRuntimeVtpOutput(Step(), Time());
+    // write particle runtime output
+    particleengine_->WriteParticleRuntimeOutput(Step(), Time());
 
     // write binning discretization output (debug feature)
     particleengine_->WriteBinDisOutput(Step(), Time());
 
-    // write wall runtime vtu output
-    if (particlewall_) particlewall_->WriteWallRuntimeVtuOutput(Step(), Time());
+    // write interaction runtime output
+    if (particleinteraction_) particleinteraction_->WriteInteractionRuntimeOutput(Step(), Time());
+
+    // write wall runtime output
+    if (particlewall_) particlewall_->WriteWallRuntimeOutput(Step(), Time());
   }
 
   // write restart step
@@ -332,8 +348,8 @@ PARTICLEALGORITHM::ParticleAlgorithm::CreateResultTests()
   if (particlewall_)
   {
     // create and init wall result test
-    std::shared_ptr<PARTICLEALGORITHM::WallResultTest> wallresulttest =
-        std::make_shared<PARTICLEALGORITHM::WallResultTest>();
+    std::shared_ptr<PARTICLEWALL::WallResultTest> wallresulttest =
+        std::make_shared<PARTICLEWALL::WallResultTest>();
     wallresulttest->Init();
 
     // setup wall result test
@@ -370,18 +386,17 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleWall()
   {
     case INPAR::PARTICLE::NoParticleWall:
     {
-      particlewall_ = std::shared_ptr<PARTICLEALGORITHM::WallHandlerBase>(nullptr);
+      particlewall_ = std::shared_ptr<PARTICLEWALL::WallHandlerBase>(nullptr);
       break;
     }
     case INPAR::PARTICLE::DiscretCondition:
     {
-      particlewall_ =
-          std::make_shared<PARTICLEALGORITHM::WallHandlerDiscretCondition>(Comm(), params_);
+      particlewall_ = std::make_shared<PARTICLEWALL::WallHandlerDiscretCondition>(Comm(), params_);
       break;
     }
     case INPAR::PARTICLE::BoundingBox:
     {
-      particlewall_ = std::make_shared<PARTICLEALGORITHM::WallHandlerBoundingBox>(Comm(), params_);
+      particlewall_ = std::make_shared<PARTICLEWALL::WallHandlerBoundingBox>(Comm(), params_);
       break;
     }
     default:
@@ -600,43 +615,8 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialParticles()
   // distribute particles to owning processor
   particleengine_->DistributeParticles(particlestodistribute_);
 
-  // dynamic load balancing
-  particleengine_->DynamicLoadBalancing();
-
-  // get number of particles on this processor
-  numparticlesafterlastloadbalance_ = particleengine_->GetNumberOfParticles();
-
-  // ghost particles on other processors
-  particleengine_->GhostParticles();
-
-  // build particle to particle neighbors
-  if (particleinteraction_) particleengine_->BuildParticleToParticleNeighbors();
-
   // distribute interaction history
   if (particleinteraction_) particleinteraction_->DistributeInteractionHistory();
-
-  // build global id to local index map
-  particleengine_->BuildGlobalIDToLocalIndexMap();
-}
-
-/*---------------------------------------------------------------------------*
- | setup initial wall distribution                            sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitalWallDistribution()
-{
-  // update bin row and column map
-  particlewall_->UpdateBinRowAndColMap(
-      particleengine_->GetBinRowMap(), particleengine_->GetBinColMap());
-
-  // distribute wall elements and nodes
-  particlewall_->DistributeWallElementsAndNodes();
-
-  // relate bins to column wall elements
-  particlewall_->RelateBinsToColWallEles();
-
-  // build particle to wall neighbors
-  if (particleinteraction_)
-    particlewall_->BuildParticleToWallNeighbors(particleengine_->GetParticlesToBins());
 }
 
 /*---------------------------------------------------------------------------*
@@ -721,78 +701,29 @@ void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity");
 
-  // check particle transfer including bin size safety checks
-  bool transferneeded = CheckParticleTransfer();
-
-  // check for valid particle connectivity
-  bool invalidparticleconnectivity = (not particleengine_->HaveValidParticleConnectivity());
-
-  // check for valid particle neighbors
-  bool invalidparticleneighbors = false;
+  // check particle interaction distance concerning bin size
   if (particleinteraction_)
-    invalidparticleneighbors = (not particleengine_->HaveValidParticleNeighbors());
+    particleinteraction_->CheckParticleInteractionDistanceConcerningBinSize();
 
-  if (transferevery_ or transferneeded or writeresultsthisstep_ or writerestartthisstep_ or
-      invalidparticleconnectivity or invalidparticleneighbors)
+  // check that wall nodes are located in bounding box
+  if (particlewall_) particlewall_->CheckWallNodesLocatedInBoundingBox();
+
+  if (CheckLoadTransferNeeded())
   {
-    // transfer particles to new bins and processors
-    particleengine_->TransferParticles();
+    // transfer load between processors
+    TransferLoadBetweenProcs();
 
-    // transfer wall elements and nodes
-    if (particlewall_) particlewall_->TransferWallElementsAndNodes();
-
-    // communicate interaction history
-    if (particleinteraction_) particleinteraction_->CommunicateInteractionHistory();
-
-    // check load balancing
-    bool loadbalanceneeded = CheckLoadBalancing();
-
-    if (loadbalanceneeded or writerestartthisstep_)
-    {
-      // dynamic load balancing
-      particleengine_->DynamicLoadBalancing();
-
-      // communicate interaction history
-      if (particleinteraction_) particleinteraction_->CommunicateInteractionHistory();
-
-      // get number of particles on this processor
-      numparticlesafterlastloadbalance_ = particleengine_->GetNumberOfParticles();
-
-      if (particlewall_)
-      {
-        // update bin row and column map
-        particlewall_->UpdateBinRowAndColMap(
-            particleengine_->GetBinRowMap(), particleengine_->GetBinColMap());
-
-        // distribute wall elements and nodes
-        particlewall_->DistributeWallElementsAndNodes();
-      }
-    }
+    // distribute load among processors
+    if (CheckLoadRedistributionNeeded()) DistributeLoadAmongProcs();
 
     // ghost particles on other processors
     particleengine_->GhostParticles();
 
-    // build particle to particle neighbors
-    if (particleinteraction_) particleengine_->BuildParticleToParticleNeighbors();
-
-    // relate bins to column wall elements
-    if (particlewall_) particlewall_->RelateBinsToColWallEles();
-
-    // build particle to wall neighbors
-    if (particleinteraction_ and particlewall_)
-      particlewall_->BuildParticleToWallNeighbors(particleengine_->GetParticlesToBins());
-
     // build global id to local index map
     particleengine_->BuildGlobalIDToLocalIndexMap();
 
-    // short screen output
-    if (myrank_ == 0)
-    {
-      if (loadbalanceneeded or writerestartthisstep_)
-        IO::cout(IO::verbose) << "dynamic load balancing in step " << Step() << IO::endl;
-      else
-        IO::cout(IO::verbose) << "particle transfer in step " << Step() << IO::endl;
-    }
+    // build potential neighbor relation
+    if (particleinteraction_) BuildPotentialNeighborRelation();
   }
   else
   {
@@ -802,36 +733,39 @@ void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
 }
 
 /*---------------------------------------------------------------------------*
- | check particle transfer including bin size safety checks   sfuchs 06/2018 |
+ | check load transfer                                        sfuchs 08/2019 |
  *---------------------------------------------------------------------------*/
-bool PARTICLEALGORITHM::ParticleAlgorithm::CheckParticleTransfer()
+bool PARTICLEALGORITHM::ParticleAlgorithm::CheckLoadTransferNeeded()
+{
+  bool transferload = transferevery_ or writeresultsthisstep_ or writerestartthisstep_;
+
+  // check max position increment
+  transferload |= CheckMaxPositionIncrement();
+
+  // check for valid particle connectivity
+  transferload |= (not particleengine_->HaveValidParticleConnectivity());
+
+  // check for valid particle neighbors
+  if (particleinteraction_) transferload |= (not particleengine_->HaveValidParticleNeighbors());
+
+  // check for valid wall neighbors
+  if (particleinteraction_ and particlewall_)
+    transferload |= (not particlewall_->HaveValidWallNeighbors());
+
+  return transferload;
+}
+
+/*---------------------------------------------------------------------------*
+ | check max position increment                               sfuchs 08/2019 |
+ *---------------------------------------------------------------------------*/
+bool PARTICLEALGORITHM::ParticleAlgorithm::CheckMaxPositionIncrement()
 {
   // get maximum particle interaction distance
-  double maxinteractiondistance = 0.0;
+  double allprocmaxinteractiondistance = 0.0;
   if (particleinteraction_)
   {
-    double interactiondistance = particleinteraction_->MaxInteractionDistance();
-    Comm().MaxAll(&interactiondistance, &maxinteractiondistance, 1);
-  }
-
-  // bin size safety check
-  if (maxinteractiondistance > particleengine_->MinBinSize())
-    dserror("the particle interaction distance is larger than the minimal bin size (%f > %f)!",
-        maxinteractiondistance, particleengine_->MinBinSize());
-
-  // periodic length safety check
-  if (particleengine_->HavePBC())
-  {
-    // loop over all spatial directions
-    for (int dim = 0; dim < 3; ++dim)
-    {
-      // check for periodic boundary condition in current spatial direction
-      if (not particleengine_->HavePBC(dim)) continue;
-
-      // check periodic length in current spatial direction
-      if ((2.0 * maxinteractiondistance) > particleengine_->PBCDelta(dim))
-        dserror("particles are not allowed to interact directly and across the periodic boundary!");
-    }
+    double maxinteractiondistance = particleinteraction_->MaxInteractionDistance();
+    Comm().MaxAll(&maxinteractiondistance, &allprocmaxinteractiondistance, 1);
   }
 
   // get max particle position increment since last transfer
@@ -843,11 +777,16 @@ bool PARTICLEALGORITHM::ParticleAlgorithm::CheckParticleTransfer()
   if (particlewall_) particlewall_->GetMaxWallPositionIncrement(maxwallpositionincrement);
 
   // get max overall position increment since last transfer
-  double maxpositionincrement = std::max(maxparticlepositionincrement, maxwallpositionincrement);
+  const double maxpositionincrement =
+      std::max(maxparticlepositionincrement, maxwallpositionincrement);
+
+  // get allowed position increment
+  const double allowedpositionincrement =
+      0.5 * (particleengine_->MinBinSize() - allprocmaxinteractiondistance);
 
   // check if a particle transfer is needed based on a worst case scenario:
   // two particles approach each other with maximum position increment in one spatial dimension
-  return ((maxinteractiondistance + 2.0 * maxpositionincrement) > particleengine_->MinBinSize());
+  return (maxpositionincrement > allowedpositionincrement);
 }
 
 /*---------------------------------------------------------------------------*
@@ -904,10 +843,32 @@ void PARTICLEALGORITHM::ParticleAlgorithm::GetMaxParticlePositionIncrement(
 }
 
 /*---------------------------------------------------------------------------*
- | check load balancing                                       sfuchs 06/2018 |
+ | transfer load between processors                           sfuchs 08/2019 |
  *---------------------------------------------------------------------------*/
-bool PARTICLEALGORITHM::ParticleAlgorithm::CheckLoadBalancing()
+void PARTICLEALGORITHM::ParticleAlgorithm::TransferLoadBetweenProcs()
 {
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::ParticleAlgorithm::TransferLoadBetweenProcs");
+
+  // transfer particles to new bins and processors
+  particleengine_->TransferParticles();
+
+  // transfer wall elements and nodes
+  if (particlewall_) particlewall_->TransferWallElementsAndNodes();
+
+  // communicate interaction history
+  if (particleinteraction_) particleinteraction_->CommunicateInteractionHistory();
+
+  // short screen output
+  if (myrank_ == 0) IO::cout(IO::verbose) << "transfer load in step " << Step() << IO::endl;
+}
+
+/*---------------------------------------------------------------------------*
+ | check load redistribution                                  sfuchs 08/2019 |
+ *---------------------------------------------------------------------------*/
+bool PARTICLEALGORITHM::ParticleAlgorithm::CheckLoadRedistributionNeeded()
+{
+  bool redistributeload = writerestartthisstep_;
+
   // percentage limit
   const double percentagelimit = 0.1;
 
@@ -925,11 +886,60 @@ bool PARTICLEALGORITHM::ParticleAlgorithm::CheckLoadBalancing()
   double maxpercentagechange = 0.0;
   Comm().MaxAll(&percentagechange, &maxpercentagechange, 1);
 
-  // check if dynamic load balance is needed based on the maximum percentage change of the number of
-  // particles on one processor
-  bool loadbalanceneeded = (maxpercentagechange > percentagelimit);
+  // criterion for load redistribution based on maximum percentage change of the number of particles
+  redistributeload |= (maxpercentagechange > percentagelimit);
 
-  return loadbalanceneeded;
+  return redistributeload;
+}
+
+/*---------------------------------------------------------------------------*
+ | distribute load among processors                           sfuchs 08/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::ParticleAlgorithm::DistributeLoadAmongProcs()
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::ParticleAlgorithm::DistributeLoadAmongProcs");
+
+  // dynamic load balancing
+  particleengine_->DynamicLoadBalancing();
+
+  // get number of particles on this processor
+  numparticlesafterlastloadbalance_ = particleengine_->GetNumberOfParticles();
+
+  if (particlewall_)
+  {
+    // update bin row and column map
+    particlewall_->UpdateBinRowAndColMap(
+        particleengine_->GetBinRowMap(), particleengine_->GetBinColMap());
+
+    // distribute wall elements and nodes
+    particlewall_->DistributeWallElementsAndNodes();
+  }
+
+  // communicate interaction history
+  if (particleinteraction_) particleinteraction_->CommunicateInteractionHistory();
+
+  // short screen output
+  if (myrank_ == 0) IO::cout(IO::verbose) << "distribute load in step " << Step() << IO::endl;
+}
+
+/*---------------------------------------------------------------------------*
+ | build potential neighbor relation                          sfuchs 08/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::ParticleAlgorithm::BuildPotentialNeighborRelation()
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::ParticleAlgorithm::BuildPotentialNeighborRelation");
+
+  // build particle to particle neighbors
+  particleengine_->BuildParticleToParticleNeighbors();
+
+  if (particlewall_)
+  {
+    // relate bins to column wall elements
+    particlewall_->RelateBinsToColWallEles();
+
+    // build particle to wall neighbors
+    particlewall_->BuildParticleToWallNeighbors(particleengine_->GetParticlesToBins());
+  }
 }
 
 /*---------------------------------------------------------------------------*
@@ -969,6 +979,15 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetCurrentStepSize()
 {
   // set current step size in particle interaction
   if (particleinteraction_) particleinteraction_->SetCurrentStepSize(Dt());
+}
+
+/*---------------------------------------------------------------------------*
+ | set current write result flag                              sfuchs 08/2019 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::ParticleAlgorithm::SetCurrentWriteResultFlag()
+{
+  // set current write result flag in particle interaction
+  if (particleinteraction_) particleinteraction_->SetCurrentWriteResultFlag(writeresultsthisstep_);
 }
 
 /*---------------------------------------------------------------------------*

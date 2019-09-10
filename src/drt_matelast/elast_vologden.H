@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief
 This file contains the routines required for the volumetic function
 suggested by Ogden, see Doll, S. and Schweizerhof, K.
@@ -10,7 +10,7 @@ The input line should read
 
 \level 1
 
-\maintainer Fabian Braeu
+\maintainer Amadeus Gebauer
 
 *----------------------------------------------------------------------*/
 #ifndef ELAST_VOLOGDEN_H_

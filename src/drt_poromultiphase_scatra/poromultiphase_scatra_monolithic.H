@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
   \brief base class for monolithic algorithm for scalar transport within multiphase porous medium
 
    \level 3

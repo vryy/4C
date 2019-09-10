@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief neighbor pair handler for smoothed particle hydrodynamics (SPH) interactions
 
 \level 3
@@ -36,6 +36,11 @@ namespace PARTICLEENGINE
   class ParticleContainerBundle;
 }  // namespace PARTICLEENGINE
 
+namespace PARTICLEWALL
+{
+  class WallHandlerInterface;
+}
+
 namespace PARTICLEINTERACTION
 {
   class SPHKernelBase;
@@ -47,6 +52,7 @@ namespace PARTICLEINTERACTION
 namespace PARTICLEINTERACTION
 {
   typedef std::vector<PARTICLEINTERACTION::SPHParticlePair> SPHParticlePairData;
+  typedef std::vector<PARTICLEINTERACTION::SPHParticleWallPair> SPHParticleWallPairData;
   typedef std::vector<std::vector<int>> SPHIndexOfParticlePairs;
 }  // namespace PARTICLEINTERACTION
 
@@ -70,6 +76,7 @@ namespace PARTICLEINTERACTION
     //! setup neighbor pair handler
     void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
+        const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
         const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel);
 
     //! write restart of neighbor pair handler
@@ -84,6 +91,12 @@ namespace PARTICLEINTERACTION
       return particlepairdata_;
     };
 
+    //! get reference to particle-wall pair data
+    inline const SPHParticleWallPairData& GetRefToParticleWallPairData() const
+    {
+      return particlewallpairdata_;
+    };
+
     //! get relevant particle pair indices for particle types
     void GetRelevantParticlePairIndices(
         const std::set<PARTICLEENGINE::TypeEnum>& reltypes, std::vector<int>& relindices) const;
@@ -95,8 +108,14 @@ namespace PARTICLEINTERACTION
     //! evaluate particle pairs
     void EvaluateParticlePairs();
 
+    //! evaluate particle-wall pairs
+    void EvaluateParticleWallPairs();
+
     //! particle pair data with evaluated quantities
     SPHParticlePairData particlepairdata_;
+
+    //! particle-wall pair data with evaluated quantities
+    SPHParticleWallPairData particlewallpairdata_;
 
     //! index of particle pairs for each type
     SPHIndexOfParticlePairs indexofparticlepairs_;
@@ -106,6 +125,9 @@ namespace PARTICLEINTERACTION
 
     //! particle container bundle
     PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle_;
+
+    //! interface to particle wall handler
+    std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface_;
 
     //! kernel handler
     std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel_;

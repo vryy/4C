@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Concrete implementation of the structural and all related
        parameter interfaces.

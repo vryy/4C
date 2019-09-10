@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/**
+/** \file
 \brief partitioned algorithm for the inequality level-set approach for contact
        problems a.k.a. xcontact or extended contact
 

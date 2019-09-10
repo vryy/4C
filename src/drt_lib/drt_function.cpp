@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
-\brief Managing and evaluating of spatial functions
+\brief Managing and evaluating of space- and/or time-dependent functions
 
 \level 0
 
@@ -109,6 +109,39 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
 
   DRT::INPUT::LineDefinition bodyforcechannelweaklycompressiblefourier3;
   bodyforcechannelweaklycompressiblefourier3.AddTag("BODYFORCECHANNELWEAKLYCOMPRESSIBLEFOURIER3");
+
+  DRT::INPUT::LineDefinition weaklycompressiblepoiseuille;
+  weaklycompressiblepoiseuille.AddTag("WEAKLYCOMPRESSIBLE_POISEUILLE")
+      .AddNamedInt("MAT")
+      .AddNamedDouble("L")
+      .AddNamedDouble("R")
+      .AddNamedDouble("U");
+
+  DRT::INPUT::LineDefinition weaklycompressiblepoiseuilleforce;
+  weaklycompressiblepoiseuilleforce.AddTag("WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE")
+      .AddNamedInt("MAT")
+      .AddNamedDouble("L")
+      .AddNamedDouble("R")
+      .AddNamedDouble("U");
+
+  DRT::INPUT::LineDefinition weaklycompressiblemanufacturedflow;
+  weaklycompressiblemanufacturedflow.AddTag("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW")
+      .AddNamedInt("MAT");
+
+  DRT::INPUT::LineDefinition weaklycompressiblemanufacturedflowforce;
+  weaklycompressiblemanufacturedflowforce.AddTag("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE")
+      .AddNamedInt("MAT");
+
+  DRT::INPUT::LineDefinition weaklycompressibleetiennecfd;
+  weaklycompressibleetiennecfd.AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_CFD").AddNamedInt("MAT");
+
+  DRT::INPUT::LineDefinition weaklycompressibleetiennecfdforce;
+  weaklycompressibleetiennecfdforce.AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE")
+      .AddNamedInt("MAT");
+
+  DRT::INPUT::LineDefinition weaklycompressibleetiennecfdviscosity;
+  weaklycompressibleetiennecfdviscosity.AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY")
+      .AddNamedInt("MAT");
 
   DRT::INPUT::LineDefinition kimmoin;
   kimmoin.AddTag("KIM-MOIN");
@@ -225,6 +258,13 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(channelweaklycompressiblefourier3);
   lines->Add(correctiontermchannelweaklycompressiblefourier3);
   lines->Add(bodyforcechannelweaklycompressiblefourier3);
+  lines->Add(weaklycompressiblepoiseuille);
+  lines->Add(weaklycompressiblepoiseuilleforce);
+  lines->Add(weaklycompressiblemanufacturedflow);
+  lines->Add(weaklycompressiblemanufacturedflowforce);
+  lines->Add(weaklycompressibleetiennecfd);
+  lines->Add(weaklycompressibleetiennecfdforce);
+  lines->Add(weaklycompressibleetiennecfdviscosity);
   lines->Add(kimmoin);
   lines->Add(bochevup);
   lines->Add(bochevrhs);
@@ -305,6 +345,117 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
       {
         functions_.push_back(
             Teuchos::rcp(new FLD::BodyForceChannelWeaklyCompressibleFourier3Function()));
+      }
+      else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_POISEUILLE"))
+      {
+        // read data
+        int mat_id = -1;
+        double L = 0.0;
+        double R = 0.0;
+        double U = 0.0;
+
+        function->ExtractInt("MAT", mat_id);
+        function->ExtractDouble("L", L);
+        function->ExtractDouble("R", R);
+        function->ExtractDouble("U", U);
+
+        if (mat_id <= 0)
+          dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_POISEUILLE");
+        if (L <= 0) dserror("Please give a (reasonable) 'L' in WEAKLYCOMPRESSIBLE_POISEUILLE");
+        if (R <= 0) dserror("Please give a (reasonable) 'R' in WEAKLYCOMPRESSIBLE_POISEUILLE");
+        if (U <= 0) dserror("Please give a (reasonable) 'U' in WEAKLYCOMPRESSIBLE_POISEUILLE");
+
+        functions_.push_back(
+            Teuchos::rcp(new FLD::WeaklyCompressiblePoiseuilleFunction(mat_id, L, R, U)));
+      }
+      else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE"))
+      {
+        // read data
+        int mat_id = -1;
+        double L = 0.0;
+        double R = 0.0;
+        double U = 0.0;
+
+        function->ExtractInt("MAT", mat_id);
+        function->ExtractDouble("L", L);
+        function->ExtractDouble("R", R);
+        function->ExtractDouble("U", U);
+
+        if (mat_id <= 0)
+          dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE");
+        if (L <= 0)
+          dserror("Please give a (reasonable) 'L' in WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE");
+        if (R <= 0)
+          dserror("Please give a (reasonable) 'R' in WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE");
+        if (U <= 0)
+          dserror("Please give a (reasonable) 'U' in WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE");
+
+        functions_.push_back(
+            Teuchos::rcp(new FLD::WeaklyCompressiblePoiseuilleForceFunction(mat_id, L, R, U)));
+      }
+      else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW"))
+      {
+        // read data
+        int mat_id = -1;
+
+        function->ExtractInt("MAT", mat_id);
+
+        if (mat_id <= 0)
+          dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW");
+
+        functions_.push_back(
+            Teuchos::rcp(new FLD::WeaklyCompressibleManufacturedFlowFunction(mat_id)));
+      }
+      else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE"))
+      {
+        // read data
+        int mat_id = -1;
+
+        function->ExtractInt("MAT", mat_id);
+
+        if (mat_id <= 0)
+          dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE");
+
+        functions_.push_back(
+            Teuchos::rcp(new FLD::WeaklyCompressibleManufacturedFlowForceFunction(mat_id)));
+      }
+      else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_CFD"))
+      {
+        // read data
+        int mat_id = -1;
+
+        function->ExtractInt("MAT", mat_id);
+
+        if (mat_id <= 0)
+          dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD");
+
+        functions_.push_back(Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDFunction(mat_id)));
+      }
+      else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE"))
+      {
+        // read data
+        int mat_id = -1;
+
+        function->ExtractInt("MAT", mat_id);
+
+        if (mat_id <= 0)
+          dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE");
+
+        functions_.push_back(
+            Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDForceFunction(mat_id)));
+      }
+      else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY"))
+      {
+        // read data
+        int mat_id = -1;
+
+        function->ExtractInt("MAT", mat_id);
+
+        if (mat_id <= 0)
+          dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY");
+
+        functions_.push_back(
+            Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDViscosityFunction(mat_id)));
       }
       else if (function->HaveNamed("KIM-MOIN"))
       {

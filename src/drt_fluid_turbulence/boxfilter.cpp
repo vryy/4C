@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Filter routines for dynamic Smagorinsky and dynamic Vreman model
 

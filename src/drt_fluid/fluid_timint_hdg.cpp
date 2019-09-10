@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Basic HDG time-integration scheme
 
@@ -14,6 +14,7 @@
 #include "../drt_lib/drt_discret_hdg.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_fluid_ele/fluid_ele_hdg.H"
+#include "../drt_fluid_ele/fluid_ele_hdg_weak_comp.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_io/io.H"

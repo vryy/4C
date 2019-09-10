@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief stationary time integration scheme for level-set problems (for coupled problems only)
        just a dummy

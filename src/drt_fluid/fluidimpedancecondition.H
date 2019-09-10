@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief method to deal with three-element windkessel and other flow dependent pressure conditions
 

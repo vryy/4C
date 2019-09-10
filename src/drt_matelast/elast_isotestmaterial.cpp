@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief
 This file contains the routines required to calculate the isochoric contribution
 of a Material, which is not realistic, but contains all possible derivatives of invariants.
@@ -8,7 +8,7 @@ isochoric parts of the Elasthyper-Toolbox.
 
 \level 1
 
-\maintainer Fabian Braeu
+\maintainer Amadeus Gebauer
 
 *----------------------------------------------------------------------*/
 /* macros */

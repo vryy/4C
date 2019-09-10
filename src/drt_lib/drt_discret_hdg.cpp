@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief a class to manage an enhanced discretization including all faces for HDG
 
@@ -18,11 +18,14 @@
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_fluid_ele/fluid_ele_calc.H"
 #include "../drt_fluid_ele/fluid_ele_hdg.H"
+#include "../drt_fluid_ele/fluid_ele_hdg_weak_comp.H"
 #include "../drt_fluid_ele/fluid_ele_calc_hdg.H"
+#include "../drt_fluid_ele/fluid_ele_calc_hdg_weak_comp.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"
 #include "../drt_acou/acou_ele.H"
 #include "../drt_acou/acou_ele_action.H"
 #include "../drt_elemag/elemag_ele_action.H"
+#include "../drt_lib/drt_dofset_predefineddofnumber.H"
 
 #include "../linalg/linalg_utils.H"
 #include "../drt_inpar/inpar_fluid.H"
@@ -31,6 +34,7 @@
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/fluid_murnaghantait.H"
+#include "../drt_mat/fluid_weakly_compressible.H"
 
 
 DRT::DiscretizationHDG::DiscretizationHDG(const std::string name, Teuchos::RCP<Epetra_Comm> comm)
@@ -116,6 +120,39 @@ int DRT::DiscretizationHDG::FillComplete(
       f->second->SetParentMasterElement(f->second->ParentSlaveElement(),
           f->second->ParentSlaveElement() != NULL ? f->second->FaceSlaveNumber() : -1);
       f->second->SetParentSlaveElement(faceMaster, faceMasterNo);
+    }
+  }
+
+  // add dofsets:
+  // nds = 0 used for trace values
+  // nds = 1 used for interior values
+  // nds = 2 used for nodal ALE values
+  if (this->lRowElement(0)->ElementType().Name() == "FluidHDGWeakCompType")
+  {
+    // add nds 1
+    if (this->NumDofSets() == 1)
+    {
+      int ndof_ele = this->NumMyRowElements() > 0
+                         ? dynamic_cast<DRT::ELEMENTS::FluidHDGWeakComp*>(this->lRowElement(0))
+                               ->NumDofPerElementAuxiliary()
+                         : 0;
+      Teuchos::RCP<DRT::DofSetInterface> dofset_ele =
+          Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(0, ndof_ele, 0, false));
+
+      this->AddDofSet(dofset_ele);
+    }
+
+    // add nds 2
+    if (this->NumDofSets() == 2)
+    {
+      int ndof_node = this->NumMyRowElements() > 0
+                          ? dynamic_cast<DRT::ELEMENTS::FluidHDGWeakComp*>(this->lRowElement(0))
+                                ->NumDofPerNodeAuxiliary()
+                          : 0;
+      Teuchos::RCP<DRT::DofSetInterface> dofset_node =
+          Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(ndof_node, 0, 0, false));
+
+      this->AddDofSet(dofset_node);
     }
   }
 

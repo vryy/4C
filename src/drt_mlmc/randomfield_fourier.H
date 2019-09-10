@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Generate samples of (log)normal random fields based on a fourier series expansion.
 
 This particular type of expansion is taken from the PhD Thesis from Tamellini

@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Collection of a bunch of possible element functions/methods
        to pass information down to the structural elements and

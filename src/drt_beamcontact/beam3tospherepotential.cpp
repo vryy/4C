@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief One beam-to-sphere potential-based interacting pair
 
@@ -186,10 +186,10 @@ void CONTACT::Beam3tospherepotential<numnodes,
   std::vector<LINALG::Matrix<1, numnodes * numnodalvalues>> N1_i_xi(numgp);  // = N1_i,xi
 
   // coords and derivatives of the two gauss points
-  LINALG::TMatrix<TYPE, 3, 1> r1(true);    // = r1
-  LINALG::TMatrix<TYPE, 3, 1> r2(true);    // = r2
-  LINALG::TMatrix<TYPE, 3, 1> dist(true);  // = r1-r2
-  TYPE norm_dist = 0.0;                    // = |r1-r2|
+  LINALG::Matrix<3, 1, TYPE> r1(true);    // = r1
+  LINALG::Matrix<3, 1, TYPE> r2(true);    // = r2
+  LINALG::Matrix<3, 1, TYPE> dist(true);  // = r1-r2
+  TYPE norm_dist = 0.0;                   // = |r1-r2|
 
   // Evaluate shape functions at gauss points and store values
   GetShapeFunctions(N1_i, N1_i_xi, gausspoints);
@@ -206,7 +206,7 @@ void CONTACT::Beam3tospherepotential<numnodes,
   double q2 = chargeconds_[1]->GetDouble("val");
 
   // auxiliary variable
-  LINALG::TMatrix<TYPE, 3, 1> fpot_tmp(true);
+  LINALG::Matrix<3, 1, TYPE> fpot_tmp(true);
 
   // determine prefactor of the integral (depends on whether surface or volume potential is applied)
   double prefactor = k_ * m_;
@@ -285,7 +285,7 @@ void CONTACT::Beam3tospherepotential<numnodes,
     // auxiliary variables (same for both elements)
     TYPE norm_dist_exp2 = (m_ + 2) * pow(norm_dist, -m_ - 4);
 
-    LINALG::TMatrix<TYPE, 3, 3> dist_dist_T(true);
+    LINALG::Matrix<3, 3, TYPE> dist_dist_T(true);
 
     for (int i = 0; i < 3; ++i)
     {
@@ -628,8 +628,8 @@ void CONTACT::Beam3tospherepotential<numnodes, numnodalvalues>::GetShapeFunction
 
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3tospherepotential<numnodes, numnodalvalues>::ComputeCoords(
-    LINALG::TMatrix<TYPE, 3, 1>& r, const LINALG::Matrix<1, numnodes * numnodalvalues>& N_i,
-    const LINALG::TMatrix<TYPE, 3 * numnodes * numnodalvalues, 1> elepos)
+    LINALG::Matrix<3, 1, TYPE>& r, const LINALG::Matrix<1, numnodes * numnodalvalues>& N_i,
+    const LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> elepos)
 {
   r.Clear();
 

@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Contact interface capable of TSI
 
 \maintainer Matthias Mayr
@@ -30,10 +30,11 @@
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            seitz 08/15|
  *----------------------------------------------------------------------*/
-CONTACT::CoTSIInterface::CoTSIInterface(const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr,
-    const int id, const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
+CONTACT::CoTSIInterface::CoTSIInterface(
+    const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr, const int id,
+    const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
     bool selfcontact, INPAR::MORTAR::RedundantStorage redundant)
-    : CONTACT::CoInterface(idata_ptr, id, comm, dim, icontact, selfcontact, redundant)
+    : CONTACT::CoInterface(interfaceData_ptr, id, comm, dim, icontact, selfcontact, redundant)
 {
   return;
 }
@@ -63,15 +64,16 @@ void CONTACT::CoTSIInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMg
 
   // information from interface contact parameter list
   INPAR::CONTACT::FrictionType ftype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(), "FRICTION");
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
   if (ftype != INPAR::CONTACT::friction_coulomb) dserror("only coulomb friction for CTSI");
 
-  double frcoeff_in = IParams().get<double>("FRCOEFF");  // the friction coefficient from the input
-  double cn = IParams().get<double>("SEMI_SMOOTH_CN");
+  double frcoeff_in =
+      InterfaceParams().get<double>("FRCOEFF");  // the friction coefficient from the input
+  double cn = InterfaceParams().get<double>("SEMI_SMOOTH_CN");
 
   // some things that are not implemented
-  bool gp_slip = DRT::INPUT::IntegralValue<int>(IParams(), "GP_SLIP_INCR");
-  bool frilessfirst = DRT::INPUT::IntegralValue<int>(IParams(), "FRLESS_FIRST");
+  bool gp_slip = DRT::INPUT::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR");
+  bool frilessfirst = DRT::INPUT::IntegralValue<int>(InterfaceParams(), "FRLESS_FIRST");
   if (gp_slip || frilessfirst)
     dserror("this fancy option for the contact algorithm is not implemented for TSI");
 
@@ -185,18 +187,19 @@ void CONTACT::CoTSIInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglo
 
   // information from interface contact parameter list
   INPAR::CONTACT::FrictionType ftype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(), "FRICTION");
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(InterfaceParams(), "FRICTION");
   if (ftype != INPAR::CONTACT::friction_coulomb) dserror("only coulomb friction for CTSI");
 
   if (Dim() != 3) dserror("CTSI only for 3D");
 
-  double frcoeff_in = IParams().get<double>("FRCOEFF");  // the friction coefficient from the input
-  double ct_input = IParams().get<double>("SEMI_SMOOTH_CT");
-  double cn_input = IParams().get<double>("SEMI_SMOOTH_CN");
+  double frcoeff_in =
+      InterfaceParams().get<double>("FRCOEFF");  // the friction coefficient from the input
+  double ct_input = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
+  double cn_input = InterfaceParams().get<double>("SEMI_SMOOTH_CN");
 
   // some things that are not implemented
-  bool gp_slip = DRT::INPUT::IntegralValue<int>(IParams(), "GP_SLIP_INCR");
-  bool frilessfirst = DRT::INPUT::IntegralValue<int>(IParams(), "FRLESS_FIRST");
+  bool gp_slip = DRT::INPUT::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR");
+  bool frilessfirst = DRT::INPUT::IntegralValue<int>(InterfaceParams(), "FRLESS_FIRST");
   if (gp_slip || frilessfirst)
     dserror("this fancy option for the contact algorithm is not implemented for TSI");
 
@@ -297,8 +300,8 @@ void CONTACT::CoTSIInterface::AssembleLinConduct(LINALG::SparseMatrix& linConduc
   if (activenodes_->NumMyElements() == 0) return;
 
   // heat transfer factors
-  const double alpha_s = IParams().get<double>("HEATTRANSSLAVE");
-  const double alpha_m = IParams().get<double>("HEATTRANSMASTER");
+  const double alpha_s = InterfaceParams().get<double>("HEATTRANSSLAVE");
+  const double alpha_m = InterfaceParams().get<double>("HEATTRANSMASTER");
   const double beta_bar = alpha_s * alpha_m / (alpha_s + alpha_m);
   const double delta_bar = alpha_s / (alpha_s + alpha_m);
 
@@ -335,7 +338,7 @@ void CONTACT::CoTSIInterface::AssembleDualMassLumped(
     double thermo_lm = conode->CoTSIData().ThermoLM();
     std::map<int, std::map<int, double>>& derivDualMass = conode->CoData().GetDerivD();
 
-    if (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(IParams(), "LM_QUAD") !=
+    if (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(InterfaceParams(), "LM_QUAD") !=
         INPAR::MORTAR::lagmult_const)
     {
       /**********************************************dual mass matrix ******/
@@ -406,7 +409,7 @@ void CONTACT::CoTSIInterface::AssembleLinDM_X(LINALG::SparseMatrix* linD_X,
   // no dissipation without friction
   if (!friction_ && mode == LinDM_Diss) return;
 
-  const double dt = IParams().get<double>("TIMESTEP");
+  const double dt = InterfaceParams().get<double>("TIMESTEP");
 
   // loop over all LM slave nodes (row map)
   for (int j = 0; j < node_rowmap->NumMyElements(); ++j)
@@ -576,7 +579,7 @@ void CONTACT::CoTSIInterface::AssembleDM_linDiss(LINALG::SparseMatrix* d_LinDiss
   typedef std::map<int, double>::const_iterator _cim;
   typedef GEN::pairedvector<int, double>::const_iterator _cip;
 
-  const double dt = IParams().get<double>("TIMESTEP");
+  const double dt = InterfaceParams().get<double>("TIMESTEP");
 
   // loop over all LM slave nodes (row map)
   for (int j = 0; j < activenodes_->NumMyElements(); ++j)
