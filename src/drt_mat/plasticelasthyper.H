@@ -11,7 +11,7 @@ EXPISOHARD 16.93 INFYIELD 0.715 KINHARD 0.0 CTE 1.0e-5 INITTEMP 293 YIELDSOFT 0.
 VISC 1e-4 VISC_TEMP 0.003 PL_SPIN_CHI -50 rY_11 1.0 rY_22 0.9 rY_33 0.9 rY_12 0.7 rY_23 0.57385
 rY_13 0.7
 
-\maintainer Matthias Mayr
+\maintainer Jan Schnabel
 \level 2
 */
 

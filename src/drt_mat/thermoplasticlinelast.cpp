@@ -33,7 +33,7 @@
 
 \level 2
 
-\maintainer Matthias Mayr
+\maintainer Jan Schnabel
 */
 /*----------------------------------------------------------------------*
  | headers                                                   dano 08/11 |

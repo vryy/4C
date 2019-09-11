@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 \brief Input parameters for plasticity
-\maintainer Matthias Mayr
+\maintainer Jan Schnabel
 \level 2
 */
 /*----------------------------------------------------------------------*/
