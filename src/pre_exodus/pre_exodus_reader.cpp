@@ -425,11 +425,8 @@ std::string EXODUS::Mesh::GetTitle() const
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<EXODUS::ElementBlock> EXODUS::Mesh::GetElementBlock(const int id) const
 {
-  if (elementBlocks_.find(id) == elementBlocks_.end())
-  {
-    std::cout << "ElementBlock " << id << " not found!" << std::endl;
-    dserror("ElementBlock not found");
-  }
+  if (elementBlocks_.find(id) == elementBlocks_.end()) dserror("ElementBlock %d not found.", id);
+
   return (elementBlocks_.find(id))->second;
 }
 
@@ -437,11 +434,8 @@ Teuchos::RCP<EXODUS::ElementBlock> EXODUS::Mesh::GetElementBlock(const int id) c
 /*----------------------------------------------------------------------*/
 EXODUS::NodeSet EXODUS::Mesh::GetNodeSet(const int id) const
 {
-  if (nodeSets_.find(id) == nodeSets_.end())
-  {
-    std::cout << "NodeSet " << id << " not found!" << std::endl;
-    dserror("NodeSet not found");
-  }
+  if (nodeSets_.find(id) == nodeSets_.end()) dserror("NodeSet %d not found.", id);
+
   return (nodeSets_.find(id))->second;
 }
 
@@ -449,11 +443,8 @@ EXODUS::NodeSet EXODUS::Mesh::GetNodeSet(const int id) const
 /*----------------------------------------------------------------------*/
 EXODUS::SideSet EXODUS::Mesh::GetSideSet(const int id) const
 {
-  if (sideSets_.find(id) == sideSets_.end())
-  {
-    std::cout << "SideSet " << id << " not found!" << std::endl;
-    dserror("SideSet not found");
-  }
+  if (sideSets_.find(id) == sideSets_.end()) dserror("SideSet %d not found.", id);
+
   return (sideSets_.find(id))->second;
 }
 
