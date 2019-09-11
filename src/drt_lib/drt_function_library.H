@@ -82,9 +82,16 @@ namespace DRT
       /// evaluate function at given position in space
       double Evaluate(const int index, const double* x, double t);
 
+      /// type of physics that a controlled rotation is applied to
+      enum PhysicalField
+      {
+        Structure,
+        Fluid
+      };
+
      private:
-      //! Condition type: STRUCTURE=1, FLUID=2
-      int type_;
+      //! the physics type used for this function
+      PhysicalField physicsType_;
 
       //! Origin, about which the rotation shall be performed
       LINALG::Matrix<3, 1> origin_;

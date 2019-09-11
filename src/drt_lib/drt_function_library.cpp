@@ -26,24 +26,15 @@ DRT::UTILS::ControlledRotationFunction::ControlledRotationFunction(
     std::string fileName, std::string type, double origin_x, double origin_y, double origin_z)
     : Function(), NUMMANEUVERCELLS_(4)
 {
-  // Initialize variables
-  // *****************************************************************************
-
   // Initialize condition type
   if (type == "STRUCTURE")
-  {  // structure
-    type_ = 1;
-  }
+    physicsType_ = PhysicalField::Structure;
   else if (type == "FLUID")
-  {  // fluid
-    type_ = 2;
-  }
+    physicsType_ = PhysicalField::Fluid;
   else
-  {
     dserror(
         "When using the function CONTROLLEDROTATION, the type must be either 'STRUCTURE' or "
         "'FLUID'");
-  }
 
   // Initialize origin, about which the rotation is performed
   origin_(0, 0) = origin_x;
@@ -298,30 +289,31 @@ double DRT::UTILS::ControlledRotationFunction::Evaluate(const int index, const d
   // Displacement of the node for the given index
   const double dispNodePos_I = nodePos_I(index, 0) - nodeReferencePos_B(index, 0);
 
-  if (type_ == 1)
-  {  // structure
-
-    // Return the displacement of the node for the given index
-    return dispNodePos_I;
-  }
-  else if (type_ == 2)
-  {  // fluid
-
-    // Node velocity, given in the inertial system: v = omega x r
-    double nodeVel_I[3];
-    nodeVel_I[0] = omega_B_(1, 0) * nodePos_I(2, 0) - omega_B_(2, 0) * nodePos_I(1, 0);
-    nodeVel_I[1] = omega_B_(2, 0) * nodePos_I(0, 0) - omega_B_(0, 0) * nodePos_I(2, 0);
-    nodeVel_I[2] = omega_B_(0, 0) * nodePos_I(1, 0) - omega_B_(1, 0) * nodePos_I(0, 0);
-
-    // Return the translational velocity of the node for the given index
-    return (nodeVel_I[index]);
-  }
-  else
+  switch (physicsType_)
   {
-    dserror(
-        "When using the function CONTROLLEDROTATION, the type must be either 'STRUCTURE' or "
-        "'FLUID'");
-    return 0.0;
+    case Structure:
+    {
+      // Return the displacement of the node for the given index
+      return dispNodePos_I;
+    }
+    case Fluid:
+    {
+      // Node velocity, given in the inertial system: v = omega x r
+      double nodeVel_I[3];
+      nodeVel_I[0] = omega_B_(1, 0) * nodePos_I(2, 0) - omega_B_(2, 0) * nodePos_I(1, 0);
+      nodeVel_I[1] = omega_B_(2, 0) * nodePos_I(0, 0) - omega_B_(0, 0) * nodePos_I(2, 0);
+      nodeVel_I[2] = omega_B_(0, 0) * nodePos_I(1, 0) - omega_B_(1, 0) * nodePos_I(0, 0);
+
+      // Return the translational velocity of the node for the given index
+      return (nodeVel_I[index]);
+    }
+    default:
+    {
+      dserror(
+          "When using the function CONTROLLEDROTATION, the type must be either 'STRUCTURE' or "
+          "'FLUID'");
+      return 0.0;
+    }
   }
 }
 
