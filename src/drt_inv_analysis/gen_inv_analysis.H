@@ -141,9 +141,6 @@ namespace STR
     ///  number of measurement points the
     double tstep_;  // timestep
 
-    /// Neumann or Dirichlet Problem
-    int problem_type_;  // ToDo Use an enum instead of an integer.
-
     /// number of fitted parameters (default 3, 4 with kappa)
     int np_;
 
