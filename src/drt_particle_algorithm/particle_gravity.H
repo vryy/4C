@@ -38,8 +38,8 @@ namespace PARTICLEALGORITHM
     //! constructor
     explicit GravityHandler(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~GravityHandler(){};
+    //! destructor
+    ~GravityHandler(){};
 
     //! init gravity handler
     void Init(const std::vector<double>& gravity);

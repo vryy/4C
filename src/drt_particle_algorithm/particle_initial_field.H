@@ -40,8 +40,8 @@ namespace PARTICLEALGORITHM
     //! constructor
     explicit InitialFieldHandler(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~InitialFieldHandler(){};
+    //! destructor
+    ~InitialFieldHandler(){};
 
     //! init initial field handler
     void Init();

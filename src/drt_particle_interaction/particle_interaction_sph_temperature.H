@@ -62,8 +62,8 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit SPHTemperature(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~SPHTemperature();
+    //! destructor
+    ~SPHTemperature();
 
     //! init temperature handler
     void Init();

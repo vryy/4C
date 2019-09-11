@@ -38,8 +38,8 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit SPHArtificialViscosity();
 
-    //! virtual destructor
-    virtual ~SPHArtificialViscosity(){};
+    //! destructor
+    ~SPHArtificialViscosity(){};
 
     //! init artificial viscosity handler
     void Init();

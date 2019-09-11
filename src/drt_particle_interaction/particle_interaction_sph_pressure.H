@@ -51,8 +51,8 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit SPHPressure();
 
-    //! virtual destructor
-    virtual ~SPHPressure(){};
+    //! destructor
+    ~SPHPressure(){};
 
     //! init pressure handler
     void Init();
