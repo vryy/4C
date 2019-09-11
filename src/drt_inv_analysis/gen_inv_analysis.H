@@ -386,7 +386,7 @@ namespace STR
 
     \note Constructor sequence has been moved into its own method.
     */
-    void ReadMonitorDofBased(int myrank);
+    void ReadMonitorDofBased(const int myrank);
 
 
     /// Read in routine for the point based monitor file

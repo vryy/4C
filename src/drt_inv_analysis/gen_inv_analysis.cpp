@@ -4314,7 +4314,7 @@ void STR::GenInvAnalysis::ConstrainAlpha()
 /* Read Monitor file (moved into own method)                HaWi 07/18  */
 /*----------------------------------------------------------------------*/
 
-void STR::GenInvAnalysis::ReadMonitorDofBased(int myrank)
+void STR::GenInvAnalysis::ReadMonitorDofBased(const int myrank)
 {
   // old comment is destroyed by clang format: please consult *.monitor files in /Input folder
 
