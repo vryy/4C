@@ -19,6 +19,7 @@
 #include "adapter_coupling.H"
 #include "adapter_coupling_volmortar.H"
 #include "adapter_coupling_mortar.H"
+#include "../drt_inpar/inpar_ale.H"
 #include "../drt_inpar/inpar_fsi.H"
 
 #include "../drt_fsi/fsi_dirichletneumann_volcoupl.H"
@@ -102,6 +103,16 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
 
     // set pointer to coupling adapter
     coupfa_ = coupfa_volmortar;
+  }
+
+  // Apply initial ALE mesh displacement
+  if (DRT::INPUT::IntegralValue<INPAR::ALE::InitialDisp>(
+          DRT::Problem::Instance()->AleDynamicParams(), "INITIALDISP") !=
+      INPAR::ALE::initdisp_zero_disp)
+  {
+    FluidField()->SetMeshMap(coupfa_->MasterDofMap(), nds_master);
+    Teuchos::RCP<Epetra_Vector> initfluiddisp = AleToFluidField(AleField()->Dispn());
+    FluidField()->ApplyInitialMeshDisplacement(initfluiddisp);
   }
 
   // initializing the fluid is done later as for xfluids the first cut is done

@@ -39,6 +39,8 @@
 
 #include "../drt_lib/drt_discret.H"
 
+#include "../linalg/linalg_utils.H"
+
 #include "../linalg/linalg_blocksparsematrix.H"
 
 
@@ -721,7 +723,25 @@ namespace FLD
 
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp() { return dispnp_; }
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispnp() { return dispnp_; }
+
+    //! Create mesh displacement at time level t_{n+1}
+    virtual Teuchos::RCP<Epetra_Vector> CreateDispnp()
+    {
+      const Epetra_Map* aledofrowmap = discret_->DofRowMap(ndsale_);
+      dispnp_ = LINALG::CreateVector(*aledofrowmap, true);
+      return dispnp_;
+    }
+
     virtual Teuchos::RCP<const Epetra_Vector> Dispn() { return dispn_; }
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispn() { return dispn_; }
+
+    //! Create mesh displacement at time level t_{n}
+    virtual Teuchos::RCP<Epetra_Vector> CreateDispn()
+    {
+      const Epetra_Map* aledofrowmap = discret_->DofRowMap(ndsale_);
+      dispn_ = LINALG::CreateVector(*aledofrowmap, true);
+      return dispn_;
+    }
     virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix()
     {
       return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);

@@ -240,6 +240,22 @@ void ADAPTER::FluidFSI::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ive
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void ADAPTER::FluidFSI::ApplyInitialMeshDisplacement(
+    Teuchos::RCP<const Epetra_Vector> initfluiddisp)
+{
+  // cast fluid to fluidimplicit
+  if (fluidimpl_ == Teuchos::null)
+    fluidimpl_ = Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_);
+
+  if (fluidimpl_ == Teuchos::null)
+    dserror("Failed to cast ADAPTER::Fluid to FLD::FluidImplicitTimeInt.");
+
+  meshmap_->InsertCondVector(initfluiddisp, fluidimpl_->CreateDispn());
+  meshmap_->InsertCondVector(initfluiddisp, fluidimpl_->CreateDispnp());
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void ADAPTER::FluidFSI::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp)
 {
   meshmap_->InsertCondVector(fluiddisp, fluidimpl_->WriteAccessDispnp());

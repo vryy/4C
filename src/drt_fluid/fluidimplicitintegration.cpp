@@ -213,6 +213,15 @@ void FLD::FluidImplicitTimeInt::Init()
   // -------------------------------------------------------------------
   Reset();
 
+  // ---------------------------------------------------------------------
+  // Set initial ALE mesh displacement and velocity
+  // ---------------------------------------------------------------------
+  if (alefluid_)
+  {
+    discret_->SetState(ndsale_, "dispnp", dispnp_);
+    discret_->SetState(ndsale_, "gridv", gridv_);
+  }
+
   // initialize nonlinear boundary conditions
   if (nonlinearbc_) InitNonlinearBC();
 
@@ -6243,8 +6252,8 @@ void FLD::FluidImplicitTimeInt::Reset(bool completeReset, int numsteps, int iter
     {
       const Epetra_Map* aledofrowmap = discret_->DofRowMap(ndsale_);
 
-      dispnp_ = LINALG::CreateVector(*aledofrowmap, true);
-      dispn_ = LINALG::CreateVector(*aledofrowmap, true);
+      if (dispnp_.is_null()) dispnp_ = LINALG::CreateVector(*aledofrowmap, true);
+      if (dispn_.is_null()) dispn_ = LINALG::CreateVector(*aledofrowmap, true);
       dispnm_ = LINALG::CreateVector(*aledofrowmap, true);
       gridv_ = LINALG::CreateVector(*aledofrowmap, true);
       gridvn_ = LINALG::CreateVector(*aledofrowmap, true);

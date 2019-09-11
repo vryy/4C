@@ -59,6 +59,15 @@ void INPAR::ALE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<std::string>("no", "meshtying", "meshsliding"),
       tuple<int>(no_meshtying, meshtying, meshsliding), &adyn);
 
+  // Initial displacement
+  setStringToIntegralParameter<int>("INITIALDISP", "zero_displacement",
+      "Initial displacement for structure problem",
+      tuple<std::string>("zero_displacement", "displacement_by_function"),
+      tuple<int>(initdisp_zero_disp, initdisp_disp_by_function), &adyn);
+
+  // Function to evaluate initial displacement
+  IntParameter("STARTFUNCNO", -1, "Function for Initial displacement", &adyn);
+
   // linear solver id used for scalar ale problems
   IntParameter("LINEAR_SOLVER", -1, "number of linear solver used for ale problems...", &adyn);
 }

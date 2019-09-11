@@ -125,6 +125,11 @@ namespace ALE
 
     virtual ~Ale(){};
 
+    /*! \brief Set initial displacement field
+     *  Use this for pure ALE problems as well as for coupled problems.
+     */
+    virtual void SetInitialDisplacement(const INPAR::ALE::InitialDisp init, const int startfuncno);
+
     /*! \brief Create Systemmatrix
      *
      * We allocate the LINALG object just once, the result is an empty
@@ -493,6 +498,12 @@ namespace ALE
 
     //! flag for mesh-tying
     const INPAR::ALE::MeshTying msht_;
+
+    //! flag for initial displacement
+    const INPAR::ALE::InitialDisp initialdisp_;
+
+    //! start function number
+    const int startfuncno_;
 
     //! coupling of ALE-ALE at an internal interface
     Teuchos::RCP<ALE::Meshtying> meshtying_;

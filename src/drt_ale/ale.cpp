@@ -70,7 +70,9 @@ ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Sol
       tolres_(params->get<double>("TOLRES")),
       toldisp_(params->get<double>("TOLDISP")),
       divercont_(DRT::INPUT::IntegralValue<INPAR::ALE::DivContAct>(*params, "DIVERCONT")),
-      msht_(DRT::INPUT::IntegralValue<INPAR::ALE::MeshTying>(*params, "MESHTYING"))
+      msht_(DRT::INPUT::IntegralValue<INPAR::ALE::MeshTying>(*params, "MESHTYING")),
+      initialdisp_(DRT::INPUT::IntegralValue<INPAR::ALE::InitialDisp>(*params, "INITIALDISP")),
+      startfuncno_(params->get<int>("STARTFUNCNO"))
 {
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
@@ -83,6 +85,11 @@ ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Sol
 
   eledetjac_ = LINALG::CreateVector(*Discretization()->ElementRowMap(), true);
   elequality_ = LINALG::CreateVector(*Discretization()->ElementRowMap(), true);
+
+  // -------------------------------------------------------------------
+  // set initial displacement
+  // -------------------------------------------------------------------
+  SetInitialDisplacement(initialdisp_, startfuncno_);
 
   SetupDBCMapEx();
 
@@ -119,6 +126,59 @@ ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Sol
   CreateSystemMatrix();
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void ALE::Ale::SetInitialDisplacement(const INPAR::ALE::InitialDisp init, const int startfuncno)
+{
+  switch (init)
+  {
+    case INPAR::ALE::initdisp_zero_disp:
+    {
+      dispn_->PutScalar(0.0);
+      dispnp_->PutScalar(0.0);
+
+      break;
+    }
+    case INPAR::ALE::initdisp_disp_by_function:
+    {
+      const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+      // loop all nodes on the processor
+      for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
+      {
+        // get the processor local node
+        DRT::Node* lnode = discret_->lRowNode(lnodeid);
+
+        // the set of degrees of freedom associated with the node
+        std::vector<int> nodedofset = discret_->Dof(0, lnode);
+
+        // loop nodal dofs
+        for (unsigned int d = 0; d < nodedofset.size(); ++d)
+        {
+          const int dofgid = nodedofset[d];
+          int doflid = dofrowmap->LID(dofgid);
+
+          // evaluate component d of function
+          double initialval =
+              DRT::Problem::Instance()->Funct(startfuncno - 1).Evaluate(d, lnode->X(), 0);
+
+          int err = dispn_->ReplaceMyValues(1, &initialval, &doflid);
+          if (err != 0) dserror("dof not on proc");
+        }
+      }
+
+      // initialize also the solution vector
+      dispnp_->Update(1.0, *dispn_, 0.0);
+
+      break;
+    }
+    default:
+      dserror("Unknown option for initial displacement: %d", init);
+      break;
+  }
+
+  return;
+}
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void ALE::Ale::CreateSystemMatrix(Teuchos::RCP<const ALE::UTILS::MapExtractor> interface)
