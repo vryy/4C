@@ -6,7 +6,7 @@ element
 
 \level 3
 
-\maintainer Matthias Mayr
+\maintainer Ivo Steinbrecher
 
 *----------------------------------------------------------------------*/
 #ifndef BEAM3TSMT_H
