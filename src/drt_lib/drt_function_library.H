@@ -7,7 +7,7 @@ The functions in this file are not problem-specific and may be useful for a numb
 
 \maintainer Sebastian Proell
 
-\level 1
+\level 3
 
 */
 /*----------------------------------------------------------------------*/
@@ -41,7 +41,7 @@ namespace DRT
        * \brief Construct a new TranslatedFunction
        *
        * @param origin function describing the position of the local origin
-       * @param local function describing the
+       * @param local function to evaluate in the translated coordinate system
        */
       TranslatedFunction(Teuchos::RCP<Function> origin, Teuchos::RCP<Function> local);
 
@@ -65,7 +65,9 @@ namespace DRT
       const static int nsd = 3;
 
      private:
+      //! function describing the position of the local origin
       Teuchos::RCP<Function> originFunction_;
+      //! function to evaluate in the translated coordinate system
       Teuchos::RCP<Function> localFunction_;
     };
 
@@ -81,34 +83,35 @@ namespace DRT
       double Evaluate(const int index, const double* x, double t);
 
      private:
-      // Condition type: STRUCTURE=1, FLUID=2
+      //! Condition type: STRUCTURE=1, FLUID=2
       int type_;
 
-      // Origin, about which the rotation shall be performed
+      //! Origin, about which the rotation shall be performed
       LINALG::Matrix<3, 1> origin_;
 
-      // Time of previous time step (at t-deltaT)
+      //! Time of previous time step (at t-deltaT)
       double timeOld_;
 
-      // Number of maneuver cells (variables)
+      //! Number of maneuver cells (variables)
       const int NUMMANEUVERCELLS_;
 
-      // Number of maneuvers
+      //! Number of maneuvers
       int numManeuvers_;
 
-      // Double Vector containing maneuver information (t, omegaDot_x_B, omegaDot_y_B, omegaDot_z_B)
+      //! Double Vector containing maneuver information (t, omegaDot_x_B, omegaDot_y_B,
+      //! omegaDot_z_B)
       std::vector<double> maneuvers_;
 
-      // Previous angular acceleration (at t-deltaT)
+      //! Previous angular acceleration (at t-deltaT)
       LINALG::Matrix<3, 1> omegaDotOld_B_;
 
-      // Current angular rate (at t)
+      //! Current angular rate (at t)
       LINALG::Matrix<3, 1> omega_B_;
 
-      // Satellite's current attitude trafo matrix from B- to I-system (at t)
+      //! Satellite's current attitude trafo matrix from B- to I-system (at t)
       LINALG::Matrix<3, 3> satAtt_dcm_IB_;
 
-      // Satellite's current attitude quaternion from B- to I-system (at t)
+      //! Satellite's current attitude quaternion from B- to I-system (at t)
       LINALG::Matrix<4, 1> satAtt_q_IB_;
     };
 
@@ -123,19 +126,19 @@ namespace DRT
       double Evaluate(const int index, const double* x, double t);
 
      private:
-      // Time of previous time step (at t-deltaT)
+      //! Time of previous time step (at t-deltaT)
       double timeOld_;
 
-      // Number of cells (variables) (time + 3-dim acc = 4)
+      //! Number of cells (variables) (time + 3-dim acc = 4)
       const int NUMACCELERATIONCELLS_;
 
-      // Number of acceleration rows
+      //! Number of acceleration rows
       int numAccelerations_;
 
-      // Double Vector containing acceleration information (t, acc_x_B, acc_y_B, acc_z_B)
+      //! Double Vector containing acceleration information (t, acc_x_B, acc_y_B, acc_z_B)
       std::vector<double> accelerations_;
 
-      // Current acceleration (at t)
+      //! Current acceleration (at t)
       LINALG::Matrix<3, 1> acc_B_;
     };
 
