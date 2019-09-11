@@ -920,7 +920,6 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcMatPsl(Epetra_Seri
   return;
 }
 
-
 /*------------------------------------------------------------------- *
  |  calculation of Poiseuille rhs matrix
  *--------------------------------------------------------------------*/

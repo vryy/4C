@@ -2094,7 +2094,6 @@ void EHL::Monolithic::LinCouetteForcePres(
     if (mat.is_null()) dserror("null pointer");
     Teuchos::RCP<MAT::LubricationMat> lmat =
         Teuchos::rcp_dynamic_cast<MAT::LubricationMat>(mat, true);
-
     const double visc = lmat->ComputeViscosity(p);
     const double dvisc_dp = lmat->ComputeViscosityDeriv(p, visc);
 
@@ -2113,17 +2112,14 @@ void EHL::Monolithic::LinCouetteForcePres(
 
   dVisc_str_dp->LeftScale(*hinv_relV);
 
-
   {
     Teuchos::RCP<const Epetra_Map> r = mortaradapter_->SlaveDofMap();
     Teuchos::RCP<const Epetra_Map> d = lubrication_->LubricationField()->DofRowMap(0);
 
     ds_dp->UnComplete();
-
     ds_dp->Add(*LINALG::MLMultiply(
                    *mortaradapter_->GetDMatrix(), true, *dVisc_str_dp, false, true, false, true),
         false, 1., 1.);
-
     ds_dp->Complete(*d, *r);
   }
 
@@ -2132,7 +2128,6 @@ void EHL::Monolithic::LinCouetteForcePres(
     Teuchos::RCP<const Epetra_Map> d = lubrication_->LubricationField()->DofRowMap(0);
 
     dm_dp->UnComplete();
-
     dm_dp->Add(*LINALG::MLMultiply(
                    *mortaradapter_->GetMMatrix(), true, *dVisc_str_dp, false, true, false, true),
         false, -1., 1.);

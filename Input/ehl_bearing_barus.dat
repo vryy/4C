@@ -1,8 +1,15 @@
+//
+// Maintainer: Mostafa Faraji
+//
+//
 ==================================================================
                   General Data File BACI
 ==================================================================
 -------------------------------------------------------------TITLE
-created by pre_exodus 
+The test case for Journal Bearing considered as Hard-EHL
+example to see the effect of Pressure-dependent Viscosity
+which has been implemented by two formulation of Barus
+and Roeland which can be selected in material section
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    150
 //NODES       500

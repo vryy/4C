@@ -425,7 +425,6 @@ void EHL::Base::AddCouetteForce(
     for (int d = 0; d < ndim; ++d) visc_vec->ReplaceGlobalValue(lub_dis.Dof(1, lnode, d), 0, visc);
   }
   Teuchos::RCP<Epetra_Vector> visc_vec_str = ada_strDisp_to_lubDisp_->SlaveToMaster(visc_vec);
-
   Teuchos::RCP<Epetra_Vector> couette_force =
       Teuchos::rcp(new Epetra_Vector(*mortaradapter_->SlaveDofMap()));
   couette_force->Multiply(-1., *visc_vec_str, *hinv_relV, 0.);
@@ -804,11 +803,8 @@ void EHL::Base::Output(bool forced_writerestart)
 
     Teuchos::RCP<Epetra_Vector> height_ex =
         Teuchos::rcp(new Epetra_Vector(*ada_lubPres_to_lubDisp_->SlaveDofMap()));
-
     LINALG::Export(*height, *height_ex);
-
     Teuchos::RCP<Epetra_Vector> h1 = ada_lubPres_to_lubDisp_->SlaveToMaster(height_ex);
-
     lubrication_->LubricationField()->DiscWriter()->WriteVector("height", h1, IO::dofvector);
 
     if (inf_gap_toggle_lub_ != Teuchos::null)

@@ -39,7 +39,6 @@ Teuchos::RCP<MAT::Material> MAT::PAR::LubricationLawConstant::CreateMaterial()
 void MAT::PAR::LubricationLawConstant::ComputeViscosity(const double& press, double& viscosity)
 {
   viscosity = viscosity_;
-
   return;
 }
 

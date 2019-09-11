@@ -106,7 +106,9 @@ namespace MAT
 
 
       /// material parameters for the calculation of the viscosity
+      /// Absolute viscosity value in Barus formulation
       double ABSViscosity_;
+      /// Press_vis coefficient value in Barus formulation
       double PreVisCoeff_;
     };
 
@@ -141,12 +143,17 @@ namespace MAT
 
 
       /// material parameters for the calculation of the viscosity
+      /// Absolute viscosity value in Roeland formulation
       double ABSViscosity_;
+      /// Press_vis coefficient value in Roeland formulation
       double PreVisCoeff_;
 
       // constants with units for the calculation of the viscosity
+      /// Reference viscosity in Roeland formulation
       double RefVisc_;
+      /// Reference pressure in Roeland formulation
       double RefPress_;
+      /// The analytical term to corrolate Barus and Roeland formulation
       double z_;
     };
 
