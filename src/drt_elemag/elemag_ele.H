@@ -359,6 +359,13 @@ namespace DRT
       DRT::Element::DiscretizationType distype_;
       DRT::Element::DiscretizationType facedis_;
 
+      // stores the degree of the element
+      unsigned char degree_;
+
+      // Why this?
+      // stores the polynomial type (tensor product or complete polynomial)
+      bool completepol_;
+
      private:
       // Why this?
       int fixedPower(const int number, const int pow) const
@@ -372,17 +379,6 @@ namespace DRT
       // don't want = operator
       Elemag& operator=(const Elemag& old);
 
-      // stores the degree of the element
-      unsigned char degree_;
-
-      // Why this?
-      // stores the polynomial type (tensor product or complete polynomial)
-      bool completepol_;
-      /*
-      /// local contributions to the gradient in case of electromagnetic parameter optimization
-      double grad_c_;
-      double grad_rho_;
-      */
     };  // class Elemag
 
 

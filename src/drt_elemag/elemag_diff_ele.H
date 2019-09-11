@@ -84,40 +84,6 @@ namespace DRT
       DRT::Element* Clone() const;
 
       /*!
-      \brief Destructor
-      */
-      virtual ~ElemagDiff();
-
-      /*!
-      \brief Get shape type of element
-      */
-      virtual DiscretizationType Shape() const { return distype_; };
-
-      /*!
-      \brief set discretization type of element
-      */
-      virtual void SetDisType(DRT::Element::DiscretizationType shape)
-      {
-        distype_ = shape;
-        return;
-      };
-
-      /*!
-      \brief Return number of lines of this element
-      */
-      virtual int NumLine() const { return DRT::UTILS::getNumberOfElementLines(distype_); }
-
-      /*!
-      \brief Return number of surfaces of this element
-      */
-      virtual int NumSurface() const { return DRT::UTILS::getNumberOfElementSurfaces(distype_); }
-
-      /*!
-      \brief Return number of volumes of this element (always 1)
-      */
-      virtual int NumVolume() const { return DRT::UTILS::getNumberOfElementVolumes(distype_); }
-
-      /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
       virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
@@ -180,74 +146,6 @@ namespace DRT
       //! @name Acess methods
 
       /*!
-      \brief Get number of degrees of freedom per node
-
-      HDG element: No dofs are associated with nodes
-      */
-      virtual int NumDofPerNode(const DRT::Node&) const { return 0; }
-
-      /*!
-      \brief Get number of degrees of freedom per face
-
-      This implementation is problem related. In the case of a fluid flow
-      NumDofPerFace() reuturns the number of velocity components (one for each spatial dimension)
-      times the number of nodes per face (given by NumDofPerComponent()).
-      The number is nsd_ - 1 because the trace values are contained in the faces and
-      therefore they have one component less than the spatial dimnsions of the problem.
-      */
-      virtual int NumDofPerFace(const unsigned face) const
-      {
-        return (DRT::UTILS::getDimension(distype_) - 1) *
-               NumDofPerComponent(face);  // seems redundant, but this is different for
-                                          // fluid_ele_hdg and Elemag_ele!
-      }
-
-      /*!
-      \brief Get number of dofs per component per face
-      It gives the number of nodes the unknowns have to be computed in.
-
-      \note For a HEX8 NumDofPerComponent() will return 4 while for a TET4 will return 3.
-      */
-      virtual int NumDofPerComponent(const unsigned face) const
-      {
-        return DRT::UTILS::getBasisSize(DRT::UTILS::getEleFaceShapeType(distype_),
-            (this->Faces()[face])->Degree(), completepol_);
-      }
-
-      /*!
-      \brief Returns the number of unknowns to be computed in each element.
-
-      \note For a HEX8 element and a 3D problem the return value will be 48.
-      */
-      virtual int NumDofPerElementAuxiliary() const
-      {
-        return (DRT::UTILS::getDimension(distype_) * 2) *
-               DRT::UTILS::getBasisSize(distype_, degree_, completepol_);
-      }
-
-      /// Number of degrees of freedom per element
-      virtual int NumDofPerElement() const { return 0; }
-
-      /*!
-       \brief Returns the degree of the element
-       */
-      virtual int Degree() const { return degree_; }
-
-      /*!
-       \brief Allows to set the element degree
-       */
-      void SetDegree(int degree)
-      {
-        degree_ = degree;
-        return;
-      }
-
-      /*!
-       \brief Returns the degree of the element
-       */
-      int UsesCompletePolynomialSpace() const { return completepol_; }
-
-      /*!
       \brief Print this element
       */
       void Print(std::ostream& os) const;
@@ -283,12 +181,6 @@ namespace DRT
       /// This variable represents the magnetic field in thge nodes
       Epetra_SerialDenseVector eleinteriorMagnetic_;
 
-     protected:
-      //! discretization type
-      DRT::Element::DiscretizationType distype_;
-      //! face discretization type
-      DRT::Element::DiscretizationType facedis_;
-
      private:
       int fixedPower(const int number, const int pow) const
       {
@@ -299,12 +191,6 @@ namespace DRT
 
       // don't want = operator
       ElemagDiff& operator=(const ElemagDiff& old);
-
-      /// stores the degree of the element
-      unsigned char degree_;
-
-      /// stores the polynomial type (tensor product or complete polynomial)
-      bool completepol_;
 
     };  // class ElemagDiff
 
@@ -388,12 +274,6 @@ namespace DRT
 
       */
       virtual void Unpack(const std::vector<char>& data);
-
-      /*!
-      \brief Destructor
-
-      */
-      virtual ~ElemagDiffBoundary();
 
       //@}
 
@@ -571,11 +451,6 @@ namespace DRT
       DRT::Element* Clone() const;
 
       /*!
-      \brief Get shape type of element
-      */
-      virtual DiscretizationType Shape() const;
-
-      /*!
       \brief Return unique ParObject id
 
       every class implementing ParObject needs a unique id defined at the
@@ -586,42 +461,10 @@ namespace DRT
         return ElemagDiffIntFaceType::Instance().UniqueParObjectId();
       }
 
-      /*!
-      \brief Destructor
-      */
-      virtual ~ElemagDiffIntFace();
-
       //@}
 
       //! @name Acess methods
 
-      /*!
-      \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual DRT::Element)
-
-      The element decides how many degrees of freedom its nodes must have.
-      As this may vary along a simulation, the element can redecide the
-      number of degrees of freedom per node along the way for each of it's nodes
-      separately.
-      */
-      virtual int NumDofPerNode(const DRT::Node& node) const
-      {
-        return std::max(
-            ParentMasterElement()->NumDofPerNode(node), ParentSlaveElement()->NumDofPerNode(node));
-      }
-
-      /*!
-      \brief Get number of degrees of freedom per element
-             (implements pure virtual DRT::Element)
-
-      The element decides how many element degrees of freedom it has.
-      It can redecide along the way of a simulation.
-
-      \note Element degrees of freedom mentioned here are dofs that are visible
-            at the level of the total system of equations. Purely internal
-            element dofs that are condensed internally should NOT be considered.
-      */
-      virtual int NumDofPerElement() const { return 0; }
       /*!
       \brief create the location vector for patch of master and slave element
 

@@ -91,8 +91,7 @@ void DRT::ELEMENTS::ElemagDiffType::SetupElementDefinition(
  |  ctor (public)                                       berardocco 03/19|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ElemagDiff::ElemagDiff(int id, int owner)
-    : Elemag(id, owner), degree_(1), completepol_(true)
+DRT::ELEMENTS::ElemagDiff::ElemagDiff(int id, int owner) : Elemag(id, owner)
 {
   distype_ = dis_none;
 }
@@ -100,10 +99,7 @@ DRT::ELEMENTS::ElemagDiff::ElemagDiff(int id, int owner)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                    berardocco 03/19|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ElemagDiff::ElemagDiff(const DRT::ELEMENTS::ElemagDiff& old)
-    : Elemag(old), distype_(old.distype_), degree_(old.degree_), completepol_(old.completepol_)
-{
-}
+DRT::ELEMENTS::ElemagDiff::ElemagDiff(const DRT::ELEMENTS::ElemagDiff& old) : Elemag(old) {}
 
 /*----------------------------------------------------------------------*
  |  Deep copy this instance of Elemag and return pointer to it (public)   |
@@ -173,12 +169,6 @@ void DRT::ELEMENTS::ElemagDiff::Unpack(const std::vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
-
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                       berardocco 03/19|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ElemagDiff::~ElemagDiff() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -431,11 +421,6 @@ void DRT::ELEMENTS::ElemagDiffBoundary::Unpack(const std::vector<char>& data)
 }
 
 /*----------------------------------------------------------------------*
- |  dtor (public)                                       berardocco 03/19|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ElemagDiffBoundary::~ElemagDiffBoundary() { return; }
-
-/*----------------------------------------------------------------------*
  |  print this element (public)                        berardocco 03/19 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ElemagDiffBoundary::Print(std::ostream& os) const
@@ -533,21 +518,6 @@ DRT::Element* DRT::ELEMENTS::ElemagDiffIntFace::Clone() const
   DRT::ELEMENTS::ElemagDiffIntFace* newelement = new DRT::ELEMENTS::ElemagDiffIntFace(*this);
   return newelement;
 }
-
-/*----------------------------------------------------------------------*
- |                                                             (public) |
- |                                                     berardocco 03/19 |
- *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::ElemagDiffIntFace::Shape() const
-{
-  // could be called for master parent or slave parent element, doesn't matter
-  return DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
-}
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                      berardocco 03/19 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ElemagDiffIntFace::~ElemagDiffIntFace() { return; }
 
 /*----------------------------------------------------------------------*
  |  create the patch location vector (public)          berardocco 03/19 |
