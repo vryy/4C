@@ -87,22 +87,21 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit DEMContactNormalLinearSpring(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~DEMContactNormalLinearSpring(){};
+    //! destructor
+    ~DEMContactNormalLinearSpring() override{};
 
     //! setup normal contact handler
-    virtual void Setup(const double& dens_max);
+    void Setup(const double& dens_max) override;
 
     //! get normal contact stiffness
-    virtual double GetNormalContactStiffness() const override { return k_normal_; };
+    double GetNormalContactStiffness() const override { return k_normal_; };
 
     //! get time critical contact stiffness
-    virtual double GetTimeCriticalStiffness() const override { return k_normal_; };
+    double GetTimeCriticalStiffness() const override { return k_normal_; };
 
     //! evaluate normal contact force
-    virtual void NormalContactForce(const double& gap, const double* radius_i,
-        const double* radius_j, const double& v_rel_normal, const double& m_eff,
-        double& normalcontactforce) const override;
+    void NormalContactForce(const double& gap, const double* radius_i, const double* radius_j,
+        const double& v_rel_normal, const double& m_eff, double& normalcontactforce) const override;
   };
 
   class DEMContactNormalLinearSpringDamp : public DEMContactNormalLinearSpring
@@ -111,19 +110,18 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit DEMContactNormalLinearSpringDamp(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~DEMContactNormalLinearSpringDamp(){};
+    //! destructor
+    ~DEMContactNormalLinearSpringDamp() override{};
 
     //! init normal contact handler
-    virtual void Init();
+    void Init() override;
 
     //! setup normal contact handler
-    virtual void Setup(const double& dens_max);
+    void Setup(const double& dens_max) override;
 
     //! evaluate normal contact force
-    virtual void NormalContactForce(const double& gap, const double* radius_i,
-        const double* radius_j, const double& v_rel_normal, const double& m_eff,
-        double& normalcontactforce) const override;
+    void NormalContactForce(const double& gap, const double* radius_i, const double* radius_j,
+        const double& v_rel_normal, const double& m_eff, double& normalcontactforce) const override;
 
    private:
     //! coefficient of restitution
@@ -145,22 +143,22 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit DEMContactNormalNonlinearBase(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~DEMContactNormalNonlinearBase(){};
+    //! destructor
+    ~DEMContactNormalNonlinearBase() override{};
 
     //! setup normal contact handler
-    virtual void Setup(const double& dens_max);
+    void Setup(const double& dens_max) override;
 
     //! get normal contact stiffness
-    virtual double GetNormalContactStiffness() const override { return k_normal_; };
+    double GetNormalContactStiffness() const override { return k_normal_; };
 
     //! get time critical contact stiffness
-    virtual double GetTimeCriticalStiffness() const override { return k_tcrit_; };
+    double GetTimeCriticalStiffness() const override { return k_tcrit_; };
 
     //! evaluate normal contact force
-    virtual void NormalContactForce(const double& gap, const double* radius_i,
-        const double* radius_j, const double& v_rel_normal, const double& m_eff,
-        double& normalcontactforce) const = 0;
+    void NormalContactForce(const double& gap, const double* radius_i, const double* radius_j,
+        const double& v_rel_normal, const double& m_eff,
+        double& normalcontactforce) const override = 0;
 
    private:
     //! time step critical contact stiffness
@@ -173,13 +171,12 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit DEMContactNormalHertz(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~DEMContactNormalHertz(){};
+    //! destructor
+    ~DEMContactNormalHertz() override{};
 
     //! evaluate normal contact force
-    virtual void NormalContactForce(const double& gap, const double* radius_i,
-        const double* radius_j, const double& v_rel_normal, const double& m_eff,
-        double& normalcontactforce) const override;
+    void NormalContactForce(const double& gap, const double* radius_i, const double* radius_j,
+        const double& v_rel_normal, const double& m_eff, double& normalcontactforce) const override;
   };
 
   class DEMContactNormalNonlinearDampBase : public DEMContactNormalNonlinearBase
@@ -188,16 +185,16 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit DEMContactNormalNonlinearDampBase(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~DEMContactNormalNonlinearDampBase(){};
+    //! destructor
+    ~DEMContactNormalNonlinearDampBase() override{};
 
     //! init normal contact handler
-    virtual void Init();
+    void Init() override;
 
     //! evaluate normal contact force
-    virtual void NormalContactForce(const double& gap, const double* radius_i,
-        const double* radius_j, const double& v_rel_normal, const double& m_eff,
-        double& normalcontactforce) const = 0;
+    void NormalContactForce(const double& gap, const double* radius_i, const double* radius_j,
+        const double& v_rel_normal, const double& m_eff,
+        double& normalcontactforce) const override = 0;
 
    protected:
     //! normal contact damping parameter
@@ -213,13 +210,12 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit DEMContactNormalLeeHerrmann(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~DEMContactNormalLeeHerrmann(){};
+    //! destructor
+    ~DEMContactNormalLeeHerrmann() override{};
 
     //! evaluate normal contact force
-    virtual void NormalContactForce(const double& gap, const double* radius_i,
-        const double* radius_j, const double& v_rel_normal, const double& m_eff,
-        double& normalcontactforce) const override;
+    void NormalContactForce(const double& gap, const double* radius_i, const double* radius_j,
+        const double& v_rel_normal, const double& m_eff, double& normalcontactforce) const override;
   };
 
   class DEMContactNormalKuwabaraKono : public DEMContactNormalNonlinearDampBase
@@ -228,13 +224,12 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit DEMContactNormalKuwabaraKono(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~DEMContactNormalKuwabaraKono(){};
+    //! destructor
+    ~DEMContactNormalKuwabaraKono() override{};
 
     //! evaluate normal contact force
-    virtual void NormalContactForce(const double& gap, const double* radius_i,
-        const double* radius_j, const double& v_rel_normal, const double& m_eff,
-        double& normalcontactforce) const override;
+    void NormalContactForce(const double& gap, const double* radius_i, const double* radius_j,
+        const double& v_rel_normal, const double& m_eff, double& normalcontactforce) const override;
   };
 
   class DEMContactNormalTsuji : public DEMContactNormalNonlinearDampBase
@@ -243,13 +238,12 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit DEMContactNormalTsuji(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~DEMContactNormalTsuji(){};
+    //! destructor
+    ~DEMContactNormalTsuji() override{};
 
     //! evaluate normal contact force
-    virtual void NormalContactForce(const double& gap, const double* radius_i,
-        const double* radius_j, const double& v_rel_normal, const double& m_eff,
-        double& normalcontactforce) const override;
+    void NormalContactForce(const double& gap, const double* radius_i, const double* radius_j,
+        const double& v_rel_normal, const double& m_eff, double& normalcontactforce) const override;
   };
 
 }  // namespace PARTICLEINTERACTION

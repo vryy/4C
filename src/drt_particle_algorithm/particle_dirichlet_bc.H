@@ -49,10 +49,10 @@ namespace PARTICLEALGORITHM
     virtual ~DirichletBoundaryConditionHandler(){};
 
     //! init dirichlet boundary condition handler
-    virtual void Init();
+    void Init();
 
     //! setup dirichlet boundary condition handler
-    virtual void Setup(
+    void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
 
     //! write restart of dirichlet boundary condition handler

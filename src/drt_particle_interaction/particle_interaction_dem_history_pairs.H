@@ -63,13 +63,13 @@ namespace PARTICLEINTERACTION
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  class DEMHistoryPairs
+  class DEMHistoryPairs final
   {
    public:
     //! constructor
     explicit DEMHistoryPairs(const Epetra_Comm& comm);
 
-    //! virtual destructor
+    //! destructor
     ~DEMHistoryPairs(){};
 
     //! init history pair handler

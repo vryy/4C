@@ -37,7 +37,7 @@ namespace IO
  *---------------------------------------------------------------------------*/
 namespace PARTICLEENGINE
 {
-  class ParticleRuntimeVtpWriter
+  class ParticleRuntimeVtpWriter final
   {
    public:
     //! constructor

@@ -50,7 +50,7 @@ namespace PARTICLEALGORITHM
     virtual ~InputGenerator(){};
 
     //! init input generator
-    virtual void Init();
+    void Init();
 
     //! generate particles
     void GenerateParticles(

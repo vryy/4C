@@ -44,14 +44,14 @@ namespace PARTICLEALGORITHM
     virtual ~InitialFieldHandler(){};
 
     //! init initial field handler
-    virtual void Init();
+    void Init();
 
     //! setup initial field handler
-    virtual void Setup(
+    void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
 
     //! set initial fields
-    virtual void SetInitialFields();
+    void SetInitialFields();
 
    protected:
     //! particle simulation parameter list

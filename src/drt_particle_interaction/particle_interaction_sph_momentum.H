@@ -59,7 +59,7 @@ namespace MAT
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  class SPHMomentum
+  class SPHMomentum final
   {
    public:
     //! constructor
