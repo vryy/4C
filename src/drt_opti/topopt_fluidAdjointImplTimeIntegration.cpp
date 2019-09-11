@@ -378,9 +378,11 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
   TEUCHOS_FUNC_TIME_MONITOR("   + nonlin. iteration/lin. adjoint solve");
 
   // ---------------------------------------------- nonlinear iteration
-  // ------------------------------- stop nonlinear iteration when both
-  //                                 increment-norms are below this bound
-  const double ittol = params_->get<double>("tolerance for nonlin iter");
+  const double velrestol = params_->get<double>("velocity residual tolerance");
+  const double velinctol = params_->get<double>("velocity increment tolerance");
+  const double presrestol = params_->get<double>("pressure residual tolerance");
+  const double presinctol = params_->get<double>("pressure increment tolerance");
+  const double ittol = std::min(std::min(std::min(velrestol, presrestol), velinctol), presinctol);
 
   //------------------------------ turn adaptive solver tolerance on/off
   const bool isadapttol = params_->get<bool>("ADAPTCONV", true);
@@ -408,8 +410,13 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
         "+------------+-------------------+--------------+--------------+--------------+-----------"
         "---+\n");
     printf(
-        "|- step/max -|- tol      [norm] -|-- vel-res ---|-- pre-res ---|-- vel-inc ---|-- pre-inc "
+        "|- step/max -|-- vel-res ---|-- pre-res ---|-- vel-inc ---|-- pre-inc "
         "---|\n");
+    printf(
+        "|-   norm   -|-- abs. L2 ---|-- abs. L2 ---|-- rel. L2 ---|-- rel. L2 "
+        "---|\n");
+    printf("|-   tol    -| %10.3E   | %10.3E   | %10.3E   | %10.3E   |\n", velrestol, presrestol,
+        velinctol, presinctol);
   }
 
   while (stopnonliniter == false)
@@ -531,9 +538,9 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
     {
       if (myrank_ == 0)
       {
-        printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |      --      |      --      |",
-            itnum, itemax, ittol, vresnorm_, presnorm_);
-        printf(" (      --     ,te=%10.3E)\n", dtele_);
+        printf("|  %3d/%3d   | %10.3E   | %10.3E   | %10.3E   | %10.3E   |", itnum, itemax,
+            vresnorm_, presnorm_, incvelnorm_L2_ / velnorm_L2_, incprenorm_L2_ / prenorm_L2_);
+        printf(" (ts=%10.3E,te=%10.3E", dtsolve_, dtele_);
       }
     }
     /* ordinary case later iteration steps:
@@ -544,15 +551,14 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
       // this is the convergence check
       // We always require at least one solve. Otherwise the
       // perturbation at the FSI interface might get by unnoticed.
-      if (vresnorm_ <= ittol and presnorm_ <= ittol and incvelnorm_L2_ / velnorm_L2_ <= ittol and
-          incprenorm_L2_ / prenorm_L2_ <= ittol)
+      if (vresnorm_ <= velrestol and presnorm_ <= presrestol and
+          incvelnorm_L2_ / velnorm_L2_ <= velinctol and incprenorm_L2_ / prenorm_L2_ <= presinctol)
       {
         stopnonliniter = true;
         if (myrank_ == 0)
         {
-          printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
-              itnum, itemax, ittol, vresnorm_, presnorm_, incvelnorm_L2_ / velnorm_L2_,
-              incprenorm_L2_ / prenorm_L2_);
+          printf("|  %3d/%3d   | %10.3E   | %10.3E   |      --      |      --      |", itnum,
+              itemax, vresnorm_, presnorm_);
           printf(" (ts=%10.3E,te=%10.3E)\n", dtsolve_, dtele_);
           printf(
               "+------------+-------------------+--------------+--------------+--------------+-----"
@@ -562,9 +568,9 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
           if (errfile != NULL)
           {
             fprintf(errfile,
-                "fluid solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  "
+                "fluid solve:   %3d/%3d  vres=%10.3E  pres=%10.3E  vinc=%10.3E  "
                 "pinc=%10.3E\n",
-                itnum, itemax, ittol, vresnorm_, presnorm_, incvelnorm_L2_ / velnorm_L2_,
+                itnum, itemax, vresnorm_, presnorm_, incvelnorm_L2_ / velnorm_L2_,
                 incprenorm_L2_ / prenorm_L2_);
           }
         }
@@ -574,9 +580,8 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
       {
         if (myrank_ == 0)
         {
-          printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
-              itnum, itemax, ittol, vresnorm_, presnorm_, incvelnorm_L2_ / velnorm_L2_,
-              incprenorm_L2_ / prenorm_L2_);
+          printf("|  %3d/%3d   | %10.3E  | %10.3E   | %10.3E   | %10.3E   |", itnum, itemax,
+              vresnorm_, presnorm_, incvelnorm_L2_ / velnorm_L2_, incprenorm_L2_ / prenorm_L2_);
           printf(" (ts=%10.3E,te=%10.3E)\n", dtsolve_, dtele_);
         }
       }
@@ -584,9 +589,9 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
 
     // warn if itemax is reached without convergence, but proceed to
     // next timestep...
-    if ((itnum == itemax) and
-        (vresnorm_ > ittol or presnorm_ > ittol or incvelnorm_L2_ / velnorm_L2_ > ittol or
-            incprenorm_L2_ / prenorm_L2_ > ittol))
+    if ((itnum == itemax) and (vresnorm_ <= velrestol or presnorm_ <= presrestol or
+                                  incvelnorm_L2_ / velnorm_L2_ <= velinctol or
+                                  incprenorm_L2_ / prenorm_L2_ <= presinctol))
     {
       stopnonliniter = true;
       if (myrank_ == 0)
@@ -599,14 +604,15 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
         if (errfile != NULL)
         {
           fprintf(errfile,
-              "fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  "
+              "fluid unconverged solve:   %3d/%3d  vres=%10.3E  pres=%10.3E  "
               "vinc=%10.3E  pinc=%10.3E\n",
-              itnum, itemax, ittol, vresnorm_, presnorm_, incvelnorm_L2_ / velnorm_L2_,
+              itnum, itemax, vresnorm_, presnorm_, incvelnorm_L2_ / velnorm_L2_,
               incprenorm_L2_ / prenorm_L2_);
         }
       }
       break;
     }
+
 
     //--------- Apply Dirichlet boundary conditions to system of equations
     //          residual displacements are supposed to be zero at
