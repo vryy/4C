@@ -122,20 +122,6 @@ namespace DRT
       {
         return ElemagDiffType::Instance().UniqueParObjectId();
       }
-      /*!
-      \brief Pack this class so it can be communicated
-
-      \ref Pack and \ref Unpack are used to communicate this element
-
-      */
-      virtual void Pack(DRT::PackBuffer& data) const;
-
-      /*!
-      \brief Unpack data from a char vector into this class
-
-      \ref Pack and \ref Unpack are used to communicate this element
-      */
-      virtual void Unpack(const std::vector<char>& data);
 
       //@}
 
@@ -152,43 +138,7 @@ namespace DRT
 
       virtual DRT::ElementType& ElementType() const { return ElemagDiffType::Instance(); }
 
-      //@}
-
-      //! @name Input and Creation
-
-      /*!
-      \brief Read input for this element
-      */
-      bool ReadElement(const std::string& eletype, const std::string& distype,
-          DRT::INPUT::LineDefinition* linedef);
-
-      //@}
-      // state vectors which do not have to be stored as global distributed vector, since
-      // we are in a discontinuous setting here
-      //! @name interior stored states
-
-      /// Trace values per element
-      Epetra_SerialDenseVector elenodeTrace2d_;
-
-      // state vectors which do not have to be stored as global distributed vector, since
-      // we are in a discontinuous setting here
-      //! @name interior stored states
-
-      /// This variable represents the elctric field in the nodes
-      Epetra_SerialDenseVector eleinteriorElectric_;
-      Epetra_SerialDenseVector eleinteriorElectricnm_;
-
-      /// This variable represents the magnetic field in thge nodes
-      Epetra_SerialDenseVector eleinteriorMagnetic_;
-
      private:
-      int fixedPower(const int number, const int pow) const
-      {
-        int result = 1;
-        for (int i = 0; i < pow; ++i) result *= number;
-        return result;
-      }
-
       // don't want = operator
       ElemagDiff& operator=(const ElemagDiff& old);
 

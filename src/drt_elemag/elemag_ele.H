@@ -347,11 +347,6 @@ namespace DRT
       Epetra_SerialDenseVector eleinteriorMagnetic_;
       Epetra_SerialDenseVector eleinteriorMagneticnm_;
 
-      // Is it for the post processing?
-      /*
-      Epetra_SerialDenseVector eleADERimprovedGrad_;
-      Epetra_SerialDenseVector eleADERimprovedDiv_;
-      */
       //@}
 
      protected:
@@ -362,12 +357,9 @@ namespace DRT
       // stores the degree of the element
       unsigned char degree_;
 
-      // Why this?
       // stores the polynomial type (tensor product or complete polynomial)
       bool completepol_;
 
-     private:
-      // Why this?
       int fixedPower(const int number, const int pow) const
       {
         int result = 1;
@@ -375,7 +367,7 @@ namespace DRT
         return result;
       }
 
-      // Why this?
+     private:
       // don't want = operator
       Elemag& operator=(const Elemag& old);
 

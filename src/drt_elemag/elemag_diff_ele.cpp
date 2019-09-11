@@ -111,66 +111,6 @@ DRT::Element* DRT::ELEMENTS::ElemagDiff::Clone() const
   return newelement;
 }
 
-
-/*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- |                                                      berardocco 03/19|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ElemagDiff::Pack(DRT::PackBuffer& data) const
-{
-  DRT::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data, type);
-
-  // add base class Element
-  Element::Pack(data);
-
-  // Discretisation type
-  AddtoPack(data, distype_);
-  int degree = degree_;
-  AddtoPack(data, degree);
-  degree = completepol_;
-  AddtoPack(data, degree);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Unpack data                                                (public) |
- |                                                      berardocco 03/19|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ElemagDiff::Unpack(const std::vector<char>& data)
-{
-  std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  dsassert(type == UniqueParObjectId(), "wrong instance type data");
-
-  // extract base class Element
-  std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
-  Element::Unpack(basedata);
-
-  // distype
-  distype_ = static_cast<DiscretizationType>(ExtractInt(position, data));
-  int val = 0;
-  ExtractfromPack(position, data, val);
-  dsassert(val >= 0 && val < 255, "Degree out of range");
-  degree_ = val;
-  ExtractfromPack(position, data, val);
-  completepol_ = val;
-
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
-  return;
-}
-
-
 /*----------------------------------------------------------------------*
  |  print this element (public)                         berardocco 03/19|
  *----------------------------------------------------------------------*/
@@ -180,29 +120,6 @@ void DRT::ELEMENTS::ElemagDiff::Print(std::ostream& os) const
   Element::Print(os);
   return;
 }
-
-bool DRT::ELEMENTS::ElemagDiff::ReadElement(
-    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
-{
-  // read number of material model
-  int material = 0;
-  linedef->ExtractInt("MAT", material);
-  SetMaterial(material);
-  int degree;
-  linedef->ExtractInt("DEG", degree);
-  degree_ = degree;
-
-  linedef->ExtractInt("SPC", degree);
-  completepol_ = degree;
-
-  // set discretization type (setOptimalgaussrule is pushed into element
-  // routine)
-  SetDisType(DRT::StringToDistype(distype));
-
-  return true;
-}
-
-
 
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)           berardocco 03/19|
