@@ -96,8 +96,11 @@ namespace GEO
       /*!
       \brief find the volumecell on myrank for which we received data stored in vc_data
        */
-      VolumeCell* findVolumeCell(MeshIntersection::DofSetData&
-              vc_data  ///< volumecell data which have to be identified on myrank
+      VolumeCell* findVolumeCell(
+          MeshIntersection::DofSetData&
+              vc_data,  ///< volumecell data which have to be identified on myrank
+          double tol    ///< geometric tolerance to fit the points of volumecells on two different
+                        ///< processors
       );
 
       /*!

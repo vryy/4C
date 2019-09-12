@@ -645,7 +645,19 @@ void GEO::CUT::Parallel::exportDofSetData(bool include_inner)
 
       // find the volumecell on myrank
       VolumeCell* my_vc = NULL;
-      my_vc = findVolumeCell(*(*vc_data));
+      double tol = PARALLEL_COORD_TOL;
+      int step = 0;
+      while (my_vc == NULL && step < 10)
+      {
+        my_vc = findVolumeCell(*(*vc_data), tol);
+        if (!my_vc)
+        {
+          std::cout << "==| Identification of Volumecells with tolerance = " << tol
+                    << " was not successful |==!" << std::endl;
+          tol *= 10;
+        }
+        ++step;
+      }
 
       if (my_vc == NULL) dserror("no corresponding volumecell for vc in element %d found", peid);
 
@@ -828,9 +840,10 @@ void GEO::CUT::Parallel::distributeDofSetData()
 /*------------------------------------------------------------------------------------------------*
  * find the volumecell on myrank for which we received data stored in vc_data        schott 10/12 *
  *------------------------------------------------------------------------------------------------*/
-GEO::CUT::VolumeCell* GEO::CUT::Parallel::findVolumeCell(MeshIntersection::DofSetData&
-        vc_data  ///< volumecell data which have to be identified on myrank
-)
+GEO::CUT::VolumeCell* GEO::CUT::Parallel::findVolumeCell(
+    MeshIntersection::DofSetData&
+        vc_data,  ///< volumecell data which have to be identified on myrank
+    double tol)
 {
   bool vc_found = true;
 
@@ -898,7 +911,7 @@ GEO::CUT::VolumeCell* GEO::CUT::Parallel::findVolumeCell(MeshIntersection::DofSe
           // compare the coordinates
           for (int i = 0; i < 3; i++)
           {
-            if (fabs((*my_it)->X()[i] - (*rec_it)(i)) > PARALLEL_COORD_TOL)
+            if (fabs((*my_it)->X()[i] - (*rec_it)(i)) > tol)
             {
               point_found = false;
               break;  // stop the loop over coordinates
@@ -934,7 +947,7 @@ GEO::CUT::VolumeCell* GEO::CUT::Parallel::findVolumeCell(MeshIntersection::DofSe
             // compare the coordinates
             for (int i = 0; i < 3; i++)
             {
-              if (fabs((*my_it)->X()[i] - (*rec_it)(i)) > PARALLEL_COORD_TOL)
+              if (fabs((*my_it)->X()[i] - (*rec_it)(i)) > tol)
               {
                 point_found = false;
                 break;  // stop the loop over coordinates
@@ -955,6 +968,11 @@ GEO::CUT::VolumeCell* GEO::CUT::Parallel::findVolumeCell(MeshIntersection::DofSe
         }  // end loop over my_points
       }
     }  // end else
+
+    // additional check which we can make for sure (If there are no DOF Sets this cannot be the
+    // correct Volumecell)
+    if (vc_found == true)
+      if (!cell->NodalDofSet().size()) vc_found = false;
 
 
     if (vc_found == true)
@@ -1068,9 +1086,6 @@ GEO::CUT::VolumeCell* GEO::CUT::Parallel::findVolumeCell(MeshIntersection::DofSe
     }
     GEO::CUT::OUTPUT::GmshEndSection(file, true);
   }
-
-  if (vc_found == false)
-    dserror("no corresponding volumecell for vc in element %d found for node %d", vc_data.peid_);
 
   return my_vc;
 }
