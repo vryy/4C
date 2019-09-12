@@ -64,24 +64,24 @@ namespace PARTICLEINTERACTION
         const double& density, const double& mass, const double& density0) const = 0;
   };
 
-  class SPHEquationOfStateGenTait : public SPHEquationOfStateBase
+  class SPHEquationOfStateGenTait final : public SPHEquationOfStateBase
   {
    public:
     //! constructor
     explicit SPHEquationOfStateGenTait(
         const double& speedofsound, const double& refdensfac, const double& exponent);
 
-    //! virtual destructor
-    virtual ~SPHEquationOfStateGenTait(){};
+    //! destructor
+    ~SPHEquationOfStateGenTait() override{};
 
     //! determine the pressure
-    virtual double DensityToPressure(const double& density, const double& density0) const override;
+    double DensityToPressure(const double& density, const double& density0) const override;
 
     //! determine the density
-    virtual double PressureToDensity(const double& pressure, const double& density0) const override;
+    double PressureToDensity(const double& pressure, const double& density0) const override;
 
     //! determine the energy
-    virtual double DensityToEnergy(
+    double DensityToEnergy(
         const double& density, const double& mass, const double& density0) const override;
 
    private:
@@ -95,23 +95,23 @@ namespace PARTICLEINTERACTION
     const double exponent_;
   };
 
-  class SPHEquationOfStateIdealGas : public SPHEquationOfStateBase
+  class SPHEquationOfStateIdealGas final : public SPHEquationOfStateBase
   {
    public:
     //! constructor
     explicit SPHEquationOfStateIdealGas(const double& speedofsound);
 
-    //! virtual destructor
-    virtual ~SPHEquationOfStateIdealGas(){};
+    //! destructor
+    ~SPHEquationOfStateIdealGas() override{};
 
     //! determine the pressure
-    virtual double DensityToPressure(const double& density, const double& density0) const override;
+    double DensityToPressure(const double& density, const double& density0) const override;
 
     //! determine the density
-    virtual double PressureToDensity(const double& pressure, const double& density0) const override;
+    double PressureToDensity(const double& pressure, const double& density0) const override;
 
     //! determine the energy
-    virtual double DensityToEnergy(
+    double DensityToEnergy(
         const double& density, const double& mass, const double& density0) const override;
 
    private:

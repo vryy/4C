@@ -66,8 +66,8 @@ namespace PARTICLEWALL
     //! constructor
     explicit WallHandlerBase(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~WallHandlerBase();
+    //! destructor
+    ~WallHandlerBase() override;
 
     //! init wall handler
     virtual void Init();
@@ -118,24 +118,23 @@ namespace PARTICLEWALL
     virtual bool HaveValidWallNeighbors() const final { return validwallneighbors_; };
 
     //! get wall discretization
-    virtual Teuchos::RCP<const DRT::Discretization> GetWallDiscretization() const override final
+    Teuchos::RCP<const DRT::Discretization> GetWallDiscretization() const final
     {
       return walldiscretization_;
     };
 
     //! get wall data state container
-    virtual std::shared_ptr<PARTICLEWALL::WallDataState> GetWallDataState() const override final
+    std::shared_ptr<PARTICLEWALL::WallDataState> GetWallDataState() const final
     {
       return walldatastate_;
     }
 
     //! get reference to potential wall neighbors
-    virtual const PARTICLEENGINE::PotentialWallNeighbors& GetPotentialWallNeighbors()
-        const override final;
+    const PARTICLEENGINE::PotentialWallNeighbors& GetPotentialWallNeighbors() const final;
 
     //! determine nodal positions of column wall element
-    virtual void DetermineColWallEleNodalPos(DRT::Element* ele,
-        std::map<int, LINALG::Matrix<3, 1>>& colelenodalpos) const override final;
+    void DetermineColWallEleNodalPos(
+        DRT::Element* ele, std::map<int, LINALG::Matrix<3, 1>>& colelenodalpos) const final;
 
    private:
     //! init wall discretization
@@ -195,48 +194,48 @@ namespace PARTICLEWALL
     bool validwallneighbors_;
   };
 
-  class WallHandlerDiscretCondition : public WallHandlerBase
+  class WallHandlerDiscretCondition final : public WallHandlerBase
   {
    public:
     //! constructor
     explicit WallHandlerDiscretCondition(
         const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~WallHandlerDiscretCondition(){};
+    //! destructor
+    ~WallHandlerDiscretCondition() override{};
 
     //! distribute wall elements and nodes
-    virtual void DistributeWallElementsAndNodes() override final;
+    void DistributeWallElementsAndNodes() override;
 
     //! transfer wall elements and nodes
-    virtual void TransferWallElementsAndNodes() override final;
+    void TransferWallElementsAndNodes() override;
 
    private:
     //! extend wall element ghosting
-    virtual void ExtendWallElementGhosting(std::map<int, std::set<int>>& bintorowelemap);
+    void ExtendWallElementGhosting(std::map<int, std::set<int>>& bintorowelemap);
 
     //! setup wall discretization
-    virtual void SetupWallDiscretization() const override;
+    void SetupWallDiscretization() const override;
   };
 
-  class WallHandlerBoundingBox : public WallHandlerBase
+  class WallHandlerBoundingBox final : public WallHandlerBase
   {
    public:
     //! constructor
     explicit WallHandlerBoundingBox(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~WallHandlerBoundingBox(){};
+    //! destructor
+    ~WallHandlerBoundingBox() override{};
 
     //! distribute wall elements and nodes
-    virtual void DistributeWallElementsAndNodes() override final;
+    void DistributeWallElementsAndNodes() override;
 
     //! transfer wall elements and nodes
-    virtual void TransferWallElementsAndNodes() override final;
+    void TransferWallElementsAndNodes() override;
 
    private:
     //! setup wall discretization
-    virtual void SetupWallDiscretization() const override;
+    void SetupWallDiscretization() const override;
   };
 
 }  // namespace PARTICLEWALL

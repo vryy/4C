@@ -31,27 +31,27 @@ namespace PASI
     //! constructor
     explicit PASI_PartTwoWayCoup(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~PASI_PartTwoWayCoup(){};
+    //! destructor
+    ~PASI_PartTwoWayCoup() override{};
 
     //! init pasi algorithm
-    virtual void Init() override;
+    void Init() override;
 
     //! setup pasi algorithm
-    virtual void Setup() override;
+    void Setup() override;
 
     //! read restart information for given time step
-    virtual void ReadRestart(int restartstep) override;
+    void ReadRestart(int restartstep) override;
 
     //! partitioned two way coupled timeloop
-    virtual void Timeloop() override;
+    void Timeloop() final;
 
    protected:
     //! iteration loop between coupled fields
     virtual void Outerloop();
 
     //! output of fields
-    virtual void Output();
+    void Output() override;
 
     //! update the current states in every iteration
     void IterUpdateStates(
@@ -105,12 +105,12 @@ namespace PASI
     explicit PASI_PartTwoWayCoup_ForceRelax(
         const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~PASI_PartTwoWayCoup_ForceRelax(){};
+    //! destructor
+    ~PASI_PartTwoWayCoup_ForceRelax() override{};
 
    protected:
     //! iteration loop between coupled fields with relaxed forces
-    virtual void Outerloop() override;
+    void Outerloop() override;
 
     //! calculate relaxation parameter
     virtual void CalcOmega(double& omega, const int itnum);
@@ -127,21 +127,21 @@ namespace PASI
     PASI_PartTwoWayCoup_ForceRelaxAitken(
         const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~PASI_PartTwoWayCoup_ForceRelaxAitken(){};
+    //! destructor
+    ~PASI_PartTwoWayCoup_ForceRelaxAitken() override{};
 
     //! init pasi algorithm
-    virtual void Init() override;
+    void Init() override;
 
     //! read restart information for given time step
-    virtual void ReadRestart(int restartstep) override;
+    void ReadRestart(int restartstep) override;
 
    protected:
     //! output of fields
-    virtual void Output() override;
+    void Output() override;
 
     //! calculate relaxation parameter
-    virtual void CalcOmega(double& omega, const int itnum) override;
+    void CalcOmega(double& omega, const int itnum) override;
 
     //! old particle force increment of the outer loop
     Teuchos::RCP<Epetra_Vector> forceincnpold_;

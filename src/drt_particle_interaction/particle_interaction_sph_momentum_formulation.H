@@ -89,14 +89,14 @@ namespace PARTICLEINTERACTION
         double* acc_j) const = 0;
   };
 
-  class SPHMomentumFormulationMonaghan : public SPHMomentumFormulationBase
+  class SPHMomentumFormulationMonaghan final : public SPHMomentumFormulationBase
   {
    public:
     //! constructor
     explicit SPHMomentumFormulationMonaghan();
 
     //! destructor
-    ~SPHMomentumFormulationMonaghan(){};
+    ~SPHMomentumFormulationMonaghan() override{};
 
     //! evaluate specific coefficient
     void SpecificCoefficient(const double* dens_i, const double* dens_j, const double* mass_i,
@@ -134,14 +134,14 @@ namespace PARTICLEINTERACTION
         double* acc_j) const override;
   };
 
-  class SPHMomentumFormulationAdami : public SPHMomentumFormulationBase
+  class SPHMomentumFormulationAdami final : public SPHMomentumFormulationBase
   {
    public:
     //! constructor
     explicit SPHMomentumFormulationAdami();
 
     //! destructor
-    ~SPHMomentumFormulationAdami(){};
+    ~SPHMomentumFormulationAdami() override{};
 
     //! evaluate specific coefficient
     void SpecificCoefficient(const double* dens_i, const double* dens_j, const double* mass_i,

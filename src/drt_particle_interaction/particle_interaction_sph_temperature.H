@@ -56,53 +56,53 @@ namespace MAT
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  class SPHTemperature
+  class SPHTemperature final
   {
    public:
     //! constructor
     explicit SPHTemperature(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~SPHTemperature();
+    //! destructor
+    ~SPHTemperature();
 
     //! init temperature handler
-    virtual void Init();
+    void Init();
 
     //! setup temperature handler
-    virtual void Setup(
+    void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
 
     //! write restart of temperature handler
-    virtual void WriteRestart(const int step, const double time) const;
+    void WriteRestart(const int step, const double time) const;
 
     //! read restart of temperature handler
-    virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
+    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
     //! set current time
-    virtual void SetCurrentTime(const double currenttime);
+    void SetCurrentTime(const double currenttime);
 
     //! set current step size
-    virtual void SetCurrentStepSize(const double currentstepsize);
+    void SetCurrentStepSize(const double currentstepsize);
 
     //! insert temperature evaluation dependent states
-    virtual void InsertParticleStatesOfParticleTypes(
+    void InsertParticleStatesOfParticleTypes(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) const;
 
     //! compute temperature field using energy equation
-    virtual void ComputeTemperature() const;
+    void ComputeTemperature() const;
 
    private:
     //! init heat source handler
-    virtual void InitHeatSourceHandler();
+    void InitHeatSourceHandler();
 
     //! evaluate energy equation
-    virtual void EnergyEquation() const;
+    void EnergyEquation() const;
 
     //! evaluate temperature gradient
-    virtual void TemperatureGradient() const;
+    void TemperatureGradient() const;
 
     //! smoothed particle hydrodynamics specific parameter list
     const Teuchos::ParameterList& params_sph_;

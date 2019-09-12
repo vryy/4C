@@ -93,26 +93,26 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit DEMContactRollingViscous(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~DEMContactRollingViscous(){};
+    //! destructor
+    ~DEMContactRollingViscous() override{};
 
     //! init rolling contact handler
-    virtual void Init();
+    void Init() override;
 
     //! setup rolling contact handler
-    virtual void Setup(const double& k_normal);
+    void Setup(const double& k_normal) override;
 
     //! calculate effective radius
-    virtual void EffectiveRadiusParticle(const double* radius_i, const double* radius_j,
-        const double& gap, double& r_eff) const override;
+    void EffectiveRadiusParticle(const double* radius_i, const double* radius_j, const double& gap,
+        double& r_eff) const override;
 
     //! calculate relative rolling velocity
-    virtual void RelativeRollingVelocity(const double& r_eff, const double* normal,
-        const double* angvel_i, const double* angvel_j, double* v_rel_rolling) const override;
+    void RelativeRollingVelocity(const double& r_eff, const double* normal, const double* angvel_i,
+        const double* angvel_j, double* v_rel_rolling) const override;
 
     //! calculate rolling contact moment
-    virtual void RollingContactMoment(double* gap_rolling, bool& stick_rolling,
-        const double* normal, const double* v_rel_rolling, const double& m_eff, const double& r_eff,
+    void RollingContactMoment(double* gap_rolling, bool& stick_rolling, const double* normal,
+        const double* v_rel_rolling, const double& m_eff, const double& r_eff,
         const double& mu_rolling, const double& normalcontactforce,
         double* rollingcontactmoment) const override;
 
@@ -130,23 +130,23 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit DEMContactRollingCoulomb(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~DEMContactRollingCoulomb(){};
+    //! destructor
+    ~DEMContactRollingCoulomb() override{};
 
     //! setup rolling contact handler
-    virtual void Setup(const double& k_normal);
+    void Setup(const double& k_normal) override;
 
     //! calculate effective radius
-    virtual void EffectiveRadiusParticle(const double* radius_i, const double* radius_j,
-        const double& gap, double& r_eff) const override;
+    void EffectiveRadiusParticle(const double* radius_i, const double* radius_j, const double& gap,
+        double& r_eff) const override;
 
     //! calculate relative rolling velocity
-    virtual void RelativeRollingVelocity(const double& r_eff, const double* normal,
-        const double* angvel_i, const double* angvel_j, double* v_rel_rolling) const override;
+    void RelativeRollingVelocity(const double& r_eff, const double* normal, const double* angvel_i,
+        const double* angvel_j, double* v_rel_rolling) const override;
 
     //! calculate rolling contact moment
-    virtual void RollingContactMoment(double* gap_rolling, bool& stick_rolling,
-        const double* normal, const double* v_rel_rolling, const double& m_eff, const double& r_eff,
+    void RollingContactMoment(double* gap_rolling, bool& stick_rolling, const double* normal,
+        const double* v_rel_rolling, const double& m_eff, const double& r_eff,
         const double& mu_rolling, const double& normalcontactforce,
         double* rollingcontactmoment) const override;
 

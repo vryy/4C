@@ -37,7 +37,7 @@ namespace PARTICLEENGINE
  *---------------------------------------------------------------------------*/
 namespace PARTICLEENGINE
 {
-  class ParticleContainerBundle
+  class ParticleContainerBundle final
   {
    public:
     //! constructor

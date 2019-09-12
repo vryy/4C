@@ -25,7 +25,7 @@
  *---------------------------------------------------------------------------*/
 namespace PARTICLEENGINE
 {
-  class ParticleContainer
+  class ParticleContainer final
   {
    public:
     //! constructor

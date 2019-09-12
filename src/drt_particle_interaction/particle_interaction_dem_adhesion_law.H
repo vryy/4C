@@ -90,10 +90,10 @@ namespace PARTICLEINTERACTION
     explicit DEMAdhesionLawVdWDMT(const Teuchos::ParameterList& params);
 
     //! destructor
-    ~DEMAdhesionLawVdWDMT(){};
+    ~DEMAdhesionLawVdWDMT() override{};
 
     //! init adhesion law handler
-    void Init();
+    void Init() override;
 
     //! calculate adhesion force
     void AdhesionForce(const double& gap, const double& surfaceenergy, const double& r_eff,
@@ -115,7 +115,7 @@ namespace PARTICLEINTERACTION
     explicit DEMAdhesionLawRegDMT(const Teuchos::ParameterList& params);
 
     //! destructor
-    ~DEMAdhesionLawRegDMT(){};
+    ~DEMAdhesionLawRegDMT() override{};
 
     //! calculate adhesion force
     void AdhesionForce(const double& gap, const double& surfaceenergy, const double& r_eff,
