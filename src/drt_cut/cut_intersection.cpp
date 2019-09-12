@@ -1021,7 +1021,7 @@ bool GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside
       {
         try
         {
-          tri_status[tri] = ComputeEdgeTri3IntersectionQuad4Split(tri, close_to_shared_edge + tri);
+          tri_status[tri] = ComputeEdgeTri3IntersectionQuad4Split(tri, &close_to_shared_edge[tri]);
         }
         catch (std::runtime_error& e)
         {
@@ -1048,10 +1048,6 @@ bool GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside
             {
               if (tri == 1)
               {
-                GenerateGmshDump();
-                dserror(
-                    "Here we should create point on diagonal line between two triangles in "
-                    "triangulated quad4! This is not yet implemented!");
                 // possible reference implementation
                 istatus_ = intersect_single_cut_point;
                 final_points.push_back(LINALG::Matrix<3, 1>(FinalPoint()));
@@ -1089,7 +1085,7 @@ bool GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside
         }
         case 2:
         {
-          // fisrt check if this point is not on the split between triangles (diagonal)
+          // first check if this point is not on the split between triangles (diagonal)
           LINALG::Matrix<3, 1> diff = final_points[0];
           diff.Update(-1, final_points[1], 1);
           // this case is unsupported
