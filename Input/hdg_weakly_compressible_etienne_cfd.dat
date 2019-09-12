@@ -42,7 +42,7 @@ TIMESTEP         1.0
 ----------------------------------------------------------SOLVER 1
 SOLVER           Superlu
 ---------------------------------------------------------MATERIALS
-MAT 1 MAT_fluid_weakly_compressible VISCOSITY 0 REFDENSITY 1 REFPRESSURE 0 COMPRCOEFF 0.000001
+MAT 1 MAT_fluid_weakly_compressible VISCOSITY 0 REFDENSITY 1.0 REFPRESSURE 0.0 COMPRCOEFF 0.000001
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.3 DENS 1.0
 ----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2

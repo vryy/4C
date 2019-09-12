@@ -33,7 +33,6 @@ void CONTACT::AnalyticalSolutions2D(const LINALG::Matrix<2, 1>& pos, LINALG::Mat
   // errornorms_bending     = 2D/3D beam bending example
   // errornorms_sphere      = 3D pressurized hollow sphere example
   // errornorms_thicksphere = 3D thick pressurized hollow sphere example
-  // errornorms_manufactured= 2D problem with manufactured solution
   //------------------------------------------------------------------------
 
   //----------------------------------------------------------------------

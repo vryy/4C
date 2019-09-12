@@ -356,6 +356,7 @@ namespace ADAPTER
     {
       return fluid_->ExtractInterfaceForces();
     }
+    /// Apply initial mesh displacement
     virtual void ApplyInitialMeshDisplacement(Teuchos::RCP<const Epetra_Vector> initfluiddisp)
     {
       fluid_->ApplyInitialMeshDisplacement(initfluiddisp);
