@@ -41,13 +41,13 @@ namespace PARTICLEINTERACTION
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  class SPHEquationOfStateBundle
+  class SPHEquationOfStateBundle final
   {
    public:
     //! constructor
     explicit SPHEquationOfStateBundle(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
+    //! destructor
     ~SPHEquationOfStateBundle(){};
 
     //! init equation of state bundle

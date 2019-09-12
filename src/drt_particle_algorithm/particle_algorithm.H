@@ -54,14 +54,14 @@ namespace DRT
  *---------------------------------------------------------------------------*/
 namespace PARTICLEALGORITHM
 {
-  class ParticleAlgorithm : public ADAPTER::AlgorithmBase
+  class ParticleAlgorithm final : public ADAPTER::AlgorithmBase
   {
    public:
     //! constructor
     explicit ParticleAlgorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
     //! destructor
-    ~ParticleAlgorithm();
+    ~ParticleAlgorithm() override;
 
     //! init particle algorithm
     void Init(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& initialparticles);
@@ -70,7 +70,7 @@ namespace PARTICLEALGORITHM
     void Setup();
 
     //! read restart information for given time step
-    void ReadRestart(const int restartstep);
+    void ReadRestart(const int restartstep) override;
 
     //! time loop for particle problem
     void Timeloop();

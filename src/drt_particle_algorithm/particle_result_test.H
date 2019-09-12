@@ -34,24 +34,24 @@ namespace PARTICLEENGINE
  *---------------------------------------------------------------------------*/
 namespace PARTICLEALGORITHM
 {
-  class ParticleResultTest : public DRT::ResultTest
+  class ParticleResultTest final : public DRT::ResultTest
   {
    public:
     //! constructor
     explicit ParticleResultTest();
 
-    //! virtual destructor
-    virtual ~ParticleResultTest(){};
+    //! destructor
+    ~ParticleResultTest() override{};
 
     //! init particle result test
-    virtual void Init();
+    void Init();
 
     //! setup particle result test
-    virtual void Setup(
+    void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
 
     //! test special quantity
-    virtual void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
    private:
     //! interface to particle engine

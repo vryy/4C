@@ -45,7 +45,7 @@ namespace DRT
  *---------------------------------------------------------------------------*/
 namespace PARTICLEWALL
 {
-  class WallDiscretizationRuntimeVtuWriter
+  class WallDiscretizationRuntimeVtuWriter final
   {
    public:
     //! constructor

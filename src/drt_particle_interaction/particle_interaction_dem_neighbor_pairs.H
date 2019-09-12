@@ -55,13 +55,13 @@ namespace PARTICLEINTERACTION
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  class DEMNeighborPairs
+  class DEMNeighborPairs final
   {
    public:
     //! constructor
     explicit DEMNeighborPairs();
 
-    //! virtual destructor
+    //! destructor
     ~DEMNeighborPairs(){};
 
     //! init neighbor pair handler

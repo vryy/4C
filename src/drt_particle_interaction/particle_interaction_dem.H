@@ -37,76 +37,76 @@ namespace PARTICLEINTERACTION
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  class ParticleInteractionDEM : public ParticleInteractionBase
+  class ParticleInteractionDEM final : public ParticleInteractionBase
   {
    public:
     //! constructor
     explicit ParticleInteractionDEM(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~ParticleInteractionDEM();
+    //! destructor
+    ~ParticleInteractionDEM() override;
 
     //! init particle interaction handler
-    virtual void Init();
+    void Init() override;
 
     //! setup particle interaction handler
-    virtual void Setup(
+    void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-        const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface);
+        const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface) override;
 
     //! write restart of particle interaction handler
-    virtual void WriteRestart(const int step, const double time) const;
+    void WriteRestart(const int step, const double time) const override;
 
     //! read restart of particle interaction handler
-    virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
+    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader) override;
 
     //! insert interaction dependent states of all particle types
-    virtual void InsertParticleStatesOfParticleTypes(
+    void InsertParticleStatesOfParticleTypes(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) override;
 
     //! set initial states
-    virtual void SetInitialStates() override;
+    void SetInitialStates() override;
 
     //! evaluate particle interactions
-    virtual void EvaluateInteractions() override;
+    void EvaluateInteractions() override;
 
     //! maximum interaction distance (on this processor)
-    virtual double MaxInteractionDistance() const override;
+    double MaxInteractionDistance() const override;
 
     //! distribute interaction history
-    virtual void DistributeInteractionHistory() const override;
+    void DistributeInteractionHistory() const override;
 
     //! communicate interaction history
-    virtual void CommunicateInteractionHistory() const override;
+    void CommunicateInteractionHistory() const override;
 
     //! set current step size
-    virtual void SetCurrentStepSize(const double currentstepsize);
+    void SetCurrentStepSize(const double currentstepsize) override;
 
    private:
     //! init neighbor pair handler
-    virtual void InitNeighborPairHandler();
+    void InitNeighborPairHandler();
 
     //! init history pair handler
-    virtual void InitHistoryPairHandler();
+    void InitHistoryPairHandler();
 
     //! init contact handler
-    virtual void InitContactHandler();
+    void InitContactHandler();
 
     //! init adhesion handler
-    virtual void InitAdhesionHandler();
+    void InitAdhesionHandler();
 
     //! set initial radius
-    virtual void SetInitialRadius();
+    void SetInitialRadius();
 
     //! set initial mass
-    virtual void SetInitialMass();
+    void SetInitialMass();
 
     //! clear force and moment states of particles
-    virtual void ClearForceAndMomentStates() const;
+    void ClearForceAndMomentStates() const;
 
     //! compute acceleration from force and moment
-    virtual void ComputeAcceleration() const;
+    void ComputeAcceleration() const;
 
     //! discrete element method specific parameter list
     const Teuchos::ParameterList& params_dem_;

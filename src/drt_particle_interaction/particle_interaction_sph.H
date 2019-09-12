@@ -43,85 +43,85 @@ namespace PARTICLEINTERACTION
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  class ParticleInteractionSPH : public ParticleInteractionBase
+  class ParticleInteractionSPH final : public ParticleInteractionBase
   {
    public:
     //! constructor
     explicit ParticleInteractionSPH(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~ParticleInteractionSPH();
+    //! destructor
+    ~ParticleInteractionSPH() override;
 
     //! init particle interaction handler
-    virtual void Init();
+    void Init() override;
 
     //! setup particle interaction handler
-    virtual void Setup(
+    void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-        const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface);
+        const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface) override;
 
     //! write restart of particle interaction handler
-    virtual void WriteRestart(const int step, const double time) const;
+    void WriteRestart(const int step, const double time) const override;
 
     //! read restart of particle interaction handler
-    virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
+    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader) override;
 
     //! insert interaction dependent states of all particle types
-    virtual void InsertParticleStatesOfParticleTypes(
+    void InsertParticleStatesOfParticleTypes(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) override;
 
     //! set initial states
-    virtual void SetInitialStates() override;
+    void SetInitialStates() override;
 
     //! evaluate particle interactions
-    virtual void EvaluateInteractions() override;
+    void EvaluateInteractions() override;
 
     //! maximum interaction distance (on this processor)
-    virtual double MaxInteractionDistance() const override;
+    double MaxInteractionDistance() const override;
 
     //! distribute interaction history
-    virtual void DistributeInteractionHistory() const override;
+    void DistributeInteractionHistory() const override;
 
     //! communicate interaction history
-    virtual void CommunicateInteractionHistory() const override;
+    void CommunicateInteractionHistory() const override;
 
     //! set current time
-    virtual void SetCurrentTime(const double currenttime);
+    void SetCurrentTime(const double currenttime);
 
     //! set current step size
-    virtual void SetCurrentStepSize(const double currentstepsize);
+    void SetCurrentStepSize(const double currentstepsize);
 
    private:
     //! init kernel handler
-    virtual void InitKernelHandler();
+    void InitKernelHandler();
 
     //! init equation of state bundle
-    virtual void InitEquationOfStateBundle();
+    void InitEquationOfStateBundle();
 
     //! init neighbor pair handler
-    virtual void InitNeighborPairHandler();
+    void InitNeighborPairHandler();
 
     //! init density handler
-    virtual void InitDensityHandler();
+    void InitDensityHandler();
 
     //! init pressure handler
-    virtual void InitPressureHandler();
+    void InitPressureHandler();
 
     //! init temperature handler
-    virtual void InitTemperatureHandler();
+    void InitTemperatureHandler();
 
     //! init momentum handler
-    virtual void InitMomentumHandler();
+    void InitMomentumHandler();
 
     //! init surface tension handler
-    virtual void InitSurfaceTensionHandler();
+    void InitSurfaceTensionHandler();
 
     //! init boundary particle handler
-    virtual void InitBoundaryParticleHandler();
+    void InitBoundaryParticleHandler();
 
     //! init phase change handler
-    virtual void InitPhaseChangeHandler();
+    void InitPhaseChangeHandler();
 
     //! smoothed particle hydrodynamics specific parameter list
     const Teuchos::ParameterList& params_sph_;

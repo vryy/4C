@@ -80,14 +80,14 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
     // non matching volume meshes of fluid and ale
     Teuchos::RCP<ADAPTER::MortarVolCoupl> coupfa_volmortar = Teuchos::rcp(new MortarVolCoupl());
 
-    // couple displacement dofs of ale and velocity/momentum dofs of fluid
+    // couple displacement dofs of ale and velocity dofs of fluid
 
     // projection ale -> fluid : all ndim dofs (displacements)
     std::vector<int> coupleddof12 = std::vector<int>(ndim, 1);
 
-    // projection fluid -> ale : ndim dofs (only velocity/momentum, no pressure/density)
+    // projection fluid -> ale : ndim dofs (only velocity, no pressure)
     std::vector<int> coupleddof21 = std::vector<int>(ndim + 1, 1);
-    // unmark pressure/density dof
+    // unmark pressure dof
     coupleddof21[ndim] = 0;
 
     // define dof sets to be coupled for both projections
@@ -135,14 +135,14 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
   {
     Teuchos::RCP<MortarVolCoupl> icoupfa = Teuchos::rcp(new MortarVolCoupl());
 
-    // couple displacement dofs of ale and velocity/momentum dofs of fluid
+    // couple displacement dofs of ale and velocity dofs of fluid
 
     // projection ale -> fluid : all ndim dofs (displacements)
     std::vector<int> coupleddof12 = std::vector<int>(ndim, 1);
 
-    // projection fluid -> ale : ndim dofs (only velocity/momentum, no pressure/density)
+    // projection fluid -> ale : ndim dofs (only velocity, no pressure)
     std::vector<int> coupleddof21 = std::vector<int>(ndim + 1, 1);
-    // unmark pressure/density dof
+    // unmark pressure dof
     coupleddof21[ndim] = 0;
 
     // define dof sets to be coupled for both projections

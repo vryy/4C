@@ -347,12 +347,29 @@ namespace FLD
 
     virtual void UpdateGridv();
 
+    /// Get xFluid Background Discretization
     Teuchos::RCP<DRT::DiscretizationXFEM> DiscretisationXFEM() { return xdiscret_; }
 
+    /// Get XFEM Condition Manager
     Teuchos::RCP<XFEM::ConditionManager> GetConditionManager() { return condition_manager_; }
 
     /// evaluate the CUT for in the next fluid evaluate
     void Set_EvaluateCut(bool evaluate_cut) { evaluate_cut_ = evaluate_cut; }
+
+    /// Get Cut Wizard
+    Teuchos::RCP<GEO::CutWizard> GetCutWizard()
+    {
+      if (state_ != Teuchos::null)
+        return state_->Wizard();
+      else
+        return Teuchos::null;
+    }
+
+    /// Get xFluid ParameterList
+    Teuchos::RCP<Teuchos::ParameterList> Params() { return params_; }
+
+    /// Set state vectors depending on time integration scheme
+    void SetStateTimInt();
 
    protected:
     /// (pseudo-)timeloop finished?
@@ -410,9 +427,6 @@ namespace FLD
         Teuchos::RCP<Epetra_Vector>& hist);
 
     void SetGamma(Teuchos::ParameterList& eleparams);
-
-    /// set state vectors depending on time integration scheme
-    void SetStateTimInt();
 
     /*!
     \brief Scale separation
@@ -695,6 +709,9 @@ namespace FLD
 
     //! @name check interfacetips in timeintegration
     bool xfluid_timint_check_interfacetips_;
+
+    //! @name check sliding on surface in timeintegration
+    bool xfluid_timint_check_sliding_on_surface_;
     //@}
 
     /// initial flow field
@@ -770,6 +787,9 @@ namespace FLD
     int mc_idx_;
 
     bool include_inner_;
+
+    /// Apply ghost penalty stabilization also for inner faces when possible
+    bool ghost_penalty_add_inner_faces_;
 
     //--------------------------------------------------------------------
 

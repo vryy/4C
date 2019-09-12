@@ -1,7 +1,5 @@
 //
 // Maintainer: Andrea La Spina
-// laspina@lnm.mw.tum.de
-// 089 - 289-15265
 //
 -------------------------------------------------------------TITLE
 Weakly compressible flow with manufactured solution on a deformed
@@ -37,8 +35,8 @@ UPDATEMATRIX     no
 LINEAR_SOLVER    1
 -------------------------------------------------------FSI DYNAMIC
 MAXTIME          1.0
-NUMSTEP          2    // to impose the BCs on the deformed mesh
-TIMESTEP         0.5
+NUMSTEP          1
+TIMESTEP         1.0
 ----------------------------------------------------------SOLVER 1
 SOLVER           Superlu
 ---------------------------------------------------------MATERIALS

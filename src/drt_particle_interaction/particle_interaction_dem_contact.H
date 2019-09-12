@@ -57,13 +57,13 @@ namespace PARTICLEINTERACTION
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  class DEMContact
+  class DEMContact final
   {
    public:
     //! constructor
     explicit DEMContact(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
+    //! destructor
     ~DEMContact();
 
     //! init contact handler

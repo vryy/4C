@@ -463,6 +463,7 @@ set(OBJS_DRT_LIB
   src/drt_lib/drt_singletondestruction.cpp
   src/drt_lib/drt_function.cpp
   src/drt_lib/drt_functionvariables.cpp
+  src/drt_lib/drt_function_library.cpp
   src/drt_lib/drt_globalproblem.cpp
   src/drt_lib/drt_locsys.cpp
   src/drt_lib/drt_node.cpp

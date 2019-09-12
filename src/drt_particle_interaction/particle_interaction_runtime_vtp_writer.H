@@ -39,7 +39,7 @@ namespace IO
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  class InteractionWriter
+  class InteractionWriter final
   {
    public:
     //! constructor

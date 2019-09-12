@@ -138,19 +138,19 @@ namespace PARTICLEALGORITHM
     //! constructor
     TimIntSemiImplicitEuler(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~TimIntSemiImplicitEuler(){};
+    //! destructor
+    ~TimIntSemiImplicitEuler() override{};
 
     //! setup particle time integration
-    virtual void Setup(
+    void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-        const bool modifiedstates);
+        const bool modifiedstates) override;
 
     //! time integration scheme specific pre-interaction routine
-    virtual void PreInteractionRoutine() override;
+    void PreInteractionRoutine() override;
 
     //! time integration scheme specific post-interaction routine
-    virtual void PostInteractionRoutine() override;
+    void PostInteractionRoutine() override;
   };
 
   class TimIntVelocityVerlet : public TimInt
@@ -169,17 +169,17 @@ namespace PARTICLEALGORITHM
     //! constructor
     TimIntVelocityVerlet(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~TimIntVelocityVerlet(){};
+    //! destructor
+    ~TimIntVelocityVerlet() override{};
 
     //! time integration scheme specific initialization routine
-    virtual void SetInitialStates();
+    void SetInitialStates() override;
 
     //! time integration scheme specific pre-interaction routine
-    virtual void PreInteractionRoutine() override;
+    void PreInteractionRoutine() override;
 
     //! time integration scheme specific post-interaction routine
-    virtual void PostInteractionRoutine() override;
+    void PostInteractionRoutine() override;
 
    private:
     //! half time step size

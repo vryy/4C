@@ -35,8 +35,8 @@ namespace MAT
       //! constructor
       ParticleMaterialBase(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      //! virtual desctructor
-      virtual ~ParticleMaterialBase(){};
+      //! desctructor
+      ~ParticleMaterialBase() override{};
 
       //! @name material parameters
       //@{
@@ -50,7 +50,7 @@ namespace MAT
       //@}
 
       //! create material instance of matching type with parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial() = 0;
+      Teuchos::RCP<MAT::Material> CreateMaterial() override = 0;
     };
 
   }  // namespace PAR
