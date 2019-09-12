@@ -832,13 +832,13 @@ bool GEO::CUT::Element::PositionByAngle(Point* p, Point* cutpoint, Side* s)
   double cosine = normal.Dot(line_vec);
   cosine /= (n_norm * l_norm);
 
-  if (cosine > 0.0)
+  if (cosine > 0.0 + 1e-3)
   {
     p->Position(Point::outside);
     // std::cout << " set position to outside" << std::endl;
     return true;
   }
-  else if (cosine < 0.0)
+  else if (cosine < 0.0 - 1e-3)
   {
     p->Position(Point::inside);
     // std::cout << " set position to inside" << std::endl;
@@ -908,7 +908,7 @@ bool GEO::CUT::Element::IsOrthogonalSide(Side* s, Point* p, Point* cutpoint)
     s->Normal(rs, normal);
 
     // check for angle=+-90 between line and normal
-    if (fabs(normal.Dot(line)) < (0.0 + BASICTOL)) return true;
+    if (fabs(normal.Dot(line)) < (0.015 + BASICTOL)) return true;
   }
 
   return false;
