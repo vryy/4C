@@ -130,6 +130,13 @@ namespace GEO
       /*! \brief Get the boundingbox */
       const LINALG::Matrix<3, 2>& GetBoundingVolume() const { return box_; }
 
+      /// Compute and return the diagonal length of the BoundingBox
+      double Diagonal()
+      {
+        return sqrt((maxx() - minx()) * (maxx() - minx()) + (maxy() - miny()) * (maxy() - miny()) +
+                    (maxz() - minz()) * (maxz() - minz()));
+      }
+
      protected:
       bool InBetween(const double& norm, const double& smin, const double& smax, const double& omin,
           const double& omax) const;

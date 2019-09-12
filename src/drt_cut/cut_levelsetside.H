@@ -144,7 +144,8 @@ namespace GEO
        *  from its global coordinates (xyz), return TRUE if successful. The last coordinate
        *  of \c rsd is the distance of the n-dimensional point \c xyz to the embedded
        *  side. */
-      virtual bool LocalCoordinates(const double* xyz, double* rst, bool allow_dist = false)
+      virtual bool LocalCoordinates(
+          const double* xyz, double* rst, bool allow_dist = false, double tol = POSITIONTOL)
       {
         dserror("no local coordinates on level set cut side");
         exit(EXIT_FAILURE);
@@ -159,7 +160,7 @@ namespace GEO
 
       /*! \brief Calculates the normal vector with respect to the element shape
        *  at local coordinates \c rs */
-      virtual void Normal(const double* xsi, double* normal)
+      virtual void Normal(const double* xsi, double* normal, bool unitnormal = true)
       {
         dserror("no normal vector on level set cut side implemented");
       }

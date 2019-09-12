@@ -75,7 +75,8 @@
 // geometries if volume of cell is less than this, we do not generate gauss rules
 #define REF_VOL_DIRDIV 1e-6
 
-#define SELF_CUT_POS_TOL 1e-10
+// Tolerance use in the Selfcut for detection of the position insider or outside
+#define SELF_CUT_POS_TOL 1e-8
 
 // If the area of boundarycell is less than this value, then it is eliminated from boundary
 // integration Such small area can lead to zero or a very small negative value in the boundary cell

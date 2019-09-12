@@ -144,14 +144,16 @@ namespace GEO
 
       virtual enum Status Status() const = 0;
 
+      /** \brief Default Compute method
+       *
+       *  \param tol (in)        : User defined tolerance for the WithinLimits check.
+       *  \param allow_dist (in) : If TRUE, the method allows an offset in normal direction,
+       *                           otherwise the higher-dimensional point \c px_ has to lie
+       *                           on the lower dimensional element. */
       bool Compute() { return Compute(POSITIONTOL); }
       virtual bool Compute(const double& tol) = 0;
       bool Compute(const bool& allow_dist) { return Compute(POSITIONTOL, allow_dist); }
-      virtual bool Compute(const double& tol, const bool& allow_dist)
-      {
-        dserror("Unsupported for the standard case!");
-        exit(EXIT_FAILURE);
-      }
+      virtual bool Compute(const double& tol, const bool& allow_dist) = 0;
 
       virtual bool IsGivenPointWithinElement() = 0;
 
@@ -421,10 +423,15 @@ namespace GEO
 
       /** \brief Compute method for the standard case with user defined tolerance
        *
-       *  Check whether the n-dimensional point lies inside the n-dimensional
-       *  element.
-       *
-       *  \param Tol (in) : User defined tolerance for the WithinLimits check. */
+       *  \param Tol (in)        : User defined tolerance for the WithinLimits check.
+       *  \param allow_dist (in) : If TRUE, the method allows an offset in normal direction,
+       *                           otherwise the higher-dimensional point \c px_ has to lie
+       *                           on the lower dimensional element. */
+      virtual bool Compute(const double& Tol, const bool& allow_dist)
+      {
+        if (allow_dist) dserror("Compute: allow_dist for ComputePosition not possible!");
+        return Compute(Tol);
+      }
       virtual bool Compute(const double& Tol);
 
       virtual bool IsGivenPointWithinElement() { return Position::Compute(); }

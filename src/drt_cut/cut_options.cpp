@@ -40,6 +40,10 @@ void GEO::CUT::Options::Init_by_Paramlist(const Teuchos::ParameterList& cutparam
   GEO::CUT::PositionFactory::SpecifyGeneralDistFloattype(general_position_dist_floattype_);
   GEO::CUT::PositionFactory::SpecifyGeneralPosFloattype(general_position_pos_floattype_);
   split_cutsides_ = DRT::INPUT::IntegralValue<bool>(cutparams, "SPLIT_CUTSIDES");
+  do_selfcut_ = DRT::INPUT::IntegralValue<bool>(cutparams, "DO_SELFCUT");
+  selfcut_do_meshcorrection_ =
+      DRT::INPUT::IntegralValue<bool>(cutparams, "SELFCUT_DO_MESHCORRECTION");
+  selfcut_island_geom_multiplicator_ = cutparams.get<int>("SELFCUT_MESHCORRECTION_MULTIPLICATOR");
 }
 
 /// Initializes Cut Parameters for Cuttests (use full cln) -- slowest option
@@ -53,4 +57,5 @@ void GEO::CUT::Options::Init_for_Cuttests()
   GEO::CUT::PositionFactory::SpecifyGeneralDistFloattype(general_position_dist_floattype_);
   GEO::CUT::PositionFactory::SpecifyGeneralPosFloattype(general_position_pos_floattype_);
   split_cutsides_ = true;
+  selfcut_do_meshcorrection_ = false;
 }

@@ -24,12 +24,14 @@ namespace GEO
     class Side;
     class Cycle;
     class Mesh;
+    class MeshHandle;
+    class BoundingBox;
 
     class SelfCut
     {
      public:
       /// constructor
-      SelfCut(Mesh& cut_mesh);
+      SelfCut(MeshHandle& cut_mesh_handle, int myrank);
 
       /*========================================================================*/
       //! @name Main routines to run the self cut
@@ -101,6 +103,12 @@ namespace GEO
       /// erases all edges which are cut by a cutside
       void EraseCuttedEdges();
 
+      /// Is this edge connected to the backgound mesh
+      bool ConnectedtoBackground(Edge* edge);
+
+      /// Is this node connected to the backgound mesh
+      bool ConnectedtoBackground(Node* node);
+
       /*========================================================================*/
       //! @name Basic routines to run the element selection
       /*========================================================================*/
@@ -129,6 +137,11 @@ namespace GEO
 
       /// identify the islands
       void FindIslands();
+
+      /// Get next Sides
+      void NextSides(Side* cutside, Teuchos::RCP<GEO::CUT::BoundingBox>& tmpbb,
+          // plain_side_set allselfcutsides,
+          plain_side_set& selfcutsides, plain_side_set& islandsides, bool& IsIsland);
 
       /*========================================================================*/
       //! @name Basic routines to run the status inspection
@@ -176,10 +189,13 @@ namespace GEO
       bool CheckNormal(std::vector<double> cutsideplane, Cycle& maincycle);
 
       /// deletes all pointers which are pointing to a soon to be erased side
-      void EraseSidePointer(Side& cutside);
+      void EraseSidePointer(Side& cutside, bool erase_nodepointers);
 
       /// erases a side
       void EraseSide(std::vector<plain_int_set>& cutsideids);
+
+      /// erases a side which is in the unphysical part
+      void EraseInsideSide(std::vector<plain_int_set>& cutsideids);
 
       /// deletes all pointers which are pointing to a soon to be erased edge
       void EraseEdgePointer(Edge& cutsideedge);
@@ -207,11 +223,16 @@ namespace GEO
 
       void SideNodePlot(Side& side);
 
-      void Debug(const std::string& viewname);
-
 
      private:
+      // My Processor Id --> Only for output purposes
+      int myrank_;
+
+      /// The Cut Mesh
       GEO::CUT::Mesh& mesh_;
+
+      /// The Cut Meshhandle (Interface to the outer world)
+      GEO::CUT::MeshHandle& meshhandle_;
 
       std::map<plain_int_set, Teuchos::RCP<Side>> selfcut_sides_;
 
@@ -220,6 +241,9 @@ namespace GEO
       std::map<int, Teuchos::RCP<Node>> selfcut_nodes_;
 
       std::map<int, plain_node_set> selfcut_connectivity_;
+
+      /// characteristic interface element size
+      double meshsizeparam_;
     };
 
   }  // namespace CUT

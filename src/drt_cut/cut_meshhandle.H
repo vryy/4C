@@ -88,6 +88,15 @@ namespace GEO
       /// get the element' side of the mesh's element based on node ids
       SideHandle* GetSide(std::vector<int>& nodeids) const;
 
+      /// Remove this side from the Sidehandle (Used by the SelfCut)
+      void RemoveSubSide(GEO::CUT::Side* side);
+
+      /// Add this side into the corresponding Sidehandle (Used by the SelfCut)
+      void AddSubSide(GEO::CUT::Side* side);
+
+      /// Mark this side as unphysical (Used by SelfCut)
+      void MarkSubSideasUnphysical(GEO::CUT::Side* side);
+
       /*========================================================================*/
       //! @name Get method for private variables
       /*========================================================================*/

@@ -236,7 +236,10 @@ namespace GEO
     //! Get this side from cut meshes from the cut libraries
     GEO::CUT::SideHandle* GetCutSide(int sid);
 
-    //! Get this element from the cut libraries
+    //! Get this element from the cut libraries by element id
+    GEO::CUT::ElementHandle* GetElement(const int eleid) const;
+
+    //! Get this element from the cut libraries by element pointer
     GEO::CUT::ElementHandle* GetElement(const DRT::Element* ele) const;
 
     //! Get this node from the cut libraries
