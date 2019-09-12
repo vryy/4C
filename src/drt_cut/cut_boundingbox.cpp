@@ -22,7 +22,7 @@
  *----------------------------------------------------------------------------*/
 GEO::CUT::BoundingBox* GEO::CUT::BoundingBox::Create()
 {
-  const int probdim = DRT::Problem::Instance()->NDim();
+  static const int probdim = DRT::Problem::Instance()->NDim();
   switch (probdim)
   {
     case 1:
