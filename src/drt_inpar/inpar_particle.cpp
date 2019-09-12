@@ -139,6 +139,10 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   Teuchos::ParameterList& particledynsph = particledyn.sublist(
       "SPH", false, "control parameters for smoothed particle hydrodynamics (SPH) simulations\n");
 
+  // write particle-wall interaction output
+  BoolParameter("WRITE_PARTICLE_WALL_INTERACTION", "no", "write particle-wall interaction output",
+      &particledynsph);
+
   // type of smoothed particle hydrodynamics kernel
   setStringToIntegralParameter<int>("KERNEL", "CubicSpline",
       "type of smoothed particle hydrodynamics kernel",
@@ -197,6 +201,14 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       tuple<std::string>("NoSlipBoundaryParticle", "FreeSlipBoundaryParticle"),
       tuple<int>(
           INPAR::PARTICLE::NoSlipBoundaryParticle, INPAR::PARTICLE::FreeSlipBoundaryParticle),
+      &particledynsph);
+
+  // type of wall formulation
+  setStringToIntegralParameter<int>("WALLFORMULATION", "NoWallFormulation",
+      "type of wall formulation",
+      tuple<std::string>("NoWallFormulation", "VirtualParticleWallFormulation"),
+      tuple<int>(
+          INPAR::PARTICLE::NoWallFormulation, INPAR::PARTICLE::VirtualParticleWallFormulation),
       &particledynsph);
 
   // type of transport velocity formulation

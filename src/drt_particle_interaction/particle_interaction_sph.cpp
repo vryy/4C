@@ -23,6 +23,7 @@
 #include "particle_interaction_sph_surface_tension.H"
 #include "particle_interaction_sph_boundary_particle.H"
 #include "particle_interaction_sph_open_boundary.H"
+#include "particle_interaction_sph_virtual_wall_particle.H"
 #include "particle_interaction_sph_phase_change.H"
 
 #include "../drt_particle_engine/particle_engine_interface.H"
@@ -88,8 +89,15 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Init()
   // init neumann open boundary handler
   InitNeumannOpenBoundaryHandler();
 
+  // init virtual wall particle handler
+  InitVirtualWallParticleHandler();
+
   // init phase change handler
   InitPhaseChangeHandler();
+
+  // safety check
+  if (surfacetension_ and virtualwallparticle_)
+    dserror("surface tension formulation with wall interaction not implemented!");
 }
 
 void PARTICLEINTERACTION::ParticleInteractionSPH::Setup(
@@ -109,8 +117,8 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Setup(
   neighborpairs_->Setup(particleengineinterface, particlewallinterface, kernel_);
 
   // setup density handler
-  density_->Setup(
-      particleengineinterface, kernel_, particlematerial_, equationofstatebundle_, neighborpairs_);
+  density_->Setup(particleengineinterface, particlewallinterface, kernel_, particlematerial_,
+      equationofstatebundle_, neighborpairs_, virtualwallparticle_);
 
   // setup pressure handler
   pressure_->Setup(particleengineinterface, particlematerial_, equationofstatebundle_);
@@ -119,8 +127,8 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Setup(
   if (temperature_) temperature_->Setup(particleengineinterface, particlematerial_, neighborpairs_);
 
   // setup momentum handler
-  momentum_->Setup(
-      particleengineinterface, kernel_, particlematerial_, equationofstatebundle_, neighborpairs_);
+  momentum_->Setup(particleengineinterface, particlewallinterface, kernel_, particlematerial_,
+      particleinteractionwriter_, equationofstatebundle_, neighborpairs_, virtualwallparticle_);
 
   // setup surface tension handler
   if (surfacetension_)
@@ -138,6 +146,11 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Setup(
   if (neumannopenboundary_)
     neumannopenboundary_->Setup(particleengineinterface, kernel_, particlematerial_,
         equationofstatebundle_, neighborpairs_);
+
+  // setup virtual wall particle handler
+  if (virtualwallparticle_)
+    virtualwallparticle_->Setup(
+        particleengineinterface, particlewallinterface, kernel_, neighborpairs_);
 
   // setup phase change handler
   if (phasechange_)
@@ -191,6 +204,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::WriteRestart(
   // write restart of neumann open boundary handler
   if (neumannopenboundary_) neumannopenboundary_->WriteRestart(step, time);
 
+  // write restart of virtual wall particle handler
+  if (virtualwallparticle_) virtualwallparticle_->WriteRestart(step, time);
+
   // write restart of phase change handler
   if (phasechange_) phasechange_->WriteRestart(step, time);
 }
@@ -233,6 +249,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::ReadRestart(
 
   // read restart of neumann open boundary handler
   if (neumannopenboundary_) neumannopenboundary_->ReadRestart(reader);
+
+  // read restart of virtual wall particle handler
+  if (virtualwallparticle_) virtualwallparticle_->ReadRestart(reader);
 
   // read restart of phase change handler
   if (phasechange_) phasechange_->ReadRestart(reader);
@@ -374,6 +393,10 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::EvaluateInteractions()
   // evaluate particle neighbor pairs
   neighborpairs_->EvaluateNeighborPairs();
 
+  // init relative positions of virtual particles
+  if (virtualwallparticle_)
+    virtualwallparticle_->InitRelativePositionsOfVirtualParticles(MaxInteractionDistance());
+
   // compute density field
   density_->ComputeDensity();
 
@@ -391,6 +414,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::EvaluateInteractions()
 
   // interpolate open boundary states
   if (neumannopenboundary_) neumannopenboundary_->InterpolateOpenBoundaryStates();
+
+  // init states at wall contact points
+  if (virtualwallparticle_) virtualwallparticle_->InitStatesAtWallContactPoints(gravity_);
 
   // add momentum contribution to acceleration field
   momentum_->AddAccelerationContribution();
@@ -729,6 +755,38 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitNeumannOpenBoundaryHandler
 
   // init open boundary handler
   if (neumannopenboundary_) neumannopenboundary_->Init();
+}
+
+void PARTICLEINTERACTION::ParticleInteractionSPH::InitVirtualWallParticleHandler()
+{
+  // get type of wall formulation
+  INPAR::PARTICLE::WallFormulationType wallformulation =
+      DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallFormulationType>(
+          params_sph_, "WALLFORMULATION");
+
+  // create virtual wall particle handler
+  switch (wallformulation)
+  {
+    case INPAR::PARTICLE::NoWallFormulation:
+    {
+      virtualwallparticle_ = std::shared_ptr<PARTICLEINTERACTION::SPHVirtualWallParticle>(nullptr);
+      break;
+    }
+    case INPAR::PARTICLE::VirtualParticleWallFormulation:
+    {
+      virtualwallparticle_ =
+          std::make_shared<PARTICLEINTERACTION::SPHVirtualWallParticle>(params_sph_);
+      break;
+    }
+    default:
+    {
+      dserror("unknown wall formulation type!");
+      break;
+    }
+  }
+
+  // init virtual wall particle handler
+  if (virtualwallparticle_) virtualwallparticle_->Init();
 }
 
 void PARTICLEINTERACTION::ParticleInteractionSPH::InitPhaseChangeHandler()

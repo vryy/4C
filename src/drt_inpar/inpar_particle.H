@@ -135,6 +135,13 @@ namespace INPAR
       FreeSlipBoundaryParticle
     };
 
+    //! type of wall formulation
+    enum WallFormulationType
+    {
+      NoWallFormulation,
+      VirtualParticleWallFormulation
+    };
+
     //! type of transport velocity formulation
     enum TransportVelocityFormulation
     {
