@@ -33,6 +33,8 @@ VARVISCFUNCNO    4
 ALE_TYPE         solid_linear
 UPDATEMATRIX     no
 LINEAR_SOLVER    1
+INITIALDISP      displacement_by_function
+STARTFUNCNO      5
 -------------------------------------------------------FSI DYNAMIC
 MAXTIME          1.0
 NUMSTEP          1
