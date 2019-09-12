@@ -419,6 +419,23 @@ namespace XFEM
     /// compute viscous part of Nitsche's penalty term scaling for Nitsche's method
     void Get_ViscPenalty_Stabfac(DRT::Element* xfele,  ///< xfluid ele
         DRT::Element* coup_ele,                        ///< coup_ele ele
+        const double& kappa_m,      ///< Weight parameter (parameter +/master side)
+        const double& kappa_s,      ///< Weight parameter (parameter -/slave  side)
+        const double& inv_h_k,      ///< the inverse characteristic element length h_k
+        double& NIT_visc_stab_fac,  ///< viscous part of Nitsche's penalty term
+        double&
+            NIT_visc_stab_fac_tang,    ///< viscous part of Nitsche's penalty term in tang direction
+        const double& NITStabScaling,  ///< prefactor of Nitsche's scaling in normal direction
+        const double&
+            NITStabScalingTang,  ///< prefactor of Nitsche's scaling in tangential direction
+        const bool& IsPseudo2D,  ///< is this a pseudo 2d problem
+        const INPAR::XFEM::ViscStab_TraceEstimate
+            ViscStab_TraceEstimate  ///< trace estimate for visc stab fac
+    );
+
+    /// compute viscous part of Nitsche's penalty term scaling for Nitsche's method
+    void Get_ViscPenalty_Stabfac(DRT::Element* xfele,  ///< xfluid ele
+        DRT::Element* coup_ele,                        ///< coup_ele ele
         const double& kappa_m,  ///< Weight parameter (parameter +/master side)
         const double& kappa_s,  ///< Weight parameter (parameter -/slave  side)
         const double& inv_h_k,  ///< the inverse characteristic element length h_k

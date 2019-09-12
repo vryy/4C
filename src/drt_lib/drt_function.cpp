@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Managing and evaluating of spatial functions
+\brief Managing and evaluating of space- and/or time-dependent functions
 
 \level 0
 
@@ -21,6 +21,7 @@
 #include "../drt_fluid_xfluid/xfluid_functions.H"
 #include "../drt_fluid_xfluid/xfluid_functions_combust.H"
 #include "../drt_io/io.H"
+#include "drt_function_library.H"
 
 /*----------------------------------------------------------------------*/
 //! Print function
@@ -108,6 +109,39 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
 
   DRT::INPUT::LineDefinition bodyforcechannelweaklycompressiblefourier3;
   bodyforcechannelweaklycompressiblefourier3.AddTag("BODYFORCECHANNELWEAKLYCOMPRESSIBLEFOURIER3");
+
+  DRT::INPUT::LineDefinition weaklycompressiblepoiseuille;
+  weaklycompressiblepoiseuille.AddTag("WEAKLYCOMPRESSIBLE_POISEUILLE")
+      .AddNamedInt("MAT")
+      .AddNamedDouble("L")
+      .AddNamedDouble("R")
+      .AddNamedDouble("U");
+
+  DRT::INPUT::LineDefinition weaklycompressiblepoiseuilleforce;
+  weaklycompressiblepoiseuilleforce.AddTag("WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE")
+      .AddNamedInt("MAT")
+      .AddNamedDouble("L")
+      .AddNamedDouble("R")
+      .AddNamedDouble("U");
+
+  DRT::INPUT::LineDefinition weaklycompressiblemanufacturedflow;
+  weaklycompressiblemanufacturedflow.AddTag("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW")
+      .AddNamedInt("MAT");
+
+  DRT::INPUT::LineDefinition weaklycompressiblemanufacturedflowforce;
+  weaklycompressiblemanufacturedflowforce.AddTag("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE")
+      .AddNamedInt("MAT");
+
+  DRT::INPUT::LineDefinition weaklycompressibleetiennecfd;
+  weaklycompressibleetiennecfd.AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_CFD").AddNamedInt("MAT");
+
+  DRT::INPUT::LineDefinition weaklycompressibleetiennecfdforce;
+  weaklycompressibleetiennecfdforce.AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE")
+      .AddNamedInt("MAT");
+
+  DRT::INPUT::LineDefinition weaklycompressibleetiennecfdviscosity;
+  weaklycompressibleetiennecfdviscosity.AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY")
+      .AddNamedInt("MAT");
 
   DRT::INPUT::LineDefinition kimmoin;
   kimmoin.AddTag("KIM-MOIN");
@@ -209,6 +243,11 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
       .AddNamedInt("NUMCOEFF")
       .AddNamedDoubleVector("COEFF", "NUMCOEFF");
 
+  DRT::INPUT::LineDefinition translatedfunction_funct;
+  translatedfunction_funct.AddTag("TRANSLATEDFUNCTION").AddNamedInt("ORIGIN").AddNamedInt("LOCAL");
+
+  lines->Add(translatedfunction_funct);
+
   lines->Add(varfunct);
   lines->Add(linelin);
   lines->Add(radiuslin);
@@ -219,6 +258,13 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(channelweaklycompressiblefourier3);
   lines->Add(correctiontermchannelweaklycompressiblefourier3);
   lines->Add(bodyforcechannelweaklycompressiblefourier3);
+  lines->Add(weaklycompressiblepoiseuille);
+  lines->Add(weaklycompressiblepoiseuilleforce);
+  lines->Add(weaklycompressiblemanufacturedflow);
+  lines->Add(weaklycompressiblemanufacturedflowforce);
+  lines->Add(weaklycompressibleetiennecfd);
+  lines->Add(weaklycompressibleetiennecfdforce);
+  lines->Add(weaklycompressibleetiennecfdviscosity);
   lines->Add(kimmoin);
   lines->Add(bochevup);
   lines->Add(bochevrhs);
@@ -299,6 +345,117 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
       {
         functions_.push_back(
             Teuchos::rcp(new FLD::BodyForceChannelWeaklyCompressibleFourier3Function()));
+      }
+      else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_POISEUILLE"))
+      {
+        // read data
+        int mat_id = -1;
+        double L = 0.0;
+        double R = 0.0;
+        double U = 0.0;
+
+        function->ExtractInt("MAT", mat_id);
+        function->ExtractDouble("L", L);
+        function->ExtractDouble("R", R);
+        function->ExtractDouble("U", U);
+
+        if (mat_id <= 0)
+          dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_POISEUILLE");
+        if (L <= 0) dserror("Please give a (reasonable) 'L' in WEAKLYCOMPRESSIBLE_POISEUILLE");
+        if (R <= 0) dserror("Please give a (reasonable) 'R' in WEAKLYCOMPRESSIBLE_POISEUILLE");
+        if (U <= 0) dserror("Please give a (reasonable) 'U' in WEAKLYCOMPRESSIBLE_POISEUILLE");
+
+        functions_.push_back(
+            Teuchos::rcp(new FLD::WeaklyCompressiblePoiseuilleFunction(mat_id, L, R, U)));
+      }
+      else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE"))
+      {
+        // read data
+        int mat_id = -1;
+        double L = 0.0;
+        double R = 0.0;
+        double U = 0.0;
+
+        function->ExtractInt("MAT", mat_id);
+        function->ExtractDouble("L", L);
+        function->ExtractDouble("R", R);
+        function->ExtractDouble("U", U);
+
+        if (mat_id <= 0)
+          dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE");
+        if (L <= 0)
+          dserror("Please give a (reasonable) 'L' in WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE");
+        if (R <= 0)
+          dserror("Please give a (reasonable) 'R' in WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE");
+        if (U <= 0)
+          dserror("Please give a (reasonable) 'U' in WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE");
+
+        functions_.push_back(
+            Teuchos::rcp(new FLD::WeaklyCompressiblePoiseuilleForceFunction(mat_id, L, R, U)));
+      }
+      else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW"))
+      {
+        // read data
+        int mat_id = -1;
+
+        function->ExtractInt("MAT", mat_id);
+
+        if (mat_id <= 0)
+          dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW");
+
+        functions_.push_back(
+            Teuchos::rcp(new FLD::WeaklyCompressibleManufacturedFlowFunction(mat_id)));
+      }
+      else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE"))
+      {
+        // read data
+        int mat_id = -1;
+
+        function->ExtractInt("MAT", mat_id);
+
+        if (mat_id <= 0)
+          dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE");
+
+        functions_.push_back(
+            Teuchos::rcp(new FLD::WeaklyCompressibleManufacturedFlowForceFunction(mat_id)));
+      }
+      else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_CFD"))
+      {
+        // read data
+        int mat_id = -1;
+
+        function->ExtractInt("MAT", mat_id);
+
+        if (mat_id <= 0)
+          dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD");
+
+        functions_.push_back(Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDFunction(mat_id)));
+      }
+      else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE"))
+      {
+        // read data
+        int mat_id = -1;
+
+        function->ExtractInt("MAT", mat_id);
+
+        if (mat_id <= 0)
+          dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE");
+
+        functions_.push_back(
+            Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDForceFunction(mat_id)));
+      }
+      else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY"))
+      {
+        // read data
+        int mat_id = -1;
+
+        function->ExtractInt("MAT", mat_id);
+
+        if (mat_id <= 0)
+          dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY");
+
+        functions_.push_back(
+            Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDViscosityFunction(mat_id)));
       }
       else if (function->HaveNamed("KIM-MOIN"))
       {
@@ -553,6 +710,28 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         function->ExtractDoubleVector("COEFF", coefficients);
 
         functions_.push_back(Teuchos::rcp(new FastPolynomialFunction(&coefficients)));
+      }
+      else if (function->HaveNamed("TRANSLATEDFUNCTION"))
+      {
+        int origin, local;
+        function->ExtractInt("ORIGIN", origin);
+        function->ExtractInt("LOCAL", local);
+
+        if (origin <= 0 or origin >= i)
+          dserror(
+              "ORIGIN function ID (currently %d) must be positive and smaller than "
+              "TRANSLATEDFUNCTION (currently %d).",
+              origin, i);
+        if (local <= 0 or local >= i)
+          dserror(
+              "LOCAL function ID (currently %d) must be positive and smaller than "
+              "TRANSLATEDFUNCTION (currently %d).",
+              local, i);
+
+        Teuchos::RCP<Function> origin_funct = Teuchos::rcpFromRef(Funct(origin - 1));
+        Teuchos::RCP<Function> local_funct = Teuchos::rcpFromRef(Funct(local - 1));
+
+        functions_.push_back(Teuchos::rcp(new TranslatedFunction(origin_funct, local_funct)));
       }
       else if (function->HaveNamed("VARFUNCTION"))
       {
@@ -1606,463 +1785,4 @@ std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateSpatialDerivative(
   variables[3] = std::pair<std::string, double>("t", t);
 
   return EvaluateDerivative(index, variables);
-}
-
-
-/*----------------------------------------------------------------------*
- | Constructor of ControlledRotation                         hahn 04/13 |
- *----------------------------------------------------------------------*/
-DRT::UTILS::ControlledRotationFunction::ControlledRotationFunction(
-    std::string fileName, std::string type, double origin_x, double origin_y, double origin_z)
-    : Function(), NUMMANEUVERCELLS_(4)
-{
-  // Initialize variables
-  // *****************************************************************************
-
-  // Initialize condition type
-  if (type == "STRUCTURE")
-  {  // structure
-    type_ = 1;
-  }
-  else if (type == "FLUID")
-  {  // fluid
-    type_ = 2;
-  }
-  else
-  {
-    dserror(
-        "When using the function CONTROLLEDROTATION, the type must be either 'STRUCTURE' or "
-        "'FLUID'");
-  }
-
-  // Initialize origin, about which the rotation is performed
-  origin_(0, 0) = origin_x;
-  origin_(1, 0) = origin_y;
-  origin_(2, 0) = origin_z;
-
-  // Initialize time of previous time step (at t-deltaT)
-  timeOld_ = 0.0;
-
-  // Initialize previous angular acceleration (at t-deltaT)
-  omegaDotOld_B_(0, 0) = 0.0;
-  omegaDotOld_B_(1, 0) = 0.0;
-  omegaDotOld_B_(2, 0) = 0.0;
-
-  // Current angular rate (at t)
-  omega_B_(0, 0) = 0.0;
-  omega_B_(1, 0) = 0.0;
-  omega_B_(2, 0) = 0.0;
-
-  // Initialize satellite's current attitude trafo matrix from B- to I-system (at t)
-  satAtt_dcm_IB_(0, 0) = 1.0;
-  satAtt_dcm_IB_(0, 1) = 0.0;
-  satAtt_dcm_IB_(0, 2) = 0.0;
-  satAtt_dcm_IB_(1, 0) = 0.0;
-  satAtt_dcm_IB_(1, 1) = 1.0;
-  satAtt_dcm_IB_(1, 2) = 0.0;
-  satAtt_dcm_IB_(2, 0) = 0.0;
-  satAtt_dcm_IB_(2, 1) = 0.0;
-  satAtt_dcm_IB_(2, 2) = 1.0;
-
-  // Initialize satellite's current attitude quaternion from B- to I-system (at t)
-  satAtt_q_IB_(0, 0) = 0.0;
-  satAtt_q_IB_(1, 0) = 0.0;
-  satAtt_q_IB_(2, 0) = 0.0;
-  satAtt_q_IB_(3, 0) = 1.0;
-
-  // Initialize maneuvers
-  maneuvers_.clear();
-
-  // Read maneuver file and fill maneuvers variable
-  // *****************************************************************************
-
-  std::string line;
-  std::stringstream lineStream;
-  std::string cell;
-
-  // Open file
-  std::ifstream file(fileName.c_str());
-  if (!file.is_open())
-  {
-    dserror("Unable to open file: %s", fileName.c_str());
-  }
-
-  // Loop through all lines
-  while (getline(file, line))
-  {
-    if (!line.empty())
-    {
-      // Clear local variables
-      lineStream.clear();
-      cell.clear();
-
-      // Obtain all numManeuverCells=4 values from current line (t, omegaDot_x_B, omegaDot_y_B,
-      // omegaDot_z_B)
-      lineStream << line;
-      for (int i = 0; i < NUMMANEUVERCELLS_; i++)
-      {
-        // Obtain i-th cell from current line
-        getline(lineStream, cell, ' ');
-
-        // If empty cell, than either empty line or one cell in the line
-        // missing, anyhow an error.
-        if (cell.empty())
-        {
-          dserror("Error during reading of file: %s", fileName.c_str());
-        }
-
-        // Convert input cell from string to double
-        double cellDouble = (double)strtod(cell.c_str(), NULL);
-
-        // Add cell to maneuvers vector
-        maneuvers_.push_back(cellDouble);
-      }
-    }
-  }
-
-  // Close file
-  file.close();
-
-  // Determine number of maneuvers
-  numManeuvers_ = (int)(maneuvers_.size()) / (int)NUMMANEUVERCELLS_;
-
-  // Output maneuver list
-  printf("\n=================================================================================\n");
-  printf("ControlledRotation - %s\n", type.c_str());
-  printf("---------------------------------------------------------------------------------\n");
-  printf("The following %d maneuvers have been loaded from file %s:\n", numManeuvers_,
-      fileName.c_str());
-  for (int i = 0; i < numManeuvers_; i++)
-  {
-    printf("Time: %e  OmegaDot_B: %e, %e, %e \n", maneuvers_[i * NUMMANEUVERCELLS_ + 0],
-        maneuvers_[i * NUMMANEUVERCELLS_ + 1], maneuvers_[i * NUMMANEUVERCELLS_ + 2],
-        maneuvers_[i * NUMMANEUVERCELLS_ + 3]);
-  }
-  printf("=================================================================================\n\n");
-}
-
-/*----------------------------------------------------------------------*
- | Evaluate ControlledRotation and return for structures the current    |
- | displacement and for fluids the current velocity of the respective   |
- | node for the given index.                                 hahn 04/13 |
- *----------------------------------------------------------------------*/
-double DRT::UTILS::ControlledRotationFunction::Evaluate(const int index, const double* xp, double t)
-{
-  // Check, if a restart has been performed
-  // *****************************************************************************
-  const int step = DRT::Problem::Instance()->Restart();
-  if ((step > 0) && (timeOld_ == 0.0))
-  {
-    dserror(
-        "When using the function CONTROLLEDROTATION, the restart functionality cannot be used!");
-  }
-
-  // If new time step, apply angular acceleration (if desired) and determine
-  // new attitude satAtt_dcm_IB_
-  // *****************************************************************************
-  // Determine time difference
-  double deltaT = t - timeOld_;
-
-  if (deltaT > 1e-12)
-  {  // new time step
-
-    // Determine current angular acceleration (at t)
-    // -----------------------------------------------------------------------------
-    LINALG::Matrix<3, 1> omegaDot_B;
-    omegaDot_B(0, 0) = 0.0;
-    omegaDot_B(1, 0) = 0.0;
-    omegaDot_B(2, 0) = 0.0;
-
-    for (int i = 0; i < numManeuvers_; i++)
-    {
-      if (t >= maneuvers_[i * NUMMANEUVERCELLS_ + 0])
-      {
-        omegaDot_B(0, 0) = maneuvers_[i * NUMMANEUVERCELLS_ + 1];
-        omegaDot_B(1, 0) = maneuvers_[i * NUMMANEUVERCELLS_ + 2];
-        omegaDot_B(2, 0) = maneuvers_[i * NUMMANEUVERCELLS_ + 3];
-      }
-    }
-
-    // Calculate current angular rate (at t) by integration
-    // of angular acceleration (trapezoidal rule):
-    // omega_(t) = deltaT * (omegaDotOld + omegaDot) / 2 + omega_(t-deltaT)
-    // -----------------------------------------------------------------------------
-    LINALG::Matrix<3, 1> deltaOmega;
-    deltaOmega.Update(omegaDotOld_B_, omegaDot_B);  // 1) deltaOmega <- omegaDotOld_ + omegaDot
-    deltaOmega.Scale(deltaT / 2.0);                 // 2) deltaOmega <- deltaOmega * deltaT / 2.0
-    omega_B_ += deltaOmega;                         // 3) omega_ <- omega_ + deltaOmega
-
-    /* // Debugging output
-       cout << "omegaDot: "; omegaDot_B.Print(cout); // Print omegaDot_B
-       cout << "omega:    "; omega_B_.Print(cout);   // Print omega_B_
-    */
-
-    omegaDotOld_B_ = omegaDot_B;  // Set omegaDotOld_B_ for next time step
-
-    // Calculate new attitude quaternion satAtt_q_IB_ [Wertz, p. 511f]
-    // -----------------------------------------------------------------------------
-    LINALG::Matrix<4, 4> mOmega;  // Skew-symmetric matrix containing angular velocity components
-    mOmega(0, 0) = 0.0;
-    mOmega(0, 1) = omega_B_(2, 0);
-    mOmega(0, 2) = -omega_B_(1, 0);
-    mOmega(0, 3) = omega_B_(0, 0);
-    mOmega(1, 0) = -omega_B_(2, 0);
-    mOmega(1, 1) = 0.0;
-    mOmega(1, 2) = omega_B_(0, 0);
-    mOmega(1, 3) = omega_B_(1, 0);
-    mOmega(2, 0) = omega_B_(1, 0);
-    mOmega(2, 1) = -omega_B_(0, 0);
-    mOmega(2, 2) = 0.0;
-    mOmega(2, 3) = omega_B_(2, 0);
-    mOmega(3, 0) = -omega_B_(0, 0);
-    mOmega(3, 1) = -omega_B_(1, 0);
-    mOmega(3, 2) = -omega_B_(2, 0);
-    mOmega(3, 3) = 0.0;
-
-    mOmega.Scale(deltaT / 2.0);
-    mOmega(0, 0) = 1.0;
-    mOmega(1, 1) = 1.0;
-    mOmega(2, 2) = 1.0;
-    mOmega(3, 3) = 1.0;
-
-    LINALG::Matrix<4, 1> satAtt_q_IB_TMP(true);
-    satAtt_q_IB_TMP.Multiply(mOmega, satAtt_q_IB_);
-    satAtt_q_IB_ = satAtt_q_IB_TMP;
-
-    satAtt_q_IB_.Scale(1 / satAtt_q_IB_.Norm2());  // Normalize attitude quaternion
-
-    // Create transformation matrix satAtt_dcm_IB_ [Wertz, (E-8)]
-    // -----------------------------------------------------------------------------
-    const double q1 = satAtt_q_IB_(0, 0);
-    const double q2 = satAtt_q_IB_(1, 0);
-    const double q3 = satAtt_q_IB_(2, 0);
-    const double q4 = satAtt_q_IB_(3, 0);
-
-    satAtt_dcm_IB_(0, 0) = q1 * q1 - q2 * q2 - q3 * q3 + q4 * q4;
-    satAtt_dcm_IB_(0, 1) = 2.0 * (q1 * q2 - q3 * q4);
-    satAtt_dcm_IB_(0, 2) = 2.0 * (q1 * q3 + q2 * q4);
-    satAtt_dcm_IB_(1, 0) = 2.0 * (q1 * q2 + q3 * q4);
-    satAtt_dcm_IB_(1, 1) = -q1 * q1 + q2 * q2 - q3 * q3 + q4 * q4;
-    satAtt_dcm_IB_(1, 2) = 2.0 * (q2 * q3 - q1 * q4);
-    satAtt_dcm_IB_(2, 0) = 2.0 * (q1 * q3 - q2 * q4);
-    satAtt_dcm_IB_(2, 1) = 2.0 * (q2 * q3 + q1 * q4);
-    satAtt_dcm_IB_(2, 2) = -q1 * q1 - q2 * q2 + q3 * q3 + q4 * q4;
-
-    // Update time of last time step
-    // -----------------------------------------------------------------------------
-    timeOld_ = t;
-  }
-
-  // Obtain the current node position in the inertial system
-  // *****************************************************************************
-  // NOTE: 1) Here it is assumed that the difference between the mesh system and the
-  //          body system is just given by a constant displacement named origin_.
-  //          Hence the variable origin_ specifies the point, given in the mesh
-  //          system, about which is being rotated.
-  //       2) The inertial system used here has position and attitude of the body
-  //          system at initial time. Thus it is deviating from the ECI system J2000
-  //          at most by a constant displacement that is due to the satellite position
-  //          at initial time and a constant rotation that is due to the satellite's
-  //          attitude at initial time. Due to Galilei-invariance this shouldn't be
-  //          a problem and it can easily be converted to the J2000 system.
-
-  // Node reference position, given in the body system
-  LINALG::Matrix<3, 1> nodeReferencePos_B;
-  nodeReferencePos_B(0, 0) = xp[0] - origin_(0, 0);
-  nodeReferencePos_B(1, 0) = xp[1] - origin_(1, 0);
-  nodeReferencePos_B(2, 0) = xp[2] - origin_(2, 0);
-
-  // Node position, given in the inertial system
-  LINALG::Matrix<3, 1> nodePos_I;
-  nodePos_I.Multiply(satAtt_dcm_IB_, nodeReferencePos_B);
-
-  // Calculate and return the displacement/velocity of the node for the given index
-  // *****************************************************************************
-
-  if (t <= 0)
-  {
-    // Return zero displacement/translational velocity of the node for the given index
-    return 0.0;
-  }
-
-  // Displacement of the node for the given index
-  const double dispNodePos_I = nodePos_I(index, 0) - nodeReferencePos_B(index, 0);
-
-  if (type_ == 1)
-  {  // structure
-
-    // Return the displacement of the node for the given index
-    return dispNodePos_I;
-  }
-  else if (type_ == 2)
-  {  // fluid
-
-    // Node velocity, given in the inertial system: v = omega x r
-    double nodeVel_I[3];
-    nodeVel_I[0] = omega_B_(1, 0) * nodePos_I(2, 0) - omega_B_(2, 0) * nodePos_I(1, 0);
-    nodeVel_I[1] = omega_B_(2, 0) * nodePos_I(0, 0) - omega_B_(0, 0) * nodePos_I(2, 0);
-    nodeVel_I[2] = omega_B_(0, 0) * nodePos_I(1, 0) - omega_B_(1, 0) * nodePos_I(0, 0);
-
-    // Return the translational velocity of the node for the given index
-    return (nodeVel_I[index]);
-  }
-  else
-  {
-    dserror(
-        "When using the function CONTROLLEDROTATION, the type must be either 'STRUCTURE' or "
-        "'FLUID'");
-    return 0.0;
-  }
-}
-
-/*----------------------------------------------------------------------*
- | Constructor of AccelerationProfile                        hahn 09/13 |
- *----------------------------------------------------------------------*/
-DRT::UTILS::AccelerationProfileFunction::AccelerationProfileFunction(std::string fileName)
-    : Function(), NUMACCELERATIONCELLS_(4)
-{
-  // Initialize variables
-  // *****************************************************************************
-
-  // Initialize time of previous time step (at t-deltaT)
-  timeOld_ = 0.0;
-
-  // Initialize accelerations
-  accelerations_.clear();
-
-  // Initialize current acceleration (at t)
-  acc_B_(0, 0) = 0.0;
-  acc_B_(1, 0) = 0.0;
-  acc_B_(2, 0) = 0.0;
-
-  // Read acceleration profile file and fill acceleration variable
-  // *****************************************************************************
-
-  std::string line;
-  std::stringstream lineStream;
-  std::string cell;
-
-  // Open file
-  std::ifstream file(fileName.c_str());
-  if (!file.is_open())
-  {
-    dserror("Unable to open file: %s", fileName.c_str());
-  }
-
-  // Loop through all lines
-  while (getline(file, line))
-  {
-    if (!line.empty())
-    {
-      // Clear local variables
-      lineStream.clear();
-      cell.clear();
-
-      // Obtain all numAccelerationCells=4 values from current line (t, acc_x_B, acc_y_B, acc_z_B)
-      lineStream << line;
-      for (int i = 0; i < NUMACCELERATIONCELLS_; i++)
-      {
-        // Obtain i-th cell from current line
-        getline(lineStream, cell, ' ');
-
-        // If empty cell, than either empty line or one cell in the line
-        // missing, anyhow an error.
-        if (cell.empty())
-        {
-          dserror("Error during reading of file: %s", fileName.c_str());
-        }
-
-        // Convert input cell from string to double
-        double cellDouble = (double)strtod(cell.c_str(), NULL);
-
-        // Add cell to acceleration vector
-        accelerations_.push_back(cellDouble);
-      }
-    }
-  }
-
-  // Close file
-  file.close();
-
-  // Determine number of accelerations
-  numAccelerations_ = (int)(accelerations_.size()) / (int)NUMACCELERATIONCELLS_;
-
-  // Output acceleration list
-  printf("\n=================================================================================\n");
-  printf("AccelerationProfile\n");
-  printf("---------------------------------------\n");
-  printf("The following %d acceleration rows have been loaded from file %s:\n", numAccelerations_,
-      fileName.c_str());
-  for (int i = 0; i < numAccelerations_; i++)
-  {
-    printf("Time: %e  acc_B: %e, %e, %e \n", accelerations_[i * NUMACCELERATIONCELLS_ + 0],
-        accelerations_[i * NUMACCELERATIONCELLS_ + 1],
-        accelerations_[i * NUMACCELERATIONCELLS_ + 2],
-        accelerations_[i * NUMACCELERATIONCELLS_ + 3]);
-  }
-  printf("=================================================================================\n\n");
-}
-
-/*---------------------------------------------------------------------*
- | Evaluate AccelerationProfile and return the respective acceleration |
- | of the node for the given index.                         hahn 09/13 |
- *---------------------------------------------------------------------*/
-double DRT::UTILS::AccelerationProfileFunction::Evaluate(
-    const int index, const double* xp, double t)
-{
-  // Determine time difference
-  double deltaT = t - timeOld_;
-
-  // If new time step, determine current acceleration
-  // *****************************************************************************
-  if (deltaT > 1e-9)
-  {  // new time step
-
-    // Determine current acceleration (at t)
-    // -------------------------------------------------------------------------
-    acc_B_(0, 0) = 0.0;
-    acc_B_(1, 0) = 0.0;
-    acc_B_(2, 0) = 0.0;
-
-    for (int i = 0; i < numAccelerations_; i++)
-    {
-      if (t >= accelerations_[i * NUMACCELERATIONCELLS_ + 0])
-      {
-        acc_B_(0, 0) = accelerations_[i * NUMACCELERATIONCELLS_ + 1];
-        acc_B_(1, 0) = accelerations_[i * NUMACCELERATIONCELLS_ + 2];
-        acc_B_(2, 0) = accelerations_[i * NUMACCELERATIONCELLS_ + 3];
-      }
-    }
-
-    // Update time of last time step
-    // -------------------------------------------------------------------------
-    timeOld_ = t;
-  }
-
-  // Return the acceleration of the node for the given index
-  // *****************************************************************************
-  return acc_B_(index, 0);
-}
-
-DRT::UTILS::FastPolynomialFunction::FastPolynomialFunction(std::vector<double>* coefficients)
-    : Function(), mypoly_(new Polynomial(*coefficients))
-{
-}
-
-/*---------------------------------------------------------------------*
- | Evaluate                                                proell 01/19 |
- *---------------------------------------------------------------------*/
-double DRT::UTILS::FastPolynomialFunction::Evaluate(const double argument) const
-{
-  return mypoly_->Evaluate(argument);
-}
-
-/*---------------------------------------------------------------------*
- | Evaluate derivative                                    proell 01/19 |
- *---------------------------------------------------------------------*/
-double DRT::UTILS::FastPolynomialFunction::EvaluateDerivative(const double argument) const
-{
-  LINALG::Matrix<2, 1> derivs(false);
-  mypoly_->Evaluate(argument, derivs);
-  return derivs(1);
 }

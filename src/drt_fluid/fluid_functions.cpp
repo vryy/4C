@@ -1549,6 +1549,1331 @@ std::vector<double> FLD::BodyForceChannelWeaklyCompressibleFourier3Function::Eva
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+FLD::WeaklyCompressiblePoiseuilleFunction::WeaklyCompressiblePoiseuilleFunction(
+    int mat_id, double L, double R, double U)
+    : Function(),
+      length_(0.0),
+      halfheight_(0.0),
+      meanvelocityexit_(0.0),
+      viscosity_(0.0),
+      refdensity_(0.0),
+      refpressure_(0.0),
+      comprcoeff_(0.0)
+{
+  // get material
+  Teuchos::RCP<MAT::PAR::Material> mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
+  if (mat->Type() != INPAR::MAT::m_fluid_weakly_compressible)
+    dserror("Material %d is not a weakly compressible fluid", mat_id);
+  MAT::PAR::Parameter* params = mat->Parameter();
+  MAT::PAR::WeaklyCompressibleFluid* fparams =
+      dynamic_cast<MAT::PAR::WeaklyCompressibleFluid*>(params);
+  if (!fparams) dserror("Material does not cast to Weakly compressible fluid");
+
+  // get data
+  length_ = L;
+  halfheight_ = R;
+  meanvelocityexit_ = U;
+
+  viscosity_ = fparams->viscosity_;
+  refdensity_ = fparams->refdensity_;
+  refpressure_ = fparams->refpressure_;
+  comprcoeff_ = fparams->comprcoeff_;
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double FLD::WeaklyCompressiblePoiseuilleFunction::Evaluate(int index, const double* xp, double t)
+{
+  // ease notation
+  double x = xp[0];
+  double y = xp[1];
+  double L = length_;
+  double R = halfheight_;
+  double U = meanvelocityexit_;
+  double mu = viscosity_;
+  double r0 = refdensity_;
+  double p0 = refpressure_;
+  double epsilon = comprcoeff_;
+
+  // initialize variables
+  LINALG::Matrix<3, 1> L_ex;
+  double p_ex;
+  LINALG::Matrix<2, 1> v_ex;
+  double r_ex;
+  LINALG::Matrix<2, 1> w_ex;
+
+  // evaluate variables
+  L_ex(0) = -sqrt(2. * mu) / 2. *
+            (+4. / 3. * (9. / 2. * mu * pow(U, 2.) / pow(R, 2.) * (1. - pow(y / R, 2.)) * epsilon));
+  L_ex(1) = -sqrt(2. * mu) / 2. *
+            (-2. / 3. * (9. / 2. * mu * pow(U, 2.) / pow(R, 2.) * (1. - pow(y / R, 2.)) * epsilon));
+  L_ex(2) = -sqrt(1. * mu) * (-3. * U / pow(R, 2.) * y + 9. * mu * L * pow(U, 2.) / pow(R, 4.) *
+                                                             (1. - x / L) * y * epsilon);
+  p_ex = p0 + 3. * mu * L * U / pow(R, 2.) * (1. - x / L) -
+         3. / 2. * pow(mu * U / R, 2.) *
+             (3. * pow(L / R, 2.) * pow(1. - x / L, 2.) - (1. - pow(y / R, 2.))) * epsilon;
+  v_ex(0) = 3. / 2. * U * (1. - pow(y / R, 2.)) - 9. / 2. * mu * L * pow(U, 2.) / pow(R, 2.) *
+                                                      (1. - x / L) * (1. - pow(y / R, 2.)) *
+                                                      epsilon;
+  v_ex(1) = 0.;
+
+  // density - momentum formulation
+  r_ex = r0 + epsilon * (p_ex - p0);
+  w_ex(0) = r_ex * v_ex(0);
+  w_ex(1) = r_ex * v_ex(1);
+
+  switch (index)
+  {
+    case 0:
+      return r_ex;
+    case 1:
+      return w_ex(0);
+    case 2:
+      return w_ex(1);
+    case 3:
+      return L_ex(0);
+    case 4:
+      return L_ex(1);
+    case 5:
+      return L_ex(2);
+
+    default:
+      return 1.0;
+  }
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::vector<double> FLD::WeaklyCompressiblePoiseuilleFunction::EvaluateTimeDerivative(
+    const int index, const double* xp, const double t, const unsigned deg)
+{
+  // resulting vector holding
+  std::vector<double> res(deg + 1);
+
+  // add the value at time t
+  res[0] = Evaluate(index, xp, t);
+
+  // add the 1st time derivative at time t
+  if (deg >= 1)
+  {
+    res[1] = 0.0;
+  }
+
+  // add the 2nd time derivative at time t
+  if (deg >= 2)
+  {
+    res[2] = 0.0;
+  }
+
+  // error for higher derivatives
+  if (deg >= 3)
+  {
+    dserror("Higher time derivatives than second not supported!");
+  }
+
+  return res;
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+FLD::WeaklyCompressiblePoiseuilleForceFunction::WeaklyCompressiblePoiseuilleForceFunction(
+    int mat_id, double L, double R, double U)
+    : Function(),
+      length_(0.0),
+      halfheight_(0.0),
+      meanvelocityexit_(0.0),
+      viscosity_(0.0),
+      refdensity_(0.0),
+      refpressure_(0.0),
+      comprcoeff_(0.0)
+{
+  // get material
+  Teuchos::RCP<MAT::PAR::Material> mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
+  if (mat->Type() != INPAR::MAT::m_fluid_weakly_compressible)
+    dserror("Material %d is not a weakly compressible fluid", mat_id);
+  MAT::PAR::Parameter* params = mat->Parameter();
+  MAT::PAR::WeaklyCompressibleFluid* fparams =
+      dynamic_cast<MAT::PAR::WeaklyCompressibleFluid*>(params);
+  if (!fparams) dserror("Material does not cast to Weakly compressible fluid");
+
+  // get data
+  length_ = L;
+  halfheight_ = R;
+  meanvelocityexit_ = U;
+
+  viscosity_ = fparams->viscosity_;
+  refdensity_ = fparams->refdensity_;
+  refpressure_ = fparams->refpressure_;
+  comprcoeff_ = fparams->comprcoeff_;
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double FLD::WeaklyCompressiblePoiseuilleForceFunction::Evaluate(
+    int index, const double* xp, double t)
+{
+  // ease notation
+  double x = xp[0];
+  double y = xp[1];
+  double L = length_;
+  double R = halfheight_;
+  double U = meanvelocityexit_;
+  double mu = viscosity_;
+  double r0 = refdensity_;
+  double epsilon = comprcoeff_;
+
+  // initialize variables
+  double f_r_ex;
+  LINALG::Matrix<2, 1> f_w_ex;
+
+  // evaluate variables
+  f_r_ex =
+      -(9. * pow(U, 2.) * epsilon * mu * (pow(R, 2.) - pow(y, 2.)) *
+          (2. * pow(R, 4.) - 2. * pow(R, 4.) * r0 +
+              27. * pow(L, 2.) * pow(U, 2.) * pow(epsilon, 2.) * pow(mu, 2.) -
+              3. * pow(R, 2.) * pow(U, 2.) * pow(epsilon, 2.) * pow(mu, 2.) +
+              27. * pow(U, 2.) * pow(epsilon, 2.) * pow(mu, 2.) * pow(x, 2.) +
+              3. * pow(U, 2.) * pow(epsilon, 2.) * pow(mu, 2.) * pow(y, 2.) -
+              54. * L * pow(U, 2.) * pow(epsilon, 2.) * pow(mu, 2.) * x -
+              18. * L * pow(R, 2.) * U * epsilon * mu + 18. * pow(R, 2.) * U * epsilon * mu * x)) /
+      (4. * pow(R, 8.));
+  f_w_ex(0) = 0.0;
+  f_w_ex(1) = 0.0;
+
+  switch (index)
+  {
+    case 0:
+      return f_r_ex;
+    case 1:
+      return f_w_ex(0);
+    case 2:
+      return f_w_ex(1);
+
+    default:
+      return 1.0;
+  }
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::vector<double> FLD::WeaklyCompressiblePoiseuilleForceFunction::EvaluateTimeDerivative(
+    const int index, const double* xp, const double t, const unsigned deg)
+{
+  // resulting vector holding
+  std::vector<double> res(deg + 1);
+
+  // add the value at time t
+  res[0] = Evaluate(index, xp, t);
+
+  // add the 1st time derivative at time t
+  if (deg >= 1)
+  {
+    res[1] = 0.0;
+  }
+
+  // add the 2nd time derivative at time t
+  if (deg >= 2)
+  {
+    res[2] = 0.0;
+  }
+
+  // error for higher derivatives
+  if (deg >= 3)
+  {
+    dserror("Higher time derivatives than second not supported!");
+  }
+
+  return res;
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+FLD::WeaklyCompressibleManufacturedFlowFunction::WeaklyCompressibleManufacturedFlowFunction(
+    int mat_id)
+    : Function(), viscosity_(0.0), refdensity_(0.0), refpressure_(0.0), comprcoeff_(0.0)
+{
+  // get material
+  Teuchos::RCP<MAT::PAR::Material> mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
+  if (mat->Type() != INPAR::MAT::m_fluid_weakly_compressible)
+    dserror("Material %d is not a weakly compressible fluid", mat_id);
+  MAT::PAR::Parameter* params = mat->Parameter();
+  MAT::PAR::WeaklyCompressibleFluid* fparams =
+      dynamic_cast<MAT::PAR::WeaklyCompressibleFluid*>(params);
+  if (!fparams) dserror("Material does not cast to Weakly compressible fluid");
+
+  // get data
+  viscosity_ = fparams->viscosity_;
+  refdensity_ = fparams->refdensity_;
+  refpressure_ = fparams->refpressure_;
+  comprcoeff_ = fparams->comprcoeff_;
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double FLD::WeaklyCompressibleManufacturedFlowFunction::Evaluate(
+    int index, const double* xp, double t)
+{
+  // ease notation
+  double x = xp[0];
+  double y = xp[1];
+  double mu = viscosity_;
+  double r0 = refdensity_;
+  double p0 = refpressure_;
+  double epsilon = comprcoeff_;
+
+  // initialize variables
+  LINALG::Matrix<3, 1> L_ex;
+  double p_ex;
+  LINALG::Matrix<2, 1> v_ex;
+  double r_ex;
+  LINALG::Matrix<2, 1> w_ex;
+
+  // evaluate variables
+  L_ex(0) =
+      -sqrt(2. * mu) / 2. *
+      (+4. / 3. *
+              (PI * cos(PI * x) * sin(PI * t) * sin(PI * y) -
+                  epsilon * ((PI * (std::pow((sin(PI * t)), 2.)) *
+                                 (2. * PI * cos(2. * PI * x) + 2. * PI * cos(2. * PI * y))) /
+                                    (8. * r0) +
+                                ((std::pow(PI, 2.)) * cos(PI * t) * cos(PI * x) * sin(PI * y)) /
+                                    (2. * r0))) -
+          2. / 3. *
+              (-epsilon * ((PI * (std::pow((sin(PI * t)), 2.)) *
+                               (2. * PI * cos(2. * PI * x) + 2. * PI * cos(2. * PI * y))) /
+                                  (8. * r0) +
+                              ((std::pow(PI, 2.)) * cos(PI * t) * cos(PI * x) * sin(PI * y)) /
+                                  (2. * r0)) -
+                  PI * cos(PI * x) * sin(PI * t) * sin(PI * y)));
+  L_ex(1) =
+      -sqrt(2. * mu) / 2. *
+      (-2. / 3. *
+              (PI * cos(PI * x) * sin(PI * t) * sin(PI * y) -
+                  epsilon * ((PI * (std::pow((sin(PI * t)), 2.)) *
+                                 (2. * PI * cos(2. * PI * x) + 2. * PI * cos(2. * PI * y))) /
+                                    (8. * r0) +
+                                ((std::pow(PI, 2.)) * cos(PI * t) * cos(PI * x) * sin(PI * y)) /
+                                    (2. * r0))) +
+          4. / 3. *
+              (-epsilon * ((PI * (std::pow((sin(PI * t)), 2.)) *
+                               (2. * PI * cos(2. * PI * x) + 2. * PI * cos(2. * PI * y))) /
+                                  (8. * r0) +
+                              ((std::pow(PI, 2.)) * cos(PI * t) * cos(PI * x) * sin(PI * y)) /
+                                  (2. * r0)) -
+                  PI * cos(PI * x) * sin(PI * t) * sin(PI * y)));
+  L_ex(2) =
+      -sqrt(1. * mu) *
+      ((PI * cos(PI * y) * sin(PI * t) * sin(PI * x) -
+           epsilon *
+               (((std::pow(PI, 2.)) * cos(PI * t) * cos(PI * y) * sin(PI * x)) / (2. * r0) -
+                   ((std::pow(PI, 3.)) * x * (std::pow((sin(PI * t)), 2.)) * sin(2. * PI * y)) /
+                       (2. * r0))) +
+          (-epsilon *
+                  (((std::pow(PI, 2.)) * cos(PI * t) * cos(PI * y) * sin(PI * x)) / (2. * r0) -
+                      ((std::pow(PI, 3.)) * y * (std::pow((sin(PI * t)), 2.)) * sin(2. * PI * x)) /
+                          (2. * r0)) -
+              PI * cos(PI * y) * sin(PI * t) * sin(PI * x)));
+  p_ex = PI * cos(PI * x) * sin(PI * t) * sin(PI * y);
+  v_ex(0) = sin(PI * t) * sin(PI * x) * sin(PI * y) -
+            epsilon * ((PI * (std::pow((sin(PI * t)), 2.)) *
+                           (sin(2. * PI * x) + 2. * PI * x * cos(2. * PI * y))) /
+                              (8. * r0) +
+                          (PI * cos(PI * t) * sin(PI * x) * sin(PI * y)) / (2. * r0));
+  v_ex(1) = cos(PI * x) * cos(PI * y) * sin(PI * t) -
+            epsilon * ((PI * (std::pow((sin(PI * t)), 2.)) *
+                           (sin(2. * PI * y) + 2. * PI * y * cos(2. * PI * x))) /
+                              (8. * r0) -
+                          (PI * cos(PI * t) * cos(PI * x) * cos(PI * y)) / (2. * r0));
+
+  // density - momentum formulation
+  r_ex = r0 + epsilon * (p_ex - p0);
+  w_ex(0) = r_ex * v_ex(0);
+  w_ex(1) = r_ex * v_ex(1);
+
+  switch (index)
+  {
+    case 0:
+      return r_ex;
+    case 1:
+      return w_ex(0);
+    case 2:
+      return w_ex(1);
+    case 3:
+      return L_ex(0);
+    case 4:
+      return L_ex(1);
+    case 5:
+      return L_ex(2);
+
+    default:
+      return 1.0;
+  }
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::vector<double> FLD::WeaklyCompressibleManufacturedFlowFunction::EvaluateTimeDerivative(
+    const int index, const double* xp, const double t, const unsigned deg)
+{
+  // resulting vector holding
+  std::vector<double> res(deg + 1);
+
+  // add the value at time t
+  res[0] = Evaluate(index, xp, t);
+
+  // add the 1st time derivative at time t
+  if (deg >= 1)
+  {
+    res[1] = 0.0;
+  }
+
+  // add the 2nd time derivative at time t
+  if (deg >= 2)
+  {
+    res[2] = 0.0;
+  }
+
+  // error for higher derivatives
+  if (deg >= 3)
+  {
+    dserror("Higher time derivatives than second not supported!");
+  }
+
+  return res;
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+FLD::WeaklyCompressibleManufacturedFlowForceFunction::
+    WeaklyCompressibleManufacturedFlowForceFunction(int mat_id)
+    : Function(), viscosity_(0.0), refdensity_(0.0), refpressure_(0.0), comprcoeff_(0.0)
+{
+  // get material
+  Teuchos::RCP<MAT::PAR::Material> mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
+  if (mat->Type() != INPAR::MAT::m_fluid_weakly_compressible)
+    dserror("Material %d is not a weakly compressible fluid", mat_id);
+  MAT::PAR::Parameter* params = mat->Parameter();
+  MAT::PAR::WeaklyCompressibleFluid* fparams =
+      dynamic_cast<MAT::PAR::WeaklyCompressibleFluid*>(params);
+  if (!fparams) dserror("Material does not cast to Weakly compressible fluid");
+
+  // get data
+  viscosity_ = fparams->viscosity_;
+  refdensity_ = fparams->refdensity_;
+  refpressure_ = fparams->refpressure_;
+  comprcoeff_ = fparams->comprcoeff_;
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double FLD::WeaklyCompressibleManufacturedFlowForceFunction::Evaluate(
+    int index, const double* xp, double t)
+{
+  // ease notation
+  double x = xp[0];
+  double y = xp[1];
+  double mu = viscosity_;
+  double r0 = refdensity_;
+  double p0 = refpressure_;
+  double epsilon = comprcoeff_;
+
+  // initialize variables
+  double f_r_ex;
+  LINALG::Matrix<2, 1> f_w_ex;
+
+  // evaluate variables
+  f_r_ex =
+      (std::pow(PI, 2.)) * epsilon * cos(PI * t) * cos(PI * x) * sin(PI * y) -
+      (epsilon * ((PI * (std::pow((sin(PI * t)), 2.)) *
+                      (2. * PI * cos(2. * PI * x) + 2. * PI * cos(2. * PI * y))) /
+                         (8. * r0) +
+                     ((std::pow(PI, 2.)) * cos(PI * t) * cos(PI * x) * sin(PI * y)) / (2. * r0)) -
+          PI * cos(PI * x) * sin(PI * t) * sin(PI * y)) *
+          (r0 - epsilon * (p0 - PI * cos(PI * x) * sin(PI * t) * sin(PI * y))) -
+      (epsilon * ((PI * (std::pow((sin(PI * t)), 2.)) *
+                      (2. * PI * cos(2. * PI * x) + 2. * PI * cos(2. * PI * y))) /
+                         (8. * r0) +
+                     ((std::pow(PI, 2.)) * cos(PI * t) * cos(PI * x) * sin(PI * y)) / (2. * r0)) +
+          PI * cos(PI * x) * sin(PI * t) * sin(PI * y)) *
+          (r0 - epsilon * (p0 - PI * cos(PI * x) * sin(PI * t) * sin(PI * y))) +
+      (std::pow(PI, 2.)) * epsilon * sin(PI * t) * sin(PI * x) * sin(PI * y) *
+          (epsilon * ((PI * (std::pow((sin(PI * t)), 2.)) *
+                          (sin(2. * PI * x) + 2. * PI * x * cos(2. * PI * y))) /
+                             (8. * r0) +
+                         (PI * cos(PI * t) * sin(PI * x) * sin(PI * y)) / (2. * r0)) -
+              sin(PI * t) * sin(PI * x) * sin(PI * y)) -
+      (std::pow(PI, 2.)) * epsilon * cos(PI * x) * cos(PI * y) * sin(PI * t) *
+          (epsilon * ((PI * (std::pow((sin(PI * t)), 2.)) *
+                          (sin(2. * PI * y) + 2. * PI * y * cos(2. * PI * x))) /
+                             (8. * r0) -
+                         (PI * cos(PI * t) * cos(PI * x) * cos(PI * y)) / (2. * r0)) -
+              cos(PI * x) * cos(PI * y) * sin(PI * t));
+  f_w_ex(0) =
+      (epsilon * ((PI * (std::pow((sin(PI * t)), 2.)) *
+                      (sin(2. * PI * x) + 2. * PI * x * cos(2. * PI * y))) /
+                         (8. * r0) +
+                     (PI * cos(PI * t) * sin(PI * x) * sin(PI * y)) / (2. * r0)) -
+          sin(PI * t) * sin(PI * x) * sin(PI * y)) *
+          (epsilon *
+                  ((PI * (std::pow((sin(PI * t)), 2.)) *
+                       (2. * PI * cos(2. * PI * x) + 2. * PI * cos(2. * PI * y))) /
+                          (8. * r0) +
+                      ((std::pow(PI, 2.)) * cos(PI * t) * cos(PI * x) * sin(PI * y)) / (2. * r0)) +
+              PI * cos(PI * x) * sin(PI * t) * sin(PI * y)) *
+          (r0 - epsilon * (p0 - PI * cos(PI * x) * sin(PI * t) * sin(PI * y))) -
+      mu * (epsilon *
+                   (((std::pow(PI, 3.)) * (std::pow((sin(PI * t)), 2.)) * sin(2. * PI * x)) /
+                           (2. * r0) +
+                       ((std::pow(PI, 3.)) * cos(PI * t) * sin(PI * x) * sin(PI * y)) / (2. * r0)) +
+               epsilon *
+                   (((std::pow(PI, 3.)) * cos(PI * t) * sin(PI * x) * sin(PI * y)) / (2. * r0) +
+                       ((std::pow(PI, 4.)) * x * cos(2. * PI * y) * (std::pow((sin(PI * t)), 2.))) /
+                           r0) +
+               (2. * epsilon *
+                   (((std::pow(PI, 3.)) * cos(PI * t) * sin(PI * x) * sin(PI * y)) / (2. * r0) +
+                       ((std::pow(PI, 3.)) * cos(PI * x) * (std::pow((sin(PI * t)), 2.)) *
+                           sin(PI * x)) /
+                           r0)) /
+                   3. -
+               2. * (std::pow(PI, 2.)) * sin(PI * t) * sin(PI * x) * sin(PI * y)) -
+      (epsilon * (((std::pow(PI, 2.)) * cos(PI * t) * sin(PI * t) *
+                      (sin(2. * PI * x) + 2. * PI * x * cos(2. * PI * y))) /
+                         (4. * r0) -
+                     ((std::pow(PI, 2.)) * sin(PI * t) * sin(PI * x) * sin(PI * y)) / (2. * r0)) -
+          PI * cos(PI * t) * sin(PI * x) * sin(PI * y)) *
+          (r0 - epsilon * (p0 - PI * cos(PI * x) * sin(PI * t) * sin(PI * y))) +
+      2. *
+          (epsilon * ((PI * (std::pow((sin(PI * t)), 2.)) *
+                          (sin(2. * PI * x) + 2. * PI * x * cos(2. * PI * y))) /
+                             (8. * r0) +
+                         (PI * cos(PI * t) * sin(PI * x) * sin(PI * y)) / (2. * r0)) -
+              sin(PI * t) * sin(PI * x) * sin(PI * y)) *
+          (epsilon *
+                  ((PI * (std::pow((sin(PI * t)), 2.)) *
+                       (2. * PI * cos(2. * PI * x) + 2. * PI * cos(2. * PI * y))) /
+                          (8. * r0) +
+                      ((std::pow(PI, 2.)) * cos(PI * t) * cos(PI * x) * sin(PI * y)) / (2. * r0)) -
+              PI * cos(PI * x) * sin(PI * t) * sin(PI * y)) *
+          (r0 - epsilon * (p0 - PI * cos(PI * x) * sin(PI * t) * sin(PI * y))) +
+      (epsilon * (((std::pow(PI, 2.)) * cos(PI * t) * cos(PI * y) * sin(PI * x)) / (2. * r0) -
+                     ((std::pow(PI, 3.)) * x * (std::pow((sin(PI * t)), 2.)) * sin(2. * PI * y)) /
+                         (2. * r0)) -
+          PI * cos(PI * y) * sin(PI * t) * sin(PI * x)) *
+          (r0 - epsilon * (p0 - PI * cos(PI * x) * sin(PI * t) * sin(PI * y))) *
+          (epsilon * ((PI * (std::pow((sin(PI * t)), 2.)) *
+                          (sin(2. * PI * y) + 2. * PI * y * cos(2. * PI * x))) /
+                             (8. * r0) -
+                         (PI * cos(PI * t) * cos(PI * x) * cos(PI * y)) / (2. * r0)) -
+              cos(PI * x) * cos(PI * y) * sin(PI * t)) -
+      (std::pow(PI, 2.)) * sin(PI * t) * sin(PI * x) * sin(PI * y) -
+      (std::pow(PI, 2.)) * epsilon * cos(PI * t) * cos(PI * x) * sin(PI * y) *
+          (epsilon * ((PI * (std::pow((sin(PI * t)), 2.)) *
+                          (sin(2. * PI * x) + 2. * PI * x * cos(2. * PI * y))) /
+                             (8. * r0) +
+                         (PI * cos(PI * t) * sin(PI * x) * sin(PI * y)) / (2. * r0)) -
+              sin(PI * t) * sin(PI * x) * sin(PI * y)) -
+      (std::pow(PI, 2.)) * epsilon * sin(PI * t) * sin(PI * x) * sin(PI * y) *
+          (std::pow((epsilon * ((PI * (std::pow((sin(PI * t)), 2.)) *
+                                    (sin(2. * PI * x) + 2. * PI * x * cos(2. * PI * y))) /
+                                       (8. * r0) +
+                                   (PI * cos(PI * t) * sin(PI * x) * sin(PI * y)) / (2. * r0)) -
+                        sin(PI * t) * sin(PI * x) * sin(PI * y)),
+              2.)) +
+      (std::pow(PI, 2.)) * epsilon * cos(PI * x) * cos(PI * y) * sin(PI * t) *
+          (epsilon * ((PI * (std::pow((sin(PI * t)), 2.)) *
+                          (sin(2. * PI * x) + 2. * PI * x * cos(2. * PI * y))) /
+                             (8. * r0) +
+                         (PI * cos(PI * t) * sin(PI * x) * sin(PI * y)) / (2. * r0)) -
+              sin(PI * t) * sin(PI * x) * sin(PI * y)) *
+          (epsilon * ((PI * (std::pow((sin(PI * t)), 2.)) *
+                          (sin(2. * PI * y) + 2. * PI * y * cos(2. * PI * x))) /
+                             (8. * r0) -
+                         (PI * cos(PI * t) * cos(PI * x) * cos(PI * y)) / (2. * r0)) -
+              cos(PI * x) * cos(PI * y) * sin(PI * t));
+  f_w_ex(1) =
+      mu * (epsilon *
+                   (((std::pow(PI, 3.)) * cos(PI * t) * cos(PI * x) * cos(PI * y)) / (2. * r0) -
+                       ((std::pow(PI, 4.)) * y * cos(2. * PI * x) * (std::pow((sin(PI * t)), 2.))) /
+                           r0) -
+               epsilon *
+                   (((std::pow(PI, 3.)) * (std::pow((sin(PI * t)), 2.)) * sin(2. * PI * y)) /
+                           (2. * r0) -
+                       ((std::pow(PI, 3.)) * cos(PI * t) * cos(PI * x) * cos(PI * y)) / (2. * r0)) +
+               (2. * epsilon *
+                   (((std::pow(PI, 3.)) * cos(PI * t) * cos(PI * x) * cos(PI * y)) / (2. * r0) -
+                       ((std::pow(PI, 3.)) * cos(PI * y) * (std::pow((sin(PI * t)), 2.)) *
+                           sin(PI * y)) /
+                           r0)) /
+                   3. +
+               2. * (std::pow(PI, 2.)) * cos(PI * x) * cos(PI * y) * sin(PI * t)) -
+      (epsilon * (((std::pow(PI, 2.)) * cos(PI * x) * cos(PI * y) * sin(PI * t)) / (2. * r0) +
+                     ((std::pow(PI, 2.)) * cos(PI * t) * sin(PI * t) *
+                         (sin(2. * PI * y) + 2. * PI * y * cos(2. * PI * x))) /
+                         (4. * r0)) -
+          PI * cos(PI * t) * cos(PI * x) * cos(PI * y)) *
+          (r0 - epsilon * (p0 - PI * cos(PI * x) * sin(PI * t) * sin(PI * y))) +
+      (epsilon * ((PI * (std::pow((sin(PI * t)), 2.)) *
+                      (sin(2. * PI * x) + 2. * PI * x * cos(2. * PI * y))) /
+                         (8. * r0) +
+                     (PI * cos(PI * t) * sin(PI * x) * sin(PI * y)) / (2. * r0)) -
+          sin(PI * t) * sin(PI * x) * sin(PI * y)) *
+          (epsilon *
+                  (((std::pow(PI, 2.)) * cos(PI * t) * cos(PI * y) * sin(PI * x)) / (2. * r0) -
+                      ((std::pow(PI, 3.)) * y * (std::pow((sin(PI * t)), 2.)) * sin(2. * PI * x)) /
+                          (2. * r0)) +
+              PI * cos(PI * y) * sin(PI * t) * sin(PI * x)) *
+          (r0 - epsilon * (p0 - PI * cos(PI * x) * sin(PI * t) * sin(PI * y))) +
+      2. *
+          (epsilon *
+                  ((PI * (std::pow((sin(PI * t)), 2.)) *
+                       (2. * PI * cos(2. * PI * x) + 2. * PI * cos(2. * PI * y))) /
+                          (8. * r0) +
+                      ((std::pow(PI, 2.)) * cos(PI * t) * cos(PI * x) * sin(PI * y)) / (2. * r0)) +
+              PI * cos(PI * x) * sin(PI * t) * sin(PI * y)) *
+          (r0 - epsilon * (p0 - PI * cos(PI * x) * sin(PI * t) * sin(PI * y))) *
+          (epsilon * ((PI * (std::pow((sin(PI * t)), 2.)) *
+                          (sin(2. * PI * y) + 2. * PI * y * cos(2. * PI * x))) /
+                             (8. * r0) -
+                         (PI * cos(PI * t) * cos(PI * x) * cos(PI * y)) / (2. * r0)) -
+              cos(PI * x) * cos(PI * y) * sin(PI * t)) +
+      (epsilon * ((PI * (std::pow((sin(PI * t)), 2.)) *
+                      (2. * PI * cos(2. * PI * x) + 2. * PI * cos(2. * PI * y))) /
+                         (8. * r0) +
+                     ((std::pow(PI, 2.)) * cos(PI * t) * cos(PI * x) * sin(PI * y)) / (2. * r0)) -
+          PI * cos(PI * x) * sin(PI * t) * sin(PI * y)) *
+          (r0 - epsilon * (p0 - PI * cos(PI * x) * sin(PI * t) * sin(PI * y))) *
+          (epsilon * ((PI * (std::pow((sin(PI * t)), 2.)) *
+                          (sin(2. * PI * y) + 2. * PI * y * cos(2. * PI * x))) /
+                             (8. * r0) -
+                         (PI * cos(PI * t) * cos(PI * x) * cos(PI * y)) / (2. * r0)) -
+              cos(PI * x) * cos(PI * y) * sin(PI * t)) +
+      (std::pow(PI, 2.)) * cos(PI * x) * cos(PI * y) * sin(PI * t) +
+      (std::pow(PI, 2.)) * epsilon * cos(PI * x) * cos(PI * y) * sin(PI * t) *
+          (std::pow((epsilon * ((PI * (std::pow((sin(PI * t)), 2.)) *
+                                    (sin(2. * PI * y) + 2. * PI * y * cos(2. * PI * x))) /
+                                       (8. * r0) -
+                                   (PI * cos(PI * t) * cos(PI * x) * cos(PI * y)) / (2. * r0)) -
+                        cos(PI * x) * cos(PI * y) * sin(PI * t)),
+              2.)) -
+      (std::pow(PI, 2.)) * epsilon * cos(PI * t) * cos(PI * x) * sin(PI * y) *
+          (epsilon * ((PI * (std::pow((sin(PI * t)), 2.)) *
+                          (sin(2. * PI * y) + 2. * PI * y * cos(2. * PI * x))) /
+                             (8. * r0) -
+                         (PI * cos(PI * t) * cos(PI * x) * cos(PI * y)) / (2. * r0)) -
+              cos(PI * x) * cos(PI * y) * sin(PI * t)) -
+      (std::pow(PI, 2.)) * epsilon * sin(PI * t) * sin(PI * x) * sin(PI * y) *
+          (epsilon * ((PI * (std::pow((sin(PI * t)), 2.)) *
+                          (sin(2. * PI * x) + 2. * PI * x * cos(2. * PI * y))) /
+                             (8. * r0) +
+                         (PI * cos(PI * t) * sin(PI * x) * sin(PI * y)) / (2. * r0)) -
+              sin(PI * t) * sin(PI * x) * sin(PI * y)) *
+          (epsilon * ((PI * (std::pow((sin(PI * t)), 2.)) *
+                          (sin(2. * PI * y) + 2. * PI * y * cos(2. * PI * x))) /
+                             (8. * r0) -
+                         (PI * cos(PI * t) * cos(PI * x) * cos(PI * y)) / (2. * r0)) -
+              cos(PI * x) * cos(PI * y) * sin(PI * t));
+
+  switch (index)
+  {
+    case 0:
+      return f_r_ex;
+    case 1:
+      return f_w_ex(0);
+    case 2:
+      return f_w_ex(1);
+
+    default:
+      return 1.0;
+  }
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::vector<double> FLD::WeaklyCompressibleManufacturedFlowForceFunction::EvaluateTimeDerivative(
+    const int index, const double* xp, const double t, const unsigned deg)
+{
+  // resulting vector holding
+  std::vector<double> res(deg + 1);
+
+  // add the value at time t
+  res[0] = Evaluate(index, xp, t);
+
+  // add the 1st time derivative at time t
+  if (deg >= 1)
+  {
+    res[1] = 0.0;
+  }
+
+  // add the 2nd time derivative at time t
+  if (deg >= 2)
+  {
+    res[2] = 0.0;
+  }
+
+  // error for higher derivatives
+  if (deg >= 3)
+  {
+    dserror("Higher time derivatives than second not supported!");
+  }
+
+  return res;
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+FLD::WeaklyCompressibleEtienneCFDFunction::WeaklyCompressibleEtienneCFDFunction(int mat_id)
+    : Function(), refdensity_(0.0), refpressure_(0.0), comprcoeff_(0.0)
+{
+  // get material
+  Teuchos::RCP<MAT::PAR::Material> mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
+  if (mat->Type() != INPAR::MAT::m_fluid_weakly_compressible)
+    dserror("Material %d is not a weakly compressible fluid", mat_id);
+  MAT::PAR::Parameter* params = mat->Parameter();
+  MAT::PAR::WeaklyCompressibleFluid* fparams =
+      dynamic_cast<MAT::PAR::WeaklyCompressibleFluid*>(params);
+  if (!fparams) dserror("Material does not cast to Weakly compressible fluid");
+
+  // get data
+  refdensity_ = fparams->refdensity_;
+  refpressure_ = fparams->refpressure_;
+  comprcoeff_ = fparams->comprcoeff_;
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double FLD::WeaklyCompressibleEtienneCFDFunction::Evaluate(int index, const double* xp, double t)
+{
+  // ease notation
+  double x = xp[0];
+  double y = xp[1];
+  double r0 = refdensity_;
+  double p0 = refpressure_;
+  double epsilon = comprcoeff_;
+
+  // initialize variables
+  LINALG::Matrix<3, 1> L_ex;
+  double p_ex;
+  LINALG::Matrix<2, 1> v_ex;
+  double r_ex;
+  LINALG::Matrix<2, 1> w_ex;
+
+  // evaluate variables
+  L_ex(0) = +10. * x * (std::pow(y, 3.)) *
+            (5. * (std::pow(x, 3.)) - 10. * (std::pow(x, 2.)) + 6. * x - 1.) *
+            (std::pow((-10. * (std::pow(x, 5.)) + 25. * (std::pow(x, 4.)) -
+                          20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                4.)) *
+            (40. * (std::pow(x, 5.)) - 100. * (std::pow(x, 4.)) + 80. * (std::pow(x, 3.)) -
+                20. * (std::pow(x, 2.)) + 5. * y - 4.);
+  L_ex(1) = -10. * x * (std::pow(y, 3.)) *
+            (5. * (std::pow(x, 3.)) - 10. * (std::pow(x, 2.)) + 6. * x - 1.) *
+            (std::pow((-10. * (std::pow(x, 5.)) + 25. * (std::pow(x, 4.)) -
+                          20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                4.)) *
+            (40. * (std::pow(x, 5.)) - 100. * (std::pow(x, 4.)) + 80. * (std::pow(x, 3.)) -
+                20. * (std::pow(x, 2.)) + 5. * y - 4.);
+  L_ex(2) =
+      20. * (std::pow(y, 3.)) *
+          ((std::pow(
+               (10. * (std::pow(x, 2.)) * (std::pow((x - 1.), 2.)) * (x - 1. / 2.) - 1.), 5.)) /
+                  5. +
+              (std::pow(y, 5.)) / 5.) +
+      12. * (std::pow(y, 2.)) *
+          ((std::pow(
+               (10. * (std::pow(x, 2.)) * (std::pow((x - 1.), 2.)) * (x - 1. / 2.) - 1.), 6.)) /
+                  6. -
+              (std::pow(y, 6.)) / 6.) +
+      (std::pow(y, 8.)) -
+      (std::pow(y, 4.)) *
+          (std::pow(
+              (10. * (std::pow(x, 2.)) * (std::pow((x - 1.), 2.)) * (x - 1. / 2.) - 1.), 4.)) *
+          (std::pow((10. * (std::pow(x, 2.)) * (std::pow((x - 1.), 2.)) +
+                        10. * (std::pow(x, 2.)) * (2. * x - 2.) * (x - 1. / 2.) +
+                        20. * x * (std::pow((x - 1.), 2.)) * (x - 1. / 2.)),
+              2.)) -
+      (std::pow(y, 4.)) *
+          (std::pow(
+              (10. * (std::pow(x, 2.)) * (std::pow((x - 1.), 2.)) * (x - 1. / 2.) - 1.), 4.)) *
+          (y + 10. * (std::pow(x, 2.)) * (std::pow((x - 1.), 2.)) * (x - 1. / 2.) - 1.) *
+          (40. * x * (std::pow((x - 1.), 2.)) + 20. * (std::pow(x, 2.)) * (x - 1. / 2.) +
+              20. * (std::pow(x, 2.)) * (2. * x - 2.) +
+              20. * (std::pow((x - 1.), 2.)) * (x - 1. / 2.) +
+              40. * x * (2. * x - 2.) * (x - 1. / 2.)) -
+      4. * (std::pow(y, 4.)) *
+          (std::pow(
+              (10. * (std::pow(x, 2.)) * (std::pow((x - 1.), 2.)) * (x - 1. / 2.) - 1.), 3.)) *
+          (y + 10. * (std::pow(x, 2.)) * (std::pow((x - 1.), 2.)) * (x - 1. / 2.) - 1.) *
+          (std::pow((10. * (std::pow(x, 2.)) * (std::pow((x - 1.), 2.)) +
+                        10. * (std::pow(x, 2.)) * (2. * x - 2.) * (x - 1. / 2.) +
+                        20. * x * (std::pow((x - 1.), 2.)) * (x - 1. / 2.)),
+              2.));
+  p_ex = (std::pow(x, 2.)) + (std::pow(y, 2.));
+  v_ex(0) =
+      -5. * (std::pow(y, 4.)) *
+          ((std::pow(
+               (10. * (std::pow(x, 2.)) * (std::pow((x - 1.), 2.)) * (x - 1. / 2.) - 1.), 5.)) /
+                  5. +
+              (std::pow(y, 5.)) / 5.) -
+      4. * (std::pow(y, 3.)) *
+          ((std::pow(
+               (10. * (std::pow(x, 2.)) * (std::pow((x - 1.), 2.)) * (x - 1. / 2.) - 1.), 6.)) /
+                  6. -
+              (std::pow(y, 6.)) / 6.);
+  v_ex(1) =
+      (std::pow(y, 4.)) *
+      (std::pow((10. * (std::pow(x, 2.)) * (std::pow((x - 1.), 2.)) * (x - 1. / 2.) - 1.), 4.)) *
+      (y + 10. * (std::pow(x, 2.)) * (std::pow((x - 1.), 2.)) * (x - 1. / 2.) - 1.) *
+      (10. * (std::pow(x, 2.)) * (std::pow((x - 1.), 2.)) +
+          10. * (std::pow(x, 2.)) * (2. * x - 2.) * (x - 1. / 2.) +
+          20. * x * (std::pow((x - 1.), 2.)) * (x - 1. / 2.));
+
+  // density - momentum formulation
+  r_ex = r0 + epsilon * (p_ex - p0);
+  w_ex(0) = r_ex * v_ex(0);
+  w_ex(1) = r_ex * v_ex(1);
+
+  switch (index)
+  {
+    case 0:
+      return r_ex;
+    case 1:
+      return w_ex(0);
+    case 2:
+      return w_ex(1);
+    case 3:
+      return L_ex(0);
+    case 4:
+      return L_ex(1);
+    case 5:
+      return L_ex(2);
+
+    default:
+      return 1.0;
+  }
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::vector<double> FLD::WeaklyCompressibleEtienneCFDFunction::EvaluateTimeDerivative(
+    const int index, const double* xp, const double t, const unsigned deg)
+{
+  // resulting vector holding
+  std::vector<double> res(deg + 1);
+
+  // add the value at time t
+  res[0] = Evaluate(index, xp, t);
+
+  // add the 1st time derivative at time t
+  if (deg >= 1)
+  {
+    res[1] = 0.0;
+  }
+
+  // add the 2nd time derivative at time t
+  if (deg >= 2)
+  {
+    res[2] = 0.0;
+  }
+
+  // error for higher derivatives
+  if (deg >= 3)
+  {
+    dserror("Higher time derivatives than second not supported!");
+  }
+
+  return res;
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+FLD::WeaklyCompressibleEtienneCFDForceFunction::WeaklyCompressibleEtienneCFDForceFunction(
+    int mat_id)
+    : Function(), refdensity_(0.0), refpressure_(0.0), comprcoeff_(0.0)
+{
+  // get material
+  Teuchos::RCP<MAT::PAR::Material> mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
+  if (mat->Type() != INPAR::MAT::m_fluid_weakly_compressible)
+    dserror("Material %d is not a weakly compressible fluid", mat_id);
+  MAT::PAR::Parameter* params = mat->Parameter();
+  MAT::PAR::WeaklyCompressibleFluid* fparams =
+      dynamic_cast<MAT::PAR::WeaklyCompressibleFluid*>(params);
+  if (!fparams) dserror("Material does not cast to Weakly compressible fluid");
+
+  // get data
+  refdensity_ = fparams->refdensity_;
+  refpressure_ = fparams->refpressure_;
+  comprcoeff_ = fparams->comprcoeff_;
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double FLD::WeaklyCompressibleEtienneCFDForceFunction::Evaluate(
+    int index, const double* xp, double t)
+{
+  // ease notation
+  double x = xp[0];
+  double y = xp[1];
+  double r0 = refdensity_;
+
+  // initialize variables
+  double f_r_ex;
+  LINALG::Matrix<2, 1> f_w_ex;
+
+  // evaluate variables
+  f_r_ex = 0;
+  f_w_ex(0) =
+      2. * x -
+      (y *
+          (20. * (std::pow(y, 3.)) *
+                  ((std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                 20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                       5.)) /
+                          5. -
+                      (std::pow(y, 5.)) / 5.) -
+              12. * (std::pow(y, 2.)) *
+                  ((std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                 20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                       6.)) /
+                          6. -
+                      (std::pow(y, 6.)) / 6.) -
+              (std::pow(y, 8.)) +
+              (std::pow(y, 4.)) *
+                  (200. * (std::pow(x, 3.)) - 300. * (std::pow(x, 2.)) + 120. * x - 10.) *
+                  (std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                      4.)) *
+                  (10. * (std::pow(x, 5.)) - 25. * (std::pow(x, 4.)) + 20. * (std::pow(x, 3.)) -
+                      5. * (std::pow(x, 2.)) + y - 1.) +
+              100. * (std::pow(x, 2.)) * (std::pow(y, 4.)) *
+                  (std::pow((5. * (std::pow(x, 3.)) - 10. * (std::pow(x, 2.)) + 6. * x - 1.), 2.)) *
+                  (std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                      4.)) -
+              400. * (std::pow(x, 2.)) * (std::pow(y, 4.)) *
+                  (std::pow((5. * (std::pow(x, 3.)) - 10. * (std::pow(x, 2.)) + 6. * x - 1.), 2.)) *
+                  (std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                      3.)) *
+                  (10. * (std::pow(x, 5.)) - 25. * (std::pow(x, 4.)) + 20. * (std::pow(x, 3.)) -
+                      5. * (std::pow(x, 2.)) + y - 1.))) /
+          5. +
+      ((std::pow(x, 2.)) / 10. + (std::pow(y, 2.)) / 10. + 1. / 10.) *
+          (24. * y *
+                  ((std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                 20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                       6.)) /
+                          6. -
+                      (std::pow(y, 6.)) / 6.) -
+              60. * (std::pow(y, 2.)) *
+                  ((std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                 20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                       5.)) /
+                          5. -
+                      (std::pow(y, 5.)) / 5.) +
+              16. * (std::pow(y, 7.)) -
+              (std::pow(y, 4.)) *
+                  (200. * (std::pow(x, 3.)) - 300. * (std::pow(x, 2.)) + 120. * x - 10.) *
+                  (std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                      4.)) -
+              4. * (std::pow(y, 3.)) *
+                  (200. * (std::pow(x, 3.)) - 300. * (std::pow(x, 2.)) + 120. * x - 10.) *
+                  (std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                      4.)) *
+                  (10. * (std::pow(x, 5.)) - 25. * (std::pow(x, 4.)) + 20. * (std::pow(x, 3.)) -
+                      5. * (std::pow(x, 2.)) + y - 1.) -
+              400. * (std::pow(x, 2.)) * (std::pow(y, 3.)) *
+                  (std::pow((5. * (std::pow(x, 3.)) - 10. * (std::pow(x, 2.)) + 6. * x - 1.), 2.)) *
+                  (std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                      4.)) +
+              400. * (std::pow(x, 2.)) * (std::pow(y, 4.)) *
+                  (std::pow((5. * (std::pow(x, 3.)) - 10. * (std::pow(x, 2.)) + 6. * x - 1.), 2.)) *
+                  (std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                      3.)) +
+              1600. * (std::pow(x, 2.)) * (std::pow(y, 3.)) *
+                  (std::pow((5. * (std::pow(x, 3.)) - 10. * (std::pow(x, 2.)) + 6. * x - 1.), 2.)) *
+                  (std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                      3.)) *
+                  (10. * (std::pow(x, 5.)) - 25. * (std::pow(x, 4.)) + 20. * (std::pow(x, 3.)) -
+                      5. * (std::pow(x, 2.)) + y - 1.)) -
+      20. * (std::pow(y, 3.)) * ((std::pow(x, 2.)) / 10. + (std::pow(y, 2.)) / 10. + 1. / 10.) *
+          (std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) - 20. * (std::pow(x, 3.)) +
+                        5. * (std::pow(x, 2.)) + 1.),
+              3.)) *
+          (48. * x + 5. * y - 60. * x * y + 375. * (std::pow(x, 2.)) * y -
+              2900. * (std::pow(x, 3.)) * y + 13275. * (std::pow(x, 4.)) * y -
+              31050. * (std::pow(x, 5.)) * y + 38350. * (std::pow(x, 6.)) * y -
+              24000. * (std::pow(x, 7.)) * y + 6000. * (std::pow(x, 8.)) * y -
+              360. * (std::pow(x, 2.)) + 3120. * (std::pow(x, 3.)) - 15620. * (std::pow(x, 4.)) +
+              52080. * (std::pow(x, 5.)) - 166360. * (std::pow(x, 6.)) +
+              504000. * (std::pow(x, 7.)) - 1141500. * (std::pow(x, 8.)) +
+              1737200. * (std::pow(x, 9.)) - 1720400. * (std::pow(x, 10.)) +
+              1066800. * (std::pow(x, 11.)) - 377000. * (std::pow(x, 12.)) +
+              58000. * (std::pow(x, 13.)) - 4.) +
+      4. * (std::pow(x, 2.)) * (std::pow(y, 3.)) *
+          (5. * (std::pow(x, 3.)) - 10. * (std::pow(x, 2.)) + 6. * x - 1.) *
+          (std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) - 20. * (std::pow(x, 3.)) +
+                        5. * (std::pow(x, 2.)) + 1.),
+              4.)) *
+          (40. * (std::pow(x, 5.)) - 100. * (std::pow(x, 4.)) + 80. * (std::pow(x, 3.)) -
+              20. * (std::pow(x, 2.)) + 5. * y - 4.) +
+      10. * r0 * x * (std::pow(y, 4.)) *
+          (5. * (std::pow(y, 4.)) *
+                  ((std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                 20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                       5.)) /
+                          5. -
+                      (std::pow(y, 5.)) / 5.) -
+              4. * (std::pow(y, 3.)) *
+                  ((std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                 20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                       6.)) /
+                          6. -
+                      (std::pow(y, 6.)) / 6.)) *
+          (5. * (std::pow(x, 3.)) - 10. * (std::pow(x, 2.)) + 6. * x - 1.) *
+          (std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) - 20. * (std::pow(x, 3.)) +
+                        5. * (std::pow(x, 2.)) + 1.),
+              4.)) +
+      40. * r0 * x * (std::pow(y, 3.)) *
+          (5. * (std::pow(y, 4.)) *
+                  ((std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                 20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                       5.)) /
+                          5. -
+                      (std::pow(y, 5.)) / 5.) -
+              4. * (std::pow(y, 3.)) *
+                  ((std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                 20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                       6.)) /
+                          6. -
+                      (std::pow(y, 6.)) / 6.)) *
+          (5. * (std::pow(x, 3.)) - 10. * (std::pow(x, 2.)) + 6. * x - 1.) *
+          (std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) - 20. * (std::pow(x, 3.)) +
+                        5. * (std::pow(x, 2.)) + 1.),
+              4.)) *
+          (10. * (std::pow(x, 5.)) - 25. * (std::pow(x, 4.)) + 20. * (std::pow(x, 3.)) -
+              5. * (std::pow(x, 2.)) + y - 1.) -
+      20. * r0 * x * (std::pow(y, 3.)) *
+          (5. * (std::pow(y, 4.)) *
+                  ((std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                 20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                       5.)) /
+                          5. -
+                      (std::pow(y, 5.)) / 5.) -
+              4. * (std::pow(y, 3.)) *
+                  ((std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                 20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                       6.)) /
+                          6. -
+                      (std::pow(y, 6.)) / 6.)) *
+          (5. * (std::pow(x, 3.)) - 10. * (std::pow(x, 2.)) + 6. * x - 1.) *
+          (std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) - 20. * (std::pow(x, 3.)) +
+                        5. * (std::pow(x, 2.)) + 1.),
+              4.)) *
+          (40. * (std::pow(x, 5.)) - 100. * (std::pow(x, 4.)) + 80. * (std::pow(x, 3.)) -
+              20. * (std::pow(x, 2.)) + 5. * y - 4.) -
+      10. * r0 * x * (std::pow(y, 4.)) *
+          (12. * (std::pow(y, 2.)) *
+                  ((std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                 20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                       6.)) /
+                          6. -
+                      (std::pow(y, 6.)) / 6.) -
+              20. * (std::pow(y, 3.)) *
+                  ((std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                 20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                       5.)) /
+                          5. -
+                      (std::pow(y, 5.)) / 5.) +
+              (std::pow(y, 8.))) *
+          (5. * (std::pow(x, 3.)) - 10. * (std::pow(x, 2.)) + 6. * x - 1.) *
+          (std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) - 20. * (std::pow(x, 3.)) +
+                        5. * (std::pow(x, 2.)) + 1.),
+              4.)) *
+          (10. * (std::pow(x, 5.)) - 25. * (std::pow(x, 4.)) + 20. * (std::pow(x, 3.)) -
+              5. * (std::pow(x, 2.)) + y - 1.);
+  f_w_ex(1) =
+      2. * y -
+      (x *
+          (20. * (std::pow(y, 3.)) *
+                  ((std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                 20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                       5.)) /
+                          5. -
+                      (std::pow(y, 5.)) / 5.) -
+              12. * (std::pow(y, 2.)) *
+                  ((std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                 20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                       6.)) /
+                          6. -
+                      (std::pow(y, 6.)) / 6.) -
+              (std::pow(y, 8.)) +
+              (std::pow(y, 4.)) *
+                  (200. * (std::pow(x, 3.)) - 300. * (std::pow(x, 2.)) + 120. * x - 10.) *
+                  (std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                      4.)) *
+                  (10. * (std::pow(x, 5.)) - 25. * (std::pow(x, 4.)) + 20. * (std::pow(x, 3.)) -
+                      5. * (std::pow(x, 2.)) + y - 1.) +
+              100. * (std::pow(x, 2.)) * (std::pow(y, 4.)) *
+                  (std::pow((5. * (std::pow(x, 3.)) - 10. * (std::pow(x, 2.)) + 6. * x - 1.), 2.)) *
+                  (std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                      4.)) -
+              400. * (std::pow(x, 2.)) * (std::pow(y, 4.)) *
+                  (std::pow((5. * (std::pow(x, 3.)) - 10. * (std::pow(x, 2.)) + 6. * x - 1.), 2.)) *
+                  (std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                      3.)) *
+                  (10. * (std::pow(x, 5.)) - 25. * (std::pow(x, 4.)) + 20. * (std::pow(x, 3.)) -
+                      5. * (std::pow(x, 2.)) + y - 1.))) /
+          5. -
+      ((std::pow(x, 2.)) / 10. + (std::pow(y, 2.)) / 10. + 1. / 10.) *
+          (120. * x * (std::pow(y, 2.)) *
+                  (5. * (std::pow(x, 3.)) - 10. * (std::pow(x, 2.)) + 6. * x - 1.) *
+                  (std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                      5.)) -
+              8000. * (std::pow(x, 3.)) * (std::pow(y, 4.)) *
+                  (std::pow((5. * (std::pow(x, 3.)) - 10. * (std::pow(x, 2.)) + 6. * x - 1.), 3.)) *
+                  (std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                      3.)) -
+              200. * x * (std::pow(y, 3.)) *
+                  (5. * (std::pow(x, 3.)) - 10. * (std::pow(x, 2.)) + 6. * x - 1.) *
+                  (std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                      4.)) +
+              (std::pow(y, 4.)) * (600. * (std::pow(x, 2.)) - 600. * x + 120.) *
+                  (std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                      4.)) *
+                  (10. * (std::pow(x, 5.)) - 25. * (std::pow(x, 4.)) + 20. * (std::pow(x, 3.)) -
+                      5. * (std::pow(x, 2.)) + y - 1.) +
+              12000. * (std::pow(x, 3.)) * (std::pow(y, 4.)) *
+                  (std::pow((5. * (std::pow(x, 3.)) - 10. * (std::pow(x, 2.)) + 6. * x - 1.), 3.)) *
+                  (std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                      2.)) *
+                  (10. * (std::pow(x, 5.)) - 25. * (std::pow(x, 4.)) + 20. * (std::pow(x, 3.)) -
+                      5. * (std::pow(x, 2.)) + y - 1.) +
+              30. * x * (std::pow(y, 4.)) *
+                  (5. * (std::pow(x, 3.)) - 10. * (std::pow(x, 2.)) + 6. * x - 1.) *
+                  (200. * (std::pow(x, 3.)) - 300. * (std::pow(x, 2.)) + 120. * x - 10.) *
+                  (std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                      4.)) -
+              120. * x * (std::pow(y, 4.)) *
+                  (5. * (std::pow(x, 3.)) - 10. * (std::pow(x, 2.)) + 6. * x - 1.) *
+                  (200. * (std::pow(x, 3.)) - 300. * (std::pow(x, 2.)) + 120. * x - 10.) *
+                  (std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                      3.)) *
+                  (10. * (std::pow(x, 5.)) - 25. * (std::pow(x, 4.)) + 20. * (std::pow(x, 3.)) -
+                      5. * (std::pow(x, 2.)) + y - 1.)) -
+      4. * x * (std::pow(y, 4.)) *
+          (5. * (std::pow(x, 3.)) - 10. * (std::pow(x, 2.)) + 6. * x - 1.) *
+          (std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) - 20. * (std::pow(x, 3.)) +
+                        5. * (std::pow(x, 2.)) + 1.),
+              4.)) *
+          (40. * (std::pow(x, 5.)) - 100. * (std::pow(x, 4.)) + 80. * (std::pow(x, 3.)) -
+              20. * (std::pow(x, 2.)) + 5. * y - 4.) +
+      100. * r0 * (std::pow(x, 2.)) * (std::pow(y, 4.)) *
+          (5. * (std::pow(y, 4.)) *
+                  ((std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                 20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                       5.)) /
+                          5. -
+                      (std::pow(y, 5.)) / 5.) -
+              4. * (std::pow(y, 3.)) *
+                  ((std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                 20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                       6.)) /
+                          6. -
+                      (std::pow(y, 6.)) / 6.)) *
+          (std::pow((5. * (std::pow(x, 3.)) - 10. * (std::pow(x, 2.)) + 6. * x - 1.), 2.)) *
+          (std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) - 20. * (std::pow(x, 3.)) +
+                        5. * (std::pow(x, 2.)) + 1.),
+              4.)) +
+      100. * r0 * (std::pow(x, 2.)) * (std::pow(y, 8.)) *
+          (std::pow((5. * (std::pow(x, 3.)) - 10. * (std::pow(x, 2.)) + 6. * x - 1.), 2.)) *
+          (std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) - 20. * (std::pow(x, 3.)) +
+                        5. * (std::pow(x, 2.)) + 1.),
+              8.)) *
+          (20. * (std::pow(x, 5.)) - 50. * (std::pow(x, 4.)) + 40. * (std::pow(x, 3.)) -
+              10. * (std::pow(x, 2.)) + 2. * y - 2.) +
+      800. * r0 * (std::pow(x, 2.)) * (std::pow(y, 7.)) *
+          (std::pow((5. * (std::pow(x, 3.)) - 10. * (std::pow(x, 2.)) + 6. * x - 1.), 2.)) *
+          (std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) - 20. * (std::pow(x, 3.)) +
+                        5. * (std::pow(x, 2.)) + 1.),
+              8.)) *
+          (std::pow((10. * (std::pow(x, 5.)) - 25. * (std::pow(x, 4.)) + 20. * (std::pow(x, 3.)) -
+                        5. * (std::pow(x, 2.)) + y - 1.),
+              2.)) +
+      r0 * (std::pow(y, 4.)) *
+          (5. * (std::pow(y, 4.)) *
+                  ((std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                 20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                       5.)) /
+                          5. -
+                      (std::pow(y, 5.)) / 5.) -
+              4. * (std::pow(y, 3.)) *
+                  ((std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                 20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                       6.)) /
+                          6. -
+                      (std::pow(y, 6.)) / 6.)) *
+          (200. * (std::pow(x, 3.)) - 300. * (std::pow(x, 2.)) + 120. * x - 10.) *
+          (std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) - 20. * (std::pow(x, 3.)) +
+                        5. * (std::pow(x, 2.)) + 1.),
+              4.)) *
+          (10. * (std::pow(x, 5.)) - 25. * (std::pow(x, 4.)) + 20. * (std::pow(x, 3.)) -
+              5. * (std::pow(x, 2.)) + y - 1.) -
+      80. * x * (std::pow(y, 2.)) * ((std::pow(x, 2.)) / 10. + (std::pow(y, 2.)) / 10. + 1. / 10.) *
+          (5. * (std::pow(x, 3.)) - 10. * (std::pow(x, 2.)) + 6. * x - 1.) *
+          (std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) - 20. * (std::pow(x, 3.)) +
+                        5. * (std::pow(x, 2.)) + 1.),
+              4.)) *
+          (30. * (std::pow(x, 5.)) - 75. * (std::pow(x, 4.)) + 60. * (std::pow(x, 3.)) -
+              15. * (std::pow(x, 2.)) + 5. * y - 3.) -
+      400. * r0 * (std::pow(x, 2.)) * (std::pow(y, 4.)) *
+          (5. * (std::pow(y, 4.)) *
+                  ((std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                 20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                       5.)) /
+                          5. -
+                      (std::pow(y, 5.)) / 5.) -
+              4. * (std::pow(y, 3.)) *
+                  ((std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) -
+                                 20. * (std::pow(x, 3.)) + 5. * (std::pow(x, 2.)) + 1.),
+                       6.)) /
+                          6. -
+                      (std::pow(y, 6.)) / 6.)) *
+          (std::pow((5. * (std::pow(x, 3.)) - 10. * (std::pow(x, 2.)) + 6. * x - 1.), 2.)) *
+          (std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) - 20. * (std::pow(x, 3.)) +
+                        5. * (std::pow(x, 2.)) + 1.),
+              3.)) *
+          (10. * (std::pow(x, 5.)) - 25. * (std::pow(x, 4.)) + 20. * (std::pow(x, 3.)) -
+              5. * (std::pow(x, 2.)) + y - 1.) -
+      100. * r0 * (std::pow(x, 2.)) * (std::pow(y, 7.)) *
+          (std::pow((5. * (std::pow(x, 3.)) - 10. * (std::pow(x, 2.)) + 6. * x - 1.), 2.)) *
+          (std::pow((25. * (std::pow(x, 4.)) - 10. * (std::pow(x, 5.)) - 20. * (std::pow(x, 3.)) +
+                        5. * (std::pow(x, 2.)) + 1.),
+              8.)) *
+          (40. * (std::pow(x, 5.)) - 100. * (std::pow(x, 4.)) + 80. * (std::pow(x, 3.)) -
+              20. * (std::pow(x, 2.)) + 5. * y - 4.) *
+          (10. * (std::pow(x, 5.)) - 25. * (std::pow(x, 4.)) + 20. * (std::pow(x, 3.)) -
+              5. * (std::pow(x, 2.)) + y - 1.);
+
+  switch (index)
+  {
+    case 0:
+      return f_r_ex;
+    case 1:
+      return f_w_ex(0);
+    case 2:
+      return f_w_ex(1);
+
+    default:
+      return 1.0;
+  }
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::vector<double> FLD::WeaklyCompressibleEtienneCFDForceFunction::EvaluateTimeDerivative(
+    const int index, const double* xp, const double t, const unsigned deg)
+{
+  // resulting vector holding
+  std::vector<double> res(deg + 1);
+
+  // add the value at time t
+  res[0] = Evaluate(index, xp, t);
+
+  // add the 1st time derivative at time t
+  if (deg >= 1)
+  {
+    res[1] = 0.0;
+  }
+
+  // add the 2nd time derivative at time t
+  if (deg >= 2)
+  {
+    res[2] = 0.0;
+  }
+
+  // error for higher derivatives
+  if (deg >= 3)
+  {
+    dserror("Higher time derivatives than second not supported!");
+  }
+
+  return res;
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+FLD::WeaklyCompressibleEtienneCFDViscosityFunction::WeaklyCompressibleEtienneCFDViscosityFunction(
+    int mat_id)
+    : Function(), refdensity_(0.0), refpressure_(0.0), comprcoeff_(0.0)
+{
+  // get material
+  Teuchos::RCP<MAT::PAR::Material> mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
+  if (mat->Type() != INPAR::MAT::m_fluid_weakly_compressible)
+    dserror("Material %d is not a weakly compressible fluid", mat_id);
+  MAT::PAR::Parameter* params = mat->Parameter();
+  MAT::PAR::WeaklyCompressibleFluid* fparams =
+      dynamic_cast<MAT::PAR::WeaklyCompressibleFluid*>(params);
+  if (!fparams) dserror("Material does not cast to Weakly compressible fluid");
+
+  // get data
+  refdensity_ = fparams->refdensity_;
+  refpressure_ = fparams->refpressure_;
+  comprcoeff_ = fparams->comprcoeff_;
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double FLD::WeaklyCompressibleEtienneCFDViscosityFunction::Evaluate(
+    int index, const double* xp, double t)
+{
+  // ease notation
+  double x = xp[0];
+  double y = xp[1];
+
+  // initialize variables
+  double mu_ex;
+
+  // evaluate variables
+  mu_ex = (1. + (std::pow(x, 2.)) + (std::pow(y, 2.))) / 10.;
+
+  switch (index)
+  {
+    case 0:
+      return mu_ex;
+
+    default:
+      return 1.0;
+  }
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::vector<double> FLD::WeaklyCompressibleEtienneCFDViscosityFunction::EvaluateTimeDerivative(
+    const int index, const double* xp, const double t, const unsigned deg)
+{
+  // resulting vector holding
+  std::vector<double> res(deg + 1);
+
+  // add the value at time t
+  res[0] = Evaluate(index, xp, t);
+
+  // add the 1st time derivative at time t
+  if (deg >= 1)
+  {
+    res[1] = 0.0;
+  }
+
+  // add the 2nd time derivative at time t
+  if (deg >= 2)
+  {
+    res[2] = 0.0;
+  }
+
+  // error for higher derivatives
+  if (deg >= 3)
+  {
+    dserror("Higher time derivatives than second not supported!");
+  }
+
+  return res;
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 double FLD::KimMoinFunction::Evaluate(const int index, const double* xp, double t)
 {
   double a = 2.0;

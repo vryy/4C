@@ -20,7 +20,7 @@
 namespace PARTICLEINTERACTION
 {
   //! struct to store quantities of interacting particles
-  struct DEMParticlePair
+  struct DEMParticlePair final
   {
     //! local index tuple of particles i and j
     PARTICLEENGINE::LocalIndexTuple tuple_i_;
@@ -37,7 +37,7 @@ namespace PARTICLEINTERACTION
   };
 
   //! struct to store quantities of interacting particles and wall elements
-  struct DEMParticleWallPair
+  struct DEMParticleWallPair final
   {
     //! local index tuple of particle i
     PARTICLEENGINE::LocalIndexTuple tuple_i_;

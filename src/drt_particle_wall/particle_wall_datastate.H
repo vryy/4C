@@ -34,7 +34,7 @@ namespace DRT
  *---------------------------------------------------------------------------*/
 namespace PARTICLEWALL
 {
-  class WallDataState
+  class WallDataState final
   {
    public:
     //! constructor

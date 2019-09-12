@@ -88,7 +88,8 @@ namespace XFEM
         std::map<INPAR::XFEM::XFluidTimeInt, std::map<int, std::set<int>>>&
             reconstr_method_to_node,  /// inverse reconstruction map for nodes and its dofsets
         const int step,               /// global time step
-        const bool xfluid_timint_check_interfacetips  /// check interfacetips?
+        const bool xfluid_timint_check_interfacetips,      /// check interfacetips?
+        const bool xfluid_timint_check_sliding_on_surface  /// check sliding on surface?
     );
 
     //! destructor
@@ -305,6 +306,9 @@ namespace XFEM
 
     // name check interfacetips in timeintegration
     bool xfluid_timint_check_interfacetips_;
+
+    //! @name check sliding on surface in timeintegration
+    bool xfluid_timint_check_sliding_on_surface_;
 
     Teuchos::RCP<std::map<int, int>> permutation_map_;
   };

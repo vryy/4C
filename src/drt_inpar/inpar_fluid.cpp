@@ -35,9 +35,11 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   // temperature-dependent water)
   setStringToIntegralParameter<int>("PHYSICAL_TYPE", "Incompressible", "Physical Type",
       tuple<std::string>("Incompressible", "Weakly_compressible", "Weakly_compressible_stokes",
+          "Weakly_compressible_dens_mom", "Weakly_compressible_stokes_dens_mom",
           "Artificial_compressibility", "Varying_density", "Loma", "Temp_dep_water", "Boussinesq",
           "Topology_optimization", "Stokes", "Oseen"),
-      tuple<int>(incompressible, weakly_compressible, weakly_compressible_stokes, artcomp,
+      tuple<int>(incompressible, weakly_compressible, weakly_compressible_stokes,
+          weakly_compressible_dens_mom, weakly_compressible_stokes_dens_mom, artcomp,
           varying_density, loma, tempdepwater, boussinesq, topopt, stokes, oseen),
       &fdyn);
 
@@ -228,6 +230,20 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   IntParameter("BODYFORCEFUNCNO", -1,
       "Function for calculation of the body force for the weakly compressible problem", &fdyn);
+
+  DoubleParameter("STAB_DEN_REF", 0.0,
+      "Reference stabilization parameter for the density for the HDG weakly compressible "
+      "formulation",
+      &fdyn);
+
+  DoubleParameter("STAB_MOM_REF", 0.0,
+      "Reference stabilization parameter for the momentum for the HDG weakly compressible "
+      "formulation",
+      &fdyn);
+
+  IntParameter("VARVISCFUNCNO", -1,
+      "Function for calculation of a variable viscosity for the weakly compressible problem",
+      &fdyn);
 
   {
     Teuchos::Tuple<std::string, 2> name;

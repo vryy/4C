@@ -110,7 +110,7 @@ namespace ADAPTER
     /// apply the interface displacements to the fluid
     virtual void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp);
 
-    virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm);
+    virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm, const int nds_master = 0);
 
     /// return coupling matrix between fluid and structure as sparse matrices
     Teuchos::RCP<LINALG::SparseMatrix> C_Struct_Fluid_Matrix();

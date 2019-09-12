@@ -43,7 +43,7 @@ namespace PARTICLEALGORITHM
     //! constructor
     explicit ViscousDampingHandler(const double viscdampfac);
 
-    //! virtual destructor
+    //! destructor
     ~ViscousDampingHandler(){};
 
     //! init viscous damping handler

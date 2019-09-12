@@ -149,14 +149,14 @@ namespace PARTICLEINTERACTION
     bool applytransportvelocity_;
   };
 
-  class SPHDensitySummation : public SPHDensityBase
+  class SPHDensitySummation final : public SPHDensityBase
   {
    public:
     //! constructor
     explicit SPHDensitySummation(const Teuchos::ParameterList& params);
 
     //! destructor
-    ~SPHDensitySummation(){};
+    ~SPHDensitySummation() override{};
 
     //! insert density evaluation dependent states
     void InsertParticleStatesOfParticleTypes(
@@ -167,14 +167,14 @@ namespace PARTICLEINTERACTION
     void ComputeDensity() const override;
   };
 
-  class SPHDensityIntegration : public SPHDensityBase
+  class SPHDensityIntegration final : public SPHDensityBase
   {
    public:
     //! constructor
     explicit SPHDensityIntegration(const Teuchos::ParameterList& params);
 
     //! destructor
-    ~SPHDensityIntegration(){};
+    ~SPHDensityIntegration() override{};
 
     //! insert density evaluation dependent states
     void InsertParticleStatesOfParticleTypes(
@@ -185,17 +185,17 @@ namespace PARTICLEINTERACTION
     void ComputeDensity() const override;
   };
 
-  class SPHDensityPredictCorrect : public SPHDensityBase
+  class SPHDensityPredictCorrect final : public SPHDensityBase
   {
    public:
     //! constructor
     explicit SPHDensityPredictCorrect(const Teuchos::ParameterList& params);
 
     //! destructor
-    ~SPHDensityPredictCorrect();
+    ~SPHDensityPredictCorrect() override;
 
     //! init density handler
-    void Init();
+    void Init() override;
 
     //! setup density handler
     void Setup(
@@ -203,13 +203,13 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
         const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
         const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
+        const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs) override;
 
     //! write restart of density handler
-    void WriteRestart(const int step, const double time) const;
+    void WriteRestart(const int step, const double time) const override;
 
     //! read restart of density handler
-    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
+    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader) override;
 
     //! insert density evaluation dependent states
     void InsertParticleStatesOfParticleTypes(

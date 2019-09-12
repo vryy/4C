@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Managing and evaluating of spatial functions
+\brief Managing and evaluating of space- and/or time-dependent functions
 
 \level 0
 
@@ -56,9 +56,9 @@ namespace DRT
   {
     /*!
 
-    \brief abstract interface for spatial functions.
+    \brief abstract interface for space- and time-dependent functions.
 
-    Spatial functions can be defined either scalar-valued or vector-valued.
+    Functions can be defined either scalar-valued or vector-valued.
 
     There exist function definitions using explicitly defined spatial functions
     for test problems (beltrami, kim-moin etc).
@@ -73,14 +73,14 @@ namespace DRT
       virtual ~Function(){};
 
       /// Evaluate time and space dependent FUNCT
-      virtual double Evaluate(const int index,  //< component of function
-          const double* x,                      //< coordinates
-          double t                              //< time
+      virtual double Evaluate(const int index,  ///< component of function
+          const double* x,                      ///< coordinates
+          double t                              ///< time
           ) = 0;
 
 
       /// Evaluate time dependent FUNCT
-      double EvaluateTime(double t  //< time
+      double EvaluateTime(double t  ///< time
       )
       {
         double dummy[3] = {0.0};
@@ -97,9 +97,9 @@ namespace DRT
 
       /// Evaluate first spatial derivatives of time and space dependent FUNCT
       virtual std::vector<double> EvaluateSpatialDerivative(
-          const int index,  //< component of function
-          const double* x,  //< coordinates
-          const double t    //< time
+          const int index,  ///< component of function
+          const double* x,  ///< coordinates
+          const double t    ///< time
       )
       {
         dserror("The evaluation of the derivative is not implemented for this function");
@@ -108,10 +108,11 @@ namespace DRT
       };
 
       /// Evaluate first or second time derivative of time and space dependent FUNCT
-      virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
-          const double* x,                                                 //< coordinates
-          const double t,                                                  //< time
-          const unsigned deg  //< degree of maximal derivative
+      virtual std::vector<double> EvaluateTimeDerivative(
+          const int index,    ///< component of function
+          const double* x,    ///< coordinates
+          const double t,     ///< time
+          const unsigned deg  ///< degree of maximal derivative
       )
       {
         dserror("The evaluation of the time derivative is not implemented for this function");
@@ -121,8 +122,8 @@ namespace DRT
 
 
       /// Evaluate first or second time derivative of time dependent FUNCT
-      std::vector<double> EvaluateTimeDerivative(const double t,  //< time
-          const unsigned deg                                      //< degree of maximal derivative
+      std::vector<double> EvaluateTimeDerivative(const double t,  ///< time
+          const unsigned deg                                      ///< degree of maximal derivative
       )
       {
         double dummy[3] = {0.0};
@@ -157,48 +158,48 @@ namespace DRT
 
       virtual ~ExprFunction();
 
-      // add an expression to the function
+      /// add an expression to the function
       virtual void AddExpr(
           std::string buf, std::vector<std::vector<Teuchos::RCP<FunctionVariable>>> variables);
 
-      // evaluate the function at given space and time
+      /// evaluate the function at given space and time
       virtual double Evaluate(const int index, const double* x, double t);
 
-      // evaluate the first derivative of the function at given space and time
+      /// evaluate the first derivative of the function at given space and time
       virtual std::vector<double> EvaluateSpatialDerivative(
           const int index, const double* x, const double t);
 
-      // evaluate the 1st or 2nd time derivative of the function at given space and time
+      /// evaluate the 1st or 2nd time derivative of the function at given space and time
       virtual std::vector<double> EvaluateTimeDerivative(
           const int index, const double* x, const double t, const unsigned deg);
 
-      // return the number of components
+      /// return the number of components
       virtual int NumberComponents() { return (expr_.size()); }
 
-      // check if it is a variable
+      /// check if it is a variable
       bool IsVariable(const int index, const std::string& varname) const;
 
-      // add a variable to the function
+      /// add a variable to the function
       void AddVariable(const int index, const std::string& varname, double varvalue);
 
-      // pars the expressions
+      /// pars the expressions
       void ParseExpressions();
 
      protected:
-      // dimension of the problem
+      /// dimension of the problem
       int dim_;
 
-      // vector of parsed expressions
+      /// vector of parsed expressions
       std::vector<Teuchos::RCP<DRT::PARSER::Parser<double>>> expr_;
 
-      // vector of parsed 1st derivatives
+      /// vector of parsed 1st derivatives
       std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<double>>>> exprd_;
 
-      // vector of parsed 2nd derivatives
+      /// vector of parsed 2nd derivatives
       std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>>>
           exprdd_;
 
-      // vector of the function variables and all their definitions
+      /// vector of the function variables and all their definitions
       std::vector<std::vector<Teuchos::RCP<FunctionVariable>>> variables_;
 
      private:
@@ -377,140 +378,8 @@ namespace DRT
       virtual void ParseExpressions();
 
      private:
-      bool isparsed_;  //! flag indicating whether expression was parsed
-    };
-
-
-    /// special implementation for controlled rotations
-    class ControlledRotationFunction : public Function
-    {
-     public:
-      /// ctor
-      ControlledRotationFunction(std::string fileName, std::string type, double origin_x,
-          double origin_y, double origin_z);
-
-      /// evaluate function at given position in space
-      double Evaluate(const int index, const double* x, double t);
-
-     private:
-      // Condition type: STRUCTURE=1, FLUID=2
-      int type_;
-
-      // Origin, about which the rotation shall be performed
-      LINALG::Matrix<3, 1> origin_;
-
-      // Time of previous time step (at t-deltaT)
-      double timeOld_;
-
-      // Number of maneuver cells (variables)
-      const int NUMMANEUVERCELLS_;
-
-      // Number of maneuvers
-      int numManeuvers_;
-
-      // Double Vector containing maneuver information (t, omegaDot_x_B, omegaDot_y_B, omegaDot_z_B)
-      std::vector<double> maneuvers_;
-
-      // Previous angular acceleration (at t-deltaT)
-      LINALG::Matrix<3, 1> omegaDotOld_B_;
-
-      // Current angular rate (at t)
-      LINALG::Matrix<3, 1> omega_B_;
-
-      // Satellite's current attitude trafo matrix from B- to I-system (at t)
-      LINALG::Matrix<3, 3> satAtt_dcm_IB_;
-
-      // Satellite's current attitude quaternion from B- to I-system (at t)
-      LINALG::Matrix<4, 1> satAtt_q_IB_;
-    };
-
-    /// special implementation for acceleration profiles
-    class AccelerationProfileFunction : public Function
-    {
-     public:
-      /// ctor
-      AccelerationProfileFunction(std::string fileName);
-
-      /// evaluate function at given position in space
-      double Evaluate(const int index, const double* x, double t);
-
-     private:
-      // Time of previous time step (at t-deltaT)
-      double timeOld_;
-
-      // Number of cells (variables) (time + 3-dim acc = 4)
-      const int NUMACCELERATIONCELLS_;
-
-      // Number of acceleration rows
-      int numAccelerations_;
-
-      // Double Vector containing acceleration information (t, acc_x_B, acc_y_B, acc_z_B)
-      std::vector<double> accelerations_;
-
-      // Current acceleration (at t)
-      LINALG::Matrix<3, 1> acc_B_;
-    };
-
-    /**
-     * @brief special implementation of a 1D polynomial function
-     *
-     * This class defines a generic polynomial that that takes on argument. The polynomial can be
-     * evaluated and the first derivative is also provided.
-     *
-     * This class does circumvent using automatic differentiation and may be used in
-     * performance-sensitive applications (e.g. operations on Gauss-point level).
-     * In particular, evaluating the derivative is faster for this function compared to
-     * a VariableExprFunction representing the same polynomial.
-     */
-    class FastPolynomialFunction : public Function
-    {
-     public:
-      /**
-       * ctor
-       *
-       * @param coefficients the coefficients of the monomials in ascending order
-       */
-      FastPolynomialFunction(std::vector<double>* coefficients);
-
-      /**
-       * @brief Evaluate the polynomial.
-       *
-       * This is the only supported evaluation call for this class
-       *
-       * @param argument point to evaluate
-       * @return value of the polynomial at `argument`
-       */
-      double Evaluate(const double argument) const;
-
-      /**
-       * Evaluate first derivative of polynomial.
-       *
-       * @param argument point to evaluate
-       * @return value of first derivative of polynomial at `argument`
-       */
-      double EvaluateDerivative(const double argument) const;
-
-      /*!
-      \brief evaluate function at given time and position
-
-      \param index (i) For vector-valued functions, index defines the
-                       function-component which should be evaluated
-                       For scalar functions, index is always set to 0
-      \param t     (i) The point in time in which the
-                       function will be evaluated
-      \param x     (i) The point in 3-dimensional space in which the
-                       function will be evaluated
-      \throws dserror
-      */
-      virtual double Evaluate(const int index, const double* x, double t)
-      {
-        dserror("FastPolynomialFunction does not support this call.");
-        return 0;
-      }
-
-     private:
-      //! internal polynomial representation
-      const DRT::UTILS::Polynomial* const mypoly_;
+      //! flag indicating whether expression was parsed
+      bool isparsed_;
     };
 
   }  // namespace UTILS

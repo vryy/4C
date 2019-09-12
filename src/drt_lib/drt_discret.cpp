@@ -420,45 +420,50 @@ void DRT::Discretization::Print(std::ostream& os) const
   {
     if (proc == Comm().MyPID())
     {
-      // print elements
+      // loop over dofsets
+      for (int nds = 0; nds < NumDofSets(); ++nds)
       {
-        os << "-------------------------- Proc " << proc << " :\n";
-        std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator curr;
-        for (curr = element_.begin(); curr != element_.end(); ++curr)
+        os << "\n------------------------ Dofset " << nds << " :\n\n";
+        // print elements
         {
-          os << *(curr->second);
-          if (Filled() && HaveDofs())
+          os << "-------------------------- Proc " << proc << " :\n";
+          std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator curr;
+          for (curr = element_.begin(); curr != element_.end(); ++curr)
           {
-            std::vector<int> dof = Dof(0, &*(curr->second));
-            if (dof.size())
+            os << *(curr->second);
+            if (Filled() && HaveDofs())
             {
-              os << " Dofs ";
-              for (unsigned i = 0; i < dof.size(); ++i) os << std::setw(6) << dof[i] << " ";
+              std::vector<int> dof = Dof(nds, &*(curr->second));
+              if (dof.size())
+              {
+                os << " Dofs ";
+                for (unsigned i = 0; i < dof.size(); ++i) os << std::setw(6) << dof[i] << " ";
+              }
             }
+            os << std::endl;
           }
           os << std::endl;
         }
-        os << std::endl;
-      }
-      // print nodes
-      {
-        os << "-------------------------- Proc " << proc << " :\n";
-        std::map<int, Teuchos::RCP<DRT::Node>>::const_iterator curr;
-        for (curr = node_.begin(); curr != node_.end(); ++curr)
+        // print nodes
         {
-          os << *(curr->second);
-          if (Filled() && HaveDofs())
+          os << "-------------------------- Proc " << proc << " :\n";
+          std::map<int, Teuchos::RCP<DRT::Node>>::const_iterator curr;
+          for (curr = node_.begin(); curr != node_.end(); ++curr)
           {
-            std::vector<int> dof = Dof(0, &*(curr->second));
-            if (dof.size())
+            os << *(curr->second);
+            if (Filled() && HaveDofs())
             {
-              os << " Dofs ";
-              for (unsigned i = 0; i < dof.size(); ++i) os << std::setw(6) << dof[i] << " ";
+              std::vector<int> dof = Dof(nds, &*(curr->second));
+              if (dof.size())
+              {
+                os << " Dofs ";
+                for (unsigned i = 0; i < dof.size(); ++i) os << std::setw(6) << dof[i] << " ";
+              }
             }
+            os << std::endl;
           }
           os << std::endl;
         }
-        os << std::endl;
       }
       // print conditions
       {

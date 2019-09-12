@@ -23,12 +23,17 @@
 FLD::FluidResultTest::FluidResultTest(FluidImplicitTimeInt& fluid) : DRT::ResultTest("FLUID")
 {
   fluiddis_ = fluid.discret_;
-  mysol_ = fluid.velnp_;
-  mytraction_ = fluid.stressmanager_->GetPreCalcStresses(fluid.trueresidual_);
-  mywss_ = fluid.stressmanager_->GetPreCalcWallShearStresses(fluid.trueresidual_);
   myerror_ = fluid.EvaluateErrorComparedToAnalyticalSol();
-  mydivu_ = fluid.EvaluateDivU();
-  mydensity_scaling_ = fluid.density_scaling_;
+  mysol_ = fluid.velnp_;
+
+  // quantities not implemented in the HDG formulation
+  if (DRT::Problem::Instance()->SpatialApproximation() != "HDG")
+  {
+    mytraction_ = fluid.stressmanager_->GetPreCalcStresses(fluid.trueresidual_);
+    mywss_ = fluid.stressmanager_->GetPreCalcWallShearStresses(fluid.trueresidual_);
+    mydivu_ = fluid.EvaluateDivU();
+    mydensity_scaling_ = fluid.density_scaling_;
+  }
 }
 
 
@@ -111,6 +116,12 @@ void FLD::FluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, 
         result = (*myerror_)[2];
       else if (position == "divu")
         result = (*mydivu_);
+      else if (position == "L2errmix")
+        result = (*myerror_)[0];
+      else if (position == "L2errden")
+        result = (*myerror_)[1];
+      else if (position == "L2errmom")
+        result = (*myerror_)[2];
       else
         dserror("Quantity '%s' not supported in fluid testing", position.c_str());
 

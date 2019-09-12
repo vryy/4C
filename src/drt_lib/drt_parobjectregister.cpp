@@ -39,6 +39,7 @@
 #include "../drt_fluid_ele/fluid_ele_poro_immersed.H"
 #include "../drt_fluid_ele/fluid_ele_xwall.H"
 #include "../drt_fluid_ele/fluid_ele_hdg.H"
+#include "../drt_fluid_ele/fluid_ele_hdg_weak_comp.H"
 #include "../drt_ale2/ale2.H"
 #include "../drt_ale2/ale2_nurbs.H"
 #include "../drt_ale3/ale3.H"
@@ -233,6 +234,7 @@ std::string DRT::ParObjectList()
     << DRT::ELEMENTS::FluidTypePoroImmersed::Instance().Name() << " "
     << DRT::ELEMENTS::FluidPoroEleType::Instance().Name() << " "
     << DRT::ELEMENTS::FluidHDGType::Instance().Name() << " "
+    << DRT::ELEMENTS::FluidHDGWeakCompType::Instance().Name() << " "
     << DRT::ELEMENTS::FluidBoundaryType::Instance().Name() << " "
     << DRT::ELEMENTS::FluidPoroBoundaryType::Instance().Name() << " "
     << DRT::ELEMENTS::Ale3Type::Instance().Name() << " "
@@ -341,7 +343,7 @@ std::string DRT::ParObjectList()
     << MAT::Mixture_ElastHyperType::Instance().Name() << " "
     << MAT::HerschelBulkleyType::Instance().Name() << " " << MAT::IonType::Instance().Name() << " "
     << MAT::LinearDensityViscosityType::Instance().Name() << " "
-	<< MAT::WeaklyCompressibleFluidType::Instance().Name() << " "
+    << MAT::WeaklyCompressibleFluidType::Instance().Name() << " "
     << MAT::MatListType::Instance().Name() << " " << MAT::MatListReactionsType::Instance().Name()
     << " " << MAT::MatListChemotaxisType::Instance().Name() << " "
     << MAT::MatListChemoReacType::Instance().Name() << " " << MAT::ElchMatType::Instance().Name()

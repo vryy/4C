@@ -530,6 +530,379 @@ namespace FLD
     virtual int NumberComponents() { return (1); };
   };
 
+  /// special implementation for weakly compressible Poiseuille flow
+  class WeaklyCompressiblePoiseuilleFunction : public DRT::UTILS::Function
+  {
+   public:
+    WeaklyCompressiblePoiseuilleFunction(int mat_id, double L, double R, double U);
+    /*!
+
+    \brief evaluate function at given position in space
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the function will be
+                     evaluated
+
+    */
+    double Evaluate(const int index, const double* x, double t);
+
+    /*!
+
+    \brief evaluate first or second time derivative
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the time derivative will
+                     be evaluated
+    \param t     (i) The point in time in which the time derivative will
+                     be evaluated
+    \param deg   (i) The degree of the time derivative
+
+    */
+    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
+        const double* x,                                                 //< coordinates
+        const double t,                                                  //< time
+        const unsigned deg);  //< degree of maximal derivative
+
+    /*!
+
+    \brief Return the number of components of this spatial function
+    (This is a vector-valued function)
+
+    \return number of components
+
+    */
+    virtual int NumberComponents() { return (6); };
+
+   private:
+    double length_;
+    double halfheight_;
+    double meanvelocityexit_;
+    double viscosity_;
+    double refdensity_;
+    double refpressure_;
+    double comprcoeff_;
+  };
+
+
+  /// special implementation for weakly compressible Poiseuille flow (force)
+  class WeaklyCompressiblePoiseuilleForceFunction : public DRT::UTILS::Function
+  {
+   public:
+    WeaklyCompressiblePoiseuilleForceFunction(int mat_id, double L, double R, double U);
+    /*!
+
+    \brief evaluate function at given position in space
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the function will be
+                     evaluated
+
+    */
+    double Evaluate(const int index, const double* x, double t);
+
+    /*!
+
+    \brief evaluate first or second time derivative
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the time derivative will
+                     be evaluated
+    \param t     (i) The point in time in which the time derivative will
+                     be evaluated
+    \param deg   (i) The degree of the time derivative
+
+    */
+    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
+        const double* x,                                                 //< coordinates
+        const double t,                                                  //< time
+        const unsigned deg);  //< degree of maximal derivative
+
+    /*!
+
+    \brief Return the number of components of this spatial function
+    (This is a vector-valued function)
+
+    \return number of components
+
+    */
+    virtual int NumberComponents() { return (3); };
+
+   private:
+    double length_;
+    double halfheight_;
+    double meanvelocityexit_;
+    double viscosity_;
+    double refdensity_;
+    double refpressure_;
+    double comprcoeff_;
+  };
+
+
+  /// special implementation for weakly compressible flow with manufactured solution
+  class WeaklyCompressibleManufacturedFlowFunction : public DRT::UTILS::Function
+  {
+   public:
+    WeaklyCompressibleManufacturedFlowFunction(int mat_id);
+    /*!
+
+    \brief evaluate function at given position in space
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the function will be
+                     evaluated
+
+    */
+    double Evaluate(const int index, const double* x, double t);
+
+    /*!
+
+    \brief evaluate first or second time derivative
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the time derivative will
+                     be evaluated
+    \param t     (i) The point in time in which the time derivative will
+                     be evaluated
+    \param deg   (i) The degree of the time derivative
+
+    */
+    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
+        const double* x,                                                 //< coordinates
+        const double t,                                                  //< time
+        const unsigned deg);  //< degree of maximal derivative
+
+    /*!
+
+    \brief Return the number of components of this spatial function
+    (This is a vector-valued function)
+
+    \return number of components
+
+    */
+    virtual int NumberComponents() { return (6); };
+
+   private:
+    double viscosity_;
+    double refdensity_;
+    double refpressure_;
+    double comprcoeff_;
+  };
+
+
+  /// special implementation for weakly compressible flow with manufactured solution (force)
+  class WeaklyCompressibleManufacturedFlowForceFunction : public DRT::UTILS::Function
+  {
+   public:
+    WeaklyCompressibleManufacturedFlowForceFunction(int mat_id);
+    /*!
+
+    \brief evaluate function at given position in space
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the function will be
+                     evaluated
+
+    */
+    double Evaluate(const int index, const double* x, double t);
+
+    /*!
+
+    \brief evaluate first or second time derivative
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the time derivative will
+                     be evaluated
+    \param t     (i) The point in time in which the time derivative will
+                     be evaluated
+    \param deg   (i) The degree of the time derivative
+
+    */
+    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
+        const double* x,                                                 //< coordinates
+        const double t,                                                  //< time
+        const unsigned deg);  //< degree of maximal derivative
+
+    /*!
+
+    \brief Return the number of components of this spatial function
+    (This is a vector-valued function)
+
+    \return number of components
+
+    */
+    virtual int NumberComponents() { return (3); };
+
+   private:
+    double viscosity_;
+    double refdensity_;
+    double refpressure_;
+    double comprcoeff_;
+  };
+
+
+  /// special implementation for weakly compressible flow - Etienne CFD problem
+  class WeaklyCompressibleEtienneCFDFunction : public DRT::UTILS::Function
+  {
+   public:
+    WeaklyCompressibleEtienneCFDFunction(int mat_id);
+    /*!
+
+    \brief evaluate function at given position in space
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the function will be
+                     evaluated
+
+    */
+    double Evaluate(const int index, const double* x, double t);
+
+    /*!
+
+    \brief evaluate first or second time derivative
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the time derivative will
+                     be evaluated
+    \param t     (i) The point in time in which the time derivative will
+                     be evaluated
+    \param deg   (i) The degree of the time derivative
+
+    */
+    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
+        const double* x,                                                 //< coordinates
+        const double t,                                                  //< time
+        const unsigned deg);  //< degree of maximal derivative
+
+    /*!
+
+    \brief Return the number of components of this spatial function
+    (This is a vector-valued function)
+
+    \return number of components
+
+    */
+    virtual int NumberComponents() { return (6); };
+
+   private:
+    double refdensity_;
+    double refpressure_;
+    double comprcoeff_;
+  };
+
+
+  /// special implementation for weakly compressible flow - Etienne CFD problem (force)
+  class WeaklyCompressibleEtienneCFDForceFunction : public DRT::UTILS::Function
+  {
+   public:
+    WeaklyCompressibleEtienneCFDForceFunction(int mat_id);
+    /*!
+
+    \brief evaluate function at given position in space
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the function will be
+                     evaluated
+
+    */
+    double Evaluate(const int index, const double* x, double t);
+
+    /*!
+
+    \brief evaluate first or second time derivative
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the time derivative will
+                     be evaluated
+    \param t     (i) The point in time in which the time derivative will
+                     be evaluated
+    \param deg   (i) The degree of the time derivative
+
+    */
+    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
+        const double* x,                                                 //< coordinates
+        const double t,                                                  //< time
+        const unsigned deg);  //< degree of maximal derivative
+
+    /*!
+
+    \brief Return the number of components of this spatial function
+    (This is a vector-valued function)
+
+    \return number of components
+
+    */
+    virtual int NumberComponents() { return (3); };
+
+   private:
+    double refdensity_;
+    double refpressure_;
+    double comprcoeff_;
+  };
+
+
+  /// special implementation for weakly compressible flow - Etienne CFD problem (viscosity)
+  class WeaklyCompressibleEtienneCFDViscosityFunction : public DRT::UTILS::Function
+  {
+   public:
+    WeaklyCompressibleEtienneCFDViscosityFunction(int mat_id);
+    /*!
+
+    \brief evaluate function at given position in space
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the function will be
+                     evaluated
+
+    */
+    double Evaluate(const int index, const double* x, double t);
+
+    /*!
+
+    \brief evaluate first or second time derivative
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the time derivative will
+                     be evaluated
+    \param t     (i) The point in time in which the time derivative will
+                     be evaluated
+    \param deg   (i) The degree of the time derivative
+
+    */
+    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
+        const double* x,                                                 //< coordinates
+        const double t,                                                  //< time
+        const unsigned deg);  //< degree of maximal derivative
+
+    /*!
+
+    \brief Return the number of components of this spatial function
+    (This is a vector-valued function)
+
+    \return number of components
+
+    */
+    virtual int NumberComponents() { return (3); };
+
+   private:
+    double refdensity_;
+    double refpressure_;
+    double comprcoeff_;
+  };
+
 
   /// special implementation for 2d Kim-Moin flow
   class KimMoinFunction : public DRT::UTILS::Function

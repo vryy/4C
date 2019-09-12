@@ -45,7 +45,7 @@ namespace ADAPTER
       return fpsiinterface_;
     }
 
-    virtual void SetupInterface();
+    virtual void SetupInterface(const int nds_master = 0);
 
     virtual void UseBlockMatrix(bool splitmatrix);
     virtual void UseBlockMatrix(

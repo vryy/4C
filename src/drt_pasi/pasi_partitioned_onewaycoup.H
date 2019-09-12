@@ -31,14 +31,18 @@ namespace PASI
     //! constructor
     explicit PASI_PartOneWayCoup(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~PASI_PartOneWayCoup(){};
+    //! destructor
+    ~PASI_PartOneWayCoup() override{};
 
     //! setup pasi algorithm
-    virtual void Setup() override;
+    void Setup() override;
 
     //! partitioned one way coupled timeloop
-    virtual void Timeloop() override;
+    void Timeloop() override;
+
+   protected:
+    //! output of fields
+    void Output() override;
   };
 
 }  // namespace PASI

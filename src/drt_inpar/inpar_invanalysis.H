@@ -42,11 +42,11 @@ namespace INPAR
       spec_inv_coup,  /*!< coupled inverse analysis: use information of two different experiments,
                            here implemented for pressure-volume-change experiment and tensile test
                            (just applicable for lung)*/
-      spec_inv_mult /*!< multible inverse analysis: fit more inverse analysis (different dat-files)
+      spec_inv_mult /*!< multiple inverse analysis: fit more inverse analysis (different dat-files)
                          in one identification procedure*/
     };
 
-    /// Update strategy for regularization parameter mu
+    /// Update strategy for regularization parameter \f$\mu\f$
     enum RegStratUpdate
     {
       reg_update_grad,  /// Update based on gradient of objective function

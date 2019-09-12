@@ -55,7 +55,7 @@ namespace PARTICLEINTERACTION
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  class DEMAdhesion
+  class DEMAdhesion final
   {
    public:
     //! constructor

@@ -41,7 +41,7 @@ namespace STR
       PartitionedPASI();
 
       //! destructor
-      ~PartitionedPASI(){};
+      ~PartitionedPASI() override{};
 
       //! setup class variables [derived]
       void Setup() override;

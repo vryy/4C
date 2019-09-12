@@ -1,12 +1,12 @@
-/*----------------------------------------------------------------------*/
-/*!
+/*----------------------------------------------------------------------------*/
+/*! \file
 \brief Weakly compressible fluid
 
 \level 1
 
 \maintainer Andrea La Spina
 */
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 
 #include <vector>
 #include "fluid_weakly_compressible.H"
@@ -17,10 +17,10 @@
 /*----------------------------------------------------------------------*/
 MAT::PAR::WeaklyCompressibleFluid::WeaklyCompressibleFluid(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-	  viscosity_(matdata->GetDouble("VISCOSITY")),
+      viscosity_(matdata->GetDouble("VISCOSITY")),
       refdensity_(matdata->GetDouble("REFDENSITY")),
       refpressure_(matdata->GetDouble("REFPRESSURE")),
-	  comprcoeff_(matdata->GetDouble("COMPRCOEFF"))
+      comprcoeff_(matdata->GetDouble("COMPRCOEFF"))
 {
 }
 
@@ -110,7 +110,7 @@ void MAT::WeaklyCompressibleFluid::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*/
 double MAT::WeaklyCompressibleFluid::ComputeDensity(const double press) const
 {
-  const double density = RefDensity() + CoeffDensity() * (press - RefPressure());
+  const double density = RefDensity() + ComprCoeff() * (press - RefPressure());
 
   return density;
 }
@@ -120,7 +120,7 @@ double MAT::WeaklyCompressibleFluid::ComputeDensity(const double press) const
 /*----------------------------------------------------------------------*/
 double MAT::WeaklyCompressibleFluid::ComputePressure(const double dens) const
 {
-  const double pressure = RefPressure() + 1.0 / CoeffDensity() * (dens - RefDensity());
+  const double pressure = RefPressure() + 1.0 / ComprCoeff() * (dens - RefDensity());
 
   return pressure;
 }
