@@ -2,7 +2,7 @@
 /*! \file
 \brief so3_plast element types
 \level 2
-\maintainer Matthias Mayr
+\maintainer Christoph Meier
 *----------------------------------------------------------------------*/
 #ifndef SO3_SSN_PLAST_ELETYPES_H_
 #define SO3_SSN_PLAST_ELETYPES_H_

@@ -13,7 +13,7 @@ The Solid-Shell element technology is based on the work of
 
 Refer also to the Semesterarbeit of Alexander Popp, 2006
 
-\maintainer Matthias Mayr
+\maintainer Christoph Meier
 \level 2
 */
 

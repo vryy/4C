@@ -5,7 +5,7 @@
 
 \level 1
 
-\maintainer Matthias Mayr
+\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 

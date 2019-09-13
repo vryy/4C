@@ -4,7 +4,7 @@
 
 \level 1
 
-\maintainer Matthias Mayr
+\maintainer Christoph Meier
 *----------------------------------------------------------------------*/
 
 #include "so_hex8fbar.H"
