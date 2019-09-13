@@ -3,7 +3,7 @@
 
 \brief MueLu smoother interface
 \level 2
-\maintainer Martin Kronbichler
+\maintainer Matthias Mayr
 
 *----------------------------------------------------------------------*/
 

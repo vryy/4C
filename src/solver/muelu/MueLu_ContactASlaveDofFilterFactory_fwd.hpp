@@ -3,7 +3,7 @@
 
 \brief MueLu contact filter factory class
 \level 2
-\maintainer Martin Kronbichler
+\maintainer Matthias Mayr
 
 *----------------------------------------------------------------------*/
 
