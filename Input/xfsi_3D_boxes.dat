@@ -16,8 +16,6 @@ RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
-NUMALEDIS                       1
-NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
@@ -25,9 +23,10 @@ DYNAMICTYP                      OneStepTheta
 TIMESTEP                        0.05
 LINEAR_SOLVER                   2
 GEOMETRY                        box
+PREDICT                         ConstDis
 -----------------------------------------------------------------FSI DYNAMIC
 TIMESTEP                        0.05
-NUMSTEP                         2
+NUMSTEP                         1
 COUPALGO                        iter_xfem_monolithic
 SECONDORDER                     No
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
@@ -141,12 +140,12 @@ ROTATION 0 0 0
 ELEMENTS    FLUID HEX8 MAT 1 NA Euler GP 3 3 3
 PARTITION   structured
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 19 QUANTITY dispx VALUE 2.75684687895991253e-04 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 19 QUANTITY dispy VALUE 3.79384103929395768e-05 TOLERANCE 1e-11
-STRUCTURE DIS structure NODE 19 QUANTITY dispz VALUE 5.27920996547394670e-16 TOLERANCE 1e-16
-XFLUID DIS fluid NODE 28 QUANTITY velx VALUE 4.91767783548945125e-01 TOLERANCE 1e-08
-XFLUID DIS fluid NODE 28 QUANTITY vely VALUE -1.88525063651696523e-01 TOLERANCE 1e-08
-XFLUID DIS fluid NODE 28 QUANTITY velz VALUE -2.59724018480542940e-01 TOLERANCE 1e-08
-XFLUID DIS fluid NODE 28 QUANTITY pressure VALUE  2.97458904456648021e-01 TOLERANCE 1e-08
+STRUCTURE DIS structure NODE 19 QUANTITY dispx VALUE 8.89037247841968647e-05 TOLERANCE 1e-11
+STRUCTURE DIS structure NODE 19 QUANTITY dispy VALUE 2.00196712058491467e-05 TOLERANCE 1e-11
+STRUCTURE DIS structure NODE 19 QUANTITY dispz VALUE 0 TOLERANCE 1e-11
+XFLUID DIS fluid NODE 28 QUANTITY velx VALUE 2.83327859793370662e-01 TOLERANCE 1e-08
+XFLUID DIS fluid NODE 28 QUANTITY vely VALUE -1.12290496662579953e-01 TOLERANCE 1e-08
+XFLUID DIS fluid NODE 28 QUANTITY velz VALUE -1.60516000180241342e-01 TOLERANCE 1e-08
+XFLUID DIS fluid NODE 28 QUANTITY pressure VALUE 3.04164771555694435e-01 TOLERANCE 1e-08
 -------------------------------------------------------------------------END
 //                              END
