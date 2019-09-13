@@ -258,6 +258,35 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
+  // Barus viscosity lubrication material law
+  {
+    Teuchos::RCP<MaterialDefinition> m =
+        Teuchos::rcp(new MaterialDefinition("MAT_lubrication_law_barus",
+            "barus lubrication material law", INPAR::MAT::m_lubrication_law_barus));
+
+    AddNamedReal(m, "ABSViscosity", "absolute lubricant viscosity");
+    AddNamedReal(m, "PreVisCoeff", "pressure viscosity coefficient");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // Roeland viscosity lubrication material law
+  {
+    Teuchos::RCP<MaterialDefinition> m =
+        Teuchos::rcp(new MaterialDefinition("MAT_lubrication_law_roeland",
+            "roeland lubrication material law", INPAR::MAT::m_lubrication_law_roeland));
+
+    AddNamedReal(m, "ABSViscosity", "absolute lubricant viscosity");
+    AddNamedReal(m, "PreVisCoeff", "pressure viscosity coefficient");
+    AddNamedReal(m, "RefVisc", "reference viscosity");
+    AddNamedReal(m, "RefPress", "reference Pressure");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+
+  /*----------------------------------------------------------------------*/
   // scalar transport material (with potential reaction coefficient)
   {
     Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(
