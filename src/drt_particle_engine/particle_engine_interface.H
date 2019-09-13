@@ -1,23 +1,22 @@
 /*---------------------------------------------------------------------------*/
 /*! \file
-\brief pure virtual interface to provide access to particle engine class
+\brief interface to provide restricted access to particle engine
 
-\level 3
+\level 1
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 05/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 #ifndef PARTICLE_ENGINE_INTERFACE_H
 #define PARTICLE_ENGINE_INTERFACE_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 05/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "particle_enums.H"
 #include "particle_container_bundle.H"
 
 #include "../linalg/linalg_fixedsizematrix.H"
@@ -28,7 +27,7 @@
 #include <unordered_map>
 
 /*---------------------------------------------------------------------------*
- | forward declarations                                       sfuchs 03/2019 |
+ | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
 namespace IO
 {
@@ -36,65 +35,190 @@ namespace IO
 }
 
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 05/2018 |
+ | class definitions                                                         |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEENGINE
 {
+  /*!
+   * \brief interface to provide restricted access to particle engine
+   *
+   * The particle algorithm holds an instance of the particle engine, thus having full access and
+   * control over it. This abstract interface class to the particle engine provides restricted
+   * access to be used in all other classes.
+   *
+   * \note Methods in this class are documented briefly. Refer to the full documentation of the
+   *       particle engine class!
+   *
+   * \author Sebastian Fuchs \date 03/2018
+   */
   class ParticleEngineInterface
   {
    public:
     //! virtual destructor
     virtual ~ParticleEngineInterface(){};
 
-    //! refresh particles of specific states and types
+    /*!
+     * \brief refresh specific states of particles of specific types
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     *
+     * \param[in] particlestatestotypes particle types and corresponding particle states to be
+     *                                  refreshed
+     */
     virtual void RefreshParticlesOfSpecificStatesAndTypes(
         const StatesOfTypesToRefresh& particlestatestotypes) const = 0;
 
-    //! change type of particles
+    /*!
+     * \brief change type of particles
+     *
+     * \author Sebastian Fuchs \date 11/2018
+     *
+     * \param[in] particlestoremove particles to be removed from containers on this processor
+     * \param[in] particlestoinsert particles to be inserted into containers on this processor
+     */
     virtual void TypeChangeParticles(std::vector<std::set<int>>& particlestoremove,
         std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert) = 0;
 
-    //! get particle container bundle
+    /*!
+     * \brief get particle container bundle
+     *
+     * \author Sebastian Fuchs \date 04/2018
+     *
+     * \return particle container bundle
+     */
     virtual const ParticleContainerBundleShrdPtr GetParticleContainerBundle() const = 0;
 
-    //! get reference to potential particle neighbors
+    /*!
+     * \brief get reference to potential particle neighbors
+     *
+     * \author Sebastian Fuchs \date 04/2018
+     *
+     * \return potential particle neighbor pairs
+     */
     virtual const PotentialParticleNeighbors& GetPotentialParticleNeighbors() const = 0;
 
-    //! get reference to particles being communicated to target processors
+    /*!
+     * \brief get reference to particles being communicated to target processors
+     *
+     * \author Sebastian Fuchs \date 04/2018
+     *
+     * \return particles being communicated to target processors
+     */
     virtual const std::vector<std::vector<int>>& GetCommunicatedParticleTargets() const = 0;
 
-    //! get local index in specific particle container
+    /*!
+     * \brief get local index in specific particle container
+     *
+     * \author Sebastian Fuchs \date 10/2018
+     *
+     * \param[in] globalid global id of particle
+     *
+     * \return local index tuple of particle
+     */
     virtual const LocalIndexTupleShrdPtr GetLocalIndexInSpecificContainer(int globalid) const = 0;
 
-    //! get bin discretization writer
+    /*!
+     * \brief get bin discretization writer
+     *
+     * \author Sebastian Fuchs \date 03/2019
+     *
+     * \return bin discretization writer
+     */
     virtual const std::shared_ptr<IO::DiscretizationWriter> GetBinDiscretizationWriter() const = 0;
 
-    //! relate all particles to all processors
+    /*!
+     * \brief relate all particles to all processors
+     *
+     * \author Sebastian Fuchs \date 03/2019
+     *
+     * \param[out] particlestoproc relate global id of particles to global id of processor
+     */
     virtual void RelateAllParticlesToAllProcs(std::vector<int>& particlestoproc) const = 0;
 
-    //! return bin size
+    //! \name get information regarding underlying bin discretization
+    //! @{
+
+    /*!
+     * \brief get bin size
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     *
+     * \return pointer to bin size
+     */
     virtual const double* BinSize() const = 0;
 
-    //! return minimum relevant bin size
+    /*!
+     * \brief get minimum relevant bin size
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     *
+     * \return minimum relevant bin size
+     */
     virtual double MinBinSize() const = 0;
 
-    //! return flag whether pbcs are applied to the problem
+    /*!
+     * \brief get flag indicating periodic boundary condition
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     *
+     * \param[in] dim spatial direction (optional)
+     *
+     * \return flag indicating periodic boundary condition
+     */
     virtual bool HavePBC(const int dim = -1) const = 0;
 
-    //! return delta for pbc in x, y, or z direction
+    /*!
+     * \brief get periodic length
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     *
+     * \param[in] dim spatial direction
+     *
+     * \return periodic length in spatial direction
+     */
     virtual double PBCDelta(const int dim) const = 0;
 
-    //! get bounding box dimensions
+    /*!
+     * \brief get bounding box dimensions
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     *
+     * \return bounding box dimensions
+     */
     virtual LINALG::Matrix<3, 2>& XAABB() const = 0;
 
-    //! get distance between particles considering periodic boundaries
+    //! @}
+
+    /*!
+     * \brief get distance between particles considering periodic boundaries
+     *
+     * \author Sebastian Fuchs \date 08/2018
+     *
+     * \param[in]  pos_i pointer to position of particle i
+     * \param[in]  pos_j pointer to position of particle j
+     * \param[out] r_ji  vector from particle i to j
+     */
     virtual void DistanceBetweenParticles(
         const double* pos_i, const double* pos_j, double* r_ji) const = 0;
 
-    //! get number of particles on this processors
+    /*!
+     * \brief get number of particles on this processors
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     *
+     * \return number of particles on this processors
+     */
     virtual int GetNumberOfParticles() const = 0;
 
-    //! get number of particles on this processor of specific type
+    /*!
+     * \brief get number of particles on this processor of specific type
+     *
+     * \author Sebastian Fuchs \date 07/2018
+     *
+     * \param[in] particleType particle type enum
+     *
+     * \return number of particles on this processors
+     */
     virtual int GetNumberOfParticlesOfSpecificType(const TypeEnum particleType) const = 0;
   };
 

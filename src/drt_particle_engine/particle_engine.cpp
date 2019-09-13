@@ -1,15 +1,15 @@
 /*---------------------------------------------------------------------------*/
 /*! \file
-\brief particle engine to control particle simulations
+\brief particle engine to control particle problem
 
-\level 3
+\level 1
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 03/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_engine.H"
 
@@ -36,7 +36,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 03/2018 |
+ | declarations                                                              |
  *---------------------------------------------------------------------------*/
 PARTICLEENGINE::ParticleEngine::ParticleEngine(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
@@ -55,18 +55,12 @@ PARTICLEENGINE::ParticleEngine::ParticleEngine(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | destructor                                                 sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEENGINE::ParticleEngine::~ParticleEngine()
 {
   // note: destructor declaration here since at compile-time a complete type
   // of class T as used in class member std::unique_ptr<T> ptr_T_ is required
 }
 
-/*---------------------------------------------------------------------------*
- | init particle engine                                       sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::Init()
 {
   // init binning strategy
@@ -79,9 +73,6 @@ void PARTICLEENGINE::ParticleEngine::Init()
   InitParticleVtpWriter();
 }
 
-/*---------------------------------------------------------------------------*
- | setup particle engine                                      sfuchs 04/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::Setup(
     const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes)
 {
@@ -101,14 +92,11 @@ void PARTICLEENGINE::ParticleEngine::Setup(
   SetupTypeWeights();
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of particle engine                           sfuchs 04/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::WriteRestart(const int step, const double time) const
 {
   // pack particles of all containers
-  Teuchos::RCP<std::vector<char>> particlebuffer = Teuchos::rcp(new std::vector<char>);
-  particlecontainerbundle_->PackParticleContainerBundle(particlebuffer);
+  std::shared_ptr<std::vector<char>> particlebuffer = std::make_shared<std::vector<char>>();
+  particlecontainerbundle_->GetPackedParticleObjectsOfAllContainers(particlebuffer);
 
   // get bin discretization writer
   Teuchos::RCP<IO::DiscretizationWriter> binwriter = binstrategy_->BinDiscret()->Writer();
@@ -116,15 +104,12 @@ void PARTICLEENGINE::ParticleEngine::WriteRestart(const int step, const double t
   binwriter->NewStep(step, time);
 
   // write particle data
-  binwriter->WriteCharVector("ParticleData", particlebuffer);
+  binwriter->WriteCharVector("ParticleData", Teuchos::rcp(particlebuffer));
 
   // write restart of runtime vtp writer
   particlevtpwriter_->WriteRestart(step, time);
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of particle engine                            sfuchs 04/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader,
     std::vector<ParticleObjShrdPtr>& particlestoread) const
@@ -157,9 +142,6 @@ void PARTICLEENGINE::ParticleEngine::ReadRestart(
   particlevtpwriter_->ReadRestart(reader);
 }
 
-/*---------------------------------------------------------------------------*
- | write particle runtime output                              sfuchs 04/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::WriteParticleRuntimeOutput(
     const int step, const double time) const
 {
@@ -169,9 +151,6 @@ void PARTICLEENGINE::ParticleEngine::WriteParticleRuntimeOutput(
   particlevtpwriter_->WriteCollectionFileOfAllWrittenFiles();
 }
 
-/*---------------------------------------------------------------------------*
- | erase particles outside bounding box                       sfuchs 09/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::EraseParticlesOutsideBoundingBox(
     std::vector<ParticleObjShrdPtr>& particlestocheck)
 {
@@ -249,12 +228,11 @@ void PARTICLEENGINE::ParticleEngine::EraseParticlesOutsideBoundingBox(
              << " particle(s) being outside the computational domain!" << IO::endl;
 }
 
-/*---------------------------------------------------------------------------*
- | distribute particles to owning processor                   sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::DistributeParticles(
     std::vector<ParticleObjShrdPtr>& particlestodistribute)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEENGINE::ParticleEngine::DistributeParticles");
+
   std::vector<std::vector<ParticleObjShrdPtr>> particlestosend(comm_.NumProc());
   std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>> particlestoinsert(typevectorsize_);
 
@@ -274,9 +252,6 @@ void PARTICLEENGINE::ParticleEngine::DistributeParticles(
   RelateOwnedParticlesToBins();
 }
 
-/*---------------------------------------------------------------------------*
- | transfer particles to new bins and processors              sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::TransferParticles()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEENGINE::ParticleEngine::TransferParticles");
@@ -314,9 +289,6 @@ void PARTICLEENGINE::ParticleEngine::TransferParticles()
       PARTICLEENGINE::Owned);
 }
 
-/*---------------------------------------------------------------------------*
- | ghost particles on other processors                        sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::GhostParticles()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEENGINE::ParticleEngine::GhostParticles");
@@ -345,9 +317,6 @@ void PARTICLEENGINE::ParticleEngine::GhostParticles()
       PARTICLEENGINE::Ghosted);
 }
 
-/*---------------------------------------------------------------------------*
- | refresh particles being ghosted on other processors        sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::RefreshParticles() const
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEENGINE::ParticleEngine::RefreshParticles");
@@ -365,9 +334,6 @@ void PARTICLEENGINE::ParticleEngine::RefreshParticles() const
   InsertRefreshedParticles(particlestoinsert);
 }
 
-/*---------------------------------------------------------------------------*
- | refresh particles of specific states and types             sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::RefreshParticlesOfSpecificStatesAndTypes(
     const StatesOfTypesToRefresh& particlestatestotypes) const
 {
@@ -388,9 +354,6 @@ void PARTICLEENGINE::ParticleEngine::RefreshParticlesOfSpecificStatesAndTypes(
   InsertRefreshedParticles(particlestoinsert);
 }
 
-/*---------------------------------------------------------------------------*
- | dynamic load balancing                                     sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::DynamicLoadBalancing()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEENGINE::ParticleEngine::DynamicLoadBalancing");
@@ -437,9 +400,6 @@ void PARTICLEENGINE::ParticleEngine::DynamicLoadBalancing()
       PARTICLEENGINE::Owned);
 }
 
-/*---------------------------------------------------------------------------*
- | change type of particles                                   sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::TypeChangeParticles(
     std::vector<std::set<int>>& particlestoremove,
     std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert)
@@ -462,9 +422,6 @@ void PARTICLEENGINE::ParticleEngine::TypeChangeParticles(
       PARTICLEENGINE::Owned);
 }
 
-/*---------------------------------------------------------------------------*
- | build particle to particle neighbors                       sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors");
@@ -575,9 +532,6 @@ void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
   validparticleneighbors_ = true;
 }
 
-/*---------------------------------------------------------------------------*
- | build global id to local index map                         sfuchs 10/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::BuildGlobalIDToLocalIndexMap()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEENGINE::ParticleEngine::BuildGlobalIDToLocalIndexMap");
@@ -624,9 +578,6 @@ void PARTICLEENGINE::ParticleEngine::BuildGlobalIDToLocalIndexMap()
   validglobalidtolocalindex_ = true;
 }
 
-/*---------------------------------------------------------------------------*
- | check for valid particle connectivity                      sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 bool PARTICLEENGINE::ParticleEngine::HaveValidParticleConnectivity() const
 {
   int localcheck = ((validownedparticles_ and validghostedparticles_ and
@@ -639,9 +590,6 @@ bool PARTICLEENGINE::ParticleEngine::HaveValidParticleConnectivity() const
   return globalcheck;
 }
 
-/*---------------------------------------------------------------------------*
- | check for valid particle neighbors                         sfuchs 04/2019 |
- *---------------------------------------------------------------------------*/
 bool PARTICLEENGINE::ParticleEngine::HaveValidParticleNeighbors() const
 {
   int localcheck = validparticleneighbors_;
@@ -653,9 +601,6 @@ bool PARTICLEENGINE::ParticleEngine::HaveValidParticleNeighbors() const
   return globalcheck;
 }
 
-/*---------------------------------------------------------------------------*
- | get reference to (owned and ghosted) particles to bins     sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 const PARTICLEENGINE::ParticlesToBins& PARTICLEENGINE::ParticleEngine::GetParticlesToBins() const
 {
   // safety check
@@ -665,9 +610,6 @@ const PARTICLEENGINE::ParticlesToBins& PARTICLEENGINE::ParticleEngine::GetPartic
   return particlestobins_;
 }
 
-/*---------------------------------------------------------------------------*
- | get reference to potential particle neighbors              sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 const PARTICLEENGINE::PotentialParticleNeighbors&
 PARTICLEENGINE::ParticleEngine::GetPotentialParticleNeighbors() const
 {
@@ -677,9 +619,6 @@ PARTICLEENGINE::ParticleEngine::GetPotentialParticleNeighbors() const
   return potentialparticleneighbors_;
 }
 
-/*---------------------------------------------------------------------------*
- | get local index in specific particle container             sfuchs 10/2018 |
- *---------------------------------------------------------------------------*/
 const PARTICLEENGINE::LocalIndexTupleShrdPtr
 PARTICLEENGINE::ParticleEngine::GetLocalIndexInSpecificContainer(int globalid) const
 {
@@ -693,18 +632,12 @@ PARTICLEENGINE::ParticleEngine::GetLocalIndexInSpecificContainer(int globalid) c
   return globalidIt->second;
 }
 
-/*---------------------------------------------------------------------------*
- | get bin discretization writer                              sfuchs 03/2019 |
- *---------------------------------------------------------------------------*/
 const std::shared_ptr<IO::DiscretizationWriter>
 PARTICLEENGINE::ParticleEngine::GetBinDiscretizationWriter() const
 {
   return Teuchos::get_shared_ptr(binstrategy_->BinDiscret()->Writer());
 }
 
-/*---------------------------------------------------------------------------*
- | relate all particles to all processors                     sfuchs 03/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::RelateAllParticlesToAllProcs(
     std::vector<int>& particlestoproc) const
 {
@@ -753,38 +686,23 @@ void PARTICLEENGINE::ParticleEngine::RelateAllParticlesToAllProcs(
   MPI_Allreduce(MPI_IN_PLACE, &particlestoproc[0], vecsize, MPI_INT, MPI_MAX, mpicomm->Comm());
 }
 
-/*---------------------------------------------------------------------------*
- | return bin size                                            sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 const double* PARTICLEENGINE::ParticleEngine::BinSize() const { return binstrategy_->BinSize(); }
 
-/*---------------------------------------------------------------------------*
- | return flag whether pbc are applied                        sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 bool PARTICLEENGINE::ParticleEngine::HavePBC(const int dim) const
 {
   return binstrategy_->HavePBC(dim);
 }
 
-/*---------------------------------------------------------------------------*
- | return delta for pbc in x, y, or z direction               sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 double PARTICLEENGINE::ParticleEngine::PBCDelta(const int dim) const
 {
   return binstrategy_->PBCDelta(dim);
 }
 
-/*---------------------------------------------------------------------------*
- | get bounding box dimensions                                sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 LINALG::Matrix<3, 2>& PARTICLEENGINE::ParticleEngine::XAABB() const
 {
   return binstrategy_->XAABB();
 }
 
-/*---------------------------------------------------------------------------*
- | distance between particles considering periodic boundaries sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::DistanceBetweenParticles(
     const double* pos_i, const double* pos_j, double* r_ji) const
 {
@@ -812,18 +730,12 @@ void PARTICLEENGINE::ParticleEngine::DistanceBetweenParticles(
   }
 }
 
-/*---------------------------------------------------------------------------*
- | create binning discretization reader                       sfuchs 04/2018 |
- *---------------------------------------------------------------------------*/
 const std::shared_ptr<IO::DiscretizationReader> PARTICLEENGINE::ParticleEngine::BinDisReader(
     int restartstep) const
 {
   return std::make_shared<IO::DiscretizationReader>(binstrategy_->BinDiscret(), restartstep);
 }
 
-/*---------------------------------------------------------------------------*
- | get number of particles on this processors                 sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 int PARTICLEENGINE::ParticleEngine::GetNumberOfParticles() const
 {
   int numberofparticles = 0;
@@ -842,9 +754,6 @@ int PARTICLEENGINE::ParticleEngine::GetNumberOfParticles() const
   return numberofparticles;
 }
 
-/*---------------------------------------------------------------------------*
- | get number of particles on this processor of specific type sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 int PARTICLEENGINE::ParticleEngine::GetNumberOfParticlesOfSpecificType(
     const TypeEnum typeEnum) const
 {
@@ -857,18 +766,12 @@ int PARTICLEENGINE::ParticleEngine::GetNumberOfParticlesOfSpecificType(
   return container->ParticlesStored();
 }
 
-/*---------------------------------------------------------------------------*
- | write binning discretization output (debug feature)        sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::WriteBinDisOutput(const int step, const double time) const
 {
   // write bins to output file
   binstrategy_->WriteBinOutput(step, time);
 }
 
-/*---------------------------------------------------------------------------*
- | init binning strategy                                      sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::InitBinningStrategy()
 {
   // create and init binning strategy
@@ -876,9 +779,6 @@ void PARTICLEENGINE::ParticleEngine::InitBinningStrategy()
   binstrategy_->Init(comm_);
 }
 
-/*---------------------------------------------------------------------------*
- | setup binning strategy                                     sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::SetupBinningStrategy()
 {
   // create bins
@@ -919,12 +819,9 @@ void PARTICLEENGINE::ParticleEngine::SetupBinningStrategy()
   DetermineGhostingDependentMapsAndSets();
 }
 
-/*---------------------------------------------------------------------------*
- | setup ghosting of bins                                     sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::SetupBinGhosting()
 {
-  // gather bins of rowmap and all its neighbors (row + ghost)
+  // gather bins of row map and all its neighbors (row + ghost)
   std::set<int> bins;
   for (int lid = 0; lid < binrowmap_->NumMyElements(); ++lid)
   {
@@ -980,9 +877,6 @@ void PARTICLEENGINE::ParticleEngine::SetupBinGhosting()
   binstrategy_->BinDiscret()->ExtendedGhosting(*bincolmap_, true, false, true, false);
 }
 
-/*---------------------------------------------------------------------------*
- | init particle container bundle                             sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::InitParticleContainerBundle()
 {
   // create and init particle container bundle
@@ -990,9 +884,6 @@ void PARTICLEENGINE::ParticleEngine::InitParticleContainerBundle()
   particlecontainerbundle_->Init();
 }
 
-/*---------------------------------------------------------------------------*
- | setup particle container bundle                            sfuchs 04/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::SetupParticleContainerBundle(
     const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes) const
 {
@@ -1000,9 +891,6 @@ void PARTICLEENGINE::ParticleEngine::SetupParticleContainerBundle(
   particlecontainerbundle_->Setup(particlestatestotypes);
 }
 
-/*---------------------------------------------------------------------------*
- | setup data storage                                         sfuchs 12/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::SetupDataStorage(
     const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes)
 {
@@ -1016,9 +904,6 @@ void PARTICLEENGINE::ParticleEngine::SetupDataStorage(
   communicatedparticletargets_.assign(comm_.NumProc(), std::vector<int>(0));
 }
 
-/*---------------------------------------------------------------------------*
- | init particle runtime vtp writer                           sfuchs 04/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::InitParticleVtpWriter()
 {
   // construct and init particle runtime vtp writer
@@ -1027,9 +912,6 @@ void PARTICLEENGINE::ParticleEngine::InitParticleVtpWriter()
   particlevtpwriter_->Init(particlecontainerbundle_);
 }
 
-/*---------------------------------------------------------------------------*
- | setup particle runtime vtp writer                          sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::SetupParticleVtpWriter() const
 {
   // get data format for written numeric data via vtp
@@ -1043,9 +925,6 @@ void PARTICLEENGINE::ParticleEngine::SetupParticleVtpWriter() const
   particlevtpwriter_->Setup(write_binary_output, write_ghosted_particles);
 }
 
-/*---------------------------------------------------------------------------*
- | setup particle type weights for dynamic load balancing     sfuchs 03/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::SetupTypeWeights()
 {
   // allocate memory to hold particle types
@@ -1062,9 +941,6 @@ void PARTICLEENGINE::ParticleEngine::SetupTypeWeights()
   for (auto& typeIt : typetodynloadbal) typeweights_[typeIt.first] = typeIt.second;
 }
 
-/*---------------------------------------------------------------------------*
- | determine bin distribution dependent maps/sets             sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::DetermineBinDisDependentMapsAndSets()
 {
   // clear sets and maps
@@ -1134,9 +1010,6 @@ void PARTICLEENGINE::ParticleEngine::DetermineBinDisDependentMapsAndSets()
   for (int currbin : innerbinids) boundarybins_.erase(currbin);
 }
 
-/*---------------------------------------------------------------------------*
- | determine ghosting dependent maps/sets for communication   sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::DetermineGhostingDependentMapsAndSets()
 {
   // clear sets and maps
@@ -1147,10 +1020,6 @@ void PARTICLEENGINE::ParticleEngine::DetermineGhostingDependentMapsAndSets()
   if (binstrategy_->BinDiscret()->Filled() == false)
     dserror("construction of binning discretization not finalized!");
 
-  // -----------------------------------------------------------------------
-  // determine set ghostedbins_
-  // -----------------------------------------------------------------------
-
   // loop over col bins
   for (int collidofbin = 0; collidofbin < bincolmap_->NumMyElements(); ++collidofbin)
   {
@@ -1159,10 +1028,6 @@ void PARTICLEENGINE::ParticleEngine::DetermineGhostingDependentMapsAndSets()
     // current bin not owned by this processor
     if (binrowmap_->LID(currbin) < 0) ghostedbins_.insert(currbin);
   }
-
-  // -----------------------------------------------------------------------
-  // determine map thisbinsghostedby_
-  // -----------------------------------------------------------------------
 
   // prepare buffer for sending and receiving
   std::map<int, std::vector<char>> sdata;
@@ -1214,9 +1079,6 @@ void PARTICLEENGINE::ParticleEngine::DetermineGhostingDependentMapsAndSets()
   }
 }
 
-/*---------------------------------------------------------------------------*
- | relate half neighboring bins to owned bins                 sfuchs 01/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::RelateHalfNeighboringBinsToOwnedBins()
 {
   // allocate memory for neighbors of owned bins
@@ -1274,9 +1136,6 @@ void PARTICLEENGINE::ParticleEngine::RelateHalfNeighboringBinsToOwnedBins()
   validhalfneighboringbins_ = true;
 }
 
-/*---------------------------------------------------------------------------*
- | check particles for periodic boundaries/leaving domain     sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::CheckParticlesAtBoundaries(
     std::vector<std::set<int>>& particlestoremove) const
 {
@@ -1354,9 +1213,6 @@ void PARTICLEENGINE::ParticleEngine::CheckParticlesAtBoundaries(
              << " particle(s) being outside the computational domain!" << IO::endl;
 }
 
-/*---------------------------------------------------------------------------*
- | determine particles that need to be distributed            sfuchs 04/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeDistributed(
     std::vector<ParticleObjShrdPtr>& particlestodistribute,
     std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend,
@@ -1459,9 +1315,6 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeDistributed(
   particlestodistribute.clear();
 }
 
-/*---------------------------------------------------------------------------*
- | determine particles that need to be transfered             sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeTransfered(
     std::vector<std::set<int>>& particlestoremove,
     std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend)
@@ -1533,9 +1386,6 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeTransfered(
   }
 }
 
-/*---------------------------------------------------------------------------*
- | determine particles that need to be ghosted                sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeGhosted(
     std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend) const
 {
@@ -1582,9 +1432,6 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeGhosted(
   }
 }
 
-/*---------------------------------------------------------------------------*
- | determine particles that need to be refreshed              sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeRefreshed(
     std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend) const
 {
@@ -1624,9 +1471,6 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeRefreshed(
   }
 }
 
-/*---------------------------------------------------------------------------*
- | determine particles that need to be refreshed              sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::DetermineSpecificStatesOfParticlesOfSpecificTypesToBeRefreshed(
     const StatesOfTypesToRefresh& particlestatestotypes,
     std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend) const
@@ -1686,9 +1530,6 @@ void PARTICLEENGINE::ParticleEngine::DetermineSpecificStatesOfParticlesOfSpecifi
   }
 }
 
-/*---------------------------------------------------------------------------*
- | communicate particles                                      sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::CommunicateParticles(
     std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend,
     std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoreceive) const
@@ -1747,9 +1588,6 @@ void PARTICLEENGINE::ParticleEngine::CommunicateParticles(
   }
 }
 
-/*---------------------------------------------------------------------------*
- | communicate and build map for direct ghosting              sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::CommunicateDirectGhostingMap(
     std::map<int, std::map<TypeEnum, std::map<int, std::pair<int, int>>>>& directghosting)
 {
@@ -1821,9 +1659,6 @@ void PARTICLEENGINE::ParticleEngine::CommunicateDirectGhostingMap(
   validdirectghosting_ = true;
 }
 
-/*---------------------------------------------------------------------------*
- | insert owned particles received from other processors      sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::InsertOwnedParticles(
     std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert)
 {
@@ -1892,9 +1727,6 @@ void PARTICLEENGINE::ParticleEngine::InsertOwnedParticles(
   InvalidateParticleSafetyFlags();
 }
 
-/*---------------------------------------------------------------------------*
- | insert ghosted particles received from other processors    sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::InsertGhostedParticles(
     std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert,
     std::map<int, std::map<TypeEnum, std::map<int, std::pair<int, int>>>>& directghosting)
@@ -1957,9 +1789,6 @@ void PARTICLEENGINE::ParticleEngine::InsertGhostedParticles(
   validdirectghosting_ = false;
 }
 
-/*---------------------------------------------------------------------------*
- | insert refreshed particles received from other processors  sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::InsertRefreshedParticles(
     std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert) const
 {
@@ -1994,9 +1823,6 @@ void PARTICLEENGINE::ParticleEngine::InsertRefreshedParticles(
   particlestoinsert.clear();
 }
 
-/*---------------------------------------------------------------------------*
- | remove particles from containers                           sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::RemoveParticlesFromContainers(
     std::vector<std::set<int>>& particlestoremove)
 {
@@ -2024,9 +1850,6 @@ void PARTICLEENGINE::ParticleEngine::RemoveParticlesFromContainers(
   InvalidateParticleSafetyFlags();
 }
 
-/*---------------------------------------------------------------------------*
- | store particle positions after transfer of particles       sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::StorePositionsAfterParticleTransfer()
 {
   // iterate over particle types
@@ -2055,9 +1878,6 @@ void PARTICLEENGINE::ParticleEngine::StorePositionsAfterParticleTransfer()
   }
 }
 
-/*---------------------------------------------------------------------------*
- | relate owned particles to bins                             sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::RelateOwnedParticlesToBins()
 {
   // clear vector relating (owned and ghosted) particles to col bins
@@ -2106,9 +1926,6 @@ void PARTICLEENGINE::ParticleEngine::RelateOwnedParticlesToBins()
   validownedparticles_ = true;
 }
 
-/*---------------------------------------------------------------------------*
- | determine minimum relevant bin size                        sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::DetermineMinRelevantBinSize()
 {
   // get number of bins in all spatial directions
@@ -2125,9 +1942,6 @@ void PARTICLEENGINE::ParticleEngine::DetermineMinRelevantBinSize()
     if (binperdir[i] > 1) minbinsize_ = std::min(minbinsize_, binsize[i]);
 }
 
-/*---------------------------------------------------------------------------*
- | determine bin weights needed for repartitioning            sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::DetermineBinWeights()
 {
   // safety check
@@ -2151,9 +1965,6 @@ void PARTICLEENGINE::ParticleEngine::DetermineBinWeights()
   }
 }
 
-/*---------------------------------------------------------------------------*
- | invalidate particle safety flags                           sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::InvalidateParticleSafetyFlags()
 {
   validownedparticles_ = false;

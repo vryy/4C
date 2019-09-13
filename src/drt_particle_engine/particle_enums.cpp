@@ -1,25 +1,23 @@
 /*---------------------------------------------------------------------------*/
 /*! \file
-\brief defining enums of particle states
+\brief defining enums for particle problem
 
-\level 3
+\level 1
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 03/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_enums.H"
 
 /*---------------------------------------------------------------------------*
- | get dimension of particle state                            sfuchs 03/2018 |
+ | declarations                                                              |
  *---------------------------------------------------------------------------*/
 int PARTICLEENGINE::EnumToStateDim(const enum PARTICLEENGINE::ParticleState& stateEnum)
 {
-  // attention: this method should be used only for the initialization of the particle container
-
   int dim = 0;
 
   switch (stateEnum)
@@ -28,10 +26,10 @@ int PARTICLEENGINE::EnumToStateDim(const enum PARTICLEENGINE::ParticleState& sta
     case PARTICLEENGINE::Radius:
     case PARTICLEENGINE::Mass:
     case PARTICLEENGINE::Density:
-    case PARTICLEENGINE::DensitySum:
-    case PARTICLEENGINE::DensityDot:
     case PARTICLEENGINE::Pressure:
     case PARTICLEENGINE::Temperature:
+    case PARTICLEENGINE::DensitySum:
+    case PARTICLEENGINE::DensityDot:
     case PARTICLEENGINE::TemperatureDot:
     case PARTICLEENGINE::BoundaryPressure:
     case PARTICLEENGINE::Colorfield:
@@ -43,19 +41,19 @@ int PARTICLEENGINE::EnumToStateDim(const enum PARTICLEENGINE::ParticleState& sta
     case PARTICLEENGINE::Position:
     case PARTICLEENGINE::Velocity:
     case PARTICLEENGINE::Acceleration:
-    case PARTICLEENGINE::AngularVelocity:
-    case PARTICLEENGINE::AngularAcceleration:
-    case PARTICLEENGINE::Force:
-    case PARTICLEENGINE::Moment:
     case PARTICLEENGINE::LastTransferPosition:
-    case PARTICLEENGINE::ReferencePosition:
     case PARTICLEENGINE::ModifiedVelocity:
     case PARTICLEENGINE::ModifiedAcceleration:
+    case PARTICLEENGINE::ReferencePosition:
     case PARTICLEENGINE::BoundaryVelocity:
     case PARTICLEENGINE::ColorfieldGradient:
     case PARTICLEENGINE::InterfaceNormal:
     case PARTICLEENGINE::UnitWallNormal:
     case PARTICLEENGINE::TemperatureGradient:
+    case PARTICLEENGINE::AngularVelocity:
+    case PARTICLEENGINE::AngularAcceleration:
+    case PARTICLEENGINE::Force:
+    case PARTICLEENGINE::Moment:
     case PARTICLEENGINE::LastIterPosition:
     case PARTICLEENGINE::LastIterVelocity:
     case PARTICLEENGINE::LastIterAcceleration:
@@ -72,9 +70,6 @@ int PARTICLEENGINE::EnumToStateDim(const enum PARTICLEENGINE::ParticleState& sta
   return dim;
 }
 
-/*---------------------------------------------------------------------------*
- | get name of particle state                                 sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 std::string PARTICLEENGINE::EnumToStateName(const enum PARTICLEENGINE::ParticleState& stateEnum)
 {
   std::string name;
@@ -187,15 +182,8 @@ std::string PARTICLEENGINE::EnumToStateName(const enum PARTICLEENGINE::ParticleS
   return name;
 }
 
-/*---------------------------------------------------------------------------*
- | get enum of particle states                                sfuchs 02/2019 |
- *---------------------------------------------------------------------------*/
 enum PARTICLEENGINE::ParticleState PARTICLEENGINE::EnumFromStateName(const std::string& stateName)
 {
-  // attention: this method is expensive (comparison of strings)
-  //            and should be used only for initialization or result testing
-  // note:      only relevant particle states are listed below (e.g., needed for input)
-
   enum PARTICLEENGINE::ParticleState state;
 
   if (stateName == "density")
@@ -210,9 +198,6 @@ enum PARTICLEENGINE::ParticleState PARTICLEENGINE::EnumFromStateName(const std::
   return state;
 }
 
-/*---------------------------------------------------------------------------*
- | get name of particle type                                  sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 std::string PARTICLEENGINE::EnumToTypeName(const enum PARTICLEENGINE::ParticleType& typeEnum)
 {
   std::string name;
@@ -238,14 +223,8 @@ std::string PARTICLEENGINE::EnumToTypeName(const enum PARTICLEENGINE::ParticleTy
   return name;
 }
 
-/*---------------------------------------------------------------------------*
- | get enum of particle types                                 sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 enum PARTICLEENGINE::ParticleType PARTICLEENGINE::EnumFromTypeName(const std::string& typeName)
 {
-  // attention: this method is expensive (comparison of strings)
-  //            and should be used only for initialization or result testing
-
   enum PARTICLEENGINE::ParticleType type;
 
   if (typeName == "phase1")
@@ -262,9 +241,6 @@ enum PARTICLEENGINE::ParticleType PARTICLEENGINE::EnumFromTypeName(const std::st
   return type;
 }
 
-/*---------------------------------------------------------------------------*
- | get name of particle status                                sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 std::string PARTICLEENGINE::EnumToStatusName(const enum PARTICLEENGINE::ParticleStatus& statusEnum)
 {
   std::string name;

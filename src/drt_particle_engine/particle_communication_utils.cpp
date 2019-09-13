@@ -1,22 +1,22 @@
 /*---------------------------------------------------------------------------*/
 /*! \file
-\brief communication utils for particle engine
+\brief communication utils for particle problem
 
-\level 3
+\level 1
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 07/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_communication_utils.H"
 
 #include "../drt_lib/drt_dserror.H"
 
 /*---------------------------------------------------------------------------*
- | communicate data via non-buffered send from proc to proc   sfuchs 05/2018 |
+ | declarations                                                              |
  *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm& comm,
     std::map<int, std::vector<char>>& sdata, std::map<int, std::vector<char>>& rdata)

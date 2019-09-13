@@ -1,25 +1,23 @@
 /*---------------------------------------------------------------------------*/
 /*! \file
-\brief particle engine to control particle simulations
+\brief particle engine to control particle problem
 
-\level 3
+\level 1
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 03/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 #ifndef PARTICLE_ENGINE_H
 #define PARTICLE_ENGINE_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 03/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_engine_interface.H"
-
-#include "particle_enums.H"
 
 #include <Epetra_Comm.h>
 #include <Epetra_Vector.h>
@@ -27,7 +25,7 @@
 #include <Teuchos_ParameterList.hpp>
 
 /*---------------------------------------------------------------------------*
- | forward declarations                                       sfuchs 03/2018 |
+ | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEENGINE
 {
@@ -49,246 +47,636 @@ namespace IO
 }  // namespace IO
 
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 03/2018 |
+ | class definitions                                                         |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEENGINE
 {
+  /*!
+   * \brief particle engine to control particle problem
+   *
+   * The particle engine is responsible for the parallel distribution of particles to all
+   * processors and keeps track of the dynamic change in position of all particles, including
+   * communication of particles to other processors if required. In addition potential particle
+   * neighbor pair relations are build.
+   *
+   * \author Sebastian Fuchs \date 03/2018
+   */
   class ParticleEngine final : public ParticleEngineInterface
   {
    public:
-    //! constructor
+    /*!
+     * \brief constructor
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     *
+     * \param[in] comm   communicator
+     * \param[in] params particle simulation parameter list
+     */
     explicit ParticleEngine(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
     //! destructor
     ~ParticleEngine() override;
 
-    //! init particle engine
+    /*!
+     * \brief init particle engine
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     */
     void Init();
 
-    //! setup particle engine
+    /*!
+     * \brief setup particle engine
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     *
+     * \param[in] particlestatestotypes particle types and corresponding particle states
+     */
     void Setup(const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes);
 
-    //! write restart of particle engine
+    /*!
+     * \brief write restart of particle engine
+     *
+     * \author Sebastian Fuchs \date 04/2018
+     *
+     * \param[in] step restart step
+     * \param[in] time restart time
+     */
     void WriteRestart(const int step, const double time) const;
 
-    //! read restart of particle engine
+    /*!
+     * \brief read restart of particle engine
+     *
+     * \author Sebastian Fuchs \date 04/2018
+     *
+     * \param[in]  reader          discretization reader
+     * \param[out] particlestoread particle objects read in from restart
+     */
     void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader,
         std::vector<ParticleObjShrdPtr>& particlestoread) const;
 
-    //! write particle runtime output
+    /*!
+     * \brief write particle runtime output
+     *
+     * \author Sebastian Fuchs \date 04/2018
+     *
+     * \param[in] step output step
+     * \param[in] time output time
+     */
     void WriteParticleRuntimeOutput(const int step, const double time) const;
 
-    //! erase particles outside bounding box
+    /*!
+     * \brief erase particles outside bounding box
+     *
+     * All particles handed in are checked if they are located inside the bounding box. Particles
+     * that are outside the bounding box are erased.
+     *
+     * \author Sebastian Fuchs \date 09/2018
+     *
+     * \param[in] particlestocheck particles to be checked if located in bounding box
+     */
     void EraseParticlesOutsideBoundingBox(std::vector<ParticleObjShrdPtr>& particlestocheck);
 
-    //! distribute particles to owning processor
+    /*!
+     * \brief distribute particles to owning processor
+     *
+     * All particle objects handed in are checked for their owning processor and send to that owning
+     * processor. This method is primarily used for initialization or after redistribution of the
+     * underlying bins.
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     *
+     * \param[in] particlestodistribute particles to be distributed to their owning processor
+     */
     void DistributeParticles(std::vector<ParticleObjShrdPtr>& particlestodistribute);
 
-    //! transfer particles to new bins and processors
+    /*!
+     * \brief transfer particles to new bins and processors
+     *
+     * Check all owned particle for their current position. If a particle leaves the spatial domain
+     * of its currently owning processor it either left the computational domain and is removed or
+     * it entered the spatial domain of a neighboring processor and is transfered to this new owning
+     * processor.
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     */
     void TransferParticles();
 
-    //! ghost particles on other processors
+    /*!
+     * \brief ghost particles on other processors
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     */
     void GhostParticles();
 
-    //! refresh particles being ghosted on other processors
+    /*!
+     * \brief refresh particles being ghosted on other processors
+     *
+     * Make use of the direct ghosting targets map and send particles that are ghosted on other
+     * processors directly to those processors together with the information of the local index in
+     * the respective ghosted particle container.
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     */
     void RefreshParticles() const;
 
-    //! refresh particles of specific states and types
+    /*!
+     * \brief refresh specific states of particles of specific types
+     *
+     * Communicate the information of specific states of particles of specific types from owned
+     * particles to processors ghosting that respective particles.
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     *
+     * \param[in] particlestatestotypes particle types and corresponding particle states to be
+     *                                  refreshed
+     */
     void RefreshParticlesOfSpecificStatesAndTypes(
         const StatesOfTypesToRefresh& particlestatestotypes) const override;
 
-    //! dynamic load balancing
+    /*!
+     * \brief dynamic load balancing
+     *
+     * Dynamically balance the work load over all processors based on the total number of particles
+     * on each processor. This results in a new distribution of bins and requires to rebuild all
+     * dependent maps and sets.
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     */
     void DynamicLoadBalancing();
 
-    //! change type of particles
+    /*!
+     * \brief change type of particles
+     *
+     * \author Sebastian Fuchs \date 11/2018
+     *
+     * \param[in] particlestoremove particles to be removed from containers on this processor
+     * \param[in] particlestoinsert particles to be inserted into containers on this processor
+     */
     void TypeChangeParticles(std::vector<std::set<int>>& particlestoremove,
         std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert) override;
 
-    //! build particle to particle neighbors
+    /*!
+     * \brief build particle to particle neighbors
+     *
+     * Build potential particle to particle neighbor pairs storing each pair only once.
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     */
     void BuildParticleToParticleNeighbors();
 
-    //! build global id to local index map
+    /*!
+     * \brief build global id to local index map
+     *
+     * Relate the global id of all particles to the local index as stored in the particle container.
+     *
+     * \author Sebastian Fuchs \date 10/2018
+     */
     void BuildGlobalIDToLocalIndexMap();
 
-    //! check for valid particle connectivity
+    /*!
+     * \brief check for valid particle connectivity
+     *
+     * \author Sebastian Fuchs \date 11/2018
+     */
     bool HaveValidParticleConnectivity() const;
 
-    //! check for valid particle neighbors
+    /*!
+     * \brief check for valid particle neighbors
+     *
+     * \author Sebastian Fuchs \date 04/2019
+     */
     bool HaveValidParticleNeighbors() const;
 
-    //! get binning strategy
+    /*!
+     * \brief get binning strategy
+     *
+     * \author Sebastian Fuchs \date 11/2018
+     *
+     * \return binning strategy
+     */
     const std::shared_ptr<BINSTRATEGY::BinningStrategy> GetBinningStrategy() const
     {
       return binstrategy_;
     };
 
-    //! get bin row map
+    /*!
+     * \brief get bin row map
+     *
+     * \author Sebastian Fuchs \date 11/2018
+     *
+     * \return bin row map
+     */
     const Teuchos::RCP<Epetra_Map> GetBinRowMap() const { return binrowmap_; };
 
-    //! get bin col map
+    /*!
+     * \brief get bin column map
+     *
+     * \author Sebastian Fuchs \date 02/2019
+     *
+     * \return bin column map
+     */
     const Teuchos::RCP<Epetra_Map> GetBinColMap() const { return bincolmap_; };
 
-    //! get particle container bundle
     const ParticleContainerBundleShrdPtr GetParticleContainerBundle() const override
     {
       return particlecontainerbundle_;
     };
 
-    //! get reference to (owned and ghosted) particles to bins
+    /*!
+     * \brief get reference to relation of (owned and ghosted) particles to bins
+     *
+     * \author Sebastian Fuchs \date 11/2018
+     *
+     * \return relation of (owned and ghosted) particles to bins
+     */
     const ParticlesToBins& GetParticlesToBins() const;
 
-    //! get reference to potential particle neighbors
     const PotentialParticleNeighbors& GetPotentialParticleNeighbors() const override;
 
-    //! get reference to particles being communicated to target processors
     const std::vector<std::vector<int>>& GetCommunicatedParticleTargets() const override
     {
       return communicatedparticletargets_;
     };
 
-    //! get local index in specific particle container
     const LocalIndexTupleShrdPtr GetLocalIndexInSpecificContainer(int globalid) const override;
 
-    //! get bin discretization writer
     const std::shared_ptr<IO::DiscretizationWriter> GetBinDiscretizationWriter() const override;
 
-    //! relate all particles to all processors
+    /*!
+     * \brief relate all particles to all processors
+     *
+     * Relate the global id of all particles to the global id of the owning processor stored in a
+     * vector indexed by the particle global id. In case a particle for a certain global id does not
+     * exist the value is set to -1.
+     *
+     * \note This method is computational expensive and should be used only for initialization.
+     *
+     * \author Sebastian Fuchs \date 03/2019
+     *
+     * \param[out] particlestoproc relate global id of particles to global id of processor
+     */
     void RelateAllParticlesToAllProcs(std::vector<int>& particlestoproc) const override;
 
-    //! return bin size
     const double* BinSize() const override;
 
-    //! return minimum relevant bin size
     double MinBinSize() const override { return minbinsize_; };
 
-    //! return flag whether pbc are applied
     bool HavePBC(const int dim = -1) const override;
 
-    //! return delta for pbc in x, y, or z direction
     double PBCDelta(const int dim) const override;
 
-    //! get bounding box dimensions
     LINALG::Matrix<3, 2>& XAABB() const override;
 
-    //! get distance between particles considering periodic boundaries
+    /*!
+     * \brief get distance between particles considering periodic boundaries
+     *
+     * Compute the distance vector between two given particles. In the case of periodic boundary
+     * conditions it is checked if the distance over the periodic boundary is closer than inside the
+     * domain.
+     *
+     * \author Sebastian Fuchs \date 08/2018
+     *
+     * \param[in]  pos_i pointer to position of particle i
+     * \param[in]  pos_j pointer to position of particle j
+     * \param[out] r_ji  vector from particle i to j
+     */
     void DistanceBetweenParticles(
         const double* pos_i, const double* pos_j, double* r_ji) const override;
 
-    //! create binning discretization reader
+    /*!
+     * \brief create binning discretization reader
+     *
+     * \author Sebastian Fuchs \date 04/2018
+     *
+     * \param[in] restartstep restart step
+     *
+     * \return discretization reader
+     */
     const std::shared_ptr<IO::DiscretizationReader> BinDisReader(int restartstep) const;
 
-    //! get number of particles on this processors
     int GetNumberOfParticles() const override;
 
-    //! get number of particles on this processor of specific type
     int GetNumberOfParticlesOfSpecificType(const TypeEnum typeEnum) const override;
 
-    //! write binning discretization output (debug feature)
+    /*!
+     * \brief write binning discretization output
+     *
+     * \note The binning discretization output is solely meant as a debug feature as this method is
+     * computational expensive!
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     *
+     * \param[in] step output step
+     * \param[in] time output time
+     */
     void WriteBinDisOutput(const int step, const double time) const;
 
    private:
-    //! init binning strategy
+    //! \name init and setup methods
+    //! @{
+
+    /*!
+     * \brief init binning strategy
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     */
     void InitBinningStrategy();
 
-    //! setup binning strategy
+    /*!
+     * \brief setup binning strategy
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     */
     void SetupBinningStrategy();
 
-    //! setup ghosting of bins
+    /*!
+     * \brief setup ghosting of bins
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     */
     void SetupBinGhosting();
 
-    //! init particle container bundle
+    /*!
+     * \brief init particle container bundle
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     */
     void InitParticleContainerBundle();
 
-    //! setup particle container bundle
+    /*!
+     * \brief setup particle container bundle
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     *
+     * \param[in] particlestatestotypes particle types and corresponding particle states
+     */
     void SetupParticleContainerBundle(
         const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes) const;
 
-    //! setup data storage
+    /*!
+     * \brief setup data storage
+     *
+     * \author Sebastian Fuchs \date 12/2018
+     *
+     * \param[in] particlestatestotypes particle types and corresponding particle states
+     */
     void SetupDataStorage(const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes);
 
-    //! init particle runtime vtp writer
+    /*!
+     * \brief init particle runtime vtp writer
+     *
+     * \author Sebastian Fuchs \date 04/2018
+     */
     void InitParticleVtpWriter();
 
-    //! setup particle runtime vtp writer
+    /*!
+     * \brief setup particle runtime vtp writer
+     *
+     * \author Sebastian Fuchs \date 04/2018
+     */
     void SetupParticleVtpWriter() const;
 
-    //! setup particle type weights for dynamic load balancing
+    /*!
+     * \brief setup particle type weights for dynamic load balancing
+     *
+     * \author Sebastian Fuchs \date 03/2019
+     */
     void SetupTypeWeights();
 
-    //! determine bin distribution dependent maps/sets
+    //! @}
+
+    //! \name bin distribution and ghosting
+    //! @{
+
+    /*!
+     * \brief determine bin distribution dependent maps/sets
+     *
+     * Determine the following maps respectively sets that depend on the parallel distribution of
+     * the bins to the processors:
+     * - set of owned bins at an open boundary or a periodic boundary
+     * - set of owned bins touched by other processors
+     * - map of non-owned neighboring bins related to global id of neighboring owning processor
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     */
     void DetermineBinDisDependentMapsAndSets();
 
-    //! determine ghosting dependent maps/sets for communication
+    /*!
+     * \brief determine ghosting dependent maps/sets for communication
+     *
+     * Determine the following maps respectively sets that depend on the ghosting of the bins:
+     * - set of bins being ghosted on this processor
+     * - map of owned bins related to global ids of processors ghosting that bins
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     */
     void DetermineGhostingDependentMapsAndSets();
 
-    //! relate half neighboring bins to owned bins
+    /*!
+     * \brief relate half neighboring bins to owned bins
+     *
+     * In order to evaluate potential particle neighbor pairs all neighboring bin pairs need to be
+     * processed. It is sufficient to find each particle neighbor pair once and evaluate the
+     * contribution of both particles onto each other, thus it also is sufficient to relate only
+     * half of the surrounding neighboring bins to an owned bin following a specific stencil. In
+     * addition, all ghosted bins and also the bin itself are added to that list in order to not
+     * miss any potential particle pairs.
+     *
+     * \author Sebastian Fuchs \date 01/2019
+     */
     void RelateHalfNeighboringBinsToOwnedBins();
 
-    //! check particles for periodic boundaries/leaving domain
+    //! @}
+
+    /*!
+     * \brief check particles for periodic boundaries/leaving domain
+     *
+     * Check the current position of owned particles in the proximity of the boundary of the
+     * computational domain. In case a particle left the computational domain it is removed from the
+     * containers. In case a particle travels over a periodic boundary it is shifted by the periodic
+     * length to be re-injected at the opposite site.
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     *
+     * \param[out] particlestoremove particles to be removed from containers
+     */
     void CheckParticlesAtBoundaries(std::vector<std::set<int>>& particlestoremove) const;
 
-    //! determine particles that need to be distributed
+    /*!
+     * \brief determine particles that need to be distributed
+     *
+     * Find the owning processors of all particle objects handed in.
+     *
+     * \author Sebastian Fuchs \date 04/2018
+     *
+     * \param[in]  particlestodistribute particles to be distributed to their owning processor
+     * \param[out] particlestosend       particles to be send to other processors
+     * \param[out] particlestokeep       particles to be kept at this processor
+     */
     void DetermineParticlesToBeDistributed(std::vector<ParticleObjShrdPtr>& particlestodistribute,
         std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend,
         std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestokeep);
 
-    //! determine particles that need to be transfered
+    /*!
+     * \brief determine particles that need to be transfered
+     *
+     * Check the current position of owned particles close to the spatial domain of neighboring
+     * processors. In case a particle left the spatial domain of its current owning processor it
+     * needs to be transfered to its new owning processor. This requires that particles travel not
+     * more than one bin layer as each processor only knows the owning processor of the first layer
+     * of bins surrounding its own spatial domain.
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     *
+     * \param[out] particlestoremove particles to be removed from containers on this processor
+     * \param[out] particlestosend   particles to be send to other processors
+     */
     void DetermineParticlesToBeTransfered(std::vector<std::set<int>>& particlestoremove,
         std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend);
 
-    //! determine particles that need to be ghosted
+    /*!
+     * \brief determine particles that need to be ghosted
+     *
+     * Determine all particles that need to be ghosted on other processors based on the information
+     * of owned bins, that are ghosted by other processors.
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     *
+     * \param[out] particlestosend particles to be send to other processors
+     */
     void DetermineParticlesToBeGhosted(
         std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend) const;
 
-    //! determine particles that need to be refreshed
+    /*!
+     * \brief determine particles that need to be refreshed
+     *
+     * Determine particles that need to be refreshed on other processors based on the direct
+     * ghosting targets map.
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     *
+     * \param[out] particlestosend particles to be send to other processors
+     */
     void DetermineParticlesToBeRefreshed(
         std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend) const;
 
-    //! determine particles that need to be refreshed
+    /*!
+     * \brief determine specific states of particles of specific type that need to be refreshed
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     *
+     * \param[in]  particlestatestotypes particle types and corresponding particle states to be
+     *                                   refreshed
+     * \param[out] particlestosend       particles to be send to other processors
+     */
     void DetermineSpecificStatesOfParticlesOfSpecificTypesToBeRefreshed(
         const StatesOfTypesToRefresh& particlestatestotypes,
         std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend) const;
 
-    //! communicate particles
+    /*!
+     * \brief communicate particles
+     *
+     * This method communicates particles to be send to other processors and receives particles from
+     * other processors.
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     *
+     * \param[in]  particlestosend    particles to be send to other processors
+     * \param[out] particlestoreceive particles to be received on this processor
+     */
     void CommunicateParticles(std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend,
         std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoreceive) const;
 
-    //! communicate and build map for direct ghosting
+    /*!
+     * \brief communicate and build map for direct ghosting
+     *
+     * Communicate the information at which local index in the particle container a particle at the
+     * processor ghosting that particle is inserted to the owning processors.
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     *
+     * \param[in] directghosting direct ghosting information
+     */
     void CommunicateDirectGhostingMap(
         std::map<int, std::map<TypeEnum, std::map<int, std::pair<int, int>>>>& directghosting);
 
-    //! insert owned particles received from other processors
+    /*!
+     * \brief insert owned particles received from other processors
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     *
+     * \param[in] particlestoinsert particles to be inserted into containers on this processor
+     */
     void InsertOwnedParticles(
         std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert);
 
-    //! insert ghosted particles received from other processors
+    /*!
+     * \brief insert ghosted particles received from other processors
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     *
+     * \param[in]  particlestoinsert particles to be inserted into containers on this processor
+     * \param[out] directghosting    direct ghosting information
+     */
     void InsertGhostedParticles(
         std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert,
         std::map<int, std::map<TypeEnum, std::map<int, std::pair<int, int>>>>& directghosting);
 
-    //! insert refreshed particles received from other processors
+    /*!
+     * \brief insert refreshed particles received from other processors
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     *
+     * \param[in] particlestoinsert particles to be inserted into containers on this processor
+     */
     void InsertRefreshedParticles(
         std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert) const;
 
-    //! remove particles from containers
+    /*!
+     * \brief remove particles from containers
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     *
+     * \param[in] particlestoremove particles to be removed from containers on this processor
+     */
     void RemoveParticlesFromContainers(std::vector<std::set<int>>& particlestoremove);
 
-    //! store particle positions after transfer of particles
+    /*!
+     * \brief store particle positions after transfer of particles
+     *
+     * \author Sebastian Fuchs \date 11/2018
+     */
     void StorePositionsAfterParticleTransfer();
 
-    //! relate owned particles to bins
+    /*!
+     * \brief relate owned particles to bins
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     */
     void RelateOwnedParticlesToBins();
 
-    //! determine minimum relevant bin size
+    /*!
+     * \brief determine minimum relevant bin size
+     *
+     * \author Sebastian Fuchs \date 08/2018
+     */
     void DetermineMinRelevantBinSize();
 
-    //! determine bin weights needed for repartitioning
+    /*!
+     * \brief determine bin weights needed for repartitioning
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     */
     void DetermineBinWeights();
 
-    //! invalidate particle safety flags
+    /*!
+     * \brief invalidate particle safety flags
+     *
+     * \author Sebastian Fuchs \date 11/2018
+     */
     void InvalidateParticleSafetyFlags();
 
-    //! communication
+    //! communicator
     const Epetra_Comm& comm_;
 
     //! processor id
@@ -303,7 +691,7 @@ namespace PARTICLEENGINE
     //! distribution of row bins
     Teuchos::RCP<Epetra_Map> binrowmap_;
 
-    //! distribution of col bins
+    //! distribution of column bins
     Teuchos::RCP<Epetra_Map> bincolmap_;
 
     //! minimum relevant bin size
