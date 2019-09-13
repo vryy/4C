@@ -1134,7 +1134,6 @@ set(OBJS_DRT_UTILS
   src/pss_full/pss_am.c
   src/pss_full/pss_table.c
   src/pss_full/pss_table_iter.c
-  src/drt_structure_new/str_functions.cpp
 )
 set(OBJS_DRT_ERROR
   src/drt_lib/drt_dserror.cpp
@@ -1782,6 +1781,7 @@ set(OBJS_DRT_STRUCTURE
 #  src/drt_beaminteraction/str_dbc_biopolynet.cpp
   src/drt_structure_new/str_resulttest.cpp
   src/drt_structure_new/str_factory.cpp
+  src/drt_structure_new/str_functions.cpp
   src/drt_structure_new/str_impl_generic.cpp
   src/drt_structure_new/str_impl_statics.cpp
   src/drt_structure_new/str_impl_genalpha.cpp
