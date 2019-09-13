@@ -125,8 +125,15 @@ namespace ALE
 
     virtual ~Ale(){};
 
-    /*! \brief Set initial displacement field
+    /*!
+     *  \brief Set initial displacement field
+     *
      *  Use this for pure ALE problems as well as for coupled problems.
+     *
+     *  \param[in]     init Initial displacement field
+     *
+     *  \param[in]     startfuncno Function to evaluate initial displacement
+     *
      */
     virtual void SetInitialDisplacement(const INPAR::ALE::InitialDisp init, const int startfuncno);
 
