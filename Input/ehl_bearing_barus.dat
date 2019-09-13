@@ -22,41 +22,22 @@ NUMFLUIDDIS                     1
 NUMSTRUCDIS                     0
 NUMALEDIS                       0
 NUMTHERMDIS                     0
---------------------------------------------------------------------------IO
-OUTPUT_BIN                      Yes
-STRUCT_DISP                     No
-STRUCT_STRESS                   No
-STRUCT_STRAIN                   No
-FLUID_SOL                       Yes
-FLUID_STRESS                    No
-FLUID_VIS                       No
-THERM_TEMPERATURE               No
-THERM_HEATFLUX                  No
-FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   3
-DYNAMICTYP                      Statics //GenAlpha
-NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
-DAMPING                         No //Yes
-TOLRES                          1.0E-2 //3 //2
-TOLDISP                         1.0E-2 //3 //2
+DYNAMICTYP                      Statics
+NLNSOL                          fullnewton
+DAMPING                         No
+TOLRES                          1.0E-2
+TOLDISP                         1.0E-2
 NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 DIVERCONT                       continue
 PREDICT                         ConstDis
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          TrLike
-BETA                            0.5
-GAMMA                           0.9
-ALPHA_M                         -0.11
-ALPHA_F                         0.3
 ---------------------------------------------------LUBRICATION DYNAMIC
-CALCERROR                       No // No error_by_function
-CALCERRORNO                     2
 LINEAR_SOLVER                   3
-ABSTOLRES                       1.0e-7 //14
-CONVTOL                         1.0e-4 //6
+ABSTOLRES                       1.0e-7
+CONVTOL                         1.0e-4
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 PENALTY_CAVITATION              1e8
@@ -65,21 +46,21 @@ RESTARTEVRYTIME                 0
 RESTARTEVRY                     1
 NUMSTEP                         2
 MAXTIME                         400
-TIMESTEP                        0.0001 //0.05
+TIMESTEP                        0.0001
 DIFFTIMESTEPSIZE                No
-RESULTSEVRYTIME                       0
-RESULTSEVRY                           1
+RESULTSEVRYTIME                 0
+RESULTSEVRY                     1
 ITEMAX                          500
 FIELDCOUPLING                   none
 UNPROJ_ZERO_DBC                 yes
 COUPALGO                        ehl_Monolithic // ehl_IterStagg // ehl_Monolithic
-DRY_CONTACT_MODEL		no
+DRY_CONTACT_MODEL	      	    no
 -----------------------------------ELASTO HYDRO DYNAMIC/MONOLITHIC
-CONVTOL                         1e-4 //8
-TOLINC                          1e-4 //8
+CONVTOL                         1e-4
+TOLINC                          1e-4
 NORM_INC                        Abs
 NORM_RESF                       Abs
-NORMCOMBI_RESFINC               And //Coupl_And_Singl //And
+NORMCOMBI_RESFINC               And
 ITERNORM                        Rms
 NLNSOL                          fullnewton
 PTCDT                           0.1
@@ -87,18 +68,18 @@ LINEAR_SOLVER                   3
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 INFNORMSCALING                  yes
-MERGE_EHL_BLOCK_MATRIX          yes //no //yes
+MERGE_EHL_BLOCK_MATRIX          yes
 ------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   3
-STRATEGY                        Ehl // Lagrange
+STRATEGY                        Ehl
 FRICTION                        None
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  1.0
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     Dual
-SEARCH_ALGORITHM                Binarytree // BruteForceEleBased
-SEARCH_PARAM                    1 //2 //50
-INTTYPE                         Elements //Segments //Elements
+SEARCH_ALGORITHM                Binarytree
+SEARCH_PARAM                    1
+INTTYPE                         Elements
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 none
 --------------------------------------------------------------------SOLVER 3
@@ -117,7 +98,6 @@ COMPONENT 2 FUNCTION 0.0
 COMPONENT 0 FUNCTION -y*250
 COMPONENT 1 FUNCTION x*250 
 COMPONENT 2 FUNCTION 0.0
-
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 1
 NDLINE  0
