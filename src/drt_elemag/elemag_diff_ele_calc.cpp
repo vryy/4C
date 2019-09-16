@@ -1,6 +1,5 @@
-/*--------------------------------------------------------------------------*/
-/*!
-\file elemag_diff_ele_calc.cpp
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief Electromagnetic diffusion equation element implementation
 
 <pre>

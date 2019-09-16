@@ -1,5 +1,5 @@
-/*!
-\file elemag_diff_ele.H
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief A C++ wrapper for the electromagnetic diffusion element
 
@@ -14,6 +14,7 @@ Pack, Unpack, NumDofPerNode etc.
             089 - 289-15244
 </pre>
 */
+/*----------------------------------------------------------------------*/
 
 #ifndef ELEMAG_DIFF_ELE_H
 #define ELEMAG_DIFF_ELE_H
