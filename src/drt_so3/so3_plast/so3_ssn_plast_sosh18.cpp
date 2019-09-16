@@ -2,7 +2,7 @@
 /*! \file
 \brief element
 \level 2
-\maintainer Matthias Mayr
+\maintainer Christoph Meier
 */
 /*----------------------------------------------------------------------*/
 

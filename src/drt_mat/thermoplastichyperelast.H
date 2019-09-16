@@ -23,7 +23,7 @@
 
 \level 3
 
-\maintainer Matthias Mayr
+\maintainer Jan Schnabel
 */
 /*----------------------------------------------------------------------*
  | definitions                                               dano 03/13 |

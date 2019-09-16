@@ -2,7 +2,7 @@
 /*! \file
 \brief solid shell8 element formulation
 \level 1
-\maintainer Matthias Mayr
+\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 

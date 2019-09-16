@@ -24,7 +24,7 @@
        MAT 1 MAT_Struct_PlasticLinElast YOUNG 206.9 NUE 0.29 DENS 0.0
          YIELD 0.45 ISOHARD 0.0 KINHARD 0.0 TOL 1.0e-6
 \level 2
-\maintainer Matthias Mayr
+\maintainer Jan Schnabel
 */
 /*----------------------------------------------------------------------*
  | headers                                                   dano 04/11 |

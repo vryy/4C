@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 \brief
-\maintainer Matthias Mayr
+\maintainer Christoph Meier
 \level 2
 
 */
