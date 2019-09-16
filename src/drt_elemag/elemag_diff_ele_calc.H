@@ -1,6 +1,5 @@
-/*--------------------------------------------------------------------------*/
-/*!
-\file elemag_diff_ele_calc.H
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief All functionality for electromagnetic diffusionm element evaluations
 

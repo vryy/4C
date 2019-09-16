@@ -1,5 +1,5 @@
-/*!
-\file elemag_diff_ele.H
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief A C++ wrapper for the electromagnetic diffusion element
 
