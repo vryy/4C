@@ -3457,9 +3457,12 @@ namespace GEO
           }
 
           for (unsigned idim = 0; idim < dimSide; ++idim)
-            scaled_tolerance(idim) = global_tolerance * 1.0 /
-                                     std::sqrt(A(0, idim) * A(0, idim) + A(1, idim) * A(1, idim) +
-                                               A(2, idim) * A(2, idim));
+          {
+            floatType A2_tmp = A(0, idim) * A(0, idim);
+            for (unsigned intersect_dim = 1; intersect_dim < probDim; ++intersect_dim)
+              A2_tmp += A(intersect_dim, idim) * A(intersect_dim, idim);
+            scaled_tolerance(idim) = global_tolerance * 1.0 / std::sqrt(A2_tmp);
+          }
           return true;
         }
 
