@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief a material defining the pressure-saturation relationship of
         fluid phase within a multiphase porous fluid
 

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief A condition of any kind
 
@@ -76,23 +76,23 @@ namespace DRT
     enum ConditionType
     {
       none,
-      PointDirichlet,
-      LineDirichlet,
-      SurfaceDirichlet,
-      VolumeDirichlet,
-      PointNeumann,
+      PointDirichlet,    ///< Dirichlet condition defined on a (set of) point(s)
+      LineDirichlet,     ///< Dirichlet condition defined on a (set of) line(s)
+      SurfaceDirichlet,  ///< Dirichlet condition defined on a (set of) surface(s)
+      VolumeDirichlet,   ///< Dirichlet condition defined on a (set of) volume(s)
+      PointNeumann,      ///< Neumann condition defined on a (set of) point(s)
       PointNeumannEB,
-      LineNeumann,
-      SurfaceNeumann,
-      VolumeNeumann,
-      PointInitfield,
-      LineInitfield,
-      SurfaceInitfield,
-      VolumeInitfield,
+      LineNeumann,       ///< Neumann condition defined on a (set of) line(s)
+      SurfaceNeumann,    ///< Neumann condition defined on a (set of) surface(s)
+      VolumeNeumann,     ///< Neumann condition defined on a (set of) volume(s)
+      PointInitfield,    ///< Initial field defined on a (set of) point(s)
+      LineInitfield,     ///< Initial field defined on a (set of) line(s)
+      SurfaceInitfield,  ///< Initial field defined on a (set of) surface(s)
+      VolumeInitfield,   ///< Initial field defined on a (set of) volume(s)
       PointCoupling,
-      Mortar,
+      Mortar,  ///< Surface coupling condition for Mortar coupling (2D and 3D)
       MortarMulti,
-      Contact,
+      Contact,  ///< Contact between two volumetric bodies
       AleWear,
       LineMrtrSym,
       PointMrtrSym,
@@ -118,7 +118,7 @@ namespace DRT
       LineMixHybDirichlet,
       SurfaceMixHybDirichlet,
       SurfaceConservativeOutflowConsistency,
-      FSICoupling,
+      FSICoupling,  ///< Surface coupling condition for fluid-structure interaction (2D and 3D)
       FPSICoupling,
       IMMERSEDCoupling,
       FSICouplingNoSlide,

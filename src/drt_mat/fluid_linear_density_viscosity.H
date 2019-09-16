@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Linear law (pressure-dependent) for the density and the viscosity
 
 \level 1

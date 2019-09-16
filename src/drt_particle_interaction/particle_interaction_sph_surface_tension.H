@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief surface tension handler for smoothed particle hydrodynamics (SPH) interactions
 
 \level 3
@@ -122,54 +122,54 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit SPHSurfaceTensionContinuumSurfaceForce(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~SPHSurfaceTensionContinuumSurfaceForce(){};
+    //! destructor
+    ~SPHSurfaceTensionContinuumSurfaceForce() override{};
 
     //! init surface tension handler
-    virtual void Init();
+    void Init() override;
 
     //! setup surface tension handler
-    virtual void Setup(
+    void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
         const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
+        const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs) override;
 
     //! insert surface tension evaluation dependent states
-    virtual void InsertParticleStatesOfParticleTypes(
+    void InsertParticleStatesOfParticleTypes(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) override;
 
     //! add surface tension contribution to acceleration field
-    virtual void AddAccelerationContribution() override;
+    void AddAccelerationContribution() override;
 
    private:
     //! compute colorfield gradient
-    virtual void ComputeColorfieldGradient() const;
+    void ComputeColorfieldGradient() const;
 
     //! compute unit wall normal
-    virtual void ComputeUnitWallNormal(std::vector<int>& relwallindices) const;
+    void ComputeUnitWallNormal(std::vector<int>& relwallindices) const;
 
     //! compute wall distance
-    virtual void ComputeWallDistance(std::vector<int>& relwallindices) const;
+    void ComputeWallDistance(std::vector<int>& relwallindices) const;
 
     //! compute wall correction factor
-    virtual void ComputeWallCorrectionFactor();
+    void ComputeWallCorrectionFactor();
 
     //! extrapolate colorfield gradient at triple point
-    virtual void ExtrapolateColorfieldGradientAtTriplePoint() const;
+    void ExtrapolateColorfieldGradientAtTriplePoint() const;
 
     //! compute interface normal
-    virtual void ComputeInterfaceNormal() const;
+    void ComputeInterfaceNormal() const;
 
     //! correct normal vector of particles close to triple point
-    virtual void CorrectTriplePointNormal() const;
+    void CorrectTriplePointNormal() const;
 
     //! compute surface tension contribution
-    virtual void ComputeSurfaceTensionContribution() const;
+    void ComputeSurfaceTensionContribution() const;
 
     //! compute temperature gradient driven contribution
-    virtual void ComputeTempGradDrivenContribution() const;
+    void ComputeTempGradDrivenContribution() const;
 
     //! colorfield gradient and wall distance of ghosted particles to refresh
     PARTICLEENGINE::StatesOfTypesToRefresh cfgwalldisttorefresh_;

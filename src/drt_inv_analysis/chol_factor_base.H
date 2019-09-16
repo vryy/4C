@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Common cholesky factor base class
 
 \level 3

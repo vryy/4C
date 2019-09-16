@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief A map extractor for Dirichlet conditions
 

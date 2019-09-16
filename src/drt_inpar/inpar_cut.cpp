@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Input parameters for cut library
 
 \level 2
@@ -69,4 +69,17 @@ void INPAR::CUT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   // Specifiy is Cutsides are triangulated
   BoolParameter(
       "SPLIT_CUTSIDES", "Yes", "Split Quad4 CutSides into Tri3-Subtriangles?", &cut_general);
+
+  // Do the Selfcut before standard CUT
+  BoolParameter("DO_SELFCUT", "Yes", "Do the SelfCut?", &cut_general);
+
+  // Do meshcorrection in Selfcut
+  BoolParameter(
+      "SELFCUT_DO_MESHCORRECTION", "Yes", "Do meshcorrection in the SelfCut?", &cut_general);
+
+  // Selfcut meshcorrection multiplicator
+  IntParameter("SELFCUT_MESHCORRECTION_MULTIPLICATOR", 30,
+      "ISLANDS with maximal size of the bounding box of h*multiplacator will be removed in the "
+      "meshcorrection",
+      &cut_general);
 }

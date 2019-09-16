@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief collection of templated methods in intersection computations
       !WARNING: not used at the moment

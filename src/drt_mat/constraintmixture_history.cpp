@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief This file contains the history class of the constraintmixture material
 
 \level 2

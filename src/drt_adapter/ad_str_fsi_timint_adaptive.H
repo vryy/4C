@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Structure field adapter for time step size adaptivity within monolithic FSI
 

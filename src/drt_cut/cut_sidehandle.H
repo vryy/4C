@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Sidehandle represents a side original loaded into the cut, internal it can be split into
 subsides
@@ -106,6 +106,45 @@ namespace GEO
         return rst;
       }
 
+      /// Remove the SubSidePointer of given side from this Sidehandle
+      virtual void RemoveSubSidePointer(const Side* side)
+      {
+        dserror("RemoveSubSidePointer: Not available in base class!");
+      }
+
+      /// Add the SubSidePointer of given side to this Sidehandle
+      virtual void AddSubSidePointer(Side* side)
+      {
+        dserror("AddSubSidePointer: Not available in base class!");
+      }
+
+      /// Add the SubSide in to the unphysical list
+      virtual void MarkSubSideunphysical(Side* side)
+      {
+        dserror("SetSubSidePointertounphysical: Not available in base class!");
+      }
+
+      /// Is this side and unphysical subside
+      virtual bool IsunphysicalSubSide(Side* side)
+      {
+        dserror("IsunphysicalSubSide: Not available in base class!");
+        return false;  // dummy
+      }
+
+      /// Does this sidehandle have unphysical subsides
+      virtual bool HasunphysicalSubSide()
+      {
+        dserror("HasunphysicalSubSide: Not available in base class!");
+        return false;  // dummy
+      }
+
+      virtual const std::vector<Node*>& GetNodes() const
+      {
+        dserror("GetNodes: Not available in base class!");
+        static const std::vector<Node*> dummy;
+        return dummy;  // dummy
+      }
+
      private:
       std::map<Point*, LINALG::Matrix<2, 1>> local_coordinates_;
     };
@@ -147,6 +186,9 @@ namespace GEO
         }
       }
 
+      /// Get the nodes of the Sidehandle
+      virtual const std::vector<Node*>& GetNodes() const { return side_->Nodes(); }
+
 
      private:
       Side* side_;
@@ -186,9 +228,93 @@ namespace GEO
         }
       }
 
+      /// Remove the SubSidePointer of given side from this Sidehandle
+      virtual void RemoveSubSidePointer(const Side* side)
+      {
+        std::vector<Side*>::iterator tmpssit = subsides_.end();
+        for (std::vector<Side*>::iterator ssit = subsides_.begin(); ssit != subsides_.end(); ++ssit)
+        {
+          if ((*ssit) == side)
+          {
+            tmpssit = ssit;
+            break;
+          }
+        }
+        if (tmpssit != subsides_.end())
+          subsides_.erase(tmpssit);
+        else
+          dserror("RemoveSubSidePointer: Couldn't identify subside!");
+      }
+
+      /// Add the SubSidePointer of given side to this Sidehandle
+      virtual void AddSubSidePointer(Side* side)
+      {
+        std::vector<Side*>::iterator tmpssit = subsides_.end();
+        for (std::vector<Side*>::iterator ssit = subsides_.begin(); ssit != subsides_.end(); ++ssit)
+        {
+          if ((*ssit) == side)
+          {
+            tmpssit = ssit;
+            break;
+          }
+        }
+        if (tmpssit == subsides_.end())
+          subsides_.push_back(side);
+        else
+          return;
+      }
+
+      /// Add the SubSide in to the unphysical list
+      virtual void MarkSubSideunphysical(Side* side)
+      {
+        std::vector<Side*>::iterator tmpssit = subsides_.end();
+        for (std::vector<Side*>::iterator ssit = subsides_.begin(); ssit != subsides_.end(); ++ssit)
+        {
+          if ((*ssit) == side)
+          {
+            tmpssit = ssit;
+            break;
+          }
+        }
+        if (tmpssit == subsides_.end())
+          dserror(
+              "MarkSubSideunphysical failed, your side is not a Subside of the "
+              "QuadraticSideHandle!");
+        else
+        {
+          unphysical_subsides_.push_back(side);
+        }
+        return;
+      }
+
+      /// Is this side and unphysical subside
+      virtual bool IsunphysicalSubSide(Side* side)
+      {
+        std::vector<Side*>::iterator tmpssit = unphysical_subsides_.end();
+        for (std::vector<Side*>::iterator ssit = unphysical_subsides_.begin();
+             ssit != unphysical_subsides_.end(); ++ssit)
+        {
+          if ((*ssit) == side)
+          {
+            tmpssit = ssit;
+            return true;
+          }
+        }
+        return false;
+      }
+
+      /// Does this sidehandle have unphysical subsides
+      virtual bool HasunphysicalSubSide() { return unphysical_subsides_.size(); }
+
+      /// Get the nodes of the Sidehandle
+      virtual const std::vector<Node*>& GetNodes() const { return nodes_; }
+
      protected:
       std::vector<Side*> subsides_;
       std::vector<Node*> nodes_;
+
+      /// all unphysical subsides of the side handle
+      std::vector<Side*> unphysical_subsides_;
     };
 
     /// tri6 side handle

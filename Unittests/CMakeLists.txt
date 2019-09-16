@@ -13,4 +13,4 @@ target_compile_options( unittest PRIVATE -g -O0 )
 target_include_directories( unittest PRIVATE ${PROJECT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR} )
 
 add_dependencies(full unittest)
-set_tests_properties( unittest PROPERTIES TIMEOUT 1000 LABELS minimal)
+set_tests_properties( unittest PROPERTIES TIMEOUT 10 LABELS minimal)

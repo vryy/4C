@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief one pair consisting of exactly one artery element and one poro-
         multiphase-scatra element which might be tied to each other
 
@@ -216,25 +216,25 @@ namespace POROMULTIPHASESCATRA
 
     //! get 1D shapefunctions at eta
     template <typename T>
-    void Get1DShapeFunctions(LINALG::TMatrix<T, 1, numnodesart_>& N1,
-        LINALG::TMatrix<T, 1, numnodesart_>& N1_eta, const T& eta);
+    void Get1DShapeFunctions(LINALG::Matrix<1, numnodesart_, T>& N1,
+        LINALG::Matrix<1, numnodesart_, T>& N1_eta, const T& eta);
 
     //! get 2D/3D shapefunctions at xi1, xi2 (, xi3)
     template <typename T>
-    void Get2D3DShapeFunctions(LINALG::TMatrix<T, 1, numnodescont_>& N2,
-        LINALG::TMatrix<T, numdim_, numnodescont_>& N2_xi, const std::vector<T>& xi);
+    void Get2D3DShapeFunctions(LINALG::Matrix<1, numnodescont_, T>& N2,
+        LINALG::Matrix<numdim_, numnodescont_, T>& N2_xi, const std::vector<T>& xi);
 
     //! compute artery coordinates and derivatives in reference configuration
     template <typename T>
-    void ComputeArteryCoordsAndDerivsRef(LINALG::TMatrix<T, numdim_, 1>& r1,
-        LINALG::TMatrix<T, numdim_, 1>& r1_eta, const LINALG::TMatrix<T, 1, numnodesart_>& N1,
-        const LINALG::TMatrix<T, 1, numnodesart_>& N1_eta);
+    void ComputeArteryCoordsAndDerivsRef(LINALG::Matrix<numdim_, 1, T>& r1,
+        LINALG::Matrix<numdim_, 1, T>& r1_eta, const LINALG::Matrix<1, numnodesart_, T>& N1,
+        const LINALG::Matrix<1, numnodesart_, T>& N1_eta);
 
     //! compute 2D/3D coordinates and derivatives in reference configuration
     template <typename T>
-    void Compute2D3DCoordsAndDerivsRef(LINALG::TMatrix<T, numdim_, 1>& x2,
-        LINALG::TMatrix<T, numdim_, numdim_>& x2_xi, const LINALG::TMatrix<T, 1, numnodescont_>& N2,
-        const LINALG::TMatrix<T, numdim_, numnodescont_>& N2_xi);
+    void Compute2D3DCoordsAndDerivsRef(LINALG::Matrix<numdim_, 1, T>& x2,
+        LINALG::Matrix<numdim_, numdim_, T>& x2_xi, const LINALG::Matrix<1, numnodescont_, T>& N2,
+        const LINALG::Matrix<numdim_, numnodescont_, T>& N2_xi);
 
     //! evaluate the function coupling
     void EvaluateFunctionCoupling(const std::vector<double>& eta,

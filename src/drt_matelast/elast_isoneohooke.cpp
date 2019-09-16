@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief
 This file contains the isochoric routines required for logarithmic neo-Hooke material
 according to Bonet and Wood, "Nonlinear continuum mechanics for finite

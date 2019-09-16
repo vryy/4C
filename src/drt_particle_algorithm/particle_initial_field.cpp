@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief initial field handler for particle simulations
 
 \level 3

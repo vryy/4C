@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief extracting maps of fluid discretizations
 
@@ -21,7 +21,7 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FLD::UTILS::MapExtractor::Setup(
-    const DRT::Discretization& dis, bool withpressure, bool overlapping)
+    const DRT::Discretization& dis, bool withpressure, bool overlapping, const int nds_master)
 {
   const int ndim = DRT::Problem::Instance()->NDim();
   DRT::UTILS::MultiConditionSelector mcs;
@@ -36,7 +36,7 @@ void FLD::UTILS::MapExtractor::Setup(
       Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis, "Mortar", 0, ndim + withpressure)));
   mcs.AddSelector(Teuchos::rcp(
       new DRT::UTILS::NDimConditionSelector(dis, "ALEUPDATECoupling", 0, ndim + withpressure)));
-  mcs.SetupExtractor(dis, *dis.DofRowMap(), *this);
+  mcs.SetupExtractor(dis, *dis.DofRowMap(nds_master), *this);
 }
 
 /*----------------------------------------------------------------------*/

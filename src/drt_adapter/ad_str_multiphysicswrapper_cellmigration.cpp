@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Adapter wrapper for multiphysics in cell migration.
 

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief heat conduction according to fourier's law with variable conductivity and capacity
 
 \level 2
@@ -16,6 +16,7 @@
 #include "../drt_tsi/tsi_defines.H"
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_function_library.H"
 
 #include <algorithm>  // for min and max function
 

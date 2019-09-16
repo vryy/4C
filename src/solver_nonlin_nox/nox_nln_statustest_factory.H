@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Create the desired outer status test.
 

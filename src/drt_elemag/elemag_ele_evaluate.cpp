@@ -1,5 +1,5 @@
 /*--------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief electromagnetic element evaluation base routines
 
 \level 2

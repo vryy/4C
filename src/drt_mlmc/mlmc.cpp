@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Class for performing Multi Level Monte Carlo (MLMC)analysis of structure
 
 \maintainer Jonas Nitzler

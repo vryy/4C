@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief contact handler for discrete element method (DEM) interactions
 
 \level 3
@@ -714,17 +714,24 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
     // number of nodes of wall element
     const int numnodes = ele->NumNode();
 
-    // evaluate shape functions of element at wall contact point
+    // shape functions and location vector of wall element
     Epetra_SerialDenseVector funct(numnodes);
-    DRT::UTILS::shape_function_2D(
-        funct, particlewallpair.elecoords_[0], particlewallpair.elecoords_[1], ele->Shape());
-
-    // get location vector of wall element
     std::vector<int> lmele;
-    lmele.reserve(numnodes * 3);
-    std::vector<int> lmowner;
-    std::vector<int> lmstride;
-    ele->LocationVector(*particlewallinterface_->GetWallDiscretization(), lmele, lmowner, lmstride);
+
+    if (walldatastate->GetVelCol() != Teuchos::null or
+        walldatastate->GetForceCol() != Teuchos::null)
+    {
+      // evaluate shape functions of element at wall contact point
+      DRT::UTILS::shape_function_2D(
+          funct, particlewallpair.elecoords_[0], particlewallpair.elecoords_[1], ele->Shape());
+
+      // get location vector of wall element
+      lmele.reserve(numnodes * 3);
+      std::vector<int> lmowner;
+      std::vector<int> lmstride;
+      ele->LocationVector(
+          *particlewallinterface_->GetWallDiscretization(), lmele, lmowner, lmstride);
+    }
 
     // tangential and rolling contact friction coefficient
     double mu_tangential = 0.0;

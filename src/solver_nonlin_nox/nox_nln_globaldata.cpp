@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Kind of a data container class, which holds many variables
        and objects, which are necessary to setup a NOX::NLN

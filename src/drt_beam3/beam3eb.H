@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief three dimensional nonlinear torsionless rod based on a C1 curve
 
@@ -711,9 +711,9 @@ namespace DRT
       vector<cl_F> Xrefprec_;
       cl_F Eprec_;
       cl_F balkenradiusprec_;
-      LINALG::TMatrix<cl_F, 3, 1> Trefprec_;
-      LINALG::TMatrix<cl_F, 12, 12> stifftest_;
-      LINALG::TMatrix<cl_F, 12, 1> restest_;
+      LINALG::Matrix<3, 1, cl_F> Trefprec_;
+      LINALG::Matrix<12, 12, cl_F> stifftest_;
+      LINALG::Matrix<12, 1, cl_F> restest_;
 #endif
 
       //! @name methods for initilization of the element
@@ -736,14 +736,14 @@ namespace DRT
 
 #ifdef PRECISION
       //! calculation of nonlinear stiffness matrix with high precision
-      void eb_nlnstiffmassprec(LINALG::TMatrix<cl_F, 12, 1>* displocal,
-          LINALG::TMatrix<cl_F, 12, 12>* stifflocal, LINALG::TMatrix<cl_F, 12, 1>* reslocal,
-          LINALG::TMatrix<cl_F, 6, 1>* xreflocal);
+      void eb_nlnstiffmassprec(LINALG::Matrix<12, 1, cl_F>* displocal,
+          LINALG::Matrix<12, 12, cl_F>* stifflocal, LINALG::Matrix<12, 1, cl_F>* reslocal,
+          LINALG::Matrix<6, 1, cl_F>* xreflocal);
 
       //! calculation of moment Neumann BC with high precision
-      void EvaluateNeumannPrec(LINALG::TMatrix<cl_F, 3, 1> tangentdisp,
-          LINALG::TMatrix<cl_F, 3, 1> mextvec, LINALG::TMatrix<cl_F, 3, 1>* fextm,
-          LINALG::TMatrix<cl_F, 3, 3>* stiffextm);
+      void EvaluateNeumannPrec(LINALG::Matrix<3, 1, cl_F> tangentdisp,
+          LINALG::Matrix<3, 1, cl_F> mextvec, LINALG::Matrix<3, 1, cl_F>* fextm,
+          LINALG::Matrix<3, 3, cl_F>* stiffextm);
 
       //! calculation of the entire problem with high precision
       void HighPrecissionCalc();

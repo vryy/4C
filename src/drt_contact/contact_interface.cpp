@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief One contact interface
 
 \level 2
@@ -907,7 +907,7 @@ void CONTACT::CoInterface::RoundRobinDetectGhosting()
 /*----------------------------------------------------------------------*
  |  redistribute contact interface (public)                   popp 08/10|
  *----------------------------------------------------------------------*/
-bool CONTACT::CoInterface::Redistribute(int index)
+void CONTACT::CoInterface::Redistribute()
 {
   const Teuchos::ParameterList& mortarParallelRedistParams =
       InterfaceParams().sublist("PARALLEL REDISTRIBUTION");
@@ -986,14 +986,14 @@ bool CONTACT::CoInterface::Redistribute(int index)
   }
 
   // print old parallel distribution
-  PrintParallelDistribution(index);
+  PrintParallelDistribution();
 
   // use simple base class method if there are ONLY close or non-close elements
   // (return value TRUE, because redistribution performed)
   if (scroweles->NumGlobalElements() == 0 || sncroweles->NumGlobalElements() == 0)
   {
     MORTAR::MortarInterface::Redistribute();
-    return true;
+    return;
   }
 
   //**********************************************************************
@@ -1223,8 +1223,6 @@ bool CONTACT::CoInterface::Redistribute(int index)
   // export nodes and elements to the column map (create ghosting)
   Discret().ExportColumnNodes(*colnodes);
   Discret().ExportColumnElements(*coleles);
-
-  return true;
 }
 
 /*----------------------------------------------------------------------------*

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Entry routines for FSI problems and some other problem types as well
 

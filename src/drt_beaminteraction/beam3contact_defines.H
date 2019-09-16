@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief A set of preprocessor defines for beam contact methods
 

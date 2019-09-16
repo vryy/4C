@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief is the base for the different types of mesh and level-set based coupling conditions and
 thereby builds the bridge between the xfluid class and the cut-library
@@ -713,6 +713,24 @@ void XFEM::CouplingBase::Get_ViscPenalty_Stabfac(DRT::Element* xfele,  ///< xflu
     double& NIT_visc_stab_fac_tang  ///< viscous part of Nitsche's penalty term in tang direction
 )
 {
+  Get_ViscPenalty_Stabfac(xfele, coup_ele, kappa_m, kappa_s, inv_h_k, NIT_visc_stab_fac,
+      NIT_visc_stab_fac_tang, params->NITStabScaling(), params->NITStabScalingTang(),
+      params->IsPseudo2D(), params->ViscStabTracEstimate());
+}
+
+/*--------------------------------------------------------------------------------
+ * compute viscous part of Nitsche's penalty term scaling for Nitsche's method
+ *--------------------------------------------------------------------------------*/
+void XFEM::CouplingBase::Get_ViscPenalty_Stabfac(DRT::Element* xfele,  ///< xfluid ele
+    DRT::Element* coup_ele,                                            ///< coup_ele ele
+    const double& kappa_m,           ///< Weight parameter (parameter +/master side)
+    const double& kappa_s,           ///< Weight parameter (parameter -/slave  side)
+    const double& inv_h_k,           ///< the inverse characteristic element length h_k
+    double& NIT_visc_stab_fac,       ///< viscous part of Nitsche's penalty term
+    double& NIT_visc_stab_fac_tang,  ///< viscous part of Nitsche's penalty term in tang direction
+    const double& NITStabScaling, const double& NITStabScalingTang, const bool& IsPseudo2D,
+    const INPAR::XFEM::ViscStab_TraceEstimate ViscStab_TraceEstimate)
+{
   double penscaling = 0.0;
   if (GetAveragingStrategy() != INPAR::XFEM::Embedded_Sided)
   {
@@ -729,11 +747,10 @@ void XFEM::CouplingBase::Get_ViscPenalty_Stabfac(DRT::Element* xfele,  ///< xflu
     penscaling += penscaling_s * kappa_s * inv_h_k;
   }
 
-  XFEM::UTILS::NIT_Compute_ViscPenalty_Stabfac(xfele->Shape(), penscaling, params->NITStabScaling(),
-      params->IsPseudo2D(), params->ViscStabTracEstimate(), NIT_visc_stab_fac);
+  XFEM::UTILS::NIT_Compute_ViscPenalty_Stabfac(xfele->Shape(), penscaling, NITStabScaling,
+      IsPseudo2D, ViscStab_TraceEstimate, NIT_visc_stab_fac);
 
-  XFEM::UTILS::NIT_Compute_ViscPenalty_Stabfac(xfele->Shape(), penscaling,
-      params->NITStabScalingTang(), params->IsPseudo2D(), params->ViscStabTracEstimate(),
-      NIT_visc_stab_fac_tang);
+  XFEM::UTILS::NIT_Compute_ViscPenalty_Stabfac(xfele->Shape(), penscaling, NITStabScalingTang,
+      IsPseudo2D, ViscStab_TraceEstimate, NIT_visc_stab_fac_tang);
   return;
 }

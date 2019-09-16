@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief pressure handler for smoothed particle hydrodynamics (SPH) interactions
 
 \level 3
@@ -45,32 +45,32 @@ namespace PARTICLEINTERACTION
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  class SPHPressure
+  class SPHPressure final
   {
    public:
     //! constructor
     explicit SPHPressure();
 
-    //! virtual destructor
-    virtual ~SPHPressure(){};
+    //! destructor
+    ~SPHPressure(){};
 
     //! init pressure handler
-    virtual void Init();
+    void Init();
 
     //! setup pressure handler
-    virtual void Setup(
+    void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
         const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle);
 
     //! write restart of pressure handler
-    virtual void WriteRestart(const int step, const double time) const;
+    void WriteRestart(const int step, const double time) const;
 
     //! read restart of pressure handler
-    virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
+    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
     //! compute pressure using equation of state and density
-    virtual void ComputePressure() const;
+    void ComputePressure() const;
 
    protected:
     //! interface to particle engine

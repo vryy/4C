@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief class holding all particle containers
 
 \level 3
@@ -37,7 +37,7 @@ namespace PARTICLEENGINE
  *---------------------------------------------------------------------------*/
 namespace PARTICLEENGINE
 {
-  class ParticleContainerBundle
+  class ParticleContainerBundle final
   {
    public:
     //! constructor

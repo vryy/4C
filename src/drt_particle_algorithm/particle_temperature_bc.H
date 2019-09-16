@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief temperature boundary condition handler for particle simulations
 
 \level 3
@@ -45,14 +45,14 @@ namespace PARTICLEALGORITHM
     //! constructor
     explicit TemperatureBoundaryConditionHandler(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~TemperatureBoundaryConditionHandler(){};
+    //! destructor
+    ~TemperatureBoundaryConditionHandler(){};
 
     //! init temperature boundary condition handler
-    virtual void Init();
+    void Init();
 
     //! setup temperature boundary condition handler
-    virtual void Setup(
+    void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
 
     //! write restart of temperature boundary condition handler

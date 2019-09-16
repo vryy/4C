@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Internal implementation of turbulence functionality of fluid element
 

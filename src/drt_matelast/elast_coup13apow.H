@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief
 This file contains the routines required to calculate the coupled
 power-type material in invariant 1 multiplicative invariant 3^(-a).

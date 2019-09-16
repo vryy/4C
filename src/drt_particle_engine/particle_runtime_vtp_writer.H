@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief write visualization output for particles in vtk/vtp format at runtime
 
 \level 3
@@ -37,7 +37,7 @@ namespace IO
  *---------------------------------------------------------------------------*/
 namespace PARTICLEENGINE
 {
-  class ParticleRuntimeVtpWriter
+  class ParticleRuntimeVtpWriter final
   {
    public:
     //! constructor

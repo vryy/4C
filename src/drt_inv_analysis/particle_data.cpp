@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Data for particles in the Sequential Monte Carlo algortihm
 
 \level 3

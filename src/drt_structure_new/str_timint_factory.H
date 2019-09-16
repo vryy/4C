@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 \brief factory for time integration base strategy and data container
 
 \maintainer Anh-Tu Vuong

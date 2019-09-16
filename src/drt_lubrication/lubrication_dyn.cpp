@@ -1,5 +1,5 @@
 /*--------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief entry point for the solution of Lubrication problems
 

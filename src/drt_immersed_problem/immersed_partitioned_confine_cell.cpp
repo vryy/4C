@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief partitioned immersed cell-ecm interaction via cell confinement in ecm pore
 

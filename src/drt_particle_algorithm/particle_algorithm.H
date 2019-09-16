@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief algorithm to control particle simulations
 
 \level 3
@@ -54,14 +54,14 @@ namespace DRT
  *---------------------------------------------------------------------------*/
 namespace PARTICLEALGORITHM
 {
-  class ParticleAlgorithm : public ADAPTER::AlgorithmBase
+  class ParticleAlgorithm final : public ADAPTER::AlgorithmBase
   {
    public:
     //! constructor
     explicit ParticleAlgorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
     //! destructor
-    ~ParticleAlgorithm();
+    ~ParticleAlgorithm() override;
 
     //! init particle algorithm
     void Init(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& initialparticles);
@@ -70,7 +70,7 @@ namespace PARTICLEALGORITHM
     void Setup();
 
     //! read restart information for given time step
-    void ReadRestart(const int restartstep);
+    void ReadRestart(const int restartstep) override;
 
     //! time loop for particle problem
     void Timeloop();
@@ -132,9 +132,6 @@ namespace PARTICLEALGORITHM
     //! setup initial particles
     void SetupInitialParticles();
 
-    //! setup initial wall distribution
-    void SetupInitalWallDistribution();
-
     //! setup initial states
     void SetupInitialStates();
 
@@ -144,14 +141,26 @@ namespace PARTICLEALGORITHM
     //! update connectivity
     void UpdateConnectivity();
 
-    //! check particle transfer including bin size safety checks
-    bool CheckParticleTransfer();
+    //! check load transfer
+    bool CheckLoadTransferNeeded();
+
+    //! check max position increment
+    bool CheckMaxPositionIncrement();
 
     //! get max particle position increment since last transfer
     void GetMaxParticlePositionIncrement(double& allprocmaxpositionincrement);
 
-    //! check load balance
-    bool CheckLoadBalancing();
+    //! transfer load between processors
+    void TransferLoadBetweenProcs();
+
+    //! check load redistribution
+    bool CheckLoadRedistributionNeeded();
+
+    //! distribute load among processors
+    void DistributeLoadAmongProcs();
+
+    //! build potential neighbor relation
+    void BuildPotentialNeighborRelation();
 
     //! set initial conditions
     void SetInitialConditions();

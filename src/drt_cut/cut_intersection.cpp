@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief here the intersection of a (plane) surface with a line is performed
 
@@ -301,7 +301,7 @@ bool GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside
   side_rs_corner_intersect.reserve(2);
   edge_r_corner_intersect.reserve(2);
 
-  LINALG::TMatrix<LINALG::Matrix<2, 1>, 2, 1> e_corner_distance;
+  LINALG::Matrix<2, 1, LINALG::Matrix<2, 1>> e_corner_distance;
   for (unsigned i = 0; i < 2; ++i)
   {
     const LINALG::Matrix<probdim, 1> e_cornerpoint(&xyze_lineElement_(0, i), true);
@@ -469,12 +469,12 @@ GEO::CUT::ParallelIntersectionStatus GEO::CUT::Intersection<probdim, edgetype, s
 
   bool zeroarea = false;
   // local coordinates are inside element
-  LINALG::TMatrix<bool, 2, 1> lineendpoint_within_surfacelimits(true);
+  LINALG::Matrix<2, 1, bool> lineendpoint_within_surfacelimits(true);
   // point is really inside element (normal distance = 0)
-  LINALG::TMatrix<bool, 2, 1> lineendpoint_in_surface(true);
+  LINALG::Matrix<2, 1, bool> lineendpoint_in_surface(true);
   LINALG::Matrix<2, 1> lineendpoint_dist;
   LINALG::Matrix<2, 1> lineendpoint_tol;
-  LINALG::TMatrix<bool, 2, 1> lineendpoint_conv(true);
+  LINALG::Matrix<2, 1, bool> lineendpoint_conv(true);
   LINALG::Matrix<dimside + dimedge, 2> lineendpoint_xsi(true);
   std::vector<std::vector<int>> lineendpoint_touched_edges(2);
   std::vector<KERNEL::PointOnSurfaceLoc> lineendpoint_location_kernel(2);
@@ -530,7 +530,7 @@ GEO::CUT::ParallelIntersectionStatus GEO::CUT::Intersection<probdim, edgetype, s
          * the distance onto tri3! */
         LINALG::Matrix<2, 1> tri_dist;
         LINALG::Matrix<2, 1> tri_tol;
-        LINALG::TMatrix<bool, 2, 1> tri_conv;
+        LINALG::Matrix<2, 1, bool> tri_conv;
 
         std::vector<KERNEL::PointOnSurfaceLoc> tri_location_kernel(2);
         std::vector<std::vector<int>> tri_touched_edges(2);
@@ -1021,7 +1021,7 @@ bool GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside
       {
         try
         {
-          tri_status[tri] = ComputeEdgeTri3IntersectionQuad4Split(tri, close_to_shared_edge + tri);
+          tri_status[tri] = ComputeEdgeTri3IntersectionQuad4Split(tri, &close_to_shared_edge[tri]);
         }
         catch (std::runtime_error& e)
         {
@@ -1048,10 +1048,6 @@ bool GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside
             {
               if (tri == 1)
               {
-                GenerateGmshDump();
-                dserror(
-                    "Here we should create point on diagonal line between two triangles in "
-                    "triangulated quad4! This is not yet implemented!");
                 // possible reference implementation
                 istatus_ = intersect_single_cut_point;
                 final_points.push_back(LINALG::Matrix<3, 1>(FinalPoint()));
@@ -1089,7 +1085,7 @@ bool GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside
         }
         case 2:
         {
-          // fisrt check if this point is not on the split between triangles (diagonal)
+          // first check if this point is not on the split between triangles (diagonal)
           LINALG::Matrix<3, 1> diff = final_points[0];
           diff.Update(-1, final_points[1], 1);
           // this case is unsupported

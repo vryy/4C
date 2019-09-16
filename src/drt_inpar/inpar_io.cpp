@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \file inpar_io.cpp
 
 \brief Input parameters for global IO section

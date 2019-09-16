@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Base class for handling of parallel data exchange
 

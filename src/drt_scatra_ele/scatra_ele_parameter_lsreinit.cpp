@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief singleton class holding all static levelset reinitialization parameters required for element
 evaluation

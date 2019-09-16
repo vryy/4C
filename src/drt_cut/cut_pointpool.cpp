@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief PointPool, stores a points in the cut and decides if points are merged or new points are
 created

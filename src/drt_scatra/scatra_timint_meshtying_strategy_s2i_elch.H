@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief Scatra-scatra interface coupling strategy for electrochemistry problems
 

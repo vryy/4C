@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief particle input generator for particle simulations
 
 \level 3
@@ -46,11 +46,11 @@ namespace PARTICLEALGORITHM
     //! constructor
     explicit InputGenerator(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~InputGenerator(){};
+    //! destructor
+    ~InputGenerator(){};
 
     //! init input generator
-    virtual void Init();
+    void Init();
 
     //! generate particles
     void GenerateParticles(

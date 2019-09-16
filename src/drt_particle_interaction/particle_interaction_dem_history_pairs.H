@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief history pair handler for discrete element method (DEM) interactions
 
 \level 3
@@ -63,13 +63,13 @@ namespace PARTICLEINTERACTION
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  class DEMHistoryPairs
+  class DEMHistoryPairs final
   {
    public:
     //! constructor
     explicit DEMHistoryPairs(const Epetra_Comm& comm);
 
-    //! virtual destructor
+    //! destructor
     ~DEMHistoryPairs(){};
 
     //! init history pair handler

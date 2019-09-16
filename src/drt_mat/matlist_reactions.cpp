@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief This file contains the material for reactive scalars. It derives from MAT_matlist
 and adds everything to supervise all the MAT_scatra_raction materials. The reactions
 itself are defined inside the MAT_scatra_raction materials. So MAT_matlist_reactions

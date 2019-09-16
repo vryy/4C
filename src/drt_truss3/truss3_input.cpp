@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief three dimensional total Lagrange truss element
 
 \level 3

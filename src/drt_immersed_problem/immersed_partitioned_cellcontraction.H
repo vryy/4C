@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief partitioned immersed contraction algorithm
 
 \level 3

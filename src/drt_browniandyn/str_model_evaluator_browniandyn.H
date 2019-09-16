@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief model evaluator for brownian (stochastic and damping)
        forces

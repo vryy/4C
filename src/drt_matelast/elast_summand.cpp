@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief
 Interface class for materials of (visco)elasthyper toolbox.
 

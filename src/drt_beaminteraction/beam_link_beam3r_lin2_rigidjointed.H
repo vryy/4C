@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Wrapper for a linear Reissner beam element used as mechanical link between two other beam
 elements
@@ -166,8 +166,8 @@ namespace BEAMINTERACTION
     \brief Fill absolute nodal positions and nodal quaternions with current values
     */
     void FillStateVariablesForElementEvaluation(
-        LINALG::TMatrix<double, 6, 1>& disp_totlag_centerline,
-        std::vector<LINALG::TMatrix<double, 4, 1>>& Qnode) const;
+        LINALG::Matrix<6, 1, double>& disp_totlag_centerline,
+        std::vector<LINALG::Matrix<4, 1, double>>& Qnode) const;
 
     //@}
 

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief St.Venant Kirchhoff with an additional temperature dependent term
        describing heat expansion
 

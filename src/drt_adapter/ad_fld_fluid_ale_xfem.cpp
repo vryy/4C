@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Fluid field adapter for xfem-ale-fluids with moving boundaries
 

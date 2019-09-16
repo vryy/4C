@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Contact interface capable of TSI
 
 \maintainer Matthias Mayr
@@ -150,7 +150,7 @@ namespace CONTACT
     Derived version with some additional TSI related stuff!
 
     */
-    virtual void Initialize();
+    void Initialize() final;
 
    protected:
   };  // class

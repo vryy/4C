@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
  \brief A dofset that adds additional, existing degrees of freedom from the same
         discretization to nodes (not yet to elements).

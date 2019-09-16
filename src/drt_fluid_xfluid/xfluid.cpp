@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Control routine for fluid (in)stationary solvers with XFEM,
        including instationary solvers for fluid and fsi problems coupled with an internal embedded
@@ -82,9 +82,12 @@ FLD::XFluid::XFluid(const Teuchos::RCP<DRT::Discretization>& actdis,
     const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
       xdiscret_(Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(actdis, true)),
+      xfluid_timint_check_interfacetips_(true),
+      xfluid_timint_check_sliding_on_surface_(true),
       edgestab_(Teuchos::rcp(new XFEM::XFEM_EdgeStab())),
       turbmodel_(INPAR::FLUID::dynamic_smagorinsky),
-      evaluate_cut_(true)
+      evaluate_cut_(true),
+      newton_restart_monolithic_(false)
 {
   // TODO the initialization of coupling objects, dofsets, and so on is not that clear so far,
   // however, strongly
@@ -369,6 +372,8 @@ void FLD::XFluid::SetXFluidParams()
       DRT::INPUT::IntegralValue<INPAR::XFEM::XFluidTimeIntScheme>(params_xf_gen, "XFLUID_TIMEINT");
   xfluid_timint_check_interfacetips_ =
       (bool)DRT::INPUT::IntegralValue<int>(params_xf_gen, "XFLUID_TIMEINT_CHECK_INTERFACETIPS");
+  xfluid_timint_check_sliding_on_surface_ =
+      (bool)DRT::INPUT::IntegralValue<int>(params_xf_gen, "XFLUID_TIMEINT_CHECK_SLIDINGONSURFACE");
 
   // for monolithic problems with xfluid (varying dofrowmaps)
   permutation_map_ = Teuchos::rcp(new std::map<int, int>);
@@ -399,6 +404,9 @@ void FLD::XFluid::SetXFluidParams()
 
     // determine, whether face-based stabilizing terms are active
     eval_eos_ = edge_based || ghost_penalty;
+
+    ghost_penalty_add_inner_faces_ =
+        (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab, "GHOST_PENALTY_ADD_INNER_FACES");
   }
 
   if (myrank_ == 0)
@@ -1311,7 +1319,7 @@ void FLD::XFluid::AssembleMatAndRHS_FaceTerms(const Teuchos::RCP<LINALG::SparseM
 
       bool gmsh_EOS_out(DRT::INPUT::IntegralValue<int>(params_->sublist("XFEM"), "GMSH_EOS_OUT"));
       edgestab_->EvaluateEdgeStabGhostPenalty(faceparams, discret_, face_ele, sysmat, residual_col,
-          wizard, include_inner_, gmsh_EOS_out);
+          wizard, include_inner_, ghost_penalty_add_inner_faces_, gmsh_EOS_out);
     }
   }
 }
@@ -2076,6 +2084,13 @@ void FLD::XFluid::CheckXFluidParams() const
   // ----------------------------------------------------------------------
   // check XFLUID DYNAMIC/GENERAL parameter list
   // ----------------------------------------------------------------------
+
+  Teuchos::ParameterList& params_xfem = params_->sublist("XFEM");
+  if (ghost_penalty_add_inner_faces_ &&
+      !DRT::INPUT::IntegralValue<INPAR::CUT::NodalDofSetStrategy>(params_xfem,
+          "NODAL_DOFSET_STRATEGY") == INPAR::CUT::NDS_Strategy_OneDofset_PerNodeAndPosition)
+    dserror(
+        "The option GHOST_PENALTY_ADD_INNER_FACES is only availabe if you use max 1 nodal dofset!");
 
   return;
 }
@@ -3568,7 +3583,8 @@ void FLD::XFluid::XTimint_DoTimeStepTransfer(const bool screen_out)
       false,  // is_newton_increment_transfer?
       discret_, condition_manager_, wizard_Intn_, state_->Wizard(), dofset_Intn_, state_->DofSet(),
       xfluid_timintapproach_,  // use the chosen approach as defined in the input file
-      node_to_reconstr_method, reconstr_method_to_node, step_, xfluid_timint_check_interfacetips_));
+      node_to_reconstr_method, reconstr_method_to_node, step_, xfluid_timint_check_interfacetips_,
+      xfluid_timint_check_sliding_on_surface_));
 
   {
     if (myrank_ == 0 and screen_out)
@@ -3790,7 +3806,7 @@ bool FLD::XFluid::XTimint_DoIncrementStepTransfer(
       Teuchos::rcp(new XFEM::XFluidTimeInt(true,  // is_newton_increment_transfer?
           discret_, condition_manager_, wizard_Intnpi_, state_->Wizard(), dofset_Intnpi_,
           state_->DofSet(), timint_method, node_to_reconstr_method, reconstr_method_to_node, step_,
-          xfluid_timint_check_interfacetips_));
+          xfluid_timint_check_interfacetips_, xfluid_timint_check_sliding_on_surface_));
 
   {
     if (myrank_ == 0 and screen_out)

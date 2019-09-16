@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Steepest ascent interface based on the augmented contact
        formulation.
 

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief  Basis of all monolithic poroelasticity algorithms
 
@@ -290,10 +290,34 @@ void POROELAST::Monolithic::Solve()
 
 }  // Solve()
 
-/*----------------------------------------------------------------------*
- | evaluate the single fields                              vuong 01/12   |
- *----------------------------------------------------------------------*/
-void POROELAST::Monolithic::Evaluate(
+
+void POROELAST::Monolithic::UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> x)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("POROELAST::Monolithic::UpdateStateIncrementally");
+
+  // displacement and fluid velocity & pressure incremental vector
+  Teuchos::RCP<const Epetra_Vector> sx = Teuchos::null;
+  Teuchos::RCP<const Epetra_Vector> fx = Teuchos::null;
+
+  // do nothing in the case no increment vector is given
+  if (x == Teuchos::null)
+  {
+    return;
+  }
+  else
+  {
+    // extract displacement sx and fluid fx incremental vector of global
+    // unknown incremental vector x (different for splits)
+    ExtractFieldVectors(x, sx, fx);
+
+    // update poro iterinc
+    if (PartOfMultifieldProblem_) UpdatePoroIterinc(x);
+  }
+
+  UpdateStateIncrementally(sx, fx);
+}
+
+void POROELAST::Monolithic::UpdateStateIncrementally(
     Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx)
 {
   // Newton update of the fluid field
@@ -317,10 +341,7 @@ void POROELAST::Monolithic::Evaluate(
 
   // Monolithic Poroelasticity accesses the linearised structure problem:
   //   UpdaterIterIncrementally(sx),
-  //   EvaluateForceStiffResidual()
-  //   PrepareSystemForNewtonSolve()
-  StructureField()->Evaluate(sx);
-  // std::cout << "  structure time for calling Evaluate: " << timerstructure.ElapsedTime() << "\n";
+  StructureField()->UpdateStateIncrementally(sx);
   /// fluid field
 
   // fluid Evaluate
@@ -329,15 +350,6 @@ void POROELAST::Monolithic::Evaluate(
 
   // set structure displacements onto the fluid
   SetStructSolution();
-
-  // monolithic Poroelasticity accesses the linearised fluid problem
-  //   EvaluateRhsTangResidual() and
-  //   PrepareSystemForNewtonSolve()
-  FluidField()->Evaluate(Teuchos::null);
-  // std::cout << "  fluid time for calling Evaluate: " << timerfluid.ElapsedTime() << "\n";
-
-  // fill off diagonal blocks and fill global system matrix
-  SetupSystemMatrix();
 }
 
 /*----------------------------------------------------------------------*
@@ -347,22 +359,11 @@ void POROELAST::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x, bool f
 {
   TEUCHOS_FUNC_TIME_MONITOR("POROELAST::Monolithic::Evaluate");
 
-  // displacement and fluid velocity & pressure incremental vector
-  Teuchos::RCP<const Epetra_Vector> sx;
-  Teuchos::RCP<const Epetra_Vector> fx;
+  // Evaluate Stiffness and RHS of Structural & Fluid field
+  EvaluateFields(x);
 
-  // if an increment vector exists
-  if (x != Teuchos::null)
-  {
-    // extract displacement sx and fluid fx incremental vector of global
-    // unknown incremental vector x (different for splits)
-    ExtractFieldVectors(x, sx, fx, firstiter);
-
-    // update poro iterinc
-    if (PartOfMultifieldProblem_) UpdatePoroIterinc(x);
-  }
-
-  Evaluate(sx, fx);
+  // fill off diagonal blocks and fill global system matrix
+  SetupSystemMatrix();
 
   // check whether we have a sanely filled tangent matrix
   if (not systemmatrix_->Filled())
@@ -374,6 +375,61 @@ void POROELAST::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x, bool f
   SetupRHS(firstiter);
 
 }  // Evaluate()
+
+void POROELAST::Monolithic::Evaluate(
+    Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx, bool firstiter)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("POROELAST::Monolithic::Evaluate");
+
+  // Evaluate Stiffness and RHS of Structural & Fluid field
+  EvaluateFields(sx, fx);
+
+  // fill off diagonal blocks and fill global system matrix
+  SetupSystemMatrix();
+
+  // check whether we have a sanely filled tangent matrix
+  if (not systemmatrix_->Filled())
+  {
+    dserror("Effective tangent matrix must be filled here");
+  }
+
+  // create full monolithic rhs vector
+  SetupRHS(firstiter);
+
+}  // Evaluate()
+
+void POROELAST::Monolithic::EvaluateFields(
+    Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx)
+{
+  // Update State incrementally
+  UpdateStateIncrementally(sx, fx);
+
+  // Monolithic Poroelasticity accesses the linearised structure problem:
+  //   EvaluateForceStiffResidual()
+  //   PrepareSystemForNewtonSolve()
+  StructureField()->Evaluate(Teuchos::null);
+
+  // monolithic Poroelasticity accesses the linearised fluid problem
+  //   EvaluateRhsTangResidual() and
+  //   PrepareSystemForNewtonSolve()
+  FluidField()->Evaluate(Teuchos::null);
+}
+
+void POROELAST::Monolithic::EvaluateFields(Teuchos::RCP<const Epetra_Vector> x)
+{
+  // Update State incrementally
+  UpdateStateIncrementally(x);
+
+  // Monolithic Poroelasticity accesses the linearised structure problem:
+  //   EvaluateForceStiffResidual()
+  //   PrepareSystemForNewtonSolve()
+  StructureField()->Evaluate(Teuchos::null);
+
+  // monolithic Poroelasticity accesses the linearised fluid problem
+  //   EvaluateRhsTangResidual() and
+  //   PrepareSystemForNewtonSolve()
+  FluidField()->Evaluate(Teuchos::null);
+}
 
 /*----------------------------------------------------------------------*
  | extract field vectors for calling Evaluate() of the       vuong 01/12|

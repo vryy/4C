@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief List of template combinations for the augmented contact integrator.
 
 \level 2

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief adhesion handler for discrete element method (DEM) interactions
 
 \level 3
@@ -55,7 +55,7 @@ namespace PARTICLEINTERACTION
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  class DEMAdhesion
+  class DEMAdhesion final
   {
    public:
     //! constructor

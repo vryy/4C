@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Nitsche poro contact solving strategy
 
 \level 3

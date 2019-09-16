@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Steepest ascent solution strategy based on the augmented contact
        formulation.
 

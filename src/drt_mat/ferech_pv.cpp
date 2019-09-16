@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief scalar transport material with simplified chemical kinetics
 
 \level 2

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief FPSI wrapper for the ALE time integration
 
  \level 2

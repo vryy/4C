@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Wrapper for the structural time integration to be used
 in the inverse analysis

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief routines for coupling between 1D arterial network and 2D/3D
         scatra-algorithm
 

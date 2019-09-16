@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief One mortar coupling interface
 
 \level 1
@@ -591,35 +591,35 @@ namespace MORTAR
 
     @return Boolean flag to indicate if FillComplete has been called
     */
-    virtual bool Filled() const;
+    bool Filled() const;
 
     /*!
     \brief Print parallel distribution of this Interface
     */
-    void PrintParallelDistribution(int index) const;
+    void PrintParallelDistribution() const;
 
     /*!
     \brief Get communicator
     */
-    virtual const Epetra_Comm& Comm() const { return *comm_; }
+    const Epetra_Comm& Comm() const { return *comm_; }
 
     /*!
     \brief Get local interface communicator (Filled()==true is prerequisite)
            This Epetra_Comm only contains the participating processors of the interface
     */
-    virtual const Epetra_Comm* lComm() const { return lcomm_.get(); }
+    const Epetra_Comm* lComm() const { return lcomm_.get(); }
 
     /*!
     \brief Get global -> local processor map
     */
-    virtual std::map<int, int>& Procmap() { return procmap_; }
+    std::map<int, int>& Procmap() { return procmap_; }
 
     //! @name Access methods
 
     /*!
     \brief Get discretization of this interface
     */
-    virtual DRT::Discretization& Discret() const { return *idiscret_; }
+    DRT::Discretization& Discret() const { return *idiscret_; }
 
     /*!
     \brief Get problem dimension
@@ -633,25 +633,25 @@ namespace MORTAR
     /*!
     \brief Get interface contact parameter list
     */
-    virtual Teuchos::ParameterList& InterfaceParams() { return imortar_; };
+    Teuchos::ParameterList& InterfaceParams() { return imortar_; };
     const Teuchos::ParameterList& InterfaceParams() const { return imortar_; };
 
     /*!
     \brief binning strategy for efficient ghosting
     */
-    virtual void BinningStrategy(Teuchos::RCP<Epetra_Map> initial_elecolmap, double vel);
+    void BinningStrategy(Teuchos::RCP<Epetra_Map> initial_elecolmap, double vel);
 
     /*!
     \brief Get quadratic 2d/3d slave element flag
 
     Returns TRUE if at least one higher-order 2d/3d slave element in interface.
     */
-    virtual const bool& Quadslave() { return quadslave_; };
+    const bool& Quadslave() { return quadslave_; };
 
     /*!
     \brief Get flag indicating nurbs shape functions
     */
-    virtual bool IsNurbs() { return nurbs_; };
+    bool IsNurbs() { return nurbs_; };
 
     /*!
     \brief Get redundant storage flag
@@ -663,17 +663,17 @@ namespace MORTAR
     /*!
     \brief Get type of search algorithm
     */
-    virtual INPAR::MORTAR::SearchAlgorithm SearchAlg() const { return searchalgo_; };
+    INPAR::MORTAR::SearchAlgorithm SearchAlg() const { return searchalgo_; };
 
     /*!
     \brief Get search algorithm parameter
     */
-    virtual double SearchParam() const { return searchparam_; };
+    double SearchParam() const { return searchparam_; };
 
     /*!
     \brief bool whether auxiliary position is used when computing dops
     */
-    virtual bool SearchUseAuxPos() const { return searchuseauxpos_; };
+    bool SearchUseAuxPos() const { return searchuseauxpos_; };
 
     /*!
     \brief Get column map of all interface nodes (Filled()==true is prerequisite)
@@ -971,7 +971,7 @@ namespace MORTAR
 
     \return Filled()==false
     */
-    virtual void AddMortarNode(Teuchos::RCP<MORTAR::MortarNode> mrtrnode);
+    void AddMortarNode(Teuchos::RCP<MORTAR::MortarNode> mrtrnode);
 
     /*!
     \brief Add a MORTAR::MortarElement to the interface (Filled()==true is prerequisite)
@@ -981,7 +981,7 @@ namespace MORTAR
     \return Filled()==false
 
     */
-    virtual void AddMortarElement(Teuchos::RCP<MORTAR::MortarElement> mrtrele);
+    void AddMortarElement(Teuchos::RCP<MORTAR::MortarElement> mrtrele);
 
     /*!
     \brief delete all elements/nodes on one side of the interface
@@ -989,7 +989,7 @@ namespace MORTAR
     \param slaveside (in): bool to choose side of interface that will be deleted
 
     */
-    virtual void RemoveSingleInterfaceSide(bool slaveside);
+    void RemoveSingleInterfaceSide(bool slaveside);
 
     /*!
     \brief Finalize construction of mortar interface
@@ -1007,7 +1007,7 @@ namespace MORTAR
 
     \return Filled()==true
     */
-    virtual void FillComplete(int maxdof = 0, bool newghosting = true);
+    void FillComplete(int maxdof = 0, bool newghosting = true);
 
     /*!
     \brief Redistribute interface among all procs
@@ -1049,7 +1049,7 @@ namespace MORTAR
       to the actual meshtying zone for the whole simulation.
 
       */
-    virtual void RestrictSlaveSets();
+    void RestrictSlaveSets();
 
     /*!
     \brief Update interface Lagrange multiplier sets
@@ -1103,7 +1103,7 @@ namespace MORTAR
     \brief Create integration cells for interface
 
     */
-    virtual void EvaluateGeometry(std::vector<Teuchos::RCP<MORTAR::IntCell>>& intcells);
+    void EvaluateGeometry(std::vector<Teuchos::RCP<MORTAR::IntCell>>& intcells);
 
     /*! @name Evaluate mortar interface
      *
@@ -1196,31 +1196,31 @@ namespace MORTAR
     \brief Assemble lagrange multipliers into global z vector (penalty strategy)
 
     */
-    virtual void AssembleLM(Epetra_Vector& zglobal);
+    void AssembleLM(Epetra_Vector& zglobal);
 
     /*!
     \brief Assemble Mortar matrices D and M
 
     */
-    virtual void AssembleDM(LINALG::SparseMatrix& dglobal, LINALG::SparseMatrix& mglobal);
+    void AssembleDM(LINALG::SparseMatrix& dglobal, LINALG::SparseMatrix& mglobal);
 
     /*!
     \brief Assemble Mortar matrix D
 
     */
-    virtual void AssembleD(LINALG::SparseMatrix& dglobal);
+    void AssembleD(LINALG::SparseMatrix& dglobal);
 
     /*!
     \brief Assemble Mortar matrix M
 
     */
-    virtual void AssembleM(LINALG::SparseMatrix& mglobal);
+    void AssembleM(LINALG::SparseMatrix& mglobal);
 
     /*!
     \brief Assemble matrix of normals N
 
     */
-    virtual void AssembleNormals(LINALG::SparseMatrix& nglobal);
+    void AssembleNormals(LINALG::SparseMatrix& nglobal);
 
     /*!
     \brief Assemble transformation matrices T and T^(-1)
@@ -1234,13 +1234,13 @@ namespace MORTAR
     {d}, we have to apply the transformation matrix T and vice
     versa with the transformation matrix T^(-1).
     */
-    virtual void AssembleTrafo(
+    void AssembleTrafo(
         LINALG::SparseMatrix& trafo, LINALG::SparseMatrix& invtrafo, std::set<int>& donebefore);
 
     /*!
     \brief Detect actual meshtying zone (node by node)
     */
-    virtual void DetectTiedSlaveNodes(int& founduntied);
+    void DetectTiedSlaveNodes(int& founduntied);
 
     /*!
     \brief Ghost underlying volume elements
@@ -1257,23 +1257,24 @@ namespace MORTAR
     \brief Brute force search algorithm for potentially coupling
            slave / master pairs (element-based algorithm)
     */
-    virtual void EvaluateSearchBruteForce(const double& eps);
+    void EvaluateSearchBruteForce(const double& eps);
 
     /*!
     \brief find meles for one snode
     */
-    virtual void FindMEles(MortarNode& mrtrnode, std::vector<MortarElement*>& meles) const;
+    void FindMEles(MortarNode& mrtrnode, std::vector<MortarElement*>& meles) const;
 
     /*!
     \brief return integration time for current interface
     */
-    virtual double Inttime() { return inttime_interface_; };
+    double Inttime() { return inttime_interface_; };
 
     /*!
     \brief return bool if interface is redistributed
     */
-    virtual bool& IsRedistributed() { return redistributed_; };
-    //@}
+    bool& IsRedistributed() { return redistributed_; };
+
+    //! @}
 
     //! @name Visualization and Debugging methods
 
@@ -1450,7 +1451,7 @@ namespace MORTAR
     \brief find master nodes for one snode
 
     */
-    virtual void FindMNodes(
+    void FindMNodes(
         MortarNode& mrtrnode, std::vector<MortarElement*>& meles, std::vector<MortarNode*>& mnodes);
 
     /*!
@@ -1475,7 +1476,7 @@ namespace MORTAR
     \brief Split MortarElements into IntElements for 3D quadratic coupling
 
     */
-    virtual bool SplitIntElements(
+    bool SplitIntElements(
         MORTAR::MortarElement& ele, std::vector<Teuchos::RCP<MORTAR::IntElement>>& auxele);
 
     /*!
@@ -1502,19 +1503,19 @@ namespace MORTAR
 
    private:
     /*!
-    \brief check and init possible cross point modification
+    \brief check and initialize possible cross point modification
 
     */
     void InitializeCrossPoints();
 
     /*!
-    \brief check and init for lin lm interpolation for 2nd order FE
+    \brief check and initialize for linear Lagrange multiplier interpolation for 2nd order FE
 
     */
     void InitializeLagMultLin();
 
     /*!
-    \brief check and init for const lm interpolation for 2nd order FE
+    \brief check and initialize for constant Lagrange muliplier interpolation for 2nd order FE
 
     */
     void InitializeLagMultConst();
@@ -1537,8 +1538,10 @@ namespace MORTAR
     Teuchos::RCP<InterfaceDataContainer> interfaceData_;
 
    protected:
-    // don't want = operator and cctor
+    //! don't want = operator
     MortarInterface operator=(const MortarInterface& old) = delete;
+
+    //! don't want copy constructor
     MortarInterface(const MortarInterface& old) = delete;
 
     /** @name References to the interface data container content

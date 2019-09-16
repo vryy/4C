@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief
 
 Evaluate boundary conditions for thermo problems

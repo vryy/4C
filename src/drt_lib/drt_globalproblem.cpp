@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief global list of problems
 
@@ -1470,7 +1470,12 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     case prb_fluid_ale:
     case prb_freesurf:
     {
-      if (distype == "Nurbs")
+      if (distype == "HDG")
+      {
+        fluiddis = Teuchos::rcp(new DRT::DiscretizationHDG("fluid", reader.Comm()));
+        aledis = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm()));
+      }
+      else if (distype == "Nurbs")
       {
         fluiddis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("fluid", reader.Comm()));
         aledis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("ale", reader.Comm()));

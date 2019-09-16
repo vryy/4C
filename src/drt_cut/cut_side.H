@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
   *
  *  \brief class representing a geometrical side
  *
@@ -182,14 +182,15 @@ namespace GEO
        *  of \c rsd is the distance of the n-dimensional point \c xyz to the embedded
        *  side. */
       template <class T1, class T2>
-      bool LocalCoordinates(const T1& xyz, T2& rsd, bool allow_dist = false)
+      bool LocalCoordinates(
+          const T1& xyz, T2& rsd, bool allow_dist = false, double tol = POSITIONTOL)
       {
         if (static_cast<unsigned>(xyz.M()) < ProbDim())
           dserror("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
         if (static_cast<unsigned>(rsd.M()) < ProbDim())
           dserror("The dimension of rsd is wrong! (dim = %d)", Dim());
 
-        const bool check = LocalCoordinates(xyz.A(), rsd.A(), allow_dist);
+        const bool check = LocalCoordinates(xyz.A(), rsd.A(), allow_dist, tol);
 
         std::fill(rsd.A() + ProbDim(), rsd.A() + rsd.M(), 0.0);
 
@@ -226,14 +227,14 @@ namespace GEO
       /*! \brief Calculates the normal vector with respect to the element shape
        *  at local coordinates \c rs */
       template <class T1, class T2>
-      void Normal(const T1& rs, T2& normal)
+      void Normal(const T1& rs, T2& normal, bool unitnormal = true)
       {
         if (static_cast<unsigned>(normal.M()) != ProbDim())
           dserror("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
         if (static_cast<unsigned>(rs.M()) != Dim())
           dserror("The dimension of rs is wrong! (dim = %d)", Dim());
 
-        Normal(rs.A(), normal.A());
+        Normal(rs.A(), normal.A(), unitnormal);
       }
 
       /* \brief Calculates a Basis of two tangential vectors (non-orthogonal!) and
@@ -348,6 +349,9 @@ namespace GEO
       bool OnEdge(Point* point);
 
       bool OnEdge(Line* line);
+
+      /// All points of this side are in the other side (based on the Id())
+      bool AllPointsCommon(Side& side);
 
       bool HaveCommonNode(Side& side);
 
@@ -552,7 +556,8 @@ namespace GEO
        *  from its global coordinates (xyz), return TRUE if successful. The last coordinate
        *  of \c rsd is the distance of the n-dimensional point \c xyz to the embedded
        *  side. */
-      virtual bool LocalCoordinates(const double* xyz, double* rsd, bool allow_dist) = 0;
+      virtual bool LocalCoordinates(
+          const double* xyz, double* rsd, bool allow_dist, double tol) = 0;
 
       /*! \brief Does the point with given coordinates lie within this side? */
       virtual bool WithinSide(const double* xyz, double* rs, double& dist) = 0;
@@ -563,7 +568,7 @@ namespace GEO
 
       /*! \brief Calculates the normal vector with respect to the element shape at local coordinates
        * rs */
-      virtual void Normal(const double* rs, double* normal) = 0;
+      virtual void Normal(const double* rs, double* normal, bool unitnormal) = 0;
 
       /* \brief Calculates a Basis of two tangential vectors (non-orthogonal!) and
        * the normal vector with respect to the element shape at local coordinates rs,
@@ -786,8 +791,8 @@ namespace GEO
        *  global coordinates (xyz), return TRUE if successful
        *
        *  \remark The last coordinate of the variable rsd holds the distance to the side. */
-      bool LocalCoordinates(
-          const LINALG::Matrix<probdim, 1>& xyz, LINALG::Matrix<probdim, 1>& rsd, bool allow_dist);
+      bool LocalCoordinates(const LINALG::Matrix<probdim, 1>& xyz, LINALG::Matrix<probdim, 1>& rsd,
+          bool allow_dist = false, double tol = POSITIONTOL);
 
       /// get local coordinates (rst) with respect to the element shape for all the corner points
       virtual void LocalCornerCoordinates(double* rst_corners)
@@ -821,7 +826,8 @@ namespace GEO
       }
 
       /// Calculates the normal vector with respect to the element shape at local coordinates xsi
-      void Normal(const LINALG::Matrix<dim, 1>& xsi, LINALG::Matrix<probdim, 1>& normal)
+      void Normal(const LINALG::Matrix<dim, 1>& xsi, LINALG::Matrix<probdim, 1>& normal,
+          bool unitnormal = true)
       {
         // get derivatives at pos
         LINALG::Matrix<probdim, numNodesSide> side_xyze(true);
@@ -863,8 +869,11 @@ namespace GEO
             break;
         }
         // force unit length
-        double norm = normal.Norm2();
-        normal.Scale(1. / norm);
+        if (unitnormal)
+        {
+          double norm = normal.Norm2();
+          normal.Scale(1. / norm);
+        }
       }
 
       /** Calculates a Basis of two tangential vectors (non-orthogonal!) and
@@ -968,11 +977,12 @@ namespace GEO
       }
 
       /// derived
-      virtual bool LocalCoordinates(const double* xyz, double* rsd, bool allow_dist)
+      virtual bool LocalCoordinates(
+          const double* xyz, double* rsd, bool allow_dist = false, double tol = POSITIONTOL)
       {
         const LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
         LINALG::Matrix<probdim, 1> rsd_mat(rsd, true);        // create view
-        return LocalCoordinates(xyz_mat, rsd_mat, allow_dist);
+        return LocalCoordinates(xyz_mat, rsd_mat, allow_dist, tol);
       }
 
       /// derived
@@ -993,11 +1003,11 @@ namespace GEO
       }
 
       /// derived
-      virtual void Normal(const double* rs, double* normal)
+      virtual void Normal(const double* rs, double* normal, bool unitnormal = true)
       {
         const LINALG::Matrix<dim, 1> rs_mat(rs, true);        // create view
         LINALG::Matrix<probdim, 1> normal_mat(normal, true);  // create view
-        Normal(rs_mat, normal_mat);
+        Normal(rs_mat, normal_mat, unitnormal);
       }
 
       /// derived

@@ -1,5 +1,5 @@
 /*--------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Fluid field adapter for fsi with internal mesh tying or mesh sliding
 

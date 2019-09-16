@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Factory to create a merit function evaluation object.
 

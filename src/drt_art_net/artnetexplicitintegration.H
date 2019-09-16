@@ -1,5 +1,5 @@
 
-/*!----------------------------------------------------------------------
+/*! \file
 \brief Associated with control routine for artery solvers,
 
      including instationary solvers based on

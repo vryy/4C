@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief neighbor pair handler for smoothed particle hydrodynamics (SPH) interactions
 
 \level 3
@@ -61,13 +61,13 @@ namespace PARTICLEINTERACTION
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  class SPHNeighborPairs
+  class SPHNeighborPairs final
   {
    public:
     //! constructor
     explicit SPHNeighborPairs();
 
-    //! virtual destructor
+    //! destructor
     ~SPHNeighborPairs(){};
 
     //! init neighbor pair handler

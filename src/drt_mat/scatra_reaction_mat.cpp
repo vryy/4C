@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
  \brief This file contains the base material for reactive scalars. This includes all
        calculations of the reactions terms and all its derivatives.
 

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Class to triangulate facets
 
@@ -1126,4 +1126,30 @@ void GEO::CUT::TriangulateFacet::EarClippingWithHoles(Side* parentside)
   }
   std::vector<int> ptConcavity;
   this->EarClipping(ptConcavity, true, false);
+}
+
+bool GEO::CUT::TriangulateFacet::Hasequal_ptlist_inlist(
+    std::vector<Point*> ptlist, std::vector<std::vector<Point*>> inlists)
+{
+  if (inlists.size() != 1)
+    return false;
+  else if (ptlist.size() != (inlists[0]).size())
+    return false;
+  else
+  {
+    for (auto ptlist_it = ptlist.begin(); ptlist_it != ptlist.end(); ++ptlist_it)
+    {
+      bool found = false;
+      for (auto inlist_it = (inlists[0]).begin(); inlist_it != (inlists[0]).end(); ++inlist_it)
+      {
+        if ((*ptlist_it)->Id() == (*inlist_it)->Id())
+        {
+          found = true;
+          break;
+        }
+      }
+      if (!found) return false;
+    }
+    return true;
+  }
 }

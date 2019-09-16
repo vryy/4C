@@ -1,4 +1,5 @@
-/*!-----------------------------------------------------------------------------------------------*
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief class that provides the common functionality for a mesh cut based on a level set field or on
 surface meshes
@@ -621,7 +622,7 @@ void GEO::CutWizard::Run_Cut(
 
       const double t_diff = Teuchos::Time::wallTime() - t_start;
       if (myrank_ == 0 and screenoutput_)
-        IO::cout << "\t\t\t\t... Success (" << t_diff << " secs)" << IO::endl;
+        IO::cout << "\t\t\t... Success (" << t_diff << " secs)" << IO::endl;
     }
     //----------------------------------------------------------
     // Cut Part I: Collision Detection (3/6 Cut_CollisionDetection)
@@ -861,9 +862,14 @@ GEO::CUT::SideHandle* GEO::CutWizard::GetCutSide(int sid)
   return meshintersection->GetCutSide(sid);
 }
 
+GEO::CUT::ElementHandle* GEO::CutWizard::GetElement(const int eleid) const
+{
+  return intersection_->GetElement(eleid);
+}
+
 GEO::CUT::ElementHandle* GEO::CutWizard::GetElement(const DRT::Element* ele) const
 {
-  return intersection_->GetElement(ele->Id());
+  return GetElement(ele->Id());
 }
 
 GEO::CUT::Node* GEO::CutWizard::GetNode(int nid) { return intersection_->GetNode(nid); }
@@ -874,6 +880,7 @@ GEO::CUT::SideHandle* GEO::CutWizard::GetMeshCuttingSide(int sid, int mi)
 }
 
 bool GEO::CutWizard::HasLSCuttingSide(int sid) { return intersection_->HasLSCuttingSide(sid); }
+
 
 
 /// run after the Run_Cut routine has been called

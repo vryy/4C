@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Special version of block matrix that includes the AMGnxn preconditioner
 

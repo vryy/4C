@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Base class for fiber materials which remodel. Has a pointer to the single fiber families
 
 \level 2
@@ -502,55 +502,55 @@ namespace MAT
 
       /// First derivative w.r.t. to the right Cauchy-Green tensor (automatic differentiation)
       template <class FUNC, typename T, typename ForceAnalytical>
-      void DerivdC(LINALG::TMatrix<T, 3, 3> const& CM,  ///< Right Cauchy-Green tensor
-          LINALG::TMatrix<T, 3, 3> const&
+      void DerivdC(LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
+          LINALG::Matrix<3, 3, T> const&
               iFinM,  ///< Inverse inelastic deformation gradient (used in G&R)
-          LINALG::TMatrix<T, 3, 3> const&
+          LINALG::Matrix<3, 3, T> const&
               AM,                        ///< Structural tensor of associated anisotropic direction
           FUNC const& func,              ///< Function which is differentiated
           ForceAnalytical const eleGID,  ///< Element Id
-          LINALG::TMatrix<T, 3, 3>& dfuncdC) const;  ///< First derivative
+          LINALG::Matrix<3, 3, T>& dfuncdC) const;  ///< First derivative
 
       /// First derivative w.r.t. to the right Cauchy-Green tensor (analytical differentiation)
       template <class FUNC, typename T>
-      void DerivdC(LINALG::TMatrix<T, 3, 3> const& CM,  ///< Right Cauchy-Green tensor
-          LINALG::TMatrix<T, 3, 3> const&
+      void DerivdC(LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
+          LINALG::Matrix<3, 3, T> const&
               iFinM,  ///< Inverse inelastic deformation gradient (used in G&R)
-          LINALG::TMatrix<T, 3, 3> const&
+          LINALG::Matrix<3, 3, T> const&
               AM,            ///< Structural tensor of associated anisotropic direction
           FUNC const& func,  ///< Function which is differentiated
           int const eleGID,  ///< Element Id
-          LINALG::TMatrix<T, 3, 3>& dfuncdC) const;  ///< First derivative
+          LINALG::Matrix<3, 3, T>& dfuncdC) const;  ///< First derivative
 
       /// Second derivative w.r.t. to the right Cauchy-Green tensor (automatic differentiation)
       template <class FUNC, typename T, typename ForceAnalytical>
-      void DerivdCdC(LINALG::TMatrix<T, 3, 3> const& CM,  ///< Right Cauchy-Green tensor
-          LINALG::TMatrix<T, 3, 3> const&
+      void DerivdCdC(LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
+          LINALG::Matrix<3, 3, T> const&
               iFinM,  ///< Inverse inelastic deformation gradient (used in G&R)
-          LINALG::TMatrix<T, 3, 3> const&
+          LINALG::Matrix<3, 3, T> const&
               AM,                        ///< Structural tensor of associated anisotropic direction
           FUNC const& func,              ///< Function which is differentiated
           ForceAnalytical const eleGID,  ///< Element Id
-          LINALG::TMatrix<T, 6, 6>& dfuncdCdC) const;  ///< Second derivative
+          LINALG::Matrix<6, 6, T>& dfuncdCdC) const;  ///< Second derivative
 
       /// Second derivative w.r.t. to the right Cauchy-Green tensor (analytical differentiation)
       template <class FUNC, typename T>
-      void DerivdCdC(LINALG::TMatrix<T, 3, 3> const& CM,  ///< Right Cauchy-Green tensor
-          LINALG::TMatrix<T, 3, 3> const&
+      void DerivdCdC(LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
+          LINALG::Matrix<3, 3, T> const&
               iFinM,  ///< Inverse inelastic deformation gradient (used in G&R)
-          LINALG::TMatrix<T, 3, 3> const&
+          LINALG::Matrix<3, 3, T> const&
               AM,            ///< Structural tensor of associated anisotropic direction
           FUNC const& func,  ///< Function which is differentiated
           int const eleGID,  ///< Element Id
-          LINALG::TMatrix<T, 6, 6>& dfuncdCdC) const;  ///< Second derivative
+          LINALG::Matrix<6, 6, T>& dfuncdCdC) const;  ///< Second derivative
 
       /// Evaluate local Cauchy stress in current fiber direction (analytical differentiation)
       template <typename T>
       void EvaluateLocalCauchyStress(
-          LINALG::TMatrix<T, 3, 3> const& CM,  ///< Right Cauchy-Green tensor
-          LINALG::TMatrix<T, 3, 3> const&
+          LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
+          LINALG::Matrix<3, 3, T> const&
               iFinM,  ///< Inverse inelastic deformation gradient (used in G&R)
-          LINALG::TMatrix<T, 3, 3> const&
+          LINALG::Matrix<3, 3, T> const&
               AM,  ///< Structural tensor of associated anisotropic direction
           Teuchos::RCP<MAT::ELASTIC::Summand> const fiber,  ///< Type of remodel fiber
           int const eleGID,                                 ///< Element Id
@@ -559,16 +559,16 @@ namespace MAT
       /// Evaluate derivative of local Cauchy stress in current fiber direction w.r.t. the elastic
       /// right Cauchy Green tensor (analytical differentiation)
       template <typename T>
-      void EvaluatedsigdCe(LINALG::TMatrix<T, 3, 3> const& CM,  ///< Right Cauchy-Green tensor
-          LINALG::TMatrix<T, 3, 3> const&
+      void EvaluatedsigdCe(LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
+          LINALG::Matrix<3, 3, T> const&
               iFgM,  ///< Inverse growth deformation gradient (used in G&R)
-          LINALG::TMatrix<T, 3, 3> const&
+          LINALG::Matrix<3, 3, T> const&
               iFrM,  ///< Inverse remodeling deformation gradient (used in G&R)
-          LINALG::TMatrix<T, 3, 3> const&
+          LINALG::Matrix<3, 3, T> const&
               AM,  ///< Structural tensor of associated anisotropic direction
           Teuchos::RCP<MAT::ELASTIC::Summand> const fiber,  ///< Type of remodel fiber
           int const eleGID,                                 ///< Element Id
-          LINALG::TMatrix<T, 3, 3>& dsigdCeM)
+          LINALG::Matrix<3, 3, T>& dsigdCeM)
           const;  ///< Derivative of Cauchy stress w.r.t. elastic right Cauchy-Green tensor
 
       /// Evaluate derivative of the derivative of the local Cauchy stress in current fiber
@@ -601,27 +601,27 @@ namespace MAT
       /// Derivative of local Cauchy stress w.r.t. to the right Cauchy-Green tensor (automatic
       /// differentiation)
       template <typename T, typename ForceAnalytical>
-      void EvaluatedsigdC(LINALG::TMatrix<T, 3, 3> const& CM,  ///< Right Cauchy-Green tensor
-          LINALG::TMatrix<T, 3, 3> const&
+      void EvaluatedsigdC(LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
+          LINALG::Matrix<3, 3, T> const&
               iFinM,  ///< Inverse inelastic deformation gradient (used in G&R)
-          LINALG::TMatrix<T, 3, 3> const&
+          LINALG::Matrix<3, 3, T> const&
               AM,  ///< Structural tensor of associated anisotropic direction
           Teuchos::RCP<MAT::ELASTIC::Summand> const fiber,  ///< Type of remodel fiber
           ForceAnalytical const eleGID,                     ///< Element Id
-          LINALG::TMatrix<T, 3, 3>& dsigdC)
+          LINALG::Matrix<3, 3, T>& dsigdC)
           const;  ///< First derivative of local Cauchy stress w.r.t. the right Cauchy-Green tensor
 
       /// Derivative of local Cauchy stress w.r.t. to the right Cauchy-Green tensor (analytical
       /// differentiation)
       template <typename T>
-      void EvaluatedsigdC(LINALG::TMatrix<T, 3, 3> const& CM,  ///< Right Cauchy-Green tensor
-          LINALG::TMatrix<T, 3, 3> const&
+      void EvaluatedsigdC(LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
+          LINALG::Matrix<3, 3, T> const&
               iFinM,  ///< Inverse inelastic deformation gradient (used in G&R)
-          LINALG::TMatrix<T, 3, 3> const&
+          LINALG::Matrix<3, 3, T> const&
               AM,  ///< Structural tensor of associated anisotropic direction
           Teuchos::RCP<MAT::ELASTIC::Summand> const fiber,  ///< Type of remodel fiber
           int const eleGID,                                 ///< Element Id
-          LINALG::TMatrix<T, 3, 3>& dsigdC)
+          LINALG::Matrix<3, 3, T>& dsigdC)
           const;  ///< First derivative of local Cauchy stress w.r.t. the right Cauchy-Green tensor
 
       /// Evaluate derivative of local Cauchy stress/ derivative of the local Cauchy stress w.r.t.

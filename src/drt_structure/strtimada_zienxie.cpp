@@ -1,5 +1,5 @@
 /*======================================================================*/
-/*!
+/*! \file
 \brief ZienkiewiczXie time step indicator for time adaptivity
 
 \level 1

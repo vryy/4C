@@ -1,4 +1,5 @@
-/*!
+/*----------------------------------------------------------------------*/
+/*! \file
 
   \brief Nurbs specific helper methods for ensight filter basis class
   Methods are declared in post_drt_ensight_writer header file.

@@ -1,4 +1,5 @@
-/*!-----------------------------------------------------------------------------------------------*
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief provides the specific functionality for cutting a mesh with other meshes
 
@@ -271,16 +272,19 @@ void GEO::CUT::MeshIntersection::Cut_SelfCut(bool include_inner, bool screenoutp
 {
   TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 2/6 --- Cut_SelfCut");
 
-  if (myrank_ == 0 and screenoutput) IO::cout << "\t * 2/6 Cut_SelfCut ...";
-
-
   Teuchos::RCP<PointPool> point_pool = CutMesh().Points();
+  if (CutMesh().GetOptions().Do_SelfCut())
+  {
+    if (myrank_ == 0 and screenoutput) IO::cout << "\t * 2/6 Cut_SelfCut ...      ";
 
-  point_pool->SetMergeStrategy(Pointpool_MergeStrategy::SelfCutLoad);
+    point_pool->SetMergeStrategy(Pointpool_MergeStrategy::SelfCutLoad);
 
-  SelfCut selfcut(CutMesh());
+    SelfCut selfcut(*cut_mesh_[0], myrank_);
 
-  selfcut.PerformSelfCut();
+    selfcut.PerformSelfCut();
+  }
+  else if (myrank_ == 0 and screenoutput)
+    IO::cout << "\t *2/6 (Skip Cut_SelfCut) ...";
 
   point_pool->SetMergeStrategy(Pointpool_MergeStrategy::NormalCutLoad);
 }

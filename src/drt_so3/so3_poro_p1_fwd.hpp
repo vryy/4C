@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
  \brief forward declarations (explicit instantiation) of the templated p1 (mixed )poro-elements
 

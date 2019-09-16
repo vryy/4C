@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Fluid field adapter
 
@@ -434,7 +434,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Map> PressureRowMap() = 0;
 
     /// the mesh map contains all velocity dofs that are covered by an ALE node
-    virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm) = 0;
+    virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm, const int nds_master = 0) = 0;
 
     /// Use ResidualScaling() to convert the implemented fluid residual to an actual force with unit
     /// Newton [N]

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief material that stores parameters of ion species in electrolyte solution. Former file of Georg
 Bauer
 

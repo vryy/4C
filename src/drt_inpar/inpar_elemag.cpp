@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Input parameters for electromagnetic simulations
 
 \level 3

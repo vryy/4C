@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief partitioned coupling algorithm for scatra-thermo interaction
 

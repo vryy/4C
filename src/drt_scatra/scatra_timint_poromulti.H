@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief time integration schemes for scalar transport within multiphase porous medium
 
    \level 3

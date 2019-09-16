@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief kernel handler for smoothed particle hydrodynamics (SPH) interactions
 
 \level 3
@@ -85,60 +85,60 @@ namespace PARTICLEINTERACTION
     INPAR::PARTICLE::KernelSpaceDimension kernelspacedim_;
   };
 
-  class SPHKernelCubicSpline : public SPHKernelBase
+  class SPHKernelCubicSpline final : public SPHKernelBase
   {
    public:
     //! constructor
     explicit SPHKernelCubicSpline(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~SPHKernelCubicSpline(){};
+    //! destructor
+    ~SPHKernelCubicSpline() override{};
 
     //! get smoothing length from kernel support radius
-    virtual double SmoothingLength(const double& support) const override;
+    double SmoothingLength(const double& support) const override;
 
     //! get normalization constant from inverse smoothing length
-    virtual double NormalizationConstant(const double& inv_h) const override;
+    double NormalizationConstant(const double& inv_h) const override;
 
     //! evaluate kernel (self-interaction)
-    virtual double W0(const double& support) const override;
+    double W0(const double& support) const override;
 
     //! evaluate kernel
-    virtual double W(const double& rij, const double& support) const override;
+    double W(const double& rij, const double& support) const override;
 
     //! evaluate first derivative of kernel
-    virtual double dWdrij(const double& rij, const double& support) const override;
+    double dWdrij(const double& rij, const double& support) const override;
 
     //! evaluate second derivative of kernel
-    virtual double d2Wdrij2(const double& rij, const double& support) const override;
+    double d2Wdrij2(const double& rij, const double& support) const override;
   };
 
-  class SPHKernelQuinticSpline : public SPHKernelBase
+  class SPHKernelQuinticSpline final : public SPHKernelBase
   {
    public:
     //! constructor
     explicit SPHKernelQuinticSpline(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~SPHKernelQuinticSpline(){};
+    //! destructor
+    ~SPHKernelQuinticSpline() override{};
 
     //! get smoothing length from kernel support radius
-    virtual double SmoothingLength(const double& support) const override;
+    double SmoothingLength(const double& support) const override;
 
     //! get normalization constant from inverse smoothing length
-    virtual double NormalizationConstant(const double& inv_h) const override;
+    double NormalizationConstant(const double& inv_h) const override;
 
     //! evaluate kernel (self-interaction)
-    virtual double W0(const double& support) const override;
+    double W0(const double& support) const override;
 
     //! evaluate kernel
-    virtual double W(const double& rij, const double& support) const override;
+    double W(const double& rij, const double& support) const override;
 
     //! evaluate first derivative of kernel
-    virtual double dWdrij(const double& rij, const double& support) const override;
+    double dWdrij(const double& rij, const double& support) const override;
 
     //! evaluate second derivative of kernel
-    virtual double d2Wdrij2(const double& rij, const double& support) const override;
+    double d2Wdrij2(const double& rij, const double& support) const override;
   };
 
 }  // namespace PARTICLEINTERACTION

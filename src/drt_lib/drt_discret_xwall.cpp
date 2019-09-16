@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief a class to manage an enhanced discretization including varying number
 of dofs per node on a fluid discretization for xwall
 

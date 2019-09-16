@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Fluid field adapter for fsi. Can only be used in conjunction with FLD::FluidImplicitTimeInt
 
@@ -110,7 +110,7 @@ namespace ADAPTER
 
     virtual void ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> gridvel);
 
-    virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm);
+    virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm, const int nds_master = 0);
 
     //! @name Conversion between displacement and velocity at interface
 
@@ -218,7 +218,7 @@ namespace ADAPTER
 
    protected:
     /// create conditioned dof-map extractor for the fluid
-    virtual void SetupInterface();
+    virtual void SetupInterface(const int nds_master = 0);
 
     /*! \brief Build inner velocity map
      *

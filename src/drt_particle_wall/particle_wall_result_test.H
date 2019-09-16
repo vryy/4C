@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief particle wall result test for particle simulations
 
 \level 3
@@ -39,27 +39,26 @@ namespace DRT
  *---------------------------------------------------------------------------*/
 namespace PARTICLEWALL
 {
-  class WallResultTest : public DRT::ResultTest
+  class WallResultTest final : public DRT::ResultTest
   {
    public:
     //! constructor
     explicit WallResultTest();
 
-    //! virtual destructor
-    virtual ~WallResultTest(){};
+    //! destructor
+    ~WallResultTest() override{};
 
     //! init wall result test
-    virtual void Init();
+    void Init();
 
     //! setup wall result test
-    virtual void Setup(
-        const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface);
+    void Setup(const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface);
 
     //! test node value
-    virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
     //! test special quantity
-    virtual void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
    private:
     //! interface to particle wall handler

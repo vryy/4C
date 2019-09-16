@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief Associated with control routine for con.-diff.(in)stat. solvers,
 
      including instationary solvers based on

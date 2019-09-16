@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief strategy for cloning thermo discretization from scatra discretization
 

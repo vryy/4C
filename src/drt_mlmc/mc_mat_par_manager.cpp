@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief manages material parameters during UQ at some point this should
        be merged with the mat par manager in stat inv ana
 

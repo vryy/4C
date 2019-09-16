@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Interface class for the eXtended contact evaluation
 
 \level 3
@@ -81,7 +81,7 @@ namespace XCONTACT
     //! @{
 
     //! Initialize all XContact related quantities
-    void Initialize();
+    void Initialize() final;
 
     //! @}
 
@@ -142,7 +142,7 @@ namespace XCONTACT
         const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) const;
 
     //! [derived]
-    virtual void UpdateMasterSlaveSets();
+    void UpdateMasterSlaveSets() final;
 
     //! @}
 

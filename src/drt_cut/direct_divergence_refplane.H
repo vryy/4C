@@ -1,4 +1,5 @@
-/*!-----------------------------------------------------------------------------------------------*
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief Construct reference plane for direct divergence method when used in global
 coordinate system

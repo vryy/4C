@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief the input line should read
   MAT 1 ELAST_Coup3Pow C 1 D 1
 

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief input parameters for particle problems
 
 \level 3
@@ -152,6 +152,8 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       tuple<int>(INPAR::PARTICLE::Kernel1D, INPAR::PARTICLE::Kernel2D, INPAR::PARTICLE::Kernel3D),
       &particledynsph);
 
+  DoubleParameter("INITIALPARTICLESPACING", 0.0, "initial spacing of particles", &particledynsph);
+
   // type of smoothed particle hydrodynamics equation of state
   setStringToIntegralParameter<int>("EQUATIONOFSTATE", "GenTait",
       "type of smoothed particle hydrodynamics equation of state",
@@ -184,7 +186,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       &particledynsph);
 
 
-  //! type of boundary particle formulation
+  // type of boundary particle formulation
   setStringToIntegralParameter<int>("BOUNDARYPARTICLEFORMULATION", "NoBoundaryFormulation",
       "type of boundary particle formulation",
       tuple<std::string>("NoBoundaryFormulation", "AdamiBoundaryFormulation"),
@@ -197,11 +199,6 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       tuple<std::string>("NoSlipBoundaryParticle", "FreeSlipBoundaryParticle"),
       tuple<int>(
           INPAR::PARTICLE::NoSlipBoundaryParticle, INPAR::PARTICLE::FreeSlipBoundaryParticle),
-      &particledynsph);
-
-  DoubleParameter("CONSISTENTPROBLEMVOLUME", 0.0,
-      "prescribe problem volume filled by (non-boundary) particles to consistently initialize "
-      "particle masses",
       &particledynsph);
 
   // type of transport velocity formulation
@@ -218,7 +215,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "formulation",
       &particledynsph);
 
-  //! type of temperature evaluation scheme
+  // type of temperature evaluation scheme
   setStringToIntegralParameter<int>("TEMPERATUREEVALUATION", "NoTemperatureEvaluation",
       "type of temperature evaluation scheme",
       tuple<std::string>("NoTemperatureEvaluation", "TemperatureIntegration"),
@@ -227,7 +224,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
 
   BoolParameter("TEMPERATUREGRADIENT", "no", "evaluate temperature gradient", &particledynsph);
 
-  //! type of heat source
+  // type of heat source
   setStringToIntegralParameter<int>("HEATSOURCETYPE", "NoHeatSource", "type of heat source",
       tuple<std::string>("NoHeatSource", "VolumeHeatSource", "SurfaceHeatSource"),
       tuple<int>(INPAR::PARTICLE::NoHeatSource, INPAR::PARTICLE::VolumeHeatSource,

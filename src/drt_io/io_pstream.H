@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief A substitute for STL cout for parallel and complex output schemes.
 

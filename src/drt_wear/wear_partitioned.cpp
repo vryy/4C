@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief  Basis of all structure approaches with ale
         (Lagrangian step followed by Shape Evolution step )
@@ -958,7 +958,7 @@ void WEAR::Partitioned::RedistributeMatInterfaces()
       winterface->Discret().ExportColumnElements(*interfaces_[m]->Discret().ElementColMap());
 
       winterface->FillComplete();
-      winterface->PrintParallelDistribution(m);
+      winterface->PrintParallelDistribution();
 
       if (Comm().MyPID() == 0)
       {

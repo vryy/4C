@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief This file contains the routines required to calculate the isochoric contribution
 of the aaagasser material and the corresponding volumetric contribution.
 

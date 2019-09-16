@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Main abstract class for contact solution strategies
 
 \level 2
@@ -343,40 +343,24 @@ bool CONTACT::CoAbstractStrategy::RedistributeContact(Teuchos::RCP<const Epetra_
   SetState(MORTAR::state_new_displacement, *dis);
   SetState(MORTAR::state_old_displacement, *dis);
 
-  // global flag for redistribution
-  bool anyinterfacedone = false;
-
   // parallel redistribution of all interfaces
   for (int i = 0; i < (int)Interfaces().size(); ++i)
   {
     // redistribute optimally among procs
-    bool done = Interfaces()[i]->Redistribute(i + 1);
+    Interfaces()[i]->Redistribute();
 
-    /* if redistribution has really been performed
-     * (the previous method might have found that there
-     * are no "close" slave elements and thus redistribution
-     * might not be necessary ->indicated by boolean) */
-    if (done)
-    {
-      // call fill complete again
-      Interfaces()[i]->FillComplete(maxdof_);
+    // call fill complete again
+    Interfaces()[i]->FillComplete(maxdof_);
 
-      // print new parallel distribution
-      Interfaces()[i]->PrintParallelDistribution(i + 1);
+    // print new parallel distribution
+    Interfaces()[i]->PrintParallelDistribution();
 
-      // re-create binary search tree
-      Interfaces()[i]->CreateSearchTree();
-
-      // set global flag to TRUE
-      anyinterfacedone = true;
-    }
+    // re-create binary search tree
+    Interfaces()[i]->CreateSearchTree();
   }
 
   // re-setup strategy with redistributed=TRUE, init=FALSE
-  if (anyinterfacedone)
-  {
-    Setup(true, false);
-  }
+  Setup(true, false);
 
   // time measurement
   Comm().Barrier();

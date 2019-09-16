@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Search tree for self-contact problems
 
 \level 2

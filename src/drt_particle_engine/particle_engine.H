@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief particle engine to control particle simulations
 
 \level 3
@@ -53,14 +53,14 @@ namespace IO
  *---------------------------------------------------------------------------*/
 namespace PARTICLEENGINE
 {
-  class ParticleEngine : public ParticleEngineInterface
+  class ParticleEngine final : public ParticleEngineInterface
   {
    public:
     //! constructor
     explicit ParticleEngine(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
     //! destructor
-    ~ParticleEngine();
+    ~ParticleEngine() override;
 
     //! init particle engine
     void Init();

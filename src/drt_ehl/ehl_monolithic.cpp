@@ -1,5 +1,5 @@
 /*--------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief basis of all monolithic EHL algorithms that perform a coupling between
        the structure field equation and lubrication field equations
@@ -2094,7 +2094,8 @@ void EHL::Monolithic::LinCouetteForcePres(
     if (mat.is_null()) dserror("null pointer");
     Teuchos::RCP<MAT::LubricationMat> lmat =
         Teuchos::rcp_dynamic_cast<MAT::LubricationMat>(mat, true);
-    const double dvisc_dp = lmat->ComputeViscosityDeriv(p);
+    const double visc = lmat->ComputeViscosity(p);
+    const double dvisc_dp = lmat->ComputeViscosityDeriv(p, visc);
 
     for (int d = 0; d < ndim; ++d)
       dVisc_dp->Assemble(dvisc_dp, lub_dis.Dof(1, lnode, d), lub_dis.Dof(0, lnode, 0));
@@ -2126,11 +2127,11 @@ void EHL::Monolithic::LinCouetteForcePres(
     Teuchos::RCP<const Epetra_Map> r = mortaradapter_->MasterDofMap();
     Teuchos::RCP<const Epetra_Map> d = lubrication_->LubricationField()->DofRowMap(0);
 
-    ds_dp->UnComplete();
-    ds_dp->Add(*LINALG::MLMultiply(
+    dm_dp->UnComplete();
+    dm_dp->Add(*LINALG::MLMultiply(
                    *mortaradapter_->GetMMatrix(), true, *dVisc_str_dp, false, true, false, true),
         false, -1., 1.);
-    ds_dp->Complete(*d, *r);
+    dm_dp->Complete(*d, *r);
   }
 }
 

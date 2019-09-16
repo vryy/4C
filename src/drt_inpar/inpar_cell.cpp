@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief input parameters and conditions for cell migration
 
 \maintainer Jonas Eichinger

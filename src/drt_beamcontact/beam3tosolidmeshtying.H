@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief meshtying element for meshtying between a 3D beam end a 2D surface (belonging to a 3D solid)
 element
@@ -210,12 +211,12 @@ namespace CONTACT
     std::vector<DRT::Element*> element2_;
 
     //! current nodal positions (and tangents) of the two elements
-    LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues, 1> ele1pos_;
-    std::vector<LINALG::TMatrix<TYPEBTS, 3 * numnodessol, 1>> ele2pos_;
+    LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPEBTS> ele1pos_;
+    std::vector<LINALG::Matrix<3 * numnodessol, 1, TYPEBTS>> ele2pos_;
 
     //! reference nodal positions (and tangents) of the two elements
-    LINALG::TMatrix<TYPEBTS, 3 * numnodes * numnodalvalues, 1> ele1posref_;
-    std::vector<LINALG::TMatrix<TYPEBTS, 3 * numnodessol, 1>> ele2posref_;
+    LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPEBTS> ele1posref_;
+    std::vector<LINALG::Matrix<3 * numnodessol, 1, TYPEBTS>> ele2posref_;
 
     //! flag indicating contact (active/inactive)
     bool contactflag_;

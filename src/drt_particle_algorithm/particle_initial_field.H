@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief initial field handler for particle simulations
 
 \level 3
@@ -40,18 +40,18 @@ namespace PARTICLEALGORITHM
     //! constructor
     explicit InitialFieldHandler(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~InitialFieldHandler(){};
+    //! destructor
+    ~InitialFieldHandler(){};
 
     //! init initial field handler
-    virtual void Init();
+    void Init();
 
     //! setup initial field handler
-    virtual void Setup(
+    void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
 
     //! set initial fields
-    virtual void SetInitialFields();
+    void SetInitialFields();
 
    protected:
     //! particle simulation parameter list

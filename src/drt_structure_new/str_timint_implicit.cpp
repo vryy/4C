@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Implicit structural time integration strategy.
 
@@ -168,8 +168,10 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::Solve()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Implicit::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
+void STR::TIMINT::Implicit::UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc)
 {
+  if (disiterinc == Teuchos::null) return;
+
   CheckInitSetup();
   ThrowIfStateNotInSyncWithNOXGroup();
   NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
@@ -187,6 +189,20 @@ void STR::TIMINT::Implicit::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterin
 
   // updated the state vector in the nox group
   grp_ptr->computeX(*grp_ptr, *nox_disiterinc_ptr, 1.0);
+
+  // Reset the state variables
+  const NOX::Epetra::Vector& x_eptra = dynamic_cast<const NOX::Epetra::Vector&>(grp_ptr->getX());
+  // set the consistent state in the models (e.g. structure and contact models)
+  ImplInt().ResetModelStates(x_eptra.getEpetraVector());
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Implicit::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
+{
+  UpdateStateIncrementally(disiterinc);
 
   Evaluate();
 

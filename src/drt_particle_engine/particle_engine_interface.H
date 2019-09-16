@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief pure virtual interface to provide access to particle engine class
 
 \level 3

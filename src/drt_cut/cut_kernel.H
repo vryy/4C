@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief The cut kernel computes basic geometric operation, implemented are
     - Intersection of Surface and line or line and line
@@ -2894,7 +2894,7 @@ namespace GEO
 
         ClnWrapper clndistance_;
 
-        // reference to the double TMatrix
+        // reference to the double Matrix
         LINALG::Matrix<probDim, 1>& xsi_;
 
         LINALG::Matrix<probDim, 1, ClnWrapper> clnxsi_;
@@ -3439,9 +3439,6 @@ namespace GEO
         bool GetLocalToleranceSide(const floatType& global_tolerance,
             LINALG::Matrix<dimSide, 1, floatType>& scaled_tolerance)
         {
-          LINALG::Matrix<probDim, 1, floatType> real_tolerance;
-          real_tolerance =
-              global_tolerance;  // set all values of the vector to be equal to the global tolerance
           // extract part of the side from the Jacobian
           LINALG::Matrix<probDim, dimSide, floatType> A;
           if (dimEdge + dimSide == probDim)
@@ -3459,18 +3456,10 @@ namespace GEO
             }
           }
 
-          LINALG::Matrix<dimSide, dimSide, floatType> TN_inv;
-          LINALG::Matrix<dimSide, probDim, floatType> aux;
-          TN_inv.MultiplyTN(A, A);
-
-
-          floatType det = TN_inv.Determinant();
-          // we will not be able to find inverse
-          if (KERNEL::closeToZero(det)) return false;
-
-          TN_inv.Invert();
-          aux.MultiplyNT(TN_inv, A);
-          scaled_tolerance.Multiply(aux, real_tolerance);
+          for (unsigned idim = 0; idim < dimSide; ++idim)
+            scaled_tolerance(idim) = global_tolerance * 1.0 /
+                                     std::sqrt(A(0, idim) * A(0, idim) + A(1, idim) * A(1, idim) +
+                                               A(2, idim) * A(2, idim));
           return true;
         }
 
@@ -4471,8 +4460,8 @@ namespace GEO
           // Diagonal one, corresponds to the middle one for both triangles, tolerance there should
           // be 1e-14
           LINALG::Matrix<3, 1> real_tolerance;
-          real_tolerance(0) = 0.0;
-          real_tolerance(1) = scaled_tolerance(1);
+          real_tolerance(0) = scaled_tolerance(0);
+          real_tolerance(1) = 0.0;
           real_tolerance(2) = 0.0;
           if (WithinLimitsSplittedQuad<sideType>(xsi_, real_tolerance))
             sideLocation_triangle_split_ = PointOnSurfaceLoc(true, true);

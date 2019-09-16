@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Factory to create the desired contact strategy
 
 \maintainer Matthias Mayr
@@ -1762,7 +1762,7 @@ void CONTACT::STRATEGY::Factory::Print(
   }
 
   // print initial parallel redistribution
-  for (unsigned i = 0; i < interfaces.size(); ++i) interfaces[i]->PrintParallelDistribution(i + 1);
+  for (unsigned i = 0; i < interfaces.size(); ++i) interfaces[i]->PrintParallelDistribution();
 
   // show default parameters
   if (Comm().MyPID() == 0)

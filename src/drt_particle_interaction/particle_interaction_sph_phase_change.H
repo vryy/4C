@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief phase change handler for smoothed particle hydrodynamics (SPH) interactions
 
 \level 3
@@ -97,20 +97,21 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit SPHPhaseChangeTwoWayScalar(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~SPHPhaseChangeTwoWayScalar(){};
+    //! destructor
+    ~SPHPhaseChangeTwoWayScalar() override{};
 
     //! init phase change handler
-    virtual void Init();
+    void Init() override;
 
     //! setup phase change handler
-    virtual void Setup(
+    void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle);
+        const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle)
+        override;
 
     //! evaluate phase change
-    virtual void EvaluatePhaseChange() const override;
+    void EvaluatePhaseChange() const override;
 
    private:
     //! phase below transition value

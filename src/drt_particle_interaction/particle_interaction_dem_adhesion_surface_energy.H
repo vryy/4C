@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief adhesion surface energy handler for discrete element method (DEM) interactions
 
 \level 3
@@ -69,7 +69,7 @@ namespace PARTICLEINTERACTION
     explicit DEMAdhesionSurfaceEnergyConstant(const Teuchos::ParameterList& params);
 
     //! destructor
-    ~DEMAdhesionSurfaceEnergyConstant(){};
+    ~DEMAdhesionSurfaceEnergyConstant() override{};
 
     //! get adhesion surface energy
     void AdhesionSurfaceEnergy(
@@ -85,14 +85,14 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit DEMAdhesionSurfaceEnergyDistributionBase(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~DEMAdhesionSurfaceEnergyDistributionBase(){};
+    //! destructor
+    ~DEMAdhesionSurfaceEnergyDistributionBase() override{};
 
     //! setup adhesion surface energy handler
-    virtual void Setup();
+    void Setup() override;
 
     //! get adhesion surface energy
-    virtual void AdhesionSurfaceEnergy(
+    void AdhesionSurfaceEnergy(
         const double& mean_surface_energy, double& surface_energy) const override = 0;
 
    protected:
@@ -114,7 +114,7 @@ namespace PARTICLEINTERACTION
     explicit DEMAdhesionSurfaceEnergyDistributionNormal(const Teuchos::ParameterList& params);
 
     //! destructor
-    ~DEMAdhesionSurfaceEnergyDistributionNormal(){};
+    ~DEMAdhesionSurfaceEnergyDistributionNormal() override{};
 
     //! get adhesion surface energy
     void AdhesionSurfaceEnergy(
@@ -129,7 +129,7 @@ namespace PARTICLEINTERACTION
     explicit DEMAdhesionSurfaceEnergyDistributionLogNormal(const Teuchos::ParameterList& params);
 
     //! destructor
-    ~DEMAdhesionSurfaceEnergyDistributionLogNormal(){};
+    ~DEMAdhesionSurfaceEnergyDistributionLogNormal() override{};
 
     //! get adhesion surface energy
     void AdhesionSurfaceEnergy(

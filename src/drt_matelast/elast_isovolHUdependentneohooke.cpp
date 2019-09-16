@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief  This file contains the routines required to calculate the isochoric and volumetric
 contribution of the cc neo hooke material MAT 20 ELAST_IsoVolHUDependentNeoHooke ALPHA_MAX 8.929E6
 CT_MIN 30.0 CT_MAX 600.0 NUE 0.49 BETA -2.0

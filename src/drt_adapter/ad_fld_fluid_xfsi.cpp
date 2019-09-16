@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Fluid field adapter for XFSI. Can only be used in conjunction with XFluid!
 
@@ -148,8 +148,11 @@ void ADAPTER::XFluidFSI::ApplyStructMeshDisplacement(Teuchos::RCP<const Epetra_V
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::XFluidFSI::SetMeshMap(Teuchos::RCP<const Epetra_Map> mm)
+void ADAPTER::XFluidFSI::SetMeshMap(Teuchos::RCP<const Epetra_Map> mm, const int nds_master)
 {
+  // check nds_master
+  if (nds_master != 0) dserror("nds_master is supposed to be 0 here");
+
   meshmap_->Setup(*xfluid_->DiscretisationXFEM()->InitialDofRowMap(), mm,
       LINALG::SplitMap(*xfluid_->DiscretisationXFEM()->InitialDofRowMap(), *mm));
 }

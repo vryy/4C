@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief
 This file contains the routines required to calculate the isochoric contribution
 of a viscous rate dependent material law, modified from Pioletti,1997

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief a fluid material for porous multiphase flow defining one reaction (mass sources and sinks)
 
    \level 3

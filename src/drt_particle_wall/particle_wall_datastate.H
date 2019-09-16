@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief wall data state container for particle wall handler
 
 \level 3
@@ -34,7 +34,7 @@ namespace DRT
  *---------------------------------------------------------------------------*/
 namespace PARTICLEWALL
 {
-  class WallDataState
+  class WallDataState final
   {
    public:
     //! constructor

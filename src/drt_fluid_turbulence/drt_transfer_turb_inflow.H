@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Methods to transfer a turbulent inflow profile a from a master
 boundary to a slave boundary on a seperate domain.

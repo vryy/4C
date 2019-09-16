@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Class for performing UQ with redairway problems
 
 \maintainer Jonas Nitzler

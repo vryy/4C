@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Input parameters for XFEM
 
 \level 2
@@ -171,6 +171,10 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "Xfluid TimeIntegration Special Check if node has changed the side!", yesnotuple, yesnovalue,
       &xfluid_general);
 
+  setStringToIntegralParameter<int>("XFLUID_TIMEINT_CHECK_SLIDINGONSURFACE", "Yes",
+      "Xfluid TimeIntegration Special Check if node is sliding on surface!", yesnotuple, yesnovalue,
+      &xfluid_general);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& xfluid_stab = xfluid_dyn.sublist("STABILIZATION", false, "");
 
@@ -339,6 +343,11 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   BoolParameter("IS_PSEUDO_2D", "no",
       "modify viscous interface stabilization due to the vanishing polynomial in third dimension "
       "when using strong Dirichlet conditions to block polynomials in one spatial dimension",
+      &xfluid_stab);
+
+  BoolParameter("GHOST_PENALTY_ADD_INNER_FACES", "no",
+      "Apply ghost penalty stabilization also for inner faces if this is possible due to the "
+      "dofsets",
       &xfluid_stab);
 
   /*----------------------------------------------------------------------*/

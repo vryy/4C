@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief artificial viscosity handler for smoothed particle hydrodynamics (SPH) interactions
 
 \level 3
@@ -32,29 +32,29 @@ namespace IO
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  class SPHArtificialViscosity
+  class SPHArtificialViscosity final
   {
    public:
     //! constructor
     explicit SPHArtificialViscosity();
 
-    //! virtual destructor
-    virtual ~SPHArtificialViscosity(){};
+    //! destructor
+    ~SPHArtificialViscosity(){};
 
     //! init artificial viscosity handler
-    virtual void Init();
+    void Init();
 
     //! setup artificial viscosity handler
-    virtual void Setup();
+    void Setup();
 
     //! write restart of artificial viscosity handler
-    virtual void WriteRestart(const int step, const double time) const;
+    void WriteRestart(const int step, const double time) const;
 
     //! read restart of artificial viscosity handler
-    virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
+    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
     //! evaluate artificial viscosity
-    virtual void ArtificialViscosity(const double* vel_i, const double* vel_j, const double* mass_i,
+    void ArtificialViscosity(const double* vel_i, const double* vel_j, const double* mass_i,
         const double* mass_j, const double& artvisc_i, const double& artvisc_j,
         const double& dWdrij, const double& dWdrji, const double& dens_ij, const double& h_ij,
         const double& c_ij, const double& abs_rij, const double* e_ij, double* acc_i,

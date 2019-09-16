@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief gen inv analysis
 
 \level 2
@@ -141,9 +141,6 @@ namespace STR
     ///  number of measurement points the
     double tstep_;  // timestep
 
-    /// Neumann or Dirichlet Problem
-    int problem_type_;  // ToDo Use an enum instead of an integer.
-
     /// number of fitted parameters (default 3, 4 with kappa)
     int np_;
 
@@ -238,7 +235,7 @@ namespace STR
     };
     INV_REG_UPDATE_STRATEGY reg_update_;
 
-    // don't accept optimization step for negative material parameters
+    //! don't accept optimization step for negative material parameters
     int check_neg_params_;
 
 
@@ -336,20 +333,22 @@ namespace STR
     void ReadInParameters();
 
     /*!
-    \brief Read in routine for the dof based monitor file (default format)
+    \brief Read the dof-based monitor file (default format)
 
-    A dof-based monitor file provides measurement data that is linked to FE nodes and their DOFs.
+    A dof-based monitor file provides measurement data that is linked to nodes of the finite element
+    mesh and their respective degrees of freedom.
 
+    <h3> Layout of the monitor file</h3>
 
     The monitor file has to be formatted as follows:
 
     \verbatim
 
-    steps <numTimeSteps> nnodes <numNodesWithMeasurements>
-    <nodeIdOne> <numDimWithMeasurements> <firstDir> <secondDir> <thirdDir>
-    <nodeIdTwo> <numDimWithMeasurements> <firstDir> <secondDir> <thirdDir>
+    steps <numberOfTimeSteps> nnodes <numberOfNodesWithMeasurements>
+    <nodeIdOne> <numberOfDofsWithMeasurements> <directionIndicators>
+    <nodeIdTwo> <numberOfDofsWithMeasurements> <directionIndicators>
     ...
-    <nodeIdN> <numDimWithMeasurements> <firstDir> <secondDir> <thirdDir>
+    <nodeIdN> <numberOfDofsWithMeasurements> <directionIndicators>
     # You can provide any number of comment lines here, but only at this position
     # After the comments, list the actual measurement data.
     # time | disp_1_x | disp_1_y | disp_2_x | disp_2_y | ... | disp_n_x | disp_n_y
@@ -359,37 +358,58 @@ namespace STR
     \endverbatim
 
     with
-    - <numTimeSteps> denoting the number of time/load steps
-    - <numNodesWithMeasurements> denoting the total number of nodes where measurement data is
-      available
+    - <numberOfTimeSteps> denoting the number of time/load steps
+    - <numberOfNodesWithMeasurements> denoting the total number of nodes where measurement data
+    is available
     - <nodeIdOne>/<nodeIdTwo>/<nodeIdN> denoting the node ID from the Baci dat-file of the
       firsts/second/.../n-th node to be monitored
-    - <numDimWithMeasurements> denotes the number of dimensions, where measurements are given
-    - <firstDir>/<secondDir>/<thirdDir> denote the 0/1/2 direction with given measurements
+    - <numberOfDofsWithMeasurements> denotes the number of dimensions, where measurements are
+    given at this node
+    - <directionIndicators> is a list of directions (0 for x, 1 for y, 2 for z) where measurements
+      are given
 
     After the comments, the data is given in column format. The first column lists the time/load
-    step. Then, the first node lists its data in 0/1/2 directions, followed by the second/third/...
-    node.
+    step. Then, the first node lists its data in all directions in <directionIndicators>, followed
+    by the second/third/... node.
 
-    Example for the file header of a 2D problem with x- and y-data at node 7:
-    - <nodeID> = 7
-    - <numDimWithMeasurements> = 2
-    - <firstDir> = 0
-    - <secondDir> = 1
-    - the parameter <thirdDir> is just ommitted
+    If measurements are only available for selected directions at a node, then only these directions
+    are included into the <directionIndicators> list and the directions without measurement data
+    are omitted from the <directionIndicators> list.
 
-    Example for the file header of a 3D problem with x- and y-data at node 11:
-    - <nodeID> = 11
-    - <numDimWithMeasurements> = 3
-    - <firstDir> = 0
-    - <secondDir> = 1
-    - <thirdDir> = 2
+    <h3> Examples</h3>
+
+    - Example for the file header of a 2D problem with x- and y-data at node 7:
+        - <nodeID> = 7
+        - <numberOfDofsWithMeasurements> = 2
+        - <directionIndicators>  = 0 1
+
+        \verbatim
+        7 2 0 1
+        \endverbatim
+
+    - Example for the file header of a 3D problem with x-, y-, and z-data at node 11:
+        - <nodeID> = 11
+        - <numberOfDofsWithMeasurements> = 3
+        - <directionIndicators>  = 0 1 2
+
+        \verbatim
+        11 3 0 1 2
+        \endverbatim
+
+    - Example for the file header of a 3D problem with only y-data at node 13:
+        - <nodeID> = 13
+        - <numberOfDofsWithMeasurements> = 1
+        - <directionIndicators>  = 1
+
+        \verbatim
+        13 1 1
+        \endverbatim
 
     @param[in] myrank Proc ID
 
     \note Constructor sequence has been moved into its own method.
     */
-    void ReadMonitorDofBased(int myrank);
+    void ReadMonitorDofBased(const int myrank);
 
 
     /// Read in routine for the point based monitor file

@@ -1,5 +1,5 @@
 /*--------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief base class for all elastohydrodynamic lubrication (lubrication structure interaction)
 algorithms
@@ -810,6 +810,39 @@ void EHL::Base::Output(bool forced_writerestart)
     if (inf_gap_toggle_lub_ != Teuchos::null)
       lubrication_->LubricationField()->DiscWriter()->WriteVector(
           "no_gap_DBC", inf_gap_toggle_lub_, IO::dofvector);
+
+    // output for viscosity
+
+    const int ndim = DRT::Problem::Instance()->NDim();
+    Teuchos::RCP<Epetra_Vector> visc_vec =
+        Teuchos::rcp(new Epetra_Vector(*lubrication_->LubricationField()->DofRowMap(1)));
+    for (int i = 0;
+         i < lubrication_->LubricationField()->Discretization()->NodeRowMap()->NumMyElements(); ++i)
+    {
+      DRT::Node* lnode = lubrication_->LubricationField()->Discretization()->lRowNode(i);
+      if (!lnode) dserror("node not found");
+      const double p = lubrication_->LubricationField()->Prenp()->operator[](
+          lubrication_->LubricationField()->Prenp()->Map().LID(
+              lubrication_->LubricationField()->Discretization()->Dof(0, lnode, 0)));
+      Teuchos::RCP<MAT::Material> mat = lnode->Elements()[0]->Material(0);
+      if (mat.is_null()) dserror("null pointer");
+      Teuchos::RCP<MAT::LubricationMat> lmat =
+          Teuchos::rcp_dynamic_cast<MAT::LubricationMat>(mat, true);
+      const double visc = lmat->ComputeViscosity(p);
+
+      for (int d = 0; d < ndim; ++d)
+        visc_vec->ReplaceGlobalValue(
+            lubrication_->LubricationField()->Discretization()->Dof(1, lnode, d), 0, visc);
+    }
+
+    Teuchos::RCP<Epetra_Vector> visc_vec_ex =
+        Teuchos::rcp(new Epetra_Vector(*ada_lubPres_to_lubDisp_->SlaveDofMap()));
+
+    LINALG::Export(*visc_vec, *visc_vec_ex);
+
+    Teuchos::RCP<Epetra_Vector> v1 = ada_lubPres_to_lubDisp_->SlaveToMaster(visc_vec_ex);
+
+    lubrication_->LubricationField()->DiscWriter()->WriteVector("viscosity", v1, IO::dofvector);
   }
 
   // reset states

@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief input parameters related to VTU output at runtime for beams
 

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Interface class for complex materials at Gauss points
 
 \level 1
@@ -89,6 +89,7 @@
 #include "optimization_density.H"
 #include "fluid_murnaghantait.H"
 #include "fluid_linear_density_viscosity.H"
+#include "fluid_weakly_compressible.H"
 #include "fluidporo.H"
 #include "fluidporo_singlephase.H"
 #include "fluidporo_multiphase.H"
@@ -173,6 +174,14 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
         curmat->SetParameter(new MAT::PAR::LinearDensityViscosity(curmat));
       MAT::PAR::LinearDensityViscosity* params =
           static_cast<MAT::PAR::LinearDensityViscosity*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_fluid_weakly_compressible:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::WeaklyCompressibleFluid(curmat));
+      MAT::PAR::WeaklyCompressibleFluid* params =
+          static_cast<MAT::PAR::WeaklyCompressibleFluid*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_stvenant:
@@ -307,6 +316,22 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
         curmat->SetParameter(new MAT::PAR::LubricationLawConstant(curmat));
       MAT::PAR::LubricationLawConstant* params =
           static_cast<MAT::PAR::LubricationLawConstant*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_lubrication_law_barus:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::LubricationLawBarus(curmat));
+      MAT::PAR::LubricationLawBarus* params =
+          static_cast<MAT::PAR::LubricationLawBarus*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_lubrication_law_roeland:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::LubricationLawRoeland(curmat));
+      MAT::PAR::LubricationLawRoeland* params =
+          static_cast<MAT::PAR::LubricationLawRoeland*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_scatra:

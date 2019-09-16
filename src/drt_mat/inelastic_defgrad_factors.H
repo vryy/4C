@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief evaluation of inelastic deformation gradients and their derivatives
 
 \level 3
@@ -512,7 +512,7 @@ namespace MAT
       /// return value of scalar 1 for that there is no growth
       double Scalar1refconc() { return Scalar1refconc_; };
       /// return number of polynomial coefficients
-      int Polyparanum() { return Polyparanum_; };
+      unsigned Polyparanum() { return Polyparanum_; };
       /// return vector containing polynomial coefficients
       std::vector<double> Polyparams() { return Polyparams_; };
       /// return lower bound of validity of polynomial
@@ -530,7 +530,7 @@ namespace MAT
       /// value of scalar 1 for that there is no growth
       const double Scalar1refconc_;
       /// number of parameters of the polynomial describing volume change
-      const int Polyparanum_;
+      const unsigned Polyparanum_;
       /// coefficients of polynomial
       const std::vector<double> Polyparams_;
       /// lower bound of validity of polynomial
@@ -644,7 +644,7 @@ namespace MAT
       /// return matrix that determines growth direction
       LINALG::Matrix<3, 3> Growthdirmat() { return growthdirmat_; };
       /// return number of polynom coefficients
-      int Polyparanum() { return Polyparanum_; };
+      unsigned Polyparanum() { return Polyparanum_; };
       /// return vector containing polynom coefficients
       std::vector<double> Polyparams() { return Polyparams_; };
       /// return lower bound of validity of polynomial
@@ -664,7 +664,7 @@ namespace MAT
       /// matrix that determines growth direction
       LINALG::Matrix<3, 3> growthdirmat_;
       /// number of parameters of the polynomial describing volume change
-      const int Polyparanum_;
+      const unsigned Polyparanum_;
       /// coefficients of polynomial
       const std::vector<double> Polyparams_;
       /// lower bound of validity of polynomial

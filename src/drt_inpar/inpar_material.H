@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief list of valid materials
 
@@ -86,6 +86,7 @@ namespace INPAR
       m_fluid_linear_density_viscosity,  ///< linear law (pressure-dependent) for the density and
                                          ///< the viscosity
       m_fluid_murnaghantait,             ///< weakly compressible fluid according to Murnaghan-Tait
+      m_fluid_weakly_compressible,       ///< weakly compressible fluid
       m_fluidporo,                       ///< darcy fluid for poroelasticity problems
       m_fluidporo_singlephase,  ///< single phase material for multiphase flow through porous medium
       m_fluidporo_singlevolfrac,    ///< single volume fraction material for multiphase flow through
@@ -137,6 +138,8 @@ namespace INPAR
       m_ion,                       ///< properties of an ion species in an electrolyte solution
       m_lubrication,               ///< lubrication material
       m_lubrication_law_constant,  ///< lubrication material with constant viscosity
+      m_lubrication_law_barus,     ///< lubrication material with Barus viscosity
+      m_lubrication_law_roeland,   ///< lubrication material with Roeland viscosity
       m_matlist,            ///< collection of single materials (used for scalar transport problems)
       m_matlist_reactions,  ///< collection of single materials (used for scalar transport problems)
                             ///< and collection of reactions (used for advanced reaction elements)

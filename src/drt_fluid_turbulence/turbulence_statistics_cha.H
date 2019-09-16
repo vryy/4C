@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Compute (time and space) averaged values for turbulent channel
        flows and write them to files.

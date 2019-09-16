@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief input parameters related to VTK output at runtime for the structural (time) integration
 

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Explicit time integration for structural dynamics
 
 \level 1
@@ -243,6 +243,15 @@ namespace STR
       PostPredict();
 
       return;
+    }
+
+    //!  Update displacement state in case of coupled problems
+    void UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override
+    {
+      dserror(
+          "All monolithically coupled problems work with implicit time "
+          "integration schemes. Thus, calling UpdateStateIncrementally() in an explicit scheme "
+          "is not possible.");
     }
 
     //!  Evaluate routine for coupled problems with monolithic approach

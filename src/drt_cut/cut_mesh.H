@@ -1,4 +1,5 @@
-/*!-----------------------------------------------------------------------------------------------*
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief class that holds information about a mesh that is cut or about a cutmesh that cuts another
 mesh
@@ -573,6 +574,20 @@ namespace GEO
       /// Erases a node of the cutmesh
       void EraseNode(int nid) { nodes_.erase(nid); }
 
+      /// Move this Side from to the Storage container of the Mesh
+      void MoveSidetoStorage(plain_int_set sid)
+      {
+        storagecontainer_sides_[sid] = sides_[sid];
+        sides_.erase(sid);
+      }
+
+      /// Move this Node from to the Storage container of the Mesh
+      void MoveNodetoStorage(int nid)
+      {
+        storagecontainer_nodes_[nid] = nodes_[nid];
+        nodes_.erase(nid);
+      }
+
      private:
       /*========================================================================*/
       //! @name private member functions
@@ -666,6 +681,14 @@ namespace GEO
 
       /// new: unique map between int ( < 0 ) and element; int is not eid and not parentid
       std::map<int, Teuchos::RCP<Element>> shadow_elements_;
+
+      /// A storage container for sides which should not interact with the CUT anymore (If we want
+      /// to access these geometric objects still from outside)
+      std::map<plain_int_set, Teuchos::RCP<Side>> storagecontainer_sides_;
+
+      /// A storage container for nodes which should not interact with the CUT anymore (If we want
+      /// to access these geometric objects still from outside)
+      std::map<int, Teuchos::RCP<Node>> storagecontainer_nodes_;
 
       /// processor id --> required just for output!
       int myrank_;

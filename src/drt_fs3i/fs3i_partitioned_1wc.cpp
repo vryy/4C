@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief Algorithmic routines for partitioned solution approaches to
        fluid-structure-scalar-scalar interaction (FS3I) specifically
        related to one-way-coupled problem configurations

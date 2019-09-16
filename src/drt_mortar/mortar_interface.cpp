@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief One mortar coupling interface
 
 \level 1
@@ -339,7 +339,7 @@ bool MORTAR::MortarInterface::Filled() const { return idiscret_->Filled(); }
 /*----------------------------------------------------------------------*
  |  print parallel distribution (public)                      popp 06/10|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::PrintParallelDistribution(int index) const
+void MORTAR::MortarInterface::PrintParallelDistribution() const
 {
   // how many processors
   const int numproc = Discret().Comm().NumProc();
@@ -421,7 +421,7 @@ void MORTAR::MortarInterface::PrintParallelDistribution(int index) const
     if (myrank == 0)
     {
       std::cout << std::endl;
-      std::cout << "   Discretization: " << Discret().Name() << " #" << index << std::endl;
+      std::cout << "   Discretization: " << Discret().Name() << std::endl;
       printf("   +-----+-----------------+--------------+-----------------+--------------+\n");
       printf("   | PID |   n_rownodes    | n_ghostnodes |  n_rowelements  |  n_ghostele  |\n");
       printf("   +-----+-----------------+--------------+-----------------+--------------+\n");
@@ -1362,8 +1362,6 @@ void MORTAR::MortarInterface::CreateInterfaceGhosting()
   //*****REDUNDANT SLAVE AND MASTER STORAGE*****
   if (Redundant() == INPAR::MORTAR::redundant_all)
   {
-    // std::cout << "REDUNDANT SLAVE AND MASTER InterfaceGhosting" << std::endl;
-
     // to ease our search algorithms we'll afford the luxury to ghost all nodes
     // on all processors. To do so, we'll take the node row map and export it to
     // full overlap. Then we export the discretization to full overlap column map.
@@ -1432,8 +1430,6 @@ void MORTAR::MortarInterface::CreateInterfaceGhosting()
   //*****ONLY REDUNDANT MASTER STORAGE*****
   else if (Redundant() == INPAR::MORTAR::redundant_master)
   {
-    // std::cout << "ONLY REDUNDANT MASTER InterfaceGhosting" << std::endl;
-
     // to ease our search algorithms we'll afford the luxury to ghost all master
     // nodes on all processors. To do so, we'll take the master node row map and
     // export it to full overlap. Then we export the discretization to partially
@@ -1538,8 +1534,6 @@ void MORTAR::MortarInterface::CreateInterfaceGhosting()
   //*****NON-REDUNDANT STORAGE*****
   else if (Redundant() == INPAR::MORTAR::redundant_none)
   {
-    // dserror("ERROR: Non-redundant interface storage not yet implemented.");
-
     // nothing to do here, we work with the given non-redundant distribution
     // of both slave and master nodes to the individual processsors. However
     // we want ALL procs to be part of the interface discretization, not only

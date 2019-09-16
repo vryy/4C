@@ -1,4 +1,5 @@
-/*!
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief methods for the integration over boundary elements
 

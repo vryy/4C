@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief An abstract interface for binary trees
 
 \level 1

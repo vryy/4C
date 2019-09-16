@@ -1,5 +1,5 @@
 /*======================================================================*/
-/*!
+/*! \file
 \brief Time step adaptivity front-end for structural dynamics
 \level 1
 

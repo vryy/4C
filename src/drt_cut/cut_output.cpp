@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Handles file writing of all cut related stuff (gmsh)
 
@@ -759,7 +759,7 @@ void GEO::CUT::OUTPUT::GmshLevelSetValueDump(
  * Write GMSH output of given coord as point                                   ager 02/17
  *--------------------------------------------------------------------------------------*/
 void GEO::CUT::OUTPUT::GmshCoordDump(
-    std::ofstream& file, LINALG::Matrix<3, 1> coord, int idx, bool to_local, Element* ele)
+    std::ofstream& file, LINALG::Matrix<3, 1> coord, double idx, bool to_local, Element* ele)
 {
   file << "SP (";
   GmshWriteCoords(file, coord, to_local, ele);

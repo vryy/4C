@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 \brief Input parameters for the eXtended contact approach
 
 \maintainer Matthias Mayr

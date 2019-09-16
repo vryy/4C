@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief viscous damping handler for particle simulations
 
 \level 3
@@ -43,7 +43,7 @@ namespace PARTICLEALGORITHM
     //! constructor
     explicit ViscousDampingHandler(const double viscdampfac);
 
-    //! virtual destructor
+    //! destructor
     ~ViscousDampingHandler(){};
 
     //! init viscous damping handler

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief calculate mean values and fluctuations for turbulent flow in a
 lid-driven cavity.

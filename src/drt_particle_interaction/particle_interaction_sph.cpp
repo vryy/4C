@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief smoothed particle hydrodynamics (SPH) interaction handler
 
 \level 3
@@ -264,8 +264,18 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InsertParticleStatesOfParticle
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
 {
-  // compute initial consistent particle volume
-  double consistentparticlevolume = ComputeConsistentParticleVolume();
+  // get kernel space dimension
+  int kernelspacedim = 0;
+  kernel_->KernelSpaceDimension(kernelspacedim);
+
+  // get initial particle spacing
+  const double initialparticlespacing = params_sph_.get<double>("INITIALPARTICLESPACING");
+
+  // safety check
+  if (not(initialparticlespacing > 0.0)) dserror("negative initial particle spacing!");
+
+  // compute initial particle volume
+  const double initialparticlevolume = std::pow(initialparticlespacing, kernelspacedim);
 
   // iterate over particle types
   for (const auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
@@ -290,7 +300,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
 
     // (initial) mass of current phase
     std::vector<double> initmass(1);
-    initmass[0] = initdensity[0] * consistentparticlevolume;
+    initmass[0] = initdensity[0] * initialparticlevolume;
 
     // (initial) radius of current phase
     std::vector<double> initradius(1);
@@ -683,35 +693,4 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitPhaseChangeHandler()
 
   // init phase change handler
   if (phasechange_) phasechange_->Init();
-}
-
-/*---------------------------------------------------------------------------*
- | compute initial consistent particle volume                 sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
-double PARTICLEINTERACTION::ParticleInteractionSPH::ComputeConsistentParticleVolume() const
-{
-  const double consistentproblemvolume = params_sph_.get<double>("CONSISTENTPROBLEMVOLUME");
-
-  if (not(consistentproblemvolume > 0.0))
-    dserror("consistent problem volume needs to be defined in SPH simulations!");
-
-  // get number of particles on this processor
-  int numberofparticles = particleengineinterface_->GetNumberOfParticles();
-
-  // get number of boundary and rigid particles on this processor
-  int numberofboundaryparticles =
-      particleengineinterface_->GetNumberOfParticlesOfSpecificType(PARTICLEENGINE::BoundaryPhase);
-  int numberofrigidparticles =
-      particleengineinterface_->GetNumberOfParticlesOfSpecificType(PARTICLEENGINE::RigidPhase);
-
-  // number of non-boundary particles on this processor
-  int numberofnonboundaryparticles =
-      numberofparticles - numberofboundaryparticles - numberofrigidparticles;
-
-  // get total number of non-boundary particles on all processors
-  int totalnumberofnonboundaryparticles = 0;
-  comm_.SumAll(&numberofnonboundaryparticles, &totalnumberofnonboundaryparticles, 1);
-
-  // consistent volume of non-boundary particles
-  return (consistentproblemvolume / totalnumberofnonboundaryparticles);
 }

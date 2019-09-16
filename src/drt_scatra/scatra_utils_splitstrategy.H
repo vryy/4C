@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief  special assemble/split strategy for blockmatrices arising
         when simulating electrochemical problems with ion transport

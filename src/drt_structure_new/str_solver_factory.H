@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Factory to build the desired linear solver std::map corresponding to the active model types
 

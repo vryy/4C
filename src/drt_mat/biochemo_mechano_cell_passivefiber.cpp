@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 \brief Implementation of Biochemo-Mechano Coupled passive, viscoelastic material model for the cell.
 
 \level 3

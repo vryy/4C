@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
  \brief  Basis of all porous media algorithms
 
@@ -145,19 +145,42 @@ namespace POROELAST
 
     //@}
 
+    //! update all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
+    void UpdateStateIncrementally(
+        Teuchos::RCP<const Epetra_Vector> iterinc  //!< increment between iteration i and i+1
+        ) override
+    {
+      dserror("UpdateStateIncrementally() only available for monolithic schemes!");
+    };
+
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    void Evaluate(
+    virtual void Evaluate(
         Teuchos::RCP<const Epetra_Vector> iterinc  //!< increment between iteration i and i+1
     )
     {
       dserror("Evaluate() only available for monolithic schemes!");
     };
 
-    //! evaluate system matrix
+    //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
     virtual void Evaluate(
         Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx)
     {
+      dserror("Evaluate(sx,fx) only available for monolithic schemes!");
+    };
+
+    //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
+    virtual void Evaluate(
+        Teuchos::RCP<const Epetra_Vector> iterinc,  //!< increment between iteration i and i+1
+        bool firstiter)
+    {
       dserror("Evaluate() only available for monolithic schemes!");
+    };
+
+    //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
+    virtual void Evaluate(
+        Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx, bool firstiter)
+    {
+      dserror("Evaluate(sx,fx) only available for monolithic schemes!");
     };
 
     //! solve time step (depending on algorithm)

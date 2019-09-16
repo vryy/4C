@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief This file contains the hyperelastic toolbox with application to finite
 strain plasticity using a variational constitutive update.
 

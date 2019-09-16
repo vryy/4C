@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief density correction handler in smoothed particle hydrodynamics (SPH)
 
 \level 3
@@ -70,14 +70,14 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit SPHDensityCorrectionInterior();
 
-    //! virtual destructor
-    virtual ~SPHDensityCorrectionInterior(){};
+    //! destructor
+    ~SPHDensityCorrectionInterior() override{};
 
     //! density boundary condition is needed
-    virtual bool ComputeDensityBC() const override;
+    bool ComputeDensityBC() const override;
 
     //! set corrected density of free surface particles
-    virtual void CorrectedDensityFreeSurface(const double* denssum, const double* colorfield,
+    void CorrectedDensityFreeSurface(const double* denssum, const double* colorfield,
         const double* dens_bc, double* dens) const override;
   };
 
@@ -87,14 +87,14 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit SPHDensityCorrectionNormalized();
 
-    //! virtual destructor
-    virtual ~SPHDensityCorrectionNormalized(){};
+    //! destructor
+    ~SPHDensityCorrectionNormalized() override{};
 
     //! density boundary condition is needed
-    virtual bool ComputeDensityBC() const override;
+    bool ComputeDensityBC() const override;
 
     //! set corrected density of free surface particles
-    virtual void CorrectedDensityFreeSurface(const double* denssum, const double* colorfield,
+    void CorrectedDensityFreeSurface(const double* denssum, const double* colorfield,
         const double* dens_bc, double* dens) const override;
   };
 
@@ -104,14 +104,14 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit SPHDensityCorrectionRandles();
 
-    //! virtual destructor
-    virtual ~SPHDensityCorrectionRandles(){};
+    //! destructor
+    ~SPHDensityCorrectionRandles() override{};
 
     //! density boundary condition is needed
-    virtual bool ComputeDensityBC() const override;
+    bool ComputeDensityBC() const override;
 
     //! set corrected density of free surface particles
-    virtual void CorrectedDensityFreeSurface(const double* denssum, const double* colorfield,
+    void CorrectedDensityFreeSurface(const double* denssum, const double* colorfield,
         const double* dens_bc, double* dens) const override;
   };
 

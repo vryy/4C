@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Integrator class for the inequality constraint level-set approach
        (originally created by student Michael Hofer)
 

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief scalar transport material according to Sutherland law with
        Arrhenius-type chemical kinetics (species)
 

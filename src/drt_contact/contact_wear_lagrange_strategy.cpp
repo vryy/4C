@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief strategy for finite wear modeling
 
 \level 2
@@ -4629,44 +4629,28 @@ bool WEAR::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<const Epetra_V
   SetState(MORTAR::state_new_displacement, *dis);
   SetState(MORTAR::state_old_displacement, *dis);
 
-  // global flag for redistribution
-  bool anyinterfacedone = false;
-
   // parallel redistribution of all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
     // redistribute optimally among procs
-    bool done = interface_[i]->Redistribute(i + 1);
+    interface_[i]->Redistribute();
 
-    // if redistribution has really been performed
-    // (the previous method might have found that there
-    // are no "close" slave elements and thud redistribution
-    // might not be necessary ->indicated by boolean)
-    if (done)
-    {
-      // call fill complete again
-      interface_[i]->FillComplete(maxdof_);
+    // call fill complete again
+    interface_[i]->FillComplete(maxdof_);
 
-      // print new parallel distribution
-      interface_[i]->PrintParallelDistribution(i + 1);
+    // print new parallel distribution
+    interface_[i]->PrintParallelDistribution();
 
-      // re-create binary search tree
-      interface_[i]->CreateSearchTree();
+    // re-create binary search tree
+    interface_[i]->CreateSearchTree();
 
-      // set bool for redistribution
-      interface_[i]->IsRedistributed() = true;
-
-      // set global flag to TRUE
-      anyinterfacedone = true;
-    }
+    // set bool for redistribution
+    interface_[i]->IsRedistributed() = true;
   }
 
   // re-setup strategy with redistributed=TRUE, init=FALSE
-  if (anyinterfacedone)
-  {
-    Setup(true, false);
-    SetupWear(true, false);
-  }
+  Setup(true, false);
+  SetupWear(true, false);
 
   // time measurement
   Comm().Barrier();

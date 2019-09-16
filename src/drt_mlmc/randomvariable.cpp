@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief class for generating random variables
 
 \maintainer Jonas Nitzler

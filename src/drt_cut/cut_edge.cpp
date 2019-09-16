@@ -1,4 +1,5 @@
-/*!-----------------------------------------------------------------------------------------------*
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief class representing a geometrical edge
 
@@ -543,7 +544,7 @@ void GEO::CUT::Edge::SelfCutPosition(Point::PointPosition pos)
         for (plain_side_set::iterator i = sides_.begin(); i != sides_.end(); ++i)
         {
           Side* s = *i;
-          s->GetSelfCutPosition(pos);
+          if (s->Id() >= 0) s->GetSelfCutPosition(pos);
         }
       }
     }

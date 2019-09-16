@@ -1,5 +1,5 @@
 /*--------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Material model for the lubrication film
 
 \level 3
@@ -44,6 +44,20 @@ MAT::PAR::LubricationMat::LubricationMat(Teuchos::RCP<MAT::PAR::Material> matdat
     {
       if (curmat->Parameter() == NULL)
         curmat->SetParameter(new MAT::PAR::LubricationLawConstant(curmat));
+      lubricationlaw_ = static_cast<MAT::PAR::LubricationLaw*>(curmat->Parameter());
+      break;
+    }
+    case INPAR::MAT::m_lubrication_law_barus:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::LubricationLawBarus(curmat));
+      lubricationlaw_ = static_cast<MAT::PAR::LubricationLaw*>(curmat->Parameter());
+      break;
+    }
+    case INPAR::MAT::m_lubrication_law_roeland:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::LubricationLawRoeland(curmat));
       lubricationlaw_ = static_cast<MAT::PAR::LubricationLaw*>(curmat->Parameter());
       break;
     }
@@ -134,9 +148,6 @@ void MAT::LubricationMat::Unpack(const std::vector<char>& data)
 *----------------------------------------------------------------------*/
 double MAT::LubricationMat::ComputeViscosity(const double press)
 {
-  //  viscosity = params_->viscosity_;
-  //  return;
-
   double visc = -1.;
   params_->lubricationlaw_->ComputeViscosity(press, visc);
 
@@ -147,9 +158,8 @@ double MAT::LubricationMat::ComputeViscosity(const double press)
 /*----------------------------------------------------------------------*
                                                               wirtz 09/16|
 *----------------------------------------------------------------------*/
-double MAT::LubricationMat::ComputeViscosityDeriv(const double press)
+double MAT::LubricationMat::ComputeViscosityDeriv(const double press, const double visc)
 {
-  double visc = -1.;
   double visc_dp = -1;
   params_->lubricationlaw_->ConstitutiveDerivatives(press, visc, visc_dp);
 

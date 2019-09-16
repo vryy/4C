@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Input parameters for multi-level monte carlo
 
 \maintainer Jonas Nitzler

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief particle material handler for particle simulations
 
 \level 3
@@ -41,13 +41,13 @@ namespace IO
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  class MaterialHandler
+  class MaterialHandler final
   {
    public:
     //! constructor
     explicit MaterialHandler(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
+    //! destructor
     ~MaterialHandler(){};
 
     //! init particle material handler

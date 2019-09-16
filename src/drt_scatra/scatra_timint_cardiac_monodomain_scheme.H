@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief  connecting time-integration schemes (OST, BDF2, GenAlpha, Stationary) with
         Cardiac-monodomain-specific implementation (class TimIntCardiacMonodomain)

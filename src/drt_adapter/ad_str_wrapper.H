@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Wrapper for the structural time integration
 
@@ -264,7 +264,15 @@ namespace ADAPTER
     /// start new time step
     virtual void PrepareTimeStep() { structure_->PrepareTimeStep(); }
 
-    /// update displacement and evaluate elements
+    /// update displacment
+    void UpdateStateIncrementally(
+        Teuchos::RCP<const Epetra_Vector> disi  ///< iterative solution increment
+        ) override
+    {
+      structure_->UpdateStateIncrementally(disi);
+    }
+
+    /// update displacement and evaluate elements (implicit only)
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
     {
       structure_->Evaluate(disiterinc);

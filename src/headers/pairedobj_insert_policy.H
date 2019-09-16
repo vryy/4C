@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief These classes are meant as policies for the paired objects and
        are NOT supposed to be accessed directly. Use the methods of the derived

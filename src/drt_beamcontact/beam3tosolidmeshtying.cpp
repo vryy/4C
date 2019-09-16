@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief meshtying element for meshtying between a 3D beam end a 2D surface (belonging to a 3D solid)
 element

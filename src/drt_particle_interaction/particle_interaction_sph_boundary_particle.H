@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief boundary particle handler for smoothed particle hydrodynamics (SPH) interactions
 
 \level 3
@@ -96,12 +96,12 @@ namespace PARTICLEINTERACTION
     explicit SPHBoundaryParticleAdami(const Teuchos::ParameterList& params);
 
     //! destructor
-    ~SPHBoundaryParticleAdami(){};
+    ~SPHBoundaryParticleAdami() override{};
 
     //! setup boundary particle handler
     void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
+        const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs) override;
 
     //! init boundary particle states
     void InitBoundaryParticleStates(std::vector<double>& gravity) override;

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief singleton class holding all static turbulence parameters required for scalar transport
 element evaluation

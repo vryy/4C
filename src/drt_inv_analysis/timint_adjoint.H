@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Adjoint time integration for a quasi static hyperelasticity
 
 \level 3

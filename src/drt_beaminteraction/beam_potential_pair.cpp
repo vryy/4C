@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief one generic (beam-to-?) element pair interacting via potentials
 

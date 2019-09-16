@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief options to set up the cut
 
@@ -43,6 +43,9 @@ namespace GEO
             genhex8_(genhex8),
             genwedge6_(genwedge6),
             genpyramid5_(genpyramid5),
+            do_selfcut_(true),
+            selfcut_do_meshcorrection_(true),
+            selfcut_island_geom_multiplicator_(2),
             gen_bcell_position_(INPAR::CUT::bcells_on_cut_side),
             split_cutsides_(true)
       {
@@ -124,6 +127,16 @@ namespace GEO
       /** \brief Indicator if quad4 cutsides are split into tri3 cutsides */
       bool SplitCutSides() const { return split_cutsides_; }
 
+      /** \brief Run the SelfCut Algorithm*/
+      bool Do_SelfCut() { return do_selfcut_; }
+
+      /** \brief perform the mesh correction in the selfcut algorithm*/
+      bool SelfCut_Do_MeshCorrection() { return selfcut_do_meshcorrection_; }
+
+      /** \brief multiplicator of the solid element size to specify the maximal size of an island in
+       * the selfcut*/
+      int SelfCut_IslandGeomMultiplicator() { return selfcut_island_geom_multiplicator_; }
+
      private:
       /** \brief Float_type for geometric intersection computation */
       INPAR::CUT::CUT_Floattype geomintersect_floattype_;
@@ -169,6 +182,17 @@ namespace GEO
        *  If TRUE a PYRAMID5 element is used as integration cell or otherwise the
        *  PYRAMID5 is splitted into 2 TRI4 elements. */
       bool genpyramid5_;
+
+      /** \brief Run the SelfCut Algorithm*/
+      bool do_selfcut_;
+
+      /** \brief perform the mesh correction in the selfcut algorithm*/
+      bool selfcut_do_meshcorrection_;
+
+      /** \brief multiplicator of the solid element size to specify the maximal size of an island in
+       * the selfcut*/
+      int selfcut_island_geom_multiplicator_;
+
 
       /** \brief Where to create boundary cells */
       enum INPAR::CUT::BoundaryCellPosition gen_bcell_position_;

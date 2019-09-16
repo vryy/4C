@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Wrapper for the scatra time integrator.
 \level 1
 \maintainer Anh-Tu Vuong

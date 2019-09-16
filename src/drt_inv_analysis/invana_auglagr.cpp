@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Augmetend lagrangian functional control algorithm
 
 \level 3

@@ -1,4 +1,5 @@
-/*!
+/*----------------------------------------------------------------------*/
+/*! \file
 
  \brief main routine of the main postprocessor filters
 

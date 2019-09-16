@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Utils methods to apply DBCs to the system-vectors of a discretization
 

@@ -1,5 +1,5 @@
 /*--------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief main file containing routines for calculation of lubrication element
 
@@ -231,6 +231,7 @@ namespace DRT
           double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
           double& densam,       //!< density at t_(n+alpha_M)
           double& visc,         //!< fluid viscosity
+          double& dvisc,        //!< derivative of the fluid viscosity
           const int iquad = -1  //!< id of current gauss point (default = -1)
       );
 
@@ -241,6 +242,7 @@ namespace DRT
           double& densnp,                              //!< density at t_(n+1) or t_(n+alpha_F)
           double& densam,                              //!< density at t_(n+alpha_M)
           double& visc,                                //!< fluid viscosity
+          double& dvisc,                               //!< derivative of the fluid viscosity
           const int iquad = -1                         //!< id of current gauss point (default = -1)
       );
 
@@ -251,6 +253,7 @@ namespace DRT
           double& densnp,                              //!< density at t_(n+1) or t_(n+alpha_F)
           double& densam,                              //!< density at t_(n+alpha_M)
           double& visc,                                //!< fluid viscosity
+          double& dvisc,                               //!< derivative of the fluid viscosity
           const int iquad = -1                         //!< id of current gauss point (default = -1)
       );
       /*========================================================================*/
@@ -275,6 +278,10 @@ namespace DRT
       //! calculation of Poiseuille contribution to element matrix in modified Rey. Equ.
       virtual void CalcMatPsl(Epetra_SerialDenseMatrix& emat, const double timefacfac,
           const double viscosity, const double height, const LINALG::Matrix<nsd_, 1> pflowfac);
+
+      //! calculation of Poiseuille-Viscosity contribution to element matrix in modified Rey. Equ.
+      virtual void CalcMatPslVis(Epetra_SerialDenseMatrix& emat, const double timefacfac,
+          const double viscosity, const double height, const double dviscosity_dp);
 
       //! calculation of Poiseuille contribution to RHS matrix
       virtual void CalcRhsPsl(Epetra_SerialDenseVector& erhs, const double rhsfac,

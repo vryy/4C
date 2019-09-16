@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Required interface for constrained problems.
        (necessary for the NOX::NLN::CONSTRAINT::Group

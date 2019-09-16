@@ -1,4 +1,5 @@
-/*!
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief Utility functions for the geometry pairs.
 
@@ -40,7 +41,7 @@ namespace GEOMETRYPAIR
    */
   template <typename element_type, typename T1, typename T2, typename V, typename scalar_type>
   void EvaluatePositionLineCrossSection(const T1& eta, const T2& eta_cross_section, const V& q,
-      LINALG::TMatrix<scalar_type, 3, 1>& r, const DRT::Element* element = NULL)
+      LINALG::Matrix<3, 1, scalar_type>& r, const DRT::Element* element = NULL)
   {
     // Get the radius from the beam element.
     const double radius = (dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element))
@@ -48,7 +49,7 @@ namespace GEOMETRYPAIR
 
     // Get the position and tangent along the centerline.
     EvaluatePosition<element_type>(eta, q, r, element);
-    LINALG::TMatrix<scalar_type, 3, 1> tangent, cross_section_director_2, cross_section_director_3;
+    LINALG::Matrix<3, 1, scalar_type> tangent, cross_section_director_2, cross_section_director_3;
     EvaluatePositionDerivative1<element_type>(eta, q, tangent, element);
 
     // The current implementation only allows tangential vectors in the x-y plane.

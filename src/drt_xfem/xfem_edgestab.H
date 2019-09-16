@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief provides the xfem fluid and ghost penalty stabilization based on EOS/CIP (edge-oriented,
 continuous interior penalty) scheme
@@ -80,8 +80,9 @@ namespace XFEM
         Teuchos::RCP<LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
         Teuchos::RCP<Epetra_Vector> systemvector,         ///< systemvector
         Teuchos::RCP<GEO::CutWizard> wizard,              ///< cut wizard
-        bool include_inner,       ///< stabilize also facets with inside position
-        bool gmsh_eos_out = true  ///< stabilization gmsh output
+        bool include_inner,        ///< stabilize also facets with inside position
+        bool include_inner_faces,  ///< stabilize also faces with inside position if possible
+        bool gmsh_eos_out = true   ///< stabilization gmsh output
     );
 
     //! calls the evaluate and assemble routine for edge based stabilization and ghost penaly in the

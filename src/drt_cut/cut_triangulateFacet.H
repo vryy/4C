@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Class to triangulate facets
 
@@ -39,6 +39,7 @@ namespace GEO
       TriangulateFacet(std::vector<Point *> ptlist, std::vector<std::vector<Point *>> inlists)
           : ptlist_(ptlist)
       {
+        if (Hasequal_ptlist_inlist(ptlist, inlists)) return;
         for (std::vector<std::vector<Point *>>::iterator i = inlists.begin(); i != inlists.end();
              ++i)
         {
@@ -82,6 +83,12 @@ namespace GEO
       std::vector<std::vector<Point *>> GetSplitCells() { return split_; }
 
      private:
+      /*!
+      \brief The cyles ptlist and inlists are equal
+      */
+      bool Hasequal_ptlist_inlist(
+          std::vector<Point *> ptlist, std::vector<std::vector<Point *>> inlists);
+
       /*!
       \brief Split a concave 4 noded facet into a 2 tri
       */

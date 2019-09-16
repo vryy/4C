@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief one way coupled partitioned algorithm for particle structure interaction
 
 \level 3
@@ -78,10 +78,19 @@ void PASI::PASI_PartOneWayCoup::Timeloop()
     // particle time step
     ParticleStep();
 
-    // output of structure field
-    StructOutput();
-
-    // output of particle field
-    ParticleOutput();
+    // output of fields
+    Output();
   }
+}
+
+/*---------------------------------------------------------------------------*
+ | output of fields                                           sfuchs 09/2019 |
+ *---------------------------------------------------------------------------*/
+void PASI::PASI_PartOneWayCoup::Output()
+{
+  // output of structure field
+  StructOutput();
+
+  // output of particle field
+  ParticleOutput();
 }

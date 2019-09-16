@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief model evaluator for structure part of partitioned pasi
 
 \level 3
@@ -41,7 +41,7 @@ namespace STR
       PartitionedPASI();
 
       //! destructor
-      ~PartitionedPASI(){};
+      ~PartitionedPASI() override{};
 
       //! setup class variables [derived]
       void Setup() override;

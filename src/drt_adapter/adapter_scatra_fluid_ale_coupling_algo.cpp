@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Basis of all algorithms that perform a coupling between Navier-Stokes
        and scalar transport equations including deforming meshes

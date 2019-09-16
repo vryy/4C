@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \maintainer Matthias Mayr
 \brief This file contains the hyperelastic toolbox with application to finite
 strain plasticity using a semi-smooth Newton method. It allows summing up

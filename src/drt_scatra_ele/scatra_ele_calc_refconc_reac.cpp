@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief main file containing routines for calculation of scatra element formulated in reference
 concentrations and with advanced reaction terms
 

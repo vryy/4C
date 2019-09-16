@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Performs ScaTra specifc functions not yet generalized for other fields.
 
 \level 2

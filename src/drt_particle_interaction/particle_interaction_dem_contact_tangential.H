@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief tangential contact handler for discrete element method (DEM) interactions
 
 \level 3
@@ -76,17 +76,17 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit DEMContactTangentialLinearSpringDamp(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~DEMContactTangentialLinearSpringDamp(){};
+    //! destructor
+    ~DEMContactTangentialLinearSpringDamp() override{};
 
     //! init tangential contact handler
-    virtual void Init();
+    void Init() override;
 
     //! setup tangential contact handler
-    virtual void Setup(const double& k_normal);
+    void Setup(const double& k_normal) override;
 
     //! calculate tangential contact force
-    virtual void TangentialContactForce(double* gap_tangential, bool& stick_tangential,
+    void TangentialContactForce(double* gap_tangential, bool& stick_tangential,
         const double* normal, const double* v_rel_tangential, const double& m_eff,
         const double& mu_tangential, const double& normalcontactforce,
         double* tangentialcontactforce) const override;

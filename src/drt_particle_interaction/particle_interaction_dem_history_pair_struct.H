@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief history pair struct for discrete element method (DEM) interactions
 
 \level 3
@@ -25,7 +25,7 @@
 namespace PARTICLEINTERACTION
 {
   //! struct to store tangential contact history of interacting particles
-  struct DEMHistoryPairTangential
+  struct DEMHistoryPairTangential final
   {
     //! tangential stick flag
     bool stick_ = true;
@@ -51,7 +51,7 @@ namespace PARTICLEINTERACTION
   };
 
   //! struct to store rolling contact history of interacting particles
-  struct DEMHistoryPairRolling
+  struct DEMHistoryPairRolling final
   {
     //! rolling stick flag
     bool stick_ = true;
@@ -77,7 +77,7 @@ namespace PARTICLEINTERACTION
   };
 
   //! struct to store adhesion history of interacting particles
-  struct DEMHistoryPairAdhesion
+  struct DEMHistoryPairAdhesion final
   {
     //! surface energy
     double surface_energy_ = 0.0;

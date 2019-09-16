@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief Library of Continuation Algorithms (LOCA) implementation.
 
@@ -295,6 +295,17 @@ void STR::TIMINT::LOCAContinuation::PreparePartitionStep()
   dserror(
       "The LOCA integration is currently not supposed to be used without the"
       "LOCA::Stepper object. For coupled problems use the implicit integrator.");
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::LOCAContinuation::UpdateStateIncrementally(
+    Teuchos::RCP<const Epetra_Vector> disiterinc)
+{
+  dserror(
+      "The LOCA integration is currently not supporting coupled monolithic"
+      "problems, thus UpdateStateIncrementally() can not be called. Use the implicit integrator "
+      "instead.");
 }
 
 /*----------------------------------------------------------------------------*

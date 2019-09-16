@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief A class to perform integrations of ehl related terms
 
 \level 3

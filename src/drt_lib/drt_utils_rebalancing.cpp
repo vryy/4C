@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief A collection of helper methods related to partitioning and parallel distribution
 

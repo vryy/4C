@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*! \file
 
 \brief fluid wrapper
 
@@ -293,7 +294,7 @@ namespace ADAPTER
     }
     virtual Teuchos::RCP<const Epetra_Map> VelocityRowMap() { return fluid_->VelocityRowMap(); }
     virtual Teuchos::RCP<const Epetra_Map> PressureRowMap() { return fluid_->PressureRowMap(); }
-    virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm)
+    virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm, const int nds_master = 0)
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
     }

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief particle object class for communication
 
 \level 3
@@ -39,14 +39,14 @@ namespace DRT
  *---------------------------------------------------------------------------*/
 namespace PARTICLEENGINE
 {
-  class ParticleObjectType : public DRT::ParObjectType
+  class ParticleObjectType final : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "ParticleObjectType"; };
+    std::string Name() const override { return "ParticleObjectType"; };
 
     static ParticleObjectType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ParticleObjectType instance_;
@@ -74,20 +74,20 @@ namespace PARTICLEENGINE
     ParticleObject(TypeEnum particletype, int particleglobalid,
         const ParticleStates& particlestates, int bingid = -1, int containerindex = -1);
 
-    //! virtual destructor
-    virtual ~ParticleObject(){};
+    //! destructor
+    ~ParticleObject() override{};
 
     //! return unique ParObject id
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return ParticleObjectType::Instance().UniqueParObjectId();
     };
 
     //! pack this class so it can be communicated
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     //! unpack data from a char vector into this class
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //! return particle type
     inline TypeEnum ReturnParticleType() const { return particletype_; };

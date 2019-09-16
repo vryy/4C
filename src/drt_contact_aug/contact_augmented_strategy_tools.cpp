@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Tools for the augmented contact solving strategy with
        standard Lagrangian multipliers.
 

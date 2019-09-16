@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \maintainer Martin Kronbichler
 
 \brief Setup of the list of valid materials for input
@@ -116,6 +116,21 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(m, "COEFFDENSITY", "density-pressure coefficient");
     AddNamedReal(m, "COEFFVISCOSITY", "viscosity-pressure coefficient");
     AddNamedReal(m, "GAMMA", "surface tension coefficient", 0.0, true);
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // Weakly compressible fluid
+  {
+    Teuchos::RCP<MaterialDefinition> m =
+        Teuchos::rcp(new MaterialDefinition("MAT_fluid_weakly_compressible",
+            "Weakly compressible fluid", INPAR::MAT::m_fluid_weakly_compressible));
+
+    AddNamedReal(m, "VISCOSITY", "viscosity");
+    AddNamedReal(m, "REFDENSITY", "reference density");
+    AddNamedReal(m, "REFPRESSURE", "reference pressure");
+    AddNamedReal(m, "COMPRCOEFF", "compressibility coefficient");
 
     AppendMaterialDefinition(matlist, m);
   }
@@ -241,6 +256,35 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
     AppendMaterialDefinition(matlist, m);
   }
+
+  /*----------------------------------------------------------------------*/
+  // Barus viscosity lubrication material law
+  {
+    Teuchos::RCP<MaterialDefinition> m =
+        Teuchos::rcp(new MaterialDefinition("MAT_lubrication_law_barus",
+            "barus lubrication material law", INPAR::MAT::m_lubrication_law_barus));
+
+    AddNamedReal(m, "ABSViscosity", "absolute lubricant viscosity");
+    AddNamedReal(m, "PreVisCoeff", "pressure viscosity coefficient");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // Roeland viscosity lubrication material law
+  {
+    Teuchos::RCP<MaterialDefinition> m =
+        Teuchos::rcp(new MaterialDefinition("MAT_lubrication_law_roeland",
+            "roeland lubrication material law", INPAR::MAT::m_lubrication_law_roeland));
+
+    AddNamedReal(m, "ABSViscosity", "absolute lubricant viscosity");
+    AddNamedReal(m, "PreVisCoeff", "pressure viscosity coefficient");
+    AddNamedReal(m, "RefVisc", "reference viscosity");
+    AddNamedReal(m, "RefPress", "reference Pressure");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
 
   /*----------------------------------------------------------------------*/
   // scalar transport material (with potential reaction coefficient)

@@ -1,10 +1,11 @@
-/*!-----------------------------------------------------------------------------------------------*
+/*----------------------------------------------------------------------*/
+/*! \file
  \brief class representing a geometrical side
 
 \level 2
 
 \maintainer Christoph Ager
- *------------------------------------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 
 #include "cut_clnwrapper.H"
 #include "cut_side.H"
@@ -269,6 +270,7 @@ bool GEO::CUT::Side::IsTouched(Side& other, Point* p)
       GEO::CUT::OUTPUT::GmshSideDump(file, &other, std::string("OtherSide"));
       GEO::CUT::OUTPUT::GmshPointDump(file, p, p->Id(), std::string("CutPoint"), false, NULL);
       p->DumpConnectivityInfo();
+      GEO::CUT::OUTPUT::GmshWriteSection(file, "Edge", p->CutEdges());
       file.close();
       dserror(
           "Touching point between two sides does not lie on edge. This case should be analyzed");
@@ -955,6 +957,15 @@ void GEO::CUT::Side::SimplifyMixedParallelCutSurface(Mesh& mesh, Element* elemen
   }
 }
 
+void GEO::CUT::Side::GetBoundaryCells(plain_boundarycell_set& bcells)
+{
+  for (std::vector<Facet*>::iterator i = facets_.begin(); i != facets_.end(); ++i)
+  {
+    Facet* f = *i;
+    f->GetBoundaryCells(bcells);
+  }
+}
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void GEO::CUT::Side::MakeOwnedSideFacets(Mesh& mesh, Element* element, plain_facet_set& facets)
@@ -1287,6 +1298,29 @@ bool GEO::CUT::Side::OnEdge(Line* line)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+bool GEO::CUT::Side::AllPointsCommon(Side& side)
+{
+  const std::vector<Node*>& other_nodes = side.Nodes();
+  for (std::vector<Node*>::const_iterator i = nodes_.begin(); i != nodes_.end(); ++i)
+  {
+    Point* p = (*i)->point();
+    bool found = false;
+    for (std::vector<Node*>::const_iterator j = other_nodes.begin(); j != other_nodes.end(); ++j)
+    {
+      Point* other_p = (*j)->point();
+      if (other_p->Id() == p->Id())
+      {
+        found = true;
+        break;
+      }
+    }
+    if (!found) return false;
+  }
+  return true;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool GEO::CUT::Side::HaveCommonNode(Side& side)
 {
   const std::vector<Node*>& other_nodes = side.Nodes();
@@ -1419,6 +1453,11 @@ void GEO::CUT::Side::GetSelfCutPosition(Point::PointPosition position)
 {
   if (selfcutposition_ != position)
   {
+    if (position == Point::oncutsurface) dserror("if (position == Point::oncutsurface)");
+
+    if (Id() < 0)  // Propagate Selfcutposition only on Cutsides :)
+      return;
+
     selfcutposition_ = position;
 
     for (std::vector<Edge*>::iterator i = edges_.begin(); i != edges_.end(); ++i)
@@ -1441,6 +1480,7 @@ void GEO::CUT::Side::ChangeSelfCutPosition(Point::PointPosition position)
 {
   if (selfcutposition_ != position)
   {
+    if (position == Point::oncutsurface) dserror("if (position == Point::oncutsurface)");
     selfcutposition_ = position;
 
     for (std::vector<Edge*>::iterator i = edges_.begin(); i != edges_.end(); ++i)
@@ -1761,12 +1801,13 @@ template <unsigned probdim, DRT::Element::DiscretizationType sidetype, unsigned 
     unsigned dim>
 ///  lies point with given coordinates within this side?
 bool GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::LocalCoordinates(
-    const LINALG::Matrix<probdim, 1>& xyz, LINALG::Matrix<probdim, 1>& rsd, bool allow_dist)
+    const LINALG::Matrix<probdim, 1>& xyz, LINALG::Matrix<probdim, 1>& rsd, bool allow_dist,
+    double tol)
 {
   Teuchos::RCP<Position> pos = PositionFactory::BuildPosition<probdim, sidetype>(*this, xyz);
-  bool success = pos->Compute();
+  bool success = pos->Compute(tol, allow_dist);
   LINALG::Matrix<dim, 1> rs(true);
-  pos->LocalCoordinates(rs);
+  if (pos->Status() == Position::position_valid) pos->LocalCoordinates(rs);
   // copy the position
   std::copy(rs.A(), rs.A() + dim, &rsd(0));
   // copy the distance
@@ -1776,7 +1817,7 @@ bool GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::LocalCoordina
      * i.e. surface element in 3-D or line element in 2-D. */
     case probdim - 1:
     {
-      rsd(dim) = pos->Distance();
+      if (pos->Status() >= Position::position_distance_valid) rsd(dim) = pos->Distance();
       break;
     }
     /* Side dimension is by a factor of two smaller than the problem dimension,

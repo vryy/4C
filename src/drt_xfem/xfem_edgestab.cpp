@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief provides the xfem fluid and ghost penalty stabilization based on EOS/CIP (edge-oriented,
 continuous interior penalty) scheme
@@ -52,8 +52,9 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
     Teuchos::RCP<LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
     Teuchos::RCP<Epetra_Vector> systemvector,         ///< systemvector
     Teuchos::RCP<GEO::CutWizard> wizard,              ///< cut wizard
-    bool include_inner,  ///< stabilize also facets with inside position
-    bool gmsh_eos_out    ///< stabilization gmsh output
+    bool include_inner,        ///< stabilize also facets with inside position
+    bool include_inner_faces,  ///< stabilize also faces with inside position if possible
+    bool gmsh_eos_out          ///< stabilization gmsh output
 )
 {
   //====================================================================================================
@@ -188,7 +189,8 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
       for (std::vector<GEO::CUT::Facet*>::const_iterator f = facets.begin(); f != facets.end(); f++)
       {
         if ((*f)->Position() == GEO::CUT::Point::outside or
-            ((*f)->Position() == GEO::CUT::Point::inside and include_inner))
+            ((*f)->Position() == GEO::CUT::Point::inside and
+                (include_inner || include_inner_faces)))
         {
           GEO::CUT::plain_volumecell_set vcs = (*f)->Cells();
 
@@ -196,21 +198,22 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
           if (vcs.size() ==
               2)  // standard XFEM case (facet between two vcs of two neighbouring cut elements
           {
-            //------------------------ create nodal dof sets
+            GEO::CUT::plain_volumecell_set::iterator vc_it = vcs.begin();
+
+            GEO::CUT::VolumeCell* vc1 = *(vc_it);
+            vc_it++;
+            GEO::CUT::VolumeCell* vc2 = *(vc_it);
+
+
+            // get the parent element
+            int vc_ele1_id = vc1->ParentElement()->Id();
+            int vc_ele2_id = vc2->ParentElement()->Id();
+
+            bool all_dofs = (facets.size() == 1 && include_inner_faces);
+            if ((*f)->Position() == GEO::CUT::Point::outside || include_inner)
             {
+              //------------------------ create nodal dof sets
               TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: create nds");
-
-              GEO::CUT::plain_volumecell_set::iterator vc_it = vcs.begin();
-
-              GEO::CUT::VolumeCell* vc1 = *(vc_it);
-              vc_it++;
-              GEO::CUT::VolumeCell* vc2 = *(vc_it);
-
-
-              // get the parent element
-              int vc_ele1_id = vc1->ParentElement()->Id();
-              int vc_ele2_id = vc2->ParentElement()->Id();
-
               // which element is the parent element
               if (vc_ele1_id == p_master_id)
               {
@@ -225,6 +228,46 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
               else
                 dserror("no element (ele1 and ele2) is the parent element!!! WHY?");
             }
+            else if ((*f)->Position() == GEO::CUT::Point::inside && all_dofs)
+            {
+              for (uint n = 0; n < vc1->ParentElement()->Nodes().size(); ++n)
+              {
+                if (!vc1->ParentElement()->Nodes()[n]->NodalDofSets().size())
+                {
+                  all_dofs = false;
+                  break;
+                }
+              }
+              if (all_dofs)
+                for (uint n = 0; n < vc2->ParentElement()->Nodes().size(); ++n)
+                {
+                  if (!vc2->ParentElement()->Nodes()[n]->NodalDofSets().size())
+                  {
+                    all_dofs = false;
+                    break;
+                  }
+                }
+              if (all_dofs)
+              {
+                nds_master.clear();
+                nds_slave.clear();
+                if (vc1->ParentElement()->NumNodes() == vc2->ParentElement()->NumNodes())
+                {
+                  //------------------------ create nodal dof sets
+                  TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: create nds");
+                  for (uint n = 0; n < vc2->ParentElement()->Nodes().size(); ++n)
+                  {
+                    nds_master.push_back(0);
+                    nds_slave.push_back(0);
+                  }
+                }
+                else
+                  dserror("Number of Nodes different between Master and Slave Element!");
+              }
+            }
+
+            if ((*f)->Position() == GEO::CUT::Point::inside && !include_inner && !all_dofs)
+              continue;
             //------------------------
 
             num_edgestab++;

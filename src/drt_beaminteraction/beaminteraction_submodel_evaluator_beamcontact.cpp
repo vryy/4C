@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief class for submodel beam contact
 
@@ -463,8 +463,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::WriteOutputRuntimeVtpBeamC
   gaps.reserve(num_row_points);
 
   // loop over my points and collect the geometry/grid data, i.e. contact points
-  std::vector<LINALG::TMatrix<double, 3, 1>> coordinates_ele1_this_pair;
-  std::vector<LINALG::TMatrix<double, 3, 1>> coordinates_ele2_this_pair;
+  std::vector<LINALG::Matrix<3, 1, double>> coordinates_ele1_this_pair;
+  std::vector<LINALG::Matrix<3, 1, double>> coordinates_ele2_this_pair;
 
   std::vector<double> contact_forces_this_pair;
   std::vector<double> gaps_this_pair;
@@ -495,7 +495,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::WriteOutputRuntimeVtpBeamC
 
       for (unsigned int ipointpair = 0; ipointpair < num_active_point_pairs; ++ipointpair)
       {
-        LINALG::TMatrix<double, 3, 1> normal_vector;
+        LINALG::Matrix<3, 1, double> normal_vector;
         normal_vector.Update(1.0, coordinates_ele1_this_pair[ipointpair], -1.0,
             coordinates_ele2_this_pair[ipointpair]);
 

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
  \brief evaluation class containing routines for calculation of scalar transport
         within porous medium including advanced reactions

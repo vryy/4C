@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/**
+/** \file
 \brief xcontact level-set one step theta algorithm
 
 \maintainer Matthias Mayr

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief partitioned algorithm for particle structure interaction
 
 \level 3
@@ -50,8 +50,8 @@ namespace PASI
     //! constructor
     explicit PartitionedAlgo(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~PartitionedAlgo(){};
+    //! destructor
+    ~PartitionedAlgo() override{};
 
     //! init pasi algorithm
     virtual void Init();
@@ -60,7 +60,7 @@ namespace PASI
     virtual void Setup();
 
     //! read restart information for given time step
-    virtual void ReadRestart(int restartstep);
+    void ReadRestart(int restartstep) override;
 
     //! timeloop of coupled problem
     virtual void Timeloop() = 0;

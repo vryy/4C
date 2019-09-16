@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Shape function repository for mortar coupling element
 
 \level 1

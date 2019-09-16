@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Augmented contact interface.
 
 \level 2
@@ -265,7 +265,7 @@ namespace CONTACT
       virtual void FillComplete(int maxdof = 0, bool newghosting = true);
 
       //! Initialization of all augmented contact related quantities
-      void Initialize();
+      void Initialize() final;
 
       /*! \brief Reduced evaluate of the contact interface. We don't need any
        *  search algorithm and we don't have to build the nodal normals again. */
@@ -436,7 +436,7 @@ namespace CONTACT
       }
 
       /// derived
-      void EvaluateNodalNormals() const override;
+      void EvaluateNodalNormals() const final;
 
       /// export the 2nd order derivatives of the nodal smooth normals
       void ExportDeriv2ndNodalNormals() const;
@@ -456,10 +456,10 @@ namespace CONTACT
        *  more expensive.
        *
        *  \author hiermeier \date 06/17 */
-      virtual void ExportNodalNormals() const;
+      void ExportNodalNormals() const final;
 
       //! derived
-      virtual void UpdateMasterSlaveSets();
+      void UpdateMasterSlaveSets() final;
 
       /// setup the interface and internal class members
       void Setup();

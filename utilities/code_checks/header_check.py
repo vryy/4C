@@ -6,81 +6,18 @@ import argparse
 import baciheader as bh
 import inputheader as ih
 import subprocess
-#UTILS
-
-def command_output(cmd):
-  " Capture a command's standard output. "
-  message = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE).communicate()[0]
-  return message
-
-def is_source_file(fname):
-  return os.path.splitext(fname)[1] in ".c .cpp .cxx .h .H .hpp".split()
-
-def is_support_file(fname):
-  return os.path.splitext(fname)[1] in ".dat .cmake .config .md".split()
-
-def path_contains(test, path):
-  head, tail = os.path.split(path)
-  if test == tail or len(head) <= 0:
-    return (test == tail)
-  return path_contains(test, head)
-
-def is_input_file(fname):
-  return path_contains("Input", fname) and os.path.splitext(fname)[1] == ".dat"
-
-def is_checked_file(fname):
-  return is_source_file(fname) or is_support_file(fname)
-
-def files_changed(look_cmd):
-  """ List the files added or updated by this transaction.
-  """
-  def filename(line):
-    return line
-  looked_files  = command_output(look_cmd).split("\n")
-  changed_files = [filename(line) for line in looked_files]
-  return changed_files
-
-def file_contents(filename):
-  " Return a file's contents for this transaction. "
-  with open (filename) as myfile:
-    output=myfile.readlines()
-  return output
-
-def pretty_print_error(allerrors):
-  max_width = 56
-  if len(allerrors) > 0:
-    max_width = max(max_width,max([len(line) for line in allerrors]))
-  if test_flag:
-  #header
-    sys.stderr.write("\n"+"E"*(max_width+4)+"\nE"+" "*(max_width+2)+"E\n")
-    sys.stderr.write("E Your commit was rejected due to the following reason(s):"+" "*(max_width-55)+"E\nE"+" "*(max_width+2)+"E\n")
-  #body
-    for line in allerrors:
-      sys.stderr.write("E "+line+" "*(max_width-len(line))+" E\n")
-#footer
-    sys.stderr.write("E"+" "*(max_width+2)+"E\n"+"E"*(max_width+4)+"\n")
-  else:
-    f = open('wrong_format.txt', 'w')
-  #header
-    f.write("\n"+"E"*(max_width+4)+"\nE"+" "*(max_width+2)+"E\n")
-  #body
-    for line in allerrors:
-      f.write("E "+line+" "*(max_width-len(line))+" E\n")
-  #footer
-    f.write("E"+" "*(max_width+2)+"E\n"+"E"*(max_width+4)+"\n")
-    f.close()
-  return
+import common_utils as utils
 
 # CHECK FOR TABS
 
 def contains_tabs(filename):
   " Return True if this version of the file contains tabs. "
-  return "\t" in file_contents(filename)
+  return "\t" in utils.file_contents(filename)
 
 def check_support_files_for_tabs(look_cmd, allerrors):
   " Check support files in this transaction are tab-free. "
 
-  support_files_with_tabs = [ff for ff in files_changed(look_cmd) if is_support_file(ff) and contains_tabs(ff)]
+  support_files_with_tabs = [ff for ff in utils.files_changed(look_cmd) if utils.is_support_file(ff) and contains_tabs(ff)]
   if len(support_files_with_tabs) > 0:
     if len(allerrors) > 0:
       allerrors.append("")
@@ -92,11 +29,11 @@ def check_support_files_for_tabs(look_cmd, allerrors):
 
 def trailing_whitespace(filename):
   " Return True if this version of the file contains a trailing whitespace. "
-  return "\t" in file_contents(filename)
+  return "\t" in utils.file_contents(filename)
 
 def check_support_files_for_trailing_whitespace(look_cmd, allerrors):
   " Check support files in this transaction are trailing whitespace-free. "
-  support_files_with_trailing_whitespace = [ff for ff in files_changed(look_cmd) if is_support_file(ff) and trailing_whitespace(ff)]
+  support_files_with_trailing_whitespace = [ff for ff in utils.files_changed(look_cmd) if utils.is_support_file(ff) and trailing_whitespace(ff)]
   if len(support_files_with_trailing_whitespace) > 0:
     if len(allerrors) > 0:
       allerrors.append("")
@@ -109,7 +46,7 @@ def check_support_files_for_trailing_whitespace(look_cmd, allerrors):
 #CHECK HEADER
 def check_cpp_files_for_header(look_cmd, allerrors):
   " Check C/C++ files in this transaction have a maintainer. "
-  headers = dict([(ff,bh.Header(file_contents(ff))) for ff in files_changed(look_cmd)[:-1] if is_source_file(ff)])
+  headers = dict([(ff,bh.Header(utils.file_contents(ff))) for ff in utils.files_changed(look_cmd)[:-1] if utils.is_source_file(ff)])
 # \brief tag
   cpp_files_wo_brief = []
 # \maintainer tag
@@ -124,7 +61,7 @@ def check_cpp_files_for_header(look_cmd, allerrors):
   if len(cpp_files_wrong_start) > 0:
     if len(allerrors) > 0:
       allerrors.append("")
-    allerrors.append("The following files do not start with '/*!' or '/**' as an appropriate header marker:")
+    allerrors.append("The following files do not start with '/*! \\file' or '/** \\file' as an appropriate header marker:")
     allerrors += cpp_files_wrong_start
 # \level tag
   cpp_files_wo_lvl = [ff for ff,hdr in headers.items() if not (0 <= hdr.get_level() <= 3)]
@@ -151,7 +88,7 @@ def check_cpp_files_for_header(look_cmd, allerrors):
 #CHECK INPUT FILE HEADERS
 def check_input_files_for_header(look_cmd, allerrors):
   " Check .dat file in the Input folder for a proper header. "
-  headers = dict([(ff,ih.Header(file_contents(ff))) for ff in files_changed(look_cmd)[:-1] if is_input_file(ff)])
+  headers = dict([(ff,ih.Header(utils.file_contents(ff))) for ff in utils.files_changed(look_cmd)[:-1] if utils.is_input_file(ff)])
   datfiles_without_header = [ff for ff,hdr in headers.items() if len(hdr.get_maintainer()) < 1]
   if len(datfiles_without_header) > 0:
     if len(allerrors) > 0:
@@ -179,14 +116,14 @@ def check_input_files_for_header(look_cmd, allerrors):
 def build_filter(look_cmd):
   " Build a regex from entries found in .gitignore. "
   import pathspec
-  #text= file_contents(".gitignore")
+  #text= utils.file_contents(".gitignore")
   with open('.gitignore', 'r') as text:
     spec = pathspec.PathSpec.from_lines(pathspec.GitIgnorePattern,text)
   return spec
 
 def check_all_files_for_gitignore(look_cmd, allerrors):
   " Check that the files to be added or changed are not in .gitignore. "
-  ignored_files = build_filter(look_cmd).match_files(files_changed(look_cmd))
+  ignored_files = build_filter(look_cmd).match_files(utils.files_changed(look_cmd))
   if len(ignored_files) > 0:
     if len(allerrors) > 0:
       allerrors.append("")
@@ -198,20 +135,21 @@ def check_all_files_for_gitignore(look_cmd, allerrors):
 #######################################################################################################################
 
 def main():
+  # build command line arguments
   parser = argparse.ArgumentParser()
-  parser.add_argument("--test_flag", help="Please specify the test_flag to determine the type of the code check. A value of 1 means pre-commit hook and a value of 0 a nightly test case.", type=int)
+  parser.add_argument('--diff_only', action='store_true', help='Add this tag if only the difference to HEAD should be analyzed. This flag should be used as a pre-commit hook. Otherwise all files are checked.')
+  parser.add_argument('--out', type=str, default=None, help='Add this tag if the error message should be written to a file.')
   args = parser.parse_args()
-  flag = args.test_flag
-  global test_flag
-  if flag==1:
-    test_flag = True # pre-commit hook
-  elif flag==0:
-    test_flag = False # nightly test case
-  else: raise ValueError(r'Invalid argument for code checks! Must be integer')
+
+  # flag, whether only touched files should be checked
+  diff_only = args.diff_only
+
+  # error file (None for sys.stderr)
+  errfile = args.out
   errors = 0
   allerrors = []
   try:
-    if test_flag:
+    if diff_only:
       look_cmd = "git diff --name-only --cached --diff-filter=MRAC"
     else:
       look_cmd = "find ./ -type f"
@@ -224,7 +162,10 @@ def main():
     print("Something went wrong! Check the error functions in this script again!")
     errors += 1
   if errors > 0:
-    pretty_print_error(allerrors)
+    if errfile is None:
+      utils.pretty_print_error_stderr(allerrors)
+    else:
+      utils.pretty_print_error_file(allerrors, errfile)
   return errors
 
 if __name__ == "__main__":

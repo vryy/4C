@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Interface class for the Lagrange solving strategy of the augmented
        framework.
 

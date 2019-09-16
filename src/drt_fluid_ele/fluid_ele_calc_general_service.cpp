@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief general service routines for calculation of fluid element
 
@@ -30,6 +30,7 @@
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/fluid_linear_density_viscosity.H"
 #include "../drt_mat/fluid_murnaghantait.H"
+#include "../drt_mat/fluid_weakly_compressible.H"
 #include "../drt_mat/fluidporo.H"
 
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"

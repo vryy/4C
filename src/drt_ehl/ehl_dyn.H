@@ -1,5 +1,5 @@
 /*--------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief control routine for elastohydrodynamic lubrication (lubrication structure interaction)
 

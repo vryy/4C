@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief A 2D shell element with scatra functionality
 
 \level 1

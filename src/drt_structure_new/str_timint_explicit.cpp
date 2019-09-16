@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief explicit structural time integration
 
@@ -51,6 +51,17 @@ void STR::TIMINT::Explicit::PrepareTimeStep()
   PostPredict();
 
   return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Explicit::UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc)
+{
+  CheckInitSetup();
+  dserror(
+      "All monolithically coupled problems work with implicit time "
+      "integration schemes. Thus, calling Evaluate() in an explicit scheme "
+      "is not possible.");
 }
 
 /*----------------------------------------------------------------------------*

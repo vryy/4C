@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
  \brief global access method for scalar transport within multiphase porous medium
 
    \level 3

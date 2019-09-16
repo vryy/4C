@@ -1,5 +1,5 @@
 /*--------------------------------------------------------------------------*/
-/*!
+/*! \file
 
 \brief base class for all elastohydrodynamic lubrication (lubrication structure interaction)
 algorithms

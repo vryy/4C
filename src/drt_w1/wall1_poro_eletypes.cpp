@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Element types of the 2D solid-poro element.
 
 \level 2

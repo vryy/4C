@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief Various auxiliar methods needed in thermal analysis
 \level 1
 \maintainer Christoph Meier

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief neighbor pair struct for smoothed particle hydrodynamics (SPH) interactions
 
 \level 3
@@ -20,7 +20,7 @@
 namespace PARTICLEINTERACTION
 {
   //! struct to store quantities of interacting particles
-  struct SPHParticlePair
+  struct SPHParticlePair final
   {
     //! local index tuple of particles i and j
     PARTICLEENGINE::LocalIndexTuple tuple_i_;
@@ -42,7 +42,7 @@ namespace PARTICLEINTERACTION
   };
 
   //! struct to store quantities of interacting particles and wall elements
-  struct SPHParticleWallPair
+  struct SPHParticleWallPair final
   {
     //! local index tuple of particle i
     PARTICLEENGINE::LocalIndexTuple tuple_i_;

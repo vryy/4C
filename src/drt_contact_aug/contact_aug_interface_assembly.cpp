@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/*!
+/*! \file
 \brief (augmented) contact assembly: assemble locally stored quantities into
 sparse matrices and parallel distributed vectors
 
