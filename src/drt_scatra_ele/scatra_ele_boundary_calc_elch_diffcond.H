@@ -57,12 +57,13 @@ namespace DRT
           Epetra_SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
           Epetra_SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
           Epetra_SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
-      );
+          ) override;
 
       //! evaluate Neumann boundary condition
       int EvaluateNeumann(DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition,
-          DRT::Element::LocationArray& la, Epetra_SerialDenseVector& elevec1, const double scalar);
+          DRT::Element::LocationArray& la, Epetra_SerialDenseVector& elevec1,
+          const double scalar) override;
 
       //! evaluate an electrode kinetics boundary condition
       void EvaluateElchBoundaryKinetics(const DRT::Element* ele,  ///< current element
@@ -81,22 +82,28 @@ namespace DRT
           const double frt,                   ///< factor F/RT
           const double
               scalar  ///< scaling factor for element matrix and right-hand side contributions
-      );
+          ) override;
 
-      //! evaluate scatra-scatra interface coupling condition
-      void EvaluateS2ICoupling(const DRT::FaceElement* ele,  ///< current boundary element
-          Teuchos::ParameterList& params,                    ///< parameter list
-          DRT::Discretization& discretization,               ///< discretization
-          DRT::Element::LocationArray& la,                   ///< location array
-          Epetra_SerialDenseMatrix& eslavematrix,            ///< element matrix for slave side
-          Epetra_SerialDenseMatrix& emastermatrix,           ///< element matrix for master side
-          Epetra_SerialDenseVector& eslaveresidual           ///< element residual for slave side
-      );
+      /*!
+       * \brief evaluate scatra-scatra interface coupling condition
+       *
+       * @param ele             current boundary element
+       * @param params          parameter list
+       * @param discretization  discretization
+       * @param la              location array
+       * @param eslavematrix    element matrix for slave side
+       * @param emastermatrix   element matrix for master side
+       * @param eslaveresidual  element residual for slave side
+       */
+      void EvaluateS2ICoupling(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+          Epetra_SerialDenseMatrix& eslavematrix, Epetra_SerialDenseMatrix& emastermatrix,
+          Epetra_SerialDenseVector& eslaveresidual) override;
 
       //! extract valence of species k from element material
       double GetValence(const Teuchos::RCP<const MAT::Material>& material,  //! element material
           const int k                                                       //! species number
-          ) const;
+          ) const override;
 
       //! diffusion manager
       Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc_;

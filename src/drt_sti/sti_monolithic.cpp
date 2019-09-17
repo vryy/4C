@@ -1167,8 +1167,13 @@ void STI::Monolithic::AssembleODBlockScatraThermo()
             scatra_->Discretization()->GetCondition("S2ICoupling", conditions);
             for (unsigned icondition = 0; icondition < conditions.size(); ++icondition)
               if (conditions[icondition]->GetInt("interface side") == INPAR::S2I::side_slave)
+              {
+                // collect condition specific data and store to scatra boundary parameter class
+                strategyscatra_->SetConditionSpecificScaTraParameters(*conditions[icondition]);
+                // evaluate the condition
                 scatra_->Discretization()->EvaluateCondition(condparams, strategyscatrathermos2i,
                     "S2ICoupling", conditions[icondition]->GetInt("ConditionID"));
+              }
 
             // finalize auxiliary system matrix
             blockslavematrix->Complete();
@@ -1224,8 +1229,13 @@ void STI::Monolithic::AssembleODBlockScatraThermo()
             scatra_->Discretization()->GetCondition("S2ICoupling", conditions);
             for (unsigned icondition = 0; icondition < conditions.size(); ++icondition)
               if (conditions[icondition]->GetInt("interface side") == INPAR::S2I::side_slave)
+              {
+                // collect condition specific data and store to scatra boundary parameter class
+                strategyscatra_->SetConditionSpecificScaTraParameters(*conditions[icondition]);
+                // evaluate the condition
                 scatra_->Discretization()->EvaluateCondition(condparams, strategyscatrathermos2i,
                     "S2ICoupling", conditions[icondition]->GetInt("ConditionID"));
+              }
 
             // finalize auxiliary system matrix
             strategyscatra_->SlaveMatrix()->Complete(
@@ -1317,6 +1327,8 @@ void STI::Monolithic::AssembleODBlockScatraThermo()
             // add condition to parameter list
             condparams.set<DRT::Condition*>("condition", &condition);
 
+            // collect condition specific data and store to scatra boundary parameter class
+            strategyscatra_->SetConditionSpecificScaTraParameters(condition);
             // evaluate mortar integration cells
             strategyscatra_->EvaluateMortarCells(
                 strategyscatra_->MortarDiscretization(condition.GetInt("ConditionID")), condparams,
@@ -1488,8 +1500,13 @@ void STI::Monolithic::AssembleODBlockThermoScatra()
             thermo_->Discretization()->GetCondition("S2ICoupling", conditions);
             for (unsigned icondition = 0; icondition < conditions.size(); ++icondition)
               if (conditions[icondition]->GetInt("interface side") == INPAR::S2I::side_slave)
+              {
+                // collect condition specific data and store to scatra boundary parameter class
+                strategythermo_->SetConditionSpecificScaTraParameters(*conditions[icondition]);
+                // evaluate the condition
                 thermo_->Discretization()->EvaluateCondition(condparams, strategythermoscatras2i,
                     "S2ICoupling", conditions[icondition]->GetInt("ConditionID"));
+              }
 
             // finalize auxiliary system matrices
             slavematrix->Complete();
@@ -1543,8 +1560,13 @@ void STI::Monolithic::AssembleODBlockThermoScatra()
             thermo_->Discretization()->GetCondition("S2ICoupling", conditions);
             for (unsigned icondition = 0; icondition < conditions.size(); ++icondition)
               if (conditions[icondition]->GetInt("interface side") == INPAR::S2I::side_slave)
+              {
+                // collect condition specific data and store to scatra boundary parameter class
+                strategythermo_->SetConditionSpecificScaTraParameters(*conditions[icondition]);
+                // evaluate the condition
                 thermo_->Discretization()->EvaluateCondition(condparams, strategythermoscatras2i,
                     "S2ICoupling", conditions[icondition]->GetInt("ConditionID"));
+              }
 
             // finalize auxiliary system matrices
             strategythermo_->SlaveMatrix()->Complete(
@@ -1692,6 +1714,8 @@ void STI::Monolithic::AssembleODBlockThermoScatra()
             // add condition to parameter list
             condparams.set<DRT::Condition*>("condition", &condition);
 
+            // collect condition specific data and store to scatra boundary parameter class
+            strategythermo_->SetConditionSpecificScaTraParameters(condition);
             // evaluate mortar integration cells
             strategythermo_->EvaluateMortarCells(
                 strategythermo_->MortarDiscretization(condition.GetInt("ConditionID")), condparams,

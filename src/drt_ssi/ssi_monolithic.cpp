@@ -685,9 +685,14 @@ void SSI::SSI_Mono::AssembleODBlockScatraStructure() const
         scatra_->ScaTraField()->Discretization()->GetCondition("S2ICoupling", conditions);
         for (unsigned icondition = 0; icondition < conditions.size(); ++icondition)
           if (conditions[icondition]->GetInt("interface side") == INPAR::S2I::side_slave)
+          {
+            // collect condition specific data and store to scatra boundary parameter class
+            strategy_scatra_->SetConditionSpecificScaTraParameters(*conditions[icondition]);
+            // evaluate the condition now
             scatra_->ScaTraField()->Discretization()->EvaluateCondition(condparams,
                 strategyscatrastructures2i, "S2ICoupling",
                 conditions[icondition]->GetInt("ConditionID"));
+          }
 
         // finalize auxiliary system matrix
         blockslavematrix->Complete();
@@ -743,9 +748,14 @@ void SSI::SSI_Mono::AssembleODBlockScatraStructure() const
         scatra_->ScaTraField()->Discretization()->GetCondition("S2ICoupling", conditions);
         for (unsigned icondition = 0; icondition < conditions.size(); ++icondition)
           if (conditions[icondition]->GetInt("interface side") == INPAR::S2I::side_slave)
+          {
+            // collect condition specific data and store to scatra boundary parameter class
+            strategy_scatra_->SetConditionSpecificScaTraParameters(*conditions[icondition]);
+            // evaluate the condition now
             scatra_->ScaTraField()->Discretization()->EvaluateCondition(condparams,
                 strategyscatrastructures2i, "S2ICoupling",
                 conditions[icondition]->GetInt("ConditionID"));
+          }
 
         // finalize auxiliary system matrix
         strategy_scatra_->SlaveMatrix()->Complete(*maps_->Map(1), *maps_->Map(0));

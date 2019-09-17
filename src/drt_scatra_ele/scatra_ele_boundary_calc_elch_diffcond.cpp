@@ -287,14 +287,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateElchBoun
  *-------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateS2ICoupling(
-    const DRT::FaceElement* ele,              ///< current boundary element
-    Teuchos::ParameterList& params,           ///< parameter list
-    DRT::Discretization& discretization,      ///< discretization
-    DRT::Element::LocationArray& la,          ///< location array
-    Epetra_SerialDenseMatrix& eslavematrix,   ///< element matrix for slave side
-    Epetra_SerialDenseMatrix& emastermatrix,  ///< element matrix for master side
-    Epetra_SerialDenseVector& eslaveresidual  ///< element residual for slave side
-)
+    const DRT::FaceElement* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    Epetra_SerialDenseMatrix& eslavematrix, Epetra_SerialDenseMatrix& emastermatrix,
+    Epetra_SerialDenseVector& eslaveresidual)
 {
   // this function should never be called
   dserror(

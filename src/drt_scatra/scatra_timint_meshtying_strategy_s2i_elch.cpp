@@ -25,6 +25,7 @@
 #include "../drt_scatra_ele/scatra_ele_calc_utils.H"
 #include "../drt_scatra_ele/scatra_ele_parameter_elch.H"
 #include "../drt_scatra_ele/scatra_ele_parameter_timint.H"
+#include "../drt_scatra_ele/scatra_ele_parameter_boundary.H"
 
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_solver.H"
@@ -602,6 +603,13 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
   // determine quadrature rule
   const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::intrule_tri_7point);
 
+  const int kineticmodel = my::scatraparamsboundary_->KineticModel();
+  const int numelectrons = my::scatraparamsboundary_->NumElectrons();
+  const std::vector<int>* stoichiometries = my::scatraparamsboundary_->Stoichiometries();
+  const double kr = my::scatraparamsboundary_->Kr();
+  const double alphaa = my::scatraparamsboundary_->AlphaA();
+  const double alphac = my::scatraparamsboundary_->AlphaC();
+
   // loop over all integration points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
@@ -617,10 +625,10 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
     if (timefacfac < 0. or timefacrhsfac < 0.) dserror("Integration factor is negative!");
 
     DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
-        distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<distypeM>(*condition,
-        matelectrode, my::ephinp_slave_, my::ephinp_master_, my::funct_slave_, my::funct_master_,
-        my::test_lm_slave_, my::test_lm_master_, timefacfac, timefacrhsfac, GetFRT(), k_ss, k_sm,
-        k_ms, k_mm, r_s, r_m);
+        distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<distypeM>(matelectrode,
+        my::ephinp_slave_, my::ephinp_master_, my::funct_slave_, my::funct_master_,
+        my::test_lm_slave_, my::test_lm_master_, kineticmodel, numelectrons, stoichiometries, kr,
+        alphaa, alphac, timefacfac, timefacrhsfac, GetFRT(), k_ss, k_sm, k_ms, k_mm, r_s, r_m);
   }
 
   return;
@@ -672,6 +680,13 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(
   // evaluate shape functions at position of slave-side node
   my::EvalShapeFuncAtSlaveNode(slavenode, slaveelement, masterelement);
 
+  const int kineticmodel = my::scatraparamsboundary_->KineticModel();
+  const int numelectrons = my::scatraparamsboundary_->NumElectrons();
+  const std::vector<int>* stoichiometries = my::scatraparamsboundary_->Stoichiometries();
+  const double kr = my::scatraparamsboundary_->Kr();
+  const double alphaa = my::scatraparamsboundary_->AlphaA();
+  const double alphac = my::scatraparamsboundary_->AlphaC();
+
   // overall integration factors
   const double timefacfac =
       DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFac() * lumpedarea;
@@ -680,11 +695,11 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(
   if (timefacfac < 0. or timefacrhsfac < 0.) dserror("Integration factor is negative!");
 
   DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
-      distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<distypeM>(condition, matelectrode,
+      distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<distypeM>(matelectrode,
       ephinp_slave, ephinp_master, my::funct_slave_, my::funct_master_, my::funct_slave_,
-      my::funct_master_, timefacfac, timefacrhsfac,
-      DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT(), k_ss, k_sm, k_ms, k_mm, r_s,
-      r_m);
+      my::funct_master_, kineticmodel, numelectrons, stoichiometries, kr, alphaa, alphac,
+      timefacfac, timefacrhsfac, DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT(),
+      k_ss, k_sm, k_ms, k_mm, r_s, r_m);
 
   return;
 }
@@ -882,6 +897,13 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionO
   // determine quadrature rule
   const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::intrule_tri_7point);
 
+  const int kineticmodel = my::scatraparamsboundary_->KineticModel();
+  const int numelectrons = my::scatraparamsboundary_->NumElectrons();
+  const std::vector<int>* stoichiometries = my::scatraparamsboundary_->Stoichiometries();
+  const double kr = my::scatraparamsboundary_->Kr();
+  const double alphaa = my::scatraparamsboundary_->AlphaA();
+  const double alphac = my::scatraparamsboundary_->AlphaC();
+
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
   {
@@ -895,9 +917,10 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionO
     if (timefacfac < 0.) dserror("Integration factor is negative!");
 
     DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
-        distypeS>::template EvaluateS2ICouplingODAtIntegrationPoint<distypeM>(*s2icondition,
-        matelectrode, my::ephinp_slave_, etempnp_slave_, my::ephinp_master_, my::funct_slave_,
-        my::funct_master_, my::test_lm_slave_, my::test_lm_master_, timefacfac, k_ss, k_ms);
+        distypeS>::template EvaluateS2ICouplingODAtIntegrationPoint<distypeM>(matelectrode,
+        my::ephinp_slave_, etempnp_slave_, my::ephinp_master_, my::funct_slave_, my::funct_master_,
+        my::test_lm_slave_, my::test_lm_master_, kineticmodel, numelectrons, stoichiometries, kr,
+        alphaa, alphac, timefacfac, k_ss, k_ms);
   }  // loop over integration points
 
   return;
@@ -1138,6 +1161,12 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateCondition(
   // determine quadrature rule
   const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::intrule_tri_7point);
 
+  const int kineticmodel = my::scatraparamsboundary_->KineticModel();
+  const double kr = my::scatraparamsboundary_->Kr();
+  const double alphaa = my::scatraparamsboundary_->AlphaA();
+  const double alphac = my::scatraparamsboundary_->AlphaC();
+  const double peltier = my::scatraparamsboundary_->Peltier();
+
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
   {
@@ -1153,9 +1182,9 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateCondition(
     if (timefacfac < 0. or timefacrhsfac < 0.) dserror("Integration factor is negative!");
 
     DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
-        distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<distypeM>(*s2icondition,
-        matelectrode, my::ephinp_slave_[0], eelchnp_slave_, eelchnp_master_, my::funct_slave_,
-        my::funct_master_, timefacfac, timefacrhsfac, k_ss, r_s);
+        distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<distypeM>(matelectrode,
+        my::ephinp_slave_[0], eelchnp_slave_, eelchnp_master_, my::funct_slave_, my::funct_master_,
+        kineticmodel, kr, alphaa, alphac, peltier, timefacfac, timefacrhsfac, k_ss, r_s);
   }  // loop over integration points
 
   return;
@@ -1206,6 +1235,12 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateConditionOD(
   // determine quadrature rule
   const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::intrule_tri_7point);
 
+  const int kineticmodel = my::scatraparamsboundary_->KineticModel();
+  const double kr = my::scatraparamsboundary_->Kr();
+  const double alphaa = my::scatraparamsboundary_->AlphaA();
+  const double alphac = my::scatraparamsboundary_->AlphaC();
+  const double peltier = my::scatraparamsboundary_->Peltier();
+
   // loop over all integration points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
@@ -1219,9 +1254,9 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateConditionOD(
     if (timefacfac < 0.) dserror("Integration factor is negative!");
 
     DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
-        distypeS>::template EvaluateS2ICouplingODAtIntegrationPoint<distypeM>(*s2icondition,
-        matelectrode, my::ephinp_slave_[0], eelchnp_slave_, eelchnp_master_, my::funct_slave_,
-        my::funct_master_, timefacfac, k_ss, k_sm);
+        distypeS>::template EvaluateS2ICouplingODAtIntegrationPoint<distypeM>(matelectrode,
+        my::ephinp_slave_[0], eelchnp_slave_, eelchnp_master_, my::funct_slave_, my::funct_master_,
+        kineticmodel, kr, alphaa, alphac, peltier, timefacfac, k_ss, k_sm);
   }  // loop over integration points
 
   return;

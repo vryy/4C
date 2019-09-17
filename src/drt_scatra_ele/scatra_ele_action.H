@@ -87,29 +87,30 @@ namespace SCATRA
     interpolate_hdg_to_node,    // interpolate hdg to node,
     micro_scale_initialize,     // initialize micro scale in multi-scale simulations
     micro_scale_output,         // output micro-scale quantities in multi-scale simulations
-    micro_scale_prepare_time_step,    // prepare time step on micro scale in multi-scale simulations
-    micro_scale_read_restart,         // read restart on micro scale in multi-scale simulations
-    micro_scale_solve,                // solve micro scale in multi-scale simulations
-    micro_scale_update,               // update micro scale in multi-scale simulations
-    project_dirich_field,             // project dirichlet field for hdg
-    project_field,                    // project field
-    project_material_field,           // project material field for hdg
-    project_neumann_field,            // project neumann field for hdg
-    recon_curvature_at_nodes,         // reconstruct curvature at node points through L2-projection
-    recon_gradients_at_nodes,         // reconstruct gradients at node points through L2-projection
-    calc_grad_ele_center,             // reconstruct gradient at ele center
-    reinitialize_levelset,            // reinitialize_levelset,
-    set_diffcond_scatra_parameter,    // set diffusion-conduction parameters for element evaluation
-    set_elch_scatra_parameter,        // set elch parameters for element evaluation
-    set_general_scatra_parameter,     // set general parameters for element evaluation
-    set_initial_field,                // set initial field for hdg
-    set_lsreinit_scatra_parameter,    // set reinitialization parameters for element evaluation
-    set_material_internal_state,      // set material internal state (for restart for example),
-    set_mean_Cai,                     // special action for mfs
-    set_time_parameter,               // set time-integration parameters for element evaluation
-    set_turbulence_scatra_parameter,  // set turbulence parameters for element evaluation
-    time_update_material,             // time update for materials
-    update_interior_variables,        // update interior variables for hdg
+    micro_scale_prepare_time_step,  // prepare time step on micro scale in multi-scale simulations
+    micro_scale_read_restart,       // read restart on micro scale in multi-scale simulations
+    micro_scale_solve,              // solve micro scale in multi-scale simulations
+    micro_scale_update,             // update micro scale in multi-scale simulations
+    project_dirich_field,           // project dirichlet field for hdg
+    project_field,                  // project field
+    project_material_field,         // project material field for hdg
+    project_neumann_field,          // project neumann field for hdg
+    recon_curvature_at_nodes,       // reconstruct curvature at node points through L2-projection
+    recon_gradients_at_nodes,       // reconstruct gradients at node points through L2-projection
+    calc_grad_ele_center,           // reconstruct gradient at ele center
+    reinitialize_levelset,          // reinitialize_levelset,
+    set_diffcond_scatra_parameter,  // set diffusion-conduction parameters for element evaluation
+    set_elch_scatra_parameter,      // set elch parameters for element evaluation
+    set_general_scatra_parameter,   // set general parameters for element evaluation
+    set_initial_field,              // set initial field for hdg
+    set_lsreinit_scatra_parameter,  // set reinitialization parameters for element evaluation
+    set_material_internal_state,    // set material internal state (for restart for example),
+    set_mean_Cai,                   // special action for mfs
+    set_scatra_ele_boundary_parameter,  // set scatra boundary parameter for interface
+    set_time_parameter,                 // set time-integration parameters for element evaluation
+    set_turbulence_scatra_parameter,    // set turbulence parameters for element evaluation
+    time_update_material,               // time update for materials
+    update_interior_variables,          // update interior variables for hdg
     transform_real_to_reference_point,  // gets a point in real coordinates and returns reference
                                         // coordinates
     evaluate_field_in_point             // evaluates field in given point (in reference coordinates)
