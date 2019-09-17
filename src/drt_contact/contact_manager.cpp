@@ -516,7 +516,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
     }
 
     //-------------------- finalize the contact interface construction
-    interface->FillComplete(maxdof);
+    interface->FillComplete(true, maxdof);
 
     if (cparams.get<int>("PROBTYPE") == INPAR::CONTACT::poro &&
         algo != INPAR::MORTAR::algorithm_gpts)

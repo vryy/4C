@@ -25,6 +25,11 @@
 
 
 // forward declarations
+namespace BINSTRATEGY
+{
+  class BinningStrategy;
+}  // namespace BINSTRATEGY
+
 namespace DRT
 {
   class Discretization;
@@ -35,7 +40,7 @@ namespace DRT
 namespace LINALG
 {
   class SparseMatrix;
-}
+}  // namespace LINALG
 
 namespace MORTAR
 {
@@ -639,7 +644,7 @@ namespace MORTAR
     /*!
     \brief binning strategy for efficient ghosting
     */
-    void BinningStrategy(Teuchos::RCP<Epetra_Map> initial_elecolmap, double vel);
+    void BinningStrategy(Teuchos::RCP<Epetra_Map> initial_elecolmap, const double vel);
 
     /*!
     \brief Get quadratic 2d/3d slave element flag
@@ -994,20 +999,21 @@ namespace MORTAR
     /*!
     \brief Finalize construction of mortar interface
 
-    The methods completes construction phase of a mortar interface.
-    It creates complete overlap ghosting of all elements and nodes
-    on all processors that own at least one node or element on the interface.
-    On return, row maps of nodes and elements are the same as on input but column maps
-    are redundant on all participating processors. Also creates row and column maps
-    of slave and master nodes separately such that these can be easily accessed.
+    The methods completes construction phase of a mortar interface. It creates all row/column maps
+    of the mortar interface discretization.
 
+    If we have arrived at the final parallel distribution, we have to call ask the underlying
+    DRT::Discretization to assign degrees of freedom. Since this is very expensive, let's do this
+    only if requested.
+
+    \sa ExtendInterfaceGhosting()
+
+    \param isFinalParallelDistribution (in): Is this the final parallel distribution?
     \param maxdof (in): maximum dof ID in global discretization
                         (if default=0, then no lmdofrowmap is created)
-    \param newghosting (in): bool to decide whether ghosting needs to be build (default=true)
-
     \return Filled()==true
     */
-    void FillComplete(int maxdof = 0, bool newghosting = true);
+    void FillComplete(const bool isFinalParallelDistribution, const int maxdof = 0);
 
     /*!
     \brief Redistribute interface among all procs
@@ -1344,8 +1350,8 @@ namespace MORTAR
     /*!
     \brief Redistribute the master side of the interface
 
-    \param[in] rownodes Node row map of master side
-    \param[in] colnodes Node column map of master side
+    \param[out] rownodes Redistributed node row map of master side after
+    \param[out] colnodes Redistributed node column map of master side
     \param[in] roweles Element row map of master side
     \param[in] comm Communicator object
     \param[in] parts Number of desired subdomains after redistribution
@@ -1353,7 +1359,7 @@ namespace MORTAR
     */
     void RedistributeMasterSide(Teuchos::RCP<Epetra_Map>& rownodes,
         Teuchos::RCP<Epetra_Map>& colnodes, const Teuchos::RCP<Epetra_Map>& roweles,
-        const Teuchos::RCP<Epetra_Comm>& comm, const int parts, const double imbalance = 1.1) const;
+        const Teuchos::RCP<Epetra_Comm>& comm, const int parts, const double imbalance) const;
 
     /** \brief function called at the beginning of each MortarCoupling call
      *
@@ -1491,17 +1497,123 @@ namespace MORTAR
     */
     virtual void UpdateMasterSlaveSets();
 
-    /*!
-    \brief Create interface ghosting
-
-    To ease our search algorithms we'll afford the luxury to ghost all nodes
-    on all processors in the general mortar coupling framework. Currently, this
-    still holds for both slave and master side of the interface.
-
-    */
-    virtual void CreateInterfaceGhosting();
-
    private:
+    /*!
+    \brief Extend interface ghosting
+
+    To guarantee that the search algorithms can find _every_ possible slave/master pair
+    -- even if entities reside on different processors --
+    we afford the luxury to ghost some or all nodes
+    on all processors in the general mortar coupling framework.
+
+    Technically, we compute extended node/element column maps and the export the discretization
+    based on these extended column maps. The actual extension strategy is defined in the input file.
+
+    The tasks to be performed depend on the status of the parallel distriution: Some tasks are only
+    necessary, if the parallel distribution is final and won't change anymore, before using the
+    interface discretization.
+
+    \note We'll do ghosting _NOT ONLY_ on procs that do own or ghost any of the nodes in the natural
+    distribution of the interface discretization #idiscret_, but really on _ALL_ procs. This makes
+    dynamic redistribution easier.
+
+    \note In some cases (self contact, sliding ALE mortar coupling), we still
+    need the SLAVE nodes and elements in fully overlapping column layout,
+    too. In the case of self contact, this is due to the fact that contact
+    search is then based on the contact interface as a whole without
+    initially distinguishing between slave and master sides. In general,
+    however we do not need (or even want) slave redundancy. Redundancy of the
+    master side is controlled via the input file.
+
+    \post The interface discretization is _NOT_ FillComplete.
+
+    \param[in] isFinalParallelDistribution Is this parallel distribution final?
+    */
+    void ExtendInterfaceGhosting(const bool isFinalParallelDistribution);
+
+    /*!
+    \brief Update master and slave interface maps for DOFs
+
+    Update #sdofrowmap_, #sdofcolmap_, #mdofrowmap_, #mdofcolmap_.
+
+    \pre A valid node column map of interface discretization exists.
+    \post DOF row/column maps for slave/master side exist.
+    */
+    void UpdateMasterSlaveDofMaps();
+
+    /*!
+    \brief Update master and slave interface maps for elements based on current maps in the
+    interface discretization
+
+    \pre A valid node column map of interface discretization exists.
+
+    \sa UpdateMasterSlaveElementMaps(const Epetra_Map&, const Epetra_Map&)
+    */
+    void UpdateMasterSlaveElementMaps();
+
+    /*!
+    \brief Update master and slave interface maps for elements using given maps
+
+    \post Element row/column maps for slave/master side -- i.e. #selerowmap_, #selecolmap_,
+    #melerowmap_, #melecolmap_ -- exist and have been updated.
+
+    \param[in] elementRowMap Row map of interface elements
+    \param[in] elementColumnMap Column map of interface elements
+
+    \warning Use the row map only for checking ownership of an element. Do not loop the row map,
+    because we sometimes pass a column map to the row map argument.
+    */
+    void UpdateMasterSlaveElementMaps(
+        const Epetra_Map& elementRowMap, const Epetra_Map& elementColumnMap);
+
+    /*!
+    \brief Update master and slave interface maps for nodes based on current maps in the interface
+    discretization
+
+    \pre A valid node column map of interface discretization exists.
+
+    \sa UpdateMasterSlaveNodeMaps(const Epetra_Map&, const Epetra_Map&)
+    */
+    void UpdateMasterSlaveNodeMaps();
+
+    /*!
+    \brief Update master and slave interface maps for nodes
+
+    \post Node row/column maps for slave/master side -- i.e. #snoderowmap_, #snodecolmap_,
+    #mnoderowmap_, #mnodecolmap_ -- exist and have been updated.
+
+    \param[in] nodeRowMap Row map of interface nodes
+    \param[in] nodeColumnMap Column map of interface nodes
+
+    \warning Use the row map only for checking ownership of a node. Do not loop the row map, because
+    we sometimes pass a column map to the row map argument.
+    */
+    void UpdateMasterSlaveNodeMaps(const Epetra_Map& nodeRowMap, const Epetra_Map& nodeColumnMap);
+
+    /*!
+    \brief Setup the binning strategy for geometrically motivated extended ghosting
+
+    \note The average velocity is only important, if binning is performed in the deformed
+    configuration, e.g. as in contact problems. For meshtying, where binning occurs during mortar
+    coupling in the reference configuration, it suffices to set the velocity to 0.0.
+
+    @param[in] vel Average velocity of solid body
+    @return Binning strategy object ready to be used
+    */
+    Teuchos::RCP<BINSTRATEGY::BinningStrategy> SetupBinningStrategy(const double vel);
+
+    /*!
+    \brief Create interface local communicator
+
+    Find all procs that have business on this interface (own or ghost nodes/elements). Then, build a
+    Epetra_Comm that contains only those procs. This intra-communicator will be used to handle most
+    stuff on this interface so the interface will not block all other procs
+
+    ToDo (mayr.mt) Move this to MORTAR::UTILS::INTERFACE. This does not have to be a function in
+    this class.
+    */
+    void CreateInterfaceLocalCommunicator();
+
     /*!
     \brief check and initialize possible cross point modification
 

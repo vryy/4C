@@ -4636,7 +4636,7 @@ bool WEAR::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<const Epetra_V
     interface_[i]->Redistribute();
 
     // call fill complete again
-    interface_[i]->FillComplete(maxdof_);
+    interface_[i]->FillComplete(true, maxdof_);
 
     // print new parallel distribution
     interface_[i]->PrintParallelDistribution();
@@ -4656,7 +4656,9 @@ bool WEAR::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<const Epetra_V
   Comm().Barrier();
   double t_end = Teuchos::Time::wallTime() - t_start;
   if (Comm().MyPID() == 0)
-    std::cout << "\nTime for parallel redistribution.........." << t_end << " secs\n" << std::endl;
+    std::cout << "\nTime for parallel redistribution..............." << std::scientific
+              << std::setprecision(6) << t_end << " secs\n"
+              << std::endl;
 
   return doredist;
 }

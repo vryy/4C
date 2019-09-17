@@ -518,8 +518,25 @@ void ADAPTER::CouplingNonLinMortar::InitMatrices()
 void ADAPTER::CouplingNonLinMortar::CompleteInterface(
     Teuchos::RCP<DRT::Discretization> masterdis, Teuchos::RCP<CONTACT::CoInterface>& interface)
 {
-  // finalize the contact interface construction
-  interface->FillComplete();
+  const Teuchos::ParameterList& input =
+      DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
+  const INPAR::MORTAR::ParRedist parallelRedist =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input, "PARALLEL_REDIST");
+
+  /* Finalize the interface construction
+   *
+   * If this is the final parallel distribution, we need to assign degrees of freedom during
+   * during FillComplete(). If parallel redistribution is enabled, there will be another call to
+   * FillComplete(), so we skip this expensive operation here and do it later. DOFs have to be
+   * assigned only once!
+   */
+  {
+    bool isFinalDistribution = false;
+    if (parallelRedist == INPAR::MORTAR::parredist_none or comm_->NumProc() == 1)
+      isFinalDistribution = true;
+
+    interface->FillComplete(isFinalDistribution);
+  }
 
   // create binary search tree
   interface->CreateSearchTree();
@@ -535,11 +552,7 @@ void ADAPTER::CouplingNonLinMortar::CompleteInterface(
 
   // check for parallel redistribution
   bool parredist = false;
-  const Teuchos::ParameterList& input =
-      DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input, "PARALLEL_REDIST") !=
-      INPAR::MORTAR::parredist_none)
-    parredist = true;
+  if (parallelRedist != INPAR::MORTAR::parredist_none) parredist = true;
 
   //**********************************************************************
   // PARALLEL REDISTRIBUTION OF INTERFACE
@@ -550,7 +563,7 @@ void ADAPTER::CouplingNonLinMortar::CompleteInterface(
     interface->Redistribute();
 
     // call fill complete again
-    interface->FillComplete();
+    interface->FillComplete(true);
 
     // re create binary search tree
     interface->CreateSearchTree();
@@ -722,8 +735,24 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
     interface->AddCoElement(mrtrele);
   }
 
-  // finalize the contact interface construction
-  interface->FillComplete();
+  /* Finalize the interface construction
+   *
+   * If this is the final parallel distribution, we need to assign degrees of freedom during
+   * during FillComplete(). If parallel redistribution is enabled, there will be another call to
+   * FillComplete(), so we skip this expensive operation here and do it later. DOFs have to be
+   * assigned only once!
+   */
+  {
+    bool isFinalDistribution = false;
+    const Teuchos::ParameterList& input =
+        DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
+    if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input, "PARALLEL_REDIST") ==
+            INPAR::MORTAR::parredist_none or
+        comm_->NumProc() == 1)
+      isFinalDistribution = true;
+
+    interface->FillComplete(isFinalDistribution);
+  }
 
   // store old row maps (before parallel redistribution)
   slavedofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowDofs()));

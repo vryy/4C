@@ -1088,7 +1088,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
     }
 
     //-------------------- finalize the contact interface construction
-    interface->FillComplete(maxdof);
+    interface->FillComplete(true, maxdof);
 
     if (isporo)
       FindPoroInterfaceTypes(

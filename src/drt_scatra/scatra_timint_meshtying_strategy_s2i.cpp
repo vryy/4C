@@ -2185,7 +2185,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
                                                          .sublist("PARALLEL REDISTRIBUTION")
                                                          .get<std::string>("PARALLEL_REDIST"));
             interface.Redistribute();
-            interface.FillComplete();
+            interface.FillComplete(true);
             interface.PrintParallelDistribution();
             interface.CreateSearchTree();
           }

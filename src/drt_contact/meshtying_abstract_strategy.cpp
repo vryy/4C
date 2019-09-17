@@ -73,79 +73,43 @@ std::ostream& operator<<(std::ostream& os, const CONTACT::MtAbstractStrategy& st
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::RedistributeMeshtying()
 {
-  // initialize time measurement
-  std::vector<double> times((int)interface_.size());
-
-  // do some more stuff with interfaces
-  for (int i = 0; i < (int)interface_.size(); ++i)
-  {
-    // print parallel distribution
-    interface_[i]->PrintParallelDistribution();
-
-    //---------------------------------------
-    // PARALLEL REDISTRIBUTION OF INTERFACES
-    //---------------------------------------
-    // get out of here if parallel redistribution is switched off
-    // or if this is a single processor (serial) job
-    if (ParRedist() && Comm().NumProc() > 1)
-    {
-      // time measurement
-      Comm().Barrier();
-      const double t_start = Teuchos::Time::wallTime();
-
-      // redistribute optimally among all procs
-      interface_[i]->Redistribute();
-
-      // call fill complete again
-      interface_[i]->FillComplete(maxdof_);
-
-      // print parallel distribution again
-      interface_[i]->PrintParallelDistribution();
-
-      // time measurement
-      Comm().Barrier();
-      times[i] = Teuchos::Time::wallTime() - t_start;
-    }
-    //---------------------------------------
-  }
-
-  // re-setup strategy object
-  // get out of here if parallel redistribution is switched off
-  // or if this is a single processor (serial) job
+  // Do we really want to redistribute?
   if (ParRedist() && Comm().NumProc() > 1)
   {
     // time measurement
     Comm().Barrier();
     const double t_start = Teuchos::Time::wallTime();
 
+    // do some more stuff with interfaces
+    for (int i = 0; i < (int)interface_.size(); ++i)
+    {
+      // print parallel distribution
+      interface_[i]->PrintParallelDistribution();
+
+      // redistribute optimally among all procs
+      interface_[i]->Redistribute();
+
+      // call fill complete again
+      interface_[i]->FillComplete(true, maxdof_);
+
+      // print parallel distribution again
+      interface_[i]->PrintParallelDistribution();
+    }
+
     // re-setup strategy with flag redistributed=TRUE
     Setup(true);
 
     // time measurement
     Comm().Barrier();
-    double t_sum = Teuchos::Time::wallTime() - t_start;
-    for (int i = 0; i < (int)interface_.size(); ++i) t_sum += times[i];
+    const double t_sum = Teuchos::Time::wallTime() - t_start;
     if (Comm().MyPID() == 0)
-      std::cout << "\nTime for parallel redistribution.........." << t_sum << " secs\n";
+      std::cout << "\nTime for parallel redistribution..............." << std::scientific
+                << std::setprecision(6) << t_sum << " secs\n";
   }
-
-  //---------------------------------------
-  // Extend ghosting with binning
-  //---------------------------------------
-  INPAR::MORTAR::GhostingStrategy strat =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
-          interface_[0]->InterfaceParams().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
-  Teuchos::RCP<Epetra_Map> melefullmap = Teuchos::null;
-  if (strat == INPAR::MORTAR::binningstrategy)
+  else
   {
-    for (int i = 0; i < (int)interface_.size(); ++i)
-    {
-      // binning if necessary
-      interface_[i]->BinningStrategy(initial_elecolmap_[i], 0.0);
-
-      // output
-      interface_[i]->PrintParallelDistribution();
-    }
+    // No parallel redistribution to be performed. Just print the current distribution to screen.
+    for (int i = 0; i < (int)interface_.size(); ++i) interface_[i]->PrintParallelDistribution();
   }
 
   return;

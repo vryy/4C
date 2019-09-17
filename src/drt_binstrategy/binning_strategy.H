@@ -255,8 +255,8 @@ namespace BINSTRATEGY
     @param masterbinelemenap Map of bins and assigned master elements
     @return Element map with extended ghosting for master side of mortar problem
     */
-    virtual Teuchos::RCP<Epetra_Map> ExtendGhosting(DRT::Discretization& mortardis,
-        Teuchos::RCP<Epetra_Map> initial_elecolmap, std::map<int, std::set<int>>& slavebinelemap,
+    virtual Teuchos::RCP<const Epetra_Map> ExtendGhosting(DRT::Discretization& mortardis,
+        const Epetra_Map& initial_elecolmap, std::map<int, std::set<int>>& slavebinelemap,
         std::map<int, std::set<int>>& masterbinelemap) const;
 
     /// extend ghosting according to scatra elements

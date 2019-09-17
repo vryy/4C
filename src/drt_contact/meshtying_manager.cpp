@@ -319,8 +319,23 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
       ggsize += gsize;  // update global element counter
     }
 
-    //-------------------- finalize the meshtying interface construction
-    interface->FillComplete(maxdof);
+    /* -------------------- finalize the meshtying interface construction
+     *
+     * If this is the final parallel distribution, we need to assign degrees of freedom during
+     * during FillComplete(). If parallel redistribution is enabled, there will be another call to
+     * FillComplete(), so we skip this expensive operation here and do it later. DOFs have to be
+     * assigned only once!
+     */
+    {
+      const INPAR::MORTAR::ParRedist parallelRedist =
+          DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
+              mtparams.sublist("PARALLEL REDISTRIBUTION"), "PARALLEL_REDIST");
+      bool isFinalDistribution = false;
+      if (parallelRedist == INPAR::MORTAR::parredist_none or comm_->NumProc() == 1)
+        isFinalDistribution = true;
+
+      interface->FillComplete(isFinalDistribution, maxdof);
+    }
 
   }  // for (int i=0; i<(int)contactconditions.size(); ++i)
   if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
@@ -369,13 +384,6 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
 
   // create binary search tree
   for (int i = 0; i < (int)interfaces.size(); ++i) interfaces[i]->CreateSearchTree();
-
-  // print parameter list to screen
-  if (Comm().MyPID() == 0)
-  {
-    std::cout << "\ngiven parameters in list '" << GetStrategy().Params().name() << "':\n";
-    std::cout << GetStrategy().Params() << std::endl;
-  }
 
   return;
 }

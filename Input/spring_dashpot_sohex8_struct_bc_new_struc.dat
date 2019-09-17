@@ -25,6 +25,9 @@ NUMSTEP                         2
 TIMESTEP                        0.5
 TOLRES                          1e-08
 TOLDISP                         1e-13
+-------------------------------------------------------------MORTAR COUPLING
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+PARALLEL_REDIST					        None
 -------------------------------------------------------------------MATERIALS
 MAT 6 MAT_Struct_StVenantKirchhoff YOUNG 1.0e06 NUE 0.0 DENS 1.0e-16
 -------------------------------------------------------------FUNCT1

@@ -957,7 +957,7 @@ void WEAR::Partitioned::RedistributeMatInterfaces()
       winterface->Discret().ExportColumnNodes(*interfaces_[m]->Discret().NodeColMap());
       winterface->Discret().ExportColumnElements(*interfaces_[m]->Discret().ElementColMap());
 
-      winterface->FillComplete();
+      winterface->FillComplete(true);
       winterface->PrintParallelDistribution();
 
       if (Comm().MyPID() == 0)

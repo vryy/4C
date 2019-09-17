@@ -538,7 +538,7 @@ void MORTAR::MortarInterface::RemoveSingleInterfaceSide(bool slaveside)
 /*----------------------------------------------------------------------*
  |  finalize construction of interface (public)              mwgee 10/07|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::FillComplete(int maxdof, bool newghosting)
+void MORTAR::MortarInterface::FillComplete(const bool isFinalParallelDistribution, const int maxdof)
 {
   // store maximum global dof ID handed in
   // this ID is later needed when setting up the Lagrange multiplier
@@ -571,111 +571,27 @@ void MORTAR::MortarInterface::FillComplete(int maxdof, bool newghosting)
   // check/init corner/edge modification
   InitializeCornerEdge();
 
-  // later we will export node and element column map to FULL overlap,
+  // later we might export node and element column map to extended or even FULL overlap,
   // thus store the standard column maps first
   // get standard nodal column map (overlap=1)
   oldnodecolmap_ = Teuchos::rcp(new Epetra_Map(*(Discret().NodeColMap())));
   // get standard element column map (overlap=1)
   oldelecolmap_ = Teuchos::rcp(new Epetra_Map(*(Discret().ElementColMap())));
 
-  // create interface local communicator
-  // find all procs that have business on this interface (own or ghost nodes/elements)
-  // build a Epetra_Comm that contains only those procs
-  // this intra-communicator will be used to handle most stuff on this
-  // interface so the interface will not block all other procs
-  {
-    std::vector<int> lin(Comm().NumProc());
-    std::vector<int> gin(Comm().NumProc());
-    for (int i = 0; i < Comm().NumProc(); ++i) lin[i] = 0;
+  CreateInterfaceLocalCommunicator();
 
-    // check ownership or ghosting of any elements / nodes
-    // const Epetra_Map* nodemap = Discret().NodeColMap();
-    // const Epetra_Map* elemap  = Discret().ElementColMap();
-
-    //********************************************************************
-    // NOTE: currently we choose local=global communicator, but we have
-    // all structures present in the code to change this assignment any time.
-    //********************************************************************
-    // if (nodemap->NumMyElements() || elemap->NumMyElements())
-    lin[Comm().MyPID()] = 1;
-
-    Comm().MaxAll(&lin[0], &gin[0], Comm().NumProc());
-    lin.clear();
-
-    // build global -> local communicator PID map
-    // we need this when calling Broadcast() on lComm later
-    int counter = 0;
-    for (int i = 0; i < Comm().NumProc(); ++i)
-    {
-      if (gin[i])
-        procmap_[i] = counter++;
-      else
-        procmap_[i] = -1;
-    }
-
-    // typecast the Epetra_Comm to Epetra_MpiComm
-    Teuchos::RCP<Epetra_Comm> copycomm = Teuchos::rcp(Comm().Clone());
-    Epetra_MpiComm* epetrampicomm = dynamic_cast<Epetra_MpiComm*>(copycomm.get());
-    if (epetrampicomm != NULL)
-    {
-      // split the communicator into participating and none-participating procs
-      int color;
-      int key = Comm().MyPID();
-      // I am taking part in the new comm if I have any ownership
-      if (gin[Comm().MyPID()]) color = 0;
-      // I am not taking part in the new comm
-      else
-        color = MPI_UNDEFINED;
-
-      // tidy up
-      gin.clear();
-
-      // free lcomm_ first
-      if (lcomm_ != Teuchos::null)
-      {
-        MPI_Comm oldcomm = Teuchos::rcp_dynamic_cast<Epetra_MpiComm>(lcomm_)->GetMpiComm();
-        lcomm_ = Teuchos::null;
-        MPI_Comm_free(&oldcomm);
-      }
-
-      // create new local communicator
-      MPI_Comm mpi_global_comm = epetrampicomm->GetMpiComm();
-      MPI_Comm mpi_local_comm;
-      MPI_Comm_split(mpi_global_comm, color, key, &mpi_local_comm);
-
-      // create the new Epetra_MpiComm only for participating procs
-      if (mpi_local_comm != MPI_COMM_NULL)
-        lcomm_ = Teuchos::rcp(new Epetra_MpiComm(mpi_local_comm));
-    }
-    else
-    {
-      // check for serial communicator
-      if (Comm().NumProc() != 1) dserror("ERROR: Epetra_SerialComm can only handle 1 processor!");
-      Epetra_SerialComm* serialcomm = dynamic_cast<Epetra_SerialComm*>(copycomm.get());
-      if (!serialcomm) dserror("ERROR: casting Epetra_Comm -> Epetra_SerialComm failed");
-      lcomm_ = Teuchos::rcp(new Epetra_SerialComm(*serialcomm));
-    }
-  }
-
-  // create interface ghosting
-  // (currently, the slave is kept with the standard overlap of one,
-  // but the master is made fully redundant, i.e. it is exported to
-  // fully overlapping column layout, for the ease of interface search)
-  // (the only exceptions are self contact and coupled problems, where
-  // also the slave is still made fully redundant)
-  // ghosting can be skipped if the desired parallel layout is already present
-  if (newghosting) CreateInterfaceGhosting();
+  ExtendInterfaceGhosting(isFinalParallelDistribution);
 
   // make sure discretization is complete
-  Discret().FillComplete(true, false, false);
+  Discret().FillComplete(isFinalParallelDistribution, false, false);
 
   // ghost also parent elements according to the ghosting strategy of the interface (atm just for
   // poro)
-  if (newghosting && poro_)
+  if (poro_)
     POROELAST::UTILS::CreateVolumeGhosting(Discret());
   else if (imortar_.isParameter("STRATEGY"))
-    if (newghosting && DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(
-                           imortar_, "ALGORITHM") == INPAR::MORTAR::algorithm_gpts)
+    if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM") ==
+        INPAR::MORTAR::algorithm_gpts)
       CreateVolumeGhosting();
 
   // need row and column maps of slave and master nodes / elements / dofs
@@ -693,6 +609,82 @@ void MORTAR::MortarInterface::FillComplete(int maxdof, bool newghosting)
   quadslave_ = (bool)(globalstatus);
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::CreateInterfaceLocalCommunicator()
+{
+  std::vector<int> lin(Comm().NumProc());
+  std::vector<int> gin(Comm().NumProc());
+  for (int i = 0; i < Comm().NumProc(); ++i) lin[i] = 0;
+
+  // check ownership or ghosting of any elements / nodes
+  // const Epetra_Map* nodemap = Discret().NodeColMap();
+  // const Epetra_Map* elemap  = Discret().ElementColMap();
+
+  //********************************************************************
+  // NOTE: currently we choose local=global communicator, but we have
+  // all structures present in the code to change this assignment any time.
+  //********************************************************************
+  // if (nodemap->NumMyElements() || elemap->NumMyElements())
+  lin[Comm().MyPID()] = 1;
+
+  Comm().MaxAll(&lin[0], &gin[0], Comm().NumProc());
+  lin.clear();
+
+  // build global -> local communicator PID map
+  // we need this when calling Broadcast() on lComm later
+  int counter = 0;
+  for (int i = 0; i < Comm().NumProc(); ++i)
+  {
+    if (gin[i])
+      procmap_[i] = counter++;
+    else
+      procmap_[i] = -1;
+  }
+
+  // typecast the Epetra_Comm to Epetra_MpiComm
+  Teuchos::RCP<Epetra_Comm> copycomm = Teuchos::rcp(Comm().Clone());
+  Epetra_MpiComm* epetrampicomm = dynamic_cast<Epetra_MpiComm*>(copycomm.get());
+  if (epetrampicomm != NULL)
+  {
+    // split the communicator into participating and none-participating procs
+    int color;
+    int key = Comm().MyPID();
+    // I am taking part in the new comm if I have any ownership
+    if (gin[Comm().MyPID()]) color = 0;
+    // I am not taking part in the new comm
+    else
+      color = MPI_UNDEFINED;
+
+    // tidy up
+    gin.clear();
+
+    // free lcomm_ first
+    if (lcomm_ != Teuchos::null)
+    {
+      MPI_Comm oldcomm = Teuchos::rcp_dynamic_cast<Epetra_MpiComm>(lcomm_)->GetMpiComm();
+      lcomm_ = Teuchos::null;
+      MPI_Comm_free(&oldcomm);
+    }
+
+    // create new local communicator
+    MPI_Comm mpi_global_comm = epetrampicomm->GetMpiComm();
+    MPI_Comm mpi_local_comm;
+    MPI_Comm_split(mpi_global_comm, color, key, &mpi_local_comm);
+
+    // create the new Epetra_MpiComm only for participating procs
+    if (mpi_local_comm != MPI_COMM_NULL) lcomm_ = Teuchos::rcp(new Epetra_MpiComm(mpi_local_comm));
+  }
+  else
+  {
+    // check for serial communicator
+    if (Comm().NumProc() != 1) dserror("ERROR: Epetra_SerialComm can only handle 1 processor!");
+    Epetra_SerialComm* serialcomm = dynamic_cast<Epetra_SerialComm*>(copycomm.get());
+    if (!serialcomm) dserror("ERROR: casting Epetra_Comm -> Epetra_SerialComm failed");
+    lcomm_ = Teuchos::rcp(new Epetra_SerialComm(*serialcomm));
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -1092,11 +1084,56 @@ void MORTAR::MortarInterface::InitializeDataContainer()
  |  Parallel Strategy based on bin distribution (public)     farah 11/13|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::BinningStrategy(
-    Teuchos::RCP<Epetra_Map> initial_elecolmap, double vel)
+    Teuchos::RCP<Epetra_Map> initial_elecolmap, const double vel)
 {
-  // init XAABB
+  // Create the binning strategy
+  Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy = SetupBinningStrategy(vel);
+
+  // fill master and slave elements into bins
+  std::map<int, std::set<int>> slavebinelemap;
+  binningstrategy->DistributeElesToBins(Discret(), slavebinelemap, true);
+  std::map<int, std::set<int>> masterbinelemap;
+  binningstrategy->DistributeElesToBins(Discret(), masterbinelemap, false);
+
+  // ghosting is extended
+  Teuchos::RCP<const Epetra_Map> extendedmastercolmap = binningstrategy->ExtendGhosting(
+      Discret(), *initial_elecolmap, slavebinelemap, masterbinelemap);
+
+  // adapt layout to extended ghosting in discret
+  // first export the elements according to the processor local element column maps
+  Discret().ExportColumnElements(*extendedmastercolmap);
+
+  // get the node ids of the elements that are to be ghosted and create a proper node column map for
+  // their export
+  std::set<int> nodes;
+  for (int lid = 0; lid < extendedmastercolmap->NumMyElements(); ++lid)
+  {
+    DRT::Element* ele = Discret().gElement(extendedmastercolmap->GID(lid));
+    const int* nodeids = ele->NodeIds();
+    for (int inode = 0; inode < ele->NumNode(); ++inode) nodes.insert(nodeids[inode]);
+  }
+
+  std::vector<int> colnodes(nodes.begin(), nodes.end());
+  Teuchos::RCP<Epetra_Map> nodecolmap =
+      Teuchos::rcp(new Epetra_Map(-1, (int)colnodes.size(), &colnodes[0], 0, Comm()));
+
+  // now ghost the nodes
+  Discret().ExportColumnNodes(*nodecolmap);
+
+  // fillcomplete interface
+  FillComplete(true);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<BINSTRATEGY::BinningStrategy> MORTAR::MortarInterface::SetupBinningStrategy(
+    const double vel)
+{
+  // Initialize eXtendedAxisAlignedBoundingBox (XAABB)
   LINALG::Matrix<3, 2> XAABB(false);
-  for (int dim = 0; dim < 3; ++dim)
+  for (unsigned int dim = 0; dim < 3; ++dim)
   {
     XAABB(dim, 0) = +1.0e12;
     XAABB(dim, 1) = -1.0e12;
@@ -1107,10 +1144,12 @@ void MORTAR::MortarInterface::BinningStrategy(
   {
     int gid = SlaveColNodes()->GID(lid);
     DRT::Node* node = Discret().gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %i", gid);
+    if (!node)
+      dserror(
+          "Cannot find node with gid %i in discretization '%s'.", gid, Discret().Name().c_str());
     MORTAR::MortarNode* mtrnode = dynamic_cast<MORTAR::MortarNode*>(node);
 
-    for (int dim = 0; dim < 3; ++dim)
+    for (unsigned int dim = 0; dim < 3; ++dim)
     {
       XAABB(dim, 0) = std::min(XAABB(dim, 0), mtrnode->xspatial()[dim] - MORTARPROJLIM);
       XAABB(dim, 1) = std::max(XAABB(dim, 1), mtrnode->xspatial()[dim] + MORTARPROJLIM);
@@ -1135,7 +1174,9 @@ void MORTAR::MortarInterface::BinningStrategy(
   {
     int gid = SlaveColElements()->GID(lid);
     DRT::Element* ele = Discret().gElement(gid);
-    if (!ele) dserror("ERROR: Cannot find element with gid %i", gid);
+    if (!ele)
+      dserror(
+          "Cannot find element with gid %i in discretization '%s'.", gid, Discret().Name().c_str());
     MORTAR::MortarElement* mtrele = dynamic_cast<MORTAR::MortarElement*>(ele);
 
     // to be thought about, whether this is enough (safety = 2??)
@@ -1148,58 +1189,20 @@ void MORTAR::MortarInterface::BinningStrategy(
 
   // extend cutoff based on problem interface velocity
   // --> only for contact problems
-  if (vel >= 1e-12)
+  if (vel >= EPS12)
   {
-    double dt = InterfaceParams().get<double>("TIMESTEP");
+    const double dt = InterfaceParams().get<double>("TIMESTEP");
     cutoff = cutoff + 2 * dt * vel;
   }
 
-  // increase XAABB by 2xcutoff radius
-  for (int dim = 0; dim < 3; ++dim)
+  // increase XAABB by 2x cutoff radius
+  for (unsigned int dim = 0; dim < 3; ++dim)
   {
     XAABB(dim, 0) = globmin[dim] - cutoff;
     XAABB(dim, 1) = globmax[dim] + cutoff;
   }
 
-  /// binning strategy is created
-  Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
-      Teuchos::rcp(new BINSTRATEGY::BinningStrategy(Comm(), cutoff, XAABB));
-
-  // fill master and slave elements into bins
-  std::map<int, std::set<int>> slavebinelemap;
-  binningstrategy->DistributeElesToBins(Discret(), slavebinelemap, true);
-  std::map<int, std::set<int>> masterbinelemap;
-  binningstrategy->DistributeElesToBins(Discret(), masterbinelemap, false);
-
-  // ghosting is extended
-  Teuchos::RCP<Epetra_Map> extendedmastercolmap = binningstrategy->ExtendGhosting(
-      Discret(), initial_elecolmap, slavebinelemap, masterbinelemap);
-
-  // adapt layout to extended ghosting in discret
-  // first export the elements according to the processor local element column maps
-  Discret().ExportColumnElements(*extendedmastercolmap);
-
-  // get the node ids of the elements that are to be ghosted and create a proper node column map for
-  // their export
-  std::set<int> nodes;
-  for (int lid = 0; lid < extendedmastercolmap->NumMyElements(); ++lid)
-  {
-    DRT::Element* ele = Discret().gElement(extendedmastercolmap->GID(lid));
-    const int* nodeids = ele->NodeIds();
-    for (int inode = 0; inode < ele->NumNode(); ++inode) nodes.insert(nodeids[inode]);
-  }
-
-  std::vector<int> colnodes(nodes.begin(), nodes.end());
-  Teuchos::RCP<Epetra_Map> nodecolmap =
-      Teuchos::rcp(new Epetra_Map(-1, (int)colnodes.size(), &colnodes[0], 0, Comm()));
-
-  // now ghost the nodes
-  Discret().ExportColumnNodes(*nodecolmap);
-
-  // fillcomplete interface
-  FillComplete();
-
-  return;
+  return Teuchos::rcp(new BINSTRATEGY::BinningStrategy(Comm(), cutoff, XAABB));
 }
 
 
@@ -1208,6 +1211,10 @@ void MORTAR::MortarInterface::BinningStrategy(
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::Redistribute()
 {
+  std::stringstream ss;
+  ss << "MORTAR::MortarInterface::Redistribute of '" << Discret().Name() << "'";
+  TEUCHOS_FUNC_TIME_MONITOR(ss.str());
+
   const Teuchos::ParameterList& mortarParallelRedistParams =
       InterfaceParams().sublist("PARALLEL REDISTRIBUTION");
 
@@ -1257,7 +1264,7 @@ void MORTAR::MortarInterface::Redistribute()
   // print message
   if (!myrank)
   {
-    std::cout << "\nRedistributing interface using ZOLTAN.........done!\n";
+    std::cout << "\nRedistributing interface '" << Discret().Name() << "' using ZOLTAN.........\n";
     std::cout << "Procs used for redistribution: " << sproc << " / " << mproc << " (S / M)\n";
   }
 
@@ -1267,19 +1274,8 @@ void MORTAR::MortarInterface::Redistribute()
   Teuchos::RCP<Epetra_Map> srownodes = Teuchos::null;
   Teuchos::RCP<Epetra_Map> scolnodes = Teuchos::null;
 
-  // build redundant vector of all slave node ids on all procs
-  // (include crosspoints / boundary nodes if there are any)
-  std::vector<int> snids;
-  std::vector<int> snidslocal(SlaveRowNodesBound()->NumMyElements());
-  for (int i = 0; i < SlaveRowNodesBound()->NumMyElements(); ++i)
-    snidslocal[i] = SlaveRowNodesBound()->GID(i);
-  LINALG::Gather<int>(snidslocal, snids, numproc, &allproc[0], Comm());
-
-  //**********************************************************************
-  // call ZOLTAN for parallel redistribution
   DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
       idiscret_, sroweles, srownodes, scolnodes, comm, false, sproc, imbalance_tol);
-  //**********************************************************************
 
   //**********************************************************************
   // (3) MASTER redistribution
@@ -1341,24 +1337,9 @@ void MORTAR::MortarInterface::RedistributeMasterSide(Teuchos::RCP<Epetra_Map>& r
 }
 
 /*----------------------------------------------------------------------*
- | create interface ghosting (public)                         popp 10/10|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::CreateInterfaceGhosting()
+void MORTAR::MortarInterface::ExtendInterfaceGhosting(const bool isFinalParallelDistribution)
 {
-  // TODO: we still do full ghosting of all MASTER elements
-  // -> this is supposed to go away one day...
-
-  //**********************************************************************
-  // IMPORTANT NOTE:
-  // In some cases (self contact, sliding ALE mortar coupling), we still
-  // need the SLAVE nodes and elements in fully overlapping column layout,
-  // too. In the case of self contact, this is due to the fact that contact
-  // search is then based on the contact interface as a whole without
-  // initially distinguishing between slave and master sides. In general,
-  // however we do not need (or even want) slave redundancy but only master
-  // redundancy and can thus use the ELSE branch below.
-  //**********************************************************************
-
   //*****REDUNDANT SLAVE AND MASTER STORAGE*****
   if (Redundant() == INPAR::MORTAR::redundant_all)
   {
@@ -1591,12 +1572,69 @@ void MORTAR::MortarInterface::CreateInterfaceGhosting()
     // new (=old) node / element column layout
     Discret().ExportColumnNodes(*newnodecolmap);
     Discret().ExportColumnElements(*newelecolmap);
+
+    const INPAR::MORTAR::GhostingStrategy ghostingStrategy =
+        DRT::INPUT::IntegralValue<INPAR::MORTAR::GhostingStrategy>(
+            DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION"),
+            "GHOSTING_STRATEGY");
+
+    if (ghostingStrategy == INPAR::MORTAR::binningstrategy)
+    {
+      /* We have to update the row/column maps split into master/slave. We start from the new
+       * node/element column maps. Since we don't have row maps at this point, we can/have to pass
+       * the column map as row map.
+       */
+      UpdateMasterSlaveElementMaps(*newelecolmap, *newelecolmap);
+      UpdateMasterSlaveNodeMaps(*newnodecolmap, *newnodecolmap);
+
+      /* Ask the discretization to initialize the elements. We need this, since the setup of the
+       * binning strategy relies on some element information.
+       * Note: This should be cheap, since we don't assign new degrees of freedom. Still, we skip
+       * initialization of elements, if we know, that the discretization will be redistriuted again.
+       */
+      Discret().FillComplete(false, isFinalParallelDistribution, false);
+
+      // Create the binning strategy
+      const double vel = 0.0;
+      Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy = SetupBinningStrategy(vel);
+
+      // fill master and slave elements into bins
+      std::map<int, std::set<int>> slavebinelemap;
+      binningstrategy->DistributeElesToBins(Discret(), slavebinelemap, true);
+      std::map<int, std::set<int>> masterbinelemap;
+      binningstrategy->DistributeElesToBins(Discret(), masterbinelemap, false);
+
+      // Extend ghosting of the master elements
+      Teuchos::RCP<const Epetra_Map> extendedmastercolmap = binningstrategy->ExtendGhosting(
+          Discret(), *newelecolmap, slavebinelemap, masterbinelemap);
+
+      // adapt layout to extended ghosting in the discretization
+      // first export the elements according to the processor local element column maps
+      Discret().ExportColumnElements(*extendedmastercolmap);
+
+      // get the node ids of the elements that are to be ghosted and create a proper node column map
+      // for their export
+      std::set<int> nodes;
+      for (int lid = 0; lid < extendedmastercolmap->NumMyElements(); ++lid)
+      {
+        DRT::Element* ele = Discret().gElement(extendedmastercolmap->GID(lid));
+        const int* nodeids = ele->NodeIds();
+        for (int inode = 0; inode < ele->NumNode(); ++inode) nodes.insert(nodeids[inode]);
+      }
+
+      std::vector<int> colnodes(nodes.begin(), nodes.end());
+      Teuchos::RCP<Epetra_Map> nodecolmap =
+          Teuchos::rcp(new Epetra_Map(-1, (int)colnodes.size(), &colnodes[0], 0, Comm()));
+
+      // now ghost the nodes
+      Discret().ExportColumnNodes(*nodecolmap);
+    }
   }
 
   //*****INVALID CASES*****
   else
   {
-    dserror("ERROR: CreateInterfaceGhosting: Invalid redundancy type.");
+    dserror("ERROR: ExtendInterfaceGhosting: Invalid redundancy type.");
   }
 
   return;
@@ -1655,144 +1693,162 @@ void MORTAR::MortarInterface::CreateSearchTree()
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::UpdateMasterSlaveSets()
 {
-  //********************************************************************
-  // NODES
-  //********************************************************************
-  // need row and column maps of slave and master nodes separately so we
-  // can easily address them
+  UpdateMasterSlaveNodeMaps();
+  UpdateMasterSlaveElementMaps();
+  UpdateMasterSlaveDofMaps();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::UpdateMasterSlaveDofMaps()
+{
+  // Vectors to collect GIDs to build maps
+  std::vector<int> sc;  // slave column map
+  std::vector<int> sr;  // slave row map
+  std::vector<int> mc;  // master column map
+  std::vector<int> mr;  // master row map
+
+  const int numMyColumnDofs = Discret().NodeColMap()->NumMyElements();
+  for (int i = 0; i < numMyColumnDofs; ++i)
   {
-    std::vector<int> sc;   // slave column map
-    std::vector<int> sr;   // slave row map
-    std::vector<int> mc;   // master column map
-    std::vector<int> mr;   // master row map
-    std::vector<int> srb;  // slave row map + boundary nodes
-    std::vector<int> scb;  // slave column map + boundary nodes
-    std::vector<int> mrb;  // master row map - boundary nodes
-    std::vector<int> mcb;  // master column map - boundary nodes
+    int gid = Discret().NodeColMap()->GID(i);
+    DRT::Node* node = Discret().gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    MortarNode* mrtrnode = dynamic_cast<MortarNode*>(node);
+    bool isslave = mrtrnode->IsSlave();
 
-    for (int i = 0; i < Discret().NodeColMap()->NumMyElements(); ++i)
+    if (isslave)
+      for (int j = 0; j < mrtrnode->NumDof(); ++j) sc.push_back(mrtrnode->Dofs()[j]);
+    else
+      for (int j = 0; j < mrtrnode->NumDof(); ++j) mc.push_back(mrtrnode->Dofs()[j]);
+
+    if (Discret().NodeRowMap()->MyGID(gid))
     {
-      int gid = Discret().NodeColMap()->GID(i);
-      bool isslave = dynamic_cast<MORTAR::MortarNode*>(Discret().gNode(gid))->IsSlave();
-      bool isonbound = dynamic_cast<MORTAR::MortarNode*>(Discret().gNode(gid))->IsOnBoundorCE();
+      if (isslave)
+        for (int j = 0; j < mrtrnode->NumDof(); ++j) sr.push_back(mrtrnode->Dofs()[j]);
+      else
+        for (int j = 0; j < mrtrnode->NumDof(); ++j) mr.push_back(mrtrnode->Dofs()[j]);
+    }
+  }
 
+  sdofrowmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)sr.size(), &sr[0], 0, Comm()));
+  sdofcolmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)sc.size(), &sc[0], 0, Comm()));
+  mdofrowmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mr.size(), &mr[0], 0, Comm()));
+  mdofcolmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mc.size(), &mc[0], 0, Comm()));
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::UpdateMasterSlaveElementMaps()
+{
+  UpdateMasterSlaveElementMaps(*Discret().ElementRowMap(), *Discret().ElementColMap());
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::UpdateMasterSlaveElementMaps(
+    const Epetra_Map& elementRowMap, const Epetra_Map& elementColumnMap)
+{
+  // Vectors to collect GIDs to build maps
+  std::vector<int> sc;  // slave column map
+  std::vector<int> sr;  // slave row map
+  std::vector<int> mc;  // master column map
+  std::vector<int> mr;  // master row map
+
+  const int numMyColumnElements = elementColumnMap.NumMyElements();
+  for (int i = 0; i < numMyColumnElements; ++i)
+  {
+    int gid = elementColumnMap.GID(i);
+    bool isslave = dynamic_cast<MORTAR::MortarElement*>(Discret().gElement(gid))->IsSlave();
+
+    if (isslave)
+      sc.push_back(gid);
+    else
+      mc.push_back(gid);
+
+    if (elementRowMap.MyGID(gid))
+    {
+      if (isslave)
+        sr.push_back(gid);
+      else
+        mr.push_back(gid);
+    }
+  }
+
+  selerowmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)sr.size(), &sr[0], 0, Comm()));
+  selecolmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)sc.size(), &sc[0], 0, Comm()));
+  melerowmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mr.size(), &mr[0], 0, Comm()));
+  melecolmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mc.size(), &mc[0], 0, Comm()));
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::UpdateMasterSlaveNodeMaps()
+{
+  UpdateMasterSlaveNodeMaps(*Discret().NodeRowMap(), *Discret().NodeColMap());
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::UpdateMasterSlaveNodeMaps(
+    const Epetra_Map& nodeRowMap, const Epetra_Map& nodeColumnMap)
+{
+  // Vectors to collect GIDs to build maps
+  std::vector<int> sc;   // slave column map
+  std::vector<int> sr;   // slave row map
+  std::vector<int> mc;   // master column map
+  std::vector<int> mr;   // master row map
+  std::vector<int> srb;  // slave row map + boundary nodes
+  std::vector<int> scb;  // slave column map + boundary nodes
+  std::vector<int> mrb;  // master row map - boundary nodes
+  std::vector<int> mcb;  // master column map - boundary nodes
+
+  const int numMyColumnNodes = nodeColumnMap.NumMyElements();
+  for (int i = 0; i < numMyColumnNodes; ++i)
+  {
+    int gid = nodeColumnMap.GID(i);
+    bool isslave = dynamic_cast<MORTAR::MortarNode*>(Discret().gNode(gid))->IsSlave();
+    bool isonbound = dynamic_cast<MORTAR::MortarNode*>(Discret().gNode(gid))->IsOnBoundorCE();
+
+    if (isslave || isonbound)
+      scb.push_back(gid);
+    else
+      mcb.push_back(gid);
+    if (isslave)
+      sc.push_back(gid);
+    else
+      mc.push_back(gid);
+
+    if (nodeRowMap.MyGID(gid))
+    {
       if (isslave || isonbound)
-        scb.push_back(gid);
+        srb.push_back(gid);
       else
-        mcb.push_back(gid);
+        mrb.push_back(gid);
       if (isslave)
-        sc.push_back(gid);
+        sr.push_back(gid);
       else
-        mc.push_back(gid);
-
-      if (Discret().NodeRowMap()->MyGID(gid))
-      {
-        if (isslave || isonbound)
-          srb.push_back(gid);
-        else
-          mrb.push_back(gid);
-        if (isslave)
-          sr.push_back(gid);
-        else
-          mr.push_back(gid);
-      }
+        mr.push_back(gid);
     }
-
-    snoderowmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)sr.size(), &sr[0], 0, Comm()));
-    snodecolmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)sc.size(), &sc[0], 0, Comm()));
-    mnoderowmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mr.size(), &mr[0], 0, Comm()));
-    mnodecolmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mc.size(), &mc[0], 0, Comm()));
-
-    snoderowmapbound_ =
-        Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)srb.size(), &srb[0], 0, Comm()));
-    snodecolmapbound_ =
-        Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)scb.size(), &scb[0], 0, Comm()));
-    mnoderowmapnobound_ =
-        Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mrb.size(), &mrb[0], 0, Comm()));
-    mnodecolmapnobound_ =
-        Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mcb.size(), &mcb[0], 0, Comm()));
-
-    // build exporter
-    interfaceData_->SlExporterPtr() =
-        Teuchos::rcp(new DRT::Exporter(*snoderowmapbound_, *snodecolmapbound_, Comm()));
   }
 
-  //********************************************************************
-  // ELEMENTS
-  //********************************************************************
-  // do the same business for elements
-  // (get row and column maps of slave and master elements seperately)
-  {
-    std::vector<int> sc;  // slave column map
-    std::vector<int> sr;  // slave row map
-    std::vector<int> mc;  // master column map
-    std::vector<int> mr;  // master row map
+  snoderowmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)sr.size(), &sr[0], 0, Comm()));
+  snodecolmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)sc.size(), &sc[0], 0, Comm()));
+  mnoderowmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mr.size(), &mr[0], 0, Comm()));
+  mnodecolmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mc.size(), &mc[0], 0, Comm()));
 
-    for (int i = 0; i < Discret().ElementColMap()->NumMyElements(); ++i)
-    {
-      int gid = Discret().ElementColMap()->GID(i);
-      bool isslave = dynamic_cast<MORTAR::MortarElement*>(Discret().gElement(gid))->IsSlave();
+  snoderowmapbound_ =
+      Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)srb.size(), &srb[0], 0, Comm()));
+  snodecolmapbound_ =
+      Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)scb.size(), &scb[0], 0, Comm()));
+  mnoderowmapnobound_ =
+      Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mrb.size(), &mrb[0], 0, Comm()));
+  mnodecolmapnobound_ =
+      Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mcb.size(), &mcb[0], 0, Comm()));
 
-      if (isslave)
-        sc.push_back(gid);
-      else
-        mc.push_back(gid);
-
-      if (Discret().ElementRowMap()->MyGID(gid))
-      {
-        if (isslave)
-          sr.push_back(gid);
-        else
-          mr.push_back(gid);
-      }
-    }
-
-    selerowmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)sr.size(), &sr[0], 0, Comm()));
-    selecolmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)sc.size(), &sc[0], 0, Comm()));
-    melerowmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mr.size(), &mr[0], 0, Comm()));
-    melecolmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mc.size(), &mc[0], 0, Comm()));
-  }
-
-  //********************************************************************
-  // DOFS
-  //********************************************************************
-  // do the same business for dofs
-  // (get row and column maps of slave and master dofs seperately)
-  {
-    std::vector<int> sc;  // slave column map
-    std::vector<int> sr;  // slave row map
-    std::vector<int> mc;  // master column map
-    std::vector<int> mr;  // master row map
-
-    for (int i = 0; i < Discret().NodeColMap()->NumMyElements(); ++i)
-    {
-      int gid = Discret().NodeColMap()->GID(i);
-      DRT::Node* node = Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
-      MortarNode* mrtrnode = dynamic_cast<MortarNode*>(node);
-      bool isslave = mrtrnode->IsSlave();
-
-      if (isslave)
-        for (int j = 0; j < mrtrnode->NumDof(); ++j) sc.push_back(mrtrnode->Dofs()[j]);
-      else
-        for (int j = 0; j < mrtrnode->NumDof(); ++j) mc.push_back(mrtrnode->Dofs()[j]);
-
-      if (Discret().NodeRowMap()->MyGID(gid))
-      {
-        if (isslave)
-          for (int j = 0; j < mrtrnode->NumDof(); ++j) sr.push_back(mrtrnode->Dofs()[j]);
-        else
-          for (int j = 0; j < mrtrnode->NumDof(); ++j) mr.push_back(mrtrnode->Dofs()[j]);
-      }
-    }
-
-    sdofrowmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)sr.size(), &sr[0], 0, Comm()));
-    sdofcolmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)sc.size(), &sc[0], 0, Comm()));
-    mdofrowmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mr.size(), &mr[0], 0, Comm()));
-    mdofcolmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(-1, (int)mc.size(), &mc[0], 0, Comm()));
-  }
-
-  return;
+  // build exporter
+  interfaceData_->SlExporterPtr() =
+      Teuchos::rcp(new DRT::Exporter(*snoderowmapbound_, *snodecolmapbound_, Comm()));
 }
 
 /*----------------------------------------------------------------------*
