@@ -186,12 +186,6 @@ void runEnsightVtuFilter(PostProblem& problem)
           StructureFilter boxwriter(boxdiscret, problem.outname());
           boxwriter.WriteFiles();
         }
-        else if (disname == "particle")
-        {
-          PostField* particlefield = problem.get_discretization(i);
-          ParticleFilter particlewriter(particlefield, problem.outname());
-          particlewriter.WriteFiles();
-        }
         else if (disname == "bins")
         {
           PostField* visualizebins = problem.get_discretization(i);
@@ -200,7 +194,7 @@ void runEnsightVtuFilter(PostProblem& problem)
         }
         else
         {
-          dserror("Particle problem has illegal discretization name!");
+          dserror("unknown discretization for postprocessing of polymer network problem!");
         }
       }
       break;
@@ -278,6 +272,7 @@ void runEnsightVtuFilter(PostProblem& problem)
       break;
     }
     case prb_particle:
+    case prb_pasi:
     {
       int numdiscr = problem.num_discr();
       for (int i = 0; i < numdiscr; ++i)
@@ -289,65 +284,18 @@ void runEnsightVtuFilter(PostProblem& problem)
           StructureFilter binwriter(visualizebins, problem.outname());
           binwriter.WriteFiles();
         }
-        else
-        {
-          dserror("Particle problem has illegal discretization name!");
-        }
-      }
-      break;
-    }
-    case prb_particle_old:
-    case prb_pasi:
-    {
-      int numdiscr = problem.num_discr();
-      for (int i = 0; i < numdiscr; ++i)
-      {
-        std::string disname = problem.get_discretization(i)->name();
-        if (disname == "structure")
+        else if (disname == "structure")
         {
           PostField* structure = problem.get_discretization(i);
           StructureFilter writer(structure, problem.outname(), problem.stresstype(),
               problem.straintype(), problem.optquantitytype());
           writer.WriteFiles();
         }
-        else if (disname == "particlewalls")
-        {
-          PostField* particlewallfield = problem.get_discretization(i);
-          StructureFilter wallwriter(particlewallfield, problem.outname());
-          wallwriter.WriteFiles();
-        }
-        else if (disname == "particle")
-        {
-          PostField* particlefield = problem.get_discretization(i);
-          ParticleFilter particlewriter(particlefield, problem.outname());
-          particlewriter.WriteFiles();
-        }
-        else if (disname == "bins")
-        {
-          PostField* visualizebins = problem.get_discretization(i);
-          StructureFilter binwriter(visualizebins, problem.outname());
-          binwriter.WriteFiles();
-        }
         else
         {
           dserror("Particle problem has illegal discretization name!");
         }
       }
-      break;
-    }
-    case prb_cavitation:
-    {
-      PostField* fluidfield = problem.get_discretization(0);
-      FluidFilter fluidwriter(fluidfield, problem.outname());
-      fluidwriter.WriteFiles();
-
-      PostField* particlewallfield = problem.get_discretization(1);
-      StructureFilter writer(particlewallfield, problem.outname());
-      writer.WriteFiles();
-
-      PostField* particlefield = problem.get_discretization(2);
-      ParticleFilter particlewriter(particlefield, problem.outname());
-      particlewriter.WriteFiles();
       break;
     }
     case prb_level_set:
@@ -357,15 +305,6 @@ void runEnsightVtuFilter(PostProblem& problem)
       PostField* scatrafield = problem.get_discretization(0);
       ScaTraFilter scatrawriter(scatrafield, basename);
       scatrawriter.WriteFiles();
-
-      // check if we have a particle field
-      int numfield = problem.num_discr();
-      if (numfield == 2)
-      {
-        PostField* particlefield = problem.get_discretization(1);
-        ParticleFilter particlewriter(particlefield, basename);
-        particlewriter.WriteFiles();
-      }
 
       break;
     }
@@ -593,12 +532,6 @@ void runEnsightVtuFilter(PostProblem& problem)
           std::cout << "|==    Scatra Field ( " << disname << " )" << std::endl;
           ScaTraFilter scatrawriter(field, basename);
           scatrawriter.WriteFiles();
-        }
-        else if (disname == "particle")
-        {
-          std::cout << "|==    Particle Field ( " << disname << " )" << std::endl;
-          ParticleFilter particlewriter(field, basename);
-          particlewriter.WriteFiles();
         }
         else if (disname == "ale")
         {

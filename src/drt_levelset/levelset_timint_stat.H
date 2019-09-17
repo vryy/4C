@@ -65,8 +65,7 @@ namespace SCATRA
     };
 
     /// update the solution after Solve()
-    /// extended version for coupled level-set problems including reinitialization and particle
-    /// correction if required
+    /// extended version for coupled level-set problems including reinitialization
     void Update(const int num = 0)
     {
       dserror("You should not need this function!");

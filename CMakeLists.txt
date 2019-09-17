@@ -491,7 +491,6 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/beam_elasthyper.cpp
   src/drt_mat/beam_elasthyper_parameter.cpp
   src/drt_mat/carreauyasuda.cpp
-  src/drt_mat/cavitationfluid.cpp
   src/drt_mat/cnst_1d_art.cpp
   src/drt_mat/compogden.cpp
   src/drt_mat/consolidation.cpp
@@ -645,8 +644,6 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/maxwell_0d_acinus_Ogden.cpp
   src/drt_mat/hemoglobin_0d_O2_saturation.cpp
   src/drt_mat/air_0d_O2_saturation.cpp
-  src/drt_mat/particle_mat.cpp
-  src/drt_mat/particle_mat_ellipsoids.cpp
   src/drt_mat/particle_material_base.cpp
   src/drt_mat/particle_material_thermo.cpp
   src/drt_mat/particle_material_sph_fluid.cpp
@@ -694,7 +691,6 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_scatra_base_algorithm.cpp
   src/drt_adapter/adapter_scatra_fluid_ale_coupling_algo.cpp
   src/drt_adapter/adapter_scatra_fluid_coupling_algorithm.cpp
-  src/drt_adapter/adapter_particle.cpp
   src/drt_adapter/ad_str_structure.cpp
   src/drt_structure/stru_dyn_nln_drt.cpp
   src/drt_adapter/ad_str_factory.cpp
@@ -774,8 +770,6 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_bio.cpp
   src/drt_inpar/inpar_cardiac_monodomain.cpp
   src/drt_inpar/inpar_particle.cpp
-  src/drt_inpar/inpar_particle_old.cpp
-  src/drt_inpar/inpar_cavitation.cpp
   src/drt_inpar/inpar_pasi.cpp
   src/drt_inpar/inpar_cell.cpp
   src/drt_inpar/inpar_contact.cpp
@@ -949,6 +943,7 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
   src/drt_beaminteraction/spherebeamlinking_params.cpp
   src/drt_beaminteraction/beaminteraction_submodel_evaluator_spherebeamlinking.cpp
   src/drt_beaminteraction/beaminteraction_geometry_utils.cpp
+  src/drt_beaminteraction/beam_crosslinker_handler.cpp
 )
 set(OBJS_DRT_STRU_MULTI
   src/drt_stru_multi/convert_mat.cpp
@@ -1555,9 +1550,6 @@ set(OBJS_DRT_NURBS_DISCRET_LIB
 )
 set(OBJS_DRT_BINSTRATEGY_DISCRET_LIB
   src/drt_beaminteraction/crosslinker_node.cpp
-  src/drt_particle/particle_ellipsoid_node.cpp
-  src/drt_particle/particle_node.cpp
-  src/drt_particle/particle_radius_node.cpp
 )
 set(OBJS_DRT_TOPOPT
   src/drt_opti/topopt_algorithm.cpp
@@ -1587,12 +1579,6 @@ set(OBJS_OPTI
 set(OBJS_DRT_LOMA
   src/drt_loma/loma_algorithm.cpp
   src/drt_loma/loma_dyn.cpp
-)
-
-set(OBJS_DRT_CAVITATION
-  src/drt_particle/cavitation_algorithm.cpp
-  src/drt_particle/cavitation_service.cpp
-  src/drt_particle/particle_dyn.cpp
 )
 
 set(OBJS_DRT_TWO_PHASE
@@ -1631,7 +1617,6 @@ set(OBJS_POST_DRT_VTK
   src/post_vtk/post_drt_vtu_writer.cpp
   src/post_vtk/post_drt_vtu_writer_node_based.cpp
   src/post_vtk/post_drt_vti_writer.cpp
-  src/post_vtk/post_drt_vtp_writer.cpp
   src/post_vtk/post_drt_vtk_writer.cpp
 )
 set(OBJS_INV_ANALYSIS
@@ -1848,19 +1833,6 @@ set(OBJS_DRT_STRUCTURE_XSTRUCTURE
 )
 set(OBJS_POST_DRT_S8CONVERT
   src/post_s8convert/post_drt_s8convert.cpp
-)
-set(OBJS_DRT_PARTICLE
-  src/drt_particle/particle_timint.cpp
-  src/drt_particle/particle_timint_expl.cpp
-  src/drt_particle/particle_timint_centrdiff.cpp
-  src/drt_particle/particle_timint_expleuler.cpp
-  src/drt_particle/particle_timint_rk.cpp
-  src/drt_particle/particle_timint_strategy.cpp
-  src/drt_particle/particle_handler.cpp
-  src/drt_particle/particle_algorithm.cpp
-  src/drt_particle/particle_contact.cpp
-  src/drt_particle/scatra_particle_coupling.cpp
-  src/drt_particle/particle_resulttest.cpp
 )
 set(OBJS_DRT_PARTICLE_ALGORITHM
   src/drt_particle_algorithm/particle_sim.cpp
@@ -2729,7 +2701,6 @@ add_library(alg_fsi ${OBJS_DRT_FSI})
 add_library(alg_immersed_problem ${OBJS_DRT_IMMERSED_PROBLEM})
 add_library(alg_fsi_xfem ${OBJS_DRT_FSI_XFEM})
 add_library(alg_loma ${OBJS_DRT_LOMA})
-add_library(alg_cavitation ${OBJS_DRT_CAVITATION})
 add_library(alg_two_phase ${OBJS_DRT_TWO_PHASE})
 add_library(alg_contact_xfem ${OBJS_DRT_CONTACT_XCONTACT})
 add_library(alg_tsi ${OBJS_DRT_TSI})
@@ -2750,7 +2721,6 @@ set(MULTIFIELD_LIBRARIES
   alg_fsi
   alg_fsi_xfem
   alg_loma
-  alg_cavitation
   alg_two_phase
   alg_contact_xfem
   alg_tsi
@@ -2791,7 +2761,6 @@ add_library(alg_xstructure ${OBJS_DRT_STRUCTURE_XSTRUCTURE})
 add_library(alg_thermo ${OBJS_DRT_THERMO})
 add_library(alg_fluid_adjoint ${OBJS_DRT_TOPOPT_ADJOINT})
 add_library(alg_opti ${OBJS_OPTI})
-add_library(alg_particle ${OBJS_DRT_PARTICLE})
 add_library(alg_particle_algorithm ${OBJS_DRT_PARTICLE_ALGORITHM})
 add_library(alg_particle_interaction ${OBJS_DRT_PARTICLE_INTERACTION})
 add_library(alg_particle_engine ${OBJS_DRT_PARTICLE_ENGINE})
@@ -2821,7 +2790,6 @@ set(SINGLEFIELD_LIBRARIES
   alg_contact_aug
   alg_fluid_adjoint
   alg_opti
-  alg_particle
   alg_particle_algorithm
   alg_particle_interaction
   alg_particle_engine

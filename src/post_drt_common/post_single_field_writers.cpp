@@ -14,7 +14,6 @@
 #include "post_drt_common.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_discret.H"
-#include "../post_vtk/post_drt_vtp_writer.H"
 #include <string>
 
 
@@ -636,51 +635,6 @@ void ThermoFilter::WriteAllResults(PostField* field)
 
 }  // ThermoFilter::WriteAllResults
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-ParticleFilter::ParticleFilter(PostField* field, std::string name) : PostFilterBase(field, name)
-{
-  // vtp output is enforced for particles independent of the choice for other fields
-  writer_ = Teuchos::rcp(new PostVtpWriter(field, name));
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void ParticleFilter::WriteAllResults(PostField* field)
-{
-  // particle stuff
-  writer_->WriteResult("velocity", "velocity", dofbased, field->problem()->num_dim(), 0);
-  writer_->WriteResult("acceleration", "acceleration", dofbased, field->problem()->num_dim(), 0);
-  writer_->WriteResult("ang_velocity", "ang_velocity", dofbased, field->problem()->num_dim(), 0);
-  writer_->WriteResult(
-      "ang_acceleration", "ang_acceleration", dofbased, field->problem()->num_dim(), 0);
-  writer_->WriteResult(
-      "modified_velocity", "modified_velocity", dofbased, field->problem()->num_dim(), 0);
-  writer_->WriteResult("radius", "radius", nodebased, 1);
-  writer_->WriteResult("density", "density", nodebased, 1);
-  writer_->WriteResult("pressure", "pressure", nodebased, 1);
-
-  writer_->WriteResult("colorField", "colorField", nodebased, 1);
-  writer_->WriteResult("CFG", "CFG", dofbased, 1);
-  writer_->WriteResult("CFG_FF", "CFG_FF", dofbased, 1);
-  writer_->WriteResult("CFG_F1S", "CFG_F1S", dofbased, 1);
-  writer_->WriteResult("CFG_F2S", "CFG_F2S", dofbased, 1);
-  writer_->WriteResult("accST_FF", "accST_FF", dofbased, 1);
-  writer_->WriteResult("fspType", "fspType", nodebased, 1);
-  writer_->WriteResult("curvature", "curvature", nodebased, 1);
-  writer_->WriteResult("phaseColor", "phaseColor", nodebased, 1);
-  writer_->WriteResult("distWall", "distWall", nodebased, 1);
-
-  writer_->WriteResult("sign", "sign", nodebased, 1);
-  writer_->WriteResult("orientation", "orientation", dofbased, field->problem()->num_dim(), 0);
-  writer_->WriteResult("orientation_tensor", "orientation_tensor", nodebased, 9);
-
-  // crosslinker stuff
-  writer_->WriteResult("numbond", "numbond", nodebased, 1);
-  writer_->WriteResult("owner", "owner", nodebased, 1);
-}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

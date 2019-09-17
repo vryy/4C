@@ -139,13 +139,6 @@ namespace BROWNIANDYN
 {
 }  // namespace BROWNIANDYN
 
-/*! brief Cavitation problems
- *
- */
-namespace CAVITATION
-{
-}  // namespace CAVITATION
-
 /*! \brief
  *
  */
@@ -709,13 +702,6 @@ namespace INPAR
   {
   }  // namespace CARDIOVASCULAR0D
 
-  /*! \brief Input parameters for cavitation
-   *
-   */
-  namespace CAVITATION
-  {
-  }  // namespace CAVITATION
-
   /*! \brief Input parameters for cell migration
    *
    */
@@ -915,13 +901,6 @@ namespace INPAR
   namespace PARTICLE
   {
   }  // namespace PARTICLE
-
-  /*! \brief Input parameters for old particle framework
-   *
-   */
-  namespace PARTICLEOLD
-  {
-  }  // namespace PARTICLEOLD
 
   /*! \brief Input parameters for particle-structure interaction
    *
@@ -1582,13 +1561,6 @@ namespace NTS
 namespace OPTI
 {
 }  // namespace OPTI
-
-/*! \brief Particle dynamics
- *
- */
-namespace PARTICLE
-{
-}  // namespace PARTICLE
 
 /*! \brief Algorithm to control particle simulations
  *

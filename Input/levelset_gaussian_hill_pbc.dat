@@ -49,13 +49,6 @@ MAXTIME                         1.0 //hill reaches point of departure (x0=2/15)
 TIMESTEP                        0.01
 RESULTSEVRY                           1
 RESTARTEVRY                     10
------------------------------------LEVEL-SET CONTROL/PARTICLE
-INCLUDE_PARTICLE                no //yes //no
---------------------------------------------------------------------BINNING STRATEGY
-CUTOFF_RADIUS                   0.1
-//BOUNDINGBOX                     -3.000001 -3.000001 -1.100001 3.000001 3.000001 3.000001
-------------------------------------------------------------PARTICLE DYNAMIC OLD
-DYNAMICTYP                      RK2
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      linear_full
@@ -112,7 +105,6 @@ ML_DAMPCOARSE                   1.0                           // damping coarse 
 -------------------------------------------------------------------MATERIALS
 //MAT 1 MAT_scatra DIFFUSIVITY 0.0033333333333 // Pe_e = 1
 MAT 1 MAT_scatra DIFFUSIVITY 0.0006666666666 // Pe_e = 5
-MAT 2 MAT_Particle DENSITY 1.0 INITRADIUS 0.01
 //MAT 1 MAT_scatra DIFFUSIVITY 0.0000333333333 // Pe_e = 100
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 1.0

@@ -28,7 +28,6 @@ NUMAIRWAYSDIS                   1
 //     Atherosclerosis_Fluid_Structure_Interaction
 //     Biofilm_Fluid_Structure_Interaction
 //     Cardiac_Monodomain
-//     Cavitation
 //     Combustion
 //     Crack
 //     Electrochemistry
@@ -190,9 +189,6 @@ NDSURF                          0
 //
 // number of volume clouds
 NDVOL                           0
-//
-// number of particle clouds
-NDPARTICLE                      0
 //
 -------------------------------------------------STRUCTURAL DYNAMIC
 //

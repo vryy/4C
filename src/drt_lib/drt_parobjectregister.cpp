@@ -32,7 +32,6 @@
 #include "../drt_lubrication_ele/lubrication_ele.H"
 #include "../drt_scatra_ele/scatra_ele.H"
 #include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele.H"
-#include "../drt_particle/particle_node.H"
 #include "../drt_fluid_ele/fluid_ele.H"
 #include "../drt_fluid_ele/fluid_ele_poro.H"
 #include "../drt_fluid_ele/fluid_ele_immersed.H"
@@ -111,7 +110,6 @@
 #include "../drt_mat/fluid_linear_density_viscosity.H"
 #include "../drt_mat/fluid_weakly_compressible.H"
 #include "../drt_mat/tempdepwater.H"
-#include "../drt_mat/cavitationfluid.H"
 #include "../drt_mat/arrhenius_spec.H"
 #include "../drt_mat/arrhenius_temp.H"
 #include "../drt_mat/arrhenius_pv.H"
@@ -192,7 +190,6 @@ std::string DRT::ParObjectList()
   s << DRT::ContainerType::Instance().Name() << " " << DRT::ConditionObjectType::Instance().Name()
     << " " << DRT::NodeType::Instance().Name() << " "
     << DRT::NURBS::ControlPointType::Instance().Name() << " "
-    << PARTICLE::ParticleNodeType::Instance().Name() << " "
     << IMMERSED::ImmersedNodeType::Instance().Name() << " "
     << CROSSLINKING::CrosslinkerNodeType::Instance().Name() << " "
     << DRT::MESHFREE::MeshfreeMultiBinType::Instance().Name() << " "
@@ -322,7 +319,6 @@ std::string DRT::ParObjectList()
     << MAT::ArrheniusPVType::Instance().Name() << " " << MAT::ArrheniusSpecType::Instance().Name()
     << " " << MAT::ArrheniusTempType::Instance().Name() << " "
     << MAT::CarreauYasudaType::Instance().Name() << " "
-    << MAT::CavitationFluidType::Instance().Name() << " "
     << MAT::ConstraintMixtureType::Instance().Name() << " "
     << MAT::ConstraintMixtureHistoryType::Instance().Name() << " "
     << MAT::ElastHyperType::Instance().Name() << " "

@@ -27,7 +27,6 @@
 #include "../drt_loma/loma_dyn.H"
 #include "../drt_lubrication/lubrication_dyn.H"
 #include "../drt_opti/topopt_dyn.H"
-#include "../drt_particle/particle_dyn.H"
 #include "../drt_particle_algorithm/particle_sim.H"
 #include "../drt_pasi/pasi_dyn.H"
 #include "../drt_poroelast/poro_dyn.H"
@@ -193,11 +192,6 @@ void ntacal()
 
     case prb_particle:
       particle_drt();
-      break;
-
-    case prb_particle_old:
-    case prb_cavitation:
-      particle_old_drt();
       break;
 
     case prb_pasi:

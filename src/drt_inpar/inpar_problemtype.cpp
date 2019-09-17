@@ -76,7 +76,6 @@ std::map<std::string, PROBLEM_TYP> INPAR::PROBLEMTYPE::StringToProblemTypeMap()
     string2prbtype["Atherosclerosis_Fluid_Structure_Interaction"] = prb_ac_fsi;
     string2prbtype["Biofilm_Fluid_Structure_Interaction"] = prb_biofilm_fsi;
     string2prbtype["Cardiac_Monodomain"] = prb_cardiac_monodomain;
-    string2prbtype["Cavitation"] = prb_cavitation;
     string2prbtype["Elastohydrodynamic_Lubrication"] = prb_ehl;
     string2prbtype["Electrochemistry"] = prb_elch;
     string2prbtype["Electromagnetics"] = prb_elemag;
@@ -105,7 +104,6 @@ std::map<std::string, PROBLEM_TYP> INPAR::PROBLEMTYPE::StringToProblemTypeMap()
     string2prbtype["Lubrication"] = prb_lubrication;
     string2prbtype["NP_Supporting_Procs"] = prb_np_support;
     string2prbtype["Particle"] = prb_particle;
-    string2prbtype["ParticleOld"] = prb_particle_old;
     string2prbtype["Particle_Structure_Interaction"] = prb_pasi;
     string2prbtype["Polymer_Network"] = prb_polymernetwork;
     string2prbtype["Poroelastic_scalar_transport"] = prb_poroscatra;

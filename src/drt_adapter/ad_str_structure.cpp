@@ -122,7 +122,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
   if (mtcond.size() == 0 and ccond.size() != 0) onlycontact = true;
 
   // Problem-types involving changing mesh or redistribution of mesh
-  // for load balancing (like particle or contact) during the simulation needs an additional step.
+  // for load balancing (like contact) during the simulation needs an additional step.
   // This is because the discretization read from the input file
   // do not match with the discr. at the current time step.
   // Here we read the discretization at the current time step from restart files

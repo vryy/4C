@@ -26,8 +26,6 @@
 #include "../drt_binstrategy/drt_meshfree_multibin.H"
 #include "../drt_inpar/inpar_binningstrategy.H"
 
-#include "../drt_particle/particle_algorithm.H"
-
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
 
@@ -64,8 +62,6 @@ BINSTRATEGY::BinningStrategy::BinningStrategy()
       writebinstype_(DRT::INPUT::IntegralValue<INPAR::BINSTRATEGY::writebins>(
           DRT::Problem::Instance()->BinningStrategyParams(), ("WRITEBINS"))),
       havepbc_(false),
-      particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::ParticleDim>(
-          DRT::Problem::Instance()->ParticleParamsOld(), "DIMENSION")),
       myrank_(DRT::Problem::Instance()->GetNPGroup()->GlobalComm()->MyPID())
 {
   // initialize arrays
@@ -255,8 +251,6 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
       writebinstype_(DRT::INPUT::IntegralValue<INPAR::BINSTRATEGY::writebins>(
           DRT::Problem::Instance()->BinningStrategyParams(), ("WRITEBINS"))),
       havepbc_(false),
-      particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::ParticleDim>(
-          DRT::Problem::Instance()->ParticleParamsOld(), "DIMENSION")),
       myrank_(comm.MyPID())
 {
   if (XAABB_(0, 0) >= XAABB_(0, 1) or XAABB_(1, 0) >= XAABB_(1, 1) or XAABB_(2, 0) >= XAABB_(2, 1))
@@ -293,8 +287,6 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(const Epetra_Comm& comm)
       writebinstype_(DRT::INPUT::IntegralValue<INPAR::BINSTRATEGY::writebins>(
           DRT::Problem::Instance()->BinningStrategyParams(), ("WRITEBINS"))),
       havepbc_(false),
-      particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::ParticleDim>(
-          DRT::Problem::Instance()->ParticleParamsOld(), "DIMENSION")),
       myrank_(comm.MyPID())
 {
   const Teuchos::ParameterList& binstrategyparams =
@@ -1047,11 +1039,7 @@ void BINSTRATEGY::BinningStrategy::DetermineBoundaryRowBins()
   if (bindis_->Filled() == false) bindis_->FillComplete(false, false, false);
 
   // determine maximal possible number of neighbors
-  size_t nummaxneighbors = -1;
-  if (particle_dim_ == INPAR::PARTICLEOLD::particle_3D)
-    nummaxneighbors = 26;
-  else
-    nummaxneighbors = 8;
+  size_t nummaxneighbors = 26;
 
   // loop over row bins and decide whether they are located at the boundary
   const Epetra_Map* binrowmap = bindis_->ElementRowMap();
@@ -1713,41 +1701,6 @@ void BINSTRATEGY::BinningStrategy::CreateBinsBasedOnCutoffAndXAABB(
   // was prescribed in input file
   if (cutoff_radius_ <= 0.0)
     cutoff_radius_ = std::min(bin_size_[0], std::min(bin_size_[1], bin_size_[2]));
-
-  // 2D case
-  if (particle_dim_ != INPAR::PARTICLEOLD::particle_3D) CreateBins2D();
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
-| find XAABB and divide into bins                           ghamm 09/12 |
- *----------------------------------------------------------------------*/
-void BINSTRATEGY::BinningStrategy::CreateBins2D()
-{
-  int entry = -1;
-  switch (particle_dim_)
-  {
-    case INPAR::PARTICLEOLD::particle_2Dx:
-      entry = 0;
-      break;
-    case INPAR::PARTICLEOLD::particle_2Dy:
-      entry = 1;
-      break;
-    case INPAR::PARTICLEOLD::particle_2Dz:
-      entry = 2;
-      break;
-    default:
-      dserror("number of particle dimensions not yet implemented");
-      break;
-  }
-
-  // one bin in pseudo direction is enough
-  bin_per_dir_[entry] = 1;
-  id_calc_bin_per_dir_[entry] = 1;
-  id_calc_exp_bin_per_dir_[entry] = 0;
-  bin_size_[entry] = (XAABB_(entry, 1) - XAABB_(entry, 0));
-  inv_bin_size_[entry] = 1.0 / bin_size_[entry];
 
   return;
 }

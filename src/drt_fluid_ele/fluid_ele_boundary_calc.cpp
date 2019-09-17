@@ -47,7 +47,6 @@
 #include "../drt_mat/fluid_murnaghantait.H"
 #include "../drt_mat/fluid_weakly_compressible.H"
 #include "../drt_mat/tempdepwater.H"
-#include "../drt_mat/cavitationfluid.H"
 #include "../drt_mat/yoghurt.H"
 #include "../drt_mat/fluidporo.H"
 #include "../drt_mat/matlist.H"
@@ -2301,21 +2300,6 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::GetDensity(
 
     // set density factor for Neumann boundary conditions to density for present material
     densfac_ = densaf_;
-  }
-  else if (material->MaterialType() == INPAR::MAT::m_cavitation)
-  {
-    const MAT::CavitationFluid* actmat = static_cast<const MAT::CavitationFluid*>(material.get());
-
-    // get constant base density
-    const double density_0 = actmat->Density();
-
-    // get fluid fraction at at n+alpha_F
-    // const double fluidfracaf = funct_.Dot(escaaf);
-
-    // compute density at at n+alpha_F; no density scaling necessary here due
-    // to the special choice of forces applied to the fluid
-    //  densaf_ = fluidfracaf*density_0;
-    densaf_ = density_0;
   }
   else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
   {

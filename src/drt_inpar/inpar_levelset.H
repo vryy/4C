@@ -109,18 +109,6 @@ namespace INPAR
 
   }  // namespace SCATRA
 
-  namespace PARTICLEOLD
-  {
-    /// escape criterion
-    enum Escaped
-    {
-      half,
-      full
-    };
-
-  }  // namespace PARTICLEOLD
-
-
   namespace LEVELSET
   {
     /// set the levelset parameters

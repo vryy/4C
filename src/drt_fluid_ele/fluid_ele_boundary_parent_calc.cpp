@@ -32,7 +32,6 @@
 
 #include "../drt_mat/arrhenius_pv.H"
 #include "../drt_mat/carreauyasuda.H"
-#include "../drt_mat/cavitationfluid.H"
 #include "../drt_mat/ferech_pv.H"
 #include "../drt_mat/fluidporo.H"
 #include "../drt_mat/herschelbulkley.H"
@@ -5957,21 +5956,6 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::GetDensityAndViscosity(
 
     // compute density at n+alpha_F or n+1 based on progress variable
     densaf_ = actmat->ComputeDensity(pscaaf);
-  }
-  else if (material->MaterialType() == INPAR::MAT::m_cavitation)
-  {
-    const MAT::CavitationFluid* actmat = static_cast<const MAT::CavitationFluid*>(material.get());
-
-    // get constant base density
-    const double density_0 = actmat->Density();
-
-    // compute density at at n+alpha_F; no density scaling necessary here due
-    // to the special choice of forces applied to the fluid
-    //  densaf_ = fluidfracaf*density_0;
-    densaf_ = density_0;
-
-    // get constant viscosity
-    visc_ = actmat->Viscosity();
   }
   else if (material->MaterialType() == INPAR::MAT::m_permeable_fluid)
   {

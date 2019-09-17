@@ -889,9 +889,6 @@ void DRT::INPUT::ConditionDefinition::Read(const Problem& problem, DatFileReader
       case DRT::Condition::Volume:
         success = dobj == "DVOL";
         break;
-      case DRT::Condition::Particle:
-        success = dobj == "DPARTICLE";
-        break;
       default:
         dserror("geometry type unspecified");
         break;
@@ -991,9 +988,6 @@ std::ostream& DRT::INPUT::ConditionDefinition::Print(
       break;
     case DRT::Condition::Volume:
       name = "DVOL";
-      break;
-    case DRT::Condition::Particle:
-      name = "DPARTICLE";
       break;
     default:
       dserror("geometry type unspecified");

@@ -77,19 +77,6 @@ namespace DRT
           const DRT::INPUT::DatFileReader& reader, const std::string& sectionname,
           const INPAR::GeometryType geometrysource, const std::string* geofilepath);
 
-      /*!
-       * \brief Adds a particle reader to this nodereader
-       *
-       * This is a version specific for particles
-       *
-       * \param dis            [in] This discretization will be passed on
-       * \param reader         [in] This reader will be passed on
-       * \param sectionname    [in] This will be passed on element/domain readers only (not used for
-       * file reader)
-       */
-      void AddParticleReader(Teuchos::RCP<Discretization> dis,
-          const DRT::INPUT::DatFileReader& reader, const std::string& sectionname);
-
       /// do the actual reading
       /*!
         This method contains the whole machinery. The reading consists of

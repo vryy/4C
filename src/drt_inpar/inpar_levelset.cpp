@@ -187,37 +187,6 @@ void INPAR::LEVELSET::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       tuple<int>(INPAR::SCATRA::hyperbolic, INPAR::SCATRA::hyperbolic_smoothed_positive,
           INPAR::SCATRA::hyperbolic_clipped_05, INPAR::SCATRA::hyperbolic_clipped_1),
       &ls_reinit);
-
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& ls_particle = levelsetcontrol.sublist("PARTICLE", false, "");
-
-  BoolParameter(
-      "INCLUDE_PARTICLE", "No", "Activate a hybrid particle-level-set method", &ls_particle);
-
-  setStringToIntegralParameter<int>("ESCAPED", "half", "criterion for escaped particles",
-      tuple<std::string>("half", "full"),
-      tuple<int>(INPAR::PARTICLEOLD::half, INPAR::PARTICLEOLD::full), &ls_particle);
-
-  IntParameter("NUMPARTICLE", 64,
-      "number of particles in bins around interface (usually 3D: 64, 2D: 32)", &ls_particle);
-  DoubleParameter("PARTICLEBANDWIDTH", 3.0,
-      "multiple of maximal element length defining band around interface filled with particles, "
-      "i.e., alpha*max(dx,dy,dz): here we give alpha, max(dx,dy,dz) is defined by the cut_off "
-      "radius for the bins!",
-      &ls_particle);
-  DoubleParameter("MIN_RADIUS", 0.1,
-      "minimal radius of particles, usually a multiple of min(dx,dy,dz)", &ls_particle);
-  DoubleParameter("MAX_RADIUS", 0.5,
-      "maximal radius of particles, usually a multiple of min(dx,dy,dz)", &ls_particle);
-  IntParameter("RESEEDING", 10000, "reseeding interval", &ls_particle);
-  BoolParameter("FAST_CHECK", "No",
-      "Fast check of interface distance based on first phi-value of first assiciated element",
-      &ls_particle);
-  DoubleParameter("DELETE_CRITICAL_PARTICLES", 0.0,
-      "Allows for deleting also escaped particles that moved to far from the interface to be "
-      "useful",
-      &ls_particle);
-  BoolParameter("RESTARTDATA", "No", "Write only restart data", &ls_particle);
 }
 
 

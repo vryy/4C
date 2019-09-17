@@ -40,8 +40,6 @@
 
 #include "../drt_binstrategy/drt_meshfree_multibin.H"
 
-#include "../drt_particle/particle_handler.H"
-
 #include "../drt_mat/crosslinkermat.H"
 
 #include "../drt_beam3/beam3_base.H"
@@ -49,6 +47,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 #include <unordered_set>
+#include "beam_crosslinker_handler.H"
 
 
 /*-------------------------------------------------------------------------------*
@@ -154,7 +153,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PostPartitionProblem()
   std::map<int, NewDoubleBonds> mynewdbondcl;
   SetAllPossibleInitialDoubleBondedCrosslinker(newlinker, mynewdbondcl);
 
-  // set row map of newly created particle discretization
+  // set row map of newly created linker discretization
   BinDiscretPtr()->FillComplete(false, false, false);
 
   // init crosslinker data container
@@ -741,7 +740,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::AddCrosslinkerToBinDiscre
     }
   }
 
-  // set row map of newly created particle discretization
+  // set row map of newly created linker discretization
   BinDiscretPtr()->FillComplete(false, false, false);
 }
 
@@ -1037,23 +1036,23 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PreUpdateStepElement(bool
   if (GState().GetMyRank() == 0)
     IO::cout(IO::debug) << " max linker movement " << gmaxdisincr << IO::endl;
 
-  bool particle_redist =
+  bool linker_redist =
       ((half_interaction_distance_ + gmaxdisincr) > (0.5 * BinStrategy().CutoffRadius()));
 
   // store old maps prior to potential redistribution
   // this needs to be stored even no redistribution takes place later one
   StoreMapsPriorRedistribution();
 
-  if (particle_redist or beam_redist)
+  if (linker_redist or beam_redist)
   {
     // current displacement state gets new reference state
     dis_at_last_redistr_ = Teuchos::rcp(new Epetra_Vector(*linker_disnp_));
     // transfer crosslinker to new bins
-    Teuchos::RCP<std::list<int>> lostcl = ParticleHandlerPtr()->TransferParticles(true);
+    Teuchos::RCP<std::list<int>> lostcl = BeamCrosslinkerHandlerPtr()->TransferLinker(true);
     if (not lostcl->empty()) dserror("Crosslinker got lost during transfer, something went wrong");
   }
 
-  return particle_redist;
+  return linker_redist;
 }
 
 /*----------------------------------------------------------------------*
@@ -1422,7 +1421,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::WriteRestart(
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PreReadRestart()
 {
   CheckInitSetup();
-  ParticleHandlerPtr()->RemoveAllParticles();
+  BeamCrosslinkerHandlerPtr()->RemoveAllLinker();
 }
 
 /*----------------------------------------------------------------------------*

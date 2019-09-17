@@ -186,10 +186,6 @@ namespace XSTR
        *  of base mesh file to controlfile [derived] */
       virtual void WriteMesh(const int step, const double time, std::string name_base_file);
 
-      /** for particle simulations: write only nodes in new "field"
-       *  group to control file [derived] */
-      virtual void ParticleOutput(const int step, const double time, const bool writerestart);
-
       /// write element data to file [derived]
       virtual void WriteElementData(bool writeowner);
 

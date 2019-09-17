@@ -36,8 +36,6 @@ REINITINTERVAL                  1
 REINITBAND                      yes
 REINITBANDWIDTH                 0.2
 REINITVOLCORRECTION             yes
------------------------------------LEVEL-SET CONTROL/PARTICLE
-INCLUDE_PARTICLE                no
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      nonlinear
 INITFUNCNO                      3

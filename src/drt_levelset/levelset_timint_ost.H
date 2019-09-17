@@ -70,8 +70,7 @@ namespace SCATRA
     void UpdateState();
 
     /// update the solution after Solve()
-    /// extended version for coupled level-set problems including reinitialization and particle
-    /// correction if required
+    /// extended version for coupled level-set problems including reinitialization
     void Update(const int num = 0);
 
     /// update phi within the reinitialization loop

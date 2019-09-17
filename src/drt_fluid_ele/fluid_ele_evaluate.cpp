@@ -725,10 +725,6 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
     case FLD::calc_dissipation:
     case FLD::integrate_shape:
     case FLD::calc_divop:
-    case FLD::calc_mat_deriv_u_and_rot_u:
-    case FLD::calc_press_grad_and_div_eps:
-    case FLD::calc_volume_gaussint:
-    case FLD::calc_fluidfrac_projection:
     case FLD::interpolate_velgrad_to_given_point:
     case FLD::interpolate_velocity_to_given_point_immersed:
     case FLD::search_immersed_boundary_elements:

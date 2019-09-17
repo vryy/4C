@@ -683,7 +683,6 @@ MIN_ELEPROC                     0
 //                              Ale
 //                              ArterialNetwork
 //                              Biofilm_Fluid_Structure_Interaction
-//                              Cavitation
 //                              Combustion
 //                              Electrochemistry
 //                              Fluid
@@ -1491,7 +1490,6 @@ DIVERCONT                       stop
 //                              GEMM
 //                              ExplicitEuler
 //                              CentrDiff
-//                              ParticleCentrDiff
 //                              AdamsBashforth2
 //                              EulerMaruyama
 //                              EulerImpStoch

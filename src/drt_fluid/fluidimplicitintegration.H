@@ -927,15 +927,6 @@ namespace FLD
     virtual void SetFldGrDisp(Teuchos::RCP<Epetra_Vector> fluid_growth_disp);
     //@}
 
-    //! @name Cavitation methods
-    //@{
-    /// fluid fraction in each element is set from outside
-    virtual void SetFluidFraction(Teuchos::RCP<Epetra_MultiVector> fluidfraction);
-
-    /// Output of density_scaling_ is written
-    virtual void WriteOutputFluidFraction();
-    //@}
-
     /*!
     \brief evaluate and update problem-specific boundary conditions
 
@@ -1245,8 +1236,8 @@ namespace FLD
     std::vector<double> flowvolumen_;
     std::vector<double> flowvolumenm_;
 
-    //! @name optimization data and cavitation
-    /// density in topology optimization and void fraction in cavitation
+    //! @name optimization data
+    /// density in topology optimization
     Teuchos::RCP<Epetra_Vector> density_scaling_;
 
     //@}

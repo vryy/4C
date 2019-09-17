@@ -253,8 +253,6 @@ namespace DRT
       RedAirwayVentilatorCond,
       RedAirwayTissue,
       RedAirwayNodeTissue,
-      ParticleInflow,
-      ParticleInitRadius,
       ParticleWall,
       ArtPrescribedScatraCond,
       RedAirwayPrescribedScatraCond,
@@ -298,7 +296,6 @@ namespace DRT
       Line,
       Surface,
       Volume,
-      Particle,
       NoGeom
     };
 

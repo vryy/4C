@@ -1212,7 +1212,7 @@ void IO::DiscretizationWriter::WriteMesh(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::ParticleOutput(
+void IO::DiscretizationWriter::WriteOnlyNodesInNewFieldGroupToControlFile(
     const int step, const double time, const bool writerestart)
 {
   if (binio_)

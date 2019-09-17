@@ -15,16 +15,6 @@
 
 #include "levelset_timint_stat.H"
 
-//#include "../drt_scatra_ele/scatra_ele_action.H"
-//#include <Teuchos_StandardParameterEntryValidators.hpp>
-//#include <Teuchos_TimeMonitor.hpp>
-//#include "../drt_io/io.H"
-//#include "../drt_io/io_pstream.H"
-//#include "../linalg/linalg_solver.H"
-//
-//#include "../drt_particle/scatra_particle_coupling.H"
-
-
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                rasthofer 09/13 |
  *----------------------------------------------------------------------*/

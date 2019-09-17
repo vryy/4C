@@ -19,10 +19,6 @@
 #include <Teuchos_TimeMonitor.hpp>
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
-//#include "../linalg/linalg_solver.H"
-
-#include "../drt_particle/scatra_particle_coupling.H"
-
 
 #include "../drt_inpar/drt_validparameters.H"
 
@@ -148,7 +144,7 @@ void SCATRA::LevelSetTimIntOneStepTheta::SetOldPartOfRighthandside()
 
 /*----------------------------------------------------------------------*
  | extended version for coupled level-set problems                      |
- | including reinitialization and particle correction   rasthofer 01/14 |
+ | including reinitialization                           rasthofer 01/14 |
  *----------------------------------------------------------------------*/
 void SCATRA::LevelSetTimIntOneStepTheta::Update(const int num)
 {
@@ -157,12 +153,6 @@ void SCATRA::LevelSetTimIntOneStepTheta::Update(const int num)
   // -----------------------------------------------------------------
   // will be done only if required
   Reinitialization();
-
-  // -------------------------------------------------------------------
-  //                     hybrid particle method
-  // -------------------------------------------------------------------
-  // correct zero level-set by particles if available
-  ParticleCorrection();
 
   // -------------------------------------------------------------------
   //                         update solution
@@ -180,7 +170,7 @@ void SCATRA::LevelSetTimIntOneStepTheta::Update(const int num)
  *----------------------------------------------------------------------*/
 void SCATRA::LevelSetTimIntOneStepTheta::UpdateState()
 {
-  if ((not switchreinit_) and particle_ == Teuchos::null)
+  if (not switchreinit_)
   {
     // compute time derivative at time n+1
     ComputeTimeDerivative();
@@ -212,15 +202,6 @@ void SCATRA::LevelSetTimIntOneStepTheta::UpdateState()
 
     // reset element time-integration parameters
     SetElementTimeParameter();
-  }
-
-  // update also particle field and related quantities
-  if (particle_ != Teuchos::null)
-  {
-    // update convective velocity
-    conveln_ = discret_->GetState(nds_vel_, "convective velocity field");
-
-    particle_->Update();
   }
 
   return;
@@ -286,14 +267,6 @@ void SCATRA::LevelSetTimIntOneStepTheta::ReadRestart(
 {
   // do basic restart
   TimIntOneStepTheta::ReadRestart(step, input);
-
-  // read restart for particles
-  if (particle_ != Teuchos::null)
-  {
-    if (myrank_ == 0) std::cout << "===== Particle restart! =====" << std::endl;
-
-    particle_->ReadRestart(step);
-  }
 
   return;
 }

@@ -358,16 +358,6 @@ void XSTR::IO::MultiDiscretizationWriter::WriteMesh(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XSTR::IO::MultiDiscretizationWriter::ParticleOutput(
-    const int step, const double time, const bool writerestart)
-{
-  XWriterMap::const_iterator cit;
-  for (cit = writers_.begin(); cit != writers_.end(); ++cit)
-    cit->second->ParticleOutput(step, time, writerestart);
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 void XSTR::IO::MultiDiscretizationWriter::WriteElementData(bool writeowner)
 {
   XWriterMap::const_iterator cit;

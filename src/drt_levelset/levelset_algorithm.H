@@ -30,11 +30,6 @@
 #define USE_PHIN_FOR_VEL  // TODO
 
 // forward declarations
-namespace PARTICLE
-{
-  class ScatraParticleCoupling;
-}
-
 namespace LINALG
 {
   class SerialDenseMatrix;
@@ -96,9 +91,6 @@ namespace SCATRA
     /// redistribute the scatra discretization and vectors according to nodegraph
     void Redistribute(const Teuchos::RCP<Epetra_CrsGraph>& nodegraph);
 
-    /// return velocity at intermediate time n+theta
-    const Teuchos::RCP<Epetra_Vector> ConVelTheta(double theta);
-
     /// perform result test
     void TestResults();
 
@@ -134,13 +126,6 @@ namespace SCATRA
 
     /// update state vectors
     virtual void UpdateState() = 0;
-
-    // -----------------------------------------------------------------
-    // hybrid method including particles
-    // -----------------------------------------------------------------
-
-    /// correct zero level-set by particles
-    void ParticleCorrection();
 
     // -----------------------------------------------------------------
     // reinitialization
@@ -189,14 +174,8 @@ namespace SCATRA
     /// the parameter list for level-set problems
     Teuchos::RCP<Teuchos::ParameterList> levelsetparams_;
 
-    /// pointer to particle algorithm
-    Teuchos::RCP<PARTICLE::ScatraParticleCoupling> particle_;
-
     /// options for reinitialization of G-function;
     INPAR::SCATRA::ReInitialAction reinitaction_;
-
-    /// convective velocity at time n
-    Teuchos::RCP<const Epetra_Vector> conveln_;
 
     /// flag to switch between standard integration and sub-time loop for reinitialization
     bool switchreinit_;

@@ -381,10 +381,6 @@ void DRT::Condition::Print(std::ostream& os) const
     os << "Reduced d airway scatra air condition";
   else if (Type() == RedAirwayScatraCapillaryCond)
     os << "Reduced d airway scatra capillary condition";
-  else if (Type() == ParticleInflow)
-    os << "particle inflow condition";
-  else if (Type() == ParticleInitRadius)
-    os << "particle initial radius condition";
   else if (Type() == ParticleWall)
     os << "particle wall condition";
   else if (Type() == SurfaceModeKrylovProjection)

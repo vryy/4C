@@ -69,12 +69,6 @@ namespace FLD
     void SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams);
 
     /*!
-    \brief switched off in TopOpt
-
-    */
-    void WriteOutputFluidFraction() { return; }
-
-    /*!
     \brief (multiple) corrector
 
     */

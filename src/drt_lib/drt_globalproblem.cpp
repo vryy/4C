@@ -377,15 +377,12 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--TOPOLOGY OPTIMIZATION CONTROL", *list);
   reader.ReadGidSection("--TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY OPTIMIZER", *list);
   reader.ReadGidSection("--TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY ADJOINT FLUID", *list);
-  reader.ReadGidSection("--CAVITATION DYNAMIC", *list);
   reader.ReadGidSection("--PARTICLE DYNAMIC", *list);
   reader.ReadGidSection("--PARTICLE DYNAMIC/INITIAL AND BOUNDARY CONDITIONS", *list);
   reader.ReadGidSection("--PARTICLE DYNAMIC/SPH", *list);
   reader.ReadGidSection("--PARTICLE DYNAMIC/DEM", *list);
-  reader.ReadGidSection("--PARTICLE DYNAMIC OLD", *list);
   reader.ReadGidSection("--PASI DYNAMIC", *list);
   reader.ReadGidSection("--LEVEL-SET CONTROL", *list);
-  reader.ReadGidSection("--LEVEL-SET CONTROL/PARTICLE", *list);
   reader.ReadGidSection("--LEVEL-SET CONTROL/REINITIALIZATION", *list);
   reader.ReadGidSection("--WEAR", *list);
   reader.ReadGidSection("--BEAM CONTACT", *list);
@@ -772,7 +769,6 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
   int ndline = design.get<int>("NDLINE");
   int ndsurf = design.get<int>("NDSURF");
   int ndvol = design.get<int>("NDVOL");
-  int ndparticle = design.get<int>("NDPARTICLE");
 
   //--------------------------------------------- read generic node sets
   // read design nodes <-> nodes
@@ -790,10 +786,6 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
   // read design volumes <-> nodes
   std::vector<std::vector<int>> dvol_fenode(ndvol);
   reader.ReadDesign("DVOL", dvol_fenode);
-
-  // read design particles
-  std::vector<std::vector<int>> dparticle(ndparticle);
-  reader.ReadDesign("DPARTICLE", dparticle);
 
   // check for meshfree discretisation to add node set topologies
   std::vector<std::vector<std::vector<int>>*> nodeset(4);
@@ -858,13 +850,6 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
                 curr->first, dvol_fenode.size());
           curr->second->Add("Node Ids", dvol_fenode[curr->first]);
           break;
-        case Condition::Particle:
-          if (curr->first < 0 or static_cast<unsigned>(curr->first) >= dparticle.size())
-            // particle conditions are allowed for having empty nodal clouds
-            break;
-          else
-            curr->second->Add("Node Ids", dparticle[curr->first]);
-          break;
         default:
           dserror("geometry type unspecified");
           break;
@@ -877,36 +862,25 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
       for (iter = discretizationmap_.begin(); iter != discretizationmap_.end(); ++iter)
       {
         Teuchos::RCP<DRT::Discretization> actdis = iter->second;
-        if (actdis->Name() != "particle")  // standard case
-        {
-          if (curr->second->GType() == Condition::Particle) continue;
-          const std::vector<int>* nodes = curr->second->Nodes();
-          if (nodes->size() == 0)
-            dserror("%s condition %d has no nodal cloud", condlist[c]->Description().c_str(),
-                curr->second->Id());
 
-          int foundit = 0;
-          for (unsigned i = 0; i < nodes->size(); ++i)
-          {
-            const int node = (*nodes)[i];
-            foundit = actdis->HaveGlobalNode(node);
-            if (foundit) break;
-          }
-          int found = 0;
-          actdis->Comm().SumAll(&foundit, &found, 1);
-          if (found)
-          {
-            // Insert a copy since we might insert the same condition in many discretizations.
-            actdis->SetCondition(condlist[c]->Name(), Teuchos::rcp(new Condition(*curr->second)));
-          }
-        }
-        else
+        const std::vector<int>* nodes = curr->second->Nodes();
+        if (nodes->size() == 0)
+          dserror("%s condition %d has no nodal cloud", condlist[c]->Description().c_str(),
+              curr->second->Id());
+
+        int foundit = 0;
+        for (unsigned i = 0; i < nodes->size(); ++i)
         {
-          // insert any particle condition into particle discret
-          if (curr->second->GType() == Condition::Particle)
-          {
-            actdis->SetCondition(condlist[c]->Name(), Teuchos::rcp(new Condition(*curr->second)));
-          }
+          const int node = (*nodes)[i];
+          foundit = actdis->HaveGlobalNode(node);
+          if (foundit) break;
+        }
+        int found = 0;
+        actdis->Comm().SumAll(&foundit, &found, 1);
+        if (found)
+        {
+          // Insert a copy since we might insert the same condition in many discretizations.
+          actdis->SetCondition(condlist[c]->Name(), Teuchos::rcp(new Condition(*curr->second)));
         }
       }
     }
@@ -1082,7 +1056,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   Teuchos::RCP<DRT::Discretization> arterydis = Teuchos::null;  //_1D_ARTERY_
   Teuchos::RCP<DRT::Discretization> airwaydis = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> optidis = Teuchos::null;
-  Teuchos::RCP<DRT::Discretization> particledis = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> porofluiddis = Teuchos::null;  // fpsi, poroelast
   Teuchos::RCP<DRT::Discretization> acoudis = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> elemagdis = Teuchos::null;
@@ -1683,18 +1656,15 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       else
         fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm()));
       scatradis = Teuchos::rcp(new DRT::Discretization("scatra", reader.Comm()));
-      particledis = Teuchos::rcp(new DRT::Discretization("particle", reader.Comm()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
       fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
       scatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatradis)));
-      particledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(particledis)));
 
       AddDis("structure", structdis);
       AddDis("fluid", fluiddis);
       AddDis("scatra", scatradis);
-      AddDis("particle", particledis);
 
       nodereader.AddElementReader(
           Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
@@ -1704,7 +1674,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       // "--FLUID ELEMENTS")));
       nodereader.AddElementReader(
           Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
-      nodereader.AddParticleReader(particledis, reader, "PARTICLE");
       break;
     }
 
@@ -2160,6 +2129,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       break;
     }
     case prb_particle:
+    case prb_pasi:
     {
       // create empty discretizations
       structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
@@ -2174,67 +2144,18 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
-    case prb_particle_old:
-    case prb_pasi:
-    {
-      if (distype == "Meshfree")
-      {
-        particledis = Teuchos::rcp(new DRT::Discretization("particle", reader.Comm()));
-      }
-      else
-      {
-        dserror("meshfree simulations must be distype=Meshfree");
-      }
-      structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
-
-      // create discretization writer - in constructor set into and owned by corresponding discret
-      structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
-      particledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(particledis)));
-
-      AddDis("structure", structdis);
-      AddDis("particle", particledis);
-
-      nodereader.AddAdvancedReader(structdis, reader, "STRUCTURE",
-          DRT::INPUT::IntegralValue<INPAR::GeometryType>(StructuralDynamicParams(), "GEOMETRY"), 0);
-      nodereader.AddParticleReader(particledis, reader, "PARTICLE");
-
-      break;
-    }
-    case prb_cavitation:
-    {
-      // create empty discretizations
-      fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm()));
-      particledis = Teuchos::rcp(new DRT::Discretization("particle", reader.Comm()));
-
-      // create discretization writer - in constructor set into and owned by corresponding discret
-      fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
-      particledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(particledis)));
-
-      AddDis("fluid", fluiddis);
-      AddDis("particle", particledis);
-
-      nodereader.AddAdvancedReader(fluiddis, reader, "FLUID",
-          DRT::INPUT::IntegralValue<INPAR::GeometryType>(FluidDynamicParams(), "GEOMETRY"), 0);
-      nodereader.AddParticleReader(particledis, reader, "PARTICLE");
-
-      break;
-    }
     case prb_level_set:
     {
       // create empty discretizations
       scatradis = Teuchos::rcp(new DRT::Discretization("scatra", reader.Comm()));
-      particledis = Teuchos::rcp(new DRT::Discretization("particle", reader.Comm()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       scatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatradis)));
-      particledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(particledis)));
 
       AddDis("scatra", scatradis);
-      AddDis("particle", particledis);
 
       nodereader.AddElementReader(
           Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
-      nodereader.AddParticleReader(particledis, reader, "PARTICLE");
       break;
     }
     case prb_np_support:

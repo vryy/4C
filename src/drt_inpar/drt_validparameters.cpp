@@ -55,8 +55,6 @@
 #include "inpar_ssi.H"
 #include "inpar_fs3i.H"
 #include "inpar_particle.H"
-#include "inpar_particle_old.H"
-#include "inpar_cavitation.H"
 #include "inpar_pasi.H"
 #include "inpar_levelset.H"
 #include "inpar_wear.H"
@@ -426,7 +424,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("NDLINE", 0, "number of line clouds", &design);
   IntParameter("NDSURF", 0, "number of surface clouds", &design);
   IntParameter("NDVOL", 0, "number of volume clouds", &design);
-  IntParameter("NDPARTICLE", 0, "number of particle clouds", &design);
 
 
   /*----------------------------------------------------------------------*/
@@ -496,9 +493,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::FPSI::SetValidParameters(list);
 
   INPAR::PARTICLE::SetValidParameters(list);
-
-  INPAR::PARTICLEOLD::SetValidParameters(list);
-  INPAR::CAVITATION::SetValidParameters(list);
 
   INPAR::MOR::SetValidParameters(list);
 

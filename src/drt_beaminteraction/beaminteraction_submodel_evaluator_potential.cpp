@@ -21,7 +21,6 @@
 
 #include "../drt_structure_new/str_timint_basedataglobalstate.H"
 
-#include "../drt_particle/particle_handler.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
@@ -37,6 +36,7 @@
 #include "beaminteraction_calc_utils.H"
 
 #include <NOX_Solver_Generic.H>
+#include "beam_crosslinker_handler.H"
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
