@@ -64,7 +64,6 @@ E 19 - 1
 SEARCH_PARAM                    10.0
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST					        None
-REDUNDANT_STORAGE				        All
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF 2
 E 19 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
