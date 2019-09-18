@@ -2,14 +2,14 @@
 /*! \file
 \brief particle result test for particle simulations
 
-\level 3
+\level 1
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 07/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_result_test.H"
 
@@ -20,24 +20,18 @@
 #include "../drt_lib/drt_linedefinition.H"
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 07/2018 |
+ | declarations                                                              |
  *---------------------------------------------------------------------------*/
 PARTICLEALGORITHM::ParticleResultTest::ParticleResultTest() : DRT::ResultTest("PARTICLE")
 {
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init particle result test                                  sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleResultTest::Init()
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | setup particle result test                                 sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleResultTest::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
 {
@@ -45,9 +39,6 @@ void PARTICLEALGORITHM::ParticleResultTest::Setup(
   particleengineinterface_ = particleengineinterface;
 }
 
-/*---------------------------------------------------------------------------*
- | test special quantity                                      sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleResultTest::TestSpecial(
     DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {

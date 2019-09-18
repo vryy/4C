@@ -2,14 +2,14 @@
 /*! \file
 \brief algorithm to control particle simulations
 
-\level 3
+\level 1
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 04/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_algorithm.H"
 
@@ -45,7 +45,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 04/2018 |
+ | declarations                                                              |
  *---------------------------------------------------------------------------*/
 PARTICLEALGORITHM::ParticleAlgorithm::ParticleAlgorithm(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
@@ -63,18 +63,12 @@ PARTICLEALGORITHM::ParticleAlgorithm::ParticleAlgorithm(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | destructor                                                 sfuchs 04/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEALGORITHM::ParticleAlgorithm::~ParticleAlgorithm()
 {
   // note: destructor declaration here since at compile-time a complete type
   // of class T as used in class member std::unique_ptr<T> ptr_T_ is required
 }
 
-/*---------------------------------------------------------------------------*
- | init particle algorithm                                    sfuchs 04/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::Init(
     std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& initialparticles)
 {
@@ -103,9 +97,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Init(
   initialparticles.clear();
 }
 
-/*---------------------------------------------------------------------------*
- | setup particle algorithm                                   sfuchs 04/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::Setup()
 {
   // generate initial particles
@@ -157,9 +148,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Setup()
   if (not isrestarted_) SetupInitialStates();
 }
 
-/*---------------------------------------------------------------------------*
- | read restart information for given time step               sfuchs 04/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::ReadRestart(const int restartstep)
 {
   // clear vector of particles to be distributed
@@ -204,9 +192,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::ReadRestart(const int restartstep)
     IO::cout << "====== restart of the particle simulation from step " << restartstep << IO::endl;
 }
 
-/*---------------------------------------------------------------------------*
- | time loop for particle problem                             sfuchs 04/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::Timeloop()
 {
   // time loop
@@ -223,9 +208,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Timeloop()
   }
 }
 
-/*---------------------------------------------------------------------------*
- | prepare time step                                          sfuchs 04/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::PrepareTimeStep(bool print_header)
 {
   // increment time and step
@@ -248,9 +230,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::PrepareTimeStep(bool print_header)
   SetCurrentWriteResultFlag();
 }
 
-/*---------------------------------------------------------------------------*
- | integrate particle time step                               sfuchs 04/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::Integrate()
 {
   // time integration scheme specific pre-interaction routine
@@ -272,9 +251,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Integrate()
   particletimint_->PostInteractionRoutine();
 }
 
-/*---------------------------------------------------------------------------*
- | output particle time step                                  sfuchs 04/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::Output() const
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::ParticleAlgorithm::Output");
@@ -323,9 +299,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Output() const
   }
 }
 
-/*---------------------------------------------------------------------------*
- | create particle field specific result test objects         sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 std::vector<std::shared_ptr<DRT::ResultTest>>
 PARTICLEALGORITHM::ParticleAlgorithm::CreateResultTests()
 {
@@ -361,9 +334,6 @@ PARTICLEALGORITHM::ParticleAlgorithm::CreateResultTests()
   return allresulttests;
 }
 
-/*---------------------------------------------------------------------------*
- | init particle engine                                       sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleEngine()
 {
   // create and init particle engine
@@ -371,9 +341,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleEngine()
   particleengine_->Init();
 }
 
-/*---------------------------------------------------------------------------*
- | init particle wall handler                                 sfuchs 10/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleWall()
 {
   // get type of particle wall source
@@ -410,9 +377,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleWall()
   if (particlewall_) particlewall_->Init();
 }
 
-/*---------------------------------------------------------------------------*
- | init particle time integration                             sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleTimeIntegration()
 {
   // get particle time integration scheme
@@ -445,9 +409,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleTimeIntegration()
   particletimint_->Init();
 }
 
-/*---------------------------------------------------------------------------*
- | init particle interaction handler                          sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleInteraction()
 {
   // get particle interaction type
@@ -485,9 +446,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleInteraction()
   if (particleinteraction_) particleinteraction_->Init();
 }
 
-/*---------------------------------------------------------------------------*
- | init particle gravity handler                              sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleGravity()
 {
   // init gravity acceleration vector
@@ -519,9 +477,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleGravity()
   if (particlegravity_) particlegravity_->Init(gravity);
 }
 
-/*---------------------------------------------------------------------------*
- | init viscous damping handler                               sfuchs 02/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::InitViscousDamping()
 {
   // get viscous damping factor
@@ -538,9 +493,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitViscousDamping()
   if (viscousdamping_) viscousdamping_->Init();
 }
 
-/*---------------------------------------------------------------------------*
- | generate initial particles                                 sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::GenerateInitialParticles()
 {
   // create and init particle input generator
@@ -553,9 +505,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::GenerateInitialParticles()
   particleinputgenerator->GenerateParticles(particlestodistribute_);
 }
 
-/*---------------------------------------------------------------------------*
- | determine all particle types                               sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::DetermineParticleTypes()
 {
   // init map relating particle types to dynamic load balance factor
@@ -577,9 +526,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::DetermineParticleTypes()
           PARTICLEENGINE::EnumToTypeName(particle->ReturnParticleType()).c_str());
 }
 
-/*---------------------------------------------------------------------------*
- | determine particle states of all particle types            sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::DetermineParticleStatesOfParticleTypes()
 {
   // iterate over particle types
@@ -604,9 +550,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::DetermineParticleStatesOfParticleType
   if (particlewall_) particlewall_->InsertParticleStatesOfParticleTypes(particlestatestotypes_);
 }
 
-/*---------------------------------------------------------------------------*
- | setup initial particles                                    sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialParticles()
 {
   // erase particles outside bounding box
@@ -619,9 +562,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialParticles()
   if (particleinteraction_) particleinteraction_->DistributeInteractionHistory();
 }
 
-/*---------------------------------------------------------------------------*
- | setup initial states                                       sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialStates()
 {
   // set initial states
@@ -643,9 +583,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialStates()
   if (particleinteraction_) particleinteraction_->EvaluateInteractions();
 }
 
-/*---------------------------------------------------------------------------*
- | check particle types for modified states                   sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 bool PARTICLEALGORITHM::ParticleAlgorithm::HaveModifiedStates()
 {
   bool havemodifiedstates = false;
@@ -694,9 +631,6 @@ bool PARTICLEALGORITHM::ParticleAlgorithm::HaveModifiedStates()
   return havemodifiedstates;
 }
 
-/*---------------------------------------------------------------------------*
- | update connectivity                                        sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity");
@@ -732,9 +666,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
   }
 }
 
-/*---------------------------------------------------------------------------*
- | check load transfer                                        sfuchs 08/2019 |
- *---------------------------------------------------------------------------*/
 bool PARTICLEALGORITHM::ParticleAlgorithm::CheckLoadTransferNeeded()
 {
   bool transferload = transferevery_ or writeresultsthisstep_ or writerestartthisstep_;
@@ -755,9 +686,6 @@ bool PARTICLEALGORITHM::ParticleAlgorithm::CheckLoadTransferNeeded()
   return transferload;
 }
 
-/*---------------------------------------------------------------------------*
- | check max position increment                               sfuchs 08/2019 |
- *---------------------------------------------------------------------------*/
 bool PARTICLEALGORITHM::ParticleAlgorithm::CheckMaxPositionIncrement()
 {
   // get maximum particle interaction distance
@@ -789,9 +717,6 @@ bool PARTICLEALGORITHM::ParticleAlgorithm::CheckMaxPositionIncrement()
   return (maxpositionincrement > allowedpositionincrement);
 }
 
-/*---------------------------------------------------------------------------*
- | get max particle position increment since last transfer    sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::GetMaxParticlePositionIncrement(
     double& allprocmaxpositionincrement)
 {
@@ -842,9 +767,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::GetMaxParticlePositionIncrement(
   Comm().MaxAll(&maxpositionincrement, &allprocmaxpositionincrement, 1);
 }
 
-/*---------------------------------------------------------------------------*
- | transfer load between processors                           sfuchs 08/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::TransferLoadBetweenProcs()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::ParticleAlgorithm::TransferLoadBetweenProcs");
@@ -862,9 +784,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::TransferLoadBetweenProcs()
   if (myrank_ == 0) IO::cout(IO::verbose) << "transfer load in step " << Step() << IO::endl;
 }
 
-/*---------------------------------------------------------------------------*
- | check load redistribution                                  sfuchs 08/2019 |
- *---------------------------------------------------------------------------*/
 bool PARTICLEALGORITHM::ParticleAlgorithm::CheckLoadRedistributionNeeded()
 {
   bool redistributeload = writerestartthisstep_;
@@ -892,9 +811,6 @@ bool PARTICLEALGORITHM::ParticleAlgorithm::CheckLoadRedistributionNeeded()
   return redistributeload;
 }
 
-/*---------------------------------------------------------------------------*
- | distribute load among processors                           sfuchs 08/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::DistributeLoadAmongProcs()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::ParticleAlgorithm::DistributeLoadAmongProcs");
@@ -922,9 +838,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::DistributeLoadAmongProcs()
   if (myrank_ == 0) IO::cout(IO::verbose) << "distribute load in step " << Step() << IO::endl;
 }
 
-/*---------------------------------------------------------------------------*
- | build potential neighbor relation                          sfuchs 08/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::BuildPotentialNeighborRelation()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::ParticleAlgorithm::BuildPotentialNeighborRelation");
@@ -942,9 +855,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::BuildPotentialNeighborRelation()
   }
 }
 
-/*---------------------------------------------------------------------------*
- | set initial conditions                                     sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::SetInitialConditions()
 {
   // create and init particle initial field handler
@@ -960,9 +870,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetInitialConditions()
   initialfield->SetInitialFields();
 }
 
-/*---------------------------------------------------------------------------*
- | set current time                                           sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::SetCurrentTime()
 {
   // set current time in particle time integration
@@ -972,27 +879,18 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetCurrentTime()
   if (particleinteraction_) particleinteraction_->SetCurrentTime(Time());
 }
 
-/*---------------------------------------------------------------------------*
- | set current step size                                      sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::SetCurrentStepSize()
 {
   // set current step size in particle interaction
   if (particleinteraction_) particleinteraction_->SetCurrentStepSize(Dt());
 }
 
-/*---------------------------------------------------------------------------*
- | set current write result flag                              sfuchs 08/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::SetCurrentWriteResultFlag()
 {
   // set current write result flag in particle interaction
   if (particleinteraction_) particleinteraction_->SetCurrentWriteResultFlag(writeresultsthisstep_);
 }
 
-/*---------------------------------------------------------------------------*
- | set gravity acceleration                                   sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::SetGravityAcceleration()
 {
   std::vector<double> scaled_gravity(3);

@@ -2,21 +2,23 @@
 /*! \file
 \brief main control routine for particle simulations
 
-\level 3
+\level 1
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 03/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 #ifndef PARTICLE_SIM_H
 #define PARTICLE_SIM_H
 
-/*---------------------------------------------------------------------------*
- | main control routine for particle simulations              sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
+/*!
+ * \brief main control routine for particle simulations
+ *
+ * \author Sebastian Fuchs \date 03/2018
+ */
 void particle_drt();
 
 /*---------------------------------------------------------------------------*/
