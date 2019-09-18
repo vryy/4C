@@ -34,45 +34,28 @@ namespace PARTICLEENGINE
    */
   enum ParticleState
   {
-    //! \name default particle states
-    //! @{
-
+    /*---------------------------------------------------------------------------*/
+    // default particle states
     Position,              //!< position
     Velocity,              //!< velocity
     Acceleration,          //!< acceleration
     LastTransferPosition,  //!< position after last particle transfer
-
-    //! @}
-
-    //! \name particle states for advanced time integration schemes
-    //! @{
-
+    /*---------------------------------------------------------------------------*/
+    // particle states for advanced time integration schemes
     ModifiedVelocity,      //!< modified velocity
     ModifiedAcceleration,  //!< modified acceleration
-
-    //! @}
-
-    //! \name particle states for boundary conditions
-    //! @{
-
+    /*---------------------------------------------------------------------------*/
+    // particle states for boundary conditions
     ReferencePosition,  //!< reference position
-
-    //! @}
-
-    //! \name common particle states
-    //! @{
-
+    /*---------------------------------------------------------------------------*/
+    // common particle states
     Radius,       //!< radius
     Mass,         //!< mass
     Density,      //!< density
     Pressure,     //!< pressure
     Temperature,  //!< temperature
-
-    //! @}
-
-    //! \name particle states for SPH interaction
-    //! @{
-
+    /*---------------------------------------------------------------------------*/
+    // particle states for SPH interaction
     DensitySum,           //!< density from summation of weighted masses
     DensityDot,           //!< first time derivative of density
     TemperatureDot,       //!< first time derivative of temperature
@@ -84,30 +67,21 @@ namespace PARTICLEENGINE
     UnitWallNormal,       //!< unit wall normal
     WallDistance,         //!< wall distance
     TemperatureGradient,  //!< temperature gradient
-
-    //! @}
-
-    //! \name particle states for DEM interaction
-    //! @{
-
+    /*---------------------------------------------------------------------------*/
+    // particle states for DEM interaction
     AngularVelocity,      //!< angular velocity
     AngularAcceleration,  //!< angular acceleration
     Force,                //!< force
     Moment,               //!< moment
-
-    //! @}
-
-    //! \name particle states for two way coupled partitioned PASI
-    //! @{
-
+    /*---------------------------------------------------------------------------*/
+    // particle states for two way coupled partitioned PASI
     LastIterPosition,             //!< position after last converged iteration
     LastIterVelocity,             //!< velocity after last converged iteration
     LastIterAcceleration,         //!< acceleration after last converged iteration
     LastIterAngularVelocity,      //!< angular velocity after last converged iteration
     LastIterAngularAcceleration,  //!< angular acceleration after last converged iteration
     LastIterModifiedAcceleration  //!< modified acceleration after last converged iteration
-
-    //! @}
+    /*---------------------------------------------------------------------------*/
   };
 
   /*!
@@ -165,21 +139,15 @@ namespace PARTICLEENGINE
    */
   enum ParticleType
   {
-    //! \name default particle types
-    //! @{
-
+    /*---------------------------------------------------------------------------*/
+    // default particle types
     Phase1,  //!< particle type for particles of first phase
     Phase2,  //!< particle type for particles of second phase
-
-    //! @}
-
-    //! \name particle types for SPH interaction
-    //! @{
-
+    /*---------------------------------------------------------------------------*/
+    // particle types for SPH interaction
     BoundaryPhase,  //!< particle type for boundary phase particles
     RigidPhase      //!< particle type for rigid phase particles
-
-    //! @}
+    /*---------------------------------------------------------------------------*/
   };
 
   /*!
