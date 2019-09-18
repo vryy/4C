@@ -1043,7 +1043,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::GetRegu
 
     // safety check
     else
-      dserror("Invalid type of regularization: %s for lithium stripping!", regtype);
+      dserror("Invalid type of regularization: %s for lithium stripping!", regtype.c_str());
   }
 
   return regfac;
@@ -1110,7 +1110,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::GetRegularizat
 
     // safety check
     else
-      dserror("Invalid type of regularization: %s for lithium stripping!", regtype);
+      dserror("Invalid type of regularization: %s for lithium stripping!", regtype.c_str());
   }
 
   return regfacderiv;
