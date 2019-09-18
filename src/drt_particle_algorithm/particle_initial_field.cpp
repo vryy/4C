@@ -2,14 +2,14 @@
 /*! \file
 \brief initial field handler for particle simulations
 
-\level 3
+\level 2
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 07/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_initial_field.H"
 
@@ -23,7 +23,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 07/2018 |
+ | declarations                                                              |
  *---------------------------------------------------------------------------*/
 PARTICLEALGORITHM::InitialFieldHandler::InitialFieldHandler(const Teuchos::ParameterList& params)
     : params_(params)
@@ -31,9 +31,6 @@ PARTICLEALGORITHM::InitialFieldHandler::InitialFieldHandler(const Teuchos::Param
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init initial field handler                                 sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::InitialFieldHandler::Init()
 {
   // get control parameters for initial/boundary conditions
@@ -59,9 +56,6 @@ void PARTICLEALGORITHM::InitialFieldHandler::Init()
   }
 }
 
-/*---------------------------------------------------------------------------*
- | setup initial field handler                                sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::InitialFieldHandler::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
 {
@@ -69,9 +63,6 @@ void PARTICLEALGORITHM::InitialFieldHandler::Setup(
   particleengineinterface_ = particleengineinterface;
 }
 
-/*---------------------------------------------------------------------------*
- | set initial fields                                         sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::InitialFieldHandler::SetInitialFields()
 {
   // get particle container bundle

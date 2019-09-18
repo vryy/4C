@@ -2,27 +2,27 @@
 /*! \file
 \brief time integration for particle simulations
 
-\level 3
+\level 2
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 04/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 #ifndef PARTICLE_TIMINT_H
 #define PARTICLE_TIMINT_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 04/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "../drt_particle_engine/particle_typedefs.H"
 
 #include <Teuchos_ParameterList.hpp>
 
 /*---------------------------------------------------------------------------*
- | forward declarations                                       sfuchs 04/2018 |
+ | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
 namespace IO
 {
@@ -41,58 +41,126 @@ namespace PARTICLEENGINE
 }
 
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 04/2018 |
+ | class definitions                                                         |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEALGORITHM
 {
+  /*!
+   * \brief time integration base
+   *
+   * \author Sebastian Fuchs \date 04/2018
+   */
   class TimInt
   {
    public:
-    //! constructor
+    /*!
+     * \brief constructor
+     *
+     * \author Sebastian Fuchs \date 04/2018
+     *
+     * \param[in] params particle simulation parameter list
+     */
     explicit TimInt(const Teuchos::ParameterList& params);
 
     //! virtual destructor
     virtual ~TimInt();
 
-    //! init particle time integration
+    /*!
+     * \brief init particle time integration
+     *
+     * \author Sebastian Fuchs \date 04/2018
+     */
     virtual void Init();
 
-    //! setup particle time integration
+    /*!
+     * \brief time integration scheme specific initialization routine
+     *
+     * \author Sebastian Fuchs \date 07/2018
+     */
     virtual void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const bool modifiedstates);
 
-    //! write restart of particle time integration
+    /*!
+     * \brief write restart of particle time integration
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     *
+     * \param[in] step restart step
+     * \param[in] time restart time
+     */
     void WriteRestart(const int step, const double time) const;
 
-    //! read restart of particle time integration
+    /*!
+     * \brief read restart of particle time integration
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     *
+     * \param[in] reader discretization reader
+     */
     void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
-    //! insert integration dependent states of all particle types
+    /*!
+     * \brief insert integration dependent states of all particle types
+     *
+     * \author Sebastian Fuchs \date 07/2018
+     *
+     * \param[out] particlestatestotypes map of particle types and corresponding states
+     */
     void InsertParticleStatesOfParticleTypes(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) const;
 
-    //! time integration scheme specific initialization routine
+    /*!
+     * \brief time integration scheme specific initialization routine
+     *
+     * \author Sebastian Fuchs \date 07/2018
+     */
     virtual void SetInitialStates();
 
-    //! set current time
+    /*!
+     * \brief set current time
+     *
+     * \author Sebastian Fuchs \date 08/2018
+     *
+     * \param[in] currenttime current time
+     */
     virtual void SetCurrentTime(const double currenttime) final;
 
-    //! time integration scheme specific pre-interaction routine
+    /*!
+     * \brief time integration scheme specific pre-interaction routine
+     *
+     * \author Sebastian Fuchs \date 04/2018
+     */
     virtual void PreInteractionRoutine() = 0;
 
-    //! time integration scheme specific post-interaction routine
+    /*!
+     * \brief time integration scheme specific post-interaction routine
+     *
+     * \author Sebastian Fuchs \date 04/2018
+     */
     virtual void PostInteractionRoutine() = 0;
 
    private:
-    //! init dirichlet boundary condition handler
+    /*!
+     * \brief init dirichlet boundary condition handler
+     *
+     * \author Sebastian Fuchs \date 07/2018
+     */
     void InitDirichletBoundaryCondition();
 
-    //! init temperature boundary condition handler
+    /*!
+     * \brief init temperature boundary condition handler
+     *
+     * \author Sebastian Fuchs \date 09/2018
+     */
     void InitTemperatureBoundaryCondition();
 
-    //! add initial random noise to particle position
+    /*!
+     * \brief add initial random noise to particle position
+     *
+     * \author Sebastian Fuchs \date 11/2018
+     */
     void AddInitialRandomNoiseToPosition();
 
    protected:
@@ -123,62 +191,102 @@ namespace PARTICLEALGORITHM
     bool modifiedstates_;
   };
 
+  /*!
+   * \brief semi-implicit Euler time integration scheme
+   *
+   * semi-implicit Euler time integration scheme of first order accuracy (also denoted as
+   * semi-explicit Euler or symplectic Euler scheme)
+   *
+   * \$f v_{n+1} = v_{n} + dt * a_{n}   \$f with \$f a_{n} = a( r_{n-1}, v_{n-1} ) \$f
+   * \$f x_{n+1} = x_{n} + dt * v_{n+1} \$f
+   *
+   * \author Sebastian Fuchs \date 05/2018
+   */
   class TimIntSemiImplicitEuler : public TimInt
   {
-    /*
-     * semi-implicit Euler time integration scheme of first order accuracy (also denoted as
-     * semi-explicit Euler or symplectic Euler scheme)
-     *
-     * v_{n+1} = v_{n} + dt * a_{n}      with    a_{n} = a( r_{n-1}, v_{n-1} )
-     * x_{n+1} = x_{n} + dt * v_{n+1}
-     *
-     */
-
    public:
-    //! constructor
+    /*!
+     * \brief constructor
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     *
+     * \param[in] params particle simulation parameter list
+     */
     TimIntSemiImplicitEuler(const Teuchos::ParameterList& params);
 
     //! destructor
     ~TimIntSemiImplicitEuler() override{};
 
-    //! setup particle time integration
+    /*!
+     * \brief time integration scheme specific initialization routine
+     *
+     * \author Sebastian Fuchs \date 07/2018
+     */
     void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const bool modifiedstates) override;
 
-    //! time integration scheme specific pre-interaction routine
+    /*!
+     * \brief time integration scheme specific pre-interaction routine
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     */
     void PreInteractionRoutine() override;
 
-    //! time integration scheme specific post-interaction routine
+    /*!
+     * \brief time integration scheme specific post-interaction routine
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     */
     void PostInteractionRoutine() override;
   };
 
+  /*!
+   * \brief explicit velocity Verlet time integration scheme
+   *
+   * explicit velocity Verlet time integration scheme of second order accuracy (also denoted as
+   * leapfrog scheme in kick-drift-kick form)
+   *
+   * \$f v_{n+1/2} = v_{n}     + dt/2 * a_{n}     \$f with \$f a_{n}   = a( r_{n}, v_{n-1/2} )   \$f
+   * \$f x_{n+1}   = x_{n}     + dt   * v_{n+1/2} \$f
+   * \$f v_{n+1}   = v_{n+1/2} + dt/2 * a_{n+1}   \$f with \$f a_{n+1} = a( r_{n+1}, v_{n+1/2} ) \$f
+   *
+   * \author Sebastian Fuchs \date 05/2018
+   */
   class TimIntVelocityVerlet : public TimInt
   {
-    /*
-     * explicit velocity Verlet time integration scheme of second order accuracy (also denoted as
-     * leapfrog scheme in kick-drift-kick form)
-     *
-     * v_{n+1/2} = v_{n}     + dt/2 * a_{n}        with    a_{n}   = a( r_{n}, v_{n-1/2} )
-     * x_{n+1}   = x_{n}     + dt   * v_{n+1/2}
-     * v_{n+1}   = v_{n+1/2} + dt/2 * a_{n+1}      with    a_{n+1} = a( r_{n+1}, v_{n+1/2} )
-     *
-     */
-
    public:
-    //! constructor
+    /*!
+     * \brief constructor
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     *
+     * \param[in] params particle simulation parameter list
+     */
     TimIntVelocityVerlet(const Teuchos::ParameterList& params);
 
     //! destructor
     ~TimIntVelocityVerlet() override{};
 
-    //! time integration scheme specific initialization routine
+    /*!
+     * \brief time integration scheme specific initialization routine
+     *
+     * \author Sebastian Fuchs \date 07/2018
+     */
     void SetInitialStates() override;
 
-    //! time integration scheme specific pre-interaction routine
+    /*!
+     * \brief time integration scheme specific pre-interaction routine
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     */
     void PreInteractionRoutine() override;
 
-    //! time integration scheme specific post-interaction routine
+    /*!
+     * \brief time integration scheme specific post-interaction routine
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     */
     void PostInteractionRoutine() override;
 
    private:

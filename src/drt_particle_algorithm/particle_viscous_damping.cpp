@@ -2,14 +2,14 @@
 /*! \file
 \brief viscous damping handler for particle simulations
 
-\level 3
+\level 2
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 02/2019 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_viscous_damping.H"
 
@@ -19,7 +19,7 @@
 #include "../drt_particle_engine/particle_container.H"
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 02/2019 |
+ | declarations                                                              |
  *---------------------------------------------------------------------------*/
 PARTICLEALGORITHM::ViscousDampingHandler::ViscousDampingHandler(const double viscdampfac)
     : viscdampfac_(viscdampfac)
@@ -27,17 +27,11 @@ PARTICLEALGORITHM::ViscousDampingHandler::ViscousDampingHandler(const double vis
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init viscous damping handler                               sfuchs 02/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ViscousDampingHandler::Init()
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | setup viscous damping handler                              sfuchs 02/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ViscousDampingHandler::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
 {
@@ -45,26 +39,17 @@ void PARTICLEALGORITHM::ViscousDampingHandler::Setup(
   particleengineinterface_ = particleengineinterface;
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of viscous damping handler                   sfuchs 02/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ViscousDampingHandler::WriteRestart(const int step, const double time) const
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of viscous damping handler                    sfuchs 02/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ViscousDampingHandler::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | apply viscous damping contribution                         sfuchs 02/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ViscousDampingHandler::ApplyViscousDamping()
 {
   // get particle container bundle

@@ -2,27 +2,27 @@
 /*! \file
 \brief dirichlet boundary condition handler for particle simulations
 
-\level 3
+\level 2
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 07/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 #ifndef PARTICLE_DIRICHLET_BC_H
 #define PARTICLE_DIRICHLET_BC_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 07/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "../drt_particle_engine/particle_typedefs.H"
 
 #include <Teuchos_ParameterList.hpp>
 
 /*---------------------------------------------------------------------------*
- | forward declarations                                       sfuchs 07/2018 |
+ | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEENGINE
 {
@@ -35,47 +35,106 @@ namespace IO
 }
 
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 07/2018 |
+ | class definitions                                                         |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEALGORITHM
 {
+  /*!
+   * \brief dirichlet boundary condition handler for particle simulations
+   *
+   * \author Sebastian Fuchs \date 07/2018
+   */
   class DirichletBoundaryConditionHandler
   {
    public:
-    //! constructor
+    /*!
+     * \brief constructor
+     *
+     * \author Sebastian Fuchs \date 07/2018
+     *
+     * \param[in] params particle simulation parameter list
+     */
     explicit DirichletBoundaryConditionHandler(const Teuchos::ParameterList& params);
 
     //! destructor
     ~DirichletBoundaryConditionHandler(){};
 
-    //! init dirichlet boundary condition handler
+    /*!
+     * \brief init dirichlet boundary condition handler
+     *
+     * \author Sebastian Fuchs \date 07/2018
+     */
     void Init();
 
-    //! setup dirichlet boundary condition handler
+    /*!
+     * \brief setup dirichlet boundary condition handler
+     *
+     * \author Sebastian Fuchs \date 07/2018
+     *
+     * \param[in] particleengineinterface interface to particle engine
+     */
     void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
 
-    //! write restart of dirichlet boundary condition handler
+    /*!
+     * \brief write restart of dirichlet boundary condition handler
+     *
+     * \author Sebastian Fuchs \date 07/2018
+     *
+     * \param[in] step restart step
+     * \param[in] time restart time
+     */
     void WriteRestart(const int step, const double time) const;
 
-    //! read restart of dirichlet oundary condition handler
+    /*!
+     * \brief read restart of dirichlet boundary condition handler
+     *
+     * \author Sebastian Fuchs \date 07/2018
+     *
+     * \param[in] reader discretization reader
+     */
     void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
-    //! get reference to particle type set
+    /*!
+     * \brief get reference to set of particle types subjected to dirichlet boundary conditions
+     *
+     * \author Sebastian Fuchs \date 07/2018
+     *
+     * \return set of particle types subjected to dirichlet boundary conditions
+     */
     const std::set<PARTICLEENGINE::TypeEnum>& GetParticleTypesSubjectedToDirichletBCSet() const
     {
       return typessubjectedtodirichletbc_;
     };
 
-    //! insert dbc dependent states of all particle types
+    /*!
+     * \brief insert dirichlet boundary condition dependent states of all particle types
+     *
+     * \author Sebastian Fuchs \date 07/2018
+     *
+     * \param[out] particlestatestotypes map of particle types and corresponding states
+     */
     void InsertParticleStatesOfParticleTypes(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) const;
 
-    //! set particle reference position
+    /*!
+     * \brief set particle reference position
+     *
+     * \author Sebastian Fuchs \date 07/2018
+     */
     void SetParticleReferencePosition() const;
 
-    //! evaluate dirichlet boundary condition
+    /*!
+     * \brief evaluate dirichlet boundary condition
+     *
+     * \author Sebastian Fuchs \date 07/2018
+     *
+     * \param[in] evaltime evaluation time
+     * \param[in] evalpos  flag to indicate evaluation of position
+     * \param[in] evalvel  flag to indicate evaluation of velocity
+     * \param[in] evalacc  flag to indicate evaluation of acceleration
+     */
     void EvaluateDirichletBoundaryCondition(
         const double& evaltime, const bool evalpos, const bool evalvel, const bool evalacc) const;
 

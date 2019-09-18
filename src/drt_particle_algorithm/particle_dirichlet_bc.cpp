@@ -2,14 +2,14 @@
 /*! \file
 \brief dirichlet boundary condition handler for particle simulations
 
-\level 3
+\level 2
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 07/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_dirichlet_bc.H"
 
@@ -23,7 +23,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 07/2018 |
+ | declarations                                                              |
  *---------------------------------------------------------------------------*/
 PARTICLEALGORITHM::DirichletBoundaryConditionHandler::DirichletBoundaryConditionHandler(
     const Teuchos::ParameterList& params)
@@ -32,9 +32,6 @@ PARTICLEALGORITHM::DirichletBoundaryConditionHandler::DirichletBoundaryCondition
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init dirichlet boundary condition handler                  sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::Init()
 {
   // get control parameters for initial/boundary conditions
@@ -49,9 +46,6 @@ void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::Init()
   for (auto& typeIt : dirichletbctypetofunctid_) typessubjectedtodirichletbc_.insert(typeIt.first);
 }
 
-/*---------------------------------------------------------------------------*
- | setup dirichlet boundary condition handler                 sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
 {
@@ -59,27 +53,18 @@ void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::Setup(
   particleengineinterface_ = particleengineinterface;
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of dirichlet boundary condition handler      sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::WriteRestart(
     const int step, const double time) const
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of dirichlet boundary condition handler       sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | insert dbc dependent states of all particle types          sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::InsertParticleStatesOfParticleTypes(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
     const
@@ -92,9 +77,6 @@ void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::InsertParticleStatesO
   }
 }
 
-/*---------------------------------------------------------------------------*
- | set particle reference position                            sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::SetParticleReferencePosition() const
 {
   // get particle container bundle
@@ -113,9 +95,6 @@ void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::SetParticleReferenceP
   }
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate dirichlet boundary condition                      sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::EvaluateDirichletBoundaryCondition(
     const double& evaltime, const bool evalpos, const bool evalvel, const bool evalacc) const
 {

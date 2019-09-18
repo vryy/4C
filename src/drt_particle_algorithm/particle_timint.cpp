@@ -2,14 +2,14 @@
 /*! \file
 \brief time integration for particle simulations
 
-\level 3
+\level 2
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 04/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_timint.H"
 
@@ -28,7 +28,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 04/2018 |
+ | declarations                                                              |
  *---------------------------------------------------------------------------*/
 PARTICLEALGORITHM::TimInt::TimInt(const Teuchos::ParameterList& params)
     : params_(params), time_(0.0), dt_(params.get<double>("TIMESTEP")), modifiedstates_(false)
@@ -36,18 +36,12 @@ PARTICLEALGORITHM::TimInt::TimInt(const Teuchos::ParameterList& params)
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | destructor                                                 sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEALGORITHM::TimInt::~TimInt()
 {
   // note: destructor declaration here since at compile-time a complete type
   // of class T as used in class member std::unique_ptr<T> ptr_T_ is required
 }
 
-/*---------------------------------------------------------------------------*
- | init particle time integration                             sfuchs 04/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::TimInt::Init()
 {
   // init dirichlet boundary condition handler
@@ -57,9 +51,6 @@ void PARTICLEALGORITHM::TimInt::Init()
   InitTemperatureBoundaryCondition();
 }
 
-/*---------------------------------------------------------------------------*
- | setup particle time integration                            sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::TimInt::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const bool modifiedstates)
@@ -103,9 +94,6 @@ void PARTICLEALGORITHM::TimInt::Setup(
     if (not typesexludedfromtimeintegration.count(typeEnum)) typestointegrate_.insert(typeEnum);
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of particle time integration                 sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::TimInt::WriteRestart(const int step, const double time) const
 {
   // write restart of dirichlet boundary condition handler
@@ -115,9 +103,6 @@ void PARTICLEALGORITHM::TimInt::WriteRestart(const int step, const double time) 
   if (temperatureboundarycondition_) temperatureboundarycondition_->WriteRestart(step, time);
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of particle time integration                  sfuchs 04/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::TimInt::ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // read restart of dirichlet boundary condition handler
@@ -127,9 +112,6 @@ void PARTICLEALGORITHM::TimInt::ReadRestart(const std::shared_ptr<IO::Discretiza
   if (temperatureboundarycondition_) temperatureboundarycondition_->ReadRestart(reader);
 }
 
-/*---------------------------------------------------------------------------*
- | insert integration dependent states of all particle types  sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::TimInt::InsertParticleStatesOfParticleTypes(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
     const
@@ -143,9 +125,6 @@ void PARTICLEALGORITHM::TimInt::InsertParticleStatesOfParticleTypes(
     temperatureboundarycondition_->InsertParticleStatesOfParticleTypes(particlestatestotypes);
 }
 
-/*---------------------------------------------------------------------------*
- | time integration scheme specific initialization routine    sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::TimInt::SetInitialStates()
 {
   // add initial random noise to particle position
@@ -166,14 +145,8 @@ void PARTICLEALGORITHM::TimInt::SetInitialStates()
     temperatureboundarycondition_->EvaluateTemperatureBoundaryCondition(0.0);
 }
 
-/*---------------------------------------------------------------------------*
- | set current time                                           sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::TimInt::SetCurrentTime(const double currenttime) { time_ = currenttime; }
 
-/*---------------------------------------------------------------------------*
- | init dirichlet boundary condition handler                  sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::TimInt::InitDirichletBoundaryCondition()
 {
   // create dirichlet boundary condition handler
@@ -192,9 +165,6 @@ void PARTICLEALGORITHM::TimInt::InitDirichletBoundaryCondition()
   if (typessubjectedtodirichletbc.size() == 0) dirichletboundarycondition_.release();
 }
 
-/*---------------------------------------------------------------------------*
- | init temperature boundary condition handler                 meier 09/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::TimInt::InitTemperatureBoundaryCondition()
 {
   // create temperature boundary condition handler
@@ -213,9 +183,6 @@ void PARTICLEALGORITHM::TimInt::InitTemperatureBoundaryCondition()
   if (typessubjectedtotempbc.size() == 0) temperatureboundarycondition_.release();
 }
 
-/*---------------------------------------------------------------------------*
- | add initial random noise to particle position              sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::TimInt::AddInitialRandomNoiseToPosition()
 {
   // init vector of initial position amplitude for each spatial direction
@@ -288,9 +255,6 @@ void PARTICLEALGORITHM::TimInt::AddInitialRandomNoiseToPosition()
   }
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEALGORITHM::TimIntSemiImplicitEuler::TimIntSemiImplicitEuler(
     const Teuchos::ParameterList& params)
     : PARTICLEALGORITHM::TimInt(params)
@@ -298,9 +262,6 @@ PARTICLEALGORITHM::TimIntSemiImplicitEuler::TimIntSemiImplicitEuler(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | setup particle time integration                            sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::TimIntSemiImplicitEuler::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const bool modifiedstates)
@@ -314,9 +275,6 @@ void PARTICLEALGORITHM::TimIntSemiImplicitEuler::Setup(
         "time integration scheme!");
 }
 
-/*---------------------------------------------------------------------------*
- | time integration scheme specific pre-interaction routine   sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::TimIntSemiImplicitEuler::PreInteractionRoutine()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::TimIntSemiImplicitEuler::PreInteractionRoutine");
@@ -366,26 +324,17 @@ void PARTICLEALGORITHM::TimIntSemiImplicitEuler::PreInteractionRoutine()
     temperatureboundarycondition_->EvaluateTemperatureBoundaryCondition(time_);
 }
 
-/*---------------------------------------------------------------------------*
- | time integration scheme specific post-interaction routine  sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::TimIntSemiImplicitEuler::PostInteractionRoutine()
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEALGORITHM::TimIntVelocityVerlet::TimIntVelocityVerlet(const Teuchos::ParameterList& params)
     : PARTICLEALGORITHM::TimInt(params), dthalf_(0.5 * dt_)
 {
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | time integration scheme specific initialization routine    sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::TimIntVelocityVerlet::SetInitialStates()
 {
   // call base class method
@@ -411,9 +360,6 @@ void PARTICLEALGORITHM::TimIntVelocityVerlet::SetInitialStates()
   }
 }
 
-/*---------------------------------------------------------------------------*
- | time integration scheme specific pre-interaction routine   sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::TimIntVelocityVerlet::PreInteractionRoutine()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::TimIntVelocityVerlet::PreInteractionRoutine");
@@ -484,9 +430,6 @@ void PARTICLEALGORITHM::TimIntVelocityVerlet::PreInteractionRoutine()
     temperatureboundarycondition_->EvaluateTemperatureBoundaryCondition(time_);
 }
 
-/*---------------------------------------------------------------------------*
- | time integration scheme specific post-interaction routine  sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::TimIntVelocityVerlet::PostInteractionRoutine()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::TimIntVelocityVerlet::PostInteractionRoutine");

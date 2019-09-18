@@ -2,21 +2,21 @@
 /*! \file
 \brief utils for particle algorithm
 
-\level 3
+\level 2
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 07/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_algorithm_utils.H"
 
 #include "../drt_lib/drt_dserror.H"
 
 /*---------------------------------------------------------------------------*
- | read parameters relating particle types to values          sfuchs 07/2018 |
+ | declarations                                                              |
  *---------------------------------------------------------------------------*/
 template <typename valtype>
 void PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues(const Teuchos::ParameterList& params,
@@ -69,7 +69,7 @@ void PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues(const Teuchos::Par
 }
 
 /*---------------------------------------------------------------------------*
- | template instantiations                                    sfuchs 03/2019 |
+ | template instantiations                                                   |
  *---------------------------------------------------------------------------*/
 template void PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues<int>(
     const Teuchos::ParameterList& params, const std::string& name,
