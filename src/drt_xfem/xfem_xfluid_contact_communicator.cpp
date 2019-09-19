@@ -941,7 +941,7 @@ GEO::CUT::Side* XFEM::XFluid_Contact_Comm::FindnextPhysicalSide(LINALG::Matrix<3
   {
     std::stringstream str;
     str << "CINS_" << fluiddis_->Comm().MyPID() << ".pos";
-    std::ofstream file = std::ofstream(str.str().c_str());
+    std::ofstream file(str.str().c_str());
     GEO::CUT::OUTPUT::GmshWriteSection(file, "InitSide", initSide);
     GEO::CUT::OUTPUT::GmshWriteSection(file, "PerFormedSides", performed_sides, true);
     dserror("Couldn't identify a new side (number of identified physical sides: %d)!",
@@ -1185,7 +1185,7 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
   ++counter;
   std::stringstream str;
   str << "ContactIntegration_" << counter << "_" << fluiddis_->Comm().MyPID() << ".pos";
-  std::ofstream file = std::ofstream(str.str().c_str());
+  std::ofstream file(str.str().c_str());
   GEO::CUT::OUTPUT::GmshNewSection(file, "BoundaryCells");
 #endif
 
@@ -1467,7 +1467,7 @@ void XFEM::XFluid_Contact_Comm::Create_New_Gmsh_files()
   {
     std::stringstream str;
     str << "FSCI_" << counter << "_" << fluiddis_->Comm().MyPID() << ".pos";
-    std::ofstream file = std::ofstream(str.str().c_str());
+    std::ofstream file(str.str().c_str());
     for (uint section = 0; section < sections.size(); ++section)
     {
       GEO::CUT::OUTPUT::GmshNewSection(file, sections[section], false);
