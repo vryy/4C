@@ -270,11 +270,8 @@ void CONTACT::CoIntegratorNitscheFsi::UpdateEleContactState(MORTAR::MortarElemen
   }
 }
 
-double CONTACT::UTILS::SolidCauchyAtXi(CONTACT::CoElement* cele,  // the contact element
-    const LINALG::Matrix<2, 1>& xsi,                              // local coord on the ele element
-    const LINALG::Matrix<3, 1>& n,                                // normal n
-    const LINALG::Matrix<3, 1>& dir                               // second directional vector
-)
+double CONTACT::UTILS::SolidCauchyAtXi(CONTACT::CoElement* cele, const LINALG::Matrix<2, 1>& xsi,
+    const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& dir)
 {
   if (cele->ParentElement()->Shape() != DRT::Element::hex8)
     dserror("This Element shape is not implemented for CONTACT::UTILS::CauchyStressatXi");

@@ -49,12 +49,8 @@ void CONTACT::CoNitscheStrategyFsi::DoContactSearch()
   }
 }
 
-bool CONTACT::CoNitscheStrategyFsi::CheckNitscheContactState(
-    CONTACT::CoElement* cele,         // the contact element
-    const LINALG::Matrix<2, 1>& xsi,  // local coord on the ele element
-    const double& full_fsi_traction,  // stressfluid + penalty
-    double& gap                       // gap
-)
+bool CONTACT::CoNitscheStrategyFsi::CheckNitscheContactState(CONTACT::CoElement* cele,
+    const LINALG::Matrix<2, 1>& xsi, const double& full_fsi_traction, double& gap)
 {
   // No master elements found
   if (!cele->MoData().NumSearchElements())

@@ -52,23 +52,22 @@ namespace CONTACT
 
     //! @name currently unsupported derived methods
     //! @{
-    virtual void IntegrateDerivSegment2D(MORTAR::MortarElement& sele, double& sxia, double& sxib,
+    void IntegrateDerivSegment2D(MORTAR::MortarElement& sele, double& sxia, double& sxib,
         MORTAR::MortarElement& mele, double& mxia, double& mxib, const Epetra_Comm& comm,
-        const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
+        const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override
     {
       dserror("Segment based integration is currently unsupported!");
     }
 
-    virtual void IntegrateDerivEle2D(MORTAR::MortarElement& sele,
-        std::vector<MORTAR::MortarElement*> meles, bool* boundary_ele,
-        const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
+    void IntegrateDerivEle2D(MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles,
+        bool* boundary_ele, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override
     {
       dserror("Element based integration in 2D is currently unsupported!");
     }
 
-    virtual void IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& sele,
-        MORTAR::MortarElement& mele, Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
-        const Epetra_Comm& comm, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
+    void IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+        Teuchos::RCP<MORTAR::IntCell> cell, double* auxn, const Epetra_Comm& comm,
+        const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override
     {
       dserror("The auxiliary plane 3-D coupling integration case is currently unsupported!");
     }
@@ -79,9 +78,9 @@ namespace CONTACT
      Second, Build all integrals and linearizations without segmentation -- 3D
      (i.e. M, g, LinM, Ling and possibly D, LinD)
      */
-    virtual void IntegrateDerivEle3D(MORTAR::MortarElement& sele,
-        std::vector<MORTAR::MortarElement*> meles, bool* boundary_ele, bool* proj_,
-        const Epetra_Comm& comm, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr);
+    void IntegrateDerivEle3D(MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles,
+        bool* boundary_ele, bool* proj_, const Epetra_Comm& comm,
+        const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override;
 
     //! @}
 
@@ -91,7 +90,7 @@ namespace CONTACT
             This is where the distinction between methods should be,
             i.e. mortar, augmented, gpts,...
      */
-    virtual void IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
         LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& sderiv,
         LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv,
@@ -100,14 +99,14 @@ namespace CONTACT
         std::vector<GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
         GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
         std::vector<GEN::pairedvector<int, double>>& derivsxi,
-        std::vector<GEN::pairedvector<int, double>>& derivmxi);
+        std::vector<GEN::pairedvector<int, double>>& derivmxi) override;
 
     /*!
      \brief Perform integration at GP
             This is where the distinction between methods should be,
             i.e. mortar, augmented, gpts,...
      */
-    virtual void IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
         LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& sderiv,
         LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv,
@@ -116,7 +115,7 @@ namespace CONTACT
         std::vector<GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
         GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
         std::vector<GEN::pairedvector<int, double>>& derivsxi,
-        std::vector<GEN::pairedvector<int, double>>& derivmxi)
+        std::vector<GEN::pairedvector<int, double>>& derivmxi) override
     {
       dserror("2d problems not available for CoIntegratorNitscheFsi, as CutFEM is only 3D!");
       return;
@@ -149,10 +148,10 @@ namespace CONTACT
   namespace UTILS
   {
     /// Compute Cauchy stress component sigma_{n dir} at local coord xsi
-    double SolidCauchyAtXi(CONTACT::CoElement* cele,  // the contact element
-        const LINALG::Matrix<2, 1>& xsi,              // local coord on the ele element
-        const LINALG::Matrix<3, 1>& n,                // normal n
-        const LINALG::Matrix<3, 1>& dir               // second directional vector
+    double SolidCauchyAtXi(CONTACT::CoElement* cele,  ///< the contact element
+        const LINALG::Matrix<2, 1>& xsi,              ///< local coord on the ele element
+        const LINALG::Matrix<3, 1>& n,                ///< normal n
+        const LINALG::Matrix<3, 1>& dir               ///< second directional vector
     );
 
     /// templated version of MapGPtoParent
