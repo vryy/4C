@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 07/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_sph_equationofstate_bundle.H"
 
@@ -21,7 +21,7 @@
 #include "../drt_lib/drt_dserror.H"
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 07/2018 |
+ | declarations                                                              |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHEquationOfStateBundle::SPHEquationOfStateBundle(
     const Teuchos::ParameterList& params)
@@ -30,9 +30,6 @@ PARTICLEINTERACTION::SPHEquationOfStateBundle::SPHEquationOfStateBundle(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init equation of state bundle                              sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHEquationOfStateBundle::Init(
     const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial)
 {
@@ -98,18 +95,12 @@ void PARTICLEINTERACTION::SPHEquationOfStateBundle::Init(
   }
 }
 
-/*---------------------------------------------------------------------------*
- | setup equation of state bundle                             sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHEquationOfStateBundle::Setup()
 {
   for (PARTICLEENGINE::TypeEnum typeEnum : storedtypes_)
     phasetypetoequationofstate_[typeEnum]->Setup();
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of equation of state bundle                  sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHEquationOfStateBundle::WriteRestart(
     const int step, const double time) const
 {
@@ -117,9 +108,6 @@ void PARTICLEINTERACTION::SPHEquationOfStateBundle::WriteRestart(
     phasetypetoequationofstate_[typeEnum]->WriteRestart(step, time);
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of equation of state bundle                   sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHEquationOfStateBundle::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {

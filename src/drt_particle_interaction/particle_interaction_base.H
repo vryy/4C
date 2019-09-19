@@ -4,18 +4,18 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 05/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 #ifndef PARTICLE_INTERACTION_BASE_H
 #define PARTICLE_INTERACTION_BASE_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 05/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "../drt_particle_engine/particle_enums.H"
 #include "../drt_particle_engine/particle_typedefs.H"
@@ -26,7 +26,7 @@
 #include <Teuchos_ParameterList.hpp>
 
 /*---------------------------------------------------------------------------*
- | forward declarations                                       sfuchs 05/2018 |
+ | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
 namespace IO
 {
@@ -50,10 +50,15 @@ namespace PARTICLEWALL
 }
 
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 05/2018 |
+ | class definitions                                                         |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
+  /*!
+   * \brief base particle interaction
+   *
+   * \author Sebastian Fuchs \date 05/2018
+   */
   class ParticleInteractionBase
   {
    public:

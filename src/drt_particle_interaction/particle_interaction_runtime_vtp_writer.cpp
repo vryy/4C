@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 08/2019 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_runtime_vtp_writer.H"
 
@@ -22,7 +22,7 @@
 #include "../drt_io/runtime_vtp_writer.H"
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 08/2019 |
+ | declarations                                                              |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::InteractionWriter::InteractionWriter(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
@@ -31,42 +31,27 @@ PARTICLEINTERACTION::InteractionWriter::InteractionWriter(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | destructor                                                 sfuchs 08/2019 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::InteractionWriter::~InteractionWriter()
 {
   // note: destructor declaration here since at compile-time a complete type
   // of class T as used in class member std::unique_ptr<T> ptr_T_ is required
 }
 
-/*---------------------------------------------------------------------------*
- | init interaction writer                                    sfuchs 08/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::InteractionWriter::Init()
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | setup interaction writer                                   sfuchs 08/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::InteractionWriter::Setup()
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of interaction writer                        sfuchs 08/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::InteractionWriter::WriteRestart(const int step, const double time) const
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of interaction writer                         sfuchs 08/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::InteractionWriter::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
@@ -74,9 +59,6 @@ void PARTICLEINTERACTION::InteractionWriter::ReadRestart(
   setuptime_ = reader->ReadDouble("time");
 }
 
-/*---------------------------------------------------------------------------*
- | register specific runtime vtp writer                       sfuchs 08/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::InteractionWriter::RegisterSpecificRuntimeVtpWriter(
     const std::string& fieldname)
 {
@@ -114,9 +96,6 @@ void PARTICLEINTERACTION::InteractionWriter::RegisterSpecificRuntimeVtpWriter(
   runtime_vtpwriters_[fieldname] = runtime_vtpwriter;
 }
 
-/*---------------------------------------------------------------------------*
- | write particle interaction runtime output                  sfuchs 08/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::InteractionWriter::WriteParticleInteractionRuntimeOutput(
     const int step, const double time) const
 {

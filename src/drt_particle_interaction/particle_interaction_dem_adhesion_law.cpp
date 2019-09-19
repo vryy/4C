@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 07/2019 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_dem_adhesion_law.H"
 
@@ -20,7 +20,7 @@
 #include "../drt_lib/drt_dserror.H"
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 07/2019 |
+ | declarations                                                              |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMAdhesionLawBase::DEMAdhesionLawBase(const Teuchos::ParameterList& params)
     : params_dem_(params),
@@ -37,17 +37,11 @@ PARTICLEINTERACTION::DEMAdhesionLawBase::DEMAdhesionLawBase(const Teuchos::Param
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init adhesion law handler                                  sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMAdhesionLawBase::Init()
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | setup adhesion law handler                                 sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMAdhesionLawBase::Setup(const double& k_normal)
 {
   // set inverse normal contact stiffness
@@ -86,28 +80,17 @@ void PARTICLEINTERACTION::DEMAdhesionLawBase::Setup(const double& k_normal)
   }
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of adhesion law handler                      sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMAdhesionLawBase::WriteRestart(const int step, const double time) const
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of adhesion law handler                       sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMAdhesionLawBase::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // nothing to do
 }
 
-
-
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMAdhesionLawVdWDMT::DEMAdhesionLawVdWDMT(
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::DEMAdhesionLawBase(params),
@@ -116,9 +99,6 @@ PARTICLEINTERACTION::DEMAdhesionLawVdWDMT::DEMAdhesionLawVdWDMT(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init adhesion law handler                                  sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMAdhesionLawVdWDMT::Init()
 {
   // call base class init
@@ -128,9 +108,6 @@ void PARTICLEINTERACTION::DEMAdhesionLawVdWDMT::Init()
   if (hamaker_constant <= 0.0) dserror("negative hamaker constant!");
 }
 
-/*---------------------------------------------------------------------------*
- | calculate adhesion force                                   sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMAdhesionLawVdWDMT::AdhesionForce(const double& gap,
     const double& surfaceenergy, const double& r_eff, const double& v_rel_normal,
     const double& m_eff, double& adhesionforce) const
@@ -216,9 +193,6 @@ void PARTICLEINTERACTION::DEMAdhesionLawVdWDMT::AdhesionForce(const double& gap,
   }
 }
 
-/*---------------------------------------------------------------------------*
- | calculate gap at which vdW-curve intersects linear ramp    sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMAdhesionLawVdWDMT::CalculateIntersectionGap(
     double a, double b, double c, double d, double& gap_intersect) const
 {
@@ -290,9 +264,6 @@ void PARTICLEINTERACTION::DEMAdhesionLawVdWDMT::CalculateIntersectionGap(
   }
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMAdhesionLawRegDMT::DEMAdhesionLawRegDMT(
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::DEMAdhesionLawBase(params),
@@ -301,9 +272,6 @@ PARTICLEINTERACTION::DEMAdhesionLawRegDMT::DEMAdhesionLawRegDMT(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | calculate adhesion force                                   sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMAdhesionLawRegDMT::AdhesionForce(const double& gap,
     const double& surfaceenergy, const double& r_eff, const double& v_rel_normal,
     const double& m_eff, double& adhesionforce) const

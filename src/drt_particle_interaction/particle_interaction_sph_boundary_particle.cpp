@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 08/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_sph_boundary_particle.H"
 
@@ -25,7 +25,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 08/2018 |
+ | declarations                                                              |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHBoundaryParticleBase::SPHBoundaryParticleBase(
     const Teuchos::ParameterList& params)
@@ -34,17 +34,11 @@ PARTICLEINTERACTION::SPHBoundaryParticleBase::SPHBoundaryParticleBase(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init boundary particle handler                             sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHBoundaryParticleBase::Init()
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | setup boundary particle handler                            sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHBoundaryParticleBase::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs)
@@ -69,27 +63,18 @@ void PARTICLEINTERACTION::SPHBoundaryParticleBase::Setup(
     dserror("no boundary or rigid particles defined but a boundary particle formulation is set!");
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of boundary particle handler                 sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHBoundaryParticleBase::WriteRestart(
     const int step, const double time) const
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of boundary particle handler                  sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHBoundaryParticleBase::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHBoundaryParticleAdami::SPHBoundaryParticleAdami(
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::SPHBoundaryParticleBase(params)
@@ -97,9 +82,6 @@ PARTICLEINTERACTION::SPHBoundaryParticleAdami::SPHBoundaryParticleAdami(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | setup boundary particle handler                            sfuchs 01/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHBoundaryParticleAdami::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs)
@@ -126,9 +108,6 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::Setup(
   sumj_vel_j_Wij_.resize(typevectorsize);
 }
 
-/*---------------------------------------------------------------------------*
- | init boundary particle states                              sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticleStates(
     std::vector<double>& gravity)
 {

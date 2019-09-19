@@ -4,62 +4,47 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 05/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_sph_equationofstate.H"
 
 #include "particle_interaction_utils.H"
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 05/2018 |
+ | declarations                                                              |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHEquationOfStateBase::SPHEquationOfStateBase()
 {
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init equation of state handler                             sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHEquationOfStateBase::Init()
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | setup equation of state handler                            sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHEquationOfStateBase::Setup()
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of equation of state handler                 sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHEquationOfStateBase::WriteRestart(
     const int step, const double time) const
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of equation of state handler                  sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHEquationOfStateBase::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHEquationOfStateGenTait::SPHEquationOfStateGenTait(
     const double& speedofsound, const double& refdensfac, const double& exponent)
     : PARTICLEINTERACTION::SPHEquationOfStateBase(),
@@ -70,9 +55,6 @@ PARTICLEINTERACTION::SPHEquationOfStateGenTait::SPHEquationOfStateGenTait(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | determine the pressure                                     sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::SPHEquationOfStateGenTait::DensityToPressure(
     const double& density, const double& density0) const
 {
@@ -85,9 +67,6 @@ double PARTICLEINTERACTION::SPHEquationOfStateGenTait::DensityToPressure(
   }
 }
 
-/*---------------------------------------------------------------------------*
- | determine the density                                      sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::SPHEquationOfStateGenTait::PressureToDensity(
     const double& pressure, const double& density0) const
 {
@@ -100,9 +79,6 @@ double PARTICLEINTERACTION::SPHEquationOfStateGenTait::PressureToDensity(
   }
 }
 
-/*---------------------------------------------------------------------------*
- | determine the energy                                       sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::SPHEquationOfStateGenTait::DensityToEnergy(
     const double& density, const double& mass, const double& density0) const
 {
@@ -126,9 +102,6 @@ double PARTICLEINTERACTION::SPHEquationOfStateGenTait::DensityToEnergy(
   }
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHEquationOfStateIdealGas::SPHEquationOfStateIdealGas(
     const double& speedofsound)
     : PARTICLEINTERACTION::SPHEquationOfStateBase(), speedofsound_(speedofsound)
@@ -136,27 +109,18 @@ PARTICLEINTERACTION::SPHEquationOfStateIdealGas::SPHEquationOfStateIdealGas(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | determine the pressure                                     sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::SPHEquationOfStateIdealGas::DensityToPressure(
     const double& density, const double& density0) const
 {
   return UTILS::pow<2>(speedofsound_) * density;
 }
 
-/*---------------------------------------------------------------------------*
- | determine the density                                      sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::SPHEquationOfStateIdealGas::PressureToDensity(
     const double& pressure, const double& density0) const
 {
   return pressure / UTILS::pow<2>(speedofsound_);
 }
 
-/*---------------------------------------------------------------------------*
- | determine the energy                                       sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::SPHEquationOfStateIdealGas::DensityToEnergy(
     const double& density, const double& mass, const double& density0) const
 {

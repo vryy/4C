@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 05/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_sph_kernel.H"
 #include "particle_interaction_utils.H"
@@ -17,7 +17,7 @@
 #include "../drt_lib/drt_dserror.H"
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 05/2018 |
+ | declarations                                                              |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHKernelBase::SPHKernelBase(const Teuchos::ParameterList& params)
     : kernelspacedim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::KernelSpaceDimension>(
@@ -26,42 +26,27 @@ PARTICLEINTERACTION::SPHKernelBase::SPHKernelBase(const Teuchos::ParameterList& 
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init kernel handler                                        sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHKernelBase::Init()
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | setup kernel handler                                       sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHKernelBase::Setup()
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of kernel handler                            sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHKernelBase::WriteRestart(const int step, const double time) const
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of kernel handler                             sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHKernelBase::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | get kernel space dimension                                 sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHKernelBase::KernelSpaceDimension(int& dim) const
 {
   switch (kernelspacedim_)
@@ -89,18 +74,12 @@ void PARTICLEINTERACTION::SPHKernelBase::KernelSpaceDimension(int& dim) const
   }
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate gradient of kernel                                sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHKernelBase::GradWij(
     const double& rij, const double& support, const double* eij, double* gradWij) const
 {
   UTILS::vec_setscale(gradWij, this->dWdrij(rij, support), eij);
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHKernelCubicSpline::SPHKernelCubicSpline(
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::SPHKernelBase(params)
@@ -108,17 +87,11 @@ PARTICLEINTERACTION::SPHKernelCubicSpline::SPHKernelCubicSpline(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | get smoothing length from kernel support radius            sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::SPHKernelCubicSpline::SmoothingLength(const double& support) const
 {
   return (0.5 * support);
 }
 
-/*---------------------------------------------------------------------------*
- | get normalization constant from inverse smoothing length   sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::SPHKernelCubicSpline::NormalizationConstant(const double& inv_h) const
 {
   switch (kernelspacedim_)
@@ -147,17 +120,11 @@ double PARTICLEINTERACTION::SPHKernelCubicSpline::NormalizationConstant(const do
   return 0.0;
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate kernel (self-interaction)                         sfuchs 02/2019 |
- *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::SPHKernelCubicSpline::W0(const double& support) const
 {
   return NormalizationConstant(2.0 / support);
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate kernel                                            sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::SPHKernelCubicSpline::W(const double& rij, const double& support) const
 {
   const double inv_h = 2.0 / support;
@@ -171,9 +138,6 @@ double PARTICLEINTERACTION::SPHKernelCubicSpline::W(const double& rij, const dou
     return 0.0;
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate first derivative of kernel                        sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::SPHKernelCubicSpline::dWdrij(
     const double& rij, const double& support) const
 {
@@ -188,9 +152,6 @@ double PARTICLEINTERACTION::SPHKernelCubicSpline::dWdrij(
     return 0.0;
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate second derivative of kernel                       sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::SPHKernelCubicSpline::d2Wdrij2(
     const double& rij, const double& support) const
 {
@@ -205,9 +166,6 @@ double PARTICLEINTERACTION::SPHKernelCubicSpline::d2Wdrij2(
     return 0.0;
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHKernelQuinticSpline::SPHKernelQuinticSpline(
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::SPHKernelBase(params)
@@ -215,18 +173,12 @@ PARTICLEINTERACTION::SPHKernelQuinticSpline::SPHKernelQuinticSpline(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | get smoothing length from kernel support radius            sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::SPHKernelQuinticSpline::SmoothingLength(const double& support) const
 {
   // (support / 3.0)
   return 0.3333333333333333 * support;
 }
 
-/*---------------------------------------------------------------------------*
- | get normalization constant from inverse smoothing length   sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::SPHKernelQuinticSpline::NormalizationConstant(const double& inv_h) const
 {
   switch (kernelspacedim_)
@@ -256,17 +208,11 @@ double PARTICLEINTERACTION::SPHKernelQuinticSpline::NormalizationConstant(const 
   return 0.0;
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate kernel (self-interaction)                         sfuchs 02/2019 |
- *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::SPHKernelQuinticSpline::W0(const double& support) const
 {
   return 66.0 * NormalizationConstant(3.0 / support);
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate kernel                                            sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::SPHKernelQuinticSpline::W(
     const double& rij, const double& support) const
 {
@@ -284,9 +230,6 @@ double PARTICLEINTERACTION::SPHKernelQuinticSpline::W(
     return 0.0;
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate first derivative of kernel                        sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::SPHKernelQuinticSpline::dWdrij(
     const double& rij, const double& support) const
 {
@@ -306,9 +249,6 @@ double PARTICLEINTERACTION::SPHKernelQuinticSpline::dWdrij(
     return 0.0;
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate second derivative of kernel                       sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::SPHKernelQuinticSpline::d2Wdrij2(
     const double& rij, const double& support) const
 {

@@ -4,18 +4,18 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 07/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 #ifndef PARTICLE_INTERACTION_SPH_EQUATIONOFSTATE_BUNDLE_H
 #define PARTICLE_INTERACTION_SPH_EQUATIONOFSTATE_BUNDLE_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 07/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "../drt_particle_engine/particle_enums.H"
 #include "../drt_particle_engine/particle_typedefs.H"
@@ -23,7 +23,7 @@
 #include <Teuchos_ParameterList.hpp>
 
 /*---------------------------------------------------------------------------*
- | forward declarations                                       sfuchs 07/2018 |
+ | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
 namespace IO
 {
@@ -37,7 +37,7 @@ namespace PARTICLEINTERACTION
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 07/2018 |
+ | class definitions                                                         |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {

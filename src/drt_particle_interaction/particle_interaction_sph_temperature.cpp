@@ -4,13 +4,10 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*
- | headers                                                     meier 09/2018 |
- *---------------------------------------------------------------------------*/
 #include "particle_interaction_sph_temperature.H"
 
 #include "particle_interaction_sph_kernel.H"
@@ -27,9 +24,6 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-/*---------------------------------------------------------------------------*
- | constructor                                                 meier 09/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHTemperature::SPHTemperature(const Teuchos::ParameterList& params)
     : params_sph_(params),
       time_(0.0),
@@ -39,27 +33,18 @@ PARTICLEINTERACTION::SPHTemperature::SPHTemperature(const Teuchos::ParameterList
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | destructor                                                 sfuchs 02/2019 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHTemperature::~SPHTemperature()
 {
   // note: destructor declaration here since at compile-time a complete type
   // of class T as used in class member std::unique_ptr<T> ptr_T_ is required
 }
 
-/*---------------------------------------------------------------------------*
- | init temperature handler                                    meier 09/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHTemperature::Init()
 {
   // init heat source handler
   InitHeatSourceHandler();
 }
 
-/*---------------------------------------------------------------------------*
- | setup temperature handler                                   meier 09/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHTemperature::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
@@ -112,18 +97,12 @@ void PARTICLEINTERACTION::SPHTemperature::Setup(
   if (heatsource_) heatsource_->Setup(particleengineinterface, particlematerial, neighborpairs);
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of temperature handler                        meier 09/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHTemperature::WriteRestart(const int step, const double time) const
 {
   // write restart of heat source handler
   if (heatsource_) heatsource_->WriteRestart(step, time);
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of temperature handler                         meier 09/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHTemperature::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
@@ -131,25 +110,16 @@ void PARTICLEINTERACTION::SPHTemperature::ReadRestart(
   if (heatsource_) heatsource_->ReadRestart(reader);
 }
 
-/*---------------------------------------------------------------------------*
- | set current time                                           sfuchs 02/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHTemperature::SetCurrentTime(const double currenttime)
 {
   time_ = currenttime;
 }
 
-/*---------------------------------------------------------------------------*
- | set current step size                                      sfuchs 02/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHTemperature::SetCurrentStepSize(const double currentstepsize)
 {
   dt_ = currentstepsize;
 }
 
-/*---------------------------------------------------------------------------*
- | insert temperature evaluation dependent states              meier 09/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHTemperature::InsertParticleStatesOfParticleTypes(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
     const
@@ -177,9 +147,6 @@ void PARTICLEINTERACTION::SPHTemperature::InsertParticleStatesOfParticleTypes(
   }
 }
 
-/*---------------------------------------------------------------------------*
- | compute temperature field using energy equation             meier 09/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHTemperature::ComputeTemperature() const
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHTemperature::ComputeTemperature");
@@ -208,9 +175,6 @@ void PARTICLEINTERACTION::SPHTemperature::ComputeTemperature() const
   if (temperaturegradient_) TemperatureGradient();
 }
 
-/*---------------------------------------------------------------------------*
- | init heat source handler                                   sfuchs 02/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHTemperature::InitHeatSourceHandler()
 {
   // get type of heat source
@@ -248,9 +212,6 @@ void PARTICLEINTERACTION::SPHTemperature::InitHeatSourceHandler()
   if (heatsource_) heatsource_->Init();
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate energy equation                                    meier 09/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHTemperature::EnergyEquation() const
 {
   // iterate over particle types
@@ -347,9 +308,6 @@ void PARTICLEINTERACTION::SPHTemperature::EnergyEquation() const
   }
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate temperature gradient                              sfuchs 03/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHTemperature::TemperatureGradient() const
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHTemperature::TemperatureGradient");

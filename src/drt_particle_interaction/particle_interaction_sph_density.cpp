@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 08/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_sph_density.H"
 
@@ -30,7 +30,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 08/2018 |
+ | declarations                                                              |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHDensityBase::SPHDensityBase(const Teuchos::ParameterList& params)
     : params_sph_(params), dt_(0.0), computecolorfield_(false), applytransportvelocity_(false)
@@ -38,9 +38,6 @@ PARTICLEINTERACTION::SPHDensityBase::SPHDensityBase(const Teuchos::ParameterList
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init density handler                                       sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityBase::Init()
 {
   // check if transport velocity formulation is applied
@@ -50,9 +47,6 @@ void PARTICLEINTERACTION::SPHDensityBase::Init()
     applytransportvelocity_ = true;
 }
 
-/*---------------------------------------------------------------------------*
- | setup density handler                                      sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityBase::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
@@ -93,34 +87,22 @@ void PARTICLEINTERACTION::SPHDensityBase::Setup(
   }
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of density handler                           sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityBase::WriteRestart(const int step, const double time) const
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of density handler                            sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityBase::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | set current step size                                      sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityBase::SetCurrentStepSize(const double currentstepsize)
 {
   dt_ = currentstepsize;
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate sum of weighted mass and colorfield               sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassAndColorfield() const
 {
   // clear density sum and colorfield states
@@ -133,9 +115,6 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassAndColorfield() const
   SumWeightedMassAndColorfieldParticleContribution();
 }
 
-/*---------------------------------------------------------------------------*
- | clear density sum and colorfield states                    sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityBase::ClearDensitySumAndColorfieldStates() const
 {
   // iterate over particle types
@@ -154,9 +133,6 @@ void PARTICLEINTERACTION::SPHDensityBase::ClearDensitySumAndColorfieldStates() c
   }
 }
 
-/*---------------------------------------------------------------------------*
- | sum weighted mass/colorfield (self contribution)           sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassAndColorfieldSelfContribution() const
 {
   TEUCHOS_FUNC_TIME_MONITOR(
@@ -200,9 +176,6 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassAndColorfieldSelfContri
   }
 }
 
-/*---------------------------------------------------------------------------*
- | sum weighted mass/colorfield (particle contribution)       sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassAndColorfieldParticleContribution() const
 {
   TEUCHOS_FUNC_TIME_MONITOR(
@@ -295,9 +268,6 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassAndColorfieldParticleCo
   }
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate continuity equation                               sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquation() const
 {
   // clear density dot state
@@ -307,9 +277,6 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquation() const
   ContinuityEquationParticleContribution();
 }
 
-/*---------------------------------------------------------------------------*
- | clear density dot state                                    sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityBase::ClearDensityDotState() const
 {
   // iterate over particle types
@@ -327,9 +294,6 @@ void PARTICLEINTERACTION::SPHDensityBase::ClearDensityDotState() const
   }
 }
 
-/*---------------------------------------------------------------------------*
- | continuity equation (particle contribution)                sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleContribution() const
 {
   TEUCHOS_FUNC_TIME_MONITOR(
@@ -432,9 +396,6 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleContribution
   }
 }
 
-/*---------------------------------------------------------------------------*
- | set density sum to density field                           sfuchs 08/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityBase::SetDensitySum() const
 {
   // iterate over particle types
@@ -450,9 +411,6 @@ void PARTICLEINTERACTION::SPHDensityBase::SetDensitySum() const
   }
 }
 
-/*---------------------------------------------------------------------------*
- | add time step scaled density dot to density field          sfuchs 08/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityBase::AddTimeStepScaledDensityDot() const
 {
   // iterate over particle types
@@ -468,18 +426,12 @@ void PARTICLEINTERACTION::SPHDensityBase::AddTimeStepScaledDensityDot() const
   }
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHDensitySummation::SPHDensitySummation(const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::SPHDensityBase(params)
 {
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | insert density evaluation dependent states                 sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensitySummation::InsertParticleStatesOfParticleTypes(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
     const
@@ -501,9 +453,6 @@ void PARTICLEINTERACTION::SPHDensitySummation::InsertParticleStatesOfParticleTyp
   }
 }
 
-/*---------------------------------------------------------------------------*
- | compute density field                                      sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensitySummation::ComputeDensity() const
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHDensitySummation::ComputeDensity");
@@ -518,9 +467,6 @@ void PARTICLEINTERACTION::SPHDensitySummation::ComputeDensity() const
   particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(densitytorefresh_);
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHDensityIntegration::SPHDensityIntegration(
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::SPHDensityBase(params)
@@ -528,9 +474,6 @@ PARTICLEINTERACTION::SPHDensityIntegration::SPHDensityIntegration(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | insert density evaluation dependent states                 sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityIntegration::InsertParticleStatesOfParticleTypes(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
     const
@@ -552,9 +495,6 @@ void PARTICLEINTERACTION::SPHDensityIntegration::InsertParticleStatesOfParticleT
   }
 }
 
-/*---------------------------------------------------------------------------*
- | compute density field                                      sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityIntegration::ComputeDensity() const
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHDensityIntegration::ComputeDensity");
@@ -569,9 +509,6 @@ void PARTICLEINTERACTION::SPHDensityIntegration::ComputeDensity() const
   particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(densitytorefresh_);
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHDensityPredictCorrect::SPHDensityPredictCorrect(
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::SPHDensityBase(params)
@@ -579,18 +516,12 @@ PARTICLEINTERACTION::SPHDensityPredictCorrect::SPHDensityPredictCorrect(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | destructor                                                 sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHDensityPredictCorrect::~SPHDensityPredictCorrect()
 {
   // note: destructor declaration here since at compile-time a complete type
   // of class T as used in class member std::unique_ptr<T> ptr_T_ is required
 }
 
-/*---------------------------------------------------------------------------*
- | init density handler                                       sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityPredictCorrect::Init()
 {
   // call base class init
@@ -603,9 +534,6 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::Init()
   InitDensityCorrectionHandler();
 }
 
-/*---------------------------------------------------------------------------*
- | setup density handler                                      sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityPredictCorrect::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
@@ -621,9 +549,6 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::Setup(
   densitycorrection_->Setup();
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of density handler                           sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityPredictCorrect::WriteRestart(
     const int step, const double time) const
 {
@@ -634,9 +559,6 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::WriteRestart(
   densitycorrection_->WriteRestart(step, time);
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of density handler                            sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityPredictCorrect::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
@@ -647,9 +569,6 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::ReadRestart(
   densitycorrection_->ReadRestart(reader);
 }
 
-/*---------------------------------------------------------------------------*
- | insert density evaluation dependent states                 sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityPredictCorrect::InsertParticleStatesOfParticleTypes(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
     const
@@ -672,9 +591,6 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::InsertParticleStatesOfPartic
   }
 }
 
-/*---------------------------------------------------------------------------*
- | compute density field                                      sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityPredictCorrect::ComputeDensity() const
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHDensityPredictCorrect::ComputeDensity");
@@ -698,9 +614,6 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::ComputeDensity() const
   particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(densitytorefresh_);
 }
 
-/*---------------------------------------------------------------------------*
- | init density correction handler                            sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityPredictCorrect::InitDensityCorrectionHandler()
 {
   // get type of density correction scheme
@@ -740,9 +653,6 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::InitDensityCorrectionHandler
   densitycorrection_->Init();
 }
 
-/*---------------------------------------------------------------------------*
- | correct density of interior/surface particles              sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHDensityPredictCorrect::CorrectDensity() const
 {
   // iterate over particle types

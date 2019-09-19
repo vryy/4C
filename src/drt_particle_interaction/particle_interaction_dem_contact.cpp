@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 11/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_dem_contact.H"
 
@@ -42,7 +42,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 11/2018 |
+ | declarations                                                              |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMContact::DEMContact(const Teuchos::ParameterList& params)
     : params_dem_(params),
@@ -53,18 +53,12 @@ PARTICLEINTERACTION::DEMContact::DEMContact(const Teuchos::ParameterList& params
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | destructor                                                 sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMContact::~DEMContact()
 {
   // note: destructor declaration here since at compile-time a complete type
   // of class T as used in class member std::unique_ptr<T> ptr_T_ is required
 }
 
-/*---------------------------------------------------------------------------*
- | init contact handler                                       sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContact::Init()
 {
   // init normal contact handler
@@ -77,9 +71,6 @@ void PARTICLEINTERACTION::DEMContact::Init()
   InitRollingContactHandler();
 }
 
-/*---------------------------------------------------------------------------*
- | setup contact handler                                      sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContact::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
@@ -137,9 +128,6 @@ void PARTICLEINTERACTION::DEMContact::Setup(
   }
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of contact handler                           sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContact::WriteRestart(const int step, const double time) const
 {
   // write restart of normal contact handler
@@ -152,9 +140,6 @@ void PARTICLEINTERACTION::DEMContact::WriteRestart(const int step, const double 
   if (contactrolling_) contactrolling_->WriteRestart(step, time);
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of contact handler                            sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContact::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
@@ -168,9 +153,6 @@ void PARTICLEINTERACTION::DEMContact::ReadRestart(
   if (contactrolling_) contactrolling_->ReadRestart(reader);
 }
 
-/*---------------------------------------------------------------------------*
- | set current step size                                      sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContact::SetCurrentStepSize(const double currentstepsize)
 {
   dt_ = currentstepsize;
@@ -182,9 +164,6 @@ void PARTICLEINTERACTION::DEMContact::SetCurrentStepSize(const double currentste
   if (contactrolling_) contactrolling_->SetCurrentStepSize(currentstepsize);
 }
 
-/*---------------------------------------------------------------------------*
- | insert contact evaluation dependent states                 sfuchs 12/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContact::InsertParticleStatesOfParticleTypes(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
     const
@@ -202,17 +181,11 @@ void PARTICLEINTERACTION::DEMContact::InsertParticleStatesOfParticleTypes(
   }
 }
 
-/*---------------------------------------------------------------------------*
- | get normal contact stiffness                               sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::DEMContact::GetNormalContactStiffness() const
 {
   return contactnormal_->GetNormalContactStiffness();
 }
 
-/*---------------------------------------------------------------------------*
- | check critical time step (on this processor)               sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContact::CheckCriticalTimeStep() const
 {
   // init value of minimum mass
@@ -246,9 +219,6 @@ void PARTICLEINTERACTION::DEMContact::CheckCriticalTimeStep() const
   if (dt_ > dt_crit) dserror("time step %f larger than critical time step %f!", dt_, dt_crit);
 }
 
-/*---------------------------------------------------------------------------*
- | add contact contribution to force and moment field         sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContact::AddForceAndMomentContribution()
 {
   // evaluate particle contact contribution
@@ -258,9 +228,6 @@ void PARTICLEINTERACTION::DEMContact::AddForceAndMomentContribution()
   if (particlewallinterface_) EvaluateParticleWallContact();
 }
 
-/*---------------------------------------------------------------------------*
- | init normal contact handler                                sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContact::InitNormalContactHandler()
 {
   // get type of normal contact law
@@ -317,9 +284,6 @@ void PARTICLEINTERACTION::DEMContact::InitNormalContactHandler()
   contactnormal_->Init();
 }
 
-/*---------------------------------------------------------------------------*
- | init tangential contact handler                            sfuchs 12/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContact::InitTangentialContactHandler()
 {
   // get type of tangential contact law
@@ -353,9 +317,6 @@ void PARTICLEINTERACTION::DEMContact::InitTangentialContactHandler()
   if (contacttangential_) contacttangential_->Init();
 }
 
-/*---------------------------------------------------------------------------*
- | init rolling contact handler                               sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContact::InitRollingContactHandler()
 {
   // get type of rolling contact law
@@ -393,9 +354,6 @@ void PARTICLEINTERACTION::DEMContact::InitRollingContactHandler()
   if (contactrolling_) contactrolling_->Init();
 }
 
-/*---------------------------------------------------------------------------*
- | setup particle interaction writer                          sfuchs 08/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContact::SetupParticleInteractionWriter()
 {
   // register specific runtime vtp writer
@@ -403,9 +361,6 @@ void PARTICLEINTERACTION::DEMContact::SetupParticleInteractionWriter()
     particleinteractionwriter_->RegisterSpecificRuntimeVtpWriter("particle-wall-contact");
 }
 
-/*---------------------------------------------------------------------------*
- | get maximum density of all materials                       sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::DEMContact::GetMaxDensityOfAllMaterials() const
 {
   // init value of maximum density
@@ -425,9 +380,6 @@ double PARTICLEINTERACTION::DEMContact::GetMaxDensityOfAllMaterials() const
   return maxdensity;
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate particle contact contribution                     sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContact::EvaluateParticleContact()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::DEMContact::EvaluateParticleContact");
@@ -633,9 +585,6 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleContact()
   }
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate particle-wall contact contribution                sfuchs 05/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact");

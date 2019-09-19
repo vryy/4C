@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 06/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_sph_artificialviscosity.H"
 
@@ -20,50 +20,35 @@
 #include <cmath>
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 06/2018 |
+ | declarations                                                              |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHArtificialViscosity::SPHArtificialViscosity()
 {
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init artificial viscosity handler                          sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHArtificialViscosity::Init()
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | setup artificial viscosity handler                         sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHArtificialViscosity::Setup()
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of artificial viscosity handler              sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHArtificialViscosity::WriteRestart(
     const int step, const double time) const
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of artificial viscosity handler               sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHArtificialViscosity::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate artificial viscosity                              sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHArtificialViscosity::ArtificialViscosity(const double* vel_i,
     const double* vel_j, const double* mass_i, const double* mass_j, const double& artvisc_i,
     const double& artvisc_j, const double& dWdrij, const double& dWdrji, const double& dens_ij,

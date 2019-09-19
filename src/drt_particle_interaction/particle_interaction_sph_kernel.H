@@ -4,25 +4,25 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 05/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 #ifndef PARTICLE_INTERACTION_SPH_KERNEL_H
 #define PARTICLE_INTERACTION_SPH_KERNEL_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 05/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "../drt_inpar/inpar_particle.H"
 
 #include <Teuchos_ParameterList.hpp>
 
 /*---------------------------------------------------------------------------*
- | forward declarations                                       sfuchs 05/2018 |
+ | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
 namespace IO
 {
@@ -30,7 +30,7 @@ namespace IO
 }
 
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 05/2018 |
+ | class definitions                                                         |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {

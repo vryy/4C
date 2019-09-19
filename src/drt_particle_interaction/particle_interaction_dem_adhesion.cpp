@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 07/2019 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_dem_adhesion.H"
 
@@ -40,7 +40,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 07/2019 |
+ | declarations                                                              |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMAdhesion::DEMAdhesion(const Teuchos::ParameterList& params)
     : params_dem_(params),
@@ -51,18 +51,12 @@ PARTICLEINTERACTION::DEMAdhesion::DEMAdhesion(const Teuchos::ParameterList& para
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | destructor                                                 sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMAdhesion::~DEMAdhesion()
 {
   // note: destructor declaration here since at compile-time a complete type
   // of class T as used in class member std::unique_ptr<T> ptr_T_ is required
 }
 
-/*---------------------------------------------------------------------------*
- | init adhesion handler                                      sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMAdhesion::Init()
 {
   // init adhesion law handler
@@ -72,9 +66,6 @@ void PARTICLEINTERACTION::DEMAdhesion::Init()
   InitAdhesionSurfaceEnergyHandler();
 }
 
-/*---------------------------------------------------------------------------*
- | setup adhesion handler                                     sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMAdhesion::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
@@ -114,9 +105,6 @@ void PARTICLEINTERACTION::DEMAdhesion::Setup(
   if (adhesion_distance_ < 0.0) dserror("negative adhesion distance!");
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of adhesion handler                          sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMAdhesion::WriteRestart(const int step, const double time) const
 {
   // write restart of adhesion law handler
@@ -126,9 +114,6 @@ void PARTICLEINTERACTION::DEMAdhesion::WriteRestart(const int step, const double
   adhesionsurfaceenergy_->WriteRestart(step, time);
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of adhesion handler                           sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMAdhesion::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
@@ -139,9 +124,6 @@ void PARTICLEINTERACTION::DEMAdhesion::ReadRestart(
   adhesionsurfaceenergy_->ReadRestart(reader);
 }
 
-/*---------------------------------------------------------------------------*
- | add adhesion contribution to force field                   sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMAdhesion::AddForceContribution()
 {
   // evaluate particle adhesion contribution
@@ -151,9 +133,6 @@ void PARTICLEINTERACTION::DEMAdhesion::AddForceContribution()
   if (particlewallinterface_) EvaluateParticleWallAdhesion();
 }
 
-/*---------------------------------------------------------------------------*
- | init adhesion law handler                                  sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMAdhesion::InitAdhesionLawHandler()
 {
   // get type of adhesion law
@@ -186,9 +165,6 @@ void PARTICLEINTERACTION::DEMAdhesion::InitAdhesionLawHandler()
   adhesionlaw_->Init();
 }
 
-/*---------------------------------------------------------------------------*
- | init adhesion surface energy handler                       sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMAdhesion::InitAdhesionSurfaceEnergyHandler()
 {
   // get type of adhesion surface energy distribution
@@ -231,9 +207,6 @@ void PARTICLEINTERACTION::DEMAdhesion::InitAdhesionSurfaceEnergyHandler()
   adhesionsurfaceenergy_->Init();
 }
 
-/*---------------------------------------------------------------------------*
- | setup particle interaction writer                          sfuchs 08/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMAdhesion::SetupParticleInteractionWriter()
 {
   // register specific runtime vtp writer
@@ -241,9 +214,6 @@ void PARTICLEINTERACTION::DEMAdhesion::SetupParticleInteractionWriter()
     particleinteractionwriter_->RegisterSpecificRuntimeVtpWriter("particle-wall-adhesion");
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate particle adhesion contribution                    sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleAdhesion()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleAdhesion");
@@ -351,9 +321,6 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleAdhesion()
   }
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate particle-wall adhesion contribution               sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion");

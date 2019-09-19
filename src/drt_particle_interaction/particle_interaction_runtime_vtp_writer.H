@@ -4,18 +4,18 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 08/2019 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 #ifndef PARTICLE_INTERACTION_RUNTIME_VTP_WRITER_H
 #define PARTICLE_INTERACTION_RUNTIME_VTP_WRITER_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 08/2019 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "../drt_lib/drt_dserror.H"
 
@@ -25,7 +25,7 @@
 #include <memory>
 
 /*---------------------------------------------------------------------------*
- | forward declarations                                       sfuchs 08/2019 |
+ | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
 class RuntimeVtpWriter;
 
@@ -35,7 +35,7 @@ namespace IO
 }
 
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 08/2019 |
+ | class definitions                                                         |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {

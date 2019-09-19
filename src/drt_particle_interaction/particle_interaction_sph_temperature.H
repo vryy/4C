@@ -4,18 +4,18 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                 meier 09/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 #ifndef PARTICLE_INTERACTION_SPH_TEMPERATURE_H
 #define PARTICLE_INTERACTION_SPH_TEMPERATURE_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                     meier 09/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "../drt_particle_engine/particle_enums.H"
 #include "../drt_particle_engine/particle_typedefs.H"
@@ -23,7 +23,7 @@
 #include "../drt_inpar/inpar_particle.H"
 
 /*---------------------------------------------------------------------------*
- | forward declarations                                        meier 09/2018 |
+ | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
 namespace IO
 {
@@ -52,7 +52,7 @@ namespace MAT
 }  // namespace MAT
 
 /*---------------------------------------------------------------------------*
- | class definitions                                           meier 09/2018 |
+ | class definitions                                                         |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
