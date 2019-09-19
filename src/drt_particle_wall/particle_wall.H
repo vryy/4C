@@ -2,20 +2,20 @@
 /*! \file
 \brief particle wall handler for particle simulations
 
-\level 3
+\level 2
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 10/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 #ifndef PARTICLE_WALL_H
 #define PARTICLE_WALL_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 10/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_wall_interface.H"
 
@@ -26,7 +26,7 @@
 #include <Teuchos_ParameterList.hpp>
 
 /*---------------------------------------------------------------------------*
- | forward declarations                                       sfuchs 10/2018 |
+ | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
 namespace IO
 {
@@ -56,49 +56,119 @@ namespace DRT
 }  // namespace DRT
 
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 10/2018 |
+ | class definitions                                                         |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEWALL
 {
+  /*!
+   * \brief particle wall handler for particle problem
+   *
+   * The particle wall handler is responsible for the parallel distribution of all wall elements to
+   * all processors following the bin distribution as handed in from the particle engine. In
+   * addition potential particle wall neighbor pair relations are build.
+   *
+   * \author Sebastian Fuchs \date 10/2018
+   */
   class WallHandlerBase : public WallHandlerInterface
   {
    public:
-    //! constructor
+    /*!
+     * \brief constructor
+     *
+     * \author Sebastian Fuchs \date 10/2018
+     *
+     * \param[in] comm   communicator
+     * \param[in] params particle simulation parameter list
+     */
     explicit WallHandlerBase(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
     //! destructor
     ~WallHandlerBase() override;
 
-    //! init wall handler
+    /*!
+     * \brief init wall handler
+     *
+     * \author Sebastian Fuchs \date 10/2018
+     */
     virtual void Init();
 
-    //! setup wall handler
+    /*!
+     * \brief setup wall handler
+     *
+     * \author Sebastian Fuchs \date 10/2018
+     *
+     * \param[in] particlestatestotypes particle types and corresponding particle states
+     * \param[in] binstrategy           binning strategy
+     */
     virtual void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<BINSTRATEGY::BinningStrategy> binstrategy);
 
-    //! write restart of wall handler
+    /*!
+     * \brief write restart of wall handler
+     *
+     * \author Sebastian Fuchs \date 11/2018
+     *
+     * \param[in] step restart step
+     * \param[in] time restart time
+     */
     virtual void WriteRestart(const int step, const double time) const;
 
-    //! read restart of wall handler
+    /*!
+     * \brief read restart of wall handler
+     *
+     * \author Sebastian Fuchs \date 11/2018
+     *
+     * \param[in] restartstep restart step
+     */
     virtual void ReadRestart(const int restartstep);
 
-    //! insert wall handler dependent states of all particle types
+    /*!
+     * \brief insert wall handler dependent states of all particle types
+     *
+     * \author Sebastian Fuchs \date 05/2019
+     *
+     * \param[out] particlestatestotypes map of particle types and corresponding states
+     */
     virtual void InsertParticleStatesOfParticleTypes(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) const final;
 
-    //! write wall runtime output
+    /*!
+     * \brief write wall runtime output
+     *
+     * \author Sebastian Fuchs \date 08/2019
+     *
+     * \param[in] step output step
+     * \param[in] time output time
+     */
     virtual void WriteWallRuntimeOutput(const int step, const double time) const final;
 
-    //! update bin row and column map
+    /*!
+     * \brief update bin row and column map
+     *
+     * \author Sebastian Fuchs \date 11/2018
+     *
+     * \param[in] binrowmap bin row map
+     * \param[in] bincolmap bin column map
+     */
     virtual void UpdateBinRowAndColMap(
         const Teuchos::RCP<Epetra_Map> binrowmap, const Teuchos::RCP<Epetra_Map> bincolmap) final;
 
-    //! check that wall nodes are located in bounding box
+    /*!
+     * \brief check that wall nodes are located in bounding box
+     *
+     * \author Sebastian Fuchs \date 08/2019
+     */
     virtual void CheckWallNodesLocatedInBoundingBox() const final;
 
-    //! get max wall position increment since last transfer
+    /*!
+     * \brief get maximum wall position increment since last transfer
+     *
+     * \author Sebastian Fuchs \date 03/2019
+     *
+     * \params[out] allprocmaxpositionincrement maximum wall position increment
+     */
     virtual void GetMaxWallPositionIncrement(double& allprocmaxpositionincrement) const final;
 
     //! distribute wall elements and nodes
@@ -107,47 +177,84 @@ namespace PARTICLEWALL
     //! transfer wall elements and nodes
     virtual void TransferWallElementsAndNodes() = 0;
 
-    //! relate bins to column wall elements
+    /*!
+     * \brief relate bins to column wall elements
+     *
+     * \author Sebastian Fuchs \date 11/2018
+     */
     virtual void RelateBinsToColWallEles() final;
 
-    //! build particle to wall neighbors
+    /*!
+     * \brief build particle to wall neighbors
+     *
+     * Build potential particle to wall neighbor pairs.
+     *
+     * \author Sebastian Fuchs \date 11/2018
+     *
+     * \param[in] particlestobins relation of (owned and ghosted) particles to bins
+     */
     virtual void BuildParticleToWallNeighbors(
         const PARTICLEENGINE::ParticlesToBins& particlestobins) final;
 
-    //! check for valid wall neighbors
+    /*!
+     * \brief check for valid wall neighbors
+     *
+     * \author Sebastian Fuchs \date 11/2018
+     */
     virtual bool HaveValidWallNeighbors() const final { return validwallneighbors_; };
 
-    //! get wall discretization
     Teuchos::RCP<const DRT::Discretization> GetWallDiscretization() const final
     {
       return walldiscretization_;
     };
 
-    //! get wall data state container
     std::shared_ptr<PARTICLEWALL::WallDataState> GetWallDataState() const final
     {
       return walldatastate_;
     }
 
-    //! get reference to potential wall neighbors
     const PARTICLEENGINE::PotentialWallNeighbors& GetPotentialWallNeighbors() const final;
 
-    //! determine nodal positions of column wall element
+    /*!
+     * \brief determine nodal positions of column wall element
+     *
+     * \author Sebastian Fuchs \date 11/2018
+     *
+     * \param ele[in]             column wall element
+     * \param colelenodalpos[out] current nodal position
+     */
     void DetermineColWallEleNodalPos(
         DRT::Element* ele, std::map<int, LINALG::Matrix<3, 1>>& colelenodalpos) const final;
 
    private:
-    //! init wall discretization
+    //! \name init and setup methods
+    //! @{
+
+    /*!
+     * \brief init wall discretization
+     *
+     * \author Sebastian Fuchs \date 10/2018
+     */
     virtual void InitWallDiscretization() final;
 
     //! setup wall discretization
     virtual void SetupWallDiscretization() const = 0;
 
-    //! init wall data state container
+    /*!
+     * \brief init wall data state container
+     *
+     * \author Sebastian Fuchs \date 05/2019
+     */
     virtual void InitWallDataState() final;
 
-    //! init wall discretization runtime vtu writer
+    /*!
+     * \brief init wall discretization runtime vtu writer
+     *
+     * \author Sebastian Fuchs \date 11/2018
+     */
     virtual void InitWallDiscretizationRuntimeVtuWriter() final;
+
+    //! @}
 
     //! relate bins to column wall elements
     PARTICLEENGINE::BinsToColWallEles binstocolwalleles_;
@@ -160,7 +267,7 @@ namespace PARTICLEWALL
         walldiscretizationruntimevtuwriter_;
 
    protected:
-    //! communication
+    //! communicator
     const Epetra_Comm& comm_;
 
     //! processor id
@@ -194,47 +301,106 @@ namespace PARTICLEWALL
     bool validwallneighbors_;
   };
 
+  /*!
+   * \brief particle wall handler with wall from condition on discretization
+   *
+   * Particle wall handler with wall discretization generated from a surface condition on a
+   * structure discretization.
+   *
+   * \author Sebastian Fuchs \date 10/2018
+   */
   class WallHandlerDiscretCondition final : public WallHandlerBase
   {
    public:
-    //! constructor
+    /*!
+     * \brief constructor
+     *
+     * \author Sebastian Fuchs \date 10/2018
+     *
+     * \param[in] comm   communicator
+     * \param[in] params particle simulation parameter list
+     */
     explicit WallHandlerDiscretCondition(
         const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
     //! destructor
     ~WallHandlerDiscretCondition() override{};
 
-    //! distribute wall elements and nodes
+    /*!
+     * \brief distribute wall elements and nodes
+     *
+     * \author Sebastian Fuchs \date 11/2018
+     */
     void DistributeWallElementsAndNodes() override;
 
-    //! transfer wall elements and nodes
+    /*!
+     * \brief transfer wall elements and nodes
+     *
+     * \author Sebastian Fuchs \date 03/2019
+     */
     void TransferWallElementsAndNodes() override;
 
    private:
-    //! extend wall element ghosting
+    /*!
+     * \brief extend wall element ghosting
+     *
+     * \author Sebastian Fuchs \date 03/2019
+     *
+     * \param[in] bintorowelemap bin to row wall element distribution
+     */
     void ExtendWallElementGhosting(std::map<int, std::set<int>>& bintorowelemap);
 
-    //! setup wall discretization
+    /*!
+     * \brief setup wall discretization
+     *
+     * \author Sebastian Fuchs \date 10/2018
+     */
     void SetupWallDiscretization() const override;
   };
 
+  /*!
+   * \brief particle wall handler with wall from bounding box
+   *
+   * Particle wall handler with wall discretization generated from bounding box of binning strategy.
+   *
+   * \author Sebastian Fuchs \date 10/2018
+   */
   class WallHandlerBoundingBox final : public WallHandlerBase
   {
    public:
-    //! constructor
+    /*!
+     * \brief constructor
+     *
+     * \author Sebastian Fuchs \date 10/2018
+     *
+     * \param[in] comm   communicator
+     * \param[in] params particle simulation parameter list
+     */
     explicit WallHandlerBoundingBox(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
     //! destructor
     ~WallHandlerBoundingBox() override{};
 
-    //! distribute wall elements and nodes
+    /*!
+     * \brief distribute wall elements and nodes
+     *
+     * \author Sebastian Fuchs \date 11/2018
+     */
     void DistributeWallElementsAndNodes() override;
 
-    //! transfer wall elements and nodes
+    /*!
+     * \brief transfer wall elements and nodes
+     *
+     * \author Sebastian Fuchs \date 03/2019
+     */
     void TransferWallElementsAndNodes() override;
 
    private:
-    //! setup wall discretization
+    /*!
+     * \brief setup wall discretization
+     *
+     * \author Sebastian Fuchs \date 10/2018
+     */
     void SetupWallDiscretization() const override;
   };
 

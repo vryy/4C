@@ -2,14 +2,14 @@
 /*! \file
 \brief particle wall result test for particle simulations
 
-\level 3
+\level 2
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 03/2019 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_wall_result_test.H"
 
@@ -20,24 +20,18 @@
 #include "../drt_lib/drt_discret.H"
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 03/2019 |
+ | declarations                                                              |
  *---------------------------------------------------------------------------*/
 PARTICLEWALL::WallResultTest::WallResultTest() : DRT::ResultTest("PARTICLEWALL")
 {
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init wall result test                                      sfuchs 03/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEWALL::WallResultTest::Init()
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | setup wall result test                                     sfuchs 03/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEWALL::WallResultTest::Setup(
     const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface)
 {
@@ -48,9 +42,6 @@ void PARTICLEWALL::WallResultTest::Setup(
   walldiscretization_ = particlewallinterface_->GetWallDiscretization();
 }
 
-/*---------------------------------------------------------------------------*
- | test node value                                            sfuchs 03/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEWALL::WallResultTest::TestNode(
     DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
@@ -157,9 +148,6 @@ void PARTICLEWALL::WallResultTest::TestNode(
   }
 }
 
-/*---------------------------------------------------------------------------*
- | test special quantity                                      sfuchs 03/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEWALL::WallResultTest::TestSpecial(
     DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {

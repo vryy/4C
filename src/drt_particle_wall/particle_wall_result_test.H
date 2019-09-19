@@ -2,27 +2,27 @@
 /*! \file
 \brief particle wall result test for particle simulations
 
-\level 3
+\level 2
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 03/2019 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 #ifndef PARTICLE_WALL_RESULT_TEST_H
 #define PARTICLE_WALL_RESULT_TEST_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 03/2019 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "../drt_particle_engine/particle_typedefs.H"
 
 #include "../drt_lib/drt_resulttest.H"
 
 /*---------------------------------------------------------------------------*
- | forward declarations                                       sfuchs 03/2019 |
+ | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEWALL
 {
@@ -35,10 +35,15 @@ namespace DRT
 }
 
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 03/2019 |
+ | class definitions                                                         |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEWALL
 {
+  /*!
+   * \brief particle wall result test handler
+   *
+   * \author Sebastian Fuchs \date 03/2019
+   */
   class WallResultTest final : public DRT::ResultTest
   {
    public:
@@ -48,16 +53,42 @@ namespace PARTICLEWALL
     //! destructor
     ~WallResultTest() override{};
 
-    //! init wall result test
+    /*!
+     * \brief init wall result test
+     *
+     * \author Sebastian Fuchs \date 03/2019
+     */
     void Init();
 
-    //! setup wall result test
+    /*!
+     * \brief setup wall result test
+     *
+     * \author Sebastian Fuchs \date 03/2019
+     *
+     * \param[in] particleengineinterface interface to particle engine
+     */
     void Setup(const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface);
 
-    //! test node value
+    /*!
+     * \brief test node value
+     *
+     * \author Sebastian Fuchs \date 03/2019
+     *
+     * \param[in]  res        result line definition
+     * \param[out] nerr       number of tests with errors
+     * \param[out] test_count number of tests performed
+     */
     void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
-    //! test special quantity
+    /*!
+     * \brief test special quantity
+     *
+     * \author Sebastian Fuchs \date 03/2019
+     *
+     * \param[in]  res        result line definition
+     * \param[out] nerr       number of tests with errors
+     * \param[out] test_count number of tests performed
+     */
     void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
    private:

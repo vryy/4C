@@ -2,14 +2,14 @@
 /*! \file
 \brief wall data state container for particle wall handler
 
-\level 3
+\level 2
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 05/2019 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_wall_datastate.H"
 
@@ -20,24 +20,18 @@
 #include "../linalg/linalg_utils.H"
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 05/2019 |
+ | declarations                                                              |
  *---------------------------------------------------------------------------*/
 PARTICLEWALL::WallDataState::WallDataState(const Teuchos::ParameterList& params) : params_(params)
 {
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init wall data state container                             sfuchs 05/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEWALL::WallDataState::Init()
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | setup wall data state container                            sfuchs 05/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEWALL::WallDataState::Setup(
     Teuchos::RCP<const DRT::Discretization> const& walldiscretization)
 {
@@ -65,9 +59,6 @@ void PARTICLEWALL::WallDataState::Setup(
   }
 }
 
-/*---------------------------------------------------------------------------*
- | check for correct maps                                     sfuchs 05/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEWALL::WallDataState::CheckForCorrectMaps(
     Teuchos::RCP<const DRT::Discretization> const& walldiscretization)
 {
@@ -96,9 +87,6 @@ void PARTICLEWALL::WallDataState::CheckForCorrectMaps(
       dserror("map of state 'force_col_' corrupt!");
 }
 
-/*---------------------------------------------------------------------------*
- | update maps of state vectors                               sfuchs 05/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEWALL::WallDataState::UpdateMapsOfStateVectors(
     Teuchos::RCP<const DRT::Discretization> const& walldiscretization)
 {
