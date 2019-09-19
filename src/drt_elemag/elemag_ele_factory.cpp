@@ -14,6 +14,7 @@
 #include "elemag_ele_factory.H"
 #include "elemag_ele_interface.H"
 #include "elemag_ele_calc.H"
+#include "elemag_diff_ele_calc.H"
 
 /*--------------------------------------------------------------------------*
  |                                                (public) berardocco 02/18 |
@@ -103,6 +104,8 @@ DRT::ELEMENTS::ElemagEleInterface* DRT::ELEMENTS::ElemagFactory::DefineProblemTy
 {
   if (problem == "std")
     return DRT::ELEMENTS::ElemagEleCalc<distype>::Instance();
+  else if (problem == "diff")
+    return DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Instance();
   else
     dserror("Defined problem type does not exist!!");
 

@@ -332,9 +332,7 @@ namespace DRT
 
       //@}
 
-      // Why this?
-      // stores the nodal trace values in case of p-adaptivity
-      Epetra_SerialDenseVector elenodeTrace_;
+      /// Trace values per element
       Epetra_SerialDenseVector elenodeTrace2d_;
 
       // state vectors which do not have to be stored as global distributed vector, since
@@ -349,11 +347,6 @@ namespace DRT
       Epetra_SerialDenseVector eleinteriorMagnetic_;
       Epetra_SerialDenseVector eleinteriorMagneticnm_;
 
-      // Is it for the post processing?
-      /*
-      Epetra_SerialDenseVector eleADERimprovedGrad_;
-      Epetra_SerialDenseVector eleADERimprovedDiv_;
-      */
       //@}
 
      protected:
@@ -361,8 +354,12 @@ namespace DRT
       DRT::Element::DiscretizationType distype_;
       DRT::Element::DiscretizationType facedis_;
 
-     private:
-      // Why this?
+      // stores the degree of the element
+      unsigned char degree_;
+
+      // stores the polynomial type (tensor product or complete polynomial)
+      bool completepol_;
+
       int fixedPower(const int number, const int pow) const
       {
         int result = 1;
@@ -370,21 +367,10 @@ namespace DRT
         return result;
       }
 
-      // Why this?
+     private:
       // don't want = operator
       Elemag& operator=(const Elemag& old);
 
-      // stores the degree of the element
-      unsigned char degree_;
-
-      // Why this?
-      // stores the polynomial type (tensor product or complete polynomial)
-      bool completepol_;
-      /*
-      /// local contributions to the gradient in case of electromagnetic parameter optimization
-      double grad_c_;
-      double grad_rho_;
-      */
     };  // class Elemag
 
 
