@@ -23,7 +23,7 @@ RANDSEED                        -1
 --------------------------------------------ELECTROMAGNETIC DYNAMIC
 TIMESTEP                        0.02
 NUMSTEP                         200000
-MAXTIME                         0.19
+MAXTIME                         0.39
 RESULTSEVRY                     1
 RESTARTEVRY                     10
 LINEAR_SOLVER                   1
@@ -54,8 +54,8 @@ COMPONENT 4 FUNCTION 0
 COMPONENT 5 FUNCTION sqrt(3)*sin(pi*x)*sin(pi*y)*cos(pi*z)*sin(pi*t)
 
 ------------------------------------------------RESULT DESCRIPTION
-ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2electric VALUE 1.08579420985799435e-02 TOLERANCE 1e-6
-ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2magnetic VALUE 4.81932972841130486e-02 TOLERANCE 1e-6
+ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2electric VALUE 1.28059708934839499e-02 TOLERANCE 1e-6
+ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2magnetic VALUE 4.83196393248475700e-02 TOLERANCE 1e-6
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0

@@ -14,6 +14,7 @@
 #include "../drt_inpar/inpar_elemag.H"
 #include "elemag_ele_interface.H"
 #include "elemag_ele.H"
+#include "elemag_diff_ele.H"
 
 /*---------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -33,11 +34,17 @@ int DRT::ELEMENTS::Elemag::Evaluate(Teuchos::ParameterList& params,
     Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
 {
   Teuchos::RCP<MAT::Material> mat = Material();
-  return DRT::ELEMENTS::ElemagFactory::ProvideImpl(Shape(), "std")
-      ->Evaluate(
-          this, discretization, lm, params, mat, elemat1, elemat2, elevec1, elevec2, elevec3);
 
-  // return -1;
+  if (dynamic_cast<const DRT::ELEMENTS::ElemagDiff*>(this))
+    return DRT::ELEMENTS::ElemagFactory::ProvideImpl(Shape(), "diff")
+        ->Evaluate(
+            this, discretization, lm, params, mat, elemat1, elemat2, elevec1, elevec2, elevec3);
+  else
+    return DRT::ELEMENTS::ElemagFactory::ProvideImpl(Shape(), "std")
+        ->Evaluate(
+            this, discretization, lm, params, mat, elemat1, elemat2, elevec1, elevec2, elevec3);
+
+  return -1;
 }
 
 /*---------------------------------------------------------------------*

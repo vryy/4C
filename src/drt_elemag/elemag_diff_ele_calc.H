@@ -1,21 +1,23 @@
-/*--------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 /*! \file
 
-\brief All functionality for electromagnetic element evaluations
+\brief All functionality for electromagnetic diffusionm element evaluations
 
+<pre>
 \level 2
 
 \maintainer Luca Berardocco
             berardocco@lnm.mw.tum.de
             089 - 289-15244
+</pre>
 */
 /*--------------------------------------------------------------------------*/
 
-#ifndef ELEMAG_ELE_CALC_H
-#define ELEMAG_ELE_CALC_H
+#ifndef ELEMAG_DIFF_ELE_CALC_H
+#define ELEMAG_DIFF_ELE_CALC_H
 
 #include "elemag_ele_interface.H"
-#include "elemag_ele.H"
+#include "elemag_diff_ele.H"
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 #include "../drt_inpar/inpar_elemag.H"
 #include "../drt_fem_general/drt_utils_shapevalues_hdg.H"
@@ -24,22 +26,23 @@ namespace DRT
 {
   namespace ELEMENTS
   {
-    /// Electromagnetic element implementation
+    /// Electromagnetic diffusion element implementation
 
     template <DRT::Element::DiscretizationType distype>
-    class ElemagEleCalc : public ElemagEleInterface
+    class ElemagDiffEleCalc : public ElemagEleInterface
     {
      public:
-      /// nen_: number of element nodes (T. Hughes: The Finite Element Method).
+      /// nen_: number of element nodes (T. Hughes: The Finite Element Method)
       static const unsigned int nen_ =
           DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
-      /// Number of space dimensions.
+      /// number of space dimensions
       static const unsigned int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
-      /// Number of faces on element.
+      /// number of faces on element
       static const unsigned int nfaces_ = DRT::UTILS::DisTypeToNumFaces<distype>::numFaces;
 
+      /// Integrate shape functions (not implemented)
       virtual int IntegrateShapeFunction(DRT::ELEMENTS::Elemag* ele,
           DRT::Discretization& discretization, const std::vector<int>& lm,
           Epetra_SerialDenseVector& elevec1)
@@ -49,15 +52,15 @@ namespace DRT
       };
 
       /// Zero initialization of elements.
-      virtual void ElementInit(DRT::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params);
+      virtual void ElementInit(DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params);
 
       /// Interpolates an HDG solution to the element nodes for output.
-      virtual int InterpolateSolutionToNodes(DRT::ELEMENTS::Elemag* ele,
+      virtual int InterpolateSolutionToNodes(DRT::ELEMENTS::ElemagDiff* ele,
           DRT::Discretization& discretization, Epetra_SerialDenseVector& elevec1);
 
       /// Initialize the shape functions and solver to the given element (degree is runtime
       /// parameter).
-      void InitializeShapes(const DRT::ELEMENTS::Elemag* ele);
+      void InitializeShapes(const DRT::ELEMENTS::ElemagDiff* ele);
 
       /// Evaluate the element.
       /// Generic virtual interface function.Called via base pointer.
@@ -76,11 +79,11 @@ namespace DRT
           Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
           const DRT::UTILS::GaussIntegration& intpoints, bool offdiag = false);
 
-
-      virtual ~ElemagEleCalc() {}
+      /// Deconstructor
+      virtual ~ElemagDiffEleCalc() {}
 
       /// Singleton access method.
-      static ElemagEleCalc<distype>* Instance(bool create = true);
+      static ElemagDiffEleCalc<distype>* Instance(bool create = true);
 
       /// Called upon destruction.
       virtual void Done();
@@ -90,42 +93,44 @@ namespace DRT
 
 
      private:
-      /// Private Constructor since we are a Singleton.
-      ElemagEleCalc();
+      /// private Constructor since we are a Singleton.
+      ElemagDiffEleCalc();
 
-      /// Local solver that inverts local problem on an element and can solve with various vectors.
+      /// local solver that inverts local problem on an element and can solve with various vectors
       struct LocalSolver
       {
         /// Number of Spatial Dimensions
-        static const unsigned int nsd_ = ElemagEleCalc<distype>::nsd_;
+        static const unsigned int nsd_ = ElemagDiffEleCalc<distype>::nsd_;
         /// Number of FACES
-        static const unsigned int nfaces_ = ElemagEleCalc<distype>::nfaces_;
+        static const unsigned int nfaces_ = ElemagDiffEleCalc<distype>::nfaces_;
 
         /// Init function for the struct members
-        LocalSolver(const DRT::ELEMENTS::Elemag* ele, DRT::UTILS::ShapeValues<distype>& shapeValues,
+        LocalSolver(const DRT::ELEMENTS::ElemagDiff* ele,
+            DRT::UTILS::ShapeValues<distype>& shapeValues,
             Teuchos::RCP<DRT::UTILS::ShapeValuesFace<distype>>& shapeValuesFace,
             INPAR::ELEMAG::DynamicType& dyna);
 
         /// Compute the residual
         void ComputeResidual(Teuchos::ParameterList& params, Epetra_SerialDenseVector& eleVec,
-            DRT::ELEMENTS::Elemag& ele);
+            double dt, Epetra_SerialDenseVector& interiorElectricn,
+            Epetra_SerialDenseVector& interiorElectricnm);
 
         /// Computes the source term in the element.
         void ComputeSource(Teuchos::ParameterList& params,
             Epetra_SerialDenseVector& interiorSourcen, Epetra_SerialDenseVector& interiorSourcenp);
 
         /// Add terms corresponding to the absorbing boundary condition.
-        void ComputeAbsorbingBC(DRT::Discretization& discretization, DRT::ELEMENTS::Elemag* ele,
+        void ComputeAbsorbingBC(DRT::Discretization& discretization, DRT::ELEMENTS::ElemagDiff* ele,
             Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat, int face,
             Epetra_SerialDenseMatrix& elemat, int indexstart, Epetra_SerialDenseVector& elevec1);
 
         /// Add terms corresponding to the absorbing boundary condition.
         void ComputeBoundaryIntegral(
-            DRT::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params, int face);
+            DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params, int face);
 
         /// Calls local solver to compute matrices: internal and face
         void ComputeMatrices(DRT::Discretization& discretization,
-            const Teuchos::RCP<MAT::Material>& mat, DRT::ELEMENTS::Elemag& ele, double dt,
+            const Teuchos::RCP<MAT::Material>& mat, DRT::ELEMENTS::ElemagDiff& ele, double dt,
             INPAR::ELEMAG::DynamicType dyna);
 
         /// Set up interior matrices
@@ -141,23 +146,23 @@ namespace DRT
 
         /// Projection of function field.
         /// The function is used to project the field in the initialization phase.
-        int ProjectField(DRT::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params,
+        int ProjectField(DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
             Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2);
 
         /// Compute the error with respect to an analytical field.
-        void ComputeError(DRT::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params,
+        void ComputeError(DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
             Epetra_SerialDenseVector& elevec1);
 
         /// Projection of a given field on the interior variables for testing purposes.
-        int ProjectFieldTest(DRT::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params,
+        int ProjectFieldTest(DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
             Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2);
 
         /// Projection of a given field on the trace for testing purposes.
-        int ProjectFieldTestTrace(DRT::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params,
+        int ProjectFieldTestTrace(DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
             Epetra_SerialDenseVector& elevec1);
 
         /// Projection of Dirichlet function field.
-        int ProjectDirichField(DRT::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params,
+        int ProjectDirichField(DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
             Epetra_SerialDenseVector& elevec1);
 
         /// Function evaluation routine
@@ -176,23 +181,25 @@ namespace DRT
         Teuchos::RCP<DRT::UTILS::ShapeValuesFace<distype>> shapesface_;
 
         // System matrices
-        /// magnetic evolution matrix
+        /// u matrix
         Epetra_SerialDenseMatrix Amat;
-        /// Inverse of magnetic evolution matrix
+        /// Inverse of u matrix
         Epetra_SerialDenseMatrix invAmat;
-        /// magnetic electric
+        /// u electric
+        Epetra_SerialDenseMatrix Bmat;
+        /// u trace
         Epetra_SerialDenseMatrix Cmat;
-        /// magnetic trace
-        Epetra_SerialDenseMatrix Dmat;
+        /// electric second time
+        // Epetra_SerialDenseMatrix Dmat;
         /// electric evolution
         Epetra_SerialDenseMatrix Emat;
-        /// electric magnetic
+        /// electric u
         Epetra_SerialDenseMatrix Fmat;
         /// electric electric
         Epetra_SerialDenseMatrix Gmat;
         /// electric trace
         Epetra_SerialDenseMatrix Hmat;
-        /// trace magnetic
+        /// trace u
         Epetra_SerialDenseMatrix Imat;
         /// trace electric
         Epetra_SerialDenseMatrix Jmat;
@@ -200,11 +207,12 @@ namespace DRT
         Epetra_SerialDenseMatrix Lmat;
 
         // auxiliary stuff
-        Epetra_SerialDenseMatrix massMat;  // final mass matrix used for the projection
-        Epetra_SerialDenseMatrix
-            massPart;  // part of the mass matrix (only contains the shape functions)
-        Epetra_SerialDenseMatrix
-            massPartW;  // other part of the mass matrix (with quadrature weights)
+        /// final mass matrix used for the projection
+        Epetra_SerialDenseMatrix massMat;
+        /// part of the mass matrix (only contains the shape functions)
+        Epetra_SerialDenseMatrix massPart;
+        /// other part of the mass matrix (with quadrature weights)
+        Epetra_SerialDenseMatrix massPartW;
 
         /// Chosen dynamics/time integrator
         INPAR::ELEMAG::DynamicType& dyna_;
@@ -212,7 +220,7 @@ namespace DRT
 
       /// Updates interior variables and calculates residual.
       void UpdateInteriorVariablesAndComputeResidual(Teuchos::ParameterList& params,
-          DRT::ELEMENTS::Elemag& ele, const Teuchos::RCP<MAT::Material>& mat,
+          DRT::ELEMENTS::ElemagDiff& ele, const Teuchos::RCP<MAT::Material>& mat,
           Epetra_SerialDenseVector& elevec, double dt, bool errormaps, bool updateonly);
 
       /// Reads from global vectors.
@@ -226,7 +234,7 @@ namespace DRT
       void ElementInitFromRestart(DRT::Element* ele, DRT::Discretization& discretization);
 
       /// Calculate error maps with local postprocessing.
-      double EstimateError(DRT::ELEMENTS::Elemag& ele, Epetra_SerialDenseVector& p);
+      double EstimateError(DRT::ELEMENTS::ElemagDiff& ele, Epetra_SerialDenseVector& p);
 
       /// Local data object for element.
       Teuchos::RCP<DRT::UTILS::ShapeValues<distype>> shapes_;
@@ -241,18 +249,18 @@ namespace DRT
       /// Local values from interior solution vector (electric and magnetic fields) at n
       Epetra_SerialDenseVector interiorElectricnp_;
       Epetra_SerialDenseVector interiorMagneticnp_;
+      Epetra_SerialDenseVector interiorauxiliaryPML_;
       /// Local values from interior solution vector (electric and magnetic fields) at n-1
       Epetra_SerialDenseVector interiorElectricnm_;
       Epetra_SerialDenseVector interiorMagneticnm_;
-      Epetra_SerialDenseVector interiorauxiliaryPML_;
+
 
       /// Chosen dynamics/time integrator
       INPAR::ELEMAG::DynamicType dyna_;
 
       bool usescompletepoly_;
-    };
-  }  // namespace ELEMENTS
+    };  // class ElemagDiffEleCalc
+  }     // namespace ELEMENTS
 }  // namespace DRT
 
-
-#endif /* ELEMAG_ELE_CALC_H */
+#endif /* ELEMAG_DIFF_ELE_CALC_H */
