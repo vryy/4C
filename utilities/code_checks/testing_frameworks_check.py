@@ -142,7 +142,7 @@ def check_inputtests(look_cmd, allerrors):
       re.compile(r'baci_test_Nested_Par_MultipleInvana *\( *([a-zA-Z0-9_\.\-]+) +([a-zA-Z0-9_\.\-]+)*'),
       re.compile(r'baci_test_Nested_Par_CopyDat *\( *([a-zA-Z0-9_\.\-]+) *'),
       re.compile(r'baci_test_Nested_Par_CopyDat_prepost *\( *([a-zA-Z0-9_\.\-]+)\s+([a-zA-Z0-9_\.\-]+)\s+([a-zA-Z0-9_\.\-]+) *'),
-      re.compile(r'baci_test_Nested_Par_CopyDat_prepost *\( *([a-zA-Z0-9_\.\-]+) *')
+      re.compile(r'baci_test_Nested_Par_CopyDat_prepost *\( *([a-zA-Z0-9_\.\-]+)\s+([a-zA-Z0-9_\.\-]+) *')
     ]
     for line in cmakefile:
       # split comments
