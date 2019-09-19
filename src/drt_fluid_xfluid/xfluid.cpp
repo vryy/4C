@@ -69,6 +69,8 @@ interface
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/matpar_bundle.H"
 
+//#include "../drt_xfem/xfem_coupling_mesh.H"
+
 #include <Epetra_Time.h>
 
 
@@ -614,6 +616,7 @@ void FLD::XFluid::CreateState()
   else
   {
     state_ = staten_;
+    state_->UpdateBoundaryCellCoords();
   }
   staten_ = state_;
 
@@ -846,6 +849,10 @@ void FLD::XFluid::AssembleMatAndRHS(int itnum)
 
 void FLD::XFluid::AssembleMatAndRHS_VolTerms()
 {
+  // Initialize the fluid state
+  GetConditionManager()->InitializeFluidState(
+      GetCutWizard(), DiscretisationXFEM(), GetConditionManager(), Params());
+
   //----------------------------------------------------------------------
   // TODO: empty eleparams, could be deleted!
   Teuchos::ParameterList eleparams;
@@ -1034,7 +1041,16 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
           {
             TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::Evaluate 2) interface");
 
-            // get boundary cell Gaussian points
+            // Regist the Processor of this side on the mesh coupling object if required
+            for (std::map<int, std::vector<GEO::CUT::BoundaryCell*>>::iterator bit = bcells.begin();
+                 bit != bcells.end(); ++bit)
+            {
+              Teuchos::RCP<XFEM::MeshCouplingFSI> mc_fsi =
+                  Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSI>(
+                      condition_manager_->GetCouplingByIdx(
+                          condition_manager_->GetMeshCouplingIndex(bit->first)));
+              if (mc_fsi != Teuchos::null) mc_fsi->RegisterSideProc(bit->first);
+            }
             e->BoundaryCellGaussPointsLin(bcells, bintpoints);
 
             //-----------------------------------------------------------
@@ -1159,7 +1175,7 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
               if (CouplingMethod() == INPAR::XFEM::Nitsche)
                 impl->ElementXfemInterfaceNIT(ele, *discret_, la[0].lm_, condition_manager_, bcells,
                     bintpoints, patchcouplm, eleparams, matptr_m, matptr_s, strategy.Elematrix1(),
-                    strategy.Elevector1(), cells, side_coupling, C_ss);
+                    strategy.Elevector1(), cells, side_coupling, C_ss, evaluate_cut_);
             }
 
             //------------------------------------------------------------------------------------------

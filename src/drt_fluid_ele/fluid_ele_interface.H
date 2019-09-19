@@ -167,8 +167,9 @@ namespace DRT
           Epetra_SerialDenseVector& elevec1_epetra,     ///< element vector
           const GEO::CUT::plain_volumecell_set& vcSet,  ///< volumecell sets in this element
           std::map<int, std::vector<Epetra_SerialDenseMatrix>>&
-              side_coupling,               ///< side coupling matrices
-          Epetra_SerialDenseMatrix& Cuiui  ///< ui-ui coupling matrix
+              side_coupling,                ///< side coupling matrices
+          Epetra_SerialDenseMatrix& Cuiui,  ///< ui-ui coupling matrix
+          bool evaluated_cut  ///< the CUT was updated before this evaluation is called
           ) = 0;
 
       virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,

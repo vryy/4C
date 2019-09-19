@@ -161,6 +161,10 @@ namespace FLD
     /// destroy the stored objects
     virtual bool Destroy();
 
+    /// update the coordinates of the cut boundary cells
+    void UpdateBoundaryCellCoords();
+
+
     //! @name Accessors
     //@{
 

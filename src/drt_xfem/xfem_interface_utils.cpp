@@ -397,10 +397,11 @@ void XFEM::UTILS::GetNavierSlipStabilizationParameters(
  * compute transformation factor for surface integration, normal, local and global gp coordinates
  *--------------------------------------------------------------------------------*/
 void XFEM::UTILS::ComputeSurfaceTransformation(double &drs,  ///< surface transformation factor
-    LINALG::Matrix<3, 1> &x_gp_lin,  ///< global coordiantes of gaussian point
-    LINALG::Matrix<3, 1> &normal,    ///< normal vector on boundary cell
-    GEO::CUT::BoundaryCell *bc,      ///< boundary cell
-    const LINALG::Matrix<2, 1> &eta  ///< local coordinates of gaussian point w.r.t boundarycell
+    LINALG::Matrix<3, 1> &x_gp_lin,   ///< global coordiantes of gaussian point
+    LINALG::Matrix<3, 1> &normal,     ///< normal vector on boundary cell
+    GEO::CUT::BoundaryCell *bc,       ///< boundary cell
+    const LINALG::Matrix<2, 1> &eta,  ///< local coordinates of gaussian point w.r.t boundarycell
+    bool referencepos                 ///< use the bc reference position for transformation
 )
 {
   normal.Clear();
@@ -411,12 +412,12 @@ void XFEM::UTILS::ComputeSurfaceTransformation(double &drs,  ///< surface transf
   {
     case DRT::Element::tri3:
     {
-      bc->Transform<DRT::Element::tri3>(eta, x_gp_lin, normal, drs);
+      bc->Transform<DRT::Element::tri3>(eta, x_gp_lin, normal, drs, referencepos);
       break;
     }
     case DRT::Element::quad4:
     {
-      bc->Transform<DRT::Element::quad4>(eta, x_gp_lin, normal, drs);
+      bc->Transform<DRT::Element::quad4>(eta, x_gp_lin, normal, drs, referencepos);
       break;
     }
     default:
@@ -1000,6 +1001,90 @@ void XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
 
   return;
 }
+
+double XFEM::UTILS::Evaluate_Full_Traction(const double &pres_m,
+    const LINALG::Matrix<3, 3> &vderxy_m, const double &visc_m, const double &penalty_fac,
+    const LINALG::Matrix<3, 1> &vel_m, const LINALG::Matrix<3, 1> &vel_s,
+    const LINALG::Matrix<3, 1> &elenormal, const LINALG::Matrix<3, 1> &normal,
+    const LINALG::Matrix<3, 1> &velpf_s, double porosity)
+{
+  LINALG::Matrix<3, 1> traction(true);
+
+  // pressure contribution
+  if (porosity <= 0)
+  {
+    for (int i = 0; i < 3; ++i)
+      traction(i, 0) = -pres_m * elenormal(i, 0) - penalty_fac * (vel_m(i, 0) - vel_s(i, 0));
+  }
+  else
+  {
+    for (int i = 0; i < 3; ++i)
+      traction(i, 0) =
+          -pres_m * elenormal(i, 0) -
+          penalty_fac * (vel_m(i, 0) - (1 - porosity) * vel_s(i, 0) - porosity * velpf_s(i, 0));
+  }
+
+  // viscous contribution
+  for (int i = 0; i < 3; ++i)
+    for (int j = 0; j < 3; ++j)
+      traction(i, 0) += visc_m * (vderxy_m(i, j) + vderxy_m(j, i)) * elenormal(j, 0);
+
+  return traction.Dot(elenormal);
+}
+
+double XFEM::UTILS::Evaluate_Full_Traction(const LINALG::Matrix<3, 1> &intraction,
+    const double &penalty_fac, const LINALG::Matrix<3, 1> &vel_m, const LINALG::Matrix<3, 1> &vel_s,
+    const LINALG::Matrix<3, 1> &elenormal, const LINALG::Matrix<3, 1> &normal)
+{
+  LINALG::Matrix<3, 1> traction(true);
+
+  for (int i = 0; i < 3; ++i)
+    traction(i, 0) = intraction(i, 0) - penalty_fac * (vel_m(i, 0) - vel_s(i, 0));
+  return traction.Dot(elenormal);
+}
+
+double XFEM::UTILS::Evaluate_Full_Traction(const double &intraction, const double &penalty_fac,
+    const LINALG::Matrix<3, 1> &vel_m, const LINALG::Matrix<3, 1> &vel_s,
+    const LINALG::Matrix<3, 1> &elenormal, const LINALG::Matrix<3, 1> &normal)
+{
+  LINALG::Matrix<3, 1> traction(true);
+
+  for (int i = 0; i < 3; ++i) traction(i, 0) = -penalty_fac * (vel_m(i, 0) - vel_s(i, 0));
+  return intraction + traction.Dot(elenormal);
+}
+
+void XFEM::UTILS::EvaluteStateatGP(const DRT::Element *sele, const LINALG::Matrix<3, 1> &selexsi,
+    const DRT::Discretization &discret, const std::string &state, LINALG::Matrix<3, 1> &vel_s)
+{
+  vel_s.Clear();
+
+  std::vector<double> ivel;
+  DRT::Element::LocationArray las(1);
+  sele->LocationVector(discret, las, false);
+  Teuchos::RCP<const Epetra_Vector> matrix_state = discret.GetState(state);
+  DRT::UTILS::ExtractMyValues(*matrix_state, ivel, las[0].lm_);
+
+  // 4 // evaluate slave velocity at guasspoint
+  if (sele->Shape() == DRT::Element::quad4)
+  {
+    LINALG::Matrix<3, 4> vels;
+    for (int n = 0; n < sele->NumNode(); ++n)
+    {
+      for (int dof = 0; dof < 3; ++dof)
+      {
+        vels(dof, n) = ivel[n * 3 + dof];
+      }
+    }
+
+    const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
+    static LINALG::Matrix<numnodes, 1> funct(false);
+    DRT::UTILS::shape_function_2D(funct, selexsi(0), selexsi(1), DRT::Element::quad4);
+    vel_s.Multiply(vels, funct);
+  }
+  else
+    dserror("Your Slave Element is not a quad4?");
+}
+
 
 template double XFEM::UTILS::EvalElementVolume<DRT::Element::hex8>(
     LINALG::Matrix<3, DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement>,

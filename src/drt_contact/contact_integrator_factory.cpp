@@ -16,6 +16,7 @@
 #include "contact_nitsche_integrator.H"
 #include "contact_nitsche_integrator_tsi.H"
 #include "contact_nitsche_integrator_poro.H"
+#include "contact_nitsche_integrator_fsi.H"
 #include "contact_ehl_integrator.H"
 
 /*----------------------------------------------------------------------*
@@ -57,6 +58,10 @@ Teuchos::RCP<CONTACT::CoIntegrator> CONTACT::INTEGRATOR::Factory::BuildIntegrato
       else if (p_mortar.get<int>("PROBTYPE") == INPAR::CONTACT::poro)
       {
         integrator = Teuchos::rcp(new CONTACT::CoIntegratorNitschePoro(p_mortar, slave_type, comm));
+      }
+      else if (p_mortar.get<int>("PROBTYPE") == INPAR::CONTACT::fsi)
+      {
+        integrator = Teuchos::rcp(new CONTACT::CoIntegratorNitscheFsi(p_mortar, slave_type, comm));
       }
       else
         integrator = Teuchos::rcp(new CONTACT::CoIntegratorNitsche(p_mortar, slave_type, comm));

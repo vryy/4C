@@ -39,7 +39,8 @@ namespace FSI
 namespace XFEM
 {
   class Coupling_Manager;
-}
+  class XFluid_Contact_Comm;
+}  // namespace XFEM
 
 namespace FSI
 {
@@ -504,6 +505,12 @@ namespace FSI
     int cut_evaluate_miniter_;
     /// Specify CUT evaluate dynamic
     bool cut_evaluate_dynamic_;
+
+    //! flag to indicate if we have contact
+    bool have_contact_;
+
+    //! Xfluid-Contact-Communicator
+    Teuchos::RCP<XFEM::XFluid_Contact_Comm> xf_c_comm_;
     //@}
 
     // Map of Coupling Object for FS, FP, FA coupling, ...(Fluid, Structure, Poro, Ale)

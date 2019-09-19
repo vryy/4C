@@ -23,6 +23,7 @@
 #include "contact_penalty_strategy.H"
 #include "contact_nitsche_strategy.H"
 #include "contact_nitsche_strategy_poro.H"
+#include "contact_nitsche_strategy_fsi.H"
 #include "contact_defines.H"
 #include "friction_node.H"
 #include "contact_strategy_factory.H"
@@ -210,9 +211,10 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
     std::vector<bool> isactive(currentgroup.size());
     bool Two_half_pass(false);
     bool Check_nonsmooth_selfcontactsurface(false);
+    bool Searchele_AllProc(false);
 
-    CONTACT::UTILS::GetInitializationInfo(
-        Two_half_pass, Check_nonsmooth_selfcontactsurface, isactive, isslave, isself, currentgroup);
+    CONTACT::UTILS::GetInitializationInfo(Two_half_pass, Check_nonsmooth_selfcontactsurface,
+        Searchele_AllProc, isactive, isslave, isself, currentgroup);
 
     // create interface local parameter list (copy)
     Teuchos::ParameterList icparams = cparams;
@@ -277,7 +279,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
     // add information to contact parameter list of this interface
     icparams.set<bool>("Two_half_pass", Two_half_pass);
     icparams.set<bool>("Check_nonsmooth_selfcontactsurface", Check_nonsmooth_selfcontactsurface);
-
+    icparams.set<bool>("Searchele_AllProc", Searchele_AllProc);
     // create an empty interface and store it in this Manager
     // create an empty contact interface and store it in this Manager
     // (for structural contact we currently choose redundant master storage)
@@ -577,6 +579,12 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
         stype == INPAR::CONTACT::solution_nitsche)
     {
       strategy_ = Teuchos::rcp(new CoNitscheStrategyPoro(data_ptr, Discret().DofRowMap(),
+          Discret().NodeRowMap(), cparams, interfaces, dim, comm_, alphaf, maxdof));
+    }
+    else if (cparams.get<int>("PROBTYPE") == INPAR::CONTACT::fsi &&
+             stype == INPAR::CONTACT::solution_nitsche)
+    {
+      strategy_ = Teuchos::rcp(new CoNitscheStrategyFsi(data_ptr, Discret().DofRowMap(),
           Discret().NodeRowMap(), cparams, interfaces, dim, comm_, alphaf, maxdof));
     }
     else
@@ -1103,8 +1111,9 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     if (contact.get<double>("PENALTYPARAM") <= 0.0)
       dserror("ERROR: Penalty parameter eps = 0, must be greater than 0");
 
-    if (problemtype != prb_structure && problemtype != prb_poroelast)
-      dserror("ERROR: GPTS algorithm only tested for structural and poroelastic problems");
+    if (problemtype != prb_structure && problemtype != prb_poroelast && problemtype != prb_fsi_xfem)
+      dserror(
+          "ERROR: GPTS algorithm only tested for structural, FSI-CutFEM, and poroelastic problems");
 
     if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") !=
         INPAR::WEAR::wear_none)
@@ -1168,6 +1177,10 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     cparams.set<double>("porotimefac", porotimefac);
     cparams.set<bool>("CONTACTNOPEN",
         DRT::INPUT::IntegralValue<int>(porodyn, "CONTACTNOPEN"));  // used in the integrator
+  }
+  else if (problemtype == prb_fsi_xfem)
+  {
+    cparams.set<int>("PROBTYPE", INPAR::CONTACT::fsi);
   }
   else
   {

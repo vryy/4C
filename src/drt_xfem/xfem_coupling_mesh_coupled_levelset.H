@@ -167,7 +167,8 @@ namespace XFEM
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
         LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
         LINALG::Matrix<3, 1>& normal,     //< normal at gp
-        LINALG::Matrix<3, 1>& vel_m       //< master velocity at gp
+        LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+        double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
     )
     {
       double dynvisc = (kappa_m * visc_m + (1.0 - kappa_m) * visc_s);

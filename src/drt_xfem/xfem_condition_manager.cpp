@@ -937,6 +937,23 @@ void XFEM::ConditionManager::GetInterfaceSlaveMaterial(
         coup_sid);
 }
 
+void XFEM::ConditionManager::InitializeFluidState(Teuchos::RCP<GEO::CutWizard> cutwizard,
+    Teuchos::RCP<DRT::Discretization> fluiddis,
+    Teuchos::RCP<XFEM::ConditionManager> condition_manager,
+    Teuchos::RCP<Teuchos::ParameterList> fluidparams)
+{
+  for (int m = 0; m < NumMeshCoupling(); m++)
+  {
+    Teuchos::RCP<MeshCouplingFSI> mc_fsi =
+        Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSI>(mesh_coupl_[m]);
+    if (mc_fsi != Teuchos::null)
+    {
+      mc_fsi->InitializeFluidState(cutwizard, fluiddis, condition_manager, fluidparams);
+      return;
+    }
+  }
+}
+
 // Get Boundary Cell Clone Information <clone_coup_idx, clone_coup_sid>
 std::vector<std::pair<int, int>> XFEM::ConditionManager::GetBCCloneInformation(
     const int coup_sid, const int back_eid, int coup_idx)

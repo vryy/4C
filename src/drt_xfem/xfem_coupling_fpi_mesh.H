@@ -7,9 +7,6 @@ xfluid class and the cut-library
 \level 3
 
 \maintainer Christoph Ager
-            ager@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15249
 */
 /*----------------------------------------------------------------------*/
 
@@ -133,6 +130,9 @@ namespace XFEM
     // for assembly of fluid interface forces
     Teuchos::RCP<Epetra_Vector> IForcecol() { return iforcecol_; }
 
+    //! Caluculate the Porosity for this FaceElement Gausspoint
+    double CalcPorosity(DRT::Element* ele, LINALG::Matrix<3, 1>& rst_slave, double& J);
+
    private:
     void Output(const int step, const double time, const bool write_restart_data);
 
@@ -158,7 +158,8 @@ namespace XFEM
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
         LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
         LINALG::Matrix<3, 1>& normal,     //< normal at gp
-        LINALG::Matrix<3, 1>& vel_m       //< master velocity at gp
+        LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+        double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
     );
 
     virtual void InitStateVectors();
@@ -171,9 +172,6 @@ namespace XFEM
 
     //! Caluculate the Porosity for J,porosity pair on this FaceElement
     double CalctrPermeability(DRT::Element* ele, double& porosity, double& J);
-
-    //! Caluculate the Porosity for this FaceElement Gausspoint
-    double CalcPorosity(DRT::Element* ele, LINALG::Matrix<3, 1>& rst_slave, double& J);
 
     //! Compute Jacobian and extract PoroFluidPressure this FaceElement Gausspoint
     double ComputeJacobianandPressure(

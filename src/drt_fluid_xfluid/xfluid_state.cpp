@@ -447,3 +447,17 @@ bool FLD::XFluidState::Destroy()
 
   return true;
 }
+
+void FLD::XFluidState::UpdateBoundaryCellCoords()
+{
+  // loop all mesh coupling objects
+  for (int mc_idx = 0; mc_idx < condition_manager_->NumMeshCoupling(); mc_idx++)
+  {
+    Teuchos::RCP<XFEM::MeshCoupling> mc_coupl = condition_manager_->GetMeshCoupling(mc_idx);
+
+    if (!mc_coupl->CutGeometry()) continue;  // If don't cut the background mesh.
+
+    wizard_->UpdateBoundaryCellCoords(mc_coupl->GetCutterDis(), mc_coupl->GetCutterDispCol(),
+        condition_manager_->GetMeshCouplingStartGID(mc_idx));
+  }
+}

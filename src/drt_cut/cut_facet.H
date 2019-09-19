@@ -233,7 +233,7 @@ namespace GEO
           plain_boundarycell_set& bcells, const DRT::UTILS::GaussIntegration& gp,
           const LINALG::Matrix<3, 1>& normal);
 
-      /// unused, see comment
+      /// Get the BoundaryCells created on this facet
       void GetBoundaryCells(plain_boundarycell_set& bcells);
 
       void TestFacetArea(double tolerance, bool istetmeshintersection = false);

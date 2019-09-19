@@ -152,6 +152,7 @@ namespace INPAR
       structalewear,  ///< wear problem including ALE shape changes
       poro,           ///< poroelasticity problem with contact
       ehl,            ///< elasto-hydrodymanic lubrication
+      fsi,            ///< coupled FSI problem with contact
       other           ///< other problemtypes
     };
 

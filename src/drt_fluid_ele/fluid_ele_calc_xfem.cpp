@@ -3260,7 +3260,7 @@ namespace DRT
         Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseVector& elevec1_epetra,
         const GEO::CUT::plain_volumecell_set& vcSet,
         std::map<int, std::vector<Epetra_SerialDenseMatrix>>& side_coupling,
-        Epetra_SerialDenseMatrix& Cuiui)
+        Epetra_SerialDenseMatrix& Cuiui, bool evaluated_cut)
     {
 #ifdef DEBUG
       if (cond_manager == Teuchos::null) dserror("set the condition manager!");
@@ -3718,11 +3718,33 @@ namespace DRT
             {
               TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::GEO::CUT::Position");
 
-              // find element local position of gauss point
-              Teuchos::RCP<GEO::CUT::Position> pos =
-                  GEO::CUT::PositionFactory::BuildPosition<my::nsd_, distype>(my::xyze_, x_gp_lin_);
-              pos->Compute();
-              pos->LocalCoordinates(rst_);
+              if (!evaluated_cut)  // compute the local coordiante based on the reference position
+                                   // (first time the cut was frozen)
+              {
+                LINALG::Matrix<3, 1> x_ref = x_gp_lin_;
+                double tmp_drs;
+                LINALG::Matrix<3, 1> tmp_normal;
+                if (bc->Shape() != DRT::Element::dis_none)  // Tessellation approach
+                {
+                  XFEM::UTILS::ComputeSurfaceTransformation(
+                      tmp_drs, x_ref, tmp_normal, bc, eta, true);
+                }
+
+                // find element local position of gauss point
+                Teuchos::RCP<GEO::CUT::Position> pos =
+                    GEO::CUT::PositionFactory::BuildPosition<my::nsd_, distype>(my::xyze_, x_ref);
+                pos->Compute();
+                pos->LocalCoordinates(rst_);
+              }
+              else  // compute the local coordiante based on the current position
+              {
+                // find element local position of gauss point
+                Teuchos::RCP<GEO::CUT::Position> pos =
+                    GEO::CUT::PositionFactory::BuildPosition<my::nsd_, distype>(
+                        my::xyze_, x_gp_lin_);
+                pos->Compute();
+                pos->LocalCoordinates(rst_);
+              }
             }
 
             LINALG::Matrix<3, 1> rst_slave;  // local coordinates of slave element
@@ -3804,6 +3826,7 @@ namespace DRT
                 proj_tangential_, LB_proj_matrix_, x_gp_lin_, normal_, si, rst_, kappa_m,
                 viscaf_master_, viscaf_slave_, rst_slave, eledisp, coupl_ele);
 
+            double fulltraction = 0.0;
             if (cond_type == INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN or
                 cond_type == INPAR::XFEM::CouplingCond_SURF_NEUMANN)
             {
@@ -3824,12 +3847,36 @@ namespace DRT
 
             {
               TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::NIT_evaluateCoupling");
+              if (mc_fsi != Teuchos::null)
+              {
+                if (mc_fsi->GetInterfaceLaw() == INPAR::XFEM::navierslip_contact)
+                  fulltraction =
+                      XFEM::UTILS::Evaluate_Full_Traction(press, my::vderxy_, viscaf_master_,
+                          NIT_full_stab_fac, my::velint_, velint_s_, normal_, normal_, velint_s_);
+              }
+              else if (mc_fpi != Teuchos::null)
+              {
+                double J = 0;
+                double porosity = mc_fpi->CalcPorosity(side, rst_slave, J);
+                static LINALG::Matrix<3, 1> vel_s(true);
+                static LINALG::Matrix<3, 1> velpf_s(true);
+                XFEM::UTILS::EvaluteStateatGP(side, rst_slave,
+                    *cond_manager->GetMeshCoupling("XFEMSurfFPIMono_ps_ps")->GetCutterDis(),
+                    "ivelnp", vel_s);
+                XFEM::UTILS::EvaluteStateatGP(side, rst_slave,
+                    *cond_manager->GetMeshCoupling("XFEMSurfFPIMono_pf_pf")->GetCutterDis(),
+                    "ivelnp", velpf_s);
+                fulltraction =
+                    XFEM::UTILS::Evaluate_Full_Traction(press, my::vderxy_, viscaf_master_,
+                        NIT_full_stab_fac, my::velint_, vel_s, normal_, normal_, velpf_s, porosity);
+              }
 
               // Get Configuration Map
               std::map<INPAR::XFEM::CoupTerm, std::pair<bool, double>>& configmap =
                   coupling->GetConfigurationmap(kappa_m, viscaf_master_, viscaf_slave_, my::densaf_,
                       NIT_visc_stab_fac_tang, NIT_full_stab_fac, x_gp_lin_, coupcond.second, ele,
-                      side, my::funct_.A(), my::derxy_.A(), rst_slave, normal_, my::velint_);
+                      side, my::funct_.A(), my::derxy_.A(), rst_slave, normal_, my::velint_,
+                      &fulltraction);
 
               //-----------------------------------------------------------------------------
               // evaluate the coupling terms for coupling with current side
@@ -3940,7 +3987,7 @@ namespace DRT
                     coupling->GetConfigurationmap(kappa_m, viscaf_master_, viscaf_slave_,
                         my::densaf_, NIT_visc_stab_fac_tang, NIT_full_stab_fac, x_gp_lin_,
                         coupcond.second, ele, side, my::funct_.A(), my::derxy_.A(), rst_slave,
-                        normal_, my::velint_);
+                        normal_, my::velint_, &fulltraction);
 
                 const double timefacfacn =
                     surf_fac * (my::fldparatimint_->Dt() - my::fldparatimint_->TimeFac());

@@ -1,5 +1,6 @@
 /*---------------------------------------------------------------------*/
 /*! \file
+
 \brief PointGraph, Graph Algorithm to create Facets from lines and edges
 
 \level 3
@@ -107,6 +108,20 @@ GEO::CUT::IMPL::PointGraph::PointGraph(
   {
     std::ofstream f("cycle.txt");
     f << cycle;
+  }
+#endif
+
+  // Simplified graph strategy for three points as ther is anyway just one way of creating the
+  // facets! ager 09/19: this is a very good idea to do that but changed results of the testcase
+  // xfluid_moving_torus* Thus, should be activated in a separate commit!
+#if (0)
+  if (GetGraph().graph_.size() == 3)
+  {
+    GetGraph().main_cycles_.push_back(Cycle());
+    for (std::map<int, plain_int_set>::iterator git = GetGraph().graph_.begin();
+         git != GetGraph().graph_.end(); ++git)
+      GetGraph().main_cycles_[0].push_back(GetGraph().all_points_[git->first]);
+    return;
   }
 #endif
 

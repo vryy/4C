@@ -10,7 +10,6 @@
 
 *----------------------------------------------------------------------*/
 #include "cut_clnwrapper.H"
-#include "cut_memory_manager.H"
 #include <iomanip>
 #include "cut_tolerance.H"
 #include <boost/unordered_map.hpp>

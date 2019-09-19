@@ -118,6 +118,12 @@ namespace CONTACT
 
     */
     void SearchContact() final;
+
+    /*!
+    \brief Communicate the Search Elements to all processors
+
+    */
+    void CommunicateSearchElementsAllProcs();
     //@}
 
     // don't want = operator and cctor
@@ -128,6 +134,8 @@ namespace CONTACT
     const bool Two_half_pass_;
     //! perform reference configuration check for non-smooth self contact
     const bool Check_nonsmooth_selfcontactsurface_;
+    //! the contact pairs are communicated to all processors
+    const bool Searchele_AllProc_;
   };  // class UnbiasedSelfBinaryTree
 }  // namespace CONTACT
 

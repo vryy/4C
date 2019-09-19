@@ -1074,7 +1074,8 @@ void XFEM::LevelSetCouplingWeakDirichlet::UpdateConfigurationMap_GP(
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
     LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
     LINALG::Matrix<3, 1>& normal,     //< normal at gp
-    LINALG::Matrix<3, 1>& vel_m       //< master velocity at gp
+    LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+    double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
   // Configuration of Penalty Terms
@@ -1141,7 +1142,8 @@ void XFEM::LevelSetCouplingNeumann::UpdateConfigurationMap_GP(
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
     LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
     LINALG::Matrix<3, 1>& normal,     //< normal at gp
-    LINALG::Matrix<3, 1>& vel_m       //< master velocity at gp
+    LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+    double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
   if (inflow_stab_)
@@ -1470,7 +1472,8 @@ void XFEM::LevelSetCouplingNavierSlip::UpdateConfigurationMap_GP(
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
     LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
     LINALG::Matrix<3, 1>& normal,     //< normal at gp
-    LINALG::Matrix<3, 1>& vel_m       //< master velocity at gp
+    LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+    double* fulltraction              //< master velocity at gp
 )
 {
   double dynvisc = (kappa_m * visc_m + (1.0 - kappa_m) * visc_s);
@@ -1975,7 +1978,8 @@ void XFEM::LevelSetCouplingTwoPhase::UpdateConfigurationMap_GP(
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
     LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
     LINALG::Matrix<3, 1>& normal,     //< normal at gp
-    LINALG::Matrix<3, 1>& vel_m       //< master velocity at gp
+    LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+    double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
   // Configuration of Penalty Terms

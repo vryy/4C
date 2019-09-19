@@ -269,11 +269,12 @@ namespace XFEM
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
         LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
         LINALG::Matrix<3, 1>& normal,     //< normal at gp
-        LINALG::Matrix<3, 1>& vel_m       //< master velocity at gp
+        LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+        double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
     )
     {
       UpdateConfigurationMap_GP(kappa_m, visc_m, visc_s, density_m, visc_stab_tang, full_stab, x,
-          cond, ele, bele, funct, derxy, rst_slave, normal, vel_m);
+          cond, ele, bele, funct, derxy, rst_slave, normal, vel_m, fulltraction);
 #ifdef DEBUG
       // Do some safety checks, every combination which is not handled correct by the element level
       // should be caught here ... As this check is done for every Gausspoint, just do this in DEBUG
@@ -488,7 +489,8 @@ namespace XFEM
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
         LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
         LINALG::Matrix<3, 1>& normal,     //< normal at gp
-        LINALG::Matrix<3, 1>& vel_m       //< master velocity at gp
+        LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+        double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
     ){};
 
     virtual void InitStateVectors(){};

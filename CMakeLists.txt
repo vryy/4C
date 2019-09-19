@@ -857,6 +857,7 @@ set(OBJS_DRT_XFEM_MANAG_LIB
   src/drt_xfem/xfem_coupling_fpi_mesh.cpp
   src/drt_xfem/xfem_coupling_mesh_coupled_levelset.cpp
   src/drt_xfem/xfem_condition_manager.cpp
+  src/drt_xfem/xfem_xfluid_contact_communicator.cpp
 )
 
 set(OBJS_POST_DRT_MONITOR
@@ -2247,6 +2248,7 @@ set(OBJS_DRT_CONTACT
   src/drt_contact/contact_nitsche_integrator.cpp
   src/drt_contact/contact_nitsche_integrator_tsi.cpp
   src/drt_contact/contact_nitsche_integrator_poro.cpp
+  src/drt_contact/contact_nitsche_integrator_fsi.cpp
   src/drt_contact/contact_ehl_integrator.cpp
   src/drt_contact/contact_integrator_factory.cpp
   src/drt_contact/contact_integrator_assemble.cpp
@@ -2264,6 +2266,7 @@ set(OBJS_DRT_CONTACT
   src/drt_contact/contact_nitsche_strategy.cpp
   src/drt_contact/contact_nitsche_strategy_tsi.cpp
   src/drt_contact/contact_nitsche_strategy_poro.cpp
+  src/drt_contact/contact_nitsche_strategy_fsi.cpp
   src/drt_contact/contact_utils.cpp
   src/drt_contact/contact_wear_interface.cpp
   src/drt_contact/contact_wear_interface_tools.cpp
@@ -2436,6 +2439,8 @@ set(OBJS_CUT_TEST
   tests/cut_test/cut_test_bacigenerated_79216.cpp
   tests/cut_test/cut_test_bacigenerated_369096.cpp
   tests/cut_test/cut_test_bacigenerated_238343.cpp
+  tests/cut_test/cut_test_bacigenerated_238343.cpp
+  tests/cut_test/cut_test_bacigenerated_26182.cpp
   src/drt_fem_general/drt_utils_gausspoints.cpp
   src/drt_fem_general/drt_utils_fem_shapefunctions.cpp
   src/drt_fem_general/drt_utils_integration.cpp

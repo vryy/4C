@@ -15,6 +15,8 @@
 #include "../drt_lib/drt_utils_reference_configuration.H"
 #include "../drt_lib/drt_discret.H"
 
+#include "../linalg/linalg_utils.H"
+
 /*----------------------------------------------------------------------*
  |  ctor UnbiasedSelfBinaryTree (public)                   schmidt 01/19|
  *----------------------------------------------------------------------*/
@@ -23,7 +25,8 @@ CONTACT::UnbiasedSelfBinaryTree::UnbiasedSelfBinaryTree(DRT::Discretization& dis
     Teuchos::RCP<Epetra_Map> elements, int dim, double eps)
     : SelfBinaryTree(discret, lcomm, iparams, elements, dim, eps),
       Two_half_pass_(iparams.get<bool>("Two_half_pass")),
-      Check_nonsmooth_selfcontactsurface_(iparams.get<bool>("Check_nonsmooth_selfcontactsurface"))
+      Check_nonsmooth_selfcontactsurface_(iparams.get<bool>("Check_nonsmooth_selfcontactsurface")),
+      Searchele_AllProc_(iparams.get<bool>("Searchele_AllProc"))
 {
   // safety check
   if (!Two_half_pass_) dserror("Only implemented for the two half pass approach so far!");
@@ -513,11 +516,36 @@ void CONTACT::UnbiasedSelfBinaryTree::SearchContact()
     ++leafiter;
   }
 
+  //**********************************************************************
+  // optional STEP 6: communicate Searchelements to all Procs
+  //**********************************************************************
+  if (Searchele_AllProc_) CommunicateSearchElementsAllProcs();
+
   // define the search elements based on the contact pairs map
   while (!ContactPairs().empty())
   {
     DefineSearchElements();
   }
 
+  return;
+}
+
+/*------------------------------------------------------------------------*
+ | Communicate the Search Elements to all processors (private) ager 09/19 |
+ *-----------------------------------------------------------------------*/
+void CONTACT::UnbiasedSelfBinaryTree::CommunicateSearchElementsAllProcs()
+{
+  for (int elelid = 0; elelid < Discret().ElementColMap()->NumMyElements(); ++elelid)
+  {
+    int elegid = Discret().ElementColMap()->GID(elelid);
+    std::vector<int> searchelements;
+    std::vector<int> searchelements_all;
+    if (ContactPairs().find(elegid) != ContactPairs().end())
+      searchelements = ContactPairs()[elegid];
+
+    LINALG::AllreduceVector(searchelements, searchelements_all, Discret().Comm());
+
+    if (searchelements_all.size()) SetContactPairs()[elegid] = searchelements_all;
+  }
   return;
 }

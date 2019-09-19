@@ -23,7 +23,7 @@
 
 #include <mpi.h>
 
-
+void test_bacigenerated_26182();
 void test_bacigenerated_238343();
 void test_bacigenerated_369096();
 void test_bacigenerated_79216();
@@ -411,6 +411,9 @@ int main(int argc, char** argv)
   // they fail, but due to other problems, not related to triangulation
   functable["narrow_triangulation"] = test_bacigenerated_369096;
   functable["split_facet"] = test_bacigenerated_238343;
+
+  // selfcut 3d-Island detection
+  functable["selfcut_island"] = test_bacigenerated_26182;
 
   // tests that failed, due to the problem with spliting surface with holes
   // in the colored

@@ -58,7 +58,7 @@ namespace GEO
        *
        *  This is the maximal polynomial degree which is integrate exactly by the used
        *  gaussion quadrature rule. */
-      virtual int CubatureDegree(DRT::Element::DiscretizationType elementshape) const = 0;
+      virtual int CubatureDegree() const = 0;
 
       /*!
       \brief Writes the geometry of boundarycell, and the constant scalar "value" in GMSH format
@@ -142,7 +142,12 @@ namespace GEO
       /*!
       \brief Get the Gaussian integration rule for the boundarycell
        */
-      virtual DRT::UTILS::GaussIntegration gaussRule() = 0;
+      virtual DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree) = 0;
+
+      /*!
+      \brief Get the Gaussian integration rule for the boundarycell
+       */
+      virtual DRT::UTILS::GaussIntegration gaussRule() { return gaussRule(CubatureDegree()); }
 
       /*!
       \brief Get the normal vector for the arbitrary boundarycell alone
@@ -166,10 +171,14 @@ namespace GEO
        */
       template <DRT::Element::DiscretizationType celldistype>
       void Transform(const LINALG::Matrix<2, 1>& eta, LINALG::Matrix<3, 1>& x_gp_lin,
-          LINALG::Matrix<3, 1>& normal, double& drs)
+          LINALG::Matrix<3, 1>& normal, double& drs, bool referencepos = false)
       {
         const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement;
         LINALG::Matrix<3, numnodes> xyze(xyz_, true);
+        if (referencepos)
+          xyze = LINALG::Matrix<3, numnodes>(xyz_ref_, true);
+        else
+          xyze = LINALG::Matrix<3, numnodes>(xyz_, true);
 
         LINALG::Matrix<numnodes, 1> funct(false);
         LINALG::Matrix<2, numnodes> deriv(false);
@@ -188,12 +197,31 @@ namespace GEO
           // For Tri's this method of determining the area and thus the gp-weights is more robust.
           //  It is needed for TRI's which are small/ill-conditioned but large enough to affect the
           //  simulation.
-          drs = 2.0 * (CUT::KERNEL::getAreaTri(Points(), &normal));
+          static LINALG::Matrix<3, 1> p0(true);
+          static LINALG::Matrix<3, 1> p1(true);
+          static LINALG::Matrix<3, 1> p2(true);
+          for (uint dim = 0; dim < 3; ++dim)
+          {
+            p0(dim) = xyze(dim, 0);
+            p1(dim) = xyze(dim, 1);
+            p2(dim) = xyze(dim, 2);
+          }
+          drs = 2.0 * (CUT::KERNEL::getAreaTri(p0.A(), p1.A(), p2.A(), &normal));
         }
 
         x_gp_lin.Multiply(xyze, funct);
 
         return;
+      }
+
+      /// Reset the point with local index lid
+      void ResetPos(int lid, LINALG::Matrix<3, 1> newpos)
+      {
+        if (lid > xyz_.N()) dserror("Index out of range! %d > %d", lid, xyz_.N());
+
+        xyz_(0, lid) = newpos(0, 0);
+        xyz_(1, lid) = newpos(1, 0);
+        xyz_(2, lid) = newpos(2, 0);
       }
 
       /*!
@@ -249,7 +277,11 @@ namespace GEO
         midpoint.Multiply(xyze, funct);
       }
 
+      /// Current position of the boundary cell
       Epetra_SerialDenseMatrix xyz_;
+
+      /// Reference position of the boundary cell
+      Epetra_SerialDenseMatrix xyz_ref_;
       Facet* facet_;
       Teuchos::RCP<Cycle> points_;
     };
@@ -268,7 +300,7 @@ namespace GEO
 
       virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::point1; }
 
-      virtual int CubatureDegree(DRT::Element::DiscretizationType elementshape) const { return 0; }
+      virtual int CubatureDegree() const { return 0; }
 
       virtual void DumpGmshNormal(std::ofstream& file);
 
@@ -278,7 +310,7 @@ namespace GEO
 
       virtual void Normal(const LINALG::Matrix<2, 1>& pos, LINALG::Matrix<3, 1>& normal) const;
 
-      virtual DRT::UTILS::GaussIntegration gaussRule();
+      virtual DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree);
 
       virtual LINALG::Matrix<3, 1> GetNormalVector();
 
@@ -305,7 +337,7 @@ namespace GEO
 
       virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::line2; }
 
-      virtual int CubatureDegree(DRT::Element::DiscretizationType elementshape) const { return 4; }
+      virtual int CubatureDegree() const { return 4; }
 
       virtual void DumpGmshNormal(std::ofstream& file);
 
@@ -315,7 +347,7 @@ namespace GEO
 
       virtual void Normal(const LINALG::Matrix<2, 1>& pos, LINALG::Matrix<3, 1>& normal) const;
 
-      virtual DRT::UTILS::GaussIntegration gaussRule();
+      virtual DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree);
 
       virtual LINALG::Matrix<3, 1> GetNormalVector();
 
@@ -341,7 +373,7 @@ namespace GEO
 
       virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::tri3; }
 
-      virtual int CubatureDegree(DRT::Element::DiscretizationType elementshape) const { return 20; }
+      virtual int CubatureDegree() const { return 20; }
 
       virtual void DumpGmshNormal(std::ofstream& file);
 
@@ -351,7 +383,7 @@ namespace GEO
 
       virtual void Normal(const LINALG::Matrix<2, 1>& pos, LINALG::Matrix<3, 1>& normal) const;
 
-      virtual DRT::UTILS::GaussIntegration gaussRule();
+      virtual DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree);
 
       virtual LINALG::Matrix<3, 1> GetNormalVector();
 
@@ -378,7 +410,7 @@ namespace GEO
 
       virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::quad4; }
 
-      virtual int CubatureDegree(DRT::Element::DiscretizationType elementshape) const { return 20; }
+      virtual int CubatureDegree() const { return 20; }
 
       virtual void DumpGmshNormal(std::ofstream& file);
 
@@ -389,7 +421,7 @@ namespace GEO
 
       virtual void Normal(const LINALG::Matrix<2, 1>& pos, LINALG::Matrix<3, 1>& normal) const;
 
-      virtual DRT::UTILS::GaussIntegration gaussRule();
+      virtual DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree);
 
       virtual LINALG::Matrix<3, 1> GetNormalVector();
 
@@ -417,7 +449,7 @@ namespace GEO
 
       virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::dis_none; }
 
-      virtual int CubatureDegree(DRT::Element::DiscretizationType elementshape) const { return 0; }
+      virtual int CubatureDegree() const { return 0; }
 
       virtual void DumpGmshNormal(std::ofstream& file);
 
@@ -427,7 +459,7 @@ namespace GEO
 
       virtual void Normal(const LINALG::Matrix<2, 1>& pos, LINALG::Matrix<3, 1>& normal) const;
 
-      virtual DRT::UTILS::GaussIntegration gaussRule();
+      virtual DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree);
 
       virtual LINALG::Matrix<3, 1> GetNormalVector();
 

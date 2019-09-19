@@ -48,6 +48,11 @@
 
 #include "../drt_xfem/xfem_condition_manager.H"
 
+#include "../drt_xfem/xfem_xfluid_contact_communicator.H"
+#include "../drt_contact/contact_interface.H"
+#include "../drt_contact/meshtying_contact_bridge.H"
+#include "../drt_contact/contact_nitsche_strategy_fsi.H"
+
 #include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_Time.h>
 
@@ -110,7 +115,9 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
       nd_inc_scaling_(1.0),
       cut_evaluate_mintol_(xfpsimono_.get<double>("CUT_EVALUATE_MINTOL")),
       cut_evaluate_miniter_(xfpsimono_.get<int>("CUT_EVALUATE_MINITER")),
-      cut_evaluate_dynamic_(cut_evaluate_mintol_ > 1e-16)
+      cut_evaluate_dynamic_(cut_evaluate_mintol_ > 1e-16),
+      have_contact_(false),
+      xf_c_comm_(Teuchos::null)
 {
   if (nd_newton_damping_)
   {
@@ -229,6 +236,36 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
  *----------------------------------------------------------------------*/
 void FSI::MonolithicXFEM::SetupCouplingObjects()
 {
+  {
+    if (StructurePoro()->MeshtyingContactBridge() != Teuchos::null)
+    {
+      if (StructurePoro()->MeshtyingContactBridge()->HaveContact())
+      {
+        CONTACT::CoNitscheStrategyFsi* cs = dynamic_cast<CONTACT::CoNitscheStrategyFsi*>(
+            &StructurePoro()->MeshtyingContactBridge()->GetStrategy());
+        if (!cs)
+          dserror(
+              "FSI::MonolithicXFEM: Only Nitsche Contact Strategy for XFSCI/XFPSCI available yet!");
+        if (cs->ContactInterfaces().size() > 1)
+          dserror("FSI::MonolithicXFEM: Only one contact interface supported!");
+
+        have_contact_ = true;
+
+        // Do contact and xfluid communication stuff
+        xf_c_comm_ = Teuchos::rcp(new XFEM::XFluid_Contact_Comm(*cs));
+        xf_c_comm_->InitializeFluidState(FluidField()->GetCutWizard(),
+            FluidField()->Discretization(), FluidField()->GetConditionManager(),
+            FluidField()->Params());
+
+        xf_c_comm_->SetupSurfElePtrs(cs->ContactInterfaces()[0]->Discret());
+
+        for (int i = 0; i < (int)cs->ContactInterfaces().size(); ++i)
+          cs->ContactInterfaces()[i]
+              ->InterfaceParams()
+              .set<Teuchos::RCP<XFEM::XFluid_Contact_Comm>>("XFluid_Contact_Comm", xf_c_comm_);
+      }
+    }
+  }
   int coup_idx = 0;
   std::vector<int> idx;
 
@@ -239,6 +276,13 @@ void FSI::MonolithicXFEM::SetupCouplingObjects()
     idx.push_back(fluid_block_);
     coup_man_[coup_idx] = Teuchos::rcp(new XFEM::XFSCoupling_Manager(
         FluidField()->GetConditionManager(), StructurePoro()->StructureField(), FluidField(), idx));
+
+    if (have_contact_)
+    {
+      Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSI>(
+          FluidField()->GetConditionManager()->GetMeshCoupling("XFEMSurfFSIMono"), true)
+          ->Assign_Contact_Comm(xf_c_comm_);  // assign to mesh coupling object
+    }
   }
 
   if (HaveAle())
@@ -783,6 +827,8 @@ void FSI::MonolithicXFEM::PrepareTimeStep()
   for (std::map<int, Teuchos::RCP<XFEM::Coupling_Manager>>::iterator coupit = coup_man_.begin();
        coupit != coup_man_.end(); ++coupit)
     coupit->second->PredictCouplingStates();
+
+  if (have_contact_) xf_c_comm_->PrepareTimeStep();
 
   // now we have relaxed ALE mesh -> set in dispnp
   // for safety apply in AleField again the standard inner DBCs of this timestep
@@ -1460,10 +1506,13 @@ bool FSI::MonolithicXFEM::Evaluate()
               ->WriteAccessDispnp());  // just update displacements which are not on dbc condition
     }
 
-    // call the structure evaluate with the current step increment  Delta d = d^(n+1,i+1) - d^n
+    // Set new state in StructurePoro
     if (sx == Teuchos::null)
       sx = Teuchos::rcp(new Epetra_Vector(*StructurePoro()->DofRowMap(), true));
     StructurePoro()->UpdateStateIncrementally(sx);
+    if (have_contact_)
+      StructurePoro()->MeshtyingContactBridge()->GetStrategy().SetState(
+          MORTAR::state_new_displacement, *StructurePoro()->Dispnp());
   }
 
   //--------------------------------------------------------
@@ -1558,8 +1607,26 @@ bool FSI::MonolithicXFEM::Evaluate()
 
     FluidField()->Evaluate();
 
-
     if (Comm().MyPID() == 0) IO::cout << "fluid time : " << tf.ElapsedTime() << IO::endl;
+
+    // Assign the Unphysical Boundary Elements to all procs (only for contact)
+    if (have_contact_)
+    {
+      xf_c_comm_->FillComplete_SeleMap();
+
+      // We need these fluid state for the evaluation of contact ...
+      FluidField()->SetStateTimInt();
+      if (FluidField()->GetConditionManager()->GetMeshCoupling("XFEMSurfFSIMono") != Teuchos::null)
+        FluidField()->GetConditionManager()->GetMeshCoupling("XFEMSurfFSIMono")->SetState();
+      if (StructurePoro()->isPoro() && FluidField()->GetConditionManager()->GetMeshCoupling(
+                                           "XFEMSurfFPIMono_ps_ps") != Teuchos::null)
+      {
+        FluidField()->GetConditionManager()->GetMeshCoupling("XFEMSurfFPIMono_ps_ps")->SetState();
+        FluidField()->GetConditionManager()->GetMeshCoupling("XFEMSurfFPIMono_pf_ps")->SetState();
+        FluidField()->GetConditionManager()->GetMeshCoupling("XFEMSurfFPIMono_ps_pf")->SetState();
+        FluidField()->GetConditionManager()->GetMeshCoupling("XFEMSurfFPIMono_pf_pf")->SetState();
+      }
+    }
 
     // structural field
     Epetra_Time ts(Comm());
@@ -2225,6 +2292,9 @@ void FSI::MonolithicXFEM::LinearSolve()
 
     // Infnormscaling: scale system before solving
     ScaleSystem(*systemmatrix_, *rhs_);
+
+    FluidField()->Discretization()->ComputeNullSpaceIfNecessary(
+        solver_->Params().sublist("Inverse2"), true);
 
     // solve the problem, work is done here!
     solver_->Solve(systemmatrix_->EpetraOperator(), iterinc_, rhs_,

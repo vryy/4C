@@ -51,14 +51,16 @@ namespace INPAR
       invalid
     };
 
-    /// how to define the average, coupling with respect to which side?
+    /// which type of interface condition is prescribed
     enum InterfaceLaw
     {
-      noslip,           /// no slip in tangential direction
-      noslip_splitpen,  /// no slip in tangential direction with splitted normal and tangential
-                        /// penalty
-      slip,             /// full slip in tangential direction
-      navierslip        /// general navier boundary condition
+      noslip,             /// no slip in tangential direction
+      noslip_splitpen,    /// no slip in tangential direction with splitted normal and tangential
+                          /// penalty
+      slip,               /// full slip in tangential direction
+      navierslip,         /// general navier boundary condition
+      navierslip_contact  /// general navier boundary condition to enable continuous transition to
+                          /// contact
     };
 
     /// how is the adjoint consistency term scaled
