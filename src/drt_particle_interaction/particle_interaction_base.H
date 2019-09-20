@@ -50,7 +50,7 @@ namespace PARTICLEWALL
 }
 
 /*---------------------------------------------------------------------------*
- | class definitions                                                         |
+ | class declarations                                                        |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {

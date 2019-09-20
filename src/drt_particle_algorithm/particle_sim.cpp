@@ -21,7 +21,7 @@
 #include <Teuchos_RCPStdSharedPtrConversions.hpp>
 
 /*---------------------------------------------------------------------------*
- | declarations                                                              |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 void particle_drt()
 {

@@ -19,7 +19,7 @@
 #include "../drt_particle_engine/particle_container.H"
 
 /*---------------------------------------------------------------------------*
- | declarations                                                              |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEALGORITHM::ViscousDampingHandler::ViscousDampingHandler(const double viscdampfac)
     : viscdampfac_(viscdampfac)

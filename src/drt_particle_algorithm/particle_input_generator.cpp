@@ -16,7 +16,7 @@
 #include "../drt_particle_engine/particle_object.H"
 
 /*---------------------------------------------------------------------------*
- | declarations                                                              |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEALGORITHM::InputGenerator::InputGenerator(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)

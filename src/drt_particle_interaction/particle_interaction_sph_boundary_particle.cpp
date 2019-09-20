@@ -25,7 +25,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
- | declarations                                                              |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHBoundaryParticleBase::SPHBoundaryParticleBase(
     const Teuchos::ParameterList& params)

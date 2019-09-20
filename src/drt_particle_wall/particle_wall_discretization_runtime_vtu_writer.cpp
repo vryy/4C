@@ -22,7 +22,7 @@
 #include "../drt_io/discretization_runtime_vtu_writer.H"
 
 /*---------------------------------------------------------------------------*
- | declarations                                                              |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::WallDiscretizationRuntimeVtuWriter()
     : setuptime_(0.0)

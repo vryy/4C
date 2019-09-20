@@ -33,7 +33,7 @@ namespace PARTICLEENGINE
 }
 
 /*---------------------------------------------------------------------------*
- | class definitions                                                         |
+ | class declarations                                                        |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEALGORITHM
 {

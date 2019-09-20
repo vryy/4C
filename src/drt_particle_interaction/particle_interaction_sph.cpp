@@ -35,7 +35,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
- | declarations                                                              |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::ParticleInteractionSPH::ParticleInteractionSPH(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)

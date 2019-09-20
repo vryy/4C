@@ -20,7 +20,7 @@
 #include "../drt_lib/drt_parobject.H"
 
 /*---------------------------------------------------------------------------*
- | class definitions                                                         |
+ | class declarations                                                        |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {

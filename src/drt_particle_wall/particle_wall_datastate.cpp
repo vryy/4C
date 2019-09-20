@@ -20,7 +20,7 @@
 #include "../linalg/linalg_utils.H"
 
 /*---------------------------------------------------------------------------*
- | declarations                                                              |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEWALL::WallDataState::WallDataState(const Teuchos::ParameterList& params) : params_(params)
 {

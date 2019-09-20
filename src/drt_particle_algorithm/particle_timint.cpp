@@ -28,7 +28,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
- | declarations                                                              |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEALGORITHM::TimInt::TimInt(const Teuchos::ParameterList& params)
     : params_(params), time_(0.0), dt_(params.get<double>("TIMESTEP")), modifiedstates_(false)

@@ -41,7 +41,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
- | declarations                                                              |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEWALL::WallHandlerBase::WallHandlerBase(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)

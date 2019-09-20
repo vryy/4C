@@ -36,7 +36,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
- | declarations                                                              |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEENGINE::ParticleEngine::ParticleEngine(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)

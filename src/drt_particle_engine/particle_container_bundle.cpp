@@ -16,7 +16,7 @@
 #include "particle_object.H"
 
 /*---------------------------------------------------------------------------*
- | declarations                                                              |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEENGINE::ParticleContainerBundle::ParticleContainerBundle()
 {

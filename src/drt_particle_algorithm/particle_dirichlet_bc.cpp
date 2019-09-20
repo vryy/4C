@@ -23,7 +23,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 
 /*---------------------------------------------------------------------------*
- | declarations                                                              |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEALGORITHM::DirichletBoundaryConditionHandler::DirichletBoundaryConditionHandler(
     const Teuchos::ParameterList& params)

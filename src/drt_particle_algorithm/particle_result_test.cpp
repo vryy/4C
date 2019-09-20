@@ -20,7 +20,7 @@
 #include "../drt_lib/drt_linedefinition.H"
 
 /*---------------------------------------------------------------------------*
- | declarations                                                              |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEALGORITHM::ParticleResultTest::ParticleResultTest() : DRT::ResultTest("PARTICLE")
 {

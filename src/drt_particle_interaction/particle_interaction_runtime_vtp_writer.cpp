@@ -22,7 +22,7 @@
 #include "../drt_io/runtime_vtp_writer.H"
 
 /*---------------------------------------------------------------------------*
- | declarations                                                              |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::InteractionWriter::InteractionWriter(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)

@@ -20,7 +20,7 @@
 #include "../drt_lib/drt_dserror.H"
 
 /*---------------------------------------------------------------------------*
- | declarations                                                              |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMAdhesionLawBase::DEMAdhesionLawBase(const Teuchos::ParameterList& params)
     : params_dem_(params),

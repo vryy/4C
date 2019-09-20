@@ -21,7 +21,7 @@
 #include "../drt_lib/drt_dserror.H"
 
 /*---------------------------------------------------------------------------*
- | declarations                                                              |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHEquationOfStateBundle::SPHEquationOfStateBundle(
     const Teuchos::ParameterList& params)

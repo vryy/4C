@@ -16,7 +16,7 @@
 #include "particle_interaction_utils.H"
 
 /*---------------------------------------------------------------------------*
- | declarations                                                              |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHEquationOfStateBase::SPHEquationOfStateBase()
 {

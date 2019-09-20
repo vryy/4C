@@ -20,7 +20,7 @@
 #include <cmath>
 
 /*---------------------------------------------------------------------------*
- | declarations                                                              |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHMomentumFormulationBase::SPHMomentumFormulationBase()
 {

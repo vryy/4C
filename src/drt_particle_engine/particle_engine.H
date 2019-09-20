@@ -47,7 +47,7 @@ namespace IO
 }  // namespace IO
 
 /*---------------------------------------------------------------------------*
- | class definitions                                                         |
+ | class declarations                                                        |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEENGINE
 {

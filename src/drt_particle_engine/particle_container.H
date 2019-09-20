@@ -21,7 +21,7 @@
 #include "particle_typedefs.H"
 
 /*---------------------------------------------------------------------------*
- | class definitions                                                         |
+ | class declarations                                                        |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEENGINE
 {

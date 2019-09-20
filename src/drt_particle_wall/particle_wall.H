@@ -56,7 +56,7 @@ namespace DRT
 }  // namespace DRT
 
 /*---------------------------------------------------------------------------*
- | class definitions                                                         |
+ | class declarations                                                        |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEWALL
 {

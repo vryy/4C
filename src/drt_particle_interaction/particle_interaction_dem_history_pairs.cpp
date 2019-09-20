@@ -22,7 +22,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
- | declarations                                                              |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMHistoryPairs::DEMHistoryPairs(const Epetra_Comm& comm) : comm_(comm)
 {
@@ -374,6 +374,9 @@ void PARTICLEINTERACTION::DEMHistoryPairs::AddHistoryPairToBuffer(std::vector<ch
   buffer.insert(buffer.end(), data().begin(), data().end());
 }
 
+/*---------------------------------------------------------------------------*
+ | template instantiations                                                   |
+ *---------------------------------------------------------------------------*/
 template void PARTICLEINTERACTION::DEMHistoryPairs::CommunicateSpecificHistoryPairs<
     PARTICLEINTERACTION::DEMHistoryPairTangential>(
     const std::vector<std::vector<int>>&, DEMHistoryPairTangentialData&);

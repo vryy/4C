@@ -20,7 +20,7 @@
 #include "../drt_lib/drt_discret.H"
 
 /*---------------------------------------------------------------------------*
- | declarations                                                              |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEWALL::WallResultTest::WallResultTest() : DRT::ResultTest("PARTICLEWALL")
 {

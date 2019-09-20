@@ -20,7 +20,7 @@
 #include "../drt_particle_engine/particle_container.H"
 
 /*---------------------------------------------------------------------------*
- | declarations                                                              |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::ParticleInteractionBase::ParticleInteractionBase(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)

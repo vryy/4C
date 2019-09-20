@@ -16,7 +16,7 @@
 #include "../drt_lib/drt_dserror.H"
 
 /*---------------------------------------------------------------------------*
- | declarations                                                              |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEENGINE::ParticleContainer::ParticleContainer()
     : containersize_(0), particlestored_(0), statesvectorsize_(0), globalids_(0, -1)

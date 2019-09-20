@@ -15,7 +15,7 @@
 #define PARTICLE_INTERACTION_SPH_NEIGHBOR_PAIR_STRUCT_H
 
 /*---------------------------------------------------------------------------*
- | class definitions                                                         |
+ | class declarations                                                        |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {

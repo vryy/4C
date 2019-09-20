@@ -45,7 +45,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
- | declarations                                                              |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEALGORITHM::ParticleAlgorithm::ParticleAlgorithm(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
