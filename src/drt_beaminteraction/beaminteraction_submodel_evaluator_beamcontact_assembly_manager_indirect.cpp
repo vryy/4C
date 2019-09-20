@@ -18,6 +18,7 @@ coupling matrices M and D first.
 #include "beaminteraction_calc_utils.H"
 #include "beam_to_solid_mortar_manager.H"
 
+#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_element.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
@@ -35,7 +36,8 @@ BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::
 {
   // Create the mortar manager.
   mortar_manager_ = Teuchos::rcp<BEAMINTERACTION::BeamToSolidMortarManager>(
-      new BEAMINTERACTION::BeamToSolidMortarManager(discret, beam_contact_params_ptr));
+      new BEAMINTERACTION::BeamToSolidMortarManager(
+          discret, beam_contact_params_ptr, discret->DofRowMap()->MaxAllGID()));
 
   // Setup the mortar manager.
   mortar_manager_->Setup();
