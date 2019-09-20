@@ -60,6 +60,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
     Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
     Epetra_SerialDenseVector& elevec3_epetra)
 {
+  // Check whether the solid material PostSetup() routine has already been called and call it if not
+  CheckMaterialPostSetup(params);
+
   SetParamsInterfacePtr(params);
 
   LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat1(elemat1_epetra.A(), true);
@@ -79,68 +82,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
   {
     // get the required action
     std::string action = params.get<std::string>("action", "none");
-    if (action == "none")
-      dserror("No action supplied");
-    else if (action == "calc_struct_linstiff")
-      act = ELEMENTS::struct_calc_linstiff;
-    else if (action == "calc_struct_nlnstiff")
-      act = ELEMENTS::struct_calc_nlnstiff;
-    else if (action == "calc_struct_internalforce")
-      act = ELEMENTS::struct_calc_internalforce;
-    else if (action == "calc_struct_linstiffmass")
-      act = ELEMENTS::struct_calc_linstiffmass;
-    else if (action == "calc_struct_nlnstiffmass")
-      act = ELEMENTS::struct_calc_nlnstiffmass;
-    else if (action == "calc_struct_nlnstifflmass")
-      act = ELEMENTS::struct_calc_nlnstifflmass;
-    else if (action == "calc_struct_nlnstiff_gemm")
-      act = ELEMENTS::struct_calc_nlnstiff_gemm;
-    else if (action == "calc_struct_stress")
-      act = ELEMENTS::struct_calc_stress;
-    else if (action == "calc_struct_eleload")
-      act = ELEMENTS::struct_calc_eleload;
-    else if (action == "calc_struct_fsiload")
-      act = ELEMENTS::struct_calc_fsiload;
-    else if (action == "calc_struct_update_istep")
-      act = ELEMENTS::struct_calc_update_istep;
-    else if (action == "calc_struct_reset_istep")
-      act = ELEMENTS::struct_calc_reset_istep;
-    else if (action == "calc_struct_store_istep")
-      act = ELEMENTS::struct_calc_store_istep;
-    else if (action == "calc_struct_recover_istep")
-      act = ELEMENTS::struct_calc_recover_istep;
-    else if (action == "calc_struct_reset_all")
-      act = ELEMENTS::struct_calc_reset_all;
-    else if (action == "calc_struct_energy")
-      act = ELEMENTS::struct_calc_energy;
-    else if (action == "calc_struct_errornorms")
-      act = ELEMENTS::struct_calc_errornorms;
-    else if (action == "multi_eas_init")
-      act = ELEMENTS::multi_init_eas;
-    else if (action == "multi_eas_set")
-      act = ELEMENTS::multi_set_eas;
-    else if (action == "multi_readrestart")
-      act = ELEMENTS::multi_readrestart;
-    else if (action == "multi_calc_dens")
-      act = ELEMENTS::multi_calc_dens;
-    else if (action == "postprocess_stress")
-      act = ELEMENTS::struct_postprocess_stress;
-    else if (action == "calc_struct_prestress_update")
-      act = ELEMENTS::struct_update_prestress;
-    else if (action == "calc_struct_inversedesign_update")
-      act = ELEMENTS::inversedesign_update;
-    else if (action == "calc_struct_inversedesign_switch")
-      act = ELEMENTS::inversedesign_switch;
-    else if (action == "calc_global_gpstresses_map")
-      act = ELEMENTS::struct_calc_global_gpstresses_map;
-    else if (action == "interpolate_velocity_to_given_point")
-      act = ELEMENTS::struct_interpolate_velocity_to_point;
-    else if (action == "calc_struct_mass_volume")
-      act = ELEMENTS::struct_calc_mass_volume;
-    else if (action == "calc_struct_predict")
-      return 0;
-    else
-      dserror("Unknown type of action for So_hex8: %s", action.c_str());
+    act = ELEMENTS::String2ActionType(action);
   }
 
   // check for patient specific data
@@ -1601,7 +1543,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       break;
     }
     default:
-      dserror("Unknown type of action for So_hex8");
+      dserror("Unknown type of action for So_hex8: %s", ELEMENTS::ActionType2String(act).c_str());
       break;
   }
   return 0;

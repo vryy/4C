@@ -68,6 +68,20 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::UnpackSummand(
   UnpackAnisotropy(data, position);
 }
 
+void MAT::ELASTIC::CoupAnisoExpoTwoCoup::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
+{
+  Summand::Setup(numgp, linedef);
+
+  Anisotropy::SetNumberOfGaussPoints(numgp);
+  Anisotropy::ReadAnisotropyFromElement(linedef);
+}
+
+void MAT::ELASTIC::CoupAnisoExpoTwoCoup::PostSetup(Teuchos::ParameterList& params)
+{
+  Summand::PostSetup(params);
+  Anisotropy::ReadAnisotropyFromParameterList(params);
+}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoExpoTwoCoup::AddStressAnisoPrincipal(const LINALG::Matrix<6, 1>& rcg,
@@ -98,7 +112,7 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::AddStressAnisoPrincipal(const LINALG::M
   double A8 = params_->A8_;
   double B8 = params_->B8_;
 
-  // check if fibers should support compression or not - if not, set the multipliers infront of
+  // check if fibers should support compression or not - if not, set the multipliers in front of
   // their strain-energy contribution to zero when the square of their stretches (fiber invariants
   // I4, I6) is smaller than one, respectively - mhv 03/14
   if ((params_->fib_comp_) == 0)
@@ -111,7 +125,7 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::AddStressAnisoPrincipal(const LINALG::M
   stress.Update(gamma, A1, 1.0);
   gamma = 2.0 * A6 * (I6 - 1.0) * exp(B6 * (I6 - 1.0) * (I6 - 1.0));
   stress.Update(gamma, A2, 1.0);
-  gamma = A8 * (I8 - a1a2) * exp(B8 * (I8 - a1a2) * (I8 - a1a2));
+  gamma = 2.0 * A8 * (I8 - a1a2) * exp(B8 * (I8 - a1a2) * (I8 - a1a2));
   stress.Update(gamma, A1A2, 1.0);
 
   double delta = 2.0 * (1.0 + 2.0 * B4 * (I4 - 1.0) * (I4 - 1.0)) * 2.0 * A4 *
@@ -120,7 +134,8 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::AddStressAnisoPrincipal(const LINALG::M
   delta = 2.0 * (1.0 + 2.0 * B6 * (I6 - 1.0) * (I6 - 1.0)) * 2.0 * A6 *
           exp(B6 * (I6 - 1.0) * (I6 - 1.0));
   cmat.MultiplyNT(delta, A2, A2, 1.0);
-  delta = A8 * exp(B8 * (I8 - a1a2) * (I8 - a1a2)) * (1 + 2.0 * B8 * (I8 - a1a2) * (I8 - a1a2));
+  delta =
+      4.0 * A8 * exp(B8 * (I8 - a1a2) * (I8 - a1a2)) * (1 + 2.0 * B8 * (I8 - a1a2) * (I8 - a1a2));
   cmat.MultiplyNT(delta, A1A2, A1A2, 1.0);
 }
 
@@ -132,8 +147,12 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::GetFiberVecs(
 {
   if (params_->init_ == INIT_MODE_NODAL_FIBERS)
   {
-    dserror(
-        "It's not possible to get the fibers this way when using nodal fibers. Use GetFiber(...)");
+    // This method expects constant fibers within this element but the init mode is such that
+    // fibers are defined on the Gauss points
+    // We therefore cannot return sth here.
+
+    // ToDo: This may needs improvements later on if needed!
+    return;
   }
 
   fibervecs.push_back(GetFiber(GPDEFAULT, 0));
@@ -204,8 +223,9 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::SetFiberVecs(
   idefgrd.Invert(defgrd);
 
   a1_0.Multiply(idefgrd, ca1);
-
   a1_0.Scale(1.0 / a1_0.Norm2());
+
+  a2_0.Multiply(idefgrd, ca2);
   a2_0.Scale(1.0 / a2_0.Norm2());
 
   std::vector<LINALG::Matrix<3, 1>> fibers(0);
@@ -257,12 +277,12 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::OnFibersInitialized()
     A1A2_[gp](0) = a1(0) * a2(0);
     A1A2_[gp](1) = a1(1) * a2(1);
     A1A2_[gp](2) = a1(2) * a2(2);
-    A1A2_[gp](3) = 0.5 * (a1(0) * a2(1) + a1(2) * a2(0));
-    A1A2_[gp](3) = 0.5 * (a1(1) * a2(2) + a1(2) * a2(1));
-    A1A2_[gp](3) = 0.5 * (a1(0) * a2(2) + a1(2) * a2(0));
+    A1A2_[gp](3) = 0.5 * (a1(0) * a2(1) + a1(1) * a2(0));
+    A1A2_[gp](4) = 0.5 * (a1(1) * a2(2) + a1(2) * a2(1));
+    A1A2_[gp](5) = 0.5 * (a1(0) * a2(2) + a1(2) * a2(0));
 
     a1a2_[gp] = 0.0;
-    for (int i = 0; i < 6; ++i)
+    for (int i = 0; i < 3; ++i)
     {
       a1a2_[gp] += a1(i) * a2(i);
     }

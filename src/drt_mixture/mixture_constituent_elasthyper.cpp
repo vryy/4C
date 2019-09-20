@@ -142,7 +142,7 @@ void MIXTURE::MixtureConstituent_ElastHyper::ReadElement(
   MixtureConstituent::ReadElement(numgp, linedef);
 
   // Setup summands
-  for (const auto& summand : potsum_) summand->Setup(linedef);
+  for (const auto& summand : potsum_) summand->Setup(numgp, linedef);
 
   // find out which formulations are used
   MAT::ElastHyperProperties(potsum_, summandProperties_);
@@ -177,10 +177,10 @@ double MIXTURE::MixtureConstituent_ElastHyper::CurrentRefDensity() const
 }
 
 // Updates all summands
-void MIXTURE::MixtureConstituent_ElastHyper::Update(
-    LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, const int gp)
+void MIXTURE::MixtureConstituent_ElastHyper::Update(LINALG::Matrix<3, 3> const& defgrd,
+    Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
-  MixtureConstituent::Update(defgrd, params, gp);
+  MixtureConstituent::Update(defgrd, params, gp, eleGID);
 
   // loop map of associated potential summands
   for (auto& summand : potsum_) summand->Update();

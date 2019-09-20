@@ -64,7 +64,7 @@ void MAT::ELASTIC::IsoAnisoExpo::UnpackSummand(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::IsoAnisoExpo::Setup(DRT::INPUT::LineDefinition* linedef)
+void MAT::ELASTIC::IsoAnisoExpo::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   if (params_->init_ == 0)
   {

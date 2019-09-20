@@ -126,7 +126,7 @@ namespace MAT
       //@}
 
       /// Setup of summand
-      virtual void Setup(DRT::INPUT::LineDefinition* linedef);
+      virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
 
       /// retrieve coefficients of first, second and third derivative
       /// of summand with respect to anisotropic invariants

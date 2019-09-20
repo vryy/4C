@@ -137,7 +137,6 @@ namespace MAT
 
       void UnpackSummand(
           const std::vector<char>& data, std::vector<char>::size_type& position) override;
-
       //@}
 
       /// @name Access material constants
@@ -152,7 +151,16 @@ namespace MAT
       //@}
 
       /// Setup of summand
-      void Setup(DRT::INPUT::LineDefinition* linedef) override;
+      void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
+
+      /*!
+       * \brief PostSetup routine of the element
+       *
+       * Here potential nodal fibers were passed to the Anisotropy framework
+       *
+       * @param params Container that potentially contains nodal fibers
+       */
+      void PostSetup(Teuchos::ParameterList& params) override;
 
       /// Add anisotropic principal stresses
       void AddStressAnisoPrincipal(const LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor

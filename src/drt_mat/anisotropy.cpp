@@ -13,8 +13,13 @@
 #include "material_service.H"
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_matelast/elast_aniso_structuraltensor_strategy.H"
+#include "../drt_fiber/nodal_fiber_holder.H"
+#include "../drt_lib/voigt_notation.H"
 
-MAT::Anisotropy::Anisotropy(int number_fibers) : number_fibers_(number_fibers)
+MAT::Anisotropy::Anisotropy(int number_fibers)
+    : number_fibers_(number_fibers),
+      fibers_initialized_(false),
+      definitionMode_(DefinitionMode::undefined)
 {
   // empty
 }
@@ -23,6 +28,8 @@ MAT::Anisotropy::Anisotropy(int number_fibers, int init,
     const Teuchos::RCP<ELASTIC::StructuralTensorStrategyBase>& structuralTensorStrategy)
     : number_fibers_(number_fibers),
       init_mode_(init),
+      fibers_initialized_(false),
+      definitionMode_(DefinitionMode::undefined),
       structuralTensorStrategy_(structuralTensorStrategy)
 {
   // empty
@@ -31,9 +38,9 @@ MAT::Anisotropy::Anisotropy(int number_fibers, int init,
 void MAT::Anisotropy::PackAnisotropy(DRT::PackBuffer& data) const
 {
   DRT::ParObject::AddtoPack(data, numgp_);
-  DRT::ParObject::AddtoPack(data, fibers_);
-  DRT::ParObject::AddtoPack(data, structuralTensors_stress_);
-  DRT::ParObject::AddtoPack(data, structuralTensors_);
+  PackFiberVector<LINALG::Matrix<3, 1>>(data, fibers_);
+  PackFiberVector<LINALG::Matrix<6, 1>>(data, structuralTensors_stress_);
+  PackFiberVector<LINALG::Matrix<3, 3>>(data, structuralTensors_);
   DRT::ParObject::AddtoPack(data, static_cast<const int>(fibers_initialized_));
   DRT::ParObject::AddtoPack(data, definitionMode_);
 }
@@ -42,9 +49,9 @@ void MAT::Anisotropy::UnpackAnisotropy(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
   DRT::ParObject::ExtractfromPack(position, data, numgp_);
-  DRT::ParObject::ExtractfromPack(position, data, fibers_);
-  DRT::ParObject::ExtractfromPack(position, data, structuralTensors_stress_);
-  DRT::ParObject::ExtractfromPack(position, data, structuralTensors_);
+  UnpackFiberVector<LINALG::Matrix<3, 1>>(position, data, fibers_);
+  UnpackFiberVector<LINALG::Matrix<6, 1>>(position, data, structuralTensors_stress_);
+  UnpackFiberVector<LINALG::Matrix<3, 3>>(position, data, structuralTensors_);
   fibers_initialized_ = (bool)DRT::ParObject::ExtractInt(position, data);
   DRT::ParObject::ExtractfromPack(position, data, definitionMode_);
 }
@@ -56,10 +63,20 @@ void MAT::Anisotropy::Initialize(
   structuralTensorStrategy_ = structuralTensorStrategy;
 }
 
-void MAT::Anisotropy::ReadAnisotropyFromElement(
-    int const numgp, DRT::INPUT::LineDefinition* linedef)
+void MAT::Anisotropy::SetNumberOfGaussPoints(int numgp)
 {
   numgp_ = numgp;
+
+  // As we now know the number of Gauss points, we can resize the fiber_ vector
+  fibers_.resize(numgp);
+  for (long gp = 0; gp < numgp; ++gp)
+  {
+    fibers_[gp].resize(number_fibers_);
+  }
+}
+
+void MAT::Anisotropy::ReadAnisotropyFromElement(DRT::INPUT::LineDefinition* linedef)
+{
   if (init_mode_ == INIT_MODE_EXTERNAL)
   {
     // Call external fiber setup
@@ -104,7 +121,7 @@ void MAT::Anisotropy::ReadAnisotropyFromElement(
       if (linedef->HaveNamed("FIBER" + std::to_string(i + 1)))
       {
         // Read in of fiber data and setting fiber data
-        ReadAnisotropyFiber(linedef, "FIBER" + std::to_string(i), fibers_[GPDEFAULT][i]);
+        ReadAnisotropyFiber(linedef, "FIBER" + std::to_string(i + 1), fibers_[GPDEFAULT][i]);
 
         definitionMode_ = DefinitionMode::fiberi;
       }
@@ -155,30 +172,62 @@ void MAT::Anisotropy::ReadAnisotropyFiber(
   }
 }
 
+void MAT::Anisotropy::ReadAnisotropyFromParameterList(Teuchos::ParameterList& params)
+{
+  if (init_mode_ == INIT_MODE_NODAL_FIBERS)
+  {
+    if (params.isParameter("fiberholder"))
+    {
+      const auto& fiberHolder = params.get<DRT::FIBER::NodalFiberHolder>("fiberholder");
+
+      std::vector<LINALG::Matrix<3, 1>> gpfiber1 =
+          fiberHolder.GetFiber(DRT::FIBER::FiberType::Fiber1);
+      std::vector<LINALG::Matrix<3, 1>> gpfiber2 =
+          fiberHolder.GetFiber(DRT::FIBER::FiberType::Fiber2);
+
+      std::vector<LINALG::Matrix<3, 1>> fibers(0);
+      for (int gp = 0; gp < numgp_; ++gp)
+      {
+        fibers.emplace_back(gpfiber1[gp]);
+        fibers.emplace_back(gpfiber2[gp]);
+        SetFibers(gp, fibers);
+        fibers.clear();
+      }
+    }
+    else
+    {
+      dserror(
+          "The fibers are not set in the ParameterList. Those fibers have to be computed "
+          "in the MaterialPostSetup() routine of the Element.");
+    }
+  }
+}
+
 void MAT::Anisotropy::SetFibers(int gp, const std::vector<LINALG::Matrix<3, 1>>& fibers)
 {
-  // only save fibers if initialization mode is for nodes
-  if (init_mode_ != INIT_MODE_NODAL_FIBERS and init_mode_ != INIT_MODE_EXTERNAL)
+  // This method should only be called if fiber initialization mode is external or with nodal fibers
+  if (gp != GPDEFAULT and init_mode_ != INIT_MODE_NODAL_FIBERS and init_mode_ != INIT_MODE_EXTERNAL)
   {
-    // Do nothing in this case
-    return;
+    dserror(
+        "The initialization mode (INIT=%d) does not allow to set nodal fibers. Nodal fibers "
+        "are only allowed with nodal fibers and external fiber initialization",
+        init_mode_);
   }
   definitionMode_ = DefinitionMode::external;
 
-  // first check, whether the size is correct (only in DEBUG mode)
-#ifdef DEBUG
-  if (fibers.size() != number_fibers_)
+  // first check, whether the size is correct
+  if (fibers.size() < number_fibers_)
   {
-    dserror("The number of fibers does not match. Given %i fibers but expected %i.", fibers.size(),
-        number_fibers_);
+    dserror(
+        "The number of given fibers (%i) is less than the needed fibers for this material (%i).",
+        fibers.size(), number_fibers_);
   }
 
   if (gp >= numgp_)
   {
-    dserror("The current Gauß point %i is out of range of the expected number of Gauß points %i.",
+    dserror("The current Gauss point %i is out of range of the expected number of Gauss points %i.",
         gp, numgp_);
   }
-#endif
 
   // Store fibers
   for (unsigned i = 0; i < number_fibers_; ++i)
@@ -202,7 +251,7 @@ void MAT::Anisotropy::ComputeStructuralTensors_stress()
   structuralTensors_stress_.resize(fibers_.size());
   for (unsigned long gp = 0; gp < fibers_.size(); ++gp)
   {
-    structuralTensors_stress_[0].resize(fibers_[gp].size());
+    structuralTensors_stress_[gp].resize(fibers_[gp].size());
     for (unsigned long i = 0; i < fibers_[gp].size(); ++i)
     {
       LINALG::Matrix<6, 1> A_stress(false);
@@ -232,7 +281,7 @@ void MAT::Anisotropy::ComputeStructuralTensors()
       structuralTensorStrategy_->SetupStructuralTensor(fibers_[gp][i], A_stress);
 
       // Convert from stress like Voigt notation to matrix notation
-      VStressUtils::ToTensor(A_stress, A);
+      UTILS::VOIGT::Stresses::VectorToMatrix(A_stress, A);
 
       structuralTensors_[gp][i].Update(A);
     }
@@ -294,13 +343,40 @@ int MAT::Anisotropy::GetGPId(Teuchos::ParameterList& params)
   int gp = GPDEFAULT;
   if (init_mode_ == INIT_MODE_NODAL_FIBERS)
   {
+    // get Gauss point from Parameter list
     gp = params.get<int>("gp", -1);
 
     if (gp < 0)
     {
-      dserror("Somehow the material does not write the Gauß point into the parameter list");
+      dserror("Somehow the material does not write the Gauss point into the parameter list.");
     }
   }
 
   return gp;
+}
+
+template <typename T>
+void MAT::Anisotropy::PackFiberVector(
+    DRT::PackBuffer& buffer, const std::vector<std::vector<T>>& vct) const
+{
+  DRT::ParObject::AddtoPack(buffer, static_cast<int>(vct.size()));
+
+  for (const auto& list : vct)
+  {
+    DRT::ParObject::AddtoPack(buffer, list);
+  }
+}
+
+template <typename T>
+void MAT::Anisotropy::UnpackFiberVector(std::vector<char>::size_type& position,
+    const std::vector<char>& data, std::vector<std::vector<T>>& vct) const
+{
+  vct.clear();
+  int numfibs = DRT::ParObject::ExtractInt(position, data);
+  for (int i = 0; i < numfibs; ++i)
+  {
+    std::vector<T> mat(0);
+    DRT::ParObject::ExtractfromPack(position, data, mat);
+    vct.emplace_back(mat);
+  }
 }

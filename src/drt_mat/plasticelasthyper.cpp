@@ -337,7 +337,7 @@ void MAT::PlasticElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linede
   // Setup summands
   for (unsigned int p = 0; p < potsum_.size(); ++p)
   {
-    potsum_[p]->Setup(linedef);
+    potsum_[p]->Setup(numgp, linedef);
   }
 
   // find out which formulations are used

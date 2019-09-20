@@ -45,6 +45,9 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
     Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
 {
+  // Check whether the solid material PostSetup() routine has already been called and call it if not
+  CheckMaterialPostSetup(params);
+
   SetParamsInterfacePtr(params);
   ELEMENTS::ActionType act = ELEMENTS::none;
 

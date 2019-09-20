@@ -131,6 +131,20 @@ namespace MAT
       }
       //@}
 
+      /*!
+       * Default setup routine
+       * @param numgp number of Gauss points
+       * @param linedef Element line definition
+       */
+      void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
+
+      /*!
+       * Post setup routine. Is needed to initialize nodal fibers
+       *
+       * @param params Container for additional information. Should contain nodal fibers if needed.
+       */
+      void PostSetup(Teuchos::ParameterList& params) override;
+
       /// Add anisotropic principal stresses
       void AddStressAnisoPrincipal(const LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
           LINALG::Matrix<6, 6>& cmat,                                ///< material stiffness matrix

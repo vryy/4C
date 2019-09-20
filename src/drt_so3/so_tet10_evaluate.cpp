@@ -25,7 +25,6 @@
 #include "prestress.H"
 
 #include "../drt_structure_new/str_elements_paramsinterface.H"
-#include "../drt_mat/anisotropy.H"
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
@@ -36,6 +35,8 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
     Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
     Epetra_SerialDenseVector& elevec3_epetra)
 {
+  CheckMaterialPostSetup(params);
+
   LINALG::Matrix<NUMDOF_SOTET10, NUMDOF_SOTET10> elemat1(elemat1_epetra.A(), true);
   LINALG::Matrix<NUMDOF_SOTET10, NUMDOF_SOTET10> elemat2(elemat2_epetra.A(), true);
   LINALG::Matrix<NUMDOF_SOTET10, 1> elevec1(elevec1_epetra.A(), true);
@@ -833,8 +834,6 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
       }
     }
     break;
-
-
     default:
       dserror("Unknown type of action for SolidTet10");
       break;
@@ -1054,37 +1053,6 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  // lo
       xdisp(i, 0) = disp[i * NODDOF_SOTET10 + 0];
       xdisp(i, 1) = disp[i * NODDOF_SOTET10 + 1];
       xdisp(i, 2) = disp[i * NODDOF_SOTET10 + 2];
-    }
-  }
-
-  // Handle fibers defined on the nodes
-  Teuchos::RCP<MAT::Anisotropy> anisotropicMaterial;
-  auto* fnode = dynamic_cast<DRT::FIBER::FiberNode*>(nodes[0]);
-  if (fnode != nullptr and
-      !Teuchos::is_null(
-          anisotropicMaterial = Teuchos::rcp_dynamic_cast<MAT::Anisotropy>(SolidMaterial())))
-  {
-    if (!anisotropicMaterial->FibersInitialized())
-    {
-      // Fibers are not yet initialized
-      // Compute nodal fibers
-
-      // interpolate fibers to gp if fiber nodes are defined
-      std::vector<LINALG::Matrix<NUMDIM_SOTET10, 1>> gpfiber1(
-          NUMNOD_SOTET10, LINALG::Matrix<NUMDIM_SOTET10, 1>(true));
-      std::vector<LINALG::Matrix<NUMDIM_SOTET10, 1>> gpfiber2(
-          NUMNOD_SOTET10, LINALG::Matrix<NUMDIM_SOTET10, 1>(true));
-      DRT::ELEMENTS::UTILS::NodalFiber<DRT::Element::tet10>(
-          nodes, shapefcts_4gp, gpfiber1, gpfiber2);
-
-
-      for (int gp = 0; gp < NUMGPT_SOTET10; ++gp)
-      {
-        std::vector<LINALG::Matrix<3, 1>> fibers;
-        fibers.emplace_back(gpfiber1[gp]);
-        fibers.emplace_back(gpfiber2[gp]);
-        anisotropicMaterial->SetFibers(gp, fibers);
-      }
     }
   }
 

@@ -178,7 +178,7 @@ void MAT::ELASTIC::RemodelFiber::Setup(
     potsumfiber_[k]->G = params_->G_;
     cauchystress_[k].resize(numgp, 1.0);
 
-    potsumfiber_[k]->fiber->Setup(linedef);
+    potsumfiber_[k]->fiber->Setup(numgp, linedef);
   }
 
 

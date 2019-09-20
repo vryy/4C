@@ -215,6 +215,24 @@ namespace DRT
           const STR::ELEMENTS::EvalErrorFlag flag);
 
      protected:
+      /*!
+       * \brief This method executes the MaterialPostSetup if not already executed.
+       *
+       * This method should be placed in the Evaluate call. It will internally check, whether the
+       * material PostSetup() routine was already called in if not, it invokes this call directly.
+       *
+       * @param params Container for additional information
+       */
+      void CheckMaterialPostSetup(Teuchos::ParameterList& params);
+
+      /*!
+       * \brief This method calls the PostSetup routine of all materials.
+       *
+       * It can be used to pass information from the element to the materials after everything
+       * is set up. For a simple element, the ParameterList is passed unchanged to the materials.
+       */
+      virtual void MaterialPostSetup(Teuchos::ParameterList& params);
+
       //! kinematic type
       INPAR::STR::KinemType kintype_;
 
@@ -223,6 +241,9 @@ namespace DRT
        *
        *  data exchange between the element and the time integrator. */
       Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> interface_ptr_;
+
+      //! Flag of the status of the material post setup routine
+      bool material_post_setup;
 
      private:
       /*!

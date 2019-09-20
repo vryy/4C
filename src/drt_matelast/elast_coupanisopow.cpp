@@ -59,7 +59,7 @@ void MAT::ELASTIC::CoupAnisoPow::UnpackSummand(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupAnisoPow::Setup(DRT::INPUT::LineDefinition* linedef)
+void MAT::ELASTIC::CoupAnisoPow::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   // path if fibers aren't given in .dat file
   if (params_->init_ == 0)

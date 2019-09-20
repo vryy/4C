@@ -13,7 +13,6 @@
 #ifndef BACI_ANISOTROPY_H
 #define BACI_ANISOTROPY_H
 
-/// MAT: anisotropy
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_fixedsizematrix.H"
@@ -21,7 +20,7 @@
 
 namespace MAT
 {
-  // declaration of structural tensor strategy
+  // forward declaration of structural tensor strategy
   namespace ELASTIC
   {
     class StructuralTensorStrategyBase;
@@ -29,6 +28,9 @@ namespace MAT
 
   /*!
    * Class that handles the initialization of the anisotropic parts of a material model.
+   *
+   * \note: This is an optional class. There are anisotropic materials that do not use this
+   * interface.
    */
   class Anisotropy
   {
@@ -60,7 +62,7 @@ namespace MAT
     {
       undefined,  //!< Unknown definition mode
       fiberi,     //!< Fibers are defined with the FIBERi notation in the input file
-      radaxicir,  //!< Fibers are defined
+      radaxicir,  //!< Fibers are defined with RAD-AXI-CIR notation in the input file
       external    //!< Fibers are defined external (likely by the material)
     };
 
@@ -68,7 +70,7 @@ namespace MAT
      * Minimal constructor
      *
      * \note When using this constructor, the initialization mode and the structural tensor strategy
-     * have to be set with Initialize(int, const
+     * have to be set with #Initialize(int, const
      * Teuchos::RCP<ELASTIC::StructuralTensorStrategyBase>&)
      *
      * @param number_fibers Number of fibers needed for the material
@@ -117,17 +119,31 @@ namespace MAT
         const Teuchos::RCP<ELASTIC::StructuralTensorStrategyBase>& structuralTensorStrategy);
 
     /*!
+     * This method should be called as soon as the number of Gauss points is known.
+     * @param numgp Number of Gauss points
+     */
+    void SetNumberOfGaussPoints(int numgp);
+
+    /*!
      * Reads the line definition of an element to get the fibers defined on the element
      *
-     * @param numgp (in) : Number of Gauß-points
      * @param linedef (in) : Input line of the corresponding element
      */
-    virtual void ReadAnisotropyFromElement(int numgp, DRT::INPUT::LineDefinition* linedef);
+    virtual void ReadAnisotropyFromElement(DRT::INPUT::LineDefinition* linedef);
+
+    /*!
+     * This method extracts the Gauss-point fibers written by the elements into the ParameterList
+     * and stores them internally. This method should be called during the PostSetup. This method
+     * will only check for Gauss-point fibers if the initialization mode is #INIT_MODE_NODAL_FIBERS.
+     *
+     * @param params Container that hold the Gauss-point fibers.
+     */
+    virtual void ReadAnisotropyFromParameterList(Teuchos::ParameterList& params);
 
     /**
-     * Sets the fiber vectors at the Gauß point level
+     * Sets the fiber vectors at the Gauss point level
      *
-     * @param gp (in) : Id of the Gauß point
+     * @param gp (in) : Id of the Gauss point
      * @param fibers (in) : Vector of fibers
      */
     virtual void SetFibers(int gp, const std::vector<LINALG::Matrix<3, 1>>& fibers);
@@ -150,7 +166,10 @@ namespace MAT
     }
 
     /**
-     * A notifier method that is called after the initialization of the fibers.
+     * \brief A notifier method that is called after the initialization of the fibers.
+     *
+     * Could be used to setup structural tensors or other quantities that only need to be computed
+     * once per fiber initialization
      */
     virtual void OnFibersInitialized()
     {
@@ -160,10 +179,10 @@ namespace MAT
     /**
      * \brief Setup fibers by the given local coordinate system
      *
-     * This method will be called after the local coordinate system was read from  the RAD-ACI-CIR
+     * This method will be called after the local coordinate system was read from the RAD-ACI-CIR
      * notation.
      *
-     * The columns of locsys matrix are:
+     * The columns of #locsys matrix are:
      *  1.: radial unit vector
      *  2.: axial unit vector
      *  3.: circular unit vector
@@ -182,11 +201,11 @@ namespace MAT
     /**
      * \brief Returns the i-th fiber vector at the Integration point
      *
-     * \note Use gp=GPDEFAULT if element fibers are used
+     * \note Use gp=#GPDEFAULT if element fibers are used
      *
-     * @param gp Id of the integration point (use GPDEFAULT for Element fibers)
-     * @param i Id of the fiber
-     * @return Vector of the fiber
+     * @param gp (in) : Id of the integration point (use #GPDEFAULT for Element fibers)
+     * @param i (in) : Id of the fiber
+     * @return Reference to the vector of the fiber
      */
     LINALG::Matrix<3, 1>& GetFiber(int gp = GPDEFAULT, int i = 0);
 
@@ -194,29 +213,29 @@ namespace MAT
      * \brief Returns the i-th structural tensor at the Integration point in stress-like Voigt
      * notation
      *
-     * \note Use gp=GPDEFAULT if element fibers are used
+     * \note Use gp=#GPDEFAULT if element fibers are used
      *
-     * @param gp Id of the integration point (use GPDEFAULT for Element fibers)
-     * @param i Id of the fiber
-     * @return Vector of the structural tensor in stress-like Voigt notation
+     * @param gp (in) : Id of the integration point (use #GPDEFAULT for Element fibers)
+     * @param i (in) : Id of the fiber
+     * @return Martix of the structural tensor in stress-like Voigt notation
      */
     LINALG::Matrix<6, 1>& GetStructuralTensor_stress(int gp = GPDEFAULT, int i = 0);
 
     /**
      * \brief Returns the i-th structural tensor at the Integration point in tensor notation
      *
-     * \note Use gp=GPDEFAULT if element fibers are used
+     * \note Use gp=#GPDEFAULT if element fibers are used
      *
-     * @param gp Id of the integration point (use GPDEFAULT for Element fibers)
-     * @param i Id of the fiber
-     * @return Vector of the structural tensor in tensor notation
+     * @param gp (in) : Id of the integration point (use #GPDEFAULT for Element fibers)
+     * @param i (in) : Id of the fiber
+     * @return Reference to Matrix of the structural tensor in tensor notation
      */
     LINALG::Matrix<3, 3>& GetStructuralTensor(int gp = GPDEFAULT, int i = 0);
     //@}
 
    protected:
     /*!
-     * Reads an fiber with a specification from the input file definition
+     * Reads a fiber with a specification from the input file definition
      *
      * @param linedef (in) : Input line definition
      * @param specifier (in) : Identifier of the fiber
@@ -236,25 +255,33 @@ namespace MAT
     int GetFibersPerElement();
 
     /*!
-     * Returns the current Gauß point if nodal fibers are used, otherwise returns GPDEFAULT
+     * Returns the current Gauss point if nodal fibers are used, otherwise returns #GPDEFAULT
      *
      * @param params (in) : Parameter list that has to contain the Integration point
-     * @return Current Gauß point id if nodal fibers are used, otherwise GPDEFAULT
+     * @return Current Gauss point id if nodal fibers are used, otherwise #GPDEFAULT
      */
     int GetGPId(Teuchos::ParameterList& params);
 
    private:
+    template <typename T>
+    void PackFiberVector(DRT::PackBuffer& buffer, const std::vector<std::vector<T>>& vct) const;
+
+    template <typename T>
+    void UnpackFiberVector(std::vector<char>::size_type& position, const std::vector<char>& data,
+        std::vector<std::vector<T>>& vct) const;
+
     /*!
-     * Compute and store all structural tensors in stress like Voigt notation for all given fibers.
+     * Compute and store all structural tensors in stress like Voigt notation for all given fibers
+     * internally.
      */
     void ComputeStructuralTensors_stress();
 
     /*!
-     * Compute and store all structural tensors in tensor notation for all given fibers.
+     * Compute and store all structural tensors in tensor notation for all given fibers internally.
      */
     void ComputeStructuralTensors();
 
-    /// Number of Gauß points
+    /// Number of Gauss points
     int numgp_ = 0;
 
     /// Total number of fibers
@@ -264,27 +291,27 @@ namespace MAT
     int init_mode_ = 0;
 
     /**
-     * Fibers of the element. The first index is for the Gauß points, the second index is for the
+     * Fibers of the element. The first index is for the Gauss points, the second index is for the
      * fiber id
      */
     std::vector<std::vector<LINALG::Matrix<3, 1>>> fibers_;
 
     /**
      * Structural tensors of the fibers in stress like Voigt notation. The ordering is the same as
-     * for fibers_
+     * in #fibers_
      */
     std::vector<std::vector<LINALG::Matrix<6, 1>>> structuralTensors_stress_;
 
     /**
-     * Structural tensors of the fibers. The ordering is the same as for fibers_
+     * Structural tensors of the fibers. The ordering is the same as in #fibers_
      */
     std::vector<std::vector<LINALG::Matrix<3, 3>>> structuralTensors_;
 
     /// Flag whether the fibers were set
-    bool fibers_initialized_ = false;
+    bool fibers_initialized_;
 
     /// mode of the definition of fibers
-    DefinitionMode definitionMode_ = DefinitionMode::undefined;
+    DefinitionMode definitionMode_;
 
     /// Structural tensor strategy
     Teuchos::RCP<ELASTIC::StructuralTensorStrategyBase> structuralTensorStrategy_ = Teuchos::null;

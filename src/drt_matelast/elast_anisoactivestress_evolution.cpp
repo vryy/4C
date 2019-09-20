@@ -47,6 +47,7 @@ MAT::ELASTIC::AnisoActiveStress_Evolution::AnisoActiveStress_Evolution(
     MAT::ELASTIC::PAR::AnisoActiveStress_Evolution* params)
     : Anisotropy(1), params_(params), tauc_np_(0.0), tauc_n_(0.0)
 {
+  Anisotropy::Initialize(params->init_, params->StructuralTensorStrategy());
 }
 
 /*----------------------------------------------------------------------*
@@ -72,8 +73,12 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::UnpackSummand(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::AnisoActiveStress_Evolution::Setup(DRT::INPUT::LineDefinition* linedef)
+void MAT::ELASTIC::AnisoActiveStress_Evolution::Setup(
+    int numgp, DRT::INPUT::LineDefinition* linedef)
 {
+  Anisotropy::SetNumberOfGaussPoints(numgp);
+  Anisotropy::ReadAnisotropyFromElement(linedef);
+
   // Setup of active stress model
   tauc_n_ = params_->tauc0_;
   tauc_np_ = params_->tauc0_;
@@ -87,6 +92,13 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::Setup(DRT::INPUT::LineDefinition
           "LAMBDA_LOWER should be lower than LAMBDA_UPPER. Seems reasonable, doesn't it? Dude...");
     }
   }
+}
+
+void MAT::ELASTIC::AnisoActiveStress_Evolution::PostSetup(Teuchos::ParameterList& params)
+{
+  Summand::PostSetup(params);
+
+  Anisotropy::ReadAnisotropyFromParameterList(params);
 }
 
 /*----------------------------------------------------------------------*/
@@ -210,8 +222,12 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::GetFiberVecs(
 {
   if (params_->init_ == INIT_MODE_NODAL_FIBERS)
   {
-    dserror(
-        "It's not possible to get the fibers this way when using nodal fibers. Use GetFiber(...)");
+    // This method expects constant fibers within this element but the init mode is such that
+    // fibers are defined on the Gauss points
+    // We therefore cannot return sth here.
+
+    // ToDo: This may needs improvements later on if needed!
+    return;
   }
 
   fibervecs.push_back(GetFiber(GPDEFAULT, 0));

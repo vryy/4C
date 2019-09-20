@@ -23,7 +23,6 @@ MAT 0   MAT_ElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 #include "so3_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "elasthyper_service.H"
-#include "anisotropy.H"
 
 // forward declaration due to avoid header definition
 namespace MAT
@@ -146,7 +145,7 @@ namespace MAT
   class ElastHyper_TestSuite;
   class ElastHyperService_TestSuite;
 
-  class ElastHyper : public So3Material, public MAT::Anisotropy
+  class ElastHyper : public So3Material
   {
    public:
     friend class MAT::PAR::ElastHyper;
@@ -310,9 +309,9 @@ namespace MAT
      * \param dddPIII[in,out] third derivative of strain energy function w.r.t. principle invariants
      * \param temp[in]        temperature
      */
-    virtual void EvaluateCauchyDerivs(const LINALG::Matrix<3, 1>& prinv, const int eleGID,
+    virtual void EvaluateCauchyDerivs(const LINALG::Matrix<3, 1>& prinv, int eleGID,
         LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII, LINALG::Matrix<10, 1>& dddPIII,
-        const double* temp = nullptr);
+        const double* temp);
 
     /**
      * \brief Evaluate the thermal dependency of the linearizations of the cauchy stress, to be
@@ -352,6 +351,14 @@ namespace MAT
 
     /// setup
     void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
+
+    /*!
+     * Post setup routine that is executed after the input. This class will forward the call to all
+     * summands
+     *
+     * @param params Container for additional information
+     */
+    void PostSetup(Teuchos::ParameterList& params) override;
 
     /// update
     void Update() override;
@@ -395,36 +402,6 @@ namespace MAT
       return params_->polyconvex_ != 0;
     };
 
-    /// @name Derived methods for anisotropy
-    //@{
-
-    /*!
-     * Invoke ReadAnisotropyFromElement on all summands that implement MAT::Anisotropy
-     *
-     * @param numgp (in) : number of Gauß points
-     * @param linedef (in) : Input line definition
-     */
-    void ReadAnisotropyFromElement(int numgp, DRT::INPUT::LineDefinition* linedef) override;
-
-    /*!
-     * Pass Fibers to all summands that implement MAT::Anisotropy
-     *
-     * @param gp (in) : Gaußpoint of the fibers
-     * @param fibers (in) : List of fiber vectors
-     */
-    void SetFibers(int gp, const std::vector<LINALG::Matrix<3, 1>>& fibers) override;
-
-    /*!
-     * \brief Check, whether the fibers are initialized for all summands
-     *
-     * This methods will only check all summands until all are initialized and stores this state
-     * to avoid checking it in every Newton step.
-     *
-     * @return true, if the fibers are already setup, otherwise false
-     */
-    bool FibersInitialized() override;
-    //@}
-
    protected:
     /// Sat Inverse Analysis: add params of summands
     virtual void ElastOptParams(std::map<std::string, int>* pnames);
@@ -440,9 +417,6 @@ namespace MAT
 
     /// map to materials/potential summands
     std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>> potsum_;
-
-    /// Flag whether the anisotropy of all Summands has already been initialized
-    bool anisotropyInitialized_;
   };
 
 }  // namespace MAT

@@ -35,6 +35,9 @@ int DRT::ELEMENTS::So_pyramid5::Evaluate(Teuchos::ParameterList& params,
     Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
     Epetra_SerialDenseVector& elevec3_epetra)
 {
+  // Check whether the solid material PostSetup() routine has already been called and call it if not
+  CheckMaterialPostSetup(params);
+
   LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5> elemat1(elemat1_epetra.A(), true);
   LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5> elemat2(elemat2_epetra.A(), true);
   LINALG::Matrix<NUMDOF_SOP5, 1> elevec1(elevec1_epetra.A(), true);

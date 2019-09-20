@@ -18,7 +18,6 @@ MAT 0   MAT_ElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 #include "elasthyper.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_matelast/elast_summand.H"
-#include "../linalg/linalg_utils_densematrix_inverse.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
@@ -93,24 +92,13 @@ DRT::ParObject* MAT::ElastHyperType::Create(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ElastHyper::ElastHyper()
-    : Anisotropy(0),  // ElastHyper does not have fibers itself, only the summands
-      summandProperties_(),
-      params_(nullptr),
-      potsum_(0),
-      anisotropyInitialized_(false)
-{
-}
+MAT::ElastHyper::ElastHyper() : summandProperties_(), params_(nullptr), potsum_(0) {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::ElastHyper::ElastHyper(MAT::PAR::ElastHyper* params)
-    : Anisotropy(0),  // ElastHyper does not have fibers itself, only the summands
-      summandProperties_(),
-      params_(params),
-      potsum_(0),
-      anisotropyInitialized_(false)
+    : summandProperties_(), params_(params), potsum_(0)
 {
   // make sure the referenced materials in material list have quick access parameters
   std::vector<int>::const_iterator m;
@@ -158,8 +146,6 @@ void MAT::ElastHyper::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, matid);
   summandProperties_.Pack(data);
 
-  AddtoPack(data, static_cast<int>(anisotropyInitialized_));
-
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
@@ -192,11 +178,11 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
   {
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
-      const unsigned int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
       MAT::PAR::Parameter* mat =
           DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::ElastHyper*>(mat);
+        params_ = dynamic_cast<MAT::PAR::ElastHyper*>(mat);
       else
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -205,16 +191,14 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
 
   summandProperties_.Unpack(position, data);
 
-  anisotropyInitialized_ = (bool)ExtractInt(position, data);
-
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     // make sure the referenced materials in material list have quick access parameters
     std::vector<int>::const_iterator m;
     for (m = params_->matids_->begin(); m != params_->matids_->end(); ++m)
     {
-      const int matid = *m;
-      Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
+      const int summand_matid = *m;
+      Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(summand_matid);
       if (sum == Teuchos::null) dserror("Failed to allocate");
       potsum_.push_back(sum);
     }
@@ -301,7 +285,7 @@ void MAT::ElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
   // Setup summands
   for (auto& p : potsum_)
   {
-    p->Setup(linedef);
+    p->Setup(numgp, linedef);
   }
   summandProperties_.Clear();
   ElastHyperProperties(potsum_, summandProperties_);
@@ -310,9 +294,15 @@ void MAT::ElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
     dserror(
         "Never use viscoelastic-materials in Elasthyper-Toolbox. Use Viscoelasthyper-Toolbox "
         "instead.");
+}
 
-  // Read anisotropy
-  ReadAnisotropyFromElement(numgp, linedef);
+void MAT::ElastHyper::PostSetup(Teuchos::ParameterList& params)
+{
+  // Forward PostSetup call to all summands
+  for (auto& p : potsum_)
+  {
+    p->PostSetup(params);
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -506,7 +496,7 @@ void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int eleGID)
 {
-  bool checkpolyconvexity = (params_ != nullptr and (params_->polyconvex_ != 0));
+  bool checkpolyconvexity = (params_ != nullptr and params_->polyconvex_ != 0);
 
   ElastHyperEvaluate(*defgrd, *glstrain, params, *stress, *cmat, eleGID, potsum_,
       summandProperties_, checkpolyconvexity);
@@ -976,66 +966,6 @@ bool MAT::ElastHyper::VisData(
   return (bool)return_val;
 }
 
-/*----------------------------------------------------------------------*/
-/* Invoke on all summands                                               */
-/*----------------------------------------------------------------------*/
-void MAT::ElastHyper::ReadAnisotropyFromElement(
-    int const numgp, DRT::INPUT::LineDefinition* linedef)
-{
-  for (const auto& p : potsum_)
-  {
-    // try to cast
-    Teuchos::RCP<MAT::Anisotropy> anisotropicSummand;
-    if (!Teuchos::is_null(anisotropicSummand = Teuchos::rcp_dynamic_cast<MAT::Anisotropy>(p)))
-    {
-      // Pass to summand
-      anisotropicSummand->ReadAnisotropyFromElement(numgp, linedef);
-    }
-  }
-}
-
-void MAT::ElastHyper::SetFibers(int gp, const std::vector<LINALG::Matrix<3, 1>>& fibers)
-{
-  for (const auto& p : potsum_)
-  {
-    // try to cast
-    Teuchos::RCP<MAT::Anisotropy> anisotropicSummand;
-    if (!Teuchos::is_null(anisotropicSummand = Teuchos::rcp_dynamic_cast<MAT::Anisotropy>(p)))
-    {
-      // Pass to summand
-      anisotropicSummand->SetFibers(gp, fibers);
-    }
-  }
-}
-
-bool MAT::ElastHyper::FibersInitialized()
-{
-  // Check, whether all summands have already been initialized previously
-  if (anisotropyInitialized_)
-  {
-    return true;
-  }
-
-  bool initialized = false;
-  for (const auto& p : potsum_)
-  {
-    // try to cast
-    Teuchos::RCP<MAT::Anisotropy> anisotropicSummand;
-    if (!Teuchos::is_null(anisotropicSummand = Teuchos::rcp_dynamic_cast<MAT::Anisotropy>(p)))
-    {
-      // Pass to summand
-      initialized = initialized && anisotropicSummand->FibersInitialized();
-    }
-  }
-
-  // check if initialized, if so -> cache
-  if (initialized)
-  {
-    anisotropyInitialized_ = true;
-  }
-
-  return initialized;
-}
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const MAT::ELASTIC::Summand> MAT::ElastHyper::GetPotSummandPtr(
