@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 11/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_dem_contact_normal.H"
 
@@ -20,7 +20,7 @@
 #include "../drt_lib/drt_dserror.H"
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 11/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMContactNormalBase::DEMContactNormalBase(
     const Teuchos::ParameterList& params)
@@ -33,9 +33,6 @@ PARTICLEINTERACTION::DEMContactNormalBase::DEMContactNormalBase(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init normal contact handler                                sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactNormalBase::Init()
 {
   if (not((c_ <= 0.0 and k_normal_ > 0.0) or (c_ > 0.0 and v_max_ > 0.0 and k_normal_ <= 0.0)))
@@ -44,35 +41,23 @@ void PARTICLEINTERACTION::DEMContactNormalBase::Init()
         "stiffness, but neither both nor none of them!");
 }
 
-/*---------------------------------------------------------------------------*
- | setup normal contact handler                               sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactNormalBase::Setup(const double& dens_max)
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of normal contact handler                    sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactNormalBase::WriteRestart(
     const int step, const double time) const
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of normal contact handler                     sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactNormalBase::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMContactNormalLinearSpring::DEMContactNormalLinearSpring(
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::DEMContactNormalBase(params)
@@ -80,9 +65,6 @@ PARTICLEINTERACTION::DEMContactNormalLinearSpring::DEMContactNormalLinearSpring(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | setup normal contact handler                               sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactNormalLinearSpring::Setup(const double& dens_max)
 {
   // call base class setup
@@ -93,9 +75,6 @@ void PARTICLEINTERACTION::DEMContactNormalLinearSpring::Setup(const double& dens
     k_normal_ = 2.0 / 3.0 * r_max_ * M_PI * dens_max * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate normal contact force                              sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactNormalLinearSpring::NormalContactForce(const double& gap,
     const double* radius_i, const double* radius_j, const double& v_rel_normal, const double& m_eff,
     double& normalcontactforce) const
@@ -103,9 +82,6 @@ void PARTICLEINTERACTION::DEMContactNormalLinearSpring::NormalContactForce(const
   normalcontactforce = k_normal_ * gap;
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp::DEMContactNormalLinearSpringDamp(
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::DEMContactNormalLinearSpring(params),
@@ -117,9 +93,6 @@ PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp::DEMContactNormalLinearSpr
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init normal contact handler                                sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp::Init()
 {
   // call base class init
@@ -129,9 +102,6 @@ void PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp::Init()
   if (e_ < 0.0) dserror("invalid input parameter COEFF_RESTITUTION for this kind of contact law!");
 }
 
-/*---------------------------------------------------------------------------*
- | setup normal contact handler                               sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp::Setup(const double& dens_max)
 {
   // call base class setup
@@ -148,9 +118,6 @@ void PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp::Setup(const double& 
     d_normal_fac_ = 2.0 * std::sqrt(k_normal_);
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate normal contact force                             sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp::NormalContactForce(const double& gap,
     const double* radius_i, const double* radius_j, const double& v_rel_normal, const double& m_eff,
     double& normalcontactforce) const
@@ -175,9 +142,6 @@ void PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp::NormalContactForce(c
   if (tension_cutoff_ && normalcontactforce > 0.0) normalcontactforce = 0.0;
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMContactNormalNonlinearBase::DEMContactNormalNonlinearBase(
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::DEMContactNormalBase(params), k_tcrit_(0.0)
@@ -185,9 +149,6 @@ PARTICLEINTERACTION::DEMContactNormalNonlinearBase::DEMContactNormalNonlinearBas
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | setup normal contact handler                               sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactNormalNonlinearBase::Setup(const double& dens_max)
 {
   // call base class setup
@@ -207,9 +168,6 @@ void PARTICLEINTERACTION::DEMContactNormalNonlinearBase::Setup(const double& den
         0.2);
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMContactNormalHertz::DEMContactNormalHertz(
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::DEMContactNormalNonlinearBase(params)
@@ -217,9 +175,6 @@ PARTICLEINTERACTION::DEMContactNormalHertz::DEMContactNormalHertz(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate normal contact force                              sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactNormalHertz::NormalContactForce(const double& gap,
     const double* radius_i, const double* radius_j, const double& v_rel_normal, const double& m_eff,
     double& normalcontactforce) const
@@ -227,9 +182,6 @@ void PARTICLEINTERACTION::DEMContactNormalHertz::NormalContactForce(const double
   normalcontactforce = -k_normal_ * (-gap) * std::sqrt(-gap);
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMContactNormalNonlinearDampBase::DEMContactNormalNonlinearDampBase(
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::DEMContactNormalNonlinearBase(params),
@@ -239,9 +191,6 @@ PARTICLEINTERACTION::DEMContactNormalNonlinearDampBase::DEMContactNormalNonlinea
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init normal contact handler                                sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactNormalNonlinearDampBase::Init()
 {
   // call base class init
@@ -251,9 +200,6 @@ void PARTICLEINTERACTION::DEMContactNormalNonlinearDampBase::Init()
   if (d_normal_ < 0.0) dserror("invalid input parameter NORMAL_DAMP for this kind of contact law!");
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMContactNormalLeeHerrmann::DEMContactNormalLeeHerrmann(
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::DEMContactNormalNonlinearDampBase(params)
@@ -261,9 +207,6 @@ PARTICLEINTERACTION::DEMContactNormalLeeHerrmann::DEMContactNormalLeeHerrmann(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate normal contact force                              sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactNormalLeeHerrmann::NormalContactForce(const double& gap,
     const double* radius_i, const double* radius_j, const double& v_rel_normal, const double& m_eff,
     double& normalcontactforce) const
@@ -274,9 +217,6 @@ void PARTICLEINTERACTION::DEMContactNormalLeeHerrmann::NormalContactForce(const 
   if (tension_cutoff_ && normalcontactforce > 0.0) normalcontactforce = 0.0;
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMContactNormalKuwabaraKono::DEMContactNormalKuwabaraKono(
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::DEMContactNormalNonlinearDampBase(params)
@@ -284,9 +224,6 @@ PARTICLEINTERACTION::DEMContactNormalKuwabaraKono::DEMContactNormalKuwabaraKono(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate normal contact force                              sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactNormalKuwabaraKono::NormalContactForce(const double& gap,
     const double* radius_i, const double* radius_j, const double& v_rel_normal, const double& m_eff,
     double& normalcontactforce) const
@@ -298,9 +235,6 @@ void PARTICLEINTERACTION::DEMContactNormalKuwabaraKono::NormalContactForce(const
   if (tension_cutoff_ && normalcontactforce > 0.0) normalcontactforce = 0.0;
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMContactNormalTsuji::DEMContactNormalTsuji(
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::DEMContactNormalNonlinearDampBase(params)
@@ -308,9 +242,6 @@ PARTICLEINTERACTION::DEMContactNormalTsuji::DEMContactNormalTsuji(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate normal contact force                              sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactNormalTsuji::NormalContactForce(const double& gap,
     const double* radius_i, const double* radius_j, const double& v_rel_normal, const double& m_eff,
     double& normalcontactforce) const

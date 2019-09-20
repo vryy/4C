@@ -4,25 +4,25 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 05/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 #ifndef PARTICLE_INTERACTION_DEM_H
 #define PARTICLE_INTERACTION_DEM_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 05/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_base.H"
 
 #include "../drt_inpar/inpar_particle.H"
 
 /*---------------------------------------------------------------------------*
- | forward declarations                                       sfuchs 11/2018 |
+ | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
@@ -33,10 +33,15 @@ namespace PARTICLEINTERACTION
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 05/2018 |
+ | class declarations                                                        |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
+  /*!
+   * \brief discrete element method (DEM) interaction
+   *
+   * \author Sebastian Fuchs \date 05/2018
+   */
   class ParticleInteractionDEM final : public ParticleInteractionBase
   {
    public:

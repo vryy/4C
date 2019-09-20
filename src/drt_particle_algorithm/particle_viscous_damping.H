@@ -2,25 +2,25 @@
 /*! \file
 \brief viscous damping handler for particle simulations
 
-\level 3
+\level 2
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 02/2019 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 #ifndef PARTICLE_VISCOUS_DAMPING_H
 #define PARTICLE_VISCOUS_DAMPING_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 02/2019 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "../drt_particle_engine/particle_typedefs.H"
 
 /*---------------------------------------------------------------------------*
- | forward declarations                                       sfuchs 02/2019 |
+ | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
 namespace IO
 {
@@ -33,33 +33,71 @@ namespace PARTICLEENGINE
 }
 
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 02/2019 |
+ | class declarations                                                        |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEALGORITHM
 {
+  /*!
+   * \brief viscous damping handler for particle simulations
+   *
+   * \author Sebastian Fuchs \date 02/2019
+   */
   class ViscousDampingHandler
   {
    public:
-    //! constructor
+    /*!
+     * \brief constructor
+     *
+     * \author Sebastian Fuchs \date 02/2019
+     *
+     * \param[in] viscdampfac viscous damping factor
+     */
     explicit ViscousDampingHandler(const double viscdampfac);
 
     //! destructor
     ~ViscousDampingHandler(){};
 
-    //! init viscous damping handler
+    /*!
+     * \brief init viscous damping handler
+     *
+     * \author Sebastian Fuchs \date 02/2019
+     */
     void Init();
 
-    //! setup viscous damping handler
+    /*!
+     * \brief setup viscous damping handler
+     *
+     * \author Sebastian Fuchs \date 02/2019
+     *
+     * \param[in] particleengineinterface interface to particle engine
+     */
     void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
 
-    //! write restart of viscous damping handler
+    /*!
+     * \brief write restart of viscous damping handler
+     *
+     * \author Sebastian Fuchs \date 02/2019
+     *
+     * \param[in] step restart step
+     * \param[in] time restart time
+     */
     void WriteRestart(const int step, const double time) const;
 
-    //! read restart of viscous damping handler
+    /*!
+     * \brief read restart of viscous damping handler
+     *
+     * \author Sebastian Fuchs \date 02/2019
+     *
+     * \param[in] reader discretization reader
+     */
     void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
-    //! apply viscous damping contribution
+    /*!
+     * \brief apply viscous damping contribution
+     *
+     * \author Sebastian Fuchs \date 02/2019
+     */
     void ApplyViscousDamping();
 
    private:

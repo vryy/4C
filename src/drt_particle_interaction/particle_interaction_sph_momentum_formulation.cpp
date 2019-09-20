@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 06/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_sph_momentum_formulation.H"
 
@@ -20,59 +20,41 @@
 #include <cmath>
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 06/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHMomentumFormulationBase::SPHMomentumFormulationBase()
 {
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init momentum formulation handler                          sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentumFormulationBase::Init()
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | setup momentum formulation handler                         sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentumFormulationBase::Setup()
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of momentum formulation handler              sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentumFormulationBase::WriteRestart(
     const int step, const double time) const
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of momentum formulation handler               sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentumFormulationBase::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::SPHMomentumFormulationMonaghan()
     : PARTICLEINTERACTION::SPHMomentumFormulationBase()
 {
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate specific coefficient                              sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::SpecificCoefficient(const double* dens_i,
     const double* dens_j, const double* mass_i, const double* mass_j, const double& dWdrij,
     const double& dWdrji, double* speccoeff_ij, double* speccoeff_ji) const
@@ -81,9 +63,6 @@ void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::SpecificCoefficient(co
   if (speccoeff_ji) speccoeff_ji[0] = (dWdrji * mass_i[0]);
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate pressure gradient                                 sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::PressureGradient(const double* dens_i,
     const double* dens_j, const double* press_i, const double* press_j, const double& speccoeff_ij,
     const double& speccoeff_ji, const double* e_ij, double* acc_i, double* acc_j) const
@@ -95,9 +74,6 @@ void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::PressureGradient(const
   if (acc_j) UTILS::vec_addscale(acc_j, speccoeff_ji * fac, e_ij);
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate shear forces                                      sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::ShearForces(const double* dens_i,
     const double* dens_j, const double* vel_i, const double* vel_j, const double& kernelfac,
     const double& visc_i, const double& visc_j, const double& bulk_visc_i,
@@ -135,9 +111,6 @@ void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::ShearForces(const doub
   if (acc_j) UTILS::vec_addscale(acc_j, -speccoeff_ji * fac_conv, e_ij);
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate background pressure (standard formulation)        sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::StandardBackgroundPressure(
     const double* dens_i, const double* dens_j, const double& bg_press_i, const double& bg_press_j,
     const double& speccoeff_ij, const double& speccoeff_ji, const double* e_ij, double* mod_acc_i,
@@ -149,9 +122,6 @@ void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::StandardBackgroundPres
   if (mod_acc_j) UTILS::vec_addscale(mod_acc_j, speccoeff_ji * bg_press_j * fac, e_ij);
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate background pressure (generalized formulation)     sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::GeneralizedBackgroundPressure(
     const double* dens_i, const double* dens_j, const double* mass_i, const double* mass_j,
     const double& mod_bg_press_i, const double& mod_bg_press_j, const double& mod_dWdrij,
@@ -166,9 +136,6 @@ void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::GeneralizedBackgroundP
         mod_acc_j, mod_bg_press_j * (mass_i[0] / UTILS::pow<2>(dens_j[0])) * mod_dWdrji, e_ij);
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate modified velocity contribution                    sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::ModifiedVelocityContribution(
     const double* dens_i, const double* dens_j, const double* vel_i, const double* vel_j,
     const double* mod_vel_i, const double* mod_vel_j, const double& speccoeff_ij,
@@ -196,18 +163,12 @@ void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::ModifiedVelocityContri
   if (acc_j) UTILS::vec_addscale(acc_j, -speccoeff_ji, A_ij_e_ij);
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHMomentumFormulationAdami::SPHMomentumFormulationAdami()
     : PARTICLEINTERACTION::SPHMomentumFormulationBase()
 {
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate specific coefficient                              sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentumFormulationAdami::SpecificCoefficient(const double* dens_i,
     const double* dens_j, const double* mass_i, const double* mass_j, const double& dWdrij,
     const double& dWdrji, double* speccoeff_ij, double* speccoeff_ji) const
@@ -218,9 +179,6 @@ void PARTICLEINTERACTION::SPHMomentumFormulationAdami::SpecificCoefficient(const
   if (speccoeff_ji) speccoeff_ji[0] = fac * (dWdrji / mass_j[0]);
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate pressure gradient                                 sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentumFormulationAdami::PressureGradient(const double* dens_i,
     const double* dens_j, const double* press_i, const double* press_j, const double& speccoeff_ij,
     const double& speccoeff_ji, const double* e_ij, double* acc_i, double* acc_j) const
@@ -231,9 +189,6 @@ void PARTICLEINTERACTION::SPHMomentumFormulationAdami::PressureGradient(const do
   if (acc_j) UTILS::vec_addscale(acc_j, speccoeff_ji * fac, e_ij);
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate shear forces                                      sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentumFormulationAdami::ShearForces(const double* dens_i,
     const double* dens_j, const double* vel_i, const double* vel_j, const double& kernelfac,
     const double& visc_i, const double& visc_j, const double& bulk_visc_i,
@@ -256,9 +211,6 @@ void PARTICLEINTERACTION::SPHMomentumFormulationAdami::ShearForces(const double*
   if (acc_j) UTILS::vec_addscale(acc_j, -speccoeff_ji * fac, vel_ij);
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate background pressure (standard formulation)        sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentumFormulationAdami::StandardBackgroundPressure(
     const double* dens_i, const double* dens_j, const double& bg_press_i, const double& bg_press_j,
     const double& speccoeff_ij, const double& speccoeff_ji, const double* e_ij, double* mod_acc_i,
@@ -268,9 +220,6 @@ void PARTICLEINTERACTION::SPHMomentumFormulationAdami::StandardBackgroundPressur
   if (mod_acc_j) UTILS::vec_addscale(mod_acc_j, speccoeff_ji * bg_press_j, e_ij);
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate background pressure (generalized formulation)     sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentumFormulationAdami::GeneralizedBackgroundPressure(
     const double* dens_i, const double* dens_j, const double* mass_i, const double* mass_j,
     const double& mod_bg_press_i, const double& mod_bg_press_j, const double& mod_dWdrij,
@@ -285,9 +234,6 @@ void PARTICLEINTERACTION::SPHMomentumFormulationAdami::GeneralizedBackgroundPres
         mod_acc_j, (mod_bg_press_j * mass_j[0] * mod_dWdrji) / UTILS::pow<2>(dens_j[0]), e_ij);
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate modified velocity contribution                    sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentumFormulationAdami::ModifiedVelocityContribution(
     const double* dens_i, const double* dens_j, const double* vel_i, const double* vel_j,
     const double* mod_vel_i, const double* mod_vel_j, const double& speccoeff_ij,

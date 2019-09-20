@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 05/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_dem.H"
 
@@ -31,7 +31,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 05/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::ParticleInteractionDEM::ParticleInteractionDEM(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
@@ -40,18 +40,12 @@ PARTICLEINTERACTION::ParticleInteractionDEM::ParticleInteractionDEM(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | destructor                                                 sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::ParticleInteractionDEM::~ParticleInteractionDEM()
 {
   // note: destructor declaration here since at compile-time a complete type
   // of class T as used in class member std::unique_ptr<T> ptr_T_ is required
 }
 
-/*---------------------------------------------------------------------------*
- | init particle interaction handler                          sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionDEM::Init()
 {
   // call base class init
@@ -70,9 +64,6 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::Init()
   InitAdhesionHandler();
 }
 
-/*---------------------------------------------------------------------------*
- | setup particle interaction handler                         sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionDEM::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface)
@@ -96,9 +87,6 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::Setup(
         neighborpairs_, historypairs_, contact_->GetNormalContactStiffness());
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of particle interaction handler              sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionDEM::WriteRestart(
     const int step, const double time) const
 {
@@ -118,9 +106,6 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::WriteRestart(
   if (adhesion_) adhesion_->WriteRestart(step, time);
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of particle interaction handler               sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionDEM::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
@@ -140,9 +125,6 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::ReadRestart(
   if (adhesion_) adhesion_->ReadRestart(reader);
 }
 
-/*---------------------------------------------------------------------------*
- | insert interaction dependent states of all particle types  sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionDEM::InsertParticleStatesOfParticleTypes(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
 {
@@ -160,9 +142,6 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::InsertParticleStatesOfParticle
   contact_->InsertParticleStatesOfParticleTypes(particlestatestotypes);
 }
 
-/*---------------------------------------------------------------------------*
- | set initial states                                         sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialStates()
 {
   // set initial radius
@@ -172,9 +151,6 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialStates()
   SetInitialMass();
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate particle interactions                             sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateInteractions()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateInteractions");
@@ -204,9 +180,6 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateInteractions()
   historypairs_->UpdateHistoryPairs();
 }
 
-/*---------------------------------------------------------------------------*
- | maximum interaction distance (on this processor)           sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::ParticleInteractionDEM::MaxInteractionDistance() const
 {
   // particle contact interaction distance
@@ -218,27 +191,18 @@ double PARTICLEINTERACTION::ParticleInteractionDEM::MaxInteractionDistance() con
   return interactiondistance;
 }
 
-/*---------------------------------------------------------------------------*
- | distribute interaction history                             sfuchs 03/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionDEM::DistributeInteractionHistory() const
 {
   // distribute history pairs
   historypairs_->DistributeHistoryPairs();
 }
 
-/*---------------------------------------------------------------------------*
- | communicate interaction history                            sfuchs 03/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionDEM::CommunicateInteractionHistory() const
 {
   // communicate history pairs
   historypairs_->CommunicateHistoryPairs();
 }
 
-/*---------------------------------------------------------------------------*
- | set current step size                                      sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionDEM::SetCurrentStepSize(const double currentstepsize)
 {
   // call base class method
@@ -248,9 +212,6 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetCurrentStepSize(const doubl
   contact_->SetCurrentStepSize(currentstepsize);
 }
 
-/*---------------------------------------------------------------------------*
- | init neighbor pair handler                                 sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionDEM::InitNeighborPairHandler()
 {
   // create neighbor pair handler
@@ -260,9 +221,6 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::InitNeighborPairHandler()
   neighborpairs_->Init();
 }
 
-/*---------------------------------------------------------------------------*
- | init history pair handler                                  sfuchs 03/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionDEM::InitHistoryPairHandler()
 {
   // create history pair handler
@@ -272,9 +230,6 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::InitHistoryPairHandler()
   historypairs_->Init();
 }
 
-/*---------------------------------------------------------------------------*
- | init contact handler                                       sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionDEM::InitContactHandler()
 {
   // create contact handler
@@ -285,9 +240,6 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::InitContactHandler()
   contact_->Init();
 }
 
-/*---------------------------------------------------------------------------*
- | init adhesion handler                                      sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionDEM::InitAdhesionHandler()
 {
   // get type of adhesion law
@@ -303,9 +255,6 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::InitAdhesionHandler()
   if (adhesion_) adhesion_->Init();
 }
 
-/*---------------------------------------------------------------------------*
- | set initial radius                                         sfuchs 05/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialRadius()
 {
   // get type of (random) particle radius distribution
@@ -422,9 +371,6 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialRadius()
   }
 }
 
-/*---------------------------------------------------------------------------*
- | set initial mass                                           sfuchs 05/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialMass()
 {
   // iterate over particle types
@@ -458,9 +404,6 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialMass()
   }
 }
 
-/*---------------------------------------------------------------------------*
- | clear force and moment states of particles                 sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionDEM::ClearForceAndMomentStates() const
 {
   // iterate over particle types
@@ -479,9 +422,6 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::ClearForceAndMomentStates() co
   }
 }
 
-/*---------------------------------------------------------------------------*
- | compute acceleration from force and moment                 sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionDEM::ComputeAcceleration() const
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionDEM::ComputeAcceleration");

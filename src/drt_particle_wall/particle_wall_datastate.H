@@ -2,27 +2,27 @@
 /*! \file
 \brief wall data state container for particle wall handler
 
-\level 3
+\level 2
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 05/2019 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 #ifndef PARTICLE_WALL_DATASTATE_H
 #define PARTICLE_WALL_DATASTATE_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 05/2019 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
 /*---------------------------------------------------------------------------*
- | forward declarations                                       sfuchs 05/2019 |
+ | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
 namespace DRT
 {
@@ -30,29 +30,60 @@ namespace DRT
 }
 
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 05/2019 |
+ | class declarations                                                        |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEWALL
 {
+  /*!
+   * \brief wall data state container
+   *
+   * \author Sebastian Fuchs \date 05/2019
+   */
   class WallDataState final
   {
    public:
-    //! constructor
+    /*!
+     * \brief constructor
+     *
+     * \author Sebastian Fuchs \date 05/2019
+     *
+     * \param[in] params particle simulation parameter list
+     */
     explicit WallDataState(const Teuchos::ParameterList& params);
 
     //! destructor
     ~WallDataState(){};
 
-    //! init wall data state container
+    /*!
+     * \brief init wall data state container
+     *
+     * \author Sebastian Fuchs \date 05/2019
+     */
     void Init();
 
-    //! setup wall data state container
+    /*!
+     * \brief setup wall data state container
+     *
+     * \author Sebastian Fuchs \date 05/2019
+     */
     void Setup(Teuchos::RCP<const DRT::Discretization> const& walldiscretization);
 
-    //! check for correct maps
+    /*!
+     * \brief check for correct maps
+     *
+     * \author Sebastian Fuchs \date 05/2019
+     *
+     * \params[in] walldiscretization wall discretization
+     */
     void CheckForCorrectMaps(Teuchos::RCP<const DRT::Discretization> const& walldiscretization);
 
-    //! update maps of state vectors
+    /*!
+     * \brief update maps of state vectors
+     *
+     * \author Sebastian Fuchs \date 05/2019
+     *
+     * \params[in] walldiscretization wall discretization
+     */
     void UpdateMapsOfStateVectors(
         Teuchos::RCP<const DRT::Discretization> const& walldiscretization);
 

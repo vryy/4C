@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 05/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_base.H"
 
@@ -20,7 +20,7 @@
 #include "../drt_particle_engine/particle_container.H"
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 05/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::ParticleInteractionBase::ParticleInteractionBase(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
@@ -29,9 +29,6 @@ PARTICLEINTERACTION::ParticleInteractionBase::ParticleInteractionBase(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init particle interaction handler                          sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionBase::Init()
 {
   // init particle material handler
@@ -41,9 +38,6 @@ void PARTICLEINTERACTION::ParticleInteractionBase::Init()
   InitParticleInteractionWriter();
 }
 
-/*---------------------------------------------------------------------------*
- | setup particle interaction handler                         sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionBase::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface)
@@ -67,9 +61,6 @@ void PARTICLEINTERACTION::ParticleInteractionBase::Setup(
   gravity_.resize(3, 0.0);
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of particle interaction handler              sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionBase::WriteRestart(
     const int step, const double time) const
 {
@@ -80,9 +71,6 @@ void PARTICLEINTERACTION::ParticleInteractionBase::WriteRestart(
   particleinteractionwriter_->WriteRestart(step, time);
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of particle interaction handler               sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionBase::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
@@ -93,9 +81,6 @@ void PARTICLEINTERACTION::ParticleInteractionBase::ReadRestart(
   particleinteractionwriter_->ReadRestart(reader);
 }
 
-/*---------------------------------------------------------------------------*
- | check particle interaction distance concerning bin size    sfuchs 08/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionBase::
     CheckParticleInteractionDistanceConcerningBinSize() const
 {
@@ -125,25 +110,16 @@ void PARTICLEINTERACTION::ParticleInteractionBase::
   }
 }
 
-/*---------------------------------------------------------------------------*
- | set current time                                           sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionBase::SetCurrentTime(const double currenttime)
 {
   time_ = currenttime;
 }
 
-/*---------------------------------------------------------------------------*
- | set current step size                                      sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionBase::SetCurrentStepSize(const double currentstepsize)
 {
   dt_ = currentstepsize;
 }
 
-/*---------------------------------------------------------------------------*
- | set current write result flag                              sfuchs 08/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionBase::SetCurrentWriteResultFlag(
     bool writeresultsthisstep)
 {
@@ -151,17 +127,11 @@ void PARTICLEINTERACTION::ParticleInteractionBase::SetCurrentWriteResultFlag(
   particleinteractionwriter_->SetCurrentWriteResultFlag(writeresultsthisstep);
 }
 
-/*---------------------------------------------------------------------------*
- | set gravity                                                sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionBase::SetGravity(std::vector<double>& gravity)
 {
   gravity_ = gravity;
 }
 
-/*---------------------------------------------------------------------------*
- | write interaction runtime output                           sfuchs 08/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionBase::WriteInteractionRuntimeOutput(
     const int step, const double time)
 {
@@ -169,9 +139,6 @@ void PARTICLEINTERACTION::ParticleInteractionBase::WriteInteractionRuntimeOutput
   particleinteractionwriter_->WriteParticleInteractionRuntimeOutput(step, time);
 }
 
-/*---------------------------------------------------------------------------*
- | init particle material handler                             sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionBase::InitParticleMaterialHandler()
 {
   // create particle material handler
@@ -181,9 +148,6 @@ void PARTICLEINTERACTION::ParticleInteractionBase::InitParticleMaterialHandler()
   particlematerial_->Init();
 }
 
-/*---------------------------------------------------------------------------*
- | init particle interaction writer                           sfuchs 08/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionBase::InitParticleInteractionWriter()
 {
   // create particle interaction writer
@@ -194,9 +158,6 @@ void PARTICLEINTERACTION::ParticleInteractionBase::InitParticleInteractionWriter
   particleinteractionwriter_->Init();
 }
 
-/*---------------------------------------------------------------------------*
- | maximum particle radius (on this processor)                sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::ParticleInteractionBase::MaxParticleRadius() const
 {
   // init value of maximum radius

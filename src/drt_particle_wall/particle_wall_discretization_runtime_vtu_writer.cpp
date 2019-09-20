@@ -2,14 +2,14 @@
 /*! \file
 \brief write visualization output for particle wall discretization in vtk/vtu format at runtime
 
-\level 3
+\level 2
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 08/2019 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_wall_discretization_runtime_vtu_writer.H"
 
@@ -22,7 +22,7 @@
 #include "../drt_io/discretization_runtime_vtu_writer.H"
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 08/2019 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::WallDiscretizationRuntimeVtuWriter()
     : setuptime_(0.0)
@@ -30,18 +30,12 @@ PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::WallDiscretizationRuntimeVtuWr
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | destructor                                                 sfuchs 08/2019 |
- *---------------------------------------------------------------------------*/
 PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::~WallDiscretizationRuntimeVtuWriter()
 {
   // note: destructor declaration here since at compile-time a complete type
   // of class T as used in class member std::unique_ptr<T> ptr_T_ is required
 }
 
-/*---------------------------------------------------------------------------*
- | init wall discretization runtime vtu writer                sfuchs 08/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::Init(
     const Teuchos::RCP<DRT::Discretization> walldiscretization,
     const std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate)
@@ -57,9 +51,6 @@ void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::Init(
       std::unique_ptr<DiscretizationRuntimeVtuWriter>(new DiscretizationRuntimeVtuWriter());
 }
 
-/*---------------------------------------------------------------------------*
- | setup wall discretization runtime vtu writer               sfuchs 08/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::Setup(bool write_binary_output)
 {
   // we need a better upper bound for total number of time steps here
@@ -71,18 +62,12 @@ void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::Setup(bool write_binary_o
       walldiscretization_, max_number_timesteps_to_be_written, setuptime_, write_binary_output);
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of wall discretization runtime vtu writer    sfuchs 08/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::WriteRestart(
     const int step, const double time) const
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of wall discretization runtime vtu writer     sfuchs 08/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
@@ -90,9 +75,6 @@ void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::ReadRestart(
   setuptime_ = reader->ReadDouble("time");
 }
 
-/*---------------------------------------------------------------------------*
- | write wall discretization runtime output                   sfuchs 08/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::WriteWallDiscretizationRuntimeOutput(
     const int step, const double time) const
 {

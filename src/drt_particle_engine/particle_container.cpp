@@ -1,22 +1,22 @@
 /*---------------------------------------------------------------------------*/
 /*! \file
-\brief smart particle container class
+\brief smart particle container
 
-\level 3
+\level 1
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 03/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_container.H"
 
 #include "../drt_lib/drt_dserror.H"
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 03/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEENGINE::ParticleContainer::ParticleContainer()
     : containersize_(0), particlestored_(0), statesvectorsize_(0), globalids_(0, -1)
@@ -24,17 +24,11 @@ PARTICLEENGINE::ParticleContainer::ParticleContainer()
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init particle container                                    sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleContainer::Init()
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | setup particle container                                   sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleContainer::Setup(
     int numContainerSize, const std::set<StateEnum>& stateEnumSet)
 {
@@ -65,9 +59,6 @@ void PARTICLEENGINE::ParticleContainer::Setup(
   }
 }
 
-/*---------------------------------------------------------------------------*
- | increase the container size                                sfuchs 04/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleContainer::IncreaseContainerSize()
 {
   // size of container is doubled
@@ -84,9 +75,6 @@ void PARTICLEENGINE::ParticleContainer::IncreaseContainerSize()
   }
 }
 
-/*---------------------------------------------------------------------------*
- | decrease the container size                                sfuchs 04/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleContainer::DecreaseContainerSize()
 {
   // size of container is halved
@@ -113,9 +101,6 @@ void PARTICLEENGINE::ParticleContainer::DecreaseContainerSize()
   }
 }
 
-/*---------------------------------------------------------------------------*
- | add particle to particle container and get index           sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleContainer::AddParticle(
     int& index, int globalid, const ParticleStates& particle)
 {
@@ -158,9 +143,6 @@ void PARTICLEENGINE::ParticleContainer::AddParticle(
   particlestored_++;
 }
 
-/*---------------------------------------------------------------------------*
- | replace particle in particle container at given index      sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleContainer::ReplaceParticle(
     int index, int globalid, const ParticleStates& particle)
 {
@@ -196,9 +178,6 @@ void PARTICLEENGINE::ParticleContainer::ReplaceParticle(
   }
 }
 
-/*---------------------------------------------------------------------------*
- | get particle at index from particle container              sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleContainer::GetParticle(
     int index, int& globalid, ParticleStates& particle) const
 {
@@ -224,9 +203,6 @@ void PARTICLEENGINE::ParticleContainer::GetParticle(
   }
 }
 
-/*---------------------------------------------------------------------------*
- | remove particle from particle container                    sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleContainer::RemoveParticle(int index)
 {
 #ifdef DEBUG
@@ -250,9 +226,6 @@ void PARTICLEENGINE::ParticleContainer::RemoveParticle(int index)
   }
 }
 
-/*---------------------------------------------------------------------------*
- | get minimum stored value of state                          sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 double PARTICLEENGINE::ParticleContainer::GetMinValueOfState(StateEnum stateEnum) const
 {
 #ifdef DEBUG
@@ -271,9 +244,6 @@ double PARTICLEENGINE::ParticleContainer::GetMinValueOfState(StateEnum stateEnum
   return min;
 }
 
-/*---------------------------------------------------------------------------*
- | get maximum stored value of state                          sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 double PARTICLEENGINE::ParticleContainer::GetMaxValueOfState(StateEnum stateEnum) const
 {
 #ifdef DEBUG

@@ -1,30 +1,39 @@
 /*---------------------------------------------------------------------------*/
 /*! \file
-\brief smart particle container class
+\brief smart particle container
 
-\level 3
+\level 1
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 03/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 #ifndef PARTICLE_CONTAINER_H
 #define PARTICLE_CONTAINER_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 03/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_enums.H"
 #include "particle_typedefs.H"
 
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 03/2018 |
+ | class declarations                                                        |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEENGINE
 {
+  /*!
+   * \brief smart particle container class
+   *
+   * A particle container class that allows for dynamic adding and removing of particles while
+   * avoiding both expensive memory reallocations and memory fragmentation. Fast access to particle
+   * states is provided.
+   *
+   * \author Sebastian Fuchs \date 03/2018
+   */
   class ParticleContainer final
   {
    public:
@@ -34,19 +43,49 @@ namespace PARTICLEENGINE
     //! destructor
     ~ParticleContainer(){};
 
-    //! init particle container
+    /*!
+     * \brief init particle container
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     */
     void Init();
 
-    //! setup particle container
+    /*!
+     * \brief setup particle container
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     *
+     * \param[in] numContainerSize size of particle container
+     * \param[in] stateEnumSet     set of particle states to be stored
+     */
     void Setup(int numContainerSize, const std::set<StateEnum>& stateEnumSet);
 
-    //! increase the container size
+    //! \name manipulate container size
+    //! @{
+
+    /*!
+     * \brief increase the container size
+     *
+     * The size of the particle container is doubled to reduce memory (re-)allocation costs.
+     *
+     * \author Sebastian Fuchs \date 04/2018
+     */
     void IncreaseContainerSize();
 
-    //! decrease the container size
+    /*!
+     * \brief decrease the container size
+     *
+     * The size of the particle container is halved.
+     *
+     * \author Sebastian Fuchs \date 04/2018
+     */
     void DecreaseContainerSize();
 
-    //! check and decrease the container size
+    /*!
+     * \brief check and decrease the container size
+     *
+     * \author Sebastian Fuchs \date 04/2018
+     */
     inline void CheckAndDecreaseContainerSize()
     {
 #ifdef DEBUG
@@ -56,26 +95,91 @@ namespace PARTICLEENGINE
             particlestored_, containersize_);
 #endif
 
-      // decrease the container size
       if (particlestored_ < 0.45 * containersize_) DecreaseContainerSize();
     };
 
-    //! clear particle container
+    //! @}
+
+    //! \name manage particles stored in container
+    //! @{
+
+    /*!
+     * \brief clear particle container
+     *
+     * Clear the particle container by resetting the number of particles stored in the container.
+     * The container size remains untouched. The global id and the particle states are not cleared.
+     *
+     * \author Sebastian Fuchs \date 04/2018
+     */
     inline void ClearContainer() { particlestored_ = 0; };
 
-    //! add particle to particle container and get index
+    /*!
+     * \brief add particle to particle container and get index
+     *
+     * Add a particle to the particle container and return the index of the particle in the
+     * container. The size of the particle container is increased if necessary. A state that is not
+     * handed over is initialized to zero.
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     *
+     * \param[out] index    index of particle in container
+     * \param[in]  globalid global id of particle
+     * \param[in]  particle states of particle
+     */
     void AddParticle(int& index, int globalid, const ParticleStates& particle);
 
-    //! replace particle in particle container at given index
+    /*!
+     * \brief replace particle in particle container at given index
+     *
+     * Replace a particle at the given index in the particle container, meaning the global id and
+     * the particle states are overwritten. A negative global id is ignored. A state that is not
+     * handed over is untouched.
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     *
+     * \param[in] index    index of particle in container
+     * \param[in] globalid global id of particle
+     * \param[in] particle states of particle
+     */
     void ReplaceParticle(int index, int globalid, const ParticleStates& particle);
 
-    //! get particle at index from particle container
+    /*!
+     * \brief get particle at index from particle container
+     *
+     * Get a particle at the given index from the particle container.
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     *
+     * \param[in]  index    index of particle in container
+     * \param[out] globalid global id of particle
+     * \param[out] particle states of particle
+     */
     void GetParticle(int index, int& globalid, ParticleStates& particle) const;
 
-    //! remove particle from particle container
+    /*!
+     * \brief remove particle from particle container
+     *
+     * Remove a particle at the given index from the particle container. The particle is swapped
+     * with the particle at the end of the container and the number of particles stored in the
+     * container is decreased.
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     *
+     * \param[in] index index of particle in container
+     */
     void RemoveParticle(int index);
 
-    //! return particle state dimension
+    //! @}
+
+    /*!
+     * \brief get particle state dimension
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     *
+     * \param[in] stateEnum particle state enum
+     *
+     * \return dimension of particle state
+     */
     inline int GetParticleStateDim(StateEnum stateEnum)
     {
 #ifdef DEBUG
@@ -87,7 +191,19 @@ namespace PARTICLEENGINE
       return statedim_[stateEnum];
     };
 
-    //! return pointer to state of a particle at index
+    //! \name access global id and particle states
+    //! @{
+
+    /*!
+     * \brief get pointer to state of a particle at index
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     *
+     * \param[in] stateEnum particle state enum
+     * \param[in] index     index of particle in container
+     *
+     * \return pointer to particle state
+     */
     inline double* GetPtrToParticleState(StateEnum stateEnum, int index)
     {
 #ifdef DEBUG
@@ -102,7 +218,15 @@ namespace PARTICLEENGINE
       return &((states_[stateEnum])[index * statedim_[stateEnum]]);
     };
 
-    //! return pointer to global id of a particle at index
+    /*!
+     * \brief get pointer to global id of a particle at index
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     *
+     * \param[in] index index of particle in container
+     *
+     * \return pointer to global id
+     */
     inline int* GetPtrToParticleGlobalID(int index)
     {
 #ifdef DEBUG
@@ -114,7 +238,19 @@ namespace PARTICLEENGINE
       return &(globalids_[index]);
     };
 
-    //! scale state of particles
+    //! @}
+
+    //! \name manipulate particle states
+    //! @{
+
+    /*!
+     * \brief scale state of particles
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     *
+     * \param[in] fac       scale factor
+     * \param[in] stateEnum particle state enum
+     */
     inline void ScaleState(double fac, StateEnum stateEnum)
     {
 #ifdef DEBUG
@@ -127,7 +263,16 @@ namespace PARTICLEENGINE
         (states_[stateEnum])[i] *= fac;
     };
 
-    //! scale and add states to update state of particles
+    /*!
+     * \brief add scaled states to first state of particles
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     *
+     * \param[in] facA       first scale factor
+     * \param[in] stateEnumA first particle state enum
+     * \param[in] facB       second scale factor
+     * \param[in] stateEnumB second particle state enum
+     */
     inline void UpdateState(double facA, StateEnum stateEnumA, double facB, StateEnum stateEnumB)
     {
 #ifdef DEBUG
@@ -148,7 +293,14 @@ namespace PARTICLEENGINE
             facA * (states_[stateEnumA])[i] + facB * (states_[stateEnumB])[i];
     };
 
-    //! set state to particles
+    /*!
+     * \brief set given state to all particles
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     *
+     * \param[in] val       particle state
+     * \param[in] stateEnum particle state enum
+     */
     inline void SetState(std::vector<double> val, StateEnum stateEnum)
     {
 #ifdef DEBUG
@@ -165,7 +317,13 @@ namespace PARTICLEENGINE
           (states_[stateEnum])[i * statedim_[stateEnum] + dim] = val[dim];
     };
 
-    //! clear state of particles
+    /*!
+     * \brief clear state of all particles
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     *
+     * \param[in] stateEnum particle state enum
+     */
     inline void ClearState(StateEnum stateEnum)
     {
 #ifdef DEBUG
@@ -178,19 +336,55 @@ namespace PARTICLEENGINE
         (states_[stateEnum])[i] = 0.0;
     };
 
-    //! get stored particle states
+    //! @}
+
+    /*!
+     * \brief get stored particle states
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     *
+     * \return stored particle state enums
+     */
     inline const std::set<StateEnum>& GetStoredStates() const { return storedstates_; };
 
-    //! get size of particle container
+    /*!
+     * \brief get size of particle container
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     *
+     * \return size of particle container
+     */
     inline int ContainerSize() const { return containersize_; };
 
-    //! get number of particles stored in container
+    /*!
+     * \brief get number of particles stored in container
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     *
+     * \return number of particles stored in container
+     */
     inline int ParticlesStored() const { return particlestored_; };
 
-    //! get minimum stored value of state
+    /*!
+     * \brief get minimum stored value of state in container
+     *
+     * \author Sebastian Fuchs \date 11/2018
+     *
+     * \param[in] stateEnum particle state enum
+     *
+     * \return minimum stored value of state in container
+     */
     double GetMinValueOfState(StateEnum stateEnum) const;
 
-    //! get maximum stored value of state
+    /*!
+     * \brief get maximum stored value of state in container
+     *
+     * \author Sebastian Fuchs \date 11/2018
+     *
+     * \param[in] stateEnum particle state enum
+     *
+     * \return maximum stored value of state in container
+     */
     double GetMaxValueOfState(StateEnum stateEnum) const;
 
    private:
@@ -209,10 +403,10 @@ namespace PARTICLEENGINE
     //! global ids of stored particles
     std::vector<int> globalids_;
 
-    //! particle states in container indexed by state enum
+    //! particle states in container indexed by particle state enum
     std::vector<std::vector<double>> states_;
 
-    //! particle state dimension indexed by state enum
+    //! particle state dimension indexed by particle state enum
     std::vector<int> statedim_;
   };
 

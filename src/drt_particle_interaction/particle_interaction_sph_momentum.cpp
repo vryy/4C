@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 08/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_sph_momentum.H"
 
@@ -31,7 +31,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 08/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHMomentum::SPHMomentum(const Teuchos::ParameterList& params)
     : params_sph_(params),
@@ -47,18 +47,12 @@ PARTICLEINTERACTION::SPHMomentum::SPHMomentum(const Teuchos::ParameterList& para
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | destructor                                                 sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHMomentum::~SPHMomentum()
 {
   // note: destructor declaration here since at compile-time a complete type
   // of class T as used in class member std::unique_ptr<T> ptr_T_ is required
 }
 
-/*---------------------------------------------------------------------------*
- | init momentum handler                                      sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentum::Init()
 {
   // init momentum formulation handler
@@ -79,9 +73,6 @@ void PARTICLEINTERACTION::SPHMomentum::Init()
         "'TRANSPORT_VELOCITY' is applied!");
 }
 
-/*---------------------------------------------------------------------------*
- | setup momentum handler                                     sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentum::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
@@ -130,9 +121,6 @@ void PARTICLEINTERACTION::SPHMomentum::Setup(
   }
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of momentum handler                          sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentum::WriteRestart(const int step, const double time) const
 {
   // write restart of momentum formulation handler
@@ -142,9 +130,6 @@ void PARTICLEINTERACTION::SPHMomentum::WriteRestart(const int step, const double
   artificialviscosity_->WriteRestart(step, time);
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of momentum handler                           sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentum::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
@@ -155,9 +140,6 @@ void PARTICLEINTERACTION::SPHMomentum::ReadRestart(
   artificialviscosity_->ReadRestart(reader);
 }
 
-/*---------------------------------------------------------------------------*
- | insert momentum evaluation dependent states                sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentum::InsertParticleStatesOfParticleTypes(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
     const
@@ -181,9 +163,6 @@ void PARTICLEINTERACTION::SPHMomentum::InsertParticleStatesOfParticleTypes(
   }
 }
 
-/*---------------------------------------------------------------------------*
- | add momentum contribution to acceleration field            sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentum::AddAccelerationContribution() const
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHMomentum::AddAccelerationContribution");
@@ -192,9 +171,6 @@ void PARTICLEINTERACTION::SPHMomentum::AddAccelerationContribution() const
   MomentumEquationParticleContribution();
 }
 
-/*---------------------------------------------------------------------------*
- | init momentum formulation handler                          sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentum::InitMomentumFormulationHandler()
 {
   // get type of smoothed particle hydrodynamics momentum formulation
@@ -228,9 +204,6 @@ void PARTICLEINTERACTION::SPHMomentum::InitMomentumFormulationHandler()
   momentumformulation_->Init();
 }
 
-/*---------------------------------------------------------------------------*
- | init artificial viscosity handler                          sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentum::InitArtificialViscosityHandler()
 {
   // create artificial viscosity handler
@@ -241,9 +214,6 @@ void PARTICLEINTERACTION::SPHMomentum::InitArtificialViscosityHandler()
   artificialviscosity_->Init();
 }
 
-/*---------------------------------------------------------------------------*
- | momentum equation (particle contribution)                  sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleContribution() const
 {
   TEUCHOS_FUNC_TIME_MONITOR(

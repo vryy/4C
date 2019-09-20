@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 07/2019 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_dem_adhesion_surface_energy.H"
 
@@ -20,7 +20,7 @@
 #include "../drt_lib/drt_dserror.H"
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 07/2019 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyBase::DEMAdhesionSurfaceEnergyBase(
     const Teuchos::ParameterList& params)
@@ -29,17 +29,11 @@ PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyBase::DEMAdhesionSurfaceEnergyBase(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init adhesion surface energy handler                       sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyBase::Init()
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | setup adhesion surface energy handler                      sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyBase::Setup()
 {
   // safety check
@@ -47,27 +41,18 @@ void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyBase::Setup()
     dserror("non-positive adhesion surface energy!");
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of adhesion surface energy handler           sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyBase::WriteRestart(
     const int step, const double time) const
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of adhesion surface energy handler            sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyBase::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyConstant::DEMAdhesionSurfaceEnergyConstant(
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyBase(params)
@@ -75,9 +60,6 @@ PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyConstant::DEMAdhesionSurfaceEnergyC
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionBase::
     DEMAdhesionSurfaceEnergyDistributionBase(const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyBase(params),
@@ -87,9 +69,6 @@ PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionBase::
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | setup adhesion surface energy handler                      sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionBase::Setup()
 {
   // call base class setup
@@ -100,9 +79,6 @@ void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionBase::Setup()
   if (cutofffactor_ < 0.0) dserror("negative cutoff factor of adhesion surface energy!");
 }
 
-/*---------------------------------------------------------------------------*
- | adjust surface energy to allowed bounds                    sfuchs 08/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionBase::
     AdjustSurfaceEnergyToAllowedBounds(
         const double& mean_surface_energy, double& surface_energy) const
@@ -117,9 +93,6 @@ void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionBase::
     surface_energy = adhesion_surface_energy_min;
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionNormal::
     DEMAdhesionSurfaceEnergyDistributionNormal(const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionBase(params)
@@ -127,9 +100,6 @@ PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionNormal::
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | get adhesion surface energy                                sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionNormal::AdhesionSurfaceEnergy(
     const double& mean_surface_energy, double& surface_energy) const
 {
@@ -143,9 +113,6 @@ void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionNormal::AdhesionSu
   AdjustSurfaceEnergyToAllowedBounds(mean_surface_energy, surface_energy);
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionLogNormal::
     DEMAdhesionSurfaceEnergyDistributionLogNormal(const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionBase(params)
@@ -153,9 +120,6 @@ PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionLogNormal::
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | get adhesion surface energy                                sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionLogNormal::AdhesionSurfaceEnergy(
     const double& mean_surface_energy, double& surface_energy) const
 {

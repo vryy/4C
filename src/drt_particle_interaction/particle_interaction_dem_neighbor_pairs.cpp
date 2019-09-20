@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 11/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_dem_neighbor_pairs.H"
 
@@ -29,24 +29,18 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 11/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMNeighborPairs::DEMNeighborPairs()
 {
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init neighbor pair handler                                 sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMNeighborPairs::Init()
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | setup neighbor pair handler                                sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMNeighborPairs::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface)
@@ -61,26 +55,17 @@ void PARTICLEINTERACTION::DEMNeighborPairs::Setup(
   particlewallinterface_ = particlewallinterface;
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of neighbor pair handler                     sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMNeighborPairs::WriteRestart(const int step, const double time) const
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of neighbor pair handler                      sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMNeighborPairs::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate neighbor pairs                                    sfuchs 05/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateNeighborPairs()
 {
   // evaluate particle pairs
@@ -90,9 +75,6 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateNeighborPairs()
   if (particlewallinterface_) EvaluateParticleWallPairs();
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate adhesion neighbor pairs                           sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateNeighborPairsAdhesion(
     const double& adhesion_distance)
 {
@@ -103,9 +85,6 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateNeighborPairsAdhesion(
   if (particlewallinterface_) EvaluateParticleWallPairsAdhesion(adhesion_distance);
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate particle pairs                                    sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticlePairs()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticlePairs");
@@ -184,9 +163,6 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticlePairs()
   }
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate particle-wall pairs                               sfuchs 05/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairs()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairs");
@@ -395,9 +371,6 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairs()
   }
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate adhesion particle pairs                           sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticlePairsAdhesion(
     const double& adhesion_distance)
 {
@@ -477,9 +450,6 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticlePairsAdhesion(
   }
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate adhesion particle-wall pairs                      sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairsAdhesion(
     const double& adhesion_distance)
 {

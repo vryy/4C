@@ -2,14 +2,14 @@
 /*! \file
 \brief temperature boundary condition handler for particle simulations
 
-\level 3
+\level 2
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                     meier 09/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_temperature_bc.H"
 
@@ -23,7 +23,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 
 /*---------------------------------------------------------------------------*
- | constructor                                                 meier 09/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::TemperatureBoundaryConditionHandler(
     const Teuchos::ParameterList& params)
@@ -32,9 +32,6 @@ PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::TemperatureBoundaryCondi
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init temperature boundary condition handler                 meier 09/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::Init()
 {
   // get control parameters for conditions
@@ -50,9 +47,6 @@ void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::Init()
     typessubjectedtotemperaturebc_.insert(typeIt.first);
 }
 
-/*---------------------------------------------------------------------------*
- | setup temperature boundary condition handler                meier 09/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
 {
@@ -60,27 +54,18 @@ void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::Setup(
   particleengineinterface_ = particleengineinterface;
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of temperature boundary condition handler     meier 09/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::WriteRestart(
     const int step, const double time) const
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of temperature boundary condition handler      meier 09/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | insert tempbc dependent states of all particle types       sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::InsertParticleStatesOfParticleTypes(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
     const
@@ -93,9 +78,6 @@ void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::InsertParticleState
   }
 }
 
-/*---------------------------------------------------------------------------*
- | set particle reference position                            sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::SetParticleReferencePosition() const
 {
   // get particle container bundle
@@ -114,9 +96,6 @@ void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::SetParticleReferenc
   }
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate temperature boundary condition                     meier 09/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::EvaluateTemperatureBoundaryCondition(
     const double& evaltime) const
 {

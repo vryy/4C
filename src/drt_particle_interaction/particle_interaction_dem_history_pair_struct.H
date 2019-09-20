@@ -4,23 +4,23 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 03/2019 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 #ifndef PARTICLE_INTERACTION_DEM_HISTORY_PAIR_STRUCT_H
 #define PARTICLE_INTERACTION_DEM_HISTORY_PAIR_STRUCT_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 03/2019 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "../drt_lib/drt_parobject.H"
 
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 03/2019 |
+ | class declarations                                                        |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {

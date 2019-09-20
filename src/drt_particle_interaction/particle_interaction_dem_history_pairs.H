@@ -4,18 +4,18 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 03/2019 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 #ifndef PARTICLE_INTERACTION_DEM_HISTORY_PAIRS_H
 #define PARTICLE_INTERACTION_DEM_HISTORY_PAIRS_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 03/2019 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "../drt_particle_engine/particle_enums.H"
 #include "../drt_particle_engine/particle_typedefs.H"
@@ -26,7 +26,7 @@
 #include <unordered_map>
 
 /*---------------------------------------------------------------------------*
- | forward declarations                                       sfuchs 03/2019 |
+ | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
 namespace IO
 {
@@ -59,7 +59,7 @@ namespace PARTICLEINTERACTION
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 03/2019 |
+ | class declarations                                                        |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {

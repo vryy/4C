@@ -4,18 +4,18 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 11/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 #ifndef PARTICLE_INTERACTION_DEM_NEIGHBOR_PAIR_STRUCT_H
 #define PARTICLE_INTERACTION_DEM_NEIGHBOR_PAIR_STRUCT_H
 
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 11/2018 |
+ | class declarations                                                        |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {

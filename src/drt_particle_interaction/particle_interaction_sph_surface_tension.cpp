@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 08/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_sph_surface_tension.H"
 
@@ -31,7 +31,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 08/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHSurfaceTensionBase::SPHSurfaceTensionBase(
     const Teuchos::ParameterList& params)
@@ -43,17 +43,11 @@ PARTICLEINTERACTION::SPHSurfaceTensionBase::SPHSurfaceTensionBase(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init surface tension handler                               sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHSurfaceTensionBase::Init()
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | setup surface tension handler                              sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHSurfaceTensionBase::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
@@ -82,35 +76,23 @@ void PARTICLEINTERACTION::SPHSurfaceTensionBase::Setup(
     boundarytypes_.insert(PARTICLEENGINE::RigidPhase);
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of surface tension handler                   sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHSurfaceTensionBase::WriteRestart(
     const int step, const double time) const
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of surface tension handler                    sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHSurfaceTensionBase::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | set current time                                           sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHSurfaceTensionBase::SetCurrentTime(const double currenttime)
 {
   time_ = currenttime;
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::SPHSurfaceTensionContinuumSurfaceForce(
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::SPHSurfaceTensionBase(params),
@@ -122,9 +104,6 @@ PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::SPHSurfaceTensionCo
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init surface tension handler                               sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::Init()
 {
   // call base class init
@@ -144,9 +123,6 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::Init()
   }
 }
 
-/*---------------------------------------------------------------------------*
- | setup surface tension handler                              sfuchs 01/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
@@ -195,9 +171,6 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::Setup(
   f_i_.resize(typevectorsize, std::vector<std::vector<double>>(2));
 }
 
-/*---------------------------------------------------------------------------*
- | insert surface tension evaluation dependent states         sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     InsertParticleStatesOfParticleTypes(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
@@ -234,9 +207,6 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
   }
 }
 
-/*---------------------------------------------------------------------------*
- | add surface tension contribution to acceleration field     sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::AddAccelerationContribution()
 {
   TEUCHOS_FUNC_TIME_MONITOR(
@@ -286,9 +256,6 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::AddAcceleratio
   if (alphaT_ != 0.0) ComputeTempGradDrivenContribution();
 }
 
-/*---------------------------------------------------------------------------*
- | compute colorfield gradient                                sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeColorfieldGradient() const
 {
   // iterate over particle types
@@ -369,9 +336,6 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeColorfi
   }
 }
 
-/*---------------------------------------------------------------------------*
- | compute unit wall normal                                   sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeUnitWallNormal(
     std::vector<int>& relwallindices) const
 {
@@ -504,9 +468,6 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeUnitWal
   }
 }
 
-/*---------------------------------------------------------------------------*
- | compute wall distance                                      sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallDistance(
     std::vector<int>& relwallindices) const
 {
@@ -599,9 +560,6 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallDis
   }
 }
 
-/*---------------------------------------------------------------------------*
- | compute wall correction factor                             sfuchs 01/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallCorrectionFactor()
 {
   // get initial particle spacing
@@ -653,9 +611,6 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallCor
   }
 }
 
-/*---------------------------------------------------------------------------*
- | extrapolate colorfield gradient at triple point            sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     ExtrapolateColorfieldGradientAtTriplePoint() const
 {
@@ -810,9 +765,6 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
   }
 }
 
-/*---------------------------------------------------------------------------*
- | compute interface normal                                   sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeInterfaceNormal() const
 {
   // iterate over particle types
@@ -852,9 +804,6 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeInterfa
   }
 }
 
-/*---------------------------------------------------------------------------*
- | correct normal vector of particles close to triple point   sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::CorrectTriplePointNormal() const
 {
   // iterate over particle types
@@ -924,9 +873,6 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::CorrectTripleP
   }
 }
 
-/*---------------------------------------------------------------------------*
- | compute surface tension contribution                       sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     ComputeSurfaceTensionContribution() const
 {
@@ -1105,9 +1051,6 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
   }
 }
 
-/*---------------------------------------------------------------------------*
- | compute temperature gradient driven contribution           sfuchs 03/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     ComputeTempGradDrivenContribution() const
 {

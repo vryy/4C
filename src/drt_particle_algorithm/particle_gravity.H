@@ -2,25 +2,25 @@
 /*! \file
 \brief gravity acceleration handler for particle simulations
 
-\level 3
+\level 2
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 05/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 #ifndef PARTICLE_GRAVITY_H
 #define PARTICLE_GRAVITY_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 05/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include <Teuchos_ParameterList.hpp>
 
 /*---------------------------------------------------------------------------*
- | forward declarations                                       sfuchs 05/2018 |
+ | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
 namespace IO
 {
@@ -28,32 +28,75 @@ namespace IO
 }
 
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 05/2018 |
+ | class declarations                                                        |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEALGORITHM
 {
+  /*!
+   * \brief gravity acceleration handler for particle simulations
+   *
+   * \author Sebastian Fuchs \date 05/2018
+   */
   class GravityHandler
   {
    public:
-    //! constructor
+    /*!
+     * \brief constructor
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     *
+     * \param[in] params particle simulation parameter list
+     */
     explicit GravityHandler(const Teuchos::ParameterList& params);
 
     //! destructor
     ~GravityHandler(){};
 
-    //! init gravity handler
+    /*!
+     * \brief init gravity handler
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     *
+     * \param[in] gravity gravity acceleration
+     */
     void Init(const std::vector<double>& gravity);
 
-    //! setup gravity handler
+    /*!
+     * \brief setup gravity handler
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     */
     void Setup();
 
-    //! write restart of gravity handler
+    /*!
+     * \brief write restart of gravity handler
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     *
+     * \param[in] step restart step
+     * \param[in] time restart time
+     */
     void WriteRestart(const int step, const double time) const;
 
-    //! read restart of gravity handler
+    /*!
+     * \brief read restart of gravity handler
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     *
+     * \param[in] reader discretization reader
+     */
     void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
-    //! get gravity acceleration
+    /*!
+     * \brief get gravity acceleration
+     *
+     * Evaluate the gravity ramp function at the given time to get the scaled gravity acceleration.
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     *
+     * \param[in]  time           evaluation time
+     * \param[out] scaled_gravity scaled gravity acceleration
+     */
     void GetGravityAcceleration(const double time, std::vector<double>& scaled_gravity);
 
    protected:

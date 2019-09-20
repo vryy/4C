@@ -2,14 +2,14 @@
 /*! \file
 \brief main control routine for particle simulations
 
-\level 3
+\level 1
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 03/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_sim.H"
 #include "particle_algorithm.H"
@@ -21,7 +21,7 @@
 #include <Teuchos_RCPStdSharedPtrConversions.hpp>
 
 /*---------------------------------------------------------------------------*
- | main control routine for particle simulations              sfuchs 03/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 void particle_drt()
 {

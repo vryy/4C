@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 11/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_sph_phase_change.H"
 
@@ -24,7 +24,7 @@
 #include "../drt_lib/drt_dserror.H"
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 11/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHPhaseChangeBase::SPHPhaseChangeBase(const Teuchos::ParameterList& params)
     : params_sph_(params)
@@ -32,17 +32,11 @@ PARTICLEINTERACTION::SPHPhaseChangeBase::SPHPhaseChangeBase(const Teuchos::Param
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init phase change handler                                  sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHPhaseChangeBase::Init()
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | setup phase change handler                                 sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHPhaseChangeBase::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
@@ -61,26 +55,17 @@ void PARTICLEINTERACTION::SPHPhaseChangeBase::Setup(
   equationofstatebundle_ = equationofstatebundle;
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of phase change handler                      sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHPhaseChangeBase::WriteRestart(const int step, const double time) const
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of phase change handler                       sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHPhaseChangeBase::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 02/2019 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::SPHPhaseChangeTwoWayScalar(
     const Teuchos::ParameterList& params)
     : SPHPhaseChangeBase::SPHPhaseChangeBase(params),
@@ -92,9 +77,6 @@ PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::SPHPhaseChangeTwoWayScalar(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init phase change handler                                  sfuchs 02/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::Init()
 {
   // call base class init
@@ -143,9 +125,6 @@ void PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::Init()
     dserror("expecting transition value of phase change!");
 }
 
-/*---------------------------------------------------------------------------*
- | setup phase change handler                                 sfuchs 03/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
@@ -161,9 +140,6 @@ void PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::Setup(
           PARTICLEENGINE::EnumToTypeName(typeEnum).c_str());
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate phase change                                      sfuchs 02/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::EvaluatePhaseChange() const
 {
   // determine size of vectors indexed by particle types

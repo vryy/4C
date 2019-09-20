@@ -1,26 +1,23 @@
 /*---------------------------------------------------------------------------*/
 /*! \file
-\brief particle object class for communication
+\brief particle object for parallel communication
 
-\level 3
+\level 1
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 03/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_object.H"
 
 /*---------------------------------------------------------------------------*
- | define static class member                                 sfuchs 03/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEENGINE::ParticleObjectType PARTICLEENGINE::ParticleObjectType::instance_;
 
-/*---------------------------------------------------------------------------*
- | create particle object                                     sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 DRT::ParObject* PARTICLEENGINE::ParticleObjectType::Create(const std::vector<char>& data)
 {
   PARTICLEENGINE::ParticleObject* my_particleobject = new PARTICLEENGINE::ParticleObject();
@@ -28,18 +25,12 @@ DRT::ParObject* PARTICLEENGINE::ParticleObjectType::Create(const std::vector<cha
   return my_particleobject;
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEENGINE::ParticleObject::ParticleObject()
     : particletype_(PARTICLEENGINE::Phase1), particleglobalid_(0), bingid_(-1), containerindex_(-1)
 {
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | standard constructor                                       sfuchs 02/2019 |
- *---------------------------------------------------------------------------*/
 PARTICLEENGINE::ParticleObject::ParticleObject(TypeEnum particletype, int particleglobalid,
     const ParticleStates& particlestates, int bingid, int containerindex)
     : particletype_(particletype),
@@ -51,9 +42,6 @@ PARTICLEENGINE::ParticleObject::ParticleObject(TypeEnum particletype, int partic
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | pack this class so it can be communicated                  sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleObject::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm(data);
@@ -81,9 +69,6 @@ void PARTICLEENGINE::ParticleObject::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, containerindex_);
 }
 
-/*---------------------------------------------------------------------------*
- | unpack data from a char vector into this class             sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleObject::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;

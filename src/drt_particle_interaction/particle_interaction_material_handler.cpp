@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 07/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_material_handler.H"
 
@@ -22,7 +22,7 @@
 #include "../drt_lib/drt_dserror.H"
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 07/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::MaterialHandler::MaterialHandler(const Teuchos::ParameterList& params)
     : params_(params)
@@ -30,9 +30,6 @@ PARTICLEINTERACTION::MaterialHandler::MaterialHandler(const Teuchos::ParameterLi
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init particle material handler                             sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::MaterialHandler::Init()
 {
   // init map relating particle types to material ids
@@ -71,25 +68,16 @@ void PARTICLEINTERACTION::MaterialHandler::Init()
   }
 }
 
-/*---------------------------------------------------------------------------*
- | setup particle material handler                            sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::MaterialHandler::Setup()
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of particle material handler                 sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::MaterialHandler::WriteRestart(const int step, const double time) const
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of particle material handler                  sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::MaterialHandler::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {

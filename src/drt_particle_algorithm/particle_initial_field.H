@@ -2,27 +2,27 @@
 /*! \file
 \brief initial field handler for particle simulations
 
-\level 3
+\level 2
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 07/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 #ifndef PARTICLE_INITIAL_FIELD_H
 #define PARTICLE_INITIAL_FIELD_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 07/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "../drt_particle_engine/particle_typedefs.H"
 
 #include <Teuchos_ParameterList.hpp>
 
 /*---------------------------------------------------------------------------*
- | forward declarations                                       sfuchs 07/2018 |
+ | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEENGINE
 {
@@ -30,27 +30,52 @@ namespace PARTICLEENGINE
 }
 
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 07/2018 |
+ | class declarations                                                        |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEALGORITHM
 {
+  /*!
+   * \brief initial field handler for particle simulations
+   *
+   * \author Sebastian Fuchs \date 07/2018
+   */
   class InitialFieldHandler
   {
    public:
-    //! constructor
+    /*!
+     * \brief constructor
+     *
+     * \author Sebastian Fuchs \date 07/2018
+     *
+     * \param[in] params particle simulation parameter list
+     */
     explicit InitialFieldHandler(const Teuchos::ParameterList& params);
 
     //! destructor
     ~InitialFieldHandler(){};
 
-    //! init initial field handler
+    /*!
+     * \brief init initial field handler
+     *
+     * \author Sebastian Fuchs \date 07/2018
+     */
     void Init();
 
-    //! setup initial field handler
+    /*!
+     * \brief setup initial field handler
+     *
+     * \author Sebastian Fuchs \date 07/2018
+     *
+     * \param[in] particleengineinterface interface to particle engine
+     */
     void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
 
-    //! set initial fields
+    /*!
+     * \brief set initial fields
+     *
+     * \author Sebastian Fuchs \date 07/2018
+     */
     void SetInitialFields();
 
    protected:

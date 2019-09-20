@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 12/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_dem_contact_tangential.H"
 
@@ -20,7 +20,7 @@
 #include "../drt_lib/drt_dserror.H"
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 12/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMContactTangentialBase::DEMContactTangentialBase(
     const Teuchos::ParameterList& params)
@@ -29,51 +29,33 @@ PARTICLEINTERACTION::DEMContactTangentialBase::DEMContactTangentialBase(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init tangential contact handler                            sfuchs 12/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactTangentialBase::Init()
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | setup tangential contact handler                           sfuchs 12/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactTangentialBase::Setup(const double& k_normal)
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of tangential contact handler                sfuchs 12/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactTangentialBase::WriteRestart(
     const int step, const double time) const
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of tangential contact handler                 sfuchs 12/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactTangentialBase::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | set current step size                                      sfuchs 12/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactTangentialBase::SetCurrentStepSize(const double currentstepsize)
 {
   dt_ = currentstepsize;
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 12/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::DEMContactTangentialLinearSpringDamp(
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::DEMContactTangentialBase(params),
@@ -85,9 +67,6 @@ PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::DEMContactTangentialL
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init tangential contact handler                            sfuchs 12/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::Init()
 {
   // call base class init
@@ -101,9 +80,6 @@ void PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::Init()
     dserror("invalid input parameter FRICT_COEFF_TANG for this kind of contact law!");
 }
 
-/*---------------------------------------------------------------------------*
- | setup tangential contact handler                           sfuchs 12/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::Setup(const double& k_normal)
 {
   // call base class setup
@@ -126,9 +102,6 @@ void PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::Setup(const doub
     d_tangential_fac_ = 2.0 * std::sqrt(k_normal);
 }
 
-/*---------------------------------------------------------------------------*
- | calculate tangential contact force                         sfuchs 12/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::TangentialContactForce(
     double* gap_tangential, bool& stick_tangential, const double* normal,
     const double* v_rel_tangential, const double& m_eff, const double& mu_tangential,

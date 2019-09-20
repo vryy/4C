@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 03/2019 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_dem_history_pairs.H"
 
@@ -22,24 +22,18 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 03/2019 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMHistoryPairs::DEMHistoryPairs(const Epetra_Comm& comm) : comm_(comm)
 {
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init history pair handler                                  sfuchs 03/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMHistoryPairs::Init()
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | setup history pair handler                                 sfuchs 03/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMHistoryPairs::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
 {
@@ -47,9 +41,6 @@ void PARTICLEINTERACTION::DEMHistoryPairs::Setup(
   particleengineinterface_ = particleengineinterface;
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of history pair handler                      sfuchs 03/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMHistoryPairs::WriteRestart(const int step, const double time) const
 {
   // get bin discretization writer
@@ -120,9 +111,6 @@ void PARTICLEINTERACTION::DEMHistoryPairs::WriteRestart(const int step, const do
   }
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of history pair handler                       sfuchs 03/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMHistoryPairs::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
@@ -184,9 +172,6 @@ void PARTICLEINTERACTION::DEMHistoryPairs::ReadRestart(
   }
 }
 
-/*---------------------------------------------------------------------------*
- | distribute history pairs                                   sfuchs 03/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMHistoryPairs::DistributeHistoryPairs()
 {
   // relate all particles to all processors
@@ -226,9 +211,6 @@ void PARTICLEINTERACTION::DEMHistoryPairs::DistributeHistoryPairs()
   CommunicateSpecificHistoryPairs(particletargets, particlewalladhesionhistorydata_);
 }
 
-/*---------------------------------------------------------------------------*
- | communicate history pairs                                  sfuchs 03/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMHistoryPairs::CommunicateHistoryPairs()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::DEMHistoryPairs::CommunicateHistoryPairs");
@@ -248,9 +230,6 @@ void PARTICLEINTERACTION::DEMHistoryPairs::CommunicateHistoryPairs()
   CommunicateSpecificHistoryPairs(particletargets, particlewalladhesionhistorydata_);
 }
 
-/*---------------------------------------------------------------------------*
- | update history pairs                                       sfuchs 03/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMHistoryPairs::UpdateHistoryPairs()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::DEMHistoryPairs::UpdateHistoryPairs");
@@ -275,9 +254,6 @@ void PARTICLEINTERACTION::DEMHistoryPairs::UpdateHistoryPairs()
     EraseUntouchedHistoryPairs(particlewalladhesionhistorydata_);
 }
 
-/*---------------------------------------------------------------------------*
- | communicate specific history pairs                         sfuchs 03/2019 |
- *---------------------------------------------------------------------------*/
 template <typename historypairtype>
 void PARTICLEINTERACTION::DEMHistoryPairs::CommunicateSpecificHistoryPairs(
     const std::vector<std::vector<int>>& particletargets,
@@ -315,9 +291,6 @@ void PARTICLEINTERACTION::DEMHistoryPairs::CommunicateSpecificHistoryPairs(
   for (auto& p : rdata) UnpackHistoryPairs(p.second, historydata);
 }
 
-/*---------------------------------------------------------------------------*
- | erase untouched history pairs                              sfuchs 03/2019 |
- *---------------------------------------------------------------------------*/
 template <typename historypairtype>
 void PARTICLEINTERACTION::DEMHistoryPairs::EraseUntouchedHistoryPairs(
     std::unordered_map<int, std::unordered_map<int, std::pair<bool, historypairtype>>>& historydata)
@@ -342,9 +315,6 @@ void PARTICLEINTERACTION::DEMHistoryPairs::EraseUntouchedHistoryPairs(
   }
 }
 
-/*---------------------------------------------------------------------------*
- | pack all history pairs                                     sfuchs 03/2019 |
- *---------------------------------------------------------------------------*/
 template <typename historypairtype>
 void PARTICLEINTERACTION::DEMHistoryPairs::PackAllHistoryPairs(std::vector<char>& buffer,
     const std::unordered_map<int, std::unordered_map<int, std::pair<bool, historypairtype>>>&
@@ -364,9 +334,6 @@ void PARTICLEINTERACTION::DEMHistoryPairs::PackAllHistoryPairs(std::vector<char>
   }
 }
 
-/*---------------------------------------------------------------------------*
- | unpack history pairs                                       sfuchs 03/2019 |
- *---------------------------------------------------------------------------*/
 template <typename historypairtype>
 void PARTICLEINTERACTION::DEMHistoryPairs::UnpackHistoryPairs(const std::vector<char>& buffer,
     std::unordered_map<int, std::unordered_map<int, std::pair<bool, historypairtype>>>& historydata)
@@ -389,9 +356,6 @@ void PARTICLEINTERACTION::DEMHistoryPairs::UnpackHistoryPairs(const std::vector<
     dserror("mismatch in size of data %d <-> %d", static_cast<int>(buffer.size()), position);
 }
 
-/*---------------------------------------------------------------------------*
- | add history pair to buffer                                 sfuchs 03/2019 |
- *---------------------------------------------------------------------------*/
 template <typename historypairtype>
 void PARTICLEINTERACTION::DEMHistoryPairs::AddHistoryPairToBuffer(std::vector<char>& buffer,
     int globalid_i, int globalid_j, const historypairtype& historypair) const
@@ -411,7 +375,7 @@ void PARTICLEINTERACTION::DEMHistoryPairs::AddHistoryPairToBuffer(std::vector<ch
 }
 
 /*---------------------------------------------------------------------------*
- | template instantiations                                    sfuchs 03/2019 |
+ | template instantiations                                                   |
  *---------------------------------------------------------------------------*/
 template void PARTICLEINTERACTION::DEMHistoryPairs::CommunicateSpecificHistoryPairs<
     PARTICLEINTERACTION::DEMHistoryPairTangential>(

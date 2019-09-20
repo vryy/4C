@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 05/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_sph.H"
 
@@ -35,7 +35,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 05/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::ParticleInteractionSPH::ParticleInteractionSPH(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
@@ -44,18 +44,12 @@ PARTICLEINTERACTION::ParticleInteractionSPH::ParticleInteractionSPH(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | destructor                                                 sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::ParticleInteractionSPH::~ParticleInteractionSPH()
 {
   // note: destructor declaration here since at compile-time a complete type
   // of class T as used in class member std::unique_ptr<T> ptr_T_ is required
 }
 
-/*---------------------------------------------------------------------------*
- | init particle interaction handler                          sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionSPH::Init()
 {
   // call base class init
@@ -92,9 +86,6 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Init()
   InitPhaseChangeHandler();
 }
 
-/*---------------------------------------------------------------------------*
- | setup particle interaction handler                         sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionSPH::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface)
@@ -137,9 +128,6 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Setup(
     phasechange_->Setup(particleengineinterface, particlematerial_, equationofstatebundle_);
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of particle interaction handler              sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionSPH::WriteRestart(
     const int step, const double time) const
 {
@@ -177,9 +165,6 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::WriteRestart(
   if (phasechange_) phasechange_->WriteRestart(step, time);
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of particle interaction handler               sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionSPH::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
@@ -217,9 +202,6 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::ReadRestart(
   if (phasechange_) phasechange_->ReadRestart(reader);
 }
 
-/*---------------------------------------------------------------------------*
- | insert interaction dependent states of all particle types  sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionSPH::InsertParticleStatesOfParticleTypes(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
 {
@@ -259,9 +241,6 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InsertParticleStatesOfParticle
   if (surfacetension_) surfacetension_->InsertParticleStatesOfParticleTypes(particlestatestotypes);
 }
 
-/*---------------------------------------------------------------------------*
- | set initial states                                         sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
 {
   // get kernel space dimension
@@ -335,9 +314,6 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
   }
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate particle interactions                             sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionSPH::EvaluateInteractions()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionSPH::EvaluateInteractions");
@@ -367,33 +343,21 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::EvaluateInteractions()
   if (phasechange_) phasechange_->EvaluatePhaseChange();
 }
 
-/*---------------------------------------------------------------------------*
- | maximum interaction distance (on this processor)           sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
 double PARTICLEINTERACTION::ParticleInteractionSPH::MaxInteractionDistance() const
 {
   return MaxParticleRadius();
 }
 
-/*---------------------------------------------------------------------------*
- | distribute interaction history                             sfuchs 03/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionSPH::DistributeInteractionHistory() const
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | communicate interaction history                            sfuchs 03/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionSPH::CommunicateInteractionHistory() const
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | set current time                                           sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionSPH::SetCurrentTime(const double currenttime)
 {
   // call base class method
@@ -406,9 +370,6 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetCurrentTime(const double cu
   if (surfacetension_) surfacetension_->SetCurrentTime(currenttime);
 }
 
-/*---------------------------------------------------------------------------*
- | set current step size                                      sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionSPH::SetCurrentStepSize(const double currentstepsize)
 {
   // call base class method
@@ -421,9 +382,6 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetCurrentStepSize(const doubl
   if (temperature_) temperature_->SetCurrentStepSize(currentstepsize);
 }
 
-/*---------------------------------------------------------------------------*
- | init kernel handler                                        sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionSPH::InitKernelHandler()
 {
   // get type of smoothed particle hydrodynamics kernel
@@ -454,9 +412,6 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitKernelHandler()
   kernel_->Init();
 }
 
-/*---------------------------------------------------------------------------*
- | init equation of state bundle                              sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionSPH::InitEquationOfStateBundle()
 {
   // create equation of state bundle
@@ -467,9 +422,6 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitEquationOfStateBundle()
   equationofstatebundle_->Init(particlematerial_);
 }
 
-/*---------------------------------------------------------------------------*
- | init neighbor pair handler                                 sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionSPH::InitNeighborPairHandler()
 {
   // create neighbor pair handler
@@ -479,9 +431,6 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitNeighborPairHandler()
   neighborpairs_->Init();
 }
 
-/*---------------------------------------------------------------------------*
- | init density handler                                       sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionSPH::InitDensityHandler()
 {
   // get type of smoothed particle hydrodynamics density evaluation scheme
@@ -529,9 +478,6 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitDensityHandler()
         "scheme!");
 }
 
-/*---------------------------------------------------------------------------*
- | init pressure handler                                      sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionSPH::InitPressureHandler()
 {
   // create pressure handler
@@ -542,9 +488,6 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitPressureHandler()
   pressure_->Init();
 }
 
-/*---------------------------------------------------------------------------*
- | init temperature handler                                    meier 09/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionSPH::InitTemperatureHandler()
 {
   // get type of smoothed particle hydrodynamics temperature evaluation scheme
@@ -577,9 +520,6 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitTemperatureHandler()
   if (temperature_) temperature_->Init();
 }
 
-/*---------------------------------------------------------------------------*
- | init momentum handler                                      sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionSPH::InitMomentumHandler()
 {
   // create momentum handler
@@ -590,9 +530,6 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitMomentumHandler()
   momentum_->Init();
 }
 
-/*---------------------------------------------------------------------------*
- | init surface tension handler                               sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionSPH::InitSurfaceTensionHandler()
 {
   // get type of smoothed particle hydrodynamics surface tension formulation
@@ -626,9 +563,6 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitSurfaceTensionHandler()
   if (surfacetension_) surfacetension_->Init();
 }
 
-/*---------------------------------------------------------------------------*
- | init boundary particle handler                             sfuchs 09/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionSPH::InitBoundaryParticleHandler()
 {
   // get type of boundary particle formulation
@@ -661,9 +595,6 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitBoundaryParticleHandler()
   if (boundaryparticle_) boundaryparticle_->Init();
 }
 
-/*---------------------------------------------------------------------------*
- | init phase change handler                                  sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionSPH::InitPhaseChangeHandler()
 {
   // get type phase change

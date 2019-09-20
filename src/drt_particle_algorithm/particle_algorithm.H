@@ -2,20 +2,20 @@
 /*! \file
 \brief algorithm to control particle simulations
 
-\level 3
+\level 1
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 04/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 #ifndef PARTICLE_ALGORITHM_H
 #define PARTICLE_ALGORITHM_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 04/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "../drt_adapter/adapter_algorithmbase.H"
 
@@ -25,7 +25,7 @@
 #include "../drt_particle_wall/particle_wall.H"
 
 /*---------------------------------------------------------------------------*
- | forward declarations                                       sfuchs 04/2018 |
+ | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEALGORITHM
 {
@@ -50,51 +50,125 @@ namespace DRT
 }
 
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 04/2018 |
+ | class declarations                                                        |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEALGORITHM
 {
+  /*!
+   * \brief algorithm to control particle simulations
+   *
+   * The particle algorithm controls all major steps of particle simulations. Besides initialization
+   * and setup of the problem this mainly concerns the control of the time loop (with the
+   * integration of the particle step) consisting of the following steps:
+   * - update and maintain valid connectivity (parallel distribution, load transfer, ghosting,
+   *   neighbor pair relations)
+   * - evaluation of particle accelerations from gravity acceleration, interactions, and viscous
+   *   damping
+   * - (runtime) output of fields
+   * - write restart information
+   *
+   * \author Sebastian Fuchs \date 04/2018
+   */
   class ParticleAlgorithm final : public ADAPTER::AlgorithmBase
   {
    public:
-    //! constructor
+    /*!
+     * \brief constructor
+     *
+     * \author Sebastian Fuchs \date 04/2018
+     *
+     * \param[in] comm   communicator
+     * \param[in] params particle simulation parameter list
+     */
     explicit ParticleAlgorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& params);
 
     //! destructor
     ~ParticleAlgorithm() override;
 
-    //! init particle algorithm
+    /*!
+     * \brief init particle algorithm
+     *
+     * \author Sebastian Fuchs \date 04/2018
+     *
+     * \param[in] initialparticles particle objects read in from restart
+     */
     void Init(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& initialparticles);
 
-    //! setup particle algorithm
+    /*!
+     * \brief setup particle algorithm
+     *
+     * \author Sebastian Fuchs \date 04/2018
+     */
     void Setup();
 
-    //! read restart information for given time step
+    /*!
+     * \brief read restart information for given time step
+     *
+     * \author Sebastian Fuchs \date 04/2018
+     *
+     * \param[in] restartstep restart step
+     */
     void ReadRestart(const int restartstep) override;
 
-    //! time loop for particle problem
+    /*!
+     * \brief time loop for particle problem
+     *
+     * \author Sebastian Fuchs \date 04/2018
+     */
     void Timeloop();
 
-    //! prepare time step
+    /*!
+     * \brief prepare time step
+     *
+     * \author Sebastian Fuchs \date 04/2018
+     *
+     * \param[in] print_header flag to control output of time step header
+     */
     void PrepareTimeStep(bool print_header = true);
 
-    //! integrate particle time step
+    /*!
+     * \brief integrate particle time step
+     *
+     * \author Sebastian Fuchs \date 04/2018
+     */
     void Integrate();
 
-    //! output particle time step
+    /*!
+     * \brief output particle time step
+     *
+     * \author Sebastian Fuchs \date 04/2018
+     */
     void Output() const;
 
-    //! create particle field specific result test objects
+    /*!
+     * \brief create particle field specific result test objects
+     *
+     * \author Sebastian Fuchs \date 07/2018
+     *
+     * \return particle field specific result test objects
+     */
     std::vector<std::shared_ptr<DRT::ResultTest>> CreateResultTests();
 
-    //! get interface to particle engine
+    /*!
+     * \brief get interface to particle engine
+     *
+     * \author Sebastian Fuchs \date 04/2018
+     *
+     * \return interface to particle engine
+     */
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> GetParticleEngineInterface()
         const
     {
       return particleengine_;
     }
 
-    //! get interface to particle wall handler
+    /*!
+     * \brief get interface to particle wall handler
+     *
+     * \author Sebastian Fuchs \date 04/2018
+     *
+     * \return interface to particle wall handler
+     */
     const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> GetParticleWallHandlerInterface()
         const
     {
@@ -102,79 +176,211 @@ namespace PARTICLEALGORITHM
     }
 
    private:
-    //! init particle engine
+    //! \name init and setup methods
+    //! @{
+
+    /*!
+     * \brief init particle engine
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     */
     void InitParticleEngine();
 
-    //! init particle wall handler
+    /*!
+     * \brief init particle wall handler
+     *
+     * \author Sebastian Fuchs \date 10/2018
+     */
     void InitParticleWall();
 
-    //! init particle time integration
+    /*!
+     * \brief init particle time integration
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     */
     void InitParticleTimeIntegration();
 
-    //! init particle interaction handler
+    /*!
+     * \brief init particle interaction handler
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     */
     void InitParticleInteraction();
 
-    //! init particle gravity handler
+    /*!
+     * \brief init particle gravity handler
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     */
     void InitParticleGravity();
 
-    //! init viscous damping handler
+    /*!
+     * \brief init viscous damping handler
+     *
+     * \author Sebastian Fuchs \date 02/2019
+     */
     void InitViscousDamping();
 
-    //! generate initial particles
+    /*!
+     * \brief generate initial particles
+     *
+     * \author Sebastian Fuchs \date 07/2018
+     */
     void GenerateInitialParticles();
 
-    //! determine all particle types
+    /*!
+     * \brief determine all particle types
+     *
+     * \author Sebastian Fuchs \date 07/2018
+     */
     void DetermineParticleTypes();
 
-    //! determine particle states of all particle types
+    /*!
+     * \brief determine particle states of all particle types
+     *
+     * \author Sebastian Fuchs \date 07/2018
+     */
     void DetermineParticleStatesOfParticleTypes();
 
-    //! setup initial particles
+    /*!
+     * \brief setup initial particles
+     *
+     * \author Sebastian Fuchs \date 05/2018
+     */
     void SetupInitialParticles();
 
-    //! setup initial states
+    /*!
+     * \brief setup initial states
+     *
+     * \author Sebastian Fuchs \date 07/2018
+     */
     void SetupInitialStates();
 
-    //! check particle types for modified states
+    /*!
+     * \brief check particle types for modified states
+     *
+     * \author Sebastian Fuchs \date 07/2018
+     *
+     * \return flag indicating modified states
+     */
     bool HaveModifiedStates();
 
-    //! update connectivity
+    //! @}
+
+    /*!
+     * \brief update and maintain valid connectivity in particle problems
+     *
+     * The main control routine of particle problems to maintain valid particle connectivity:
+     * - parallel distribution of particles
+     * - transfer of particles to new bins
+     * - ghosting of particles
+     * - neighbor pair relations
+     *
+     * This method includes several safety checks that are part of the called sub-methods.
+     *
+     * \author Sebastian Fuchs \date 06/2018
+     */
     void UpdateConnectivity();
 
-    //! check load transfer
+    /*!
+     * \brief check load transfer
+     *
+     * Check if a load transfer is needed based on the following criteria:
+     * - maximum position increment of particles or walls
+     * - invalid particle connectivity
+     * - invalid particle neighbor pair relation
+     * - invalid particle wall neighbor pair relation
+     *
+     * \author Sebastian Fuchs \date 08/2019
+     *
+     * \return flag indicating load transfer is needed
+     */
     bool CheckLoadTransferNeeded();
 
-    //! check max position increment
+    /*!
+     * \brief check maximum position increment
+     *
+     * \author Sebastian Fuchs \date 08/2019
+     *
+     * \return flag indicating load transfer is needed due to maximum position increment
+     */
     bool CheckMaxPositionIncrement();
 
-    //! get max particle position increment since last transfer
+    /*!
+     * \brief get maximum particle position increment since last transfer
+     *
+     * \author Sebastian Fuchs \date 06/2018
+     *
+     * \param allprocmaxpositionincrement maximum particle position increment
+     */
     void GetMaxParticlePositionIncrement(double& allprocmaxpositionincrement);
 
-    //! transfer load between processors
+    /*!
+     * \brief transfer load between processors
+     *
+     * \author Sebastian Fuchs \date 08/2019
+     */
     void TransferLoadBetweenProcs();
 
-    //! check load redistribution
+    /*!
+     * \brief check load redistribution
+     *
+     * Check if a load redistribution is needed based on the difference in the absolute number of
+     * particles since the last redistribution.
+     *
+     * \author Sebastian Fuchs \date 08/2019
+     *
+     * \return flag indicating load redistribution is needed
+     */
     bool CheckLoadRedistributionNeeded();
 
-    //! distribute load among processors
+    /*!
+     * \brief distribute load among processors
+     *
+     * \author Sebastian Fuchs \date 08/2019
+     */
     void DistributeLoadAmongProcs();
 
-    //! build potential neighbor relation
+    /*!
+     * \brief build potential neighbor relation
+     *
+     * \author Sebastian Fuchs \date 08/2019
+     */
     void BuildPotentialNeighborRelation();
 
-    //! set initial conditions
+    /*!
+     * \brief set initial conditions
+     *
+     * \author Sebastian Fuchs \date 07/2018
+     */
     void SetInitialConditions();
 
-    //! set current time
+    /*!
+     * \brief set current time
+     *
+     * \author Sebastian Fuchs \date 08/2018
+     */
     void SetCurrentTime();
 
-    //! set current step size
+    /*!
+     * \brief set current step size
+     *
+     * \author Sebastian Fuchs \date 08/2018
+     */
     void SetCurrentStepSize();
 
-    //! set current write result flag
+    /*!
+     * \brief set current write result flag
+     *
+     * \author Sebastian Fuchs \date 08/2019
+     */
     void SetCurrentWriteResultFlag();
 
-    //! set gravity acceleration
+    /*!
+     * \brief set gravity acceleration
+     *
+     * \author Sebastian Fuchs \date 06/2018
+     */
     void SetGravityAcceleration();
 
     //! processor id

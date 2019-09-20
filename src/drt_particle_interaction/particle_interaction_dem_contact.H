@@ -4,18 +4,18 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 11/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 #ifndef PARTICLE_INTERACTION_DEM_CONTACT_H
 #define PARTICLE_INTERACTION_DEM_CONTACT_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 11/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "../drt_particle_engine/particle_enums.H"
 #include "../drt_particle_engine/particle_typedefs.H"
@@ -23,7 +23,7 @@
 #include "../drt_inpar/inpar_particle.H"
 
 /*---------------------------------------------------------------------------*
- | forward declarations                                       sfuchs 11/2018 |
+ | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
 namespace IO
 {
@@ -53,7 +53,7 @@ namespace PARTICLEINTERACTION
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 11/2018 |
+ | class declarations                                                        |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {

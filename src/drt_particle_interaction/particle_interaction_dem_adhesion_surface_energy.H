@@ -4,23 +4,23 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 07/2019 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 #ifndef PARTICLE_INTERACTION_DEM_ADHESION_SURFACE_ENERGY_H
 #define PARTICLE_INTERACTION_DEM_ADHESION_SURFACE_ENERGY_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 07/2019 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include <Teuchos_ParameterList.hpp>
 
 /*---------------------------------------------------------------------------*
- | forward declarations                                       sfuchs 07/2019 |
+ | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
 namespace IO
 {
@@ -28,7 +28,7 @@ namespace IO
 }
 
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 07/2019 |
+ | class declarations                                                        |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {

@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 02/2019 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_sph_heatsource.H"
 
@@ -28,7 +28,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 02/2019 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHHeatSourceBase::SPHHeatSourceBase(const Teuchos::ParameterList& params)
     : params_sph_(params), heatsourcefctnumber_(params.get<int>("HEATSOURCE_FUNCT"))
@@ -36,17 +36,11 @@ PARTICLEINTERACTION::SPHHeatSourceBase::SPHHeatSourceBase(const Teuchos::Paramet
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init heat source handler                                   sfuchs 02/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHHeatSourceBase::Init()
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | setup heat source handler                                  sfuchs 02/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHHeatSourceBase::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
@@ -85,35 +79,23 @@ void PARTICLEINTERACTION::SPHHeatSourceBase::Setup(
     dserror("no heat source evaluation for boundary particles!");
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of heat source handler                       sfuchs 02/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHHeatSourceBase::WriteRestart(const int step, const double time) const
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of heat source handler                        sfuchs 02/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHHeatSourceBase::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 02/2019 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHHeatSourceVolume::SPHHeatSourceVolume(const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::SPHHeatSourceBase(params)
 {
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate heat source                                       sfuchs 02/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHHeatSourceVolume::EvaluateHeatSource(const double& evaltime) const
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHHeatSourceVolume::EvaluateHeatSource");
@@ -159,9 +141,6 @@ void PARTICLEINTERACTION::SPHHeatSourceVolume::EvaluateHeatSource(const double& 
   }
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 02/2019 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHHeatSourceSurface::SPHHeatSourceSurface(
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::SPHHeatSourceBase(params), eval_direction_(false)
@@ -169,9 +148,6 @@ PARTICLEINTERACTION::SPHHeatSourceSurface::SPHHeatSourceSurface(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init heat source handler                                   sfuchs 02/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHHeatSourceSurface::Init()
 {
   // call base class init
@@ -198,9 +174,6 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::Init()
   }
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate heat source                                       sfuchs 02/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double& evaltime) const
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource");

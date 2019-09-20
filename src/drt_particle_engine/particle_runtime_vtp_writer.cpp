@@ -2,14 +2,14 @@
 /*! \file
 \brief write visualization output for particles in vtk/vtp format at runtime
 
-\level 3
+\level 1
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 03/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_runtime_vtp_writer.H"
 
@@ -21,7 +21,7 @@
 #include "../drt_lib/drt_dserror.H"
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 03/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEENGINE::ParticleRuntimeVtpWriter::ParticleRuntimeVtpWriter(const Epetra_Comm& comm)
     : comm_(comm), setuptime_(0.0)
@@ -29,18 +29,12 @@ PARTICLEENGINE::ParticleRuntimeVtpWriter::ParticleRuntimeVtpWriter(const Epetra_
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | destructor                                                 sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 PARTICLEENGINE::ParticleRuntimeVtpWriter::~ParticleRuntimeVtpWriter()
 {
   // note: destructor declaration here since at compile-time a complete type
   // of class T as used in class member std::unique_ptr<T> ptr_T_ is required
 }
 
-/*---------------------------------------------------------------------------*
- | init particle runtime vtp writer                           sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleRuntimeVtpWriter::Init(
     const ParticleContainerBundleShrdPtr particlecontainerbundle)
 {
@@ -60,9 +54,6 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::Init(
       PARTICLEENGINE::LastIterAngularAcceleration, PARTICLEENGINE::LastIterModifiedAcceleration});
 }
 
-/*---------------------------------------------------------------------------*
- | setup particle runtime vtp writer                          sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleRuntimeVtpWriter::Setup(
     bool write_binary_output, bool write_ghosted_particles)
 {
@@ -119,17 +110,11 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::Setup(
   }
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of runtime vtp writer                        sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleRuntimeVtpWriter::WriteRestart(const int step, const double time) const
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of runtime vtp writer                         sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleRuntimeVtpWriter::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
@@ -137,9 +122,6 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::ReadRestart(
   setuptime_ = reader->ReadDouble("time");
 }
 
-/*---------------------------------------------------------------------------*
- | reset current simulation time and time step number         sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleRuntimeVtpWriter::ResetTimeAndTimeStep(
     double time, unsigned int timestep)
 {
@@ -163,9 +145,6 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::ResetTimeAndTimeStep(
   }
 }
 
-/*---------------------------------------------------------------------------*
- | set positions and states of particles                      sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
 {
   // iterate over particle types
@@ -268,9 +247,6 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
   }
 }
 
-/*---------------------------------------------------------------------------*
- | write all required vtp files to filesystem                 sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleRuntimeVtpWriter::WriteFiles()
 {
   // iterate over particle types
@@ -287,9 +263,6 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::WriteFiles()
   }
 }
 
-/*---------------------------------------------------------------------------*
- | write a vtp collection file to filesystem                  sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleRuntimeVtpWriter::WriteCollectionFileOfAllWrittenFiles()
 {
   // iterate over particle types

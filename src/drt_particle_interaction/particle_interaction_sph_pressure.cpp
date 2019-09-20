@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 08/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_sph_pressure.H"
 
@@ -25,24 +25,18 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 08/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHPressure::SPHPressure()
 {
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init pressure handler                                      sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHPressure::Init()
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | setup pressure handler                                     sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHPressure::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
@@ -75,26 +69,17 @@ void PARTICLEINTERACTION::SPHPressure::Setup(
   }
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of pressure handler                          sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHPressure::WriteRestart(const int step, const double time) const
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of pressure handler                           sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHPressure::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | compute pressure using equation of state and density       sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHPressure::ComputePressure() const
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHPressure::ComputePressure");

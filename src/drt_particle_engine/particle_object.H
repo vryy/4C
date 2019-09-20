@@ -1,21 +1,21 @@
 /*---------------------------------------------------------------------------*/
 /*! \file
-\brief particle object class for communication
+\brief particle object for parallel communication
 
-\level 3
+\level 1
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 03/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 #ifndef PARTICLE_OBJECT_H
 #define PARTICLE_OBJECT_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 03/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_enums.H"
 #include "particle_typedefs.H"
@@ -23,11 +23,8 @@
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 
-#include <map>
-#include <vector>
-
 /*---------------------------------------------------------------------------*
- | forward declarations                                       sfuchs 03/2018 |
+ | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
 namespace DRT
 {
@@ -35,86 +32,151 @@ namespace DRT
 }
 
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 03/2018 |
+ | class declarations                                                        |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEENGINE
 {
+  /*!
+   * \brief particle object type singleton
+   *
+   * \author Sebastian Fuchs \date 03/2018
+   */
   class ParticleObjectType final : public DRT::ParObjectType
   {
    public:
     std::string Name() const override { return "ParticleObjectType"; };
 
+    /*!
+     * \brief get instance of particle object type
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     *
+     * \return reference to instance of particle object type
+     */
     static ParticleObjectType& Instance() { return instance_; };
 
     DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
+    //! particle object type instance
     static ParticleObjectType instance_;
   };
 
-  /**
-   * \brief A particle object for parallel communication of particle data.
+  /*!
+   * \brief particle object for parallel communication of particle data
    *
    * The class members of the particle object are either initialized via an constructor with
    * initializer list or via unpacking of the data (after communication and receiving of packed
    * data).
    *
    * \note A separate method for initializing or modifying of class members is not provided due to
-   * performance reasons (avoid copy operations) and due to the fact that a particle object only
-   * needs to be packed once (without being modified afterwards) and is directly sent to another
-   * processor.
+   *       performance reasons (avoid copy operations) and due to the fact that a particle object
+   *       only needs to be packed once (without being modified afterwards) and is directly sent to
+   *       another processor.
+   *
+   * \author Sebastian Fuchs \date 03/2018
    */
   class ParticleObject : public DRT::ParObject
   {
    public:
-    //! constructor
+    /*!
+     * \brief constructor
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     */
     ParticleObject();
 
-    //! standard constructor
+    /*!
+     * \brief constructor with initializer list
+     *
+     * Construct particle object and set class members via initializer list.
+     *
+     * \author Sebastian Fuchs \date 02/2019
+     *
+     * \param[in] particletype     particle type enum
+     * \param[in] particleglobalid global id of particle
+     * \param[in] particlestates   states of particle
+     * \param[in] bingid           global id of bin the particle is located in
+     *                             optional: set to -1 if omnitted
+     * \param[in] containerindex   index of particle in container
+     *                             optional: set to -1 if omnitted
+     */
     ParticleObject(TypeEnum particletype, int particleglobalid,
         const ParticleStates& particlestates, int bingid = -1, int containerindex = -1);
 
     //! destructor
     ~ParticleObject() override{};
 
-    //! return unique ParObject id
     int UniqueParObjectId() const override
     {
       return ParticleObjectType::Instance().UniqueParObjectId();
     };
 
-    //! pack this class so it can be communicated
     void Pack(DRT::PackBuffer& data) const override;
 
-    //! unpack data from a char vector into this class
     void Unpack(const std::vector<char>& data) override;
 
-    //! return particle type
+    //! \name get particle object members
+    //! @{
+
+    /*!
+     * \brief get particle type enum
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     *
+     * \return particle type enum
+     */
     inline TypeEnum ReturnParticleType() const { return particletype_; };
 
-    //! return particle global id
+    /*!
+     * \brief get global id of particle
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     *
+     * \return global id of particle
+     */
     inline int ReturnParticleGlobalID() const { return particleglobalid_; };
 
-    //! return reference to particle states
+    /*!
+     * \brief get states of particle
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     *
+     * \return reference to states of particle
+     */
     inline const ParticleStates& ReturnParticleStates() const { return particlestates_; };
 
-    //! return bin gid
+    /*!
+     * \brief get global id of bin the particle is located in
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     *
+     * \return global id of bin the particle is located in
+     */
     inline int ReturnBinGid() const { return bingid_; };
 
-    //! return index
+    /*!
+     * \brief get index of particle in container
+     *
+     * \author Sebastian Fuchs \date 03/2018
+     *
+     * \return index of particle in container
+     */
     inline int ReturnContainerIndex() const { return containerindex_; };
+
+    //! @}
 
    private:
     //! particle type enum
     TypeEnum particletype_;
 
-    //! particle global id
+    //! global id of particle
     int particleglobalid_;
 
-    //! maps particle state enum to state
+    //! states of particle
     ParticleStates particlestates_;
 
-    //! bin gid particle is located in
+    //! global id of bin the particle is located in
     int bingid_;
 
     //! index of particle in container (owned or ghosted depending on case)

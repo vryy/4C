@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 07/2019 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_dem_contact_rolling.H"
 
@@ -20,7 +20,7 @@
 #include "../drt_lib/drt_dserror.H"
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 07/2019 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMContactRollingBase::DEMContactRollingBase(
     const Teuchos::ParameterList& params)
@@ -33,9 +33,6 @@ PARTICLEINTERACTION::DEMContactRollingBase::DEMContactRollingBase(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init rolling contact handler                               sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactRollingBase::Init()
 {
   // safety checks for contact parameters
@@ -46,43 +43,28 @@ void PARTICLEINTERACTION::DEMContactRollingBase::Init()
     dserror("invalid input parameter FRICT_COEFF_ROLL for this kind of contact law!");
 }
 
-/*---------------------------------------------------------------------------*
- | setup rolling contact handler                              sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactRollingBase::Setup(const double& k_normal)
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of rolling contact handler                   sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactRollingBase::WriteRestart(
     const int step, const double time) const
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of rolling contact handler                    sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactRollingBase::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | set current step size                                      sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactRollingBase::SetCurrentStepSize(const double currentstepsize)
 {
   dt_ = currentstepsize;
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMContactRollingViscous::DEMContactRollingViscous(
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::DEMContactRollingBase(params),
@@ -92,9 +74,6 @@ PARTICLEINTERACTION::DEMContactRollingViscous::DEMContactRollingViscous(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init rolling contact handler                               sfuchs 08/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactRollingViscous::Init()
 {
   // call base class init
@@ -106,9 +85,6 @@ void PARTICLEINTERACTION::DEMContactRollingViscous::Init()
   if (v_max_ <= 0.0) dserror("invalid input parameter MAX_VELOCITY (expected to be positive)!");
 }
 
-/*---------------------------------------------------------------------------*
- | setup rolling contact handler                              sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactRollingViscous::Setup(const double& k_normal)
 {
   // call base class setup
@@ -120,9 +96,6 @@ void PARTICLEINTERACTION::DEMContactRollingViscous::Setup(const double& k_normal
   d_rolling_fac_ = (1.0 - e_) / (c_1 * std::pow(fac, 0.4) * std::pow(v_max_, 0.2));
 }
 
-/*---------------------------------------------------------------------------*
- | calculate effective radius                                 sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactRollingViscous::EffectiveRadiusParticle(
     const double* radius_i, const double* radius_j, const double& gap, double& r_eff) const
 {
@@ -132,9 +105,6 @@ void PARTICLEINTERACTION::DEMContactRollingViscous::EffectiveRadiusParticle(
     r_eff = radius_i[0];
 }
 
-/*---------------------------------------------------------------------------*
- | calculate relative rolling velocity                        sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactRollingViscous::RelativeRollingVelocity(const double& r_eff,
     const double* normal, const double* angvel_i, const double* angvel_j,
     double* v_rel_rolling) const
@@ -143,9 +113,6 @@ void PARTICLEINTERACTION::DEMContactRollingViscous::RelativeRollingVelocity(cons
   if (angvel_j) UTILS::vec_addcross(v_rel_rolling, normal, angvel_j);
 }
 
-/*---------------------------------------------------------------------------*
- | calculate rolling contact moment                           sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactRollingViscous::RollingContactMoment(double* gap_rolling,
     bool& stick_rolling, const double* normal, const double* v_rel_rolling, const double& m_eff,
     const double& r_eff, const double& mu_rolling, const double& normalcontactforce,
@@ -163,9 +130,6 @@ void PARTICLEINTERACTION::DEMContactRollingViscous::RollingContactMoment(double*
   UTILS::vec_scale(rollingcontactmoment, r_eff);
 }
 
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::DEMContactRollingCoulomb::DEMContactRollingCoulomb(
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::DEMContactRollingBase(params), k_rolling_(0.0)
@@ -173,9 +137,6 @@ PARTICLEINTERACTION::DEMContactRollingCoulomb::DEMContactRollingCoulomb(
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | setup rolling contact handler                              sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactRollingCoulomb::Setup(const double& k_normal)
 {
   // call base class setup
@@ -198,9 +159,6 @@ void PARTICLEINTERACTION::DEMContactRollingCoulomb::Setup(const double& k_normal
     d_rolling_fac_ = 2.0 * std::sqrt(k_normal);
 }
 
-/*---------------------------------------------------------------------------*
- | calculate effective radius                                 sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactRollingCoulomb::EffectiveRadiusParticle(
     const double* radius_i, const double* radius_j, const double& gap, double& r_eff) const
 {
@@ -211,9 +169,6 @@ void PARTICLEINTERACTION::DEMContactRollingCoulomb::EffectiveRadiusParticle(
     r_eff = radius_i[0] + gap;
 }
 
-/*---------------------------------------------------------------------------*
- | calculate relative rolling velocity                        sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactRollingCoulomb::RelativeRollingVelocity(const double& r_eff,
     const double* normal, const double* angvel_i, const double* angvel_j,
     double* v_rel_rolling) const
@@ -224,9 +179,6 @@ void PARTICLEINTERACTION::DEMContactRollingCoulomb::RelativeRollingVelocity(cons
   UTILS::vec_scale(v_rel_rolling, r_eff);
 }
 
-/*---------------------------------------------------------------------------*
- | calculate rolling contact moment                           sfuchs 07/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::DEMContactRollingCoulomb::RollingContactMoment(double* gap_rolling,
     bool& stick_rolling, const double* normal, const double* v_rel_rolling, const double& m_eff,
     const double& r_eff, const double& mu_rolling, const double& normalcontactforce,

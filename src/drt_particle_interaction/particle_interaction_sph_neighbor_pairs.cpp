@@ -4,12 +4,12 @@
 
 \level 3
 
-\maintainer  Sebastian Fuchs
+\maintainer Sebastian Fuchs
 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 08/2018 |
+ | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_sph_neighbor_pairs.H"
 
@@ -29,24 +29,18 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 08/2018 |
+ | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHNeighborPairs::SPHNeighborPairs()
 {
   // empty constructor
 }
 
-/*---------------------------------------------------------------------------*
- | init neighbor pair handler                                 sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHNeighborPairs::Init()
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | setup neighbor pair handler                                sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHNeighborPairs::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
@@ -71,26 +65,17 @@ void PARTICLEINTERACTION::SPHNeighborPairs::Setup(
   indexofparticlepairs_.resize(typevectorsize);
 }
 
-/*---------------------------------------------------------------------------*
- | write restart of neighbor pair handler                     sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHNeighborPairs::WriteRestart(const int step, const double time) const
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | read restart of neighbor pair handler                      sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHNeighborPairs::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // nothing to do
 }
 
-/*---------------------------------------------------------------------------*
- | get relevant particle pair indices for particle types      sfuchs 04/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHNeighborPairs::GetRelevantParticlePairIndices(
     const std::set<PARTICLEENGINE::TypeEnum>& reltypes, std::vector<int>& relindices) const
 {
@@ -107,9 +92,6 @@ void PARTICLEINTERACTION::SPHNeighborPairs::GetRelevantParticlePairIndices(
   }
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate neighbor pairs                                    sfuchs 06/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateNeighborPairs()
 {
   // evaluate particle pairs
@@ -119,9 +101,6 @@ void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateNeighborPairs()
   if (particlewallinterface_) EvaluateParticleWallPairs();
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate particle pairs                                    sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateParticlePairs()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHNeighborPairs::EvaluateParticlePairs");
@@ -241,9 +220,6 @@ void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateParticlePairs()
   }
 }
 
-/*---------------------------------------------------------------------------*
- | evaluate particle-wall pairs                               sfuchs 06/2019 |
- *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateParticleWallPairs()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHNeighborPairs::EvaluateParticleWallPairs");
