@@ -29,11 +29,11 @@
  */
 BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
     const Teuchos::RCP<DRT::Discretization> discret,
-    Teuchos::RCP<const BEAMINTERACTION::BeamContactParams> params)
+    Teuchos::RCP<const BEAMINTERACTION::BeamContactParams> params, int start_value_lambda_gid)
     : is_setup_(false),
       is_local_maps_build_(false),
       is_global_maps_build_(false),
-      index_base_(0),
+      start_value_lambda_gid_(start_value_lambda_gid),
       discret_(discret),
       beam_contact_parameters_ptr_(params),
       lambda_dof_rowmap_(Teuchos::null),
@@ -99,13 +99,31 @@ void BEAMINTERACTION::BeamToSolidMortarManager::Setup()
   const unsigned int n_element = my_elements_gid.size();
   const unsigned int n_lambda_dof = n_nodes * n_lambda_node_ + n_element * n_lambda_element_;
 
-  // Rowmap for the additional DOFs used by the mortar contact discretization.
-  lambda_dof_rowmap_ =
-      Teuchos::rcp(new Epetra_Map(-1, n_lambda_dof, index_base_, discret_->Comm()));
 
-  // We need to be able to get the global ids for a Lagrange multiplier DOF from the global id of a
-  // node or element. To do so, we 'abuse' the Epetra_MultiVector as map between the global node /
-  // element ids and the global Lagrange multiplier DOF ids.
+  // Tell all other processors how many lambda DOFs this processor has. This information is needed
+  // to construct the lambda_dof_rowmap_.
+  std::vector<int> lambda_dof_per_rank(discret_->Comm().NumProc(), 0);
+  int temp_my_n_lambda_dof = (int)n_lambda_dof;
+  discret_->Comm().GatherAll(&temp_my_n_lambda_dof, &lambda_dof_per_rank[0], 1);
+
+  // Get the start ID for the lambda DOFs on this processor.
+  int my_lambda_gid_start_value = start_value_lambda_gid_;
+  for (int pid = 0; pid < discret_->Comm().MyPID(); pid++)
+    my_lambda_gid_start_value += lambda_dof_per_rank[pid];
+
+  // Fill in all GIDs of the lambda DOFs on this processor.
+  std::vector<int> my_lambda_gid(n_lambda_dof, 0);
+  for (int my_lid = 0; my_lid < (int)n_lambda_dof; my_lid++)
+    my_lambda_gid[my_lid] = my_lambda_gid_start_value + my_lid;
+
+  // Rowmap for the additional DOFs used by the mortar contact discretization.
+  lambda_dof_rowmap_ = Teuchos::rcp(
+      new Epetra_Map(-1, my_lambda_gid.size(), my_lambda_gid.data(), 0, discret_->Comm()));
+
+
+  // We need to be able to get the global ids for a Lagrange multiplier DOF from the global id
+  // of a node or element. To do so, we 'abuse' the Epetra_MultiVector as map between the
+  // global node / element ids and the global Lagrange multiplier DOF ids.
   Teuchos::RCP<Epetra_Map> node_gid_rowmap =
       Teuchos::rcp(new Epetra_Map(-1, n_nodes, &my_nodes_gid[0], 0, discret_->Comm()));
   Teuchos::RCP<Epetra_Map> element_gid_rowmap =
@@ -132,7 +150,6 @@ void BEAMINTERACTION::BeamToSolidMortarManager::Setup()
       {
         // Get the global Lagrange multiplier id for this node.
         lagrange_gid = lambda_dof_rowmap_->GID(i_node * n_lambda_node_ + i_lambda);
-        if (lagrange_gid < index_base_) dserror("Local id not found on this processor!");
 
         // Set the global Lagrange multiplier id for this node.
         error_code = node_gid_to_lambda_gid_->ReplaceMyValue(i_node, i_lambda, lagrange_gid);
@@ -144,12 +161,11 @@ void BEAMINTERACTION::BeamToSolidMortarManager::Setup()
     for (unsigned int i_element = 0; i_element < n_element; i_element++)
       for (unsigned int i_lambda = 0; i_lambda < n_lambda_element_; i_lambda++)
       {
-        // Get the global Lagrange multiplier id for this node.
+        // Get the global Lagrange multiplier id for this element.
         lagrange_gid = lambda_dof_rowmap_->GID(
             n_nodes * n_lambda_node_ + i_element * n_lambda_element_ + i_lambda);
-        if (lagrange_gid < index_base_) dserror("Local id not found on this processor!");
 
-        // Set the global Lagrange multiplier id for this node.
+        // Set the global Lagrange multiplier id for this element.
         error_code = element_gid_to_lambda_gid_->ReplaceMyValue(i_element, i_lambda, lagrange_gid);
         if (error_code != 0) dserror("Got error code %d!", error_code);
       }

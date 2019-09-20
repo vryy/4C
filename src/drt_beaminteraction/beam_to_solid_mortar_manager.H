@@ -64,6 +64,17 @@ namespace BEAMINTERACTION
    * identified by either the global id of the physical node it is defined on or by the global id of
    * the element it is defined on.
    *
+   * The start value for the Lagrange multiplier global IDs can be explicitly given. This is usually
+   * the number of solid DOFs + beam DOFs + Lagrange multipliers from other beam-to-solid couplings
+   * preceding this mortar manager in the model.
+   * The Lagrange multiplier DOFs are then numbered the following way, and used in \ref
+   * lambda_dof_rowmap_.
+   *   - Lagrange multiplier DOFs on nodes of processor 0
+   *   - Lagrange multiplier DOFs on elements of processor 0
+   *   - Lagrange multiplier DOFs on nodes of processor 1
+   *   - Lagrange multiplier DOFs on elements of processor 1
+   *   - ...
+   *
    * This class manages the connection between the created nodes and the global node / element DOFs.
    * For the created maps a offset can be chosen, so the new DOFs fit into a global saddle-point
    * system.
@@ -73,9 +84,13 @@ namespace BEAMINTERACTION
    public:
     /**
      * \brief Standard Constructor
+     *
+     * @params discret (in) Pointer to the discretization.
+     * @params params (in) Parameters for the beam contact.
+     * @params start_value_lambda_gid (in) Start value for the Lagrange multiplier global IDs.
      */
     BeamToSolidMortarManager(const Teuchos::RCP<DRT::Discretization> discret,
-        Teuchos::RCP<const BEAMINTERACTION::BeamContactParams> params);
+        Teuchos::RCP<const BEAMINTERACTION::BeamContactParams> params, int start_value_lambda_gid);
 
     /**
      * \brief This method builds the global maps for the global node / element IDs to the Lagrange
@@ -198,8 +213,8 @@ namespace BEAMINTERACTION
     //! Flag if global maps were build.
     bool is_global_maps_build_;
 
-    //! Base for the index used for the Lagrange multiplier DOFs.
-    int index_base_;
+    //! The start value for the Lagrange multiplier global IDs.
+    int start_value_lambda_gid_;
 
     //! Number of Lagrange multiplier DOFs on a node.
     unsigned int n_lambda_node_;
