@@ -114,6 +114,20 @@ namespace CONTACT
         std::vector<GEN::pairedvector<int, double>>& derivsxi,
         std::vector<GEN::pairedvector<int, double>>& derivmxi);
 
+    /*!
+    \brief Evaluate cauchy stress component and its derivatives
+    */
+    template <int dim>
+    void SoEleCauchy(MORTAR::MortarElement& moEle, double* boundary_gpcoord,
+        std::vector<GEN::pairedvector<int, double>> boundary_gpcoord_lin, const double gp_wgt,
+        const LINALG::Matrix<dim, 1>& normal,
+        std::vector<GEN::pairedvector<int, double>>& normal_deriv,
+        const LINALG::Matrix<dim, 1>& direction,
+        std::vector<GEN::pairedvector<int, double>>& direction_deriv, const double w,
+        double& cauchy_nt, GEN::pairedvector<int, double>& deriv_sigma_nt,
+        LINALG::SerialDenseVector& adjoint_test,
+        GEN::pairedvector<int, LINALG::SerialDenseVector>& deriv_adjoint_test);
+
    private:
     /*!
     \brief evaluate GPTS forces and linearization at this gp
@@ -128,16 +142,6 @@ namespace CONTACT
         const GEN::pairedvector<int, double>& dgapgp, double* gpn,
         std::vector<GEN::pairedvector<int, double>>& dnmap_unit, double* sxi, double* mxi);
 
-    template <int dim>
-    void SoEleCauchy(MORTAR::MortarElement& moEle, double* boundary_gpcoord,
-        std::vector<GEN::pairedvector<int, double>> boundary_gpcoord_lin, const double gp_wgt,
-        const LINALG::Matrix<dim, 1>& normal,
-        std::vector<GEN::pairedvector<int, double>>& normal_deriv,
-        const LINALG::Matrix<dim, 1>& direction,
-        std::vector<GEN::pairedvector<int, double>>& direction_deriv, const double w,
-        double& cauchy_nt, GEN::pairedvector<int, double>& deriv_sigma_nt,
-        LINALG::SerialDenseVector& adjoint_test,
-        GEN::pairedvector<int, LINALG::SerialDenseVector>& deriv_adjoint_test);
 
    protected:
     template <int dim>

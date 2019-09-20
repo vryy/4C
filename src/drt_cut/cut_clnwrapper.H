@@ -1,5 +1,6 @@
 /*---------------------------------------------------------------------*/
 /*! \file
+
 \brief Class which stores floating points numbers of arbitrary precision (equivalent to double )
 
 \level 3
@@ -14,6 +15,7 @@
 #include <stddef.h>
 #include "../drt_lib/drt_dserror.H"
 #include <boost/unordered_map.hpp>
+#include "cut_memory_manager.H"
 
 // whether we want to use CLN at all or not
 #define CLN_CALC

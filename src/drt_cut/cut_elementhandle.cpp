@@ -374,14 +374,14 @@ void GEO::CUT::ElementHandle::BoundaryCellGaussPoints(
       {
         case DRT::Element::tri3:
         {
-          cell_points.push_back(DRT::UTILS::GaussIntegration(
-              DRT::Element::tri3, bc->CubatureDegree(DRT::Element::quad9)));
+          cell_points.push_back(
+              DRT::UTILS::GaussIntegration(DRT::Element::tri3, bc->CubatureDegree()));
           break;
         }
         case DRT::Element::quad4:
         {
-          cell_points.push_back(DRT::UTILS::GaussIntegration(
-              DRT::Element::quad4, bc->CubatureDegree(DRT::Element::quad9)));
+          cell_points.push_back(
+              DRT::UTILS::GaussIntegration(DRT::Element::quad4, bc->CubatureDegree()));
           break;
         }
         default:

@@ -251,6 +251,10 @@ namespace GEO
     //! is there a level-set side with the given sid?
     bool HasLSCuttingSide(int sid);
 
+    //! update the coordinates of the cut boundary cells
+    void UpdateBoundaryCellCoords(Teuchos::RCP<DRT::Discretization> cutterdis,
+        Teuchos::RCP<const Epetra_Vector> cutter_disp_col, const int start_ele_gid);
+
    protected:
     /** \brief hidden constructor for derived classes only
      *

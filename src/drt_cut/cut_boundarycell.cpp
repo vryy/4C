@@ -37,6 +37,9 @@ GEO::CUT::BoundaryCell::BoundaryCell(
     std::copy(&xyz(0, c), &xyz(0, c) + xyz.M(), &xyz_(0, c));
     std::fill(&xyz_(0, c) + xyz.M(), &xyz_(0, c) + 3, 0.0);
   }
+
+  // Assign reference position of boundary cell
+  xyz_ref_ = xyz_;
 }
 
 /*----------------------------------------------------------------------------*
@@ -516,39 +519,42 @@ void GEO::CUT::ArbitraryBoundaryCell::Normal(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-DRT::UTILS::GaussIntegration GEO::CUT::Point1BoundaryCell::gaussRule()
+DRT::UTILS::GaussIntegration GEO::CUT::Point1BoundaryCell::gaussRule(int cubaturedegree)
 {
-  DRT::UTILS::GaussIntegration gi(DRT::Element::point1, CubatureDegree(DRT::Element::point1));
+  DRT::UTILS::GaussIntegration gi(DRT::Element::point1, cubaturedegree);
   return gi;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-DRT::UTILS::GaussIntegration GEO::CUT::Line2BoundaryCell::gaussRule()
+DRT::UTILS::GaussIntegration GEO::CUT::Line2BoundaryCell::gaussRule(int cubaturedegree)
 {
-  DRT::UTILS::GaussIntegration gi(DRT::Element::line2, CubatureDegree(DRT::Element::line2));
+  DRT::UTILS::GaussIntegration gi(DRT::Element::line2, cubaturedegree);
   return gi;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-DRT::UTILS::GaussIntegration GEO::CUT::Tri3BoundaryCell::gaussRule()
+DRT::UTILS::GaussIntegration GEO::CUT::Tri3BoundaryCell::gaussRule(int cubaturedegree)
 {
-  DRT::UTILS::GaussIntegration gi(DRT::Element::tri3, CubatureDegree(DRT::Element::tri3));
+  DRT::UTILS::GaussIntegration gi(DRT::Element::tri3, cubaturedegree);
   return gi;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-DRT::UTILS::GaussIntegration GEO::CUT::Quad4BoundaryCell::gaussRule()
+DRT::UTILS::GaussIntegration GEO::CUT::Quad4BoundaryCell::gaussRule(int cubaturedegree)
 {
-  DRT::UTILS::GaussIntegration gi(DRT::Element::quad4, CubatureDegree(DRT::Element::quad4));
+  DRT::UTILS::GaussIntegration gi(DRT::Element::quad4, cubaturedegree);
   return gi;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-DRT::UTILS::GaussIntegration GEO::CUT::ArbitraryBoundaryCell::gaussRule() { return gaussRule_; }
+DRT::UTILS::GaussIntegration GEO::CUT::ArbitraryBoundaryCell::gaussRule(int cubaturedegree)
+{
+  return gaussRule_;
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

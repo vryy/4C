@@ -881,6 +881,114 @@ GEO::CUT::SideHandle* GEO::CutWizard::GetMeshCuttingSide(int sid, int mi)
 
 bool GEO::CutWizard::HasLSCuttingSide(int sid) { return intersection_->HasLSCuttingSide(sid); }
 
+void GEO::CutWizard::UpdateBoundaryCellCoords(Teuchos::RCP<DRT::Discretization> cutterdis,
+    Teuchos::RCP<const Epetra_Vector> cutter_disp_col, const int start_ele_gid)
+{
+  if (cutterdis == Teuchos::null)
+    dserror("cannot add mesh cutting sides for invalid cutter Discretization!");
+
+  std::vector<int> lm;
+  std::vector<double> mydisp;
+
+  int numcutelements = cutterdis->NumMyColElements();
+
+
+  for (int lid = 0; lid < numcutelements; ++lid)
+  {
+    DRT::Element* element = cutterdis->lColElement(lid);
+
+    const int numnode = element->NumNode();
+    DRT::Node** nodes = element->Nodes();
+
+    Epetra_SerialDenseMatrix xyze(3, numnode);
+    std::vector<int> dofs;
+
+    for (int i = 0; i < numnode; ++i)
+    {
+      DRT::Node& node = *nodes[i];
+
+      lm.clear();
+      mydisp.clear();
+
+      LINALG::Matrix<3, 1> x(node.X());
+
+      cutterdis->Dof(&node, lm);
+
+      dofs.push_back(lm[0]);
+      dofs.push_back(lm[1]);
+      dofs.push_back(lm[2]);
+
+      if (cutter_disp_col != Teuchos::null)
+      {
+        if (lm.size() == 3)  // case for BELE3 boundary elements
+        {
+          DRT::UTILS::ExtractMyValues(*cutter_disp_col, mydisp, lm);
+        }
+        else if (lm.size() == 4)  // case for BELE3_4 boundary elements
+        {
+          // copy the first three entries for the displacement, the fourth entry should be zero if
+          // BELE3_4 is used for cutdis instead of BELE3
+          std::vector<int> lm_red;  // reduced local map
+          lm_red.clear();
+          for (int k = 0; k < 3; k++) lm_red.push_back(lm[k]);
+
+          DRT::UTILS::ExtractMyValues(*cutter_disp_col, mydisp, lm_red);
+        }
+        else
+          dserror("wrong number of dofs for node %i", lm.size());
+
+        if (mydisp.size() != 3) dserror("we need 3 displacements here");
+
+        LINALG::Matrix<3, 1> disp(&mydisp[0], true);
+
+        // update x-position of cutter node for current time step (update with displacement)
+        x.Update(1, disp, 1);
+      }
+      std::copy(x.A(), x.A() + 3, &xyze(0, i));
+    }
+
+    GEO::CUT::SideHandle* sh = GetCutSide(element->Id() + start_ele_gid);
+    if (!sh) dserror("couldn't get sidehandle!");
+
+    if (xyze.N() == 4 && sh->Shape() == DRT::Element::quad4)
+    {
+      LINALG::Matrix<3, 4> XYZE(xyze.A(), true);
+
+      GEO::CUT::plain_side_set sides;
+      sh->CollectSides(sides);
+
+      for (GEO::CUT::plain_side_set::iterator sit = sides.begin(); sit != sides.end(); ++sit)
+      {
+        GEO::CUT::Side* side = *sit;
+
+        GEO::CUT::plain_boundarycell_set bcs;
+        side->GetBoundaryCells(bcs);
+
+        for (GEO::CUT::plain_boundarycell_set::iterator bit = bcs.begin(); bit != bcs.end(); ++bit)
+        {
+          GEO::CUT::BoundaryCell* bc = *bit;
+
+          for (uint bcpoint = 0; bcpoint < bc->Points().size(); ++bcpoint)
+          {
+            // get local coord on sidehandle
+            LINALG::Matrix<2, 1> xsi = sh->LocalCoordinates(bc->Points()[bcpoint]);
+
+            // eval shape function
+            LINALG::Matrix<4, 1> funct;
+            DRT::UTILS::shape_function_2D(funct, xsi(0, 0), xsi(1, 0), sh->Shape());
+
+            LINALG::Matrix<3, 1> newpos(true);
+            newpos.Multiply(XYZE, funct);
+            bc->ResetPos(bcpoint, newpos);
+          }
+        }
+      }
+    }
+    else
+      dserror("Shape not implemented!");
+  }
+}
+
 
 
 /// run after the Run_Cut routine has been called

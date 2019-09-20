@@ -380,6 +380,10 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   IntParameter("CUT_EVALUATE_MINITER", 0,
       "Minimal number of nonlinear iterations, before the CUT is potentially not evaluated",
       &xfsi_monolithic);
+  BoolParameter("EXTRAPOLATE_TO_ZERO", "no",
+      "the extrapolation of the fluid stress in the contact zone is relaxed to zero after a "
+      "certain distance",
+      &xfsi_monolithic);
 }
 
 
@@ -759,9 +763,10 @@ void INPAR::XFEM::SetValidConditions(
 
   xfem_surf_fsi_mono->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("INTLAW", true)));
   xfem_surf_fsi_mono->AddComponent(Teuchos::rcp(new StringConditionComponent("INTLAW", "noslip",
-      Teuchos::tuple<std::string>("noslip", "noslip_splitpen", "slip", "navslip"),
+      Teuchos::tuple<std::string>(
+          "noslip", "noslip_splitpen", "slip", "navslip", "navslip_contact"),
       Teuchos::tuple<int>(INPAR::XFEM::noslip, INPAR::XFEM::noslip_splitpen, INPAR::XFEM::slip,
-          INPAR::XFEM::navierslip),
+          INPAR::XFEM::navierslip, INPAR::XFEM::navierslip_contact),
       true)));
 
   xfem_surf_fsi_mono->AddComponent(

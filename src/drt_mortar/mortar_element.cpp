@@ -619,7 +619,8 @@ void MORTAR::MortarElement::BuildNormalAtNode(int nid, int& i, Epetra_SerialDens
 /*----------------------------------------------------------------------*
  |  Compute element normal at loc. coord. xi                  popp 09/08|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarElement::ComputeNormalAtXi(double* xi, int& i, Epetra_SerialDenseMatrix& elens)
+void MORTAR::MortarElement::ComputeNormalAtXi(
+    const double* xi, int& i, Epetra_SerialDenseMatrix& elens)
 {
   // empty local basis vectors
   double gxi[3];
@@ -646,7 +647,7 @@ void MORTAR::MortarElement::ComputeNormalAtXi(double* xi, int& i, Epetra_SerialD
 /*----------------------------------------------------------------------*
  |  Compute element normal at loc. coord. xi                  popp 11/08|
  *----------------------------------------------------------------------*/
-double MORTAR::MortarElement::ComputeUnitNormalAtXi(double* xi, double* n)
+double MORTAR::MortarElement::ComputeUnitNormalAtXi(const double* xi, double* n)
 {
   // check input
   if (!xi) dserror("ERROR: ComputeUnitNormalAtXi called with xi=NULL");
@@ -676,7 +677,7 @@ double MORTAR::MortarElement::ComputeUnitNormalAtXi(double* xi, double* n)
 /*----------------------------------------------------------------------*
  |  Compute nodal averaged normal at xi                      farah 06/16|
  *----------------------------------------------------------------------*/
-double MORTAR::MortarElement::ComputeAveragedUnitNormalAtXi(double* xi, double* n)
+double MORTAR::MortarElement::ComputeAveragedUnitNormalAtXi(const double* xi, double* n)
 {
   // check input
   if (!xi) dserror("ERROR: ComputeUnitNormalAtXi called with xi=NULL");
@@ -714,7 +715,7 @@ double MORTAR::MortarElement::ComputeAveragedUnitNormalAtXi(double* xi, double* 
  |  Compute unit normal derivative at loc. coord. xi          popp 03/09|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarElement::DerivUnitNormalAtXi(
-    double* xi, std::vector<GEN::pairedvector<int, double>>& derivn)
+    const double* xi, std::vector<GEN::pairedvector<int, double>>& derivn)
 {
   // initialize variables
   const int nnodes = NumNode();

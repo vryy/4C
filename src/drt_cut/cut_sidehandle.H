@@ -83,8 +83,7 @@ namespace GEO
         }
 
         Teuchos::RCP<DRT::UTILS::GaussPoints> gp =
-            DRT::UTILS::GaussIntegration::CreateProjected<distype>(
-                xie, bc->CubatureDegree(Shape()));
+            DRT::UTILS::GaussIntegration::CreateProjected<distype>(xie, bc->CubatureDegree());
         return gp;
       }
 

@@ -669,12 +669,12 @@ namespace MORTAR
            Caution: This function cannot be called stand-alone! It is
            integrated into the whole nodal normal calculation process.
     */
-    virtual void ComputeNormalAtXi(double* xi, int& i, Epetra_SerialDenseMatrix& elens);
+    virtual void ComputeNormalAtXi(const double* xi, int& i, Epetra_SerialDenseMatrix& elens);
 
     /*!
     \brief Compute averaged nodal normal at local coordinate xi
     */
-    virtual double ComputeAveragedUnitNormalAtXi(double* xi, double* n);
+    virtual double ComputeAveragedUnitNormalAtXi(const double* xi, double* n);
 
     /*!
     \brief Compute unit element normal at local coordinate xi
@@ -682,7 +682,7 @@ namespace MORTAR
            for a CElement in order to compute a unit normal at any point.
            Returns the length of the non-unit interpolated normal at xi.
     */
-    virtual double ComputeUnitNormalAtXi(double* xi, double* n);
+    virtual double ComputeUnitNormalAtXi(const double* xi, double* n);
 
     /*!
     \brief Compute element unit normal derivative at local coordinate xi
@@ -690,7 +690,7 @@ namespace MORTAR
            for a CoElement in order to compute a unit normal derivative at any point.
     */
     virtual void DerivUnitNormalAtXi(
-        double* xi, std::vector<GEN::pairedvector<int, double>>& derivn);
+        const double* xi, std::vector<GEN::pairedvector<int, double>>& derivn);
 
     /*!
     \brief Get nodal reference / spatial coords of current element

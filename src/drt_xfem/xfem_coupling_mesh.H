@@ -19,8 +19,15 @@ between the xfluid class and the cut-library
 
 #include "xfem_coupling_base.H"
 
+namespace GEO
+{
+  class CutWizard;
+}
+
 namespace XFEM
 {
+  class ConditionManager;
+  class XFluid_Contact_Comm;
   /*!
   \brief
    */
@@ -117,6 +124,8 @@ namespace XFEM
 
     Teuchos::RCP<Epetra_Vector> IDispnpi() { return idispnpi_; }
 
+    /// Get background fluid mesh h scaling
+    virtual double Get_h() { return h_scaling_; }
 
    protected:
     /*!
@@ -176,6 +185,9 @@ namespace XFEM
         idispnpi_;  ///< displacements of last Newton increment at t^n+1 (for monolithic approaches)
 
     bool mark_geometry_;
+
+    //! Background fluid mesh h scaling
+    double h_scaling_;
     //@}
 
     //! @name output discretization writers
@@ -397,7 +409,8 @@ namespace XFEM
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
         LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
         LINALG::Matrix<3, 1>& normal,     //< normal at gp
-        LINALG::Matrix<3, 1>& vel_m       //< master velocity at gp
+        LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+        double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
     );
   };
 
@@ -463,7 +476,8 @@ namespace XFEM
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
         LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
         LINALG::Matrix<3, 1>& normal,     //< normal at gp
-        LINALG::Matrix<3, 1>& vel_m       //< master velocity at gp
+        LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+        double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
     );
 
    private:
@@ -546,7 +560,8 @@ namespace XFEM
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
         LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
         LINALG::Matrix<3, 1>& normal,     //< normal at gp
-        LINALG::Matrix<3, 1>& vel_m       //< master velocity at gp
+        LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+        double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
     );
 
    protected:
@@ -630,10 +645,34 @@ namespace XFEM
 
     virtual void Output(const int step, const double time, const bool write_restart_data);
 
-    // prepare solve
+    /// Assign communicator to contact to mesh coupling object
+    void Assign_Contact_Comm(Teuchos::RCP<XFEM::XFluid_Contact_Comm> xf_c_comm)
+    {
+      xf_c_comm_ = xf_c_comm;
+    }
+
+    /// Get communicator to contact
+    Teuchos::RCP<XFEM::XFluid_Contact_Comm> Get_Contact_Comm()
+    {
+      if (xf_c_comm_ == Teuchos::null)
+        dserror("Get_Contact_Comm: Xfluid_Contact_Communicator not assigned!");
+      return xf_c_comm_;
+    }
+
+    /// Prepare solve
     virtual void PrepareSolve();
 
+    /// Get the corresponding FSI interface law
     virtual INPAR::XFEM::InterfaceLaw GetInterfaceLaw() { return interfacelaw_; }
+
+    /// Register this side on this proc
+    void RegisterSideProc(int sid);
+
+    /// Initialize Fluid State
+    void InitializeFluidState(Teuchos::RCP<GEO::CutWizard> cutwizard,
+        Teuchos::RCP<DRT::Discretization> fluiddis,
+        Teuchos::RCP<XFEM::ConditionManager> condition_manager,
+        Teuchos::RCP<Teuchos::ParameterList> fluidparams);
 
    protected:
     //! estimate the penalty scaling in Nitsche's method from the trace inequality for a specific
@@ -664,7 +703,27 @@ namespace XFEM
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
         LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
         LINALG::Matrix<3, 1>& normal,     //< normal at gp
-        LINALG::Matrix<3, 1>& vel_m       //< master velocity at gp
+        LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+        double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
+    );
+
+    //! Updates configurationmap for specific Gausspoint for FSI with contact
+    void UpdateConfigurationMap_GP_Contact(double& kappa_m,  //< fluid sided weighting
+        double& visc_m,                                      //< master sided dynamic viscosity
+        double& visc_s,                                      //< slave sided dynamic viscosity
+        double& density_m,                                   //< master sided density
+        double& visc_stab_tang,         //< viscous tangential NIT Penalty scaling
+        double& full_stab,              //< full NIT Penalty scaling
+        const LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
+        const DRT::Condition* cond,     //< Condition
+        DRT::Element* ele,              //< Element
+        DRT::Element* bele,             //< Boundary Element
+        double* funct,  //< local shape function for Gauss Point (from fluid element)
+        double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
+        LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+        LINALG::Matrix<3, 1>& normal,     //< normal at gp
+        LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+        double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
     );
 
     //------------------------------- vectors -----------------------------
@@ -685,6 +744,9 @@ namespace XFEM
 
     //! applied interface law
     INPAR::XFEM::InterfaceLaw interfacelaw_;
+
+    //! Xfluid Contact Communicator
+    Teuchos::RCP<XFEM::XFluid_Contact_Comm> xf_c_comm_;
     //@}
   };
 
@@ -770,7 +832,8 @@ namespace XFEM
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
         LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
         LINALG::Matrix<3, 1>& normal,     //< normal at gp
-        LINALG::Matrix<3, 1>& vel_m       //< master velocity at gp
+        LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+        double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
     );
 
    private:

@@ -200,7 +200,7 @@ void CONTACT::UTILS::GetMasterSlaveSideInfo(std::vector<bool>& isslave, std::vec
  | gather initialization information                            schmidt 11/18 |
  *----------------------------------------------------------------------------*/
 void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
-    bool& Check_nonsmooth_selfcontactsurface, std::vector<bool>& isactive,
+    bool& Check_nonsmooth_selfcontactsurface, bool& Searchele_AllProc, std::vector<bool>& isactive,
     std::vector<bool>& isslave, std::vector<bool>& isself,
     const std::vector<DRT::Condition*> cond_grp)
 {
@@ -258,6 +258,12 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
   const Teuchos::ParameterList& contact = DRT::Problem::Instance()->ContactDynamicParams();
   const Teuchos::ParameterList& mortar = DRT::Problem::Instance()->MortarCouplingParams();
 
+  // XFSI is the only reason why you want this option (as the xfluid redistribution is different)
+  if (problemtype == prb_fsi_xfem)
+    Searchele_AllProc = true;
+  else
+    Searchele_AllProc = false;
+
   // all definitions of one interface need to be consistent
   if (Two_half_pass)
   {
@@ -282,8 +288,8 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
             "other contact conditions with same ID need to be defined accordingly!");
     }
 
-    if (problemtype != prb_structure)
-      dserror("two half pass algorithm only implemented in structural problems");
+    if (problemtype != prb_structure && problemtype != prb_fsi_xfem)
+      dserror("two half pass algorithm only implemented in structural and fsi problems");
     if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
         INPAR::CONTACT::solution_nitsche)
       dserror("two half pass algorithm only with nitsche contact formulation");
@@ -291,6 +297,9 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
         INPAR::CONTACT::NitWgt_harmonic)
       dserror("two half pass algorithm only with harmonic weighting");
   }
+
+  if (!Two_half_pass && problemtype == prb_fsi_xfem)
+    dserror("Nitsche FSI with Contact requires Two_half_pass which is not set!");
 
   if ((!Two_half_pass) && Check_nonsmooth_selfcontactsurface)
     dserror(

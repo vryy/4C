@@ -97,7 +97,9 @@ namespace XFEM
         LINALG::Matrix<3, 1>& x_gp_lin,             ///< global coordiantes of gaussian point
         LINALG::Matrix<3, 1>& normal,               ///< normal vector on boundary cell
         GEO::CUT::BoundaryCell* bc,                 ///< boundary cell
-        const LINALG::Matrix<2, 1>& eta  ///< local coordinates of gaussian point w.r.t boundarycell
+        const LINALG::Matrix<2, 1>&
+            eta,                   ///< local coordinates of gaussian point w.r.t boundarycell
+        bool referencepos = false  ///< use the bc reference position for transformation
     );
 
     //! pre-compute the measure of the element's intersecting surface
@@ -173,6 +175,23 @@ namespace XFEM
         const bool IsConservative = false,  ///< conservative formulation of navier stokes
         bool error_calc = false  ///< when called in error calculation, don't add the inflow terms
     );
+
+    double Evaluate_Full_Traction(const double& pres_m, const LINALG::Matrix<3, 3>& vderxy_m,
+        const double& visc_m, const double& penalty_fac, const LINALG::Matrix<3, 1>& vel_m,
+        const LINALG::Matrix<3, 1>& vel_s, const LINALG::Matrix<3, 1>& elenormal,
+        const LINALG::Matrix<3, 1>& normal, const LINALG::Matrix<3, 1>& velpf_s,
+        double porosity = -1);
+
+    double Evaluate_Full_Traction(const LINALG::Matrix<3, 1>& intraction, const double& penalty_fac,
+        const LINALG::Matrix<3, 1>& vel_m, const LINALG::Matrix<3, 1>& vel_s,
+        const LINALG::Matrix<3, 1>& elenormal, const LINALG::Matrix<3, 1>& normal);
+
+    double Evaluate_Full_Traction(const double& intraction, const double& penalty_fac,
+        const LINALG::Matrix<3, 1>& vel_m, const LINALG::Matrix<3, 1>& vel_s,
+        const LINALG::Matrix<3, 1>& elenormal, const LINALG::Matrix<3, 1>& normal);
+
+    void EvaluteStateatGP(const DRT::Element* sele, const LINALG::Matrix<3, 1>& selexsi,
+        const DRT::Discretization& discret, const std::string& state, LINALG::Matrix<3, 1>& vel_s);
 
   }  // namespace UTILS
 }  // namespace XFEM

@@ -20,6 +20,7 @@ between the xfluid class and the cut-library
 #include "xfem_utils.H"
 #include "xfem_interface_utils.H"
 #include "xfem_discretization_utils.H"
+#include "xfem_xfluid_contact_communicator.H"
 
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_utils_parallel.H"
@@ -61,6 +62,7 @@ XFEM::MeshCoupling::MeshCoupling(
     bool marked_geometry)
     : CouplingBase(bg_dis, cond_name, cond_dis, coupling_id, time, step),
       mark_geometry_(marked_geometry),
+      h_scaling_(-1.0),
       firstoutputofrun_(true),
       suffix_(suffix)
 {
@@ -351,7 +353,8 @@ void XFEM::MeshVolCoupling::GetCouplingEleLocationVector(const int sid, std::vec
 {
   std::vector<int> patchlmstride, patchlmowner;  // dummy
   DRT::Element* coupl_ele = GetCouplingElement(sid);
-  return coupl_ele->LocationVector(*coupl_dis_, patchlm, patchlmowner, patchlmstride);
+  coupl_ele->LocationVector(*coupl_dis_, patchlm, patchlmowner, patchlmstride);
+  return;
 }
 
 /*--------------------------------------------------------------------------*
@@ -1059,7 +1062,8 @@ void XFEM::MeshCouplingWeakDirichlet::UpdateConfigurationMap_GP(
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
     LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
     LINALG::Matrix<3, 1>& normal,     //< normal at gp
-    LINALG::Matrix<3, 1>& vel_m       //< master velocity at gp
+    LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+    double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
   // Configuration of Penalty Terms
@@ -1125,7 +1129,8 @@ void XFEM::MeshCouplingNeumann::UpdateConfigurationMap_GP(
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
     LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
     LINALG::Matrix<3, 1>& normal,     //< normal at gp
-    LINALG::Matrix<3, 1>& vel_m       //< master velocity at gp
+    LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+    double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
   if (inflow_stab_)
@@ -1559,7 +1564,8 @@ void XFEM::MeshCouplingNavierSlip::UpdateConfigurationMap_GP(
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
     LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
     LINALG::Matrix<3, 1>& normal,     //< normal at gp
-    LINALG::Matrix<3, 1>& vel_m       //< master velocity at gp
+    LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+    double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
   double dynvisc = (kappa_m * visc_m + (1.0 - kappa_m) * visc_s);
@@ -1831,6 +1837,27 @@ void XFEM::MeshCouplingFSI::SetConditionSpecificParameters()
     interfacelaw_ = interfacelaw;
   }
 
+  if (interfacelaw_ == INPAR::XFEM::navierslip_contact)  // compute h
+  {
+    double hmax = 0.0;
+    for (int ele = 0; ele < bg_dis_->NumMyRowElements(); ++ele)
+    {
+      DRT::Element* fluid_ele = bg_dis_->lRowElement(ele);
+      if (fluid_ele->Shape() == DRT::Element::hex8)
+      {
+        LINALG::Matrix<3, 8> xyze(true);
+        GEO::fillInitialPositionArray(fluid_ele, xyze);
+        double vol = XFEM::UTILS::EvalElementVolume<DRT::Element::hex8>(xyze);
+        hmax = std::max(hmax, XFEM::UTILS::ComputeVolEqDiameter(vol));
+      }
+      else
+        dserror("Element type != hex8, add it here!");
+    }
+    bg_dis_->Comm().MaxAll(&hmax, &h_scaling_, 1);
+    std::cout << "==| XFEM::MeshCouplingFSI: Computed h_scaling for fluidele is: " << h_scaling_
+              << "(Proc: " << bg_dis_->Comm().MyPID() << ")! |==" << std::endl;
+  }
+
   std::cout << "==| XFEM::MeshCouplingFSI: Applied interface law is";
   switch (interfacelaw_)
   {
@@ -1853,6 +1880,11 @@ void XFEM::MeshCouplingFSI::SetConditionSpecificParameters()
     case INPAR::XFEM::navierslip:
     {
       std::cout << " Navier-slip! |==" << std::endl;
+      break;
+    }
+    case INPAR::XFEM::navierslip_contact:
+    {
+      std::cout << " Navier-slip with Nitsche contact! |==" << std::endl;
       break;
     }
   }
@@ -1991,7 +2023,8 @@ void XFEM::MeshCouplingFSI::SetupConfigurationMap()
         configuration_map_[INPAR::XFEM::X_Adj_t_Col] = std::pair<bool, double>(false, 1.0);
       }
     }
-    else if (GetInterfaceLaw() == INPAR::XFEM::navierslip)
+    else if (GetInterfaceLaw() == INPAR::XFEM::navierslip ||
+             GetInterfaceLaw() == INPAR::XFEM::navierslip_contact)
     {
       // Configuration of Consistency Terms
       configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool, double>(true, 1.0);
@@ -2086,7 +2119,8 @@ void XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP(double& kappa_m,  //< flui
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
     LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
     LINALG::Matrix<3, 1>& normal,     //< normal at gp
-    LINALG::Matrix<3, 1>& vel_m       //< master velocity at gp
+    LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+    double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
 #ifdef DEBUG
@@ -2148,6 +2182,11 @@ void XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP(double& kappa_m,  //< flui
       configuration_map_[INPAR::XFEM::X_Pen_n_Row].second =
           full_stab;  // full_stab <-- to keep results!
     }
+    else if (GetInterfaceLaw() == INPAR::XFEM::navierslip_contact)
+    {
+      UpdateConfigurationMap_GP_Contact(kappa_m, visc_m, visc_s, density_m, visc_stab_tang,
+          full_stab, x, cond, ele, bele, funct, derxy, rst_slave, normal, vel_m, fulltraction);
+    }
     else
       dserror("Intlaw not available!");
   }
@@ -2171,6 +2210,122 @@ void XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP(double& kappa_m,  //< flui
       dserror("Intlaw not available!");
   }
   return;
+}
+
+/*--------------------------------------------------------------------------*
+ * UpdateConfigurationMap_GP_Contact for XFSCI
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP_Contact(
+    double& kappa_m,         //< fluid sided weighting
+    double& visc_m,          //< master sided dynamic viscosity
+    double& visc_s,          //< slave sided dynamic viscosity
+    double& density_m,       //< master sided density
+    double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
+    double& full_stab, const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond,
+    DRT::Element* ele,   //< Element
+    DRT::Element* bele,  //< Boundary Element
+    double* funct,       //< local shape function for Gauss Point (from fluid element)
+    double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
+    LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+    LINALG::Matrix<3, 1>& normal,     //< normal at gp
+    LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+    double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
+)
+{
+#ifdef DEBUG
+  dsassert(xf_c_comm_ != Teuchos::null,
+      "UpdateConfigurationMap_GP_Contact but no Xfluid Contact Communicator assigned!");
+#endif
+
+  static const double MAX_sliplength = 1e40;  // large number for slip case
+  static const int MAX_h = 1;  // distance from contact zone at which no-slip is prescribed
+  static const int MIN_h = 0;  // distance from contact zone at which full-slip is prescribed
+  static const double scaling = 1. / (MAX_h - MIN_h);
+
+  LINALG::Matrix<2, 1> xsi(rst_slave.A(), true);  // 3-->2
+  bool pure_fsi = true;                           // do we integrate only fsi
+  double gap =
+      MAX_h * h_scaling_;  // initialize with large value as this should be the default value ...
+  pure_fsi = xf_c_comm_->Get_Contact_State(
+      bele->Id(), GetName(), xsi, *fulltraction, gap);  // get gap and if contact is integrated
+
+
+  double sliplength = 0.0;
+  GetSlipCoefficient(sliplength, x, cond);  // get reference slip length
+
+  if ((gap - MIN_h * h_scaling_) * (MAX_sliplength + scaling) <
+      h_scaling_)  // larger than maximal allows sliplength
+  {
+    sliplength *= h_scaling_ * MAX_sliplength;
+  }
+  else if (gap > MAX_h * h_scaling_)  // no-slip case
+  {
+    sliplength = 0.;
+  }
+  else  // scaling scase
+  {
+    sliplength *= h_scaling_ * (h_scaling_ / (gap - MIN_h * h_scaling_) - scaling);
+  }
+
+  if (sliplength < 0.0) dserror("The sliplength should not be negative!");
+
+  double dynvisc = (kappa_m * visc_m + (1.0 - kappa_m) * visc_s);
+  double stabnit = 0.0;
+  double stabadj = 0.0;
+  XFEM::UTILS::GetNavierSlipStabilizationParameters(
+      visc_stab_tang, dynvisc, sliplength, stabnit, stabadj);  // sliplength is input for this
+
+  {
+    xf_c_comm_->Gmsh_Write(x, *fulltraction, 1);
+    xf_c_comm_->Gmsh_Write(x, (double)pure_fsi, 3);
+    xf_c_comm_->Gmsh_Write(x, sliplength, 6);
+  }
+
+  if (pure_fsi)  // standard FSI with gernal Navier-slip --> Case I
+  {
+    xf_c_comm_->Inc_GP(3);
+    configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool, double>(true, 1.0);
+    configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool, double>(true, stabnit);
+    configuration_map_[INPAR::XFEM::X_Pen_t_Row] = std::pair<bool, double>(true, stabnit);
+    configuration_map_[INPAR::XFEM::F_Con_t_Col] =
+        std::pair<bool, double>(true, sliplength / dynvisc);
+    configuration_map_[INPAR::XFEM::F_Con_t_Row] =
+        std::pair<bool, double>(true, -stabnit);  //+sign for penalty!
+    configuration_map_[INPAR::XFEM::X_Con_t_Row] =
+        std::pair<bool, double>(true, -stabnit);  //+sign for penalty!
+    configuration_map_[INPAR::XFEM::F_Adj_t_Row] = std::pair<bool, double>(true, stabadj);
+    configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool, double>(true, sliplength);
+
+    // Configuration of Penalty Terms
+    configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool, double>(true, full_stab);
+    configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool, double>(true, full_stab);
+  }
+  else  // we evaluate only the fluid terms here --> Case III (see Remark 5) -> the fluid terms, the
+        // solid contributions are added in the contact part
+  {
+    xf_c_comm_->Inc_GP(4);
+    configuration_map_[INPAR::XFEM::X_Con_Row] =
+        std::pair<bool, double>(false, 0.0);  // no solid consistency
+    configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool, double>(true, stabnit);
+    configuration_map_[INPAR::XFEM::X_Pen_t_Row] = std::pair<bool, double>(true, stabnit);
+    configuration_map_[INPAR::XFEM::F_Con_t_Col] =
+        std::pair<bool, double>(true, sliplength / dynvisc);
+    configuration_map_[INPAR::XFEM::F_Con_t_Row] =
+        std::pair<bool, double>(true, -stabnit);  //+sign for penalty!
+    if (sliplength > 1e-40)                       // this is basically the no-slip case ...
+      configuration_map_[INPAR::XFEM::X_Con_t_Row] = std::pair<bool, double>(
+          true, -stabnit + dynvisc / sliplength);  //+sign for penalty!+tangcons
+    else                                           // avoid to evaluate this term ...
+      configuration_map_[INPAR::XFEM::X_Con_t_Row] =
+          std::pair<bool, double>(false, 0);  //+sign for penalty!+tancons
+    configuration_map_[INPAR::XFEM::F_Adj_t_Row] = std::pair<bool, double>(true, stabadj);
+    configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool, double>(true, sliplength);
+
+    // Configuration of Penalty Terms
+    configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool, double>(true, full_stab);
+    configuration_map_[INPAR::XFEM::X_Pen_n_Row] =
+        std::pair<bool, double>(false, 0.0);  // no normal penalty
+  }
 }
 
 /*--------------------------------------------------------------------------*
@@ -2283,6 +2438,28 @@ void XFEM::MeshCouplingFSI::PrepareSolve()
   if (GetAveragingStrategy() != INPAR::XFEM::Xfluid_Sided) ResetEvaluatedTraceEstimates();
 }
 
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshCouplingFSI::RegisterSideProc(int sid)
+{
+  if (GetInterfaceLaw() == INPAR::XFEM::navierslip_contact)
+    Get_Contact_Comm()->RegisterSideProc(sid);
+  return;
+}
+
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshCouplingFSI::InitializeFluidState(Teuchos::RCP<GEO::CutWizard> cutwizard,
+    Teuchos::RCP<DRT::Discretization> fluiddis,
+    Teuchos::RCP<XFEM::ConditionManager> condition_manager,
+    Teuchos::RCP<Teuchos::ParameterList> fluidparams)
+{
+  if (GetInterfaceLaw() == INPAR::XFEM::navierslip_contact)
+    Get_Contact_Comm()->InitializeFluidState(cutwizard, fluiddis, condition_manager, fluidparams);
+  return;
+}
+
 XFEM::MeshCouplingFluidFluid::MeshCouplingFluidFluid(
     Teuchos::RCP<DRT::Discretization>& bg_dis,  ///< background discretization
     const std::string& cond_name,  ///< name of the condition, by which the derived cutter
@@ -2389,7 +2566,8 @@ void XFEM::MeshCouplingFluidFluid::UpdateConfigurationMap_GP(
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
     LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
     LINALG::Matrix<3, 1>& normal,     //< normal at gp
-    LINALG::Matrix<3, 1>& vel_m       //< master velocity at gp
+    LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+    double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
 #ifdef DEBUG

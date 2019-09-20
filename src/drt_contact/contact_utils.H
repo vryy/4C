@@ -56,6 +56,7 @@ namespace CONTACT
      * \param [in,out]  Two_half_pass: two half pass approach applied for current condition group
      * \param [in,out]  Check_nonsmooth_selfcontactsurface: reference configuration check for
      *                  non-smooth self contact shall be performed for current condition group
+     * \param [in,out]  Searchele_AllProc: Search elements on all processors
      * \param [in,out]  isactive:  condition is set active
      * \param [in]      isslave:   condition is defined as slave side
      * \param [in]      isself:    condition is self contact condition
@@ -63,8 +64,8 @@ namespace CONTACT
      *
      * \author cschmidt \date 11/18 */
     void GetInitializationInfo(bool& Two_half_pass, bool& Check_nonsmooth_selfcontactsurface,
-        std::vector<bool>& isactive, std::vector<bool>& isslave, std::vector<bool>& isself,
-        const std::vector<DRT::Condition*> cond_grp);
+        bool& Searchele_AllProc, std::vector<bool>& isactive, std::vector<bool>& isslave,
+        std::vector<bool>& isself, const std::vector<DRT::Condition*> cond_grp);
 
     /// write conservation data to an output file
     void WriteConservationDataToFile(const int mypid, const int interface_id, const int nln_iter,
