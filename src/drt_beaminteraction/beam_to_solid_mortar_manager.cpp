@@ -106,7 +106,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::Setup()
   int temp_my_n_lambda_dof = (int)n_lambda_dof;
   discret_->Comm().GatherAll(&temp_my_n_lambda_dof, &lambda_dof_per_rank[0], 1);
 
-  // Get the start ID for the lambda DOFs on this processor.
+  // Get the start GID for the lambda DOFs on this processor.
   int my_lambda_gid_start_value = start_value_lambda_gid_;
   for (int pid = 0; pid < discret_->Comm().MyPID(); pid++)
     my_lambda_gid_start_value += lambda_dof_per_rank[pid];
@@ -116,7 +116,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::Setup()
   for (int my_lid = 0; my_lid < (int)n_lambda_dof; my_lid++)
     my_lambda_gid[my_lid] = my_lambda_gid_start_value + my_lid;
 
-  // Rowmap for the additional DOFs used by the mortar contact discretization.
+  // Rowmap for the additional GIDs used by the mortar contact discretization.
   lambda_dof_rowmap_ = Teuchos::rcp(
       new Epetra_Map(-1, my_lambda_gid.size(), my_lambda_gid.data(), 0, discret_->Comm()));
 
