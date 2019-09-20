@@ -57,6 +57,16 @@ namespace PARTICLEALGORITHM
   /*!
    * \brief algorithm to control particle simulations
    *
+   * The particle algorithm controls all major steps of particle simulations. Besides initialization
+   * and setup of the problem this mainly concerns the control of the time loop (with the
+   * integration of the particle step) consisting of the following steps:
+   * - update and maintain valid connectivity (parallel distribution, load transfer, ghosting,
+   *   neighbor pair relations)
+   * - evaluation of particle accelerations from gravity acceleration, interactions, and viscous
+   *   damping
+   * - (runtime) output of fields
+   * - write restart information
+   *
    * \author Sebastian Fuchs \date 04/2018
    */
   class ParticleAlgorithm final : public ADAPTER::AlgorithmBase
