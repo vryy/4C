@@ -23,6 +23,7 @@ MAT 0   MAT_ElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 #include "so3_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "elasthyper_service.H"
+#include "anisotropy.H"
 
 // forward declaration due to avoid header definition
 namespace MAT
@@ -54,7 +55,7 @@ namespace MAT
       ///
       /// This constructor recursively calls the constructors of the
       /// parameter sets of the hyperelastic summands.
-      explicit ElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata);
+      explicit ElastHyper(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
       /// destructor
       ~ElastHyper() override = default;
@@ -145,7 +146,7 @@ namespace MAT
   class ElastHyper_TestSuite;
   class ElastHyperService_TestSuite;
 
-  class ElastHyper : public So3Material
+  class ElastHyper : public So3Material, public MAT::Anisotropy
   {
    public:
     friend class MAT::PAR::ElastHyper;
@@ -211,7 +212,7 @@ namespace MAT
     virtual int NumMat() const { return params_->nummat_; }
 
     /// deliver material ID of index i'th potential summand in collection
-    virtual int MatID(const unsigned index  ///< index i
+    virtual int MatID(unsigned index  ///< index i
         ) const;
 
     /// provide access to material by its ID
@@ -230,7 +231,7 @@ namespace MAT
     /// evaluate strain energy function
     void StrainEnergy(const LINALG::Matrix<6, 1>& glstrain,  ///< Green-Lagrange strain
         double& psi,                                         ///< Strain energy function
-        const int eleGID                                     ///< Element GID
+        int eleGID                                           ///< Element GID
         ) override;
 
     /// hyperelastic stress response plus elasticity tensor
@@ -239,7 +240,7 @@ namespace MAT
         Teuchos::ParameterList& params,                ///< Container for additional information
         LINALG::Matrix<6, 1>* stress,                  ///< 2nd Piola-Kirchhoff stresses
         LINALG::Matrix<6, 6>* cmat,                    ///< Constitutive matrix
-        const int eleGID                               ///< Element GID
+        int eleGID                                     ///< Element GID
         ) override;
 
     /// evaluate for GEMM
@@ -251,7 +252,7 @@ namespace MAT
         LINALG::Matrix<6, 1>* glstrain_old,          ///< Green-Lagrange strain at t_{n}
         LINALG::Matrix<3, 3>* rcg_new,               ///< Right Cauchy-Green tensor at t_{n+1}
         LINALG::Matrix<3, 3>* rcg_old,               ///< Right Cauchy-Green tensor at t_{n}
-        const int eleGID) override;                  ///< Element GID
+        int eleGID) override;                        ///< Element GID
 
     /**
      * \brief Evaluate the Cauchy stress and linearizations with given deformation gradient.
@@ -293,7 +294,7 @@ namespace MAT
     void EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd, const LINALG::Matrix<3, 1>& n,
         const LINALG::Matrix<3, 1>& t, double& snt, LINALG::Matrix<3, 1>* DsntDn,
         LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<9, 1>* DsntDF, LINALG::Matrix<9, 9>* D2sntDF2,
-        LINALG::Matrix<9, 3>* D2sntDFDn, LINALG::Matrix<9, 3>* D2sntDFDt, const int eleGID,
+        LINALG::Matrix<9, 3>* D2sntDFDn, LINALG::Matrix<9, 3>* D2sntDFDt, int eleGID,
         const double* temp = nullptr, double* DsntDT = nullptr,
         LINALG::Matrix<9, 1>* D2sntDFDT = nullptr) override;
 
@@ -356,7 +357,7 @@ namespace MAT
     void Update() override;
 
     /// setup patient-specific AAA stuff
-    virtual void SetupAAA(Teuchos::ParameterList& params, const int eleGID);
+    virtual void SetupAAA(Teuchos::ParameterList& params, int eleGID);
 
     /// return if anisotropic not splitted formulation
     virtual bool AnisotropicPrincipal() const { return summandProperties_.anisoprinc; }
@@ -368,9 +369,9 @@ namespace MAT
     virtual void GetFiberVecs(std::vector<LINALG::Matrix<3, 1>>& fibervecs);
 
     /// evaluate fiber directions from locsys and alignment angle, pull back
-    virtual void EvaluateFiberVecs(const double newgamma,  ///< new angle
-        const LINALG::Matrix<3, 3>& locsys,                ///< local coordinate system
-        const LINALG::Matrix<3, 3>& defgrd                 ///< deformation gradient
+    virtual void EvaluateFiberVecs(double newgamma,  ///< new angle
+        const LINALG::Matrix<3, 3>& locsys,          ///< local coordinate system
+        const LINALG::Matrix<3, 3>& defgrd           ///< deformation gradient
     );
 
     /// Return potential summand pointer for the given material type
@@ -394,6 +395,36 @@ namespace MAT
       return params_->polyconvex_ != 0;
     };
 
+    /// @name Derived methods for anisotropy
+    //@{
+
+    /*!
+     * Invoke ReadAnisotropyFromElement on all summands that implement MAT::Anisotropy
+     *
+     * @param numgp (in) : number of Gauß points
+     * @param linedef (in) : Input line definition
+     */
+    void ReadAnisotropyFromElement(int numgp, DRT::INPUT::LineDefinition* linedef) override;
+
+    /*!
+     * Pass Fibers to all summands that implement MAT::Anisotropy
+     *
+     * @param gp (in) : Gaußpoint of the fibers
+     * @param fibers (in) : List of fiber vectors
+     */
+    void SetFibers(int gp, const std::vector<LINALG::Matrix<3, 1>>& fibers) override;
+
+    /*!
+     * \brief Check, whether the fibers are initialized for all summands
+     *
+     * This methods will only check all summands until all are initialized and stores this state
+     * to avoid checking it in every Newton step.
+     *
+     * @return true, if the fibers are already setup, otherwise false
+     */
+    bool FibersInitialized() override;
+    //@}
+
    protected:
     /// Sat Inverse Analysis: add params of summands
     virtual void ElastOptParams(std::map<std::string, int>* pnames);
@@ -409,6 +440,9 @@ namespace MAT
 
     /// map to materials/potential summands
     std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>> potsum_;
+
+    /// Flag whether the anisotropy of all Summands has already been initialized
+    bool anisotropyInitialized_;
   };
 
 }  // namespace MAT

@@ -116,7 +116,7 @@ MAT::ELASTIC::StructuralTensorStrategyDispersedTransverselyIsotropic::
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::StructuralTensorStrategyBase::DyadicProduct(
-    LINALG::Matrix<3, 1>& M, LINALG::Matrix<6, 1>& result)
+    const LINALG::Matrix<3, 1>& M, LINALG::Matrix<6, 1>& result)
 {
   for (int i = 0; i < 3; ++i) result(i) = M(i) * M(i);
 
@@ -129,7 +129,7 @@ void MAT::ELASTIC::StructuralTensorStrategyBase::DyadicProduct(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::StructuralTensorStrategyStandard::SetupStructuralTensor(
-    LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<6, 1>& structural_tensor)
+    const LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<6, 1>& structural_tensor)
 {
   DyadicProduct(fiber_vector, structural_tensor);
 }
@@ -138,7 +138,7 @@ void MAT::ELASTIC::StructuralTensorStrategyStandard::SetupStructuralTensor(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::SetupStructuralTensor(
-    LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<6, 1>& structural_tensor)
+    const LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<6, 1>& structural_tensor)
 {
   const DRT::UTILS::IntegrationPoints1D gausspoints(DRT::UTILS::intrule_line_50point);
   LINALG::Matrix<numbgp, twice> rho;
@@ -295,7 +295,7 @@ void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::SetupStructur
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::StructuralTensorStrategyDispersedTransverselyIsotropic::SetupStructuralTensor(
-    LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<6, 1>& structural_tensor)
+    const LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<6, 1>& structural_tensor)
 {
   // constant for dispersion around fiber_vector
   double c1 = params_->c1_;

@@ -30,13 +30,13 @@ MAT 0   MAT_ElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::ElastHyper::ElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::ElastHyper::ElastHyper(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
       nummat_(matdata->GetInt("NUMMAT")),
       matids_(matdata->Get<std::vector<int>>("MATIDS")),
       density_(matdata->GetDouble("DENS")),
       polyconvex_(matdata->GetInt("POLYCONVEX")),
-      statiaelasthyper_(NULL)
+      statiaelasthyper_(nullptr)
 
 {
   // check if sizes fit
@@ -45,7 +45,7 @@ MAT::PAR::ElastHyper::ElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata)
         matids_->size());
 
   // output, that polyconvexity is checked
-  if (polyconvex_) std::cout << "Polyconvexity of your simulation is checked." << std::endl;
+  if (polyconvex_ != 0) std::cout << "Polyconvexity of your simulation is checked." << std::endl;
 
   // STAT INVERSE ANALYSIS
   // For stat inverse analysis, add all parameters to matparams_
@@ -78,7 +78,7 @@ MAT::ElastHyperType MAT::ElastHyperType::instance_;
 
 DRT::ParObject* MAT::ElastHyperType::Create(const std::vector<char>& data)
 {
-  MAT::ElastHyper* elhy = new MAT::ElastHyper();
+  auto* elhy = new MAT::ElastHyper();
   elhy->Unpack(data);
 
   return elhy;
@@ -93,13 +93,24 @@ DRT::ParObject* MAT::ElastHyperType::Create(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ElastHyper::ElastHyper() : summandProperties_(), params_(NULL), potsum_(0) {}
+MAT::ElastHyper::ElastHyper()
+    : Anisotropy(0),  // ElastHyper does not have fibers itself, only the summands
+      summandProperties_(),
+      params_(nullptr),
+      potsum_(0),
+      anisotropyInitialized_(false)
+{
+}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::ElastHyper::ElastHyper(MAT::PAR::ElastHyper* params)
-    : summandProperties_(), params_(params), potsum_(0)
+    : Anisotropy(0),  // ElastHyper does not have fibers itself, only the summands
+      summandProperties_(),
+      params_(params),
+      potsum_(0),
+      anisotropyInitialized_(false)
 {
   // make sure the referenced materials in material list have quick access parameters
   std::vector<int>::const_iterator m;
@@ -122,10 +133,10 @@ MAT::ElastHyper::ElastHyper(MAT::PAR::ElastHyper* params)
   {
     // copy matparams_ to summands, to fill it with respective parameters
     // loop map of associated potential summands
-    for (unsigned int p = 0; p < potsum_.size(); ++p)
+    for (auto& p : potsum_)
     {
-      potsum_[p]->CopyStatInvAnaMatParams(params_->matparams_);
-      potsum_[p]->SetStatInvAnaSummandMatParams();
+      p->CopyStatInvAnaMatParams(params_->matparams_);
+      p->SetStatInvAnaSummandMatParams();
     }
   }
 }
@@ -143,11 +154,13 @@ void MAT::ElastHyper::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, type);
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
   summandProperties_.Pack(data);
 
-  if (params_ != NULL)  // summands are not accessible in postprocessing mode
+  AddtoPack(data, static_cast<int>(anisotropyInitialized_));
+
+  if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
     for (const auto& p : potsum_)
@@ -163,7 +176,7 @@ void MAT::ElastHyper::Pack(DRT::PackBuffer& data) const
 void MAT::ElastHyper::Unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
-  params_ = NULL;
+  params_ = nullptr;
   potsum_.clear();
 
   std::vector<char>::size_type position = 0;
@@ -192,7 +205,9 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
 
   summandProperties_.Unpack(position, data);
 
-  if (params_ != NULL)  // summands are not accessible in postprocessing mode
+  anisotropyInitialized_ = (bool)ExtractInt(position, data);
+
+  if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     // make sure the referenced materials in material list have quick access parameters
     std::vector<int>::const_iterator m;
@@ -205,9 +220,9 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
     }
 
     // loop map of associated potential summands
-    for (unsigned int p = 0; p < potsum_.size(); ++p)
+    for (auto& p : potsum_)
     {
-      potsum_[p]->UnpackSummand(data, position);
+      p->UnpackSummand(data, position);
     }
     // in the postprocessing mode, we do not unpack everything we have packed
     // -> position check cannot be done in this case
@@ -217,20 +232,19 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
 
   // For Stat Inverse Analysis
   // pointer to elasthyper
-  if (params_ != NULL) params_->SetMaterialPtrSIA(this);
+  if (params_ != nullptr) params_->SetMaterialPtrSIA(this);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 int MAT::ElastHyper::MatID(const unsigned index) const
 {
-  if ((int)index < params_->nummat_)
-    return params_->matids_->at(index);
-  else
+  if ((int)index >= params_->nummat_)
   {
     dserror("Index too large");
-    return -1;
   }
+
+  return params_->matids_->at(index);
 }
 
 /*----------------------------------------------------------------------*/
@@ -242,30 +256,27 @@ double MAT::ElastHyper::ShearMod() const
   double shearmod = 0.0;
   {
     // loop map of associated potential summands
-    for (unsigned int p = 0; p < potsum_.size(); ++p)
+    for (const auto& p : potsum_)
     {
-      potsum_[p]->AddShearMod(haveshearmod, shearmod);
+      p->AddShearMod(haveshearmod, shearmod);
     }
   }
-
-  if (haveshearmod)
-  {
-    return shearmod;
-  }
-  else
+  if (!haveshearmod)
   {
     dserror("Cannot provide shear modulus equivalent");
-    return -1.0;
   }
+  return shearmod;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double MAT::ElastHyper::GetYoung()
 {
-  double young, shear, bulk;
+  double young;
+  double shear;
+  double bulk;
   young = shear = bulk = 0.;
-  for (unsigned int p = 0; p < potsum_.size(); ++p) potsum_[p]->AddYoungsMod(young, shear, bulk);
+  for (auto& p : potsum_) p->AddYoungsMod(young, shear, bulk);
 
   if (bulk != 0. || shear != 0.) young += 9. * bulk * shear / (3. * bulk + shear);
 
@@ -277,12 +288,10 @@ double MAT::ElastHyper::GetYoung()
 void MAT::ElastHyper::SetupAAA(Teuchos::ParameterList& params, const int eleGID)
 {
   // loop map of associated potential summands
-  for (unsigned int p = 0; p < potsum_.size(); ++p)
+  for (auto& p : potsum_)
   {
-    potsum_[p]->SetupAAA(params, eleGID);
+    p->SetupAAA(params, eleGID);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -290,9 +299,9 @@ void MAT::ElastHyper::SetupAAA(Teuchos::ParameterList& params, const int eleGID)
 void MAT::ElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   // Setup summands
-  for (unsigned int p = 0; p < potsum_.size(); ++p)
+  for (auto& p : potsum_)
   {
-    potsum_[p]->Setup(linedef);
+    p->Setup(linedef);
   }
   summandProperties_.Clear();
   ElastHyperProperties(potsum_, summandProperties_);
@@ -302,7 +311,8 @@ void MAT::ElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
         "Never use viscoelastic-materials in Elasthyper-Toolbox. Use Viscoelasthyper-Toolbox "
         "instead.");
 
-  return;
+  // Read anisotropy
+  ReadAnisotropyFromElement(numgp, linedef);
 }
 
 /*----------------------------------------------------------------------*/
@@ -310,12 +320,10 @@ void MAT::ElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 void MAT::ElastHyper::Update()
 {
   // loop map of associated potential summands
-  for (unsigned int p = 0; p < potsum_.size(); ++p)
+  for (auto& p : potsum_)
   {
-    potsum_[p]->Update();
+    p->Update();
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -324,9 +332,9 @@ void MAT::ElastHyper::GetFiberVecs(std::vector<LINALG::Matrix<3, 1>>& fibervecs)
 {
   if (summandProperties_.anisoprinc || summandProperties_.anisomod)
   {
-    for (unsigned int p = 0; p < potsum_.size(); ++p)
+    for (auto& p : potsum_)
     {
-      potsum_[p]->GetFiberVecs(fibervecs);
+      p->GetFiberVecs(fibervecs);
     }
   }
 }
@@ -338,9 +346,9 @@ void MAT::ElastHyper::EvaluateFiberVecs(
 {
   if (summandProperties_.anisoprinc || summandProperties_.anisomod)
   {
-    for (unsigned int p = 0; p < potsum_.size(); ++p)
+    for (auto& p : potsum_)
     {
-      potsum_[p]->SetFiberVecs(newgamma, locsys, defgrd);
+      p->SetFiberVecs(newgamma, locsys, defgrd);
     }
   }
 }
@@ -380,11 +388,11 @@ void MAT::ElastHyper::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress
     LINALG::Matrix<3, 3>* rcg_old, const int eleGID)
 {
 #ifdef DEBUG
-  if (!stress) dserror("No stress vector supplied");
-  if (!cmat) dserror("No material tangent matrix supplied");
-  if (!glstrain_m) dserror("No GL strains supplied");
-  if (!glstrain_new) dserror("No GL strains supplied");
-  if (!glstrain_old) dserror("No GL strains supplied");
+  if (stress == nullptr) dserror("No stress vector supplied");
+  if (cmat == nullptr) dserror("No material tangent matrix supplied");
+  if (glstrain_m == nullptr) dserror("No GL strains supplied");
+  if (glstrain_new == nullptr) dserror("No GL strains supplied");
+  if (glstrain_old == nullptr) dserror("No GL strains supplied");
 #endif
 
   // standard material evaluate call at midpoint t_{n+1/2}
@@ -490,8 +498,6 @@ void MAT::ElastHyper::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress
   //**********************************************************************
   stress->Update(1.0, algstress, 1.0);
   cmat->Update(1.0, algcmat, 1.0);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -500,7 +506,7 @@ void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
     LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int eleGID)
 {
-  bool checkpolyconvexity = (params_ != nullptr and params_->polyconvex_);
+  bool checkpolyconvexity = (params_ != nullptr and (params_->polyconvex_ != 0));
 
   ElastHyperEvaluate(*defgrd, *glstrain, params, *stress, *cmat, eleGID, potsum_,
       summandProperties_, checkpolyconvexity);
@@ -512,12 +518,12 @@ void MAT::ElastHyper::EvaluateCauchyDerivs(const LINALG::Matrix<3, 1>& prinv, co
     LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII, LINALG::Matrix<10, 1>& dddPIII,
     const double* temp)
 {
-  for (unsigned i = 0; i < potsum_.size(); ++i)
+  for (auto& i : potsum_)
   {
     if (summandProperties_.isoprinc)
     {
-      potsum_[i]->AddDerivativesPrincipal(dPI, ddPII, prinv, eleGID);
-      potsum_[i]->AddThirdDerivativesPrincipalIso(dddPIII, prinv, eleGID);
+      i->AddDerivativesPrincipal(dPI, ddPII, prinv, eleGID);
+      i->AddThirdDerivativesPrincipalIso(dddPIII, prinv, eleGID);
     }
     if (summandProperties_.isomod || summandProperties_.anisomod || summandProperties_.anisoprinc)
       dserror("not implemented for this form of strain energy function");
@@ -570,7 +576,7 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
   snt = prefac * (prinv(1) * dPI(1) * ndt + prinv(2) * dPI(2) * ndt + dPI(0) * bdndt -
                      prinv(2) * dPI(1) * ibdndt);
 
-  if (DsntDn)
+  if (DsntDn != nullptr)
   {
     DsntDn->Update(prinv(1) * dPI(1) + prinv(2) * dPI(2), t, 0.0);  // clear DsntDn here
     DsntDn->Update(dPI(0), bdt, 1.0);
@@ -578,7 +584,7 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
     DsntDn->Scale(prefac);
   }
 
-  if (DsntDt)
+  if (DsntDt != nullptr)
   {
     DsntDt->Update(prinv(1) * dPI(1) + prinv(2) * dPI(2), n, 0.0);  // clear DsntDt here
     DsntDt->Update(dPI(0), bdn, 1.0);
@@ -637,11 +643,11 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
   static LINALG::Matrix<9, 1> DibdndtDFV(true);
   UTILS::VOIGT::Matrix3x3to9x1(DibdndtDF, DibdndtDFV);
 
-  if (temp)
+  if (temp != nullptr)
     EvaluateCauchyTempDeriv(prinv, ndt, bdndt, ibdndt, temp, DsntDT, iFTV, DbdndtDFV, DibdndtDFV,
         DI1DF, DI2DF, DI3DF, D2sntDFDT);
 
-  if (DsntDF)
+  if (DsntDF != nullptr)
   {
     // next 3 updates add partial derivative of (\sigma * n * t) w.r.t. F for constant invariants
     // 1. part is term arising from d(J^{-1})/dF
@@ -666,7 +672,7 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
         DI3DF, 1.0);
   }
 
-  if (D2sntDFDn)
+  if (D2sntDFDn != nullptr)
   {
     // next three blocks add d/dn(d(\sigma * n * t)/dF) for constant invariants
     // first part is term arising from d/dn(dJ^{-1}/dF)
@@ -682,7 +688,7 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
       for (int l = 0; l < 3; ++l)
         for (int z = 0; z < 3; ++z)
           (*D2sntDFDn)(UTILS::VOIGT::IndexMappings::NonSymToVoigt9(k, l), z) +=
-              fac * (t(k, 0) * defgrd(z, l) + (k == z) * tempvec1x3(0, l));
+              fac * (t(k, 0) * defgrd(z, l) + static_cast<double>(k == z) * tempvec1x3(0, l));
 
     // third part is term arising from d/dn(d(b^{-1} * n * t)/dF
     const double fac2 = prefac * prinv(2) * dPI(1);
@@ -711,7 +717,7 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
     D2sntDFDn->MultiplyNT(prefac, DI3DF, tempvec3x1, 1.0);
   }
 
-  if (D2sntDFDt)
+  if (D2sntDFDt != nullptr)
   {
     // next three blocks add d/dt(d(\sigma * n * t)/dF) for constant invariants
     // first part is term arising from d/dt(dJ^{-1}/dF)
@@ -727,7 +733,7 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
       for (int l = 0; l < 3; ++l)
         for (int z = 0; z < 3; ++z)
           (*D2sntDFDt)(UTILS::VOIGT::IndexMappings::NonSymToVoigt9(k, l), z) +=
-              fac * (n(k, 0) * defgrd(z, l) + (k == z) * tempvec1x3(0, l));
+              fac * (n(k, 0) * defgrd(z, l) + static_cast<double>(k == z) * tempvec1x3(0, l));
 
     // third part is term arising from d/dn(d(b^{-1} * n * t)/dF
     const double fac2 = prefac * prinv(2) * dPI(1);
@@ -756,7 +762,7 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
     D2sntDFDt->MultiplyNT(prefac, DI3DF, tempvec3x1, 1.0);
   }
 
-  if (D2sntDF2)
+  if (D2sntDF2 != nullptr)
   {
     // define and fill all tensors that can not be calculated using multiply operations first
     static LINALG::Matrix<9, 9> DiFTDF(true);
@@ -784,16 +790,18 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
           {
             DiFTDF(map::NonSymToVoigt9(k, l), map::NonSymToVoigt9(m, a)) = -iF(l, m) * iF(a, k);
             D2bdndtDF2(map::NonSymToVoigt9(k, l), map::NonSymToVoigt9(m, a)) =
-                (t(k, 0) * n(m, 0) + t(m, 0) * n(k, 0)) * (l == a);
+                (t(k, 0) * n(m, 0) + t(m, 0) * n(k, 0)) * static_cast<double>(l == a);
             D2ibdndtDF2(map::NonSymToVoigt9(k, l), map::NonSymToVoigt9(m, a)) =
                 ibdF(k, a) * (ibdt(m, 0) * ndibdF(0, l) + ibdn(m, 0) * tdibdF(0, l)) +
                 ib(m, k) * (tdibdF(0, a) * ndibdF(0, l) + tdibdF(0, l) * ndibdF(0, a)) +
                 ibdF(m, l) * (ibdt(k, 0) * ndibdF(0, a) + tdibdF(0, a) * ibdn(k, 0));
             D2I1DF2(map::NonSymToVoigt9(k, l), map::NonSymToVoigt9(m, a)) =
-                2.0 * (k == m) * (l == a);
+                2.0 * static_cast<double>(k == m) * static_cast<double>(l == a);
             D2I2DF2(map::NonSymToVoigt9(k, l), map::NonSymToVoigt9(m, a)) =
-                2.0 * (prinv(0) * (k == m) * (l == a) + 2.0 * defgrd(m, a) * defgrd(k, l) -
-                          (k == m) * C(a, l) - defgrd(k, a) * defgrd(m, l) - b(k, m) * (l == a));
+                2.0 *
+                (prinv(0) * static_cast<double>(k == m) * static_cast<double>(l == a) +
+                    2.0 * defgrd(m, a) * defgrd(k, l) - static_cast<double>(k == m) * C(a, l) -
+                    defgrd(k, a) * defgrd(m, l) - b(k, m) * static_cast<double>(l == a));
             D2I3DF2(map::NonSymToVoigt9(k, l), map::NonSymToVoigt9(m, a)) =
                 2.0 * prinv(2) * (2.0 * ibdF(m, a) * ibdF(k, l) - ibdF(m, l) * ibdF(k, a));
           }
@@ -903,8 +911,6 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
                      dddPIII(4) * bdndt - 2.0 * ddPII(3) * ibdndt - prinv(2) * dddPIII(8) * ibdndt),
         DI3DF, DI3DF, 1.0);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -927,9 +933,9 @@ void MAT::ElastHyper::VisNames(std::map<std::string, int>& names)
   }
   // do visualization for isotropic materials as well
   // loop map of associated potential summands
-  for (unsigned int p = 0; p < potsum_.size(); ++p)
+  for (auto& p : potsum_)
   {
-    potsum_[p]->VisNames(names);
+    p->VisNames(names);
   }
 }
 
@@ -963,21 +969,81 @@ bool MAT::ElastHyper::VisData(
     return_val = 1;
   }
   // loop map of associated potential summands
-  for (unsigned int p = 0; p < potsum_.size(); ++p)
+  for (auto& p : potsum_)
   {
-    return_val += potsum_[p]->VisData(name, data, numgp, eleID);
+    return_val += static_cast<int>(p->VisData(name, data, numgp, eleID));
   }
   return (bool)return_val;
 }
 
 /*----------------------------------------------------------------------*/
+/* Invoke on all summands                                               */
+/*----------------------------------------------------------------------*/
+void MAT::ElastHyper::ReadAnisotropyFromElement(
+    int const numgp, DRT::INPUT::LineDefinition* linedef)
+{
+  for (const auto& p : potsum_)
+  {
+    // try to cast
+    Teuchos::RCP<MAT::Anisotropy> anisotropicSummand;
+    if (!Teuchos::is_null(anisotropicSummand = Teuchos::rcp_dynamic_cast<MAT::Anisotropy>(p)))
+    {
+      // Pass to summand
+      anisotropicSummand->ReadAnisotropyFromElement(numgp, linedef);
+    }
+  }
+}
+
+void MAT::ElastHyper::SetFibers(int gp, const std::vector<LINALG::Matrix<3, 1>>& fibers)
+{
+  for (const auto& p : potsum_)
+  {
+    // try to cast
+    Teuchos::RCP<MAT::Anisotropy> anisotropicSummand;
+    if (!Teuchos::is_null(anisotropicSummand = Teuchos::rcp_dynamic_cast<MAT::Anisotropy>(p)))
+    {
+      // Pass to summand
+      anisotropicSummand->SetFibers(gp, fibers);
+    }
+  }
+}
+
+bool MAT::ElastHyper::FibersInitialized()
+{
+  // Check, whether all summands have already been initialized previously
+  if (anisotropyInitialized_)
+  {
+    return true;
+  }
+
+  bool initialized = false;
+  for (const auto& p : potsum_)
+  {
+    // try to cast
+    Teuchos::RCP<MAT::Anisotropy> anisotropicSummand;
+    if (!Teuchos::is_null(anisotropicSummand = Teuchos::rcp_dynamic_cast<MAT::Anisotropy>(p)))
+    {
+      // Pass to summand
+      initialized = initialized && anisotropicSummand->FibersInitialized();
+    }
+  }
+
+  // check if initialized, if so -> cache
+  if (initialized)
+  {
+    anisotropyInitialized_ = true;
+  }
+
+  return initialized;
+}
+/*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const MAT::ELASTIC::Summand> MAT::ElastHyper::GetPotSummandPtr(
     const INPAR::MAT::MaterialType& materialtype) const
 {
-  for (unsigned int p = 0; p < potsum_.size(); ++p)
+  for (const auto& p : potsum_)
   {
-    if (potsum_[p]->MaterialType() == materialtype) return potsum_[p];
+    if (p->MaterialType() == materialtype) return p;
   }
   return Teuchos::null;
 }
@@ -990,9 +1056,8 @@ Teuchos::RCP<const MAT::ELASTIC::Summand> MAT::ElastHyper::GetPotSummandPtr(
 void MAT::ElastHyper::ElastOptParams(std::map<std::string, int>* pnames)
 {
   // loop map of associated potential summands
-  for (unsigned int p = 0; p < potsum_.size(); ++p)
+  for (auto& p : potsum_)
   {
-    potsum_[p]->AddElastOptParams(pnames);
+    p->AddElastOptParams(pnames);
   }
-  return;
 }

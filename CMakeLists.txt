@@ -485,6 +485,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/aaaneohooke.cpp
   src/drt_mat/aaaneohooke_stopro.cpp
   src/drt_mat/aaaraghavanvorp_damage.cpp
+  src/drt_mat/anisotropy.cpp
   src/drt_mat/arrhenius_pv.cpp
   src/drt_mat/arrhenius_spec.cpp
   src/drt_mat/arrhenius_temp.cpp

@@ -25,6 +25,7 @@
 #include "prestress.H"
 
 #include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "../drt_mat/anisotropy.H"
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
@@ -1056,14 +1057,36 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  // lo
     }
   }
 
-  // interpolate fibers to gp if fiber nodes are defined
-  std::vector<LINALG::Matrix<NUMDIM_SOTET10, 1>> gpfiber1(
-      NUMNOD_SOTET10, LINALG::Matrix<NUMDIM_SOTET10, 1>(true));
-  std::vector<LINALG::Matrix<NUMDIM_SOTET10, 1>> gpfiber2(
-      NUMNOD_SOTET10, LINALG::Matrix<NUMDIM_SOTET10, 1>(true));
-  DRT::FIBER::FiberNode* fnode = dynamic_cast<DRT::FIBER::FiberNode*>(nodes[0]);
-  if (fnode)
-    DRT::ELEMENTS::UTILS::NodalFiber<DRT::Element::tet10>(nodes, shapefcts_4gp, gpfiber1, gpfiber2);
+  // Handle fibers defined on the nodes
+  Teuchos::RCP<MAT::Anisotropy> anisotropicMaterial;
+  auto* fnode = dynamic_cast<DRT::FIBER::FiberNode*>(nodes[0]);
+  if (fnode != nullptr and
+      !Teuchos::is_null(
+          anisotropicMaterial = Teuchos::rcp_dynamic_cast<MAT::Anisotropy>(SolidMaterial())))
+  {
+    if (!anisotropicMaterial->FibersInitialized())
+    {
+      // Fibers are not yet initialized
+      // Compute nodal fibers
+
+      // interpolate fibers to gp if fiber nodes are defined
+      std::vector<LINALG::Matrix<NUMDIM_SOTET10, 1>> gpfiber1(
+          NUMNOD_SOTET10, LINALG::Matrix<NUMDIM_SOTET10, 1>(true));
+      std::vector<LINALG::Matrix<NUMDIM_SOTET10, 1>> gpfiber2(
+          NUMNOD_SOTET10, LINALG::Matrix<NUMDIM_SOTET10, 1>(true));
+      DRT::ELEMENTS::UTILS::NodalFiber<DRT::Element::tet10>(
+          nodes, shapefcts_4gp, gpfiber1, gpfiber2);
+
+
+      for (int gp = 0; gp < NUMGPT_SOTET10; ++gp)
+      {
+        std::vector<LINALG::Matrix<3, 1>> fibers;
+        fibers.emplace_back(gpfiber1[gp]);
+        fibers.emplace_back(gpfiber2[gp]);
+        anisotropicMaterial->SetFibers(gp, fibers);
+      }
+    }
+  }
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -1233,12 +1256,6 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  // lo
       LINALG::Matrix<1, NUMDIM_SOTET10> point(true);
       point.MultiplyTN(funct, xrefe);
       params.set("gprefecoord", point);
-    }
-
-    if (fnode)
-    {
-      params.set("gpfiber1", gpfiber1[gp]);
-      params.set("gpfiber2", gpfiber2[gp]);
     }
 
     params.set<int>("gp", gp);

@@ -90,6 +90,112 @@ class MAT::MaterialService_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(prinv(2), 1.7143620000000002, 1e-10);
   }
 
+  void test_invariants_principal_stress()
+  {
+    LINALG::Matrix<3, 1> prinv(false);
+    MAT::InvariantsPrincipal<MAT::VoigtNotation::stress>(prinv, *tens_stress);
+    TS_ASSERT_DELTA(prinv(0), 3.5999999999999996, 1e-10);
+    TS_ASSERT_DELTA(prinv(1), 4.3085999999999984, 1e-10);
+    TS_ASSERT_DELTA(prinv(2), 1.7143620000000002, 1e-10);
+  }
+
+  void test_invariants_principal_strain()
+  {
+    LINALG::Matrix<3, 1> prinv(false);
+    MAT::InvariantsPrincipal<MAT::VoigtNotation::strain>(prinv, *tens_strain);
+    TS_ASSERT_DELTA(prinv(0), 3.5999999999999996, 1e-10);
+    TS_ASSERT_DELTA(prinv(1), 4.3085999999999984, 1e-10);
+    TS_ASSERT_DELTA(prinv(2), 1.7143620000000002, 1e-10);
+  }
+
+  void test_inverse_stress()
+  {
+    LINALG::Matrix<6, 1> itens_stress_result(false);
+    VStressUtils::InverseTensor(*tens_stress, itens_stress_result);
+
+    for (unsigned i = 0; i < 6; ++i)
+      TS_ASSERT_DELTA(itens_stress_result(i), (*itens_stress)(i), 1e-5);
+  }
+
+  void test_inverse_strain()
+  {
+    LINALG::Matrix<6, 1> itens_strain_result(false);
+    VStrainUtils::InverseTensor(*tens_strain, itens_strain_result);
+
+    for (unsigned i = 0; i < 6; ++i)
+      TS_ASSERT_DELTA(itens_strain_result(i), (*itens_strain)(i), 1e-5);
+  }
+
+  void test_to_stress_like()
+  {
+    LINALG::Matrix<6, 1> strain_to_stress(false);
+    LINALG::Matrix<6, 1> stress_to_stress(false);
+    VStrainUtils::ToStressLike(*tens_strain, strain_to_stress);
+    VStressUtils::ToStressLike(*tens_stress, stress_to_stress);
+
+    for (unsigned i = 0; i < 6; ++i)
+    {
+      TS_ASSERT_DELTA(strain_to_stress(i), (*tens_stress)(i), 1e-5);
+      TS_ASSERT_DELTA(stress_to_stress(i), (*tens_stress)(i), 1e-5);
+    }
+  }
+
+  void test_to_strain_like()
+  {
+    LINALG::Matrix<6, 1> strain_to_strain(false);
+    LINALG::Matrix<6, 1> stress_to_strain(false);
+    VStrainUtils::ToStrainLike(*tens_strain, strain_to_strain);
+    VStressUtils::ToStrainLike(*tens_stress, stress_to_strain);
+
+    for (unsigned i = 0; i < 6; ++i)
+    {
+      TS_ASSERT_DELTA(strain_to_strain(i), (*tens_strain)(i), 1e-5);
+      TS_ASSERT_DELTA(stress_to_strain(i), (*tens_strain)(i), 1e-5);
+    }
+  }
+
+  void test_stress_like_to_tensor()
+  {
+    LINALG::Matrix<3, 3> tensor(false);
+    VStressUtils::ToTensor(*tens_stress, tensor);
+
+    for (unsigned i = 0; i < 3; ++i)
+    {
+      for (unsigned j = 0; j < 3; ++j)
+      {
+        TS_ASSERT_DELTA(tensor(i, j), (*tens)(i, j), 1e-5);
+      }
+    }
+  }
+
+  void test_strain_like_to_tensor()
+  {
+    LINALG::Matrix<3, 3> tensor(false);
+    VStrainUtils::ToTensor(*tens_strain, tensor);
+
+    for (unsigned i = 0; i < 3; ++i)
+    {
+      for (unsigned j = 0; j < 3; ++j)
+      {
+        TS_ASSERT_DELTA(tensor(i, j), (*tens)(i, j), 1e-10);
+      }
+    }
+  }
+
+  void test_identity_matrix()
+  {
+    LINALG::Matrix<6, 1> id(false);
+
+    IdentityMatrix(id);
+
+    TS_ASSERT_DELTA(id(0), 1.0, 1e-10);
+    TS_ASSERT_DELTA(id(1), 1.0, 1e-10);
+    TS_ASSERT_DELTA(id(2), 1.0, 1e-10);
+    TS_ASSERT_DELTA(id(3), 0.0, 1e-10);
+    TS_ASSERT_DELTA(id(4), 0.0, 1e-10);
+    TS_ASSERT_DELTA(id(5), 0.0, 1e-10);
+  }
+
  private:
   Teuchos::RCP<LINALG::Matrix<3, 3>> tens;
   Teuchos::RCP<LINALG::Matrix<3, 3>> itens;
