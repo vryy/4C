@@ -648,6 +648,22 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkStructure(
     vtu_writer_ptr_->AppendDofBasedResultDataVector(
         displacement_state_vector, 3, 0, "displacement");
 
+  // append element owner if desired
+  if (strucuture_vtu_output_params.OutputOwner())
+  {
+    const DRT::Discretization& discret = dynamic_cast<const DRT::Discretization&>(Discret());
+
+    Teuchos::RCP<Epetra_Vector> owner_vector =
+        Teuchos::rcp(new Epetra_Vector(*discret.ElementColMap(), true));
+    for (int iele = 0; iele < discret.NumMyColElements(); ++iele)
+    {
+      const DRT::Element* ele = discret.lColElement(iele);
+      (*owner_vector)[iele] = ele->Owner();
+    }
+
+    vtu_writer_ptr_->AppendElementBasedResultDataVector(owner_vector, 1, "element_owner");
+  }
+
   // finalize everything and write all required files to filesystem
   vtu_writer_ptr_->WriteFiles();
   vtu_writer_ptr_->WriteCollectionFileOfAllWrittenFiles();
