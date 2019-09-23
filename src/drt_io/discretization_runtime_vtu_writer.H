@@ -91,8 +91,9 @@ class DiscretizationRuntimeVtuWriter
   /**
    * \brief Write owner id for each element.
    *
-   * In order to process all elements, it is sufficient that each processor writes all elements in
-   * his row map. This can easily be achieved by appending the PID of the writing processor.
+   * In order to process all solid elements (beam elements are handled by a sepperate output
+   * writer), it is sufficient that each processor writes all elements in his row map. This can
+   * easily be achieved by appending the PID of the writing processor.
    *
    * @param resultname (in) Name of the owner field in the VTK file.
    */
