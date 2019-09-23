@@ -419,8 +419,7 @@ void DiscretizationRuntimeVtuWriter::AppendElementOwner(const std::string result
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
     if (beamele != NULL) continue;
 
-    const int lid = discretization_->ElementColMap()->LID(ele->Id());
-    if (lid > -1) owner_of_row_elements.push_back(my_pid);
+    owner_of_row_elements.push_back(my_pid);
   }
 
   // Pass data to the output writer.
