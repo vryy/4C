@@ -404,6 +404,18 @@ void DiscretizationRuntimeVtuWriter::AppendElementBasedResultDataVector(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
+void DiscretizationRuntimeVtuWriter::AppendElementOwner(const std::string resultname)
+{
+  // Vector with element owner for elements in the row map.
+  std::vector<double> owner_of_row_elements(
+      discretization_->NumMyRowElements(), discretization_->Comm().MyPID());
+
+  // Pass data to the output writer.
+  runtime_vtuwriter_->AppendVisualizationCellDataVector(owner_of_row_elements, 1, resultname);
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
 void DiscretizationRuntimeVtuWriter::WriteFiles() { runtime_vtuwriter_->WriteFiles(); }
 
 /*-----------------------------------------------------------------------------------------------*

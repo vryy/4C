@@ -635,7 +635,7 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkStructure(
   CheckInitSetup();
 
   // get the parameter container object
-  const DRT::ELEMENTS::StructureRuntimeVtuOutputParams& strucuture_vtu_output_params =
+  const DRT::ELEMENTS::StructureRuntimeVtuOutputParams& structure_vtu_output_params =
       *GInOutput().GetRuntimeVtkOutputParams()->GetStructureParams();
 
   // reset time and time step of the writer object
@@ -644,25 +644,13 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkStructure(
   // append all desired output data to the writer object's storage
 
   // append displacement if desired
-  if (strucuture_vtu_output_params.OutputDisplacementState())
+  if (structure_vtu_output_params.OutputDisplacementState())
     vtu_writer_ptr_->AppendDofBasedResultDataVector(
         displacement_state_vector, 3, 0, "displacement");
 
   // append element owner if desired
-  if (strucuture_vtu_output_params.OutputElementOwner())
-  {
-    const DRT::Discretization& discret = dynamic_cast<const DRT::Discretization&>(Discret());
-
-    Teuchos::RCP<Epetra_Vector> owner_vector =
-        Teuchos::rcp(new Epetra_Vector(*discret.ElementColMap(), true));
-    for (int iele = 0; iele < discret.NumMyColElements(); ++iele)
-    {
-      const DRT::Element* ele = discret.lColElement(iele);
-      (*owner_vector)[iele] = ele->Owner();
-    }
-
-    vtu_writer_ptr_->AppendElementBasedResultDataVector(owner_vector, 1, "element_owner");
-  }
+  if (structure_vtu_output_params.OutputElementOwner())
+    vtu_writer_ptr_->AppendElementOwner("element_owner");
 
   // finalize everything and write all required files to filesystem
   vtu_writer_ptr_->WriteFiles();
