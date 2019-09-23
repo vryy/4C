@@ -649,7 +649,7 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkStructure(
         displacement_state_vector, 3, 0, "displacement");
 
   // append element owner if desired
-  if (strucuture_vtu_output_params.OutputOwner())
+  if (strucuture_vtu_output_params.OutputElementOwner())
   {
     const DRT::Discretization& discret = dynamic_cast<const DRT::Discretization&>(Discret());
 

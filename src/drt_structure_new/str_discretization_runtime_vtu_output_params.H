@@ -52,10 +52,10 @@ namespace DRT
       };
 
       /// whether to write the owner of elements
-      bool OutputOwner() const
+      bool OutputElementOwner() const
       {
         CheckInitSetup();
-        return output_owner_;
+        return output_element_owner_;
       };
 
      private:
@@ -85,7 +85,7 @@ namespace DRT
       bool output_displacement_state_;
 
       /// whether to write the owner of elements
-      bool output_owner_;
+      bool output_element_owner_;
 
       //@}
     };
