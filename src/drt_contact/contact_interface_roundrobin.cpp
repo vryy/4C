@@ -24,48 +24,48 @@
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::RoundRobinExtendGhosting(bool firstevaluation)
 {
-  std::vector<int> eghosting;
-  std::vector<int> nghosting;
+  std::vector<int> element_GIDs_to_be_ghosted;
+  std::vector<int> node_GIDs_to_be_ghosted;
   for (int k = 0; k < SlaveColElements()->NumMyElements(); ++k)
   {
     int gid = SlaveColElements()->GID(k);
     DRT::Element* ele = Discret().gElement(gid);
     if (!ele) dserror("ERROR: Cannot find ele with gid %i", gid);
-    CoElement* sele = dynamic_cast<CoElement*>(ele);
+    CoElement* slave_ele = dynamic_cast<CoElement*>(ele);
 
-    for (int j = 0; j < sele->MoData().NumSearchElements(); ++j)
+    for (int j = 0; j < slave_ele->MoData().NumSearchElements(); ++j)
     {
-      int gid2 = sele->MoData().SearchElements()[j];
+      int gid2 = slave_ele->MoData().SearchElements()[j];
       DRT::Element* ele2 = idiscret_->gElement(gid2);
       if (!ele2) dserror("ERROR: Cannot find master element with gid %", gid2);
       CoElement* melement = dynamic_cast<CoElement*>(ele2);
 
-      eghosting.push_back(melement->Id());
+      element_GIDs_to_be_ghosted.push_back(melement->Id());
 
       for (int z = 0; z < melement->NumNode(); ++z)
       {
         int gidn = melement->NodeIds()[z];
-        nghosting.push_back(gidn);
+        node_GIDs_to_be_ghosted.push_back(gidn);
       }
     }
     // reset found elements
-    sele->DeleteSearchElements();
+    slave_ele->DeleteSearchElements();
   }
 
-  Teuchos::RCP<Epetra_Map> ecurrghosting =
-      Teuchos::rcp(new Epetra_Map(-1, (int)eghosting.size(), &eghosting[0], 0, Comm()));
-  Teuchos::RCP<Epetra_Map> ncurrghosting =
-      Teuchos::rcp(new Epetra_Map(-1, (int)nghosting.size(), &nghosting[0], 0, Comm()));
+  Teuchos::RCP<Epetra_Map> currently_ghosted_elements = Teuchos::rcp(new Epetra_Map(
+      -1, (int)element_GIDs_to_be_ghosted.size(), &element_GIDs_to_be_ghosted[0], 0, Comm()));
+  Teuchos::RCP<Epetra_Map> currently_ghosted_nodes = Teuchos::rcp(new Epetra_Map(
+      -1, (int)node_GIDs_to_be_ghosted.size(), &node_GIDs_to_be_ghosted[0], 0, Comm()));
 
   if (firstevaluation)
   {
-    eextendedghosting_ = Teuchos::rcp(new Epetra_Map(*ecurrghosting));
-    nextendedghosting_ = Teuchos::rcp(new Epetra_Map(*ncurrghosting));
+    eextendedghosting_ = Teuchos::rcp(new Epetra_Map(*currently_ghosted_elements));
+    nextendedghosting_ = Teuchos::rcp(new Epetra_Map(*currently_ghosted_nodes));
   }
   else
   {
-    eextendedghosting_ = LINALG::MergeMap(eextendedghosting_, ecurrghosting, true);
-    nextendedghosting_ = LINALG::MergeMap(nextendedghosting_, ncurrghosting, true);
+    eextendedghosting_ = LINALG::MergeMap(eextendedghosting_, currently_ghosted_elements, true);
+    nextendedghosting_ = LINALG::MergeMap(nextendedghosting_, currently_ghosted_nodes, true);
   }
 
   return;
@@ -93,7 +93,7 @@ void CONTACT::CoInterface::RoundRobinChangeOwnership()
   const int torank = (myrank + 1) % numproc;              // to
   const int fromrank = (myrank + numproc - 1) % numproc;  // from
 
-  // new eles, new nodes
+  // new elements, new nodes
   std::vector<int> ncol, nrow;
   std::vector<int> ecol, erow;
 
@@ -444,21 +444,25 @@ void CONTACT::CoInterface::RoundRobinDetectGhosting()
   RoundRobinExtendGhosting(true);
 
   // Init Maps
-  Teuchos::RCP<Epetra_Map> INIT_SCN = Teuchos::rcp(new Epetra_Map(*SlaveColNodes()));
-  Teuchos::RCP<Epetra_Map> Init_SCE = Teuchos::rcp(new Epetra_Map(*SlaveColElements()));
-  Teuchos::RCP<Epetra_Map> Init_MCN = Teuchos::rcp(new Epetra_Map(*MasterColNodes()));
-  Teuchos::RCP<Epetra_Map> Init_MCE = Teuchos::rcp(new Epetra_Map(*MasterColElements()));
+  Teuchos::RCP<Epetra_Map> initial_slave_node_column_map =
+      Teuchos::rcp(new Epetra_Map(*SlaveColNodes()));
+  Teuchos::RCP<Epetra_Map> initial_slave_element_column_map =
+      Teuchos::rcp(new Epetra_Map(*SlaveColElements()));
+  Teuchos::RCP<Epetra_Map> initial_master_node_column_map =
+      Teuchos::rcp(new Epetra_Map(*MasterColNodes()));
+  Teuchos::RCP<Epetra_Map> initial_master_element_column_map =
+      Teuchos::rcp(new Epetra_Map(*MasterColElements()));
 
   // *************************************
   // start RR loop for current interface
   // *************************************
   // loop over all procs
   if (Comm().NumProc() > 1)
-    for (int j = 0; j < (int)(Comm().NumProc()); ++j)
+    for (int proc = 0; proc < (int)(Comm().NumProc()); ++proc)
     {
       // status output
-      if (Comm().MyPID() == 0 && j == 0) std::cout << "Round-Robin-Iteration #" << j;
-      if (Comm().MyPID() == 0 && j > 0) std::cout << " #" << j;
+      if (Comm().MyPID() == 0 && proc == 0) std::cout << "Round-Robin-Iteration #" << proc;
+      if (Comm().MyPID() == 0 && proc > 0) std::cout << " #" << proc;
 
       // perform the ownership change
       RoundRobinChangeOwnership();
@@ -470,7 +474,7 @@ void CONTACT::CoInterface::RoundRobinDetectGhosting()
         dserror("ERROR: Invalid search algorithm");
 
       // evaluate interfaces
-      if (j < (int)(Comm().NumProc() - 1))
+      if (proc < (int)(Comm().NumProc() - 1))
       {
         if (SearchAlg() == INPAR::MORTAR::search_bfele)
           EvaluateSearchBruteForce(SearchParam());
@@ -479,7 +483,7 @@ void CONTACT::CoInterface::RoundRobinDetectGhosting()
         else
           dserror("ERROR: Invalid search algorithm");
 
-        // other ghostings per iter
+        // other ghostings per iteration
         RoundRobinExtendGhosting(false);
       }
       else
@@ -488,11 +492,12 @@ void CONTACT::CoInterface::RoundRobinDetectGhosting()
       }
     }  // end RR
 
-  // NEW VERSION
-  eextendedghosting_ = LINALG::MergeMap(eextendedghosting_, Init_SCE, true);
-  nextendedghosting_ = LINALG::MergeMap(nextendedghosting_, INIT_SCN, true);
-  eextendedghosting_ = LINALG::MergeMap(eextendedghosting_, Init_MCE, true);
-  nextendedghosting_ = LINALG::MergeMap(nextendedghosting_, Init_MCN, true);
+  // Append ghost nodes/elements to be ghosted to existing column maps
+  eextendedghosting_ = LINALG::MergeMap(eextendedghosting_, initial_slave_element_column_map, true);
+  nextendedghosting_ = LINALG::MergeMap(nextendedghosting_, initial_slave_node_column_map, true);
+  eextendedghosting_ =
+      LINALG::MergeMap(eextendedghosting_, initial_master_element_column_map, true);
+  nextendedghosting_ = LINALG::MergeMap(nextendedghosting_, initial_master_node_column_map, true);
 
   // finally extend ghosting
   Discret().ExportColumnElements(*eextendedghosting_);
@@ -510,7 +515,7 @@ void CONTACT::CoInterface::RoundRobinDetectGhosting()
     dserror("ERROR: Invalid search algorithm");
 
   // final output for loop
-  if (Comm().MyPID() == 0) std::cout << " RRL done!" << std::endl;
+  if (Comm().MyPID() == 0) std::cout << " Round-Robin loop done!" << std::endl;
 
   return;
 }
