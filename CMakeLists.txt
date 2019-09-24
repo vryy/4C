@@ -2256,6 +2256,7 @@ set(OBJS_DRT_CONTACT
   src/drt_contact/contact_integrator_factory.cpp
   src/drt_contact/contact_integrator_assemble.cpp
   src/drt_contact/contact_interface.cpp
+  src/drt_contact/contact_interface_roundrobin.cpp
   src/drt_contact/contact_interface_tools.cpp
   src/drt_contact/contact_interpolator.cpp
   src/drt_contact/contact_lagrange_strategy.cpp
