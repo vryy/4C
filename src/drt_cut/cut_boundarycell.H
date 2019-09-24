@@ -175,10 +175,7 @@ namespace GEO
       {
         const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement;
         LINALG::Matrix<3, numnodes> xyze(xyz_, true);
-        if (referencepos)
-          xyze = LINALG::Matrix<3, numnodes>(xyz_ref_, true);
-        else
-          xyze = LINALG::Matrix<3, numnodes>(xyz_, true);
+        if (referencepos) xyze = LINALG::Matrix<3, numnodes>(xyz_ref_, true);
 
         LINALG::Matrix<numnodes, 1> funct(false);
         LINALG::Matrix<2, numnodes> deriv(false);
